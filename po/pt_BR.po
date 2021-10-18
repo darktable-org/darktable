@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-17 09:11-0300\n"
-"PO-Revision-Date: 2021-10-16 17:37-0300\n"
+"POT-Creation-Date: 2021-10-20 17:18-0300\n"
+"PO-Revision-Date: 2021-10-20 17:20-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -236,7 +236,7 @@ msgstr "usar arquivo RAW ao invés de JPEG embutido a partir do tamanho"
 #: ../build/bin/preferences_gen.h:5177 ../build/bin/preferences_gen.h:5231
 #: ../build/bin/preferences_gen.h:7080 ../build/bin/conf_gen.h:391
 #: ../build/bin/conf_gen.h:1079 ../build/bin/conf_gen.h:1095
-#: ../build/bin/conf_gen.h:2869
+#: ../build/bin/conf_gen.h:2875
 msgctxt "preferences"
 msgid "always"
 msgstr "sempre"
@@ -656,17 +656,17 @@ msgid "white balance slider colors"
 msgstr "cores do controle deslizante de balanço de branco"
 
 #: ../build/bin/preferences_gen.h:5047 ../build/bin/preferences_gen.h:5076
-#: ../build/bin/conf_gen.h:2811
+#: ../build/bin/conf_gen.h:2817
 msgctxt "preferences"
 msgid "no color"
 msgstr "sem cor"
 
-#: ../build/bin/preferences_gen.h:5052 ../build/bin/conf_gen.h:2812
+#: ../build/bin/preferences_gen.h:5052 ../build/bin/conf_gen.h:2818
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "cor do iluminante"
 
-#: ../build/bin/preferences_gen.h:5057 ../build/bin/conf_gen.h:2813
+#: ../build/bin/preferences_gen.h:5057 ../build/bin/conf_gen.h:2819
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "emulação do efeito"
@@ -690,17 +690,17 @@ msgid "colorbalance slider block layout"
 msgstr "disposição do bloco de controles do balanço de cor"
 
 #: ../build/bin/preferences_gen.h:5112 ../build/bin/preferences_gen.h:5141
-#: ../build/bin/conf_gen.h:2859
+#: ../build/bin/conf_gen.h:2865
 msgctxt "preferences"
 msgid "list"
 msgstr "lista"
 
-#: ../build/bin/preferences_gen.h:5117 ../build/bin/conf_gen.h:2860
+#: ../build/bin/preferences_gen.h:5117 ../build/bin/conf_gen.h:2866
 msgctxt "preferences"
 msgid "tabs"
 msgstr "abas"
 
-#: ../build/bin/preferences_gen.h:5122 ../build/bin/conf_gen.h:2861
+#: ../build/bin/preferences_gen.h:5122 ../build/bin/conf_gen.h:2867
 msgctxt "preferences"
 msgid "columns"
 msgstr "colunas"
@@ -726,39 +726,39 @@ msgid "show right-side buttons in processing module headers"
 msgstr ""
 "mostrar botões do lado direito nos cabeçalhos de módulos de processamento"
 
-#: ../build/bin/preferences_gen.h:5182 ../build/bin/conf_gen.h:2870
+#: ../build/bin/preferences_gen.h:5182 ../build/bin/conf_gen.h:2876
 msgctxt "preferences"
 msgid "active"
 msgstr "ativo"
 
-#: ../build/bin/preferences_gen.h:5187 ../build/bin/conf_gen.h:2871
+#: ../build/bin/preferences_gen.h:5187 ../build/bin/conf_gen.h:2877
 msgctxt "preferences"
 msgid "dim"
 msgstr "atenuar"
 
 #: ../build/bin/preferences_gen.h:5192 ../build/bin/preferences_gen.h:6611
 #: ../build/bin/preferences_gen.h:6647 ../build/bin/conf_gen.h:2250
-#: ../build/bin/conf_gen.h:2872
+#: ../build/bin/conf_gen.h:2878
 msgctxt "preferences"
 msgid "auto"
 msgstr "automático"
 
-#: ../build/bin/preferences_gen.h:5197 ../build/bin/conf_gen.h:2873
+#: ../build/bin/preferences_gen.h:5197 ../build/bin/conf_gen.h:2879
 msgctxt "preferences"
 msgid "fade"
 msgstr "esmaecer"
 
-#: ../build/bin/preferences_gen.h:5202 ../build/bin/conf_gen.h:2874
+#: ../build/bin/preferences_gen.h:5202 ../build/bin/conf_gen.h:2880
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../build/bin/preferences_gen.h:5207 ../build/bin/conf_gen.h:2875
+#: ../build/bin/preferences_gen.h:5207 ../build/bin/conf_gen.h:2881
 msgctxt "preferences"
 msgid "smooth"
 msgstr "suavizar"
 
-#: ../build/bin/preferences_gen.h:5212 ../build/bin/conf_gen.h:2876
+#: ../build/bin/preferences_gen.h:5212 ../build/bin/conf_gen.h:2882
 msgctxt "preferences"
 msgid "glide"
 msgstr "deslizar"
@@ -903,19 +903,19 @@ msgid "auto-apply pixel workflow defaults"
 msgstr "auto-aplicar padrões do fluxo de trabalho"
 
 #: ../build/bin/preferences_gen.h:5582 ../build/bin/preferences_gen.h:5611
-#: ../build/bin/conf_gen.h:2697
+#: ../build/bin/conf_gen.h:2703
 msgctxt "preferences"
 msgid "scene-referred"
 msgstr "relativo à cena"
 
-#: ../build/bin/preferences_gen.h:5587 ../build/bin/conf_gen.h:2698
+#: ../build/bin/preferences_gen.h:5587 ../build/bin/conf_gen.h:2704
 msgctxt "preferences"
 msgid "display-referred"
 msgstr "relativo à exibição"
 
 #: ../build/bin/preferences_gen.h:5592 ../build/bin/preferences_gen.h:6616
 #: ../build/bin/conf_gen.h:627 ../build/bin/conf_gen.h:1697
-#: ../build/bin/conf_gen.h:2251 ../build/bin/conf_gen.h:2699
+#: ../build/bin/conf_gen.h:2251 ../build/bin/conf_gen.h:2705
 msgctxt "preferences"
 msgid "none"
 msgstr "nenhum"
@@ -936,13 +936,13 @@ msgstr ""
 msgid "auto-apply chromatic adaptation defaults"
 msgstr "auto-aplicar padrões de adaptação cromática"
 
-#: ../build/bin/preferences_gen.h:5647 ../build/bin/conf_gen.h:2707
+#: ../build/bin/preferences_gen.h:5647 ../build/bin/conf_gen.h:2713
 msgctxt "preferences"
 msgid "modern"
 msgstr "moderno"
 
 #: ../build/bin/preferences_gen.h:5652 ../build/bin/preferences_gen.h:5671
-#: ../build/bin/conf_gen.h:2708
+#: ../build/bin/conf_gen.h:2714
 msgctxt "preferences"
 msgid "legacy"
 msgstr "legado"
@@ -1543,17 +1543,17 @@ msgid "method to use for getting the display profile"
 msgstr "método usado para obter o perfil do monitor"
 
 #: ../build/bin/preferences_gen.h:7313 ../build/bin/preferences_gen.h:7342
-#: ../build/bin/conf_gen.h:2659
+#: ../build/bin/conf_gen.h:2665
 msgctxt "preferences"
 msgid "all"
 msgstr "tudo"
 
-#: ../build/bin/preferences_gen.h:7318 ../build/bin/conf_gen.h:2660
+#: ../build/bin/preferences_gen.h:7318 ../build/bin/conf_gen.h:2666
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/preferences_gen.h:7323 ../build/bin/conf_gen.h:2661
+#: ../build/bin/preferences_gen.h:7323 ../build/bin/conf_gen.h:2667
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
@@ -2103,51 +2103,51 @@ msgctxt "preferences"
 msgid "vectorscope"
 msgstr "vetorscópio"
 
-#: ../build/bin/conf_gen.h:2466 ../build/bin/conf_gen.h:2502
+#: ../build/bin/conf_gen.h:2472 ../build/bin/conf_gen.h:2508
 msgctxt "preferences"
 msgid "logarithmic"
 msgstr "logarítmico"
 
-#: ../build/bin/conf_gen.h:2467 ../build/bin/conf_gen.h:2503
+#: ../build/bin/conf_gen.h:2473 ../build/bin/conf_gen.h:2509
 msgctxt "preferences"
 msgid "linear"
 msgstr "linear"
 
-#: ../build/bin/conf_gen.h:2475
+#: ../build/bin/conf_gen.h:2481
 msgctxt "preferences"
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../build/bin/conf_gen.h:2476
+#: ../build/bin/conf_gen.h:2482
 msgctxt "preferences"
 msgid "vertical"
 msgstr "vertical"
 
-#: ../build/bin/conf_gen.h:2484
+#: ../build/bin/conf_gen.h:2490
 msgctxt "preferences"
 msgid "overlaid"
 msgstr "sobreposto"
 
-#: ../build/bin/conf_gen.h:2485
+#: ../build/bin/conf_gen.h:2491
 msgctxt "preferences"
 msgid "parade"
 msgstr "parada (canais lado a lado)"
 
-#: ../build/bin/conf_gen.h:2493
+#: ../build/bin/conf_gen.h:2499
 msgctxt "preferences"
 msgid "u*v*"
 msgstr "u*v*"
 
-#: ../build/bin/conf_gen.h:2494
+#: ../build/bin/conf_gen.h:2500
 msgctxt "preferences"
 msgid "AzBz"
 msgstr "AzBz"
 
-#: ../build/bin/conf_gen.h:2799
+#: ../build/bin/conf_gen.h:2805
 msgid "camera time zone"
 msgstr "fuso horário da câmera"
 
-#: ../build/bin/conf_gen.h:2800
+#: ../build/bin/conf_gen.h:2806
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -2529,7 +2529,7 @@ msgstr "raio"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:73
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:136
-#: ../src/iop/bloom.c:407 ../src/iop/denoiseprofile.c:3696
+#: ../src/iop/bloom.c:407 ../src/iop/denoiseprofile.c:3697
 #: ../src/iop/grain.c:581 ../src/iop/hazeremoval.c:203
 #: ../src/iop/hotpixels.c:381 ../src/iop/nlmeans.c:527 ../src/iop/velvia.c:266
 msgid "strength"
@@ -3175,7 +3175,7 @@ msgstr "saturação"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
 #: ../src/iop/atrous.c:1370 ../src/iop/atrous.c:1374
-#: ../src/iop/denoiseprofile.c:3421 ../src/iop/rawdenoise.c:759
+#: ../src/iop/denoiseprofile.c:3422 ../src/iop/rawdenoise.c:759
 msgid "smooth"
 msgstr "suave"
 
@@ -3816,7 +3816,7 @@ msgstr "detectar por 3 vizinhos"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/iop/bilat.c:429 ../src/iop/colorbalance.c:1878
-#: ../src/iop/denoiseprofile.c:3680 ../src/iop/exposure.c:877
+#: ../src/iop/denoiseprofile.c:3681 ../src/iop/exposure.c:877
 #: ../src/iop/levels.c:686 ../src/iop/profile_gamma.c:687
 #: ../src/libs/copy_history.c:390 ../src/libs/export.c:1346
 #: ../src/libs/image.c:592 ../src/libs/print_settings.c:2566
@@ -5093,10 +5093,11 @@ msgid "error starting darktable"
 msgstr "erro ao iniciar o darktable"
 
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2900
-#: ../src/libs/export_metadata.c:281 ../src/libs/import.c:1762
-#: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1239
-#: ../src/libs/modulegroups.c:3395 ../src/libs/recentcollect.c:319
-#: ../src/libs/styles.c:441 ../src/libs/styles.c:624 ../src/libs/tagging.c:1357
+#: ../src/libs/export_metadata.c:281 ../src/libs/histogram.c:1850
+#: ../src/libs/import.c:1762 ../src/libs/metadata.c:445
+#: ../src/libs/metadata_view.c:1239 ../src/libs/modulegroups.c:3395
+#: ../src/libs/recentcollect.c:319 ../src/libs/styles.c:441
+#: ../src/libs/styles.c:624 ../src/libs/tagging.c:1357
 #: ../src/libs/tagging.c:1445 ../src/libs/tagging.c:1526
 #: ../src/libs/tagging.c:1656 ../src/libs/tagging.c:1931
 msgid "cancel"
@@ -6849,7 +6850,7 @@ msgid "gray"
 msgstr "cinza"
 
 #: ../src/develop/blend_gui.c:2004 ../src/develop/blend_gui.c:2031
-#: ../src/iop/channelmixerrgb.c:3792 ../src/iop/denoiseprofile.c:3597
+#: ../src/iop/channelmixerrgb.c:3792 ../src/iop/denoiseprofile.c:3598
 #: ../src/iop/rawdenoise.c:908 ../src/iop/rgbcurve.c:1383
 #: ../src/iop/rgblevels.c:1013
 msgid "R"
@@ -6860,7 +6861,7 @@ msgid "sliders for red channel"
 msgstr "deslizante para canal vermelho"
 
 #: ../src/develop/blend_gui.c:2007 ../src/develop/blend_gui.c:2034
-#: ../src/iop/channelmixerrgb.c:3793 ../src/iop/denoiseprofile.c:3598
+#: ../src/iop/channelmixerrgb.c:3793 ../src/iop/denoiseprofile.c:3599
 #: ../src/iop/rawdenoise.c:909 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:1014
 msgid "G"
@@ -6871,7 +6872,7 @@ msgid "sliders for green channel"
 msgstr "deslizante para canal verde"
 
 #: ../src/develop/blend_gui.c:2010 ../src/develop/blend_gui.c:2037
-#: ../src/iop/channelmixerrgb.c:3794 ../src/iop/denoiseprofile.c:3599
+#: ../src/iop/channelmixerrgb.c:3794 ../src/iop/denoiseprofile.c:3600
 #: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1385
 #: ../src/iop/rgblevels.c:1015
 msgid "B"
@@ -6966,7 +6967,7 @@ msgid "reset blend mask settings"
 msgstr "redefine configurações da mascara de mesclagem"
 
 #: ../src/develop/blend_gui.c:2160 ../src/iop/atrous.c:1737
-#: ../src/iop/colorzones.c:2443 ../src/iop/denoiseprofile.c:3595
+#: ../src/iop/colorzones.c:2443 ../src/iop/denoiseprofile.c:3596
 #: ../src/iop/rawdenoise.c:905 ../src/iop/rgbcurve.c:1382
 #: ../src/iop/rgblevels.c:1012 ../src/iop/tonecurve.c:1175
 msgid "channel"
@@ -8631,7 +8632,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1821 ../src/gui/accelerators.c:1900
 #: ../src/gui/gtk.c:3002 ../src/imageio/format/pdf.c:662
-#: ../src/iop/denoiseprofile.c:3596 ../src/iop/lens.cc:2245
+#: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2245
 #: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:185
 msgid "all"
 msgstr "tudo"
@@ -10509,12 +10510,12 @@ msgstr[0] "%d/%d exportada para álbum piwigo"
 msgstr[1] "%d/%d exportadas para álbum piwigo"
 
 #: ../src/iop/ashift.c:120
-msgid "rotation and perspective"
+msgid "rotate and perspective"
 msgstr "rotação e perspectiva"
 
 #: ../src/iop/ashift.c:125
-msgid "rotate|keystone|distortion|crop|reframe"
-msgstr "girar|chave|distorção|cortar|reenquadrar"
+msgid "rotation|keystone|distortion|crop|reframe"
+msgstr "rotação|chave|distorção|cortar|reenquadrar"
 
 #: ../src/iop/ashift.c:130
 msgid "rotate or distort perspective"
@@ -10833,12 +10834,12 @@ msgid "deblur: fine blur, strength 1"
 msgstr "nitidez: desfoque pequeno, força 1"
 
 #: ../src/iop/atrous.c:1350 ../src/iop/atrous.c:1596
-#: ../src/iop/denoiseprofile.c:3404 ../src/iop/rawdenoise.c:742
+#: ../src/iop/denoiseprofile.c:3405 ../src/iop/rawdenoise.c:742
 msgid "coarse"
 msgstr "grosseiro"
 
 #: ../src/iop/atrous.c:1357 ../src/iop/atrous.c:1597
-#: ../src/iop/denoiseprofile.c:3412 ../src/iop/rawdenoise.c:750
+#: ../src/iop/denoiseprofile.c:3413 ../src/iop/rawdenoise.c:750
 msgid "fine"
 msgstr "fino"
 
@@ -10846,7 +10847,7 @@ msgstr "fino"
 msgid "contrasty"
 msgstr "contrastado"
 
-#: ../src/iop/atrous.c:1375 ../src/iop/denoiseprofile.c:3426
+#: ../src/iop/atrous.c:1375 ../src/iop/denoiseprofile.c:3427
 #: ../src/iop/rawdenoise.c:764
 msgid "noisy"
 msgstr "ruidoso"
@@ -12331,11 +12332,11 @@ msgstr "força do efeito"
 
 #: ../src/iop/clipping.c:304
 msgid ""
-"this module is deprecated. please use the crop and/or rotation and "
-"perspective modules instead."
+"this module is deprecated. please use the crop and/or rotate and perspective "
+"modules instead."
 msgstr ""
-"este módulo está obsoleto. use o módulo de corte e/ou rotação e os módulos "
-"de perspectiva ao invés dele."
+"este módulo está obsoleto. use os módulos de corte e/ou rotação e "
+"perspectiva ao invés dele."
 
 #: ../src/iop/clipping.c:309
 msgid "crop and rotate"
@@ -13844,29 +13845,29 @@ msgstr "redução de ruído (perfilado)"
 msgid "denoise using noise statistics profiled on sensors."
 msgstr "remove ruído usando estatística perfilada em sensores."
 
-#: ../src/iop/denoiseprofile.c:2716
+#: ../src/iop/denoiseprofile.c:2717
 #, c-format
 msgid "found match for ISO %d"
 msgstr "encontrada correspondência para ISO %d"
 
-#: ../src/iop/denoiseprofile.c:2725
+#: ../src/iop/denoiseprofile.c:2726
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolado de ISO %d e %d"
 
-#: ../src/iop/denoiseprofile.c:3102 ../src/iop/denoiseprofile.c:3686
+#: ../src/iop/denoiseprofile.c:3103 ../src/iop/denoiseprofile.c:3687
 msgid "compute variance"
 msgstr "calcula variância"
 
-#: ../src/iop/denoiseprofile.c:3604
+#: ../src/iop/denoiseprofile.c:3605
 msgid "Y0"
 msgstr "Y0"
 
-#: ../src/iop/denoiseprofile.c:3605
+#: ../src/iop/denoiseprofile.c:3606
 msgid "U0V0"
 msgstr "U0V0"
 
-#: ../src/iop/denoiseprofile.c:3638
+#: ../src/iop/denoiseprofile.c:3639
 msgid ""
 "use only with a perfectly\n"
 "uniform image if you want to\n"
@@ -13876,55 +13877,55 @@ msgstr ""
 "uniforme se você quiser\n"
 "estimar a variância de ruído"
 
-#: ../src/iop/denoiseprofile.c:3644
+#: ../src/iop/denoiseprofile.c:3645
 msgid "variance red: "
 msgstr "variância de vermelho: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3647
+#: ../src/iop/denoiseprofile.c:3648
 msgid "variance computed on the red channel"
 msgstr "variância calculada no canal vermelho"
 
-#: ../src/iop/denoiseprofile.c:3652
+#: ../src/iop/denoiseprofile.c:3653
 msgid "variance green: "
 msgstr "variância de verde: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3655
+#: ../src/iop/denoiseprofile.c:3656
 msgid "variance computed on the green channel"
 msgstr "variância calculada no canal verde"
 
-#: ../src/iop/denoiseprofile.c:3660
+#: ../src/iop/denoiseprofile.c:3661
 msgid "variance blue: "
 msgstr "variância de azul: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3663
+#: ../src/iop/denoiseprofile.c:3664
 msgid "variance computed on the blue channel"
 msgstr "variância calculada no canal azul"
 
-#: ../src/iop/denoiseprofile.c:3673 ../src/libs/export.c:1278
+#: ../src/iop/denoiseprofile.c:3674 ../src/libs/export.c:1278
 #: ../src/libs/print_settings.c:2138 ../src/libs/print_settings.c:2463
 msgid "profile"
 msgstr "perfil"
 
-#: ../src/iop/denoiseprofile.c:3681
+#: ../src/iop/denoiseprofile.c:3682
 msgid "non-local means"
 msgstr "média não local"
 
-#: ../src/iop/denoiseprofile.c:3682
+#: ../src/iop/denoiseprofile.c:3683
 msgid "non-local means auto"
 msgstr "média não local automático"
 
-#: ../src/iop/denoiseprofile.c:3683
+#: ../src/iop/denoiseprofile.c:3684
 msgid "wavelets"
 msgstr "wavelets"
 
-#: ../src/iop/denoiseprofile.c:3684
+#: ../src/iop/denoiseprofile.c:3685
 msgid "wavelets auto"
 msgstr "wavelets automático"
 
-#: ../src/iop/denoiseprofile.c:3711
+#: ../src/iop/denoiseprofile.c:3712
 msgid ""
 "adapt denoising according to the\n"
 "white balance coefficients.\n"
@@ -13940,7 +13941,7 @@ msgstr ""
 "deve ser desabilitado se uma instância anterior\n"
 "foi usada com um modo de fusão de cor."
 
-#: ../src/iop/denoiseprofile.c:3717
+#: ../src/iop/denoiseprofile.c:3718
 msgid ""
 "fix bugs in anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -13962,11 +13963,11 @@ msgstr ""
 "uma vez ativado, não será mais possível\n"
 "reverter para o algoritmo antigo."
 
-#: ../src/iop/denoiseprofile.c:3726
+#: ../src/iop/denoiseprofile.c:3727
 msgid "profile used for variance stabilization"
 msgstr "perfil utilizado para estabilização de variância"
 
-#: ../src/iop/denoiseprofile.c:3727
+#: ../src/iop/denoiseprofile.c:3728
 msgid ""
 "method used in the denoising core.\n"
 "non-local means works best for `lightness' blending,\n"
@@ -13976,7 +13977,7 @@ msgstr ""
 "médias não-locais funcionam melhor para mesclagem em `luminosidade',\n"
 "wavelets funcionam melhor para mesclagem em `cor`"
 
-#: ../src/iop/denoiseprofile.c:3730
+#: ../src/iop/denoiseprofile.c:3731
 msgid ""
 "color representation used within the algorithm.\n"
 "RGB keeps the RGB channels separated,\n"
@@ -13988,7 +13989,7 @@ msgstr ""
 "enquanto Y0U0V0 combina os canais para\n"
 "remoção de ruído de croma e luma separadamente."
 
-#: ../src/iop/denoiseprofile.c:3734
+#: ../src/iop/denoiseprofile.c:3735
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -14002,7 +14003,7 @@ msgstr ""
 "se detalhes são suavizados demais, reduza este valor ou aumente o controle "
 "deslizante de peso do pixel central."
 
-#: ../src/iop/denoiseprofile.c:3737
+#: ../src/iop/denoiseprofile.c:3738
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -14012,7 +14013,7 @@ msgstr ""
 "para melhor denoising, mas cuidado com os longos tempos de execução! raios "
 "grandes podem ser muito lentos. você foi avisado/a"
 
-#: ../src/iop/denoiseprofile.c:3740
+#: ../src/iop/denoiseprofile.c:3741
 msgid ""
 "scattering of the neighbourhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
@@ -14022,7 +14023,7 @@ msgstr ""
 "aumente para melhor redução de ruídos grosseiros.\n"
 "não afeta o tempo de execução."
 
-#: ../src/iop/denoiseprofile.c:3743
+#: ../src/iop/denoiseprofile.c:3744
 msgid ""
 "increase the weight of the central pixel\n"
 "of the patch in the patch comparison.\n"
@@ -14034,11 +14035,11 @@ msgstr ""
 "útil para recuperar detalhes quando o tamanho do patch\n"
 "é grande."
 
-#: ../src/iop/denoiseprofile.c:3747
+#: ../src/iop/denoiseprofile.c:3748
 msgid "finetune denoising strength"
 msgstr "ajuste fino da intensidade redução de ruido"
 
-#: ../src/iop/denoiseprofile.c:3748
+#: ../src/iop/denoiseprofile.c:3749
 msgid ""
 "controls the way parameters are autoset\n"
 "increase if shadows are not denoised enough\n"
@@ -14050,7 +14051,7 @@ msgstr ""
 "ou se sobra ruído de croma.\n"
 "isto pode acontecer se sua foto for superexposta."
 
-#: ../src/iop/denoiseprofile.c:3752
+#: ../src/iop/denoiseprofile.c:3753
 msgid ""
 "finetune shadows denoising.\n"
 "decrease to denoise more aggressively\n"
@@ -14060,7 +14061,7 @@ msgstr ""
 "diminua para remover ruído mais agressivamente\n"
 "em áreas escuras da imagem."
 
-#: ../src/iop/denoiseprofile.c:3755
+#: ../src/iop/denoiseprofile.c:3756
 msgid ""
 "correct color cast in shadows.\n"
 "decrease if shadows are too purple.\n"
@@ -14070,7 +14071,7 @@ msgstr ""
 "diminuir se as sombras são muito roxas.\n"
 "aumentar se as sombras são muito verdes."
 
-#: ../src/iop/denoiseprofile.c:3758
+#: ../src/iop/denoiseprofile.c:3759
 msgid ""
 "upgrade the variance stabilizing algorithm.\n"
 "new algorithm extends the current one.\n"
@@ -18302,15 +18303,16 @@ msgid "collections settings"
 msgstr "preferências de coleções"
 
 #: ../src/libs/collect.c:2901 ../src/libs/export_metadata.c:281
-#: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1239
-#: ../src/libs/recentcollect.c:320 ../src/libs/tagging.c:1526
-#: ../src/libs/tagging.c:1656 ../src/libs/tagging.c:1931
+#: ../src/libs/histogram.c:1850 ../src/libs/metadata.c:445
+#: ../src/libs/metadata_view.c:1239 ../src/libs/recentcollect.c:320
+#: ../src/libs/tagging.c:1526 ../src/libs/tagging.c:1656
+#: ../src/libs/tagging.c:1931
 msgid "save"
 msgstr "salvar"
 
 #: ../src/libs/collect.c:2915 ../src/libs/export.c:1097
-#: ../src/libs/metadata.c:579 ../src/libs/metadata_view.c:1350
-#: ../src/libs/recentcollect.c:382
+#: ../src/libs/histogram.c:1936 ../src/libs/metadata.c:579
+#: ../src/libs/metadata_view.c:1350 ../src/libs/recentcollect.c:382
 msgid "preferences..."
 msgstr "preferências..."
 
@@ -19118,15 +19120,15 @@ msgstr "selecionar imagens que combinam"
 msgid "number of matching images versus selected images"
 msgstr "número de imagens que combinam  versus imagens selecionadas"
 
-#: ../src/libs/histogram.c:147
-msgid "histogram"
-msgstr "histograma"
+#: ../src/libs/histogram.c:158
+msgid "scopes"
+msgstr ""
 
-#: ../src/libs/histogram.c:1302 ../src/libs/histogram.c:1961
+#: ../src/libs/histogram.c:1314 ../src/libs/histogram.c:2069
 msgid "ctrl+scroll to change display height"
 msgstr "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:1311
+#: ../src/libs/histogram.c:1323
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
@@ -19136,7 +19138,7 @@ msgstr ""
 "clique duplo reinicializa\n"
 "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:1316
+#: ../src/libs/histogram.c:1328
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
@@ -19146,116 +19148,143 @@ msgstr ""
 "clique duplo reinicializa\n"
 "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:1429 ../src/libs/histogram.c:1469
+#: ../src/libs/histogram.c:1441 ../src/libs/histogram.c:1481
 msgid "set scale to linear"
 msgstr "mudar escala para linear"
 
-#: ../src/libs/histogram.c:1434 ../src/libs/histogram.c:1474
+#: ../src/libs/histogram.c:1446 ../src/libs/histogram.c:1486
 msgid "set scale to logarithmic"
 msgstr "mudar escala para logarítmica"
 
-#: ../src/libs/histogram.c:1450
+#: ../src/libs/histogram.c:1462
 msgid "set scope to vertical"
 msgstr "mudar escopo para vertical"
 
-#: ../src/libs/histogram.c:1455
+#: ../src/libs/histogram.c:1467
 msgid "set scope to horizontal"
 msgstr "mudar escopo para horizontal"
 
-#: ../src/libs/histogram.c:1484
+#: ../src/libs/histogram.c:1496
 msgid "set view to AzBz"
 msgstr "mudar visão para AzBz"
 
-#: ../src/libs/histogram.c:1489
+#: ../src/libs/histogram.c:1501
 msgid "set view to RYB"
 msgstr "mudar visão para RYB"
 
-#: ../src/libs/histogram.c:1494
+#: ../src/libs/histogram.c:1506
 msgid "set view to u*v*"
 msgstr "mudar visão para u*v*"
 
-#: ../src/libs/histogram.c:1508
+#: ../src/libs/histogram.c:1520
 msgid "set mode to waveform"
 msgstr "mudar o modo para forma de onda"
 
-#: ../src/libs/histogram.c:1518
+#: ../src/libs/histogram.c:1530
 msgid "set mode to rgb parade"
 msgstr "mudar o modo para parada rgb (canais separados)"
 
-#: ../src/libs/histogram.c:1528
+#: ../src/libs/histogram.c:1540
 msgid "set mode to vectorscope"
 msgstr "mudar o modo para vetorscópio"
 
-#: ../src/libs/histogram.c:1538
+#: ../src/libs/histogram.c:1550
 msgid "set mode to histogram"
 msgstr "mudar o modo para histograma"
 
-#: ../src/libs/histogram.c:1631 ../src/libs/histogram.c:1667
-#: ../src/libs/histogram.c:1996
+#: ../src/libs/histogram.c:1643 ../src/libs/histogram.c:1679
+#: ../src/libs/histogram.c:2104
 msgid "click to hide red channel"
 msgstr "clique para esconder o canal vermelho"
 
-#: ../src/libs/histogram.c:1631 ../src/libs/histogram.c:1667
-#: ../src/libs/histogram.c:1996
+#: ../src/libs/histogram.c:1643 ../src/libs/histogram.c:1679
+#: ../src/libs/histogram.c:2104
 msgid "click to show red channel"
 msgstr "clique para mostrar o canal vermelho"
 
-#: ../src/libs/histogram.c:1639 ../src/libs/histogram.c:1665
-#: ../src/libs/histogram.c:2003
+#: ../src/libs/histogram.c:1651 ../src/libs/histogram.c:1677
+#: ../src/libs/histogram.c:2111
 msgid "click to hide green channel"
 msgstr "clique para esconder o canal verde"
 
-#: ../src/libs/histogram.c:1639 ../src/libs/histogram.c:1665
-#: ../src/libs/histogram.c:2003
+#: ../src/libs/histogram.c:1651 ../src/libs/histogram.c:1677
+#: ../src/libs/histogram.c:2111
 msgid "click to show green channel"
 msgstr "clique para mostrar o canal verde"
 
-#: ../src/libs/histogram.c:1647 ../src/libs/histogram.c:1666
-#: ../src/libs/histogram.c:2009
+#: ../src/libs/histogram.c:1659 ../src/libs/histogram.c:1678
+#: ../src/libs/histogram.c:2117
 msgid "click to hide blue channel"
 msgstr "clique para esconder o canal azul"
 
-#: ../src/libs/histogram.c:1647 ../src/libs/histogram.c:1666
-#: ../src/libs/histogram.c:2009
+#: ../src/libs/histogram.c:1659 ../src/libs/histogram.c:1678
+#: ../src/libs/histogram.c:2117
 msgid "click to show blue channel"
 msgstr "clique para mostrar o canal azul"
 
-#: ../src/libs/histogram.c:2118
+#: ../src/libs/histogram.c:1848
+#, fuzzy
+msgid "scopes settings"
+msgstr "configurações de corte"
+
+#: ../src/libs/histogram.c:1855
+#, fuzzy
+msgid "display scopes"
+msgstr "mostrar máscara"
+
+#: ../src/libs/histogram.c:1856
+msgid "in the left sidebar"
+msgstr "na barra lateral à esquerda"
+
+#: ../src/libs/histogram.c:1857
+msgid "in the right sidebar"
+msgstr "na barra lateral à direita"
+
+#: ../src/libs/histogram.c:1864
+msgid "this setting will take effect only after switching between views."
+msgstr "esta configuração terá efeito somente após mudar de vista."
+
+#. until the above works, just warn that settings will have no effect yet
+#: ../src/libs/histogram.c:1928
+msgid "you need to switch views for the new setting to take effect."
+msgstr "você precisa mudar para outra vista para que esta configuração tenha efeito."
+
+#: ../src/libs/histogram.c:2231
 msgctxt "accel"
 msgid "histogram/hide histogram"
 msgstr "histograma/esconder histograma"
 
-#: ../src/libs/histogram.c:2119
+#: ../src/libs/histogram.c:2232
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "esconder histograma"
 
-#: ../src/libs/histogram.c:2120
+#: ../src/libs/histogram.c:2233
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
 msgstr "histograma/alterna ciclicamente opções de histograma"
 
-#: ../src/libs/histogram.c:2121
+#: ../src/libs/histogram.c:2234
 msgctxt "accel"
 msgid "cycle histogram modes"
 msgstr "alterna ciclicamente opções de histograma"
 
-#: ../src/libs/histogram.c:2122
+#: ../src/libs/histogram.c:2235
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
 msgstr "histograma/alterna modo histograma/forma de onda"
 
-#: ../src/libs/histogram.c:2123
+#: ../src/libs/histogram.c:2236
 msgctxt "accel"
 msgid "switch histogram mode"
 msgstr "alterna modo histograma/forma de onda"
 
-#: ../src/libs/histogram.c:2124
+#: ../src/libs/histogram.c:2237
 msgctxt "accel"
 msgid "histogram/switch histogram type"
 msgstr "histograma/alterna escala do histograma linear/logarítmica"
 
-#: ../src/libs/histogram.c:2125
+#: ../src/libs/histogram.c:2238
 msgctxt "accel"
 msgid "switch histogram type"
 msgstr "alterna escala do histograma linear/logarítmica"
@@ -22812,6 +22841,9 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1668
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "histogram"
+#~ msgstr "histograma"
 
 #~ msgid "modules order"
 #~ msgstr "ordem dos módulos"
