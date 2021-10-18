@@ -240,6 +240,7 @@ jobs:
       - name: Create DMG image
         run: |
           cd ${SRC_DIR}/packaging/macosx
+          export PYTHONPATH=/opt/lib/python3.8/site-packages/
           ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable.bundle
       - name: Publish artifacts
         uses: 'actions/upload-artifact@v2'
