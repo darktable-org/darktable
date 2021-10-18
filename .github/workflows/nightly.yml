@@ -211,10 +211,11 @@ jobs:
           sudo port select --set python2 python27
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
+        env:
+          ECO: "-DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp"
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
-          export ECO="-DOpenMP_C_INCLUDE_DIR=/opt/local/include/libomp -DOpenMP_CXX_INCLUDE_DIR=/opt/local/include/libomp -DCMAKE_LIBRARY_PATH=/opt/local/lib/libomp"
           ./src/.ci/ci-script.sh;
       - name: Check if it runs
         run: |
@@ -238,9 +239,10 @@ jobs:
           patch -p1 < ${SRC_DIR}/packaging/macosx/gtk-mac-bundler-0.7.4.patch
           make install
       - name: Create DMG image
+        env:
+          PYTHONPATH: /opt/local/lib/python3.8/site-packages/
         run: |
           cd ${SRC_DIR}/packaging/macosx
-          export PYTHONPATH=/opt/lib/python3.8/site-packages/
           ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable.bundle
       - name: Publish artifacts
         uses: 'actions/upload-artifact@v2'
