@@ -17,7 +17,7 @@ How to make a darktable windows installer (64 bit only):
     ```
 * Install required libraries and dependencies:
     ```
-    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
     ```
 
 * Install optional libraries and dependencies:
