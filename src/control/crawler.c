@@ -105,12 +105,20 @@ GList *dt_control_crawler_run()
       xmp_path[len++] = 'p';
       xmp_path[len] = '\0';
 
-      struct stat statbuf;
       // on Windows the encoding might not be UTF8
       gchar *xmp_path_locale = dt_util_normalize_path(xmp_path);
+#ifdef _WIN32
+      // UTF8 paths fail in this context, but converting to UTF16 works
+      struct _stati64 statbuf;
+      wchar_t *wfilename = g_utf8_to_utf16(xmp_path_locale, -1, NULL, NULL, NULL);
+      const int stat_res = _wstati64(wfilename, &statbuf);
+      g_free(wfilename);
+ #else
+      struct stat statbuf;
       const int stat_res = stat(xmp_path_locale, &statbuf);
+#endif
       g_free(xmp_path_locale);
-      if(stat_res == -1) continue; // TODO: shall we report these?
+      if(stat_res) continue; // TODO: shall we report these?
 
       // step 1: check if the xmp is newer than our db entry
       // FIXME: allow for a few seconds difference?
