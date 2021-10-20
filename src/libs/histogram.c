@@ -167,7 +167,7 @@ const char **views(dt_lib_module_t *self)
 uint32_t container(dt_lib_module_t *self)
 {
   const dt_lib_histogram_position_t position = dt_conf_get_int("plugins/darkroom/histogram/position");
-  return position;
+  return (position == 0) ? DT_UI_CONTAINER_PANEL_LEFT_TOP : DT_UI_CONTAINER_PANEL_RIGHT_TOP;
 }
 
 int expandable(dt_lib_module_t *self)
@@ -1925,7 +1925,7 @@ static void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 #endif
 
     // until the above works, just warn that settings will have no effect yet
-    dt_control_log(_("you need to go switch views for the new setting to take effect."));
+    dt_control_log(_("you need to switch views for the new setting to take effect."));
   }
 
   gtk_widget_destroy(dialog);
