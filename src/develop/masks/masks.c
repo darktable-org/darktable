@@ -1130,7 +1130,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
     {
       float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
       float amount = 0.05f;
-      if(!up) amount = -amount;
+      if(up) amount = -amount;
 
       opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
@@ -1737,7 +1737,7 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
   if(form->type & DT_MASKS_GROUP) return;
   const int id = form->formid;
   float amount = 0.05f;
-  if(!up) amount = -amount;
+  if(up) amount = -amount;
 
   // so we change the value inside the group
   for(GList *fpts = grp->points; fpts; fpts = g_list_next(fpts))
