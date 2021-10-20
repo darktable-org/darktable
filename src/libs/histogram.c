@@ -2202,7 +2202,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* if we don't have a pref for the collapsed state of the widget, force it expanded */
   /* this is to manage the transition from the uncollapsible to the collapsible widget */
-  if(dt_conf_key_exists("plugins/darkroom/histogram/position"))
+  if(!dt_conf_key_exists("plugins/darkroom/histogram/expanded"))
     dt_lib_gui_set_expanded(self, TRUE);
 }
 
