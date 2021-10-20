@@ -62,6 +62,7 @@ jobs:
             mingw-w64-x86_64-libxslt
             mingw-w64-x86_64-libsoup
             mingw-w64-x86_64-libavif
+            mingw-w64-x86_64-libheif
             mingw-w64-x86_64-libwebp
             mingw-w64-x86_64-libsecret
             mingw-w64-x86_64-lua
