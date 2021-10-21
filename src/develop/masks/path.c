@@ -1009,7 +1009,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
     }
     else
     {
-      const float amount = up ? 0.97f : 1.03f;
+      const float amount = up ? 1.03f : 0.97f;
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {

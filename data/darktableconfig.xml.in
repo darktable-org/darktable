@@ -1200,6 +1200,13 @@
     <shortdescription>smoothing of brush strokes</shortdescription>
     <longdescription>sets level for smoothing of brush strokes. stronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom" section="general">
+    <name>masks_scroll_down_increases</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>scroll down to increase mask parameters</shortdescription>
+    <longdescription>when using the mouse scroll wheel to change mask parameters, scroll down to increase the mask size, feather size, opacity, brush hardness and gradient curvature\nby default scrolling up increases these parameters</longdescription>
+  </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>channel_display</name>
     <type>

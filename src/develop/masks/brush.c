@@ -1093,7 +1093,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
   {
     if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
-      const float amount = up ? 0.97f : 1.03f;
+      const float amount = up ? 1.03f : 0.97f;
       float masks_hardness;
 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
@@ -1117,7 +1117,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
     }
     else if(dt_modifier_is(state, 0))
     {
-      const float amount = up ? 0.97f : 1.03f;
+      const float amount = up ? 1.03f : 0.97f;
       float masks_border;
 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
@@ -1161,7 +1161,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
-        const float amount = up ? 0.97f : 1.03f;
+        const float amount = up ? 1.03f : 0.97f;
         // do not exceed upper limit of 1.0 and lower limit of 0.004
         for(GList *l = form->points; l; l = g_list_next(l))
         {
@@ -1191,7 +1191,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       }
       else
       {
-        const float amount = up ? 0.97f : 1.03f;
+        const float amount = up ? 1.03f : 0.97f;
         for(GList *l = form->points; l; l = g_list_next(l))
         {
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
@@ -2586,7 +2586,7 @@ static void _brush_bounding_box_raw(const float *const points, const float *cons
   float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
 #ifdef _OPENMP
 #pragma omp parallel for reduction(min : xmin, ymin) reduction(max : xmax, ymax) \
-  schedule(static) if(num_points > 1000) 
+  schedule(static) if(num_points > 1000)
 #endif
   for(int i = nb_corner * 3; i < num_points; i++)
   {

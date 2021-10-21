@@ -3085,6 +3085,7 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
 
   // add an option to allow skip mouse events while editing masks
   if(darktable.develop->darkroom_skip_mouse_events) return 0;
+  const gboolean incr = dt_mask_scroll_increases(up);
 
   if(g->temp)
   {
@@ -3097,10 +3098,10 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
       get_stamp_params(module, &radius, &r, &phi);
 
       float factor = 1.0f;
-      if(up && cabsf(warp->radius - warp->point) > 10.0f)
-        factor *= 0.97f;
-      else if(!up)
+      if(incr)
         factor *= 1.0f / 0.97f;
+      else if(!incr && cabsf(warp->radius - warp->point) > 10.0f)
+        factor *= 0.97f;
 
       r *= factor;
       radius *= factor;
@@ -3118,10 +3119,10 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
       float phi = cargf(strength_v);
       const float r = cabsf(strength_v);
 
-      if(up)
-        phi += DT_M_PI_F / 16.0f;
-      else
+      if(incr)
         phi -= DT_M_PI_F / 16.0f;
+      else
+        phi += DT_M_PI_F / 16.0f;
 
       warp->strength = warp->point + r * cexpf(phi * I);
       dt_conf_set_float(CONF_STRENGTH, r);
@@ -3134,10 +3135,10 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
       const float phi = cargf(strength_v);
       float r = cabsf(strength_v);
 
-      if(up)
-        r *= 0.97f;
-      else
+      if(incr)
         r *= 1.0f / 0.97f;
+      else
+        r *= 0.97f;
 
       warp->strength = warp->point + r * cexpf(phi * I);
       dt_conf_set_float(CONF_STRENGTH, r);
