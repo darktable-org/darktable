@@ -244,10 +244,14 @@ jobs:
         run: |
           cd ${SRC_DIR}/packaging/macosx
           
+          brew install tree
+
           echo "--- head of lensfun-update-data ---"
           head `which lensfun-update-data`
           echo "--- end ---"
           
+          tree /opt/local/
+
           ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable.bundle
       - name: Publish artifacts
         uses: 'actions/upload-artifact@v2'
