@@ -41,6 +41,9 @@ void dt_iop_combobox_enum_callback(GtkWidget *combobox, int *field);
 void dt_iop_combobox_int_callback(GtkWidget *combobox, int *field);
 void dt_iop_combobox_bool_callback(GtkWidget *combobox, gboolean *field);
 
+/* returns up or !up depending on the masks_updown preference */
+gboolean dt_mask_scroll_increases(int up);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
