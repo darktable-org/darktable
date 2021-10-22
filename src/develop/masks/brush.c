@@ -1162,6 +1162,29 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
         const float amount = up ? 1.03f : 0.97f;
+        for(GList *l = form->points; l; l = g_list_next(l))
+        {
+          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
+          const float masks_hardness = point->hardness;
+          point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+          dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
+        }
+        if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
+        {
+          float masks_hardness = dt_conf_get_float("plugins/darkroom/spots/brush_hardness");
+          masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+          dt_conf_set_float("plugins/darkroom/spots/brush_hardness", masks_hardness);
+        }
+        else
+        {
+          float masks_hardness = dt_conf_get_float("plugins/darkroom/masks/brush/hardness");
+          masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+          dt_conf_set_float("plugins/darkroom/masks/brush/hardness", masks_hardness);
+        }
+      }
+      else
+      {
+        const float amount = up ? 1.03f : 0.97f;
         // do not exceed upper limit of 1.0 and lower limit of 0.004
         for(GList *l = form->points; l; l = g_list_next(l))
         {
@@ -1187,29 +1210,6 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
           masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
           dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
           dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
-        }
-      }
-      else
-      {
-        const float amount = up ? 1.03f : 0.97f;
-        for(GList *l = form->points; l; l = g_list_next(l))
-        {
-          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-          const float masks_hardness = point->hardness;
-          point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-          dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
-        }
-        if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        {
-          float masks_hardness = dt_conf_get_float("plugins/darkroom/spots/brush_hardness");
-          masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-          dt_conf_set_float("plugins/darkroom/spots/brush_hardness", masks_hardness);
-        }
-        else
-        {
-          float masks_hardness = dt_conf_get_float("plugins/darkroom/masks/brush/hardness");
-          masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-          dt_conf_set_float("plugins/darkroom/masks/brush/hardness", masks_hardness);
         }
       }
 
@@ -2935,13 +2935,9 @@ static void _brush_set_hint_message(const dt_masks_form_gui_t *const gui, const 
                                      const int opacity, char *const restrict msgbuf, const size_t msgbuf_len)
 {
   // TODO: check if it would be good idea to have same controls on creation and for selected brush
-  if(gui->creation)
+  if(gui->creation || gui->form_selected)
     g_snprintf(msgbuf, msgbuf_len,
                _("<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
-                 "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
-  else if(gui->form_selected)
-    g_snprintf(msgbuf, msgbuf_len,
-               _("<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
                  "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
   else if(gui->border_selected)
     g_strlcat(msgbuf, _("<b>size</b>: scroll"), msgbuf_len);
