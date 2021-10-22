@@ -3120,9 +3120,9 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
       const float r = cabsf(strength_v);
 
       if(incr)
-        phi -= DT_M_PI_F / 16.0f;
-      else
         phi += DT_M_PI_F / 16.0f;
+      else
+        phi -= DT_M_PI_F / 16.0f;
 
       warp->strength = warp->point + r * cexpf(phi * I);
       dt_conf_set_float(CONF_STRENGTH, r);
