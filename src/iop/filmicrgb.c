@@ -57,6 +57,7 @@
 
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 #define INVERSE_SQRT_3 0.5773502691896258f
+#define SAFETY_MARGIN 0.01f
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
@@ -185,7 +186,7 @@ typedef struct dt_iop_filmicrgb_params_t
   float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
   float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
   float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
-  float latitude;           // $MIN: 0.01 $MAX: 100 $DEFAULT: 33.0
+  float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 25.0
   float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.35
   float saturation;         // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
@@ -2147,9 +2148,16 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
   }
 
   const float hardness = p->output_power;
-  float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f * dynamic_range; // in % of dynamic range
+  // latitude in %
+  float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f;
   float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f;                  // in %
-  float slope = CLAMP(p->contrast * dynamic_range / 8.0f, 1.00001f, 100.0f);
+  float slope = p->contrast * dynamic_range / 8.0f;
+  float min_contrast = 1.0f; // otherwise, white_display and black_display cannot be reached
+  // make sure there is enough contrast to be able to construct the top right part of the curve
+  min_contrast = fmaxf(min_contrast, (white_display - grey_display) / (white_log - grey_log));
+  // make sure there is enough contrast to be able to construct the bottom left part of the curve
+  min_contrast = fmaxf(min_contrast, (grey_display - black_display) / (grey_log - black_log));
+  min_contrast += SAFETY_MARGIN;
   // we want a slope that depends only on contrast at gray point.
   // let's consider f(x) = (contrast*x+linear_intercept)^output_power
   // f'(x) = contrast * output_power * (contrast*x+linear_intercept)^(output_power-1)
@@ -2157,30 +2165,33 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
   // f'(grey_log) = contrast * output_power * (contrast * grey_log + grey_display - (contrast * grey_log))^(output_power-1)
   //              = contrast * output_power * grey_display^(output_power-1)
   // f'(grey_log) = target_contrast <=> contrast = target_contrast / (output_power * grey_display^(output_power-1))
-  float contrast = slope / (hardness * powf(grey_display, hardness - 1.0f));
-
-  // nodes for mapping from log encoding to desired target luminance
-  // X coordinates
-  float toe_log = grey_log - latitude / dynamic_range * fabsf(black_source / dynamic_range);
-  float shoulder_log = grey_log + latitude / dynamic_range * fabsf(white_source / dynamic_range);
+  float contrast = CLAMP(slope / (hardness * powf(grey_display, hardness - 1.0f)), min_contrast, 100.0f);
 
   // interception
   float linear_intercept = grey_display - (contrast * grey_log);
 
+  // consider the line of equation y = contrast * x + linear_intercept
+  // we want to keep y in [black_display, white_display] (with some safety margin)
+  // thus, we compute x values such as y=black_display and y=white_display
+  // latitude will influence position of toe and shoulder in the [xmin, xmax] segment
+  const float xmin = (black_display + SAFETY_MARGIN * (white_display - black_display) - linear_intercept) / contrast;
+  const float xmax = (white_display - SAFETY_MARGIN * (white_display - black_display) - linear_intercept) / contrast;
+
+  // nodes for mapping from log encoding to desired target luminance
+  // X coordinates
+  float toe_log = (1.0f - latitude) * grey_log + latitude * xmin;
+  float shoulder_log = (1.0f - latitude) * grey_log + latitude * xmax;
+
+  // Apply the highlights/shadows balance as a shift along the contrast slope
+  // negative values drag to the left and compress the shadows, on the UI negative is the inverse
+  float balance_correction = (balance > 0.0f) ? 2.0f * balance * fminf(toe_log - xmin, shoulder_log - grey_log)
+                                              : 2.0f * balance * fminf(grey_log - toe_log, xmax - shoulder_log);
+  toe_log -= balance_correction;
+  shoulder_log -= balance_correction;
+
   // y coordinates
   float toe_display = (toe_log * contrast + linear_intercept);
   float shoulder_display = (shoulder_log * contrast + linear_intercept);
-
-  // Apply the highlights/shadows balance as a shift along the contrast slope
-  const float norm = sqrtf(contrast * contrast + 1.0f);
-
-  // negative values drag to the left and compress the shadows, on the UI negative is the inverse
-  const float coeff = -((2.0f * latitude) / dynamic_range) * balance;
-
-  toe_display += coeff * contrast / norm;
-  shoulder_display += coeff * contrast / norm;
-  toe_log += coeff / norm;
-  shoulder_log += coeff / norm;
 
   /**
    * Now we have 3 segments :
@@ -2886,12 +2897,12 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       float y = filmic_spline(value, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4, g->spline.M5,
                               g->spline.latitude_min, g->spline.latitude_max, g->spline.type);
 
-      if(y > g->spline.y[4])
+      if(y > g->spline.y[4] + 1E-5)
       {
         y = fminf(y, 1.0f);
         cairo_set_source_rgb(cr, 0.75, .5, 0.);
       }
-      else if(y < g->spline.y[0])
+      else if(y < g->spline.y[0] - 1E-5)
       {
         y = fmaxf(y, 0.f);
         cairo_set_source_rgb(cr, 0.75, .5, 0.);
@@ -2954,6 +2965,12 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       {
         float x = g->spline.x[k];
         float y = g->spline.y[k];
+        const float ymin = g->spline.y[0];
+        const float ymax = g->spline.y[4];
+        // we multiply SAFETY_MARGIN by 1.1f to avoid possible false negatives due to float errors
+        const float y_margin = SAFETY_MARGIN * 1.1f * (ymax - ymin);
+        gboolean red = (((k == 1) && (y - ymin <= y_margin)) 
+                     || ((k == 3) && (ymax - y <= y_margin)));
 
         if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
         {
@@ -2978,10 +2995,15 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
           y_white = y;
         }
 
+        if(red) cairo_set_source_rgb(cr, 0.8, 0.35, 0.35);
+
         // draw bullet
         cairo_arc(cr, x * g->graph_width, (1.0 - y) * g->graph_height, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
         cairo_fill(cr);
         cairo_stroke(cr);
+
+        // reset color for next points
+        if(red) set_color(cr, darktable.bauhaus->graph_fg);
       }
     }
     cairo_restore(cr);
@@ -3823,11 +3845,10 @@ void gui_init(dt_iop_module_t *self)
                                                  "decrease to mute highlights."));
 
   g->latitude = dt_bauhaus_slider_from_params(self, N_("latitude"));
-  dt_bauhaus_slider_set_soft_range(g->latitude, 5.0, 50.0);
+  dt_bauhaus_slider_set_soft_range(g->latitude, 0.1, 50.0);
   dt_bauhaus_slider_set_format(g->latitude, "%.2f %%");
   gtk_widget_set_tooltip_text(g->latitude,
                               _("width of the linear domain in the middle of the curve,\n"
-                                "in percent of the dynamic range (white exposure - black exposure).\n"
                                 "increase to get more contrast and less desaturation at extreme luminances,\n"
                                 "decrease otherwise. no desaturation happens in the latitude range.\n"
                                 "this has no effect on mid-tones."));
