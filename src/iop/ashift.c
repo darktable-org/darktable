@@ -5662,6 +5662,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->draw_line_move = -1;
 
   g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
+  dt_bauhaus_slider_set_step(g->rotation, 0.25);
   dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 
