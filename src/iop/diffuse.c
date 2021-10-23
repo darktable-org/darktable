@@ -370,7 +370,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.second = 0.f;
   p.third = +0.5f;
   p.fourth = +0.5f;
-  dt_gui_presets_add_generic(_("simulate watercolour"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  dt_gui_presets_add_generic(_("simulate watercolor"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 50;
   p.radius = 64;
