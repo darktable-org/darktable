@@ -117,6 +117,9 @@ static gchar *_import_session_path_pattern()
   gchar *s1 = dt_str_replace(base, "/", "\\\\");
   gchar *s2 = dt_str_replace(sub, "/", "\\\\");
   gchar *s1d = g_ascii_strdown(s1, -1);
+  const char first = g_ascii_toupper(s1d[0]);
+  if(first >= 'A' && first <= 'Z' && s1d[1] == ':') // path format is <drive letter>:\path\to\file
+    s1d[0] = first;                                 // drive letter in uppercase looks nicer
   res = g_build_path("\\\\", s1d, s2, (char *)NULL);
   g_free(s1);
   g_free(s2);
