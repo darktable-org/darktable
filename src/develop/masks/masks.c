@@ -24,6 +24,7 @@
 #include "common/undo.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 
 #pragma GCC diagnostic ignored "-Wshadow"
 
@@ -1119,9 +1120,12 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   pzy += 0.5f;
 
   int ret = 0;
+  const gboolean incr = dt_mask_scroll_increases(up);
 
   if(form->functions)
-    ret = form->functions->mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
+    ret = form->functions->mouse_scrolled(module, pzx, pzy,
+                                          incr ? 1 : 0,
+                                          state, form, 0, gui, 0);
 
   if(gui)
   {
@@ -1129,8 +1133,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
     if(gui->creation && dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
-      float amount = 0.05f;
-      if(up) amount = -amount;
+      const float amount = incr ? 0.05f : -0.05f;
 
       opacity = CLAMP(opacity + amount, 0.05f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/opacity", opacity);
@@ -1736,8 +1739,7 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
   // we first need to test if the opacity can be set to the form
   if(form->type & DT_MASKS_GROUP) return;
   const int id = form->formid;
-  float amount = 0.05f;
-  if(up) amount = -amount;
+  const float amount = up ? 0.05f : -0.05f;
 
   // so we change the value inside the group
   for(GList *fpts = grp->points; fpts; fpts = g_list_next(fpts))
@@ -1774,14 +1776,14 @@ void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up)
     pos++;
   }
 
-  // we remove the form and readd it
+  // we remove the form and read it
   if(grpt)
   {
-    if(up && pos == 0) return;
-    if(!up && pos == g_list_length(grp->points) - 1) return;
+    if(!up && pos == 0) return;
+    if(up && pos == g_list_length(grp->points) - 1) return;
 
     grp->points = g_list_remove(grp->points, grpt);
-    if(up)
+    if(!up)
       pos -= 1;
     else
       pos += 1;

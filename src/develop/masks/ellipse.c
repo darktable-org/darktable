@@ -478,9 +478,9 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         rotation = dt_conf_get_float("plugins/darkroom/masks/ellipse/rotation");
 
       if(up)
-        rotation -= 10.f;
-      else
         rotation += 10.f;
+      else
+        rotation -= 10.f;
       rotation = fmodf(rotation, 360.0f);
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
@@ -511,9 +511,9 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       }
 
       const float reference = (flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f / fmin(radius_a, radius_b) : 1.0f);
-      if(up && masks_border > 0.001f * reference)
+      if(!up && masks_border > 0.001f * reference)
         masks_border *= 0.97f;
-      else if(!up && masks_border < radius_limit * reference)
+      else if(up && masks_border < radius_limit * reference)
         masks_border *= 1.0f / 0.97f;
       else
         return 1;
@@ -530,9 +530,9 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     {
       const float oldradius = radius_a;
 
-      if(up && radius_a > 0.001f)
+      if(!up && radius_a > 0.001f)
         radius_a *= 0.97f;
-      else if(!up && radius_a < radius_limit)
+      else if(up && radius_a < radius_limit)
         radius_a *= 1.0f / 0.97f;
       else
         return 1;
@@ -578,9 +578,9 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       {
         // we try to change the rotation
         if(up)
-          ellipse->rotation -= 10.f;
-        else
           ellipse->rotation += 10.f;
+        else
+          ellipse->rotation -= 10.f;
         ellipse->rotation = fmodf(ellipse->rotation, 360.0f);
 
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -596,9 +596,9 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
         const float reference = (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f/fmin(ellipse->radius[0], ellipse->radius[1]) : 1.0f);
-        if(up && ellipse->border > 0.001f * reference)
+        if(!up && ellipse->border > 0.001f * reference)
           ellipse->border *= 0.97f;
-        else if(!up && ellipse->border < radius_limit * reference)
+        else if(up && ellipse->border < radius_limit * reference)
           ellipse->border *= 1.0f/0.97f;
         else return 1;
         ellipse->border = CLAMP(ellipse->border, 0.001f * reference, reference);
@@ -615,9 +615,9 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       {
         const float oldradius = ellipse->radius[0];
 
-        if(up && ellipse->radius[0] > 0.001f)
+        if(!up && ellipse->radius[0] > 0.001f)
           ellipse->radius[0] *= 0.97f;
-        else if(!up && ellipse->radius[0] < radius_limit)
+        else if(up && ellipse->radius[0] < radius_limit)
           ellipse->radius[0] *= 1.0f / 0.97f;
         else return 1;
 
