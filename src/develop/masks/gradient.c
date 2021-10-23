@@ -94,9 +94,9 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
     {
       float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
       if(up)
-        compression = fmaxf(compression, 0.001f) * 0.8f;
-      else
         compression = fminf(fmaxf(compression, 0.001f) * 1.0f / 0.8f, 1.0f);
+      else
+        compression = fmaxf(compression, 0.001f) * 0.8f;
       dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
       dt_toast_log(_("compression: %3.2f%%"), compression*100.0f);
     }
@@ -130,9 +130,9 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
     {
       dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
       if(up)
-        gradient->compression = fmaxf(gradient->compression, 0.001f) * 0.8f;
-      else
         gradient->compression = fminf(fmaxf(gradient->compression, 0.001f) * 1.0f / 0.8f, 1.0f);
+      else
+        gradient->compression = fmaxf(gradient->compression, 0.001f) * 0.8f;
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index, module);

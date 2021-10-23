@@ -97,10 +97,10 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
       else
         masks_border = dt_conf_get_float("plugins/darkroom/masks/circle/border");
 
-      if(up && masks_border > 0.0005f)
-        masks_border *= 0.97f;
-      else if(!up && masks_border < max_mask_border)
+      if(up && masks_border < max_mask_border)
         masks_border *= 1.0f / 0.97f;
+      else if(!up && masks_border > 0.0005f)
+        masks_border *= 0.97f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         dt_conf_set_float("plugins/darkroom/spots/circle_border", masks_border);
@@ -110,10 +110,10 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
     }
     else if(dt_modifier_is(state, 0))
     {
-      if(up && masks_size > 0.001f)
-        masks_size *= 0.97f;
-      else if(!up && masks_size < max_mask_size)
+      if(up && masks_size < max_mask_size)
         masks_size *= 1.0f / 0.97f;
+      else if(!up && masks_size > 0.001f)
+        masks_size *= 0.97f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
         dt_conf_set_float("plugins/darkroom/spots/circle_size", masks_size);
@@ -143,10 +143,10 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
       // resize don't care where the mouse is inside a shape
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
-        if(up && circle->border > 0.0005f)
-          circle->border *= 0.97f;
-        else if(!up && circle->border < max_mask_border)
+        if(up && circle->border < max_mask_border)
           circle->border *= 1.0f / 0.97f;
+        else if(!up && circle->border > 0.0005f)
+          circle->border *= 0.97f;
         else
           return 1;
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -160,10 +160,10 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
-        if(up && circle->radius > 0.001f)
-          circle->radius *= 0.97f;
-        else if(!up && circle->radius < max_mask_size)
+        if(up && circle->radius < max_mask_size)
           circle->radius *= 1.0f / 0.97f;
+        else if(!up && circle->radius > 0.001f)
+          circle->radius *= 0.97f;
         else
           return 1;
         dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
