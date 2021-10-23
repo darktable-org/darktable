@@ -47,18 +47,24 @@ static void _path_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, 
 static void _path_border_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x,
                                 float p3y, float t, float rad, float *xc, float *yc, float *xb, float *yb)
 {
+  // we use double precision math here to avoid rounding issues in paths with sharp corners
   // we get the point
   _path_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t, xc, yc);
 
   // now we get derivative points
-  const float ti = 1.0f - t;
-  const float a = 3.0f * ti * ti;
-  const float b = 3.0f * (ti * ti - 2.0f * t * ti);
-  const float c = 3.0f * (2.0f * t * ti - t * t);
-  const float d = 3.0f * sqf(t);
+  const double ti = 1.0 - (double)t;
+  
+  const double t_t = (double)t * t;
+  const double ti_ti = ti * ti;
+  const double t_ti = t * ti;
+  
+  const double a = 3.0 * ti_ti;
+  const double b = 3.0 * (ti_ti - 2.0 * t_ti);
+  const double c = 3.0 * (2.0 * t_ti - t_t);
+  const double d = 3.0 * t_t;
 
-  const float dx = -p0x * a + p1x * b + p2x * c + p3x * d;
-  const float dy = -p0y * a + p1y * b + p2y * c + p3y * d;
+  const double dx = -p0x * a + p1x * b + p2x * c + p3x * d;
+  const double dy = -p0y * a + p1y * b + p2y * c + p3y * d;
 
   // so we can have the resulting point
   if(dx == 0 && dy == 0)
@@ -67,7 +73,7 @@ static void _path_border_get_XY(float p0x, float p0y, float p1x, float p1y, floa
     *yb = NAN;
     return;
   }
-  const float l = 1.0f / sqrtf(sqf(dx) + sqf(dy));
+  const double l = 1.0 / sqrt(dx * dx + dy * dy);
   *xb = (*xc) + rad * dy * l;
   *yb = (*yc) - rad * dx * l;
 }
@@ -664,7 +670,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
                           bmax, bmax + 1);
       if(isnan(bmax[0]))
       {
-        _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0.0001, p3[4], cmin,
+        _path_border_get_XY(p3[0], p3[1], p3[2], p3[3], p4[2], p4[3], p4[0], p4[1], 0.00001f, p3[4], cmin,
                             cmin + 1, bmax, bmax + 1);
       }
       if(bmax[0] - rb[0] > 1 || bmax[0] - rb[0] < -1 || bmax[1] - rb[1] > 1 || bmax[1] - rb[1] < -1)
