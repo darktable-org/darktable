@@ -206,17 +206,17 @@ int dt_imageio_heif_read_profile(const char *filename,
   cicp->matrix_coefficients = (dt_colorspaces_cicp_matrix_coefficients_t) heif_matrix_coefficients_unspecified;
 
   struct heif_image_handle* handle = NULL;
-
+  struct heif_color_profile_nclx *profile_info_nclx = NULL;
   struct heif_context* ctx = heif_context_alloc();
+  struct heif_error err;
+  
   if(!ctx)
   {
     dt_print(DT_DEBUG_IMAGEIO,
              "Unable to allocate HEIF context\n");
     goto out;
   }
-
-  struct heif_error err;
-  struct heif_color_profile_nclx *profile_info_nclx = NULL;
+  
   size_t icc_size = 0;
   uint8_t *icc_data = NULL;
 
