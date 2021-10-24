@@ -2485,7 +2485,9 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   for(int i = 0; i < IOP_MODULE_LAST; i++)
     if(hw[i]) dt_action_define(&module->so->actions, NULL, NULL, hw[i], NULL);
 
-  dt_gui_add_help_link(header, dt_get_help_url("module_interacting"));
+  dt_gui_add_help_link(header, dt_get_help_url("module_header"));
+  // for the module label, point to module specific help page
+  dt_gui_add_help_link(hw[IOP_MODULE_LABEL], dt_get_help_url(module->op));
 
   gtk_widget_set_halign(hw[IOP_MODULE_LABEL], GTK_ALIGN_START);
   gtk_widget_set_halign(hw[IOP_MODULE_INSTANCE], GTK_ALIGN_END);
