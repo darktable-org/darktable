@@ -358,23 +358,23 @@ void gui_init(dt_lib_module_t *self)
 
   d->copy_parts_button = dt_ui_button_new(_("selective copy..."),
                                           _("choose which modules to copy from the source image"),
-                                          "history_stack.html#history_stack_usage");
+                                          "module-reference/utility-modules/lighttable/history-stack");
   gtk_grid_attach(grid, d->copy_parts_button, 0, line, 3, 1);
 
   d->copy_button = dt_ui_button_new(_("copy"),
                                     _("copy history stack of\nfirst selected image"),
-                                    "history_stack.html#history_stack_usage");
+                                    "module-reference/utility-modules/lighttable/history-stack");
   gtk_grid_attach(grid, d->copy_button, 3, line++, 3, 1);
 
   d->paste_parts = dt_ui_button_new(_("selective paste..."),
                                     _("choose which modules to paste to the target image(s)"),
-                                    "history_stack.html#history_stack_usage");
+                                    "module-reference/utility-modules/lighttable/history-stack");
   gtk_widget_set_sensitive(d->paste_parts, FALSE);
   gtk_grid_attach(grid, d->paste_parts, 0, line, 3, 1);
 
   d->paste = dt_ui_button_new(_("paste"),
                               _("paste history stack to\nall selected images"),
-                              "history_stack.html#history_stack_usage");
+                              "module-reference/utility-modules/lighttable/history-stack");
   gtk_widget_set_sensitive(d->paste, FALSE);
   gtk_grid_attach(grid, d->paste, 3, line++, 3, 1);
 
@@ -397,12 +397,12 @@ void gui_init(dt_lib_module_t *self)
 
   d->load_button = dt_ui_button_new(_("load sidecar file..."),
                                     _("open an XMP sidecar file\nand apply it to selected images"),
-                                    "history_stack.html#history_stack_usage");
+                                    "module-reference/utility-modules/lighttable/history-stack");
   gtk_grid_attach(grid, d->load_button, 0, line, 3, 1);
 
   d->write_button = dt_ui_button_new(_("write sidecar files"),
                                      _("write history stack and tags to XMP sidecar files"),
-                                     "history_stack.html#history_stack_usage");
+                                     "module-reference/utility-modules/lighttable/history-stack");
   gtk_grid_attach(grid, d->write_button, 3, line, 3, 1);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
