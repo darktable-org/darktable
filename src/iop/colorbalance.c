@@ -1407,6 +1407,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   d->mode = p->mode;
 
+  const dt_aligned_pixel_t lift = { p->lift[CHANNEL_RED], p->lift[CHANNEL_GREEN], p->lift[CHANNEL_BLUE] };
+  const dt_aligned_pixel_t gamma = { p->gamma[CHANNEL_RED], p->gamma[CHANNEL_GREEN], p->gamma[CHANNEL_BLUE] };
+  const dt_aligned_pixel_t gain = { p->gain[CHANNEL_RED], p->gain[CHANNEL_GREEN], p->gain[CHANNEL_BLUE] };
+
   switch(d->mode)
   {
     case SLOPE_OFFSET_POWER:
@@ -1414,19 +1418,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       // Correct the luminance in RGB parameters so we don't affect it
       dt_aligned_pixel_t XYZ;
 
-      dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
+      dt_prophotorgb_to_XYZ(lift, XYZ);
       d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
       d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) + 1.f;
       d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) + 1.f;
       d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) + 1.f;
 
-      dt_prophotorgb_to_XYZ((const float *)&p->gamma[CHANNEL_RED], XYZ);
+      dt_prophotorgb_to_XYZ(gamma, XYZ);
       d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
       d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) + 1.f;
       d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) + 1.f;
       d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) + 1.f;
 
-      dt_prophotorgb_to_XYZ((const float *)&p->gain[CHANNEL_RED], XYZ);
+      dt_prophotorgb_to_XYZ(gain, XYZ);
       d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
       d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) + 1.f;
       d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) + 1.f;
@@ -1452,19 +1456,20 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       // Correct the luminance in RGB parameters so we don't affect it
       dt_aligned_pixel_t XYZ;
-      dt_prophotorgb_to_XYZ((const float *)&p->lift[CHANNEL_RED], XYZ);
+
+      dt_prophotorgb_to_XYZ(lift, XYZ);
       d->lift[CHANNEL_FACTOR] = p->lift[CHANNEL_FACTOR];
       d->lift[CHANNEL_RED] = (p->lift[CHANNEL_RED] - XYZ[1]) + 1.f;
       d->lift[CHANNEL_GREEN] = (p->lift[CHANNEL_GREEN] - XYZ[1]) + 1.f;
       d->lift[CHANNEL_BLUE] = (p->lift[CHANNEL_BLUE] - XYZ[1]) + 1.f;
 
-      dt_prophotorgb_to_XYZ((const float *)&p->gamma[CHANNEL_RED], XYZ);
+      dt_prophotorgb_to_XYZ(gamma, XYZ);
       d->gamma[CHANNEL_FACTOR] = p->gamma[CHANNEL_FACTOR];
       d->gamma[CHANNEL_RED] = (p->gamma[CHANNEL_RED] - XYZ[1]) + 1.f;
       d->gamma[CHANNEL_GREEN] = (p->gamma[CHANNEL_GREEN] - XYZ[1]) + 1.f;
       d->gamma[CHANNEL_BLUE] = (p->gamma[CHANNEL_BLUE] - XYZ[1]) + 1.f;
 
-      dt_prophotorgb_to_XYZ((const float *)&p->gain[CHANNEL_RED], XYZ);
+      dt_prophotorgb_to_XYZ(gain, XYZ);
       d->gain[CHANNEL_FACTOR] = p->gain[CHANNEL_FACTOR];
       d->gain[CHANNEL_RED] = (p->gain[CHANNEL_RED] - XYZ[1]) + 1.f;
       d->gain[CHANNEL_GREEN] = (p->gain[CHANNEL_GREEN] - XYZ[1]) + 1.f;

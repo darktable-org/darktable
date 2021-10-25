@@ -207,12 +207,12 @@ static inline void dt_imageio_write_dng(
     const uint8_t xtrans[6][6],
     const float whitelevel,
     const dt_aligned_pixel_t wb_coeffs,
-    const char camera_model[24])
+    const char camera_makermodel[128])
 {
   FILE *f = g_fopen(filename, "wb");
   if(f)
   {
-    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, xtrans, whitelevel, wb_coeffs, camera_model);
+    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, xtrans, whitelevel, wb_coeffs, camera_makermodel);
     const int k = fwrite(pixel, sizeof(float), (size_t)wd * ht, f);
     if(k != wd * ht) fprintf(stderr, "[dng_write] Error writing image data to %s\n", filename);
     fclose(f);
