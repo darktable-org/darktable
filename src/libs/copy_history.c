@@ -384,7 +384,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->discard_button = dt_ui_button_new(_("discard history"),
                                        _("discard history stack of\nall selected images"),
-                                       "history_stack.html#history_stack_usage");
+                                       "module-reference/utility-modules/lighttable/history-stack");
   gtk_grid_attach(grid, d->discard_button, 3, line++, 3, 1);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->pastemode, self, NULL, N_("mode"),
