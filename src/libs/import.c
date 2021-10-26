@@ -1152,7 +1152,7 @@ static gboolean _folders_button_press(GtkWidget *view, GdkEventButton *event, dt
   if(event->type == GDK_DOUBLE_BUTTON_PRESS)
   {
     GtkTreePath *path = NULL;
-    gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), event->x, event->y, &path, NULL, NULL, NULL); 
+    gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), event->x, event->y, &path, NULL, NULL, NULL);
     if(gtk_tree_view_row_expanded(d->from.folderview, path))
       gtk_tree_view_collapse_row (d->from.folderview, path);
     else
@@ -2060,7 +2060,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *widget = dt_ui_button_new(_("add to library..."),
                                        _("add existing images to the library"),
-                                       "lighttable_panels.html#import_from_fs");
+                                       "module-reference/utility-modules/lighttable/import");
   d->import_inplace = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
@@ -2069,7 +2069,7 @@ void gui_init(dt_lib_module_t *self)
   widget = dt_ui_button_new(_("copy & import..."),
                             _("copy and optionally rename images before adding them to the library"
                               "\npatterns can be defined to rename the images and specify the destination folders"),
-                            "lighttable_panels.html#import_from_fs");
+                            "module-reference/utility-modules/lighttable/import");
   d->import_copy = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
