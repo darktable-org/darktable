@@ -371,17 +371,9 @@ jobs:
         with:
           msystem: MINGW64
           install: >-
-            pacman-mirrors
-            bash
-            curl
-            git
             base-devel
-            intltool
-            mingw-w64-x86_64-gdb
+            git
             mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-clang
-            mingw-w64-x86_64-openmp
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-cmocka
             mingw-w64-x86_64-ninja
@@ -405,7 +397,6 @@ jobs:
             mingw-w64-x86_64-graphicsmagick
             mingw-w64-x86_64-openjpeg2
             mingw-w64-x86_64-gtk3
-            mingw-w64-x86_64-pugixml
             mingw-w64-x86_64-libexif
             mingw-w64-x86_64-osm-gps-map
             mingw-w64-x86_64-libgphoto2
@@ -417,11 +408,8 @@ jobs:
             mingw-w64-x86_64-python3-six
             mingw-w64-x86_64-python3-setuptools
             mingw-w64-x86_64-gmic
+            mingw-w64-x86_64-nsis
           update: true
-      - name: Pacman workaround
-        run: |
-            pacman --noconfirm -S --needed \
-            mingw-w64-x86_64-nsis;
       - uses: actions/checkout@v2
         with:
           submodules: true
