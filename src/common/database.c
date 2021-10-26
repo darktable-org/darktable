@@ -2982,7 +2982,18 @@ start:
   }
   else
   {
-    gchar* data_status = _get_pragma_string_val(db->handle, "data.quick_check");
+    gchar* data_status;
+    if (dt_conf_get_bool("database/quick_check"))
+    {
+      data_status = _get_pragma_string_val(db->handle, "data.quick_check");
+      dt_print(DT_DEBUG_SQL, "[init sql] with data pragma.quick_check\n");
+    }
+    else
+    {
+      data_status = g_strdup("ok");
+      dt_print(DT_DEBUG_SQL, "[init sql] without data pragma.quick_check\n");
+    }
+
     rc = sqlite3_prepare_v2(db->handle, "select value from data.db_info where key = 'version'", -1, &stmt, NULL);
     if(!g_strcmp0(data_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -3159,7 +3170,18 @@ start:
     }
   }
 
-  gchar* libdb_status = _get_pragma_string_val(db->handle, "main.quick_check");
+  gchar* libdb_status;
+  if (dt_conf_get_bool("database/quick_check"))
+    {
+    libdb_status = _get_pragma_string_val(db->handle, "main.quick_check");
+    dt_print(DT_DEBUG_SQL, "[init sql] with library pragma.quick_check\n");
+    }
+    else
+    {
+    libdb_status = g_strdup("ok");
+    dt_print(DT_DEBUG_SQL, "[init sql] without library pragma.quick_check\n");
+    }
+
   // next we are looking at the library database
   // does the db contain the new 'db_info' table?
   rc = sqlite3_prepare_v2(db->handle, "select value from main.db_info where key = 'version'", -1, &stmt, NULL);

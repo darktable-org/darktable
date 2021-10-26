@@ -127,6 +127,13 @@
     <shortdescription>how many snapshots to keep</shortdescription>
     <longdescription>after successfully creating snapshot, how many older snapshots to keep (excluding mandatory version update ones). enter -1 to keep all snapshots\nkeep in mind that snapshots do take some space and you only need the most recent one for successful restore</longdescription>
   </dtconfig>
+  <dtconfig prefs="storage" section="database">
+    <name>database/quick_check</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>perform quick_check pragma on launch</shortdescription>
+    <longdescription>in some cases the launch of darktable can take up to 1 min. This happens only after a system boot and only if you have imported a large number of pictures (>= 40k ~ 60k).\nNot doing this systematic check at startup can significantly reduce this time, but does not allow to identify any inconsistency in the DB at startup.\nNevertheless, to get back to normal launch times, you should also uncheck \"look for updated xmp files on startup\"</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>min_panel_width</name>
     <type>int</type>
@@ -318,6 +325,13 @@
     <default>only large entries</default>
     <shortdescription>store xmp tags in compressed format</shortdescription>
     <longdescription>entries in xmp tags can get rather large and may exceed the available space to store the history stack in output files. this option allows xmp tags to be compressed and save space.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="storage" section="xmp">
+    <name>run_crawler_on_start</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>look for updated xmp files on startup</shortdescription>
+    <longdescription>check file modification times of all xmp files on startup to check if any got updated in the meantime.\nIn some cases the launch of darktable can take up to 1 min. This happens only after a system boot and only if you have imported a large number of pictures (>= 40k ~ 60k).\nNot doing this systematic ckeck of xmp files at startup can significantly reduce this time, but does not allow to identify any inconsistency between xmp files and DB content.\nNevertheless, to get back to normal launch times, you should also uncheck \"perform quick_check pragma on launch\"</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="tags">
     <name>omit_tag_hierarchy</name>
@@ -2973,13 +2987,6 @@
     <default>300</default>
     <shortdescription>DPI value for exported files</shortdescription>
     <longdescription/>
-  </dtconfig>
-  <dtconfig prefs="storage" section="xmp">
-    <name>run_crawler_on_start</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>look for updated xmp files on startup</shortdescription>
-    <longdescription>check file modification times of all xmp files on startup to check if any got updated in the meantime</longdescription>
   </dtconfig>
   <dtconfig prefs="security" section="other">
     <name>plugins/lighttable/audio_player</name>
