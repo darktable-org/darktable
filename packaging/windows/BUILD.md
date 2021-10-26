@@ -13,7 +13,7 @@ How to make a darktable windows installer (64 bit only):
 * From MSYS2 terminal, install x64 developer tools and x86_64 toolchain and git from the MSYS2 prompt:
     ```
     $ pacman -S base-devel
-    $ pacman -S mingw-w64-x86_64-{toolchain,cmake,nsis}
+    $ pacman -S mingw-w64-x86_64-{toolchain,cmake,nsis,ninja}
     $ pacman -S git
     ```
 * Install required libraries and dependencies:
@@ -78,29 +78,22 @@ How to make a darktable windows installer (64 bit only):
     ```
 
 ### Building and Installing Locally
-* Local Install 
+#### Local Install 
   * run `build_and_install.sh` from MSYS2 MINGW64 terminal.
   * after this darktable will be installed in `/opt/darktable `directory and can be started by typing `/opt/darktable/bin/darktable.exe` in MSYS2 MINGW64 terminal.
   * *NOTE: If you are using the Lua scripts, build the installer and install darktable.  
     The Lua scripts check the operating system and see windows and expect a windows shell when executing system commands. Running darktable from the MSYS2 MINGW64 terminal gives a bash shell and therefore the commands will not work.*
 
-* Installer Image
+#### Installer Image
   * for a generic installer, run `build_generic_msi_installer.sh` from MSYS2 MINGW64 terminal  
   * if you'll re-use the installer on a PC with the same hardware and Windows version then you can get an optimized installer using `build_optimized_msi_installer.sh`
 
-### Using Ninja instead of Make
-It is now possible to build darktable on Windows using Ninja rather than Make.  This offers advantages of reduced build times for incremental builds (builds on Windows are significantly slower than with linux based systems).  To use Ninja you need to install it from an MSYS terminal with:  
+#### A Note on Using Ninja over Make
+since Windows builds are significantly slower than Linux based systems, we use Ninja builds by default instead of Makefiles. This allows for incremental builds and therefore reduces build times where possible.
 
-`$ pacman -S mingw-w64-x86_64-ninja`
+If you find that any of the `build_.*.sh` files aren't working with Ninja or that you cannot use Ninja, simply change `cmake -G "Ninja" [...]` to `cmake -G "MSYS Makefiles" [...]`
 
-Be careful as there is also a version of Ninja for MSYS and this will not work here.  Now return to a MINGW64 terminal and use this sequence
-```
-$ mkdir build
-$ cd build
-$ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
-$ cmake --build .
-```
-If you are in a hurry you can now run darktable by executing the darktable.exe found in the build/bin folder, install in /opt/darktable as described earlier, or create an install image.  If you like experimenting you could also install clang and use that instead of gcc/g++ as the toolchain.
+If you like experimenting you could also install clang and use that instead of gcc/g++ as the toolchain.
 
 
 ## B) Cross compile on Linux
