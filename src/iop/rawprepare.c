@@ -406,26 +406,36 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const uint32_t map_h = d->gainmaps[0]->map_points_v;
     const float map_origin_h = d->gainmaps[0]->map_origin_h;
     const float map_origin_v = d->gainmaps[0]->map_origin_v;
-
     float *const out = (float *const)ovoid;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(roi_out, out, im_to_rel_x, im_to_rel_y, rel_to_map_x, rel_to_map_y, map_w, map_h, map_origin_h, map_origin_v) \
+    shared(d) schedule(static)
+#endif
     for(int j = 0; j < roi_out->height; j++)
     {
+      const float y_map = CLAMP(((roi_out->y + j) * im_to_rel_y - map_origin_v) * rel_to_map_y, 0, map_h);
+      const uint32_t y_i0 = MIN(y_map, map_h - 1);
+      const uint32_t y_i1 = MIN(y_i0 + 1, map_h - 1);
+      const float y_frac = y_map - y_i0;
+      const float * restrict map_row0[4];
+      const float * restrict map_row1[4];
+      for(int f = 0; f < 4; f++)
+      {
+        map_row0[f] = &d->gainmaps[f]->map_gain[y_i0 * map_w];
+        map_row1[f] = &d->gainmaps[f]->map_gain[y_i1 * map_w];
+      }
       for(int i = 0; i < roi_out->width; i++)
       {
         const int id = BL(roi_out, d, j, i);
-        const float *const map_gain = d->gainmaps[id]->map_gain;
         const float x_map = CLAMP(((roi_out->x + i) * im_to_rel_x - map_origin_h) * rel_to_map_x, 0, map_w);
-        const float y_map = CLAMP(((roi_out->y + j) * im_to_rel_y - map_origin_v) * rel_to_map_y, 0, map_h);
         const uint32_t x_i0 = MIN(x_map, map_w - 1);
-        const uint32_t y_i0 = MIN(y_map, map_h - 1);
         const uint32_t x_i1 = MIN(x_i0 + 1, map_w - 1);
-        const uint32_t y_i1 = MIN(y_i0 + 1, map_h - 1);
         const float x_frac = x_map - x_i0;
-        const float y_frac = y_map - y_i0;
-        const float gain_top = (1.0f - x_frac) * map_gain[y_i0 * map_w + x_i0] + x_frac * map_gain[y_i0 * map_w + x_i1];
-        const float gain_bottom = (1.0f - x_frac) * map_gain[y_i1 * map_w + x_i0] + x_frac * map_gain[y_i1 * map_w + x_i1];
-        const size_t pout = (size_t)j * roi_out->width + i;
-        out[pout] *= (1.0f - y_frac) * gain_top + y_frac * gain_bottom;
+        const float gain_top = (1.0f - x_frac) * map_row0[id][x_i0] + x_frac * map_row0[id][x_i1];
+        const float gain_bottom = (1.0f - x_frac) * map_row1[id][x_i0] + x_frac * map_row1[id][x_i1];
+        out[j * roi_out->width + i] *= (1.0f - y_frac) * gain_top + y_frac * gain_bottom;
       }
     }
   }
