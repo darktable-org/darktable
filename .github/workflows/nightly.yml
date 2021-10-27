@@ -192,7 +192,7 @@ jobs:
           curl -Lo ~/ports/lang/libomp/Portfile https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/Portfile
           curl -Lo ~/ports/lang/libomp/files/reviews.llvm.org_D88252.diff https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/files/reviews.llvm.org_D88252.diff
           curl -Lo ~/ports/lang/libomp/files/patch-libomp-use-gettid-on-Leopard.diff https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/files/patch-libomp-use-gettid-on-Leopard.diff
-      - name: Patch portfiles
+      - name: Patch portfiles and sources.conf
         run: |
           for f in ~/ports/*/*/Portfile;
           do
@@ -202,7 +202,7 @@ jobs:
           
           portindex ~/ports
 
-          echo "$HOME/ports\n$(cat /opt/local/etc/macports/sources.conf)" | sudo tee /opt/local/etc/macports/sources.conf
+          echo -e "file:///$HOME/ports\n$(cat /opt/local/etc/macports/sources.conf)" | sudo tee /opt/local/etc/macports/sources.conf
 
           echo "Contents of sources.conf:"
           cat /opt/local/etc/macports/sources.conf
