@@ -232,6 +232,11 @@ jobs:
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
+      - name: Correct links to liblensfun (install_name_tool)
+        run: |
+          find ${INSTALL_PREFIX}/opt/darktable/bin/ -type f | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
+          find ${INSTALL_PREFIX}/opt/darktable -type f -name "*.dylib" | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
+          find ${INSTALL_PREFIX}/opt/darktable -type f -name "*.so" | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
       - name: Check if it runs
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
