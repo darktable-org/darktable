@@ -72,7 +72,8 @@ rawprepare_1f_gainmap(read_only image2d_t in, write_only image2d_t out,
   const int id = BL(ry+cy+y, rx+cx+x);
   float pixel_scaled = (pixel - sub[id]) / div[id];
 
-  const float2 map_pt = ((float2)(x, y) * im_to_rel - map_origin) * rel_to_map;
+  // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
+  const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5, 0.5);
   switch(id)
   {
     case 0:
@@ -133,7 +134,8 @@ rawprepare_1f_unnormalized_gainmap(read_only image2d_t in, write_only image2d_t 
   const int id = BL(ry+cy+y, rx+cx+x);
   float pixel_scaled = (pixel - sub[id]) / div[id];
 
-  const float2 map_pt = ((float2)(x, y) * im_to_rel - map_origin) * rel_to_map;
+  // Add 0.5 to compensate for CLK_FILTER_LINEAR subtracting 0.5 from the specified coordinates
+  const float2 map_pt = ((float2)(rx+cx+x,ry+cy+y) * im_to_rel - map_origin) * rel_to_map + (float2)(0.5, 0.5);
   switch(id)
   {
     case 0:
