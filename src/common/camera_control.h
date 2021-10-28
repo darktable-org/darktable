@@ -242,6 +242,15 @@ typedef enum dt_camera_preview_flags_t
   CAMCTL_IMAGE_PREVIEW_DATA = 1,
 } dt_camera_preview_flags_t;
 
+/** camera file info */
+typedef struct dt_camera_files_t
+{
+  /** file name */
+  char *filename;
+  /** timestamp */
+  time_t timestamp;
+} dt_camera_files_t;
+
 /** gphoto2 device updating function for thread */
 void *dt_update_cameras_thread(void *ptr);
 /** Initializes the gphoto and cam control, returns NULL if failed */
