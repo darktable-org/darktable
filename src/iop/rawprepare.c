@@ -43,7 +43,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_rawprepare_params_t)
 typedef enum dt_iop_rawprepare_flat_field_t
 {
   FLAT_FIELD_OFF = 0,     // $DESCRIPTION: "disabled"
-  FLAT_FIELD_EMBEDDED = 1 // $DESCRIPTION: "embedded"
+  FLAT_FIELD_EMBEDDED = 1 // $DESCRIPTION: "embedded GainMap"
 } dt_iop_rawprepare_flat_field_t;
 
 typedef struct dt_iop_rawprepare_params_t
@@ -78,8 +78,8 @@ typedef struct dt_iop_rawprepare_data_t
     uint16_t raw_white_point;
   } rawprepare;
 
-  // image contains GainMaps that we are able to apply here
-  gboolean has_gainmaps;
+  // image contains GainMaps that should be applied
+  gboolean apply_gainmaps;
   // GainMap for each filter of RGGB Bayer pattern
   dt_dng_gain_map_t *gainmaps[4];
 } dt_iop_rawprepare_data_t;
@@ -398,7 +398,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && d->has_gainmaps)
+  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && d->apply_gainmaps)
   {
     const uint32_t map_w = d->gainmaps[0]->map_points_h;
     const uint32_t map_h = d->gainmaps[0]->map_points_v;
@@ -465,7 +465,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 
   if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_UINT16)
   {
-    if(d->has_gainmaps)
+    if(d->apply_gainmaps)
     {
       kernel = gd->kernel_rawprepare_1f_gainmap;
       gainmap_args = TRUE;
@@ -477,7 +477,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   }
   else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_FLOAT)
   {
-    if(d->has_gainmaps)
+    if(d->apply_gainmaps)
     {
       kernel = gd->kernel_rawprepare_1f_unnormalized_gainmap;
       gainmap_args = TRUE;
@@ -698,9 +698,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->rawprepare.raw_white_point = p->raw_white_point;
 
   if(p->flat_field == FLAT_FIELD_EMBEDDED)
-    d->has_gainmaps = check_gain_maps(self, d->gainmaps);
+    d->apply_gainmaps = check_gain_maps(self, d->gainmaps);
   else
-    d->has_gainmaps = FALSE;
+    d->apply_gainmaps = FALSE;
 
   if(image_set_rawcrops(pipe->image.id, d->x + d->width, d->y + d->height))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
