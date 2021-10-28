@@ -155,7 +155,8 @@ typedef enum dt_image_loader_t
   LOADER_AVIF     = 11,
   LOADER_IM       = 12,
   LOADER_HEIF     = 13,
-  LOADER_COUNT    = 14, // keep last
+  LOADER_LIBRAW   = 14,
+  LOADER_COUNT    = 15, // keep last
 } dt_image_loader_t;
 
 static const struct
