@@ -1597,7 +1597,8 @@ void dt_configure_performance()
     // if machine has at least 16GB RAM, use all of the total memory size leaving 4GB "breathing room"
     dt_conf_set_int("host_memory_limit", MAX((mem - (4lu << 20)) >> 11, dt_conf_get_int("host_memory_limit")));
     dt_conf_set_int("singlebuffer_limit", MAX(64, dt_conf_get_int("singlebuffer_limit")));
-    if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
+    if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
+       || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
   }
@@ -1610,7 +1611,8 @@ void dt_configure_performance()
     // if machine has at least 8GB RAM, use half of the total memory size
     dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
     dt_conf_set_int("singlebuffer_limit", MAX(32, dt_conf_get_int("singlebuffer_limit")));
-    if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
+    if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
+       || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
   }
@@ -1622,7 +1624,8 @@ void dt_configure_performance()
 
     dt_conf_set_int("host_memory_limit", MAX(1500, dt_conf_get_int("host_memory_limit")));
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
-    if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
+    if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
+       || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
   }
