@@ -114,13 +114,17 @@ jobs:
           retention-days: 2
   
   macOS:
-    name: Nightly darktable.${{ github.sha }}.macOS
+    name: Nightly darktable.${{ github.sha }}-${{ matrix.build.deployment }}-${{ matrix.build.xcode }}.macOS
     runs-on: ${{ matrix.build.os }}
     strategy:
-      fail-fast: true
+      strategy:
+      fail-fast: false
       matrix:
         build:
           - { os: macos-10.15, xcode: 11.3.1, deployment: 10.7 }
+          - { os: macos-10.15, xcode: 11.7,   deployment: 10.14 }
+          - { os: macos-10.15, xcode: 12.4,   deployment: 10.15 }
+          - { os: macos-11,    xcode: 12.5.1, deployment: 11.3 }
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ RelWithDebInfo ]
@@ -136,6 +140,7 @@ jobs:
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
+      LENSFUN_INSTALL_PREFIX: ${{ github.workspace }}/lensfun
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       #GENERATOR: Ninja
       GENERATOR: Unix Makefiles
@@ -156,14 +161,38 @@ jobs:
           brew tap Homebrew/bundle
           cd src/.ci 
           brew bundle --verbose
+          brew uninstall lensfun
+          echo brew prefix: `brew --prefix`
+      - name: Compile and install lensfun
+        env:
+          PYTHONPATH: ${{ env.LENSFUN_INSTALL_PREFIX }}/lib/python3.9/site-packages/
+        run: |
+          wget https://github.com/lensfun/lensfun/archive/refs/tags/v0.3.2.tar.gz -O lensfun-v0.3.2.tar.gz
+          tar xzf lensfun-v0.3.2.tar.gz
+          cd lensfun-0.3.2
+          mkdir cmake_build && cd cmake_build
+          cmake ../ -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$LENSFUN_INSTALL_PREFIX
+          export LIBRARY_PATH="$LIBRARY_PATH:`brew --prefix`/lib"
+          make
+          sudo make install
+          lensfun-update-data
       - name: Build and Install
+        env:
+          LENSFUN_INCLUDE_DIR: ${{ env.LENSFUN_INSTALL_PREFIX }}/include/lensfun
+          LENSFUN_LIB_DIR: ${{ env.LENSFUN_INSTALL_PREFIX }}/lib
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
+      - name: Correct links to liblensfun (install_name_tool)
+        run: |
+          find ${INSTALL_PREFIX}/bin/ -type f | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
+          find ${INSTALL_PREFIX} -type f -name "*.dylib" | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
+          find ${INSTALL_PREFIX} -type f -name "*.so" | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
       - name: Check if it runs
         run: |
+          otool -L ${INSTALL_PREFIX}/bin/darktable
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
                  --width 2048 --height 2048 \
