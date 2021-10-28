@@ -52,6 +52,47 @@ rawprepare_1f(read_only image2d_t in, write_only image2d_t out,
 }
 
 kernel void
+rawprepare_1f_gainmap(read_only image2d_t in, write_only image2d_t out,
+              const int width, const int height,
+              const int cx, const int cy,
+              global const float *sub, global const float *div,
+              const int rx, const int ry,
+              read_only image2d_t map0, read_only image2d_t map1,
+              read_only image2d_t map2, read_only image2d_t map3,
+              const int2 map_size, const float2 im_to_rel,
+              const float2 rel_to_map, const float2 map_origin)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float pixel = read_imageui(in, sampleri, (int2)(x + cx, y + cy)).x;
+
+  const int id = BL(ry+cy+y, rx+cx+x);
+  float pixel_scaled = (pixel - sub[id]) / div[id];
+
+  const float2 map_pt = ((float2)(x, y) * im_to_rel - map_origin) * rel_to_map;
+  switch(id)
+  {
+    case 0:
+      pixel_scaled *= read_imagef(map0, samplerf, map_pt).x;
+      break;
+    case 1:
+      pixel_scaled *= read_imagef(map1, samplerf, map_pt).x;
+      break;
+    case 2:
+      pixel_scaled *= read_imagef(map2, samplerf, map_pt).x;
+      break;
+    case 3:
+      pixel_scaled *= read_imagef(map3, samplerf, map_pt).x;
+      break;
+  }
+
+  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+}
+
+kernel void
 rawprepare_1f_unnormalized(read_only image2d_t in, write_only image2d_t out,
                            const int width, const int height,
                            const int cx, const int cy,
@@ -67,6 +108,47 @@ rawprepare_1f_unnormalized(read_only image2d_t in, write_only image2d_t out,
 
   const int id = BL(ry+cy+y, rx+cx+x);
   const float pixel_scaled = (pixel - sub[id]) / div[id];
+
+  write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
+}
+
+kernel void
+rawprepare_1f_unnormalized_gainmap(read_only image2d_t in, write_only image2d_t out,
+                           const int width, const int height,
+                           const int cx, const int cy,
+                           global const float *sub, global const float *div,
+                           const int rx, const int ry,
+                           read_only image2d_t map0, read_only image2d_t map1,
+                           read_only image2d_t map2, read_only image2d_t map3,
+                           const int2 map_size, const float2 im_to_rel,
+                           const float2 rel_to_map, const float2 map_origin)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width  || y >= height) return;
+
+  const float pixel = read_imagef(in, sampleri, (int2)(x + cx, y + cy)).x;
+
+  const int id = BL(ry+cy+y, rx+cx+x);
+  float pixel_scaled = (pixel - sub[id]) / div[id];
+
+  const float2 map_pt = ((float2)(x, y) * im_to_rel - map_origin) * rel_to_map;
+  switch(id)
+  {
+    case 0:
+      pixel_scaled *= read_imagef(map0, samplerf, map_pt).x;
+      break;
+    case 1:
+      pixel_scaled *= read_imagef(map1, samplerf, map_pt).x;
+      break;
+    case 2:
+      pixel_scaled *= read_imagef(map2, samplerf, map_pt).x;
+      break;
+    case 3:
+      pixel_scaled *= read_imagef(map3, samplerf, map_pt).x;
+      break;
+  }
 
   write_imagef(out, (int2)(x, y), (float4)(pixel_scaled, 0.0f, 0.0f, 0.0f));
 }

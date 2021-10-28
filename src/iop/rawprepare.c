@@ -87,7 +87,9 @@ typedef struct dt_iop_rawprepare_data_t
 typedef struct dt_iop_rawprepare_global_data_t
 {
   int kernel_rawprepare_1f;
+  int kernel_rawprepare_1f_gainmap;
   int kernel_rawprepare_1f_unnormalized;
+  int kernel_rawprepare_1f_unnormalized_gainmap;
   int kernel_rawprepare_4f;
 } dt_iop_rawprepare_global_data_t;
 
@@ -396,14 +398,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  if(d->has_gainmaps)
+  if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && d->has_gainmaps)
   {
+    const uint32_t map_w = d->gainmaps[0]->map_points_h;
+    const uint32_t map_h = d->gainmaps[0]->map_points_v;
     const float im_to_rel_x = 1.0 / piece->buf_in.width;
     const float im_to_rel_y = 1.0 / piece->buf_in.height;
     const float rel_to_map_x = 1.0 / d->gainmaps[0]->map_spacing_h;
     const float rel_to_map_y = 1.0 / d->gainmaps[0]->map_spacing_v;
-    const uint32_t map_w = d->gainmaps[0]->map_points_h;
-    const uint32_t map_h = d->gainmaps[0]->map_points_v;
     const float map_origin_h = d->gainmaps[0]->map_origin_h;
     const float map_origin_v = d->gainmaps[0]->map_origin_v;
     float *const out = (float *const)ovoid;
@@ -445,8 +447,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
 
-// Temporarily disable OpenCL as flat field correction is not implemented yet
-#ifdef xHAVE_OPENCL
+#ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -456,17 +457,35 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   const int devid = piece->pipe->devid;
   cl_mem dev_sub = NULL;
   cl_mem dev_div = NULL;
+  cl_mem dev_gainmap[4] = {0};
   cl_int err = -999;
 
   int kernel = -1;
+  gboolean gainmap_args = FALSE;
 
   if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_UINT16)
   {
-    kernel = gd->kernel_rawprepare_1f;
+    if(d->has_gainmaps)
+    {
+      kernel = gd->kernel_rawprepare_1f_gainmap;
+      gainmap_args = TRUE;
+    }
+    else
+    {
+      kernel = gd->kernel_rawprepare_1f;
+    }
   }
   else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1 && piece->dsc_in.datatype == TYPE_FLOAT)
   {
-    kernel = gd->kernel_rawprepare_1f_unnormalized;
+    if(d->has_gainmaps)
+    {
+      kernel = gd->kernel_rawprepare_1f_unnormalized_gainmap;
+      gainmap_args = TRUE;
+    }
+    else
+    {
+      kernel = gd->kernel_rawprepare_1f_unnormalized;
+    }
   }
   else
   {
@@ -495,11 +514,37 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_div);
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(uint32_t), (void *)&roi_out->x);
   dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(uint32_t), (void *)&roi_out->y);
+  if(gainmap_args)
+  {
+    const int map_size[2] = { d->gainmaps[0]->map_points_h, d->gainmaps[0]->map_points_v };
+    const float im_to_rel[2] = { 1.0 / piece->buf_in.width, 1.0 / piece->buf_in.height };
+    const float rel_to_map[2] = { 1.0 / d->gainmaps[0]->map_spacing_h, 1.0 / d->gainmaps[0]->map_spacing_v };
+    const float map_origin[2] = { d->gainmaps[0]->map_origin_h, d->gainmaps[0]->map_origin_v };
+
+    for(int i = 0; i < 4; i++)
+    {
+      dev_gainmap[i] = dt_opencl_alloc_device(devid, map_size[0], map_size[1], sizeof(float));
+      if(dev_gainmap[i] == NULL) goto error;
+      err = dt_opencl_write_host_to_device(devid, d->gainmaps[i]->map_gain, dev_gainmap[i],
+                                           map_size[0], map_size[1], sizeof(float));
+      if(err != CL_SUCCESS) goto error;
+    }
+
+    dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), &dev_gainmap[0]);
+    dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(cl_mem), &dev_gainmap[1]);
+    dt_opencl_set_kernel_arg(devid, kernel, 12, sizeof(cl_mem), &dev_gainmap[2]);
+    dt_opencl_set_kernel_arg(devid, kernel, 13, sizeof(cl_mem), &dev_gainmap[3]);
+    dt_opencl_set_kernel_arg(devid, kernel, 14, 2 * sizeof(int), &map_size);
+    dt_opencl_set_kernel_arg(devid, kernel, 15, 2 * sizeof(float), &im_to_rel);
+    dt_opencl_set_kernel_arg(devid, kernel, 16, 2 * sizeof(float), &rel_to_map);
+    dt_opencl_set_kernel_arg(devid, kernel, 17, 2 * sizeof(float), &map_origin);
+  }
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
+  for(int i = 0; i < 4; i++) dt_opencl_release_mem_object(dev_gainmap[i]);
 
   if(piece->pipe->dsc.filters)
   {
@@ -517,6 +562,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
 error:
   dt_opencl_release_mem_object(dev_sub);
   dt_opencl_release_mem_object(dev_div);
+  for(int i = 0; i < 4; i++) dt_opencl_release_mem_object(dev_gainmap[i]);
   dt_print(DT_DEBUG_OPENCL, "[opencl_rawprepare] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -711,7 +757,9 @@ void init_global(dt_iop_module_so_t *self)
 
   dt_iop_rawprepare_global_data_t *gd = self->data;
   gd->kernel_rawprepare_1f = dt_opencl_create_kernel(program, "rawprepare_1f");
+  gd->kernel_rawprepare_1f_gainmap = dt_opencl_create_kernel(program, "rawprepare_1f_gainmap");
   gd->kernel_rawprepare_1f_unnormalized = dt_opencl_create_kernel(program, "rawprepare_1f_unnormalized");
+  gd->kernel_rawprepare_1f_unnormalized_gainmap = dt_opencl_create_kernel(program, "rawprepare_1f_unnormalized_gainmap");
   gd->kernel_rawprepare_4f = dt_opencl_create_kernel(program, "rawprepare_4f");
 }
 
