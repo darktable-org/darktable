@@ -171,7 +171,7 @@ Optional dependencies with no version requirement:
 * OpenEXR *(for EXR import and export)*
 * OpenJPEG *(for Jpeg2000 export)*
 * Colord, Xatom *(for system display color profile fetching)*
-* G'Mic *(for HaldcLUT support)*
+* G'Mic *(for gmz compressed lut support)*
 * PortMidi *(for MIDI input support)*
 * SDL2 *(for gamepad input support)*
 
