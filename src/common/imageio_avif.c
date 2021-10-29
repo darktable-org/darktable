@@ -230,6 +230,35 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
     cicp->color_primaries = avif_image.colorPrimaries;
     cicp->transfer_characteristics = avif_image.transferCharacteristics;
     cicp->matrix_coefficients = avif_image.matrixCoefficients;
+
+    /* fix up mistagged legacy AVIFs */
+    if(avif_image.colorPrimaries == AVIF_COLOR_PRIMARIES_BT709)
+    {
+      bool over = false;
+      /* mistagged sRGB AVIFs exported before dt 3.8 */
+      if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_SRGB
+         && avif_image.matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_BT709)
+      {
+        /* must be code value 5 (IEC 61966-2-1 sYCC) */
+        cicp->matrix_coefficients = AVIF_MATRIX_COEFFICIENTS_BT470BG;
+        over =  true;
+      }
+      /* mistagged Rec. 709 AVIFs exported before dt 3.6 */
+      else if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_BT470M
+         && avif_image.matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_BT709)
+      {
+        /* must be actual Rec. 709 instead of 2.2 gamma*/
+        cicp->transfer_characteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
+        over =  true;
+      }
+
+      if(over)
+      {
+        dt_print(DT_DEBUG_IMAGEIO, "Overriding nclx color profile for AVIF image [%s]: 1/%d/%d to 1/%d/%d\n",
+                filename, avif_image.transferCharacteristics, avif_image.matrixCoefficients,
+                cicp->transfer_characteristics, cicp->matrix_coefficients);
+      }
+    }
   }
 
 out:
