@@ -116,9 +116,17 @@ static gchar *_import_session_path_pattern()
 #ifdef WIN32
   gchar *s1 = dt_str_replace(base, "/", "\\\\");
   gchar *s2 = dt_str_replace(sub, "/", "\\\\");
-  res = g_build_path("\\\\", s1, s2, (char *)NULL);
+  gchar *s1d = g_ascii_strdown(s1, -1);
+  if(s1d && (strlen(s1d) > 1))
+  {
+    const char first = g_ascii_toupper(s1d[0]);
+    if(first >= 'A' && first <= 'Z' && s1d[1] == ':') // path format is <drive letter>:\path\to\file
+      s1d[0] = first;                                 // drive letter in uppercase looks nicer
+  }
+  res = g_build_path("\\\\", s1d, s2, (char *)NULL);
   g_free(s1);
   g_free(s2);
+  g_free(s1d);
 #else
   res = g_build_path(G_DIR_SEPARATOR_S, base, sub, (char *)NULL);
 #endif
