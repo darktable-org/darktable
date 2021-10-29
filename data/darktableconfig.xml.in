@@ -2719,12 +2719,17 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/histogram/position</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription/>
-    <longdescription/>
+  <dtconfig prefs="misc" section="interface" restart="true">
+    <name>plugins/darkroom/histogram/panel_position</name>
+    <type>
+       <enum>
+          <option>left</option>
+          <option>right</option>
+       </enum>
+    </type>
+    <default>right</default>
+    <shortdescription>position of the histogram module</shortdescription>
+    <longdescription>position the histogram at the top-left or top-right of the screen</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/histogram</name>
