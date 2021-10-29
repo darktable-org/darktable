@@ -172,7 +172,7 @@ jobs:
           export LIBRARY_PATH="$LIBRARY_PATH:`brew --prefix`/lib"
           make
           sudo make install
-       - name: Update lensfun data
+      - name: Update lensfun data
         env:
           PYTHONPATH: ${{ env.LENSFUN_INSTALL_PREFIX }}/lib/python3.9/site-packages/
         run: |
