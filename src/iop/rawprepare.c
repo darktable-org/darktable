@@ -412,12 +412,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(roi_out, out, im_to_rel_x, im_to_rel_y, rel_to_map_x, rel_to_map_y, map_w, map_h, map_origin_h, map_origin_v) \
+    dt_omp_firstprivate(csx, csy, roi_out, out, im_to_rel_x, im_to_rel_y, rel_to_map_x, rel_to_map_y, \
+                        map_w, map_h, map_origin_h, map_origin_v) \
     shared(d) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
-      const float y_map = CLAMP(((roi_out->y + j) * im_to_rel_y - map_origin_v) * rel_to_map_y, 0, map_h);
+      const float y_map = CLAMP(((roi_out->y + csy + j) * im_to_rel_y - map_origin_v) * rel_to_map_y, 0, map_h);
       const uint32_t y_i0 = MIN(y_map, map_h - 1);
       const uint32_t y_i1 = MIN(y_i0 + 1, map_h - 1);
       const float y_frac = y_map - y_i0;
@@ -431,7 +432,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int i = 0; i < roi_out->width; i++)
       {
         const int id = BL(roi_out, d, j, i);
-        const float x_map = CLAMP(((roi_out->x + i) * im_to_rel_x - map_origin_h) * rel_to_map_x, 0, map_w);
+        const float x_map = CLAMP(((roi_out->x + csx + i) * im_to_rel_x - map_origin_h) * rel_to_map_x, 0, map_w);
         const uint32_t x_i0 = MIN(x_map, map_w - 1);
         const uint32_t x_i1 = MIN(x_i0 + 1, map_w - 1);
         const float x_frac = x_map - x_i0;
@@ -605,6 +606,7 @@ static gboolean image_set_rawcrops(const uint32_t imgid, int dx, int dy)
 }
 
 // check if image contains GainMaps of the exact type that we can apply here
+// we may reject some GainMaps that are valid according to Adobe DNG spec but we do not support
 gboolean check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out)
 {
   const dt_image_t *const image = &(self->dev->image_storage);
@@ -615,13 +617,15 @@ gboolean check_gain_maps(dt_iop_module_t *self, dt_dng_gain_map_t **gainmaps_out
 
   for(int i = 0; i < 4; i++)
   {
-    // check that each GainMap applies to one filter of a Bayer image
-    // and is not a 1x1 no-op
+    // check that each GainMap applies to one filter of a Bayer image,
+    // covers the entire image, and is not a 1x1 no-op
     dt_dng_gain_map_t *g = (dt_dng_gain_map_t *)g_list_nth_data(image->dng_gain_maps, i);
     if(g == NULL ||
       g->plane != 0 || g->planes != 1 || g->map_planes != 1 ||
       g->row_pitch != 2 || g->col_pitch != 2 ||
-      g->map_points_v < 2 || g->map_points_h < 2)
+      g->map_points_v < 2 || g->map_points_h < 2 ||
+      g->top > 1 || g->left > 1 ||
+      g->bottom != image->height || g->right != image->width)
       return FALSE;
     uint32_t filter = ((g->top & 1) << 1) + (g->left & 1);
     gainmaps[filter] = g;
