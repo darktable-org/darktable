@@ -128,7 +128,7 @@ jobs:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ RelWithDebInfo ]
         target:
-          - nofeatures
+          - skiptest
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
@@ -207,7 +207,6 @@ jobs:
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
       - name: Install and prepare mac bundler
-        if: false
         run: |
           cd ${SRC_DIR}
           curl -LO https://download.gnome.org/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
@@ -216,7 +215,6 @@ jobs:
           patch -p1 < ${SRC_DIR}/packaging/macosx/gtk-mac-bundler-0.7.4.patch
           make install
       - name: Create DMG image
-        if: false
         run: |
           cd ${SRC_DIR}/packaging/macosx
           ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable-nightly.bundle
