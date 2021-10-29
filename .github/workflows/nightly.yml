@@ -161,7 +161,7 @@ jobs:
           cd src/.ci 
           brew bundle --verbose
           brew uninstall lensfun
-          echo brew prefix: `brew --prefix`
+          brew uninstall libheif
       - name: Compile and install lensfun
         run: |
           wget https://github.com/lensfun/lensfun/archive/refs/tags/v0.3.2.tar.gz -O lensfun-v0.3.2.tar.gz
@@ -177,13 +177,6 @@ jobs:
           PYTHONPATH: ${{ env.LENSFUN_INSTALL_PREFIX }}/lib/python3.9/site-packages/
         run: |
           export PATH=$PATH:$LENSFUN_INSTALL_PREFIX/bin
-          echo PPath: $PYTHONPATH
-          head -n 20 $PYTHONPATH/lensfun/__init__.py
-          echo "lensfun-update-data is here:"
-          echo `which lensfun-update-data`
-          echo "--- head of lensfun-update-data ---"
-          head `which lensfun-update-data`
-          echo "--- end ---"
           lensfun-update-data
       - name: Build and Install
         env:
