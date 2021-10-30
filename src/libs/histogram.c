@@ -1859,7 +1859,7 @@ void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)dt_alloc_align(64, sizeof(dt_lib_histogram_t));
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)dt_calloc_align(64, sizeof(dt_lib_histogram_t));
   self->data = (void *)d;
 
   dt_pthread_mutex_init(&d->lock, NULL);
