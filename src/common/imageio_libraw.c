@@ -74,6 +74,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
 
   libraw_close(raw_data);
 
+  img->loader = LOADER_LIBRAW;
   return DT_IMAGEIO_OK;
 
 error:
