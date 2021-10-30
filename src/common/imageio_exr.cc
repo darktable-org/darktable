@@ -189,6 +189,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   img->flags &= ~DT_IMAGE_LDR;
   img->flags |= DT_IMAGE_HDR;
 
+  img->loader = LOADER_EXR;
   return DT_IMAGEIO_OK;
 }
 

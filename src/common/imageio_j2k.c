@@ -306,6 +306,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
         buf[i * 4 + k] = (float)(image->comps[k].data[i] + signed_offsets[k]) / float_divs[k];
   }
 
+  img->loader = LOADER_J2K;
   ret = DT_IMAGEIO_OK;
 
 end_of_the_world:

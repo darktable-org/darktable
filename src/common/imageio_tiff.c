@@ -472,7 +472,13 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   _TIFFfree(t.buf);
   TIFFClose(t.tiff);
 
-  return (ok == 1 ? DT_IMAGEIO_OK : DT_IMAGEIO_FILE_CORRUPTED);
+  if(ok == 1)
+  {
+    img->loader = LOADER_TIFF;
+    return DT_IMAGEIO_OK;
+  }
+  else
+    return DT_IMAGEIO_FILE_CORRUPTED;
 }
 
 int dt_imageio_tiff_read_profile(const char *filename, uint8_t **out)
