@@ -176,6 +176,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     goto out;
   }
 
+  img->loader = LOADER_AVIF;
   ret = DT_IMAGEIO_OK;
 out:
   avifRGBImageFreePixels(&rgb);

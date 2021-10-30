@@ -625,6 +625,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
 
   mat3inv((float *)img->d65_color_matrix, (float *)mat);
 
+  img->loader = LOADER_RGBE;
   return DT_IMAGEIO_OK;
 
 error_corrupt:

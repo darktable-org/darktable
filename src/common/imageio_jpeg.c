@@ -757,6 +757,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
 
   dt_free_align(tmp);
 
+  img->loader = LOADER_JPEG;
   return DT_IMAGEIO_OK;
 }
 

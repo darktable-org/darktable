@@ -1217,11 +1217,6 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
   {
     ret = dt_imageio_open_rawspeed(img, filename, buf);
-    if(ret == DT_IMAGEIO_OK)
-    {
-      img->buf_dsc.cst = iop_cs_RAW;
-      img->loader = LOADER_RAWSPEED;
-    }
   }
 
   /* fallback that tries to open file via GraphicsMagick */
