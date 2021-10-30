@@ -178,7 +178,8 @@ static const struct
   { N_("netpnm"),          'n'},
   { N_("avif"),            'a'},
   { N_("ImageMagick"),     'i'},
-  { N_("heif"),            'h'}
+  { N_("heif"),            'h'},
+  { N_("libraw"),          'l'}
 };
 
 typedef struct dt_image_geoloc_t
