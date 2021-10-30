@@ -215,7 +215,10 @@ jobs:
           patch -p1 < ${SRC_DIR}/packaging/macosx/gtk-mac-bundler-0.7.4.patch
           make install
       - name: Create DMG image
+        env:
+          PYTHONPATH: ${{ env.LENSFUN_INSTALL_PREFIX }}/lib/python3.9/site-packages/
         run: |
+          export PATH=$PATH:$LENSFUN_INSTALL_PREFIX/bin
           cd ${SRC_DIR}/packaging/macosx
           ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable-nightly.bundle
       - name: Publish artifacts
