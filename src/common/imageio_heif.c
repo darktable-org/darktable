@@ -176,6 +176,8 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
         out_pixel[3] = 0.0f; /* alpha */
     }
   }
+
+  img->loader = LOADER_HEIF;
   ret = DT_IMAGEIO_OK;
 
   out:

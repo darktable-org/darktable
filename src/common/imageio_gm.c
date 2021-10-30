@@ -129,6 +129,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
   img->flags &= ~DT_IMAGE_S_RAW;
   img->flags |= DT_IMAGE_LDR;
 
+  img->loader = LOADER_GM;
   return DT_IMAGEIO_OK;
 
 error:

@@ -208,6 +208,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
   }
 
   dt_free_align(buf);
+  img->loader = LOADER_PNG;
   return DT_IMAGEIO_OK;
 }
 
