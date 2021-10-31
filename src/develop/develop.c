@@ -178,7 +178,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   while(dev->allprofile_info)
   {
     dt_ioppr_cleanup_profile_info((dt_iop_order_iccprofile_info_t *)dev->allprofile_info->data);
-    free(dev->allprofile_info->data);
+    dt_free_align(dev->allprofile_info->data);
     dev->allprofile_info = g_list_delete_link(dev->allprofile_info, dev->allprofile_info);
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);

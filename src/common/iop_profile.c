@@ -748,7 +748,7 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_get_profile_info_from_list(dev, profile_type, profile_filename);
   if(profile_info == NULL)
   {
-    profile_info = malloc(sizeof(dt_iop_order_iccprofile_info_t));
+    profile_info = dt_alloc_align(64, sizeof(dt_iop_order_iccprofile_info_t));
     dt_ioppr_init_profile_info(profile_info, 0);
     const int err = dt_ioppr_generate_profile_info(profile_info, profile_type, profile_filename, intent);
     if(err == 0)
@@ -757,7 +757,7 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
     }
     else
     {
-      free(profile_info);
+      dt_free_align(profile_info);
       profile_info = NULL;
     }
   }
