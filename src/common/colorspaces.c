@@ -2013,7 +2013,6 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type(const dt_colorsp
             case DT_CICP_MATRIX_COEFFICIENTS_IDENTITY: /* support RGB (4:4:4 or lossless) */
             case DT_CICP_MATRIX_COEFFICIENTS_SYCC:
             case DT_CICP_MATRIX_COEFFICIENTS_REC601: /* support equivalents just in case of mistagging */
-            case DT_CICP_MATRIX_COEFFICIENTS_REC709: /* support incorrectly tagged legacy AVIFs exported before dt 3.8 */
             case DT_CICP_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL: /* support incorrectly tagged files */
             case DT_CICP_MATRIX_COEFFICIENTS_UNSPECIFIED:
               return DT_COLORSPACE_SRGB;
@@ -2028,7 +2027,6 @@ dt_colorspaces_color_profile_type_t dt_colorspaces_cicp_to_type(const dt_colorsp
         case DT_CICP_TRANSFER_CHARACTERISTICS_REC601:      /* support equivalents just in case of mistagging */
         case DT_CICP_TRANSFER_CHARACTERISTICS_REC2020_10B: /* support equivalents just in case of mistagging */
         case DT_CICP_TRANSFER_CHARACTERISTICS_REC2020_12B: /* support equivalents just in case of mistagging */
-        case DT_CICP_TRANSFER_CHARACTERISTICS_GAMMA22: /* support incorrectly tagged legacy AVIFs exported before dt 3.6 (gamma 2.2) */
 
           switch(cicp->matrix_coefficients)
           {
