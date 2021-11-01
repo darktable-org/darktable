@@ -28,186 +28,191 @@ You are strongly advised to take a backup first.
 
 ## The Big Ones
 
-- New module diffuse and sharpen.
+- The keyboard shortcut system has been entirely reworked and extended to allow you
+  to control darktable with other devices, for example, MIDI devices
+  and game controllers. Standard keyboard/mouse shortcuts can now make use
+  of mouse movements (horizontal, vertical, diagonal) as well as multiple
+  button/key presses and short or long presses/clicks.
+
+  Please note that any shortcuts you have previously created are not transferred
+  to the new functionality and will need to be redefined in darktable 3.8.
+
+- New diffuse and sharpen module.
 
 - New scene-referred blurs module.
 
-- Full rework of perspective correction module adding manual correction support.
+- Perspective correction module has been renamed to rotate and perspective
+  and now allows you to manually define correction settings by drawing lines
+  or rectangles on the image (replicating keystone correction functionality 
+  from the deprecated crop and rotate module) 
 
-- Full rework of the shortcuts handling. The new system can handles
-  many hardware that are compatible with the MIDI interface. Also the
-  shortcuts can handle mouse movements, multiple key press, short or long
-  clicks.
+- Added support for multiple images in the print view. The page can be
+  filled with multiple areas, each of which can be moved around and placed on
+  the page with the ability to snap to a grid for precision.
 
-- Add support for multiple images in print module. The page can be
-  filed with multiple areas which can be moved around an placed into
-  the page using a magnetic-grid for precision.
+- A new LMMSE demosaic algorithm has been introduced. This algorithm is particularly
+  suited to high ISO and/or noisy images.
 
-- A new LMMSE demosaic algorithm is introduced which is better suited
-  for high ISO and/or noisy images.
-
-- A new guide widget is introduced. This make it possible to display a
-  composition grid in any module.
+- The composition guides from the crop module are now available globally and do
+  not require the crop module to be activated.
 
 ## Other New Features And Changes
 
-- The denoise profile default is now using wavelets mode.
+- The denoise (profiled) module now uses wavelets mode by default and its default 
+  settings in Y0U0V0 mode have been improved.
 
-- Add flip buttons in orientation module.
+- Flip buttons have been added to the orientation module (functionality moved
+  from crop and rotate).
 
-- Remove the background jobs handling in preferences.
+- Background jobs handling has been removed from preferences.
 
-- Remove many specific SSE code as the compiler generated code is faster.
+- Much of the SSE-specific code has been removed, since compiler-generated code 
+  is usually faster.
 
-- The filename and image id are now displayed by darktable-generate-cache.
+- The darktable-generate-cache script now displays filenames and image ids.
 
-- Speed up filename matches in collections module.
+- File name matches in the collections module are now faster. 
 
-- Speed up masks handling.
+- Mask handling is faster.
 
-- Make it possible to auto-apply iop order lib presets.
+- Processing module order can now be automatically applied based on the image 
+  properties.
 
-- The collect folders statuses are properly refresh when a mount is changed.
+- Folder status is properly refreshed when a mount is changed.
 
-- An area color picker is selectable by using a <kdb>Right-Click</kdb>
+- An area color picker is selectable by using a <kbd>Right-Click</kbd> in
+  addition to the existing <kbd>Ctrl+click</kbd> action.
 
-- Add substitutable variables for image dimensions. Adds
+- Subsitution variables have been added for image dimensions as follows:
   $(SENSOR_HEIGHT) and $(SENSOR_WIDTH) for the absolute pixel
-  dimensions of the sensor, implements the existing stubs for
-  $(MAX_WIDTH) and $(MAX_HEIGHT) to represent the raw image size,
-  and adds $(EXPORT_HEIGHT) and $(EXPORT_WIDTH) for the
+  dimensions of the sensor; $(MAX_HEIGHT) and $(MAX_WIDTH) for the raw 
+  image size; and $(EXPORT_HEIGHT) and $(EXPORT_WIDTH) for the
   post-cropping final image size.
 
-- Again some work on code speed-up in many different routines ensuring
+- More work on code speed-up in many different routines ensuring
   better vectorization and/or OpenMP definition. Notably, the
-  split-toning, haze removal and soften modules had been improved.
+  split-toning, haze removal and soften modules have been improved.
 
-- The beginner preset in module groups is now taking into account the
-  workflow (display or scene referred).
+- The beginner preset in module groups now takes the chosen workflow
+  (display or scene referred) into account.
 
-- The quick access panel is now taking into account the
-  workflow (display or scene referred).
+- The quick access panel now takes the chosen workflow
+  (display or scene referred) into account.
 
 - New sorting options based on capture, import, modification,
   last export and last print times.
 
-- Better colors for waveform and parade scopes.
-
-- Add source module information in raster mask tooltip.
+- Tooltip for raster mask now includes source module information.
 
 - The following modules have been deprecated:
 
-  - Crop & Rotate : replaced by Crop, Orientation and Rotate and Perspective modules.
+  - Crop & rotate - the features of this module are now shared between the crop, 
+    orientation, and rotate and perspective modules.
 
-    Note that the new Crop module have been moved after Retouch module
+    Note that the new crop module is now placed after the retouch module
     to ensure that the full image can be used a source area.
 
-- Add option to write XMP only when a change is done in the
-  darkroom. So there is now three options, never write XMP, always
-  write XMP or write XMP only after user has edited the image.
+- A new option has been added to allow you to choose when to start writing
+  changes to the XMP sidecare files. Choose to (a) never write XMP, 
+  (b) write XMP as soon as the image is imported; or 
+  (c) write XMP only after the user has edited the image in the darkroom view.
 
-- Improve timezone entry in the geotagging module.
+- Timezone entry has been improved in the geotagging module.
 
-- Add a preference for the number of recent collections to display.
+- A new preference has been added to choose the number of recent collections to display.
 
-- Add rating support in collect module making possible to create
-  presets to select best of 2021 pictures for example.
+- Rating support has been added to the collections module making possible to create
+  presets, for example, to select the best images of 2021.
 
-- Improve default denoise profile smoothing in Y0U0V0 mode.
+- PNG files are now supported in the watermark module.
 
-- Add support for PNG files in watermark module.
+- Minor usability improvements have been made to the tone equalizer,
+  ensuring that the cursor is shown on focus and the module is activated on scroll.
 
-- Minor usability improvement in tone equalizer by ensuring the cursor is
-  shown on focus and the module is activated on scroll.
+- The values in the global color picker module are now selectable.
 
-- The color picker values are now selectable.
+- HSV has been added as an option in the global color picker module.
 
-- Improve timeline color scheme.
-
-- Live samples are now displayed in the vector scope.
-
-- Lut3D has been moved after Filmic.
-
-- Add RYB option in vectorscope.
-
-- Better mask auto-tune in tone equalizer.
-
-- Enable tiling in Color Balance RGB, Diffuse and Filmic RGB modules
-  to be able to process very large images.
-
-- Improve XMP synchronization window to enable more choices on the way
-  to synchronize between the database and XMP.
-
-- Add support for HEIF/HEIC file format.
-
-- Add support for ARM64/Apple M1 as build target.
+- the color scheme of the timeline is improved.
 
 - The scopes module (previously named histogram) can be moved to the
   left panel.
 
-- Add preference to invert the behavior of mouse scroll up/down on
-  masks. At the same time, and for consistency, the scroll-up has been
-  set to increase the masks attributes.
+- Improved color rendering for waveform and parade scopes.
 
-- Add timestamp in camera import dialog for consistency with other
+- A new vertical waveform scope option has been added.
+
+- Live samples can now be displayed in the vectorscope.
+
+- An RYB option has been added to the vectorscope.
+
+- The lut3d module has been moved after filmic.
+
+- The automatic mask tuning has been improved in the tone equalizer module.
+
+- Tiling has been enabled in the color balance rgb, diffuse and filmic rgb modules
+  to allow very large images to be processed.
+
+- When scanning for updated XMP files, the synchronization window has been improved
+  to offer more choices as to how the database/XMP files should be updated.
+
+- Added support for HEIF/HEIC file format.
+
+- Added support for ARM64/Apple M1 as a build target.
+
+- Added a preference to invert the behavior of mouse scroll up/down on drawn
+  mask attributes. At the same time, and for consistency, the scroll-up action has been
+  set to increase all mask attributes by default.
+
+- Added timestamp in camera import dialog for consistency with other
   import dialog.
 
-- Show current modules order in the module lib header to save one line
-  in GUI.
+- The current module order is now shown in the module order module header to 
+  save space in the GUI.
 
-- Display hue in degree in the split toning module for consistency
+- The split toning module now displays the hue in degree for consistency
   with other modules.
 
-- The rejected images in lighttable are dimmed for them to be better
-  distinguishable.
+- Rejected images in the lighttable view are now dimmed for clarity.
 
-- Remember the last selected Piwigo album in the export module.
+- The last selected Piwigo album is now remembered in the export module.
 
-- Add vertical waveform in scopes.
+- New "magic wand" icons are now used for the auto-tune actions in
+  the tone equalizer module.
 
-- Use a new magic wand icons for automatic actions instead of the
-  color picker one. This is used for masks auto-tune in the Tone
-  Equalizer module.
-
-- Add HSV reading in color picker.
-
-- For advanced users and developers expose OpenCL building options in
+- For advanced users and developers, OpenCL build options are now exposed in
   darktablerc.
 
-- Move the module order entry in the copy/paste dialog at the end for
-  better usability as this option is rarely used.
+- The "module order" entry is now moved to the end of the copy/paste dialog 
+  for better usability, as this option is rarely used.
 
-- The collect module offers some new presets based on image time to
-  complement the current ones based on the import time.
-
-- Add places section into the import dialog and list there the default
-  folders (Home, Document, Images), the mounted drives and other
-  folders added by users for quick access.
+- The collections module now offers some new presets based on image time to
+  complement the existing presets based on the import time.
 
 ## Bug Fixes
 
 - Multiple memory leaks have been fixed.
 
-- Fix green equilibration in RCD CPU code path.
+- Fixed green equilibration in RCD CPU code path.
 
 - Select the best illuminant for DNG images.
 
-- When trying to enter a view that cannot be used (like the capture if
-  there is no camera attached), make sure we reset back to previous
-  view the combobox.
+- When trying to enter a view that cannot be used (like the tethering view
+  where no camera is attached), make sure to reset the combobox back to 
+  the previous view.
 
 - Fix calibration optimizations for delta E in Channel Mixer RGB module.
 
-- Fix focus peaking which was in some cases displaying some wrong
+- Fix focus peaking, which was in some cases displaying some wrong
   random pixels on the borders.
 
-- Fix refresh when pasting whole or part of history.
+- Fix refresh when pasting the whole or part of history.
 
 - Fix possible uninitialized-data access in RCD demosaic.
 
 - Update metadata fields when applying a preset.
 
-- Fix creation of liquify interpolated path to be closer to what user
+- Fix creation of liquify interpolated path to be closer to what the user
   would expect.
 
 - Multiple Windows PATH specific issues have been fixed. Also, UNC
@@ -215,24 +220,24 @@ You are strongly advised to take a backup first.
 
 - Make sure RAW+Jpeg files keep the same filename during copy & import.
 
-- Add some consistency on the opacity increase/decrease which was
-  working in the reverse order compared to all other mask's controls.
+- Add some consistency to the drawn shape opacity increase/decrease, which was
+  working in the opposite way to the other mask controls.
 
 - Invert liquify strength vector rotation for consistency.
 
 - Make metadata and tagging consistent regarding the current selection.
 
-- Fix some rounding errors in masks with sharp corners creating
-  discontinuity in the mask area.
+- Fix some rounding errors in masks with sharp corners, which were creating
+  discontinuities in the mask area.
 
-- Fix image loader flag which was not properly set at import time.
+- Fix the image loader flag, which was not properly set at import time.
 
-- Add a search box in presets perferences and shortcuts.
+- Add a search box in preset perferences and shortcuts.
 
 ## Notes
 
-- 3.8.x series of darktable releases will be the last supporting running on macOS 10.7 and building with Xcode 11.
-  Next major release will require at least macOS 10.14 to run and Xcode 12 to build.
+- The 3.8.x series of darktable releases will be the last which supports macOS 10.7 and building with Xcode 11.
+  The next major release will require at least macOS 10.14 to run and Xcode 12 to build.
 
 ## Changed Dependencies
 
