@@ -50,9 +50,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   decoder = avifDecoderCreate();
   if(decoder == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to create AVIF decoder for image [%s]\n",
-             filename);
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to create decoder for `%s'\n", filename);
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
@@ -60,9 +58,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   result = avifDecoderReadFile(decoder, &avif_image, filename);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to parse AVIF image [%s]: %s\n",
-             filename, avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s\n", filename, avifResultToString(result));
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
@@ -78,9 +74,8 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   result = avifImageYUVToRGB(avif, &rgb);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to convert AVIF image [%s] from YUV to RGB: %s\n",
-             filename, avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to convert `%s' from YUV to RGB: %s\n", filename,
+             avifResultToString(result));
     ret = DT_IMAGEIO_FILE_CORRUPTED;
     goto out;
   }
@@ -101,9 +96,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to allocate mipmap buffer for AVIF image [%s]\n",
-             filename);
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to allocate mipmap buffer for `%s'\n", filename);
     ret = DT_IMAGEIO_CACHE_FULL;
     goto out;
   }
@@ -169,9 +162,7 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
     break;
   }
   default:
-    dt_print(DT_DEBUG_IMAGEIO,
-             "Invalid bit depth for AVIF image [%s]\n",
-             filename);
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] invalid bit depth for `%s'\n", filename);
     ret = DT_IMAGEIO_CACHE_FULL;
     goto out;
   }
@@ -201,18 +192,14 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
   decoder = avifDecoderCreate();
   if(decoder == NULL)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to create AVIF decoder for image [%s]\n",
-             filename);
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to create decoder for `%s'\n", filename);
     goto out;
   }
 
   result = avifDecoderReadFile(decoder, &avif_image, filename);
   if(result != AVIF_RESULT_OK)
   {
-    dt_print(DT_DEBUG_IMAGEIO,
-             "Failed to parse AVIF image [%s]: %s\n",
-             filename, avifResultToString(result));
+    dt_print(DT_DEBUG_IMAGEIO, "[avif_open] failed to parse `%s': %s\n", filename, avifResultToString(result));
     goto out;
   }
 
@@ -231,6 +218,35 @@ int dt_imageio_avif_read_profile(const char *filename, uint8_t **out, dt_colorsp
     cicp->color_primaries = avif_image.colorPrimaries;
     cicp->transfer_characteristics = avif_image.transferCharacteristics;
     cicp->matrix_coefficients = avif_image.matrixCoefficients;
+
+    /* fix up mistagged legacy AVIFs */
+    if(avif_image.colorPrimaries == AVIF_COLOR_PRIMARIES_BT709)
+    {
+      gboolean over = FALSE;
+      /* mistagged sRGB AVIFs exported before dt 3.8 */
+      if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_SRGB
+         && avif_image.matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_BT709)
+      {
+        /* must be code value 5 (IEC 61966-2-1 sYCC) */
+        cicp->matrix_coefficients = AVIF_MATRIX_COEFFICIENTS_BT470BG;
+        over =  TRUE;
+      }
+      /* mistagged Rec. 709 AVIFs exported before dt 3.6 */
+      else if(avif_image.transferCharacteristics == AVIF_TRANSFER_CHARACTERISTICS_BT470M
+         && avif_image.matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_BT709)
+      {
+        /* must be actual Rec. 709 instead of 2.2 gamma*/
+        cicp->transfer_characteristics = AVIF_TRANSFER_CHARACTERISTICS_BT709;
+        over =  TRUE;
+      }
+
+      if(over)
+      {
+        dt_print(DT_DEBUG_IMAGEIO, "[avif_open] overriding nclx color profile for `%s': 1/%d/%d to 1/%d/%d\n",
+                 filename, avif_image.transferCharacteristics, avif_image.matrixCoefficients,
+                 cicp->transfer_characteristics, cicp->matrix_coefficients);
+      }
+    }
   }
 
 out:
@@ -238,3 +254,7 @@ out:
 
   return size;
 }
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
