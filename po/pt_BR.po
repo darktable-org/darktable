@@ -1,15 +1,15 @@
 # Copyright (C) 2021 Free Software Foundation, Inc.
 #
-# Marcus Gama <marcus.gama@gmail.com>, 2021.
 #: ../build/bin/conf_gen.h:850 ../build/bin/conf_gen.h:856
 #: ../build/bin/conf_gen.h:862 ../build/bin/conf_gen.h:868
 #: ../build/bin/conf_gen.h:874
+# Marcus Gama <marcus.gama@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-10-25 14:32-0300\n"
-"PO-Revision-Date: 2021-10-25 23:11-0300\n"
+"PO-Revision-Date: 2021-10-30 16:39-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Lokalize 21.08.1\n"
+"X-Generator: Lokalize 21.08.2\n"
 "X-Poedit-Bookmarks: 722,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/preferences_gen.h:81 ../build/bin/preferences_gen.h:3702
@@ -438,7 +438,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4419
 msgid "scroll down to increase mask parameters"
-msgstr "deslize para baixo para aumentar ps parâmetros da máscara"
+msgstr "deslize para baixo para aumentar os parâmetros da máscara"
 
 #: ../build/bin/preferences_gen.h:4433
 msgid ""
@@ -3448,22 +3448,22 @@ msgstr "sensibilidade para bordas"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:147
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:264
 msgid "1st order anisotropy"
-msgstr "anisotropia - 1a ordem"
+msgstr "anisotropia de 1ª ordem"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:153
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:268
 msgid "2nd order anisotropy"
-msgstr "anisotropia - 2a ordem"
+msgstr "anisotropia de 2ª ordem"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:159
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:272
 msgid "3rd order anisotropy"
-msgstr "anisotropia - 3a ordem"
+msgstr "anisotropia de 3ª ordem"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:165
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:276
 msgid "4th order anisotropy"
-msgstr "anisotropia - 4a ordem"
+msgstr "anisotropia de 4ª ordem"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:171
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:280
@@ -3473,22 +3473,22 @@ msgstr "limiar de luminância para a máscara"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
 msgid "1st order speed"
-msgstr "velocidade - 1a ordem"
+msgstr "velocidade de 1ª ordem"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:183
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:288
 msgid "2nd order speed"
-msgstr "velocidade - 2a ordem"
+msgstr "velocidade de 2ª ordem"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:189
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:292
 msgid "3rd order speed"
-msgstr "velocidade - 3a ordem"
+msgstr "velocidade de 3ª ordem"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:195
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:296
 msgid "4th order speed"
-msgstr "velocidade - 4a ordem"
+msgstr "velocidade de 4ª ordem"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:201
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:300
@@ -4766,7 +4766,7 @@ msgstr "nome do arquivo"
 #: ../src/common/collection.c:703 ../src/develop/lightroom.c:1537
 #: ../src/libs/geotagging.c:138
 msgid "geotagging"
-msgstr "geoetiqueta"
+msgstr "geoetiquetas"
 
 #: ../src/common/collection.c:704
 msgid "grouping"
@@ -9332,7 +9332,8 @@ msgid ""
 "that shows guide overlays"
 msgstr ""
 "mudar configurações globais de guia\n"
-"note que etas configurações são aplicadas globalmente e terão efeito em qualquer módulo que use sobreposições de guias"
+"note que etas configurações são aplicadas globalmente e terão efeito em"
+" qualquer módulo que use sobreposições de guias"
 
 #: ../src/gui/hist_dialog.c:191
 msgid "select parts to copy"
@@ -9760,7 +9761,7 @@ msgstr "gerenciar predefinições rápidas"
 
 #: ../src/gui/presets.c:1257
 msgid "manage quick presets list..."
-msgstr "gerenciar lista de predefinições"
+msgstr "gerenciar lista de predefinições..."
 
 #: ../src/gui/presets.c:1390
 msgid "(default)"
@@ -11746,7 +11747,7 @@ msgstr "misturador de canais"
 msgid ""
 "this module is deprecated. please use the color calibration module instead."
 msgstr ""
-"este módulo está obsoleto. use o módulo de calibração de cores em seu lugar."
+"este módulo está obsoleto. use o módulo de calibração de cor em seu lugar."
 
 #: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:205
 msgid ""
@@ -11988,8 +11989,8 @@ msgid ""
 "this can lead to inconsistencies, unless you\n"
 "use them with masks or know what you are doing."
 msgstr ""
-"você tem 2 instâncias ou mais de calibração de cores,\n"
-"todas fazendo adaptação  cromática.\n"
+"você tem 2 instâncias ou mais de calibração de cor,\n"
+"todas fazendo adaptação cromática.\n"
 "isto pode levar a inconsistências, a não ser que você\n"
 "as use com máscaras ou saiba o que está fazendo."
 
@@ -12095,7 +12096,7 @@ msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
 msgstr ""
-"calibração de cores: a soma dos parâmetros do canal cinza é zero, a "
+"calibração de cor: a soma dos parâmetros do canal cinza é zero, a "
 "normalização será desabilitada."
 
 #. //////////////////////// PAGE SETTINGS
@@ -12344,7 +12345,9 @@ msgstr "força do efeito"
 msgid ""
 "this module is deprecated. please use the crop, orientation and/or rotate "
 "and perspective modules instead."
-msgstr "este módulo está obsoleto. use o módulo de corte,orientação e/ou rotação e perspectiva ao invés dele."
+msgstr ""
+"este módulo está obsoleto. use o módulo cortar, orientação e/ou rotação e"
+" perspectiva em seu lugar."
 
 #: ../src/iop/clipping.c:309
 msgid "crop and rotate"
@@ -12808,7 +12811,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:368
 msgid "add basic colorfulness"
-msgstr "adicionar saturação de base"
+msgstr "adicionar colorido básico"
 
 #: ../src/iop/colorbalancergb.c:770
 msgid "colorbalance works only on RGB input"
@@ -14167,7 +14170,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:1447
 msgid "diffusion properties"
-msgstr "propriedades de difusão"
+msgstr "propriedades da difusão"
 
 #: ../src/iop/diffuse.c:1451
 msgid ""
@@ -14202,7 +14205,7 @@ msgid ""
 "for deblurring and denoising, set to zero.\n"
 "increase to act on local contrast instead."
 msgstr ""
-"escala principal de difusão.\n"
+"escala principal da difusão.\n"
 "zero faz a difusão agir nos detalhes finos de forma mais pesada.\n"
 "não-zero define o tamanho dos detalhes a difundir mais pesadamente.\n"
 "para remoção de desfoque e de ruído, escolha zero.\n"
@@ -14210,7 +14213,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:1472
 msgid "diffusion speed"
-msgstr "velocidade de difusão"
+msgstr "velocidade da difusão"
 
 #: ../src/iop/diffuse.c:1478
 msgid ""
@@ -17227,10 +17230,10 @@ msgid ""
 "set the white balance here to camera reference (D65)\n"
 "or disable chromatic adaptation in color calibration."
 msgstr ""
-"o módulo de calibração de cores está ativado,\n"
+"o módulo de calibração de cor está ativado,\n"
 "e realizando adaptação cromática.\n"
 "defina o balanço de branco aqui para a referência da câmera (D65)\n"
-"ou desabilite a adaptação cromática na calibração de cores."
+"ou desabilite a adaptação cromática na calibração de cor."
 
 #: ../src/iop/temperature.c:1367
 #, c-format
@@ -19130,7 +19133,7 @@ msgstr "número de imagens que combinam  versus imagens selecionadas"
 
 #: ../src/libs/histogram.c:158
 msgid "scopes"
-msgstr "gráficos"
+msgstr "histograma"
 
 #: ../src/libs/histogram.c:1314 ../src/libs/histogram.c:2069
 msgid "ctrl+scroll to change display height"
@@ -19232,7 +19235,7 @@ msgstr "clique para mostrar o canal azul"
 
 #: ../src/libs/histogram.c:1848
 msgid "scopes settings"
-msgstr "configurações dos gráficos"
+msgstr "configurações do histograma"
 
 #: ../src/libs/histogram.c:1855
 msgid "display scopes"
@@ -19483,7 +19486,7 @@ msgstr "sincroniza o XMP da imagem e remove a cópia local"
 
 #: ../src/libs/image.c:524 ../src/libs/tools/filter.c:98
 msgid "group"
-msgstr "agrupar"
+msgstr "grupo"
 
 #: ../src/libs/image.c:524
 msgid "add selected images to expanded group or create a new one"
@@ -22080,7 +22083,7 @@ msgstr "clique duplo para redefinir para `%f'"
 
 #: ../src/lua/preferences.c:834
 msgid "lua options"
-msgstr "opções lua"
+msgstr "opções do lua"
 
 #: ../src/views/darkroom.c:640
 #, c-format
@@ -22150,7 +22153,7 @@ msgstr "mostrar uma segunda janela da sala escura"
 
 #: ../src/views/darkroom.c:2282
 msgid "toggle ISO 12646 color assessment conditions"
-msgstr "alterna condições de avaliação de cores ISO 12646"
+msgstr "alterna avaliação de cores ISO 12646"
 
 #: ../src/views/darkroom.c:2295
 msgid ""
@@ -22720,7 +22723,7 @@ msgstr "mover localização da imagem"
 #: ../src/views/print.c:55
 msgctxt "view"
 msgid "print"
-msgstr "imprimir"
+msgstr "impressão"
 
 #: ../src/views/slideshow.c:314
 msgid "end of images"
