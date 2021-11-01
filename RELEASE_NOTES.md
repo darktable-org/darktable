@@ -34,7 +34,7 @@ You are strongly advised to take a backup first.
 
 - Full rework of perspective correction module adding manual correction support.
 
-- Full rework off the shortcuts handling. The new system can handles
+- Full rework of the shortcuts handling. The new system can handles
   many hardware that are compatible with the MIDI interface. Also the
   shortcuts can handle mouse movements, multiple key press, short or long
   clicks.
