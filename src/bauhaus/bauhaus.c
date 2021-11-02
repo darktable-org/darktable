@@ -359,10 +359,10 @@ static void combobox_popup_scroll(int amt)
 
 static gboolean dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  int delta_y = 0;
   switch(darktable.bauhaus->current->type)
   {
     case DT_BAUHAUS_COMBOBOX:
+      int delta_y = 0;
       if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
          combobox_popup_scroll(delta_y);
       break;
@@ -1815,11 +1815,12 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       char *text = dt_bauhaus_slider_get_text(GTK_WIDGET(w));
       set_color(cr, *fg_color);
-      float value_width = show_pango_text(w, context, cr, text, wd - darktable.bauhaus->quad_width - INNER_PADDING,
-                                          0, 0, TRUE, FALSE, PANGO_ELLIPSIZE_END, FALSE, FALSE);
+      const float value_width =
+        show_pango_text(w, context, cr, text, wd - darktable.bauhaus->quad_width - INNER_PADDING,
+                        0, 0, TRUE, FALSE, PANGO_ELLIPSIZE_END, FALSE, FALSE);
       g_free(text);
 
-      float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING * 2.0 - value_width;
+      const float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING * 2.0 - value_width;
       if(label_width > 0)
       {
         gchar *lb = _build_label(w);
@@ -2069,7 +2070,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
       // label on top of marker:
       gchar *label_text = _build_label(w);
       set_color(cr, *text_color);
-      float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING - value_width;
+      const float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING - value_width;
       if(label_width > 0)
         show_pango_text(w, context, cr, label_text, 0, 0, label_width, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE,
                         TRUE);
@@ -2247,7 +2248,7 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     if(delta_y == 0) return TRUE;
-    gdouble delta = delta_y * -w->data.slider.scale / 5.0;
+    const gdouble delta = delta_y * -w->data.slider.scale / 5.0;
     gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
     return dt_bauhaus_slider_add_delta_internal(widget, delta, event->state);
   }
@@ -2944,7 +2945,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
   GtkWidget *widget = GTK_WIDGET(target);
   dt_bauhaus_widget_t *bhw = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_slider_data_t *d = &bhw->data.slider;
-  float value = dt_bauhaus_slider_get(widget);
+  const float value = dt_bauhaus_slider_get(widget);
   const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget));
 
   if(!isnan(move_size))
@@ -2962,7 +2963,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         move_size *= -1;
       case DT_ACTION_EFFECT_UP:
         d->is_dragging = 1;
-        float step = dt_bauhaus_slider_get_step(widget);
+        const float step = dt_bauhaus_slider_get_step(widget);
         float multiplier = dt_accel_get_slider_scale_multiplier();
 
         if(move_size && fabsf(move_size * step * multiplier) < min_visible)
@@ -3014,11 +3015,12 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
       case DT_ACTION_EFFECT_UP:
         if(d->soft_min != d->hard_min || d->soft_max != d->hard_max)
         {
-          float multiplier = powf(2.0f, move_size/2);
-          float new_min = value - multiplier * (value - d->min);
-          float new_max = value + multiplier * (d->max - value);
-          if(new_min >= d->hard_min && new_max <= d->hard_max &&
-             new_max - new_min >= min_visible * 10)
+          const float multiplier = powf(2.0f, move_size/2);
+          const float new_min = value - multiplier * (value - d->min);
+          const float new_max = value + multiplier * (d->max - value);
+          if(new_min >= d->hard_min
+             && new_max <= d->hard_max
+             && new_max - new_min >= min_visible * 10)
           {
             d->min = new_min;
             d->max = new_max;
