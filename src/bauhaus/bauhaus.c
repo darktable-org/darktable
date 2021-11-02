@@ -362,10 +362,12 @@ static gboolean dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event
   switch(darktable.bauhaus->current->type)
   {
     case DT_BAUHAUS_COMBOBOX:
+    {
       int delta_y = 0;
       if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
          combobox_popup_scroll(delta_y);
       break;
+    }
     case DT_BAUHAUS_SLIDER:
       break;
     default:
