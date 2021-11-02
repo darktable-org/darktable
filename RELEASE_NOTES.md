@@ -156,7 +156,7 @@ You are strongly advised to take a backup first.
 - When scanning for updated XMP files, the synchronization window has been improved
   to offer more choices as to how the database/XMP files should be updated.
 
-- Added support for HEIF/HEIC file format.
+- Added read support for HEIF/HEIC file format.
 
 - Added support for ARM64/Apple M1 as a build target.
 
