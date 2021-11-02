@@ -1648,7 +1648,7 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       // only set to what's in the filtered list.
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       const int active = darktable.bauhaus->end_mouse_y >= 0
-                 ? ((darktable.bauhaus->end_mouse_y - INNER_PADDING) / (darktable.bauhaus->line_height))
+                 ? ((darktable.bauhaus->end_mouse_y - darktable.bauhaus->widget_space) / (darktable.bauhaus->line_height))
                  : d->active;
 
       int k = 0, i = 0, kk = 0, match = 1;
