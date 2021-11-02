@@ -228,7 +228,7 @@ def extract_seconds(line):
       line = line[:pos]
    else:
       return 0.0
-   return float(line.strip())
+   return float(line.strip().replace(',','.'))
    
 def run_benchmark(program,image,xmp,args):
    confdir=args.tempdir
