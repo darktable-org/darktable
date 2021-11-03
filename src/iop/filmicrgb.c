@@ -200,7 +200,7 @@ typedef struct dt_iop_filmicrgb_params_t
   dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in shadows"
   dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in highlights"
   gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
-  gint internal_version;         // $DEFAULT: 2020 $DESCRIPTION: "version of the spline generator"
+  gint internal_version;         // $DEFAULT: 2021 $DESCRIPTION: "version of the spline generator"
 } dt_iop_filmicrgb_params_t;
 // clang-format on
 
@@ -2147,51 +2147,83 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
         = powf(fmaxf(p->white_point_target, p->grey_point_target) / 100.0f, 1.0f / (p->output_power)); // in %
   }
 
-  const float hardness = p->output_power;
-  // latitude in %
-  float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f;
-  float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f;                  // in %
-  float slope = p->contrast * dynamic_range / 8.0f;
-  float min_contrast = 1.0f; // otherwise, white_display and black_display cannot be reached
-  // make sure there is enough contrast to be able to construct the top right part of the curve
-  min_contrast = fmaxf(min_contrast, (white_display - grey_display) / (white_log - grey_log));
-  // make sure there is enough contrast to be able to construct the bottom left part of the curve
-  min_contrast = fmaxf(min_contrast, (grey_display - black_display) / (grey_log - black_log));
-  min_contrast += SAFETY_MARGIN;
-  // we want a slope that depends only on contrast at gray point.
-  // let's consider f(x) = (contrast*x+linear_intercept)^output_power
-  // f'(x) = contrast * output_power * (contrast*x+linear_intercept)^(output_power-1)
-  // linear_intercept = grey_display - (contrast * grey_log);
-  // f'(grey_log) = contrast * output_power * (contrast * grey_log + grey_display - (contrast * grey_log))^(output_power-1)
-  //              = contrast * output_power * grey_display^(output_power-1)
-  // f'(grey_log) = target_contrast <=> contrast = target_contrast / (output_power * grey_display^(output_power-1))
-  float contrast = CLAMP(slope / (hardness * powf(grey_display, hardness - 1.0f)), min_contrast, 100.0f);
+  float toe_log, shoulder_log, toe_display, shoulder_display, contrast;
+  float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f; // in %
+  if(p->internal_version < 2021)
+  {
+    float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f * dynamic_range; // in % of dynamic range
+    contrast = CLAMP(p->contrast, 1.00001f, 6.0f);
 
-  // interception
-  float linear_intercept = grey_display - (contrast * grey_log);
+    // nodes for mapping from log encoding to desired target luminance
+    // X coordinates
+    toe_log = grey_log - latitude / dynamic_range * fabsf(black_source / dynamic_range);
+    shoulder_log = grey_log + latitude / dynamic_range * fabsf(white_source / dynamic_range);
 
-  // consider the line of equation y = contrast * x + linear_intercept
-  // we want to keep y in [black_display, white_display] (with some safety margin)
-  // thus, we compute x values such as y=black_display and y=white_display
-  // latitude will influence position of toe and shoulder in the [xmin, xmax] segment
-  const float xmin = (black_display + SAFETY_MARGIN * (white_display - black_display) - linear_intercept) / contrast;
-  const float xmax = (white_display - SAFETY_MARGIN * (white_display - black_display) - linear_intercept) / contrast;
+    // interception
+    float linear_intercept = grey_display - (contrast * grey_log);
 
-  // nodes for mapping from log encoding to desired target luminance
-  // X coordinates
-  float toe_log = (1.0f - latitude) * grey_log + latitude * xmin;
-  float shoulder_log = (1.0f - latitude) * grey_log + latitude * xmax;
+    // y coordinates
+    toe_display = (toe_log * contrast + linear_intercept);
+    shoulder_display = (shoulder_log * contrast + linear_intercept);
 
-  // Apply the highlights/shadows balance as a shift along the contrast slope
-  // negative values drag to the left and compress the shadows, on the UI negative is the inverse
-  float balance_correction = (balance > 0.0f) ? 2.0f * balance * fminf(toe_log - xmin, shoulder_log - grey_log)
-                                              : 2.0f * balance * fminf(grey_log - toe_log, xmax - shoulder_log);
-  toe_log -= balance_correction;
-  shoulder_log -= balance_correction;
+    // Apply the highlights/shadows balance as a shift along the contrast slope
+    const float norm = sqrtf(contrast * contrast + 1.0f);
 
-  // y coordinates
-  float toe_display = (toe_log * contrast + linear_intercept);
-  float shoulder_display = (shoulder_log * contrast + linear_intercept);
+    // negative values drag to the left and compress the shadows, on the UI negative is the inverse
+    const float coeff = -((2.0f * latitude) / dynamic_range) * balance;
+
+    toe_display += coeff * contrast / norm;
+    shoulder_display += coeff * contrast / norm;
+    toe_log += coeff / norm;
+    shoulder_log += coeff / norm;
+  }
+  else // p->internal_version >= 2021. Slope dependent on contrast only, and latitude as % of display range.
+  {
+    const float hardness = p->output_power;
+    // latitude in %
+    float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f;
+    float slope = p->contrast * dynamic_range / 8.0f;
+    float min_contrast = 1.0f; // otherwise, white_display and black_display cannot be reached
+    // make sure there is enough contrast to be able to construct the top right part of the curve
+    min_contrast = fmaxf(min_contrast, (white_display - grey_display) / (white_log - grey_log));
+    // make sure there is enough contrast to be able to construct the bottom left part of the curve
+    min_contrast = fmaxf(min_contrast, (grey_display - black_display) / (grey_log - black_log));
+    min_contrast += SAFETY_MARGIN;
+    // we want a slope that depends only on contrast at gray point.
+    // let's consider f(x) = (contrast*x+linear_intercept)^hardness
+    // f'(x) = contrast * hardness * (contrast*x+linear_intercept)^(hardness-1)
+    // linear_intercept = grey_display - (contrast * grey_log);
+    // f'(grey_log) = contrast * hardness * (contrast * grey_log + grey_display - (contrast * grey_log))^(hardness-1)
+    //              = contrast * hardness * grey_display^(hardness-1)
+    // f'(grey_log) = target_contrast <=> contrast = target_contrast / (hardness * grey_display^(hardness-1))
+    contrast = CLAMP(slope / (hardness * powf(grey_display, hardness - 1.0f)), min_contrast, 100.0f);
+
+    // interception
+    float linear_intercept = grey_display - (contrast * grey_log);
+
+    // consider the line of equation y = contrast * x + linear_intercept
+    // we want to keep y in [black_display, white_display] (with some safety margin)
+    // thus, we compute x values such as y=black_display and y=white_display
+    // latitude will influence position of toe and shoulder in the [xmin, xmax] segment
+    const float xmin = (black_display + SAFETY_MARGIN * (white_display - black_display) - linear_intercept) / contrast;
+    const float xmax = (white_display - SAFETY_MARGIN * (white_display - black_display) - linear_intercept) / contrast;
+
+    // nodes for mapping from log encoding to desired target luminance
+    // X coordinates
+    toe_log = (1.0f - latitude) * grey_log + latitude * xmin;
+    shoulder_log = (1.0f - latitude) * grey_log + latitude * xmax;
+
+    // Apply the highlights/shadows balance as a shift along the contrast slope
+    // negative values drag to the left and compress the shadows, on the UI negative is the inverse
+    float balance_correction = (balance > 0.0f) ? 2.0f * balance * fminf(toe_log - xmin, shoulder_log - grey_log)
+                                                : 2.0f * balance * fminf(grey_log - toe_log, xmax - shoulder_log);
+    toe_log -= balance_correction;
+    shoulder_log -= balance_correction;
+
+    // y coordinates
+    toe_display = (toe_log * contrast + linear_intercept);
+    shoulder_display = (shoulder_log * contrast + linear_intercept);
+  }
 
   /**
    * Now we have 3 segments :
