@@ -28,7 +28,6 @@
   <data>${prefix:dt}/share/icons</data>
   <data dest="${bundle}/Contents/Resources/etc/gtk-3.0/settings.ini">${project}/settings.ini</data>
   <data>${prefix}/share/mime</data>
-  <data>${prefix}/share/curl/curl-ca-bundle.crt</data>
   <data>${prefix}/share/iso-codes/json/iso_639-2.json</data>
   <data dest="${bundle}/Contents/Resources/Icons.icns">${project}/Icons.icns</data>
   <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
