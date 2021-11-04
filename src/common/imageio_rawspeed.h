@@ -25,7 +25,7 @@ extern "C" {
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
+int dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
                                    char *mk, int mk_len, char *md, int md_len,
                                    char *al, int al_len);
 
