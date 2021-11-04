@@ -23,13 +23,25 @@
 #include "common/mipmap_cache.h"
 
 #ifdef HAVE_LIBRAW
+int dt_libraw_lookup_makermodel(const char *maker, const char *model,
+                                   char *mk, int mk_len, char *md, int md_len,
+                                   char *al, int al_len);
+
 dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
 #else
+inline int dt_libraw_lookup_makermodel(const char *maker, const char *model,
+                                   char *mk, int mk_len, char *md, int md_len,
+                                   char *al, int al_len)
+{
+  return FALSE;
+}
+
 inline dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename,
                                                   dt_mipmap_buffer_t *buf)
 {
   return DT_IMAGEIO_FILE_NOT_FOUND;
 }
+
 #endif
 
 #endif

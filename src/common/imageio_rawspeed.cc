@@ -73,7 +73,7 @@ static void dt_rawspeed_load_meta() {
   }
 }
 
-void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
+int dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
                                    char *mk, int mk_len, char *md, int md_len,
                                    char *al, int al_len)
 {
@@ -105,6 +105,7 @@ void dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
     g_strlcpy(md, model, md_len);
     g_strlcpy(al, model, al_len);
   }
+  return got_it_done;
 }
 
 uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint32_t crop_y)
