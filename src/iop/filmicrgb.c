@@ -2215,10 +2215,12 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
 
     // Apply the highlights/shadows balance as a shift along the contrast slope
     // negative values drag to the left and compress the shadows, on the UI negative is the inverse
-    float balance_correction = (balance > 0.0f) ? 2.0f * balance * fminf(toe_log - xmin, shoulder_log - grey_log)
-                                                : 2.0f * balance * fminf(grey_log - toe_log, xmax - shoulder_log);
+    float balance_correction = (balance > 0.0f) ? 2.0f * balance * (shoulder_log - grey_log)
+                                                : 2.0f * balance * (grey_log - toe_log);
     toe_log -= balance_correction;
     shoulder_log -= balance_correction;
+    toe_log = fmaxf(toe_log, xmin);
+    shoulder_log = fminf(shoulder_log, xmax);
 
     // y coordinates
     toe_display = (toe_log * contrast + linear_intercept);
