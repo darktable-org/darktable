@@ -189,10 +189,12 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
   int32_t px=0, py=0, pwidth=0, pheight=0;
   int32_t ax=0, ay=0, awidth=0, aheight=0;
 
+  gboolean borderless = FALSE;
 
   dt_get_print_layout(prt->pinfo, width, height,
                       &px, &py, &pwidth, &pheight,
-                      &ax, &ay, &awidth, &aheight);
+                      &ax, &ay, &awidth, &aheight, &borderless);
+
   // page w/h
   double pg_width  = prt->pinfo->paper.width;
   double pg_height = prt->pinfo->paper.height;
@@ -232,7 +234,8 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
 
   dt_printing_setup_display(prt->imgs,
                             px, py, pwidth, pheight,
-                            ax, ay, awidth, aheight);
+                            ax, ay, awidth, aheight,
+                            borderless);
 
   // display non-printable area
   cairo_set_source_rgb (cr, 0.1, 0.1, 0.1);
