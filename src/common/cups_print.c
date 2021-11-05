@@ -648,10 +648,15 @@ void dt_get_print_layout(const dt_print_info_t *prt,
 
   // display picture area, that is removing the non printable areas and user's margins
 
-  const int32_t bx = *px + ((np_left + border_left) / pg_width) * (*pwidth);
-  const int32_t by = *py + ((np_top + border_top)/ pg_height) * (*pheight);
-  const int32_t bb = p_bottom - ((np_bottom + border_bottom) / pg_height) * (*pheight);
-  const int32_t br = p_right - ((np_right + border_right) / pg_width) * (*pwidth);
+  const int32_t bx = *px + (border_left / pg_width) * (*pwidth);
+  const int32_t by = *py + (border_top / pg_height) * (*pheight);
+  const int32_t bb = p_bottom - (border_bottom / pg_height) * (*pheight);
+  const int32_t br = p_right - (border_right / pg_width) * (*pwidth);
+
+  // TODO??? if border_left < np_left (same condition for all side we should activate the
+  // borderless printing.
+  // At lest send a message to users about the fact that we are below the hardware
+  // limits.
 
   // now we have the printable area (ax, ay) -> (ax + awidth, ay + aheight)
 
