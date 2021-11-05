@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-03 23:57-0600\n"
-"PO-Revision-Date: 2021-11-04 17:30-0600\n"
+"PO-Revision-Date: 2021-11-05 12:54-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1422,10 +1422,9 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7136 ../build/bin/preferences_gen.h:7155
 #: ../build/bin/conf_gen.h:382
-#, fuzzy
 msgctxt "preferences"
 msgid "on import"
-msgstr "importar"
+msgstr "al importar"
 
 #: ../build/bin/preferences_gen.h:7158
 msgid ""
@@ -1519,14 +1518,12 @@ msgid "position of the histogram module"
 msgstr "cambiar modo de histograma"
 
 #: ../build/bin/preferences_gen.h:7429 ../build/bin/conf_gen.h:2472
-#, fuzzy
 msgctxt "preferences"
 msgid "left"
 msgstr "izquierdo"
 
 #: ../build/bin/preferences_gen.h:7434 ../build/bin/preferences_gen.h:7453
 #: ../build/bin/conf_gen.h:2473
-#, fuzzy
 msgctxt "preferences"
 msgid "right"
 msgstr "derecho"
@@ -2998,21 +2995,18 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:369
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:548
-#, fuzzy
 msgid "brilliance highlights"
-msgstr "recortar luces"
+msgstr "brillantez en las luces"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:375
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:552
-#, fuzzy
 msgid "brilliance mid-tones"
-msgstr "tonos medios"
+msgstr "brillantez en los tonos medios"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:381
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:556
-#, fuzzy
 msgid "brilliance shadows"
-msgstr "Incremento de luminancia en las sombras"
+msgstr "brillantez en las sombras"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:387
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:560
@@ -3461,7 +3455,7 @@ msgstr "rangos de luminancia"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
 #, fuzzy
 msgid "1st order speed"
-msgstr "1º orden"
+msgstr "1º orden de velocidad"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:183
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:288
@@ -3483,9 +3477,8 @@ msgstr "0º orden"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:201
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:300
-#, fuzzy
 msgid "central radius"
-msgstr "buscar el radio"
+msgstr "radio central"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:62
 #: ../build/lib/darktable/plugins/introspection_dither.c:141
@@ -5584,11 +5577,11 @@ msgstr "\""
 
 #: ../src/common/pdf.h:104
 msgid "a4"
-msgstr "a4"
+msgstr "A4"
 
 #: ../src/common/pdf.h:105
 msgid "a3"
-msgstr "a3"
+msgstr "A3"
 
 #: ../src/common/pdf.h:106
 msgid "letter"
@@ -5653,30 +5646,27 @@ msgstr "abajo"
 
 #: ../src/common/ratings.c:290
 msgid "zero"
-msgstr ""
+msgstr "cero"
 
 #: ../src/common/ratings.c:291
-#, fuzzy
 msgid "one"
-msgstr "ninguno"
+msgstr "una"
 
 #: ../src/common/ratings.c:292
-#, fuzzy
 msgid "two"
-msgstr "superior"
+msgstr "dos"
 
 #: ../src/common/ratings.c:293
-#, fuzzy
 msgid "three"
-msgstr "hilos"
+msgstr "tres"
 
 #: ../src/common/ratings.c:294
 msgid "four"
-msgstr ""
+msgstr "cuatro"
 
 #: ../src/common/ratings.c:295
 msgid "five"
-msgstr ""
+msgstr "cinco"
 
 #: ../src/common/ratings.c:296
 #, fuzzy
@@ -5697,10 +5687,10 @@ msgid "styles/apply %s"
 msgstr "estilos/utilizar %s"
 
 #: ../src/common/styles.c:407
-#, fuzzy, c-format
+#, c-format
 msgctxt "accel"
 msgid "apply %s"
-msgstr "establecer"
+msgstr "establecer %s"
 
 #: ../src/common/styles.c:503 ../src/gui/styles_dialog.c:231
 #, c-format
@@ -5813,10 +5803,9 @@ msgid "blending"
 msgstr "fusión"
 
 #: ../src/control/control.c:115
-#, fuzzy
 msgctxt "accel"
 msgid "lua scripts"
-msgstr "opciones de Lua"
+msgstr "guiones de Lua"
 
 #: ../src/control/control.c:116
 #, fuzzy
@@ -7399,9 +7388,8 @@ msgstr ""
 
 #: ../src/develop/imageop.c:3234 ../src/develop/imageop.c:3244
 #: ../src/gui/accelerators.c:140 ../src/libs/lib.c:1262
-#, fuzzy
 msgid "show"
-msgstr "mostrar OSD"
+msgstr "mostrar"
 
 #: ../src/develop/imageop.c:3237 ../src/libs/modulegroups.c:3253
 #: ../src/libs/modulegroups.c:3369 ../src/libs/modulegroups.c:3750
@@ -7921,16 +7909,14 @@ msgid "copy history"
 msgstr "copiar historial"
 
 #: ../src/dtgtk/thumbtable.c:2306
-#, fuzzy
 msgctxt "accel"
 msgid "copy history parts"
-msgstr "copiar historial"
+msgstr "copiar ítems del historial"
 
 #: ../src/dtgtk/thumbtable.c:2308
-#, fuzzy
 msgctxt "accel"
 msgid "paste history"
-msgstr "reemplazar al historial"
+msgstr "pegar historial"
 
 #: ../src/dtgtk/thumbtable.c:2309
 #, fuzzy
@@ -7944,22 +7930,19 @@ msgid "discard history"
 msgstr "descartar historial"
 
 #: ../src/dtgtk/thumbtable.c:2313
-#, fuzzy
 msgctxt "accel"
 msgid "duplicate image"
-msgstr "Duplicar imágenes"
+msgstr "Duplicar imagen"
 
 #: ../src/dtgtk/thumbtable.c:2314
-#, fuzzy
 msgctxt "accel"
 msgid "duplicate image virgin"
-msgstr "Duplicar imágenes"
+msgstr "Duplicar imagen virgen"
 
 #. setup color label accelerators
 #: ../src/dtgtk/thumbtable.c:2318 ../src/dtgtk/thumbtable.c:2319
 #: ../src/dtgtk/thumbtable.c:2320 ../src/dtgtk/thumbtable.c:2321
 #: ../src/dtgtk/thumbtable.c:2322
-#, fuzzy
 msgctxt "accel"
 msgid "color label"
 msgstr "marcas de color"
@@ -8425,14 +8408,12 @@ msgid "click to open shortcut configuration"
 msgstr ""
 
 #: ../src/gui/accelerators.c:667
-#, fuzzy
 msgid "ctrl+click to add to quick access panel\n"
-msgstr "Ctrl+Clic para agregar un nodo"
+msgstr "Ctrl+Clic para añadir un componente al panel de control modular\n"
 
 #: ../src/gui/accelerators.c:668
-#, fuzzy
 msgid "ctrl+click to remove from quick access panel\n"
-msgstr "Añade un componente al panel de control modular"
+msgstr "Ctrl+Clic para quitar un componente del panel de control modular\n"
 
 #: ../src/gui/accelerators.c:669
 #, fuzzy
@@ -8772,40 +8753,34 @@ msgstr "Cerrando darktable..."
 
 #. register keys for view switching
 #: ../src/gui/gtk.c:1201
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/tethering"
-msgstr "cambiar vista"
+msgstr "cambiar vista a captura"
 
 #: ../src/gui/gtk.c:1202
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/lighttable"
 msgstr "cambiar a mesa de luz"
 
 #: ../src/gui/gtk.c:1203
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/darkroom"
-msgstr "cambiar vista"
+msgstr "cambiar vista a cuarto oscuro"
 
 #: ../src/gui/gtk.c:1204
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/map"
-msgstr "cambiar vista"
+msgstr "cambiar vista a mapa"
 
 #: ../src/gui/gtk.c:1205
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/slideshow"
-msgstr "cambiar vista"
+msgstr "cambiar vista a presentación"
 
 #: ../src/gui/gtk.c:1206
-#, fuzzy
 msgctxt "accel"
 msgid "switch views/print"
-msgstr "cambiar vista"
+msgstr "cambiar vista a imprimir"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:1229
@@ -8815,16 +8790,15 @@ msgstr "salir"
 
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
 #: ../src/gui/gtk.c:1234
-#, fuzzy
 msgctxt "accel"
 msgid "fullscreen"
-msgstr "salir de pantalla completa"
+msgstr "pantalla completa"
 
 #. Side-border hide/show
 #: ../src/gui/gtk.c:1240
 msgctxt "accel"
 msgid "panels/all"
-msgstr ""
+msgstr "paneles/todos"
 
 #: ../src/gui/gtk.c:1244
 #, fuzzy
@@ -8835,31 +8809,28 @@ msgstr "activar controles de pliegue de panel"
 #: ../src/gui/gtk.c:1248
 msgctxt "accel"
 msgid "panels/left"
-msgstr ""
+msgstr "paneles/izquierda"
 
 #: ../src/gui/gtk.c:1252
-#, fuzzy
 msgctxt "accel"
 msgid "panels/right"
-msgstr "luz puntual"
+msgstr "paneles/derecha"
 
 #: ../src/gui/gtk.c:1256
 msgctxt "accel"
 msgid "panels/top"
-msgstr ""
+msgstr "paneles/superior"
 
 #: ../src/gui/gtk.c:1260
-#, fuzzy
 msgctxt "accel"
 msgid "panels/bottom"
-msgstr "inferior"
+msgstr "paneles/inferior"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1265
-#, fuzzy
 msgctxt "accel"
 msgid "panels/header"
-msgstr "Imagen de portada"
+msgstr "paneles/encabezado"
 
 #: ../src/gui/gtk.c:1268
 #, fuzzy
@@ -8868,26 +8839,24 @@ msgid "panels/filmstrip and timeline"
 msgstr "mostrar u ocultar la tira de imágenes o la línea del tiempo"
 
 #: ../src/gui/gtk.c:1272
-#, fuzzy
 msgctxt "accel"
 msgid "panels/top toolbar"
-msgstr "activar barra de herramientas superior"
+msgstr "paneles/barra de herramienta superior"
 
 #: ../src/gui/gtk.c:1276
-#, fuzzy
 msgctxt "accel"
 msgid "panels/bottom toolbar"
-msgstr "activar barra de herramientas inferior"
+msgstr "paneles/barra de herramienta inferior"
 
 #: ../src/gui/gtk.c:1280
 msgctxt "accel"
 msgid "panels/all top"
-msgstr ""
+msgstr "paneles/superiores"
 
 #: ../src/gui/gtk.c:1284
 msgctxt "accel"
 msgid "panels/all bottom"
-msgstr ""
+msgstr "paneles/inferiores"
 
 #. accels window
 #: ../src/gui/gtk.c:1289
@@ -8941,23 +8910,23 @@ msgstr "Pestañas"
 
 #: ../src/gui/gtkentry.c:172
 msgid "$(ROLL_NAME) - roll of the input image"
-msgstr "$(ROLL_NAME) - carrete de la imagen de entrada"
+msgstr "$(ROLL_NAME) → carrete de la imagen de entrada"
 
 #: ../src/gui/gtkentry.c:173
 msgid "$(FILE_FOLDER) - folder containing the input image"
-msgstr "$(FILE_FOLDER) - carpeta de la imagen de entrada"
+msgstr "$(FILE_FOLDER) → carpeta de la imagen de entrada"
 
 #: ../src/gui/gtkentry.c:174
 msgid "$(FILE_NAME) - basename of the input image"
-msgstr "$(FILE_NAME) - nombre base de la imagen de entrada"
+msgstr "$(FILE_NAME) → nombre base de la imagen de entrada"
 
 #: ../src/gui/gtkentry.c:175
 msgid "$(FILE_EXTENSION) - extension of the input image"
-msgstr "$(FILE_EXTENSION) - extensión de la imagen de entrada"
+msgstr "$(FILE_EXTENSION) → extensión de la imagen de entrada"
 
 #: ../src/gui/gtkentry.c:176
 msgid "$(VERSION) - duplicate version"
-msgstr "$(VERSION) - duplicar versión"
+msgstr "$(VERSION) → duplicar versión"
 
 #: ../src/gui/gtkentry.c:177
 msgid ""
@@ -8968,206 +8937,206 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:178
 msgid "$(VERSION_NAME) - version name from metadata"
-msgstr "$(VERSION_NAME) - nombre de la versión desde los metadatos"
+msgstr "$(VERSION_NAME) → nombre de la versión desde los metadatos"
 
 #: ../src/gui/gtkentry.c:179
 msgid "$(SEQUENCE) - sequence number"
-msgstr "$(SEQUENCE) - número de secuencia"
+msgstr "$(SEQUENCE) → número de secuencia"
 
 #: ../src/gui/gtkentry.c:180
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr "$(MAX_WIDTH) - ancho máximo de exportación de la imagen"
+msgstr "$(MAX_WIDTH) → ancho máximo de exportación de la imagen"
 
 #: ../src/gui/gtkentry.c:181
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr "$(MAX_HEIGHT) - altura máxima de exportación de la imagen"
+msgstr "$(MAX_HEIGHT) → altura máxima de exportación de la imagen"
 
 #: ../src/gui/gtkentry.c:182
 #, fuzzy
 msgid "$(SENSOR_WIDTH) - image sensor width"
-msgstr "$(MAX_WIDTH) - ancho máximo de exportación de la imagen"
+msgstr "$(MAX_WIDTH) → ancho máximo de exportación de la imagen"
 
 #: ../src/gui/gtkentry.c:183
 #, fuzzy
 msgid "$(SENSOR_HEIGHT) - image sensor height"
-msgstr "$(MAX_HEIGHT) - altura máxima de exportación de la imagen"
+msgstr "$(MAX_HEIGHT) → altura máxima de exportación de la imagen"
 
 #: ../src/gui/gtkentry.c:184
 #, fuzzy
 msgid "$(RAW_WIDTH) - RAW image width"
-msgstr "$(MAX_WIDTH) - ancho máximo de exportación de la imagen"
+msgstr "$(MAX_WIDTH) → ancho máximo de exportación de la imagen"
 
 #: ../src/gui/gtkentry.c:185
 #, fuzzy
 msgid "$(RAW_HEIGHT) - RAW image height"
-msgstr "$(MAX_HEIGHT) - altura máxima de exportación de la imagen"
+msgstr "$(MAX_HEIGHT) → altura máxima de exportación de la imagen"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(CROP_WIDTH) - image width after crop"
-msgstr ""
+msgstr "$(CROP_WIDTH) → anchura de la imagen después del recorte"
 
 #: ../src/gui/gtkentry.c:187
 #, fuzzy
 msgid "$(CROP_HEIGHT) - image height after crop"
-msgstr "$(MAX_HEIGHT) - altura máxima de exportación de la imagen"
+msgstr "$(MAX_HEIGHT) → altura máxima de exportación de la imagen"
 
 #: ../src/gui/gtkentry.c:188
 #, fuzzy
 msgid "$(EXPORT_WIDTH) - exported image width"
-msgstr "$(MAX_WIDTH) - ancho máximo de exportación de la imagen"
+msgstr "$(MAX_WIDTH) → ancho máximo de exportación de la imagen"
 
 #: ../src/gui/gtkentry.c:189
 #, fuzzy
 msgid "$(EXPORT_HEIGHT) - exported image height"
-msgstr "$(MAX_HEIGHT) - altura máxima de exportación de la imagen"
+msgstr "$(MAX_HEIGHT) → altura máxima de exportación de la imagen"
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(YEAR) - year"
-msgstr "$(YEAR) - año"
+msgstr "$(YEAR) → año"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(MONTH) - month"
-msgstr "$(MONTH) - mes"
+msgstr "$(MONTH) → mes"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(DAY) - day"
-msgstr "$(DAY) - día"
+msgstr "$(DAY) → día"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(HOUR) - hour"
-msgstr "$(HOUR) - hora"
+msgstr "$(HOUR) → hora"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(MINUTE) - minute"
-msgstr "$(MINUTE) - minuto"
+msgstr "$(MINUTE) → minuto"
 
 #: ../src/gui/gtkentry.c:195
 msgid "$(SECOND) - second"
-msgstr "$(SECOND) - segundo"
+msgstr "$(SECOND) → segundo"
 
 #: ../src/gui/gtkentry.c:196
 msgid "$(EXIF_YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) - año Exif"
+msgstr "$(EXIF_YEAR) → año Exif"
 
 #: ../src/gui/gtkentry.c:197
 msgid "$(EXIF_MONTH) - EXIF month"
-msgstr "$(EXIF_MONTH) - mes Exif"
+msgstr "$(EXIF_MONTH) → mes Exif"
 
 #: ../src/gui/gtkentry.c:198
 msgid "$(EXIF_DAY) - EXIF day"
-msgstr "$(EXIF_DAY) - día Exif"
+msgstr "$(EXIF_DAY) → día Exif"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(EXIF_HOUR) - EXIF hour"
-msgstr "$(EXIF_HOUR) - hora Exif"
+msgstr "$(EXIF_HOUR) → hora Exif"
 
 #: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_MINUTE) - EXIF minute"
-msgstr "$(EXIF_MINUTE) - minuto Exif"
+msgstr "$(EXIF_MINUTE) → minuto Exif"
 
 #: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_SECOND) - EXIF second"
-msgstr "$(EXIF_SECOND) - segundo Exif"
+msgstr "$(EXIF_SECOND) → segundo Exif"
 
 #: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_ISO) - ISO value"
-msgstr "$(EXIF_ISO) - valor ISO"
+msgstr "$(EXIF_ISO) → valor ISO"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_EXPOSURE) - EXIF exposure"
-msgstr "$(EXIF_EXPOSURE) - exposición Exif"
+msgstr "$(EXIF_EXPOSURE) → exposición Exif"
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
-msgstr "$(EXIF_EXPOSURE_BIAS) - Compensación de exposición Exif"
+msgstr "$(EXIF_EXPOSURE_BIAS) → Compensación de exposición Exif"
 
 #: ../src/gui/gtkentry.c:205
 msgid "$(EXIF_APERTURE) - EXIF aperture"
-msgstr "$(EXIF_APERTURE) - apertura EXIF"
+msgstr "$(EXIF_APERTURE) → apertura EXIF"
 
 #: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
-msgstr "$(EXIF_FOCAL_LENGTH) - longitud focal Exif"
+msgstr "$(EXIF_FOCAL_LENGTH) → longitud focal Exif"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
-msgstr "$(EXIF_FOCUS_DISTANCE) - distancia focal Exif"
+msgstr "$(EXIF_FOCUS_DISTANCE) → distancia focal Exif"
 
 #: ../src/gui/gtkentry.c:208
 msgid "$(LONGITUDE) - longitude"
-msgstr "$(LONGITUDE) - longitud"
+msgstr "$(LONGITUDE) → longitud"
 
 #: ../src/gui/gtkentry.c:209
 msgid "$(LATITUDE) - latitude"
-msgstr "$(LATITUDE) - latitud"
+msgstr "$(LATITUDE) → latitud"
 
 #: ../src/gui/gtkentry.c:210
 msgid "$(ELEVATION) - elevation"
-msgstr "$(ELEVATION) - elevación"
+msgstr "$(ELEVATION) → elevación"
 
 #: ../src/gui/gtkentry.c:211
 msgid "$(STARS) - star rating"
-msgstr "$(STARS) - puntuación"
+msgstr "$(STARS) → puntuación"
 
 #: ../src/gui/gtkentry.c:212
 msgid "$(LABELS) - colorlabels"
-msgstr "$(LABELS) - marcas de color"
+msgstr "$(LABELS) → marcas de color"
 
 #: ../src/gui/gtkentry.c:213
 msgid "$(MAKER) - camera maker"
-msgstr "$(MAKER) - fabricante de la cámara"
+msgstr "$(MAKER) → fabricante de la cámara"
 
 #: ../src/gui/gtkentry.c:214
 msgid "$(MODEL) - camera model"
-msgstr "$(MODEL) - modelo de la cámara"
+msgstr "$(MODEL) → modelo de la cámara"
 
 #: ../src/gui/gtkentry.c:215
 msgid "$(LENS) - lens"
-msgstr "$(LENS) - lentes"
+msgstr "$(LENS) → lentes"
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(TITLE) - title from metadata"
-msgstr "$(TITLE) - titulo de los metadatos"
+msgstr "$(TITLE) → titulo de los metadatos"
 
 #: ../src/gui/gtkentry.c:217
 msgid "$(DESCRIPTION) - description from metadata"
-msgstr "$(DESCRIPTION) - descripción en los metadatos"
+msgstr "$(DESCRIPTION) → descripción en los metadatos"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(CREATOR) - creator from metadata"
-msgstr "$(CREATOR) - autor de los metadatos"
+msgstr "$(CREATOR) → autor de los metadatos"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(PUBLISHER) - publisher from metadata"
-msgstr "$(PUBLISHER) - editor de los metadatos"
+msgstr "$(PUBLISHER) → editor de los metadatos"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(RIGHTS) - rights from metadata"
-msgstr "$(RIGHTS) - derechos de los metadatos"
+msgstr "$(RIGHTS) → derechos de los metadatos"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(PICTURES_FOLDER) - pictures folder"
-msgstr "$(PICTURES_FOLDER) - carpeta de fotos"
+msgstr "$(PICTURES_FOLDER) → carpeta de fotos"
 
 #: ../src/gui/gtkentry.c:222
 msgid "$(HOME) - home folder"
-msgstr "$(HOME) - carpeta home"
+msgstr "$(HOME) → carpeta home"
 
 #: ../src/gui/gtkentry.c:223
 msgid "$(DESKTOP) - desktop folder"
-msgstr "$(DESKTOP) - carpeta escritorio"
+msgstr "$(DESKTOP) → carpeta escritorio"
 
 #: ../src/gui/gtkentry.c:224
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
-msgstr "$(OPENCL_ACTIVATED) - determinar si OpenCL está activado"
+msgstr "$(OPENCL_ACTIVATED) → determinar si OpenCL está activado"
 
 #: ../src/gui/gtkentry.c:225
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
-msgstr "$(CATEGORY0(category)) - subetiqueta de nivel 0 en etiquetas jerárquicas"
+msgstr "$(CATEGORY0(category)) → subetiqueta de nivel 0 en etiquetas jerárquicas"
 
 #: ../src/gui/gtkentry.c:226
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr "$(TAGS) - etiquetas establecidas en la configuración de metadatos"
+msgstr "$(TAGS) → etiquetas establecidas en la configuración de metadatos"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:263
 msgid "grid"
@@ -9287,9 +9256,8 @@ msgid "magenta"
 msgstr "magenta"
 
 #: ../src/gui/guides.c:806 ../src/gui/guides.c:852
-#, fuzzy
 msgid "show guides"
-msgstr "Mostrar grupos"
+msgstr "mostrar retícula"
 
 #: ../src/gui/guides.c:861
 msgid "show guide overlay when this module has focus"
@@ -9542,7 +9510,7 @@ msgstr "todos los archivos"
 
 #: ../src/gui/presets.c:59
 msgid "non-raw"
-msgstr ""
+msgstr "imagen no en bruto"
 
 #: ../src/gui/presets.c:59 ../src/libs/metadata_view.c:359
 msgid "raw"
@@ -10484,9 +10452,8 @@ msgstr[0] "%d/%d exportado a álbum Piwigo"
 msgstr[1] "%d/%d exportados a álbum Piwigo"
 
 #: ../src/iop/ashift.c:120
-#, fuzzy
 msgid "rotate and perspective"
-msgstr "perspectiva"
+msgstr "rotación y perspectiva"
 
 #: ../src/iop/ashift.c:125
 #, fuzzy
@@ -10494,9 +10461,8 @@ msgid "rotation|keystone|distortion|crop|reframe"
 msgstr "trapezoidal|distorsión"
 
 #: ../src/iop/ashift.c:130
-#, fuzzy
 msgid "rotate or distort perspective"
-msgstr "Distorsiona automáticamente la perspectiva"
+msgstr "Rota o distorsiona la perspectiva"
 
 #: ../src/iop/ashift.c:131 ../src/iop/channelmixer.c:139
 #: ../src/iop/channelmixerrgb.c:208 ../src/iop/clipping.c:320
@@ -10836,7 +10802,6 @@ msgid "boost"
 msgstr ""
 
 #: ../src/iop/atrous.c:1585
-#, fuzzy
 msgid "reduce"
 msgstr "reducir"
 
@@ -11317,11 +11282,11 @@ msgstr "Lineal o no lineal, RGB, basado en la pantalla"
 
 #: ../src/iop/borders.c:724
 msgid "15:10 postcard white"
-msgstr "postal blanca 10x15"
+msgstr "postal blanca 10×15"
 
 #: ../src/iop/borders.c:729
 msgid "15:10 postcard black"
-msgstr "postal negra 10x15"
+msgstr "postal negra 10×15"
 
 #: ../src/iop/borders.c:969
 msgid "3:1"
@@ -12370,7 +12335,7 @@ msgstr "10:8 en impresión"
 
 #: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1098
 msgid "5:4, 4x5, 8x10"
-msgstr "5:4, 4x5, 8x10"
+msgstr "5:4, 4×5, 8×10"
 
 #: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1099
 msgid "11x14"
@@ -12378,7 +12343,7 @@ msgstr "11x14"
 
 #: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1100
 msgid "8.5x11, letter"
-msgstr "8.5x11, carta"
+msgstr "8.5×11, carta"
 
 #: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1101
 msgid "4:3, VGA, TV"
@@ -12386,7 +12351,7 @@ msgstr "4:3, VGA, TV"
 
 #: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1102
 msgid "5x7"
-msgstr "5x7"
+msgstr "5×7"
 
 #: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1103
 msgid "ISO 216, DIN 476, A4"
@@ -12394,11 +12359,11 @@ msgstr "ISO 216, DIN 476, A4"
 
 #: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1104
 msgid "3:2, 4x6, 35mm"
-msgstr "3:2, 4x6, 35mm"
+msgstr "3:2, 4×6, 35mm"
 
 #: ../src/iop/clipping.c:2167 ../src/iop/crop.c:1105
 msgid "16:10, 8x5"
-msgstr "16:10, 8x5"
+msgstr "16:10, 8×5"
 
 #: ../src/iop/clipping.c:2169 ../src/iop/crop.c:1107
 msgid "16:9, HDTV"
@@ -12985,9 +12950,8 @@ msgstr "intensidad general"
 
 #: ../src/iop/colorbalancergb.c:1895 ../src/iop/colorbalancergb.c:1896
 #: ../src/iop/colorbalancergb.c:1897
-#, fuzzy
 msgid "brilliance"
-msgstr "intensidad general"
+msgstr "brillantez"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -14042,14 +14006,12 @@ msgid "dehaze"
 msgstr ""
 
 #: ../src/iop/diffuse.c:278
-#, fuzzy
 msgid "denoise: soft"
-msgstr "reducción de ruido"
+msgstr "reducción de ruido: tenue"
 
 #: ../src/iop/diffuse.c:296
-#, fuzzy
 msgid "denoise: hard (slow)"
-msgstr "reducción de ruido (intenso)"
+msgstr "reducción de ruido: intenso (lento)"
 
 #: ../src/iop/diffuse.c:350
 msgid "sharpen demosaicing (no AA filter)"
@@ -14070,9 +14032,8 @@ msgid "simulate line drawing"
 msgstr "Realiza una imitación de los granos de haluro de plata"
 
 #: ../src/iop/diffuse.c:412
-#, fuzzy
 msgid "add local contrast"
-msgstr "contraste local"
+msgstr "añadir contraste local"
 
 #: ../src/iop/diffuse.c:432
 #, fuzzy
@@ -19672,7 +19633,7 @@ msgstr "v3.0 imagen en bruto (predefinido)"
 
 #: ../src/libs/ioporder.c:216
 msgid "v3.0 for JPEG/non-RAW input"
-msgstr ""
+msgstr "v3.0 para JPEG o no en bruto"
 
 #: ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
@@ -20479,9 +20440,8 @@ msgid "add this widget"
 msgstr "Añadir este elemento de control"
 
 #: ../src/libs/modulegroups.c:2558
-#, fuzzy
 msgid "add widget"
-msgstr "Añadir este elemento de control"
+msgstr "añadir elemento de control"
 
 #: ../src/libs/modulegroups.c:2563
 #, fuzzy
@@ -21025,7 +20985,6 @@ msgid "styles"
 msgstr "estilos"
 
 #: ../src/libs/styles.c:73
-#, fuzzy
 msgctxt "accel"
 msgid "create"
 msgstr "crear"
@@ -21165,13 +21124,11 @@ msgid "new"
 msgstr "nueva"
 
 #: ../src/libs/tagging.c:131
-#, fuzzy
 msgctxt "accel"
 msgid "import..."
 msgstr "importar..."
 
 #: ../src/libs/tagging.c:132
-#, fuzzy
 msgctxt "accel"
 msgid "export..."
 msgstr "exportar..."
@@ -21742,7 +21699,6 @@ msgid "preferences"
 msgstr "preferencias"
 
 #: ../src/libs/tools/global_toolbox.c:947
-#, fuzzy
 msgctxt "accel"
 msgid "shortcuts"
 msgstr "atajos de teclado"
