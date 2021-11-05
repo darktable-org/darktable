@@ -2639,8 +2639,8 @@
     <name>plugins/darkroom/histogram/height</name>
     <type min="100" max="250">int</type>
     <default>175</default>
-    <shortdescription>height of the histogram module</shortdescription>
-    <longdescription>height of the histogram module in the darkroom and tethering views</longdescription>
+    <shortdescription>height of the scopes module</shortdescription>
+    <longdescription>height of the scopes module in the darkroom and tethering views</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/atrous/aspect_percent</name>
@@ -2728,8 +2728,8 @@
        </enum>
     </type>
     <default>right</default>
-    <shortdescription>position of the histogram module</shortdescription>
-    <longdescription>position the histogram at the top-left or top-right of the screen</longdescription>
+    <shortdescription>position of the scopes module</shortdescription>
+    <longdescription>position the scopes at the top-left or top-right of the screen</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/histogram/histogram</name>
