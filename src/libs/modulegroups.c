@@ -681,6 +681,62 @@ static gchar *_action_id(dt_action_t *action)
     return g_strdup(action->id);
 }
 
+static dt_lib_modulegroups_basic_item_position_t
+_basics_add_items_from_module_widget(dt_lib_module_t *self, dt_iop_module_t *module, GtkWidget *w,
+                                     dt_lib_modulegroups_basic_item_position_t item_pos)
+{
+  if(!w) return item_pos;
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // search for a corresponding basic item
+  dt_action_t *ac = module->so->actions.target;
+  while(ac)
+  {
+    if(ac->type >= DT_ACTION_TYPE_WIDGET && ac->target == w)
+    {
+      gchar *action_id = _action_id(ac);
+
+      for(const GList *l = d->basics; l; l = g_list_next(l))
+      {
+        dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
+        if(!item->module && g_strcmp0(item->module_op, module->op) == 0
+           && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
+        {
+          if(!strcmp(item->id, action_id))
+          {
+            item->module = module;
+            _basics_add_widget(self, item, ac->target, item_pos);
+            // we have found and added the widget. no need to go further
+            g_free(action_id);
+            return NORMAL;
+          }
+        }
+      }
+      g_free(action_id);
+    }
+
+    if(ac->type == DT_ACTION_TYPE_SECTION)
+      ac = ac->target;
+    else if(!ac->next && ac->owner->type == DT_ACTION_TYPE_SECTION)
+      ac = ac->owner->next;
+    else
+      ac = ac->next;
+  }
+
+  // if w is a container, test all subwidgets
+  if(GTK_IS_CONTAINER(w))
+  {
+    GList *ll = gtk_container_get_children(GTK_CONTAINER(w));
+    for(const GList *l = ll; l; l = g_list_next(l))
+    {
+      item_pos = _basics_add_items_from_module_widget(self, module, l->data, item_pos);
+    }
+    g_list_free(ll);
+  }
+
+  return item_pos;
+}
+
 static void _basics_show(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -697,7 +753,6 @@ static void _basics_show(dt_lib_module_t *self)
   else
     gtk_widget_set_name(d->vbox_basic, "basics-box");
 
-  int pos = 0;
   dt_lib_modulegroups_basic_item_position_t item_pos = FIRST_MODULE;
   for(GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
@@ -719,44 +774,12 @@ static void _basics_show(dt_lib_module_t *self)
             item->module = module;
             _basics_add_widget(self, item, NULL, item_pos);
             item_pos = NORMAL;
-            pos++;
           }
         }
       }
-      dt_action_t *ac = module->so->actions.target;
-      while(ac)
-      {
-        if(ac->type >= DT_ACTION_TYPE_WIDGET && ac->target)
-        {
-          gchar *action_id = _action_id(ac);
 
-          for(const GList *l = d->basics; l; l = g_list_next(l))
-          {
-            dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
-            if(!item->module && g_strcmp0(item->module_op, module->op) == 0
-                && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
-            {
-              if(!strcmp(item->id, action_id))
-              {
-                item->module = module;
-                _basics_add_widget(self, item, ac->target, item_pos);
-                item_pos = NORMAL;
-                pos++;
-                break;
-              }
-            }
-          }
-
-          g_free(action_id);
-        }
-
-        if(ac->type == DT_ACTION_TYPE_SECTION)
-          ac = ac->target;
-        else if(!ac->next && ac->owner->type == DT_ACTION_TYPE_SECTION)
-          ac = ac->owner->next;
-        else
-          ac = ac->next;
-      }
+      // for the other items, we want them in same order as the module gui
+      _basics_add_items_from_module_widget(self, module, module->widget, item_pos);
     }
   }
 
@@ -2545,7 +2568,6 @@ static GtkWidget *_build_menu_from_actions(dt_action_t *actions, dt_lib_module_t
 
 static void _manage_basics_add_popup(GtkWidget *widget, dt_lib_module_t *self, gboolean full_menu)
 {
-//  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   int nba = 0; // nb of already present items
   GtkWidget *pop = gtk_menu_new();
   gtk_widget_set_name(pop, "modulegroups-popup");
