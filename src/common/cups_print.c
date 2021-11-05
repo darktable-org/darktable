@@ -577,7 +577,8 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
 void dt_get_print_layout(const dt_print_info_t *prt,
                          const int32_t area_width, const int32_t area_height,
                          int32_t *px, int32_t *py, int32_t *pwidth, int32_t *pheight,
-                         int32_t *ax, int32_t *ay, int32_t *awidth, int32_t *aheight)
+                         int32_t *ax, int32_t *ay, int32_t *awidth, int32_t *aheight,
+                         gboolean *borderless)
 {
   /* this is where the layout is done for the display and for the print too. So this routine is one
      of the most critical for the print circuitry. */
@@ -653,10 +654,10 @@ void dt_get_print_layout(const dt_print_info_t *prt,
   const int32_t bb = p_bottom - (border_bottom / pg_height) * (*pheight);
   const int32_t br = p_right - (border_right / pg_width) * (*pwidth);
 
-  // TODO??? if border_left < np_left (same condition for all side we should activate the
-  // borderless printing.
-  // At lest send a message to users about the fact that we are below the hardware
-  // limits.
+  *borderless = border_left   < np_left
+             || border_right  < np_right
+             || border_top    < np_top
+             || border_bottom < np_bottom;
 
   // now we have the printable area (ax, ay) -> (ax + awidth, ay + aheight)
 
