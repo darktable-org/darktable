@@ -3580,7 +3580,7 @@ msgstr "resplandor ↔ reconstrucción"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:239
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:432
 msgid "gray ↔ colorful details"
-msgstr "detalles grises ↔ coloridos"
+msgstr "detalles: grises ↔ coloridos"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:245
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:436
@@ -8360,27 +8360,27 @@ msgstr "Controlador desconocido"
 
 #: ../src/gui/accelerators.c:515 ../src/gui/accelerators.c:525
 msgid "double"
-msgstr "Doble"
+msgstr "doble"
 
 #: ../src/gui/accelerators.c:516 ../src/gui/accelerators.c:526
 msgid "triple"
-msgstr "Triple"
+msgstr "triple"
 
 #: ../src/gui/accelerators.c:517 ../src/gui/accelerators.c:527
 msgid "long"
-msgstr "Largo"
+msgstr "larga"
 
 #: ../src/gui/accelerators.c:518
 msgid "press"
-msgstr "Pulsar"
+msgstr "Pulsación"
 
 #: ../src/gui/accelerators.c:524 ../src/views/lighttable.c:815
 msgid "middle"
-msgstr "Medio"
+msgstr "media"
 
 #: ../src/gui/accelerators.c:528
 msgid "click"
-msgstr "Clic"
+msgstr "pulsación"
 
 #: ../src/gui/accelerators.c:556
 #, fuzzy
@@ -14984,7 +14984,6 @@ msgstr ""
 "Es útil para hacerlo combinar con el patrón natural del ruido del sensor.\n"
 
 #: ../src/iop/filmicrgb.c:3982
-#, fuzzy
 msgid "mid-tones saturation"
 msgstr "saturación en los tonos medios"
 
@@ -15952,9 +15951,8 @@ msgid "error - the maximum lut value does not match any valid bit depth"
 msgstr "Error: el valor máximo LUT no coincide con ninguna profundidad de bit válida"
 
 #: ../src/iop/lut3d.c:1550
-#, fuzzy
 msgid "lut root folder not defined"
-msgstr "Carpeta raíz de LUT no está definida"
+msgstr "La carpeta raíz de LUT no está definida"
 
 #: ../src/iop/lut3d.c:1556
 msgid "select lut file"
@@ -15973,7 +15971,6 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "Hald CLUT (png) o LUT 3D (cube)"
 
 #: ../src/iop/lut3d.c:1603
-#, fuzzy
 msgid "select file outside Lut root folder is not allowed"
 msgstr "No es posible seleccionar el archivo fuera de la carpeta raíz de LUT"
 
@@ -16894,13 +16891,12 @@ msgid "filter to use for softening. bilateral avoids halos"
 msgstr "Filtro de suavizado. El bilateral evita los halos"
 
 #: ../src/iop/shadhi.c:711
-#, fuzzy
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve mid-tones"
 msgstr ""
-"Comprimir el efecto en luces/sombras\n"
-"preservando tonos medios"
+"Comprime el efecto en las sombras/luces\n"
+"preservando los tonos medios"
 
 #: ../src/iop/shadhi.c:712
 msgid "adjust saturation of shadows"
@@ -17018,13 +17014,12 @@ msgid "the balance of center of split-toning"
 msgstr "Equilibrio central en las variaciones tonales"
 
 #: ../src/iop/splittoning.c:546
-#, fuzzy
 msgid ""
 "compress the effect on highlights/shadows and\n"
 "preserve mid-tones"
 msgstr ""
-"comprimir el efecto en luces/sombras y\n"
-"preservar tonos medios"
+"Comprime el efecto en las luces/sombras\n"
+"preservando los tonos medios"
 
 #: ../src/iop/spots.c:56
 msgid "spot removal"
@@ -17354,7 +17349,6 @@ msgid "relight : fill-in"
 msgstr "iluminar: luz de relleno"
 
 #: ../src/iop/toneequal.c:591
-#, fuzzy
 msgid "tone equalizer needs to be after distortion modules in the pipeline – disabled"
 msgstr ""
 "El ecualizador de tono debe estar después de los módulos de distorsión en el "
@@ -18001,17 +17995,15 @@ msgstr "Importadas: Últimos 30 días"
 
 #: ../src/libs/collect.c:323
 msgid "taken: today"
-msgstr ""
+msgstr "Capturado: hoy"
 
 #: ../src/libs/collect.c:328
-#, fuzzy
 msgid "taken: last 24h"
-msgstr "Última 24 hrs."
+msgstr "Capturado: últimas 24 hrs."
 
 #: ../src/libs/collect.c:333
-#, fuzzy
 msgid "taken: last 30 days"
-msgstr "Últimos 30 días"
+msgstr "Capturado: últimos 30 días"
 
 #: ../src/libs/collect.c:467
 msgid "search filmroll"
