@@ -75,7 +75,7 @@ void dt_init_print_info(dt_print_info_t *pinfo)
 void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
 {
   cups_dest_t *dests;
-  int num_dests = cupsGetDests(&dests);
+  const int num_dests = cupsGetDests(&dests);
   cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
 
   if (dest)
@@ -268,7 +268,7 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
 #endif
   {
     cups_dest_t *dests;
-    int num_dests = cupsGetDests(&dests);
+    const int num_dests = cupsGetDests(&dests);
     cups_dest_t *dest = cupsGetDest(printer_name, NULL, num_dests, dests);
 
     int cancel = 0; // important
@@ -466,8 +466,9 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
 
     gint exit_status = 0;
 
-    g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL | G_SPAWN_STDERR_TO_DEV_NULL,
-                  NULL, NULL, NULL, NULL, &exit_status, NULL);
+    g_spawn_sync(NULL, argv, NULL,
+                 G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL | G_SPAWN_STDERR_TO_DEV_NULL,
+                 NULL, NULL, NULL, NULL, &exit_status, NULL);
 
     g_free(argv[1]);
     g_free(argv[3]);
@@ -512,7 +513,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
   else
   {
     cups_dest_t *dests;
-    int num_dests = cupsGetDests(&dests);
+    const int num_dests = cupsGetDests(&dests);
     cups_dest_t *dest = cupsGetDest(pinfo->printer.name, NULL, num_dests, dests);
 
     for (int j = 0; j < dest->num_options; j ++)
