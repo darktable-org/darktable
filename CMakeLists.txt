@@ -473,7 +473,9 @@ if(NOT WIN32)
     else()
         add_definitions("-D_XOPEN_SOURCE=700")
     endif(CMAKE_SYSTEM MATCHES "SunOS.*")
-endif(NOT WIN32)
+else()
+    add_definitions("-D_USE_MATH_DEFINES")
+endif()
 
 # Set default component name - that way external modules like RawSpeed will install their
 # materials under the default component and not under 'Unspecified'

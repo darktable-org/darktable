@@ -5,7 +5,6 @@
 #endif
 #define __MSVCRT_VERSION__ 0x0700
 
-#undef __STRICT_ANSI__
 #define XMD_H
 
 #undef _WIN32_WINNT
