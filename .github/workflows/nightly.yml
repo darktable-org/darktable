@@ -190,6 +190,7 @@ jobs:
           ./src/.ci/ci-script.sh;
       - name: Correct links to liblensfun (install_name_tool)
         run: |
+          ls -al ${INSTALL_PREFIX}/bin/
           find ${INSTALL_PREFIX}/bin/ -type f | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
           find ${INSTALL_PREFIX} -type f -name "*.dylib" | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
           find ${INSTALL_PREFIX} -type f -name "*.so" | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
