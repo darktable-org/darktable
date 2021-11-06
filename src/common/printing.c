@@ -109,7 +109,8 @@ void _compute_rel_pos(const dt_images_box *imgs, const dt_image_pos *ref, dt_ima
 
 void dt_printing_setup_display(dt_images_box *imgs,
                                const float px, const float py, const float pwidth, const float pheight,
-                               const float ax, const float ay, const float awidth, const float aheight)
+                               const float ax, const float ay, const float awidth, const float aheight,
+  gboolean borderless)
 {
   imgs->screen.page.x      = px;
   imgs->screen.page.y      = py;
@@ -120,6 +121,8 @@ void dt_printing_setup_display(dt_images_box *imgs,
   imgs->screen.print_area.y      = ay;
   imgs->screen.print_area.width  = awidth;
   imgs->screen.print_area.height = aheight;
+
+  imgs->screen.borderless = borderless;
 
   // and now reset the box to be resised accordingly if needed
   for(int k=0; k<imgs->count; k++)

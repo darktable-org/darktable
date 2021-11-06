@@ -80,6 +80,7 @@ typedef struct dt_lib_print_settings_t
   GtkWidget *b_width, *b_height;
   GtkWidget *del;
   GtkWidget *grid, *grid_size, *snap_grid;
+  GtkWidget *borderless;
   GList *profiles;
   GtkButton *print_button;
   GtkToggleButton *lock_button;
@@ -1966,6 +1967,11 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     pango_font_description_free(desc);
     g_object_unref(layout);
   }
+
+  if(ps->imgs.screen.borderless)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->borderless), TRUE);
+  else
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->borderless), FALSE);
 }
 
 static void _width_changed(GtkWidget *widget, gpointer user_data)
@@ -2344,6 +2350,14 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(d->grid), "toggled", G_CALLBACK(_grid_callback), self);
     g_signal_connect(d->snap_grid, "toggled", G_CALLBACK(_snap_grid_callback), (gpointer)self);
   }
+
+  d->borderless = gtk_check_button_new_with_label(_("borderless mode required"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->borderless), TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(d->borderless,
+                              _("indicates that the borderless mode should be activated\n"
+                                "in the printer driver because the selected margins are\n"
+                                "below the printer hardware margins"));
+  gtk_widget_set_sensitive(d->borderless, FALSE);
 
   // pack image dimension hbox here
 
