@@ -15,7 +15,7 @@ sed -i '' 's|/opt/local/share/locale||' package/darktable.app/Contents/Resources
 glib-compile-schemas package/darktable.app/Contents/Resources/share/glib-2.0/schemas/
 sed -i '' 's|{VERSION}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f2|sed 's/^\([0-9]*\.[0-9]*\)$/\1.0/')'|' package/darktable.app/Contents/Info.plist
 sed -i '' 's|{COMMITS}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f3)'|' package/darktable.app/Contents/Info.plist
-for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-cltest,-generate-cache}
+for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-generate-cache}
 do
 	install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$i"
 done
@@ -24,7 +24,7 @@ ln -s /Applications package/
 if [ -z "$STRIPDEBUGINFO" ]
 then
 	find package/darktable.app/Contents/Resources/lib/darktable \( -name \*.dylib -or -name \*.so \) -exec dsymutil \{} \;
-	for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-cltest,-generate-cache,-curve-tool,-noiseprofile}
+	for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-generate-cache,-curve-tool,-noiseprofile}
 	do
 		dsymutil "$i"
 	done
