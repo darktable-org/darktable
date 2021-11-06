@@ -43,8 +43,8 @@ You are strongly advised to take a backup first.
 
 - Perspective correction module has been renamed to rotate and perspective
   and now allows you to manually define correction settings by drawing lines
-  or rectangles on the image (replicating keystone correction functionality 
-  from the deprecated crop and rotate module) 
+  or rectangles on the image (replicating keystone correction functionality
+  from the deprecated crop and rotate module)
 
 - Added support for multiple images in the print view. The page can be
   filled with multiple areas, each of which can be moved around and placed on
@@ -58,7 +58,7 @@ You are strongly advised to take a backup first.
 
 ## Other New Features And Changes
 
-- The denoise (profiled) module now uses wavelets mode by default and its default 
+- The denoise (profiled) module now uses wavelets mode by default and its default
   settings in Y0U0V0 mode have been improved.
 
 - Flip buttons have been added to the orientation module (functionality moved
@@ -66,16 +66,16 @@ You are strongly advised to take a backup first.
 
 - Background jobs handling has been removed from preferences.
 
-- Much of the SSE-specific code has been removed, since compiler-generated code 
+- Much of the SSE-specific code has been removed, since compiler-generated code
   is usually faster.
 
 - The darktable-generate-cache script now displays filenames and image ids.
 
-- File name matches in the collections module are now faster. 
+- File name matches in the collections module are now faster.
 
 - Mask handling is faster.
 
-- Processing module order can now be automatically applied based on the image 
+- Processing module order can now be automatically applied based on the image
   properties.
 
 - Folder status is properly refreshed when a mount is changed.
@@ -83,9 +83,9 @@ You are strongly advised to take a backup first.
 - An area color picker is selectable by using a <kbd>Right-Click</kbd> in
   addition to the existing <kbd>Ctrl+click</kbd> action.
 
-- Subsitution variables have been added for image dimensions as follows:
+- Substitution variables have been added for image dimensions as follows:
   $(SENSOR_HEIGHT) and $(SENSOR_WIDTH) for the absolute pixel
-  dimensions of the sensor; $(MAX_HEIGHT) and $(MAX_WIDTH) for the raw 
+  dimensions of the sensor; $(MAX_HEIGHT) and $(MAX_WIDTH) for the raw
   image size; and $(EXPORT_HEIGHT) and $(EXPORT_WIDTH) for the
   post-cropping final image size.
 
@@ -106,15 +106,15 @@ You are strongly advised to take a backup first.
 
 - The following modules have been deprecated:
 
-  - Crop & rotate - the features of this module are now shared between the crop, 
+  - Crop & rotate - the features of this module are now shared between the crop,
     orientation, and rotate and perspective modules.
 
     Note that the new crop module is now placed after the retouch module
     to ensure that the full image can be used a source area.
 
 - A new option has been added to allow you to choose when to start writing
-  changes to the XMP sidecare files. Choose to (a) never write XMP, 
-  (b) write XMP as soon as the image is imported; or 
+  changes to the XMP sidecar files. Choose to (a) never write XMP,
+  (b) write XMP as soon as the image is imported; or
   (c) write XMP only after the user has edited the image in the darkroom view.
 
 - Timezone entry has been improved in the geotagging module.
@@ -167,7 +167,7 @@ You are strongly advised to take a backup first.
 - Added timestamp in camera import dialog for consistency with other
   import dialog.
 
-- The current module order is now shown in the module order module header to 
+- The current module order is now shown in the module order module header to
   save space in the GUI.
 
 - The split toning module now displays the hue in degree for consistency
@@ -183,7 +183,7 @@ You are strongly advised to take a backup first.
 - For advanced users and developers, OpenCL build options are now exposed in
   darktablerc.
 
-- The "module order" entry is now moved to the end of the copy/paste dialog 
+- The "module order" entry is now moved to the end of the copy/paste dialog
   for better usability, as this option is rarely used.
 
 - The collections module now offers some new presets based on image time to
@@ -198,7 +198,7 @@ You are strongly advised to take a backup first.
 - Select the best illuminant for DNG images.
 
 - When trying to enter a view that cannot be used (like the tethering view
-  where no camera is attached), make sure to reset the combobox back to 
+  where no camera is attached), make sure to reset the combobox back to
   the previous view.
 
 - Fix calibration optimizations for delta E in Channel Mixer RGB module.
@@ -232,7 +232,7 @@ You are strongly advised to take a backup first.
 
 - Fix the image loader flag, which was not properly set at import time.
 
-- Add a search box in preset perferences and shortcuts.
+- Add a search box in preset preferences and shortcuts.
 
 ## Notes
 
