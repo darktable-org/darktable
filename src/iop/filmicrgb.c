@@ -62,7 +62,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
 
-DT_MODULE_INTROSPECTION(4, dt_iop_filmicrgb_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_filmicrgb_params_t)
 
 /**
  * DOCUMENTATION
@@ -135,6 +135,12 @@ typedef enum dt_iop_filmicrgb_colorscience_type_t
   DT_FILMIC_COLORSCIENCE_V3 = 2, // $DESCRIPTION: "v5 (2021)"
 } dt_iop_filmicrgb_colorscience_type_t;
 
+typedef enum dt_iop_filmicrgb_spline_version_type_t
+{
+  DT_FILMIC_SPLINE_VERSION_V1 = 0, // $DESCRIPTION: "v1 (2019)"
+  DT_FILMIC_SPLINE_VERSION_V2 = 1, // $DESCRIPTION: "v2 (2020)"
+  DT_FILMIC_SPLINE_VERSION_V3 = 2, // $DESCRIPTION: "v3 (2021)"
+} dt_iop_filmicrgb_spline_version_type_t;
 
 typedef enum dt_iop_filmicrgb_reconstruction_type_t
 {
@@ -200,7 +206,7 @@ typedef struct dt_iop_filmicrgb_params_t
   dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in shadows"
   dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in highlights"
   gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
-  gint internal_version;         // $DEFAULT: 2021 $DESCRIPTION: "version of the spline generator"
+  dt_iop_filmicrgb_spline_version_type_t spline_version; // $DEFAULT: DT_FILMIC_SPLINE_VERSION_V3 $DESCRIPTION: "spline handling"
 } dt_iop_filmicrgb_params_t;
 // clang-format on
 
@@ -306,6 +312,7 @@ typedef struct dt_iop_filmicrgb_data_t
   float noise_level;
   int preserve_color;
   int version;
+  int spline_version;
   int high_quality_reconstruction;
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
   dt_noise_distribution_t noise_distribution;
@@ -368,7 +375,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     typedef struct dt_iop_filmicrgb_params_v1_t
     {
@@ -420,11 +427,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->high_quality_reconstruction = 0;
     n->noise_distribution = d->noise_distribution;
     n->noise_level = 0.f;
-    n->internal_version = 2019;
+    n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
     return 0;
   }
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2 && new_version == 5)
   {
     typedef struct dt_iop_filmicrgb_params_v2_t
     {
@@ -487,11 +494,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = d->noise_level;
     n->noise_distribution = d->noise_distribution;
     n->noise_level = 0.f;
-    n->internal_version = 2019;
+    n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3 && new_version == 5)
   {
     typedef struct dt_iop_filmicrgb_params_v3_t
     {
@@ -563,8 +570,62 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = d->noise_level;
     n->noise_distribution = d->noise_distribution;
     n->noise_level = d->noise_level;
-    n->internal_version = 2019;
+    n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
+    return 0;
+  }
+  if(old_version == 4 && new_version == 5)
+  {
+    typedef struct dt_iop_filmicrgb_params_v4_t
+    {
+      float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
+      float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
+      float white_point_source;    // $MIN: 0 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
+      float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
+      float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
+      float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "bloom ↔ reconstruct"
+      float reconstruct_grey_vs_color; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "gray ↔ colorful details"
+      float reconstruct_structure_vs_texture; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "structure ↔ texture"
+      float security_factor;                  // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "dynamic range scaling"
+      float grey_point_target;                // $MIN: 1 $MAX: 50 $DEFAULT: 18.45 $DESCRIPTION: "target middle gray"
+      float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
+      float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
+      float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
+      float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 50.0
+      float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.1
+      float saturation;         // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
+      float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
+      float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "add noise in highlights"
+      dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve chrominance"
+      dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V3 $DESCRIPTION: "color science"
+      gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
+      gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
+      int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
+      dt_iop_filmic_noise_distribution_t noise_distribution; // $DEFAULT: DT_NOISE_GAUSSIAN $DESCRIPTION: "type of noise"
+      dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in shadows"
+      dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in highlights"
+      gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
+      gint internal_version; // $DEFAULT: 2020 $DESCRIPTION: "version of the spline generator"
+    } dt_iop_filmicrgb_params_v4_t;
+    
+    dt_iop_filmicrgb_params_v4_t *o = (dt_iop_filmicrgb_params_v4_t *)old_params;
+    dt_iop_filmicrgb_params_t *n = (dt_iop_filmicrgb_params_t *)new_params;
+    *n = *(dt_iop_filmicrgb_params_t*)o; // structure didn't change except the enum instead of gint for internal_version
+    // we still need to convert the internal_version (in year) to the enum
+    switch(o->internal_version)
+    {
+      case(2019):
+        n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
+        break;
+      case(2020):
+        n->spline_version = DT_FILMIC_SPLINE_VERSION_V2;
+        break;
+      case(2021):
+        n->spline_version = DT_FILMIC_SPLINE_VERSION_V3;
+        break;
+      default:
+        return 1;
+    }
     return 0;
   }
   return 1;
@@ -2131,7 +2192,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
   // target luminance desired after filmic curve
   float black_display, white_display;
 
-  if(p->internal_version == 2019)
+  if(p->spline_version == DT_FILMIC_SPLINE_VERSION_V1)
   {
     // this is a buggy version that doesn't take the output power function into account
     // it was silent because black and white display were set to 0 and 1 and users were advised to not touch them.
@@ -2140,7 +2201,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
     black_display = CLAMP(p->black_point_target, 0.0f, p->grey_point_target) / 100.0f; // in %
     white_display = fmaxf(p->white_point_target, p->grey_point_target) / 100.0f;       // in %
   }
-  else //(p->internal_version == 2020)
+  else //(p->spline_version >= DT_FILMIC_SPLINE_VERSION_V2)
   {
     // this is the fixed version
     black_display = powf(CLAMP(p->black_point_target, 0.0f, p->grey_point_target) / 100.0f,
@@ -2151,7 +2212,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
 
   float toe_log, shoulder_log, toe_display, shoulder_display, contrast;
   float balance = CLAMP(p->balance, -50.0f, 50.0f) / 100.0f; // in %
-  if(p->internal_version < 2021)
+  if(p->spline_version < DT_FILMIC_SPLINE_VERSION_V3)
   {
     float latitude = CLAMP(p->latitude, 0.0f, 100.0f) / 100.0f * dynamic_range; // in % of dynamic range
     contrast = CLAMP(p->contrast, 1.00001f, 6.0f);
@@ -2179,7 +2240,7 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
     toe_log += coeff / norm;
     shoulder_log += coeff / norm;
   }
-  else // p->internal_version >= 2021. Slope dependent on contrast only, and latitude as % of display range.
+  else // p->spline_version >= DT_FILMIC_SPLINE_VERSION_V3. Slope dependent on contrast only, and latitude as % of display range.
   {
     const float hardness = p->output_power;
     // latitude in %
@@ -2431,9 +2492,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 
   float contrast = p->contrast;
-  if(contrast < grey_display / grey_log)
+  if((p->spline_version < DT_FILMIC_SPLINE_VERSION_V3) && (contrast < grey_display / grey_log))
   {
     // We need grey_display - (contrast * grey_log) <= 0.0
+    // this clamping is handled automatically for spline_version >= DT_FILMIC_SPLINE_VERSION_V3
     contrast = 1.0001f * grey_display / grey_log;
   }
 
@@ -2444,6 +2506,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->output_power = p->output_power;
   d->contrast = contrast;
   d->version = p->version;
+  d->spline_version = p->spline_version;
   d->preserve_color = p->preserve_color;
   d->high_quality_reconstruction = p->high_quality_reconstruction;
   d->noise_level = p->noise_level;
