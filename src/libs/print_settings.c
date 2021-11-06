@@ -253,7 +253,7 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
 
   d->params->buf = (uint16_t *)malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
 
-  if (d->bpp == 8)
+  if(d->bpp == 8)
   {
     const uint8_t *in_ptr = (const uint8_t *)in;
     uint8_t *out_ptr = (uint8_t *)d->params->buf;
@@ -297,7 +297,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
   dat.bpp = *params->p_icc_profile ? 16 : 8; // set to 16bit when a profile is to be applied
   dat.params = params;
 
-  if (params->style) g_strlcpy(dat.head.style, params->style, sizeof(dat.head.style));
+  if(params->style) g_strlcpy(dat.head.style, params->style, sizeof(dat.head.style));
 
   // let the user know something is happening
   dt_control_job_set_progress(job, 0.05);
@@ -326,7 +326,7 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
     const dt_colorspaces_color_profile_t *pprof =
       dt_colorspaces_get_profile(params->p_icc_type, params->p_icc_profile,
                                  DT_PROFILE_DIRECTION_OUT);
-    if (!pprof)
+    if(!pprof)
     {
       dt_control_log(_("cannot open printer profile `%s'"), params->p_icc_profile);
       fprintf(stderr, "cannot open printer profile `%s'\n", params->p_icc_profile);
@@ -342,9 +342,9 @@ static int _export_image(dt_job_t *job, dt_image_box *img)
         dt_control_queue_redraw();
         return 1;
       }
-      if (dt_apply_printer_profile
-          ((void **)&(params->buf), dat.head.width, dat.head.height, dat.bpp, buf_profile->profile,
-           pprof->profile, params->p_icc_intent, params->black_point_compensation))
+      if(dt_apply_printer_profile
+         ((void **)&(params->buf), dat.head.width, dat.head.height, dat.bpp, buf_profile->profile,
+          pprof->profile, params->p_icc_intent, params->black_point_compensation))
       {
         dt_control_log(_("cannot apply printer profile `%s'"), params->p_icc_profile);
         fprintf(stderr, "cannot apply printer profile `%s'\n", params->p_icc_profile);
@@ -677,7 +677,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  dt_get_printer_info (printer_name, &ps->prt.printer);
+  dt_get_printer_info(printer_name, &ps->prt.printer);
 
   // if this is a turboprint printer, disable the printer profile
 
@@ -2114,8 +2114,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_alignment(GTK_ENTRY(d->grid_size), 1);
 
 
-
-
   ////////////////////////// PRINTER SETTINGS
 
   // create papers combo as filled when adding printers
@@ -2251,7 +2249,7 @@ void gui_init(dt_lib_module_t *self)
   d->unit = dt_conf_get_int("plugins/print/print/unit");
   dt_bauhaus_combobox_set(ucomb, d->unit);
 
-  dt_bauhaus_combobox_set (d->orientation, d->prt.page.landscape?1:0);
+  dt_bauhaus_combobox_set(d->orientation, d->prt.page.landscape?1:0);
 
   //// image dimensions, create them now as we need them
 
