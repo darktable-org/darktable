@@ -189,6 +189,9 @@ You are strongly advised to take a backup first.
 - The collections module now offers some new presets based on image time to
   complement the existing presets based on the import time.
 
+- Add a borderless requirement indicator in the print module when the user's
+  selected margins are below the hardware margins.
+
 ## Bug Fixes
 
 - Multiple memory leaks have been fixed.
