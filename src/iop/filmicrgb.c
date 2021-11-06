@@ -2099,11 +2099,13 @@ static void show_mask_callback(GtkWidget *slider, gpointer user_data)
 #define ORDER_4 5
 #define ORDER_3 4
 
-
-inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
+// returns true if contrast was clamped, false otherwise
+// used in GUI, to show user when contrast clamping is happening
+inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
                                                     struct dt_iop_filmic_rgb_spline_t *const spline)
 {
   float grey_display = 0.4638f;
+  gboolean clamping = FALSE;
 
   if(p->custom_grey)
   {
@@ -2196,7 +2198,10 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
     // f'(grey_log) = contrast * hardness * (contrast * grey_log + grey_display - (contrast * grey_log))^(hardness-1)
     //              = contrast * hardness * grey_display^(hardness-1)
     // f'(grey_log) = target_contrast <=> contrast = target_contrast / (hardness * grey_display^(hardness-1))
-    contrast = CLAMP(slope / (hardness * powf(grey_display, hardness - 1.0f)), min_contrast, 100.0f);
+    contrast = slope / (hardness * powf(grey_display, hardness - 1.0f));
+    float clamped_contrast = CLAMP(contrast, min_contrast, 100.0f);
+    clamping = (clamped_contrast != contrast);
+    contrast = clamped_contrast;
 
     // interception
     float linear_intercept = grey_display - (contrast * grey_log);
@@ -2392,6 +2397,7 @@ inline static void dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_param
     spline->M3[1] = c;
     spline->M4[1] = shoulder_display;
   }
+  return clamping;
 }
 
 void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -2685,7 +2691,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_filmicrgb_params_t *p = (dt_iop_filmicrgb_params_t *)self->params;
   dt_iop_filmicrgb_gui_data_t *g = (dt_iop_filmicrgb_gui_data_t *)self->gui_data;
-  dt_iop_filmic_rgb_compute_spline(p, &g->spline);
+  gboolean contrast_clamped = dt_iop_filmic_rgb_compute_spline(p, &g->spline);
 
   // Cache the graph objects to avoid recomputing all the view at each redraw
   gtk_widget_get_allocation(widget, &g->allocation);
@@ -2992,6 +2998,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     float x_white = 1.f;
     float y_white = 1.f;
 
+    const float central_slope = (g->spline.y[3] - g->spline.y[1]) * g->graph_width / ((g->spline.x[3] - g->spline.x[1]) * g->graph_height);
+    const float central_slope_angle = atanf(central_slope) + M_PI / 2.0f;
     set_color(cr, darktable.bauhaus->graph_fg);
     for(int k = 0; k < 5; k++)
     {
@@ -3005,6 +3013,23 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         const float y_margin = SAFETY_MARGIN * 1.1f * (ymax - ymin);
         gboolean red = (((k == 1) && (y - ymin <= y_margin)) 
                      || ((k == 3) && (ymax - y <= y_margin)));
+        float start_angle = 0.0f;
+        float end_angle = 2.f * M_PI;
+        // if contrast is clamped, show it on GUI with half circles
+        // for points 1 and 3
+        if(contrast_clamped)
+        {
+          if(k == 1)
+          {
+            start_angle = central_slope_angle + M_PI;
+            end_angle = central_slope_angle;
+          }
+          if(k == 3)
+          {
+            start_angle = central_slope_angle;
+            end_angle = start_angle + M_PI;
+          }
+        }
 
         if(g->gui_mode == DT_FILMIC_GUI_BASECURVE)
         {
@@ -3032,7 +3057,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         if(red) cairo_set_source_rgb(cr, 0.8, 0.35, 0.35);
 
         // draw bullet
-        cairo_arc(cr, x * g->graph_width, (1.0 - y) * g->graph_height, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
+        cairo_arc(cr, x * g->graph_width, (1.0 - y) * g->graph_height, DT_PIXEL_APPLY_DPI(4), start_angle, end_angle);
         cairo_fill(cr);
         cairo_stroke(cr);
 
