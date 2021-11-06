@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-05 18:17+0100\n"
+"POT-Creation-Date: 2021-11-06 08:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2066,7 +2066,7 @@ msgstr ""
 #: ../src/iop/clipping.c:2129 ../src/iop/clipping.c:2145
 #: ../src/iop/lens.cc:2239 ../src/iop/retouch.c:422 ../src/libs/collect.c:1861
 #: ../src/libs/colorpicker.c:50 ../src/libs/export.c:1074
-#: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2527
+#: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2541
 msgid "none"
 msgstr ""
 
@@ -2236,7 +2236,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:128
 #: ../build/lib/darktable/plugins/introspection_borders.c:263
-#: ../src/iop/flip.c:74 ../src/libs/print_settings.c:2230
+#: ../src/iop/flip.c:74 ../src/libs/print_settings.c:2236
 msgid "orientation"
 msgstr ""
 
@@ -2846,7 +2846,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:303
 #: ../src/common/colorspaces.c:1428 ../src/common/colorspaces.c:1654
-#: ../src/libs/print_settings.c:1328
+#: ../src/libs/print_settings.c:1329
 msgid "Adobe RGB (compatible)"
 msgstr ""
 
@@ -3607,7 +3607,7 @@ msgstr ""
 #: ../src/iop/denoiseprofile.c:3681 ../src/iop/exposure.c:877
 #: ../src/iop/levels.c:686 ../src/iop/profile_gamma.c:687
 #: ../src/libs/copy_history.c:390 ../src/libs/export.c:1346
-#: ../src/libs/image.c:592 ../src/libs/print_settings.c:2566
+#: ../src/libs/image.c:592 ../src/libs/print_settings.c:2580
 #: ../src/libs/styles.c:846 ../src/views/darkroom.c:2311
 msgid "mode"
 msgstr ""
@@ -4622,7 +4622,7 @@ msgstr ""
 msgid "sRGB (e.g. JPG)"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1423 ../src/libs/print_settings.c:1321
+#: ../src/common/colorspaces.c:1423 ../src/libs/print_settings.c:1322
 msgid "sRGB (web-safe)"
 msgstr ""
 
@@ -4727,17 +4727,17 @@ msgstr ""
 msgid "failed to create temporary file for printing options"
 msgstr ""
 
-#: ../src/common/cups_print.c:507
+#: ../src/common/cups_print.c:508
 #, c-format
 msgid "printing on `%s' cancelled"
 msgstr ""
 
-#: ../src/common/cups_print.c:570
+#: ../src/common/cups_print.c:571
 #, c-format
 msgid "error while printing `%s' on `%s'"
 msgstr ""
 
-#: ../src/common/cups_print.c:572
+#: ../src/common/cups_print.c:573
 #, c-format
 msgid "printing `%s' on `%s'"
 msgstr ""
@@ -5252,16 +5252,16 @@ msgid "opencl scheduling profile set to default"
 msgstr ""
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:1888
-#: ../src/libs/print_settings.c:2237
+#: ../src/libs/print_settings.c:2243
 msgid "mm"
 msgstr ""
 
 #: ../src/common/pdf.h:89 ../src/libs/export.c:547 ../src/libs/export.c:1208
-#: ../src/libs/print_settings.c:2238
+#: ../src/libs/print_settings.c:2244
 msgid "cm"
 msgstr ""
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:2239
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:2245
 msgid "inch"
 msgstr ""
 
@@ -5876,7 +5876,7 @@ msgid "exporting %d / %d to %s"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:1419 ../src/views/darkroom.c:834
-#: ../src/views/print.c:333
+#: ../src/views/print.c:337
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr ""
@@ -9483,7 +9483,7 @@ msgid "enter the title of the pdf"
 msgstr ""
 
 #. // papers
-#: ../src/imageio/format/pdf.c:595 ../src/libs/print_settings.c:2222
+#: ../src/imageio/format/pdf.c:595 ../src/libs/print_settings.c:2228
 msgid "paper size"
 msgstr ""
 
@@ -9499,12 +9499,12 @@ msgid "page orientation"
 msgstr ""
 
 #: ../src/imageio/format/pdf.c:611 ../src/iop/borders.c:1051
-#: ../src/libs/collect.c:281 ../src/libs/print_settings.c:2231
+#: ../src/libs/collect.c:281 ../src/libs/print_settings.c:2237
 msgid "portrait"
 msgstr ""
 
 #: ../src/imageio/format/pdf.c:612 ../src/iop/borders.c:1052
-#: ../src/libs/collect.c:276 ../src/libs/print_settings.c:2232
+#: ../src/libs/collect.c:276 ../src/libs/print_settings.c:2238
 msgid "landscape"
 msgstr ""
 
@@ -11356,7 +11356,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:3685 ../src/iop/clipping.c:2123
 #: ../src/iop/colorbalancergb.c:1569 ../src/iop/filmicrgb.c:3674
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3139
-#: ../src/libs/print_settings.c:2216 ../src/views/lighttable.c:1407
+#: ../src/libs/print_settings.c:2222 ../src/views/lighttable.c:1407
 msgid "page"
 msgstr ""
 
@@ -12594,21 +12594,21 @@ msgid "output intent"
 msgstr ""
 
 #: ../src/iop/colorout.c:867 ../src/libs/export.c:1303
-#: ../src/libs/print_settings.c:2190 ../src/libs/print_settings.c:2512
+#: ../src/libs/print_settings.c:2196 ../src/libs/print_settings.c:2526
 #: ../src/views/darkroom.c:2454 ../src/views/darkroom.c:2461
 #: ../src/views/lighttable.c:1319 ../src/views/lighttable.c:1326
 msgid "perceptual"
 msgstr ""
 
 #: ../src/iop/colorout.c:868 ../src/libs/export.c:1304
-#: ../src/libs/print_settings.c:2191 ../src/libs/print_settings.c:2513
+#: ../src/libs/print_settings.c:2197 ../src/libs/print_settings.c:2527
 #: ../src/views/darkroom.c:2455 ../src/views/darkroom.c:2462
 #: ../src/views/lighttable.c:1320 ../src/views/lighttable.c:1327
 msgid "relative colorimetric"
 msgstr ""
 
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:1305
-#: ../src/libs/print_settings.c:2192 ../src/libs/print_settings.c:2514
+#: ../src/libs/print_settings.c:2198 ../src/libs/print_settings.c:2528
 #: ../src/views/darkroom.c:2456 ../src/views/darkroom.c:2463
 #: ../src/views/lighttable.c:1321 ../src/views/lighttable.c:1328
 msgctxt "rendering intent"
@@ -12616,7 +12616,7 @@ msgid "saturation"
 msgstr ""
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:1306
-#: ../src/libs/print_settings.c:2193 ../src/libs/print_settings.c:2515
+#: ../src/libs/print_settings.c:2199 ../src/libs/print_settings.c:2529
 #: ../src/views/darkroom.c:2457 ../src/views/darkroom.c:2464
 #: ../src/views/lighttable.c:1322 ../src/views/lighttable.c:1329
 msgid "absolute colorimetric"
@@ -13021,7 +13021,7 @@ msgid "variance computed on the blue channel"
 msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3674 ../src/libs/export.c:1278
-#: ../src/libs/print_settings.c:2138 ../src/libs/print_settings.c:2463
+#: ../src/libs/print_settings.c:2144 ../src/libs/print_settings.c:2477
 msgid "profile"
 msgstr ""
 
@@ -13587,7 +13587,7 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1701 ../src/libs/export.c:1301
-#: ../src/libs/print_settings.c:2189 ../src/libs/print_settings.c:2509
+#: ../src/libs/print_settings.c:2195 ../src/libs/print_settings.c:2523
 #: ../src/views/darkroom.c:2453 ../src/views/lighttable.c:1318
 #: ../src/views/lighttable.c:1325
 msgid "intent"
@@ -15386,7 +15386,7 @@ msgid "toggle tool for picking median lightness in image"
 msgstr ""
 
 #: ../src/iop/relight.c:286 ../src/libs/metadata_view.c:146
-#: ../src/libs/print_settings.c:2255
+#: ../src/libs/print_settings.c:2261
 msgid "width"
 msgstr ""
 
@@ -16574,7 +16574,7 @@ msgstr ""
 msgid "position"
 msgstr ""
 
-#: ../src/iop/watermark.c:1316 ../src/libs/print_settings.c:2371
+#: ../src/iop/watermark.c:1316 ../src/libs/print_settings.c:2385
 msgid "alignment"
 msgstr ""
 
@@ -17292,11 +17292,11 @@ msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 
 #: ../src/libs/export.c:1280 ../src/libs/export.c:1302
-#: ../src/libs/print_settings.c:2466 ../src/libs/print_settings.c:2511
+#: ../src/libs/print_settings.c:2480 ../src/libs/print_settings.c:2525
 msgid "image settings"
 msgstr ""
 
-#: ../src/libs/export.c:1292 ../src/libs/print_settings.c:2500
+#: ../src/libs/export.c:1292 ../src/libs/print_settings.c:2514
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr ""
@@ -17320,7 +17320,7 @@ msgid ""
 "colors. (not suited for photography)."
 msgstr ""
 
-#: ../src/libs/export.c:1338 ../src/libs/print_settings.c:2525
+#: ../src/libs/export.c:1338 ../src/libs/print_settings.c:2539
 msgid "style"
 msgstr ""
 
@@ -17328,15 +17328,15 @@ msgstr ""
 msgid "temporary style to use while exporting"
 msgstr ""
 
-#: ../src/libs/export.c:1350 ../src/libs/print_settings.c:2568
+#: ../src/libs/export.c:1350 ../src/libs/print_settings.c:2582
 msgid "replace history"
 msgstr ""
 
-#: ../src/libs/export.c:1351 ../src/libs/print_settings.c:2569
+#: ../src/libs/export.c:1351 ../src/libs/print_settings.c:2583
 msgid "append history"
 msgstr ""
 
-#: ../src/libs/export.c:1356 ../src/libs/print_settings.c:2576
+#: ../src/libs/export.c:1356 ../src/libs/print_settings.c:2590
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
@@ -18811,7 +18811,7 @@ msgstr ""
 msgid "datetime"
 msgstr ""
 
-#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2259
+#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2265
 msgid "height"
 msgstr ""
 
@@ -19290,101 +19290,101 @@ msgid "hide navigation thumbnail"
 msgstr ""
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:46 ../src/libs/print_settings.c:2456
+#: ../src/libs/print_settings.c:46 ../src/libs/print_settings.c:2470
 msgid "print settings"
 msgstr ""
 
 #. FIXME: ellipsize title/printer as the export completed message is ellipsized
-#: ../src/libs/print_settings.c:303 ../src/libs/print_settings.c:654
+#: ../src/libs/print_settings.c:304 ../src/libs/print_settings.c:655
 #, c-format
 msgid "processing `%s' for `%s'"
 msgstr ""
 
-#: ../src/libs/print_settings.c:330
+#: ../src/libs/print_settings.c:331
 #, c-format
 msgid "cannot open printer profile `%s'"
 msgstr ""
 
-#: ../src/libs/print_settings.c:339
+#: ../src/libs/print_settings.c:340
 #, c-format
 msgid "error getting output profile for image %d"
 msgstr ""
 
-#: ../src/libs/print_settings.c:348
+#: ../src/libs/print_settings.c:349
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr ""
 
-#: ../src/libs/print_settings.c:494
+#: ../src/libs/print_settings.c:495
 msgid "failed to create temporary pdf for printing"
 msgstr ""
 
-#: ../src/libs/print_settings.c:540
+#: ../src/libs/print_settings.c:541
 msgid "maximum image per page reached"
 msgstr ""
 
-#: ../src/libs/print_settings.c:609
+#: ../src/libs/print_settings.c:610
 msgid "cannot print until a picture is selected"
 msgstr ""
 
-#: ../src/libs/print_settings.c:614
+#: ../src/libs/print_settings.c:615
 msgid "cannot print until a printer is selected"
 msgstr ""
 
-#: ../src/libs/print_settings.c:619
+#: ../src/libs/print_settings.c:620
 msgid "cannot print until a paper is selected"
 msgstr ""
 
 #. in this case no need to release from cache what we couldn't get
-#: ../src/libs/print_settings.c:646
+#: ../src/libs/print_settings.c:647
 #, c-format
 msgid "cannot get image %d for printing"
 msgstr ""
 
-#: ../src/libs/print_settings.c:886
+#: ../src/libs/print_settings.c:887
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2118 ../src/libs/print_settings.c:2130
-#: ../src/libs/print_settings.c:2138 ../src/libs/print_settings.c:2189
+#: ../src/libs/print_settings.c:2124 ../src/libs/print_settings.c:2136
+#: ../src/libs/print_settings.c:2144 ../src/libs/print_settings.c:2195
 msgid "printer"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2130
+#: ../src/libs/print_settings.c:2136
 msgid "media"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2148
+#: ../src/libs/print_settings.c:2154
 msgid "color management in printer driver"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2180
+#: ../src/libs/print_settings.c:2186
 #, c-format
 msgid "printer ICC profiles in %s or %s"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2202
+#: ../src/libs/print_settings.c:2208
 msgid "black point compensation"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2210
+#: ../src/libs/print_settings.c:2216
 msgid "activate black point compensation when applying the printer profile"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2253
+#: ../src/libs/print_settings.c:2259
 msgid "image width/height"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2257
+#: ../src/libs/print_settings.c:2263
 msgid " x "
 msgstr ""
 
-#: ../src/libs/print_settings.c:2265
+#: ../src/libs/print_settings.c:2271
 msgid "scale factor"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2270
+#: ../src/libs/print_settings.c:2276
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -19393,107 +19393,118 @@ msgid ""
 msgstr ""
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2284
+#: ../src/libs/print_settings.c:2290
 msgid "top margin"
 msgstr ""
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2288
+#: ../src/libs/print_settings.c:2294
 msgid "left margin"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2291
+#: ../src/libs/print_settings.c:2297
 msgid "lock"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2292
+#: ../src/libs/print_settings.c:2298
 msgid "change all margins uniformly"
 msgstr ""
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2296
+#: ../src/libs/print_settings.c:2302
 msgid "right margin"
 msgstr ""
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2300
+#: ../src/libs/print_settings.c:2306
 msgid "bottom margin"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2328
+#: ../src/libs/print_settings.c:2334
 msgid "display grid"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2338
+#: ../src/libs/print_settings.c:2344
 msgid "snap to grid"
 msgstr ""
 
+#: ../src/libs/print_settings.c:2354
+msgid "borderless mode required"
+msgstr ""
+
+#: ../src/libs/print_settings.c:2357
+msgid ""
+"indicates that the borderless mode should be activated\n"
+"in the printer driver because the selected margins are\n"
+"below the printer hardware margins"
+msgstr ""
+
 #. pack image dimension hbox here
-#: ../src/libs/print_settings.c:2350
+#: ../src/libs/print_settings.c:2364
 msgid "image layout"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2387
+#: ../src/libs/print_settings.c:2401
 msgid "new image area"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2388
+#: ../src/libs/print_settings.c:2402
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
 "drag&drop image from film strip on it"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2394
+#: ../src/libs/print_settings.c:2408
 msgid "delete image area"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2395
+#: ../src/libs/print_settings.c:2409
 msgid "delete the currently selected image area"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2399
+#: ../src/libs/print_settings.c:2413
 msgid "clear layout"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2400
+#: ../src/libs/print_settings.c:2414
 msgid "remove all image area from the page"
 msgstr ""
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2415
+#: ../src/libs/print_settings.c:2429
 msgid "image area x origin (in current unit)"
 msgstr ""
 
 #. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2419
+#: ../src/libs/print_settings.c:2433
 msgid "image area y origin (in current unit)"
 msgstr ""
 
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2430
+#: ../src/libs/print_settings.c:2444
 msgid "image area width (in current unit)"
 msgstr ""
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2434
+#: ../src/libs/print_settings.c:2448
 msgid "image area height (in current unit)"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2547
+#: ../src/libs/print_settings.c:2561
 msgid "temporary style to use while printing"
 msgstr ""
 
 #. Print button
-#: ../src/libs/print_settings.c:2584
+#: ../src/libs/print_settings.c:2598
 msgid "print"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2586
+#: ../src/libs/print_settings.c:2600
 msgid "print with current settings"
 msgstr ""
 
-#: ../src/libs/print_settings.c:3115
+#: ../src/libs/print_settings.c:3129
 msgctxt "accel"
 msgid "print"
 msgstr ""
@@ -20474,7 +20485,7 @@ msgid "soft proof"
 msgstr ""
 
 #. fail :(
-#: ../src/views/darkroom.c:821 ../src/views/print.c:320
+#: ../src/views/darkroom.c:821 ../src/views/print.c:324
 msgid "no image to open !"
 msgstr ""
 
