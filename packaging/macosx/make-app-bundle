@@ -24,7 +24,7 @@ ln -s /Applications package/
 if [ -z "$STRIPDEBUGINFO" ]
 then
 	find package/darktable.app/Contents/Resources/lib/darktable \( -name \*.dylib -or -name \*.so \) -exec dsymutil \{} \;
-	for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-generate-cache,-curve-tool,-noiseprofile}
+	for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-generate-cache}
 	do
 		dsymutil "$i"
 	done
