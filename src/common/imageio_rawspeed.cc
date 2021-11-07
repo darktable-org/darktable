@@ -22,6 +22,9 @@
 
 #include "RawSpeed-API.h"
 
+#define TYPE_FLOAT32 RawImageType::F32
+#define TYPE_USHORT16 RawImageType::UINT16
+
 #include <memory>
 
 #define __STDC_LIMIT_MACROS
@@ -317,7 +320,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         for(int i = 0; i < 6; ++i)
           for(int j = 0; j < 6; ++j)
           {
-            img->buf_dsc.xtrans[j][i] = r->cfa.getColorAt(i % 6, j % 6);
+            img->buf_dsc.xtrans[j][i] = (uint8_t)r->cfa.getColorAt(i % 6, j % 6);
           }
       }
     }
