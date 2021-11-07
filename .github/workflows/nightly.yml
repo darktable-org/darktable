@@ -216,6 +216,8 @@ jobs:
           cd gtk-mac-bundler-0.7.4
           patch -p1 < ${SRC_DIR}/packaging/macosx/gtk-mac-bundler-0.7.4.patch
           make install
+      - name: Fetch git tags for next step
+        run: git fetch --tags
       - name: Create DMG image
         env:
           PYTHONPATH: ${{ env.LENSFUN_INSTALL_PREFIX }}/lib/python3.9/site-packages/
