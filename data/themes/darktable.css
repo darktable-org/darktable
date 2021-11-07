@@ -536,16 +536,7 @@ spinbutton>button
   min-width: 1.2em;
   border: 0;
 }
-
-/* Size of control-buttons in duplicate module one */
-  /* control-buttons are: filter in collect images, filter in header toolbar and arrow in filmic */
-#iop-plugin-ui-main #control-button,
-#lib-plugin-ui-main #control-button,
-#header-toolbar #control-button
-{
-  padding: 0.14em;
-}
-
+l
 #lib-plugin-ui-main viewport
 {
   margin-left: 0.14em;
@@ -610,8 +601,9 @@ spinbutton>button
   padding: 0.56em;
 }
 
-/* Entries options in lighttable */
-#left #lib-plugin-ui #lib-collect-entry
+/* Entries options in lighttable collections module */
+#left #lib-plugin-ui #lib-collect-entry,
+#lib-dtbutton #control-button
 {
   margin-top: 0;
   margin-bottom: 0.28em;
@@ -722,6 +714,7 @@ spinbutton>button
 #filter-box
 {
   min-width: 50em;
+  padding-top: 0.28em;
 }
 
 /*-------------------
