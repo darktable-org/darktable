@@ -2959,6 +2959,34 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/print/print/top_margin</name>
+    <type min="-50" max="500">float</type>
+    <default>17</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/print/print/bottom_margin</name>
+    <type min="-50" max="500">float</type>
+    <default>17</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/print/print/left_margin</name>
+    <type min="-50" max="500">float</type>
+    <default>17</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/print/print/right_margin</name>
+    <type min="-50" max="500">float</type>
+    <default>17</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_profile_source</name>
     <type>
