@@ -3864,7 +3864,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   gtk_widget_set_name(d->edit_full_active_cb, "modulegroups_editor_setting");
   gtk_widget_set_tooltip_text(
       d->edit_full_active_cb,
-      _("show modules that are present in the history stack, regardless of whether or not they are currently enabled"))
+      _("show modules that are present in the history stack, regardless of whether or not they are currently enabled"));
       g_signal_connect(G_OBJECT(d->edit_full_active_cb), "toggled", G_CALLBACK(_manage_editor_full_active_toggle),
                        self);
   gtk_box_pack_start(GTK_BOX(vb), d->edit_full_active_cb, FALSE, TRUE, 0);
