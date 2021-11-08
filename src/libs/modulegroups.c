@@ -776,6 +776,16 @@ static uint32_t _lib_modulegroups_get_activated(dt_lib_module_t *self)
   return DT_MODULEGROUP_NONE;
 }
 
+static gboolean _is_module_in_history(dt_iop_module_t *module)
+{
+  for(const GList *hists = darktable.develop->history; hists; hists = g_list_next(hists))
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)hists->data;
+    if(hist->module == module) return TRUE;
+  }
+  return FALSE;
+}
+
 static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -900,7 +910,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         case DT_MODULEGROUP_ACTIVE_PIPE:
         {
           if(d->full_active)
-            show_module = dt_history_check_module_exists(darktable.develop->image_storage.id, module->op);
+            show_module = _is_module_in_history(module);
           else
             show_module = module->enabled;
         }
@@ -2105,10 +2115,15 @@ static void _manage_editor_save(dt_lib_module_t *self)
   const char *preset = dt_conf_get_string_const("plugins/darkroom/modulegroups_preset");
   if(g_strcmp0(preset, d->edit_preset) == 0)
   {
-    // and we update the gui
+    const int cur = d->current;
+    // we update the gui
     if(!dt_lib_presets_apply(d->edit_preset, self->plugin_name, self->version()))
       dt_lib_presets_apply((gchar *)C_("modulegroup", FALLBACK_PRESET_NAME),
                            self->plugin_name, self->version());
+
+    // and we ensure the right group is selected
+    d->current = cur;
+    _lib_modulegroups_update_iop_visibility(self);
   }
 }
 
@@ -3825,8 +3840,11 @@ static void _manage_show_window(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(vb), d->basics_chkbox, FALSE, TRUE, 0);
   d->edit_full_active_cb = gtk_check_button_new_with_label(_("show all history in active group"));
   gtk_widget_set_name(d->edit_full_active_cb, "modulegroups_editor_setting");
-  g_signal_connect(G_OBJECT(d->edit_full_active_cb), "toggled", G_CALLBACK(_manage_editor_full_active_toggle),
-                   self);
+  gtk_widget_set_tooltip_text(
+      d->edit_full_active_cb,
+      _("show modules in the history regardless of whether or not they are currently enabled"))
+      g_signal_connect(G_OBJECT(d->edit_full_active_cb), "toggled", G_CALLBACK(_manage_editor_full_active_toggle),
+                       self);
   gtk_box_pack_start(GTK_BOX(vb), d->edit_full_active_cb, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 0);
 
