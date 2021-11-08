@@ -230,7 +230,7 @@ jobs:
       - name: Check if app in bundle runs
         run: |
           ls ${MACOS_PACKAGING_DIR}/*.dmg | head -1 | xargs hdiutil attach
-          /Volumes/darktable/darktable.app/Contents/MacOS/darktable.app --version
+          /Volumes/darktable/darktable.app/Contents/MacOS/darktable --version
       - name: Publish artifacts
         uses: 'actions/upload-artifact@v2'
         with:
