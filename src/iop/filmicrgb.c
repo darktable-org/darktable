@@ -3000,12 +3000,19 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       float y = filmic_spline(value, g->spline.M1, g->spline.M2, g->spline.M3, g->spline.M4, g->spline.M5,
                               g->spline.latitude_min, g->spline.latitude_max, g->spline.type);
 
-      if(y > g->spline.y[4] + 1E-5)
+      // curve is drawn in orange when above maximum
+      // or below minimum.
+      // we use a small margin in the comparison
+      // to avoid drawing curve in orange when it
+      // is right above or right below the limit
+      // due to floating point errors
+      const float margin = 1E-5;
+      if(y > g->spline.y[4] + margin)
       {
         y = fminf(y, 1.0f);
         cairo_set_source_rgb(cr, 0.75, .5, 0.);
       }
-      else if(y < g->spline.y[0] - 1E-5)
+      else if(y < g->spline.y[0] - margin)
       {
         y = fmaxf(y, 0.f);
         cairo_set_source_rgb(cr, 0.75, .5, 0.);
