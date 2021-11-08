@@ -186,8 +186,8 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
   if (prt->pinfo == NULL)
     return;
 
-  int32_t px=0, py=0, pwidth=0, pheight=0;
-  int32_t ax=0, ay=0, awidth=0, aheight=0;
+  float px=.0f, py=.0f, pwidth=.0f, pheight=.0f;
+  float ax=.0f, ay=.0f, awidth=.0f, aheight=.0f;
 
   gboolean borderless = FALSE;
 
@@ -196,19 +196,19 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
                       &ax, &ay, &awidth, &aheight, &borderless);
 
   // page w/h
-  double pg_width  = prt->pinfo->paper.width;
-  double pg_height = prt->pinfo->paper.height;
+  float pg_width  = prt->pinfo->paper.width;
+  float pg_height = prt->pinfo->paper.height;
 
   // non-printable
-  double np_top = prt->pinfo->printer.hw_margin_top;
-  double np_left = prt->pinfo->printer.hw_margin_left;
-  double np_right = prt->pinfo->printer.hw_margin_right;
-  double np_bottom = prt->pinfo->printer.hw_margin_bottom;
+  float np_top = prt->pinfo->printer.hw_margin_top;
+  float np_left = prt->pinfo->printer.hw_margin_left;
+  float np_right = prt->pinfo->printer.hw_margin_right;
+  float np_bottom = prt->pinfo->printer.hw_margin_bottom;
 
   // handle the landscape mode if needed
   if(prt->pinfo->page.landscape)
   {
-    double tmp = pg_width;
+    float tmp = pg_width;
     pg_width = pg_height;
     pg_height = tmp;
 
@@ -220,8 +220,8 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
     np_left   = tmp;
   }
 
-  const int32_t pright = px + pwidth;
-  const int32_t pbottom = py + pheight;
+  const float pright = px + pwidth;
+  const float pbottom = py + pheight;
 
   // x page -> x display
   // (x / pg_width) * p_width + p_x
@@ -240,10 +240,10 @@ static void expose_print_page(dt_view_t *self, cairo_t *cr,
   // display non-printable area
   cairo_set_source_rgb (cr, 0.1, 0.1, 0.1);
 
-  const int np1x = px + (np_left / pg_width) * pwidth;
-  const int np1y = py + (np_top / pg_height) * pheight;
-  const int np2x = pright - (np_right / pg_width) * pwidth;
-  const int np2y = pbottom - (np_bottom / pg_height) * pheight;
+  const float np1x = px + (np_left / pg_width) * pwidth;
+  const float np1y = py + (np_top / pg_height) * pheight;
+  const float np2x = pright - (np_right / pg_width) * pwidth;
+  const float np2y = pbottom - (np_bottom / pg_height) * pheight;
 
   // top-left
   cairo_move_to (cr, np1x-10, np1y);
