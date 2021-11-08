@@ -577,8 +577,8 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
 
 void dt_get_print_layout(const dt_print_info_t *prt,
                          const int32_t area_width, const int32_t area_height,
-                         int32_t *px, int32_t *py, int32_t *pwidth, int32_t *pheight,
-                         int32_t *ax, int32_t *ay, int32_t *awidth, int32_t *aheight,
+                         float *px, float *py, float *pwidth, float *pheight,
+                         float *ax, float *ay, float *awidth, float *aheight,
                          gboolean *borderless)
 {
   /* this is where the layout is done for the display and for the print too. So this routine is one
@@ -619,7 +619,7 @@ void dt_get_print_layout(const dt_print_info_t *prt,
   const float pg_aspect = pg_width / pg_height;
 
   // display page
-  int32_t p_bottom, p_right;
+  float p_bottom, p_right;
 
   if(a_aspect > pg_aspect)
   {
@@ -650,10 +650,10 @@ void dt_get_print_layout(const dt_print_info_t *prt,
 
   // display picture area, that is removing the non printable areas and user's margins
 
-  const int32_t bx = *px + (border_left / pg_width) * (*pwidth);
-  const int32_t by = *py + (border_top / pg_height) * (*pheight);
-  const int32_t bb = p_bottom - (border_bottom / pg_height) * (*pheight);
-  const int32_t br = p_right - (border_right / pg_width) * (*pwidth);
+  const float bx = *px + (border_left / pg_width) * (*pwidth);
+  const float by = *py + (border_top / pg_height) * (*pheight);
+  const float bb = p_bottom - (border_bottom / pg_height) * (*pheight);
+  const float br = p_right - (border_right / pg_width) * (*pwidth);
 
   *borderless = border_left   < np_left
              || border_right  < np_right

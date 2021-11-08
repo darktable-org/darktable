@@ -102,8 +102,8 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
 // there is no unit, every returned values are based on the area size.
 void dt_get_print_layout(const dt_print_info_t *prt,
                          const int32_t area_width, const int32_t area_height,
-                         int32_t *px, int32_t *py, int32_t *pwidth, int32_t *pheight,
-                         int32_t *ax, int32_t *ay, int32_t *awidth, int32_t *aheight,
+                         float *px, float *py, float *pwidth, float *pheight,
+                         float *ax, float *ay, float *awidth, float *aheight,
                          gboolean *borderless);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
