@@ -162,7 +162,6 @@ jobs:
           cd src/.ci 
           brew bundle --verbose
           brew uninstall lensfun
-          brew uninstall libheif
           brew install adwaita-icon-theme
       - name: Compile and install lensfun
         run: |
