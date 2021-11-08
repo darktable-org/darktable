@@ -3,6 +3,7 @@
   <meta>
     <prefix name="default">/usr/local</prefix>
     <prefix name="dt">/Users/runner/work/darktable/darktable/install</prefix>
+    <prefix name="lensfun">/Users/runner/work/darktable/darktable/lensfun/</prefix>
     <destination overwrite="yes">package</destination>
     <run-install-name-tool/>
     <gtk>gtk+-3.0</gtk>
