@@ -2122,7 +2122,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 static void _manage_editor_save(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  if(!d->edit_groups || !d->edit_preset) return;
+  if(!d->edit_preset) return;
 
   // get all the values
   d->edit_show_search = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->edit_search_cb));
