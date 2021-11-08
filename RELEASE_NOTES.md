@@ -192,6 +192,10 @@ You are strongly advised to take a backup first.
 - Add a borderless requirement indicator in the print module when the user's
   selected margins are below the hardware margins.
 
+- Add an option to show all modules in the history into the active
+  module group regardeless of whether or not they are currently
+  enabled.
+
 ## Bug Fixes
 
 - Multiple memory leaks have been fixed.
