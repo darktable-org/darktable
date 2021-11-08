@@ -139,6 +139,7 @@ jobs:
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
+      MACOS_PACKAGING_DIR: ${{ github.workspace }}/src/packaging/macosx
       LENSFUN_INSTALL_PREFIX: ${{ github.workspace }}/lensfun
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       #GENERATOR: Ninja
@@ -214,7 +215,7 @@ jobs:
           curl -LO https://download.gnome.org/sources/gtk-mac-bundler/0.7/gtk-mac-bundler-0.7.4.tar.xz
           tar -xf gtk-mac-bundler-0.7.4.tar.xz
           cd gtk-mac-bundler-0.7.4
-          patch -p1 < ${SRC_DIR}/packaging/macosx/gtk-mac-bundler-0.7.4.patch
+          patch -p1 < ${MACOS_PACKAGING_DIR}/gtk-mac-bundler-0.7.4.patch
           make install
       - name: Fetch git tags for next step
         run: |
@@ -226,10 +227,10 @@ jobs:
         run: |
           export PATH=$PATH:$LENSFUN_INSTALL_PREFIX/bin
           cd ${SRC_DIR}/packaging/macosx
-          ./make-app-bundle ${SRC_DIR}/packaging/macosx/darktable-nightly.bundle
+          ./make-app-bundle ${MACOS_PACKAGING_DIR}/darktable-nightly.bundle
       - name: Publish artifacts
         uses: 'actions/upload-artifact@v2'
         with:
-          name: darktable.${{ github.sha }}.macos
-          path: ${{ env.INSTALL_PREFIX }}/*
-          retention-days: 2
+          name: darktable.${{ github.sha }}-${{ matrix.build.deployment }}-${{ matrix.build.xcode }}.macos.dmg
+          path: ${{ env.MACOS_PACKAGING_DIR }}/*.dmg
+          retention-days: 7
