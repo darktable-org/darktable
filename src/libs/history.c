@@ -1150,7 +1150,7 @@ static gboolean _lib_history_button_clicked_callback(GtkWidget *widget, GdkEvent
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) return FALSE;
 
   // ctrl-click just show the corresponding module in modulegroups
-  if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
   {
     const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)g_list_nth_data(darktable.develop->history, num - 1);
