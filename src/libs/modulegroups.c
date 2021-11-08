@@ -2700,7 +2700,10 @@ static gboolean _manage_direct_active_popup(GtkWidget *widget, GdkEventButton *e
     GtkWidget *pop = gtk_menu_new();
     gtk_widget_set_name(pop, "modulegroups-popup");
 
-    GtkWidget *smt = gtk_check_menu_item_new_with_label(_("show all module in history"));
+    GtkWidget *smt = gtk_check_menu_item_new_with_label(_("show all history modules"));
+    gtk_widget_set_tooltip_text(
+        smt,
+        _("show modules that are present in the history stack, regardless of whether or not they are currently enabled"));
     gtk_widget_set_name(smt, "modulegroups-popup-item");
     gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(smt), d->full_active);
     g_signal_connect(G_OBJECT(smt), "toggled", G_CALLBACK(_manage_direct_full_active_toggled), self);
@@ -3860,7 +3863,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   gtk_widget_set_name(d->basics_chkbox, "modulegroups_editor_setting");
   g_signal_connect(G_OBJECT(d->basics_chkbox), "toggled", G_CALLBACK(_manage_editor_basics_toggle), self);
   gtk_box_pack_start(GTK_BOX(vb), d->basics_chkbox, FALSE, TRUE, 0);
-  d->edit_full_active_cb = gtk_check_button_new_with_label(_("show all history in active group"));
+  d->edit_full_active_cb = gtk_check_button_new_with_label(_("show all history modules in active group"));
   gtk_widget_set_name(d->edit_full_active_cb, "modulegroups_editor_setting");
   gtk_widget_set_tooltip_text(
       d->edit_full_active_cb,
