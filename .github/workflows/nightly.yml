@@ -194,7 +194,7 @@ jobs:
           find ${INSTALL_PREFIX}/bin/ -type f | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
           find ${INSTALL_PREFIX} -type f -name "*.dylib" | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
           find ${INSTALL_PREFIX} -type f -name "*.so" | xargs -n 1 sudo install_name_tool -change liblensfun.1.dylib $LENSFUN_INSTALL_PREFIX/lib/liblensfun.1.dylib
-      - name: Check if it runs
+      - name: Check if compiled binary runs
         run: |
           otool -L ${INSTALL_PREFIX}/bin/darktable
           ${INSTALL_PREFIX}/bin/darktable --version || true
@@ -225,8 +225,13 @@ jobs:
           PYTHONPATH: ${{ env.LENSFUN_INSTALL_PREFIX }}/lib/python3.9/site-packages/
         run: |
           export PATH=$PATH:$LENSFUN_INSTALL_PREFIX/bin
-          cd ${SRC_DIR}/packaging/macosx
-          ./make-app-bundle ${MACOS_PACKAGING_DIR}/darktable-nightly.bundle
+          cd ${MACOS_PACKAGING_DIR}
+          ./make-app-bundle ./darktable-nightly.bundle
+      - name: Check if app in bundle runs
+        run: |
+          ls ${MACOS_PACKAGING_DIR}/*.dmg | head -1 | xargs hdiutil attach
+          /Volumes/darktable/darktable.app/Contents/MacOS
+          ./darktable.app --version || true
       - name: Publish artifacts
         uses: 'actions/upload-artifact@v2'
         with:
