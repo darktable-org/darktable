@@ -378,6 +378,9 @@ inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_p
 // convert parameters from spline v1 or v2 to spline v3
 static inline void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
 {
+  if(n->spline_version == DT_FILMIC_SPLINE_VERSION_V3)
+    return;
+
   dt_iop_filmic_rgb_spline_t spline;
   dt_iop_filmic_rgb_compute_spline(n, &spline);
   
