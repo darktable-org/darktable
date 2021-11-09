@@ -613,7 +613,7 @@ void dt_get_print_layout(const dt_print_info_t *prt,
   }
 
   // the image area aspect
-  const float a_aspect = (double)area_width / (double)area_height;
+  const float a_aspect = (float)area_width / (float)area_height;
 
   // page aspect
   const float pg_aspect = pg_width / pg_height;
