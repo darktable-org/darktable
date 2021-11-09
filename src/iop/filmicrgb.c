@@ -425,6 +425,14 @@ static inline void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
   else
     balance = -0.5f * (1.0f - fmaxf(grey_display - toe_display, 0.0f) / fmaxf(grey_display - toe_display_ref, 1E-5f));
 
+  if(n->spline_version == DT_FILMIC_SPLINE_VERSION_V1)
+  {
+    // black and white point need to be updated as well,
+    // as code path for v3 will raise them to power 1.0f / hardness,
+    // while code path for v1 did not.
+    n->black_point_target = powf(black_display, hardness) * 100.0f;
+    n->white_point_target = powf(white_display, hardness) * 100.0f;
+  }
   n->latitude = latitude * 100.0f;
   n->contrast = contrast;
   n->balance = balance * 100.0f;
