@@ -387,18 +387,33 @@ static inline void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
   float shoulder_log = fmaxf(spline.x[3], grey_log);
   float black_display = spline.y[0];
   float grey_display = spline.y[2];
+  float white_display = spline.y[4];
+  const float scaled_safety_margin = SAFETY_MARGIN * (white_display - black_display);
   float toe_display = fminf(spline.y[1], grey_display);
   float shoulder_display = fmaxf(spline.y[3], grey_display);
-  float white_display = spline.y[4];
+
   float hardness = n->output_power;
-  // latitude is the % of the segment [b+safety*(w-b),w-safety*(w-b)] which is covered, where b is black_display and w white_display
-  const float latitude = CLAMP((shoulder_display - toe_display) / ((white_display - black_display) * (1.0f - 2.0f * SAFETY_MARGIN)), 0.0f, 0.99f);
-  // for contrast, revert contrast adaptation that will be performed in dt_iop_filmic_rgb_compute_spline
   float contrast = (shoulder_display - toe_display) / (shoulder_log - toe_log);
+  // sanitize toe and shoulder, for min and max values, while keeping the same contrast
+  float linear_intercept = grey_display - (contrast * grey_log);
+  if(toe_display < black_display + scaled_safety_margin)
+  {
+    toe_display = black_display + scaled_safety_margin;
+    // compute toe_log to keep same slope
+    toe_log = (toe_display - linear_intercept) / contrast;
+  }
+  if(shoulder_display > white_display - scaled_safety_margin)
+  {
+    shoulder_display = white_display - scaled_safety_margin;
+    // compute shoulder_log to keep same slope
+    shoulder_log = (shoulder_display - linear_intercept) / contrast;
+  }
+  // revert contrast adaptation that will be performed in dt_iop_filmic_rgb_compute_spline
   contrast *= 8.0f / (n->white_point_source - n->black_point_source);
   contrast *= hardness * powf(grey_display, hardness-1.0f);
+  // latitude is the % of the segment [b+safety*(w-b),w-safety*(w-b)] which is covered, where b is black_display and w white_display
+  const float latitude = CLAMP((shoulder_display - toe_display) / ((white_display - black_display) - 2.0f * scaled_safety_margin), 0.0f, 0.99f);
   // find balance
-  const float scaled_safety_margin = SAFETY_MARGIN * (white_display - black_display);
   float toe_display_ref = latitude * (black_display + scaled_safety_margin) + (1.0f - latitude) * grey_display;
   float shoulder_display_ref = latitude * (white_display - scaled_safety_margin) + (1.0f - latitude) * grey_display;
   float balance;
