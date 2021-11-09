@@ -372,6 +372,47 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+inline static gboolean dt_iop_filmic_rgb_compute_spline(const dt_iop_filmicrgb_params_t *const p,
+                                                    struct dt_iop_filmic_rgb_spline_t *const spline);
+
+// convert parameters from spline v1 or v2 to spline v3
+static inline void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
+{
+  dt_iop_filmic_rgb_spline_t spline;
+  dt_iop_filmic_rgb_compute_spline(n, &spline);
+  
+  // from the spline, compute new values for contrast, balance, and latitude to update spline_version to v3
+  float grey_log = spline.x[2];
+  float toe_log = fminf(spline.x[1], grey_log);
+  float shoulder_log = fmaxf(spline.x[3], grey_log);
+  float black_display = spline.y[0];
+  float grey_display = spline.y[2];
+  float toe_display = fminf(spline.y[1], grey_display);
+  float shoulder_display = fmaxf(spline.y[3], grey_display);
+  float white_display = spline.y[4];
+  float hardness = n->output_power;
+  // latitude is the % of the segment [b+safety*(w-b),w-safety*(w-b)] which is covered, where b is black_display and w white_display
+  const float latitude = CLAMP((shoulder_display - toe_display) / ((white_display - black_display) * (1.0f - 2.0f * SAFETY_MARGIN)), 0.0f, 0.99f);
+  // for contrast, revert contrast adaptation that will be performed in dt_iop_filmic_rgb_compute_spline
+  float contrast = (shoulder_display - toe_display) / (shoulder_log - toe_log);
+  contrast *= 8.0f / (n->white_point_source - n->black_point_source);
+  contrast *= hardness * powf(grey_display, hardness-1.0f);
+  // find balance
+  const float scaled_safety_margin = SAFETY_MARGIN * (white_display - black_display);
+  float toe_display_ref = latitude * (black_display + scaled_safety_margin) + (1.0f - latitude) * grey_display;
+  float shoulder_display_ref = latitude * (white_display - scaled_safety_margin) + (1.0f - latitude) * grey_display;
+  float balance;
+  if(shoulder_display < shoulder_display_ref)
+    balance = 0.5f * (1.0f - fmaxf(shoulder_display - grey_display, 0.0f) / fmaxf(shoulder_display_ref - grey_display, 1E-5f));
+  else
+    balance = -0.5f * (1.0f - fmaxf(grey_display - toe_display, 0.0f) / fmaxf(grey_display - toe_display_ref, 1E-5f));
+
+  n->latitude = latitude * 100.0f;
+  n->contrast = contrast;
+  n->balance = balance * 100.0f;
+  n->spline_version = DT_FILMIC_SPLINE_VERSION_V3;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
@@ -429,6 +470,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.f;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
+    convert_to_spline_v3(n);
     return 0;
   }
   if(old_version == 2 && new_version == 5)
@@ -496,6 +538,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.f;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
+    convert_to_spline_v3(n);
     return 0;
   }
   if(old_version == 3 && new_version == 5)
@@ -572,6 +615,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = d->noise_level;
     n->spline_version = DT_FILMIC_SPLINE_VERSION_V1;
     n->compensate_icc_black = FALSE;
+    convert_to_spline_v3(n);
     return 0;
   }
   if(old_version == 4 && new_version == 5)
@@ -626,11 +670,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       default:
         return 1;
     }
+    convert_to_spline_v3(n);
     return 0;
   }
   return 1;
 }
-
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(pixel:16)
