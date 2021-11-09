@@ -198,6 +198,9 @@ You are strongly advised to take a backup first.
 
 - Add a search box in preset preferences and shortcuts.
 
+- Improved curve handling in filmic. Curve should be easier to control, as
+  some side-effects of some parameters on others have been eliminated.
+
 ## Bug Fixes
 
 - Multiple memory leaks have been fixed.
