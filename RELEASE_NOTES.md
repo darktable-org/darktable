@@ -196,6 +196,8 @@ You are strongly advised to take a backup first.
   module group regardeless of whether or not they are currently
   enabled.
 
+- Add a search box in preset preferences and shortcuts.
+
 ## Bug Fixes
 
 - Multiple memory leaks have been fixed.
@@ -239,7 +241,7 @@ You are strongly advised to take a backup first.
 
 - Fix the image loader flag, which was not properly set at import time.
 
-- Add a search box in preset preferences and shortcuts.
+- Fix possible wrong setting in Color Calibration when switching from Jpeg to RAW files.
 
 ## Notes
 
