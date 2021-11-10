@@ -241,10 +241,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
         // 1.0 is at 8/9 of the height!
         const float v = (8.0f / 9.0f) * px[4U * (x + roi->crop_x) + ch];
         // Using ceilf brings everything <= 0 to bottom tone,
-        // everything > 1.0f/(num_tones-1) to top tone. Note that
-        // don't need to clamp to >= 0 as assigning a negative value
-        // to size_t (or any unsigned integer) results in 0.
-        tone[ch] = ceilf(MIN(v, 1.0f) * (num_tones-1));
+        // everything > 1.0f/(num_tones-1) to top tone.
+        tone[ch] = ceilf(CLAMPS(v, 0.0f, 1.0f) * (num_tones-1));
       }
       for(size_t ch = 0; ch < 3; ch++)
         binned[num_tones * (ch * num_bins + bin) + tone[ch]]++;
