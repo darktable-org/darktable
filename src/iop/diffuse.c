@@ -211,96 +211,97 @@ void init_presets(dt_iop_module_so_t *self)
   // deblurring presets
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
-  p.variance_threshold = +0.2f;
-
-  p.anisotropy_first = +3.f;
-  p.anisotropy_second = +6.f;
-  p.anisotropy_third = +3.f;
-  p.anisotropy_fourth = +6.f;
-
-  p.first = -0.2f;
-  p.second = +0.1f;
-  p.third = -0.05f;
-  p.fourth = +0.025f;
-
-  p.regularization = 1.5f;
-
-  p.iterations = 4;
+  p.variance_threshold = +1.f;
+  p.regularization = 3.f;
   p.radius = 8;
+
+  p.anisotropy_first = +1.f;
+  p.anisotropy_second = 0.f;
+  p.anisotropy_third = +1.f;
+  p.anisotropy_fourth = 0.f;
+
+  p.first = -0.25f;
+  p.second = +0.125f;
+  p.third = -0.50f;
+  p.fourth = +0.25f;
+
+  p.iterations = 8;
   dt_gui_presets_add_generic(_("lens deblur: soft"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  p.iterations = 6;
-  p.radius = 12;
+  p.iterations = 16;
   dt_gui_presets_add_generic(_("lens deblur: medium"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  p.iterations = 8;
-  p.radius = 16;
+  p.iterations = 32;
   dt_gui_presets_add_generic(_("lens deblur: hard"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.iterations = 10;
   p.radius = 512;
   p.sharpness = 0.f;
-  p.variance_threshold = 0.0f;
-  p.regularization = 2.f;
+  p.variance_threshold = 0.25f;
+  p.regularization = 2.5f;
 
-  p.first = -0.30f;
-  p.second = +0.15f;
+  p.first = -0.20f;
+  p.second = +0.10f;
   p.third = -0.20f;
   p.fourth = +0.10f;
 
   p.anisotropy_first = 2.f;
-  p.anisotropy_second = 4.f;
+  p.anisotropy_second = 0.f;
   p.anisotropy_third = 2.f;
-  p.anisotropy_fourth = 4.f;
+  p.anisotropy_fourth = 0.f;
 
   dt_gui_presets_add_generic(_("dehaze"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
-  p.iterations = 5;
-  p.radius = 5;
+  p.iterations = 32;
   p.sharpness = 0.f;
   p.threshold = 0.f;
   p.variance_threshold = -0.25f;
   p.regularization = 4.f;
 
-  p.anisotropy_first = -5.f;
-  p.anisotropy_second = +5.f;
-  p.anisotropy_third = -5.f;
-  p.anisotropy_fourth = +5.f;
-
-  p.first = -0.25f;
-  p.second = +0.50f;
-  p.third = -0.05f;
-  p.fourth = +0.10f;
-  dt_gui_presets_add_generic(_("denoise: soft"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
-
-  p.iterations = 100;
-  p.radius = 8;
-  p.sharpness = 0.f;
-  p.threshold = 0.f;
-  p.variance_threshold = -0.25f;
-  p.regularization = 1.f;
-
-  p.anisotropy_first = 0.f;
+  p.anisotropy_first = +2.f;
   p.anisotropy_second = 0.f;
-  p.anisotropy_third = 0.f;
-  p.anisotropy_fourth = +5.f;
+  p.anisotropy_third = +2.f;
+  p.anisotropy_fourth = 0.f;
 
-  p.first = -0.02f;
-  p.second = 0.0f;
-  p.third = 0.0f;
-  p.fourth = +0.05f;
-  dt_gui_presets_add_generic(_("denoise: hard (slow)"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+  p.radius = 1;
+  p.radius_center = 2;
+
+  p.first = +0.06f;
+  p.second = 0.f;
+  p.third = +0.06f;
+  p.fourth = 0.f;
+  dt_gui_presets_add_generic(_("denoise: fine"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.radius = 3;
+  p.radius_center = 4;
+
+  p.first = +0.05f;
+  p.second = 0.f;
+  p.third = +0.05f;
+  p.fourth = 0.f;
+  dt_gui_presets_add_generic(_("denoise: medium"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.radius = 6;
+  p.radius_center = 8;
+
+  p.first = +0.04f;
+  p.second = 0.f;
+  p.third = +0.04f;
+  p.fourth = 0.f;
+  dt_gui_presets_add_generic(_("denoise: coarse"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
+
+  p.radius_center = 0;
 
   p.iterations = 2;
   p.radius = 32;
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
   p.variance_threshold = 0.f;
-  p.regularization = 3.f;
+  p.regularization = 4.f;
 
   p.anisotropy_first = +4.f;
   p.anisotropy_second = +4.f;
@@ -362,7 +363,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.regularization = 2.f;
 
   p.anisotropy_first = 0.f;
-  p.anisotropy_second = +4.f;
+  p.anisotropy_second = 0.f;
   p.anisotropy_third = +4.f;
   p.anisotropy_fourth = +4.f;
 
@@ -393,22 +394,22 @@ void init_presets(dt_iop_module_so_t *self)
   // local contrast
   p.sharpness = 0.0f;
   p.threshold = 0.0f;
-  p.variance_threshold = 0.f;
+  p.variance_threshold = 1.f;
 
-  p.anisotropy_first = 0.f;
+  p.anisotropy_first = -2.5f;
   p.anisotropy_second = 0.f;
   p.anisotropy_third = 0.f;
-  p.anisotropy_fourth = 0.f;
+  p.anisotropy_fourth = -2.5f;
 
-  p.first = -0.5f;
+  p.first = -0.50f;
   p.second = 0.f;
   p.third = 0.f;
-  p.fourth = -0.5f;
+  p.fourth = -0.50f;
 
-  p.iterations = 1;
-  p.radius = 512;
+  p.iterations = 10;
+  p.radius = 384;
   p.radius_center = 512;
-  p.regularization = 0.5f;
+  p.regularization = 1.f;
   dt_gui_presets_add_generic(_("add local contrast"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
 
