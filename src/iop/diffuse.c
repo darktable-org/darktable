@@ -809,7 +809,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         // Prevents large scale halos when deblurring.
         for_each_channel(c, aligned(variance))
         {
-          variance[c] = variance_threshold + sqrtf(variance[c] * regularization_factor);
+          variance[c] = variance_threshold + variance[c] * regularization_factor;
         }
         // compute the update
         dt_aligned_pixel_t acc = { 0.f };

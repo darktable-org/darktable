@@ -311,7 +311,7 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     // This allows to keep the scene-referred variance roughly constant
     // regardless of the wavelet scale where we compute it.
     // Prevents large scale halos when deblurring.
-    variance = variance_threshold + native_sqrt(variance * regularization_factor);
+    variance = variance_threshold + variance * regularization_factor;
 
     // compute the update
     float4 acc = (float4)0.f;
