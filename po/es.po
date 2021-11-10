@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-08 10:20-0600\n"
-"PO-Revision-Date: 2021-11-09 23:25-0600\n"
+"PO-Revision-Date: 2021-11-10 15:04-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1035,9 +1035,8 @@ msgid "cpu / gpu / memory"
 msgstr "cpu/gpu/memoria"
 
 #: ../build/bin/preferences_gen.h:5964
-#, fuzzy
 msgid "memory in MB to use for thumbnail cache"
-msgstr "Memoria en megabytes para usar en la caché de las miniaturas"
+msgstr "Memoria en MB que se utilizará para la caché de miniaturas"
 
 #: ../build/bin/preferences_gen.h:5987
 msgid ""
@@ -1617,19 +1616,17 @@ msgstr ""
 "desconcertante. Es necesario reiniciar darktable."
 
 #: ../build/bin/preferences_gen.h:7611
-#, fuzzy
 msgid "shortcuts with multiple instances"
 msgstr "atajos de teclado con varios duplicados del módulo"
 
 #: ../build/bin/preferences_gen.h:7616
-#, fuzzy
 msgid ""
 "where multiple module instances are present, these preferences control rules "
 "that are applied (in order) to decide which module instance shortcuts will be "
 "applied to"
 msgstr ""
 "Cuando hay módulos duplicados, estas preferencias controlarán las reglas y el "
-"orden, y determinará a qué módulo se le aplicarán los atajos de teclado."
+"orden para determinar a qué módulo se le aplicarán los atajos de teclado."
 
 #: ../build/bin/preferences_gen.h:7632
 msgid "prefer expanded instances"
@@ -3451,15 +3448,13 @@ msgstr "enfoque"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:129
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:252
-#, fuzzy
 msgid "max radius"
-msgstr "radio"
+msgstr "radio máximo"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:135
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:256
-#, fuzzy
 msgid "edge sensitivity"
-msgstr "sensibilidad"
+msgstr "sensibilidad a los bordes"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:147
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:264
@@ -3483,9 +3478,8 @@ msgstr "4º orden de anisotropía"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:171
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:280
-#, fuzzy
 msgid "luminance masking threshold"
-msgstr "rangos de luminancia"
+msgstr "umbral en la máscara de luminancia"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
@@ -5602,9 +5596,10 @@ msgid "noiseprofile file `%s' is not valid"
 msgstr "Archivo de perfil de ruido «%s» no es válido"
 
 #: ../src/common/opencl.c:815
-#, fuzzy
 msgid "due to a slow GPU hardware acceleration via opencl has been de-activated"
-msgstr "desactivado debido a una aceleración lenta de GPU vía opencl."
+msgstr ""
+"Debido al lento comportamiento de la GPU para la aceleración vía OpenCl, el "
+"hardware se ha desactivado."
 
 #: ../src/common/opencl.c:822
 #, fuzzy
@@ -5992,12 +5987,12 @@ msgstr "hora y tiempo de la base de datos"
 
 #: ../src/control/crawler.c:639
 msgid "newest"
-msgstr ""
+msgstr "más nuevo"
 
 #: ../src/control/crawler.c:644
 #, fuzzy
 msgid "time difference"
-msgstr "modo : diferencia"
+msgstr "diferencia de horario"
 
 #: ../src/control/crawler.c:654
 msgid "updated xmp sidecar files found"
@@ -8426,7 +8421,6 @@ msgid "apply on new instance"
 msgstr "nuevo módulo"
 
 #: ../src/gui/accelerators.c:448
-#, fuzzy
 msgid "unknown driver"
 msgstr "Controlador desconocido"
 
@@ -8470,9 +8464,8 @@ msgid "relative instance"
 msgstr "Última instancia"
 
 #: ../src/gui/accelerators.c:588 ../src/gui/accelerators.c:2061
-#, fuzzy
 msgid "speed"
-msgstr "RawSpeed"
+msgstr "velocidad"
 
 #: ../src/gui/accelerators.c:641
 msgid ""
@@ -8570,7 +8563,7 @@ msgstr "Basado en la pantalla"
 
 #: ../src/gui/accelerators.c:1066
 msgid "second"
-msgstr ""
+msgstr "segundo"
 
 #: ../src/gui/accelerators.c:1067
 #, fuzzy
@@ -8578,9 +8571,8 @@ msgid "last but one"
 msgstr "Última instancia"
 
 #: ../src/gui/accelerators.c:1206 ../src/gui/accelerators.c:1260
-#, fuzzy
 msgid "(unchanged)"
-msgstr "<dejar sin cambios>"
+msgstr "(sin cambios)"
 
 #: ../src/gui/accelerators.c:1355
 msgid ""
@@ -8967,9 +8959,8 @@ msgid "reinitialise input devices"
 msgstr ""
 
 #: ../src/gui/gtk.c:1339
-#, fuzzy
 msgid "toggle focus-peaking mode"
-msgstr "activar o desactivar detección de máximo enfoque"
+msgstr "Activar o desactivar detección de máximo enfoque"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1344
@@ -9514,17 +9505,13 @@ msgstr "Pulsar para guardar y aplicar los cambios CSS hechos en el editor"
 
 #. load default text with some pointers
 #: ../src/gui/preferences.c:457
-#, fuzzy
 msgid "ERROR Loading user.css"
-msgstr "/* ERROR al cargar usuario.css */"
+msgstr "ERROR al cargar user.css"
 
 #. load default text
 #: ../src/gui/preferences.c:466
-#, fuzzy
 msgid "Enter CSS theme tweaks here"
-msgstr ""
-"/* Incorpore las modificaciones al tema CSS aquí */\n"
-"\n"
+msgstr "Incorpore las modificaciones al tema CSS aquí."
 
 #: ../src/gui/preferences.c:502
 msgid "darktable preferences"
@@ -11557,7 +11544,7 @@ msgstr "seleccionar color del marco de la imagen"
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:82
 msgid "raw chromatic aberrations"
-msgstr "aberración cromática raw"
+msgstr "aberración cromática (raw)"
 
 #: ../src/iop/cacorrect.c:87
 msgid "correct chromatic aberrations for Bayer sensors"
@@ -13062,7 +13049,6 @@ msgstr "tamaño de la cuadrícula"
 
 #: ../src/iop/colorbalancergb.c:1873 ../src/iop/colorbalancergb.c:1877
 #: ../src/iop/colorbalancergb.c:1881
-#, fuzzy
 msgid "lift"
 msgstr "realce"
 
@@ -13803,15 +13789,15 @@ msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "«%s» matriz de color no encontrada para la imagen 4bayer"
 
 #: ../src/iop/demosaic.c:5769
-#, fuzzy
 msgid ""
 "bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
 "LMMSE is suited best for high ISO images.\n"
 "dual demosaicers double processing time."
 msgstr ""
-"Para los sensores tipo Bayer, los métodos de interpolación cromática PPG y RCD "
-"son rápidos; AMaZE es lento.\n"
+"Para los sensores tipo Bayer, los métodos de interpolación cromática rápidos son "
+"PPG y RCD y los lentos son AMaZE y LMMSE.\n"
+"LMMSE es el más adecuado para imágenes con ISO alto.\n"
 "El tiempo de procesado se duplica con la interpolación cromática dual."
 
 #: ../src/iop/demosaic.c:5773
@@ -13825,7 +13811,6 @@ msgstr ""
 "El tiempo de procesado se duplica con la interpolación cromática dual."
 
 #: ../src/iop/demosaic.c:5778
-#, fuzzy
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -14153,7 +14138,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:230
 msgid "lens deblur: soft"
-msgstr ""
+msgstr "desenfoque de lente: sutil"
 
 #: ../src/iop/diffuse.c:235
 #, fuzzy
@@ -14162,7 +14147,7 @@ msgstr "curva de tono: contraste medio"
 
 #: ../src/iop/diffuse.c:240
 msgid "lens deblur: hard"
-msgstr ""
+msgstr "desenfoque de lente: notable"
 
 #: ../src/iop/diffuse.c:259
 msgid "dehaze"
@@ -14211,9 +14196,8 @@ msgstr ""
 "la RAM"
 
 #: ../src/iop/diffuse.c:1447
-#, fuzzy
 msgid "diffusion properties"
-msgstr "propiedades adicionales"
+msgstr "propiedades de difusión"
 
 #: ../src/iop/diffuse.c:1451
 msgid ""
@@ -14269,9 +14253,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/diffuse.c:1510
-#, fuzzy
 msgid "diffusion directionality"
-msgstr "opacidad"
+msgstr "direccionalidad de la dispersión"
 
 #: ../src/iop/diffuse.c:1517 ../src/iop/diffuse.c:1527 ../src/iop/diffuse.c:1537
 #: ../src/iop/diffuse.c:1547
@@ -14283,9 +14266,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/diffuse.c:1552
-#, fuzzy
 msgid "edges management"
-msgstr "verde / magenta"
+msgstr "configuración de los bordes"
 
 #: ../src/iop/diffuse.c:1558
 msgid "increase or decrease the sharpness of the highest frequencies"
@@ -14307,9 +14289,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/diffuse.c:1574
-#, fuzzy
 msgid "diffusion spatiality"
-msgstr "opacidad"
+msgstr "extensión espacial"
 
 #: ../src/iop/diffuse.c:1580
 msgid ""
@@ -17770,7 +17751,7 @@ msgid ""
 "the magic wand will auto-adjust the contrast"
 msgstr ""
 "Úsese para contrarrestar el efecto promedio del filtro guiado\n"
-"y dilatar el contraste de la máscara alrededor de -4 EV\n"
+"y dilatar el contraste de la máscara alrededor de -4 EV.\n"
 "Permite extender el histograma de exposición a más canales.\n"
 "Ofrece un mejor control sobre la corrección de exposición."
 
@@ -18087,14 +18068,13 @@ msgid "the count of seconds before actually doing a capture"
 msgstr "Cuenta regresiva en segundos antes de hacer una captura"
 
 #: ../src/libs/camera.c:482
-#, fuzzy
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion sequences"
 msgstr ""
 "Número de disparos en secuencia.\n"
-"Puede utilizarse en conjunto con el modo diferido para crear animación cuadro "
-"por cuadro"
+"Puede utilizarse en conjunto con el modo diferido para crear una animación "
+"cuadro por cuadro."
 
 #: ../src/libs/camera.c:485
 #, fuzzy
@@ -18104,14 +18084,13 @@ msgid ""
 msgstr "Cantidad de capturas en el ahorquillado; cantidad = (posiciones*2)+1."
 
 #: ../src/libs/camera.c:487
-#, fuzzy
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets"
 msgstr ""
 "Número de incrementos por toma. Los incrementos son configurables en la cámara y "
-"normalmente son tres incrementos por paso.\n"
+"usualmente son 3 incrementos por paso.\n"
 "Es decir, 3 incrementos son 1 EV de exposición de diferencia entre disparos."
 
 #. user specified properties
@@ -18213,12 +18192,14 @@ msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "Utilice <, <=, >, >=, <>, =, [;] como operadores"
 
 #: ../src/libs/collect.c:2104
-#, fuzzy
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
 "rejected images: -1"
-msgstr "Utilice <, <=, >, >=, <>, =, [;] como operadores"
+msgstr ""
+"Utilice <, <=, >, >=, <>, =, [;] como operadores.\n"
+"Para puntuar imágenes: 0-5\n"
+"Para rechazar imágenes: -1"
 
 #: ../src/libs/collect.c:2111
 msgid ""
@@ -18417,13 +18398,12 @@ msgid "select which color mode to use"
 msgstr "Pulse para alternar los modos de color de los controles deslizantes"
 
 #: ../src/libs/colorpicker.c:595
-#, fuzzy
 msgid ""
 "turn on color picker\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
-"Activar el selector de color\n"
-"Pulse Ctrl+Clic para seleccionar un área"
+"Activar el selector de color.\n"
+"Pulse Ctrl+Clic o el botón secundario para seleccionar un área."
 
 #. Adding the live samples section
 #: ../src/libs/colorpicker.c:638
@@ -21697,11 +21677,8 @@ msgid "colorlabels"
 msgstr "marcas de color"
 
 #: ../src/libs/tools/colorlabels.c:85
-#, fuzzy
 msgid "toggle color label of selected images"
-msgstr ""
-"Poner/quitar marca roja\n"
-"de las imágenes seleccionadas"
+msgstr "Poner/quitar marcas de color de las imágenes seleccionadas"
 
 #: ../src/libs/tools/darktable.c:285
 #, c-format
