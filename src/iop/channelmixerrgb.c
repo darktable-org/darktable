@@ -3486,7 +3486,8 @@ void reload_defaults(dt_iop_module_t *module)
     if(dt_image_is_matrix_correction_supported(img))
     {
       if(dt_bauhaus_combobox_length(g->illuminant) < DT_ILLUMINANT_CAMERA + 1)
-        dt_bauhaus_combobox_add(g->illuminant, _("as shot in camera"));
+        dt_bauhaus_combobox_add_full(g->illuminant, _("as shot in camera"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                                     GINT_TO_POINTER(DT_ILLUMINANT_CAMERA), NULL, TRUE);
     }
     else
       dt_bauhaus_combobox_remove_at(g->illuminant, DT_ILLUMINANT_CAMERA);
