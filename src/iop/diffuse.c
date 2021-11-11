@@ -423,13 +423,13 @@ void init_presets(dt_iop_module_so_t *self)
 
   p.anisotropy_first = +0.f;
   p.anisotropy_second = +0.f;
-  p.anisotropy_third = +2.f;
+  p.anisotropy_third = +0.f;
   p.anisotropy_fourth = +2.f;
 
   p.first = +0.0f;
   p.second = +0.0f;
-  p.third = +0.02f;
-  p.fourth = +0.02f;
+  p.third = +0.0f;
+  p.fourth = +0.5f;
   dt_gui_presets_add_generic(_("inpaint highlights"), self->op, self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
