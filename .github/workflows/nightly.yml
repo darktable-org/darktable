@@ -183,7 +183,7 @@ jobs:
         env:
           LENSFUN_INCLUDE_DIR: ${{ env.LENSFUN_INSTALL_PREFIX }}/include/lensfun
           LENSFUN_LIB_DIR: ${{ env.LENSFUN_INSTALL_PREFIX }}/lib
-          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
+          ECO: -DCMAKE_C_FLAGS=-march=x86-64 -DCMAKE_CXX_FLAGS=-march=x86-64
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
