@@ -137,13 +137,13 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.build.deployment }}
       CXXFLAGS: -stdlib=libc++
       OBJCXXFLAGS: -stdlib=libc++
+      ECO: ${{ matrix.eco }}
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
       MACOS_PACKAGING_DIR: ${{ github.workspace }}/src/packaging/macosx
       LENSFUN_INSTALL_PREFIX: ${{ github.workspace }}/lensfun
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      #GENERATOR: Ninja
       GENERATOR: Unix Makefiles
       TARGET: ${{ matrix.target }}
     steps:
