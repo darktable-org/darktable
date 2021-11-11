@@ -37,9 +37,15 @@ You are strongly advised to take a backup first.
   Please note that any shortcuts you have previously created are not transferred
   to the new functionality and will need to be redefined in darktable 3.8.
 
-- New diffuse and sharpen module.
+- New diffuse and sharpen module, allowing to simulate or to revert diffusion
+  processes to reconstruct images from lens blur, hazing, sensor low-pass filter, or
+  noise. It can also be used to simulate watercolour smudges, increase local contrast, simulate blooming or apply surface blur. Special rules can be defined
+  to specifically diffuse across or along edges, as well as to avoid sharpening or
+  blurring them.
 
-- New scene-referred blurs module.
+- New scene-referred blurs module, to synthesize motion and lens blurs in a parametric
+  and physically-accurate way. It lets you define the motion path or the lens
+  diaphragm and then generates the corresponding blur.
 
 - Perspective correction module has been renamed to rotate and perspective
   and now allows you to manually define correction settings by drawing lines
