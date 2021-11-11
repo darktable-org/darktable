@@ -127,6 +127,7 @@ jobs:
         compiler:
           - { compiler: XCode,   CC: cc, CXX: c++ }
         btype: [ RelWithDebInfo ]
+        eco: [-DBINARY_PACKAGE_BUILD=ON]
         target:
           - skiptest
     env:
@@ -183,7 +184,6 @@ jobs:
         env:
           LENSFUN_INCLUDE_DIR: ${{ env.LENSFUN_INSTALL_PREFIX }}/include/lensfun
           LENSFUN_LIB_DIR: ${{ env.LENSFUN_INSTALL_PREFIX }}/lib
-          ECO: -DCMAKE_C_FLAGS=-march=x86-64 -DCMAKE_CXX_FLAGS=-march=x86-64
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
