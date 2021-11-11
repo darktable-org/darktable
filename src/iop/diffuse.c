@@ -55,7 +55,7 @@ typedef struct dt_iop_diffuse_params_t
   // global parameters
   int iterations;           // $MIN: 1   $MAX: 128   $DEFAULT: 1  $DESCRIPTION: "iterations"
   float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
-  int radius;               // $MIN: 1   $MAX: 512   $DEFAULT: 8  $DESCRIPTION: "max radius"
+  int radius;               // $MIN: 1   $MAX: 512   $DEFAULT: 8  $DESCRIPTION: "radius span"
   float regularization;     // $MIN: 0. $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
   float variance_threshold; // $MIN: -2. $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
 
@@ -1453,14 +1453,6 @@ void gui_init(struct dt_iop_module_t *self)
                                 "this is analogous to giving more time to the diffusion reaction.\n"
                                 "if you plan on sharpening or inpainting, more iterations help reconstruction."));
 
-  g->radius = dt_bauhaus_slider_from_params(self, "radius");
-  dt_bauhaus_slider_set_format(g->radius, "%.0f px");
-  gtk_widget_set_tooltip_text(
-      g->radius, _("maximal scale of the diffusion.\n"
-                   "high values diffuse farther, at the expense of computation time.\n"
-                   "low values diffuse closer.\n"
-                   "if you plan on denoising, the radius should be around the width of your lens blur."));
-
   g->radius_center = dt_bauhaus_slider_from_params(self, "radius_center");
   dt_bauhaus_slider_set_format(g->radius_center, "%.0f px");
   gtk_widget_set_tooltip_text(
@@ -1469,6 +1461,14 @@ void gui_init(struct dt_iop_module_t *self)
                           "non-zero defines the size of the details to diffuse heavily.\n"
                           "for deblurring and denoising, set to zero.\n"
                           "increase to act on local contrast instead."));
+
+  g->radius = dt_bauhaus_slider_from_params(self, "radius");
+  dt_bauhaus_slider_set_format(g->radius, "%.0f px");
+  gtk_widget_set_tooltip_text(
+      g->radius, _("width of the diffusion around the center radius.\n"
+                   "high values diffuse on a large band of radii.\n"
+                   "low values diffuse closer to the center radius.\n"
+                   "if you plan on deblurring, the radius should be around the width of your lens blur."));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion speed")), FALSE, FALSE, 0);
 
