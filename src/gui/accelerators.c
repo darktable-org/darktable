@@ -548,7 +548,7 @@ static gchar *_action_description(dt_shortcut_t *s, int components)
   if(components == 2)
   {
     gchar *action_label = _action_full_label(s->action);
-    add_hint("%s", action_label);
+    add_hint("%s", _(action_label));
     g_free(action_label);
   }
 
@@ -564,8 +564,7 @@ static gchar *_action_description(dt_shortcut_t *s, int components)
   if(def && def->elements)
   {
     if(components && (s->element || (!def->fallbacks && def->elements->name)))
-      add_hint(", %s", def->elements[s->element].name);
-
+      add_hint(", %s", _(def->elements[s->element].name));
     if(def->elements[s->element].effects == dt_action_effect_selection
         && s->effect > DT_ACTION_EFFECT_COMBO_SEPARATOR)
     {
