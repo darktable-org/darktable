@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-10 20:10-0600\n"
-"PO-Revision-Date: 2021-11-11 21:21-0600\n"
+"PO-Revision-Date: 2021-11-11 23:21-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -15284,14 +15284,12 @@ msgid "scale into final size"
 msgstr "redimensionar al tamaño final"
 
 #: ../src/iop/flip.c:79
-#, fuzzy
 msgid "rotation|flip"
-msgstr "rotación"
+msgstr "rotación|espejar"
 
 #: ../src/iop/flip.c:105
-#, fuzzy
 msgid "flip or rotate image by step of 90 degrees"
-msgstr "Rota la imagen en múltiplos de 90 grados"
+msgstr "Se espeja la imagen o se rota en múltiplos de 90 grados."
 
 #: ../src/iop/flip.c:421 ../src/iop/flip.c:423
 msgid "autodetect"
@@ -15303,36 +15301,35 @@ msgstr "sin rotación"
 
 #: ../src/iop/flip.c:430 ../src/iop/flip.c:560
 msgid "flip horizontally"
-msgstr "girar imagen horizontalmente"
+msgstr "Espejar la imagen horizontalmente"
 
 #: ../src/iop/flip.c:434 ../src/iop/flip.c:563
 msgid "flip vertically"
-msgstr "girar imagen verticalmente"
+msgstr "Espejar la imagen verticalmente"
 
 #: ../src/iop/flip.c:438
 msgid "rotate by -90 degrees"
-msgstr "rotar -90 grados"
+msgstr "rotar -90°"
 
 #: ../src/iop/flip.c:442
 msgid "rotate by  90 degrees"
-msgstr "rotar 90 grados"
+msgstr "rotar 90°"
 
 #: ../src/iop/flip.c:446
 msgid "rotate by 180 degrees"
-msgstr "rotar 180 grados"
+msgstr "rotar 180°"
 
 #: ../src/iop/flip.c:549
-#, fuzzy
 msgid "transform"
-msgstr "Traductores:"
+msgstr "modificar"
 
 #: ../src/iop/flip.c:552
 msgid "rotate 90 degrees CCW"
-msgstr "rotar 90 grados en sentido antihorario"
+msgstr "Rotar 90° la imagen en sentido antihorario"
 
 #: ../src/iop/flip.c:556
 msgid "rotate 90 degrees CW"
-msgstr "rotar 90 grados en sentido horario"
+msgstr "Rotar 90° la imagen en sentido horario"
 
 #: ../src/iop/gamma.c:43
 msgctxt "modulename"
@@ -15496,7 +15493,6 @@ msgid "the strength of applied grain"
 msgstr "Intensidad del ruido aplicado"
 
 #: ../src/iop/grain.c:587
-#, fuzzy
 msgid ""
 "amount of mid-tones bias from the photographic paper response modeling. the "
 "greater the bias, the more pronounced the fall off of the grain in shadows "
@@ -15504,7 +15500,7 @@ msgid ""
 msgstr ""
 "La cantidad de desviación en los tonos medios de la simulación de la "
 "reacción en papel fotográfico. A mayor sesgo, más pronunciada es la caída "
-"del grano en las sombras y en las luces"
+"del grano en las sombras y en las luces."
 
 #: ../src/iop/hazeremoval.c:99
 msgid "haze removal"
@@ -16548,16 +16544,15 @@ msgstr ""
 "y recupera el contraste. Usa un gramaje alto para una alto valor en D. máx."
 
 #: ../src/iop/negadoctor.c:976
-#, fuzzy
 msgid ""
 "gradually compress specular highlights past this value\n"
 "to avoid clipping while pushing the exposure for mid-tones.\n"
 "this somewhat reproduces the behaviour of matte paper."
 msgstr ""
-"Comprime gradualmente las luces reflectantes más allá de este valor\n"
-"para evitar el recorte mientras se mueve la exposición hacia los tonos "
-"medios.\n"
-"Reproduce de alguna manera el comportamiento del papel mate."
+"Al superar este valor, se comprimen gradualmente las luces reflectantes \n"
+"mientras se mueve la exposición hacia los tonos medios, para evitar el "
+"recorte .\n"
+"De cierta manera, se reproduce el comportamiento del papel mate."
 
 #: ../src/iop/negadoctor.c:980
 msgid "virtual print emulation"
