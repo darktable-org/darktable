@@ -1,0 +1,33 @@
+name: CI
+
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  LIBRAW_GIT: https://github.com/LibRaw/LibRaw.git
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        libraw_ref: ['0.20.2', 'master']
+    
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - run: git clone $LIBRAW_GIT -b ${{ matrix.libraw_ref }}
+      name: Clone LibRaw
+
+    - run: |
+        mkdir build
+        cd build
+        cmake -DENABLE_OPENMP=OFF -DLIBRAW_PATH=$(pwd)/../LibRaw ..
+        cmake --build .
+      name: Build LibRaw

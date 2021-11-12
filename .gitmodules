@@ -14,3 +14,6 @@
 [submodule "src/tests/integration"]
 	path = src/tests/integration
 	url = https://github.com/darktable-org/darktable-tests.git
+[submodule "src/external/LibRaw"]
+	path = src/external/LibRaw
+	url = https://github.com/LibRaw/LibRaw.git
