@@ -5,6 +5,7 @@ include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
 include(CheckCXXSymbolExists)
 
+
 #
 # Add files for libdarktable
 #
@@ -382,14 +383,17 @@ if(USE_HEIF)
   endif()
 endif()
 
+#  For now we use the LibRaw submodule
 if (USE_LIBRAW)
-    find_package(libraw 0.20.2)
-    if (libraw_FOUND)
-        list(APPEND LIBS ${libraw_LIBRARY})
-        add_definitions(-DHAVE_LIBRAW=1)
-        list(APPEND SOURCES "common/imageio_libraw.c")
-        set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} libraw CACHE INTERNAL "")
-    endif()
+#    find_package(libraw 0.20.2)
+#    if (libraw_FOUND)
+#        list(APPEND LIBS ${libraw_LIBRARY})
+#        add_definitions(-DHAVE_LIBRAW=1)
+#        list(APPEND SOURCES "common/imageio_libraw.c")
+#        set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} libraw CACHE INTERNAL "")
+#    endif()
+   add_definitions(-DHAVE_LIBRAW=1)
+   list(APPEND SOURCES "common/imageio_libraw.c")
 endif()
 
 if(USE_LENSFUN)
@@ -432,6 +436,10 @@ if (USE_ISOBMFF)
     # This must be manually enabled during exiv2 build and can be checked with
     # the EXV_ENABLE_BMFF symbol.
     check_cxx_symbol_exists(EXV_ENABLE_BMFF "exiv2/exiv2.hpp" HAVE_EXV_ENABLE_BMFF)
+    # ??? This needs fix as we bypass the check for actual exiv2 version
+    if(APPLE)
+      set(HAVE_EXV_ENABLE_BMFF 1)
+    endif()
     if(HAVE_EXV_ENABLE_BMFF)
       add_definitions(-DHAVE_LIBEXIV2_WITH_ISOBMFF=1)
       set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} cr3 CACHE INTERNAL "")
@@ -1033,3 +1041,13 @@ InstallDependencyFiles()
 
 # Tell CPack about the components and group the data components together (CPACK_COMPONENT_${COMPONENT_NAME_ALL_CAPS}_GROUP).
 set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments)
+
+if (USE_LIBRAW)
+  set(LIBRAW_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw" CACHE STRING "Relative path to libraw directory (default=CMAKE_CURRENT_SOURCE_DIR)")
+  set(ENABLE_EXAMPLES OFF CACHE BOOLEAN "")
+  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} libraw CACHE INTERNAL "")
+
+  # LibRaw sub-module
+  add_subdirectory(external/LibRaw-cmake)
+  target_link_libraries(lib_darktable PRIVATE libraw::libraw)
+endif()

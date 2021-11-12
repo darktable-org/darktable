@@ -83,7 +83,7 @@ int dt_libraw_lookup_makermodel(const char *maker, const char *model,
 
 dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  int err;
+  int err = 0;
   int libraw_err = 0;
   if(!_supported_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
@@ -131,10 +131,10 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   img->height = raw->sizes.raw_height;
 
   // Apply crop parameters
-  img->crop_x = raw->sizes.raw_inset_crop.cleft;
-  img->crop_y = raw->sizes.raw_inset_crop.ctop;
-  img->crop_width = raw->sizes.raw_width - raw->sizes.raw_inset_crop.cwidth - raw->sizes.raw_inset_crop.cleft;
-  img->crop_height = raw->sizes.raw_height - raw->sizes.raw_inset_crop.cheight - raw->sizes.raw_inset_crop.ctop;
+  img->crop_x = raw->sizes.raw_inset_crops[0].cleft;
+  img->crop_y = raw->sizes.raw_inset_crops[0].ctop;
+  img->crop_width = raw->sizes.raw_width - raw->sizes.raw_inset_crops[0].cwidth - raw->sizes.raw_inset_crops[0].cleft;
+  img->crop_height = raw->sizes.raw_height - raw->sizes.raw_inset_crops[0].cheight - raw->sizes.raw_inset_crops[0].ctop;
 
   // We can reuse the libraw filters property, it's already well-handled in dt.
   // It contains the BAYER filter pattern.
