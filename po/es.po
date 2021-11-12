@@ -18333,27 +18333,27 @@ msgstr "colección"
 
 #: ../src/libs/collect.c:307
 msgid "imported: today"
-msgstr "Importadas: Hoy"
+msgstr "importado: hoy"
 
 #: ../src/libs/collect.c:312
 msgid "imported: last 24h"
-msgstr "Importadas: Últimas 24 hrs."
+msgstr "importado: últimas 24 horas"
 
 #: ../src/libs/collect.c:317
 msgid "imported: last 30 days"
-msgstr "Importadas: Últimos 30 días"
+msgstr "importado: últimos 30 días"
 
 #: ../src/libs/collect.c:323
 msgid "taken: today"
-msgstr "Capturado: hoy"
+msgstr "capturado: hoy"
 
 #: ../src/libs/collect.c:328
 msgid "taken: last 24h"
-msgstr "Capturado: últimas 24 hrs."
+msgstr "capturado: últimas 24 horas"
 
 #: ../src/libs/collect.c:333
 msgid "taken: last 30 days"
-msgstr "Capturado: últimos 30 días"
+msgstr "capturado: últimos 30 días"
 
 #: ../src/libs/collect.c:467
 msgid "search filmroll"
