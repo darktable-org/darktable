@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-10 23:31-0300\n"
-"PO-Revision-Date: 2021-11-10 23:30-0300\n"
+"POT-Creation-Date: 2021-11-12 21:17-0300\n"
+"PO-Revision-Date: 2021-11-12 23:34-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -3711,9 +3711,8 @@ msgstr "compensar ponto preto do perfil ICC de saída"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:367
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:518
-#, fuzzy
 msgid "spline handling"
-msgstr "divide linha"
+msgstr "tratamento de spline"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:532
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
@@ -4522,9 +4521,9 @@ msgid "dropdown"
 msgstr "menu flutuante"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1682
-#: ../src/control/jobs/control_jobs.c:1744 ../src/gui/accelerators.c:1736
-#: ../src/gui/accelerators.c:1810 ../src/gui/accelerators.c:1861
-#: ../src/gui/accelerators.c:1889 ../src/gui/accelerators.c:1948
+#: ../src/control/jobs/control_jobs.c:1744 ../src/gui/accelerators.c:1735
+#: ../src/gui/accelerators.c:1809 ../src/gui/accelerators.c:1860
+#: ../src/gui/accelerators.c:1888 ../src/gui/accelerators.c:1947
 #: ../src/gui/hist_dialog.c:193 ../src/gui/preferences.c:1014
 #: ../src/gui/preferences.c:1053 ../src/gui/presets.c:366
 #: ../src/gui/presets.c:466 ../src/gui/styles_dialog.c:418
@@ -7519,7 +7518,7 @@ msgstr "ativar"
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3247 ../src/gui/accelerators.c:2071
+#: ../src/develop/imageop.c:3247 ../src/gui/accelerators.c:2070
 msgid "instance"
 msgstr "instância"
 
@@ -8370,11 +8369,11 @@ msgstr "próxima"
 msgid "previous"
 msgstr "anterior"
 
-#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1065
+#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1064
 msgid "last"
 msgstr "última"
 
-#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:1064
+#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:1063
 msgid "first"
 msgstr "primeira"
 
@@ -8474,11 +8473,11 @@ msgstr "última instância"
 msgid "relative instance"
 msgstr "instância relativa"
 
-#: ../src/gui/accelerators.c:588 ../src/gui/accelerators.c:2061
+#: ../src/gui/accelerators.c:587 ../src/gui/accelerators.c:2060
 msgid "speed"
 msgstr "velocidade"
 
-#: ../src/gui/accelerators.c:641
+#: ../src/gui/accelerators.c:640
 msgid ""
 "press Del to delete selected shortcut\n"
 "double click to add new shortcut\n"
@@ -8488,7 +8487,7 @@ msgstr ""
 "clique duplo para adicionar um novo atalho\n"
 "comece a digitar para busca incremental"
 
-#: ../src/gui/accelerators.c:655
+#: ../src/gui/accelerators.c:654
 msgid ""
 "click to filter shortcut list\n"
 "double click to define new shortcut\n"
@@ -8498,7 +8497,7 @@ msgstr ""
 "clique duplo para definir um novo atalho\n"
 "comece a digitar para busca incremental"
 
-#: ../src/gui/accelerators.c:665
+#: ../src/gui/accelerators.c:664
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
@@ -8506,85 +8505,85 @@ msgstr ""
 "pressione teclas com combinações de clique, rolar e movimentos do mouse para "
 "criar um atalho"
 
-#: ../src/gui/accelerators.c:666
+#: ../src/gui/accelerators.c:665
 msgid "click to open shortcut configuration"
 msgstr "clique para abrir configuração de atalho"
 
-#: ../src/gui/accelerators.c:667
+#: ../src/gui/accelerators.c:666
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "ctrl+clique para adicionar ao painel de acesso rápido\n"
 
-#: ../src/gui/accelerators.c:668
+#: ../src/gui/accelerators.c:667
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "ctrl+clique para remover do painel de acesso rápido\n"
 
-#: ../src/gui/accelerators.c:669
+#: ../src/gui/accelerators.c:668
 msgid "right click to exit mapping mode"
 msgstr "clique direito para sair do modo de mapeamento"
 
-#: ../src/gui/accelerators.c:812
+#: ../src/gui/accelerators.c:811
 msgid "active view"
 msgstr "vista ativa"
 
-#: ../src/gui/accelerators.c:813
+#: ../src/gui/accelerators.c:812
 msgid "other views"
 msgstr "outras vistas"
 
-#: ../src/gui/accelerators.c:814
+#: ../src/gui/accelerators.c:813
 msgid "fallbacks"
 msgstr "alternativas"
 
-#: ../src/gui/accelerators.c:961
+#: ../src/gui/accelerators.c:960
 msgid "shortcut for move exists with single effect"
 msgstr "atalho para movimento existe com único efeito"
 
-#: ../src/gui/accelerators.c:962
+#: ../src/gui/accelerators.c:961
 msgid "create separate shortcuts for up and down move?"
 msgstr "criar atalhos separados para movimentos para cima e para baixo?"
 
-#: ../src/gui/accelerators.c:977
+#: ../src/gui/accelerators.c:976
 msgid "shortcut exists with different settings"
 msgstr "existe um atalho com configuração diferente"
 
-#: ../src/gui/accelerators.c:978
+#: ../src/gui/accelerators.c:977
 msgid "reset the settings of the shortcut?"
 msgstr "redefinir a configuração do atalho?"
 
-#: ../src/gui/accelerators.c:990
+#: ../src/gui/accelerators.c:989
 msgid "shortcut already exists"
 msgstr "o atalho já existe"
 
-#: ../src/gui/accelerators.c:991
+#: ../src/gui/accelerators.c:990
 msgid "remove the shortcut?"
 msgstr "remover o atalho?"
 
-#: ../src/gui/accelerators.c:1024
+#: ../src/gui/accelerators.c:1023
 msgid "remove these existing shortcuts?"
 msgstr "remover estes atalhos existentes?"
 
-#: ../src/gui/accelerators.c:1026
+#: ../src/gui/accelerators.c:1025
 msgid "clashing shortcuts exist"
 msgstr "há atalhos conflitantes"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1063
+#: ../src/gui/accelerators.c:1062
 msgid "preferred"
 msgstr "preferido"
 
-#: ../src/gui/accelerators.c:1066
+#: ../src/gui/accelerators.c:1065
 msgid "second"
 msgstr "segundo"
 
-#: ../src/gui/accelerators.c:1067
+#: ../src/gui/accelerators.c:1066
 msgid "last but one"
 msgstr "penúltimo"
 
-#: ../src/gui/accelerators.c:1206 ../src/gui/accelerators.c:1260
+#: ../src/gui/accelerators.c:1205 ../src/gui/accelerators.c:1259
 msgid "(unchanged)"
 msgstr "(não modificado)"
 
-#: ../src/gui/accelerators.c:1355
+#: ../src/gui/accelerators.c:1354
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -8609,31 +8608,31 @@ msgstr ""
 "\n"
 "clique direito para cancelar"
 
-#: ../src/gui/accelerators.c:1402
+#: ../src/gui/accelerators.c:1401
 msgid "removing shortcut"
 msgstr "removendo atalho"
 
-#: ../src/gui/accelerators.c:1403
+#: ../src/gui/accelerators.c:1402
 msgid "remove the selected shortcut?"
 msgstr "excluir os atalhos selecionados?"
 
-#: ../src/gui/accelerators.c:1733
+#: ../src/gui/accelerators.c:1732
 msgid "restore shortcuts"
 msgstr "restaurar atalhos"
 
-#: ../src/gui/accelerators.c:1737
+#: ../src/gui/accelerators.c:1736
 msgid "_defaults"
 msgstr "_padrões"
 
-#: ../src/gui/accelerators.c:1738
+#: ../src/gui/accelerators.c:1737
 msgid "_startup"
 msgstr "_ao iniciar"
 
-#: ../src/gui/accelerators.c:1739
+#: ../src/gui/accelerators.c:1738
 msgid "_edits"
 msgstr "_editados"
 
-#: ../src/gui/accelerators.c:1744
+#: ../src/gui/accelerators.c:1743
 msgid ""
 "restore default shortcuts\n"
 "  or as at startup\n"
@@ -8643,7 +8642,7 @@ msgstr ""
 "  ou como ao iniciar\n"
 "  ou como quando o diálogo de configuração foi aberto\n"
 
-#: ../src/gui/accelerators.c:1747
+#: ../src/gui/accelerators.c:1746
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -8651,21 +8650,21 @@ msgstr ""
 "limpar todos os atalhos mais novos\n"
 "(ao invés de simplesmente restaurar os modificados)"
 
-#: ../src/gui/accelerators.c:1799 ../src/gui/preferences.c:894
+#: ../src/gui/accelerators.c:1798 ../src/gui/preferences.c:894
 #: ../src/libs/tools/global_toolbox.c:815
 msgid "shortcuts"
 msgstr "atalhos"
 
-#: ../src/gui/accelerators.c:1808
+#: ../src/gui/accelerators.c:1807
 msgid "export shortcuts"
 msgstr "exportar atalhos"
 
-#: ../src/gui/accelerators.c:1811 ../src/gui/accelerators.c:1890
+#: ../src/gui/accelerators.c:1810 ../src/gui/accelerators.c:1889
 #: ../src/gui/hist_dialog.c:196 ../src/gui/presets.c:467
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/gui/accelerators.c:1816
+#: ../src/gui/accelerators.c:1815
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -8673,34 +8672,34 @@ msgstr ""
 "exportar todos os atalhos para um arquivo\n"
 "ou somente para um dispositivo selecionado\n"
 
-#: ../src/gui/accelerators.c:1821 ../src/gui/accelerators.c:1900
+#: ../src/gui/accelerators.c:1820 ../src/gui/accelerators.c:1899
 #: ../src/gui/gtk.c:3002 ../src/imageio/format/pdf.c:662
 #: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2245
 #: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:185
 msgid "all"
 msgstr "tudo"
 
-#: ../src/gui/accelerators.c:1822 ../src/gui/accelerators.c:1901
+#: ../src/gui/accelerators.c:1821 ../src/gui/accelerators.c:1900
 msgid "keyboard"
 msgstr "teclado"
 
-#: ../src/gui/accelerators.c:1834
+#: ../src/gui/accelerators.c:1833
 msgid "device id"
 msgstr "id do dispositivo"
 
-#: ../src/gui/accelerators.c:1860
+#: ../src/gui/accelerators.c:1859
 msgid "select file to export"
 msgstr "selecione arquivo para exportar"
 
-#: ../src/gui/accelerators.c:1861 ../src/libs/tagging.c:2336
+#: ../src/gui/accelerators.c:1860 ../src/libs/tagging.c:2336
 msgid "_export"
 msgstr "_exportar"
 
-#: ../src/gui/accelerators.c:1887
+#: ../src/gui/accelerators.c:1886
 msgid "import shortcuts"
 msgstr "importar atalhos"
 
-#: ../src/gui/accelerators.c:1895
+#: ../src/gui/accelerators.c:1894
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -8708,31 +8707,31 @@ msgstr ""
 "importar todos os atalhos de um arquivo\n"
 "ou somente para um dispositivo selecionado\n"
 
-#: ../src/gui/accelerators.c:1913
+#: ../src/gui/accelerators.c:1912
 msgid "id in file"
 msgstr "id no arquivo"
 
-#: ../src/gui/accelerators.c:1919
+#: ../src/gui/accelerators.c:1918
 msgid "id when loaded"
 msgstr "id quando carregado"
 
-#: ../src/gui/accelerators.c:1923
+#: ../src/gui/accelerators.c:1922
 msgid "clear device first"
 msgstr "limpar o dispositivo primeiro"
 
-#: ../src/gui/accelerators.c:1947
+#: ../src/gui/accelerators.c:1946
 msgid "select file to import"
 msgstr "selecione arquivo para importar"
 
-#: ../src/gui/accelerators.c:1948 ../src/libs/tagging.c:2300
+#: ../src/gui/accelerators.c:1947 ../src/libs/tagging.c:2300
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/gui/accelerators.c:2021
+#: ../src/gui/accelerators.c:2020
 msgid "search shortcuts list"
 msgstr "buscar na lista de atalhos"
 
-#: ../src/gui/accelerators.c:2022
+#: ../src/gui/accelerators.c:2021
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -8742,28 +8741,28 @@ msgstr ""
 "resultados"
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2037 ../src/views/view.c:1710
+#: ../src/gui/accelerators.c:2036 ../src/views/view.c:1710
 msgid "shortcut"
 msgstr "atalho"
 
-#: ../src/gui/accelerators.c:2039 ../src/gui/accelerators.c:2127
+#: ../src/gui/accelerators.c:2038 ../src/gui/accelerators.c:2126
 #: ../src/views/view.c:1712
 msgid "action"
 msgstr "ação"
 
-#: ../src/gui/accelerators.c:2048
+#: ../src/gui/accelerators.c:2047
 msgid "element"
 msgstr "elemento"
 
-#: ../src/gui/accelerators.c:2055
+#: ../src/gui/accelerators.c:2054
 msgid "effect"
 msgstr "efeito"
 
-#: ../src/gui/accelerators.c:2112
+#: ../src/gui/accelerators.c:2111
 msgid "search actions list"
 msgstr "buscar na lista de ações"
 
-#: ../src/gui/accelerators.c:2113
+#: ../src/gui/accelerators.c:2112
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -8772,16 +8771,16 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/accelerators.c:2133 ../src/gui/guides.c:689
+#: ../src/gui/accelerators.c:2132 ../src/gui/guides.c:689
 #: ../src/libs/export_metadata.c:191
 msgid "type"
 msgstr "tipo"
 
-#: ../src/gui/accelerators.c:2168
+#: ../src/gui/accelerators.c:2167
 msgid "enable fallbacks"
 msgstr "ativar fallbacks"
 
-#: ../src/gui/accelerators.c:2169
+#: ../src/gui/accelerators.c:2168
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -8790,45 +8789,45 @@ msgstr ""
 "adicionais,\n"
 "quando usados em combinação com um atalho base"
 
-#: ../src/gui/accelerators.c:2175
+#: ../src/gui/accelerators.c:2174
 msgid "restore..."
 msgstr "restaurar..."
 
-#: ../src/gui/accelerators.c:2176
+#: ../src/gui/accelerators.c:2175
 msgid "restore default shortcuts or previous state"
 msgstr "restaurar atalhos padrão ou estado anterior"
 
-#: ../src/gui/accelerators.c:2180
+#: ../src/gui/accelerators.c:2179
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/gui/accelerators.c:2181
+#: ../src/gui/accelerators.c:2180
 msgid "fully or partially import shortcuts from file"
 msgstr "importar atalhos completamente ou parcialmente de um arquivo"
 
 #. export button
-#: ../src/gui/accelerators.c:2185 ../src/libs/styles.c:880
+#: ../src/gui/accelerators.c:2184 ../src/libs/styles.c:880
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/gui/accelerators.c:2186
+#: ../src/gui/accelerators.c:2185
 msgid "fully or partially export shortcuts to file"
 msgstr "exportar atalhos completamente ou parcialmente para um arquivo"
 
-#: ../src/gui/accelerators.c:2594
+#: ../src/gui/accelerators.c:2593
 msgid "input devices reinitialised"
 msgstr "dispositivos de entrada reinicializados"
 
-#: ../src/gui/accelerators.c:2803
+#: ../src/gui/accelerators.c:2802
 msgid "fallback to move"
 msgstr "fallback para mover"
 
-#: ../src/gui/accelerators.c:2978
+#: ../src/gui/accelerators.c:2977
 #, c-format
 msgid "%s not assigned"
 msgstr "%s não associado"
 
-#: ../src/gui/accelerators.c:3125
+#: ../src/gui/accelerators.c:3124
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s associado a %s"
@@ -10834,7 +10833,7 @@ msgstr "reduz ruido croma"
 msgid "denoise"
 msgstr "reduz ruído"
 
-#: ../src/iop/atrous.c:854 ../src/iop/bloom.c:75 ../src/iop/diffuse.c:333
+#: ../src/iop/atrous.c:854 ../src/iop/bloom.c:75 ../src/iop/diffuse.c:335
 msgid "bloom"
 msgstr "luz suave"
 
@@ -11319,7 +11318,7 @@ msgstr ""
 "alcance dinâmico (reduz sombra e aumenta contraste), mais alto para "
 "contraste local melhor"
 
-#: ../src/iop/bilateral.cc:73 ../src/iop/diffuse.c:315
+#: ../src/iop/bilateral.cc:73 ../src/iop/diffuse.c:317
 msgid "surface blur"
 msgstr "desfoque de superfície"
 
@@ -14152,65 +14151,73 @@ msgstr ""
 msgid "lens deblur: soft"
 msgstr "correção de desfoque de lente: suave"
 
-#: ../src/iop/diffuse.c:233
+#: ../src/iop/diffuse.c:234
 msgid "lens deblur: medium"
 msgstr "correção de desfoque de lente: médio"
 
-#: ../src/iop/diffuse.c:237
+#: ../src/iop/diffuse.c:239
 msgid "lens deblur: hard"
 msgstr "correção de desfoque de lente: forte"
 
-#: ../src/iop/diffuse.c:256
+#: ../src/iop/diffuse.c:258
 msgid "dehaze"
 msgstr "remoção de névoa"
 
-#: ../src/iop/diffuse.c:277
+#: ../src/iop/diffuse.c:279
 msgid "denoise: fine"
 msgstr "redução de ruído: suave"
 
-#: ../src/iop/diffuse.c:286
+#: ../src/iop/diffuse.c:288
 msgid "denoise: medium"
 msgstr "reedução de ruído: médio"
 
-#: ../src/iop/diffuse.c:295
+#: ../src/iop/diffuse.c:297
 msgid "denoise: coarse"
 msgstr "redução de ruído: grosseiro"
 
-#: ../src/iop/diffuse.c:351
+#: ../src/iop/diffuse.c:353
 msgid "sharpen demosaicing (no AA filter)"
 msgstr "aumentar nitidez da interpolação cromática (sem filtro AA)"
 
-#: ../src/iop/diffuse.c:355
+#: ../src/iop/diffuse.c:357
 msgid "sharpen demosaicing (AA filter)"
 msgstr "aumentar nitidez da interpolação cromática (com filtro AA)"
 
-#: ../src/iop/diffuse.c:374
+#: ../src/iop/diffuse.c:376
 msgid "simulate watercolor"
 msgstr "simular aquarela"
 
-#: ../src/iop/diffuse.c:392
+#: ../src/iop/diffuse.c:394
 msgid "simulate line drawing"
 msgstr "simular desenho"
 
-#: ../src/iop/diffuse.c:413
+#: ../src/iop/diffuse.c:415
 msgid "add local contrast"
 msgstr "adicionar contraste local"
 
-#: ../src/iop/diffuse.c:433
+#: ../src/iop/diffuse.c:435
 msgid "inpaint highlights"
 msgstr "reconstruir realces"
 
-#: ../src/iop/diffuse.c:1082 ../src/iop/diffuse.c:1320
+#: ../src/iop/diffuse.c:456
+msgid "fast sharpness"
+msgstr "nitidez rápida"
+
+#: ../src/iop/diffuse.c:478
+msgid "fast local contrast"
+msgstr "contraste local rápido"
+
+#: ../src/iop/diffuse.c:1128 ../src/iop/diffuse.c:1366
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
 "difusão/nitidez não conseguiu alocar memória, verifique sua configuração de "
 "RAM"
 
-#: ../src/iop/diffuse.c:1448
+#: ../src/iop/diffuse.c:1494
 msgid "diffusion properties"
 msgstr "propriedades da difusão"
 
-#: ../src/iop/diffuse.c:1452
+#: ../src/iop/diffuse.c:1499
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -14221,7 +14228,7 @@ msgstr ""
 "se planeja aumentar nitidez ou reconstruir, mais iterações ajudam na "
 "reconstrução."
 
-#: ../src/iop/diffuse.c:1459
+#: ../src/iop/diffuse.c:1507
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -14235,7 +14242,7 @@ msgstr ""
 "para remoção de desfoque e de ruído, escolha zero.\n"
 "aumente para, ao invés disso, atuar no contraste local."
 
-#: ../src/iop/diffuse.c:1468
+#: ../src/iop/diffuse.c:1517
 msgid ""
 "width of the diffusion around the center radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -14249,11 +14256,11 @@ msgstr ""
 "se planeja reduzir ruído, o raio deve estar perto da largura do desfoque da "
 "sua lente."
 
-#: ../src/iop/diffuse.c:1473
+#: ../src/iop/diffuse.c:1522
 msgid "diffusion speed"
 msgstr "velocidade da difusão"
 
-#: ../src/iop/diffuse.c:1479
+#: ../src/iop/diffuse.c:1528
 msgid ""
 "smoothing or sharpening of smooth details (gradients).\n"
 "positive values diffuse and blur.\n"
@@ -14265,7 +14272,7 @@ msgstr ""
 "valores negativos aumentam nitidez.\n"
 "zero nada faz."
 
-#: ../src/iop/diffuse.c:1488 ../src/iop/diffuse.c:1497
+#: ../src/iop/diffuse.c:1537 ../src/iop/diffuse.c:1546
 msgid ""
 "smoothing or sharpening of sharp details.\n"
 "positive values diffuse and blur.\n"
@@ -14277,7 +14284,7 @@ msgstr ""
 "valores negativos aumentam nitidez.\n"
 "zero nada faz."
 
-#: ../src/iop/diffuse.c:1506
+#: ../src/iop/diffuse.c:1555
 msgid ""
 "smoothing or sharpening of sharp details (gradients).\n"
 "positive values diffuse and blur.\n"
@@ -14289,12 +14296,12 @@ msgstr ""
 "valores negativos aumentam nitidez.\n"
 "zero nada faz."
 
-#: ../src/iop/diffuse.c:1511
+#: ../src/iop/diffuse.c:1560
 msgid "diffusion directionality"
 msgstr "direcionalidade da difusão"
 
-#: ../src/iop/diffuse.c:1518 ../src/iop/diffuse.c:1528
-#: ../src/iop/diffuse.c:1538 ../src/iop/diffuse.c:1548
+#: ../src/iop/diffuse.c:1567 ../src/iop/diffuse.c:1577
+#: ../src/iop/diffuse.c:1587 ../src/iop/diffuse.c:1597
 msgid ""
 "anisotropy of the diffusion.\n"
 "zero makes the diffusion isotrope (same in all directions)\n"
@@ -14306,15 +14313,15 @@ msgstr ""
 "positivos fazem a difusão seguir isofotos mais de perto\n"
 "negativos fazem a difusão seguir gradientes mais de perto"
 
-#: ../src/iop/diffuse.c:1553
+#: ../src/iop/diffuse.c:1602
 msgid "edges management"
 msgstr "tratamento de bordas"
 
-#: ../src/iop/diffuse.c:1559
+#: ../src/iop/diffuse.c:1608
 msgid "increase or decrease the sharpness of the highest frequencies"
 msgstr "aumenta ou diminui a nitidez das frequências mais altas"
 
-#: ../src/iop/diffuse.c:1563
+#: ../src/iop/diffuse.c:1612
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -14324,7 +14331,7 @@ msgstr ""
 "aumente para excluir mais bordas da difusão,\n"
 "se franjas ou halos surgirem."
 
-#: ../src/iop/diffuse.c:1569
+#: ../src/iop/diffuse.c:1618
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -14337,11 +14344,11 @@ msgstr ""
 "se áreas escuras parecerem demasiado nítidas quando comparadas com áreas "
 "claras."
 
-#: ../src/iop/diffuse.c:1575
+#: ../src/iop/diffuse.c:1624
 msgid "diffusion spatiality"
 msgstr "espacialidade da difusão"
 
-#: ../src/iop/diffuse.c:1581
+#: ../src/iop/diffuse.c:1630
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
