@@ -83,7 +83,7 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
 
 dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
-  int err = 0;
+  int err = DT_IMAGEIO_FILE_CORRUPTED;
   int libraw_err = 0;
   if(!_supported_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
