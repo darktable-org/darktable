@@ -73,11 +73,11 @@ static void dt_rawspeed_load_meta() {
   }
 }
 
-int dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
+gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
                                    char *mk, int mk_len, char *md, int md_len,
                                    char *al, int al_len)
 {
-  int got_it_done = FALSE;
+  gboolean got_it_done = FALSE;
   try {
     dt_rawspeed_load_meta();
     const Camera *cam = meta->getCamera(maker, model, "");
