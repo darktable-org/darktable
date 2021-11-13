@@ -548,7 +548,7 @@ static gchar *_action_description(dt_shortcut_t *s, int components)
   if(components == 2)
   {
     gchar *action_label = _action_full_label(s->action);
-    add_hint("%s", _(action_label));
+    add_hint("%s", action_label);
     g_free(action_label);
   }
 
