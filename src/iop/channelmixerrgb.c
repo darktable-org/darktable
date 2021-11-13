@@ -3002,8 +3002,8 @@ static void update_R_colors(dt_iop_module_t *self)
   }
 
   // Get the current values bound of the slider, taking into account the possible soft rescaling
-  const float RR_min = DT_BAUHAUS_WIDGET(g->scale_red_R)->data.slider.soft_min;
-  const float RR_max = DT_BAUHAUS_WIDGET(g->scale_red_R)->data.slider.soft_max;
+  const float RR_min = DT_BAUHAUS_WIDGET(g->scale_red_R)->data.slider.min;
+  const float RR_max = DT_BAUHAUS_WIDGET(g->scale_red_R)->data.slider.max;
   const float RR_range = RR_max - RR_min;
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -3017,8 +3017,8 @@ static void update_R_colors(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_red_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
-  const float RG_min = DT_BAUHAUS_WIDGET(g->scale_red_G)->data.slider.soft_min;
-  const float RG_max = DT_BAUHAUS_WIDGET(g->scale_red_G)->data.slider.soft_max;
+  const float RG_min = DT_BAUHAUS_WIDGET(g->scale_red_G)->data.slider.min;
+  const float RG_max = DT_BAUHAUS_WIDGET(g->scale_red_G)->data.slider.max;
   const float RG_range = RG_max - RG_min;
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -3032,8 +3032,8 @@ static void update_R_colors(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_red_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
-  const float RB_min = DT_BAUHAUS_WIDGET(g->scale_red_B)->data.slider.soft_min;
-  const float RB_max = DT_BAUHAUS_WIDGET(g->scale_red_B)->data.slider.soft_max;
+  const float RB_min = DT_BAUHAUS_WIDGET(g->scale_red_B)->data.slider.min;
+  const float RB_max = DT_BAUHAUS_WIDGET(g->scale_red_B)->data.slider.max;
   const float RB_range = RB_max - RB_min;
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -3070,8 +3070,8 @@ static void update_B_colors(dt_iop_module_t *self)
   }
 
   // Get the current values bound of the slider, taking into account the possible soft rescaling
-  const float BR_min = DT_BAUHAUS_WIDGET(g->scale_blue_R)->data.slider.soft_min;
-  const float BR_max = DT_BAUHAUS_WIDGET(g->scale_blue_R)->data.slider.soft_max;
+  const float BR_min = DT_BAUHAUS_WIDGET(g->scale_blue_R)->data.slider.min;
+  const float BR_max = DT_BAUHAUS_WIDGET(g->scale_blue_R)->data.slider.max;
   const float BR_range = BR_max - BR_min;
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -3085,8 +3085,8 @@ static void update_B_colors(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_blue_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
-  const float BG_min = DT_BAUHAUS_WIDGET(g->scale_blue_G)->data.slider.soft_min;
-  const float BG_max = DT_BAUHAUS_WIDGET(g->scale_blue_G)->data.slider.soft_max;
+  const float BG_min = DT_BAUHAUS_WIDGET(g->scale_blue_G)->data.slider.min;
+  const float BG_max = DT_BAUHAUS_WIDGET(g->scale_blue_G)->data.slider.max;
   const float BG_range = BG_max - BG_min;
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -3100,8 +3100,8 @@ static void update_B_colors(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_blue_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
-  const float BB_min = DT_BAUHAUS_WIDGET(g->scale_blue_B)->data.slider.soft_min;
-  const float BB_max = DT_BAUHAUS_WIDGET(g->scale_blue_B)->data.slider.soft_max;
+  const float BB_min = DT_BAUHAUS_WIDGET(g->scale_blue_B)->data.slider.min;
+  const float BB_max = DT_BAUHAUS_WIDGET(g->scale_blue_B)->data.slider.max;
   const float BB_range = BB_max - BB_min;
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -3137,8 +3137,8 @@ static void update_G_colors(dt_iop_module_t *self)
   }
 
   // Get the current values bound of the slider, taking into account the possible soft rescaling
-  const float GR_min = DT_BAUHAUS_WIDGET(g->scale_green_R)->data.slider.soft_min;
-  const float GR_max = DT_BAUHAUS_WIDGET(g->scale_green_R)->data.slider.soft_max;
+  const float GR_min = DT_BAUHAUS_WIDGET(g->scale_green_R)->data.slider.min;
+  const float GR_max = DT_BAUHAUS_WIDGET(g->scale_green_R)->data.slider.max;
   const float GR_range = GR_max - GR_min;
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -3152,8 +3152,8 @@ static void update_G_colors(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_green_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
-  const float GG_min = DT_BAUHAUS_WIDGET(g->scale_green_G)->data.slider.soft_min;
-  const float GG_max = DT_BAUHAUS_WIDGET(g->scale_green_G)->data.slider.soft_max;
+  const float GG_min = DT_BAUHAUS_WIDGET(g->scale_green_G)->data.slider.min;
+  const float GG_max = DT_BAUHAUS_WIDGET(g->scale_green_G)->data.slider.max;
   const float GG_range = GG_max - GG_min;
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -3167,8 +3167,8 @@ static void update_G_colors(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_green_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
-  const float GB_min = DT_BAUHAUS_WIDGET(g->scale_green_B)->data.slider.soft_min;
-  const float GB_max = DT_BAUHAUS_WIDGET(g->scale_green_B)->data.slider.soft_max;
+  const float GB_min = DT_BAUHAUS_WIDGET(g->scale_green_B)->data.slider.min;
+  const float GB_max = DT_BAUHAUS_WIDGET(g->scale_green_B)->data.slider.max;
   const float GB_range = GB_max - GB_min;
 
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
