@@ -1,15 +1,15 @@
 # Copyright (C) 2021 Free Software Foundation, Inc.
 #
-# Marcus Gama <marcus.gama@gmail.com>, 2021.
 #: ../build/bin/conf_gen.h:850 ../build/bin/conf_gen.h:856
 #: ../build/bin/conf_gen.h:862 ../build/bin/conf_gen.h:868
 #: ../build/bin/conf_gen.h:874
+# Marcus Gama <marcus.gama@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-12 21:17-0300\n"
-"PO-Revision-Date: 2021-11-12 23:34-0300\n"
+"PO-Revision-Date: 2021-11-13 14:12-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Lokalize 21.08.2\n"
+"X-Generator: Lokalize 21.08.3\n"
 "X-Poedit-Bookmarks: 722,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/preferences_gen.h:81 ../build/bin/preferences_gen.h:3746
@@ -3105,12 +3105,12 @@ msgstr "Adobe RGB (compatível)"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
 #: ../src/common/colorspaces.c:1433 ../src/common/colorspaces.c:1656
 msgid "linear Rec709 RGB"
-msgstr "Rec709 RGB linear"
+msgstr "RGB Rec709 linear"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
 #: ../src/common/colorspaces.c:1442 ../src/common/colorspaces.c:1658
 msgid "linear Rec2020 RGB"
-msgstr "Rec2020 RGB linear"
+msgstr "RGB Rec2020 linear"
 
 #: ../build/lib/darktable/plugins/introspection_colorize.c:65
 #: ../build/lib/darktable/plugins/introspection_colorize.c:128
@@ -3964,15 +3964,15 @@ msgstr "Adobe RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:203
 msgid "gamma rec709 RGB"
-msgstr "gama Rec709 RGB"
+msgstr "gama RGB Rec709"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:204
 msgid "linear rec709 RGB"
-msgstr "Rec709 RGB linear"
+msgstr "RGB Rec709 linear"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:205
 msgid "linear rec2020 RGB"
-msgstr "rec2020 RGB linear"
+msgstr "RGB Rec2020 linear"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:209
 msgid "tetrahedral"
@@ -4915,27 +4915,27 @@ msgstr "sRGB (ex. JPG)"
 
 #: ../src/common/colorspaces.c:1423 ../src/libs/print_settings.c:1275
 msgid "sRGB (web-safe)"
-msgstr "sRGB (web-safe)"
+msgstr "sRGB (seguro para Web)"
 
 #: ../src/common/colorspaces.c:1437 ../src/common/colorspaces.c:1690
 msgid "Rec709 RGB"
-msgstr "Rec709 RGB"
+msgstr "RGB Rec709"
 
 #: ../src/common/colorspaces.c:1447
 msgid "PQ Rec2020 RGB"
-msgstr "PQ Rec2020 RGB"
+msgstr "RGB PQ Rec2020"
 
 #: ../src/common/colorspaces.c:1452
 msgid "HLG Rec2020 RGB"
-msgstr "HLG Rec2020 RGB"
+msgstr "RGB HLG Rec2020"
 
 #: ../src/common/colorspaces.c:1457
 msgid "PQ P3 RGB"
-msgstr "PQ P3 RGB"
+msgstr "RGB PQ P3"
 
 #: ../src/common/colorspaces.c:1462
 msgid "HLG P3 RGB"
-msgstr "HLG P3 RGB"
+msgstr "RGB HLG P3"
 
 #: ../src/common/colorspaces.c:1467 ../src/common/colorspaces.c:1692
 msgid "linear ProPhoto RGB"
@@ -5572,7 +5572,7 @@ msgstr "v3.0 JPEG"
 #, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 msgstr ""
-"perfil de entrada %s não suportado foi substituído por linear Rec709 RGB!\n"
+"perfil de entrada %s não suportado foi substituído por linear RGB Rec709!\n"
 "\n"
 
 #. clang-format off
@@ -5850,7 +5850,7 @@ msgstr "segurar"
 
 #: ../src/control/control.c:102 ../src/control/control.c:135
 msgid "modifiers"
-msgstr "modificadores"
+msgstr "modificador"
 
 #: ../src/control/control.c:109
 msgctxt "accel"
@@ -5890,7 +5890,7 @@ msgstr "scripts lua"
 #: ../src/control/control.c:116
 msgctxt "accel"
 msgid "fallbacks"
-msgstr "alternativas"
+msgstr "alternativos"
 
 #: ../src/control/control.c:132
 msgid "show accels window"
@@ -8381,7 +8381,7 @@ msgstr "primeira"
 #: ../src/gui/accelerators.c:238 ../src/views/darkroom.c:2293
 #: ../src/views/darkroom.c:2349
 msgid "toggle"
-msgstr "alternar"
+msgstr "ligar/desligar"
 
 #: ../src/gui/accelerators.c:123
 msgid "ctrl-toggle"
@@ -8531,7 +8531,7 @@ msgstr "outras vistas"
 
 #: ../src/gui/accelerators.c:813
 msgid "fallbacks"
-msgstr "alternativas"
+msgstr "alternativos"
 
 #: ../src/gui/accelerators.c:960
 msgid "shortcut for move exists with single effect"
@@ -8778,7 +8778,7 @@ msgstr "tipo"
 
 #: ../src/gui/accelerators.c:2167
 msgid "enable fallbacks"
-msgstr "ativar fallbacks"
+msgstr "ativar alternativos"
 
 #: ../src/gui/accelerators.c:2168
 msgid ""
@@ -8820,7 +8820,7 @@ msgstr "dispositivos de entrada reinicializados"
 
 #: ../src/gui/accelerators.c:2802
 msgid "fallback to move"
-msgstr "fallback para mover"
+msgstr "alternativo para mover"
 
 #: ../src/gui/accelerators.c:2977
 #, c-format
@@ -8965,13 +8965,13 @@ msgstr "painéis/tudo abaixo"
 #: ../src/gui/gtk.c:1289
 msgctxt "accel"
 msgid "show accels window"
-msgstr "mostra janela de atalhos"
+msgstr "mostrar janela de atalhos"
 
 #. View-switch
 #: ../src/gui/gtk.c:1292
 msgctxt "accel"
 msgid "toggle tooltip visibility"
-msgstr "alterna visibilidade de dicas"
+msgstr "alternar visibilidade de dicas"
 
 #. reinitialise input devices
 #: ../src/gui/gtk.c:1298
@@ -8987,7 +8987,7 @@ msgstr "alterna foco máximo"
 #: ../src/gui/gtk.c:1344
 msgctxt "accel"
 msgid "toggle focus peaking"
-msgstr "alterna foco máximo"
+msgstr "alternar foco máximo"
 
 #: ../src/gui/gtk.c:1500 ../src/gui/gtk.c:1516 ../src/gui/gtk.c:1550
 #: ../src/gui/gtk.c:1564
@@ -10274,11 +10274,11 @@ msgstr "imagem preto & branco"
 
 #: ../src/imageio/format/tiff.c:849
 msgid "write rgb colors"
-msgstr "escrever cores RGB"
+msgstr "salvar cores RGB"
 
 #: ../src/imageio/format/tiff.c:850
 msgid "write grayscale"
-msgstr "escrever escala de cinza"
+msgstr "salvar escala de cinza"
 
 #: ../src/imageio/format/webp.c:288
 msgid "WebP (8-bit)"
@@ -13328,7 +13328,7 @@ msgid ""
 "RGB!"
 msgstr ""
 "não consegui extrair matriz do espaço de cores `%s', será substituída pelo "
-"Rec2020 RGB!"
+"RGB Rec2020!"
 
 #: ../src/iop/colorin.c:1554
 #, c-format
@@ -13341,7 +13341,7 @@ msgstr "perfil de entrada não pode ser gerado!"
 
 #: ../src/iop/colorin.c:1672
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
-msgstr "perfil de entrada não suportado foi substituído por linear Rec709 RGB!"
+msgstr "perfil de entrada não suportado foi substituído por RGB Rec709 linear!"
 
 #: ../src/iop/colorin.c:2066
 msgid "input profile"
