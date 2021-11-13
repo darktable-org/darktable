@@ -659,7 +659,10 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
 
     if(darktable.control->mapping_widget == widget)
     {
-      int add_remove_qap = darktable.develop ? dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE) : 0;
+      const int add_remove_qap = darktable.develop
+        ? dt_dev_modulegroups_basics_module_toggle(darktable.develop, widget, FALSE)
+        : 0;
+
       markup_text = g_markup_printf_escaped("%s\n%s\n%s%s",
                                             _("press keys with mouse click and scroll or move combinations to create a shortcut"),
                                             _("click to open shortcut configuration"),
@@ -670,7 +673,7 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
   }
 
   const dt_action_def_t *def = _action_find_definition(action);
-  gboolean has_fallbacks = def && def->fallbacks;
+  const gboolean has_fallbacks = def && def->fallbacks;
 
   if(def && (darktable.control->element || !has_fallbacks))
   {
@@ -1447,7 +1450,7 @@ static gboolean _add_actions_to_tree(GtkTreeIter *parent, dt_action_t *action,
     gboolean module_is_needed = FALSE;
     if(action->type == DT_ACTION_TYPE_IOP)
     {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)action;
+      const dt_iop_module_so_t *module = (dt_iop_module_so_t *)action;
       module_is_needed = !(module->flags() & (IOP_FLAGS_HIDDEN | IOP_FLAGS_DEPRECATED));
     }
     else if(action->type == DT_ACTION_TYPE_LIB)
@@ -1788,7 +1791,7 @@ static void _export_id_changed(GtkComboBox *widget, gpointer user_data)
       !g_sequence_iter_is_end(iter);
       iter = g_sequence_iter_next(iter))
   {
-    dt_shortcut_t *s = g_sequence_get(iter);
+    const dt_shortcut_t *s = g_sequence_get(iter);
     if(dev == 0 ||
        (id == 0 &&  s->key_device == id && s->move_device == id) ||
        (id != 0 && (s->key_device == id || s->move_device == id)))
@@ -2470,7 +2473,7 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
             while(driver)
             {
               id += 10;
-              dt_input_driver_definition_t *callbacks = driver->data;
+              const dt_input_driver_definition_t *callbacks = driver->data;
               if(!strcmp(token, callbacks->name))
               {
                 if(!callbacks->string_to_move(move_start, &s.move))
@@ -2502,9 +2505,9 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
 
         const dt_action_element_def_t *elements = _action_find_elements(s.action);
         const gchar **effects = NULL;
-        gint default_effect = s.effect = _shortcut_is_move(&s)
-                                       ? DT_ACTION_EFFECT_DEFAULT_MOVE
-                                       : DT_ACTION_EFFECT_DEFAULT_KEY;
+        const gint default_effect = s.effect = _shortcut_is_move(&s)
+                                             ? DT_ACTION_EFFECT_DEFAULT_MOVE
+                                             : DT_ACTION_EFFECT_DEFAULT_KEY;
 
         while((token = strtok(NULL, ";")))
         {
@@ -2575,7 +2578,7 @@ void dt_shortcuts_reinitialise()
 {
   for(GSList *d = darktable.control->input_drivers; d; d = d->next)
   {
-    dt_input_driver_definition_t *driver = d->data;
+    const dt_input_driver_definition_t *driver = d->data;
     driver->module->gui_cleanup(driver->module);
     driver->module->gui_init(driver->module);
   }
@@ -2632,7 +2635,7 @@ static void _lookup_mapping_widget()
             iop_mods;
             iop_mods = g_list_next(iop_mods))
         {
-          dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
+          const dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
 
           if(mod->so == module && mod->iop_order != INT_MAX)
           {
@@ -2854,7 +2857,7 @@ static float _process_action(dt_action_t *action, int instance,
       {
         for(GSList *w = mod->widget_list; w; w = w->next)
         {
-          dt_action_target_t *referral = w->data;
+          const dt_action_target_t *referral = w->data;
           if(referral->action == action)
           {
             action_target = referral->target;
@@ -2883,7 +2886,7 @@ static float _process_action(dt_action_t *action, int instance,
   {
     if(owner->type == DT_ACTION_TYPE_LIB)
     {
-      dt_lib_module_t *lib = (dt_lib_module_t *)owner;
+      const dt_lib_module_t *lib = (dt_lib_module_t *)owner;
       dt_lib_presets_apply(action->label, lib->plugin_name, lib->version());
     }
     else if(owner->type == DT_ACTION_TYPE_IOP)
@@ -3004,7 +3007,7 @@ float dt_action_process(const gchar *action, int instance, const gchar *element,
     return NAN;;
   }
 
-  dt_view_type_flags_t vws = _find_views(ac);
+  const dt_view_type_flags_t vws = _find_views(ac);
   if(!(vws & darktable.view_manager->current_view->view(darktable.view_manager->current_view)))
   {
     fprintf(stderr, "[dt_action_process] action '%s' not valid for current view\n", action);
