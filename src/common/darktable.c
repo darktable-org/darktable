@@ -1531,7 +1531,16 @@ static inline size_t _get_total_memory()
   size_t mem = 0;
   char *line = NULL;
   size_t len = 0;
-  if(getline(&line, &len, f) != -1) mem = atol(line + 10);
+  int first = 1, found = 0;
+  // return "MemTotal" or the value from the first line
+  while(!found && getline(&line, &len, f) != -1)
+  {
+    char *colon = strchr(line, ':');
+    if(!colon) continue;
+    found = !strncmp(line, "MemTotal:", 9);
+    if(found || first) mem = atol(colon + 1);
+    first = 0;
+  }
   fclose(f);
   if(len > 0) free(line);
   return mem;
