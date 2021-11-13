@@ -3503,6 +3503,22 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(w == g->illuminant)
   {
+    if(previous)
+    {
+      dt_illuminant_t *prev_illuminant = (dt_illuminant_t *)previous;
+      if(*prev_illuminant == DT_ILLUMINANT_CAMERA)
+      {
+        // If illuminant was previously set with "as set in camera",
+        // when changing it, we need to ensure the temperature and chromaticity
+        // are inited with the correct values taken from camera EXIF.
+        // Otherwise, if using a preset defining illuminant = "as set in camera",
+        // temperature and chromaticity are inited with the preset content when illuminant is changed.
+        dt_aligned_pixel_t custom_wb;
+        get_white_balance_coeff(self, custom_wb);
+        find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(p->x), &(p->y));
+        check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
+      }
+    }
     if(p->illuminant == DT_ILLUMINANT_CAMERA)
     {
       // Get camera WB and update illuminant
