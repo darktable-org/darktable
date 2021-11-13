@@ -3725,6 +3725,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->illum_led = dt_bauhaus_combobox_from_params(self, "illum_led");
 
   g->temperature = dt_bauhaus_slider_from_params(self, N_("temperature"));
+  dt_bauhaus_slider_set_soft_range(g->temperature, 3000., 7000.);
   dt_bauhaus_slider_set_step(g->temperature, 50.);
   dt_bauhaus_slider_set_digits(g->temperature, 0);
   dt_bauhaus_slider_set_format(g->temperature, "%.0f K");
