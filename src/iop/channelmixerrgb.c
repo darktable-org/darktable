@@ -2947,7 +2947,8 @@ static void update_xy_color(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->illum_y, stop, RGB[0], RGB[1], RGB[2]);
   }
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(g->illum_x);
+  gtk_widget_queue_draw(g->illum_y);
 }
 
 static void _convert_GUI_colors(dt_iop_channelmixer_rgb_params_t *p,
@@ -3044,7 +3045,9 @@ static void update_R_colors(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_red_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(g->scale_red_R);
+  gtk_widget_queue_draw(g->scale_red_G);
+  gtk_widget_queue_draw(g->scale_red_B);
 }
 
 
@@ -3110,7 +3113,9 @@ static void update_B_colors(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_blue_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(g->scale_blue_R);
+  gtk_widget_queue_draw(g->scale_blue_G);
+  gtk_widget_queue_draw(g->scale_blue_B);
 }
 
 static void update_G_colors(dt_iop_module_t *self)
@@ -3175,7 +3180,9 @@ static void update_G_colors(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->scale_green_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
-  gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(g->scale_green_R);
+  gtk_widget_queue_draw(g->scale_green_G);
+  gtk_widget_queue_draw(g->scale_green_B);
 }
 
 
