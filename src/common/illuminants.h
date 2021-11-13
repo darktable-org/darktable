@@ -582,7 +582,7 @@ static inline float CCT_reverse_lookup(const float x, const float y)
     // Current x, y chromaticity
     float x_bb, y_bb;
 
-    if(T > 3000.f)
+    if(T >= 4000.f)
       CCT_to_xy_daylight(T, &x_bb, &y_bb);
     else
       CCT_to_xy_blackbody(T, &x_bb, &y_bb);
