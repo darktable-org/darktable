@@ -34,6 +34,141 @@
 #include <libraw/libraw.h>
 
 
+typedef struct model_map
+{
+  const gchar *exif_make;
+  const gchar *exif_model;
+  const gchar *clean_make;
+  const gchar *clean_model;
+  const gchar *clean_alias;
+
+} model_map_t;
+
+
+const model_map_t modelMap[] = {
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R",
+    .clean_make = "Canon",
+    .clean_model = "EOS R",
+    .clean_alias = "EOS R"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS RP",
+    .clean_make = "Canon",
+    .clean_model = "EOS RP",
+    .clean_alias = "EOS RP"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R5",
+    .clean_make = "Canon",
+    .clean_model = "EOS R5",
+    .clean_alias = "EOS R5"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R6",
+    .clean_make = "Canon",
+    .clean_model = "EOS R6",
+    .clean_alias = "EOS R6"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS R3",
+    .clean_make = "Canon",
+    .clean_model = "EOS R3",
+    .clean_alias = "EOS R3"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS M50",
+    .clean_make = "Canon",
+    .clean_model = "EOS M50",
+    .clean_alias = "EOS M50"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS KISS M",
+    .clean_make = "Canon",
+    .clean_model = "EOS M50",
+    .clean_alias = "EOS KISS M"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS M50m2",
+    .clean_make = "Canon",
+    .clean_model = "EOS M50 Mark II",
+    .clean_alias = "EOS M50 Mark II"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS M6 Mark II",
+    .clean_make = "Canon",
+    .clean_model = "EOS M6",
+    .clean_alias = "EOS M6"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS M200",
+    .clean_make = "Canon",
+    .clean_model = "EOS M200",
+    .clean_alias = "EOS M200"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS 250D",
+    .clean_make = "Canon",
+    .clean_model = "EOS 250D",
+    .clean_alias = "EOS 250D"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS 850D",
+    .clean_make = "Canon",
+    .clean_model = "EOS 850D",
+    .clean_alias = "EOS 850D"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS Rebel T8i",
+    .clean_make = "Canon",
+    .clean_model = "EOS 850D",
+    .clean_alias = "EOS Rebel T8i"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS 90D",
+    .clean_make = "Canon",
+    .clean_model = "EOS 90D",
+    .clean_alias = "EOS 90D"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon EOS-1D X Mark III",
+    .clean_make = "Canon",
+    .clean_model = "EOS-1D X Mark III",
+    .clean_alias = "EOS-1D X Mark III"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon PowerShot G7 X Mark III",
+    .clean_make = "Canon",
+    .clean_model = "PowerShot G7 X Mark III",
+    .clean_alias = "PowerShot G7 X Mark III"
+  },
+  {
+    .exif_make = "Canon",
+    .exif_model = "Canon PowerShot G5 X Mark II",
+    .clean_make = "Canon",
+    .clean_model = "PowerShot G5 X Mark II",
+    .clean_alias = "PowerShot G5 X Mark II"
+  }
+};
+
+
+
 /* LibRAW is expected to read only new canon CR3 files */
 
 static gboolean _supported_image(const gchar *filename)
@@ -60,23 +195,18 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
 {
   gboolean got_it_done = FALSE;
 
-  if(g_str_equal(maker, "Canon"))
+  for(int i = 0; i < sizeof(modelMap) / sizeof(modelMap[0]); ++i)
   {
-    g_strlcpy(mk, "Canon", mk_len);
-
-    if(g_str_equal(model, "Canon EOS RP"))
+    if(g_str_equal(maker, modelMap[i].exif_make) && g_str_equal(model, modelMap[i].exif_model))
     {
-      g_strlcpy(md, "EOS RP", md_len);
-      g_strlcpy(al, "EOS RP", al_len);
+      //printf("input model: %s, exif model: %s\n", model, modelMap[i].exif_model);
+      g_strlcpy(mk, modelMap[i].clean_make, mk_len);
+      g_strlcpy(md, modelMap[i].clean_model, md_len);
+      g_strlcpy(al, modelMap[i].clean_alias, al_len);
+      got_it_done = TRUE;
+      break;
     }
-    if(g_str_equal(model, "Canon EOS R"))
-    {
-      g_strlcpy(md, "EOS R", md_len);
-      g_strlcpy(al, "EOS R", al_len);
-    }
-    got_it_done = TRUE;
   }
-
   return got_it_done;
 }
 
