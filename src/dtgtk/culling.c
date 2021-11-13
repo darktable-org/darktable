@@ -326,7 +326,7 @@ static void _get_root_offset(GtkWidget *w_image_box, float x_root, float y_root,
 
 static gboolean _zoom_and_shift(dt_thumbnail_t *th, const int x_offset, const int y_offset, const float zoom_delta)
 {
-  float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
+  const float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
   if(zd == th->zoom)
     return FALSE; // delta_zoom did not change this thumbnail's zoom factor
 
@@ -368,7 +368,7 @@ static gboolean _zoom_to_x_root(dt_thumbnail_t *th, const float x_root, const fl
 
 static gboolean _zoom_to_center(dt_thumbnail_t *th, const float zoom_delta)
 {
-  float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
+  const float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
   if(zd == th->zoom)
     return FALSE; // delta_zoom did not change this thumbnail's zoom factor
 
@@ -1477,20 +1477,20 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
   g_list_free(rows);
 
-  float factor;
-  factor = (float)(table->view_width - 1) / total_width;
-  if(factor * total_height > table->view_height - 1) factor = (float)(table->view_height - 1) / total_height;
+  float factor = (float)(table->view_width - 1) / total_width;
+  if(factor * total_height > table->view_height - 1)
+    factor = (float)(table->view_height - 1) / total_height;
 
-  int xoff = (table->view_width - (float)total_width * factor) / 2;
-  int yoff = (table->view_height - (float)total_height * factor) / 2;
+  const int xoff = (table->view_width - (float)total_width * factor) / 2;
+  const int yoff = (table->view_height - (float)total_height * factor) / 2;
 
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
-    thumb->width = thumb->width * factor;
+    thumb->width  = thumb->width * factor;
     thumb->height = thumb->height * factor;
-    thumb->x = thumb->x * factor + xoff;
-    thumb->y = thumb->y * factor + yoff;
+    thumb->x      = thumb->x * factor + xoff;
+    thumb->y      = thumb->y * factor + yoff;
   }
 
   // we save the current first id
