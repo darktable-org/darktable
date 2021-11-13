@@ -106,6 +106,11 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
 int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height,
                                dt_colorspaces_color_profile_type_t *color_space);
 
+// lookup maker and model, dispatch lookup to rawspeed or libraw
+gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
+                                      char *mk, int mk_len, char *md, int md_len,
+                                      char *al, int al_len);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

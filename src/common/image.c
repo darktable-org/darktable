@@ -1793,19 +1793,10 @@ void dt_image_refresh_makermodel(dt_image_t *img)
   if(!img->camera_maker[0] || !img->camera_model[0] || !img->camera_alias[0])
   {
     // We need to use the exif values, so let's get rawspeed to munge them
-    gboolean found = dt_rawspeed_lookup_makermodel(img->exif_maker, img->exif_model,
-                                              img->camera_maker, sizeof(img->camera_maker),
-                                              img->camera_model, sizeof(img->camera_model),
-                                              img->camera_alias, sizeof(img->camera_alias));
-
-    if(found == FALSE)
-    {
-      // Special handling for CR3 raw files via libraw
-      found = dt_libraw_lookup_makermodel(img->exif_maker, img->exif_model,
-                                              img->camera_maker, sizeof(img->camera_maker),
-                                              img->camera_model, sizeof(img->camera_model),
-                                              img->camera_alias, sizeof(img->camera_alias));
-    }
+    dt_imageio_lookup_makermodel(img->exif_maker, img->exif_model,
+                                 img->camera_maker, sizeof(img->camera_maker),
+                                 img->camera_model, sizeof(img->camera_model),
+                                 img->camera_alias, sizeof(img->camera_alias));
   }
 
   // Now we just create a makermodel by concatenation
