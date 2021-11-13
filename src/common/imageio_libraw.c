@@ -54,11 +54,11 @@ static gboolean _supported_image(const gchar *filename)
 
 
 
-int dt_libraw_lookup_makermodel(const char *maker, const char *model,
-                                   char *mk, int mk_len, char *md, int md_len,
-                                   char *al, int al_len)
+gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
+                                     char *mk, int mk_len, char *md, int md_len,
+                                     char *al, int al_len)
 {
-  int got_it_done = FALSE;
+  gboolean got_it_done = FALSE;
 
   if(g_str_equal(maker, "Canon"))
   {
@@ -101,7 +101,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   // But seems to be the best available. libraw crx decoder can actually
   // decode the raw data, but internal metadata like wb_coeffs, crops etc.
   // are not populated into libraw structure.
-  if(raw->color.cam_mul[0] == 0.0)
+  if(raw->color.cam_mul[0] == 0.0 || isnan(raw->color.cam_mul[0]))
   {
     libraw_close(raw);
     return DT_IMAGEIO_FILE_CORRUPTED;
@@ -187,7 +187,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   return DT_IMAGEIO_OK;
 
 error:
-  printf("libraw error: %s\n", libraw_strerror(libraw_err));
+  fprintf(stderr, "libraw error: %s\n", libraw_strerror(libraw_err));
   libraw_close(raw);
   return err;
 }
