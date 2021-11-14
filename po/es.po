@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-10 20:10-0600\n"
-"PO-Revision-Date: 2021-11-11 23:21-0600\n"
+"POT-Creation-Date: 2021-11-12 10:40-0600\n"
+"PO-Revision-Date: 2021-11-14 01:49-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -8566,6 +8566,9 @@ msgid ""
 "double click to add new shortcut\n"
 "start typing for incremental search"
 msgstr ""
+"Para borrar el atajo seleccionado, pulse Retroceso.\n"
+"Para añadir un nuevo atajo, pulse doble.\n"
+"Para hacer una búsqueda, comience a escribir."
 
 #: ../src/gui/accelerators.c:655
 msgid ""
@@ -8630,14 +8633,12 @@ msgid "reset the settings of the shortcut?"
 msgstr "Seleccionar la saturación del filtro"
 
 #: ../src/gui/accelerators.c:990
-#, fuzzy
 msgid "shortcut already exists"
-msgstr "El nombre de la ubicación «%s» ya existe"
+msgstr "El atajo del teclado ya existe"
 
 #: ../src/gui/accelerators.c:991
-#, fuzzy
 msgid "remove the shortcut?"
-msgstr "eliminar el preajuste"
+msgstr "¿Confirma la eliminación del preajuste?"
 
 #: ../src/gui/accelerators.c:1024
 #, fuzzy
@@ -9345,9 +9346,8 @@ msgid "golden spiral sections"
 msgstr "secciones espirales"
 
 #: ../src/gui/guides.c:39
-#, fuzzy
 msgid "golden mean (all guides)"
-msgstr "proporción áurea"
+msgstr "proporción áurea (todas las guías)"
 
 #: ../src/gui/guides.c:218
 msgid "horizontal lines"
@@ -12494,13 +12494,12 @@ msgid "strength of the effect"
 msgstr "Fuerza del efecto"
 
 #: ../src/iop/clipping.c:304
-#, fuzzy
 msgid ""
 "this module is deprecated. please use the crop, orientation and/or rotate "
 "and perspective modules instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
-"aberración cromática."
+"Este módulo se ha vuelto obsoleto. Se recomienda sustituirlo por alguno de "
+"los siguientes módulos: «recortar», «orientación» o «rotación y perspectiva»."
 
 #: ../src/iop/clipping.c:309
 msgid "crop and rotate"
@@ -13201,9 +13200,8 @@ msgid "global saturation"
 msgstr "saturación general"
 
 #: ../src/iop/colorbalancergb.c:1894
-#, fuzzy
 msgid "global brilliance"
-msgstr "intensidad general"
+msgstr "brillantez general"
 
 #: ../src/iop/colorbalancergb.c:1895 ../src/iop/colorbalancergb.c:1896
 #: ../src/iop/colorbalancergb.c:1897
@@ -14260,36 +14258,33 @@ msgstr ""
 "diferencias en las imágenes ya procesadas."
 
 #: ../src/iop/diffuse.c:127
-#, fuzzy
 msgid "diffuse or sharpen"
-msgstr "reducción de ruido y enfoque"
+msgstr "difuso / nítido"
 
 #: ../src/iop/diffuse.c:132
 msgid "diffusion|deconvolution|blur|sharpening"
 msgstr "difusión|deconvolución|desenfoque|nitidez"
 
 #: ../src/iop/diffuse.c:138
-#, fuzzy
 msgid ""
 "simulate directional diffusion of light with heat transfer model\n"
 "to apply an iterative edge-oriented blur, \n"
 "inpaint damaged parts of the image,\n"
 "or to remove blur with blind deconvolution."
 msgstr ""
-"simula la dispersión direccional de la luz basándose en un modelo de "
+"Puede imitar la dispersión direccional de la luz basándose en un modelo de "
 "transferencia de calor\n"
-"para aplicar el desenfoque iterativo a lo largo de los bordes,\n"
-"reconstruye las zonas dañadas de una imagen o\n"
-"eliminar el desenfoque mediante deconvolución ciega."
+"para generar un desenfoque iterativo a lo largo de los bordes,\n"
+"puede reconstruir las zonas dañadas de una imagen o\n"
+" logra reducir el desenfoque por el método de deconvolución ciega."
 
 #: ../src/iop/diffuse.c:229
 msgid "lens deblur: soft"
 msgstr "desenfoque de lente: sutil"
 
 #: ../src/iop/diffuse.c:233
-#, fuzzy
 msgid "lens deblur: medium"
-msgstr "curva de tono: contraste medio"
+msgstr "desenfoque de lente: moderado"
 
 #: ../src/iop/diffuse.c:237
 msgid "lens deblur: hard"
@@ -14300,19 +14295,16 @@ msgid "dehaze"
 msgstr "eliminar neblina"
 
 #: ../src/iop/diffuse.c:277
-#, fuzzy
 msgid "denoise: fine"
 msgstr "reducción de ruido: tenue"
 
 #: ../src/iop/diffuse.c:286
-#, fuzzy
 msgid "denoise: medium"
-msgstr "curva de tono: contraste medio"
+msgstr "reducción de ruido: moderado"
 
 #: ../src/iop/diffuse.c:295
-#, fuzzy
 msgid "denoise: coarse"
-msgstr "reducción de ruido de crominancia"
+msgstr "reducción de ruido: intenso"
 
 #: ../src/iop/diffuse.c:351
 msgid "sharpen demosaicing (no AA filter)"
@@ -14323,30 +14315,26 @@ msgid "sharpen demosaicing (AA filter)"
 msgstr ""
 
 #: ../src/iop/diffuse.c:374
-#, fuzzy
 msgid "simulate watercolor"
-msgstr "Escoja el color de la marca de agua"
+msgstr "imitar a la acuarela"
 
 #: ../src/iop/diffuse.c:392
-#, fuzzy
 msgid "simulate line drawing"
-msgstr "Realiza una imitación de los granos de haluro de plata"
+msgstr "imitar al dibujo con líneas"
 
 #: ../src/iop/diffuse.c:413
 msgid "add local contrast"
 msgstr "añadir contraste local"
 
 #: ../src/iop/diffuse.c:433
-#, fuzzy
 msgid "inpaint highlights"
-msgstr "recortar luces"
+msgstr "reconstrucción de luces"
 
 #: ../src/iop/diffuse.c:1082 ../src/iop/diffuse.c:1320
-#, fuzzy
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
-"El ecualizador de tono no pudo reservar memoria, verifique la configuración "
-"de la RAM"
+"El módulo difuso/nítido no pudo reservar memoria, verifique la configuración "
+"de la RAM."
 
 #: ../src/iop/diffuse.c:1448
 msgid "diffusion properties"
@@ -15289,7 +15277,7 @@ msgstr "rotación|espejar"
 
 #: ../src/iop/flip.c:105
 msgid "flip or rotate image by step of 90 degrees"
-msgstr "Se espeja la imagen o se rota en múltiplos de 90 grados."
+msgstr "Se espeja la imagen o se rota en múltiplos de 90 grados"
 
 #: ../src/iop/flip.c:421 ../src/iop/flip.c:423
 msgid "autodetect"
@@ -19383,9 +19371,8 @@ msgid "set view to AzBz"
 msgstr "Visualizar en AzBz"
 
 #: ../src/libs/histogram.c:1491
-#, fuzzy
 msgid "set view to RYB"
-msgstr "Visualizar en AzBz"
+msgstr "Visualizar en RYB"
 
 #: ../src/libs/histogram.c:1496
 msgid "set view to u*v*"
