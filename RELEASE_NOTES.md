@@ -268,12 +268,35 @@ You are strongly advised to take a backup first.
 
 ### Base Support
 
+- Canon EOS R
+- Canon EOS RP
+- Canon EOS R5
+- Canon EOS R6
+- Canon EOS 6D Mark II
+- Canon EOS 250D
+- Canon EOS 850D
+- Canon EOS 90D
+- Canon EOS 1D X Mark III
+- Canon EOS M50
+- Canon EOS M50 Mark II
+- Canon EOS M200
+- Canon PowerShot G5 X Mark II
+- Canon PowerShot G7 X Mark III
 
 ### White Balance Presets
 
+- Canon EOS R (with finetuning)
+- Canon EOS RP (with finetuning)
+- Canon EOS R5 (with finetuning)
+- Canon EOS R6
+- Canon EOS M50 (with finetuning)
 
 ### Noise Profiles
 
+- Canon EOS R
+- Canon EOS RP
+- Canon EOS R5
+- Canon EOS R6
 
 ### Custom Color matrices
 
