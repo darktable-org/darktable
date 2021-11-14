@@ -1042,7 +1042,7 @@ set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments)
 
 if (USE_LIBRAW)
   set(LIBRAW_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw" CACHE STRING "Relative path to libraw directory (default=CMAKE_CURRENT_SOURCE_DIR)")
-   set(ENABLE_EXAMPLES OFF CACHE BOOL "")
+  set(ENABLE_EXAMPLES OFF CACHE BOOL "")
   set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} libraw CACHE INTERNAL "")
 
   # LibRaw sub-module
