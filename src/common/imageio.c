@@ -40,6 +40,7 @@
 #include "common/imageio_png.h"
 #include "common/imageio_pnm.h"
 #include "common/imageio_rawspeed.h"
+#include "common/imageio_libraw.h"
 #include "common/imageio_rgbe.h"
 #include "common/imageio_tiff.h"
 #ifdef HAVE_LIBAVIF
@@ -48,6 +49,7 @@
 #ifdef HAVE_LIBHEIF
 #include "common/imageio_heif.h"
 #endif
+#include "common/imageio_libraw.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
 #include "control/conf.h"
@@ -1219,6 +1221,10 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
     ret = dt_imageio_open_rawspeed(img, filename, buf);
   }
 
+  /* fallback that tries to open file via LibRAW to support Canon CR3 */
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_libraw(img, filename, buf);
+
   /* fallback that tries to open file via GraphicsMagick */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_exotic(img, filename, buf);
@@ -1233,6 +1239,26 @@ dt_imageio_retval_t dt_imageio_open(dt_image_t *img,               // non-const 
   img->p_height = img->height - img->crop_y - img->crop_height;
 
   return ret;
+}
+
+gboolean dt_imageio_lookup_makermodel(const char *maker, const char *model,
+                                      char *mk, int mk_len, char *md, int md_len,
+                                      char *al, int al_len)
+{
+  // At this stage, we can't tell which loader is used to open the image.
+  gboolean found = dt_rawspeed_lookup_makermodel(maker, model,
+                                                 mk, mk_len,
+                                                 md, md_len,
+                                                 al, al_len);
+  if(found == FALSE)
+  {
+    // Special handling for CR3 raw files via libraw
+    found = dt_libraw_lookup_makermodel(maker, model,
+                                        mk, mk_len,
+                                        md, md_len,
+                                        al, al_len);
+  }
+  return found;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

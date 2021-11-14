@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: 
+        os:
           - { label: ubuntu-20.04, code: focal }
           #- { label: ubuntu-18.04, code: bionic }
         compiler:
@@ -52,7 +52,7 @@ jobs:
           #- { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
           #- { compiler: LLVM11, CC: clang-11, CXX: clang++-11, packages: clang-11 libomp-11-dev libclang-common-11-dev llvm-11-dev clang++-11 libc++-11-dev lld-11}
           - { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
-        btype: 
+        btype:
           - RelWithDebInfo
           #- Release
         target:
@@ -112,6 +112,7 @@ jobs:
             libgraphicsmagick1-dev \
             libgtk-3-dev \
             libheif-dev \
+            libraw-dev \
             libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
@@ -268,6 +269,7 @@ jobs:
             libgraphicsmagick1-dev \
             libgtk-3-dev \
             libheif-dev \
+            libraw-dev \
             libjpeg-dev \
             libjson-glib-dev \
             liblcms2-dev \
@@ -473,7 +475,7 @@ jobs:
             compiler: { compiler: XCode,   CC: cc, CXX: c++ }
             btype: RelWithDebInfo
             target: skiptest
-            
+
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
@@ -502,7 +504,7 @@ jobs:
           brew link --overwrite python@3.9 # workaround introduced 30.12.2020, replace asap.
           # brew upgrade --ignore-pinned # workaround introduced 18.07.2021, replace asap
           brew tap Homebrew/bundle
-          cd src/.ci 
+          cd src/.ci
           brew bundle --verbose
       - name: Build and Install
           # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
