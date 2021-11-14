@@ -445,7 +445,7 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
   if(!no_preview_fallback)
   {
     uint8_t *buffer = NULL;
-    size_t size;
+    size_t size = 0;
     char *mime_type = NULL;
     if(!dt_exif_get_thumbnail(filename, &buffer, &size, &mime_type))
     {
@@ -457,8 +457,9 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
       // loader. We must do this before calling gdk_pixbuf_loader_get_pixbuf.
       if(!gdk_pixbuf_loader_close(loader, NULL)) goto cleanup;
       if (!(tmp = gdk_pixbuf_loader_get_pixbuf(loader))) goto cleanup;
-      float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
-      int width = 128, height = 128 * ratio;
+      const float ratio = 1.0 * gdk_pixbuf_get_height(tmp) / gdk_pixbuf_get_width(tmp);
+      const int width = 128;
+      const int height = 128 * ratio;
       pixbuf = gdk_pixbuf_scale_simple(tmp, width, height, GDK_INTERP_BILINEAR);
 
       have_preview = TRUE;
@@ -519,8 +520,8 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
     if(surface)
     {
       guint8 *image_buffer = cairo_image_surface_get_data(surface);
-      int image_width = cairo_image_surface_get_width(surface);
-      int image_height = cairo_image_surface_get_height(surface);
+      const int image_width = cairo_image_surface_get_width(surface);
+      const int image_height = cairo_image_surface_get_height(surface);
 
       pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, image_width, image_height);
 
