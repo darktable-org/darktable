@@ -435,11 +435,9 @@ if (USE_ISOBMFF)
     # exiv2 >= 0.27.4 provides optional support for ISOBMFF files.
     # This must be manually enabled during exiv2 build and can be checked with
     # the EXV_ENABLE_BMFF symbol.
-    check_cxx_symbol_exists(EXV_ENABLE_BMFF "exiv2/exiv2.hpp" HAVE_EXV_ENABLE_BMFF)
-    # ??? This needs fix as we bypass the check for actual exiv2 version
-    if(APPLE)
-      set(HAVE_EXV_ENABLE_BMFF 1)
-    endif()
+    check_symbol_exists(EXV_ENABLE_BMFF
+      "${Exiv2_INCLUDE_DIRS}/exiv2/exv_conf.h"
+      HAVE_EXV_ENABLE_BMFF)
     if(HAVE_EXV_ENABLE_BMFF)
       add_definitions(-DHAVE_LIBEXIV2_WITH_ISOBMFF=1)
       set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} cr3 CACHE INTERNAL "")
