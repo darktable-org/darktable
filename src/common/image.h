@@ -155,7 +155,8 @@ typedef enum dt_image_loader_t
   LOADER_AVIF     = 11,
   LOADER_IM       = 12,
   LOADER_HEIF     = 13,
-  LOADER_COUNT    = 14, // keep last
+  LOADER_LIBRAW   = 14,
+  LOADER_COUNT    = 15, // keep last
 } dt_image_loader_t;
 
 static const struct
@@ -177,7 +178,8 @@ static const struct
   { N_("netpnm"),          'n'},
   { N_("avif"),            'a'},
   { N_("ImageMagick"),     'i'},
-  { N_("heif"),            'h'}
+  { N_("heif"),            'h'},
+  { N_("libraw"),          'l'}
 };
 
 typedef struct dt_image_geoloc_t
