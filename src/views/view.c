@@ -830,6 +830,15 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   darktable.view_manager->act_on.inside_table = dt_ui_thumbtable(darktable.gui->ui)->mouse_inside;
   darktable.view_manager->act_on.ok = TRUE;
 
+  if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
+  {
+    gchar *tx = dt_util_dstrcat(NULL, "[images to act on] images list : ");
+    for(GList *ll = darktable.view_manager->act_on.images; ll; ll = g_list_next(ll))
+      tx = dt_util_dstrcat(tx, "%d ", GPOINTER_TO_INT(ll->data));
+    dt_print(DT_DEBUG_ACT_ON, "%s\n", tx);
+    g_free(tx);
+  }
+
   return darktable.view_manager->act_on.images;
 }
 
@@ -975,6 +984,9 @@ int dt_view_get_image_to_act_on()
       if(stmt) sqlite3_finalize(stmt);
     }
   }
+
+  if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
+    dt_print(DT_DEBUG_ACT_ON, "[images to act on] single image : %d\n", ret);
 
   return ret;
 }
