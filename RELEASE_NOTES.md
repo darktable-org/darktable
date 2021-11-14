@@ -285,11 +285,11 @@ You are strongly advised to take a backup first.
 
 ### White Balance Presets
 
-- Canon EOS R (with finetuning)
-- Canon EOS RP (with finetuning)
-- Canon EOS R5 (with finetuning)
+- Canon EOS R (with fine-tuning)
+- Canon EOS RP (with fine-tuning)
+- Canon EOS R5 (with fine-tuning)
 - Canon EOS R6
-- Canon EOS M50 (with finetuning)
+- Canon EOS M50 (with fine-tuning)
 
 ### Noise Profiles
 
