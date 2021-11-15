@@ -275,11 +275,11 @@ You are strongly advised to take a backup first.
 - Canon EOS RP
 - Canon EOS R5
 - Canon EOS R6
-- Canon EOS 6D Mark II
 - Canon EOS 250D
 - Canon EOS 850D
 - Canon EOS 90D
 - Canon EOS 1D X Mark III
+- Canon EOS M6 Mark II
 - Canon EOS M50
 - Canon EOS M50 Mark II
 - Canon EOS M200
