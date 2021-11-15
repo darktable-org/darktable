@@ -62,6 +62,9 @@ You are strongly advised to take a backup first.
 - The composition guides from the crop module are now available globally and do
   not require the crop module to be activated.
 
+- The Canon raw CR3 format is now supported (see list of supported cameras in the
+  section below).
+
 ## Other New Features And Changes
 
 - The denoise (profiled) module now uses wavelets mode by default and its default
