@@ -644,6 +644,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Convert to JCh
     float JC[2] = { Jab[0], dt_fast_hypotf(Jab[1], Jab[2]) };   // brightness/chroma vector
     const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
+    // Gamut mapping: find the upper bound for saturation at current hue.
+    const float max_saturation = lookup_gamut(gamut_LUT, h);
 
     // The norm of the JC vector is considered as the brilliance,
     // the polar angle is considered as the saturation.
@@ -652,24 +654,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Saturation adjustment: determine the new saturation angle based on settings and current angle.
     // The constraint is that a global saturation of -1 (100 %) must result in angle zero -> zero chroma.
     const float saturation_boost = MAX(1.f + d->saturation_global + scalar_product(opacities, saturation), 0.f);
-    const float new_saturation = MIN(current_saturation * saturation_boost, DT_M_PI_F / 2.f);
+    // Soft clip to the max saturation found in the gamut LUT
+    const float new_saturation = soft_clip(current_saturation * saturation_boost, 0.9f * max_saturation, max_saturation);
     // Brilliance boost: scale the vector
     const float brilliance_boost = MAX(1.f + d->brilliance_global + scalar_product(opacities, brilliance), 0.f);
     const float new_brilliance = current_brilliance * brilliance_boost;
     // Form the new JC vector
     JC[0] = MAX(new_brilliance * cosf(new_saturation), 0.f);
     JC[1] = MAX(new_brilliance * sinf(new_saturation), 0.f);
-
-    // Gamut mapping
-    const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
-    // if JC[0] == 0.f, the saturation / luminance ratio is infinite - assign the largest practical value we have
-    float sat = (JC[0] > 0.f) ? JC[1] / JC[0] : out_max_sat_h;
-    sat = soft_clip(sat, 0.8f * out_max_sat_h, out_max_sat_h);
-    const float max_C_at_sat = JC[0] * sat;
-    // if sat == 0.f, the chroma is zero - assign the original luminance because there's no need to gamut map
-    const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : JC[0];
-    JC[0] = (JC[0] + max_J_at_sat) / 2.f;
-    JC[1] = (JC[1] + max_C_at_sat) / 2.f;
 
     // Gamut-clip in Jch at constant hue and lightness,
     // e.g. find the max chroma available at current hue that doesn't
@@ -1041,7 +1033,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           Jch[2] = atan2f(Jab[2], Jab[1]);
 
           const size_t index = roundf((LUT_ELEM - 1) * (Jch[2] + M_PI_F) / (2.f * M_PI_F));
-          const float saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
+          const float saturation = atan2f(Jch[1], Jch[0]);
           LUT[index] = fmaxf(saturation, LUT[index]);
         }
 
