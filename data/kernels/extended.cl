@@ -948,8 +948,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   // Gamut mapping
   const float out_max_sat_h = lookup_gamut(gamut_lut, h);
   // if JC[0] == 0.f, the saturation / luminance ratio is infinite - assign the largest practical value we have
-  float sat = (JC[0] > 0.f) ? JC[1] / JC[0] : out_max_sat_h;
-  sat = soft_clip(sat, 0.8f * out_max_sat_h, out_max_sat_h);
+  const float sat = (JC[0] > 0.f) ? soft_clip(JC[1] / JC[0], 0.8f * out_max_sat_h, out_max_sat_h)
+                                  : out_max_sat_h;
   const float max_C_at_sat = JC[0] * sat;
   // if sat == 0.f, the chroma is zero - assign the original luminance because there's no need to gamut map
   const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : JC[0];
