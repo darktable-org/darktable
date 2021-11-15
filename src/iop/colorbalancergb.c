@@ -645,29 +645,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float JC[2] = { Jab[0], dt_fast_hypotf(Jab[1], Jab[2]) };   // brightness/chroma vector
     const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
 
-    // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
-    // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
-    // so we add the chroma projected along the orthogonal axis to get some control value
-    const float T = atan2f(JC[1], JC[0]); // angle of the eigenvector over the hue plane
-    const float sin_T = sinf(T);
-    const float cos_T = cosf(T);
-    const float DT_ALIGNED_PIXEL M_rot_dir[2][2] = { {  cos_T,  sin_T },
-                                                     { -sin_T,  cos_T } };
-    const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { {  cos_T, -sin_T },
-                                                     {  sin_T,  cos_T } };
-    float SO[2];
-
-    // brilliance & Saturation : mix of chroma and luminance
-    const float boosts[2] = { 1.f + d->brilliance_global + scalar_product(opacities, brilliance),     // move in S direction
-                              d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
-
-    SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
-    SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
-    SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
-
-    // Project back to JCh, that is rotate back of -T angle
-    JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
-    JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
+    // The norm of the JC vector is considered as the brilliance,
+    // the polar angle is considered as the saturation.
+    const float current_brilliance = dt_fast_hypotf(JC[0], JC[1]);
+    const float current_saturation = atan2f(JC[1], JC[0]);
+    // Saturation adjustment: determine the new saturation angle based on settings and current angle.
+    // The constraint is that a global saturation of -1 (100 %) must result in angle zero -> zero chroma.
+    const float saturation_boost = MAX(1.f + d->saturation_global + scalar_product(opacities, saturation), 0.f);
+    const float new_saturation = MIN(current_saturation * saturation_boost, DT_M_PI_F / 2.f);
+    // Brilliance boost: scale the vector
+    const float brilliance_boost = MAX(1.f + d->brilliance_global + scalar_product(opacities, brilliance), 0.f);
+    const float new_brilliance = current_brilliance * brilliance_boost;
+    // Form the new JC vector
+    JC[0] = MAX(new_brilliance * cosf(new_saturation), 0.f);
+    JC[1] = MAX(new_brilliance * sinf(new_saturation), 0.f);
 
     // Gamut mapping
     const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
