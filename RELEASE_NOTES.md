@@ -63,7 +63,8 @@ You are strongly advised to take a backup first.
   not require the crop module to be activated.
 
 - The Canon raw CR3 format is now supported (see list of supported cameras in the
-  section below).
+  section below). This support is done by LibRaw and requires at least exiv2 version
+  0.27.4 with BMFF support activated.
 
 ## Other New Features And Changes
 
