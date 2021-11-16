@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-10 09:22+0100\n"
-"PO-Revision-Date: 2021-11-16 00:24+0100\n"
+"PO-Revision-Date: 2021-11-16 01:40+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -1757,7 +1757,6 @@ msgid "waiting time between each picture in slideshow"
 msgstr "Intervallo di tempo tra le foto durante la presentazione"
 
 #: ../build/bin/preferences_gen.h:7938 ../src/control/jobs/control_jobs.c:2320
-#, fuzzy
 #: ../src/libs/import.c:177
 msgid "import"
 msgstr "Importa "
@@ -2155,7 +2154,6 @@ msgid "logarithmic"
 msgstr "Logaritmica"
 
 #: ../build/bin/conf_gen.h:2482 ../build/bin/conf_gen.h:2518
-#, fuzzy
 msgctxt "preferences"
 msgid "linear"
 msgstr "Lineare"
@@ -2480,7 +2478,7 @@ msgstr "Obiettivo"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:221
 msgid "motion"
-msgstr ""
+msgstr "Movimento"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:222
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:546
@@ -2571,7 +2569,6 @@ msgid "guide"
 msgstr "Guida"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:67
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:132
 #: ../src/iop/atrous.c:1593 ../src/iop/bilateral.cc:312 ../src/iop/clahe.c:335
 #: ../src/iop/dither.c:889 ../src/iop/lowpass.c:587 ../src/iop/shadhi.c:698
@@ -2598,7 +2595,6 @@ msgid "very large chromatic aberration"
 msgstr "Aberrazione cromatica molto ampia"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#, fuzzy
 #: ../src/common/collection.c:1501 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
 #: ../src/gui/gtk.c:3003 ../src/gui/guides.c:700 ../src/iop/bilateral.cc:317
@@ -2610,7 +2606,6 @@ msgid "red"
 msgstr "Rosso"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#, fuzzy
 #: ../src/common/collection.c:1505 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
 #: ../src/gui/gtk.c:3004 ../src/gui/guides.c:701 ../src/iop/bilateral.cc:322
@@ -2622,7 +2617,6 @@ msgid "green"
 msgstr "Verde"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#, fuzzy
 #: ../src/common/collection.c:1507 ../src/develop/blend_gui.c:2012
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
 #: ../src/gui/gtk.c:3005 ../src/iop/bilateral.cc:327
@@ -2848,7 +2842,6 @@ msgid "non-linear Bradford"
 msgstr "Bradford non lineare"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:554
-#, fuzzy
 msgid "XYZ"
 msgstr "XYZ"
 
@@ -3340,7 +3333,7 @@ msgstr "RCD"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:217
 msgid "LMMSE"
-msgstr ""
+msgstr "LMMSE"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:218
 msgid "RCD + VNG4"
@@ -3388,7 +3381,7 @@ msgstr "basique"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:233
 msgid "median"
-msgstr ""
+msgstr "Mediano"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:234
 msgid "3x median"
@@ -4516,29 +4509,28 @@ msgstr "Stampa le tue immagini"
 
 #: ../src/bauhaus/bauhaus.c:3133 ../src/gui/accelerators.c:266
 msgid "value"
-msgstr ""
+msgstr "Valore"
 
 #: ../src/bauhaus/bauhaus.c:3134 ../src/bauhaus/bauhaus.c:3140
 #: ../src/gui/accelerators.c:250
 msgid "button"
-msgstr ""
+msgstr "Pulsante"
 
 #: ../src/bauhaus/bauhaus.c:3135
 msgid "force"
-msgstr ""
+msgstr "Forza"
 
 #: ../src/bauhaus/bauhaus.c:3136
-#, fuzzy
 msgid "zoom"
-msgstr "(zoom)"
+msgstr "Zoom"
 
 #: ../src/bauhaus/bauhaus.c:3139
 msgid "selection"
-msgstr ""
+msgstr "Selezione"
 
 #: ../src/bauhaus/bauhaus.c:3158
 msgid "slider"
-msgstr ""
+msgstr "Cursore"
 
 #: ../src/bauhaus/bauhaus.c:3163
 msgid "dropdown"
@@ -5609,11 +5601,11 @@ msgstr "Legacy"
 
 #: ../src/common/iop_order.c:60
 msgid "v3.0 RAW"
-msgstr ""
+msgstr "v3.0 RAW"
 
 #: ../src/common/iop_order.c:61
 msgid "v3.0 JPEG"
-msgstr ""
+msgstr "v3.0 JPEG"
 
 #: ../src/common/iop_profile.c:105
 #, c-format
@@ -5710,7 +5702,7 @@ msgstr "pollici"
 
 #: ../src/common/pdf.h:91
 msgid "\""
-msgstr ""
+msgstr "\""
 
 #: ../src/common/pdf.h:104
 msgid "a4"
@@ -5775,39 +5767,39 @@ msgstr "Seleziona"
 
 #: ../src/common/ratings.c:285
 msgid "upgrade"
-msgstr ""
+msgstr "Aggiorna"
 
 #: ../src/common/ratings.c:286
 msgid "downgrade"
-msgstr ""
+msgstr "Retrocedi"
 
 #: ../src/common/ratings.c:290
 msgid "zero"
-msgstr ""
+msgstr "Zero"
 
 #: ../src/common/ratings.c:291
 msgid "one"
-msgstr ""
+msgstr "Uno"
 
 #: ../src/common/ratings.c:292
 msgid "two"
-msgstr ""
+msgstr "Due"
 
 #: ../src/common/ratings.c:293
 msgid "three"
-msgstr ""
+msgstr "Tre"
 
 #: ../src/common/ratings.c:294
 msgid "four"
-msgstr ""
+msgstr "Quattro"
 
 #: ../src/common/ratings.c:295
 msgid "five"
-msgstr ""
+msgstr "Cinque"
 
 #: ../src/common/ratings.c:296
 msgid "reject"
-msgstr ""
+msgstr "Rifiuta"
 
 #: ../src/common/styles.c:227
 #, c-format
@@ -5827,7 +5819,7 @@ msgstr "Stili/applica %s"
 #, c-format
 msgctxt "accel"
 msgid "apply %s"
-msgstr ""
+msgstr "Appica %s"
 
 #: ../src/common/styles.c:503 ../src/gui/styles_dialog.c:231
 #, c-format
@@ -5900,7 +5892,7 @@ msgstr "m"
 #: ../src/control/control.c:66 ../src/gui/accelerators.c:129
 #: ../src/views/darkroom.c:2093
 msgid "hold"
-msgstr ""
+msgstr "Tieni"
 
 #: ../src/control/control.c:102 ../src/control/control.c:135
 msgid "modifiers"
@@ -6053,7 +6045,7 @@ msgstr "Data del database"
 
 #: ../src/control/crawler.c:639
 msgid "newest"
-msgstr ""
+msgstr "Più nuovo"
 
 #: ../src/control/crawler.c:644
 msgid "time difference"
@@ -7004,7 +6996,6 @@ msgid "sliders for chroma channel (of HSL)"
 msgstr "Selettore scorrevole per il canale crominanza (di HSL)"
 
 #: ../src/develop/blend_gui.c:2020 ../src/develop/blend_gui.c:2047
-#, fuzzy
 #: ../src/iop/atrous.c:1739 ../src/iop/channelmixerrgb.c:3751
 #: ../src/iop/colorbalancergb.c:1877 ../src/iop/colorbalancergb.c:1878
 #: ../src/iop/colorbalancergb.c:1879 ../src/iop/colorbalancergb.c:1880
@@ -7077,7 +7068,7 @@ msgstr "Ripristina le impostazioni della maschera di fusione"
 #: ../src/iop/rawdenoise.c:905 ../src/iop/rgbcurve.c:1382
 #: ../src/iop/rgblevels.c:1012 ../src/iop/tonecurve.c:1175
 msgid "channel"
-msgstr ""
+msgstr "Canale"
 
 #: ../src/develop/blend_gui.c:2170 ../src/iop/colorzones.c:2457
 #: ../src/iop/rgbcurve.c:1392 ../src/iop/tonecurve.c:1184
@@ -7556,7 +7547,7 @@ msgstr ""
 #: ../src/develop/imageop.c:3234 ../src/develop/imageop.c:3244
 #: ../src/gui/accelerators.c:140 ../src/libs/lib.c:1262
 msgid "show"
-msgstr ""
+msgstr "Lento"
 
 #: ../src/develop/imageop.c:3237 ../src/libs/modulegroups.c:3341
 #: ../src/libs/modulegroups.c:3465 ../src/libs/modulegroups.c:3850
@@ -7571,15 +7562,15 @@ msgstr "Duplica"
 
 #: ../src/develop/imageop.c:3245
 msgid "enable"
-msgstr ""
+msgstr "Abilita"
 
 #: ../src/develop/imageop.c:3246
 msgid "focus"
-msgstr ""
+msgstr "Messa a fuoco"
 
 #: ../src/develop/imageop.c:3247 ../src/gui/accelerators.c:2071
 msgid "instance"
-msgstr ""
+msgstr "Istanza"
 
 #: ../src/develop/imageop.c:3248 ../src/gui/accelerators.c:106
 #: ../src/gui/accelerators.c:115 ../src/iop/atrous.c:1583
@@ -8347,13 +8338,12 @@ msgid "creating complete lighttable thumbnail cache\n"
 msgstr "Creazione cache anteprime Tavolo Luminoso in corso\n"
 
 #: ../src/gui/accelerators.c:77 ../src/views/view.c:1517
-#, fuzzy
 msgid "scroll"
-msgstr "+Scorri"
+msgstr "Scorri"
 
 #: ../src/gui/accelerators.c:78
 msgid "pan"
-msgstr ""
+msgstr "Scorri"
 
 #: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5372
 #: ../src/iop/ashift.c:5373 ../src/iop/ashift.c:5475 ../src/iop/ashift.c:5476
@@ -8377,7 +8367,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:82
 msgid "skew"
-msgstr ""
+msgstr "Storto"
 
 #: ../src/gui/accelerators.c:83
 msgid "leftright"
@@ -8385,7 +8375,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:84
 msgid "updown"
-msgstr ""
+msgstr "Sottosopra"
 
 #: ../src/gui/accelerators.c:85
 msgid "pgupdown"
@@ -8393,23 +8383,23 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:93
 msgid "shift"
-msgstr ""
+msgstr "Shift"
 
 #: ../src/gui/accelerators.c:94
 msgid "ctrl"
-msgstr ""
+msgstr "Ctrl"
 
 #: ../src/gui/accelerators.c:95
 msgid "alt"
-msgstr ""
+msgstr "Alt"
 
 #: ../src/gui/accelerators.c:96
 msgid "cmd"
-msgstr ""
+msgstr "Cmd"
 
 #: ../src/gui/accelerators.c:97
 msgid "altgr"
-msgstr ""
+msgstr "Altgr"
 
 #: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:145
 #: ../src/libs/tagging.c:1655
@@ -8418,24 +8408,24 @@ msgstr "Modifica "
 
 #: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:534
 msgid "up"
-msgstr ""
+msgstr "su"
 
 #: ../src/gui/accelerators.c:105 ../src/gui/accelerators.c:534
 msgid "down"
-msgstr ""
+msgstr "Giù"
 
 #: ../src/gui/accelerators.c:109
 msgid "set"
-msgstr ""
+msgstr "Imposta"
 
 #: ../src/gui/accelerators.c:112
 msgid "popup"
-msgstr ""
+msgstr "Apparire"
 
 #: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:142
 #: ../src/gui/gtk.c:2948 ../src/views/lighttable.c:816
 msgid "next"
-msgstr "prossimo"
+msgstr "Prossimo"
 
 #: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:141
 #: ../src/gui/gtk.c:2949 ../src/views/lighttable.c:817
@@ -8444,17 +8434,17 @@ msgstr "Precedente"
 
 #: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1065
 msgid "last"
-msgstr ""
+msgstr "Ultimo"
 
 #: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:1064
 msgid "first"
-msgstr ""
+msgstr "Primo"
 
 #: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:132
 #: ../src/gui/accelerators.c:238 ../src/views/darkroom.c:2293
 #: ../src/views/darkroom.c:2349
 msgid "toggle"
-msgstr ""
+msgstr "Disattiva"
 
 #: ../src/gui/accelerators.c:123
 msgid "ctrl-toggle"
@@ -8486,7 +8476,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:143
 msgid "store"
-msgstr ""
+msgstr "Negozio"
 
 #: ../src/gui/accelerators.c:146 ../src/gui/styles_dialog.c:507
 msgid "update"
@@ -8512,27 +8502,27 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:515 ../src/gui/accelerators.c:525
 msgid "double"
-msgstr ""
+msgstr "Doppio"
 
 #: ../src/gui/accelerators.c:516 ../src/gui/accelerators.c:526
 msgid "triple"
-msgstr ""
+msgstr "Triplo"
 
 #: ../src/gui/accelerators.c:517 ../src/gui/accelerators.c:527
 msgid "long"
-msgstr ""
+msgstr "Lungo"
 
 #: ../src/gui/accelerators.c:518
 msgid "press"
-msgstr ""
+msgstr "Premi"
 
 #: ../src/gui/accelerators.c:524 ../src/views/lighttable.c:815
 msgid "middle"
-msgstr ""
+msgstr "Metà"
 
 #: ../src/gui/accelerators.c:528
 msgid "click"
-msgstr ""
+msgstr "Clicca"
 
 #: ../src/gui/accelerators.c:556
 msgid "first instance"
@@ -8548,7 +8538,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:588 ../src/gui/accelerators.c:2061
 msgid "speed"
-msgstr ""
+msgstr "Velocità"
 
 #: ../src/gui/accelerators.c:641
 msgid ""
@@ -8638,7 +8628,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1066
 msgid "second"
-msgstr ""
+msgstr "Secondo"
 
 #: ../src/gui/accelerators.c:1067
 msgid "last but one"
@@ -8684,7 +8674,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1739
 msgid "_edits"
-msgstr ""
+msgstr "_modifiche"
 
 #: ../src/gui/accelerators.c:1744
 msgid ""
@@ -8788,7 +8778,6 @@ msgid "shortcut"
 msgstr "Scorciatoia"
 
 #: ../src/gui/accelerators.c:2039 ../src/gui/accelerators.c:2127
-#, fuzzy
 #: ../src/views/view.c:1712
 msgid "action"
 msgstr "Azione"
@@ -9029,7 +9018,7 @@ msgstr "Nascondi l'evidenziatore del fuoco"
 #: ../src/gui/gtk.c:1500 ../src/gui/gtk.c:1516 ../src/gui/gtk.c:1550
 #: ../src/gui/gtk.c:1564
 msgid "panels"
-msgstr ""
+msgstr "Pannelli"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
@@ -10484,7 +10473,7 @@ msgstr "Crea un nuovo album"
 
 #: ../src/imageio/storage/piwigo.c:600
 msgid "---"
-msgstr ""
+msgstr "---"
 
 #: ../src/imageio/storage/piwigo.c:641
 msgid "cannot refresh albums"
@@ -10944,19 +10933,19 @@ msgstr "Spento"
 
 #: ../src/iop/atrous.c:1584 ../src/iop/atrous.c:1635
 msgid "boost"
-msgstr ""
+msgstr "Incremento"
 
 #: ../src/iop/atrous.c:1585
 msgid "reduce"
-msgstr ""
+msgstr "Riduci"
 
 #: ../src/iop/atrous.c:1586
 msgid "raise"
-msgstr ""
+msgstr "Alza"
 
 #: ../src/iop/atrous.c:1587
 msgid "lower"
-msgstr ""
+msgstr "Abbassa"
 
 #: ../src/iop/atrous.c:1594
 msgid "coarsest"
@@ -10968,11 +10957,11 @@ msgstr ""
 
 #: ../src/iop/atrous.c:1598
 msgid "finer"
-msgstr ""
+msgstr "Più fine"
 
 #: ../src/iop/atrous.c:1599
 msgid "finest"
-msgstr ""
+msgstr "Più bello"
 
 #: ../src/iop/atrous.c:1657 ../src/libs/export.c:1206 ../src/libs/export.c:1221
 msgid "x"
@@ -11008,7 +10997,7 @@ msgstr ""
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3197
 msgid "graph"
-msgstr ""
+msgstr "Grafico"
 
 #: ../src/iop/atrous.c:1768 ../src/iop/colorzones.c:2513
 msgid "make effect stronger or weaker"
@@ -11411,7 +11400,7 @@ msgstr "Intensità di luce soffusa"
 
 #: ../src/iop/blurs.c:81
 msgid "blurs"
-msgstr ""
+msgstr "Sfocature"
 
 #: ../src/iop/blurs.c:86
 msgid "blur|lens|motion"
@@ -11443,19 +11432,19 @@ msgstr "15:10 Cartolina nera"
 
 #: ../src/iop/borders.c:969
 msgid "3:1"
-msgstr ""
+msgstr "3:1"
 
 #: ../src/iop/borders.c:970
 msgid "95:33"
-msgstr ""
+msgstr "95:33"
 
 #: ../src/iop/borders.c:971
 msgid "2:1"
-msgstr ""
+msgstr "2:1"
 
 #: ../src/iop/borders.c:972
 msgid "16:9"
-msgstr ""
+msgstr "16:9"
 
 #: ../src/iop/borders.c:973 ../src/iop/clipping.c:2168 ../src/iop/crop.c:1106
 msgid "golden cut"
@@ -11463,7 +11452,7 @@ msgstr "Taglio aureo"
 
 #: ../src/iop/borders.c:974
 msgid "3:2"
-msgstr ""
+msgstr "3:2"
 
 #: ../src/iop/borders.c:975
 msgid "A4"
@@ -11475,7 +11464,7 @@ msgstr "DIN"
 
 #: ../src/iop/borders.c:977
 msgid "4:3"
-msgstr ""
+msgstr "4:3"
 
 #: ../src/iop/borders.c:978 ../src/iop/clipping.c:2158 ../src/iop/crop.c:1096
 #: ../src/libs/collect.c:271
@@ -11496,19 +11485,19 @@ msgstr "Centro"
 
 #: ../src/iop/borders.c:1002 ../src/iop/borders.c:1008
 msgid "1/3"
-msgstr ""
+msgstr "1/3"
 
 #: ../src/iop/borders.c:1003 ../src/iop/borders.c:1009
 msgid "3/8"
-msgstr ""
+msgstr "3/8"
 
 #: ../src/iop/borders.c:1004 ../src/iop/borders.c:1010
 msgid "5/8"
-msgstr ""
+msgstr "5/8"
 
 #: ../src/iop/borders.c:1005 ../src/iop/borders.c:1011
 msgid "2/3"
-msgstr ""
+msgstr "2/3"
 
 #: ../src/iop/borders.c:1037
 msgid "size of the border in percent of the full image"
@@ -12476,7 +12465,6 @@ msgid "mirror image horizontally and/or vertically"
 msgstr "Rifletti l'immagine orizzontalmente e/o verticalmente"
 
 #: ../src/iop/clipping.c:2137
-#, fuzzy
 msgid "angle"
 msgstr "Angolo"
 
@@ -12551,7 +12539,7 @@ msgstr "Cinemascope"
 
 #: ../src/iop/clipping.c:2173 ../src/iop/crop.c:1111
 msgid "21:9"
-msgstr ""
+msgstr "21:9"
 
 #: ../src/iop/clipping.c:2174 ../src/iop/crop.c:1112
 msgid "anamorphic"
@@ -13668,11 +13656,11 @@ msgstr "Impostazioni base HSL"
 
 #: ../src/iop/colorzones.c:2317
 msgid "orange"
-msgstr ""
+msgstr "Arancione"
 
 #: ../src/iop/colorzones.c:2320
 msgid "aqua"
-msgstr ""
+msgstr "Acqua"
 
 #: ../src/iop/colorzones.c:2464 ../src/iop/rgbcurve.c:1399
 msgid ""
@@ -14183,7 +14171,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:259
 msgid "dehaze"
-msgstr ""
+msgstr "Rimuovi foschia"
 
 #: ../src/iop/diffuse.c:278
 msgid "denoise: soft"
@@ -14668,7 +14656,6 @@ msgstr "Sfumato"
 
 #. centripetal spline
 #: ../src/iop/filmic.c:1704 ../src/iop/profile_gamma.c:638
-#, fuzzy
 msgid "linear"
 msgstr "Lineare"
 
@@ -14826,7 +14813,7 @@ msgstr "Visualizza"
 #. axis legend
 #: ../src/iop/filmicrgb.c:3148
 msgid "(%)"
-msgstr ""
+msgstr "(%)"
 
 #. Page SCENE
 #: ../src/iop/filmicrgb.c:3157 ../src/iop/filmicrgb.c:3677
@@ -15603,7 +15590,6 @@ msgid "f-number (aperture)"
 msgstr "Numero-f (apertura diaframma)"
 
 #: ../src/iop/lens.cc:1928
-#, fuzzy
 msgid "d"
 msgstr "d"
 
@@ -15762,7 +15748,6 @@ msgid "pick white point from image"
 msgstr "Prendi punto di bianco dall'immagine"
 
 #: ../src/iop/levels.c:666 ../src/iop/rgblevels.c:946
-#, fuzzy
 msgid "black"
 msgstr "Nero"
 
@@ -16689,7 +16674,6 @@ msgid "toggle tool for picking median lightness in image"
 msgstr "Cambia strumento per prelevare la luminosità media nell'immagine"
 
 #: ../src/iop/relight.c:286 ../src/libs/metadata_view.c:146
-#, fuzzy
 #: ../src/libs/print_settings.c:2224
 msgid "width"
 msgstr "Larghezza"
@@ -16998,7 +16982,7 @@ msgstr "Regola i punti di nero, bianco e grigio medio nello spazio colore RGB"
 
 #: ../src/iop/rgblevels.c:947
 msgid "grey"
-msgstr ""
+msgstr "Grigio"
 
 #: ../src/iop/rgblevels.c:1073
 msgid ""
@@ -18367,11 +18351,11 @@ msgstr "LCh"
 
 #: ../src/libs/colorpicker.c:50
 msgid "HSV"
-msgstr ""
+msgstr "HSV"
 
 #: ../src/libs/colorpicker.c:50
 msgid "Hex"
-msgstr ""
+msgstr "Hex"
 
 #: ../src/libs/colorpicker.c:52
 msgid "mean"
@@ -18722,7 +18706,7 @@ msgstr "Risoluzione punti/pollice"
 
 #: ../src/libs/export.c:1211
 msgid "@"
-msgstr ""
+msgstr "@"
 
 #: ../src/libs/export.c:1224 ../src/libs/tools/global_toolbox.c:226
 msgid "px"
@@ -19161,7 +19145,7 @@ msgstr "Numero di immagini corrispondenti contro immagini selezionate"
 
 #: ../src/libs/histogram.c:151
 msgid "scopes"
-msgstr ""
+msgstr "Ambiti"
 
 #: ../src/libs/histogram.c:1304 ../src/libs/histogram.c:1963
 msgid "ctrl+scroll to change display height"
@@ -20882,27 +20866,27 @@ msgstr "Adatta allo schermo"
 
 #: ../src/libs/navigation.c:518
 msgid "50%"
-msgstr ""
+msgstr "50%"
 
 #: ../src/libs/navigation.c:522
 msgid "100%"
-msgstr ""
+msgstr "100%"
 
 #: ../src/libs/navigation.c:526
 msgid "200%"
-msgstr ""
+msgstr "200%"
 
 #: ../src/libs/navigation.c:530
 msgid "400%"
-msgstr ""
+msgstr "400%"
 
 #: ../src/libs/navigation.c:534
 msgid "800%"
-msgstr ""
+msgstr "800%"
 
 #: ../src/libs/navigation.c:538
 msgid "1600%"
-msgstr ""
+msgstr "1600%"
 
 #: ../src/libs/navigation.c:569
 msgctxt "accel"
@@ -21260,7 +21244,6 @@ msgid "remove"
 msgstr "Rimuovi"
 
 #: ../src/libs/styles.c:76
-#, fuzzy
 msgctxt "accel"
 msgid "import"
 msgstr "Importa "
@@ -21380,7 +21363,6 @@ msgid "attach"
 msgstr "Allega"
 
 #: ../src/libs/tagging.c:129
-#, fuzzy
 msgctxt "accel"
 msgid "detach"
 msgstr "Rimuovi"
@@ -21642,7 +21624,6 @@ msgid "attach tag to all selected images"
 msgstr "Allega etichetta alle immagini selezionate"
 
 #: ../src/libs/tagging.c:2946
-#, fuzzy
 msgid "detach"
 msgstr "Rimuovi"
 
@@ -22238,25 +22219,21 @@ msgid "color scheme"
 msgstr "Combinazione colori"
 
 #: ../src/views/darkroom.c:2322
-#, fuzzy
 msgctxt "solidcolor"
 msgid "red"
 msgstr "Rosso"
 
 #: ../src/views/darkroom.c:2323
-#, fuzzy
 msgctxt "solidcolor"
 msgid "green"
 msgstr "Verde"
 
 #: ../src/views/darkroom.c:2324
-#, fuzzy
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "Blu"
 
 #: ../src/views/darkroom.c:2325
-#, fuzzy
 msgctxt "solidcolor"
 msgid "black"
 msgstr "Nero"
@@ -22382,7 +22359,7 @@ msgstr ""
 #: ../src/views/darkroom.c:2479 ../src/views/darkroom.c:2480
 #: ../src/views/darkroom.c:2481 ../src/views/darkroom.c:2482
 msgid "profiles"
-msgstr ""
+msgstr "Profili"
 
 #: ../src/views/darkroom.c:2460
 msgid "preview intent"
@@ -22542,7 +22519,7 @@ msgstr ""
 #: ../src/views/darkroom.c:3894
 msgctxt "accel"
 msgid "second window"
-msgstr ""
+msgstr "Seconda finestra"
 
 #. brush size +/-
 #: ../src/views/darkroom.c:3897
@@ -22752,7 +22729,7 @@ msgstr "Imposta profilo schermo"
 
 #: ../src/views/lighttable.c:1395
 msgid "whole"
-msgstr ""
+msgstr "Intero"
 
 #. Preview key
 #: ../src/views/lighttable.c:1412 ../src/views/lighttable.c:1413
@@ -22783,7 +22760,7 @@ msgstr "Stampa"
 
 #: ../src/views/slideshow.c:314
 msgid "end of images"
-msgstr ""
+msgstr "Fine delle immagini"
 
 #: ../src/views/slideshow.c:330
 msgid "end of images. press any key to return to lighttable mode"
