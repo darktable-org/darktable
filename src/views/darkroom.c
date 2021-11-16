@@ -1064,7 +1064,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
     {
       if(!dt_iop_is_hidden(module))
       {
-        module->gui_init(module);
+        dt_iop_gui_init(module);
 
         /* add module to right panel */
         dt_iop_gui_set_expander(module);
