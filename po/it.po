@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-10 09:22+0100\n"
-"PO-Revision-Date: 2021-11-16 01:40+0100\n"
+"PO-Revision-Date: 2021-11-16 23:24+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -200,11 +200,10 @@ msgstr ""
 "Valutare un'immagine con una stella per due volte non azzera la valutazione"
 
 #: ../build/bin/preferences_gen.h:3907
-#, fuzzy
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
-"Definisce se valutare un'immagine con una stella per due volte azzera la"
+"Definisce se valutare un'immagine con una stella per due volte azzererà la"
 " valutazione."
 
 #: ../build/bin/preferences_gen.h:3929 ../build/bin/preferences_gen.h:4661
@@ -408,7 +407,6 @@ msgid "brush size (relative)"
 msgstr "Dimensione pennello (relativa)"
 
 #: ../build/bin/preferences_gen.h:4376
-#, fuzzy
 msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
 "reading controls specified attribute, absolute/relative - pressure reading "
@@ -641,7 +639,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4972 ../build/bin/preferences_gen.h:4986
 msgid "show the guides widget in modules UI"
-msgstr ""
+msgstr "Mostra il widget delle guide nei moduli UI"
 
 #: ../build/bin/preferences_gen.h:5008
 msgid "expand a single processing module at a time"
@@ -844,7 +842,7 @@ msgstr "Elaborazione"
 
 #: ../build/bin/preferences_gen.h:5453
 msgid "image processing"
-msgstr ""
+msgstr "Elaborazione d'immagine"
 
 #: ../build/bin/preferences_gen.h:5473
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -978,7 +976,6 @@ msgid "legacy"
 msgstr "Legacy"
 
 #: ../build/bin/preferences_gen.h:5790
-#, fuzzy
 msgid ""
 "legacy performs a basic chromatic adaptation using only the white balance "
 "module\n"
@@ -987,7 +984,8 @@ msgid ""
 msgstr ""
 "Legacy effettua una correzione cromatica semplice usando solamente il modulo "
 "del bilanciamento del bianco\n"
-"Moderno usa una combinazione di bilanciamento del bianco e calibrazione "
+"Moderno usa una combinazione dei moduli bilanciamento del bianco e"
+" calibrazione "
 "colore, con una scienza del colore migliorata per la correzione cromatica."
 
 #: ../build/bin/preferences_gen.h:5812
@@ -1151,7 +1149,6 @@ msgid "activate OpenCL support"
 msgstr "Attiva supporto OpenCL"
 
 #: ../build/bin/preferences_gen.h:6186
-#, fuzzy
 msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
@@ -1921,7 +1918,7 @@ msgstr "HSL"
 #: ../build/bin/conf_gen.h:626
 msgctxt "preferences"
 msgid "Hex"
-msgstr ""
+msgstr "Hex"
 
 #: ../build/bin/conf_gen.h:635
 msgctxt "preferences"
@@ -2441,7 +2438,6 @@ msgid "linearity"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:113
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_blurs.c:194
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:75
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
@@ -2509,12 +2505,12 @@ msgstr "Dimensione bordo"
 #: ../build/lib/darktable/plugins/introspection_borders.c:140
 #: ../build/lib/darktable/plugins/introspection_borders.c:271
 msgid "horizontal offset"
-msgstr ""
+msgstr "Spostamento orizzontale"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:158
 #: ../build/lib/darktable/plugins/introspection_borders.c:283
 msgid "vertical offset"
-msgstr ""
+msgstr "Compensazione verticale"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:176
 #: ../build/lib/darktable/plugins/introspection_borders.c:295
@@ -2928,12 +2924,12 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:225
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:452
 msgid "lift chroma"
-msgstr ""
+msgstr "Alza crominanza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:231
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:456
 msgid "lift hue"
-msgstr ""
+msgstr "Alza la tonalità"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:237
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:460
@@ -2943,12 +2939,12 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:243
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:464
 msgid "power chroma"
-msgstr ""
+msgstr "Rinforza crominanza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:249
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:468
 msgid "power hue"
-msgstr ""
+msgstr "Potenzia tonalità"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:255
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:472
@@ -2958,27 +2954,27 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:261
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
 msgid "gain chroma"
-msgstr ""
+msgstr "Guadagna crominanza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:267
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:480
 msgid "gain hue"
-msgstr ""
+msgstr "Guadagna tonalità"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:273
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:484
 msgid "offset luminance"
-msgstr ""
+msgstr "Compensazione di luminanza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:279
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:488
 msgid "offset chroma"
-msgstr ""
+msgstr "Compensazione "
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:285
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:492
 msgid "offset hue"
-msgstr ""
+msgstr "Compensa tonalità"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:291
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:496
@@ -2998,22 +2994,22 @@ msgstr "Caduta delle alteluci"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:309
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:508
 msgid "chroma shadows"
-msgstr ""
+msgstr "Crominanza ombre"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:315
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:512
 msgid "chroma highlights"
-msgstr ""
+msgstr "Crominanza alteluci"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:321
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:516
 msgid "chroma global"
-msgstr ""
+msgstr "Crominanza globale"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:327
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:520
 msgid "chroma mid-tones"
-msgstr ""
+msgstr "Crominanza toni medi"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:333
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:524
@@ -3474,7 +3470,7 @@ msgstr "Nitidezza "
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:129
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:252
 msgid "max radius"
-msgstr ""
+msgstr "Raggio massimo"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:135
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:256
@@ -3529,7 +3525,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:201
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:300
 msgid "central radius"
-msgstr ""
+msgstr "Raggio centrale"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:62
 #: ../build/lib/darktable/plugins/introspection_dither.c:141
@@ -3818,7 +3814,6 @@ msgid "drago"
 msgstr "drago"
 
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:63
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:136
 msgid "density"
 msgstr "Densità"
@@ -4479,13 +4474,12 @@ msgstr ""
 "il geotagging, il Tethering (scatto remoto), la Stampa e la Presentazione."
 
 #: ../data/darktable.appdata.xml.in.h:4
-#, fuzzy
 msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "darktable supporta i formati raw delle più moderne fotocamere, e ne esegue "
-"le elaborazioni con un'altissima precisione"
+"le elaborazioni con un'altissima precisione."
 
 #: ../data/darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
@@ -4534,7 +4528,7 @@ msgstr "Cursore"
 
 #: ../src/bauhaus/bauhaus.c:3163
 msgid "dropdown"
-msgstr ""
+msgstr "A discesa"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1682
 #: ../src/control/jobs/control_jobs.c:1744 ../src/gui/accelerators.c:1736
@@ -5921,7 +5915,7 @@ msgstr "Moduli utilità"
 #: ../src/control/control.c:113
 msgctxt "accel"
 msgid "processing modules"
-msgstr "Elaborazione moduli"
+msgstr "Moduli di elaborazione"
 
 #: ../src/control/control.c:114
 msgctxt "accel"
@@ -7346,7 +7340,7 @@ msgstr "Estensione spaziale della sfumatura"
 
 #: ../src/develop/blend_gui.c:3116
 msgid "blurring radius"
-msgstr ""
+msgstr "Raggio di sfocatura"
 
 #: ../src/develop/blend_gui.c:3118
 msgid "radius for gaussian blur of blend mask"
@@ -7480,7 +7474,7 @@ msgstr ""
 #: ../src/develop/imageop.c:2301
 #, c-format
 msgid "taken from module %s"
-msgstr ""
+msgstr "Scattante dal modulo %s"
 
 #: ../src/develop/imageop.c:2306
 msgid "click to display (module must be activated first)"
@@ -7580,7 +7574,7 @@ msgstr "Ripristina"
 
 #: ../src/develop/imageop.c:3261
 msgid "processing module"
-msgstr ""
+msgstr "Modulo di elaborazione"
 
 #: ../src/develop/imageop_gui.c:399
 #, c-format
@@ -8784,7 +8778,7 @@ msgstr "Azione"
 
 #: ../src/gui/accelerators.c:2048
 msgid "element"
-msgstr ""
+msgstr "Elemento"
 
 #: ../src/gui/accelerators.c:2055
 msgid "effect"
@@ -9632,7 +9626,7 @@ msgstr "Tutti i file"
 
 #: ../src/gui/presets.c:59
 msgid "non-raw"
-msgstr ""
+msgstr "Non raw"
 
 #: ../src/gui/presets.c:59 ../src/libs/metadata_view.c:359
 msgid "raw"
@@ -10953,7 +10947,7 @@ msgstr ""
 
 #: ../src/iop/atrous.c:1595
 msgid "coarser"
-msgstr ""
+msgstr "Più grezzo"
 
 #: ../src/iop/atrous.c:1598
 msgid "finer"
@@ -10968,9 +10962,8 @@ msgid "x"
 msgstr "x"
 
 #: ../src/iop/atrous.c:1738 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:532
-#, fuzzy
 msgid "luma"
-msgstr "Luminanza "
+msgstr "Luminanza"
 
 #: ../src/iop/atrous.c:1738
 msgid "change lightness at each feature size"
@@ -11673,7 +11666,6 @@ msgstr ""
 "Solo per file raw bayer"
 
 #: ../src/iop/cacorrectrgb.c:161 ../src/iop/defringe.c:75
-#, fuzzy
 msgid "chromatic aberrations"
 msgstr "aberrazioni cromatiche"
 
@@ -11960,13 +11952,12 @@ msgid "swap G and R"
 msgstr "Scambia G e R"
 
 #: ../src/iop/channelmixerrgb.c:1647
-#, fuzzy
 msgid "(daylight)"
-msgstr "Luce diurna "
+msgstr "(Luce diurna)"
 
 #: ../src/iop/channelmixerrgb.c:1649
 msgid "(black body)"
-msgstr ""
+msgstr "(corpo nero)"
 
 #: ../src/iop/channelmixerrgb.c:1651
 msgid "(invalid)"
@@ -12235,15 +12226,15 @@ msgstr "Temperatura"
 
 #: ../src/iop/channelmixerrgb.c:3771
 msgid "input R"
-msgstr ""
+msgstr "R in ingresso"
 
 #: ../src/iop/channelmixerrgb.c:3778
 msgid "input G"
-msgstr ""
+msgstr "G in ingresso"
 
 #: ../src/iop/channelmixerrgb.c:3785
 msgid "input B"
-msgstr ""
+msgstr "B in ingresso"
 
 #: ../src/iop/channelmixerrgb.c:3793
 msgid "output R"
@@ -13023,11 +13014,11 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1771
 msgid "hue of the color exponent in mid-tones"
-msgstr ""
+msgstr "Tonalità dell'esponente colore nei toni medi"
 
 #: ../src/iop/colorbalancergb.c:1779
 msgid "chroma of the color exponent in mid-tones"
-msgstr ""
+msgstr "Crominanza dell'esponente del colore nei toni medi"
 
 #. Page masks
 #: ../src/iop/colorbalancergb.c:1784
@@ -13212,7 +13203,7 @@ msgstr ""
 
 #: ../src/iop/colorchecker.c:1362
 msgid "green-magenta offset"
-msgstr ""
+msgstr "Compensazione verde-magenta"
 
 #: ../src/iop/colorchecker.c:1368
 msgid ""
@@ -13223,7 +13214,7 @@ msgstr ""
 
 #: ../src/iop/colorchecker.c:1369
 msgid "blue-yellow offset"
-msgstr ""
+msgstr "Compensazione blue-giallo"
 
 #: ../src/iop/colorchecker.c:1375
 msgid ""
@@ -13828,6 +13819,10 @@ msgid ""
 "LMMSE is suited best for high ISO images.\n"
 "dual demosaicers double processing time."
 msgstr ""
+"Metodo di demosaicizzazione per sensore bayer, PPG e RCD sono veloci, AMaZE e "
+"LMMSE sono lenti.\n"
+"LMMSE è il più adatto per immagini con alto ISO.\n"
+"Doppia demosaicizzazione, doppio tempo di elaborazione."
 
 #: ../src/iop/demosaic.c:5773
 msgid ""
@@ -14060,16 +14055,15 @@ msgstr ""
 "oppure aumenta il selettore scorrevole del peso del pixel centrale."
 
 #: ../src/iop/denoiseprofile.c:3738
-#, fuzzy
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
 "large radii can be very slow. you have been warned"
 msgstr ""
 "Solo per emergenza: raggio di ampiezza per la ricerca di campioni. "
-"Aumentandolo si ottiene una migliore riduzione del rumore ma attenzione alla "
-"lunga distanza! Un raggio molto ampio può essere anche molto lento. Sei "
-"stato avvisato!"
+"Aumentandolo si ottiene una migliore riduzione del rumore ma attenzione ai "
+"tempi di esecuzione! Un raggio ampio può essere molto lento. Sei stato"
+" avvisato"
 
 #: ../src/iop/denoiseprofile.c:3741
 msgid ""
@@ -14316,9 +14310,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/dither.c:97 ../src/iop/vignette.c:997
-#, fuzzy
 msgid "dithering"
-msgstr "dithering"
+msgstr "Dithering"
 
 #: ../src/iop/dither.c:102
 msgid ""
@@ -16148,6 +16141,10 @@ msgid ""
 "CAUTION: 3D lut folder must be set in preferences/processing before choosing "
 "the lut file"
 msgstr ""
+"Seleziona un PNG (haldclut), un cubo, un file 3dl o gmz (lut compresso) "
+"ATTENZIONE: la cartella dei 3D lut deve esser impostata in"
+" preferenze/elaborazione "
+"prima di scegliere il file lut"
 
 #: ../src/iop/lut3d.c:1680
 msgid ""
@@ -16335,7 +16332,7 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:902
 msgid "shadows green offset"
-msgstr "Offset verde delle ombre"
+msgstr "Compensazione delle ombre verdi"
 
 #: ../src/iop/negadoctor.c:909
 msgid "shadows blue offset"
@@ -18178,15 +18175,15 @@ msgstr ""
 
 #: ../src/libs/collect.c:323
 msgid "taken: today"
-msgstr ""
+msgstr "Scattate: oggi"
 
 #: ../src/libs/collect.c:328
 msgid "taken: last 24h"
-msgstr ""
+msgstr "Scattate: ultime 24h"
 
 #: ../src/libs/collect.c:333
 msgid "taken: last 30 days"
-msgstr ""
+msgstr "Scattate: ultimi 30 giorni"
 
 #: ../src/libs/collect.c:467
 msgid "search filmroll"
@@ -20671,11 +20668,11 @@ msgstr "Aggiungi questo widget"
 
 #: ../src/libs/modulegroups.c:2612
 msgid "add widget"
-msgstr ""
+msgstr "Aggiuni widget"
 
 #: ../src/libs/modulegroups.c:2617
 msgid "remove widget"
-msgstr ""
+msgstr "Rimuovi widget"
 
 #: ../src/libs/modulegroups.c:2703
 msgid "show all history modules"
@@ -21909,6 +21906,12 @@ msgid ""
 "click on a widget, module or screen area to open the dialog for further "
 "configuration"
 msgstr ""
+"Definisci le scorciatoie\n"
+"Passa sopra un widget e premi le combinazioni pulsanti con un click del "
+"mouse e scorri o muovi \n"
+"Ripeti la stessa combinazione ancora per cancellare la mappatura\n"
+"Clicca su un widget, un modulo o un area dello schermo per aprire il dialogo "
+"per ulteriore configurazione"
 
 #: ../src/libs/tools/global_toolbox.c:532
 msgid "show global preferences"
