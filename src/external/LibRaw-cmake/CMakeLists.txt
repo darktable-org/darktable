@@ -465,7 +465,7 @@ if(RAWSPEED_SUPPORT_CAN_BE_COMPILED)
 endif()
 
 
-add_library(raw ${libraw_LIB_SRCS})
+add_library(raw STATIC ${libraw_LIB_SRCS})
 add_library(libraw::libraw ALIAS raw)
 target_compile_definitions(raw PRIVATE LIBRAW_NOTHREADS)
 
@@ -523,7 +523,7 @@ set_target_properties(raw PROPERTIES COMPILE_PDB_NAME "raw")
 
 set(libraw_r_LIB_SRCS ${libraw_LIB_SRCS})
 
-add_library(raw_r ${libraw_r_LIB_SRCS})
+add_library(raw_r STATIC ${libraw_r_LIB_SRCS})
 add_library(libraw::libraw_r ALIAS raw_r)
 
 # Flag to export library symbols
