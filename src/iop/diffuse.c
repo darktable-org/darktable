@@ -54,7 +54,7 @@ typedef struct dt_iop_diffuse_params_t
 {
   // global parameters
   int iterations;           // $MIN: 0    $MAX: 500  $DEFAULT: 1  $DESCRIPTION: "iterations"
-  float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
+  float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness (highest frequencies)"
   int radius;               // $MIN: 0    $MAX: 2048 $DEFAULT: 8  $DESCRIPTION: "radius span"
   float regularization;     // $MIN: 0.   $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
   float variance_threshold; // $MIN: -2.  $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
@@ -1471,20 +1471,21 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_diffuse_gui_data_t *g = IOP_GUI_ALLOC(diffuse);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion properties")), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 0);
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
   dt_bauhaus_slider_set_soft_range(g->iterations, 1., 128);
   gtk_widget_set_tooltip_text(g->iterations,
                               _("more iterations make the effect stronger but the module slower.\n"
                                 "this is analogous to giving more time to the diffusion reaction.\n"
-                                "if you plan on sharpening or inpainting, more iterations help reconstruction."));
+                                "if you plan on sharpening or inpainting, \n"
+                                "more iterations help reconstruction."));
 
   g->radius_center = dt_bauhaus_slider_from_params(self, "radius_center");
   dt_bauhaus_slider_set_soft_range(g->radius_center, 0., 512.);
   dt_bauhaus_slider_set_format(g->radius_center, " px");
   gtk_widget_set_tooltip_text(
-      g->radius_center, _("main scale of the diffusion.\n"
+      g->radius_center, _("main scale of the diffusion in px.\n"
                           "zero makes diffusion act on the finest details more heavily.\n"
                           "non-zero defines the size of the details to diffuse heavily.\n"
                           "for deblurring and denoising, set to zero.\n"
@@ -1494,15 +1495,21 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->radius, 1., 512.);
   dt_bauhaus_slider_set_format(g->radius, " px");
   gtk_widget_set_tooltip_text(
-      g->radius, _("width of the diffusion around the center radius.\n"
+      g->radius, _("width of the diffusion around the central radius in px.\n"
                    "high values diffuse on a large band of radii.\n"
-                   "low values diffuse closer to the center radius.\n"
-                   "if you plan on deblurring, the radius should be around the width of your lens blur."));
+                   "low values diffuse closer to the central radius.\n"
+                   "if you plan on deblurring, \n"
+                   "the radius should be around the width of your lens blur."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion speed")), FALSE, FALSE, 0);
+  GtkWidget *label_speed = dt_ui_section_label_new(_("speed (sharpen ↔ diffuse)"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label_speed, FALSE, FALSE, 0);
+  gtk_widget_set_tooltip_text(label_speed, _("negative values sharpen, \n"
+                                          "positive values diffuse and blur, \n"
+                                          "zero does nothing."));
 
   g->first = dt_bauhaus_slider_from_params(self, "first");
   dt_bauhaus_slider_set_digits(g->first, 4);
+<<<<<<< HEAD
   dt_bauhaus_slider_set_format(g->first, "%");
   gtk_widget_set_tooltip_text(g->first, _("smoothing or sharpening of smooth details (gradients).\n"
                                           "positive values diffuse and blur.\n"
@@ -1532,11 +1539,42 @@ void gui_init(struct dt_iop_module_t *self)
                                            "positive values diffuse and blur.\n"
                                            "negative values sharpen.\n"
                                            "zero does nothing."));
+=======
+  dt_bauhaus_slider_set_format(g->first, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->first, _("speed of low-frequency wavelet layers\n"
+                  "in the direction of 1st order anisotropy (set below)."));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion directionality")), FALSE, FALSE, 0);
+  g->second = dt_bauhaus_slider_from_params(self, "second");
+  dt_bauhaus_slider_set_digits(g->second, 4);
+  dt_bauhaus_slider_set_factor(g->second, 100.0f);
+  dt_bauhaus_slider_set_format(g->second, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->second, _("speed of low-frequency wavelet layers\n"
+                  "in the direction of 2nd order anisotropy (set below)."));
+
+  g->third = dt_bauhaus_slider_from_params(self, "third");
+  dt_bauhaus_slider_set_digits(g->third, 4);
+  dt_bauhaus_slider_set_factor(g->third, 100.0f);
+  dt_bauhaus_slider_set_format(g->third, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->third, _("speed of high-frequency wavelet layers\n"
+                  "in the direction of 3rd order anisotropy (set below)."));
+
+  g->fourth = dt_bauhaus_slider_from_params(self, "fourth");
+  dt_bauhaus_slider_set_digits(g->fourth, 4);
+  dt_bauhaus_slider_set_factor(g->fourth, 100.0f);
+  dt_bauhaus_slider_set_format(g->fourth, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->fourth, _("speed of high-frequency wavelet layers\n"
+                  "in the direction of 4th order anisotropy (set below)."));
+>>>>>>> 69d0b6aee (diffuse-sharpen: adjust labels and tooltips)
+
+  GtkWidget *label_direction = dt_ui_section_label_new(_("direction"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label_direction, FALSE, FALSE, 0);
+  gtk_widget_set_tooltip_text(label_direction, _("negative values follow gradients more closely, \n"
+                  "positive values rather avoid edges (isophotes), \n"
+                  "zero affects both equally (isotropic)."));
 
   g->anisotropy_first = dt_bauhaus_slider_from_params(self, "anisotropy_first");
   dt_bauhaus_slider_set_digits(g->anisotropy_first, 4);
+<<<<<<< HEAD
   dt_bauhaus_slider_set_format(g->anisotropy_first, "%");
   gtk_widget_set_tooltip_text(g->anisotropy_first,
                               _("anisotropy of the diffusion.\n"
@@ -1570,13 +1608,38 @@ void gui_init(struct dt_iop_module_t *self)
                                 "zero makes the diffusion isotrope (same in all directions)\n"
                                 "positives make the diffusion follow isophotes more closely\n"
                                 "negatives make the diffusion follow gradients more closely"));
+=======
+  dt_bauhaus_slider_set_factor(g->anisotropy_first, 100.0f);
+  dt_bauhaus_slider_set_format(g->anisotropy_first, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->anisotropy_first, _("direction of 1st order speed (set above)\n"));
+
+  g->anisotropy_second = dt_bauhaus_slider_from_params(self, "anisotropy_second");
+  dt_bauhaus_slider_set_digits(g->anisotropy_second, 4);
+  dt_bauhaus_slider_set_factor(g->anisotropy_second, 100.0f);
+  dt_bauhaus_slider_set_format(g->anisotropy_second, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->anisotropy_second,_("direction of 2nd order speed (set above)\n"));
+
+  g->anisotropy_third = dt_bauhaus_slider_from_params(self, "anisotropy_third");
+  dt_bauhaus_slider_set_digits(g->anisotropy_third, 4);
+  dt_bauhaus_slider_set_factor(g->anisotropy_third, 100.0f);
+  dt_bauhaus_slider_set_format(g->anisotropy_third, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->anisotropy_third,_("direction of 3rd order speed (set above)\n"));
+
+  g->anisotropy_fourth = dt_bauhaus_slider_from_params(self, "anisotropy_fourth");
+  dt_bauhaus_slider_set_digits(g->anisotropy_fourth, 4);
+  dt_bauhaus_slider_set_factor(g->anisotropy_fourth, 100.0f);
+  dt_bauhaus_slider_set_format(g->anisotropy_fourth, "%+.2f %%");
+  gtk_widget_set_tooltip_text(g->anisotropy_fourth,_("direction of 4th order speed (set above)\n"));
+>>>>>>> 69d0b6aee (diffuse-sharpen: adjust labels and tooltips)
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("edges management")), FALSE, FALSE, 0);
 
   g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
   dt_bauhaus_slider_set_format(g->sharpness, "%");
   gtk_widget_set_tooltip_text(g->sharpness,
-                              _("increase or decrease the sharpness of the highest frequencies"));
+                              _("increase or decrease the sharpness of the highest frequencies.\n"                              
+                              "can be used to keep details after blooming,\n"
+                              "for standalone sharpening set speed to negative values."));
 
   g->regularization = dt_bauhaus_slider_from_params(self, "regularization");
   gtk_widget_set_tooltip_text(g->regularization,
