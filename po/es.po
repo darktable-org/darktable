@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-15 23:20-0600\n"
-"PO-Revision-Date: 2021-11-16 00:21-0600\n"
+"PO-Revision-Date: 2021-11-17 01:05-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -3734,9 +3734,8 @@ msgstr "compensar el punto negro del perfil ICC de salida"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:367
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:518
-#, fuzzy
 msgid "spline handling"
-msgstr "línea divisoria"
+msgstr "versión de curva segmentaria"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:532
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
@@ -4533,19 +4532,16 @@ msgid "zoom"
 msgstr "ampliación"
 
 #: ../src/bauhaus/bauhaus.c:3139
-#, fuzzy
 msgid "selection"
-msgstr "seleccionar"
+msgstr "Selección"
 
 #: ../src/bauhaus/bauhaus.c:3158
-#, fuzzy
 msgid "slider"
-msgstr "Adaptado"
+msgstr "Control deslizante"
 
 #: ../src/bauhaus/bauhaus.c:3163
-#, fuzzy
 msgid "dropdown"
-msgstr "abajo"
+msgstr "Lista deplegable"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1682
 #: ../src/control/jobs/control_jobs.c:1744 ../src/gui/accelerators.c:1738
@@ -10929,49 +10925,49 @@ msgstr "claridad"
 
 #: ../src/iop/atrous.c:889
 msgid "deblur: large blur, strength 3"
-msgstr "enfoque: difuminado amplio, intensidad 3"
+msgstr "nitidez: desenfoque amplio, intensidad 3"
 
 #: ../src/iop/atrous.c:906
 msgid "deblur: medium blur, strength 3"
-msgstr "enfoque: difuminado medio, intensidad 3"
+msgstr "nitidez: desenfoque medio, intensidad 3"
 
 #: ../src/iop/atrous.c:922
 msgid "deblur: fine blur, strength 3"
-msgstr "enfoque: difuminado ligero, intensidad 3"
+msgstr "nitidez: desenfoque ligero, intensidad 3"
 
 #: ../src/iop/atrous.c:940
 msgid "deblur: large blur, strength 2"
-msgstr "enfoque: difuminado amplio, intensidad 2"
+msgstr "nitidez: desenfoque amplio, intensidad 2"
 
 #: ../src/iop/atrous.c:957
 msgid "deblur: medium blur, strength 2"
-msgstr "enfoque: difuminado medio, intensidad 2"
+msgstr "nitidez: desenfoque medio, intensidad 2"
 
 #: ../src/iop/atrous.c:973
 msgid "deblur: fine blur, strength 2"
-msgstr "enfoque: difuminado ligero, intensidad 2"
+msgstr "nitidez: desenfoque ligero, intensidad 2"
 
 #: ../src/iop/atrous.c:991
 msgid "deblur: large blur, strength 1"
-msgstr "enfoque: difuminado amplio, intensidad 1"
+msgstr "nitidez: desenfoque amplio, intensidad 1"
 
 #: ../src/iop/atrous.c:1008
 msgid "deblur: medium blur, strength 1"
-msgstr "enfoque: difuminado medio, intensidad 1"
+msgstr "nitidez: desenfoque medio, intensidad 1"
 
 #: ../src/iop/atrous.c:1024
 msgid "deblur: fine blur, strength 1"
-msgstr "enfoque: difuminado ligero, intensidad 1"
+msgstr "nitidez: desenfoque ligero, intensidad 1"
 
 #: ../src/iop/atrous.c:1350 ../src/iop/atrous.c:1596
 #: ../src/iop/denoiseprofile.c:3405 ../src/iop/rawdenoise.c:742
 msgid "coarse"
-msgstr "grueso"
+msgstr "detalles grandes"
 
 #: ../src/iop/atrous.c:1357 ../src/iop/atrous.c:1597
 #: ../src/iop/denoiseprofile.c:3413 ../src/iop/rawdenoise.c:750
 msgid "fine"
-msgstr "fino"
+msgstr "detalles pequeños"
 
 #: ../src/iop/atrous.c:1369
 msgid "contrasty"
@@ -10985,7 +10981,7 @@ msgstr "ruidoso"
 #. case atrous_s:
 #: ../src/iop/atrous.c:1378
 msgid "bold"
-msgstr "marcado"
+msgstr "vivo"
 
 #: ../src/iop/atrous.c:1379
 msgid "dull"
@@ -10993,7 +10989,7 @@ msgstr "apagado"
 
 #: ../src/iop/atrous.c:1584 ../src/iop/atrous.c:1635
 msgid "boost"
-msgstr ""
+msgstr "potenciar"
 
 #: ../src/iop/atrous.c:1585
 msgid "reduce"
@@ -11001,32 +10997,27 @@ msgstr "reducir"
 
 #: ../src/iop/atrous.c:1586
 msgid "raise"
-msgstr ""
+msgstr "elevar"
 
 #: ../src/iop/atrous.c:1587
-#, fuzzy
 msgid "lower"
-msgstr "potencia"
+msgstr "bajar"
 
 #: ../src/iop/atrous.c:1594
-#, fuzzy
 msgid "coarsest"
-msgstr "grueso"
+msgstr "más grandes"
 
 #: ../src/iop/atrous.c:1595
-#, fuzzy
 msgid "coarser"
-msgstr "grueso"
+msgstr "los más grandes"
 
 #: ../src/iop/atrous.c:1598
-#, fuzzy
 msgid "finer"
-msgstr "fino"
+msgstr "más pequeños"
 
 #: ../src/iop/atrous.c:1599
-#, fuzzy
 msgid "finest"
-msgstr "fino"
+msgstr "los más pequeños"
 
 #: ../src/iop/atrous.c:1657 ../src/libs/export.c:1206 ../src/libs/export.c:1221
 msgid "x"
@@ -11053,8 +11044,9 @@ msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
 msgstr ""
-"Cambia los halos de contorno en cada nivel de detalle.\n"
-"Sólo afecta los resultados de las pestañas de luma y crominancia."
+"Modifica los halos de contorno en cada nivel de detalle.\n"
+"Sólo tiene efecto si en las pestañas de luma y crominancia hay "
+"modificaciones."
 
 #: ../src/iop/atrous.c:1757 ../src/iop/colorbalancergb.c:1793
 #: ../src/iop/colorzones.c:2520 ../src/iop/filmicrgb.c:3889
@@ -15688,6 +15680,9 @@ msgid ""
 "you might also want to check if your lensfun database is up-to-date\n"
 "by running lensfun_update_data"
 msgstr ""
+"Hay que seleccionar manualmente el objetivo.\n"
+"También puede verificar si la base de datos de Lensfun está actualizada\n"
+"ejecutando lensfun_update_data."
 
 #: ../src/iop/lens.cc:1843
 #, c-format
@@ -19273,6 +19268,9 @@ msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
 "press enter to confirm, so that the asterisk * disappers"
 msgstr ""
+"Comience a teclear para mostrar una lista de ítems válidos, luego seleccione "
+"la zona horaria.\n"
+"Para confirmar, pulse Entrar (así también desaparecerá el asterisco *)."
 
 #. gpx
 #: ../src/libs/geotagging.c:1797
@@ -19365,14 +19363,12 @@ msgid "set scale to logarithmic"
 msgstr "Cambiar histograma a escala logarítmica"
 
 #: ../src/libs/histogram.c:1452
-#, fuzzy
 msgid "set scope to vertical"
-msgstr "Cambiar histograma a escala logarítmica"
+msgstr "Cambiar visor a modo vertical"
 
 #: ../src/libs/histogram.c:1457
-#, fuzzy
 msgid "set scope to horizontal"
-msgstr "Cambiar histograma a escala lineal"
+msgstr "Cambiar visor a modo horizontal"
 
 #: ../src/libs/histogram.c:1486
 msgid "set view to AzBz"
@@ -20855,12 +20851,11 @@ msgstr "Añadir este elemento de control"
 
 #: ../src/libs/modulegroups.c:2612
 msgid "add widget"
-msgstr "añadir elemento de control"
+msgstr "Añadir elemento de control"
 
 #: ../src/libs/modulegroups.c:2617
-#, fuzzy
 msgid "remove widget"
-msgstr "Quitar este elemento de control"
+msgstr "Quitar elemento de control"
 
 #: ../src/libs/modulegroups.c:2703
 #, fuzzy
