@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-10 09:22+0100\n"
-"PO-Revision-Date: 2021-11-16 23:24+0100\n"
+"PO-Revision-Date: 2021-11-17 23:46+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -8845,12 +8845,12 @@ msgstr ""
 #: ../src/gui/accelerators.c:2978
 #, c-format
 msgid "%s not assigned"
-msgstr ""
+msgstr "%s non assegnato"
 
 #: ../src/gui/accelerators.c:3125
 #, c-format
 msgid "%s assigned to %s"
-msgstr ""
+msgstr "%s assegnato a %s"
 
 #: ../src/gui/gtk.c:158 ../src/views/darkroom.c:4659
 msgid "darktable - darkroom preview"
@@ -8880,7 +8880,7 @@ msgstr "Sto chiudendo darktable..."
 #: ../src/gui/gtk.c:1201
 msgctxt "accel"
 msgid "switch views/tethering"
-msgstr ""
+msgstr "scambia viste/tethering"
 
 #: ../src/gui/gtk.c:1202
 msgctxt "accel"
@@ -8900,12 +8900,12 @@ msgstr ""
 #: ../src/gui/gtk.c:1205
 msgctxt "accel"
 msgid "switch views/slideshow"
-msgstr ""
+msgstr "scambia viste/presentazione"
 
 #: ../src/gui/gtk.c:1206
 msgctxt "accel"
 msgid "switch views/print"
-msgstr ""
+msgstr "scambia viste/stampa"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:1229
@@ -8917,69 +8917,69 @@ msgstr "Chiudi"
 #: ../src/gui/gtk.c:1234
 msgctxt "accel"
 msgid "fullscreen"
-msgstr ""
+msgstr "a pieno schermo"
 
 #. Side-border hide/show
 #: ../src/gui/gtk.c:1240
 msgctxt "accel"
 msgid "panels/all"
-msgstr ""
+msgstr "Pannelli/tutto"
 
 #: ../src/gui/gtk.c:1244
 msgctxt "accel"
 msgid "panels/collapsing controls"
-msgstr ""
+msgstr "Ppannelli/controlli che si nascondono"
 
 #: ../src/gui/gtk.c:1248
 msgctxt "accel"
 msgid "panels/left"
-msgstr ""
+msgstr "Pannelli/sinistra"
 
 #: ../src/gui/gtk.c:1252
 msgctxt "accel"
 msgid "panels/right"
-msgstr ""
+msgstr "Pannelli/destra"
 
 #: ../src/gui/gtk.c:1256
 msgctxt "accel"
 msgid "panels/top"
-msgstr ""
+msgstr "Pannelli/alto"
 
 #: ../src/gui/gtk.c:1260
 msgctxt "accel"
 msgid "panels/bottom"
-msgstr ""
+msgstr "Pannelli/basso"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1265
 msgctxt "accel"
 msgid "panels/header"
-msgstr ""
+msgstr "Pannelli/intestazione"
 
 #: ../src/gui/gtk.c:1268
 msgctxt "accel"
 msgid "panels/filmstrip and timeline"
-msgstr ""
+msgstr "Pannelli/provino e linea del tempo"
 
 #: ../src/gui/gtk.c:1272
 msgctxt "accel"
 msgid "panels/top toolbar"
-msgstr ""
+msgstr "Pannelli/barra degli strumenti alta"
 
 #: ../src/gui/gtk.c:1276
 msgctxt "accel"
 msgid "panels/bottom toolbar"
-msgstr ""
+msgstr "Pannelli/barra degli strumenti bassa"
 
 #: ../src/gui/gtk.c:1280
 msgctxt "accel"
 msgid "panels/all top"
-msgstr ""
+msgstr "Pannelli/tutto alto"
 
 #: ../src/gui/gtk.c:1284
 msgctxt "accel"
 msgid "panels/all bottom"
-msgstr ""
+msgstr "Pannelli/tutto basso"
 
 #. accels window
 #: ../src/gui/gtk.c:1289
@@ -8997,11 +8997,11 @@ msgstr "Attiva visibilità suggerimenti"
 #: ../src/gui/gtk.c:1298
 msgctxt "accel"
 msgid "reinitialise input devices"
-msgstr ""
+msgstr "Reinizializza i dispositivi di input"
 
 #: ../src/gui/gtk.c:1339
 msgid "toggle focus-peaking mode"
-msgstr ""
+msgstr "Attiva modalità focus-peaking"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1344
@@ -9076,35 +9076,35 @@ msgstr "$(MAX_HEIGHT) - Altezza max immagine esportata"
 
 #: ../src/gui/gtkentry.c:182
 msgid "$(SENSOR_WIDTH) - image sensor width"
-msgstr ""
+msgstr "$(SENSOR_WIDTH) - larghezza sensore d'immagine"
 
 #: ../src/gui/gtkentry.c:183
 msgid "$(SENSOR_HEIGHT) - image sensor height"
-msgstr ""
+msgstr "$(SENSOR_HEIGHT) - altezza sensore d'immagine"
 
 #: ../src/gui/gtkentry.c:184
 msgid "$(RAW_WIDTH) - RAW image width"
-msgstr ""
+msgstr "$(RAW_WIDTH) - larghezza dell'immagine RAW"
 
 #: ../src/gui/gtkentry.c:185
 msgid "$(RAW_HEIGHT) - RAW image height"
-msgstr ""
+msgstr "$(RAW_HEIGHT) - altezza dell'immagine RAW"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(CROP_WIDTH) - image width after crop"
-msgstr ""
+msgstr "$(CROP_WIDTH) - larghezza immagine dopo il taglio"
 
 #: ../src/gui/gtkentry.c:187
 msgid "$(CROP_HEIGHT) - image height after crop"
-msgstr ""
+msgstr "$(CROP_HEIGHT) - altezza immagine dopo il taglio"
 
 #: ../src/gui/gtkentry.c:188
 msgid "$(EXPORT_WIDTH) - exported image width"
-msgstr ""
+msgstr "$(EXPORT_WIDTH) - larghezza immagine esportata"
 
 #: ../src/gui/gtkentry.c:189
 msgid "$(EXPORT_HEIGHT) - exported image height"
-msgstr ""
+msgstr "$(EXPORT_HEIGHT) - altezza immagine esportata"
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(YEAR) - year"
@@ -9294,7 +9294,7 @@ msgstr "Sezioni spirale aurea"
 
 #: ../src/gui/guides.c:39
 msgid "golden mean (all guides)"
-msgstr ""
+msgstr "Media aurea (tutte le guide)"
 
 #: ../src/gui/guides.c:218
 msgid "horizontal lines"
@@ -9323,7 +9323,7 @@ msgstr "Numero di suddivisioni per la griglia rettangolare"
 #. title
 #: ../src/gui/guides.c:671
 msgid "global guide overlay settings"
-msgstr ""
+msgstr "Impostazioni sovrimpressione della guida globale"
 
 #: ../src/gui/guides.c:680 ../src/gui/guides.c:689 ../src/gui/guides.c:697
 msgid "guide lines"
@@ -9352,7 +9352,7 @@ msgstr "Entrambi"
 
 #: ../src/gui/guides.c:690
 msgid "setup guide lines"
-msgstr ""
+msgstr "Imposta linee guida"
 
 #: ../src/gui/guides.c:697
 msgid "overlay color"
@@ -9373,11 +9373,11 @@ msgstr "Magenta"
 
 #: ../src/gui/guides.c:806 ../src/gui/guides.c:852
 msgid "show guides"
-msgstr ""
+msgstr "Mostra guide"
 
 #: ../src/gui/guides.c:861
 msgid "show guide overlay when this module has focus"
-msgstr ""
+msgstr "Mostra guida sovrimpressa quando questo modulo ha focus"
 
 #: ../src/gui/guides.c:863
 msgid ""
@@ -9385,6 +9385,10 @@ msgid ""
 "note that these settings are applied globally and will impact any module "
 "that shows guide overlays"
 msgstr ""
+"Cambia le impostazioni della guida globale\n"
+"Nota che queste impostazioni sono applicate globalmente ed impattano ogni"
+" modulo "
+"Questo mostra sovrimpressioni guidate"
 
 #: ../src/gui/hist_dialog.c:191
 msgid "select parts to copy"
@@ -9544,14 +9548,13 @@ msgstr ""
 
 #. load default text with some pointers
 #: ../src/gui/preferences.c:457
-#, fuzzy
 msgid "ERROR Loading user.css"
-msgstr "/* ERRORE nel caricamento di user.css */"
+msgstr "ERRORE nel caricamento del .css utente"
 
 #. load default text
 #: ../src/gui/preferences.c:466
 msgid "Enter CSS theme tweaks here"
-msgstr ""
+msgstr "Inserisci qui le modifiche al CSS del tema"
 
 #: ../src/gui/preferences.c:502
 msgid "darktable preferences"
@@ -9581,7 +9584,7 @@ msgstr "Auto"
 
 #: ../src/gui/preferences.c:854
 msgid "search presets list"
-msgstr ""
+msgstr "Cerca la lista delle preimpostazioni"
 
 #: ../src/gui/preferences.c:855
 msgid ""
@@ -10578,15 +10581,15 @@ msgstr[1] "%d/%d esportati in Piwigo"
 
 #: ../src/iop/ashift.c:120
 msgid "rotate and perspective"
-msgstr ""
+msgstr "Ruota e prospettiva"
 
 #: ../src/iop/ashift.c:125
 msgid "rotation|keystone|distortion|crop|reframe"
-msgstr ""
+msgstr "rotazione|poligono|distorsione|taglio|ritaglio"
 
 #: ../src/iop/ashift.c:130
 msgid "rotate or distort perspective"
-msgstr ""
+msgstr "Rotazione o distorsione prospettica"
 
 #: ../src/iop/ashift.c:131 ../src/iop/channelmixer.c:139
 #: ../src/iop/channelmixerrgb.c:208 ../src/iop/clipping.c:320
@@ -10641,20 +10644,19 @@ msgid ""
 "not enough structure for automatic correction\n"
 "minimum %d lines in each relevant direction"
 msgstr ""
+"Non abbastanza struttura per la correzione automatica\n"
+"Minimo di %d linee in ogni direzione rilevante"
 
 #: ../src/iop/ashift.c:3218
-#, fuzzy
 msgid "automatic correction failed, please correct manually"
-msgstr ""
-"Correzione automatica fallita, per favore effettuare la correzione "
-"manualmente"
+msgstr "è fallita la correzione automatica, correggi manualmente"
 
 #. if count > MAX_SAVED_LINES we alert that the next lines won't be saved in params
 #. but they still may be used for the current section (that's why we still allow them)
 #: ../src/iop/ashift.c:4650
 #, c-format
 msgid "only %d lines can be saved in parameters"
-msgstr ""
+msgstr "Solo %d linee possono esser salvate nei parametri"
 
 #: ../src/iop/ashift.c:5372 ../src/iop/ashift.c:5373 ../src/iop/ashift.c:5475
 #: ../src/iop/ashift.c:5476
@@ -10664,11 +10666,11 @@ msgstr "Spostamento lente (%s)"
 
 #: ../src/iop/ashift.c:5736
 msgid "perspective helpers"
-msgstr ""
+msgstr "Aiuti prospettici"
 
 #: ../src/iop/ashift.c:5743
 msgid "structure"
-msgstr ""
+msgstr "Struttura"
 
 #: ../src/iop/ashift.c:5776
 msgid ""
@@ -10676,6 +10678,9 @@ msgid ""
 "right-click and drag to define a horizontal or vertical line by drawing on "
 "the image"
 msgstr ""
+"rotate image\n"
+"right-click and drag to define a horizontal or vertical line by drawing on "
+"the image"
 
 #: ../src/iop/ashift.c:5777 ../src/iop/ashift.c:5778
 msgid "apply lens shift correction in one direction"
@@ -10767,14 +10772,18 @@ msgid ""
 "shift+click for an additional detail enhancement\n"
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
+"Analizza automaticamente la struttura delle linee nell'immagine\n"
+"Ctrl+click per un miglioramento ulteriore dei bordi\n"
+"Maiusc+click per un miglioramento ulteriore dei dettagli\n"
+"Ctrl+Maiusc+click per una combinazione di entrambi i metodi"
 
 #: ../src/iop/ashift.c:5807
 msgid "manually define perspective rectangle"
-msgstr ""
+msgstr "Definisci manualmente il rettangolo prospettico"
 
 #: ../src/iop/ashift.c:5808
 msgid "manually draw structure lines"
-msgstr ""
+msgstr "Disegna manualmente delle linee di struttura"
 
 #: ../src/iop/ashift.c:5845 ../src/iop/clipping.c:3387
 #, c-format
@@ -10943,7 +10952,7 @@ msgstr "Abbassa"
 
 #: ../src/iop/atrous.c:1594
 msgid "coarsest"
-msgstr ""
+msgstr "Il più grossolano"
 
 #: ../src/iop/atrous.c:1595
 msgid "coarser"
@@ -11334,6 +11343,9 @@ msgid ""
 "(reduce shadow and highlight contrast), increase for more powerful local "
 "contrast"
 msgstr ""
+"Definisce che cosa considerare come mezzi toni. Abbassare per una miglior "
+"compressione della gamma dinamica (riduce il contrasto delle ombre e delle "
+"alteluci), aumentare per un contrasto locale più forte"
 
 #: ../src/iop/bilateral.cc:73 ../src/iop/diffuse.c:314
 msgid "surface blur"
@@ -11397,11 +11409,11 @@ msgstr "Sfocature"
 
 #: ../src/iop/blurs.c:86
 msgid "blur|lens|motion"
-msgstr ""
+msgstr "Sfocatura|lenti|movimento"
 
 #: ../src/iop/blurs.c:92
 msgid "simulate physically-accurate lens and motion blurs"
-msgstr ""
+msgstr "Simula lenti fisicamente accurate e sfocature da movimento"
 
 #: ../src/iop/borders.c:181
 msgid "framing"
@@ -11609,6 +11621,7 @@ msgstr "Lineare, raw"
 #: ../src/iop/cacorrect.c:1337
 msgid "raw CA correction supports only standard RGB bayer filter arrays"
 msgstr ""
+"La correzione RAW CA supporta solo matrici standard di filtri RGB bayer"
 
 #: ../src/iop/cacorrect.c:1339 ../src/iop/cacorrect.c:1347
 msgid "bypassed while zooming in"
@@ -11920,24 +11933,20 @@ msgid "B&W : luminance-based"
 msgstr "B/N: basato sulla luminanza"
 
 #: ../src/iop/channelmixerrgb.c:372
-#, fuzzy
 msgid "B&W : ILFORD HP5+"
-msgstr "B/N: Ilford HP5+"
+msgstr "B&N: ILFORD HP5+"
 
 #: ../src/iop/channelmixerrgb.c:381
-#, fuzzy
 msgid "B&W : ILFORD DELTA 100"
-msgstr "B/N: Ilford Delta 100"
+msgstr "B&N: ILFORD DELTA 100"
 
 #: ../src/iop/channelmixerrgb.c:391
-#, fuzzy
 msgid "B&W : ILFORD DELTA 400 - 3200"
-msgstr "B/N: Ilford Delta 100"
+msgstr "B&W : ILFORD DELTA 400 - 3200"
 
 #: ../src/iop/channelmixerrgb.c:400
-#, fuzzy
 msgid "B&W : ILFORD FP4+"
-msgstr "B/N: Ilford FP2"
+msgstr "B&W : ILFORD FP4+"
 
 #: ../src/iop/channelmixerrgb.c:409
 msgid "B&W : Fuji Acros 100"
@@ -12674,12 +12683,10 @@ msgid "similar to Kodachrome"
 msgstr "Simile a Kodachrome"
 
 #: ../src/iop/colorbalance.c:943
-#, fuzzy
 msgid "optimize luma from patches"
 msgstr "Ottimizza luminosità dai campioni"
 
 #: ../src/iop/colorbalance.c:945 ../src/iop/colorbalance.c:2092
-#, fuzzy
 msgid "optimize luma"
 msgstr "Ottimizza luminosità"
 
@@ -12730,7 +12737,6 @@ msgid "mid-tones : gamma / power"
 msgstr "Mezzitoni: gamma / power"
 
 #: ../src/iop/colorbalance.c:1762
-#, fuzzy
 msgid "highlights : gain / slope"
 msgstr "Alteluci: guadano / calo"
 
@@ -12841,9 +12847,8 @@ msgid "auto optimizers"
 msgstr "Ottimizzatori automatici"
 
 #: ../src/iop/colorbalance.c:2093
-#, fuzzy
 msgid "fit the whole histogram and center the average luma"
-msgstr "Adatta l'istogramma e centra la luminosità media"
+msgstr "Adatta l'intero istogramma e centra la luminosità media"
 
 #: ../src/iop/colorbalance.c:2099
 msgid "optimize the RGB curves to remove color casts"
@@ -12905,7 +12910,7 @@ msgstr "Aumenta la colorazione alla stessa luminanza soprattutto sulle ombre"
 
 #: ../src/iop/colorbalancergb.c:1615
 msgid "increase colorfulness at same luminance mostly in mid-tones"
-msgstr ""
+msgstr "Aumenta la colorazione alla stessa luminanza soprattutto nei toni medi"
 
 #: ../src/iop/colorbalancergb.c:1621
 msgid "increase colorfulness at same luminance mostly in highlights"
@@ -13010,7 +13015,7 @@ msgstr "Power"
 
 #: ../src/iop/colorbalancergb.c:1764
 msgid "luminance exponent in mid-tones"
-msgstr ""
+msgstr "Esponente di luminanza nei toni medi"
 
 #: ../src/iop/colorbalancergb.c:1771
 msgid "hue of the color exponent in mid-tones"
@@ -13097,12 +13102,12 @@ msgstr "Saturazione globale"
 
 #: ../src/iop/colorbalancergb.c:1894
 msgid "global brilliance"
-msgstr ""
+msgstr "Brillantezza globale"
 
 #: ../src/iop/colorbalancergb.c:1895 ../src/iop/colorbalancergb.c:1896
 #: ../src/iop/colorbalancergb.c:1897
 msgid "brilliance"
-msgstr ""
+msgstr "Brillantezza"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -13193,6 +13198,9 @@ msgid ""
 "adjust target color Lab 'L' channel\n"
 "lower values darken target color while higher brighten it"
 msgstr ""
+"Aggiusta il canale Lab 'L' del colore obiettivo\n"
+"Valori più bassi scuriscono il colore obiettivo mentre più  alti lo"
+" schiariscono"
 
 #: ../src/iop/colorchecker.c:1361
 msgid ""
@@ -13200,6 +13208,9 @@ msgid ""
 "lower values shift target color towards greens while higher shift towards "
 "magentas"
 msgstr ""
+"Aggiusta il canale Lab 'a' del colore obiettivo\n"
+"Valori più bassi spostano al verde il colore obiettivo mentre più alti lo "
+"spostano verso i magenta"
 
 #: ../src/iop/colorchecker.c:1362
 msgid "green-magenta offset"
@@ -13211,6 +13222,9 @@ msgid ""
 "lower values shift target color towards blues while higher shift towards "
 "yellows"
 msgstr ""
+"Aggiusta il canale Lab 'b' del colore obiettivo\n"
+"Valori più bassi spostano verso i blue il colore obiettivo mentre più alti lo "
+"spostano verso i gialli"
 
 #: ../src/iop/colorchecker.c:1369
 msgid "blue-yellow offset"
