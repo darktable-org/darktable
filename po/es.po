@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-15 23:20-0600\n"
-"PO-Revision-Date: 2021-11-17 01:05-0600\n"
+"POT-Creation-Date: 2021-11-17 20:01-0600\n"
+"PO-Revision-Date: 2021-11-18 00:48-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -193,7 +193,6 @@ msgid "rating an image one star twice will not zero out the rating"
 msgstr "Puntuar una imagen con una estrella dos veces no anulará el puntaje"
 
 #: ../build/bin/preferences_gen.h:3907
-#, fuzzy
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
@@ -1873,9 +1872,10 @@ msgid "number of collections to be stored"
 msgstr "Número de colecciones para ser mostradas"
 
 #: ../build/bin/preferences_gen.h:8410
-#, fuzzy
 msgid "the number of recent collections to store and show in this list"
-msgstr "Número de niveles de carpetas que se muestran en listas"
+msgstr ""
+"Señala el número de colecciones recientes que se conservarán para ser "
+"mostradas en la lista"
 
 #: ../build/bin/conf_gen.h:443
 msgctxt "preferences"
@@ -5665,7 +5665,6 @@ msgstr ""
 "hardware se ha desactivado."
 
 #: ../src/common/opencl.c:822
-#, fuzzy
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
@@ -5681,9 +5680,8 @@ msgstr ""
 "función de la misma."
 
 #: ../src/common/opencl.c:836
-#, fuzzy
 msgid "opencl scheduling profile set to default"
-msgstr "el perfil de control para opencl ha sido configurado a predeterminado."
+msgstr "El perfil de control para OpenCL se ha ajustado al predefinido."
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:1888
 #: ../src/libs/print_settings.c:2207
@@ -5800,7 +5798,6 @@ msgid "five"
 msgstr "cinco"
 
 #: ../src/common/ratings.c:296
-#, fuzzy
 msgid "reject"
 msgstr "rechazar"
 
@@ -6057,7 +6054,6 @@ msgid "newest"
 msgstr "más nuevo"
 
 #: ../src/control/crawler.c:644
-#, fuzzy
 msgid "time difference"
 msgstr "diferencia de horario"
 
@@ -8089,10 +8085,9 @@ msgid "paste history"
 msgstr "pegar historial"
 
 #: ../src/dtgtk/thumbtable.c:2309
-#, fuzzy
 msgctxt "accel"
 msgid "paste history parts"
-msgstr "pegado parcial"
+msgstr "pegar elementos del historial"
 
 #: ../src/dtgtk/thumbtable.c:2311
 msgctxt "accel"
@@ -11232,8 +11227,8 @@ msgstr "escala del gráfico"
 #: ../src/iop/basicadj.c:135
 msgid "this module is deprecated. please use the quick access panel instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el panel de "
-"control modular."
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el panel "
+"de control modular."
 
 #: ../src/iop/basicadj.c:140
 msgid "basic adjustments"
@@ -11878,7 +11873,7 @@ msgstr "mezclador de canal"
 msgid ""
 "this module is deprecated. please use the color calibration module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "calibración de color."
 
 #: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:205
@@ -12470,7 +12465,7 @@ msgstr ""
 msgid ""
 "this module is deprecated. better use new local contrast module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el nuevo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el nuevo "
 "módulo de contraste local."
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:463
@@ -13675,7 +13670,7 @@ msgstr "transferencia de color"
 #: ../src/iop/colortransfer.c:118
 msgid "this module is deprecated. better use color mapping module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "mapeo de color."
 
 #: ../src/iop/colortransfer.c:129
@@ -13871,7 +13866,7 @@ msgid ""
 "this module is deprecated. please use the chromatic aberration module "
 "instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "aberración cromática."
 
 #: ../src/iop/defringe.c:417
@@ -14488,7 +14483,7 @@ msgstr "ecualizador (antiguo)"
 msgid ""
 "this module is deprecated. better use contrast equalizer module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "ecualizador de contraste."
 
 #: ../src/iop/equalizer.c:306
@@ -14594,7 +14589,7 @@ msgstr ""
 #: ../src/iop/filmic.c:179
 msgid "this module is deprecated. better use filmic rgb module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "película rgb."
 
 #: ../src/iop/filmic.c:306
@@ -15331,7 +15326,7 @@ msgstr "mapeo tonal global"
 #: ../src/iop/globaltonemap.c:105
 msgid "this module is deprecated. please use the filmic rgb module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "película rgb."
 
 #: ../src/iop/globaltonemap.c:643
@@ -15612,7 +15607,7 @@ msgstr "invertir"
 #: ../src/iop/invert.c:115
 msgid "this module is deprecated. please use the negadoctor module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "negatidóctor."
 
 #: ../src/iop/invert.c:120
@@ -16786,7 +16781,7 @@ msgstr "luz de relleno"
 msgid ""
 "this module is deprecated. please use the tone equalizer module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "ecualizador de tono."
 
 #: ../src/iop/relight.c:270
@@ -17338,7 +17333,7 @@ msgstr "eliminación de manchas"
 #: ../src/iop/spots.c:61
 msgid "this module is deprecated. please use the retouch module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por el módulo "
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "retoque."
 
 #: ../src/iop/spots.c:66
@@ -17946,8 +17941,8 @@ msgid ""
 "this module is deprecated. please use the local contrast or tone equalizer "
 "module instead."
 msgstr ""
-"Este módulo ha quedado obsoleto. Se recomienda sustituirlo por los módulos "
-"contraste local o ecualizador de tono."
+"Este módulo ha quedado sin soporte. Se recomienda sustituirlo por los "
+"módulos contraste local o ecualizador de tono."
 
 #: ../src/iop/velvia.c:79
 msgid "velvia"
