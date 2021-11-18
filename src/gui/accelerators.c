@@ -2907,7 +2907,6 @@ static float _process_action(dt_action_t *action, int instance,
     if(definition && definition->process
         && (action->type < DT_ACTION_TYPE_WIDGET
             || definition->no_widget
-            || !action_target
             || !_widget_invisible(action_target)))
       return_value = definition->process(action_target, element, effect, move_size);
     else if(!isnan(move_size))
@@ -3757,7 +3756,7 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
     }
     else if(!darktable.control->accel_initialising)
     {
-      if(label && action_def) ac->target = widget;
+      if(label && action_def && !ac->target) ac->target = widget;
       g_hash_table_insert(darktable.control->widgets, widget, ac);
 
       gtk_widget_set_has_tooltip(widget, TRUE);
