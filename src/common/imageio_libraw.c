@@ -221,7 +221,7 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
 dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *mbuf)
 {
   int err = DT_IMAGEIO_FILE_CORRUPTED;
-  int libraw_err = 0;
+  int libraw_err = LIBRAW_SUCCESS;
   if(!_supported_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
@@ -234,14 +234,14 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   libraw_err = libraw_unpack(raw);
   if(libraw_err != LIBRAW_SUCCESS) goto error;
 
-  // Bad method to detect if camera is fully supported by libraw.
-  // But seems to be the best available. libraw crx decoder can actually
+  // Bad method to detect if camera is fully supported by LibRaw,
+  // but seems to be the best available. LibRaw crx decoder can actually
   // decode the raw data, but internal metadata like wb_coeffs, crops etc.
-  // are not populated into libraw structure.
-  if(raw->color.cam_mul[0] == 0.0 || isnan(raw->color.cam_mul[0]))
+  // are not populated into libraw structure, or image is not of CFA type.
+  if(raw->rawdata.color.cam_mul[0] == 0.0 || isnan(raw->rawdata.color.cam_mul[0]) || !raw->rawdata.raw_image)
   {
-    libraw_close(raw);
-    return DT_IMAGEIO_FILE_CORRUPTED;
+    fprintf(stderr, "[libraw_open] detected unsupported image `%s'\n", img->filename);
+    goto error;
   }
 
   libraw_err = libraw_dcraw_process(raw);
@@ -268,10 +268,16 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   img->height = raw->sizes.raw_height;
 
   // Apply crop parameters
-  img->crop_x = raw->sizes.raw_inset_crops[0].cleft;
-  img->crop_y = raw->sizes.raw_inset_crops[0].ctop;
-  img->crop_width = raw->sizes.raw_width - raw->sizes.raw_inset_crops[0].cwidth - raw->sizes.raw_inset_crops[0].cleft;
-  img->crop_height = raw->sizes.raw_height - raw->sizes.raw_inset_crops[0].cheight - raw->sizes.raw_inset_crops[0].ctop;
+  libraw_raw_inset_crop_t *ric;
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 21)
+  ric = &raw->sizes.raw_inset_crops[0];
+#else
+  ric = &raw->sizes.raw_inset_crop;
+#endif
+  img->crop_x = ric->cleft;
+  img->crop_y = ric->ctop;
+  img->crop_width = raw->rawdata.sizes.raw_width - ric->cwidth - ric->cleft;
+  img->crop_height = raw->rawdata.sizes.raw_height - ric->cheight - ric->ctop;
 
   // We can reuse the libraw filters property, it's already well-handled in dt.
   // It contains the BAYER filter pattern.
@@ -287,6 +293,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
+    fprintf(stderr, "[libraw_open] could not alloc full buffer for image `%s'\n", img->filename);
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
@@ -319,12 +326,12 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   }
 
   img->loader = LOADER_LIBRAW;
-  libraw_close(raw);
 
-  return DT_IMAGEIO_OK;
+  err = DT_IMAGEIO_OK;
 
 error:
-  fprintf(stderr, "libraw error: %s\n", libraw_strerror(libraw_err));
+  if(libraw_err != LIBRAW_SUCCESS)
+    fprintf(stderr, "[libraw_open] `%s': %s\n", img->filename, libraw_strerror(libraw_err));
   libraw_close(raw);
   return err;
 }
