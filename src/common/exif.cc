@@ -3963,7 +3963,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       dt_variables_params_t *params;
       dt_variables_params_init(&params);
       params->filename = input_filename;
-      params->jobcode = "export";
+      params->jobcode = "infos";
       params->sequence = 0;
       params->imgid = imgid;
 
@@ -4039,7 +4039,8 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
               else if(g_str_has_prefix(tagname, "Exif."))
               {
                 const char *type = _exif_get_exiv2_tag_type(tagname);
-                if((!g_strcmp0(type, "Rational")) || (!g_strcmp0(type, "SRational")))
+                if((!g_strcmp0(type, "Rational") || !g_strcmp0(type, "SRational")) &&
+                   (g_strstr_len(result, strlen(result), "/") == NULL))
                 {
                   float float_value = (float)std::atof(result);
                   if(!std::isnan(float_value))
@@ -4047,8 +4048,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
                     g_free(result);
                     int int_value = (int)float_value;
                     int divisor = 1;
-                    // exiv2 shows 2 digits for rational
-                    while(fabs(float_value - int_value) > 0.001)
+                    while(fabs(float_value - int_value) > 0.000001)
                     {
                       divisor *= 10;
                       float_value *= 10.0;
