@@ -97,20 +97,15 @@ set(RAWSPEED_RPATH           "RawSpeed"           CACHE STRING
 
 set(RAWSPEED_PATH           "${CMAKE_CURRENT_SOURCE_DIR}/${RAWSPEED_RPATH}")
 
-set(INSTALL_CMAKE_MODULE_PATH  "share/libraw/cmake"  CACHE STRING
-    "Path to install cmake module              (default=share/libraw/cmake)")
-
 # ==================================================================================================
 # General definitions rules
-
-set(LIB_SUFFIX "" CACHE STRING "Define suffix of lib directory name (32/64)" )
 
 if(WIN32 AND NOT DEFINED CMAKE_DEBUG_POSTFIX)
     set(CMAKE_DEBUG_POSTFIX "d")
 endif()
 
 # To prevent warnings from M$ compiler
-if(WIN32 AND MSVC)
+if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_definitions(-D_ATL_SECURE_NO_WARNINGS)
     add_definitions(-D_AFX_SECURE_NO_WARNINGS)
@@ -120,9 +115,9 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH} )
 
-INCLUDE(MacroBoolTo01)
-INCLUDE(MacroLogFeature)
-INCLUDE(MacroOptionalFindPackage)
+include(MacroBoolTo01)
+include(MacroLogFeature)
+include(MacroOptionalFindPackage)
 
 # Math library check
 
@@ -492,6 +487,9 @@ endif()
 
 if(OpenMP_FOUND)
     target_link_libraries(raw PUBLIC OpenMP::OpenMP_CXX)
+    if(MINGW)
+        target_compile_definitions(raw PRIVATE LIBRAW_FORCE_OPENMP)
+    endif()
 endif()
 
 if(LCMS_SUPPORT_CAN_BE_COMPILED)
@@ -556,6 +554,9 @@ endif()
 
 if(OpenMP_FOUND)
     target_link_libraries(raw_r PUBLIC OpenMP::OpenMP_CXX)
+    if(MINGW)
+        target_compile_definitions(raw_r PRIVATE LIBRAW_FORCE_OPENMP)
+    endif()
 endif()
 
 if(LCMS_SUPPORT_CAN_BE_COMPILED)
@@ -586,12 +587,14 @@ set_target_properties(raw_r PROPERTIES COMPILE_PDB_NAME "raw_r")
 # -- Files to install -------------------------------------------------------------------------------------
 if (LIBRAW_INSTALL)
     # Configure and install data file for packaging.
-    if(NOT WIN32)
+    include(GNUInstallDirs)
+
+    if(NOT MSVC)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/data/libraw.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/libraw.pc @ONLY)
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libraw.pc DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libraw.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/data/libraw_r.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/libraw_r.pc @ONLY)
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libraw_r.pc DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libraw_r.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/data/libraw.lsm.cmake ${CMAKE_CURRENT_BINARY_DIR}/libraw.lsm)
     endif()
@@ -605,38 +608,38 @@ if (LIBRAW_INSTALL)
                         ${LIBRAW_PATH}/libraw/libraw_types.h
                         ${LIBRAW_PATH}/libraw/libraw_version.h
                         ${CMAKE_CURRENT_BINARY_DIR}/libraw_config.h
-            DESTINATION include/libraw
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libraw
             COMPONENT   Devel
            )
 
     # Install Shared binary files.
     install(TARGETS raw raw_r
             EXPORT ${PROJECT_NAME}Targets
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION lib${LIB_SUFFIX}
-            ARCHIVE DESTINATION lib${LIB_SUFFIX}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
            )
 
     if(NOT BUILD_SHARED_LIBS AND "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
         message("ClangCl does not support pdb generation with static libraries")
     elseif(MSVC)
         install(FILES ${PROJECT_BINARY_DIR}/raw.pdb ${PROJECT_BINARY_DIR}/raw_r.pdb
-                DESTINATION lib
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 CONFIGURATIONS Debug RelWithDebInfo
                )
     endif()
 
     # Install find cmake script to the system for client applications.
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/FindLibRaw.cmake
-            DESTINATION ${INSTALL_CMAKE_MODULE_PATH})
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/libraw)
 
     # Install doc data files.
-    if(NOT WIN32)
+    if(NOT MSVC)
         install(FILES       ${LIBRAW_PATH}/COPYRIGHT
                             ${LIBRAW_PATH}/LICENSE.CDDL
                             ${LIBRAW_PATH}/LICENSE.LGPL
                             ${LIBRAW_PATH}/Changelog.txt
-                DESTINATION share/libraw
+                DESTINATION ${CMAKE_INSTALL_DOCDIR}
                 COMPONENT main
                )
     endif()
@@ -661,15 +664,15 @@ if (LIBRAW_INSTALL)
     configure_package_config_file(
         cmake/${PROJECT_NAME}Config.cmake.in
         cmake/${PROJECT_NAME}Config.cmake
-        INSTALL_DESTINATION lib/cmake/)
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/)
 
     install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake
-        DESTINATION lib/cmake/)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/)
 
     install(EXPORT ${PROJECT_NAME}Targets
-        NAMESPACE libraw:: DESTINATION lib/cmake/)
+        NAMESPACE libraw:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/)
 endif(LIBRAW_INSTALL)
 
 # -- Compile LibRaw Examples --------------------------------------------------------------------------------
@@ -693,9 +696,9 @@ macro(LIBRAW_BUILD_SAMPLES)
     endif()
 
     install(TARGETS ${_target}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION lib${LIB_SUFFIX}
-            ARCHIVE DESTINATION lib${LIB_SUFFIX}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endmacro(LIBRAW_BUILD_SAMPLES)
 
@@ -716,7 +719,7 @@ if(ENABLE_EXAMPLES)
     LIBRAW_BUILD_SAMPLES(postprocessing_benchmark.cpp raw)
 
     if(TARGET Threads::Threads)
-        if(WIN32)
+        if(MSVC)
             LIBRAW_BUILD_SAMPLES(half_mt_win32.c raw_r)
         else()
             LIBRAW_BUILD_SAMPLES(dcraw_half.c raw_r)
