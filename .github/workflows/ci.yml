@@ -2,7 +2,6 @@ name: CI
 
 # Keep in sync with manualrun.yml!
 
-
 on:
   push:
     branches:
@@ -19,7 +18,21 @@ on:
         - "data/themes/**"
         - "data/watermarks/**"
         - "**.md"
-  
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+        - "po/**"
+        - "packaging/**"
+        - "data/latex/**"
+        - "data/lua/**"
+        - "data/pixmaps/**"
+        - "data/pswp/**"
+        - "data/style/**"
+        - "data/themes/**"
+        - "data/watermarks/**"
+        - "**.md"
+
 jobs:
 
   Linux-minimal:
