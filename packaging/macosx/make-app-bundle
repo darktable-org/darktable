@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e -o pipefail
 trap 'echo "${BASH_SOURCE[0]}{${FUNCNAME[0]}}:${LINENO}: Error: command \`${BASH_COMMAND}\` failed with exit code $?"' ERR
+
+# make sure we have the latest tags also in our local repo clone
+git fetch --tags 2>&1 > /dev/null
+
 cd "$(dirname "$0")"/
 
 lensfun-update-data || true

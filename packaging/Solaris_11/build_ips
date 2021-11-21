@@ -23,6 +23,10 @@ AWK=/usr/bin/nawk
 GIT=/usr/bin/git
 
 REPODIR=/tmp/darktable.repo.$$
+
+# make sure we have the latest tags also in our local repo clone
+git fetch --tags 2>&1 > /dev/null
+
 # change MYPUBLISHER if you want
 MYPUBLISHER=
 CSET=`git rev-parse --short=15 --verify HEAD`

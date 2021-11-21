@@ -5,6 +5,9 @@ DT_SRC_DIR=$(cd "$DT_SRC_DIR/../" && pwd -P)
 
 cd "$DT_SRC_DIR" || exit
 
+# make sure we have the latest tags also in our local repo clone
+git fetch --tags 2>&1 > /dev/null
+
 git shortlog -sne release-3.1.0..HEAD
 
 echo "are you sure these guys received proper credit in the about dialog?"

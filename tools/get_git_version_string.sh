@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# make sure we have the latest tags also in our local repo clone
+git fetch --tags 2>&1 > /dev/null
+
 VERSION="$(git describe --tags --dirty)"
 
 if [ $? -eq 0 ] ;
