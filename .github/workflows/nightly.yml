@@ -160,7 +160,6 @@ jobs:
           cd src/.ci 
           brew bundle --verbose
           brew uninstall lensfun
-          brew install adwaita-icon-theme
       - name: Compile and install lensfun
         run: |
           wget https://github.com/lensfun/lensfun/archive/refs/tags/v0.3.2.tar.gz -O lensfun-v0.3.2.tar.gz
