@@ -8,9 +8,9 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     (practice showed that support for versions older than 10.7 isn't viable)
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome -gfortran
-    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, perl, pugixml, gmic, gtk-osx-application and downgrade libomp and lensfun
-    (all fixes except for gmic, gtk-osx-application, lensfun and libomp are required due to set deployment target, gmic patch removes extra dependencies,
-    gtk-osx-application patch and libomp version change fix a crash, lensfun downgrade fixes backwards compatibility):
+    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, perl, pugixml, gmic, gtk-osx-application, exiv2 and downgrade libomp and lensfun
+    (all fixes except for exiv2, gmic, gtk-osx-application, lensfun and libomp are required due to set deployment target, gmic patch removes extra dependencies,
+    gtk-osx-application patch and libomp version change fix a crash, lensfun downgrade fixes backwards compatibility, exiv2 enables CR3 support):
      $ mkdir -p ~/ports/devel/gnutls/files ~/ports/devel/gtk-osx-application/files ~/ports/lang/libomp/files ~/ports/lang/python{37,38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
      $ cp -R "$(port dir gnutls)" ~/ports/devel
      $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.diff
@@ -34,6 +34,8 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pugixml-stdlib.patch | patch -d ~/ports -p0
      $ cp -R "$(port dir gmic)" ~/ports/science
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gmic-minimal.patch | patch -d ~/ports -p0
+     $ cp -R "$(port dir exiv2)" ~/ports/graphics
+     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/exiv2-BMFF.patch | patch -d ~/ports -p0
      $ cp -R "$(port dir lensfun)" ~/ports/graphics
      $ curl -Lo ~/ports/graphics/lensfun/Portfile https://github.com/macports/macports-ports/raw/c94887a0760bdbfaf1469e20b85d06635ff294d1/graphics/lensfun/Portfile
      $ curl -Lo ~/ports/lang/libomp/Portfile https://github.com/macports/macports-ports/raw/589fc380ea8b74771fc4ec1de607ddbddf22cb70/lang/libomp/Portfile
