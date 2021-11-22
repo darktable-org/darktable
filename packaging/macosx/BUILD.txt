@@ -11,11 +11,9 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, perl, pugixml, gmic, gtk-osx-application, exiv2 and downgrade libomp and lensfun
     (all fixes except for exiv2, gmic, gtk-osx-application, lensfun and libomp are required due to set deployment target, gmic patch removes extra dependencies,
     gtk-osx-application patch and libomp version change fix a crash, lensfun downgrade fixes backwards compatibility, exiv2 enables CR3 support):
-     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/devel/gtk-osx-application/files ~/ports/lang/libomp/files ~/ports/lang/python{37,38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/devel/gtk-osx-application/files ~/ports/lang/libomp/files ~/ports/lang/python{38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
      $ cp -R "$(port dir gnutls)" ~/ports/devel
      $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.diff
-     $ cp -R "$(port dir python37)" ~/ports/lang
-     $ curl -Lo ~/ports/lang/python37/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
      $ cp -R "$(port dir python38)" ~/ports/lang
      $ curl -Lo ~/ports/lang/python38/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
      $ cp -R "$(port dir python39)" ~/ports/lang
