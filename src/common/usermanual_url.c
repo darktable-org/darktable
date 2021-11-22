@@ -72,7 +72,7 @@ dt_help_url urls_db[] =
   {"import_camera",              "overview/workflow/import-rate-tag/"},
   {"import_fr",                  "overview/workflow/import-rate-tag/"},
   {"global_toolbox",             NULL},
-  {"global_toolbox_preferences", "overview/user-interface/top-panel/#on-the-right-hand-side/"},
+  {"global_toolbox_preferences", "overview/user-interface/top-panel/#on-the-right-hand-side"},
   {"global_toolbox_help",        "overview/user-interface/top-panel/#on-the-right-hand-side"},
   {"lighttable_mode",            "lighttable/overview/"},
   {"lighttable_filemanager",     "lighttable/lighttable-modes/filemanager/"},
