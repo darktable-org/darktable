@@ -2404,14 +2404,14 @@ msgstr "filtre laplacien local"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:249
 #: ../build/lib/darktable/plugins/introspection_retouch.c:394
 msgid "blur type"
-msgstr "flou"
+msgstr "type de flou"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:89
 #: ../build/lib/darktable/plugins/introspection_blurs.c:178
 #: ../build/lib/darktable/plugins/introspection_retouch.c:255
 #: ../build/lib/darktable/plugins/introspection_retouch.c:398
 msgid "blur radius"
-msgstr "rayon"
+msgstr "rayon du flou"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:95
 #: ../build/lib/darktable/plugins/introspection_blurs.c:182
@@ -2699,7 +2699,7 @@ msgstr "D (lumière du jour)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:510
 msgid "E (equi-energy)"
-msgstr "E (énergie égale)"
+msgstr "E (équi-énergie)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:511
 msgid "F (fluorescent)"
@@ -2757,11 +2757,11 @@ msgstr "F6 (Blanc léger 4150 K) – IRC moyen"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:528
 msgid "F7 (D65 simulator 6500 K) – high CRI"
-msgstr "F7 (Simulation D65 6500 K) – IRC haut"
+msgstr "F7 (Simulateur D65 6500 K) – IRC haut"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:529
 msgid "F8 (D50 simulator 5000 K) – high CRI"
-msgstr "F8 (Simulation D50 5000 K) –IRC haut"
+msgstr "F8 (Simulateur D50 5000 K) –IRC haut"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:530
 msgid "F9 (Cool White Deluxe 4150 K) – high CRI"
@@ -2773,11 +2773,11 @@ msgstr "F10 (RVB ajusté 5000 K) – IRC bas"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:532
 msgid "F11 (Tuned RGB 4000 K) – low CRI"
-msgstr "F11 (RVB affiné 4000 K)– IRC bas"
+msgstr "F11 (RVB ajusté 4000 K)– IRC bas"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:533
 msgid "F12 (Tuned RGB 3000 K) – low CRI"
-msgstr "F12 (RVB affiné 3000 K)– IRC bas"
+msgstr "F12 (RVB ajusté 3000 K)– IRC bas"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:538
 msgid "B1 (Blue 2733 K)"
@@ -2909,12 +2909,12 @@ msgstr "lift, gamma, gain (sRVB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:219
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:448
 msgid "lift luminance"
-msgstr "luminance lift"
+msgstr "lift luminance"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:225
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:452
 msgid "lift chroma"
-msgstr "saturation lift"
+msgstr "lift saturation"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:231
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:456
@@ -2924,12 +2924,12 @@ msgstr "teinte lift"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:237
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:460
 msgid "power luminance"
-msgstr "luminance puissance"
+msgstr "puissance luminance"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:243
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:464
 msgid "power chroma"
-msgstr "chroma puissance"
+msgstr "puissance chroma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:249
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:468
@@ -2954,32 +2954,32 @@ msgstr "teinte hautes lumières"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:273
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:484
 msgid "offset luminance"
-msgstr "luminance décalage"
+msgstr "décalage luminance"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:279
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:488
 msgid "offset chroma"
-msgstr "chroma décalage"
+msgstr "décalage chroma"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:285
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:492
 msgid "offset hue"
-msgstr "teinte décalage"
+msgstr "décalage teinte"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:291
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:496
 msgid "shadows fall-off"
-msgstr "atténuation des ombres"
+msgstr "transition des ombres"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:297
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:500
 msgid "white fulcrum"
-msgstr "pivot blanc"
+msgstr "pivot du blanc"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:303
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:504
 msgid "highlights fall-off"
-msgstr "atténuation des hautes lumières"
+msgstr "transition des hautes lumières"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:309
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:508
@@ -3024,7 +3024,7 @@ msgstr "saturation ombres"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:357
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:540
 msgid "hue shift"
-msgstr "changement de teinte"
+msgstr "virage de teinte"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:363
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:544
@@ -3049,7 +3049,7 @@ msgstr "brillance ombres"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:387
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:560
 msgid "mask middle-gray fulcrum"
-msgstr "pivot gris-moyen du masque"
+msgstr "pivot du gris-moyen du masque"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:393
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:564
@@ -3059,7 +3059,7 @@ msgstr "vibrance globale"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:399
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:568
 msgid "contrast gray fulcrum"
-msgstr "pivot du contraste des gris"
+msgstr "pivot du gris du contraste"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:405
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:572
@@ -3260,7 +3260,7 @@ msgstr "correction des verts"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:141
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:260
 msgid "edge threshold"
-msgstr "seuil"
+msgstr "seuil des bords"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:102
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:171
@@ -3616,7 +3616,7 @@ msgstr "structure ↔ texture"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:251
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:440
 msgid "dynamic range scaling"
-msgstr "échelle plage dynamique"
+msgstr "échelle de plage dynamique"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:257
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:444
@@ -3662,12 +3662,12 @@ msgstr "ajouter du bruit dans les hautes lumières"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:311
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:480
 msgid "preserve chrominance"
-msgstr "préserver couleur"
+msgstr "préserver chrominance"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:317
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:484
 msgid "color science"
-msgstr "science couleur"
+msgstr "science de couleur"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:323
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:488
@@ -4210,7 +4210,7 @@ msgstr "ombres"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:162
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:301
 msgid "light shadows"
-msgstr "ombres légères"
+msgstr "ombres claires"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:168
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
@@ -4246,32 +4246,32 @@ msgstr "spéculaires"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:198
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:325
 msgid "smoothing diameter"
-msgstr "diamètre adoucissement"
+msgstr "diamètre lissage"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:210
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:333
 msgid "edges refinement/feathering"
-msgstr "raffinement/respect des bords"
+msgstr "raffinement des bords"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:216
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:337
 msgid "mask quantization"
-msgstr "quantification masque"
+msgstr "quantification du masque"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:222
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:341
 msgid "mask contrast compensation"
-msgstr "compensation contraste masque"
+msgstr "compensation de contraste masque"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:228
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:345
 msgid "mask exposure compensation"
-msgstr "compensation exposition masque"
+msgstr "compensation d'exposition masque"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:240
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:353
 msgid "luminance estimator"
-msgstr "estimateur luminance"
+msgstr "estimateur de luminance"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:246
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:357
@@ -4300,7 +4300,7 @@ msgstr "moyenne RVB"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:380
 msgid "HSL lightness"
-msgstr "luminance TSL"
+msgstr "luminosité TSL"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
@@ -4318,7 +4318,7 @@ msgstr "moyenne géométrique RVB"
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:88
 #: ../src/iop/rgbcurve.c:183 ../src/iop/tonecurve.c:554
 msgid "contrast compression"
-msgstr "contraste"
+msgstr "compression de contraste"
 
 #: ../build/lib/darktable/plugins/introspection_vibrance.c:33
 #: ../build/lib/darktable/plugins/introspection_vibrance.c:76
@@ -11193,7 +11193,7 @@ msgstr "créatif"
 
 #: ../src/iop/basicadj.c:149 ../src/iop/colorbalancergb.c:174
 msgid "non-linear, RGB, scene-referred"
-msgstr "relatif à la scène, on-linéaire, RVB"
+msgstr "relatif à la scène, non-linéaire, RVB"
 
 #: ../src/iop/basicadj.c:592
 msgid ""
@@ -11750,7 +11750,7 @@ msgstr "censurer"
 #: ../src/iop/censorize.c:82
 msgid "censorize license plates and body parts for privacy"
 msgstr ""
-"censurer les informations de license et les parties du corps pour des "
+"censurer les plaques d'immatriculation et les parties du corps pour des "
 "raisons de protection de la vie privée"
 
 #: ../src/iop/censorize.c:84 ../src/iop/colorin.c:138
@@ -11813,7 +11813,7 @@ msgid ""
 msgstr ""
 "effectue des corrections de l'espace colorimétrique\n"
 "tels que la balance des blancs, le mélange des canaux\n"
-"et des conversions en films d'émulation monochromes"
+"et des conversions en monochrome qui simulent la pellicule"
 
 #: ../src/iop/channelmixer.c:621
 msgid "destination"
@@ -11942,7 +11942,7 @@ msgstr "N&B : Fuji Acros 100"
 
 #: ../src/iop/channelmixerrgb.c:426
 msgid "basic channel mixer"
-msgstr "mixeur de canaux base"
+msgstr "mixeur de canaux de base"
 
 #: ../src/iop/channelmixerrgb.c:452
 msgid "swap G and R"
@@ -11958,7 +11958,7 @@ msgstr "(corps noir)"
 
 #: ../src/iop/channelmixerrgb.c:1651
 msgid "(invalid)"
-msgstr "invalide"
+msgstr "(invalide)"
 
 #: ../src/iop/channelmixerrgb.c:1655 ../src/iop/channelmixerrgb.c:1704
 msgid "very good"
@@ -11998,11 +11998,11 @@ msgid ""
 msgstr ""
 "\n"
 "<b>Rapport de qualité du profil : %s</b>\n"
-"entrée  ΔE : \tmoy. %.2f   \tmax. %.2f\n"
-"BdB ΔE : \t\tmoy. %.2f   \tmax. %.2f\n"
-"sortie ΔE : \tmoy. %.2f   \tmax. %.2f\n"
+"ΔE en entrée : \tmoy. %.2f   \tmax. %.2f\n"
+"ΔE BdB: \t\tmoy. %.2f   \tmax. %.2f\n"
+"ΔE en sortie : \tmoy. %.2f   \tmax. %.2f\n"
 "\n"
-"<b>Données de profil</b>\n"
+"<b>Données du profil</b>\n"
 "illuminant :  \t%.0f K \t%s \n"
 "matrice dans l'espace d'adaptation :\n"
 "<tt>%+.4f \t%+.4f \t%+.4f\n"
@@ -12026,7 +12026,7 @@ msgid ""
 msgstr ""
 "\n"
 "<b>Rapport de qualité du profil: : %s</b>\n"
-"sortie ΔE : \tmoy. %.2f   \tmax. %.2f\n"
+"ΔE en sortie : \tmoy. %.2f   \tmax. %.2f\n"
 "\n"
 "<b>Valeurs de normalisation</b>\n"
 "compensation d'exposition : \t%+.2f IL\n"
@@ -12036,7 +12036,7 @@ msgstr ""
 #. earlier in the pipe.
 #: ../src/iop/channelmixerrgb.c:1736
 msgid "double CAT applied"
-msgstr "CAT appliquée deux foix"
+msgstr "CAT appliquée en double"
 
 #: ../src/iop/channelmixerrgb.c:1737
 msgid ""
@@ -12045,10 +12045,10 @@ msgid ""
 "this can lead to inconsistencies, unless you\n"
 "use them with masks or know what you are doing."
 msgstr ""
-"deux instances ou plus de calibration des couleurs,\n"
-"toutes faisant une adaptation chromatique.\n"
-"cela entraînes des incohérences, sauf utilisées\n"
-"avec des masques en connaissance de cause."
+"vous avez 2 instances ou plus de calibration des couleurs,\n"
+"appliquant chacune une adaptation chromatique.\n"
+"cela peut entraîner des incohérences, sauf si utilisées\n"
+"avec des masques et en connaissance de cause."
 
 #. our first and biggest problem : white balance module is being clever with WB coeffs
 #: ../src/iop/channelmixerrgb.c:1747
@@ -12086,7 +12086,7 @@ msgid ""
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
 "so its temperature is relevant and meaningful with a D illuminant."
 msgstr ""
-"température de couleur proximale.\n"
+"température de couleur proximale approchée.\n"
 "cet illuminant peut être modélisé avec précision par un spectre de lumière "
 "du jour,\n"
 "donc sa température est pertinente et significative avec un illuminant D."
@@ -12102,7 +12102,7 @@ msgid ""
 "this illuminant can be accurately modeled by a black body spectrum,\n"
 "so its temperature is relevant and meaningful with a Planckian illuminant."
 msgstr ""
-"température de couleur proximale.\n"
+"température de couleur proximale approchée.\n"
 "cet illuminant peut être modélisé avec précision par un spectre de corps "
 "noir,\n"
 "donc sa température est pertinente et significative avec un illuminant "
@@ -12121,11 +12121,11 @@ msgid ""
 "so its temperature is not relevant and meaningful and you need to use a "
 "custom illuminant."
 msgstr ""
-"température de couleur proximale.\n"
-"cet illuminant peut être modélisé avec précision par un spectre de lumière "
+"température de couleur proximale approchée.\n"
+"cet illuminant ne peut pas être modélisé précisiment par un spectre de lumière "
 "de jour ou de corps noir,\n"
-"donc sa température est pertinente et significative avec un illuminant "
-"personnalisé."
+"donc sa température n'est ni pertinente ni significative et vous devez\n"
+"un illuminant personnalisé."
 
 #: ../src/iop/channelmixerrgb.c:3274
 #, c-format
@@ -12137,8 +12137,8 @@ msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
 msgstr ""
-"température de couleur proximale\n"
-"ne peut être définie donc vous devez utiliser un illuminant personnalisé."
+"la température de couleur proximale approchée\n"
+"ne peut être estimée, donc vous devez utiliser un illuminant personnalisé."
 
 #: ../src/iop/channelmixerrgb.c:3515
 msgid "white balance successfully extracted from raw image"
@@ -12147,7 +12147,7 @@ msgstr "la balance des blancs a été extraite de l'image raw avec succès"
 #. We need to recompute only the full preview
 #: ../src/iop/channelmixerrgb.c:3521
 msgid "auto-detection of white balance started…"
-msgstr "l'auto-détection de la balance des blancs a démarrée…"
+msgstr "l'auto-détection de la balance des blancs a démarré…"
 
 #: ../src/iop/channelmixerrgb.c:3576
 msgid ""
@@ -12189,7 +12189,7 @@ msgid ""
 "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
 "• none disables any adaptation and uses pipeline working RGB."
 msgstr ""
-"choisir la méthode pour ajuster l'illuminant\n"
+"choisir la méthode pour adapter l'illuminant\n"
 "et l'espace couleur dans lequel le module travaille :\n"
 "• Bradford linéaire (1985) est cohérent avec un traitement ICC v4.\n"
 "• CAT16 (2016) est plus robuste et précis\n"
@@ -12206,7 +12206,7 @@ msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
 msgstr ""
-"ceci est la couleur de l'illuminant de scène avant l'adaptation chromatique\n"
+"ceci est la couleur de l'illuminant de la scène avant l'adaptation chromatique\n"
 "cette couleur sera transformée en blanc pur par l'adaptation."
 
 #: ../src/iop/channelmixerrgb.c:3717 ../src/iop/temperature.c:2011
@@ -12267,7 +12267,7 @@ msgstr "calibrer avec une charte couleur"
 
 #: ../src/iop/channelmixerrgb.c:3814
 msgid "use a color checker target to autoset CAT and channels"
-msgstr "utiliser une charte couleur pour auto-définir CAT et canaux"
+msgstr "utiliser une charte couleur pour auto-régler CAT et canaux"
 
 #: ../src/iop/channelmixerrgb.c:3820
 msgid "chart"
@@ -12329,7 +12329,7 @@ msgstr "couleurs neutres"
 
 #: ../src/iop/channelmixerrgb.c:3841
 msgid "skin and soil colors"
-msgstr "couleurs de la peau et du sol"
+msgstr "couleurs de peau et de terres"
 
 #: ../src/iop/channelmixerrgb.c:3842
 msgid "foliage colors"
@@ -12358,7 +12358,7 @@ msgid ""
 "the patches frame cast a shadows on the edges of the patch."
 msgstr ""
 "réduire le rayon des patchs pour choisir la partie plus ou moins centrale.\n"
-"utile lorsque la correction de la perspective est bâclée ou\n"
+"utile lorsque la correction de la perspective est grossière ou que\n"
 "le cadre des patchs projette une ombre sur les bords du patch."
 
 #: ../src/iop/channelmixerrgb.c:3858
@@ -12367,7 +12367,7 @@ msgstr "le delta E utilise la formule CIE 2000."
 
 #: ../src/iop/channelmixerrgb.c:3864
 msgid "accept the computed profile and set it in the module"
-msgstr "accepter le profile calculé et le définir dans le module"
+msgstr "accepter le profil calculé et le régler dans le module"
 
 #: ../src/iop/channelmixerrgb.c:3869
 msgid "recompute the profile"
@@ -12874,7 +12874,7 @@ msgstr "ajoute saturation de base"
 
 #: ../src/iop/colorbalancergb.c:770
 msgid "colorbalance works only on RGB input"
-msgstr "la balance des couleurs ne travail qu'avec un entrée RVB"
+msgstr "la balance des couleurs ne travail qu'avec une entrée RVB"
 
 #: ../src/iop/colorbalancergb.c:1209 ../src/iop/colorzones.c:2217
 #: ../src/iop/retouch.c:1817 ../src/iop/toneequal.c:1894
@@ -13104,7 +13104,7 @@ msgstr "gain"
 
 #: ../src/iop/colorbalancergb.c:1886
 msgid "global chroma"
-msgstr "chroma global"
+msgstr "chroma globale"
 
 #: ../src/iop/colorbalancergb.c:1890 ../src/iop/filmic.c:1677
 msgid "global saturation"
@@ -14199,19 +14199,19 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:230
 msgid "lens deblur: soft"
-msgstr "correction flou d'objectif : léger"
+msgstr "correction de flou d'objectif : léger"
 
 #: ../src/iop/diffuse.c:235
 msgid "lens deblur: medium"
-msgstr "correction flou d'objectif : moyen"
+msgstr "correction de flou d'objectif : moyen"
 
 #: ../src/iop/diffuse.c:240
 msgid "lens deblur: hard"
-msgstr "correction flou d'objectif : fort"
+msgstr "correction de flou d'objectif : fort"
 
 #: ../src/iop/diffuse.c:259
 msgid "dehaze"
-msgstr "suppression brume"
+msgstr "suppression de la brume"
 
 #: ../src/iop/diffuse.c:278
 msgid "denoise: soft"
@@ -14223,11 +14223,11 @@ msgstr "réduction du bruit : fort (lent)"
 
 #: ../src/iop/diffuse.c:350
 msgid "sharpen demosaicing (no AA filter)"
-msgstr "netteté dématriçage (sans filtre AA)"
+msgstr "netteté du dématriçage (sans filtre AA)"
 
 #: ../src/iop/diffuse.c:354
 msgid "sharpen demosaicing (AA filter)"
-msgstr "netteté dématriçage (filtre AA)"
+msgstr "netteté du dématriçage (filtre AA)"
 
 #: ../src/iop/diffuse.c:373
 msgid "simulate watercolor"
@@ -14235,15 +14235,15 @@ msgstr "simuler l'aquarelle"
 
 #: ../src/iop/diffuse.c:391
 msgid "simulate line drawing"
-msgstr "simuler dessins"
+msgstr "simuler le dessin au trait"
 
 #: ../src/iop/diffuse.c:412
 msgid "add local contrast"
-msgstr "contraste local"
+msgstr "ajoute du contraste local"
 
 #: ../src/iop/diffuse.c:432
 msgid "inpaint highlights"
-msgstr "reconstruire hautes lumières"
+msgstr "remplir les hautes lumières"
 
 #: ../src/iop/diffuse.c:1081 ../src/iop/diffuse.c:1319
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
@@ -14251,7 +14251,7 @@ msgstr "diffusion/netteté n'a pas assez de mémoire, vérifier votre RAM"
 
 #: ../src/iop/diffuse.c:1447
 msgid "diffusion properties"
-msgstr "paramètres diffusion"
+msgstr "paramètres de diffusion"
 
 #: ../src/iop/diffuse.c:1451
 msgid ""
@@ -14260,8 +14260,8 @@ msgid ""
 "if you plan on sharpening or inpainting, more iterations help reconstruction."
 msgstr ""
 "plus d'itération rend l'effet plus fort mais ralenti le traitement.\n"
-"ceci est similaire à laisser plus de temps à la réaction de la diffusion.\n"
-"pour la netteté ou la reconstruction plus d'itération peut aider."
+"ceci est similaire à laisser plus de temps à la réaction de diffusion.\n"
+"pour la netteté ou la reconstruction, plus d'itération peuvent aider."
 
 #: ../src/iop/diffuse.c:1458
 msgid ""
@@ -14274,8 +14274,8 @@ msgstr ""
 "échelle maximale de la diffusion.\n"
 "de plus grandes valeurs diffusent plus loin au détriment du temps de "
 "calcul.\n"
-"de plus petites valeurs diffusent plus prêt.\n"
-"pour la suppression du bruit, le rayon devrait être à peu près la largeur du "
+"de plus petites valeurs diffusent plus près.\n"
+"pour la suppression du bruit, le rayon devrait être environ de la largeur du "
 "flou d'objectif."
 
 #: ../src/iop/diffuse.c:1466
@@ -14287,14 +14287,14 @@ msgid ""
 "increase to act on local contrast instead."
 msgstr ""
 "échelle principale de la diffusion.\n"
-"zéro pour travailler de façon plus prononcé sur les plus fin détails.\n"
-"non-zéro défini la taille des détails à travailler de façon plus prononcée.\n"
-"pour supprimer le flou et les bruit, positionner sur zéro.\n"
+"zéro applique la diffusion en priorité sur les détails.\n"
+"non-nul définit la taille des détails à diffuser prioritairement.\n"
+"pour déflouter et débruiter, règler à zéro.\n"
 "augmenter pour travailler sur le contraste local sinon."
 
 #: ../src/iop/diffuse.c:1472
 msgid "diffusion speed"
-msgstr "vitesse diffusion"
+msgstr "vitesse de diffusion"
 
 #: ../src/iop/diffuse.c:1478
 msgid ""
@@ -14303,9 +14303,9 @@ msgid ""
 "negative values sharpen.\n"
 "zero does nothing."
 msgstr ""
-"adoucir ou accentuer les détails léger (gradients).\n"
+"lisser ou accentuer les détails lisses (gradients).\n"
 "les valeurs positives vont diffuser et flouter.\n"
-"les valeurs négatives vont accentuer les détails.\n"
+"les valeurs négatives vont accentuer la netteté.\n"
 "zéro ne fait rien (point neutre)."
 
 #: ../src/iop/diffuse.c:1487 ../src/iop/diffuse.c:1496
@@ -14315,9 +14315,9 @@ msgid ""
 "negative values sharpen.\n"
 "zero does nothing."
 msgstr ""
-"adoucir ou accentuer les détails fins.\n"
+"lisser ou accentuer les détails fins.\n"
 "les valeurs positives vont diffuser et flouter.\n"
-"les valeurs négatives vont accentuer les détails.\n"
+"les valeurs négatives vont accentuer la netteté.\n"
 "zéro ne fait rien (point neutre)."
 
 #: ../src/iop/diffuse.c:1505
@@ -14327,7 +14327,7 @@ msgid ""
 "negative values sharpen.\n"
 "zero does nothing."
 msgstr ""
-"adoucir ou accentuer les détails fins (gradients).\n"
+"lisser ou accentuer les détails fins (gradients).\n"
 "les valeurs positives vont diffuser et flouter.\n"
 "les valeurs négatives vont accentuer les détails.\n"
 "zéro ne fait rien (point neutre)."
@@ -14346,8 +14346,8 @@ msgid ""
 msgstr ""
 "anisotropie de la diffusion.\n"
 "zéro fait une diffusion isotrope (la même dans toutes les directions)\n"
-"valeurs positives pour une diffusion suivant les isophotes plus précisément\n"
-"valeurs négatives pour une diffusion suivant les gradients plus précisément"
+"les valeurs positives forcent la diffusion à suivre les isopohotes de plus près\n"
+"les valeurs négatives forcent la diffusion à suidre les gradients de plus près"
 
 #: ../src/iop/diffuse.c:1552
 msgid "edges management"
@@ -14363,7 +14363,7 @@ msgid ""
 "increase to exclude more edges from diffusion,\n"
 "if fringes or halos appear."
 msgstr ""
-"défini le sensibilité de la pénalité de la variance pour les bords.\n"
+"définit la sensibilité de la pénalisation par variance pour les bords.\n"
 "augmenter pour exclure plus de bords de la diffusion,\n"
 "si des franges ou des halos apparaissent."
 
@@ -14374,11 +14374,10 @@ msgid ""
 "increase if you see noise appear on smooth surfaces or\n"
 "if dark areas seem oversharpened compared to bright areas."
 msgstr ""
-"défini le seuil de la variance entre l'amplification des bords et la "
-"pénalité.\n"
-"diminuer pour booster les pixels dans les surfaces lisses,\n"
-"augmenter pour éviter le bruit pouvant apparaître des les surfaces lisses "
-"ou\n"
+"définit le seuil de la variance entre l'amplification des bords et la "
+"pénalisation.\n"
+"diminuer pour booster l'effet sur les pixels dans les surfaces lisses,\n"
+"augmenter si du bruit apparaît des les surfaces lisses ou\n"
 "si les zones sombres semblent trop accentuées par rapport aux zones claires."
 
 #: ../src/iop/diffuse.c:1574
@@ -14396,8 +14395,8 @@ msgstr ""
 "seuil de luminance pour le masque.\n"
 "0 pour désactiver le masque de luminance et appliquer le module sur toute "
 "l'image.\n"
-"toutes valeurs supérieures excluent les pixels avec une luminance en dessous "
-"du seuil.\n"
+"toutes valeurs supérieures excluent les pixels de luminance inférieure "
+"au seuil.\n"
 "cela peut être utilisé pour reconstruire les hautes lumières."
 
 #: ../src/iop/dither.c:97 ../src/iop/vignette.c:997
@@ -17597,19 +17596,19 @@ msgstr "compresser ombres/hautes-lumières (gf) : léger"
 
 #: ../src/iop/toneequal.c:509
 msgid "contrast tone curve: soft"
-msgstr "courbe des tonalités contraste : léger"
+msgstr "courbe des tons contrastée : léger"
 
 #: ../src/iop/toneequal.c:513
 msgid "contrast tone curve: medium"
-msgstr "courbe des tonalités contraste : moyen"
+msgstr "courbe des tons contrastée : moyen"
 
 #: ../src/iop/toneequal.c:517
 msgid "contrast tone curve: strong"
-msgstr "courbe des tonalités contraste : fort"
+msgstr "courbe des tons contrastée : fort"
 
 #: ../src/iop/toneequal.c:539
 msgid "relight : fill-in"
-msgstr "rééclairer : fill-in"
+msgstr "rééclairer : lumière de remplissage"
 
 #: ../src/iop/toneequal.c:591
 msgid ""
@@ -17624,7 +17623,7 @@ msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
-"les données entrée/sortie de l'égaliseur de don ne sont pas correctement "
+"les buffers entrée/sortie de l'égaliseur de ton ne sont pas correctement "
 "alignées, reporter le bug aux développeurs"
 
 #: ../src/iop/toneequal.c:1034
@@ -17650,7 +17649,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:2094
 msgid "some parameters are out-of-bounds"
-msgstr "certains paramètres sont hors bornes"
+msgstr "certains paramètres sont hors limites"
 
 #: ../src/iop/toneequal.c:2383
 #, c-format
@@ -17660,17 +17659,17 @@ msgstr "%+.1f IL"
 #: ../src/iop/toneequal.c:3061
 #, c-format
 msgid "[%s over image] change tone exposure"
-msgstr "[%s sur l'image] changer exposition tonalité"
+msgstr "[%s sur l'image] changer exposition du ton"
 
 #: ../src/iop/toneequal.c:3063
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
-msgstr "[%s sur l'image] changer exposition tonalité (grossièrement)"
+msgstr "[%s sur l'image] changer exposition du ton (grossièrement)"
 
 #: ../src/iop/toneequal.c:3065
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
-msgstr "[%s sur l'image] changer exposition tonalité (finement)"
+msgstr "[%s sur l'image] changer exposition du ton (finement)"
 
 #. Simple view
 #: ../src/iop/toneequal.c:3143 ../src/iop/toneequal.c:3181
@@ -17754,17 +17753,17 @@ msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
 msgstr ""
-"prévisualisation du masque et choisir l'estimateur qui donne le\n"
+"prévisualiser le masque et choisir l'estimateur qui donne le\n"
 "contraste le plus important entre les zones à éclaircir et les zones à "
 "assombrir"
 
 #: ../src/iop/toneequal.c:3230
 msgid "details"
-msgstr "détail"
+msgstr "détails"
 
 #: ../src/iop/toneequal.c:3231
 msgid "preserve details"
-msgstr "préserver détails"
+msgstr "préserver les détails"
 
 #: ../src/iop/toneequal.c:3232
 msgid ""
@@ -17796,7 +17795,7 @@ msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
-"nombre de passe du filtre guidé à appliquer\n"
+"nombre de passes du filtre guidé à appliquer\n"
 "aide à diffuser les bords du filtre mais dégrade les performances"
 
 #: ../src/iop/toneequal.c:3246
@@ -17818,11 +17817,11 @@ msgid ""
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
 "précision du raffinement :\n"
-"les grandes valeurs force le masque à suivre les bords plus précisément\n"
-"mais peut alors annuler l'adoucissement\n"
-"les petites valeurs donne des gradients plus progressif et un meilleur "
+"les grandes valeurs forcent le masque à suivre les bords plus précisément\n"
+"mais peuvent alors annuler l'adoucissement\n"
+"les petites valeurs donnent des gradients plus progressifs et un meilleur "
 "adoucissement\n"
-"mais peut alors créer des bords peu précis et des halos"
+"mais peuvent alors créer des bords peu précis et des halos"
 
 #: ../src/iop/toneequal.c:3259
 msgid "mask post-processing"
@@ -17835,8 +17834,8 @@ msgid ""
 "clipping occurs."
 msgstr ""
 "l'histogramme du masque s'étend entre le premier et dernier décile.\n"
-"la ligne centrale montre la moyenne. des bars oranges apparaissent aux "
-"extrémités si troncatures."
+"la ligne centrale montre la moyenne. des barres oranges apparaissent aux "
+"extrémités si troncature."
 
 #: ../src/iop/toneequal.c:3273
 msgid ""
@@ -17845,8 +17844,8 @@ msgid ""
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
 "0 désactive la quantification.\n"
-"les valeurs plus grandes postérise la luminance pour aider le guidage\n"
-" à produire des zones plus lisse lors de l'utilisation de grandes valeurs de "
+"les valeurs plus grandes postérisent la luminance pour aider le guidage\n"
+" à produire des zones plus lisses lors de l'utilisation de grandes valeurs de "
 "raffinement"
 
 #: ../src/iop/toneequal.c:3280
@@ -17857,7 +17856,7 @@ msgid ""
 msgstr ""
 "utiliser pour déplacer la moyenne du masque d'exposition à travers les "
 "canaux\n"
-"pour un meilleur contrôle de la correction d'exposition.\n"
+"pour un meilleur contrôle de la correction d'exposition avec les nœuds disponibles.\n"
 "la baguette magique ajustera automatiquement l'exposition moyenne."
 
 #: ../src/iop/toneequal.c:3290
