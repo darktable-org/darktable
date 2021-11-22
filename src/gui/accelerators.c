@@ -441,7 +441,7 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
   else
   {
     GSList *driver = darktable.control->input_drivers;
-    while(driver && (id -= 10) > 10)
+    while(driver && (id -= 10) >= 10)
       driver = driver->next;
 
     if(!driver)
@@ -2743,7 +2743,7 @@ static gboolean _shortcut_match(dt_shortcut_t *f, gchar **fb_log)
 
     dt_input_device_t id = f->key_device;
     GSList *driver = darktable.control->input_drivers;
-    while(driver && (id -= 10) > 10)
+    while(driver && (id -= 10) >= 10)
       driver = driver->next;
 
     if(!driver)
