@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-22 21:13+0100\n"
-"PO-Revision-Date: 2021-11-22 21:23+0100\n"
+"PO-Revision-Date: 2021-11-22 23:52+0100\n"
 "Last-Translator: Aurélien PIERRE <contact@aurelienpierre.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3460,7 +3460,7 @@ msgstr "étendue de rayon"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:135
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:256
 msgid "edge sensitivity"
-msgstr "sensibilité des bords"
+msgstr "sensibilité aux bords"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:147
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:264
@@ -3485,7 +3485,7 @@ msgstr "anisotropie 4ème ordre"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:171
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:280
 msgid "luminance masking threshold"
-msgstr "seuil masquage luminance"
+msgstr "seuil du masque de luminance"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
