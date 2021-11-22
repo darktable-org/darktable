@@ -724,7 +724,10 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
                 lang_index++;
               }
             }
+
+            // language not found, default to EN
             if(!is_language_supported) lang_index = 0;
+
             char *url = g_build_path("/", base_url, supported_languages[lang_index], help_url, NULL);
 
             // TODO: call the web browser directly so that file:// style base for local installs works
