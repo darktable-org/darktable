@@ -4711,8 +4711,6 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     g->straightening = FALSE;
     // adjust the line with possible current angle and flip on this module
     float pts[4] = { x, y, g->lastx, g->lasty };
-    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
-                                      DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
 
     float dx = pts[0] - pts[2];
     float dy = pts[1] - pts[3];
@@ -4736,6 +4734,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(a < -180.0) a += 360.0;
     if(a > 180.0) a -= 360.0;
 
+    a -= dt_bauhaus_slider_get(g->rotation);
     dt_bauhaus_slider_set_soft(g->rotation, -a);
     return TRUE;
   }
