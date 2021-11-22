@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-10 09:22+0100\n"
-"PO-Revision-Date: 2021-11-20 01:08+0100\n"
+"PO-Revision-Date: 2021-11-23 00:17+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -1465,13 +1465,13 @@ msgstr "Scrivi un file di elaborazione per ogni immagine"
 #: ../build/bin/preferences_gen.h:7131 ../build/bin/conf_gen.h:381
 msgctxt "preferences"
 msgid "after edit"
-msgstr ""
+msgstr "Dopo modifica"
 
 #: ../build/bin/preferences_gen.h:7136 ../build/bin/preferences_gen.h:7155
 #: ../build/bin/conf_gen.h:382
 msgctxt "preferences"
 msgid "on import"
-msgstr ""
+msgstr "Su importa"
 
 #: ../build/bin/preferences_gen.h:7158
 msgid ""
@@ -1771,14 +1771,14 @@ msgstr "Modello nominazione sottocartella"
 
 #: ../build/bin/preferences_gen.h:8041
 msgid "keep original filename"
-msgstr "Mantieni il nome originale del file"
+msgstr "Mantenere il nome originale del file"
 
 #: ../build/bin/preferences_gen.h:8055
 msgid ""
 "keep original filename instead of a pattern while importing from camera or "
 "card"
 msgstr ""
-"Mantieni il nome originale del file quando si importa da una fotocamera o da "
+"Mantenere il nome originale del file quando si importa da una fotocamera o da "
 "una scheda di memoria"
 
 #: ../build/bin/preferences_gen.h:8077
@@ -1868,7 +1868,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8386
 msgid "number of collections to be stored"
-msgstr ""
+msgstr "Numero di raccolte da archiviare"
 
 #: ../build/bin/preferences_gen.h:8410
 msgid "the number of recent collections to store and show in this list"
@@ -2032,11 +2032,11 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:923
 msgid "keep this window open"
-msgstr "Tieni questa finestra aperta"
+msgstr "Tenere questa finestra aperta"
 
 #: ../build/bin/conf_gen.h:924
 msgid "keep this window open to run several imports"
-msgstr "Tieni questa finestra aperta per avviare diverse importazioni"
+msgstr "Tenere questa finestra aperta per avviare diverse importazioni"
 
 #: ../build/bin/conf_gen.h:1665
 msgid "show OSD"
@@ -2132,7 +2132,7 @@ msgstr "Forma d'onda"
 #: ../build/bin/conf_gen.h:2463
 msgctxt "preferences"
 msgid "rgb parade"
-msgstr ""
+msgstr "Parata RGB"
 
 #: ../build/bin/conf_gen.h:2464
 msgctxt "preferences"
@@ -2417,17 +2417,17 @@ msgstr "Raggio di sfocatura"
 #: ../build/lib/darktable/plugins/introspection_blurs.c:95
 #: ../build/lib/darktable/plugins/introspection_blurs.c:182
 msgid "diaphragm blades"
-msgstr ""
+msgstr "Lame diaframma"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:101
 #: ../build/lib/darktable/plugins/introspection_blurs.c:186
 msgid "concavity"
-msgstr ""
+msgstr "Concavità"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:107
 #: ../build/lib/darktable/plugins/introspection_blurs.c:190
 msgid "linearity"
-msgstr ""
+msgstr "Linearità"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:113
 #: ../build/lib/darktable/plugins/introspection_blurs.c:194
@@ -2442,12 +2442,12 @@ msgstr "Rotazione"
 #: ../build/lib/darktable/plugins/introspection_blurs.c:119
 #: ../build/lib/darktable/plugins/introspection_blurs.c:198
 msgid "direction"
-msgstr ""
+msgstr "Direzione"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:125
 #: ../build/lib/darktable/plugins/introspection_blurs.c:202
 msgid "curvature"
-msgstr ""
+msgstr "Curvatura"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:131
 #: ../build/lib/darktable/plugins/introspection_blurs.c:206
@@ -2910,7 +2910,7 @@ msgstr "lift, gamma, gain (sRGB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:219
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:448
 msgid "lift luminance"
-msgstr ""
+msgstr "Alza la luminanza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:225
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:452
@@ -2925,7 +2925,7 @@ msgstr "Alza la tonalità"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:237
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:460
 msgid "power luminance"
-msgstr ""
+msgstr "Potenzia luminanza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:243
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:464
@@ -2940,7 +2940,7 @@ msgstr "Potenzia tonalità"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:255
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:472
 msgid "gain luminance"
-msgstr ""
+msgstr "Guadagno di luminanza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:261
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
@@ -3005,7 +3005,7 @@ msgstr "Crominanza toni medi"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:333
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:524
 msgid "saturation global"
-msgstr ""
+msgstr "Globale saturazione"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:339
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:528
@@ -3015,12 +3015,12 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:345
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:532
 msgid "saturation mid-tones"
-msgstr ""
+msgstr "Saturazione mezzi toni"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:351
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:536
 msgid "saturation shadows"
-msgstr ""
+msgstr "Ombre di saturazione"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:357
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:540
@@ -3030,7 +3030,7 @@ msgstr "Spostamento di tonalità"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:363
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:544
 msgid "brilliance global"
-msgstr ""
+msgstr "Globale brillantezza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:369
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:548
@@ -3040,12 +3040,12 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:375
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:552
 msgid "brilliance mid-tones"
-msgstr ""
+msgstr "Brillantezza mezzi toni"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:381
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:556
 msgid "brilliance shadows"
-msgstr ""
+msgstr "Ombre di brillantezza"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:387
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:560
@@ -3276,7 +3276,7 @@ msgstr "Metodo demosaicizzazione"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:114
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:179
 msgid "lmmse refine"
-msgstr ""
+msgstr "Affina lmmse"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
@@ -3370,15 +3370,15 @@ msgstr "Mediano"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:234
 msgid "3x median"
-msgstr ""
+msgstr "3x mediano"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:235
 msgid "refine & medians"
-msgstr ""
+msgstr "Affina & mediani"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:236
 msgid "2x refine + medians"
-msgstr ""
+msgstr "2x affina + mediani"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:125
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:300
@@ -3461,7 +3461,7 @@ msgstr "Raggio massimo"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:135
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:256
 msgid "edge sensitivity"
-msgstr ""
+msgstr "Sensibilità bordo"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:147
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:264
@@ -3491,22 +3491,22 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
 msgid "1st order speed"
-msgstr ""
+msgstr "Prima velocità d'ordine"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:183
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:288
 msgid "2nd order speed"
-msgstr ""
+msgstr "Seconda velocità d'ordine"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:189
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:292
 msgid "3rd order speed"
-msgstr ""
+msgstr "Terza velocità d'ordine"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:195
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:296
 msgid "4th order speed"
-msgstr ""
+msgstr "Quarta velocità d'ordine"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:201
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:300
@@ -5854,7 +5854,7 @@ msgstr "Tieni"
 
 #: ../src/control/control.c:102 ../src/control/control.c:135
 msgid "modifiers"
-msgstr ""
+msgstr "Modificatori"
 
 #: ../src/control/control.c:109
 msgctxt "accel"
@@ -5869,7 +5869,7 @@ msgstr "Viste"
 #: ../src/control/control.c:111
 msgctxt "accel"
 msgid "thumbtable"
-msgstr ""
+msgstr "Anteprime"
 
 #: ../src/control/control.c:112
 msgctxt "accel"
@@ -5889,12 +5889,12 @@ msgstr "Fusione"
 #: ../src/control/control.c:115
 msgctxt "accel"
 msgid "lua scripts"
-msgstr ""
+msgstr "Scripts LUA"
 
 #: ../src/control/control.c:116
 msgctxt "accel"
 msgid "fallbacks"
-msgstr ""
+msgstr "Abbandonate"
 
 #: ../src/control/control.c:132
 msgid "show accels window"
@@ -6007,7 +6007,7 @@ msgstr "Più nuovo"
 
 #: ../src/control/crawler.c:644
 msgid "time difference"
-msgstr ""
+msgstr "Differenza d'orario"
 
 #: ../src/control/crawler.c:654
 msgid "updated xmp sidecar files found"
@@ -6034,27 +6034,27 @@ msgstr "Inverti selezione"
 
 #: ../src/control/crawler.c:683
 msgid "on the selection:"
-msgstr ""
+msgstr "Sulla selezione:"
 
 #: ../src/control/crawler.c:684
 msgid "keep the xmp edit"
-msgstr ""
+msgstr "Tenere le modifiche all'xmp"
 
 #: ../src/control/crawler.c:685
 msgid "keep the database edit"
-msgstr ""
+msgstr "Tenere le modifiche al database"
 
 #: ../src/control/crawler.c:686
 msgid "keep the newest edit"
-msgstr ""
+msgstr "Tieni le modifiche più recenti"
 
 #: ../src/control/crawler.c:687
 msgid "keep the oldest edit"
-msgstr ""
+msgstr "Tenere le modifiche più vecchie"
 
 #: ../src/control/crawler.c:709
 msgid "synchronization log"
-msgstr ""
+msgstr "Log di sincronizzazione"
 
 #: ../src/control/jobs/camera_jobs.c:79
 #, c-format
@@ -8321,7 +8321,7 @@ msgstr "Verticale"
 
 #: ../src/gui/accelerators.c:81
 msgid "diagonal"
-msgstr ""
+msgstr "Diagonale"
 
 #: ../src/gui/accelerators.c:82
 msgid "skew"
@@ -8329,7 +8329,7 @@ msgstr "Storto"
 
 #: ../src/gui/accelerators.c:83
 msgid "leftright"
-msgstr ""
+msgstr "Sinistradestra"
 
 #: ../src/gui/accelerators.c:84
 msgid "updown"
@@ -8337,7 +8337,7 @@ msgstr "Sottosopra"
 
 #: ../src/gui/accelerators.c:85
 msgid "pgupdown"
-msgstr ""
+msgstr "Pgsugiù"
 
 #: ../src/gui/accelerators.c:93
 msgid "shift"
@@ -8406,31 +8406,31 @@ msgstr "Disattiva"
 
 #: ../src/gui/accelerators.c:123
 msgid "ctrl-toggle"
-msgstr ""
+msgstr "Disattiva CTRL"
 
 #: ../src/gui/accelerators.c:124
 msgid "ctrl-on"
-msgstr ""
+msgstr "ctrl-on"
 
 #: ../src/gui/accelerators.c:125
 msgid "right-toggle"
-msgstr ""
+msgstr "Disattiva destro"
 
 #: ../src/gui/accelerators.c:126
 msgid "right-on"
-msgstr ""
+msgstr "A destra"
 
 #: ../src/gui/accelerators.c:135 ../src/gui/gtk.c:2947
 msgid "activate"
-msgstr ""
+msgstr "Attiva"
 
 #: ../src/gui/accelerators.c:136
 msgid "ctrl-activate"
-msgstr ""
+msgstr "CTR-attiva"
 
 #: ../src/gui/accelerators.c:137
 msgid "right-activate"
-msgstr ""
+msgstr "Destro-attiva"
 
 #: ../src/gui/accelerators.c:143
 msgid "store"
@@ -8456,7 +8456,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:448
 msgid "unknown driver"
-msgstr ""
+msgstr "Driver sconosciuto"
 
 #: ../src/gui/accelerators.c:515 ../src/gui/accelerators.c:525
 msgid "double"
@@ -8492,7 +8492,7 @@ msgstr "Ultima istanza"
 
 #: ../src/gui/accelerators.c:560
 msgid "relative instance"
-msgstr ""
+msgstr "Istanza relativa"
 
 #: ../src/gui/accelerators.c:588 ../src/gui/accelerators.c:2061
 msgid "speed"
@@ -8536,7 +8536,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:812
 msgid "active view"
-msgstr ""
+msgstr "Vita attiva"
 
 #: ../src/gui/accelerators.c:813
 msgid "other views"
@@ -8544,7 +8544,7 @@ msgstr "Altre viste"
 
 #: ../src/gui/accelerators.c:814
 msgid "fallbacks"
-msgstr ""
+msgstr "Abbandonate"
 
 #: ../src/gui/accelerators.c:961
 msgid "shortcut for move exists with single effect"
@@ -8582,7 +8582,7 @@ msgstr ""
 #. NUM_INSTANCES
 #: ../src/gui/accelerators.c:1063
 msgid "preferred"
-msgstr ""
+msgstr "Preferito"
 
 #: ../src/gui/accelerators.c:1066
 msgid "second"
@@ -8590,11 +8590,11 @@ msgstr "Secondo"
 
 #: ../src/gui/accelerators.c:1067
 msgid "last but one"
-msgstr ""
+msgstr "Penultimo"
 
 #: ../src/gui/accelerators.c:1206 ../src/gui/accelerators.c:1260
 msgid "(unchanged)"
-msgstr ""
+msgstr "(non cambiato)"
 
 #: ../src/gui/accelerators.c:1355
 msgid ""
@@ -8612,7 +8612,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1402
 msgid "removing shortcut"
-msgstr ""
+msgstr "Rimuovendo scorciatoia"
 
 #: ../src/gui/accelerators.c:1403
 msgid "remove the selected shortcut?"
@@ -8620,15 +8620,15 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1733
 msgid "restore shortcuts"
-msgstr ""
+msgstr "Ripristina scorciatoie"
 
 #: ../src/gui/accelerators.c:1737
 msgid "_defaults"
-msgstr ""
+msgstr "_Predefiniti"
 
 #: ../src/gui/accelerators.c:1738
 msgid "_startup"
-msgstr ""
+msgstr "_Avviare"
 
 #: ../src/gui/accelerators.c:1739
 msgid "_edits"
@@ -8654,7 +8654,7 @@ msgstr "Scorciatoie"
 
 #: ../src/gui/accelerators.c:1808
 msgid "export shortcuts"
-msgstr ""
+msgstr "Esporta scorciatoie"
 
 #: ../src/gui/accelerators.c:1811 ../src/gui/accelerators.c:1890
 #: ../src/gui/hist_dialog.c:196 ../src/gui/presets.c:467
@@ -8676,11 +8676,11 @@ msgstr "Tutto"
 
 #: ../src/gui/accelerators.c:1822 ../src/gui/accelerators.c:1901
 msgid "keyboard"
-msgstr ""
+msgstr "Tastiera"
 
 #: ../src/gui/accelerators.c:1834
 msgid "device id"
-msgstr ""
+msgstr "ID dispositivo"
 
 #: ../src/gui/accelerators.c:1860
 msgid "select file to export"
@@ -8692,7 +8692,7 @@ msgstr "_Esporta"
 
 #: ../src/gui/accelerators.c:1887
 msgid "import shortcuts"
-msgstr ""
+msgstr "Importa scorciatoie"
 
 #: ../src/gui/accelerators.c:1895
 msgid ""
@@ -8702,15 +8702,15 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1913
 msgid "id in file"
-msgstr ""
+msgstr "ID nel file"
 
 #: ../src/gui/accelerators.c:1919
 msgid "id when loaded"
-msgstr ""
+msgstr "ID quando caricato"
 
 #: ../src/gui/accelerators.c:1923
 msgid "clear device first"
-msgstr ""
+msgstr "Prima pulisci il dispositivo"
 
 #: ../src/gui/accelerators.c:1947
 msgid "select file to import"
@@ -8750,7 +8750,7 @@ msgstr "Effetti"
 
 #: ../src/gui/accelerators.c:2112
 msgid "search actions list"
-msgstr ""
+msgstr "Cercare lista azioni"
 
 #: ../src/gui/accelerators.c:2113
 msgid ""
@@ -8765,7 +8765,7 @@ msgstr "Tipo"
 
 #: ../src/gui/accelerators.c:2168
 msgid "enable fallbacks"
-msgstr ""
+msgstr "Attiva abbandonate"
 
 #: ../src/gui/accelerators.c:2169
 msgid ""
@@ -8775,7 +8775,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:2175
 msgid "restore..."
-msgstr ""
+msgstr "Ripristina..."
 
 #: ../src/gui/accelerators.c:2176
 msgid "restore default shortcuts or previous state"
@@ -8804,7 +8804,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:2803
 msgid "fallback to move"
-msgstr ""
+msgstr "Abbandona per muovere"
 
 #: ../src/gui/accelerators.c:2978
 #, c-format
@@ -8859,7 +8859,7 @@ msgstr ""
 #: ../src/gui/gtk.c:1204
 msgctxt "accel"
 msgid "switch views/map"
-msgstr ""
+msgstr "Scambia viste/mappa"
 
 #: ../src/gui/gtk.c:1205
 msgctxt "accel"
@@ -11934,7 +11934,7 @@ msgstr "(corpo nero)"
 
 #: ../src/iop/channelmixerrgb.c:1651
 msgid "(invalid)"
-msgstr ""
+msgstr "(non valido)"
 
 #: ../src/iop/channelmixerrgb.c:1655 ../src/iop/channelmixerrgb.c:1704
 msgid "very good"
@@ -12211,15 +12211,15 @@ msgstr "B in ingresso"
 
 #: ../src/iop/channelmixerrgb.c:3793
 msgid "output R"
-msgstr ""
+msgstr "Uscita R"
 
 #: ../src/iop/channelmixerrgb.c:3794
 msgid "output G"
-msgstr ""
+msgstr "Uscita G"
 
 #: ../src/iop/channelmixerrgb.c:3795
 msgid "output B"
-msgstr ""
+msgstr "Uscita B"
 
 #: ../src/iop/channelmixerrgb.c:3796
 msgid "colorfulness"
@@ -12227,15 +12227,15 @@ msgstr "Colorazione"
 
 #: ../src/iop/channelmixerrgb.c:3796
 msgid "output colorfulness"
-msgstr ""
+msgstr "Colorazione di uscita"
 
 #: ../src/iop/channelmixerrgb.c:3798
 msgid "output brightness"
-msgstr ""
+msgstr "Luminosità di uscita"
 
 #: ../src/iop/channelmixerrgb.c:3799
 msgid "output gray"
-msgstr ""
+msgstr "Grigio d'uscita"
 
 #: ../src/iop/channelmixerrgb.c:3811
 msgid "calibrate with a color checker"
@@ -12557,6 +12557,9 @@ msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
+"<b>Ridimensionare</b>: trascinare, <b>tenere il rapporto d'aspetto</b>:"
+" Maiuscolo+trascinare\n"
+"<b>Raddrizzare</b>: destro-trascina"
 
 #: ../src/iop/clipping.c:3105
 msgid "<b>move control point</b>: drag"
@@ -13718,6 +13721,8 @@ msgstr ""
 #: ../src/iop/crop.c:1587
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
+"<b>Ridimensionare</b>: trascinare, <b>tenere il rapporto d'aspetto</b>:"
+" Maiuscolo+trascinare"
 
 #: ../src/iop/crop.c:1594
 msgid ""
@@ -14111,7 +14116,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:127
 msgid "diffuse or sharpen"
-msgstr ""
+msgstr "Diffuso o nitido"
 
 #: ../src/iop/diffuse.c:132
 msgid "diffusion|deconvolution|blur|sharpening"
@@ -14127,15 +14132,15 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:230
 msgid "lens deblur: soft"
-msgstr ""
+msgstr "Nitidezza obiettivo: morbida"
 
 #: ../src/iop/diffuse.c:235
 msgid "lens deblur: medium"
-msgstr ""
+msgstr "Nitidezza obiettivo: media"
 
 #: ../src/iop/diffuse.c:240
 msgid "lens deblur: hard"
-msgstr ""
+msgstr "Nitidezza obiettivo: dura"
 
 #: ../src/iop/diffuse.c:259
 msgid "dehaze"
@@ -14143,7 +14148,7 @@ msgstr "Rimuovi foschia"
 
 #: ../src/iop/diffuse.c:278
 msgid "denoise: soft"
-msgstr ""
+msgstr "Riduci rumore: morbido"
 
 #: ../src/iop/diffuse.c:296
 msgid "denoise: hard (slow)"
@@ -14151,7 +14156,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:350
 msgid "sharpen demosaicing (no AA filter)"
-msgstr ""
+msgstr "Demosaicizzazione nitidezza (no filtro AA)"
 
 #: ../src/iop/diffuse.c:354
 msgid "sharpen demosaicing (AA filter)"
@@ -14159,7 +14164,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:373
 msgid "simulate watercolor"
-msgstr ""
+msgstr "Simulare acquarello"
 
 #: ../src/iop/diffuse.c:391
 msgid "simulate line drawing"
@@ -14167,7 +14172,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:412
 msgid "add local contrast"
-msgstr ""
+msgstr "Aggiungi contrasto locale"
 
 #: ../src/iop/diffuse.c:432
 msgid "inpaint highlights"
@@ -14205,10 +14210,15 @@ msgid ""
 "for deblurring and denoising, set to zero.\n"
 "increase to act on local contrast instead."
 msgstr ""
+"Scala principale della diffusione.\n"
+"Zero rende più pesante l'azione di diffusione sui dettagli più belli.\n"
+"Diverso da zero definisce la misura dei dettagli da diffondere pesantemente.\n"
+"Per aumentare nitidezza e riduzione rumore, imposta  a zero.\n"
+"Aumenta invece per lavorare sul contrasto locale."
 
 #: ../src/iop/diffuse.c:1472
 msgid "diffusion speed"
-msgstr ""
+msgstr "Velocità di diffusione"
 
 #: ../src/iop/diffuse.c:1478
 msgid ""
@@ -14249,7 +14259,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:1552
 msgid "edges management"
-msgstr ""
+msgstr "Gestione margini"
 
 #: ../src/iop/diffuse.c:1558
 msgid "increase or decrease the sharpness of the highest frequencies"
@@ -15118,7 +15128,7 @@ msgstr "Scala nella dimensione finale"
 
 #: ../src/iop/flip.c:79
 msgid "rotation|flip"
-msgstr ""
+msgstr "Rotazione|Capovolgimento"
 
 #: ../src/iop/flip.c:105
 msgid "flip or rotate image by step of 90 degrees"
@@ -15154,7 +15164,7 @@ msgstr "Ruota di 180°"
 
 #: ../src/iop/flip.c:549
 msgid "transform"
-msgstr ""
+msgstr "Trasforma"
 
 #: ../src/iop/flip.c:552
 msgid "rotate 90 degrees CCW"
@@ -18115,11 +18125,11 @@ msgstr "Raccolte"
 
 #: ../src/libs/collect.c:307
 msgid "imported: today"
-msgstr ""
+msgstr "Importato: oggi"
 
 #: ../src/libs/collect.c:312
 msgid "imported: last 24h"
-msgstr ""
+msgstr "Importato: ultime 24 ore"
 
 #: ../src/libs/collect.c:317
 msgid "imported: last 30 days"
@@ -18345,7 +18355,7 @@ msgstr "Click per nascondere o scoprire un campione colore più grande"
 
 #: ../src/libs/colorpicker.c:576
 msgid "statistic"
-msgstr ""
+msgstr "Statistica"
 
 #: ../src/libs/colorpicker.c:577
 msgid "select which statistic to show"
@@ -19140,7 +19150,7 @@ msgstr "Imposta la vista su AzBz"
 
 #: ../src/libs/histogram.c:1491
 msgid "set view to RYB"
-msgstr ""
+msgstr "Imposta la vista a RYB"
 
 #: ../src/libs/histogram.c:1496
 msgid "set view to u*v*"
@@ -19815,7 +19825,7 @@ msgstr "Visualizza modulo"
 
 #: ../src/libs/lib.c:1274
 msgid "utility module"
-msgstr ""
+msgstr "Modulo utilità"
 
 #: ../src/libs/live_view.c:106
 msgid "live view"
@@ -20180,7 +20190,7 @@ msgstr "Editor metadati"
 
 #: ../src/libs/metadata.c:78 ../src/libs/metadata.c:114
 msgid "<leave unchanged>"
-msgstr ""
+msgstr "<lascia non modificato>"
 
 #: ../src/libs/metadata.c:443 ../src/libs/metadata_view.c:1237
 msgid "metadata settings"
@@ -20400,7 +20410,7 @@ msgstr "Caricatore: %s"
 
 #: ../src/libs/metadata_view.c:651
 msgid "<various values>"
-msgstr ""
+msgstr "<valori vari>"
 
 #: ../src/libs/metadata_view.c:664
 #, c-format
@@ -20982,7 +20992,7 @@ msgstr "Griglia dello schermo"
 
 #: ../src/libs/print_settings.c:2312
 msgid "snap to grid"
-msgstr ""
+msgstr "Aggrappa alla griglia"
 
 #: ../src/libs/print_settings.c:2322
 msgid "borderless mode required"
@@ -20998,11 +21008,11 @@ msgstr ""
 #. pack image dimension hbox here
 #: ../src/libs/print_settings.c:2332
 msgid "image layout"
-msgstr ""
+msgstr "Disposizione dell'immagine"
 
 #: ../src/libs/print_settings.c:2369
 msgid "new image area"
-msgstr ""
+msgstr "Area nuova immagine"
 
 #: ../src/libs/print_settings.c:2370
 msgid ""
@@ -21013,7 +21023,7 @@ msgstr ""
 
 #: ../src/libs/print_settings.c:2376
 msgid "delete image area"
-msgstr ""
+msgstr "Cancella l'area d'immagine"
 
 #: ../src/libs/print_settings.c:2377
 msgid "delete the currently selected image area"
@@ -21021,11 +21031,11 @@ msgstr ""
 
 #: ../src/libs/print_settings.c:2381
 msgid "clear layout"
-msgstr ""
+msgstr "Disposizione chiara"
 
 #: ../src/libs/print_settings.c:2382
 msgid "remove all image area from the page"
-msgstr ""
+msgstr "Rimuovere tutta l'area immagine della pagina"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
 #: ../src/libs/print_settings.c:2397
@@ -21040,7 +21050,7 @@ msgstr ""
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
 #: ../src/libs/print_settings.c:2412
 msgid "image area width (in current unit)"
-msgstr ""
+msgstr "Larghezza dell'area d'immagine (in unità correnti)"
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
 #: ../src/libs/print_settings.c:2416
@@ -21682,11 +21692,11 @@ msgstr "Provino"
 
 #: ../src/libs/tools/filter.c:90
 msgid "capture time"
-msgstr ""
+msgstr "Orario di acquisizione"
 
 #: ../src/libs/tools/filter.c:91
 msgid "import time"
-msgstr ""
+msgstr "Orario d'importazione"
 
 #: ../src/libs/tools/filter.c:92
 msgid "last modification time"
@@ -21694,11 +21704,11 @@ msgstr ""
 
 #: ../src/libs/tools/filter.c:93
 msgid "last export time"
-msgstr ""
+msgstr "Orario ultima esportazione"
 
 #: ../src/libs/tools/filter.c:94
 msgid "last print time"
-msgstr ""
+msgstr "Orario ultima stampa"
 
 #: ../src/libs/tools/filter.c:100
 msgid "custom sort"
@@ -21714,7 +21724,7 @@ msgstr "Filtro"
 
 #: ../src/libs/tools/filter.c:162
 msgid "comparator"
-msgstr ""
+msgstr "Comparatore"
 
 #: ../src/libs/tools/filter.c:163 ../src/libs/tools/filter.c:182
 msgid "which images should be shown"
@@ -22311,7 +22321,7 @@ msgstr "Profili"
 
 #: ../src/views/darkroom.c:2460
 msgid "preview intent"
-msgstr ""
+msgstr "Scopo anteprima"
 
 #: ../src/views/darkroom.c:2479 ../src/views/lighttable.c:1332
 msgid "display profile"
@@ -22431,7 +22441,7 @@ msgstr ""
 #: ../src/views/darkroom.c:3876
 msgctxt "accel"
 msgid "overexposed/toggle"
-msgstr ""
+msgstr "Sovraesposto/disattiva"
 
 #. cycle overlay colors
 #: ../src/views/darkroom.c:3879
@@ -22461,7 +22471,7 @@ msgstr "Visualizza maschere disegnate"
 #: ../src/views/darkroom.c:3891
 msgctxt "accel"
 msgid "guide lines/toggle"
-msgstr ""
+msgstr "Linee guida/disattiva"
 
 #. toggle visibility of second window
 #: ../src/views/darkroom.c:3894
@@ -22749,23 +22759,23 @@ msgstr "Esci dalla presentazione"
 #: ../src/views/slideshow.c:628
 msgctxt "accel"
 msgid "slow down"
-msgstr ""
+msgstr "Rallenta"
 
 #: ../src/views/slideshow.c:629 ../src/views/slideshow.c:630
 #: ../src/views/slideshow.c:631
 msgctxt "accel"
 msgid "speed up"
-msgstr ""
+msgstr "Accellera"
 
 #: ../src/views/slideshow.c:633
 msgctxt "accel"
 msgid "step forward"
-msgstr ""
+msgstr "Un passo avanti"
 
 #: ../src/views/slideshow.c:634
 msgctxt "accel"
 msgid "step back"
-msgstr ""
+msgstr "Un passo indietro"
 
 #: ../src/views/slideshow.c:652
 msgid "go to next image"
