@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-17 20:01-0600\n"
-"PO-Revision-Date: 2021-11-18 00:48-0600\n"
+"POT-Creation-Date: 2021-11-18 17:02-0600\n"
+"PO-Revision-Date: 2021-11-22 01:05-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -440,6 +440,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:4463
 msgid "scroll down to increase mask parameters"
 msgstr ""
+"Incrementar los parámetros de la máscara con desplazamiento hacia abajo"
 
 #: ../build/bin/preferences_gen.h:4477
 msgid ""
@@ -448,6 +449,12 @@ msgid ""
 "curvature\n"
 "by default scrolling up increases these parameters"
 msgstr ""
+"Si se activa, al utilizar el panel táctil o la rueda del ratón para cambiar "
+"los parámetros de la máscara, desplazarse hacia abajo incrementa el tamaño, "
+"el difuminado, la opacidad, la dureza del pincel y la curvatura del "
+"gradiente.\n"
+"De manera predefinida, los parámetros se incrementan con desplazamiento "
+"hacia arriba."
 
 #: ../build/bin/preferences_gen.h:4499
 msgid "pattern for the image information line"
@@ -818,13 +825,15 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5408
 msgid "prompt for name on addition of new instance"
-msgstr "Requerir el nombre del duplicado inmediatamente al añadirlo"
+msgstr "Requerir el nombre del módulo nuevo inmediatamente al añadirlo"
 
 #: ../build/bin/preferences_gen.h:5422
 msgid ""
 "if enabled, a rename prompt will be present for each new module instance "
 "(either new instance or duplicate)"
 msgstr ""
+"Al activarse esta opción, aparecerá un campo de texto para introducir el "
+"nombre del módulo inmediatamente al ser creado uno nuevo o un duplicado"
 
 #: ../build/bin/preferences_gen.h:5450
 msgid "processing"
@@ -3754,7 +3763,7 @@ msgstr "luminancia Y"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:535
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:384
 msgid "RGB power norm"
-msgstr "potencia estándar RGB"
+msgstr "RGB potencia estándar"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:536
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:383
@@ -4343,7 +4352,7 @@ msgstr "Luminosidad HSV"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
-msgstr "valor HSV / máx. RGB"
+msgstr "valor HSV / RGB máx."
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:382
 msgid "RGB sum"
@@ -5911,10 +5920,9 @@ msgid "views"
 msgstr "vistas"
 
 #: ../src/control/control.c:111
-#, fuzzy
 msgctxt "accel"
 msgid "thumbtable"
-msgstr "Miniatura"
+msgstr "mesa de trabajo"
 
 #: ../src/control/control.c:112
 msgctxt "accel"
@@ -5927,7 +5935,6 @@ msgid "processing modules"
 msgstr "módulos de revelado"
 
 #: ../src/control/control.c:114
-#, fuzzy
 msgctxt "accel"
 msgid "blending"
 msgstr "fusión"
@@ -8559,7 +8566,7 @@ msgid ""
 msgstr ""
 "Para borrar el atajo seleccionado, pulse Retroceso.\n"
 "Para añadir un nuevo atajo, pulse doble.\n"
-"Para hacer una búsqueda, comience a escribir."
+"La búsqueda se realiza desde que se comienza a escribir."
 
 #: ../src/gui/accelerators.c:654
 msgid ""
@@ -8576,7 +8583,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:668
 msgid "click to open shortcut configuration"
-msgstr ""
+msgstr "Pulse para abrir la configuración de los atajos de teclado"
 
 #: ../src/gui/accelerators.c:669
 msgid "ctrl+click to add to quick access panel\n"
@@ -8601,9 +8608,8 @@ msgid "other views"
 msgstr "otras vistas"
 
 #: ../src/gui/accelerators.c:816
-#, fuzzy
 msgid "fallbacks"
-msgstr "negros"
+msgstr "alternativas"
 
 #: ../src/gui/accelerators.c:963
 msgid "shortcut for move exists with single effect"
@@ -8885,12 +8891,12 @@ msgstr ""
 msgid "fallback to move"
 msgstr "negros"
 
-#: ../src/gui/accelerators.c:2980
+#: ../src/gui/accelerators.c:2979
 #, c-format
 msgid "%s not assigned"
 msgstr "%s sin asignar"
 
-#: ../src/gui/accelerators.c:3127
+#: ../src/gui/accelerators.c:3126
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s asignado a %s"
@@ -8969,10 +8975,9 @@ msgid "panels/all"
 msgstr "paneles/todos"
 
 #: ../src/gui/gtk.c:1244
-#, fuzzy
 msgctxt "accel"
 msgid "panels/collapsing controls"
-msgstr "activar controles de pliegue de panel"
+msgstr "paneles/ controles de pliegue"
 
 #: ../src/gui/gtk.c:1248
 msgctxt "accel"
@@ -9001,10 +9006,9 @@ msgid "panels/header"
 msgstr "paneles/encabezado"
 
 #: ../src/gui/gtk.c:1268
-#, fuzzy
 msgctxt "accel"
 msgid "panels/filmstrip and timeline"
-msgstr "mostrar u ocultar la tira de imágenes o la línea del tiempo"
+msgstr "paneles/ tira de imágenes y línea del tiempo"
 
 #: ../src/gui/gtk.c:1272
 msgctxt "accel"
@@ -9042,7 +9046,7 @@ msgstr "activar/desactivar descripción emergente"
 #: ../src/gui/gtk.c:1298
 msgctxt "accel"
 msgid "reinitialise input devices"
-msgstr ""
+msgstr "reiniciar los dispositivos de entrada"
 
 #: ../src/gui/gtk.c:1339
 msgid "toggle focus-peaking mode"
@@ -13520,11 +13524,11 @@ msgstr "Adquirir la imagen como imagen fuente"
 
 #: ../src/iop/colormapping.c:1072
 msgid "acquire as target"
-msgstr "imagen objetivo"
+msgstr "imagen destino"
 
 #: ../src/iop/colormapping.c:1076
 msgid "analyze this image as a target image"
-msgstr "Adquirir la imagen como imagen objetivo"
+msgstr "Adquirir la imagen como imagen destino"
 
 #: ../src/iop/colormapping.c:1079
 msgid "number of clusters to find in image. value change resets all clusters"
@@ -22145,10 +22149,9 @@ msgid "grouping"
 msgstr "agrupar"
 
 #: ../src/libs/tools/global_toolbox.c:945
-#, fuzzy
 msgctxt "accel"
 msgid "thumbnail overlays options"
-msgstr "Visibilidad de información para el tamaño"
+msgstr "opciones para la información sobrepuesta"
 
 #: ../src/libs/tools/global_toolbox.c:946
 msgctxt "accel"
@@ -22679,17 +22682,15 @@ msgstr "evaluación del color"
 
 #. toggle raw overexposure indication
 #: ../src/views/darkroom.c:3873
-#, fuzzy
 msgctxt "accel"
 msgid "raw overexposed/toggle"
-msgstr "archivo en bruto sobreexpuesto"
+msgstr "sobreexposición de imagen en bruto/ activar o desactivar"
 
 #. toggle overexposure indication
 #: ../src/views/darkroom.c:3876
-#, fuzzy
 msgctxt "accel"
 msgid "overexposed/toggle"
-msgstr "sobreexposición"
+msgstr "sobreexposición/ activar o desactivar"
 
 #. cycle overlay colors
 #: ../src/views/darkroom.c:3879
@@ -22717,10 +22718,9 @@ msgstr "mostrar máscaras trazadas"
 
 #. toggle visibility of guide lines
 #: ../src/views/darkroom.c:3891
-#, fuzzy
 msgctxt "accel"
 msgid "guide lines/toggle"
-msgstr "líneas guía"
+msgstr "líneas guía/ activar o desactivar"
 
 #. toggle visibility of second window
 #: ../src/views/darkroom.c:3894
