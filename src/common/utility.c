@@ -447,7 +447,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
     else
     {
       cairo_t *cr = cairo_create(surface);
-      cairo_scale(cr, factor, factor);
+      cairo_scale(cr, factor/ppd, factor/ppd);
       dt_render_svg(svg, cr, final_width, final_height, 0, 0);
       cairo_destroy(cr);
       cairo_surface_flush(surface);
