@@ -24,6 +24,10 @@ How to make a darktable windows installer (64 bit only):
     ```
     $ pacman -S mingw-w64-x86_64-gmic
     ```
+    for NG Input with midi or gamepad devices
+    ```
+    $ pacman -S mingw-w64-x86_64-portmidi mingw-w64-x86_64-SDL2
+    ```
 
 * Optional: Install libraries required for [testing](../../src/tests/unittests/README.md)
     ```
