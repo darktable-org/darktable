@@ -2805,13 +2805,13 @@ static gboolean _shortcut_match(dt_shortcut_t *f, gchar **fb_log)
         *fb_log = dt_util_dstrcat(*fb_log, "\n%s \u2192 %s", _shortcut_description(f), _("fallback to move"));
 
       f->effect = DT_ACTION_EFFECT_DEFAULT_MOVE;
-      matched = TRUE;
+      f->move = 0;
     }
 
     f->action = matched_action;
   }
 
-  return f->action != NULL;
+  return f->action != NULL && !f->move;
 }
 
 
@@ -2974,7 +2974,7 @@ static float _process_shortcut(float move_size)
 
     return_value =  _process_action(fsc.action, fsc.instance, fsc.element, fsc.effect, move_size);
   }
-  else if(!isnan(move_size))
+  else if(!isnan(move_size) && !fsc.action)
   {
     dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc));
 
