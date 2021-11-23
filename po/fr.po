@@ -2042,7 +2042,7 @@ msgstr "afficher contrôles"
 
 #: ../build/bin/conf_gen.h:1666
 msgid "toggle the visibility of the map overlays"
-msgstr "activer/désactiver les surimpressions de la carte"
+msgstr "basculer les surimpressions de la carte"
 
 #: ../build/bin/conf_gen.h:1671
 msgid "filtered images"
@@ -8399,7 +8399,7 @@ msgstr "premier"
 #: ../src/gui/accelerators.c:238 ../src/views/darkroom.c:2293
 #: ../src/views/darkroom.c:2349
 msgid "toggle"
-msgstr "activer/désactiver"
+msgstr "basculer"
 
 #: ../src/gui/accelerators.c:123
 msgid "ctrl-toggle"
@@ -8993,7 +8993,7 @@ msgstr "afficher la fenêtre des raccourcis"
 #: ../src/gui/gtk.c:1292
 msgctxt "accel"
 msgid "toggle tooltip visibility"
-msgstr "activer/désactiver les infos-bulles"
+msgstr "basculer les infos-bulles"
 
 #. reinitialise input devices
 #: ../src/gui/gtk.c:1298
@@ -9003,13 +9003,13 @@ msgstr "réinitialise les périphériques d'entrée"
 
 #: ../src/gui/gtk.c:1339
 msgid "toggle focus-peaking mode"
-msgstr "activer/désactiver le mode zones nettes"
+msgstr "basculer le mode zones nettes"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1344
 msgctxt "accel"
 msgid "toggle focus peaking"
-msgstr "activer/désactiver les zones nettes"
+msgstr "basculer les zones nettes"
 
 #: ../src/gui/gtk.c:1500 ../src/gui/gtk.c:1516 ../src/gui/gtk.c:1550
 #: ../src/gui/gtk.c:1564
@@ -14937,7 +14937,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:3831
 msgid "toggle axis labels and values display"
-msgstr "activer/désactiver les légendes des axes"
+msgstr "basculer les légendes des axes"
 
 #: ../src/iop/filmicrgb.c:3835
 msgid ""
@@ -16536,7 +16536,7 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:996
 msgid "toggle on or off the color controls"
-msgstr "activer/désactiver les contrôles des couleurs"
+msgstr "basculer les contrôles des couleurs"
 
 #: ../src/iop/nlmeans.c:88
 msgid "astrophoto denoise"
@@ -16781,7 +16781,7 @@ msgstr ""
 #: ../src/iop/relight.c:283
 msgid "toggle tool for picking median lightness in image"
 msgstr ""
-"activer/désactiver pour récupérer la \n"
+"basculer l'outil pour récupérer la \n"
 "lumière moyenne d'une zone de l'image"
 
 #: ../src/iop/relight.c:286 ../src/libs/metadata_view.c:146
@@ -18154,7 +18154,7 @@ msgstr "capturer"
 
 #: ../src/libs/camera.c:143
 msgid "toggle view property in center view"
-msgstr "activer/désactiver l'affichage des propriétés dans la vue centrale"
+msgstr "basculer l'affichage des propriétés dans la vue centrale"
 
 #: ../src/libs/camera.c:213
 msgid "connection with camera lost, exiting tethering mode"
@@ -18199,15 +18199,15 @@ msgstr "capturer"
 
 #: ../src/libs/camera.c:477
 msgid "toggle delayed capture mode"
-msgstr "activer/désactiver le mode retardateur"
+msgstr "basculer le mode retardateur"
 
 #: ../src/libs/camera.c:478
 msgid "toggle sequenced capture mode"
-msgstr "activer/désactiver le mode séquence"
+msgstr "basculer le mode séquence"
 
 #: ../src/libs/camera.c:479
 msgid "toggle bracketed capture mode"
-msgstr "activer/désactiver le mode bracketing d'exposition"
+msgstr "basculer le mode bracketing d'exposition"
 
 #: ../src/libs/camera.c:480
 msgid "the count of seconds before actually doing a capture"
@@ -20040,7 +20040,7 @@ msgstr "visée directe"
 #: ../src/libs/live_view.c:132
 msgctxt "accel"
 msgid "toggle live view"
-msgstr "activer/désactiver la visée directe"
+msgstr "basculer la visée directe"
 
 #: ../src/libs/live_view.c:133
 msgctxt "accel"
@@ -20088,7 +20088,7 @@ msgstr "recule la mise au point par (grands pas)"
 
 #: ../src/libs/live_view.c:324
 msgid "toggle live view"
-msgstr "activer/désactiver la visée directe"
+msgstr "basculer la visée directe"
 
 #: ../src/libs/live_view.c:325
 msgid "zoom live view"
@@ -21074,7 +21074,7 @@ msgstr "1600%"
 #: ../src/libs/navigation.c:569
 msgctxt "accel"
 msgid "hide navigation thumbnail"
-msgstr "activer/désactiver la miniature de navigation"
+msgstr "basculer la miniature de navigation"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:46 ../src/libs/print_settings.c:2438
@@ -21399,7 +21399,7 @@ msgstr "prendre un instantané"
 #: ../src/libs/snapshots.c:106
 msgctxt "accel"
 msgid "toggle last snapshot"
-msgstr "activer/désactiver le dernier instantané"
+msgstr "basculer le dernier instantané"
 
 #: ../src/libs/snapshots.c:131
 msgctxt "snapshot sign"
@@ -21828,7 +21828,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:2952
 msgid "toggle list with / without hierarchy"
-msgstr "activer/désactiver la liste hiérarchique"
+msgstr "basculer la liste hiérarchique"
 
 #: ../src/libs/tagging.c:2960
 msgid "toggle sort by name or by count"
@@ -21836,7 +21836,7 @@ msgstr "changer le classement par nom ou par nombre"
 
 #: ../src/libs/tagging.c:2970
 msgid "toggle show or not darktable tags"
-msgstr "activer/désactiver l'affichage des mots-clés spécifiques à darktable"
+msgstr "basculer l'affichage des mots-clés spécifiques à darktable"
 
 #: ../src/libs/tagging.c:2988
 msgid "enter tag name"
@@ -21885,7 +21885,7 @@ msgstr "changer la vue liste / arbre"
 
 #: ../src/libs/tagging.c:3098
 msgid "toggle list with / without suggestion"
-msgstr "activer/désactiver les suggestions"
+msgstr "basculer les suggestions"
 
 #: ../src/libs/tagging.c:3222
 msgid ""
@@ -21905,7 +21905,7 @@ msgstr "labels de couleur"
 
 #: ../src/libs/tools/colorlabels.c:85
 msgid "toggle color label of selected images"
-msgstr "activer/désactiver le label de couleur des images sélectionnées"
+msgstr "basculer le label de couleur des images sélectionnées"
 
 #: ../src/libs/tools/darktable.c:285
 #, c-format
@@ -22237,38 +22237,38 @@ msgstr "cliquer pour entrer dans la vue table lumineuse zoomable."
 #: ../src/libs/tools/lighttable.c:572
 msgctxt "accel"
 msgid "toggle filemanager layout"
-msgstr "activer/désactiver la vue navigateur de fichiers"
+msgstr "basculer la vue navigateur de fichiers"
 
 #: ../src/libs/tools/lighttable.c:573
 msgctxt "accel"
 msgid "toggle zoomable lighttable layout"
-msgstr "activer/désactiver la vue table lumineuse zoomable"
+msgstr "baculer la vue table lumineuse zoomable"
 
 #: ../src/libs/tools/lighttable.c:574
 msgctxt "accel"
 msgid "toggle culling mode"
-msgstr "activer/désactiver le mode tri/sélection"
+msgstr "basculer le mode tri/sélection"
 
 #: ../src/libs/tools/lighttable.c:575
 msgctxt "accel"
 msgid "toggle culling dynamic mode"
-msgstr "activer/désactiver le mode sélection dynamique"
+msgstr "basculer le mode sélection dynamique"
 
 #: ../src/libs/tools/lighttable.c:577
 msgctxt "accel"
 msgid "toggle culling zoom mode"
-msgstr "activer/désactiver le mode sélection"
+msgstr "basculer le mode sélection"
 
 #: ../src/libs/tools/lighttable.c:578
 msgctxt "accel"
 msgid "toggle sticky preview mode"
-msgstr "activer/désactiver le mode aperçu persistant"
+msgstr "basculer le mode aperçu persistant"
 
 #: ../src/libs/tools/lighttable.c:579
 msgctxt "accel"
 msgid "toggle sticky preview mode with focus detection"
 msgstr ""
-"activer/désactiver le mode aperçu persistant avec détection de la mise au "
+"basculer le mode aperçu persistant avec détection de la mise au "
 "point"
 
 #: ../src/libs/tools/lighttable.c:581
@@ -22388,14 +22388,14 @@ msgstr "activer l'affichage secondaire de la chambre noire"
 
 #: ../src/views/darkroom.c:2282
 msgid "toggle ISO 12646 color assessment conditions"
-msgstr "activer/désactiver les conditions d'évaluation des couleurs ISO 12646"
+msgstr "basculer les conditions d'évaluation des couleurs ISO 12646"
 
 #: ../src/views/darkroom.c:2295
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
 msgstr ""
-"activer/désactiver les zones sur-/sous-exposées raw\n"
+"basculer les zones sur-/sous-exposées raw\n"
 "clic-droit pour les options"
 
 #: ../src/views/darkroom.c:2312
@@ -22461,7 +22461,7 @@ msgid ""
 "toggle clipping indication\n"
 "right click for options"
 msgstr ""
-"activer/désactiver les zones tronquées\n"
+"basculer les zones tronquées\n"
 "clic-droit pour les options"
 
 #: ../src/views/darkroom.c:2367
@@ -22545,7 +22545,7 @@ msgid ""
 "toggle softproofing\n"
 "right click for profile options"
 msgstr ""
-"activer/désactiver l'épreuvage écran\n"
+"basculer l'épreuvage écran\n"
 "clic-droit pour les options de profil"
 
 #: ../src/views/darkroom.c:2429
@@ -22553,7 +22553,7 @@ msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
-"activer/désactiver vérification de gamut\n"
+"basculer vérification de gamut\n"
 "clic-droit pour les options de profil"
 
 #: ../src/views/darkroom.c:2453 ../src/views/darkroom.c:2460
@@ -22603,7 +22603,7 @@ msgid ""
 "toggle guide lines\n"
 "right click for guides options"
 msgstr ""
-"activer/désactiver les lignes guides\n"
+"basculer les lignes guides\n"
 "clic-droit pour les options des guides"
 
 #. Fullscreen preview key
@@ -22679,13 +22679,13 @@ msgstr "évaluation des couleurs"
 #: ../src/views/darkroom.c:3873
 msgctxt "accel"
 msgid "raw overexposed/toggle"
-msgstr "activer/désactiver sur-exposition raw"
+msgstr "sur-exposition raw/basculer"
 
 #. toggle overexposure indication
 #: ../src/views/darkroom.c:3876
 msgctxt "accel"
 msgid "overexposed/toggle"
-msgstr "activer/désactiver sur-exposition"
+msgstr "sur-exposition/basculer "
 
 #. cycle overlay colors
 #: ../src/views/darkroom.c:3879
@@ -22715,7 +22715,7 @@ msgstr "afficher les masques dessinés"
 #: ../src/views/darkroom.c:3891
 msgctxt "accel"
 msgid "guide lines/toggle"
-msgstr "afficher/cacher lignes guides"
+msgstr "lignes guides/basculer"
 
 #. toggle visibility of second window
 #: ../src/views/darkroom.c:3894
@@ -23189,39 +23189,39 @@ msgstr "actions souris"
 
 #~ msgctxt "accel"
 #~ msgid "toggle fullscreen"
-#~ msgstr "activer/désactiver le plein écran"
+#~ msgstr "basculer le plein écran"
 
 #~ msgctxt "accel"
 #~ msgid "toggle side borders"
-#~ msgstr "activer/désactiver les panneaux latéraux"
+#~ msgstr "basculer les panneaux latéraux"
 
 #~ msgctxt "accel"
 #~ msgid "toggle left panel"
-#~ msgstr "activer/désactiver le panneau gauche"
+#~ msgstr "basculer le panneau gauche"
 
 #~ msgctxt "accel"
 #~ msgid "toggle right panel"
-#~ msgstr "activer/désactiver le panneau droit"
+#~ msgstr "basculer le panneau droit"
 
 #~ msgctxt "accel"
 #~ msgid "toggle top panel"
-#~ msgstr "activer/désactiver le panneau du haut"
+#~ msgstr "basculer le panneau du haut"
 
 #~ msgctxt "accel"
 #~ msgid "toggle bottom panel"
-#~ msgstr "activer/désactiver le panneau du bas"
+#~ msgstr "basculer le panneau du bas"
 
 #~ msgctxt "accel"
 #~ msgid "toggle header"
-#~ msgstr "activer/désactiver le panneau d'entête"
+#~ msgstr "basculer le panneau d'entête"
 
 #~ msgctxt "accel"
 #~ msgid "toggle all top panels"
-#~ msgstr "activer/désactiver tous les panneaux du haut"
+#~ msgstr "basculer tous les panneaux du haut"
 
 #~ msgctxt "accel"
 #~ msgid "toggle all bottom panels"
-#~ msgstr "activer/désactiver tous les panneaux du bas"
+#~ msgstr "basculer tous les panneaux du bas"
 
 #~ msgid "perspective correction"
 #~ msgstr "correction de perspective"
@@ -23311,7 +23311,7 @@ msgstr "actions souris"
 
 #~ msgctxt "accel"
 #~ msgid "toggle guides"
-#~ msgstr "activer/désactiver les guides"
+#~ msgstr "basculer les guides"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #~ msgctxt "accel"
@@ -25829,7 +25829,7 @@ msgstr "actions souris"
 #~ "toggle over/under exposed indication\n"
 #~ "right click for options"
 #~ msgstr ""
-#~ "activer/désactiver les zones sur-/sous-exposées\n"
+#~ "basculer les zones sur-/sous-exposées\n"
 #~ "clic-droit pour les options"
 
 #~ msgid "threshold of what shall be considered underexposed"
@@ -26667,7 +26667,7 @@ msgstr "actions souris"
 
 #~ msgctxt "accel"
 #~ msgid "toggle timeline"
-#~ msgstr "activer/désactiver la chronologie"
+#~ msgstr "basculer la chronologie"
 
 #~ msgid "width of the side panels in pixels"
 #~ msgstr "taille des panneaux latéraux en pixels"
@@ -26843,7 +26843,7 @@ msgstr "actions souris"
 
 #~ msgctxt "accel"
 #~ msgid "toggle exposé mode"
-#~ msgstr "activer/désactiver le mode exposé"
+#~ msgstr "basculer le mode exposé"
 
 #~ msgctxt "accel"
 #~ msgid "compress history"
@@ -27269,11 +27269,11 @@ msgstr "actions souris"
 
 #~ msgctxt "accel"
 #~ msgid "toggle softproofing"
-#~ msgstr "activer/désactiver l'épreuvage"
+#~ msgstr "basculer l'épreuvage"
 
 #~ msgctxt "accel"
 #~ msgid "toggle gamutcheck"
-#~ msgstr "activer/désactiver la vérification du gamut"
+#~ msgstr "basculer la vérification du gamut"
 
 #~ msgid "Select _All"
 #~ msgstr "_Tout sélectionner"
