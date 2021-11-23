@@ -3494,6 +3494,9 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     {
       if(_sc.action)
       {
+        // we may interrupt a delayed release, so do the ungrab here if needed
+        if(!_pressed_keys) _ungrab_grab_widget();
+
         _sc.mods = _key_modifiers_clean(event->key.state);
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
       }
