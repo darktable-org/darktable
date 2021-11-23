@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-22 21:13+0100\n"
-"PO-Revision-Date: 2021-11-22 23:52+0100\n"
+"PO-Revision-Date: 2021-11-23 08:53-0300\n"
 "Last-Translator: Aurélien PIERRE <contact@aurelienpierre.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2114,8 +2114,7 @@ msgstr "max points polygone"
 msgid ""
 "limit the number of points imported with polygon in find location module"
 msgstr ""
-"la limite de points de polygone importés depuis le module de recherche de "
-"localisation"
+"la limite de points de polygone importés depuis le module trouver un lieu"
 
 #: ../build/bin/conf_gen.h:2455
 msgctxt "preferences"
@@ -18389,10 +18388,10 @@ msgid ""
 "ctrl+click to include only sub-locations (suffix `|%')"
 msgstr ""
 "utiliser « % » comme joker\n"
-"clic pour inclure la géolocalisation courante et les sous-géolocalisation "
-"(suffixe « * »)\n"
-"shift+clic pour inclure seulement la géolocalisation courante (no suffixe)\n"
-"ctrl+clic pour inclure les sous-géolocalisations seulement (suffixe « |% »)"
+"clic pour inclure l'emplacement courant et les sous-emplacements (suffixe « "
+"* »)\n"
+"shift+clic pour inclure seulement l'emplacement courant (no suffixe)\n"
+"ctrl+clic pour inclure les sous-emplacements seulement (suffixe « |% »)"
 
 #: ../src/libs/collect.c:2148
 #, no-c-format
@@ -20232,33 +20231,33 @@ msgstr "montrer en partie la superposition"
 
 #: ../src/libs/location.c:100
 msgid "find location"
-msgstr "trouver la localisation"
+msgstr "trouver un lieu"
 
 #: ../src/libs/map_locations.c:35
 msgid "locations"
-msgstr "localisation"
+msgstr "emplacements"
 
 #: ../src/libs/map_locations.c:256
 msgid "new sub-location"
-msgstr "sous-localisation"
+msgstr "sous-emplacement"
 
 #: ../src/libs/map_locations.c:260 ../src/libs/map_locations.c:308
 #: ../src/libs/map_locations.c:994
 msgid "new location"
-msgstr "nouvelle localisation"
+msgstr "nouvel emplacement"
 
 #: ../src/libs/map_locations.c:611
 #, c-format
 msgid "location name '%s' already exists"
-msgstr "la localisation « %s » existe déjà"
+msgstr "l'emplacement « %s » existe déjà"
 
 #: ../src/libs/map_locations.c:804
 msgid "edit location"
-msgstr "éditer localisation"
+msgstr "éditer l'emplacement"
 
 #: ../src/libs/map_locations.c:807
 msgid "delete location"
-msgstr "supprimer localisation"
+msgstr "supprimer l'emplacement"
 
 #: ../src/libs/map_locations.c:817
 msgid "update filmstrip"
@@ -20272,8 +20271,8 @@ msgstr "aller à la collection (table lumineuse)"
 msgid ""
 "terminate edit (press enter or escape) before selecting another location"
 msgstr ""
-"terminer l'édition (appuyer entrer ou échapper) avant de sélectionner une "
-"autre localisation"
+"terminer l'édition (appuyer entrer ou échapper) avant de sélectionner un "
+"autre emplacement"
 
 #: ../src/libs/map_locations.c:964
 msgid ""
@@ -20290,18 +20289,18 @@ msgid ""
 "right-click for other actions: delete location and go to collection,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
-"liste des localisations utilisateur,\n"
-"clic pour montrer ou cacher une localisation sur la carte:\n"
+"liste des emplacements utilisateur,\n"
+"clic pour montrer ou cacher un emplacement sur la carte:\n"
 "- utiliser la molette pour changer la taille\n"
 "- <shift> ou <ctrl> pour modifier la largeur ou la hauteur\n"
 "- cliquer + déplacer dans la forme pour changer sa position\n"
-"ctrl+clic pour éditer le nom d'une localisation\n"
+"ctrl+clic pour éditer le nom d'un emplacement\n"
 "- un trait-vertical « | » permet de créer un nom hiérarchique\n"
-"- pour supprimer un groupe de localisation effacer son nom\n"
+"- pour supprimer un groupe d'emplacements effacer son nom\n"
 "- presser enter pour valider le nouveau nom, échapper pour annuler "
 "l'édition\n"
-"clic-droit pour les autres actions: effacer une localisation et aller dans "
-"la collection correspondante,\n"
+"clic-droit pour les autres actions: effacer un emplacement et aller dans la "
+"collection correspondante,\n"
 "ctrl+molette pour changer la taille de la fenêtre"
 
 #: ../src/libs/map_locations.c:991
@@ -20310,13 +20309,13 @@ msgid ""
 "or even polygon if available (select first a polygon place in 'find "
 "location' module)"
 msgstr ""
-"sélectionner la forme de la localisation sur la carte, cercle ou rectangle\n"
-"ou même polygone si disponible (sélectionner avant un emplacement de puis le "
-"module de recherche de localisation)"
+"sélectionner la forme de l'emplacement sur la carte, cercle ou rectangle\n"
+"ou même polygone si disponible (sélectionner avant un lieu de puis le module "
+"trouver un lieu)"
 
 #: ../src/libs/map_locations.c:995
 msgid "add a new location on the center of the visible map"
-msgstr "ajouter une nouvelle localisation au centre de la carte"
+msgstr "ajouter une nouvel emplacement au centre de la carte"
 
 #: ../src/libs/map_locations.c:1000
 msgid "show all"
@@ -20324,7 +20323,7 @@ msgstr "tout montrer"
 
 #: ../src/libs/map_locations.c:1002
 msgid "show all locations which are on the visible map"
-msgstr "montrer toutes les localisations sur la zone de la carte affichée"
+msgstr "montrer toutes les emplacements sur la zone de la carte affichée"
 
 #: ../src/libs/map_settings.c:39
 msgid "map settings"
@@ -22267,9 +22266,7 @@ msgstr "basculer le mode aperçu persistant"
 #: ../src/libs/tools/lighttable.c:579
 msgctxt "accel"
 msgid "toggle sticky preview mode with focus detection"
-msgstr ""
-"basculer le mode aperçu persistant avec détection de la mise au "
-"point"
+msgstr "basculer le mode aperçu persistant avec détection de la mise au point"
 
 #: ../src/libs/tools/lighttable.c:581
 msgctxt "accel"
