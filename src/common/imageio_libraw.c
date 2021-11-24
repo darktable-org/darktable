@@ -238,41 +238,37 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   // but seems to be the best available. LibRaw crx decoder can actually
   // decode the raw data, but internal metadata like wb_coeffs, crops etc.
   // are not populated into libraw structure, or image is not of CFA type.
-  if(raw->rawdata.color.cam_mul[0] == 0.0 || isnan(raw->rawdata.color.cam_mul[0]) || !raw->rawdata.raw_image)
+  if(raw->rawdata.color.cam_mul[0] == 0.0f || isnan(raw->rawdata.color.cam_mul[0]) || !raw->rawdata.raw_image)
   {
     fprintf(stderr, "[libraw_open] detected unsupported image `%s'\n", img->filename);
     goto error;
   }
 
-  libraw_err = libraw_dcraw_process(raw);
-  if(libraw_err != LIBRAW_SUCCESS) goto error;
-
   // Copy white level
-  img->raw_white_point = raw->color.maximum;
+  img->raw_white_point = raw->rawdata.color.maximum;
 
-  // Copy black level, specific for Canon as the regular black level
-  // info in libraw is set to 0. We need to look into makernotes!
-  img->raw_black_level_separate[0] = raw->makernotes.canon.ChannelBlackLevel[0];
-  img->raw_black_level_separate[1] = raw->makernotes.canon.ChannelBlackLevel[1];
-  img->raw_black_level_separate[2] = raw->makernotes.canon.ChannelBlackLevel[2];
-  img->raw_black_level_separate[3] = raw->makernotes.canon.ChannelBlackLevel[3];
+  // Copy black level
+  img->raw_black_level_separate[0] = raw->rawdata.color.black + raw->rawdata.color.cblack[0];
+  img->raw_black_level_separate[1] = raw->rawdata.color.black + raw->rawdata.color.cblack[1];
+  img->raw_black_level_separate[2] = raw->rawdata.color.black + raw->rawdata.color.cblack[2];
+  img->raw_black_level_separate[3] = raw->rawdata.color.black + raw->rawdata.color.cblack[3];
 
-  // AsShot WB coeffs, caution: different ordering!
-  img->wb_coeffs[0] = raw->color.cam_mul[2];
-  img->wb_coeffs[1] = raw->color.cam_mul[1];
-  img->wb_coeffs[2] = raw->color.cam_mul[0];
-  img->wb_coeffs[3] = raw->color.cam_mul[3];
+  // AsShot WB coeffs
+  img->wb_coeffs[0] = raw->rawdata.color.cam_mul[0];
+  img->wb_coeffs[1] = raw->rawdata.color.cam_mul[1];
+  img->wb_coeffs[2] = raw->rawdata.color.cam_mul[2];
+  img->wb_coeffs[3] = raw->rawdata.color.cam_mul[3];
 
   // Raw dimensions. This is the full sensor range.
-  img->width = raw->sizes.raw_width;
-  img->height = raw->sizes.raw_height;
+  img->width = raw->rawdata.sizes.raw_width;
+  img->height = raw->rawdata.sizes.raw_height;
 
   // Apply crop parameters
   libraw_raw_inset_crop_t *ric;
 #if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0, 21)
-  ric = &raw->sizes.raw_inset_crops[0];
+  ric = &raw->rawdata.sizes.raw_inset_crops[0];
 #else
-  ric = &raw->sizes.raw_inset_crop;
+  ric = &raw->rawdata.sizes.raw_inset_crop;
 #endif
   img->crop_x = ric->cleft;
   img->crop_y = ric->ctop;
@@ -280,10 +276,23 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   img->crop_height = raw->rawdata.sizes.raw_height - ric->cheight - ric->ctop;
 
   // We can reuse the libraw filters property, it's already well-handled in dt.
-  // It contains the BAYER filter pattern.
-  img->buf_dsc.filters = raw->idata.filters;
+  // It contains (for CR3) the Bayer pattern, but we have to undo some LibRaw logic.
+  if(raw->rawdata.iparams.colors == 3)
+  {
+    // Workaround for 3 color filters (ok for CR3) from LibRaw::pre_interpolate()
+    img->buf_dsc.filters = raw->rawdata.iparams.filters & ~((raw->rawdata.iparams.filters & 0x55555555U) << 1);
+  }
+  else
+  {
+    // In general we should run through entire post-processing to get corrected filters.
+    // This incurs a significant performance penalty.
+    libraw_err = libraw_dcraw_process(raw);
+    if(libraw_err != LIBRAW_SUCCESS) goto error;
 
-  // For CR3, we only have BAYER data and a single channel
+    img->buf_dsc.filters = raw->idata.filters;
+  }
+
+  // For CR3, we only have Bayer data and a single channel
   img->buf_dsc.channels = 1;
 
   img->buf_dsc.datatype = TYPE_UINT16;
@@ -297,9 +306,20 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
     err = DT_IMAGEIO_CACHE_FULL;
     goto error;
   }
-  dt_imageio_flip_buffers((char *)buf, (char *)raw->rawdata.raw_image, sizeof(uint16_t), raw->sizes.raw_width,
-                          raw->sizes.raw_height, raw->sizes.raw_width, raw->sizes.raw_height, raw->sizes.raw_pitch, ORIENTATION_NONE);
-
+  // Use faster memcpy if buffer sizes are equal
+  const size_t bufSize_mipmap = (size_t)img->width * img->height * sizeof(uint16_t);
+  const size_t bufSize_libraw = (size_t)raw->rawdata.sizes.raw_pitch * raw->rawdata.sizes.raw_height;
+  if(bufSize_mipmap == bufSize_libraw)
+  {
+    memcpy(buf, raw->rawdata.raw_image, bufSize_mipmap);
+  }
+  else
+  {
+    dt_imageio_flip_buffers((char *)buf, (char *)raw->rawdata.raw_image, sizeof(uint16_t),
+                            raw->rawdata.sizes.raw_width, raw->rawdata.sizes.raw_height,
+                            raw->rawdata.sizes.raw_width, raw->rawdata.sizes.raw_height,
+                            raw->rawdata.sizes.raw_pitch, ORIENTATION_NONE);
+  }
 
   // Checks not really required for CR3 support, but it's taken from the old dt libraw integration.
   if(FILTERS_ARE_4BAYER(img->buf_dsc.filters))
