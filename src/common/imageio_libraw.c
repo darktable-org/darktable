@@ -204,7 +204,7 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
 
   for(int i = 0; i < sizeof(modelMap) / sizeof(modelMap[0]); ++i)
   {
-    if(g_str_equal(maker, modelMap[i].exif_make) && g_str_equal(model, modelMap[i].exif_model))
+    if(!g_strcmp0(maker, modelMap[i].exif_make) && !g_strcmp0(model, modelMap[i].exif_model))
     {
       //printf("input model: %s, exif model: %s\n", model, modelMap[i].exif_model);
       g_strlcpy(mk, modelMap[i].clean_make, mk_len);
