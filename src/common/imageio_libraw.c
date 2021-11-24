@@ -181,17 +181,15 @@ const model_map_t modelMap[] = {
 static gboolean _supported_image(const gchar *filename)
 {
   const char *extensions_whitelist[] = { "cr3", NULL };
-  gboolean supported = FALSE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
   ext++;
   for(const char **i = extensions_whitelist; *i != NULL; i++)
     if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
     {
-      supported = TRUE;
-      break;
+      return TRUE;
     }
-  return supported;
+  return FALSE;
 }
 
 
@@ -200,8 +198,6 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
                                      char *mk, int mk_len, char *md, int md_len,
                                      char *al, int al_len)
 {
-  gboolean got_it_done = FALSE;
-
   for(int i = 0; i < sizeof(modelMap) / sizeof(modelMap[0]); ++i)
   {
     if(!g_strcmp0(maker, modelMap[i].exif_make) && !g_strcmp0(model, modelMap[i].exif_model))
@@ -210,11 +206,10 @@ gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
       g_strlcpy(mk, modelMap[i].clean_make, mk_len);
       g_strlcpy(md, modelMap[i].clean_model, md_len);
       g_strlcpy(al, modelMap[i].clean_alias, al_len);
-      got_it_done = TRUE;
-      break;
+      return TRUE;
     }
   }
-  return got_it_done;
+  return FALSE;
 }
 
 
