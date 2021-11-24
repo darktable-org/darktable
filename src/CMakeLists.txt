@@ -277,10 +277,6 @@ if(USE_OPENMP)
   endif()
 
   list(APPEND LIBS ${OpenMP_C_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
-
-  if(WIN32)
-    list(APPEND LIBS gomp)
-  endif(WIN32)
 endif(USE_OPENMP)
 
 if(USE_DARKTABLE_PROFILING)
@@ -1041,8 +1037,10 @@ InstallDependencyFiles()
 set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments)
 
 if (USE_LIBRAW)
-  set(LIBRAW_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw" CACHE STRING "Relative path to libraw directory (default=CMAKE_CURRENT_SOURCE_DIR)")
-  set(ENABLE_EXAMPLES OFF CACHE BOOL "")
+  set(LIBRAW_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw")
+  if(NOT USE_OPENMP)
+    set(ENABLE_OPENMP OFF)
+  endif()
   set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} libraw CACHE INTERNAL "")
 
   # LibRaw sub-module
