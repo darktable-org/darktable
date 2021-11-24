@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-10 09:22+0100\n"
-"PO-Revision-Date: 2021-11-23 23:31+0100\n"
+"PO-Revision-Date: 2021-11-25 00:13+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -828,13 +828,16 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5408
 msgid "prompt for name on addition of new instance"
-msgstr ""
+msgstr "Pronto per un nome in aggiunta della nuova istanza"
 
 #: ../build/bin/preferences_gen.h:5422
 msgid ""
 "if enabled, a rename prompt will be present for each new module instance "
 "(either new instance or duplicate)"
 msgstr ""
+"Se attivato, sarà fatta una richiesta di rinomina per ogni nuova istanza di"
+" modulo "
+"(entrambe nuova istanza o duplicato)"
 
 #: ../build/bin/preferences_gen.h:5450
 msgid "processing"
@@ -1715,7 +1718,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7800
 msgid "allow visual assignment to specific instances"
-msgstr ""
+msgstr "Consenti l'assegnazione visuale a specifiche istanze"
 
 #: ../build/bin/preferences_gen.h:7814
 msgid ""
@@ -1873,7 +1876,7 @@ msgstr "Numero di raccolte da archiviare"
 
 #: ../build/bin/preferences_gen.h:8410
 msgid "the number of recent collections to store and show in this list"
-msgstr ""
+msgstr "Il numero di raccolte recenti da archiviare e mostrare in questa lista"
 
 #: ../build/bin/conf_gen.h:443
 msgctxt "preferences"
@@ -3467,22 +3470,22 @@ msgstr "Sensibilità bordo"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:147
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:264
 msgid "1st order anisotropy"
-msgstr ""
+msgstr "1° ordine di anisotropia"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:153
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:268
 msgid "2nd order anisotropy"
-msgstr ""
+msgstr "2° ordine di anisotropia"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:159
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:272
 msgid "3rd order anisotropy"
-msgstr ""
+msgstr "3° ordine di anisotropia"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:165
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:276
 msgid "4th order anisotropy"
-msgstr ""
+msgstr "4° ordine di anisotropia"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:171
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:280
@@ -5968,7 +5971,7 @@ msgstr "SUCCESSO: %s sincronizzato nuovo (DB) → vecchio (XMP)"
 #: ../src/control/crawler.c:436 ../src/control/crawler.c:487
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
-msgstr "ECCEZZIONE: %s ha marche temporali inconsistenti"
+msgstr "ECCEZIONE: %s ha marche temporali inconsistenti"
 
 #: ../src/control/crawler.c:460
 #, c-format
@@ -5988,7 +5991,7 @@ msgstr "ERRORE: %s NON sincronizzato vecchio (DB) → nuovo (XMP)"
 #: ../src/control/crawler.c:479
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
-msgstr ""
+msgstr "SUCCESSO: %s sincronizzato vecchio (DB) → nuovo (XMP)"
 
 #: ../src/control/crawler.c:558
 #, c-format
@@ -7040,6 +7043,8 @@ msgid ""
 "pick GUI color from image\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
+"Prendi il colore interfaccia dall'immagine\n"
+"Ctrl+click o Click destro per selezionare un'area"
 
 #: ../src/develop/blend_gui.c:2177
 msgid ""
@@ -8510,6 +8515,9 @@ msgid ""
 "double click to add new shortcut\n"
 "start typing for incremental search"
 msgstr ""
+"Primi Del per cancellare la scorciatoia selezionata\n"
+"Doppio click per aggiungere una nuova scorciatoia\n"
+"Inizia a digitare per la ricerca incrementale"
 
 #: ../src/gui/accelerators.c:655
 msgid ""
@@ -8517,12 +8525,18 @@ msgid ""
 "double click to define new shortcut\n"
 "start typing for incremental search"
 msgstr ""
+"Clicca per filtrare la lista delle scorciatoie\n"
+"Doppio click per definire una nuova scorciatoia\n"
+"Inizia a digitare per la ricerca incrementale"
 
 #: ../src/gui/accelerators.c:665
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
 msgstr ""
+"Premi tasti con il click del mouse e scorri o muovi le combinazioni per"
+" creare una "
+"scorciatoia"
 
 #: ../src/gui/accelerators.c:666
 msgid "click to open shortcut configuration"
@@ -8530,15 +8544,15 @@ msgstr "Clicca per aprire la configurazione della scorciatoia"
 
 #: ../src/gui/accelerators.c:667
 msgid "ctrl+click to add to quick access panel\n"
-msgstr ""
+msgstr "CTRL+click per aggiungere al pannello di accesso rapido\n"
 
 #: ../src/gui/accelerators.c:668
 msgid "ctrl+click to remove from quick access panel\n"
-msgstr ""
+msgstr "CTRL+click per rimuovere dal pannello di accesso rapido\n"
 
 #: ../src/gui/accelerators.c:669
 msgid "right click to exit mapping mode"
-msgstr ""
+msgstr "Click destro per uscire dalla modalità mappatura"
 
 #: ../src/gui/accelerators.c:812
 msgid "active view"
@@ -8554,15 +8568,15 @@ msgstr "Abbandonate"
 
 #: ../src/gui/accelerators.c:961
 msgid "shortcut for move exists with single effect"
-msgstr ""
+msgstr "Scorciatoia per muovere esiste con un singolo effetto"
 
 #: ../src/gui/accelerators.c:962
 msgid "create separate shortcuts for up and down move?"
-msgstr ""
+msgstr "Creare scorciatoie separate per muovere su o giù?"
 
 #: ../src/gui/accelerators.c:977
 msgid "shortcut exists with different settings"
-msgstr ""
+msgstr "La scorciatoia esiste con impostazioni diverse"
 
 #: ../src/gui/accelerators.c:978
 msgid "reset the settings of the shortcut?"
@@ -8615,6 +8629,18 @@ msgid ""
 "\n"
 "right-click to cancel"
 msgstr ""
+"Definisce una scorciatoia premendo un tasto, in opzione combinato con tasti "
+"modificatori (ctrl/shift/alt)\n"
+"Un tasto può esser premuto duo o tre volte, con una ultima pressione lunga\n"
+"Mentre il tasto è premuto, una combinazione di tasti del mouse possono (due/ "
+"tre volte /a lungo) esser premuti\n"
+"Tenendo premuto il tasto (e modificatori e/o pulsanti) uno scorrimento del"
+" mouse "
+"o un movimento può esser aggiunto\n"
+"I dispositivi connessi possono inviare tasti o movimenti usando i loro"
+" controller fisici\n"
+"\n"
+"Clicca col destro per cancellare"
 
 #: ../src/gui/accelerators.c:1402
 msgid "removing shortcut"
@@ -8646,12 +8672,17 @@ msgid ""
 "  or as at startup\n"
 "  or when the configuration dialog was opened\n"
 msgstr ""
+"Ripristino le scorciatoie predefinite\n"
+"  o com'erano all'avvio\n"
+"  o come quando il dialogo di configurazione era aperto\n"
 
 #: ../src/gui/accelerators.c:1747
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
 msgstr ""
+"Cancella tutte le scorciatoie più nuove\n"
+"(invece di ripristinare proprio quelle cambiate)"
 
 #: ../src/gui/accelerators.c:1799 ../src/gui/preferences.c:894
 #: ../src/libs/tools/global_toolbox.c:815
@@ -8672,6 +8703,8 @@ msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
 msgstr ""
+"Esporta tutte le scorciatoie su un file\n"
+"o proprio per un dispositivo selezionato\n"
 
 #: ../src/gui/accelerators.c:1821 ../src/gui/accelerators.c:1900
 #: ../src/gui/gtk.c:3002 ../src/imageio/format/pdf.c:662
@@ -8705,6 +8738,8 @@ msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
 msgstr ""
+"Importa tutte le scorciatoie da un file\n"
+"o proprio per un dispositivo selezionato\n"
 
 #: ../src/gui/accelerators.c:1913
 msgid "id in file"
@@ -8735,6 +8770,8 @@ msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
 msgstr ""
+"Ricerca in modo incrementale la lista delle scorciatoie\n"
+"Premi i tasti su o giù per spostarsi attraverso le combinazioni"
 
 #. Setting up the cell renderers
 #: ../src/gui/accelerators.c:2037 ../src/views/view.c:1710
@@ -8763,6 +8800,8 @@ msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
 msgstr ""
+"Ricerca in modo incrementale la lista delle azioni\n"
+"Premi i tasti su o giù per spostarsi attraverso le combinazioni"
 
 #: ../src/gui/accelerators.c:2133 ../src/gui/guides.c:689
 #: ../src/libs/export_metadata.c:191
@@ -8778,6 +8817,9 @@ msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
 msgstr ""
+"Abilita significati di default per pulsanti addizionali, modificatori o"
+" movimenti\n"
+"Quando è usato in combinazione con una scorciatoia di base"
 
 #: ../src/gui/accelerators.c:2175
 msgid "restore..."
@@ -8785,7 +8827,7 @@ msgstr "Ripristina..."
 
 #: ../src/gui/accelerators.c:2176
 msgid "restore default shortcuts or previous state"
-msgstr ""
+msgstr "Ripristino le scorciatoie predefinite o gli stati precedenti"
 
 #: ../src/gui/accelerators.c:2180
 msgid "import..."
@@ -8793,7 +8835,7 @@ msgstr "Importa..."
 
 #: ../src/gui/accelerators.c:2181
 msgid "fully or partially import shortcuts from file"
-msgstr ""
+msgstr "Importa per intero o parzialmente le scorciatoie da un file"
 
 #. export button
 #: ../src/gui/accelerators.c:2185 ../src/libs/styles.c:880
@@ -8802,7 +8844,7 @@ msgstr "Esporta..."
 
 #: ../src/gui/accelerators.c:2186
 msgid "fully or partially export shortcuts to file"
-msgstr ""
+msgstr "Esporta per intero o parzialmente le scorciatoie in un file"
 
 #: ../src/gui/accelerators.c:2594
 msgid "input devices reinitialised"
@@ -9561,6 +9603,8 @@ msgid ""
 "incrementally search the list of presets\n"
 "press up or down keys to cycle through matches"
 msgstr ""
+"Ricerca in modo incrementale la lista delle preimpostazioni\n"
+"Premi i tasti su o giù per spostarsi attraverso le combinazioni"
 
 #: ../src/gui/preferences.c:861
 msgctxt "preferences"
@@ -12388,6 +12432,8 @@ msgid ""
 "this module is deprecated. please use the crop, orientation and/or rotate "
 "and perspective modules instead."
 msgstr ""
+"Questo modulo è deprecato. Piuttosto usa i moduli taglio, orientazione e/o "
+"rotazione e prospettiva."
 
 #: ../src/iop/clipping.c:309
 msgid "crop and rotate"
@@ -12533,6 +12579,11 @@ msgid ""
 "to enter custom aspect ratio open the combobox and type ratio in x:y or "
 "decimal format"
 msgstr ""
+"Imposta le proporzioni\n"
+"La lista è ordinata: dal più quadrato al meno quadrato\n"
+"Per inserire un rapporto di proporzione personalizzato apri la casella"
+" combinata "
+"e digita il rapporto in x:y o in formato decimale"
 
 #: ../src/iop/clipping.c:2273 ../src/iop/crop.c:1213
 msgid "margins"
@@ -12556,7 +12607,7 @@ msgstr "Il margine inferiore non può sovrapporsi a quello superiore"
 
 #: ../src/iop/clipping.c:3058
 msgid "<b>commit</b>: double click, <b>straighten</b>: right-drag"
-msgstr ""
+msgstr "<b>Consegna</b>: doppio click, <b>raddrizzare</b>: destro-trascina"
 
 #: ../src/iop/clipping.c:3062
 msgid ""
@@ -12574,6 +12625,7 @@ msgstr "<b>Sposta il punto di controllo</b>: trascina"
 #: ../src/iop/clipping.c:3110
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
 msgstr ""
+"<b>Muovi la linea</b>: trascina, <b>attiva la simmetria</b>: clicca <tt>ꝏ</tt>"
 
 #: ../src/iop/clipping.c:3115
 msgid ""
@@ -12590,6 +12642,10 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double click"
 msgstr ""
+"<b>Muovi</b>: trascina, <b>muovi verticalmente</b>: Maiusc+trascina, <b>muovi"
+" orizzontalmente</"
+"b>: Ctrl+trascina\n"
+"<b>Raddrizza</b>: Tasto destro-trascina, <b>consegna</b>: doppio click"
 
 #: ../src/iop/clipping.c:3373 ../src/iop/crop.c:1670
 msgid "commit"
@@ -13213,6 +13269,12 @@ msgid ""
 "lower values scale towards lower saturation while higher scale towards "
 "higher saturation"
 msgstr ""
+"Aggiusta l'obiettivo di saturazione del colore\n"
+"Aggiusta i canali 'a' e 'b' del colore obiettivo simultaneamente nello spazio"
+" Lab\n"
+"Valori più bassi scalano verso una saturazione bassa, mentre più alti scalano"
+" verso "
+"una più alta saturazione"
 
 #: ../src/iop/colorchecker.c:1380
 msgid "target color"
@@ -13451,7 +13513,7 @@ msgstr ""
 
 #: ../src/iop/colorout.c:95
 msgid "non-linear, RGB or Lab, display-referred"
-msgstr ""
+msgstr "Non-lineare, RGB o Lab, riferito allo schermo"
 
 #: ../src/iop/colorout.c:672
 msgid "missing output profile has been replaced by sRGB!"
@@ -14195,6 +14257,8 @@ msgstr "Rimuovere le alteluci"
 #: ../src/iop/diffuse.c:1081 ../src/iop/diffuse.c:1319
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
+"Diffondi/rendi nitido fallito ad allocare la memoria, controlla le"
+" impostazioni della RAM"
 
 #: ../src/iop/diffuse.c:1447
 msgid "diffusion properties"
@@ -14281,7 +14345,7 @@ msgstr "Gestione margini"
 
 #: ../src/iop/diffuse.c:1558
 msgid "increase or decrease the sharpness of the highest frequencies"
-msgstr ""
+msgstr "Aumenta o riduce la nitidezza delle frequenze più alte"
 
 #: ../src/iop/diffuse.c:1562
 msgid ""
@@ -14351,7 +14415,7 @@ msgstr "Livello di smorzamento del dithering casuale"
 
 #: ../src/iop/dual_demosaic.c:50
 msgid "[dual demosaic] can't allocate internal buffers"
-msgstr ""
+msgstr "[dual demosaic] non riesco ad allocare i buffers interni"
 
 #: ../src/iop/equalizer.c:89
 msgid "legacy equalizer"
@@ -15155,7 +15219,7 @@ msgstr "Rotazione|Capovolgimento"
 
 #: ../src/iop/flip.c:105
 msgid "flip or rotate image by step of 90 degrees"
-msgstr ""
+msgstr "Capovolge o ruota in step di 90°"
 
 #: ../src/iop/flip.c:421 ../src/iop/flip.c:423
 msgid "autodetect"
@@ -17066,6 +17130,8 @@ msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve mid-tones"
 msgstr ""
+"Comprimi l'effetto sulle ombre/alteluci e\n"
+"preserva i mezzitoni"
 
 #: ../src/iop/shadhi.c:712
 msgid "adjust saturation of shadows"
@@ -17187,6 +17253,8 @@ msgid ""
 "compress the effect on highlights/shadows and\n"
 "preserve mid-tones"
 msgstr ""
+"Comprimi l'effetto sulle alteluci/ombre e\n"
+"preserva i mezzitoni"
 
 #: ../src/iop/spots.c:56
 msgid "spot removal"
@@ -17515,6 +17583,8 @@ msgid ""
 "tone equalizer needs to be after distortion modules in the pipeline – "
 "disabled"
 msgstr ""
+"L'equalizzatore di tono nel processo di sviluppo deve trovarsi dopo i moduli "
+"di distorsione nel processo di sviluppo - disabilitato"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
 #: ../src/iop/toneequal.c:935
@@ -18209,6 +18279,9 @@ msgid ""
 "star rating: 0-5\n"
 "rejected images: -1"
 msgstr ""
+"Usa <, <=, >, >=, <>, =, [;] come operatori\n"
+"Valutazione in stelle: 0-5\n"
+"Immagini rifiutate: -1"
 
 #: ../src/libs/collect.c:2111
 msgid ""
@@ -18397,6 +18470,8 @@ msgid ""
 "turn on color picker\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
+"Attiva il selettore colore\n"
+"Ctrl+click o click destro per selezionare un'area"
 
 #. Adding the live samples section
 #: ../src/libs/colorpicker.c:638
@@ -20818,7 +20893,7 @@ msgstr "Mostra il pannello di accesso rapido"
 
 #: ../src/libs/modulegroups.c:3866
 msgid "show all history modules in active group"
-msgstr ""
+msgstr "Mostra tutta la storia dei moduli nel gruppo attivo"
 
 #: ../src/libs/modulegroups.c:3879
 msgid "auto-apply this preset"
@@ -21054,7 +21129,7 @@ msgstr "Cancella l'area d'immagine"
 
 #: ../src/libs/print_settings.c:2377
 msgid "delete the currently selected image area"
-msgstr ""
+msgstr "Cancella l'area d'immagine attualmente selezionata"
 
 #: ../src/libs/print_settings.c:2381
 msgid "clear layout"
@@ -21780,7 +21855,7 @@ msgstr "Ordina per"
 
 #: ../src/libs/tools/filter.c:201
 msgid "determine the sort order of shown images"
-msgstr ""
+msgstr "Determina l'ordine delle immagini mostrate"
 
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:224
@@ -22258,6 +22333,8 @@ msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
 msgstr ""
+"Seleziona la metrica che vuoi visualizzare\n"
+"La gamma completa è la combinazione di tutte le altre modalità"
 
 #: ../src/views/darkroom.c:2370
 msgid "full gamut"
@@ -22387,6 +22464,8 @@ msgid ""
 "toggle guide lines\n"
 "right click for guides options"
 msgstr ""
+"Attiva le linee guida\n"
+"Click destro per ulteriori opzioni"
 
 #. Fullscreen preview key
 #: ../src/views/darkroom.c:2609
