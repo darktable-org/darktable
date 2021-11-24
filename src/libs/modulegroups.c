@@ -2772,7 +2772,7 @@ static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *s
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const char *preset = (char *)sqlite3_column_blob(stmt, 0);
+    const char *preset = (char *)sqlite3_column_text(stmt, 0);
     dt_lib_presets_apply(preset, self->plugin_name, self->version());
   }
   sqlite3_finalize(stmt);
