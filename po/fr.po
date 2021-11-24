@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-22 21:13+0100\n"
-"PO-Revision-Date: 2021-11-23 08:53-0300\n"
+"PO-Revision-Date: 2021-11-24 14:29-0300\n"
 "Last-Translator: Aurélien PIERRE <contact@aurelienpierre.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1851,7 +1851,7 @@ msgstr "définit l'ordre de tri pour la collection sur les pellicules"
 
 #: ../build/bin/preferences_gen.h:8334
 msgid "sort collection descending"
-msgstr "trie descendant des collections"
+msgstr "tri descendant des collections"
 
 #: ../build/bin/preferences_gen.h:8348
 msgid ""
@@ -21744,7 +21744,7 @@ msgstr "défini comme mot-clé"
 
 #: ../src/libs/tagging.c:2155
 msgid "copy to entry"
-msgstr "copier l'entrée"
+msgstr "copier dans le champ de saisie"
 
 #: ../src/libs/tagging.c:2172
 msgid "go to tag collection"
