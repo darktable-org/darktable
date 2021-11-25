@@ -98,6 +98,7 @@ const struct _modifier_name
       { 0, NULL } };
 
 static dt_shortcut_t _sc = { 0 };  //  shortcut under construction
+static guint _previous_move = DT_SHORTCUT_MOVE_NONE;
 
 const gchar *dt_action_effect_value[]
   = { N_("edit"),
@@ -3099,6 +3100,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
   {
     _cancel_delayed_release();
     _last_time = 0;
+    _previous_move = move;
 
     if(_grab_widget)
       _ungrab_grab_widget();
@@ -3558,31 +3560,36 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 
     const gdouble angle = x_move / (0.001 + y_move);
     gdouble size = trunc(x_move / step_size);
+    gdouble y_size = - trunc(y_move / step_size);
 
-    if(size != 0 && fabs(angle) >= 2)
+    if(size != 0 || y_size != 0)
     {
-      move_start_x += size * step_size;
-      move_start_y = event->motion.y;
-      dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->motion.time, DT_SHORTCUT_MOVE_HORIZONTAL, size);
-    }
-    else
-    {
-      size = - trunc(y_move / step_size);
-      if(size != 0)
+      guint move = DT_SHORTCUT_MOVE_HORIZONTAL;
+      if(fabs(angle) >= 2)
       {
+        move_start_x += size * step_size;
+        move_start_y = event->motion.y;
+      }
+      else
+      {
+        size = y_size;
         move_start_y -= size * step_size;
         if(fabs(angle) < .5)
         {
           move_start_x = event->motion.x;
-          dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->motion.time, DT_SHORTCUT_MOVE_VERTICAL, size);
+          move = DT_SHORTCUT_MOVE_VERTICAL;
         }
         else
         {
           move_start_x -= size * step_size * angle;
-          dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->motion.time,
-                           angle < 0 ? DT_SHORTCUT_MOVE_SKEW : DT_SHORTCUT_MOVE_DIAGONAL, size);
+          move = angle < 0 ? DT_SHORTCUT_MOVE_SKEW : DT_SHORTCUT_MOVE_DIAGONAL;
         }
       }
+
+      if(_previous_move == move || _previous_move == DT_SHORTCUT_MOVE_NONE)
+        dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, event->motion.time, move, size);
+      else
+        _previous_move = move;
     }
     break;
   case GDK_BUTTON_PRESS:
