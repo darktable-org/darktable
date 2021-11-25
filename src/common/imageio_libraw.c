@@ -244,20 +244,16 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
     goto error;
   }
 
-  // Copy white level
-  img->raw_white_point = raw->rawdata.color.maximum;
+  // Copy white level (all linear_max[] equal single SpecularWhiteLevel for CR3, we can skip min or mean)
+  img->raw_white_point = raw->rawdata.color.linear_max[0] ? raw->rawdata.color.linear_max[0] :raw->rawdata.color.maximum;
 
   // Copy black level
-  img->raw_black_level_separate[0] = raw->rawdata.color.black + raw->rawdata.color.cblack[0];
-  img->raw_black_level_separate[1] = raw->rawdata.color.black + raw->rawdata.color.cblack[1];
-  img->raw_black_level_separate[2] = raw->rawdata.color.black + raw->rawdata.color.cblack[2];
-  img->raw_black_level_separate[3] = raw->rawdata.color.black + raw->rawdata.color.cblack[3];
+  for(size_t c = 0; c < 4; ++c)
+    img->raw_black_level_separate[c] = raw->rawdata.color.black + raw->rawdata.color.cblack[c];
 
   // AsShot WB coeffs
-  img->wb_coeffs[0] = raw->rawdata.color.cam_mul[0];
-  img->wb_coeffs[1] = raw->rawdata.color.cam_mul[1];
-  img->wb_coeffs[2] = raw->rawdata.color.cam_mul[2];
-  img->wb_coeffs[3] = raw->rawdata.color.cam_mul[3];
+  for(size_t c = 0; c < 4; ++c)
+    img->wb_coeffs[c] = raw->rawdata.color.cam_mul[c];
 
   // Raw dimensions. This is the full sensor range.
   img->width = raw->rawdata.sizes.raw_width;
