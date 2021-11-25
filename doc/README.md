@@ -7,6 +7,7 @@ Build dependencies for many platforms are listed here:
 https://redmine.darktable.org/projects/darktable/wiki/Building_darktable_20
 
 ### Requirements
+
 In summary, you'll need:
 
  - `gcc`, `g++`, GNU `make` and `cmake`
@@ -19,16 +20,15 @@ Optionally, you might need for special features:
 
  - `libcups2` (for the print module)
  - `gphoto2` (for camera support, recommended)
- - `flickcurl` (for Flickr support)
- - SDL, SDL-image and Mesa OpenGL (to build darktable-viewer)
+ - `SDL`, SDL-image and Mesa OpenGL (to build darktable-viewer)
  - `osm-gps-map` for geo tagging view
  - `lensfun` (lens distortion plugin)
  - `libheif` for reading HEIF/HEIC images
- - OpenEXR for HDR export
+ - `OpenEXR` for HDR export
  - `libsecret` for storing passwords
  - `libcolord-dev` `libcolord-gtk-dev` for colour profile support
  - `webp` and `openjpeg` libraries for WebP and JPEG 2000 support
- - GraphicsMagick library for TIFF-encoded EXIF thumbnails and LDR image format support
+ - `GraphicsMagick` library for TIFF-encoded EXIF thumbnails and LDR image format support
  - `exiftool` for creating whitebalance presets
 
 ### Build
