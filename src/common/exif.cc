@@ -3876,6 +3876,19 @@ static void dt_remove_exif_key(Exiv2::ExifData &exif, const char *key)
   }
 }
 
+static void dt_remove_iptc_key(Exiv2::IptcData &iptc, const char *key)
+{
+  try
+  {
+    Exiv2::IptcData::iterator pos;
+    while((pos = iptc.findKey(Exiv2::IptcKey(key))) != iptc.end())
+      iptc.erase(pos);
+  }
+  catch(Exiv2::AnyError &e)
+  {
+  }
+}
+
 int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata)
 {
   dt_export_metadata_t *m = (dt_export_metadata_t *)metadata;
@@ -4013,8 +4026,10 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
                 const char *type = _exif_get_exiv2_tag_type(tagname);
                 if(!g_strcmp0(type, "String-R"))
                 {
+                  // clean up the original tags before giving new values
+                  dt_remove_iptc_key(iptcData, tagname);
                   // convert the input list (separator ", ") into different tags
-                  // FIXME if an element of the list contains a ", " it is not correctly expeorted
+                  // FIXME if an element of the list contains a ", " it is not correctly exported
                   Exiv2::IptcKey key(tagname);
                   Exiv2::Iptcdatum id(key);
                   gchar **values = g_strsplit(result, ", ", 0);
@@ -4069,6 +4084,8 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
             dt_remove_xmp_key(xmpData, tagname);
           else if (g_str_has_prefix(tagname, "Exif."))
             dt_remove_exif_key(exifData, tagname);
+          else if (g_str_has_prefix(tagname, "Iptc."))
+            dt_remove_iptc_key(iptcData, tagname);
         }
       }
       dt_variables_params_destroy(params);
