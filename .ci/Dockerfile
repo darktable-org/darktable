@@ -76,7 +76,6 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     libcups2-dev \
     libcurl4-gnutls-dev \
     libexiv2-dev \
-    libflickcurl-dev \
     libgdk-pixbuf2.0-dev \
     libglib2.0-dev \
     libgphoto2-dev \
