@@ -34,7 +34,6 @@ BuildRequires:  intltool
 BuildRequires:  lensfun-devel
 BuildRequires:  libcurl-devel
 BuildRequires:  libexiv2-devel
-BuildRequires:  libflickcurl-devel
 BuildRequires:  libglade2-devel
 BuildRequires:  libgphoto2-devel
 BuildRequires:  libjpeg-devel
@@ -50,8 +49,8 @@ License:        GPL-3.0+
 Group:          Productivity/Graphics/Viewers
 
 %description
-darktable is a virtual lighttable and darkroom for photographers: it manages 
-your digital negatives in a database and lets you view them through a zoomable 
+darktable is a virtual lighttable and darkroom for photographers: it manages
+your digital negatives in a database and lets you view them through a zoomable
 lighttable. it also enables you to develop raw images and enhance them.
 
 
@@ -62,13 +61,13 @@ lighttable. it also enables you to develop raw images and enhance them.
 [ ! -d "build" ] && mkdir  build
 cd build
 
-export CXXFLAGS="%{optflags} -fno-strict-aliasing "  
+export CXXFLAGS="%{optflags} -fno-strict-aliasing "
 export CFLAGS="$CXXFLAGS"
 
 cmake \
         -DCMAKE_INSTALL_PREFIX=%{_prefix} -DCMAKE_INSTALL_LIBDIR=%{_lib} \
         -DCMAKE_BUILD_TYPE=Release \
-        -DBINARY_PACKAGE_BUILD=1 .. 
+        -DBINARY_PACKAGE_BUILD=1 ..
 %__make %{_smp_mflags} VERBOSE=1
 
 %install

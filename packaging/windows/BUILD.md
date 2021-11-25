@@ -1,8 +1,8 @@
-To build darktable for Windows operating system you have two basic option:  
-A) Native compile using MSYS  
+To build darktable for Windows operating system you have two basic option:
+A) Native compile using MSYS
 B) Cross compile on Linux
 
-## A) Native compile using MSYS2:  
+## A) Native compile using MSYS2:
 How to make a darktable windows installer (64 bit only):
 
 * Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
@@ -17,7 +17,7 @@ How to make a darktable windows installer (64 bit only):
     ```
 * Install required libraries and dependencies:
     ```
-    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
     ```
 
 * Install optional libraries and dependencies:
@@ -48,7 +48,7 @@ How to make a darktable windows installer (64 bit only):
         ```
 
 * From MINGW64 terminal, update your lensfun database:
-    `lensfun-update-data`  
+    `lensfun-update-data`
 
     Also use this program to install USB driver on Windows for your camera:
     http://zadig.akeo.ie/
@@ -87,19 +87,19 @@ How to make a darktable windows installer (64 bit only):
     $ cmake --build .
     $ cmake --build . --target install
     ```
-    After this darktable will be installed in `/opt/darktable `directory and can be started by typing `/opt/darktable/bin/darktable.exe` in MSYS2 MINGW64 terminal.  
+    After this darktable will be installed in `/opt/darktable `directory and can be started by typing `/opt/darktable/bin/darktable.exe` in MSYS2 MINGW64 terminal.
 
-    *NOTE: If you are using the Lua scripts, build the installer and install darktable.  
-    The Lua scripts check the operating system and see windows and expect a windows shell when executing system commands.  
+    *NOTE: If you are using the Lua scripts, build the installer and install darktable.
+    The Lua scripts check the operating system and see windows and expect a windows shell when executing system commands.
     Running darktable from the MSYS2 MINGW64 terminal gives a bash shell and therefore the commands will not work.*
 
-* For building the installer image, which will  create darktable-<VERSION>.exe installer in current build directory, use: `$ cmake --build . --target package`  
+* For building the installer image, which will  create darktable-<VERSION>.exe installer in current build directory, use: `$ cmake --build . --target package`
 
     *NOTE: The package created will be optimized for the machine on which it has been built, but it could not run on other PCs with different hardware or different Windows version. If you want to create a "generic" package, change the first cmake command line as follows:*
     ```
     $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON ../.
     ```
-It is now possible to build darktable on Windows using Ninja rather than Make.  This offers advantages of reduced build times for incremental builds (builds on Windows are significantly slower than with linux based systems).  To use Ninja you need to install it from an MSYS terminal with:  
+It is now possible to build darktable on Windows using Ninja rather than Make.  This offers advantages of reduced build times for incremental builds (builds on Windows are significantly slower than with linux based systems).  To use Ninja you need to install it from an MSYS terminal with:
 
 `$ pacman -S mingw-w64-x86_64-ninja`
 

@@ -56,11 +56,7 @@ file path=opt/darktable/lib/darktable/plugins/imageio/storage/libdisk.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/storage/libemail.so \
     owner=root group=root mode=755
-file path=opt/darktable/lib/darktable/plugins/imageio/storage/libflickr.so \
-    owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/imageio/storage/libgallery.so \
-    owner=root group=root mode=755
-file path=opt/darktable/lib/darktable/plugins/imageio/storage/libpicasa.so \
     owner=root group=root mode=755
 file path=opt/darktable/lib/darktable/plugins/libatrous.so owner=root \
     group=root mode=755
@@ -584,7 +580,6 @@ file path=usr/share/icons/hicolor/scalable/apps/darktable.svg owner=root \
     group=root mode=644
 depend type=require fmri=pkg://JMCP/darktable/library/OpenEXR
 depend type=require fmri=pkg://JMCP/darktable/library/exiv2
-depend type=require fmri=pkg://JMCP/darktable/library/flickcurl
 depend type=require fmri=pkg://JMCP/darktable/library/ilmbase
 depend type=require fmri=pkg://JMCP/darktable/library/lcms2
 depend type=require fmri=pkg://JMCP/darktable/library/lensfun
@@ -606,4 +601,3 @@ depend type=require fmri=pkg://solaris/system/library
 depend type=require fmri=pkg://solaris/web/curl
 depend type=require fmri=pkg://solaris/x11/library/libxevie
 depend type=require fmri=pkg://solaris/x11/library/mesa
-
