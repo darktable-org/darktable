@@ -262,7 +262,6 @@ jobs:
             libcups2-dev \
             libcurl4-gnutls-dev \
             libexiv2-dev \
-            libflickcurl-dev \
             libgdk-pixbuf2.0-dev \
             libglib2.0-dev \
             libgphoto2-dev \
@@ -280,9 +279,11 @@ jobs:
             libosmgpsmap-1.0-dev \
             libpango1.0-dev \
             libpng-dev \
+            libportmidi-dev \
             libpugixml-dev \
             librsvg2-dev \
             libsaxon-java \
+            libsdl2-dev \
             libsecret-1-dev \
             libsoup2.4-dev \
             libsqlite3-dev \
@@ -379,38 +380,39 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-cmocka
             mingw-w64-x86_64-ninja
-            mingw-w64-x86_64-libxml2
-            mingw-w64-x86_64-pugixml
-            mingw-w64-x86_64-libjpeg-turbo
-            mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-nsis
+            mingw-w64-x86_64-dbus-glib
+            mingw-w64-x86_64-drmingw
             mingw-w64-x86_64-exiv2
+            mingw-w64-x86_64-gettext
+            mingw-w64-x86_64-gmic
+            mingw-w64-x86_64-graphicsmagick
+            mingw-w64-x86_64-gtk3
+            mingw-w64-x86_64-iso-codes
             mingw-w64-x86_64-lcms2
             mingw-w64-x86_64-lensfun
-            mingw-w64-x86_64-dbus-glib
-            mingw-w64-x86_64-openexr
-            mingw-w64-x86_64-sqlite3
-            mingw-w64-x86_64-libxslt
-            mingw-w64-x86_64-libsoup
             mingw-w64-x86_64-libavif
-            mingw-w64-x86_64-libheif
-            mingw-w64-x86_64-libwebp
-            mingw-w64-x86_64-libsecret
-            mingw-w64-x86_64-lua
-            mingw-w64-x86_64-graphicsmagick
-            mingw-w64-x86_64-openjpeg2
-            mingw-w64-x86_64-gtk3
             mingw-w64-x86_64-libexif
-            mingw-w64-x86_64-osm-gps-map
             mingw-w64-x86_64-libgphoto2
-            mingw-w64-x86_64-drmingw
-            mingw-w64-x86_64-gettext
+            mingw-w64-x86_64-libheif
+            mingw-w64-x86_64-libjpeg-turbo
+            mingw-w64-x86_64-libsecret
+            mingw-w64-x86_64-libsoup
+            mingw-w64-x86_64-libwebp
+            mingw-w64-x86_64-libxml2
+            mingw-w64-x86_64-libxslt
+            mingw-w64-x86_64-lua
+            mingw-w64-x86_64-openexr
+            mingw-w64-x86_64-openjpeg2
+            mingw-w64-x86_64-osm-gps-map
+            mingw-w64-x86_64-portmidi
+            mingw-w64-x86_64-pugixml
             mingw-w64-x86_64-python3
-            mingw-w64-x86_64-iso-codes
             mingw-w64-x86_64-python3-jsonschema
-            mingw-w64-x86_64-python3-six
             mingw-w64-x86_64-python3-setuptools
-            mingw-w64-x86_64-gmic
-            mingw-w64-x86_64-nsis
+            mingw-w64-x86_64-python3-six
+            mingw-w64-x86_64-sqlite3
+            mingw-w64-x86_64-zlib
           update: true
       - uses: actions/checkout@v2
         with:
