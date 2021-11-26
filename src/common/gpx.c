@@ -96,7 +96,7 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
   gpx = g_malloc0(sizeof(dt_gpx_t));
 
   /* skip UTF-8 BOM */
-  if(gpxmf_size > 3 && gpxmf_content[0] == '\xef' && gpxmf_content[1] == '\xbb' && gpxmf_content[2] == '\xbf')
+  if(gpxmf_content[0] == '\xef' && gpxmf_content[1] == '\xbb' && gpxmf_content[2] == '\xbf')
     bom_offset = 3;
 
   /* initialize the parser and start parse gpx xml data */
@@ -177,7 +177,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GDateTime *timestamp, dt_imag
     dt_gpx_track_point_t *tp_next = (dt_gpx_track_point_t *)item->next->data;
     /* check if timestamp is within current and next trackpoint */
     const gint cmp_n = g_date_time_compare(timestamp, tp_next->time);
-    if((cmp >= 0) && (item->next && cmp_n <= 0))
+    if(item->next && cmp_n <= 0)
     {
       GTimeSpan seg_diff = g_date_time_difference(tp_next->time, tp->time);
       GTimeSpan diff = g_date_time_difference(timestamp, tp->time);
