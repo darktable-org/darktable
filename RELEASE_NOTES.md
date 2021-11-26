@@ -261,6 +261,8 @@ You are strongly advised to take a backup first.
 - The 3.8.x series of darktable releases will be the last which supports macOS 10.7 and building with Xcode 11.
   The next major release will require at least macOS 10.14 to run and Xcode 12 to build.
 
+- The module deprecated in 3.4 have now been removed from the deprecated module group. The modules are: Zone System, Invert, Channel Mixer, Global Tonemap, Relight, Tonemap, Vibrance and Basic Adjustements.
+
 ## Changed Dependencies
 
 - Move from Lua 5.3 to 5.4.
