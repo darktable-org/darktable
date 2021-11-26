@@ -4498,6 +4498,10 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   int handled = 0;
 
+  // avoid unexpected back to lt mode:
+  if(type == GDK_2BUTTON_PRESS && which == 1)
+    return TRUE;
+
   float pzx = 0.0f, pzy = 0.0f;
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
