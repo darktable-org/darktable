@@ -265,73 +265,69 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // than as an ICC binary blob which is possible.
   // If we are unable to find the required color encoding data for libjxl we will
   // just fallback to providing an ICC blob (and hope we can at least do that!).
-  bool written_color = false;
+  bool write_color_natively = true;
 
-  // We can only handle RGB
-  if(cmsGetColorSpace(out_profile) == cmsSigRgbData)
+  JxlColorEncoding color_encoding;
+  color_encoding.color_space = JXL_COLOR_SPACE_RGB;
+  // TODO: safe to simply put pipe->icc_intent here?
+  color_encoding.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
+
+  // Attempt to find the whitepoint, primaries and transfer function
+  // If we can't find any of these we fall back to ICC binary
+  switch(over_type)
   {
-    // Attempt to find the whitepoint, primaries and transfer function
-    // If we can't find any of these we fall back to ICC binary
-    JxlColorEncoding color_encoding;
-    color_encoding.color_space = JXL_COLOR_SPACE_RGB;
-    // TODO: safe to simply put pipe->icc_intent here?
-    color_encoding.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
-
-    switch(over_type)
-    {
-      case DT_COLORSPACE_SRGB:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_SRGB;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
-        break;
-      case DT_COLORSPACE_LIN_REC2020:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_2100;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
-        break;
-      case DT_COLORSPACE_PQ_REC2020:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_2100;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_PQ;
-        break;
-      case DT_COLORSPACE_HLG_REC2020:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_2100;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
-        break;
-      case DT_COLORSPACE_REC709:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_SRGB;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_709;
-        break;
-      case DT_COLORSPACE_LIN_REC709:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_SRGB;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
-        break;
-      case DT_COLORSPACE_PQ_P3:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_P3;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_PQ;
-        break;
-      case DT_COLORSPACE_HLG_P3:
-        color_encoding.white_point = JXL_WHITE_POINT_D65;
-        color_encoding.primaries = JXL_PRIMARIES_P3;
-        color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
-        break;
-      default:
-        goto write_icc;
-    }
-
-    JxlEncoderSetColorEncoding(encoder, &color_encoding);
-    written_color = true;
+    case DT_COLORSPACE_SRGB:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_SRGB;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
+      break;
+    case DT_COLORSPACE_LIN_REC2020:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_2100;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+      break;
+    case DT_COLORSPACE_PQ_REC2020:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_2100;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_PQ;
+      break;
+    case DT_COLORSPACE_HLG_REC2020:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_2100;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
+      break;
+    case DT_COLORSPACE_REC709:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_SRGB;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_709;
+      break;
+    case DT_COLORSPACE_LIN_REC709:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_SRGB;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+      break;
+    case DT_COLORSPACE_PQ_P3:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_P3;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_PQ;
+      break;
+    case DT_COLORSPACE_HLG_P3:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_P3;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
+      break;
+    default:
+      write_color_natively = false;
+      break;
   }
 
-write_icc:
-
-  // If we haven't yet managed to write the color encoding we need to fallback to ICC
-  if(!written_color)
+  if(write_color_natively)
   {
+    JxlEncoderSetColorEncoding(encoder, &color_encoding);
+  }
+  else
+  {
+    // If we didn't manage to write the color encoding natively we need to fallback to ICC
     fprintf(stdout, "JXL: Could not generate color encoding data, falling back to ICC binary\n");
 
     cmsUInt32Number size = 0;
@@ -411,7 +407,6 @@ write_icc:
     {
       const float *in_pixel = &in[((y * width) + x) * 4];
       float *pixel = &pixels[(y * width * channels) + (x * channels)];
-
       for(int k = 0; k < channels; k++) pixel[k] = in_pixel[k];
     }
   }
