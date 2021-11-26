@@ -1619,17 +1619,13 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
                    uint32_t state)
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
   // we don't do anything if the image is not ready
   if(!g->preview_ready) return 0;
 
   // avoid unexpected back to lt mode:
   if(type == GDK_2BUTTON_PRESS && which == 1)
-  {
-    dt_iop_request_focus(NULL);
-    _commit_box(self, g, p);
     return 1;
-  }
+
   if(which == 1)
   {
     // switch module on already, other code depends in this:
