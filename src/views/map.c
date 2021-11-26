@@ -2847,7 +2847,7 @@ typedef struct dt_dbscan_t
   unsigned int cluster_id;
 } dt_dbscan_t;
 
-dt_dbscan_t db;
+static dt_dbscan_t db;
 
 static void _get_epsilon_neighbours(epsilon_neighbours_t *en, unsigned int index)
 {
