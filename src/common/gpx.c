@@ -75,21 +75,17 @@ static gint _sort_segment(gconstpointer a, gconstpointer b)
 
 dt_gpx_t *dt_gpx_new(const gchar *filename)
 {
-  dt_gpx_t *gpx = NULL;
-  GMarkupParseContext *ctx = NULL;
   GError *err = NULL;
-  GMappedFile *gpxmf = NULL;
-  gchar *gpxmf_content = NULL;
-  gint gpxmf_size = 0;
   gint bom_offset = 0;
-
+  GMarkupParseContext *ctx = NULL;
+  dt_gpx_t *gpx = NULL;
 
   /* map gpx file to parse into memory */
-  gpxmf = g_mapped_file_new(filename, FALSE, &err);
+  GMappedFile *gpxmf = g_mapped_file_new(filename, FALSE, &err);
   if(err) goto error;
 
-  gpxmf_content = g_mapped_file_get_contents(gpxmf);
-  gpxmf_size = g_mapped_file_get_length(gpxmf);
+  gchar *gpxmf_content = g_mapped_file_get_contents(gpxmf);
+  const gint gpxmf_size = g_mapped_file_get_length(gpxmf);
   if(!gpxmf_content || gpxmf_size < 10) goto error;
 
   /* allocate new dt_gpx_t context */
@@ -103,7 +99,6 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
   ctx = g_markup_parse_context_new(&_gpx_parser, 0, gpx, NULL);
   g_markup_parse_context_parse(ctx, gpxmf_content + bom_offset, gpxmf_size - bom_offset, &err);
   if(err) goto error;
-
 
   /* cleanup and return gpx context */
   g_markup_parse_context_free(ctx);
