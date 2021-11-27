@@ -192,8 +192,6 @@ static gboolean _supported_image(const gchar *filename)
   return FALSE;
 }
 
-
-
 gboolean dt_libraw_lookup_makermodel(const char *maker, const char *model,
                                      char *mk, int mk_len, char *md, int md_len,
                                      char *al, int al_len)
