@@ -1694,6 +1694,8 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
     }
     case DT_BAUHAUS_SLIDER:
     {
+      if(darktable.bauhaus->end_mouse_y < get_line_height()) break;
+
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       const float mouse_off = get_slider_line_offset(
           d->oldpos, d->scale, darktable.bauhaus->end_mouse_x / width,
@@ -2767,11 +2769,18 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     }
     else
     {
-      const float l = 0.0f;
-      const float r = slider_right_pos((float)allocation.width);
-      dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
-      dt_bauhaus_slider_data_t *d = &w->data.slider;
-      d->is_dragging = 1;
+      if(event->y > get_line_height())
+      {
+        const float l = 0.0f;
+        const float r = slider_right_pos((float)allocation.width);
+        dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
+        d->is_dragging = 1;
+      }
+      else if(event->x > allocation.width / 2)
+      {
+        dt_bauhaus_show_popup(w);
+      }
     }
     return TRUE;
   }
