@@ -115,9 +115,27 @@ uint32_t dt_rawspeed_crop_dcraw_filters(uint32_t filters, uint32_t crop_x, uint3
   return ColorFilterArray::shiftDcrawFilter(filters, crop_x, crop_y);
 }
 
+// CR3 files are for now handled by LibRAW, we do not want rawspeed to try to open them
+// as this issues lot of error message on the console.
+static gboolean _ignore_image(const gchar *filename)
+{
+  const char *extensions_whitelist[] = { "cr3", NULL };
+  char *ext = g_strrstr(filename, ".");
+  if(!ext) return FALSE;
+  ext++;
+  for(const char **i = extensions_whitelist; *i != NULL; i++)
+    if(!g_ascii_strncasecmp(ext, *i, strlen(*i)))
+    {
+      return TRUE;
+    }
+  return FALSE;
+}
+
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *mbuf)
 {
+  if(_ignore_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
+
   if(!img->exif_inited) (void)dt_exif_read(img, filename);
 
   char filen[PATH_MAX] = { 0 };
