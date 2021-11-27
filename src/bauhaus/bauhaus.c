@@ -2818,7 +2818,7 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(d->is_dragging || event->x <= allocation.width - darktable.bauhaus->quad_width)
+  if(d->is_dragging || (event->x <= allocation.width - darktable.bauhaus->quad_width && event->y > get_line_height()))
   {
     // remember mouse position for motion effects in draw
     if(event->state & GDK_BUTTON1_MASK && event->type != GDK_2BUTTON_PRESS)
