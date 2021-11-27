@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-10 09:22+0100\n"
-"PO-Revision-Date: 2021-11-25 00:13+0100\n"
+"PO-Revision-Date: 2021-11-27 01:04+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -457,6 +457,12 @@ msgid ""
 "curvature\n"
 "by default scrolling up increases these parameters"
 msgstr ""
+"Quanto viene usata la rotella del mouse per cambiare i parametri della"
+" maschera, "
+"scorri verso il basso per aumentare la dimensione della maschera, della"
+" sfumatura, "
+"dell'opacità, la durezza del pennello e la curvatura del gradiente\n"
+"In modo predefinito correre in alto aumenta questi parametri"
 
 #: ../build/bin/preferences_gen.h:4499
 msgid "pattern for the image information line"
@@ -1486,6 +1492,14 @@ msgid ""
 " - on import: immediately after importing the image\n"
 " - after edit: after any user change on the image"
 msgstr ""
+"I sidecar files mantengono l'informazione su tutti i tuoi passi di sviluppo"
+" per permettere "
+"la perfetta re-importazione dei files delle immagini.\n"
+"\n"
+"In base alla modalità selezionata i file sidecar saranno scritti:\n"
+" - mai\n"
+" - all'importazione: subito dopo aver importato l'immagine\n"
+" - dopo la modifica: dopo che qualsiasi utente abbia modificato l'immagine"
 
 #: ../build/bin/preferences_gen.h:7180
 msgid "store xmp tags in compressed format"
@@ -1660,6 +1674,10 @@ msgid ""
 "that are applied (in order) to decide which module instance shortcuts will "
 "be applied to"
 msgstr ""
+"Dove sono presenti istanze multiple di un modulo, questa opzione controlla le"
+" regole "
+"che sono applicate (in ordine) per stabilire quale scorciatoie devono esser"
+" applicate"
 
 #: ../build/bin/preferences_gen.h:7632
 msgid "prefer expanded instances"
@@ -1726,6 +1744,9 @@ msgid ""
 "visually assigned to those specific instances\n"
 "otherwise shortcuts will always be assigned to the preferred instance"
 msgstr ""
+"Quanto istanze multiple sono presenti sull'immagine questo consente che siano "
+"visivamente assegnate le scorciatoie a queste specifiche istanze\n"
+"Altrimenti le scorciatoie saranno sempre assegnate alle istanze preferite"
 
 #: ../build/bin/preferences_gen.h:7824
 msgid "map / geolocalization view"
@@ -3404,7 +3425,7 @@ msgstr "Preserva le ombre"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:149
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:316
 msgid "bias correction"
-msgstr "Correzione distorsione"
+msgstr "Correzione d'errore"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:155
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:320
@@ -13286,6 +13307,9 @@ msgid ""
 "relative - target color is relative from the patch original color\n"
 "absolute - target color is absolute Lab value"
 msgstr ""
+"Controlla il colore obiettivo dei campioni\n"
+"Relativo - il colore obiettivo rispetto al colore originale del campione\n"
+"Assoluto - il colore obiettivo è un valore Lab assoluto"
 
 #: ../src/iop/colorchecker.c:1382
 msgid "relative"
@@ -13801,6 +13825,10 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>commit</b>: double click"
 msgstr ""
+"<b>Muovi</b>: trascina, <b>muovi verticalmente</b>: Maius+trascina, <b>muovi"
+" orizzontalmente</"
+"b>: Ctrl+trascina\n"
+"<b>Consegna</b>: Doppio click"
 
 #: ../src/iop/defringe.c:70
 msgid "defringe"
@@ -13916,6 +13944,8 @@ msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
 msgstr ""
+"Passi di rifinitura LMMSE. I passi mediani fanno la media dell'uscita,\n"
+"refinisce aggiunge un po' di ricalcolo dei cananli rosso e blu"
 
 #: ../src/iop/demosaic.c:5796
 msgid "how many color smoothing median steps after demosaicing"
@@ -14283,6 +14313,12 @@ msgid ""
 "if you plan on denoising, the radius should be around the width of your lens "
 "blur."
 msgstr ""
+"Scala massima della diffusione.\n"
+"Valori elevati diffondono più distante, a discapito del tempo di calcolo.\n"
+"Valori bassi diffondono più vicino.\n"
+"Se intendi ridurre il rumore, il raggio dovrebbe esser intorno all'ampiezza"
+" della "
+"sfocatura dell'obiettivo."
 
 #: ../src/iop/diffuse.c:1466
 msgid ""
@@ -14309,6 +14345,10 @@ msgid ""
 "negative values sharpen.\n"
 "zero does nothing."
 msgstr ""
+"Morbidezza o nitidezza dei dettagli morbidi (gradienti).\n"
+"Valori positivi diffondono e sfocano.\n"
+"Valori negativi rendono più nitido.\n"
+"Zero non fa niente."
 
 #: ../src/iop/diffuse.c:1487 ../src/iop/diffuse.c:1496
 msgid ""
@@ -14317,6 +14357,10 @@ msgid ""
 "negative values sharpen.\n"
 "zero does nothing."
 msgstr ""
+"Morbidezza o nitidezza dei dettagli nitidi.\n"
+"Valori positivi diffondono e sfocano.\n"
+"Valori negativi rendono più nitido.\n"
+"Zero non fa niente."
 
 #: ../src/iop/diffuse.c:1505
 msgid ""
@@ -14325,6 +14369,10 @@ msgid ""
 "negative values sharpen.\n"
 "zero does nothing."
 msgstr ""
+"Morbidezza o nitidezza dei dettagli nitidi (gradienti).\n"
+"Valori positivi diffondono e sfocano.\n"
+"Valori negativi rendono più nitido.\n"
+"Zero non fa niente."
 
 #: ../src/iop/diffuse.c:1510
 msgid "diffusion directionality"
@@ -14338,6 +14386,10 @@ msgid ""
 "positives make the diffusion follow isophotes more closely\n"
 "negatives make the diffusion follow gradients more closely"
 msgstr ""
+"Anisotropia della diffusione.\n"
+"Zero rende la diffusione isotropa (uguale in tutte le direzioni)\n"
+"Positivi fanno seguire la diffusione più minuziosamente le isofote\n"
+"Negativi fanno seguire la diffusione più minuziosamente i gradienti"
 
 #: ../src/iop/diffuse.c:1552
 msgid "edges management"
@@ -14353,6 +14405,9 @@ msgid ""
 "increase to exclude more edges from diffusion,\n"
 "if fringes or halos appear."
 msgstr ""
+"Definisce la sensibilità della penalità di varianza per i bordi.\n"
+"Aumenta per escludere più bordi dalla diffusione,\n"
+"se appaiono frange o aloni."
 
 #: ../src/iop/diffuse.c:1568
 msgid ""
@@ -14361,6 +14416,10 @@ msgid ""
 "increase if you see noise appear on smooth surfaces or\n"
 "if dark areas seem oversharpened compared to bright areas."
 msgstr ""
+"Definisce la soglia della varianza tra amplificazione del bordo e penalità.\n"
+"Diminuisci se vuoi che pixels e superfici morbide ottengano una spinta,\n"
+"aumenta se vedi apparire rumore su superfici morbide o\n"
+"se le aree scure sembrano sovra-nitide rispetto alle aree chiare."
 
 #: ../src/iop/diffuse.c:1574
 msgid "diffusion spatiality"
@@ -15287,7 +15346,7 @@ msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
 msgstr ""
-"L'imprecisione per la mappatura tonale controlla la linearità, più è elevata "
+"L'errore per la mappatura tonale controlla la linearità, più è elevata "
 "più dettagli ci sono nei neri"
 
 #: ../src/iop/globaltonemap.c:652
@@ -15426,6 +15485,10 @@ msgid ""
 "greater the bias, the more pronounced the fall off of the grain in shadows "
 "and highlights"
 msgstr ""
+"Ammontare dell'errore nei mezzi toni dal modello di risposta della carta"
+" fotografica. "
+"Più elevato l'errore e più pronunciata sarà la caduta della grana nelle ombre"
+" e nelle alte luci"
 
 #: ../src/iop/hazeremoval.c:99
 msgid "haze removal"
@@ -15612,6 +15675,9 @@ msgid ""
 "you might also want to check if your lensfun database is up-to-date\n"
 "by running lensfun_update_data"
 msgstr ""
+"Per favore seleziona manualmente il tuo obiettivo\n"
+"Potresti dover controllare se il database lensfun è aggiornato\n"
+"lanciando il comando lensfun_update_data"
 
 #: ../src/iop/lens.cc:1843
 #, c-format
@@ -16471,6 +16537,9 @@ msgid ""
 "to avoid clipping while pushing the exposure for mid-tones.\n"
 "this somewhat reproduces the behaviour of matte paper."
 msgstr ""
+"Comprimi gradualmente le alte luci speculari che superano questo valore\n"
+"per evitare tagli mentre si spinge l'esposizione dai mezzi toni.\n"
+"Questo riproduce più o meno l'effetto della carta opaca."
 
 #: ../src/iop/negadoctor.c:980
 msgid "virtual print emulation"
@@ -17822,6 +17891,11 @@ msgid ""
 "for a better control of the exposure correction with the available nodes.\n"
 "the magic wand will auto-adjust the average exposure"
 msgstr ""
+"Utilizzalo per far scorrere la maschera dell'esposizione media lungo i"
+" canali\n"
+"per un miglior controllo della correzione d'esposizione con i nodi"
+" disponibili.\n"
+"La bacchetta magica aggiusterà automaticamente l'esposizione media"
 
 #: ../src/iop/toneequal.c:3290
 msgid ""
@@ -17831,6 +17905,11 @@ msgid ""
 "for a better control of the exposure correction.\n"
 "the magic wand will auto-adjust the contrast"
 msgstr ""
+"Utilizzalo per contrastare gli effetti di appiattimento del filtro guidato\n"
+"e dilatare il contrasto della maschera intorno a -4EV\n"
+"Questo permetterà di allargare l'istogramma su più canali\n"
+"per un miglior controllo della correzione dell'esposizione.\n"
+"La bacchetta magica aggiusterà automaticamente il contrasto"
 
 #: ../src/iop/toneequal.c:3310 ../src/iop/toneequal.c:3314
 msgid "display exposure mask"
@@ -18304,6 +18383,10 @@ msgid ""
 "shift+click to include only the current hierarchy (no suffix)\n"
 "ctrl+click to include only sub-hierarchies (suffix `|%')"
 msgstr ""
+"Usa `%' come jolly\n"
+"Clicca per includere la gerarchia + sub gerarchia (suffisso `*')\n"
+"Maiuscolo+click per includere solo la gerarchia corrente (nessun suffisso)\n"
+"Ctrl+click per includere solo le sub gerarchia (suffisso `|%')"
 
 #: ../src/libs/collect.c:2136
 #, no-c-format
@@ -18313,6 +18396,10 @@ msgid ""
 "shift+click to include only the current location (no suffix)\n"
 "ctrl+click to include only sub-locations (suffix `|%')"
 msgstr ""
+"Usa `%' come jolly\n"
+"Clicca per includere la località + le sotto località (suffisso `*')\n"
+"Maiuscolo+click per includere solo la località corrente (nessun suffisso)\n"
+"Ctrl+click per includere solo le sotto località (suffisso `|%')"
 
 #: ../src/libs/collect.c:2148
 #, no-c-format
@@ -18323,9 +18410,9 @@ msgid ""
 "ctrl+click to include only sub-folders (suffix `|%')"
 msgstr ""
 "Usa `%' come jolly\n"
-"Clcca per includere la cartella corrente + sottocartelle (suffisso `*')\n"
+"Clicca per includere la cartella corrente + sottocartelle (suffisso `*')\n"
 "Maiuscolo+click per includere solo la cartella corrente (nessun suffisso)\n"
-"CTRL+click per includere solo le sottocartelle (suffisso `|%')"
+"Ctrl+click per includere solo le sottocartelle (suffisso `|%')"
 
 #: ../src/libs/collect.c:2159
 #, no-c-format
@@ -18448,6 +18535,10 @@ msgid ""
 "click to lock sample,\n"
 "right-click to load sample area into active color picker"
 msgstr ""
+"Posizionati sopra per evidenziare il campione, "
+"fai click per bloccare il campione,\n"
+"fai click col destro per caricare l'area di esempio nel selettore colore"
+" attivo"
 
 #: ../src/libs/colorpicker.c:562 ../src/libs/colorpicker.c:612
 msgid "click to (un)hide large color patch"
@@ -19147,6 +19238,9 @@ msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
 "press enter to confirm, so that the asterisk * disappers"
 msgstr ""
+"Inizia a digitare per mostrare una lista di valori permessi e selezionare il"
+" tuo fuso orario.\n"
+"Premi Enter per confermare, così facendo l'asterisco * scompare"
 
 #. gpx
 #: ../src/libs/geotagging.c:1776
@@ -20744,6 +20838,9 @@ msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 msgstr ""
+"Mostra i moduli che sono presenti nella coda di sviluppo, senza riguardo a"
+" dove o no "
+"sono attualmente attivati"
 
 #: ../src/libs/modulegroups.c:2804
 msgid "quick access panel"
@@ -21106,6 +21203,9 @@ msgid ""
 "in the printer driver because the selected margins are\n"
 "below the printer hardware margins"
 msgstr ""
+"Indica che la modalità senza bordi dovrebbe venir attivata\n"
+"nel driver della stampante in quanto i margini selezionati sono\n"
+"al di sotto dei margini della stampante"
 
 #. pack image dimension hbox here
 #: ../src/libs/print_settings.c:2332
@@ -21122,6 +21222,9 @@ msgid ""
 "click and drag on the page to place the area\n"
 "drag&drop image from film strip on it"
 msgstr ""
+"Aggiungi sulla pagina una nuova area immagine\n"
+"Fai click e trascina sulla pagina per posizionare l'area\n"
+"Trascina e rilascia su di essa l'immagine dal rullino"
 
 #: ../src/libs/print_settings.c:2376
 msgid "delete image area"
