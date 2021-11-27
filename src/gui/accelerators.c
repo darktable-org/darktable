@@ -520,12 +520,12 @@ static gchar *_shortcut_description(dt_shortcut_t *s)
   if(s->button)
   {
     if(*key_name || *move_name) add_hint(",");
-    if(s->button & DT_SHORTCUT_LEFT  ) add_hint(" %s", _("left"));
-    if(s->button & DT_SHORTCUT_RIGHT ) add_hint(" %s", _("right"));
-    if(s->button & DT_SHORTCUT_MIDDLE) add_hint(" %s", _("middle"));
-    if(s->click  & DT_SHORTCUT_DOUBLE) add_hint(" %s", _("double"));
-    if(s->click  & DT_SHORTCUT_TRIPLE) add_hint(" %s", _("triple"));
-    if(s->click  & DT_SHORTCUT_LONG  ) add_hint(" %s", _("long"));
+    if(s->button & DT_SHORTCUT_LEFT  ) add_hint(" %s", C_("accel", "left"));
+    if(s->button & DT_SHORTCUT_RIGHT ) add_hint(" %s", C_("accel", "right"));
+    if(s->button & DT_SHORTCUT_MIDDLE) add_hint(" %s", C_("accel", "middle"));
+    if(s->click  & DT_SHORTCUT_DOUBLE) add_hint(" %s", C_("accel", "double"));
+    if(s->click  & DT_SHORTCUT_TRIPLE) add_hint(" %s", C_("accel", "triple"));
+    if(s->click  & DT_SHORTCUT_LONG  ) add_hint(" %s", C_("accel", "long"));
     add_hint(" %s", _("click"));
   }
 
