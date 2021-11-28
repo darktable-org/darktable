@@ -494,9 +494,15 @@ static int get_white_balance_coeff(struct dt_iop_module_t *self, dt_aligned_pixe
 
   // Second, if the temperature module is not using these, for example because they are wrong
   // and user made a correct preset, find the WB adaptation ratio
-  if(self->dev->proxy.wb_coeffs[0] != 0.f)
+  
+  dt_dev_proxy_temperature_t *instance = &self->dev->proxy.temperature;
+
+  if(instance && instance->module && instance->get_wb_coeffs)
   {
-    for(size_t k = 0; k < 4; k++) custom_wb[k] = bwb[k] / self->dev->proxy.wb_coeffs[k];
+    dt_aligned_pixel_t wb_coeffs;
+    instance->get_wb_coeffs(instance->module, wb_coeffs);
+
+    for(size_t k = 0; k < 4; k++) custom_wb[k] = bwb[k] / wb_coeffs[k];
   }
 
   return 0;
