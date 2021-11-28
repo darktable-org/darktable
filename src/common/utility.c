@@ -448,7 +448,7 @@ static cairo_surface_t *_util_get_svg_img(gchar *logo, const float size)
     {
       cairo_t *cr = cairo_create(surface);
       cairo_scale(cr, factor, factor);
-      dt_render_svg(svg, cr, final_width, final_height, 0, 0);
+      dt_render_svg(svg, cr, dimension.width, dimension.height, 0, 0);
       cairo_destroy(cr);
       cairo_surface_flush(surface);
     }
@@ -896,9 +896,18 @@ RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg)
   #if LIBRSVG_CHECK_VERSION(2,52,0)
     double width;
     double height;
-    rsvg_handle_get_intrinsic_size_in_pixels(svg, &width, &height);
-    dimension.width = width;
-    dimension.height = height;
+    if(rsvg_handle_get_intrinsic_size_in_pixels(svg, &width, &height)) //only works if SVG document has size specified
+    {
+      dimension.width = lround(width);
+      dimension.height = lround(height);
+    }
+    else
+    {
+      RsvgRectangle rectangle;
+      rsvg_handle_get_geometry_for_element(svg, NULL, NULL, &rectangle, NULL);
+      dimension.width = lround(rectangle.width + rectangle.x);
+      dimension.height = lround(rectangle.height + rectangle.y);
+    }
   #else
     rsvg_handle_get_dimensions(svg, &dimension);
   #endif
