@@ -556,14 +556,13 @@ static void _page_clear_area_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-static void _page_delete_area_clicked(GtkWidget *widget, gpointer user_data)
+static void _page_delete_area(const dt_lib_module_t *self, const int box_index)
 {
-  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  if(ps->last_selected == -1) return;
+  if(box_index == -1) return;
 
-  for(int k=ps->last_selected; k<MAX_IMAGE_PER_PAGE-1; k++)
+  for(int k=box_index; k<MAX_IMAGE_PER_PAGE-1; k++)
   {
     memcpy(&ps->imgs.box[k], &ps->imgs.box[k+1], sizeof(dt_image_box));
   }
@@ -581,6 +580,14 @@ static void _page_delete_area_clicked(GtkWidget *widget, gpointer user_data)
 
   ps->has_changed = TRUE;
   dt_control_queue_redraw_center();
+}
+
+static void _page_delete_area_clicked(GtkWidget *widget, gpointer user_data)
+{
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  _page_delete_area(self, ps->last_selected);
 }
 
 static void _print_job_cleanup(void *p)
@@ -1631,7 +1638,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     if(b->imgid != -1)
       b->imgid = -1;
     else
-      dt_printing_clear_box(b);
+      _page_delete_area(self, ps->selected);
 
     ps->last_selected = ps->selected;
     ps->has_changed = TRUE;
