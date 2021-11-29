@@ -1735,7 +1735,7 @@ static void _display_lens_error(struct dt_iop_module_t *self)
 {
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  if(g->trouble)
+  if(g->trouble && self->enabled)
   {
     dt_iop_set_module_trouble_message(self, _("camera/lens not found"),
                                       _("please select your lens manually\n"
