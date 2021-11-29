@@ -3399,34 +3399,14 @@ void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
 
 gboolean dt_shortcut_key_active(dt_input_device_t id, guint key)
 {
-  dt_shortcut_t base_key
-    = { .key_device = id,
-        .key   = key,
-        .views = darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
+  dt_shortcut_t saved_sc = _sc;
+  _sc = (dt_shortcut_t) {.key_device = id, .key = key};
 
-  GSequenceIter *existing = g_sequence_lookup(darktable.control->shortcuts, &base_key,
-                                              _shortcut_compare_func, GINT_TO_POINTER(base_key.views));
-  if(existing)
-  {
-    dt_shortcut_t *s = g_sequence_get(existing);
+  float value = dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, NAN);
 
-    if(s && s->action)
-    {
-      const dt_action_def_t *definition = _action_find_definition(s->action);
-      if(definition && definition->process)
-      {
-        gpointer action_target = s->action->type == DT_ACTION_TYPE_IOP
-                               ? dt_iop_get_module_preferred_instance((dt_iop_module_so_t *)s->action)
-                               : s->action->type == DT_ACTION_TYPE_LIB
-                               ? s->action
-                               : s->action->target;
-        float value = definition->process(action_target, s->element, s->effect, NAN);
-        return fmodf(value, 1) <= DT_VALUE_PATTERN_ACTIVE || fmodf(value, 2) > .5;
-      }
-    }
-  }
+  _sc = saved_sc;
 
-  return FALSE;
+  return fmodf(value, 1) <= DT_VALUE_PATTERN_ACTIVE || fmodf(value, 2) > .5;
 }
 
 static guint _fix_keyval(GdkEvent *event)
