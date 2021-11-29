@@ -3410,12 +3410,17 @@ gboolean dt_shortcut_key_active(dt_input_device_t id, guint key)
   {
     dt_shortcut_t *s = g_sequence_get(existing);
 
-    if(s && s->action && s->action->type >= DT_ACTION_TYPE_WIDGET)
+    if(s && s->action)
     {
       const dt_action_def_t *definition = _action_find_definition(s->action);
       if(definition && definition->process)
       {
-        float value = definition->process(s->action->target, s->element, s->effect, NAN);
+        gpointer action_target = s->action->type == DT_ACTION_TYPE_IOP
+                               ? dt_iop_get_module_preferred_instance((dt_iop_module_so_t *)s->action)
+                               : s->action->type == DT_ACTION_TYPE_LIB
+                               ? s->action
+                               : s->action->target;
+        float value = definition->process(action_target, s->element, s->effect, NAN);
         return fmodf(value, 1) <= DT_VALUE_PATTERN_ACTIVE || fmodf(value, 2) > .5;
       }
     }
