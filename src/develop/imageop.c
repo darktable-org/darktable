@@ -504,6 +504,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
                           module->expander, -1);
 
     dt_iop_gui_cleanup_module(module);
+    gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
     gtk_widget_destroy(module->widget);
   }
 
