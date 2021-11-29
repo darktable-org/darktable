@@ -254,7 +254,11 @@ You are strongly advised to take a backup first.
 
 - Fix the image loader flag, which was not properly set at import time.
 
-- Fix possible wrong setting in Color Calibration when switching from Jpeg to RAW files.
+- Fix possible wrong setting in Color Calibration when switching from
+  Jpeg to RAW files.
+
+- Fix a rare but possible wrong White Balance just after importing a
+  picture or while resetting the development history.
 
 ## Notes
 
