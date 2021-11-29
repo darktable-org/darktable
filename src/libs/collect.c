@@ -2450,6 +2450,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
   dt_control_queue_redraw_center();
 }
 
