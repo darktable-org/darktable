@@ -3227,7 +3227,11 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
     g_free(text);
   }
 
-  return 0;
+  return element == DT_ACTION_ELEMENT_FOCUS ? darktable.develop->gui_module == module
+       : element == DT_ACTION_ELEMENT_ENABLE ? module->off &&
+                                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off))
+       : element == DT_ACTION_ELEMENT_SHOW ? module->expanded
+       : 0;
 }
 
 const gchar *dt_action_effect_instance[]
