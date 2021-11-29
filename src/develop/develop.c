@@ -814,7 +814,23 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     GList *next = g_list_next(history);
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     // printf("removing obsoleted history item: %s\n", hist->module->op);
-    if(!hist->module->hide_enable_button && !hist->module->default_enabled)
+
+    //check if an earlier instance of the module exists
+    gboolean earlier_entry = FALSE;
+    GList *prior_history = g_list_nth(dev->history, dev->history_end - 1);
+    while(prior_history)
+    {
+      dt_dev_history_item_t *prior_hist = (dt_dev_history_item_t *)(prior_history->data);
+      if(prior_hist->module->so == hist->module->so) 
+      {
+        earlier_entry = TRUE;
+        break;
+      }
+      prior_history = g_list_previous(prior_history);
+    }
+
+    if((!hist->module->hide_enable_button && !hist->module->default_enabled)
+        || earlier_entry)
     {
       dt_dev_free_history_item(hist);
       dev->history = g_list_delete_link(dev->history, history);
