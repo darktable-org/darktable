@@ -472,13 +472,20 @@ static int _print_job_run(dt_job_t *job)
 {
   dt_lib_print_job_t *params = dt_control_job_get_params(job);
 
+  // get first image on a box, needed as print leader
+
+  int imgid = -1;
+
   // compute the needed size for picture for the given printer resolution
 
   for(int k=0; k<params->imgs.count; k++)
   {
     if(params->imgs.box[k].imgid > -1)
+    {
+      if(imgid == -1) imgid = params->imgs.box[k].imgid;
       if(_export_and_setup_pos(job, &params->imgs.box[k], k))
         return 1;
+    }
   }
 
   if(dt_control_job_get_state(job) == DT_JOB_STATE_CANCELLED) return 0;
@@ -506,7 +513,7 @@ static int _print_job_run(dt_job_t *job)
 
   // send to CUPS
 
-  dt_print_file (params->imgs.box[0].imgid, params->pdf_filename, params->job_title, &params->prt);
+  dt_print_file (imgid, params->pdf_filename, params->job_title, &params->prt);
   dt_control_job_set_progress(job, 1.0);
 
   // add tag for this image
@@ -556,14 +563,13 @@ static void _page_clear_area_clicked(GtkWidget *widget, gpointer user_data)
   dt_control_queue_redraw_center();
 }
 
-static void _page_delete_area_clicked(GtkWidget *widget, gpointer user_data)
+static void _page_delete_area(const dt_lib_module_t *self, const int box_index)
 {
-  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  if(ps->last_selected == -1) return;
+  if(box_index == -1) return;
 
-  for(int k=ps->last_selected; k<MAX_IMAGE_PER_PAGE-1; k++)
+  for(int k=box_index; k<MAX_IMAGE_PER_PAGE-1; k++)
   {
     memcpy(&ps->imgs.box[k], &ps->imgs.box[k+1], sizeof(dt_image_box));
   }
@@ -581,6 +587,14 @@ static void _page_delete_area_clicked(GtkWidget *widget, gpointer user_data)
 
   ps->has_changed = TRUE;
   dt_control_queue_redraw_center();
+}
+
+static void _page_delete_area_clicked(GtkWidget *widget, gpointer user_data)
+{
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  _page_delete_area(self, ps->last_selected);
 }
 
 static void _print_job_cleanup(void *p)
@@ -601,7 +615,18 @@ static void _print_button_clicked(GtkWidget *widget, gpointer user_data)
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  const int imgid = ps->imgs.box[0].imgid;
+  int imgid = -1;
+
+  // at least one image on a box
+
+  for(int k=0; k<ps->imgs.count; k++)
+  {
+    if(ps->imgs.box[k].imgid > -1)
+    {
+      imgid = ps->imgs.box[k].imgid;
+      break;
+    }
+  }
 
   if(imgid == -1)
   {
@@ -630,7 +655,7 @@ static void _print_button_clicked(GtkWidget *widget, gpointer user_data)
 
   // what to call the image?
   GList *res;
-  if((res = dt_metadata_get(params->imgs.box[0].imgid, "Xmp.dc.title", NULL)) != NULL)
+  if((res = dt_metadata_get(imgid, "Xmp.dc.title", NULL)) != NULL)
   {
     // FIXME: in metadata_view.c, non-printables are filtered, should we do this here?
     params->job_title = g_strdup((gchar *)res->data);
@@ -638,7 +663,7 @@ static void _print_button_clicked(GtkWidget *widget, gpointer user_data)
   }
   else
   {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgs.box[0].imgid, 'r');
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     if(!img)
     {
       // in this case no need to release from cache what we couldn't get
@@ -1631,7 +1656,7 @@ int button_pressed(struct dt_lib_module_t *self, double x, double y, double pres
     if(b->imgid != -1)
       b->imgid = -1;
     else
-      dt_printing_clear_box(b);
+      _page_delete_area(self, ps->selected);
 
     ps->last_selected = ps->selected;
     ps->has_changed = TRUE;
