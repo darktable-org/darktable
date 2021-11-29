@@ -464,7 +464,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const dt_iop_temperature_data_t *const d = (dt_iop_temperature_data_t *)piece->data;
 
-  commit_params(self, self->params, NULL, piece);
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
   const float *const d_coeffs = d->coeffs;
@@ -571,6 +570,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
   }
+  commit_params(self, self->params, NULL, piece);
 }
 
 #if defined(__SSE__)
@@ -579,7 +579,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 {
   const uint32_t filters = piece->pipe->dsc.filters;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  commit_params(self, self->params, NULL, piece);
   if(filters)
   { // xtrans float mosaiced or bayer float mosaiced
     // plain C version is same speed for Bayer and actually a bit faster for Xtrans, so use it instead
@@ -621,6 +620,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
   }
+  commit_params(self, self->params, NULL, piece);
 }
 #endif
 
@@ -631,7 +631,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->global_data;
 
-  commit_params(self, self->params, NULL, piece);
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
   cl_mem dev_coeffs = NULL;
@@ -687,6 +686,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
   }
+  commit_params(self, self->params, NULL, piece);
   return TRUE;
 
 error:
