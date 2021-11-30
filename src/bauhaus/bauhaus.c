@@ -981,6 +981,11 @@ static void dt_bauhaus_slider_destroy(dt_bauhaus_widget_t *widget, gpointer user
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   if(d->timeout_handle) g_source_remove(d->timeout_handle);
   d->timeout_handle = 0;
+  if(d->grad_col)
+  {
+    free(d->grad_col);
+    free(d->grad_pos);
+  }
 }
 
 GtkWidget *dt_bauhaus_slider_new(dt_iop_module_t *self)
@@ -1027,6 +1032,8 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->offset = 0.0f;
 
   d->grad_cnt = 0;
+  d->grad_col = NULL;
+  d->grad_pos = NULL;
 
   d->fill_feedback = feedback;
 
@@ -1398,6 +1405,12 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  if(!d->grad_col)
+  {
+    d->grad_col = malloc(DT_BAUHAUS_SLIDER_MAX_STOPS * sizeof(*d->grad_col));
+    d->grad_pos = malloc(DT_BAUHAUS_SLIDER_MAX_STOPS * sizeof(*d->grad_pos));
+  }
   // need to replace stop?
   for(int k = 0; k < d->grad_cnt; k++)
   {
