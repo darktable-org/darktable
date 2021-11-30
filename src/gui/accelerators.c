@@ -95,6 +95,8 @@ const struct _modifier_name
 
 static dt_shortcut_t _sc = { 0 };  //  shortcut under construction
 static guint _previous_move = DT_SHORTCUT_MOVE_NONE;
+static dt_action_t *_selected_action = NULL;
+static dt_action_t *_highlighted_action = NULL;
 
 const gchar *dt_action_effect_value[]
   = { N_("edit"),
@@ -674,7 +676,10 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     gtk_tree_view_set_tooltip_row(GTK_TREE_VIEW(widget), tooltip, path);
     gtk_tree_path_free(path);
 
-    markup_text = g_markup_escape_text(_("click to filter shortcut list\ndouble-click to define new shortcut\nstart typing for incremental search"), -1);
+    markup_text = g_markup_printf_escaped("%s%s%s",
+                                          _("click to filter shortcut list\n"),
+                                          _highlighted_action ? _("right click to show action of selected shortcut\n") : "",
+                                          _("double-click to define new shortcut\nstart typing for incremental search"));
   }
   else
   {
@@ -1558,13 +1563,25 @@ static void _fill_action_fields(GtkTreeViewColumn *column, GtkCellRenderer *cell
 {
   dt_action_t *action = NULL;
   gtk_tree_model_get(model, iter, 0, &action, -1);
-  if(data)
-    g_object_set(cell, "text", action->label, NULL);
-  else
+  gchar const *text = action->label;
+  if(!data)
   {
     const dt_action_def_t *def = _action_find_definition(action);
-    g_object_set(cell, "text", def ? _(def->name) : "", NULL);
+    text = def ? _(def->name) : "";
   }
+
+  int weight = PANGO_WEIGHT_NORMAL;
+
+  for(dt_action_t *ac = _highlighted_action; ac; ac = ac->owner)
+  {
+    if(ac == action)
+    {
+      weight = PANGO_WEIGHT_BOLD;
+      break;
+    }
+  }
+
+  g_object_set(cell, "text", text, "weight", weight, NULL);
 }
 
 static void _action_row_activated(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data)
@@ -1608,11 +1625,56 @@ static gboolean _shortcut_selection_function(GtkTreeSelection *selection,
     return TRUE;
 }
 
-static dt_action_t *_selected_action = NULL;
+static void _shortcut_selection_changed(GtkTreeSelection *selection, gpointer data)
+{
+  GtkTreeModel *model = NULL;
+  GtkTreeIter iter;
+
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
+  {
+    void *data_ptr = NULL;
+    gtk_tree_model_get(model, &iter, 0, &data_ptr, -1);
+    dt_shortcut_t *selected_shortcut = g_sequence_get(data_ptr);
+    _highlighted_action = selected_shortcut->action;
+  }
+  else
+    _highlighted_action = NULL;
+
+  gtk_widget_queue_draw(GTK_WIDGET(data));
+}
+
+static gboolean _action_find_and_expand(GtkTreeModel *model, GtkTreeIter *iter, GtkTreeView *view)
+{
+  do
+  {
+    dt_action_t *current_action = NULL;
+    gtk_tree_model_get(model, iter, 0, &current_action, -1);
+
+    if(current_action == _highlighted_action)
+    {
+      GtkTreePath *path = gtk_tree_model_get_path(model, iter);
+      gtk_tree_view_expand_to_path(view, path);
+      gtk_tree_view_scroll_to_cell(view, path, NULL, TRUE, 0.5, 0);
+      gtk_tree_path_free(path);
+
+      return TRUE;
+    }
+
+    GtkTreeIter child;
+    if(gtk_tree_model_iter_children(model, &child, iter)
+       && _action_find_and_expand(model, &child, view))
+    {
+      return TRUE;
+    }
+  } while(gtk_tree_model_iter_next(model, iter));
+
+  return FALSE;
+}
 
 static gboolean _action_view_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
   GtkTreeView *view = GTK_TREE_VIEW(widget);
+  GtkTreeModel *model = gtk_tree_view_get_model(view);
 
   if(event->button == GDK_BUTTON_PRIMARY)
   {
@@ -1624,7 +1686,7 @@ static gboolean _action_view_click(GtkWidget *widget, GdkEventButton *event, gpo
       if(event->type == GDK_DOUBLE_BUTTON_PRESS)
       {
         gtk_tree_selection_select_path(selection, path);
-        _action_row_activated(view, path, NULL, gtk_tree_view_get_model(view));
+        _action_row_activated(view, path, NULL, model);
       }
       else if(gtk_tree_selection_path_is_selected(selection, path))
       {
@@ -1641,6 +1703,13 @@ static gboolean _action_view_click(GtkWidget *widget, GdkEventButton *event, gpo
     }
     else
       gtk_tree_selection_unselect_all(selection);
+  }
+  else if(event->button == GDK_BUTTON_SECONDARY)
+  {
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter_first(model, &iter);
+
+    _action_find_and_expand(model, &iter, view);
   }
 
   return TRUE;
@@ -2208,8 +2277,11 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_signal_connect(G_OBJECT(actions_view), "row-activated", G_CALLBACK(_action_row_activated), _actions_store);
   g_signal_connect(G_OBJECT(actions_view), "button-press-event", G_CALLBACK(_action_view_click), _actions_store);
   g_signal_connect(G_OBJECT(actions_view), "key-press-event", G_CALLBACK(dt_gui_search_start), search_actions);
+
   g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(actions_view)), "changed",
                    G_CALLBACK(_action_selection_changed), shortcuts_view);
+  g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(shortcuts_view)), "changed",
+                   G_CALLBACK(_shortcut_selection_changed), actions_view);
 
   renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("action"), renderer, NULL);
