@@ -118,6 +118,7 @@ typedef struct dt_bauhaus_combobox_data_t
   PangoEllipsizeMode entries_ellipsis;
   GList *entries;
   gboolean mute_scrolling;   // if set, prevents to issue "data-changed"
+  void (*populate)(GtkWidget *w, struct dt_iop_module_t **module); // function to populate the combo list on the fly
 } dt_bauhaus_combobox_data_t;
 
 typedef union dt_bauhaus_data_t
@@ -159,9 +160,6 @@ typedef struct dt_bauhaus_widget_t
   int quad_toggle;
   // if a section label
   gboolean is_section;
-
-  // function to populate the combo list on the fly
-  void (*combo_populate)(GtkWidget *w, struct dt_iop_module_t **module);
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
