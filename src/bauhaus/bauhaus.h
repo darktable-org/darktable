@@ -74,9 +74,9 @@ typedef struct dt_bauhaus_slider_data_t
   float scale; // step width for loupe mode
   int digits;  // how many decimals to round to
 
-  float grad_col[DT_BAUHAUS_SLIDER_MAX_STOPS][3]; // colors for gradient slider
-  int grad_cnt;                                   // how many stops
-  float grad_pos[DT_BAUHAUS_SLIDER_MAX_STOPS];    // and position of these.
+  float (*grad_col)[3]; // colors for gradient slider
+  int grad_cnt;         // how many stops
+  float *grad_pos;      // and position of these.
 
   int fill_feedback; // fill the slider with brighter part up to the handle?
 
