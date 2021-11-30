@@ -838,6 +838,7 @@ int try_enter(dt_view_t *self)
   // and drop the lock again.
   dt_image_cache_read_release(darktable.image_cache, img);
   darktable.develop->image_storage.id = imgid;
+  darktable.develop->proxy.wb_coeffs[0] = 0.f;
   return 0;
 }
 
