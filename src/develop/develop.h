@@ -144,12 +144,6 @@ typedef struct dt_dev_proxy_exposure_t
   float (*get_black)(struct dt_iop_module_t *exp);
 } dt_dev_proxy_exposure_t;
 
-typedef struct dt_dev_proxy_temperature_t
-{
-  struct dt_iop_module_t *module;
-  void (*get_wb_coeffs)(struct dt_iop_module_t *temp, dt_aligned_pixel_t wb_coeffs);
-} dt_dev_proxy_temperature_t;
-
 struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
@@ -233,9 +227,6 @@ typedef struct dt_develop_t
     // each element is dt_dev_proxy_exposure_t
     dt_dev_proxy_exposure_t exposure;
 
-    //proxy to access white balance coeffs
-    dt_dev_proxy_temperature_t temperature;
-
     // modulegroups plugin hooks
     struct
     {
@@ -288,6 +279,7 @@ typedef struct dt_develop_t
 
     // is the WB module using D65 illuminant and not doing full chromatic adaptation ?
     gboolean wb_is_D65;
+    dt_aligned_pixel_t wb_coeffs;
 
   } proxy;
 

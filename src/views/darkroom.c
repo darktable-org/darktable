@@ -850,7 +850,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // FIXME: synch with dev_init() and dev_cleanup() instead of redoing it
   dev->proxy.chroma_adaptation = NULL;
   dev->proxy.wb_is_D65 = TRUE;
-  dev->proxy.temperature.module = NULL;
+  dev->proxy.wb_coeffs[0] = 0.f;
 
 #ifdef USE_LUA
 
