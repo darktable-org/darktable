@@ -579,6 +579,8 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       g_free(path);
     }
   }
+  else if(has_prefix(variable, "DARKTABLE_VERSION"))
+    result = g_strdup(darktable_package_version);
   else
   {
     // go past what looks like an invalid variable. we only expect to see [a-zA-Z]* in a variable name.
