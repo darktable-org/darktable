@@ -224,6 +224,7 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "OPENCL", N_("$(OPENCL_ACTIVATED) - whether OpenCL is activated") },
           { "CATEGORY", N_("$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags") },
           { "TAGS", N_("$(TAGS) - tags as set in metadata settings") },
+          { "DARKTABLE_VERSION", N_("$(DARKTABLE_VERSION) - current darktable version") },
           { NULL, NULL } };
 
   return default_path_compl_list;
