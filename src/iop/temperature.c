@@ -569,6 +569,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+    self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
   }
 }
 
@@ -618,6 +619,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+    self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
   }
 }
 #endif
@@ -683,6 +685,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     piece->pipe->dsc.temperature.coeffs[k] = d->coeffs[k];
     piece->pipe->dsc.processed_maximum[k] = d->coeffs[k] * piece->pipe->dsc.processed_maximum[k];
+    self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
   }
   return TRUE;
 
@@ -723,11 +726,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       if(d->coeffs[c] != (float)g->daylight_wb[c]) is_D65 = FALSE;
 
     self->dev->proxy.wb_is_D65 = is_D65;
-  }
-
-  for(int k = 0; k < 4; k++)
-  {
-    self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
   }
 }
 
