@@ -720,7 +720,6 @@ static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self
   w->quad_paint = 0;
   w->quad_paint_data = NULL;
   w->quad_toggle = 0;
-  w->combo_populate = NULL;
 
   switch(w->type)
   {
@@ -1102,6 +1101,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->text_align = DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT;
   d->entries_ellipsis = PANGO_ELLIPSIZE_END;
   d->mute_scrolling = FALSE;
+  d->populate = NULL;
   memset(d->text, 0, sizeof(d->text));
 
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_PRESS_MASK);
@@ -1121,8 +1121,8 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
 void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidget *w, struct dt_iop_module_t **module))
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  if(w->type != DT_BAUHAUS_COMBOBOX) return;
-  w->combo_populate = fct;
+  if(w->type == DT_BAUHAUS_COMBOBOX)
+    w->data.combobox.populate = fct;
 }
 
 void dt_bauhaus_combobox_add_list(GtkWidget *widget, dt_action_t *action, const char **texts)
@@ -2189,10 +2189,10 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
     {
       // we launch the dynamic populate fct if any
       dt_iop_module_t *module = (dt_iop_module_t *)(w->module);
-      if(w->combo_populate) w->combo_populate(GTK_WIDGET(w), &module);
+      const dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+      if(d->populate) d->populate(GTK_WIDGET(w), &module);
       // comboboxes change immediately
       darktable.bauhaus->change_active = 1;
-      const dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       if(!d->num_labels) return;
       tmp.height = darktable.bauhaus->line_height * d->num_labels + 5 * darktable.bauhaus->widget_space;
       tmp.width *= d->scale;
