@@ -464,7 +464,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
   const dt_iop_temperature_data_t *const d = (dt_iop_temperature_data_t *)piece->data;
 
-  commit_params(self, self->params, NULL, piece);
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
   const float *const d_coeffs = d->coeffs;
@@ -579,7 +578,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 {
   const uint32_t filters = piece->pipe->dsc.filters;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
-  commit_params(self, self->params, NULL, piece);
   if(filters)
   { // xtrans float mosaiced or bayer float mosaiced
     // plain C version is same speed for Bayer and actually a bit faster for Xtrans, so use it instead
@@ -631,7 +629,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
   dt_iop_temperature_global_data_t *gd = (dt_iop_temperature_global_data_t *)self->global_data;
 
-  commit_params(self, self->params, NULL, piece);
   const int devid = piece->pipe->devid;
   const uint32_t filters = piece->pipe->dsc.filters;
   cl_mem dev_coeffs = NULL;
@@ -697,23 +694,6 @@ error:
 }
 #endif
 
-static void dt_iop_temperature_get_wb_coeffs(struct dt_iop_module_t *self, dt_aligned_pixel_t wb_coeffs)
-{
-  dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-
-  for(size_t k = 0; k < 4; k++) wb_coeffs[k] = 1.f;
-
-  if(self->hide_enable_button) return;
-
-  if(p)
-  {
-    wb_coeffs[0] = p->red;
-    wb_coeffs[1] = p->green;
-    wb_coeffs[2] = p->blue;
-    wb_coeffs[3] = p->g2;
-  }
-}
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -745,10 +725,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     self->dev->proxy.wb_is_D65 = is_D65;
   }
 
-  //set up proxy to retrieve wb coeffs
-  dt_dev_proxy_temperature_t *temp = &self->dev->proxy.temperature;
-  temp->module = self;
-  temp->get_wb_coeffs = dt_iop_temperature_get_wb_coeffs;
+  for(int k = 0; k < 4; k++)
+  {
+    self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -758,7 +738,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  self->dev->proxy.temperature.module = NULL;
   free(piece->data);
   piece->data = NULL;
 }

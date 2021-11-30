@@ -112,7 +112,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->proxy.exposure.module = NULL;
   dev->proxy.chroma_adaptation = NULL;
   dev->proxy.wb_is_D65 = TRUE; // don't display error messages until we know for sure it's FALSE
-  dev->proxy.temperature.module = NULL;
+  dev->proxy.wb_coeffs[0] = 0.f;
 
   dev->rawoverexposed.enabled = FALSE;
   dev->rawoverexposed.mode = dt_conf_get_int("darkroom/ui/rawoverexposed/mode");
@@ -141,7 +141,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_pthread_mutex_destroy(&dev->preview_pipe_mutex);
   dt_pthread_mutex_destroy(&dev->preview2_pipe_mutex);
   dev->proxy.chroma_adaptation = NULL;
-  dev->proxy.temperature.module = NULL;
+  dev->proxy.wb_coeffs[0] = 0.f;
   if(dev->pipe)
   {
     dt_dev_pixelpipe_cleanup(dev->pipe);
