@@ -260,6 +260,25 @@ You are strongly advised to take a backup first.
 - Fix a rare but possible wrong White Balance just after importing a
   picture or while resetting the development history.
 
+## Lua
+
+- Moved from Lua 5.3 to Lua 5.4
+
+- Lua API is now 8.0.0
+
+- added darktable.print_toast() and darktable.print_hinter() functions to print toast and hinter messages respectively
+
+- added is_altered() field to dt_lua_image data type to determine if and image has been altered since being imported
+
+- added generate_cache() function to the dt_lua_image data type so that a mipmap cache image can be generated without
+  having to run darktable-generate-cache
+
+- added function darktable.gui.libs.snapshots.clear_snapshots() to delete any snapshots.
+
+- added event darkroom-image-loaded that is triggered when an image is loaded into darkroom view.  The image is returned.
+
+- added event darkroom-image-history-changed that is triggered when an the image history is changed in darkroom view.  The image is returned.
+
 ## Notes
 
 - The 3.8.x series of darktable releases will be the last which supports macOS 10.7 and building with Xcode 11.
