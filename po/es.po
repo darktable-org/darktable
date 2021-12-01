@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-24 10:13-0600\n"
-"PO-Revision-Date: 2021-11-28 23:38-0600\n"
+"POT-Creation-Date: 2021-11-29 12:18-0600\n"
+"PO-Revision-Date: 2021-11-30 23:41-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2273,8 +2273,8 @@ msgstr "específico"
 #: ../src/common/history.c:873 ../src/common/styles.c:1113
 #: ../src/common/styles.c:1117 ../src/develop/blend_gui.c:101
 #: ../src/develop/blend_gui.c:124 ../src/develop/blend_gui.c:2988
-#: ../src/develop/develop.c:2222 ../src/gui/accelerators.c:122
-#: ../src/gui/accelerators.c:131 ../src/gui/accelerators.c:197
+#: ../src/develop/develop.c:2222 ../src/gui/accelerators.c:123
+#: ../src/gui/accelerators.c:132 ../src/gui/accelerators.c:198
 #: ../src/imageio/format/avif.c:811 ../src/imageio/format/exr.cc:376
 #: ../src/imageio/format/j2k.c:666 ../src/libs/live_view.c:427
 msgid "off"
@@ -2328,7 +2328,7 @@ msgstr "preservar los colores"
 #: ../src/iop/clipping.c:2129 ../src/iop/clipping.c:2145
 #: ../src/iop/lens.cc:2239 ../src/iop/retouch.c:422 ../src/libs/collect.c:1863
 #: ../src/libs/colorpicker.c:50 ../src/libs/export.c:1074
-#: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2509
+#: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2534
 msgid "none"
 msgstr "ninguno"
 
@@ -2449,7 +2449,7 @@ msgstr "linealidad"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:5663
+#: ../src/iop/ashift.c:5667
 msgid "rotation"
 msgstr "rotación"
 
@@ -2498,7 +2498,7 @@ msgstr "proporción"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:128
 #: ../build/lib/darktable/plugins/introspection_borders.c:263
-#: ../src/iop/flip.c:74 ../src/libs/print_settings.c:2200
+#: ../src/iop/flip.c:74 ../src/libs/print_settings.c:2225
 msgid "orientation"
 msgstr "orientación"
 
@@ -2868,7 +2868,7 @@ msgstr "versión 3 (abril 2021)"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
 #: ../build/lib/darktable/plugins/introspection_crop.c:61
 #: ../build/lib/darktable/plugins/introspection_crop.c:134
-#: ../src/gui/accelerators.c:522 ../src/gui/gtk.c:1563 ../src/iop/atrous.c:1589
+#: ../src/gui/gtk.c:1563 ../src/iop/atrous.c:1589
 msgid "left"
 msgstr "izquierdo"
 
@@ -2876,7 +2876,7 @@ msgstr "izquierdo"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
-#: ../src/gui/accelerators.c:107 ../src/gui/gtk.c:1513
+#: ../src/gui/accelerators.c:108 ../src/gui/gtk.c:1513
 msgid "top"
 msgstr "superior"
 
@@ -2884,7 +2884,7 @@ msgstr "superior"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
 #: ../build/lib/darktable/plugins/introspection_crop.c:73
 #: ../build/lib/darktable/plugins/introspection_crop.c:142
-#: ../src/gui/accelerators.c:523 ../src/gui/gtk.c:1577 ../src/iop/atrous.c:1588
+#: ../src/gui/gtk.c:1577 ../src/iop/atrous.c:1588
 msgid "right"
 msgstr "derecho"
 
@@ -2892,7 +2892,7 @@ msgstr "derecho"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
 #: ../build/lib/darktable/plugins/introspection_crop.c:79
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
-#: ../src/gui/accelerators.c:108 ../src/gui/gtk.c:1529
+#: ../src/gui/accelerators.c:109 ../src/gui/gtk.c:1529
 msgid "bottom"
 msgstr "inferior"
 
@@ -3110,7 +3110,7 @@ msgstr "sRGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:303
 #: ../src/common/colorspaces.c:1428 ../src/common/colorspaces.c:1654
-#: ../src/libs/print_settings.c:1282
+#: ../src/libs/print_settings.c:1307
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
@@ -3888,7 +3888,7 @@ msgstr "detección por 3 pixeles cercanos"
 #: ../src/iop/denoiseprofile.c:3681 ../src/iop/exposure.c:877
 #: ../src/iop/levels.c:686 ../src/iop/profile_gamma.c:687
 #: ../src/libs/copy_history.c:390 ../src/libs/export.c:1346
-#: ../src/libs/image.c:592 ../src/libs/print_settings.c:2548
+#: ../src/libs/image.c:592 ../src/libs/print_settings.c:2573
 #: ../src/libs/styles.c:846 ../src/views/darkroom.c:2311
 msgid "mode"
 msgstr "modo"
@@ -4162,7 +4162,7 @@ msgstr "borrar"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:442
 #: ../src/gui/presets.c:59 ../src/iop/watermark.c:1259 ../src/libs/image.c:608
-#: ../src/libs/modulegroups.c:2412
+#: ../src/libs/modulegroups.c:2404
 msgid "color"
 msgstr "color"
 
@@ -4508,12 +4508,12 @@ msgstr "Mostrar imágenes en un mapa"
 msgid "Print your images"
 msgstr "Imprimir tus imágenes"
 
-#: ../src/bauhaus/bauhaus.c:3133 ../src/gui/accelerators.c:266
+#: ../src/bauhaus/bauhaus.c:3133 ../src/gui/accelerators.c:267
 msgid "value"
 msgstr "valor"
 
 #: ../src/bauhaus/bauhaus.c:3134 ../src/bauhaus/bauhaus.c:3140
-#: ../src/gui/accelerators.c:250
+#: ../src/gui/accelerators.c:251
 msgid "button"
 msgstr "botón"
 
@@ -4538,9 +4538,9 @@ msgid "dropdown"
 msgstr "Lista deplegable"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1682
-#: ../src/control/jobs/control_jobs.c:1744 ../src/gui/accelerators.c:1738
-#: ../src/gui/accelerators.c:1812 ../src/gui/accelerators.c:1863
-#: ../src/gui/accelerators.c:1891 ../src/gui/accelerators.c:1950
+#: ../src/control/jobs/control_jobs.c:1744 ../src/gui/accelerators.c:1739
+#: ../src/gui/accelerators.c:1813 ../src/gui/accelerators.c:1864
+#: ../src/gui/accelerators.c:1892 ../src/gui/accelerators.c:1951
 #: ../src/gui/hist_dialog.c:193 ../src/gui/preferences.c:1014
 #: ../src/gui/preferences.c:1053 ../src/gui/presets.c:366
 #: ../src/gui/presets.c:466 ../src/gui/styles_dialog.c:418
@@ -4935,7 +4935,7 @@ msgstr "perfil de pantalla del sistema (2ª ventana)"
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (p. ej. JPG)"
 
-#: ../src/common/colorspaces.c:1423 ../src/libs/print_settings.c:1275
+#: ../src/common/colorspaces.c:1423 ../src/libs/print_settings.c:1300
 msgid "sRGB (web-safe)"
 msgstr "sRGB (fiable para internet)"
 
@@ -5174,7 +5174,7 @@ msgstr "Error de inicio de darktable"
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2902
 #: ../src/libs/export_metadata.c:281 ../src/libs/import.c:1766
 #: ../src/libs/metadata.c:445 ../src/libs/metadata_view.c:1239
-#: ../src/libs/modulegroups.c:3491 ../src/libs/recentcollect.c:319
+#: ../src/libs/modulegroups.c:3483 ../src/libs/recentcollect.c:319
 #: ../src/libs/styles.c:441 ../src/libs/styles.c:624 ../src/libs/tagging.c:1357
 #: ../src/libs/tagging.c:1445 ../src/libs/tagging.c:1526
 #: ../src/libs/tagging.c:1656 ../src/libs/tagging.c:1931
@@ -5398,12 +5398,12 @@ msgstr "Mantenimiento del esquema de darktable"
 msgid "later"
 msgstr "Después"
 
-#: ../src/common/exif.cc:4146
+#: ../src/common/exif.cc:4163
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "No se puede leer el archivo XMP «%s»: «%s»"
 
-#: ../src/common/exif.cc:4198
+#: ../src/common/exif.cc:4215
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "No se puede escribir en el archivo XMP «%s»: «%s»"
@@ -5446,8 +5446,8 @@ msgstr "Necesita copiar el historial de una imagen antes de pegarlo en otra"
 #: ../src/common/history.c:854 ../src/common/history.c:857
 #: ../src/common/history.c:873 ../src/common/styles.c:1113
 #: ../src/common/styles.c:1117 ../src/develop/blend_gui.c:125
-#: ../src/develop/develop.c:2222 ../src/gui/accelerators.c:121
-#: ../src/gui/accelerators.c:130 ../src/gui/accelerators.c:197
+#: ../src/develop/develop.c:2222 ../src/gui/accelerators.c:122
+#: ../src/gui/accelerators.c:131 ../src/gui/accelerators.c:198
 #: ../src/imageio/format/avif.c:809 ../src/libs/live_view.c:428
 msgid "on"
 msgstr "activo"
@@ -5678,16 +5678,16 @@ msgid "opencl scheduling profile set to default"
 msgstr "El perfil de control para OpenCL se ha ajustado al predefinido."
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:1888
-#: ../src/libs/print_settings.c:2207
+#: ../src/libs/print_settings.c:2232
 msgid "mm"
 msgstr "mm"
 
 #: ../src/common/pdf.h:89 ../src/libs/export.c:547 ../src/libs/export.c:1208
-#: ../src/libs/print_settings.c:2208
+#: ../src/libs/print_settings.c:2233
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:2209
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:2234
 msgid "inch"
 msgstr "pulgada"
 
@@ -5883,7 +5883,7 @@ msgstr "bajo el nivel del mar"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:66 ../src/gui/accelerators.c:129
+#: ../src/control/control.c:66 ../src/gui/accelerators.c:130
 #: ../src/views/darkroom.c:2093
 #, fuzzy
 msgid "hold"
@@ -7441,14 +7441,14 @@ msgid "move down"
 msgstr "bajar"
 
 #: ../src/develop/imageop.c:952 ../src/develop/imageop.c:3238
-#: ../src/gui/accelerators.c:144 ../src/gui/presets.c:467
+#: ../src/gui/accelerators.c:145 ../src/gui/presets.c:467
 #: ../src/libs/image.c:178 ../src/libs/tagging.c:1357
 #: ../src/libs/tagging.c:1445
 msgid "delete"
 msgstr "borrar"
 
 #: ../src/develop/imageop.c:959 ../src/develop/imageop.c:3239
-#: ../src/libs/modulegroups.c:3491 ../src/libs/modulegroups.c:3847
+#: ../src/libs/modulegroups.c:3483 ../src/libs/modulegroups.c:3839
 msgid "rename"
 msgstr "renombrar"
 
@@ -7544,18 +7544,18 @@ msgstr ""
 "no corresponde a los requerimientos."
 
 #: ../src/develop/imageop.c:3234 ../src/develop/imageop.c:3244
-#: ../src/gui/accelerators.c:140 ../src/libs/lib.c:1262
+#: ../src/gui/accelerators.c:141 ../src/libs/lib.c:1262
 msgid "show"
 msgstr "mostrar"
 
-#: ../src/develop/imageop.c:3237 ../src/libs/modulegroups.c:3341
-#: ../src/libs/modulegroups.c:3465 ../src/libs/modulegroups.c:3850
+#: ../src/develop/imageop.c:3237 ../src/libs/modulegroups.c:3333
+#: ../src/libs/modulegroups.c:3457 ../src/libs/modulegroups.c:3842
 #: ../src/libs/tagging.c:3076
 msgid "new"
 msgstr "nueva"
 
 #: ../src/develop/imageop.c:3240 ../src/libs/duplicate.c:546
-#: ../src/libs/image.c:496 ../src/libs/modulegroups.c:3844
+#: ../src/libs/image.c:496 ../src/libs/modulegroups.c:3836
 msgid "duplicate"
 msgstr "duplicar"
 
@@ -7569,14 +7569,14 @@ msgstr "activar copia de seguridad"
 msgid "focus"
 msgstr "modo de enfoque"
 
-#: ../src/develop/imageop.c:3247 ../src/gui/accelerators.c:2073
+#: ../src/develop/imageop.c:3247 ../src/gui/accelerators.c:2074
 #, fuzzy
 msgid "instance"
 msgstr "distancia"
 
-#: ../src/develop/imageop.c:3248 ../src/gui/accelerators.c:106
-#: ../src/gui/accelerators.c:115 ../src/iop/atrous.c:1583
-#: ../src/libs/lib.c:1263 ../src/libs/modulegroups.c:3921
+#: ../src/develop/imageop.c:3248 ../src/gui/accelerators.c:107
+#: ../src/gui/accelerators.c:116 ../src/iop/atrous.c:1583
+#: ../src/libs/lib.c:1263 ../src/libs/modulegroups.c:3913
 msgid "reset"
 msgstr "restablecer"
 
@@ -8002,7 +8002,7 @@ msgid "grouped images"
 msgstr "Imágenes agrupadas"
 
 #: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1414
-#: ../src/iop/ashift.c:5756
+#: ../src/iop/ashift.c:5760
 msgid "fit"
 msgstr "normal"
 
@@ -8339,16 +8339,16 @@ msgstr "Desplazamiento"
 msgid "pan"
 msgstr "PNG"
 
-#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5371
-#: ../src/iop/ashift.c:5372 ../src/iop/ashift.c:5474 ../src/iop/ashift.c:5475
+#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5375
+#: ../src/iop/ashift.c:5376 ../src/iop/ashift.c:5478 ../src/iop/ashift.c:5479
 #: ../src/iop/clipping.c:1920 ../src/iop/clipping.c:2130
 #: ../src/iop/clipping.c:2147 ../src/views/darkroom.c:2617
 #: ../src/views/lighttable.c:1399
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5371
-#: ../src/iop/ashift.c:5372 ../src/iop/ashift.c:5474 ../src/iop/ashift.c:5475
+#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5375
+#: ../src/iop/ashift.c:5376 ../src/iop/ashift.c:5478 ../src/iop/ashift.c:5479
 #: ../src/iop/clipping.c:1919 ../src/iop/clipping.c:2131
 #: ../src/iop/clipping.c:2146 ../src/views/darkroom.c:2620
 #: ../src/views/lighttable.c:1403
@@ -8398,156 +8398,186 @@ msgstr "cmd"
 msgid "altgr"
 msgstr "Alt Gr"
 
-#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:145
+#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:146
 #: ../src/libs/tagging.c:1655
 msgid "edit"
 msgstr "Modificar"
 
-#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:534
+#: ../src/gui/accelerators.c:105 ../src/gui/accelerators.c:535
 msgid "up"
 msgstr "arriba"
 
-#: ../src/gui/accelerators.c:105 ../src/gui/accelerators.c:534
+#: ../src/gui/accelerators.c:106 ../src/gui/accelerators.c:535
 msgid "down"
 msgstr "abajo"
 
-#: ../src/gui/accelerators.c:109
+#: ../src/gui/accelerators.c:110
 #, fuzzy
 msgid "set"
 msgstr "restablecer"
 
-#: ../src/gui/accelerators.c:112
+#: ../src/gui/accelerators.c:113
 msgid "popup"
 msgstr ""
 
-#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:142
+#: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:143
 #: ../src/gui/gtk.c:2961 ../src/views/lighttable.c:816
 msgid "next"
 msgstr "siguiente"
 
-#: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:141
+#: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:142
 #: ../src/gui/gtk.c:2962 ../src/views/lighttable.c:817
 msgid "previous"
 msgstr "anterior"
 
-#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1067
+#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:1068
 msgid "last"
 msgstr "Fin"
 
-#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:1066
+#: ../src/gui/accelerators.c:118 ../src/gui/accelerators.c:1067
 msgid "first"
 msgstr "Inicio"
 
-#: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:132
-#: ../src/gui/accelerators.c:238 ../src/views/darkroom.c:2293
+#: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:133
+#: ../src/gui/accelerators.c:239 ../src/views/darkroom.c:2293
 #: ../src/views/darkroom.c:2349
 #, fuzzy
 msgid "toggle"
 msgstr "activar cabecera"
 
-#: ../src/gui/accelerators.c:123
+#: ../src/gui/accelerators.c:124
 msgid "ctrl-toggle"
 msgstr ""
 
-#: ../src/gui/accelerators.c:124
+#: ../src/gui/accelerators.c:125
 msgid "ctrl-on"
 msgstr ""
 
-#: ../src/gui/accelerators.c:125
+#: ../src/gui/accelerators.c:126
 #, fuzzy
 msgid "right-toggle"
 msgstr "mesa de luz"
 
-#: ../src/gui/accelerators.c:126
+#: ../src/gui/accelerators.c:127
 #, fuzzy
 msgid "right-on"
 msgstr "derecho"
 
-#: ../src/gui/accelerators.c:135 ../src/gui/gtk.c:2960
+#: ../src/gui/accelerators.c:136 ../src/gui/gtk.c:2960
 #, fuzzy
 msgid "activate"
 msgstr "Dinámico"
 
-#: ../src/gui/accelerators.c:136
+#: ../src/gui/accelerators.c:137
 #, fuzzy
 msgid "ctrl-activate"
 msgstr "Dinámico"
 
-#: ../src/gui/accelerators.c:137
+#: ../src/gui/accelerators.c:138
 msgid "right-activate"
 msgstr ""
 
-#: ../src/gui/accelerators.c:143
+#: ../src/gui/accelerators.c:144
 msgid "store"
 msgstr "almacenamiento"
 
-#: ../src/gui/accelerators.c:146 ../src/gui/styles_dialog.c:507
+#: ../src/gui/accelerators.c:147 ../src/gui/styles_dialog.c:507
 msgid "update"
 msgstr "actualizar"
 
-#: ../src/gui/accelerators.c:147 ../src/libs/tools/global_toolbox.c:61
+#: ../src/gui/accelerators.c:148 ../src/libs/tools/global_toolbox.c:61
 msgid "preferences"
 msgstr "preferencias"
 
 #. apply button
-#: ../src/gui/accelerators.c:150 ../src/iop/colortransfer.c:670
+#: ../src/gui/accelerators.c:151 ../src/iop/colortransfer.c:670
 #: ../src/libs/metadata.c:773 ../src/libs/styles.c:885
 msgid "apply"
 msgstr "establecer"
 
-#: ../src/gui/accelerators.c:151
+#: ../src/gui/accelerators.c:152
 #, fuzzy
 msgid "apply on new instance"
 msgstr "nuevo módulo"
 
-#: ../src/gui/accelerators.c:448
+#: ../src/gui/accelerators.c:449
 msgid "unknown driver"
 msgstr "Controlador desconocido"
 
-#: ../src/gui/accelerators.c:515 ../src/gui/accelerators.c:525
+#: ../src/gui/accelerators.c:516
 msgid "double"
 msgstr "doble"
 
-#: ../src/gui/accelerators.c:516 ../src/gui/accelerators.c:526
+#: ../src/gui/accelerators.c:517
 msgid "triple"
 msgstr "triple"
 
-#: ../src/gui/accelerators.c:517 ../src/gui/accelerators.c:527
+#: ../src/gui/accelerators.c:518
 msgid "long"
 msgstr "larga"
 
-#: ../src/gui/accelerators.c:518
+#: ../src/gui/accelerators.c:519
 msgid "press"
 msgstr "Pulsación"
 
-#: ../src/gui/accelerators.c:524 ../src/views/lighttable.c:815
+#: ../src/gui/accelerators.c:523
+msgctxt "accel"
+msgid "left"
+msgstr "margen izquierdo"
+
+#: ../src/gui/accelerators.c:524
+msgctxt "accel"
+msgid "right"
+msgstr "margen derecho"
+
+#: ../src/gui/accelerators.c:525
+#, fuzzy
+msgctxt "accel"
 msgid "middle"
 msgstr "media"
 
+#: ../src/gui/accelerators.c:526
+#, fuzzy
+msgctxt "accel"
+msgid "double"
+msgstr "doble"
+
+#: ../src/gui/accelerators.c:527
+#, fuzzy
+msgctxt "accel"
+msgid "triple"
+msgstr "triple"
+
 #: ../src/gui/accelerators.c:528
+#, fuzzy
+msgctxt "accel"
+msgid "long"
+msgstr "larga"
+
+#: ../src/gui/accelerators.c:529
 msgid "click"
 msgstr "pulsación"
 
-#: ../src/gui/accelerators.c:556
+#: ../src/gui/accelerators.c:557
 #, fuzzy
 msgid "first instance"
 msgstr "Primera instancia"
 
-#: ../src/gui/accelerators.c:558
+#: ../src/gui/accelerators.c:559
 #, fuzzy
 msgid "last instance"
 msgstr "Última instancia"
 
-#: ../src/gui/accelerators.c:560
+#: ../src/gui/accelerators.c:561
 #, fuzzy
 msgid "relative instance"
 msgstr "Última instancia"
 
-#: ../src/gui/accelerators.c:587 ../src/gui/accelerators.c:2063
+#: ../src/gui/accelerators.c:588 ../src/gui/accelerators.c:2064
 msgid "speed"
 msgstr "velocidad"
 
-#: ../src/gui/accelerators.c:640
+#: ../src/gui/accelerators.c:641
 msgid ""
 "press Del to delete selected shortcut\n"
 "double click to add new shortcut\n"
@@ -8557,105 +8587,105 @@ msgstr ""
 "Para añadir un nuevo atajo, pulse doble.\n"
 "La búsqueda se realiza desde que se comienza a escribir."
 
-#: ../src/gui/accelerators.c:654
+#: ../src/gui/accelerators.c:655
 msgid ""
 "click to filter shortcut list\n"
 "double click to define new shortcut\n"
 "start typing for incremental search"
 msgstr ""
 
-#: ../src/gui/accelerators.c:667
+#: ../src/gui/accelerators.c:668
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:668
+#: ../src/gui/accelerators.c:669
 msgid "click to open shortcut configuration"
 msgstr "Pulse para abrir la configuración de los atajos de teclado"
 
-#: ../src/gui/accelerators.c:669
+#: ../src/gui/accelerators.c:670
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "Ctrl+Clic para añadir un componente al panel de control modular\n"
 
-#: ../src/gui/accelerators.c:670
+#: ../src/gui/accelerators.c:671
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "Ctrl+Clic para quitar un componente del panel de control modular\n"
 
-#: ../src/gui/accelerators.c:671
+#: ../src/gui/accelerators.c:672
 #, fuzzy
 msgid "right click to exit mapping mode"
 msgstr "Pulsar para editar nodos"
 
-#: ../src/gui/accelerators.c:814
+#: ../src/gui/accelerators.c:815
 #, fuzzy
 msgid "active view"
 msgstr "visión en directo"
 
-#: ../src/gui/accelerators.c:815
+#: ../src/gui/accelerators.c:816
 msgid "other views"
 msgstr "otras vistas"
 
-#: ../src/gui/accelerators.c:816
+#: ../src/gui/accelerators.c:817
 msgid "fallbacks"
 msgstr "alternativas"
 
-#: ../src/gui/accelerators.c:963
+#: ../src/gui/accelerators.c:964
 msgid "shortcut for move exists with single effect"
 msgstr ""
 
-#: ../src/gui/accelerators.c:964
+#: ../src/gui/accelerators.c:965
 msgid "create separate shortcuts for up and down move?"
 msgstr ""
 
-#: ../src/gui/accelerators.c:979
+#: ../src/gui/accelerators.c:980
 #, fuzzy
 msgid "shortcut exists with different settings"
 msgstr "Imprimir con la configuración actual"
 
-#: ../src/gui/accelerators.c:980
+#: ../src/gui/accelerators.c:981
 #, fuzzy
 msgid "reset the settings of the shortcut?"
 msgstr "Seleccionar la saturación del filtro"
 
-#: ../src/gui/accelerators.c:992
+#: ../src/gui/accelerators.c:993
 msgid "shortcut already exists"
 msgstr "El atajo del teclado ya existe"
 
-#: ../src/gui/accelerators.c:993
+#: ../src/gui/accelerators.c:994
 msgid "remove the shortcut?"
 msgstr "¿Confirma la eliminación del preajuste?"
 
-#: ../src/gui/accelerators.c:1026
+#: ../src/gui/accelerators.c:1027
 #, fuzzy
 msgid "remove these existing shortcuts?"
 msgstr "Elimina las manchas de polvo del sensor"
 
-#: ../src/gui/accelerators.c:1028
+#: ../src/gui/accelerators.c:1029
 msgid "clashing shortcuts exist"
 msgstr ""
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1065
+#: ../src/gui/accelerators.c:1066
 #, fuzzy
 msgid "preferred"
 msgstr "Basado en la pantalla"
 
-#: ../src/gui/accelerators.c:1068
+#: ../src/gui/accelerators.c:1069
 msgid "second"
 msgstr "segundo"
 
-#: ../src/gui/accelerators.c:1069
+#: ../src/gui/accelerators.c:1070
 #, fuzzy
 msgid "last but one"
 msgstr "Última instancia"
 
-#: ../src/gui/accelerators.c:1208 ../src/gui/accelerators.c:1262
+#: ../src/gui/accelerators.c:1209 ../src/gui/accelerators.c:1263
 msgid "(unchanged)"
 msgstr "(sin cambios)"
 
-#: ../src/gui/accelerators.c:1357
+#: ../src/gui/accelerators.c:1358
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -8669,219 +8699,219 @@ msgid ""
 "right-click to cancel"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1404
+#: ../src/gui/accelerators.c:1405
 #, fuzzy
 msgid "removing shortcut"
 msgstr "atajo de teclado"
 
-#: ../src/gui/accelerators.c:1405
+#: ../src/gui/accelerators.c:1406
 #, fuzzy
 msgid "remove the selected shortcut?"
 msgstr "Elimina los estilos seleccionados de la lista anterior"
 
-#: ../src/gui/accelerators.c:1735
+#: ../src/gui/accelerators.c:1736
 msgid "restore shortcuts"
 msgstr "Restaurar atajos de teclado"
 
-#: ../src/gui/accelerators.c:1739
+#: ../src/gui/accelerators.c:1740
 msgid "_defaults"
 msgstr "_predefinidos"
 
-#: ../src/gui/accelerators.c:1740
+#: ../src/gui/accelerators.c:1741
 #, fuzzy
 msgid "_startup"
 msgstr "Al inicio"
 
-#: ../src/gui/accelerators.c:1741
+#: ../src/gui/accelerators.c:1742
 #, fuzzy
 msgid "_edits"
 msgstr "Modificar"
 
-#: ../src/gui/accelerators.c:1746
+#: ../src/gui/accelerators.c:1747
 msgid ""
 "restore default shortcuts\n"
 "  or as at startup\n"
 "  or when the configuration dialog was opened\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1749
+#: ../src/gui/accelerators.c:1750
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1801 ../src/gui/preferences.c:894
+#: ../src/gui/accelerators.c:1802 ../src/gui/preferences.c:894
 #: ../src/libs/tools/global_toolbox.c:842
 msgid "shortcuts"
 msgstr "atajos de teclado"
 
-#: ../src/gui/accelerators.c:1810
+#: ../src/gui/accelerators.c:1811
 msgid "export shortcuts"
 msgstr "Exportar atajos de teclado"
 
-#: ../src/gui/accelerators.c:1813 ../src/gui/accelerators.c:1892
+#: ../src/gui/accelerators.c:1814 ../src/gui/accelerators.c:1893
 #: ../src/gui/hist_dialog.c:196 ../src/gui/presets.c:467
 msgid "_ok"
 msgstr "_aceptar"
 
-#: ../src/gui/accelerators.c:1818
+#: ../src/gui/accelerators.c:1819
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1823 ../src/gui/accelerators.c:1902
+#: ../src/gui/accelerators.c:1824 ../src/gui/accelerators.c:1903
 #: ../src/gui/gtk.c:3015 ../src/imageio/format/pdf.c:662
 #: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2245
 #: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:185
 msgid "all"
 msgstr "todas"
 
-#: ../src/gui/accelerators.c:1824 ../src/gui/accelerators.c:1903
+#: ../src/gui/accelerators.c:1825 ../src/gui/accelerators.c:1904
 msgid "keyboard"
 msgstr "teclado"
 
-#: ../src/gui/accelerators.c:1836
+#: ../src/gui/accelerators.c:1837
 msgid "device id"
 msgstr "Id. del dispositivo"
 
-#: ../src/gui/accelerators.c:1862
+#: ../src/gui/accelerators.c:1863
 msgid "select file to export"
 msgstr "Seleccione el archivo a exportar"
 
-#: ../src/gui/accelerators.c:1863 ../src/libs/tagging.c:2336
+#: ../src/gui/accelerators.c:1864 ../src/libs/tagging.c:2336
 msgid "_export"
 msgstr "_exportar"
 
-#: ../src/gui/accelerators.c:1889
+#: ../src/gui/accelerators.c:1890
 msgid "import shortcuts"
 msgstr "Importar atajos de teclado"
 
-#: ../src/gui/accelerators.c:1897
+#: ../src/gui/accelerators.c:1898
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1915
+#: ../src/gui/accelerators.c:1916
 #, fuzzy
 msgid "id in file"
 msgstr "cargar archivo dt"
 
-#: ../src/gui/accelerators.c:1921
+#: ../src/gui/accelerators.c:1922
 msgid "id when loaded"
 msgstr ""
 
-#: ../src/gui/accelerators.c:1925
+#: ../src/gui/accelerators.c:1926
 #, fuzzy
 msgid "clear device first"
 msgstr "buscar dispositivos"
 
-#: ../src/gui/accelerators.c:1949
+#: ../src/gui/accelerators.c:1950
 msgid "select file to import"
 msgstr "Seleccionar el archivo a importar"
 
-#: ../src/gui/accelerators.c:1950 ../src/libs/tagging.c:2300
+#: ../src/gui/accelerators.c:1951 ../src/libs/tagging.c:2300
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/gui/accelerators.c:2023
+#: ../src/gui/accelerators.c:2024
 #, fuzzy
 msgid "search shortcuts list"
 msgstr "buscar módulos"
 
-#: ../src/gui/accelerators.c:2024
+#: ../src/gui/accelerators.c:2025
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
 msgstr ""
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2039 ../src/views/view.c:1722
+#: ../src/gui/accelerators.c:2040 ../src/views/view.c:1722
 msgid "shortcut"
 msgstr "atajo de teclado"
 
-#: ../src/gui/accelerators.c:2041 ../src/gui/accelerators.c:2129
+#: ../src/gui/accelerators.c:2042 ../src/gui/accelerators.c:2130
 #: ../src/views/view.c:1724
 #, fuzzy
 msgid "action"
 msgstr "Acción"
 
-#: ../src/gui/accelerators.c:2050
+#: ../src/gui/accelerators.c:2051
 #, fuzzy
 msgid "element"
 msgstr "alineación"
 
-#: ../src/gui/accelerators.c:2057
+#: ../src/gui/accelerators.c:2058
 msgid "effect"
 msgstr "efecto"
 
-#: ../src/gui/accelerators.c:2114
+#: ../src/gui/accelerators.c:2115
 #, fuzzy
 msgid "search actions list"
 msgstr "sólo búsqueda"
 
-#: ../src/gui/accelerators.c:2115
+#: ../src/gui/accelerators.c:2116
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2135 ../src/gui/guides.c:689
+#: ../src/gui/accelerators.c:2136 ../src/gui/guides.c:689
 #: ../src/libs/export_metadata.c:191
 msgid "type"
 msgstr "tipo"
 
-#: ../src/gui/accelerators.c:2170
+#: ../src/gui/accelerators.c:2171
 msgid "enable fallbacks"
 msgstr "Habilitar alternativas"
 
-#: ../src/gui/accelerators.c:2171
+#: ../src/gui/accelerators.c:2172
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2177
+#: ../src/gui/accelerators.c:2178
 msgid "restore..."
 msgstr "restaurar..."
 
-#: ../src/gui/accelerators.c:2178
+#: ../src/gui/accelerators.c:2179
 msgid "restore default shortcuts or previous state"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2182
+#: ../src/gui/accelerators.c:2183
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/gui/accelerators.c:2183
+#: ../src/gui/accelerators.c:2184
 msgid "fully or partially import shortcuts from file"
 msgstr ""
 
 #. export button
-#: ../src/gui/accelerators.c:2187 ../src/libs/styles.c:880
+#: ../src/gui/accelerators.c:2188 ../src/libs/styles.c:880
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/gui/accelerators.c:2188
+#: ../src/gui/accelerators.c:2189
 msgid "fully or partially export shortcuts to file"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2596
+#: ../src/gui/accelerators.c:2597
 msgid "input devices reinitialised"
 msgstr "Los dispositivos de entrada han sido reiniciados"
 
-#: ../src/gui/accelerators.c:2805
+#: ../src/gui/accelerators.c:2806
 #, fuzzy
 msgid "fallback to move"
 msgstr "negros"
 
-#: ../src/gui/accelerators.c:2979
+#: ../src/gui/accelerators.c:2980
 #, c-format
 msgid "%s not assigned"
 msgstr "%s sin asignar"
 
-#: ../src/gui/accelerators.c:3126
+#: ../src/gui/accelerators.c:3128
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s asignado a %s"
@@ -9307,7 +9337,7 @@ msgstr "regla de los tercios"
 msgid "metering"
 msgstr "medida"
 
-#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5675
+#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5679
 msgid "perspective"
 msgstr "perspectiva"
 
@@ -9692,13 +9722,13 @@ msgstr ""
 "eliminar."
 
 #: ../src/gui/presets.c:173 ../src/gui/presets.c:403 ../src/libs/lib.c:240
-#: ../src/libs/modulegroups.c:3726
+#: ../src/libs/modulegroups.c:3718
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "¿Desea borrar el ajuste predefinido «%s»?"
 
 #: ../src/gui/presets.c:177 ../src/gui/presets.c:408 ../src/libs/lib.c:244
-#: ../src/libs/modulegroups.c:3730
+#: ../src/libs/modulegroups.c:3722
 msgid "delete preset?"
 msgstr "¿Borrar este ajuste predefinido?"
 
@@ -9846,8 +9876,8 @@ msgstr "¿Realmente desea actualizar el ajuste definido como «%s»?"
 msgid "update preset?"
 msgstr "Actualizar preajuste"
 
-#: ../src/gui/presets.c:1078 ../src/libs/modulegroups.c:3812
-#: ../src/libs/modulegroups.c:3821
+#: ../src/gui/presets.c:1078 ../src/libs/modulegroups.c:3804
+#: ../src/libs/modulegroups.c:3813
 msgid "manage module layouts"
 msgstr "Gestionar la disposición de los módulos"
 
@@ -10158,7 +10188,7 @@ msgid "enter the title of the pdf"
 msgstr "introduzca el título del pdf"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:595 ../src/libs/print_settings.c:2192
+#: ../src/imageio/format/pdf.c:595 ../src/libs/print_settings.c:2217
 msgid "paper size"
 msgstr "formato de papel"
 
@@ -10177,12 +10207,12 @@ msgid "page orientation"
 msgstr "orientación de la página"
 
 #: ../src/imageio/format/pdf.c:611 ../src/iop/borders.c:1051
-#: ../src/libs/collect.c:281 ../src/libs/print_settings.c:2201
+#: ../src/libs/collect.c:281 ../src/libs/print_settings.c:2226
 msgid "portrait"
 msgstr "vertical"
 
 #: ../src/imageio/format/pdf.c:612 ../src/iop/borders.c:1052
-#: ../src/libs/collect.c:276 ../src/libs/print_settings.c:2202
+#: ../src/libs/collect.c:276 ../src/libs/print_settings.c:2227
 msgid "landscape"
 msgstr "horizontal"
 
@@ -10696,46 +10726,46 @@ msgstr "La corrección automática falló. Deberá corregir manualmente."
 
 #. if count > MAX_SAVED_LINES we alert that the next lines won't be saved in params
 #. but they still may be used for the current section (that's why we still allow them)
-#: ../src/iop/ashift.c:4650
+#: ../src/iop/ashift.c:4654
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr ""
 
-#: ../src/iop/ashift.c:5371 ../src/iop/ashift.c:5372 ../src/iop/ashift.c:5474
-#: ../src/iop/ashift.c:5475
+#: ../src/iop/ashift.c:5375 ../src/iop/ashift.c:5376 ../src/iop/ashift.c:5478
+#: ../src/iop/ashift.c:5479
 #, c-format
 msgid "lens shift (%s)"
 msgstr "desplazamiento %s"
 
-#: ../src/iop/ashift.c:5735
+#: ../src/iop/ashift.c:5739
 #, fuzzy
 msgid "perspective helpers"
 msgstr "perspectiva"
 
-#: ../src/iop/ashift.c:5742
+#: ../src/iop/ashift.c:5746
 msgid "structure"
 msgstr "estructura"
 
-#: ../src/iop/ashift.c:5775
+#: ../src/iop/ashift.c:5779
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
 "the image"
 msgstr ""
 
-#: ../src/iop/ashift.c:5776 ../src/iop/ashift.c:5777
+#: ../src/iop/ashift.c:5780 ../src/iop/ashift.c:5781
 msgid "apply lens shift correction in one direction"
 msgstr "Efectúa la corrección del desplazamiento de lente en una dirección"
 
-#: ../src/iop/ashift.c:5778
+#: ../src/iop/ashift.c:5782
 msgid "shear the image along one diagonal"
 msgstr "Corta la imagen de acuerdo a la diagonal"
 
-#: ../src/iop/ashift.c:5779 ../src/iop/clipping.c:2154
+#: ../src/iop/ashift.c:5783 ../src/iop/clipping.c:2154
 msgid "automatically crop to avoid black edges"
 msgstr "Cortar automáticamente para evitar bordes negros"
 
-#: ../src/iop/ashift.c:5780
+#: ../src/iop/ashift.c:5784
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -10743,13 +10773,13 @@ msgstr ""
 "Modelo del lente de la corrección de perspectiva: genérico o en función de "
 "la distancia focal"
 
-#: ../src/iop/ashift.c:5782
+#: ../src/iop/ashift.c:5786
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "Distancia focal del lente. Se fija el valor por defecto desde los datos Exif "
 "si están disponibles."
 
-#: ../src/iop/ashift.c:5784
+#: ../src/iop/ashift.c:5788
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -10758,7 +10788,7 @@ msgstr ""
 "desde los datos Exif si están disponibles. Normalmente los ajustes manuales "
 "son requeridos."
 
-#: ../src/iop/ashift.c:5787
+#: ../src/iop/ashift.c:5791
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -10766,13 +10796,13 @@ msgstr ""
 "Nivel de corrección en función de la lente. Se fija el valor máximo como "
 "corrrespondencia total de la lente. Se fija en cero para los genéricos."
 
-#: ../src/iop/ashift.c:5789
+#: ../src/iop/ashift.c:5793
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "Ajusta la relación de aspecto de la imagen mediante cambiar la escala "
 "horizontal y vertical"
 
-#: ../src/iop/ashift.c:5790
+#: ../src/iop/ashift.c:5794
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10782,7 +10812,7 @@ msgstr ""
 "Ctrl+Clic para corregir solo la rotación\n"
 "Mayús+Clic para corregir el desplazamiento del lente"
 
-#: ../src/iop/ashift.c:5793
+#: ../src/iop/ashift.c:5797
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10792,7 +10822,7 @@ msgstr ""
 "Ctrl+Clic para solo corregir la rotación\n"
 "Mayús+Clic para solo corregir el desplazamiento del lente"
 
-#: ../src/iop/ashift.c:5796
+#: ../src/iop/ashift.c:5800
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -10806,7 +10836,7 @@ msgstr ""
 "Mayús+Clic para solo corregir el desplazamiento del lente\n"
 "Ctrl+Mayús+Clic para ajustar la rotación y el desplazamiento del lente"
 
-#: ../src/iop/ashift.c:5802
+#: ../src/iop/ashift.c:5806
 #, fuzzy
 msgid ""
 "automatically analyse line structure in image\n"
@@ -10819,36 +10849,36 @@ msgstr ""
 "Mayús+Clic para mejoras adicionales en el detalle\n"
 "Ctrl+Mayús+Clic para una combinación de ambos métodos"
 
-#: ../src/iop/ashift.c:5806
+#: ../src/iop/ashift.c:5810
 msgid "manually define perspective rectangle"
 msgstr ""
 
-#: ../src/iop/ashift.c:5807
+#: ../src/iop/ashift.c:5811
 #, fuzzy
 msgid "manually draw structure lines"
 msgstr "Cambiar la visibilidad de las líneas de la estructura"
 
-#: ../src/iop/ashift.c:5844 ../src/iop/clipping.c:3387
+#: ../src/iop/ashift.c:5848 ../src/iop/clipping.c:3387
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] definir o rotar horizonte"
 
-#: ../src/iop/ashift.c:5845
+#: ../src/iop/ashift.c:5849
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s en el segmento] seleccionar segmento"
 
-#: ../src/iop/ashift.c:5847
+#: ../src/iop/ashift.c:5851
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s en el segmento] anular selección de segmento"
 
-#: ../src/iop/ashift.c:5849
+#: ../src/iop/ashift.c:5853
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] seleccionar todos los segmentos de la zona"
 
-#: ../src/iop/ashift.c:5851
+#: ../src/iop/ashift.c:5855
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] anular la selección de todos los segmentos de la zona"
@@ -12230,7 +12260,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:3736 ../src/iop/clipping.c:2123
 #: ../src/iop/colorbalancergb.c:1571 ../src/iop/filmicrgb.c:3904
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3139
-#: ../src/libs/print_settings.c:2186 ../src/views/lighttable.c:1407
+#: ../src/libs/print_settings.c:2211 ../src/views/lighttable.c:1407
 msgid "page"
 msgstr "página"
 
@@ -12687,16 +12717,16 @@ msgid ""
 "<b>straighten</b>: right-drag, <b>commit</b>: double click"
 msgstr ""
 
-#: ../src/iop/clipping.c:3373 ../src/iop/crop.c:1670
+#: ../src/iop/clipping.c:3373 ../src/iop/crop.c:1666
 msgid "commit"
 msgstr "aceptar"
 
-#: ../src/iop/clipping.c:3384 ../src/iop/crop.c:1681
+#: ../src/iop/clipping.c:3384 ../src/iop/crop.c:1677
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s en los bordes] recortar"
 
-#: ../src/iop/clipping.c:3386 ../src/iop/crop.c:1683
+#: ../src/iop/clipping.c:3386 ../src/iop/crop.c:1679
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s en los bordes] recortar manteniendo la proporción"
@@ -13571,21 +13601,21 @@ msgid "output intent"
 msgstr "salida"
 
 #: ../src/iop/colorout.c:867 ../src/libs/export.c:1303
-#: ../src/libs/print_settings.c:2160 ../src/libs/print_settings.c:2494
+#: ../src/libs/print_settings.c:2185 ../src/libs/print_settings.c:2519
 #: ../src/views/darkroom.c:2454 ../src/views/darkroom.c:2461
 #: ../src/views/lighttable.c:1319 ../src/views/lighttable.c:1326
 msgid "perceptual"
 msgstr "perceptivo"
 
 #: ../src/iop/colorout.c:868 ../src/libs/export.c:1304
-#: ../src/libs/print_settings.c:2161 ../src/libs/print_settings.c:2495
+#: ../src/libs/print_settings.c:2186 ../src/libs/print_settings.c:2520
 #: ../src/views/darkroom.c:2455 ../src/views/darkroom.c:2462
 #: ../src/views/lighttable.c:1320 ../src/views/lighttable.c:1327
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:1305
-#: ../src/libs/print_settings.c:2162 ../src/libs/print_settings.c:2496
+#: ../src/libs/print_settings.c:2187 ../src/libs/print_settings.c:2521
 #: ../src/views/darkroom.c:2456 ../src/views/darkroom.c:2463
 #: ../src/views/lighttable.c:1321 ../src/views/lighttable.c:1328
 msgctxt "rendering intent"
@@ -13593,7 +13623,7 @@ msgid "saturation"
 msgstr "saturación"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:1306
-#: ../src/libs/print_settings.c:2163 ../src/libs/print_settings.c:2497
+#: ../src/libs/print_settings.c:2188 ../src/libs/print_settings.c:2522
 #: ../src/views/darkroom.c:2457 ../src/views/darkroom.c:2464
 #: ../src/views/lighttable.c:1322 ../src/views/lighttable.c:1329
 msgid "absolute colorimetric"
@@ -14059,7 +14089,7 @@ msgid "variance computed on the blue channel"
 msgstr "Varianza calculada para el canal azul"
 
 #: ../src/iop/denoiseprofile.c:3674 ../src/libs/export.c:1278
-#: ../src/libs/print_settings.c:2108 ../src/libs/print_settings.c:2445
+#: ../src/libs/print_settings.c:2133 ../src/libs/print_settings.c:2470
 msgid "profile"
 msgstr "perfil"
 
@@ -14753,7 +14783,7 @@ msgstr ""
 "Disminuir si las sombras o las luces o ambas están sobresaturadas."
 
 #: ../src/iop/filmic.c:1701 ../src/libs/export.c:1301
-#: ../src/libs/print_settings.c:2159 ../src/libs/print_settings.c:2491
+#: ../src/libs/print_settings.c:2184 ../src/libs/print_settings.c:2516
 #: ../src/views/darkroom.c:2453 ../src/views/lighttable.c:1318
 #: ../src/views/lighttable.c:1325
 msgid "intent"
@@ -15803,7 +15833,7 @@ msgstr "escala"
 msgid "auto scale"
 msgstr "Autorredimensionar"
 
-#: ../src/iop/lens.cc:2374 ../src/libs/modulegroups.c:2413
+#: ../src/iop/lens.cc:2374 ../src/libs/modulegroups.c:2405
 msgid "correct"
 msgstr "corrección"
 
@@ -16795,7 +16825,7 @@ msgid "toggle tool for picking median lightness in image"
 msgstr "Activar herramienta para elegir la luz promedio de la imagen"
 
 #: ../src/iop/relight.c:286 ../src/libs/metadata_view.c:146
-#: ../src/libs/print_settings.c:2224
+#: ../src/libs/print_settings.c:2249
 msgid "width"
 msgstr "anchura"
 
@@ -18131,7 +18161,7 @@ msgstr "El tamaño es relativo a..."
 msgid "position"
 msgstr "posición"
 
-#: ../src/iop/watermark.c:1316 ../src/libs/print_settings.c:2353
+#: ../src/iop/watermark.c:1316 ../src/libs/print_settings.c:2378
 msgid "alignment"
 msgstr "alineación"
 
@@ -18583,14 +18613,12 @@ msgid "live samples"
 msgstr "muestreo"
 
 #: ../src/libs/colorpicker.c:648
-#, fuzzy
 msgid "display samples on image/vectorscope"
-msgstr "mostrar sobre la imagen"
+msgstr "muestras visibles (imagen y vectorscopio)"
 
 #: ../src/libs/colorpicker.c:657
-#, fuzzy
 msgid "restrict scope to selection"
-msgstr "restringir el histograma a la selección"
+msgstr "limitar el gráfico a la selección"
 
 #: ../src/libs/copy_history.c:53
 msgid "history stack"
@@ -18914,11 +18942,11 @@ msgstr ""
 "con algunos formatos."
 
 #: ../src/libs/export.c:1280 ../src/libs/export.c:1302
-#: ../src/libs/print_settings.c:2448 ../src/libs/print_settings.c:2493
+#: ../src/libs/print_settings.c:2473 ../src/libs/print_settings.c:2518
 msgid "image settings"
 msgstr "configuración de la imagen"
 
-#: ../src/libs/export.c:1292 ../src/libs/print_settings.c:2482
+#: ../src/libs/export.c:1292 ../src/libs/print_settings.c:2507
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "Perfiles de salida ICC en %s o %s"
@@ -18957,7 +18985,7 @@ msgstr ""
 "imagen al punto blanco del medio de destino. Se utiliza principalmente para "
 "hacer pruebas de colores. (No apto para la fotografía)."
 
-#: ../src/libs/export.c:1338 ../src/libs/print_settings.c:2507
+#: ../src/libs/export.c:1338 ../src/libs/print_settings.c:2532
 msgid "style"
 msgstr "estilo"
 
@@ -18965,15 +18993,15 @@ msgstr "estilo"
 msgid "temporary style to use while exporting"
 msgstr "Estilo temporal para ser aplicado al exportar"
 
-#: ../src/libs/export.c:1350 ../src/libs/print_settings.c:2550
+#: ../src/libs/export.c:1350 ../src/libs/print_settings.c:2575
 msgid "replace history"
 msgstr "reemplazar al historial"
 
-#: ../src/libs/export.c:1351 ../src/libs/print_settings.c:2551
+#: ../src/libs/export.c:1351 ../src/libs/print_settings.c:2576
 msgid "append history"
 msgstr "incorporar al historial"
 
-#: ../src/libs/export.c:1356 ../src/libs/print_settings.c:2558
+#: ../src/libs/export.c:1356 ../src/libs/print_settings.c:2583
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "Los elementos del estilo se anexan al historial o se reemplazan"
@@ -19570,7 +19598,7 @@ msgid "physically delete from disk immediately"
 msgstr "Eliminar inmediatamente del disco"
 
 #. delete
-#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3841
+#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3833
 #: ../src/libs/styles.c:870
 msgid "remove"
 msgstr "quitar"
@@ -20547,7 +20575,7 @@ msgstr "distancia focal"
 msgid "datetime"
 msgstr "fecha/hora"
 
-#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2228
+#: ../src/libs/metadata_view.c:147 ../src/libs/print_settings.c:2253
 msgid "height"
 msgstr "altura"
 
@@ -20671,7 +20699,7 @@ msgstr "grupos de módulos"
 #. FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
 #. respond later to image changed signal
 #: ../src/libs/modulegroups.c:314 ../src/libs/modulegroups.c:326
-#: ../src/libs/modulegroups.c:2515 ../src/libs/modulegroups.c:2517
+#: ../src/libs/modulegroups.c:2507 ../src/libs/modulegroups.c:2509
 msgid "on-off"
 msgstr "Control de activación"
 
@@ -20707,7 +20735,7 @@ msgstr "Ir a la versión completa del módulo %s"
 
 #: ../src/libs/modulegroups.c:1573 ../src/libs/modulegroups.c:1657
 #: ../src/libs/modulegroups.c:1693 ../src/libs/modulegroups.c:1743
-#: ../src/libs/modulegroups.c:1916
+#: ../src/libs/modulegroups.c:1908
 msgctxt "modulegroup"
 msgid "base"
 msgstr "básico"
@@ -20730,7 +20758,7 @@ msgid "correct"
 msgstr "corrección"
 
 #: ../src/libs/modulegroups.c:1633 ../src/libs/modulegroups.c:1727
-#: ../src/libs/modulegroups.c:1770 ../src/libs/modulegroups.c:2416
+#: ../src/libs/modulegroups.c:1770 ../src/libs/modulegroups.c:2408
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "efecto"
@@ -20745,7 +20773,7 @@ msgid "grading"
 msgstr "calibración de color"
 
 #: ../src/libs/modulegroups.c:1680 ../src/libs/modulegroups.c:1837
-#: ../src/libs/modulegroups.c:2420
+#: ../src/libs/modulegroups.c:2412
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "efectos"
@@ -20771,98 +20799,98 @@ msgstr "técnico"
 msgid "search only"
 msgstr "sólo búsqueda"
 
-#: ../src/libs/modulegroups.c:1868 ../src/libs/modulegroups.c:2184
-#: ../src/libs/modulegroups.c:2668
+#: ../src/libs/modulegroups.c:1868 ../src/libs/modulegroups.c:2176
+#: ../src/libs/modulegroups.c:2660
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "obsoleto"
 
-#: ../src/libs/modulegroups.c:1891
+#: ../src/libs/modulegroups.c:1883
 msgid "previous config"
 msgstr "configuración previa"
 
-#: ../src/libs/modulegroups.c:1892
+#: ../src/libs/modulegroups.c:1884
 msgid "previous layout"
 msgstr "disposición previa"
 
-#: ../src/libs/modulegroups.c:1896
+#: ../src/libs/modulegroups.c:1888
 msgid "previous config with new layout"
 msgstr "configuración previa con la nueva disposición"
 
-#: ../src/libs/modulegroups.c:2051 ../src/libs/modulegroups.c:2568
+#: ../src/libs/modulegroups.c:2043 ../src/libs/modulegroups.c:2560
 msgid "remove this widget"
 msgstr "Quitar este elemento de control"
 
-#: ../src/libs/modulegroups.c:2202 ../src/libs/modulegroups.c:2442
+#: ../src/libs/modulegroups.c:2194 ../src/libs/modulegroups.c:2434
 msgid "remove this module"
 msgstr "Quitar este módulo"
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2411
+#: ../src/libs/modulegroups.c:2403
 msgid "base"
 msgstr "básico"
 
-#: ../src/libs/modulegroups.c:2414
+#: ../src/libs/modulegroups.c:2406
 msgid "tone"
 msgstr "tono"
 
-#: ../src/libs/modulegroups.c:2417
+#: ../src/libs/modulegroups.c:2409
 msgid "technical"
 msgstr "técnico"
 
-#: ../src/libs/modulegroups.c:2418
+#: ../src/libs/modulegroups.c:2410
 msgid "grading"
 msgstr "calibración de color"
 
-#: ../src/libs/modulegroups.c:2424 ../src/libs/modulegroups.c:2432
+#: ../src/libs/modulegroups.c:2416 ../src/libs/modulegroups.c:2424
 msgid "add this module"
 msgstr "Añadir este módulo"
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2454 ../src/libs/modulegroups.c:2628
+#: ../src/libs/modulegroups.c:2446 ../src/libs/modulegroups.c:2620
 msgid "all available modules"
 msgstr "todos los módulos disponibles"
 
-#: ../src/libs/modulegroups.c:2462
+#: ../src/libs/modulegroups.c:2454
 msgid "add module"
 msgstr "añadir módulo"
 
-#: ../src/libs/modulegroups.c:2467
+#: ../src/libs/modulegroups.c:2459
 msgid "remove module"
 msgstr "quitar módulo"
 
-#: ../src/libs/modulegroups.c:2577 ../src/libs/modulegroups.c:2584
+#: ../src/libs/modulegroups.c:2569 ../src/libs/modulegroups.c:2576
 msgid "add this widget"
 msgstr "Añadir este elemento de control"
 
-#: ../src/libs/modulegroups.c:2612
+#: ../src/libs/modulegroups.c:2604
 msgid "add widget"
 msgstr "Añadir elemento de control"
 
-#: ../src/libs/modulegroups.c:2617
+#: ../src/libs/modulegroups.c:2609
 msgid "remove widget"
 msgstr "Quitar elemento de control"
 
-#: ../src/libs/modulegroups.c:2703
+#: ../src/libs/modulegroups.c:2695
 #, fuzzy
 msgid "show all history modules"
 msgstr "Mostrar únicamente los módulos activos"
 
-#: ../src/libs/modulegroups.c:2706 ../src/libs/modulegroups.c:3870
+#: ../src/libs/modulegroups.c:2698 ../src/libs/modulegroups.c:3862
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 msgstr ""
 
-#: ../src/libs/modulegroups.c:2804
+#: ../src/libs/modulegroups.c:2796
 msgid "quick access panel"
 msgstr "Panel de control modular y acceso rápido"
 
-#: ../src/libs/modulegroups.c:2814
+#: ../src/libs/modulegroups.c:2806
 msgid "show only active modules"
 msgstr "Mostrar únicamente los módulos activos"
 
-#: ../src/libs/modulegroups.c:2819
+#: ../src/libs/modulegroups.c:2811
 msgid ""
 "presets\n"
 "ctrl+click to manage"
@@ -20870,15 +20898,15 @@ msgstr ""
 "Preajustes\n"
 "Use Ctrl+Clic para gestionar"
 
-#: ../src/libs/modulegroups.c:2826
+#: ../src/libs/modulegroups.c:2818
 msgid "search modules by name or tag"
 msgstr "Buscar módulos por nombre o etiqueta"
 
-#: ../src/libs/modulegroups.c:2831
+#: ../src/libs/modulegroups.c:2823
 msgid "clear text"
 msgstr "Borrar texto"
 
-#: ../src/libs/modulegroups.c:2839
+#: ../src/libs/modulegroups.c:2831
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes which can't be solved and alternative modules which solve them.\n"
@@ -20889,132 +20917,132 @@ msgstr ""
 "sustitutos.\n"
 "Se desactivarán para nuevos revelados en la próxima versión."
 
-#: ../src/libs/modulegroups.c:3078
+#: ../src/libs/modulegroups.c:3070
 msgid "basic icon"
 msgstr "ícono de básico"
 
-#: ../src/libs/modulegroups.c:3088
+#: ../src/libs/modulegroups.c:3080
 msgid "active icon"
 msgstr "ícono de activos"
 
-#: ../src/libs/modulegroups.c:3098
+#: ../src/libs/modulegroups.c:3090
 msgid "color icon"
 msgstr "ícono de color"
 
-#: ../src/libs/modulegroups.c:3108
+#: ../src/libs/modulegroups.c:3100
 msgid "correct icon"
 msgstr "ícono de corrección"
 
-#: ../src/libs/modulegroups.c:3118
+#: ../src/libs/modulegroups.c:3110
 msgid "effect icon"
 msgstr "ícono de efecto"
 
-#: ../src/libs/modulegroups.c:3128
+#: ../src/libs/modulegroups.c:3120
 msgid "favorites icon"
 msgstr "ícono de favoritos"
 
-#: ../src/libs/modulegroups.c:3138
+#: ../src/libs/modulegroups.c:3130
 msgid "tone icon"
 msgstr "ícono de tono"
 
-#: ../src/libs/modulegroups.c:3148
+#: ../src/libs/modulegroups.c:3140
 msgid "grading icon"
 msgstr "ícono de calibración de color"
 
-#: ../src/libs/modulegroups.c:3158
+#: ../src/libs/modulegroups.c:3150
 msgid "technical icon"
 msgstr "ícono de técnico"
 
-#: ../src/libs/modulegroups.c:3191
+#: ../src/libs/modulegroups.c:3183
 msgid "quick access panel widgets"
 msgstr "Controles para el panel de control modular"
 
-#: ../src/libs/modulegroups.c:3193
+#: ../src/libs/modulegroups.c:3185
 msgid "quick access"
 msgstr "acceso rápido"
 
-#: ../src/libs/modulegroups.c:3214
+#: ../src/libs/modulegroups.c:3206
 msgid "add widget to the quick access panel"
 msgstr "Añade un componente al panel de control modular"
 
-#: ../src/libs/modulegroups.c:3246
+#: ../src/libs/modulegroups.c:3238
 msgid "group icon"
 msgstr "ícono de grupo"
 
-#: ../src/libs/modulegroups.c:3255
+#: ../src/libs/modulegroups.c:3247
 msgid "group name"
 msgstr "Nombre del grupo"
 
-#: ../src/libs/modulegroups.c:3266
+#: ../src/libs/modulegroups.c:3258
 msgid "remove group"
 msgstr "Eliminar grupo"
 
-#: ../src/libs/modulegroups.c:3293
+#: ../src/libs/modulegroups.c:3285
 msgid "move group to the left"
 msgstr "Se mueve el grupo a otra carpeta"
 
-#: ../src/libs/modulegroups.c:3302
+#: ../src/libs/modulegroups.c:3294
 msgid "add module to the group"
 msgstr "Añadir un módulo al grupo"
 
-#: ../src/libs/modulegroups.c:3314
+#: ../src/libs/modulegroups.c:3306
 msgid "move group to the right"
 msgstr "Se mueve el grupo a la derecha"
 
-#: ../src/libs/modulegroups.c:3490
+#: ../src/libs/modulegroups.c:3482
 msgid "rename preset"
 msgstr "Renombrar preajuste"
 
-#: ../src/libs/modulegroups.c:3497
+#: ../src/libs/modulegroups.c:3489
 msgid "new preset name :"
 msgstr "Nuevo nombre del preajuste :"
 
-#: ../src/libs/modulegroups.c:3498
+#: ../src/libs/modulegroups.c:3490
 msgid "a preset with this name already exists !"
 msgstr "Ya existe un preajuste con el mismo nombre"
 
-#: ../src/libs/modulegroups.c:3834
+#: ../src/libs/modulegroups.c:3826
 msgid "preset : "
 msgstr "preajuste : "
 
-#: ../src/libs/modulegroups.c:3841
+#: ../src/libs/modulegroups.c:3833
 msgid "remove the preset"
 msgstr "eliminar el preajuste"
 
-#: ../src/libs/modulegroups.c:3844
+#: ../src/libs/modulegroups.c:3836
 msgid "duplicate the preset"
 msgstr "Duplicar el preajuste"
 
-#: ../src/libs/modulegroups.c:3847
+#: ../src/libs/modulegroups.c:3839
 msgid "rename the preset"
 msgstr "Renombrar el preajuste"
 
-#: ../src/libs/modulegroups.c:3850
+#: ../src/libs/modulegroups.c:3842
 msgid "create a new empty preset"
 msgstr "Crear un preajuste vacío nuevo"
 
-#: ../src/libs/modulegroups.c:3858
+#: ../src/libs/modulegroups.c:3850
 msgid "show search line"
 msgstr "mostrar búsqueda"
 
-#: ../src/libs/modulegroups.c:3862
+#: ../src/libs/modulegroups.c:3854
 msgid "show quick access panel"
 msgstr "Mostrar panel de control modular"
 
-#: ../src/libs/modulegroups.c:3866
+#: ../src/libs/modulegroups.c:3858
 #, fuzzy
 msgid "show all history modules in active group"
 msgstr "Plegar sólo los módulos del grupo en curso"
 
-#: ../src/libs/modulegroups.c:3879
+#: ../src/libs/modulegroups.c:3871
 msgid "auto-apply this preset"
 msgstr "usar automáticamente este preajuste"
 
-#: ../src/libs/modulegroups.c:3895
+#: ../src/libs/modulegroups.c:3887
 msgid "module groups"
 msgstr "Agrupación de módulos"
 
-#: ../src/libs/modulegroups.c:3913
+#: ../src/libs/modulegroups.c:3905
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
@@ -21062,12 +21090,12 @@ msgid "hide navigation thumbnail"
 msgstr "ocultar navegación de miniaturas"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:46 ../src/libs/print_settings.c:2438
+#: ../src/libs/print_settings.c:46 ../src/libs/print_settings.c:2463
 msgid "print settings"
 msgstr "ajustes de impresión"
 
 #. FIXME: ellipsize title/printer as the export completed message is ellipsized
-#: ../src/libs/print_settings.c:302 ../src/libs/print_settings.c:653
+#: ../src/libs/print_settings.c:302 ../src/libs/print_settings.c:678
 #, c-format
 msgid "processing `%s' for `%s'"
 msgstr "Procesando «%s» para el módulo «%s»"
@@ -21087,78 +21115,77 @@ msgstr "Error al obtener el perfil de salida para la imagen %d"
 msgid "cannot apply printer profile `%s'"
 msgstr "No se puede establecer el perfil de la impresora «%s»"
 
-#: ../src/libs/print_settings.c:493
+#: ../src/libs/print_settings.c:500
 msgid "failed to create temporary pdf for printing"
 msgstr "Hubo un fallo al crear el archivo temporal pdf para imprimir"
 
-#: ../src/libs/print_settings.c:539
-#, fuzzy
+#: ../src/libs/print_settings.c:546
 msgid "maximum image per page reached"
-msgstr "anchura máxima de la ventana de imagen"
+msgstr "Número máximo de imágenes por página alcanzado"
 
-#: ../src/libs/print_settings.c:608
+#: ../src/libs/print_settings.c:633
 msgid "cannot print until a picture is selected"
 msgstr "No se puede imprimir hasta que una imagen sea seleccionada"
 
-#: ../src/libs/print_settings.c:613
+#: ../src/libs/print_settings.c:638
 msgid "cannot print until a printer is selected"
 msgstr "No se puede imprimir hasta que una impresora sea seleccionada"
 
-#: ../src/libs/print_settings.c:618
+#: ../src/libs/print_settings.c:643
 msgid "cannot print until a paper is selected"
 msgstr "No se puede imprimir hasta que un papel sea seleccionado"
 
 #. in this case no need to release from cache what we couldn't get
-#: ../src/libs/print_settings.c:645
+#: ../src/libs/print_settings.c:670
 #, c-format
 msgid "cannot get image %d for printing"
 msgstr "No se puede obtener la imagen %d para imprimirla"
 
-#: ../src/libs/print_settings.c:862
+#: ../src/libs/print_settings.c:887
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (ppp:%d)"
 
-#: ../src/libs/print_settings.c:2088 ../src/libs/print_settings.c:2100
-#: ../src/libs/print_settings.c:2108 ../src/libs/print_settings.c:2159
+#: ../src/libs/print_settings.c:2113 ../src/libs/print_settings.c:2125
+#: ../src/libs/print_settings.c:2133 ../src/libs/print_settings.c:2184
 msgid "printer"
 msgstr "impresora"
 
-#: ../src/libs/print_settings.c:2100
+#: ../src/libs/print_settings.c:2125
 msgid "media"
 msgstr "tipos de papel"
 
-#: ../src/libs/print_settings.c:2118
+#: ../src/libs/print_settings.c:2143
 msgid "color management in printer driver"
 msgstr "gestión de color en el controlador de la impresora"
 
-#: ../src/libs/print_settings.c:2150
+#: ../src/libs/print_settings.c:2175
 #, c-format
 msgid "printer ICC profiles in %s or %s"
 msgstr "Perfiles ICC de la impresora en %s o %s"
 
-#: ../src/libs/print_settings.c:2172
+#: ../src/libs/print_settings.c:2197
 msgid "black point compensation"
 msgstr "compensación de punto negro"
 
-#: ../src/libs/print_settings.c:2180
+#: ../src/libs/print_settings.c:2205
 msgid "activate black point compensation when applying the printer profile"
 msgstr ""
 "Activa la compensación de punto negro al establecer el perfil de la impresora"
 
-#: ../src/libs/print_settings.c:2222
+#: ../src/libs/print_settings.c:2247
 msgid "image width/height"
 msgstr "ancho/alto de imagen"
 
-#: ../src/libs/print_settings.c:2226
+#: ../src/libs/print_settings.c:2251
 msgid " x "
 msgstr " × "
 
-#: ../src/libs/print_settings.c:2234
+#: ../src/libs/print_settings.c:2259
 msgid "scale factor"
 msgstr "factor de escala"
 
-#: ../src/libs/print_settings.c:2239
+#: ../src/libs/print_settings.c:2264
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -21172,49 +21199,46 @@ msgstr ""
 "Un valor muy grande puede resultar en una calidad de impresión pobre"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2253
+#: ../src/libs/print_settings.c:2278
 msgid "top margin"
 msgstr "Margen superior"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2257
+#: ../src/libs/print_settings.c:2282
 msgid "left margin"
 msgstr "Margen izquierdo"
 
-#: ../src/libs/print_settings.c:2260
+#: ../src/libs/print_settings.c:2285
 msgid "lock"
 msgstr "bloquear"
 
-#: ../src/libs/print_settings.c:2261
+#: ../src/libs/print_settings.c:2286
 msgid "change all margins uniformly"
 msgstr "Cambiar los margenes uniformemente"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2265
+#: ../src/libs/print_settings.c:2290
 msgid "right margin"
 msgstr "Margen derecho"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:2269
+#: ../src/libs/print_settings.c:2294
 msgid "bottom margin"
 msgstr "Margen inferior"
 
-#: ../src/libs/print_settings.c:2302
-#, fuzzy
+#: ../src/libs/print_settings.c:2327
 msgid "display grid"
-msgstr "perfil (pantalla)"
+msgstr "mostrar cuadrícula"
 
-#: ../src/libs/print_settings.c:2312
-#, fuzzy
+#: ../src/libs/print_settings.c:2337
 msgid "snap to grid"
-msgstr "alinear imágenes a la cuadrícula"
+msgstr "ajustar a la cuadrícula"
 
-#: ../src/libs/print_settings.c:2322
-#, fuzzy
+#: ../src/libs/print_settings.c:2347
 msgid "borderless mode required"
-msgstr "Habilitado por ser requerido"
+msgstr "modo sin bordes requerido"
 
-#: ../src/libs/print_settings.c:2325
+#: ../src/libs/print_settings.c:2350
 msgid ""
 "indicates that the borderless mode should be activated\n"
 "in the printer driver because the selected margins are\n"
@@ -21222,77 +21246,72 @@ msgid ""
 msgstr ""
 
 #. pack image dimension hbox here
-#: ../src/libs/print_settings.c:2332
-#, fuzzy
+#: ../src/libs/print_settings.c:2357
 msgid "image layout"
-msgstr "Gestionar la disposición de los módulos"
+msgstr "disposición de la imagen"
 
-#: ../src/libs/print_settings.c:2369
-#, fuzzy
+#: ../src/libs/print_settings.c:2394
 msgid "new image area"
-msgstr "desde un área de imagen"
+msgstr "nueva área de imagen"
 
-#: ../src/libs/print_settings.c:2370
+#: ../src/libs/print_settings.c:2395
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
 "drag&drop image from film strip on it"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2376
-#, fuzzy
+#: ../src/libs/print_settings.c:2401
 msgid "delete image area"
-msgstr "Borrar imágenes"
+msgstr "borrar el área de la imagen"
 
-#: ../src/libs/print_settings.c:2377
-#, fuzzy
+#: ../src/libs/print_settings.c:2402
 msgid "delete the currently selected image area"
-msgstr "Fijar la primer imagen seleccionada como fuente de metadatos"
+msgstr "borrar el área de la imagen actualmente seleccionada"
 
-#: ../src/libs/print_settings.c:2381
-#, fuzzy
+#: ../src/libs/print_settings.c:2406
 msgid "clear layout"
-msgstr "heredado"
+msgstr "borrar disposición"
 
-#: ../src/libs/print_settings.c:2382
+#: ../src/libs/print_settings.c:2407
 #, fuzzy
 msgid "remove all image area from the page"
 msgstr "Eliminar las imágenes seleccionadas del grupo"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2397
+#: ../src/libs/print_settings.c:2422
 msgid "image area x origin (in current unit)"
 msgstr ""
 
 #. d->b_y = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2401
+#: ../src/libs/print_settings.c:2426
 msgid "image area y origin (in current unit)"
 msgstr ""
 
 #. d->b_width = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2412
+#: ../src/libs/print_settings.c:2437
 msgid "image area width (in current unit)"
 msgstr ""
 
 #. d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
-#: ../src/libs/print_settings.c:2416
+#: ../src/libs/print_settings.c:2441
 msgid "image area height (in current unit)"
 msgstr ""
 
-#: ../src/libs/print_settings.c:2529
+#: ../src/libs/print_settings.c:2554
 msgid "temporary style to use while printing"
 msgstr "Estilo para ser aplicado solo al imprimir"
 
 #. Print button
-#: ../src/libs/print_settings.c:2566
+#: ../src/libs/print_settings.c:2591
 msgid "print"
 msgstr "imprimir"
 
-#: ../src/libs/print_settings.c:2568
+#: ../src/libs/print_settings.c:2593
 msgid "print with current settings"
 msgstr "Imprimir con la configuración actual"
 
-#: ../src/libs/print_settings.c:3097
+#: ../src/libs/print_settings.c:3122
 msgctxt "accel"
 msgid "print"
 msgstr "imprimir"
@@ -22820,6 +22839,10 @@ msgstr "pruebe con condiciones de filtro más flexibles, en el panel superior"
 #: ../src/views/lighttable.c:427
 msgid "or add images in the collections module in the left panel"
 msgstr "o añada imágenes con el módulo de colección en el panel izquierdo."
+
+#: ../src/views/lighttable.c:815
+msgid "middle"
+msgstr "media"
 
 #: ../src/views/lighttable.c:876
 msgctxt "accel"
@@ -24764,16 +24787,8 @@ msgstr "acciones con el ratón"
 #~ msgstr "ángulo"
 
 #~ msgctxt "accel"
-#~ msgid "left"
-#~ msgstr "margen izquierdo"
-
-#~ msgctxt "accel"
 #~ msgid "top"
 #~ msgstr "margen superior"
-
-#~ msgctxt "accel"
-#~ msgid "right"
-#~ msgstr "margen derecho"
 
 #~ msgctxt "accel"
 #~ msgid "bottom"
