@@ -4634,7 +4634,38 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
       if(which == 3)
       {
-        g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+        if(g->current_structure_method != ASHIFT_METHOD_LINES)
+          g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+        else
+        {
+          // we completely remove the line from the list
+          if(g->lines[n].type == ASHIFT_LINE_HORIZONTAL_SELECTED)
+          {
+            g->horizontal_count--;
+            g->horizontal_weight -= 1.0f;
+          }
+          else
+          {
+            g->vertical_count--;
+            g->vertical_weight -= 1.0f;
+          }
+
+          const int count = g->lines_count - 1;
+          dt_iop_ashift_line_t *lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * count);
+          int pos = 0;
+          for(int i = 0; i < g->lines_count; i++)
+          {
+            if(i != n)
+            {
+              lines[pos] = g->lines[i];
+              pos++;
+            }
+          }
+          if(g->lines) free(g->lines);
+          g->lines = lines;
+          g->lines_count = count;
+        }
+
         handled = 1;
       }
       else if(g->current_structure_method != ASHIFT_METHOD_LINES)
