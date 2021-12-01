@@ -395,8 +395,12 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
       // we remove the plugin effectively
       if(!dt_iop_is_hidden(mod))
       {
+        // we just hide the module to avoid lots of gtk critical warnings
+        gtk_widget_hide(mod->expander);
+
+        // this is copied from dt_iop_gui_delete_callback(), not sure why the above sentence...
+        gtk_widget_destroy(mod->widget);
         dt_iop_gui_cleanup_module(mod);
-        gtk_widget_destroy(mod->expander);
       }
 
       iop_list = g_list_remove_link(iop_list, modules);

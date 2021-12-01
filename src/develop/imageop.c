@@ -495,9 +495,17 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   // we remove the plugin effectively
   if(!dt_iop_is_hidden(module))
   {
+    // we just hide the module to avoid lots of gtk critical warnings
+    gtk_widget_hide(module->expander);
+
+    // we move the module far away, to avoid problems when reordering instance after that
+    // FIXME: ?????
+    gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
+                          module->expander, -1);
+
     dt_iop_gui_cleanup_module(module);
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
-    gtk_widget_destroy(module->expander);
+    gtk_widget_destroy(module->widget);
   }
 
   // we remove all references in the history stack and dev->iop
