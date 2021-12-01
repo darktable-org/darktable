@@ -3686,7 +3686,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   // first step: basic initialization of my_points_idx and counting of total_points
   for(int n = 0; n < lines_count; n++)
   {
-    const int length = lines[n].length;
+    const int length = MAX(lines[n].length, 2);
 
     total_points += length;
 
@@ -3734,13 +3734,26 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
     const float dx = (lines[n].p2[0] / scale - x) / (float)(length - 1);
     const float dy = (lines[n].p2[1] / scale - y) / (float)(length - 1);
 
-    for(int l = 0; l < length && offset < total_points; l++, offset++)
+    // for very small length, we set the second extrema at last point
+    if(length < 2)
     {
       my_points[2 * offset] = x;
       my_points[2 * offset + 1] = y;
+      offset++;
+      my_points[2 * offset] = lines[n].p2[0] / scale;
+      my_points[2 * offset + 1] = lines[n].p2[1] / scale;
+      offset++;
+    }
+    else
+    {
+      for(int l = 0; l < length && offset < total_points; l++, offset++)
+      {
+        my_points[2 * offset] = x;
+        my_points[2 * offset + 1] = y;
 
-      x += dx;
-      y += dy;
+        x += dx;
+        y += dy;
+      }
     }
   }
 
