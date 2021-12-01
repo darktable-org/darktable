@@ -4306,7 +4306,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
   // if visibility of lines is switched off or no lines available, we would normally adjust the crop box
   // but since g->adjust_crop was FALSE, we have nothing to do
-  if(!g->lines) return TRUE;
+  if(!g->lines) return FALSE;
 
   // if we are moving a drawn line extrema, we do the change here
   if(g->draw_point_move)
