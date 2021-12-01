@@ -47,6 +47,7 @@ extern GType DT_BAUHAUS_WIDGET_TYPE;
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX 500
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN 25
 #define DT_BAUHAUS_SLIDER_MAX_STOPS 20
+#define DT_BAUHAUS_COMBO_MAX_TEXT 180
 
 typedef enum dt_bauhaus_type_t
 {
@@ -114,7 +115,7 @@ typedef struct dt_bauhaus_combobox_data_t
   int editable;         // 1 if arbitrary text may be typed
   int scale;            // scale of the combo popup from combo widget
   dt_bauhaus_combobox_alignment_t text_align; // if selected text in combo should be aligned to the left/right
-  char text[180];       // roughly as much as a slider
+  char *text;           // to hold arbitrary text if editable
   PangoEllipsizeMode entries_ellipsis;
   GList *entries;
   gboolean mute_scrolling;   // if set, prevents to issue "data-changed"
