@@ -2805,7 +2805,7 @@ static void _draw_retrieve_line_type(dt_iop_ashift_line_t *line)
 }
 
 // add a basic line. used for drawing perspective method
-static void _draw_basic_line(dt_iop_ashift_line_t *line, int x1, int y1, int x2, int y2,
+static void _draw_basic_line(dt_iop_ashift_line_t *line, float x1, float y1, float x2, float y2,
                              dt_iop_ashift_linetype_t type)
 {
   // store as homogeneous coordinates
