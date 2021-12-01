@@ -1072,6 +1072,7 @@ static void dt_bauhaus_combobox_destroy(dt_bauhaus_widget_t *widget, gpointer us
   d->entries = NULL;
   d->num_labels = 0;
   d->active = -1;
+  if(d->text) free(d->text);
 }
 
 GtkWidget *dt_bauhaus_combobox_new(dt_iop_module_t *self)
@@ -1114,7 +1115,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->entries_ellipsis = PANGO_ELLIPSIZE_END;
   d->mute_scrolling = FALSE;
   d->populate = NULL;
-  memset(d->text, 0, sizeof(d->text));
+  d->text = NULL;
 
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_PRESS_MASK);
   gtk_widget_set_can_focus(GTK_WIDGET(w), TRUE);
@@ -1197,6 +1198,8 @@ void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->editable = editable ? 1 : 0;
+  if(d->editable && !d->text)
+    d->text = calloc(1, DT_BAUHAUS_COMBO_MAX_TEXT);
 }
 
 int dt_bauhaus_combobox_get_editable(GtkWidget *widget)
@@ -1324,7 +1327,7 @@ void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(!d->editable) return;
-  g_strlcpy(d->text, text, sizeof(d->text));
+  g_strlcpy(d->text, text, DT_BAUHAUS_COMBO_MAX_TEXT);
 }
 
 static void _bauhaus_combobox_set(GtkWidget *widget, const int pos, const gboolean mute)
@@ -1697,8 +1700,8 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       else if(d->editable)
       {
         // otherwise, if combobox is editable, assume it is a custom input
-        memset(d->text, 0, sizeof(d->text));
-        g_strlcpy(d->text, darktable.bauhaus->keys, sizeof(d->text));
+        memset(d->text, 0, DT_BAUHAUS_COMBO_MAX_TEXT);
+        g_strlcpy(d->text, darktable.bauhaus->keys, DT_BAUHAUS_COMBO_MAX_TEXT);
         // select custom entry
         dt_bauhaus_combobox_set(widget, -1);
       }
