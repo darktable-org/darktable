@@ -4249,7 +4249,7 @@ static int _draw_near_point(const float x, const float y, const float *points, c
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
   const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
-  const int delta = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
+  const float delta = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
 
   for(int i = 0; i < limit; i++)
   {
