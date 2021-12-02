@@ -821,7 +821,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     while(prior_history)
     {
       dt_dev_history_item_t *prior_hist = (dt_dev_history_item_t *)(prior_history->data);
-      if(prior_hist->module->so == hist->module->so) 
+      if(prior_hist->module->so == hist->module->so)
       {
         earlier_entry = TRUE;
         break;

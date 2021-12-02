@@ -2160,14 +2160,14 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
 // allow to select a shape inside an iop
 void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel)
 {
-  int selection_changed = 0;
+  gboolean selection_changed = FALSE;
 
   if(sel)
   {
     if(sel->formid != darktable.develop->mask_form_selected_id)
     {
       darktable.develop->mask_form_selected_id = sel->formid;
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
   }
   else
@@ -2175,12 +2175,13 @@ void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel)
     if(darktable.develop->mask_form_selected_id != 0)
     {
       darktable.develop->mask_form_selected_id = 0;
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
   }
   if(selection_changed)
   {
-    if(!module && darktable.develop->mask_form_selected_id == 0) module = darktable.develop->gui_module;
+    if(!module && darktable.develop->mask_form_selected_id == 0)
+      module = darktable.develop->gui_module;
     if(module)
     {
       if(module->masks_selection_changed)

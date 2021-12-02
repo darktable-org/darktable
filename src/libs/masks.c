@@ -802,7 +802,7 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
     int id = g_value_get_int(&gv3);
     g_value_unset(&gv3);
 
-    int nid = dt_masks_form_duplicate(darktable.develop, id);
+    const int nid = dt_masks_form_duplicate(darktable.develop, id);
     if(nid > 0)
     {
       dt_dev_masks_selection_change(darktable.develop, nid, TRUE);
@@ -1454,8 +1454,8 @@ static gboolean _remove_foreach(GtkTreeModel *model, GtkTreePath *path, GtkTreeI
 {
   if(!iter) return 0;
   GList **rl = (GList **)data;
-  int refid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "formid"));
-  int refgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "groupid"));
+  const int refid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "formid"));
+  const int refgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model), "groupid"));
 
   // we retrieve the id
   GValue gv = {
@@ -1539,6 +1539,7 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int
     }
     valid = gtk_tree_model_iter_next(model, &iter);
   }
+
   lm->gui_reset = 0;
 }
 
