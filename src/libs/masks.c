@@ -265,7 +265,7 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 
     // and we apply the change
     dt_masks_update_image(darktable.develop);
-    dt_dev_masks_selection_change(darktable.develop, grp->formid, TRUE);
+    dt_dev_masks_selection_change(darktable.develop, NULL, grp->formid, TRUE);
   }
 }
 
@@ -756,7 +756,7 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
     const int nid = dt_masks_form_duplicate(darktable.develop, id);
     if(nid > 0)
     {
-      dt_dev_masks_selection_change(darktable.develop, nid, TRUE);
+      dt_dev_masks_selection_change(darktable.develop, NULL, nid, TRUE);
       //_lib_masks_recreate_list(self);
     }
   }
@@ -1274,6 +1274,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore, GtkTreeIter *topleve
                        (icinv != NULL), TREE_IC_USED, icuse, TREE_IC_USED_VISIBLE, (nbuse > 0),
                        TREE_USED_TEXT, str2, -1);
     _set_iter_name(lm, form, gstate, opacity, GTK_TREE_MODEL(treestore), &child);
+
     // we add all nodes to the tree
     for(const GList *forms = form->points; forms; forms = g_list_next(forms))
     {
@@ -1283,6 +1284,66 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore, GtkTreeIter *topleve
         _lib_masks_list_recurs(treestore, &child, f, form->formid, module, grpt->state, grpt->opacity, lm);
     }
   }
+}
+
+gboolean _find_mask_iter_by_values(GtkTreeModel *model, GtkTreeIter *iter,
+                                   const dt_iop_module_t *module, const int formid, const int level)
+{
+  gboolean found = FALSE;
+  do
+  {
+    int fid = -1;
+    dt_iop_module_t *mod;
+    _lib_masks_get_values(model, iter, &mod, NULL, &fid);
+    found = (fid == formid)
+      && ((level == 1)
+          || (module == NULL || (mod && (!g_strcmp0(module->op, mod->op)))));
+    if(found) return found;
+    GtkTreeIter child, parent = *iter;
+    if(gtk_tree_model_iter_children(model, &child, &parent))
+    {
+      found = _find_mask_iter_by_values(model, &child, module, formid, level + 1);
+      if(found)
+      {
+        *iter = child;
+        return found;
+      }
+    }
+  } while(gtk_tree_model_iter_next(model, iter));
+  return found;
+}
+
+GList *_lib_masks_get_selected(dt_lib_module_t *self)
+{
+  GList *res = NULL;
+  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
+
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
+
+  GList *items = gtk_tree_selection_get_selected_rows(selection, &model);
+
+  for(GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
+  {
+    GtkTreePath *item = (GtkTreePath *)items_iter->data;
+    GtkTreeIter iter;
+    if(gtk_tree_model_get_iter(model, &iter, item))
+    {
+      int fid = -1;
+      int gid = -1;
+      dt_iop_module_t *mod;
+      _lib_masks_get_values(model, &iter, &mod, &gid, &fid);
+      res = g_list_prepend(res, GINT_TO_POINTER(fid));
+      res = g_list_prepend(res, GINT_TO_POINTER(gid));
+      res = g_list_prepend(res, (void *)(mod));
+    }
+  }
+
+  g_list_foreach(items, (GFunc)gtk_tree_path_free, NULL);
+  g_list_free(items);
+
+  return res;
 }
 
 static void _lib_masks_recreate_list(dt_lib_module_t *self)
@@ -1295,6 +1356,15 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
   const int gui_reset = lm->gui_reset;
   lm->gui_reset = 1;
   // if (lm->treeview) gtk_widget_destroy(lm->treeview);
+
+  // if a treeview is already present, let's get the currently selected items
+  // as we are going to recreate the tree.
+  GList *selectids = NULL;
+
+  if(lm->treeview)
+  {
+    selectids = _lib_masks_get_selected(self);
+  }
 
   _lib_masks_inactivate_icons(self);
 
@@ -1319,6 +1389,39 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
   }
 
   gtk_tree_view_set_model(GTK_TREE_VIEW(lm->treeview), GTK_TREE_MODEL(treestore));
+
+  // select the images as selected in the previous tree
+  if(selectids)
+  {
+    GList *ids = selectids;
+    while(ids)
+    {
+      GtkTreeModel *model = GTK_TREE_MODEL(treestore);
+      dt_iop_module_t *mod = (dt_iop_module_t *)ids->data;
+      ids = g_list_next(ids);
+      // const int gid = GPOINTER_TO_INT(ids->data); // not needed, skip it
+      ids = g_list_next(ids);
+      const int fid = GPOINTER_TO_INT(ids->data);
+      ids = g_list_next(ids);
+
+      GtkTreeIter iter;
+      gtk_tree_model_get_iter_first(model, &iter);
+      // get formid in group for the given module
+      const gboolean found = _find_mask_iter_by_values(model, &iter, mod, fid, 1);
+
+      if(found)
+      {
+        GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+        gtk_tree_view_expand_to_path(GTK_TREE_VIEW(lm->treeview), path);
+        gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(lm->treeview), path, NULL, TRUE, 0.5, 0.5);
+        gtk_tree_path_free(path);
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
+        gtk_tree_selection_select_iter(selection, &iter);
+      }
+    }
+    g_list_free(selectids);
+  }
+
   g_object_unref(treestore);
 
   lm->gui_reset = gui_reset;
@@ -1415,7 +1518,44 @@ static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parent
   g_list_free(rl);
 }
 
-static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int throw_event)
+static gboolean _lib_masks_selection_change_r(GtkTreeModel *model, GtkTreeSelection *selection,
+                                              GtkTreeIter *iter, struct dt_iop_module_t *module,
+                                              const int selectid, int throw_event, const int level)
+{
+  gboolean found = FALSE;
+
+  GtkTreeIter i = *iter;
+  do
+  {
+    int id = -1;
+    dt_iop_module_t *mod;
+    _lib_masks_get_values(model, &i, &mod, NULL, &id);
+
+    if((id == selectid)
+       && ((level == 1)
+           || (module == NULL || (mod && (!g_strcmp0(module->op, mod->op))))))
+    {
+      gtk_tree_selection_select_iter(selection, &i);
+      found = TRUE;
+      break;
+    }
+
+    // check for children if any
+    GtkTreeIter child, parent = i;
+    if(gtk_tree_model_iter_children(model, &child, &parent))
+    {
+      found = _lib_masks_selection_change_r(model, selection, &child, module, selectid, throw_event, level + 1);
+      if(found)
+      {
+        break;
+      }
+    }
+  } while(gtk_tree_model_iter_next(model, &i) == TRUE);
+
+  return found;
+}
+
+static void _lib_masks_selection_change(dt_lib_module_t *self, struct dt_iop_module_t *module, const int selectid, const int throw_event)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   if(!lm->treeview) return;
@@ -1431,21 +1571,12 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
-  while(valid)
+
+  if(valid)
   {
-    // we get the formid from the iter
-    GValue gv = {
-      0,
-    };
-    gtk_tree_model_get_value(model, &iter, TREE_FORMID, &gv);
-    int id = g_value_get_int(&gv);
-    g_value_unset(&gv);
-    if(id == selectid)
-    {
-      gtk_tree_selection_select_iter(selection, &iter);
-      break;
-    }
-    valid = gtk_tree_model_iter_next(model, &iter);
+    gtk_tree_view_expand_all(GTK_TREE_VIEW(lm->treeview));
+    const gboolean found = _lib_masks_selection_change_r(model, selection, &iter, module, selectid, throw_event, 1);
+    if(!found) gtk_tree_view_collapse_all(GTK_TREE_VIEW(lm->treeview));
   }
 
   lm->gui_reset = 0;
