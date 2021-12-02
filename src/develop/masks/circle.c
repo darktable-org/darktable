@@ -286,7 +286,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
     else
     {
       // we select the new form
-      dt_dev_masks_selection_change(darktable.develop, form->formid, TRUE);
+      dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, TRUE);
     }
 
     // if we draw a clone circle, we start now the source dragging

@@ -1189,7 +1189,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       }
       else
       {
-        dt_dev_masks_selection_change(darktable.develop, form->formid, TRUE);
+        dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, TRUE);
       }
 
       if(gui->creation_continuous)

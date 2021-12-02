@@ -442,7 +442,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
     else
     {
       // we select the new form
-      dt_dev_masks_selection_change(darktable.develop, form->formid, TRUE);
+      dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, TRUE);
     }
 
     if(crea_module && gui->creation_continuous)
