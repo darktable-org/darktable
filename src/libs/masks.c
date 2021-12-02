@@ -1175,15 +1175,14 @@ static gboolean _tree_query_tooltip(GtkWidget *widget, gint x, gint y, gboolean 
   return show;
 }
 
-static int _is_form_used(int formid, dt_masks_form_t *grp, char *text, size_t text_length)
+static void _is_form_used(int formid, dt_masks_form_t *grp, char *text, size_t text_length, int *nb)
 {
-  int nb = 0;
   if(!grp)
   {
     for(const GList *forms = darktable.develop->forms; forms; forms = g_list_next(forms))
     {
       dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
-      if(form->type & DT_MASKS_GROUP) nb += _is_form_used(formid, form, text, text_length);
+      if(form->type & DT_MASKS_GROUP) _is_form_used(formid, form, text, text_length, nb);
     }
   }
   else if(grp->type & DT_MASKS_GROUP)
@@ -1196,15 +1195,14 @@ static int _is_form_used(int formid, dt_masks_form_t *grp, char *text, size_t te
       {
         if(point->formid == formid)
         {
-          nb++;
-          if(nb > 1) g_strlcat(text, "\n", text_length);
+          (*nb)++;
+          if(*nb > 1) g_strlcat(text, "\n", text_length);
           g_strlcat(text, grp->name, text_length);
         }
-        if(form->type & DT_MASKS_GROUP) nb += _is_form_used(formid, form, text, text_length);
+        if(form->type & DT_MASKS_GROUP) _is_form_used(formid, form, text, text_length, nb);
       }
     }
   }
-  return nb;
 }
 
 static void _lib_masks_list_recurs(GtkTreeStore *treestore, GtkTreeIter *toplevel, dt_masks_form_t *form,
@@ -1232,7 +1230,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore, GtkTreeIter *topleve
   int nbuse = 0;
   if(grp_id == 0)
   {
-    nbuse = _is_form_used(form->formid, NULL, str2, sizeof(str2));
+    _is_form_used(form->formid, NULL, str2, sizeof(str2), &nbuse);
     if(nbuse > 0) icuse = lm->ic_used;
   }
 
