@@ -2805,7 +2805,7 @@ static void _draw_retrieve_line_type(dt_iop_ashift_line_t *line)
 }
 
 // add a basic line. used for drawing perspective method
-static void _draw_basic_line(dt_iop_ashift_line_t *line, int x1, int y1, int x2, int y2,
+static void _draw_basic_line(dt_iop_ashift_line_t *line, float x1, float y1, float x2, float y2,
                              dt_iop_ashift_linetype_t type)
 {
   // store as homogeneous coordinates
@@ -3686,7 +3686,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   // first step: basic initialization of my_points_idx and counting of total_points
   for(int n = 0; n < lines_count; n++)
   {
-    const int length = lines[n].length;
+    const int length = MAX(lines[n].length, 2);
 
     total_points += length;
 
@@ -3734,13 +3734,26 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
     const float dx = (lines[n].p2[0] / scale - x) / (float)(length - 1);
     const float dy = (lines[n].p2[1] / scale - y) / (float)(length - 1);
 
-    for(int l = 0; l < length && offset < total_points; l++, offset++)
+    // for very small length, we set the second extrema at last point
+    if(length < 2)
     {
       my_points[2 * offset] = x;
       my_points[2 * offset + 1] = y;
+      offset++;
+      my_points[2 * offset] = lines[n].p2[0] / scale;
+      my_points[2 * offset + 1] = lines[n].p2[1] / scale;
+      offset++;
+    }
+    else
+    {
+      for(int l = 0; l < length && offset < total_points; l++, offset++)
+      {
+        my_points[2 * offset] = x;
+        my_points[2 * offset + 1] = y;
 
-      x += dx;
-      y += dy;
+        x += dx;
+        y += dy;
+      }
     }
   }
 
@@ -4236,7 +4249,7 @@ static int _draw_near_point(const float x, const float y, const float *points, c
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
   const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
-  const int delta = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
+  const float delta = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
 
   for(int i = 0; i < limit; i++)
   {
@@ -4293,7 +4306,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
   // if visibility of lines is switched off or no lines available, we would normally adjust the crop box
   // but since g->adjust_crop was FALSE, we have nothing to do
-  if(!g->lines) return TRUE;
+  if(!g->lines) return FALSE;
 
   // if we are moving a drawn line extrema, we do the change here
   if(g->draw_point_move)
@@ -4621,7 +4634,38 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
       if(which == 3)
       {
-        g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+        if(g->current_structure_method != ASHIFT_METHOD_LINES)
+          g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
+        else
+        {
+          // we completely remove the line from the list
+          if(g->lines[n].type == ASHIFT_LINE_HORIZONTAL_SELECTED)
+          {
+            g->horizontal_count--;
+            g->horizontal_weight -= 1.0f;
+          }
+          else
+          {
+            g->vertical_count--;
+            g->vertical_weight -= 1.0f;
+          }
+
+          const int count = g->lines_count - 1;
+          dt_iop_ashift_line_t *lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * count);
+          int pos = 0;
+          for(int i = 0; i < g->lines_count; i++)
+          {
+            if(i != n)
+            {
+              lines[pos] = g->lines[i];
+              pos++;
+            }
+          }
+          if(g->lines) free(g->lines);
+          g->lines = lines;
+          g->lines_count = count;
+        }
+
         handled = 1;
       }
       else if(g->current_structure_method != ASHIFT_METHOD_LINES)
