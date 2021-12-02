@@ -1399,7 +1399,7 @@ int dt_opencl_lock_device(const int pipetype)
   int *priority = (int *)malloc(prio_size);
   int mandatory;
 
-  switch(pipetype)
+  switch(pipetype & DT_DEV_PIXELPIPE_ANY)
   {
     case DT_DEV_PIXELPIPE_FULL:
       memcpy(priority, cl->dev_priority_image, prio_size);
