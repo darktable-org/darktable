@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-01 15:21-0600\n"
-"PO-Revision-Date: 2021-12-01 19:10-0600\n"
+"PO-Revision-Date: 2021-12-01 19:44-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -5944,7 +5944,7 @@ msgstr "Procesando..."
 #: ../src/control/crawler.c:357
 #, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
-msgstr ""
+msgstr "ERROR: %s FALLÓ sincronización XMP → BD"
 
 #: ../src/control/crawler.c:358 ../src/control/crawler.c:409
 #: ../src/control/crawler.c:461
@@ -5958,12 +5958,12 @@ msgstr ""
 #: ../src/control/crawler.c:363
 #, c-format
 msgid "SUCCESS: %s synced XMP → DB"
-msgstr ""
+msgstr "PROCESO EXITOSO: %s sincronizado XMP → BD"
 
 #: ../src/control/crawler.c:380
 #, c-format
 msgid "ERROR: %s NOT synced DB → XMP"
-msgstr ""
+msgstr "ERROR: %s FALLÓ sincronización BD → XMP"
 
 #: ../src/control/crawler.c:381 ../src/control/crawler.c:424
 #: ../src/control/crawler.c:475
@@ -5979,52 +5979,52 @@ msgstr ""
 #: ../src/control/crawler.c:386
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
-msgstr ""
+msgstr "PROCESO EXITOSO: %s sincronizado BD → XMP"
 
 #: ../src/control/crawler.c:408
 #, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
-msgstr ""
+msgstr "ERROR: %s FALLÓ sincronización nuevo (XMP) → antigua (BD)"
 
 #: ../src/control/crawler.c:413
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
-msgstr ""
+msgstr "PROCESO EXITOSO: %s sincronizado nuevo (XMP) → antigua (BD)"
 
 #: ../src/control/crawler.c:423
 #, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
-msgstr ""
+msgstr "ERROR: %s FALLÓ sincronización nueva (BD) → antiguo (XMP)"
 
 #: ../src/control/crawler.c:428
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
-msgstr ""
+msgstr "PROCESO EXITOSO: %s sincronizado nueva (BD) → antiguo (XMP)"
 
 #: ../src/control/crawler.c:436 ../src/control/crawler.c:487
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
-msgstr ""
+msgstr "ANORMALIDAD: %s existen inconsistencias en las fechas/horas"
 
 #: ../src/control/crawler.c:460
 #, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
-msgstr ""
+msgstr "ERROR: %s FALLÓ sincronización antiguo (XMP) → nueva (BD)"
 
 #: ../src/control/crawler.c:465
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
-msgstr ""
+msgstr "PROCESO EXITOSO: %s sincronizado antiguo (XMP) → nueva (BD)"
 
 #: ../src/control/crawler.c:474
 #, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
-msgstr ""
+msgstr "ERROR: %s FALLÓ sincronización antigua (BD) → nuevo (XMP)"
 
 #: ../src/control/crawler.c:479
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
-msgstr ""
+msgstr "PROCESO EXITOSO: %s sincronizado antigua (BD) → nuevo (XMP)"
 
 #: ../src/control/crawler.c:558
 #, c-format
@@ -6041,7 +6041,7 @@ msgstr "fecha y hora del xmp"
 
 #: ../src/control/crawler.c:635
 msgid "database timestamp"
-msgstr "hora y tiempo de la base de datos"
+msgstr "fecha y hora de la base de datos"
 
 #: ../src/control/crawler.c:639
 msgid "newest"
