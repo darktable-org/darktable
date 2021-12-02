@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-01 15:21-0600\n"
-"PO-Revision-Date: 2021-12-01 19:44-0600\n"
+"PO-Revision-Date: 2021-12-01 23:12-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -5755,42 +5755,40 @@ msgid "select"
 msgstr "seleccionar"
 
 #: ../src/common/ratings.c:285
-#, fuzzy
 msgid "upgrade"
-msgstr "Canales paralelos"
+msgstr "incrementar"
 
 #: ../src/common/ratings.c:286
-#, fuzzy
 msgid "downgrade"
-msgstr "abajo"
+msgstr "decrementar"
 
 #: ../src/common/ratings.c:290
 msgid "zero"
-msgstr "cero"
+msgstr "Cero"
 
 #: ../src/common/ratings.c:291
 msgid "one"
-msgstr "una"
+msgstr "Una"
 
 #: ../src/common/ratings.c:292
 msgid "two"
-msgstr "dos"
+msgstr "Dos"
 
 #: ../src/common/ratings.c:293
 msgid "three"
-msgstr "tres"
+msgstr "Tres"
 
 #: ../src/common/ratings.c:294
 msgid "four"
-msgstr "cuatro"
+msgstr "Cuatro"
 
 #: ../src/common/ratings.c:295
 msgid "five"
-msgstr "cinco"
+msgstr "Cinco"
 
 #: ../src/common/ratings.c:296
 msgid "reject"
-msgstr "rechazar"
+msgstr "Rechazar"
 
 #: ../src/common/styles.c:227
 #, c-format
@@ -5932,9 +5930,8 @@ msgid "fallbacks"
 msgstr "alternativas"
 
 #: ../src/control/control.c:132
-#, fuzzy
 msgid "show accels window"
-msgstr "mostrar la ventana de atajos"
+msgstr "Mostrar la ventana de atajos"
 
 # Traducción no literal: Se usa un mensaje con mejor sentido en español.
 #: ../src/control/control.c:310
@@ -8526,25 +8523,21 @@ msgid "right"
 msgstr "margen derecho"
 
 #: ../src/gui/accelerators.c:525
-#, fuzzy
 msgctxt "accel"
 msgid "middle"
 msgstr "media"
 
 #: ../src/gui/accelerators.c:526
-#, fuzzy
 msgctxt "accel"
 msgid "double"
 msgstr "doble"
 
 #: ../src/gui/accelerators.c:527
-#, fuzzy
 msgctxt "accel"
 msgid "triple"
 msgstr "triple"
 
 #: ../src/gui/accelerators.c:528
-#, fuzzy
 msgctxt "accel"
 msgid "long"
 msgstr "larga"
@@ -20041,11 +20034,11 @@ msgstr "gestionar preajustes"
 
 #: ../src/libs/lib.c:527
 msgid "nothing to save"
-msgstr "nada que guardar"
+msgstr "Nada para guardar"
 
 #: ../src/libs/lib.c:977
 msgid "show module"
-msgstr "mostrar módulo"
+msgstr "Mostrar módulo"
 
 #: ../src/libs/lib.c:1274
 msgid "utility module"
