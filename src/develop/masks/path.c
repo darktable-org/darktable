@@ -53,11 +53,11 @@ static void _path_border_get_XY(float p0x, float p0y, float p1x, float p1y, floa
 
   // now we get derivative points
   const double ti = 1.0 - (double)t;
-  
+
   const double t_t = (double)t * t;
   const double ti_ti = ti * ti;
   const double t_ti = t * ti;
-  
+
   const double a = 3.0 * ti_ti;
   const double b = 3.0 * (ti_ti - 2.0 * t_ti);
   const double c = 3.0 * (2.0 * t_ti - t_t);
