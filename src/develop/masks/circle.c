@@ -281,6 +281,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
       else if(!gui->creation_continuous)
         dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
+      dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid, TRUE);
       gui->creation_module = NULL;
     }
     else

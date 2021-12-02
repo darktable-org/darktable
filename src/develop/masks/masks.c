@@ -1062,8 +1062,9 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
   pzx += 0.5f;
   pzy += 0.5f;
 
-  dt_dev_masks_selection_change(darktable.develop, module,
-                                darktable.develop->mask_form_selected_id, FALSE);
+  if(darktable.develop->mask_form_selected_id)
+    dt_dev_masks_selection_change(darktable.develop, module,
+                                  darktable.develop->mask_form_selected_id, FALSE);
 
   if(form->functions)
     return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
