@@ -1052,6 +1052,14 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
         g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
         gtk_menu_shell_append(menu, item);
       }
+      else
+      {
+        // TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
+        // we can only do that after 3.8 is released.
+        item = gtk_menu_item_new_with_label(_("delete"));
+        g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
+        gtk_menu_shell_append(menu, item);
+      }
     }
     else if(nb > 0 && depth < 3)
     {
