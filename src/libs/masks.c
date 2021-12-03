@@ -254,7 +254,7 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 {
   if(!grp || !(grp->type & DT_MASKS_GROUP)) return;
   // we get the new formid
-  int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "formid"));
+  const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "formid"));
 
   // we add the form in this group
   dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
@@ -901,16 +901,16 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     }
 
     // and we display the context-menu
-    GtkMenuShell *menu;
+    GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
     GtkWidget *item;
-    menu = GTK_MENU_SHELL(gtk_menu_new());
 
     // we get all infos from selection
-    int nb = gtk_tree_selection_count_selected_rows(selection);
+    const int nb = gtk_tree_selection_count_selected_rows(selection);
     int from_group = 0;
 
     int grpid = 0;
     int depth = 0;
+
     if(nb > 0)
     {
       GList *selected = gtk_tree_selection_get_selected_rows(selection, NULL);
@@ -1058,7 +1058,6 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
       g_signal_connect(item, "activate", (GCallback)_tree_group, self);
       gtk_menu_shell_append(menu, item);
     }
-
 
     if(from_group && depth < 3)
     {
