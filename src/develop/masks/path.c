@@ -53,11 +53,11 @@ static void _path_border_get_XY(float p0x, float p0y, float p1x, float p1y, floa
 
   // now we get derivative points
   const double ti = 1.0 - (double)t;
-  
+
   const double t_t = (double)t * t;
   const double ti_ti = ti * ti;
   const double t_ti = t * ti;
-  
+
   const double a = 3.0 * ti_ti;
   const double b = 3.0 * (ti_ti - 2.0 * t_ti);
   const double c = 3.0 * (2.0 * t_ti - t_t);
@@ -1185,11 +1185,12 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         else if(!gui->creation_continuous)
           dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
         dt_masks_iop_update(crea_module);
+        dt_dev_masks_selection_change(darktable.develop, crea_module, form->formid, TRUE);
         gui->creation_module = NULL;
       }
       else
       {
-        dt_dev_masks_selection_change(darktable.develop, form->formid, TRUE);
+        dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, TRUE);
       }
 
       if(gui->creation_continuous)
