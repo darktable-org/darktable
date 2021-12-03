@@ -974,12 +974,9 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
         g_signal_connect(item, "activate", (GCallback)_tree_add_gradient, module);
         gtk_menu_shell_append(menu, item);
 
-        item = gtk_menu_item_new_with_label(_("add existing shape"));
-        gtk_menu_shell_append(menu, item);
-        gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
         // existing forms
+        gboolean has_unused_shapes = FALSE;
         GtkWidget *menu0 = gtk_menu_new();
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu0);
         for(GList *forms = darktable.develop->forms; forms; forms = g_list_next(forms))
         {
           dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
@@ -1027,22 +1024,34 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
             g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
             g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_tree_add_exist), grp);
             gtk_menu_shell_append(GTK_MENU_SHELL(menu0), item);
+            has_unused_shapes = TRUE;
           }
+        }
+
+        if(has_unused_shapes)
+        {
+          item = gtk_menu_item_new_with_label(_("add existing shape"));
+          gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu0);
+          gtk_menu_shell_append(menu, item);
         }
       }
     }
 
     if(!from_group && nb > 0)
     {
-      if(nb == 1)
+      dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grpid);
+      if(!(grp && (grp->type & DT_MASKS_GROUP)))
       {
-        item = gtk_menu_item_new_with_label(_("duplicate this shape"));
-        g_signal_connect(item, "activate", (GCallback)_tree_duplicate_shape, self);
+        if(nb == 1)
+        {
+          item = gtk_menu_item_new_with_label(_("duplicate this shape"));
+          g_signal_connect(item, "activate", (GCallback)_tree_duplicate_shape, self);
+          gtk_menu_shell_append(menu, item);
+        }
+        item = gtk_menu_item_new_with_label(_("delete this shape"));
+        g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
         gtk_menu_shell_append(menu, item);
       }
-      item = gtk_menu_item_new_with_label(_("delete this shape"));
-      g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
-      gtk_menu_shell_append(menu, item);
     }
     else if(nb > 0 && depth < 3)
     {
