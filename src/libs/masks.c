@@ -254,7 +254,8 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 {
   if(!grp || !(grp->type & DT_MASKS_GROUP)) return;
   // we get the new formid
-  int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "formid"));
+  const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "formid"));
+  dt_iop_module_t *module = g_object_get_data(G_OBJECT(button), "module");
 
   // we add the form in this group
   dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
@@ -265,6 +266,7 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 
     // and we apply the change
     dt_masks_update_image(darktable.develop);
+    dt_masks_iop_update(module);
     dt_dev_masks_selection_change(darktable.develop, NULL, grp->formid, TRUE);
   }
 }
@@ -901,16 +903,16 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     }
 
     // and we display the context-menu
-    GtkMenuShell *menu;
+    GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
     GtkWidget *item;
-    menu = GTK_MENU_SHELL(gtk_menu_new());
 
     // we get all infos from selection
-    int nb = gtk_tree_selection_count_selected_rows(selection);
+    const int nb = gtk_tree_selection_count_selected_rows(selection);
     int from_group = 0;
 
     int grpid = 0;
     int depth = 0;
+
     if(nb > 0)
     {
       GList *selected = gtk_tree_selection_get_selected_rows(selection, NULL);
@@ -974,12 +976,9 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
         g_signal_connect(item, "activate", (GCallback)_tree_add_gradient, module);
         gtk_menu_shell_append(menu, item);
 
-        item = gtk_menu_item_new_with_label(_("add existing shape"));
-        gtk_menu_shell_append(menu, item);
-        gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
         // existing forms
+        gboolean has_unused_shapes = FALSE;
         GtkWidget *menu0 = gtk_menu_new();
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu0);
         for(GList *forms = darktable.develop->forms; forms; forms = g_list_next(forms))
         {
           dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
@@ -1025,24 +1024,45 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
             // we add the menu entry
             item = gtk_menu_item_new_with_label(str);
             g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
+            g_object_set_data(G_OBJECT(item), "module", module);
             g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_tree_add_exist), grp);
-            gtk_menu_shell_append(menu, item);
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu0), item);
+            has_unused_shapes = TRUE;
           }
+        }
+
+        if(has_unused_shapes)
+        {
+          item = gtk_menu_item_new_with_label(_("add existing shape"));
+          gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu0);
+          gtk_menu_shell_append(menu, item);
         }
       }
     }
 
     if(!from_group && nb > 0)
     {
-      if(nb == 1)
+      dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grpid);
+      if(!(grp && (grp->type & DT_MASKS_GROUP)))
       {
-        item = gtk_menu_item_new_with_label(_("duplicate this shape"));
-        g_signal_connect(item, "activate", (GCallback)_tree_duplicate_shape, self);
+        if(nb == 1)
+        {
+          item = gtk_menu_item_new_with_label(_("duplicate this shape"));
+          g_signal_connect(item, "activate", (GCallback)_tree_duplicate_shape, self);
+          gtk_menu_shell_append(menu, item);
+        }
+        item = gtk_menu_item_new_with_label(_("delete this shape"));
+        g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
         gtk_menu_shell_append(menu, item);
       }
-      item = gtk_menu_item_new_with_label(_("delete this shape"));
-      g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
-      gtk_menu_shell_append(menu, item);
+      else
+      {
+        // TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
+        // we can only do that after 3.8 is released.
+        item = gtk_menu_item_new_with_label(_("delete"));
+        g_signal_connect(item, "activate", (GCallback)_tree_delete_shape, self);
+        gtk_menu_shell_append(menu, item);
+      }
     }
     else if(nb > 0 && depth < 3)
     {
@@ -1058,7 +1078,6 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
       g_signal_connect(item, "activate", (GCallback)_tree_group, self);
       gtk_menu_shell_append(menu, item);
     }
-
 
     if(from_group && depth < 3)
     {
