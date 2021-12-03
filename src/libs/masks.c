@@ -1026,7 +1026,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
             item = gtk_menu_item_new_with_label(str);
             g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
             g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_tree_add_exist), grp);
-            gtk_menu_shell_append(menu, item);
+            gtk_menu_shell_append(GTK_MENU_SHELL(menu0), item);
           }
         }
       }
