@@ -1062,6 +1062,10 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
   pzx += 0.5f;
   pzy += 0.5f;
 
+  if(darktable.develop->mask_form_selected_id)
+    dt_dev_masks_selection_change(darktable.develop, module,
+                                  darktable.develop->mask_form_selected_id, FALSE);
+
   if(form->functions)
     return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
 
@@ -1302,9 +1306,9 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
   dt_masks_change_form_gui(grp);
   darktable.develop->form_gui->edit_mode = value;
   if(value && form)
-    dt_dev_masks_selection_change(darktable.develop, form->formid, FALSE);
+    dt_dev_masks_selection_change(darktable.develop, NULL, form->formid, FALSE);
   else
-    dt_dev_masks_selection_change(darktable.develop, 0, FALSE);
+    dt_dev_masks_selection_change(darktable.develop, NULL, 0, FALSE);
 
   if(bd->masks_support)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
@@ -1339,9 +1343,9 @@ void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module, const in
   darktable.develop->form_gui->edit_mode = value;
 
   if(value && form)
-    dt_dev_masks_selection_change(darktable.develop, formid, FALSE);
+    dt_dev_masks_selection_change(darktable.develop, NULL, formid, FALSE);
   else
-    dt_dev_masks_selection_change(darktable.develop, 0, FALSE);
+    dt_dev_masks_selection_change(darktable.develop, NULL, 0, FALSE);
 
   dt_control_queue_redraw_center();
 }
@@ -2160,14 +2164,14 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
 // allow to select a shape inside an iop
 void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel)
 {
-  int selection_changed = 0;
+  gboolean selection_changed = FALSE;
 
   if(sel)
   {
     if(sel->formid != darktable.develop->mask_form_selected_id)
     {
       darktable.develop->mask_form_selected_id = sel->formid;
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
   }
   else
@@ -2175,12 +2179,13 @@ void dt_masks_select_form(struct dt_iop_module_t *module, dt_masks_form_t *sel)
     if(darktable.develop->mask_form_selected_id != 0)
     {
       darktable.develop->mask_form_selected_id = 0;
-      selection_changed = 1;
+      selection_changed = TRUE;
     }
   }
   if(selection_changed)
   {
-    if(!module && darktable.develop->mask_form_selected_id == 0) module = darktable.develop->gui_module;
+    if(!module && darktable.develop->mask_form_selected_id == 0)
+      module = darktable.develop->gui_module;
     if(module)
     {
       if(module->masks_selection_changed)
