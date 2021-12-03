@@ -255,6 +255,7 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
   if(!grp || !(grp->type & DT_MASKS_GROUP)) return;
   // we get the new formid
   const int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "formid"));
+  dt_iop_module_t *module = g_object_get_data(G_OBJECT(button), "module");
 
   // we add the form in this group
   dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
@@ -265,6 +266,7 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 
     // and we apply the change
     dt_masks_update_image(darktable.develop);
+    dt_masks_iop_update(module);
     dt_dev_masks_selection_change(darktable.develop, NULL, grp->formid, TRUE);
   }
 }
@@ -1022,6 +1024,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
             // we add the menu entry
             item = gtk_menu_item_new_with_label(str);
             g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
+            g_object_set_data(G_OBJECT(item), "module", module);
             g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(_tree_add_exist), grp);
             gtk_menu_shell_append(GTK_MENU_SHELL(menu0), item);
             has_unused_shapes = TRUE;
