@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-04 23:55+0100\n"
+"PO-Revision-Date: 2021-12-05 00:48+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -84,7 +84,7 @@ msgstr "Generale"
 
 #: ../build/bin/preferences_gen.h:3749
 msgid "hide built-in presets for utility modules"
-msgstr "Nascondi i preset incorporati per i moduli di utilità"
+msgstr "Nascondi le preimpostazioni incorporate per i moduli di utilità"
 
 #: ../build/bin/preferences_gen.h:3760 ../build/bin/preferences_gen.h:3796
 #: ../build/bin/preferences_gen.h:3832 ../build/bin/preferences_gen.h:3868
@@ -156,7 +156,8 @@ msgstr "FALSO"
 #: ../build/bin/preferences_gen.h:3763
 msgid "hides built-in presets of utility modules in presets menu."
 msgstr ""
-"Nascondi i preset incorporati nei moduli di utilità nel menu dei preset."
+"Nascondi le preimpostazioni incorporate nei moduli di utilità nel menu dei"
+" preimpostazioni."
 
 #: ../build/bin/preferences_gen.h:3785
 msgid "use single-click in the collections module"
@@ -633,15 +634,15 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4936
 msgid "hide built-in presets for processing modules"
-msgstr "Nascondi i preset incorporati per i moduli di processo"
+msgstr "Nascondi le preimpostazioni incorporate per i moduli di processo"
 
 #: ../build/bin/preferences_gen.h:4950
 msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
-"Nascondi i preset incorporati dei moduli di processo in entrambi i menu "
-"presets e preferiti."
+"Nascondi le preimpostazioni incorporate dei moduli di processo in entrambi i"
+" menu preimpostazioni e preferiti."
 
 #: ../build/bin/preferences_gen.h:4972 ../build/bin/preferences_gen.h:4986
 msgid "show the guides widget in modules UI"
@@ -999,7 +1000,8 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5812
 msgid "auto-apply per camera basecurve presets"
-msgstr "Applica automaticamente i preset della curva base per la fotocamera"
+msgstr ""
+"Applica automaticamente le preimpostazioni della curva base per la fotocamera"
 
 #: ../build/bin/preferences_gen.h:5826
 msgid ""
@@ -1290,7 +1292,7 @@ msgstr "Chiedi prima di eliminare uno stile"
 
 #: ../build/bin/preferences_gen.h:6636
 msgid "ask before deleting a preset"
-msgstr "Chiedi prima di eliminare un preset"
+msgstr "Chiedi prima di eliminare una preimpostazione"
 
 #: ../build/bin/preferences_gen.h:6650
 msgid "will ask for confirmation before deleting or overwriting a preset"
@@ -2513,7 +2515,7 @@ msgstr "Proporzioni"
 #: ../build/lib/darktable/plugins/introspection_borders.c:263
 #: ../src/iop/flip.c:74 ../src/libs/print_settings.c:2200
 msgid "orientation"
-msgstr "Orientamento"
+msgstr "orientamento"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:134
 #: ../build/lib/darktable/plugins/introspection_borders.c:267
@@ -3478,7 +3480,7 @@ msgstr "Y0U0V0"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:248
 #: ../src/iop/atrous.c:1635 ../src/iop/highpass.c:402
 msgid "sharpness"
-msgstr "Nitidezza "
+msgstr "nitidezza"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:129
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:252
@@ -4121,7 +4123,7 @@ msgstr "Punto di bianco"
 #: ../src/gui/presets.c:560 ../src/iop/basicadj.c:597 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:832 ../src/libs/metadata_view.c:140
 msgid "exposure"
-msgstr "Esposizione"
+msgstr "esposizione"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:261
 #: ../build/lib/darktable/plugins/introspection_retouch.c:402
@@ -4911,8 +4913,8 @@ msgstr "Selezionata %d immagine di %d (#%d) nella raccolta attuale"
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
-msgstr[0] "%d immagine di %d è stata selezionata nella raccolta"
-msgstr[1] "%d immagini di %d sono state selezionate nella raccolta"
+msgstr[0] "è stata selezionata %d immagine su %d presenti nella raccolta"
+msgstr[1] "sono state selezionate %d immagini su %d presenti nella raccolta"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:1397 ../src/common/colorspaces.c:1686
@@ -7505,13 +7507,13 @@ msgid ""
 "ctrl+click to reapply any automatic presets"
 msgstr ""
 "Azzera i parametri\n"
-"Crtrl+click per applicare di nuovo qualsiasi preset automatico"
+"Crtrl+click per applicare di nuovo qualsiasi preimpostazione automatica"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2454 ../src/develop/imageop.c:3249
 #: ../src/gui/preferences.c:791 ../src/libs/lib.c:1264
 msgid "presets"
-msgstr "Preset"
+msgstr "Preimpostazioni"
 
 #: ../src/develop/imageop.c:2456
 msgid ""
@@ -7930,11 +7932,9 @@ msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
-"La cronologia ha il modulo disabilitato ma è richiesto per questo tipo di"
-" immagine.\n"
-"Probabilmente introdotto applicando una preimpostazione, uno stile o un copia"
-" e incolla "
-"della cronologia"
+"La cronologia ha il modulo disabilitato ma è richiesto per questo tipo di \n"
+" immagine. Probabile che sia accaduto applicando una preimpostazione, uno "
+" stile o un copia e incolla della cronologia"
 
 #: ../src/develop/pixelpipe_hb.c:398
 msgid "disabled as not appropriate"
@@ -7945,11 +7945,9 @@ msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
-"La cronologia ha il modulo abilitato ma non è permesso per questo tipo di"
-" immagine.\n"
-"Probabilmente introdotto applicando una preimpostazione, uno stile o un copia"
-" e incolla "
-"della cronologia"
+"La cronologia ha il modulo abilitato ma non è permesso per questo tipo di \n"
+" immagine. Probabile che sia accaduto applicando una preimpostazione, uno "
+" stile o un copia e incolla della cronologia"
 
 #: ../src/develop/pixelpipe_hb.c:2256
 msgid ""
@@ -9536,7 +9534,7 @@ msgstr ""
 #. tags
 #: ../src/gui/import_metadata.c:461
 msgid "tag presets"
-msgstr "Etichette dei preset"
+msgstr "Etichette dei preimpostazioni"
 
 #: ../src/gui/import_metadata.c:475
 msgid "comma separated list of tags"
@@ -9687,7 +9685,7 @@ msgstr "Esporta..."
 #: ../src/gui/preferences.c:1002
 #, c-format
 msgid "failed to import preset %s"
-msgstr "Non riesco ad importare il la preimpostazione %s"
+msgstr "Non riesco ad importare la preimpostazione %s"
 
 #: ../src/gui/preferences.c:1013
 msgid "select preset(s) to import"
@@ -9729,13 +9727,13 @@ msgstr "monocromia"
 #: ../src/gui/presets.c:161
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
-msgstr "Il preset '%s' è di sola lettura! Non puoi cancellarlo!"
+msgstr "La preimpostazione '%s' è di sola lettura! Non puoi cancellarla!"
 
 #: ../src/gui/presets.c:173 ../src/gui/presets.c:403 ../src/libs/lib.c:240
 #: ../src/libs/modulegroups.c:3718
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "Vuoi veramente eliminare il preset `%s'?"
+msgstr "Vuoi veramente eliminare la preimpostazione `%s'?"
 
 #: ../src/gui/presets.c:177 ../src/gui/presets.c:408 ../src/libs/lib.c:244
 #: ../src/libs/modulegroups.c:3722
@@ -9747,15 +9745,15 @@ msgstr "Elimino impostazione?"
 #: ../src/gui/presets.c:206 ../src/gui/presets.c:844 ../src/gui/presets.c:850
 #: ../src/libs/lib.c:189 ../src/libs/lib.c:204 ../src/libs/lib.c:215
 msgid "new preset"
-msgstr "Nuovo preset"
+msgstr "Nuova preimpostazione"
 
 #: ../src/gui/presets.c:211
 msgid "please give preset a name"
-msgstr "Per favore, dai un nome al preset"
+msgstr "Per favore, dai un nome alla preimpostazione"
 
 #: ../src/gui/presets.c:216
 msgid "unnamed preset"
-msgstr "Preset senza nome"
+msgstr "Preimpostazione senza nome"
 
 #: ../src/gui/presets.c:243
 #, c-format
@@ -9763,12 +9761,12 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"Preset '%s' già esistente.\n"
-"Vuoi sovrascriverlo?"
+"La preimpostazione '%s' è già esistente.\n"
+"Vuoi sovrascriverla?"
 
 #: ../src/gui/presets.c:248
 msgid "overwrite preset?"
-msgstr "Sovrascrivo preset?"
+msgstr "Sovrascrivo la preimpostazione?"
 
 #: ../src/gui/presets.c:366 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
@@ -9791,7 +9789,7 @@ msgstr "_Esporta..."
 
 #: ../src/gui/presets.c:484
 msgid "name of the preset"
-msgstr "Nome del preset"
+msgstr "Nome della preimpostazione"
 
 #: ../src/gui/presets.c:492
 msgid "description or further information"
@@ -9806,7 +9804,7 @@ msgstr ""
 #: ../src/gui/presets.c:498
 msgid "only show this preset for matching images"
 msgstr ""
-"Mostra solo questo preset per le immagini\n"
+"Mostra solo questa preimpostazione per le immagini\n"
 "che corrispondono a questi criteri:"
 
 #: ../src/gui/presets.c:499
@@ -9814,8 +9812,8 @@ msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
 msgstr ""
-"Attento con questa opzione. Potrebbe essere l'ultima volta che vedi il tuo "
-"preset."
+"Attento con questa opzione. Potrebbe essere l'ultima volta che vedi la tua "
+"preimpostazione."
 
 #: ../src/gui/presets.c:524
 #, no-c-format
@@ -9872,21 +9870,22 @@ msgstr "Formato"
 #: ../src/gui/presets.c:606
 msgid "select image types you want this preset to be available for"
 msgstr ""
-"Seleziona i tipi di immagine per le quali questo preset sarà disponibile"
+"Seleziona i tipi di immagine per le quali questa preimpostazione sarà"
+" disponibile"
 
 #: ../src/gui/presets.c:779
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
-msgstr "Il preset '%s' è di sola lettura! Non puoi modificarlo!"
+msgstr "La preimpostazione '%s' è di sola lettura! Non puoi modificarla!"
 
 #: ../src/gui/presets.c:808 ../src/libs/lib.c:157
 #, c-format
 msgid "do you really want to update the preset `%s'?"
-msgstr "Vuoi veramente aggiornare il preset `%s'?"
+msgstr "Vuoi veramente aggiornare la preimpostazione `%s'?"
 
 #: ../src/gui/presets.c:812 ../src/libs/lib.c:161
 msgid "update preset?"
-msgstr "Aggiorno il preset?"
+msgstr "Aggiorno la preimpostazione?"
 
 #: ../src/gui/presets.c:1078 ../src/libs/modulegroups.c:3804
 #: ../src/libs/modulegroups.c:3813
@@ -9899,7 +9898,7 @@ msgstr "Gestisci le preimpostazioni rapide"
 
 #: ../src/gui/presets.c:1257
 msgid "manage quick presets list..."
-msgstr "Gestione rapida elenco preset..."
+msgstr "Gestione lista rapida delle preimpostazioni..."
 
 #: ../src/gui/presets.c:1390
 msgid "(default)"
@@ -9911,19 +9910,19 @@ msgstr "Disabilitato: versione del modulo errata"
 
 #: ../src/gui/presets.c:1436 ../src/libs/lib.c:511
 msgid "edit this preset.."
-msgstr "Modifica questo preset..."
+msgstr "Modifica questa preimpostazione..."
 
 #: ../src/gui/presets.c:1440 ../src/libs/lib.c:515
 msgid "delete this preset"
-msgstr "Elimina questo preset"
+msgstr "Elimina questa preimpostazione"
 
 #: ../src/gui/presets.c:1446 ../src/libs/lib.c:523
 msgid "store new preset.."
-msgstr "Salva nuovo preset..."
+msgstr "Salva nuova preimpostazione..."
 
 #: ../src/gui/presets.c:1452 ../src/libs/lib.c:535
 msgid "update preset"
-msgstr "Aggiorna preset"
+msgstr "Aggiorna la preimpostazione"
 
 #: ../src/gui/styles_dialog.c:206
 #, c-format
@@ -10663,7 +10662,7 @@ msgstr[1] "%d/%d esportati in Piwigo"
 
 #: ../src/iop/ashift.c:120
 msgid "rotate and perspective"
-msgstr "Ruota e prospettiva"
+msgstr "rotazione e prospettiva"
 
 #: ../src/iop/ashift.c:125
 msgid "rotation|keystone|distortion|crop|reframe"
@@ -11431,7 +11430,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:73 ../src/iop/diffuse.c:317
 msgid "surface blur"
-msgstr "Sfocatura superficie"
+msgstr "sfocatura superficie"
 
 #: ../src/iop/bilateral.cc:78
 msgid "denoise (bilateral filter)"
@@ -11487,7 +11486,7 @@ msgstr "Intensità di luce soffusa"
 
 #: ../src/iop/blurs.c:81
 msgid "blurs"
-msgstr "Sfocature"
+msgstr "sfocatura"
 
 #: ../src/iop/blurs.c:86
 msgid "blur|lens|motion"
@@ -11676,7 +11675,7 @@ msgstr "Scegli colore per la cornice dall'immagine"
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:82
 msgid "raw chromatic aberrations"
-msgstr "Aberrazioni cromatiche del raw"
+msgstr "aberrazioni cromatiche del raw"
 
 #: ../src/iop/cacorrect.c:87
 msgid "correct chromatic aberrations for Bayer sensors"
@@ -11842,7 +11841,7 @@ msgstr ""
 
 #: ../src/iop/censorize.c:77
 msgid "censorize"
-msgstr "Censura"
+msgstr "censura"
 
 #: ../src/iop/censorize.c:82
 msgid "censorize license plates and body parts for privacy"
@@ -12000,7 +11999,7 @@ msgstr "B/N Kodak Tri-X 400"
 
 #: ../src/iop/channelmixerrgb.c:195
 msgid "color calibration"
-msgstr "Calibrazione colore"
+msgstr "calibrazione colore"
 
 #: ../src/iop/channelmixerrgb.c:200
 msgid "channel mixer|white balance|monochrome"
@@ -12956,7 +12955,7 @@ msgstr "Ottimizza le curve RGB per rimuovere le dominanti di colore"
 
 #: ../src/iop/colorbalancergb.c:160
 msgid "color balance rgb"
-msgstr "Bilanciamento colore RGB"
+msgstr "bilanciamento colore RGB"
 
 #: ../src/iop/colorbalancergb.c:165
 msgid ""
@@ -13849,7 +13848,7 @@ msgstr ""
 
 #: ../src/iop/crop.c:130
 msgid "crop"
-msgstr "Ritaglia"
+msgstr "ritaglio"
 
 #: ../src/iop/crop.c:135
 msgid "reframe|distortion"
@@ -14272,7 +14271,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:127
 msgid "diffuse or sharpen"
-msgstr "Diffuso o nitido"
+msgstr "diffusione o nitidezza"
 
 #: ../src/iop/diffuse.c:132
 msgid "diffusion|deconvolution|blur|sharpening"
@@ -14508,7 +14507,7 @@ msgstr ""
 
 #: ../src/iop/dither.c:97 ../src/iop/vignette.c:997
 msgid "dithering"
-msgstr "Dithering"
+msgstr "dithering"
 
 #: ../src/iop/dither.c:102
 msgid ""
@@ -16624,7 +16623,7 @@ msgstr "Nascondi controlli colore"
 
 #: ../src/iop/nlmeans.c:88
 msgid "astrophoto denoise"
-msgstr "Rimuovi rumore nelle astro-fotografie"
+msgstr "riduci rumore foto astronomiche"
 
 #: ../src/iop/nlmeans.c:93
 msgid "denoise (non-local means)"
@@ -17278,7 +17277,7 @@ msgstr "Regola la saturazione delle alteluci"
 #: ../src/iop/sharpen.c:73
 msgctxt "modulename"
 msgid "sharpen"
-msgstr "Nitidezza"
+msgstr "nitidezza"
 
 #: ../src/iop/sharpen.c:93
 msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
@@ -19943,8 +19942,8 @@ msgstr "Monta la fotocamera"
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
-msgstr[0] "%d immagine fuori dal %d selezionato"
-msgstr[1] "%d immagini fuori dalle %d selezionate"
+msgstr[0] "%d immagine nuova delle %d selezionate"
+msgstr[1] "%d immagini nuove delle %d selezionate"
 
 #: ../src/libs/import.c:1118
 msgid "you can't delete the selected place"
@@ -20074,11 +20073,11 @@ msgstr "v3.0 per JPEG/input non-RAW"
 
 #: ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
-msgstr "Elimina preset per il modulo obsoleto"
+msgstr "Eliminano la preimpostazione per il modulo obsoleto"
 
 #: ../src/libs/lib.c:502
 msgid "manage presets..."
-msgstr "Gestione preset..."
+msgstr "Gestione delle preimpostazioni..."
 
 #: ../src/libs/lib.c:527
 msgid "nothing to save"
@@ -20646,7 +20645,7 @@ msgstr "Contrassegnata per l'eliminazione"
 
 #: ../src/libs/metadata_view.c:362
 msgid "auto-applying presets applied"
-msgstr "Applicato preset auto-applicante"
+msgstr "Applicata preimpostazione auto-applicante"
 
 #: ../src/libs/metadata_view.c:363
 msgid "legacy flag. set for all new images"
@@ -21018,7 +21017,7 @@ msgstr "Sposta gruppo a destra"
 
 #: ../src/libs/modulegroups.c:3482
 msgid "rename preset"
-msgstr "Rinomina la preimpostazione"
+msgstr "Rinomina le preimpostazioni"
 
 #: ../src/libs/modulegroups.c:3489
 msgid "new preset name :"
@@ -21072,7 +21071,7 @@ msgstr "Gruppi modulo"
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
-"Questo preset è di sola lettura.\n"
+"Questa preimpostazione è di sola lettura.\n"
 "Duplicalo se vuoi apportare delle modifiche"
 
 #: ../src/libs/navigation.c:62
@@ -21350,7 +21349,7 @@ msgstr "Stampa"
 
 #: ../src/libs/recentcollect.c:67
 msgid "recently used collections"
-msgstr "Raccolte usate recentemente"
+msgstr "Raccolte usate di recente"
 
 #: ../src/libs/recentcollect.c:99
 msgctxt "accel"
@@ -21531,7 +21530,7 @@ msgstr ""
 
 #: ../src/libs/styles.c:824 ../src/libs/styles.c:825
 msgid "filter style names"
-msgstr "Filtra nome stile"
+msgstr "Filtra per nome stile"
 
 #: ../src/libs/styles.c:836
 msgid "create duplicate"
@@ -21936,7 +21935,7 @@ msgstr "Etichette colore"
 
 #: ../src/libs/tools/colorlabels.c:85
 msgid "toggle color label of selected images"
-msgstr "Attiva etichetta colore delle immagini selezionate"
+msgstr "Attiva etichetta colore alle immagini selezionate"
 
 #: ../src/libs/tools/darktable.c:285
 #, c-format
@@ -22394,7 +22393,8 @@ msgstr "Nessuna immagine da aprire!"
 #: ../src/views/darkroom.c:1309
 msgid "no userdefined presets for favorite modules were found"
 msgstr ""
-"Non sono stati trovati preset definiti dall'utente per i moduli preferiti "
+"Non sono state trovate preimpostazione definite dall'utente per i moduli"
+" preferiti"
 
 #: ../src/views/darkroom.c:1314
 #, c-format
@@ -22407,7 +22407,7 @@ msgstr "Nessuno stile è stato ancora creato"
 
 #: ../src/views/darkroom.c:2252
 msgid "quick access to presets"
-msgstr "Accesso rapido ai presets"
+msgstr "Accesso rapido alle preimpostazioni"
 
 #: ../src/views/darkroom.c:2261
 msgid "quick access for applying any of your styles"
