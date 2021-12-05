@@ -196,7 +196,7 @@ static void _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, 
     const gchar *name = gtk_entry_get_text(GTK_ENTRY(g->name));
     if(name && *name)
     {
-        
+
       /* show prompt dialog when style already exists */
       if(name && (dt_styles_exists(name)) != 0)
       {
@@ -210,15 +210,15 @@ static void _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, 
 
         gtk_window_set_title(GTK_WINDOW(dlg_overwrite), _("overwrite style?"));
 
-        gint dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
+        const gint dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
         gtk_widget_destroy(dlg_overwrite);
 
         /* on button yes delete style name for overwriting */
-        if(dlg_ret == GTK_RESPONSE_YES) 
+        if(dlg_ret == GTK_RESPONSE_YES)
         {
           dt_styles_delete_by_name(name);
         }
-        else 
+        else
         {
          /* on RESPONSE_NO and escape key return to dialog */
           return;
@@ -323,8 +323,8 @@ static void _gui_styles_item_toggled(GtkCellRendererToggle *cell, gchar *path_st
 
   gtk_tree_model_get_iter(model, &iter, path);
   gtk_tree_model_get(model, &iter,
-                     DT_STYLE_ITEMS_COL_ENABLED, &toggle_item,
-                     DT_STYLE_ITEMS_COL_NUM, &num,
+                     DT_STYLE_ITEMS_COL_ENABLED,    &toggle_item,
+                     DT_STYLE_ITEMS_COL_NUM,        &num,
                      DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num,
                      -1);
 
@@ -548,12 +548,12 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
         {
           gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
           gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
-                             DT_STYLE_ITEMS_COL_ENABLED, TRUE,
-                             DT_STYLE_ITEMS_COL_UPDATE, FALSE,
-                             DT_STYLE_ITEMS_COL_NAME, item->name,
-                             DT_STYLE_ITEMS_COL_NUM, item->num,
-                             DT_STYLE_ITEMS_COL_UPDATE_NUM,
-                             item->selimg_num, -1);
+                             DT_STYLE_ITEMS_COL_ENABLED,    TRUE,
+                             DT_STYLE_ITEMS_COL_UPDATE,     FALSE,
+                             DT_STYLE_ITEMS_COL_NAME,       item->name,
+                             DT_STYLE_ITEMS_COL_NUM,        item->num,
+                             DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
+                             -1);
           has_item = TRUE;
         }
         else if(item->num != -1
@@ -561,9 +561,9 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
         {
           gtk_list_store_append(GTK_LIST_STORE(liststore_new), &iter);
           gtk_list_store_set(GTK_LIST_STORE(liststore_new), &iter,
-                             DT_STYLE_ITEMS_COL_ENABLED, item->num != -1 ? TRUE : FALSE,
-                             DT_STYLE_ITEMS_COL_NAME, item->name,
-                             DT_STYLE_ITEMS_COL_NUM, item->num,
+                             DT_STYLE_ITEMS_COL_ENABLED,    item->num != -1 ? TRUE : FALSE,
+                             DT_STYLE_ITEMS_COL_NAME,       item->name,
+                             DT_STYLE_ITEMS_COL_NUM,        item->num,
                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
                              -1);
           has_new_item = TRUE;
