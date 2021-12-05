@@ -1419,6 +1419,37 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   extraction_result_t extraction_result = _extract_patches(out, roi_in, g, RGB_to_XYZ,
                                                            patches);
 
+  // find reference white patch
+  dt_aligned_pixel_t XYZ_white_ref;
+  dt_Lab_to_XYZ(g->checker->values[g->checker->white].Lab, XYZ_white_ref);
+  const float white_ref_norm = euclidean_norm(XYZ_white_ref);
+
+  // find test white patch
+  dt_aligned_pixel_t XYZ_white_test;
+  for(size_t c = 0; c < 3; c++) XYZ_white_test[c] = patches[g->checker->white * 4 + c];
+  const float white_test_norm = euclidean_norm(XYZ_white_test);
+
+  // Exposure compensation
+  // Ensure the relative luminance of the test patch (compared to white patch)
+  // is the same as the relative luminance of the reference patch.
+  // This compensate for lighting fall-off and unevenness
+  for(size_t k = 0; k < g->checker->patches; k++)
+  {
+    float *const sample = patches + k * 4;
+
+    dt_aligned_pixel_t XYZ_ref;
+    dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
+
+    const float sample_norm = euclidean_norm(sample);
+    const float ref_norm = euclidean_norm(XYZ_ref);
+
+    const float relative_luminance_test = sample_norm / white_test_norm;
+    const float relative_luminance_ref = ref_norm / white_ref_norm;
+
+    const float luma_correction = relative_luminance_ref / relative_luminance_test;
+    for(size_t c = 0; c < 3; ++c) sample[c] *= luma_correction;
+  }
+
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
   float pre_wb_max_delta_E = 0.f;
