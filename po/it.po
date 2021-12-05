@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-05 00:48+0100\n"
+"PO-Revision-Date: 2021-12-05 14:14+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -1217,11 +1217,12 @@ msgstr "Sicurezza"
 
 #: ../build/bin/preferences_gen.h:6314
 msgid "ask before removing images from the library"
-msgstr "Chiedi prima di rimuovere le immagini dalla biblioteca"
+msgstr "Chiedi prima di rimuovere immagini dalla biblioteca"
 
 #: ../build/bin/preferences_gen.h:6328
 msgid "always ask the user before any image is removed from the library"
-msgstr "Chiedi sempre prima di rimuovere qualsiasi file dalla biblioteca"
+msgstr ""
+"Chiedi sempre prima che qualsiasi immagine sia rimossa dalla biblioteca"
 
 #: ../build/bin/preferences_gen.h:6350
 msgid "ask before deleting images from disk"
@@ -4453,7 +4454,7 @@ msgstr "Contributori di Rawspeed"
 
 #: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:26
 msgid "integration contributors"
-msgstr "Contributori delle integrazioni"
+msgstr "Contributori di integrazione"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
 #: ../data/darktable.desktop.in.h:1
@@ -4849,7 +4850,7 @@ msgstr "Modulo"
 #: ../src/gui/styles_dialog.c:536 ../src/gui/styles_dialog.c:578
 #: ../src/libs/ioporder.c:40
 msgid "module order"
-msgstr "Ordine moduli"
+msgstr "Ordine dei moduli"
 
 #: ../src/common/collection.c:708 ../src/common/ratings.c:300
 #: ../src/develop/lightroom.c:1521 ../src/libs/tools/filter.c:95
@@ -6223,7 +6224,7 @@ msgstr "Elimina fisicamente tutti i files"
 
 #: ../src/control/jobs/control_jobs.c:847
 msgid "only remove from the image library"
-msgstr "Rimuovi solamente dalla biblioteca delle immagini"
+msgstr "Rimuovi solo dalla biblioteca delle immagini"
 
 #: ../src/control/jobs/control_jobs.c:848
 msgid "skip to next file"
@@ -8382,7 +8383,7 @@ msgstr "Sottosopra"
 
 #: ../src/gui/accelerators.c:85
 msgid "pgupdown"
-msgstr "Pgsugiù"
+msgstr "Pagsugiù"
 
 #: ../src/gui/accelerators.c:93
 msgid "shift"
@@ -8411,7 +8412,7 @@ msgstr "Modifica "
 
 #: ../src/gui/accelerators.c:105 ../src/gui/accelerators.c:535
 msgid "up"
-msgstr "su"
+msgstr "Su"
 
 #: ../src/gui/accelerators.c:106 ../src/gui/accelerators.c:535
 msgid "down"
@@ -8575,7 +8576,7 @@ msgid ""
 "double click to add new shortcut\n"
 "start typing for incremental search"
 msgstr ""
-"Primi Del per cancellare la scorciatoia selezionata\n"
+"Premi Del per cancellare la scorciatoia selezionata\n"
 "Doppio click per aggiungere una nuova scorciatoia\n"
 "Inizia a digitare per la ricerca incrementale"
 
@@ -17867,7 +17868,7 @@ msgstr "Dettagli"
 
 #: ../src/iop/toneequal.c:3231
 msgid "preserve details"
-msgstr "Preserva i dettagli"
+msgstr "Conserva i dettagli"
 
 #: ../src/iop/toneequal.c:3232
 msgid ""
@@ -18536,7 +18537,7 @@ msgstr "Orari"
 
 #: ../src/libs/collect.c:2878
 msgid "capture details"
-msgstr "Preserva i dettagli"
+msgstr "Dettagli di acquisizione"
 
 #: ../src/libs/collect.c:2887 ../src/libs/tools/darktable.c:65
 msgid "darktable"
@@ -18878,7 +18879,7 @@ msgstr "Formato file"
 
 #: ../src/libs/export.c:1161
 msgid "global options"
-msgstr "Impostazioni esportazione"
+msgstr "Opzioni globali"
 
 #: ../src/libs/export.c:1165
 msgid "set size"
@@ -19629,7 +19630,7 @@ msgstr "Rimuovi"
 
 #: ../src/libs/image.c:476
 msgid "remove images from the image library, without deleting"
-msgstr "Elimina le immagini dalla biblioteca immagini, senza cancellarle"
+msgstr "Rimuove le immagini dalla biblioteca delle immagini, senza cancellarle"
 
 #: ../src/libs/image.c:484
 msgid "move..."
@@ -19658,8 +19659,8 @@ msgstr "Crea HDR dagli scatti selezionati"
 #: ../src/libs/image.c:496
 msgid "add a duplicate to the image library, including its history stack"
 msgstr ""
-"Aggiungi un duplicato alla biblioteca delle immagini, includendo la coda di"
-" sviluppo"
+"Aggiungi un duplicato alla biblioteca delle immagini, includendo la "
+"coda di sviluppo"
 
 #: ../src/libs/image.c:502
 msgid "rotate selected images 90 degrees CCW"
@@ -19765,7 +19766,7 @@ msgstr "Come gestire i metadati esistenti"
 #: ../src/libs/image.c:600
 msgid "update image information to match changes to file"
 msgstr ""
-"Aggiorna le informazioni immagine per riflettere i cambiamenti del file"
+"Aggiorna le informazioni dell'immagine per riflettere i cambiamenti del file"
 
 #: ../src/libs/image.c:604
 msgid "set selection as monochrome images and activate monochrome workflow"
@@ -20036,7 +20037,7 @@ msgstr "Aggiungi alla biblioteca..."
 
 #: ../src/libs/import.c:2066
 msgid "add existing images to the library"
-msgstr "Aggiungi alla biblioteca le immagini esistenti"
+msgstr "Aggiunge le immagini presenti alla biblioteca"
 
 #: ../src/libs/import.c:2073
 msgid "copy & import..."
@@ -20050,9 +20051,8 @@ msgid ""
 msgstr ""
 "Copia ed eventualmente rinomina le immagini prima di aggiungerle alla "
 "biblioteca\n"
-"Possono esser definiti dei modelli per rinominare le immagini e specificare"
-" la "
-"cartella di destinazione"
+"Possono esser definiti dei modelli per rinominare le immagini e specificare "
+"la cartella di destinazione"
 
 #. collapsible section
 #: ../src/libs/import.c:2096
@@ -20625,7 +20625,7 @@ msgstr "CategorieSenza categoria"
 
 #: ../src/libs/metadata_view.c:169
 msgid "image information"
-msgstr "Informazioni immagine"
+msgstr "Informazioni dell'immagine"
 
 #: ../src/libs/metadata_view.c:357
 msgid "unused/deprecated"
@@ -21940,7 +21940,7 @@ msgstr "Attiva etichetta colore alle immagini selezionate"
 #: ../src/libs/tools/darktable.c:285
 #, c-format
 msgid "copyright (c) the authors 2009-%s"
-msgstr "Copyright (c) - gli autori 2009-%s"
+msgstr "Copyright (c) Gli autori 2009-%s"
 
 #: ../src/libs/tools/darktable.c:289
 msgid "organize and develop images from digital cameras"
@@ -21948,7 +21948,7 @@ msgstr "Organizza e sviluppa immagini dalla tua fotocamera digitale"
 
 #: ../src/libs/tools/darktable.c:301
 msgid "all those of you that made previous releases possible"
-msgstr "e tutti coloro che hanno reso possibile le versioni precedenti"
+msgstr "tutti coloro che hanno reso possibile le versioni precedenti"
 
 #: ../src/libs/tools/darktable.c:306
 msgid "and..."
@@ -21956,7 +21956,12 @@ msgstr "e..."
 
 #: ../src/libs/tools/darktable.c:308
 msgid "translator-credits"
-msgstr "Mauro 'bartokk' Bartoccelli <bartokk@gmail.com>"
+msgstr ""
+"Matteo Mardegan <matteo@mardegan.org> (2019-2021)\n"
+"Nelle precedenti versioni:\n"
+"Maurizio Paglia (2018-2020)\n"
+"Germano Massullo (2015-2017)\n"
+"Mauro 'bartokk' Bartoccelli (2013-2014)"
 
 #: ../src/libs/tools/filmstrip.c:45
 msgid "filmstrip"
@@ -22030,7 +22035,7 @@ msgstr "Determina l'ordine delle immagini mostrate"
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:224
 msgid "thumbnails overlays for size"
-msgstr "Anteprime delle sovraimpressioni dal formato"
+msgstr "Anteprime delle sovrimpressioni per il formato"
 
 #: ../src/libs/tools/global_toolbox.c:258
 #: ../src/libs/tools/global_toolbox.c:321
@@ -22039,26 +22044,27 @@ msgid ""
 "image\n"
 "set -1 to never hide the overlay"
 msgstr ""
-"Ritardo prima che il blocco della sovraimpressone sia nascosta dopo ogni "
+"Ritardo prima che il blocco della sovrimpressione sia nascosto dopo ogni "
 "movimento del mouse sull'immagine\n"
-"Imposta -1 per non nascondere mai la sovraimpressione"
+"Imposta -1 per non nascondere mai la sovrimpressione"
 
 #: ../src/libs/tools/global_toolbox.c:263
 #: ../src/libs/tools/global_toolbox.c:326
 msgid "timeout only available for block overlay"
-msgstr "Conto alla rovescia disponibile solo dal blocco sovraimpressione"
+msgstr ""
+"Conto alla rovescia disponibile solo per il blocca della sovrimpressione"
 
 #: ../src/libs/tools/global_toolbox.c:286
 msgid "culling overlays"
-msgstr "Selezione sovraimpressioni"
+msgstr "Selezione sovrimpressioni"
 
 #: ../src/libs/tools/global_toolbox.c:288
 msgid "preview overlays"
-msgstr "Mostra sovraimpressioni"
+msgstr "Anteprima sovrimpressioni"
 
 #: ../src/libs/tools/global_toolbox.c:362
 msgid "overlays not available here..."
-msgstr "Sovraimpressioni non disponibili qui..."
+msgstr "Sovrimpressioni qui non disponibili..."
 
 #: ../src/libs/tools/global_toolbox.c:406
 #: ../src/libs/tools/global_toolbox.c:555
@@ -22079,7 +22085,7 @@ msgstr ""
 #: ../src/libs/tools/global_toolbox.c:431
 #: ../src/libs/tools/global_toolbox.c:475
 msgid "overlay mode for size"
-msgstr "Modalità sovraimpressione dal formato"
+msgstr "Modalità sovrimpressione per dimensione"
 
 #: ../src/libs/tools/global_toolbox.c:434
 #: ../src/libs/tools/global_toolbox.c:478
@@ -22147,7 +22153,7 @@ msgstr "Mostra preferenze globali"
 #: ../src/libs/tools/global_toolbox.c:662
 #, c-format
 msgid "do you want to access `%s'?"
-msgstr "Vuoi accedere `%s'?"
+msgstr "Vuoi aprire il link `%s'?"
 
 #: ../src/libs/tools/global_toolbox.c:667
 msgid "access the online usermanual?"
@@ -22230,7 +22236,7 @@ msgstr "Suggerimento"
 
 #: ../src/libs/tools/image_infos.c:40
 msgid "image infos"
-msgstr "Informazioni immagine"
+msgstr "Info dell'immagine"
 
 #: ../src/libs/tools/lighttable.c:117
 msgid "click to exit from full preview layout."
