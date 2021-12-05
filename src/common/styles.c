@@ -262,6 +262,7 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
     char tmp[500];
     char *fields[] = { "op_params",       "module",         "enabled",    "blendop_params",
                        "blendop_version", "multi_priority", "multi_name", 0 };
+
     do
     {
       query[0] = '\0';
@@ -274,27 +275,28 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
         for(int k = 0; fields[k]; k++)
         {
           if(k != 0) g_strlcat(query, ",", sizeof(query));
-          snprintf(tmp, sizeof(tmp), "%s=(SELECT %s FROM main.history WHERE imgid=%d AND num=%d)", fields[k],
-                   fields[k], imgid, GPOINTER_TO_INT(list->data));
+          snprintf(tmp, sizeof(tmp),
+                   "%s=(SELECT %s FROM main.history WHERE imgid=%d AND num=%d)",
+                   fields[k], fields[k], imgid, GPOINTER_TO_INT(upd->data));
           g_strlcat(query, tmp, sizeof(query));
         }
         snprintf(tmp, sizeof(tmp), " WHERE styleid=%d AND data.style_items.num=%d", id,
-                 GPOINTER_TO_INT(upd->data));
+                 GPOINTER_TO_INT(list->data));
         g_strlcat(query, tmp, sizeof(query));
       }
       // update only, so we want to insert the new style item
       else if(GPOINTER_TO_INT(upd->data) != -1)
         snprintf(query, sizeof(query),
                  "INSERT INTO data.style_items "
-                 "  (styleid,num,module,operation,op_params,enabled,blendop_params,"
-                 "   blendop_version,multi_priority,multi_name)"
+                 "  (styleid, num, module, operation, op_params, enabled, blendop_params,"
+                 "   blendop_version, multi_priority, multi_name)"
                  " SELECT %d,"
                  "    (SELECT num+1 "
                  "     FROM data.style_items"
                  "     WHERE styleid=%d"
                  "     ORDER BY num DESC LIMIT 1), "
-                 "   module,operation,op_params,enabled,blendop_params,blendop_version,"
-                 "   multi_priority,multi_name"
+                 "   module, operation, op_params, enabled, blendop_params, blendop_version,"
+                 "   multi_priority, multi_name"
                  " FROM main.history"
                  " WHERE imgid=%d AND num=%d",
                  id, id, imgid, GPOINTER_TO_INT(upd->data));
@@ -1032,8 +1034,9 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
           "SELECT num, multi_priority, module, operation, enabled,"
           "       (SELECT MAX(num)"
           "        FROM main.history"
-          "        WHERE imgid=?2 AND operation=data.style_items.operation"
-          "        GROUP BY multi_priority),"
+          "        WHERE imgid=?2 "
+          "          AND operation=data.style_items.operation"
+          "          AND multi_priority=data.style_items.multi_priority),"
           "       0, multi_name, blendop_version"
           " FROM data.style_items"
           " WHERE styleid=?1"
