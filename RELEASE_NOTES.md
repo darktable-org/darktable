@@ -68,6 +68,12 @@ You are strongly advised to take a backup first.
   section below). This support is done by LibRaw and requires at least exiv2 version
   0.27.4 with BMFF support activated.
 
+- The color checker profiling tool, introduced in darktable 3.4 as part of the 
+  color calibration module, is now normalized patch-wise in exposure to discard the effect 
+  of uneven lighting and fall-off when shooting color checkers hand-held and on-location. 
+  This robustly decreases the residual average dE after calibration and noticeably 
+  helps to recover natural dark blues while preventing yellow shifts in highlights.
+
 ## Other New Features And Changes
 
 - The denoise (profiled) module now uses wavelets mode by default and its default
