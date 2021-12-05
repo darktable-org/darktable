@@ -1413,7 +1413,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
   /* match global exposure */
   // white exposure depends on camera settings and raw white point,
   // we want our profile to be independent from that
-  const float exposure = XYZ_white_ref[1] / XYZ_white_test[1];
+  const float exposure = white_ref_norm / white_test_norm;
 
   // black point is evaluated by rawspeed on each picture using the dark pixels
   // we want our profile to be also independent from its discrepancies
