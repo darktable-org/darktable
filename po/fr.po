@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-11-28 16:24+0100\n"
+"PO-Revision-Date: 2021-12-05 17:14+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -697,7 +697,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5217
 msgid "colorbalance slider block layout"
-msgstr "disposition des contrôles du module balance des couleurs"
+msgstr "disposition des contrôles du module balance couleur"
 
 #: ../build/bin/preferences_gen.h:5228 ../build/bin/preferences_gen.h:5257
 #: ../build/bin/conf_gen.h:2900
@@ -11664,9 +11664,12 @@ msgid "raw CA correction supports only standard RGB bayer filter arrays"
 msgstr ""
 "la correction des AC supporte seulement les capteurs bayer RGB standards"
 
+# Dans le module aberrations chromatiques raw :
+# À des niveaux de zoom élevés darktable sautera le module dans le pipeline graphique, et un message “sauté en zoomant” apparaîtra en haut du module. Cette limitation ne s’applique qu’au travail interactif et non à l’exportation finale.
+#  et non "sauter en zoomant "
 #: ../src/iop/cacorrect.c:1339 ../src/iop/cacorrect.c:1347
 msgid "bypassed while zooming in"
-msgstr "sauter en zoomant"
+msgstr "sauté en zoomant"
 
 #: ../src/iop/cacorrect.c:1340
 msgid ""
@@ -22273,7 +22276,7 @@ msgstr "basculer la vue navigateur de fichiers"
 #: ../src/libs/tools/lighttable.c:573
 msgctxt "accel"
 msgid "toggle zoomable lighttable layout"
-msgstr "baculer la vue table lumineuse zoomable"
+msgstr "basculer la vue table lumineuse zoomable"
 
 #: ../src/libs/tools/lighttable.c:574
 msgctxt "accel"
@@ -22714,7 +22717,7 @@ msgstr "sur-exposition raw/basculer"
 #: ../src/views/darkroom.c:3876
 msgctxt "accel"
 msgid "overexposed/toggle"
-msgstr "sur-exposition/basculer "
+msgstr "sur-exposition/basculer"
 
 #. cycle overlay colors
 #: ../src/views/darkroom.c:3879
