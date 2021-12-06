@@ -26,6 +26,8 @@
 #endif
 #include "common/darktable.h"
 
+#define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
+
 // work around missing standard math.h symbols
 /** ln(10) */
 #ifndef M_LN10
@@ -218,6 +220,45 @@ static inline void dot_product(const dt_aligned_pixel_t v_in, const dt_colormatr
   #pragma omp simd aligned(M:64) aligned(v_in, v_out:16)
   #endif
   for(size_t i = 0; i < 3; ++i) v_out[i] = scalar_product(v_in, M[i]);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline float sqf(const float x)
+{
+  return x * x;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(vector:16)
+#endif
+static inline float euclidean_norm(const dt_aligned_pixel_t vector)
+{
+  return fmaxf(sqrtf(sqf(vector[0]) + sqf(vector[1]) + sqf(vector[2])), NORM_MIN);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(vector:16)
+#endif
+static inline void downscale_vector(dt_aligned_pixel_t vector, const float scaling)
+{
+  // check zero or NaN
+  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + NORM_MIN) : vector[c] / NORM_MIN;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(vector:16)
+#endif
+static inline void upscale_vector(dt_aligned_pixel_t vector, const float scaling)
+{
+  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;
 }
 
 
