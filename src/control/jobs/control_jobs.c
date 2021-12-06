@@ -85,6 +85,7 @@ typedef struct dt_control_export_t
   gchar *icc_filename;
   dt_iop_color_intent_t icc_intent;
   gchar *metadata_export;
+  gboolean restore_datetime;
 } dt_control_export_t;
 
 typedef struct dt_control_import_t
@@ -492,7 +493,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
     dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE, TRUE,
                                  FALSE, "pre:rawprepare", FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
-                                 NULL, num, total, NULL);
+                                 NULL, num, total, NULL, FALSE);
 
     t = g_list_next(t);
 
@@ -1426,7 +1427,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
         dt_image_cache_read_release(darktable.image_cache, image);
         if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality, settings->upscale,
                            settings->export_masks, settings->icc_type, settings->icc_filename, settings->icc_intent,
-                           &metadata) != 0)
+                           &metadata, settings->restore_datetime) != 0)
           dt_control_job_cancel(job);
       }
     }
@@ -1841,7 +1842,7 @@ static void dt_control_export_cleanup(void *p)
 void dt_control_export(GList *imgid_list, int max_width, int max_height, int format_index, int storage_index,
                        gboolean high_quality, gboolean upscale, gboolean export_masks, char *style, gboolean style_append,
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                       dt_iop_color_intent_t icc_intent, const gchar *metadata_export)
+                       dt_iop_color_intent_t icc_intent, const gchar *metadata_export, gboolean restore_datetime)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_export_job_run, "export");
   if(!job) return;
@@ -1881,6 +1882,7 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   data->icc_filename = g_strdup(icc_filename);
   data->icc_intent = icc_intent;
   data->metadata_export = g_strdup(metadata_export);
+  data->restore_datetime = restore_datetime;
 
   dt_control_job_add_progress(job, _("export images"), TRUE);
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_EXPORT, job);

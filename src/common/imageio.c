@@ -73,6 +73,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #ifdef USE_LUA
 #include "lua/image.h"
@@ -654,7 +656,8 @@ int dt_imageio_export(const int32_t imgid, const char *filename, dt_imageio_modu
                       const gboolean copy_metadata, const gboolean export_masks,
                       dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                       dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
-                      dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata)
+                      dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata,
+		      gboolean restore_datetime)
 {
   if(strcmp(format->mime(format_params), "x-copy") == 0)
     /* This is a just a copy, skip process and just export */
@@ -663,7 +666,7 @@ int dt_imageio_export(const int32_t imgid, const char *filename, dt_imageio_modu
   else
     return dt_imageio_export_with_flags(imgid, filename, format, format_params, FALSE, FALSE, high_quality, upscale,
                                         FALSE, NULL, copy_metadata, export_masks, icc_type, icc_filename, icc_intent,
-                                        storage, storage_params, num, total, metadata);
+                                        storage, storage_params, num, total, metadata, restore_datetime);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
@@ -675,7 +678,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                                  dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
                                  dt_imageio_module_data_t *storage_params, int num, int total,
-                                 dt_export_metadata_t *metadata)
+                                 dt_export_metadata_t *metadata, gboolean restore_datetime)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -1052,28 +1055,37 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   format_params->width = processed_width;
   format_params->height = processed_height;
 
-  if(!ignore_exif)
-  {
-    int length;
-    uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes max, but if original size is close to that,
-                                  // adding new tags could make it go over that... so let it be and see what
-                                  // happens when we write the image
+  time_t datetime_taken = 0;
+  int exif_length;
+  uint8_t *exif_profile = NULL; // Exif data should be 65536 bytes max, but if original size is close to that,
+                                // adding new tags could make it go over that... so let it be and see what
+                                // happens when we write the image
+
+  if (!ignore_exif || restore_datetime) {
     char pathname[PATH_MAX] = { 0 };
     gboolean from_cache = TRUE;
     dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
     // last param is dng mode, it's false here
-    length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
+    exif_length = dt_exif_read_blob(&exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
+  
+    printf("Getting EXIF datetime taken for %s...\n", filename);
+    if (!dt_exif_get_datetime_taken_from_exifblob(exif_profile, exif_length, &datetime_taken)) {
+      datetime_taken = 0;
+    }
+  }
 
-    res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, exif_profile, length, imgid,
+  if(!ignore_exif)
+  {
+    res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, exif_profile, exif_length, imgid,
                               num, total, &pipe, export_masks);
-
-    free(exif_profile);
   }
   else
   {
     res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, NULL, 0, imgid, num, total,
                               &pipe, export_masks);
   }
+
+  free(exif_profile);
 
   if(res)
     goto error;
@@ -1116,6 +1128,18 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_EXPORT_TMPFILE, imgid, filename, format,
                             format_params, storage, storage_params);
+  }
+
+  if (restore_datetime) {
+    const struct timespec access_time = { 0, UTIME_OMIT };
+    const struct timespec modification_time = { datetime_taken, 0 };
+    const struct timespec times[2] = {
+      access_time,
+      modification_time,
+    };
+    const int flags = 0;
+    printf("Datetime taken: %ld\n", datetime_taken);
+    utimensat(AT_FDCWD, filename, times, flags);
   }
 
   return 0; // success

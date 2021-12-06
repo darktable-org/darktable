@@ -76,7 +76,8 @@ int dt_imageio_export(const int32_t imgid, const char *filename, struct dt_image
                       const gboolean upscale, const gboolean copy_metadata, const gboolean export_masks,
                       dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                       dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
-                      dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata);
+                      dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata,
+                      gboolean restore_datetime);
 
 int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  struct dt_imageio_module_format_t *format,
@@ -86,7 +87,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  const gboolean export_masks, dt_colorspaces_color_profile_type_t icc_type,
                                  const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
                                  dt_imageio_module_storage_t *storage, dt_imageio_module_data_t *storage_params,
-                                 int num, int total, dt_export_metadata_t *metadata);
+                                 int num, int total, dt_export_metadata_t *metadata,
+                                 gboolean restore_datetime);
 
 size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
                             dt_image_orientation_t orientation);

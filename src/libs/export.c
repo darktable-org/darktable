@@ -58,7 +58,7 @@ typedef struct dt_lib_export_t
   GtkWidget *storage, *format;
   int format_lut[128];
   uint32_t max_allowed_width , max_allowed_height;
-  GtkWidget *upscale, *profile, *intent, *style, *style_mode;
+  GtkWidget *upscale, *profile, *intent, *style, *style_mode, *restore_datetime;
   GtkButton *export_button;
   GtkWidget *storage_extra_container, *format_extra_container;
   GtkWidget *high_quality;
@@ -336,6 +336,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   const gboolean high_quality = dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing");
   const gboolean export_masks = dt_conf_get_bool(CONFIG_PREFIX "export_masks");
   const gboolean style_append = dt_conf_get_bool(CONFIG_PREFIX "style_append");
+  const gboolean restore_datetime = dt_conf_get_bool(CONFIG_PREFIX "restore_datetime");
   const char *tmp = dt_conf_get_string_const(CONFIG_PREFIX "style");
   if(tmp)
   {
@@ -366,7 +367,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
 
   GList *list = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, TRUE));
   dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks,
-                    style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export);
+                    style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export, restore_datetime);
 
   g_free(icc_filename);
 
@@ -607,6 +608,9 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->style_mode, dt_confgen_get_bool(CONFIG_PREFIX "style_append", DT_DEFAULT));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
+
+  // restore datetime
+  dt_bauhaus_combobox_set(d->restore_datetime, dt_confgen_get_bool(CONFIG_PREFIX "restore_datetime", DT_DEFAULT) ? 1 : 0);
 
   // export metadata presets
   g_free(d->metadata_export);
@@ -1355,6 +1359,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->style_mode,
                               _("whether the style items are appended to the history or replacing the history"));
 
+  d->restore_datetime = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+  dt_bauhaus_widget_set_label(d->restore_datetime, NULL, N_("restore original datetime"));
+  dt_bauhaus_combobox_add(d->restore_datetime, _("no"));
+  dt_bauhaus_combobox_add(d->restore_datetime, _("yes"));
+  gtk_widget_set_tooltip_text(d->restore_datetime, _("whether to set the file modification time to the datetime taken from EXIF"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->restore_datetime, FALSE, TRUE, 0);
+
   //  Set callback signals
 
   g_signal_connect(G_OBJECT(d->upscale), "value-changed", G_CALLBACK(_callback_bool),
@@ -1368,6 +1379,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(_style_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style_mode), "value-changed", G_CALLBACK(_callback_bool),
                    (gpointer)CONFIG_PREFIX "style_append");
+  g_signal_connect(G_OBJECT(d->restore_datetime), "value-changed", G_CALLBACK(_callback_bool),
+                   (gpointer)CONFIG_PREFIX "restore_datetime");
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_STYLE_CHANGED,
                             G_CALLBACK(_lib_export_styles_changed_callback), self);
@@ -1475,6 +1488,9 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
 
+  // restore datetime
+  dt_bauhaus_combobox_set(d->restore_datetime, dt_conf_get_bool(CONFIG_PREFIX "restore_datetime") ? 1 : 0);
+
   // export metadata presets
   d->metadata_export = dt_lib_export_metadata_get_conf();
 
@@ -1565,6 +1581,7 @@ void init_presets(dt_lib_module_t *self)
       const char *buf = (const char *)op_params;
 
       // skip 6*int32_t: max_width, max_height, upscale, high_quality and iccintent, icctype
+      // TODO: restore_datetime
       buf += 6 * sizeof(int32_t);
       // skip metadata presets string
       buf += strlen(buf) + 1;
@@ -1863,6 +1880,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     // format of v7:
     //  - 7 x int32_t (max_width, max_height, upscale, high_quality, export_masks, iccintent, icctype)
     //  - old rest
+    // TODO: restore_datetime
 
     const size_t new_params_size = old_params_size + sizeof(int32_t);
     void *new_params = calloc(1, new_params_size);
@@ -1953,6 +1971,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   memcpy(params + pos, &max_height, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, &upscale, sizeof(int32_t));
+  // TODO: restore_datetime
   pos += sizeof(int32_t);
   memcpy(params + pos, &high_quality, sizeof(int32_t));
   pos += sizeof(int32_t);
@@ -2009,6 +2028,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   const int max_height = *(const int *)buf;
   buf += sizeof(int32_t);
   const int upscale = *(const int *)buf;
+  // TODO: restore_datetime
   buf += sizeof(int32_t);
   const int high_quality = *(const int *)buf;
   buf += sizeof(int32_t);

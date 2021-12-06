@@ -4311,6 +4311,46 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
   }
 }
 
+gboolean dt_exif_get_datetime_taken_from_exifblob(const uint8_t *exifblob, size_t size, time_t *datetime_taken)
+{
+  try
+  {
+    Exiv2::ExifData exifData;
+    Exiv2::ExifParser::decode(exifData, exifblob + 6, size);
+    Exiv2::ExifData::const_iterator pos;
+
+    char exif_datetime_taken[DT_DATETIME_LENGTH];
+    _find_datetime_taken(exifData, pos, exif_datetime_taken);
+
+    if(*exif_datetime_taken)
+    {
+      struct tm exif_tm= {0};
+      if(sscanf(exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+        &exif_tm.tm_year,
+        &exif_tm.tm_mon,
+        &exif_tm.tm_mday,
+        &exif_tm.tm_hour,
+        &exif_tm.tm_min,
+        &exif_tm.tm_sec) == 6)
+      {
+        exif_tm.tm_year -= 1900;
+        exif_tm.tm_mon--;
+        exif_tm.tm_isdst = -1;    // no daylight saving time
+        *datetime_taken = mktime(&exif_tm);
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2 dt_exif_get_datetime_taken_from_exifblob] " << s << std::endl;
+    return FALSE;
+  }
+}
+
 static void dt_exif_log_handler(int log_level, const char *message)
 {
   if(log_level >= Exiv2::LogMsg::level())

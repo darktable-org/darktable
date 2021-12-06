@@ -70,7 +70,7 @@ REQUIRED(int, store, struct dt_imageio_module_storage_t *self, struct dt_imageio
                      struct dt_imageio_module_format_t *format, struct dt_imageio_module_data_t *fdata, const int num,
                      const int total, const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
                      const enum dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                     enum dt_iop_color_intent_t icc_intent, struct dt_export_metadata_t *metadata);
+                     enum dt_iop_color_intent_t icc_intent, struct dt_export_metadata_t *metadata, gboolean restore_datetime);
 /* called once at the end (after exporting all images), if implemented. */
 OPTIONAL(void, finalize_store, struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *data);
 

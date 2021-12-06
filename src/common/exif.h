@@ -110,6 +110,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
 
 /** look for datetime_taken in data. used for gphoto downloads */
 gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *datetime_taken);
+gboolean dt_exif_get_datetime_taken_from_exifblob(const uint8_t *exifblob, size_t size, time_t *datetime_taken);
 
 #ifdef __cplusplus
 }

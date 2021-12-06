@@ -45,7 +45,8 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
                        gboolean high_quality, gboolean upscale, gboolean export_masks,
                        char *style, gboolean style_append,
                        dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                       dt_iop_color_intent_t icc_intent, const gchar *metadata_export);
+                       dt_iop_color_intent_t icc_intent, const gchar *metadata_export,
+		       gboolean restore_datetime);
 void dt_control_merge_hdr();
 void dt_control_import(GList *imgs, const time_t datetime_override, const gboolean inplace);
 void dt_control_seed_denoise();

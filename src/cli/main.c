@@ -752,7 +752,7 @@ int main(int argc, char *arg[])
     metadata.flags = dt_lib_export_metadata_default_flags();
     metadata.list = NULL;
     if(storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, export_masks,
-                      icc_type, icc_filename, icc_intent, &metadata) != 0)
+                      icc_type, icc_filename, icc_intent, &metadata, FALSE) != 0)
       res = 1;
   }
 

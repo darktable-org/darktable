@@ -216,7 +216,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
           dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
-          dt_export_metadata_t *metadata)
+          dt_export_metadata_t *metadata, gboolean restore_datetime)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)sdata;
 
@@ -351,7 +351,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   /* export image to file */
   dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type, icc_filename,
-                    icc_intent, self, sdata, num, total, metadata);
+                    icc_intent, self, sdata, num, total, metadata, restore_datetime);
 
   printf("[export_job] exported to `%s'\n", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
