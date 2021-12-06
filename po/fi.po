@@ -1,12 +1,9 @@
-#: ../build/bin/conf_gen.h:850 ../build/bin/conf_gen.h:856
-#: ../build/bin/conf_gen.h:862 ../build/bin/conf_gen.h:868
-#: ../build/bin/conf_gen.h:874
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-06 16:59+0100\n"
-"PO-Revision-Date: 2021-12-06 17:12+0200\n"
+"POT-Creation-Date: 2021-12-06 18:07+0200\n"
+"PO-Revision-Date: 2021-12-06 18:07+0200\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -156,23 +153,20 @@ msgstr ""
 "Piilottaa valopöydän moduulien sisäänrakennetut esiasetukset valikoista."
 
 #: ../build/bin/preferences_gen.h:3785
-#, fuzzy
 msgid "use single-click in the collections module"
-msgstr "Käytä yhtä napsausta kokoelmat-paneelissa"
+msgstr "Käytä yhtä napsausta kokoelmat-moduulissa"
 
 #: ../build/bin/preferences_gen.h:3799
-#, fuzzy
 msgid ""
 "check this option to use single-click to select items in the collections "
 "module. this will allow you to do range selections for date-time and numeric "
 "values."
 msgstr ""
 "Valitse tämä asetus käyttääksesi yhtä napsausta kohteiden valintaan "
-"kokoelmat-paneelissa. Tämä mahdollistaa joukon valinnan päivä-, aika- ja "
+"kokoelmat-moduulissa. Tämä mahdollistaa joukon valinnan päivä-, aika- ja "
 "numeerisilla arvoilla."
 
 #: ../build/bin/preferences_gen.h:3821
-#, fuzzy
 msgid "expand a single utility module at a time"
 msgstr "Laajenna yksittäinen valopöydän moduuli kerralla"
 
@@ -182,7 +176,6 @@ msgstr ""
 "Tämä asetus vaihtaa moduulien SHIFT+napsautuksen toimintatavan valopöydällä."
 
 #: ../build/bin/preferences_gen.h:3857
-#, fuzzy
 msgid "scroll to utility modules when expanded/collapsed"
 msgstr "Siirry avattuun/suljettuun valopöydän moduuliin"
 
@@ -206,7 +199,6 @@ msgstr ""
 "Määrittää nollataanko kuvan luokitus antamalla sille yksi tähti kahdesti."
 
 #: ../build/bin/preferences_gen.h:3929 ../build/bin/preferences_gen.h:4661
-#, fuzzy
 msgid "show scrollbars for central view"
 msgstr "Näytä keskinäkymän vierityspalkit"
 
@@ -228,7 +220,6 @@ msgid "TRUE"
 msgstr "VALITTU"
 
 #: ../build/bin/preferences_gen.h:3943 ../build/bin/preferences_gen.h:4675
-#, fuzzy
 msgid "defines whether scrollbars should be displayed"
 msgstr "Määrittää missä vierityspalkit näytetään."
 
@@ -317,12 +308,10 @@ msgstr ""
 "(Lisää kommentteja käyttöohjeessa)."
 
 #: ../build/bin/preferences_gen.h:4068
-#, fuzzy
 msgid "high quality processing from size"
-msgstr "Korkeammalla laadulla käsiteltävien esikatselukuvien koko"
+msgstr "Korkeammalla laadulla käsitteleminen koosta"
 
 #: ../build/bin/preferences_gen.h:4141
-#, fuzzy
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower).\n"
@@ -458,16 +447,14 @@ msgstr ""
 "Oletuksena rullan ylöspäin pyörittäminen lisää näiden parametrien arvoa."
 
 #: ../build/bin/preferences_gen.h:4499
-#, fuzzy
 msgid "pattern for the image information line"
-msgstr "Kuvan tiedot-rivin tiedot"
+msgstr "Kuvan tiedot-rivillä näytettävät tiedot"
 
 #: ../build/bin/preferences_gen.h:4520
 msgid "see manual for a list of the tags you can use."
 msgstr "Katso käyttöohjeesta kaikki käytettävissä olevat tunnisteet."
 
 #: ../build/bin/preferences_gen.h:4542
-#, fuzzy
 msgid "position of the image information line"
 msgstr "Kuvan tiedot-rivin sijainti"
 
@@ -530,10 +517,9 @@ msgstr "Aina bilineaarinen (nopea)"
 
 #: ../build/bin/preferences_gen.h:4713 ../build/bin/preferences_gen.h:4737
 #: ../build/bin/conf_gen.h:1968
-#, fuzzy
 msgctxt "preferences"
 msgid "at most RCD (reasonable)"
-msgstr "Enintään PPG (kohtuullinen)"
+msgstr "Enintään RCD (kohtuullinen)"
 
 #: ../build/bin/preferences_gen.h:4718 ../build/bin/conf_gen.h:1969
 msgctxt "preferences"
@@ -541,7 +527,6 @@ msgid "full (possibly slow)"
 msgstr "Täysi (mahdollisesti hidas)"
 
 #: ../build/bin/preferences_gen.h:4740
-#, fuzzy
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using RCD + interpolation modes specified "
@@ -550,10 +535,10 @@ msgid ""
 "as middle ground."
 msgstr ""
 "Interpolointi, kun kuvia ei näytetä 1:1 pimiö-tilassa. Bilineaarinen on "
-"nopein ja epätarkin. PPG + alla määritetyt pikselien interpolointitavat ovat "
-"nopeuden ja laadun suhteen keskimääräisiä. Täysi käyttää täyden resoluution "
-"viennin asetuksia. X-Trans kuvakennot käyttävät VNG:tä PPG:n sijaan "
-"keskimääräisenä asetuksena."
+"nopein ja epätarkin. RCD + 'pikselien intepolointi' valinnassa (Prosessointi-"
+"välilehti) määritetyt interpolointitavat ovat nopeuden ja laadun suhteen "
+"keskimääräisiä. Täysi käyttää täyden resoluution viennin asetuksia. X-Trans "
+"kuvakennot käyttävät VNG:tä RCD:n sijaan keskimääräisenä asetuksena."
 
 #: ../build/bin/preferences_gen.h:4762
 msgid "reduce resolution of preview image"
@@ -599,7 +584,6 @@ msgstr ""
 "Poista käytöstä näyttääksesi ainoastaan kuvakkeen."
 
 #: ../build/bin/preferences_gen.h:4856
-#, fuzzy
 msgid "modules"
 msgstr "Moduulit"
 
@@ -614,7 +598,6 @@ msgid "false color"
 msgstr "Vääräväri"
 
 #: ../build/bin/preferences_gen.h:4892 ../build/bin/conf_gen.h:1159
-#, fuzzy
 msgctxt "preferences"
 msgid "gray scale"
 msgstr "Harmaasävy"
@@ -644,7 +627,6 @@ msgid "show the guides widget in modules UI"
 msgstr "Näytä apulinjojen pienoisohjelma moduuleissa"
 
 #: ../build/bin/preferences_gen.h:5008
-#, fuzzy
 msgid "expand a single processing module at a time"
 msgstr "Näytä yksittäinen pimiön moduuli kerralla"
 
@@ -678,7 +660,6 @@ msgstr ""
 "otetaan käyttöön tai poistetaan käytöstä."
 
 #: ../build/bin/preferences_gen.h:5116
-#, fuzzy
 msgid "scroll to processing modules when expanded/collapsed"
 msgstr "Siirry avattuun/suljettuun pimiön moduuliin"
 
@@ -856,9 +837,8 @@ msgid "this is slower than the default."
 msgstr "Tämä on hitaampi kuin oletustapa."
 
 #: ../build/bin/preferences_gen.h:5509
-#, fuzzy
 msgid "pixel interpolator (warp)"
-msgstr "Pikselien interpolointi"
+msgstr "Pikselien interpolointi (warp)"
 
 #: ../build/bin/preferences_gen.h:5520 ../build/bin/preferences_gen.h:5585
 #: ../build/bin/conf_gen.h:1994 ../build/bin/conf_gen.h:2004
@@ -899,7 +879,6 @@ msgid "lanczos3"
 msgstr "lanczos3"
 
 #: ../build/bin/preferences_gen.h:5622
-#, fuzzy
 msgid ""
 "pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3)."
 msgstr ""
@@ -922,13 +901,12 @@ msgid "select directory"
 msgstr "Valitse hakemisto"
 
 #: ../build/bin/preferences_gen.h:5665
-#, fuzzy
 msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. "
 "(need a restart)."
 msgstr ""
 "Tämä hakemisto (ja alihakemistot) sisältävät LUT3D-moduulien käyttämät LUT-"
-"tiedostot. Vaatii uudelleenkäynnistyksen."
+"tiedostot. (Vaatii uudelleenkäynnistyksen)."
 
 #: ../build/bin/preferences_gen.h:5687
 msgid "auto-apply pixel workflow defaults"
@@ -1018,15 +996,14 @@ msgid "auto-apply sharpen"
 msgstr "Ota oletuksena käyttöön terävöitys"
 
 #: ../build/bin/preferences_gen.h:5862
-#, fuzzy
 msgid ""
 "this added sharpen is not recommended on cameras without a low-pass filter. "
 "you should disable this option if you use one of those more recent cameras "
 "or sharpen your images with other means."
 msgstr ""
 "Tätä lisättyä terävöitystä ei suositella kameroille joissa ei ole "
-"alipäästösuodinta. Oletuksena ei lisätä terävöitystä, koska useimmissa "
-"uusissa kameroissa ei ole alipäästösuodinta (vaatii uudelleenkäynnistyksen)."
+"alipäästösuodinta. Tämä asetus kannattaa ottaa pois päältä, jos käytät ilman "
+"alipäästösuodinta olevaa kameraa tai terävöität kuvasi muulla tavalla."
 
 #: ../build/bin/preferences_gen.h:5884
 msgid "detect monochrome previews"
@@ -1062,7 +1039,6 @@ msgid "cpu / gpu / memory"
 msgstr "CPU / GPU / Muisti"
 
 #: ../build/bin/preferences_gen.h:5964
-#, fuzzy
 msgid "memory in MB to use for thumbnail cache"
 msgstr "Esikatselukuvien välimuistiksi varattu RAM-muisti megatavuina"
 
@@ -1207,28 +1183,24 @@ msgid "security"
 msgstr "Tietoturva"
 
 #: ../build/bin/preferences_gen.h:6314
-#, fuzzy
 msgid "ask before removing images from the library"
-msgstr "Varmista kuvien poisto tietokannasta"
+msgstr "Varmista kuvien poisto kirjastosta"
 
 #: ../build/bin/preferences_gen.h:6328
-#, fuzzy
 msgid "always ask the user before any image is removed from the library"
-msgstr "Käyttäjältä kysytään aina varmistus ennen kuvan poistoa tietokannasta."
+msgstr "Käyttäjältä kysytään aina varmistus ennen kuvan poistoa kirjastosta."
 
 #: ../build/bin/preferences_gen.h:6350
 msgid "ask before deleting images from disk"
 msgstr "Varmista kuvien poisto levyltä"
 
 #: ../build/bin/preferences_gen.h:6364
-#, fuzzy
 msgid "always ask the user before any image file is deleted"
-msgstr "Käyttäjältä kysytään aina varmistus ennen kuvan siirtoa."
+msgstr "Käyttäjältä kysytään aina varmistus ennen kuvan poistoa."
 
 #: ../build/bin/preferences_gen.h:6386
-#, fuzzy
 msgid "ask before discarding history stack"
-msgstr "Varmista kuvan poistaminen levyltä / historiatiedon hävittäminen"
+msgstr "Varmista kuvan muokkaushistorian tuhoaminen"
 
 #: ../build/bin/preferences_gen.h:6400
 msgid "always ask the user before history stack is discarded on any image"
@@ -1237,7 +1209,6 @@ msgstr ""
 "poistamista."
 
 #: ../build/bin/preferences_gen.h:6422
-#, fuzzy
 msgid "try to use trash when deleting images"
 msgstr "Siirrä poistettavat kuvat roskakoriin"
 
@@ -1366,10 +1337,9 @@ msgid "on close"
 msgstr "Suljettaessa"
 
 #: ../build/bin/preferences_gen.h:6883 ../build/bin/conf_gen.h:199
-#, fuzzy
 msgctxt "preferences"
 msgid "on both"
-msgstr "Näytä molemmat"
+msgstr "Molemmat"
 
 #: ../build/bin/preferences_gen.h:6888 ../build/bin/conf_gen.h:200
 msgctxt "preferences"
@@ -1750,9 +1720,8 @@ msgstr ""
 "Muussa tapauksessa pikavalinnat vaikuttavat ensisijaiseen säätöön."
 
 #: ../build/bin/preferences_gen.h:7824
-#, fuzzy
 msgid "map / geolocalization view"
-msgstr "Kartta / Paikkatiedot"
+msgstr "Kartta / Paikkatiedotnäkymä"
 
 #: ../build/bin/preferences_gen.h:7844
 msgid "pretty print the image location"
@@ -1766,7 +1735,6 @@ msgstr ""
 "Näytä kuvien sijaintitiedot luettavammassa muodossa kuvan tiedot -moduulissa."
 
 #: ../build/bin/preferences_gen.h:7868
-#, fuzzy
 msgid "slideshow view"
 msgstr "Kuvasarja"
 
@@ -1964,7 +1932,6 @@ msgid "only select images that have not already been imported"
 msgstr "Valitse ainoastaan kuvat joita ei ole aiemmin tuotu."
 
 #: ../build/bin/conf_gen.h:831
-#, fuzzy
 msgid "ignore JPEG images"
 msgstr "Ohita JPEG-tiedostot"
 
@@ -1978,9 +1945,8 @@ msgstr ""
 "tiedostot."
 
 #: ../build/bin/conf_gen.h:837
-#, fuzzy
 msgid "apply metadata"
-msgstr "Kopioi metatiedot"
+msgstr "Lisää metatiedot"
 
 #: ../build/bin/conf_gen.h:838
 msgid "apply some metadata to all newly imported images."
@@ -2015,9 +1981,8 @@ msgid "import tags from xmp"
 msgstr "Tuo tunnisteet XMP-tiedostosta"
 
 #: ../build/bin/conf_gen.h:899
-#, fuzzy
 msgid "initial rating"
-msgstr "Tuonnissa lisättävä luokitus"
+msgstr "Lisättävä luokitus"
 
 #: ../build/bin/conf_gen.h:900
 msgid "initial star rating for all images when importing a filmroll"
@@ -2048,17 +2013,16 @@ msgid "override today's date"
 msgstr "Ohita tämä päivä"
 
 #: ../build/bin/conf_gen.h:918
-#, fuzzy
 msgid ""
 "enter a valid date/time (YYYY-MM-DD[Thh:mm:ss] format) if you want to "
 "override the current date/time used when expanding variables:\n"
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\n"
 "let the field empty otherwise"
 msgstr ""
-"Valitse tämä, jos haluat ohittaa käytetyn aikaleiman muuttujia "
-"laajennettaessa:\n"
-"$(YEAR), $(MONTH), $(DAY),\n"
-"$(HOUR), $(MINUTE) ja $(SECONDS)"
+"Kirjoita kelvollinen päivä/aika (YYYY-MM-DD[Thh:mm:ss] muodossa), jos haluat "
+"korvata nykyisen päivän/ajan laajentamalla muutujia:\n"
+"$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE) ja $(SECONDS).\n"
+"Muussa tapauksessa jätä tämä kenttä tyhjäksi."
 
 #: ../build/bin/conf_gen.h:923
 msgid "keep this window open"
@@ -2089,9 +2053,8 @@ msgid "max images"
 msgstr "Kuvia max"
 
 #: ../build/bin/conf_gen.h:1680
-#, fuzzy
 msgid "the maximum number of image thumbnails drawn on the map"
-msgstr "Maksimimäärä kartalle piirrettäviä kuvia"
+msgstr "Maksimimäärä kartalle piirrettäviä esikatselukuvia"
 
 #: ../build/bin/conf_gen.h:1687
 msgid "group size factor"
@@ -2116,7 +2079,6 @@ msgid ""
 msgstr "Kuvaryhmän kuvien minimimäärä. Saattaa vaikuttaa käsittelyaikaan."
 
 #: ../build/bin/conf_gen.h:1701
-#, fuzzy
 msgctxt "preferences"
 msgid "thumbnail"
 msgstr "Esikatselukuva"
@@ -2413,7 +2375,6 @@ msgstr "Huippuvalojen palautus"
 
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:128
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:219
-#, fuzzy
 msgid "middle gray"
 msgstr "Keskiharmaa"
 
@@ -3360,9 +3321,8 @@ msgstr "AMaZE + VNG4"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:220
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:227
-#, fuzzy
 msgid "passthrough (monochrome)"
-msgstr "Läpipäästö (mustavalkoinen) (kokeellinen)"
+msgstr "Läpipäästö (mustavalkoinen)"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:221
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:228
@@ -3382,9 +3342,8 @@ msgid "Markesteijn 3-pass"
 msgstr "Markesteijn 3-kerta"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:225
-#, fuzzy
 msgid "frequency domain chroma"
-msgstr "Taajuusalueen kroma (hidas)"
+msgstr "Taajuusalueen kroma"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:226
 msgid "Markesteijn 3-pass + VNG"
@@ -3441,9 +3400,8 @@ msgstr "Sironta"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:161
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:324
-#, fuzzy
 msgid "central pixel weight"
-msgstr "Keskipikselin painoarvo (yksityiskohdat)"
+msgstr "Keskipikselin painoarvo"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:167
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:328
@@ -3523,15 +3481,13 @@ msgstr "Kirkkauden maskin kynnysarvo"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
-#, fuzzy
 msgid "1st order speed"
-msgstr "3. asteen nopeus"
+msgstr "1. asteen nopeus"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:183
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:288
-#, fuzzy
 msgid "2nd order speed"
-msgstr "3. asteen nopeus"
+msgstr "2. asteen nopeus"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:189
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:292
@@ -3540,9 +3496,8 @@ msgstr "3. asteen nopeus"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:195
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:296
-#, fuzzy
 msgid "4th order speed"
-msgstr "3. asteen nopeus"
+msgstr "4. asteen nopeus"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:201
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:300
@@ -3602,7 +3557,6 @@ msgstr "Kompensoi valotuksen vinoumaa"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:168
 #: ../build/lib/darktable/plugins/introspection_levels.c:160
-#, fuzzy
 msgid "manual"
 msgstr "Käsisäätöinen"
 
@@ -3996,7 +3950,6 @@ msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:203
-#, fuzzy
 msgid "gamma rec709 RGB"
 msgstr "Gamma Rec709 RGB"
 
@@ -4068,7 +4021,6 @@ msgstr "Dynaaminen alue"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:91
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:162
-#, fuzzy
 msgid "middle gray luma"
 msgstr "Keskiharmaan luma"
 
@@ -4104,9 +4056,8 @@ msgstr "Rajaa ylälaita"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:75
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:150
-#, fuzzy
 msgid "crop right"
-msgstr "Rajaa korkeus"
+msgstr "Rajaa oikea"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:81
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:154
@@ -4188,7 +4139,6 @@ msgstr "Väri"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:134
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:223
 #: ../src/iop/rgbcurve.c:1448
-#, fuzzy
 msgid "compensate middle gray"
 msgstr "Keskiharmaan kompensointi"
 
@@ -4243,15 +4193,13 @@ msgstr "XYZ, yhdistetyt kanavat"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:144
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:289
-#, fuzzy
 msgid "blacks"
 msgstr "Mustat"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:150
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:293
-#, fuzzy
 msgid "deep shadows"
-msgstr "Tummat varjot"
+msgstr "Syvät varjot"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:156
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:297
@@ -4264,7 +4212,6 @@ msgstr "Varjot"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:162
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:301
-#, fuzzy
 msgid "light shadows"
 msgstr "Vaaleat varjot"
 
@@ -4277,7 +4224,6 @@ msgstr "Keskisävyt"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:174
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:309
-#, fuzzy
 msgid "dark highlights"
 msgstr "Tummat huippuvalot"
 
@@ -4292,13 +4238,11 @@ msgstr "Huippuvalot"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:186
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:317
-#, fuzzy
 msgid "whites"
 msgstr "Valkoiset"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:192
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:321
-#, fuzzy
 msgid "speculars"
 msgstr "Heijastukset"
 
@@ -4983,7 +4927,6 @@ msgid "HLG P3 RGB"
 msgstr "HLG P3 RGB"
 
 #: ../src/common/colorspaces.c:1467 ../src/common/colorspaces.c:1692
-#, fuzzy
 msgid "linear ProPhoto RGB"
 msgstr "Suoralinjainen ProPhoto RGB"
 
@@ -5274,7 +5217,7 @@ msgstr "Virhe avattaessa tietokannan lukkotiedostoa: %s"
 
 #. the database has to be upgraded, let's ask user
 #: ../src/common/database.c:2732
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
 "\n"
@@ -5286,7 +5229,9 @@ msgid ""
 msgstr ""
 "Tietokannan rakenne täytyy päivittää:\n"
 "\n"
-"<span style=\"italic\">%s</span>\n"
+"<span style='italic'>%s</span>\n"
+"\n"
+"Tämä saattaa kestää pitkään suurilla tietokannoilla.\n"
 "\n"
 "Haluatko jatkaa vai lopettaa ja ottaa varmuuskopion?\n"
 
@@ -5350,7 +5295,7 @@ msgstr ""
 "luoden tyhjän tietokannan."
 
 #: ../src/common/database.c:3083 ../src/common/database.c:3261
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
 "\n"
@@ -5361,9 +5306,10 @@ msgid ""
 msgstr ""
 "Tapahtui virhe avattaessa tietokantaa kohteesta\n"
 "\n"
-"<span style=\"italic\">%s</span>\n"
+"<span style='italic'>%s</span>\n"
 "\n"
-"%s\n"
+"näyttää siltä, että tietokanta on korruptoitunut.\n"
+"%s%s"
 
 #: ../src/common/database.c:3579
 msgid "click later to be asked on next startup"
@@ -5665,7 +5611,6 @@ msgid "noiseprofile file `%s' is not valid"
 msgstr "Kohinan profiilitiedosto `%s' on virheellinen."
 
 #: ../src/common/opencl.c:815
-#, fuzzy
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
@@ -5673,7 +5618,6 @@ msgstr ""
 "käytöstä."
 
 #: ../src/common/opencl.c:822
-#, fuzzy
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
@@ -5681,7 +5625,6 @@ msgstr ""
 "mukaisesti."
 
 #: ../src/common/opencl.c:829
-#, fuzzy
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
@@ -5689,7 +5632,6 @@ msgstr ""
 "sen mukaisesti."
 
 #: ../src/common/opencl.c:836
-#, fuzzy
 msgid "opencl scheduling profile set to default"
 msgstr "Asetettiin OpenCL-ajoitusprofiili oletukseksi."
 
@@ -5952,7 +5894,6 @@ msgid "show accels window"
 msgstr "Näytä esiasetusikkuna"
 
 #: ../src/control/control.c:310
-#, fuzzy
 msgid "working..."
 msgstr "Työstetään.."
 
@@ -6420,9 +6361,8 @@ msgstr ""
 "mahdollista)?"
 
 #: ../src/control/jobs/control_jobs.c:1647
-#, fuzzy
 msgid "do you really want to physically delete selected image from disk?"
-msgstr "Haluatko varmasti poistaa %d valitun kuvan levyltä?"
+msgstr "Haluatko varmasti poistaa valitun kuvan levyltä?"
 
 #: ../src/control/jobs/control_jobs.c:1670
 msgid "move images"
@@ -6434,7 +6374,7 @@ msgid "_select as destination"
 msgstr "_Valitse kohteeksi"
 
 #: ../src/control/jobs/control_jobs.c:1702
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
 "(all duplicates will be moved along)"
@@ -6459,7 +6399,7 @@ msgid "copy images"
 msgstr "Kopioi kuvat"
 
 #: ../src/control/jobs/control_jobs.c:1764
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "Haluatko varmasti kopioida %d valitun kuvan kohteeseen %s?"
@@ -6491,7 +6431,7 @@ msgid "export images"
 msgstr "Vie kuvia"
 
 #: ../src/control/jobs/control_jobs.c:1948
-#, fuzzy, c-format
+#, c-format
 msgid "adding time offset to %d image"
 msgstr "Lisätään ajan poikkeama %d kuvaan."
 
@@ -6511,7 +6451,7 @@ msgid "setting date/time of %d images"
 msgstr "Asetettiin päivä/aika %d kuvaan."
 
 #: ../src/control/jobs/control_jobs.c:1990
-#, fuzzy, c-format
+#, c-format
 msgid "added time offset to %d image"
 msgstr "Lisättiin ajan poikkeama %d kuvaan."
 
@@ -6775,10 +6715,9 @@ msgid "subtract inverse (deprecated)"
 msgstr "Vähennä käänteinen (vanhentunut)"
 
 #: ../src/develop/blend_gui.c:84
-#, fuzzy
 msgctxt "blendmode"
 msgid "divide inverse (deprecated)"
-msgstr "Käänteinen (vanhentunut)"
+msgstr "Jaa käänteinen (vanhentunut)"
 
 #: ../src/develop/blend_gui.c:88
 msgctxt "blendoperation"
@@ -7082,23 +7021,21 @@ msgstr "Kanava"
 
 #: ../src/develop/blend_gui.c:2170 ../src/iop/colorzones.c:2457
 #: ../src/iop/rgbcurve.c:1392 ../src/iop/tonecurve.c:1184
-#, fuzzy
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click or right-click to select an area"
 msgstr ""
 "Valitse väri kuvasta.\n"
-"CTRL+napsaus valitsee alueen."
+"CTRL+napsaus tai oikea napsaus valitsee alueen."
 
 #: ../src/develop/blend_gui.c:2177
-#, fuzzy
 msgid ""
 "set the range based on an area from the image\n"
 "drag to use the input image\n"
 "ctrl+drag to use the output image"
 msgstr ""
 "Aseta alue perustuen valintaan kuvasta.\n"
-"Napsauta + raahaa käyttääksesi alkuperäistä kuvaa.\n"
+"Raahaa käyttääksesi alkuperäistä kuvaa.\n"
 "CTRL+raahaa käyttääksesi muokattua kuvaa."
 
 #: ../src/develop/blend_gui.c:2181
@@ -7338,11 +7275,12 @@ msgid "feathering guide"
 msgstr "Häivytyksen ohjain"
 
 #: ../src/develop/blend_gui.c:3103
-#, fuzzy
 msgid ""
 "choose to guide mask by input or output image and\n"
 "choose to apply feathering before or after mask blur"
-msgstr "Valitse johtaaksesi maski alkuperäisestä- tai muokatusta kuvasta."
+msgstr ""
+"Valitse johtaaksesi maski alkuperäisestä- tai muokatusta kuvasta ja\n"
+"valitse tehdäänkö häivytys ennen vai jälkeen maskin häivytyksen."
 
 #: ../src/develop/blend_gui.c:3109 ../src/libs/history.c:878
 msgid "feathering radius"
@@ -7391,7 +7329,6 @@ msgid "display mask and/or color channel"
 msgstr "Maskin ja/tai värikanavien näyttö"
 
 #: ../src/develop/blend_gui.c:3148
-#, fuzzy
 msgid ""
 "display mask and/or color channel. ctrl+click to display mask, shift+click "
 "to display channel. hover over parametric mask slider to select channel for "
@@ -7493,7 +7430,6 @@ msgid "click to display (module must be activated first)"
 msgstr "Napsauta näyttääksesi (moduulin pitää olla ensin aktiivinen)."
 
 #: ../src/develop/imageop.c:2432
-#, fuzzy
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -7516,7 +7452,6 @@ msgid "presets"
 msgstr "Esiasetukset"
 
 #: ../src/develop/imageop.c:2457
-#, fuzzy
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -7960,18 +7895,16 @@ msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "Tiiletys epäonnistui moduulille '%s'. Ulostulo saattaa olla sotkua."
 
 #: ../src/dtgtk/culling.c:228
-#, fuzzy
 msgid "you have reached the start of your selection"
-msgstr "Saavutit kokoelman alun"
+msgstr "Saavutit valinnan alun"
 
 #: ../src/dtgtk/culling.c:237
 msgid "you have reached the start of your collection"
 msgstr "Saavutit kokoelman alun"
 
 #: ../src/dtgtk/culling.c:278
-#, fuzzy
 msgid "you have reached the end of your selection"
-msgstr "Saavutit kokoelman lopun"
+msgstr "Saavutit valinnan lopun"
 
 #: ../src/dtgtk/culling.c:301
 msgid "you have reached the end of your collection"
@@ -8296,7 +8229,7 @@ msgstr ""
 "\n"
 
 #: ../src/generate-cache/main.c:227
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\n"
 "if you want to pre-generate thumbnails and for darktable to use them, you "
@@ -8307,7 +8240,7 @@ msgstr ""
 "käytössä (cache_disk_backend).\n"
 "Jos haluat luoda esikatselukuvat ennakkoon Darktablen käyttöön, niin sinun "
 "täytyy ottaa esikatselukuvien levyn taustapalvelu käyttöön.\n"
-"Esikatselukuvia ei ole luotu, valmis."
+"Esikatselukuvia ei ole luotu, valmis.\n"
 
 #: ../src/generate-cache/main.c:238
 #, c-format
@@ -8336,14 +8269,12 @@ msgid "creating complete lighttable thumbnail cache\n"
 msgstr "Luodaan valopöydän esikatselukuville välimuistia\n"
 
 #: ../src/gui/accelerators.c:77 ../src/views/view.c:1529
-#, fuzzy
 msgid "scroll"
 msgstr "Rulla"
 
 #: ../src/gui/accelerators.c:78
-#, fuzzy
 msgid "pan"
-msgstr "PNG"
+msgstr "Panoroi"
 
 #: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5419
 #: ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522 ../src/iop/ashift.c:5523
@@ -8563,9 +8494,8 @@ msgid "relative instance"
 msgstr "Suhteellinen säätö"
 
 #: ../src/gui/accelerators.c:588 ../src/gui/accelerators.c:2064
-#, fuzzy
 msgid "speed"
-msgstr "RawSpeed"
+msgstr "Nopeus"
 
 #: ../src/gui/accelerators.c:641
 msgid ""
@@ -8837,7 +8767,6 @@ msgstr "Pikavalinta"
 
 #: ../src/gui/accelerators.c:2042 ../src/gui/accelerators.c:2130
 #: ../src/views/view.c:1724
-#, fuzzy
 msgid "action"
 msgstr "Toiminto"
 
@@ -9001,7 +8930,6 @@ msgid "panels/all"
 msgstr "Paneelit/Kaikki"
 
 #: ../src/gui/gtk.c:1257
-#, fuzzy
 msgctxt "accel"
 msgid "panels/collapsing controls"
 msgstr "Vaihda paneelin piilotuksen ohjaimet"
@@ -9447,9 +9375,8 @@ msgid "magenta"
 msgstr "Magenta"
 
 #: ../src/gui/guides.c:806 ../src/gui/guides.c:852
-#, fuzzy
 msgid "show guides"
-msgstr "Näytä ryhmät"
+msgstr "Näytä apulinjat"
 
 #: ../src/gui/guides.c:861
 msgid "show guide overlay when this module has focus"
@@ -9465,9 +9392,8 @@ msgstr ""
 "Nämä asetukset vaikuttavat kaikkiin apulinjojen näyttöä tukeviin moduuleihin."
 
 #: ../src/gui/hist_dialog.c:191
-#, fuzzy
 msgid "select parts to copy"
-msgstr "Valitse liitettävät osat"
+msgstr "Valitse kopioitavat osat"
 
 #: ../src/gui/hist_dialog.c:191
 msgid "select parts to paste"
@@ -9681,14 +9607,13 @@ msgid "export..."
 msgstr "Vie..."
 
 #: ../src/gui/preferences.c:1002
-#, fuzzy, c-format
+#, c-format
 msgid "failed to import preset %s"
-msgstr "Esiasetuksen tuonti epäonnistui"
+msgstr "Esiasetuksen %s tuonti epäonnistui"
 
 #: ../src/gui/preferences.c:1013
-#, fuzzy
 msgid "select preset(s) to import"
-msgstr "Valitse tuotava esiasetus"
+msgstr "Valitse tuotavat esiasetukset"
 
 #: ../src/gui/preferences.c:1014 ../src/libs/collect.c:468
 #: ../src/libs/copy_history.c:108 ../src/libs/geotagging.c:936
@@ -10712,11 +10637,13 @@ msgid "could not run outlier removal"
 msgstr "Poikkeavien arvojen poisto ei onnistunut."
 
 #: ../src/iop/ashift.c:3212
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "not enough structure for automatic correction\n"
 "minimum %d lines in each relevant direction"
-msgstr "Ei riittävästi selkeitä rakenteita automaattiseen korjaukseen"
+msgstr ""
+"Ei riittävästi selkeitä rakenteita automaattikorjauksen\n"
+"minimimäärälle %d linjoja jokaisessa tarvittavassa suunnassa."
 
 #: ../src/iop/ashift.c:3218
 msgid "automatic correction failed, please correct manually"
@@ -10740,9 +10667,8 @@ msgid "perspective helpers"
 msgstr "Perspektiivin apurit"
 
 #: ../src/iop/ashift.c:5790
-#, fuzzy
 msgid "structure"
-msgstr "Hae rakenne"
+msgstr "Rakenne"
 
 #: ../src/iop/ashift.c:5823
 msgid ""
@@ -10799,7 +10725,6 @@ msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr "Muuta kuvasuhdetta vaaka- ja pystysuuntaisella skaalauksella."
 
 #: ../src/iop/ashift.c:5838
-#, fuzzy
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10810,7 +10735,6 @@ msgstr ""
 "SHIFT+napsaus sovittaa ainoastaan linssin siirron."
 
 #: ../src/iop/ashift.c:5841
-#, fuzzy
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10821,7 +10745,6 @@ msgstr ""
 "SHIFT+napsaus sovittaa ainoastaan linssin siirron."
 
 #: ../src/iop/ashift.c:5844
-#, fuzzy
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -10836,14 +10759,13 @@ msgstr ""
 "CTRL+SHIFT+napsaus sovittaa ainoastaan kierron ja linssin siirron."
 
 #: ../src/iop/ashift.c:5850
-#, fuzzy
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
 "shift+click for an additional detail enhancement\n"
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
-"Analysoi kuvan rakenteelliset viivat.\n"
+"Analysoi kuvan rakenteelliset linjat.\n"
 "CTRL+napsaus ylimääräinen reunojen tunnistus.\n"
 "SHIFT+napsaus ylimääräinen yksityiskohtien tunnistus.\n"
 "CTRL+SHIFT+napsaus molempien tapojen yhdistelmä."
@@ -11303,7 +11225,6 @@ msgid "contrast adjustment"
 msgstr "Kontrastin säätö."
 
 #: ../src/iop/basicadj.c:618
-#, fuzzy
 msgid "middle gray adjustment"
 msgstr "Keskiharmaan säätö."
 
@@ -11415,7 +11336,6 @@ msgid "changes the local contrast of shadows"
 msgstr "Muuttaa varjojen paikallista kontrastia."
 
 #: ../src/iop/bilat.c:470
-#, fuzzy
 msgid ""
 "defines what counts as mid-tones. lower for better dynamic range compression "
 "(reduce shadow and highlight contrast), increase for more powerful local "
@@ -11747,13 +11667,12 @@ msgid "activate colorshift correction for blue & red channels"
 msgstr "Aktivoi värisiirtymän korjauksen siniselle ja punaiselle kanavalle."
 
 #: ../src/iop/cacorrect.c:1470
-#, fuzzy
 msgid ""
 "automatic chromatic aberration correction\n"
 "only for bayer raw files"
 msgstr ""
 "Automaattinen värivirheen korjaus toimii\n"
-"ainoastaan raakakuviin."
+"ainoastaan Bayer-kennotyypin raakakuvilla."
 
 #: ../src/iop/cacorrectrgb.c:161 ../src/iop/defringe.c:75
 msgid "chromatic aberrations"
@@ -12292,9 +12211,8 @@ msgstr ""
 "Sovitus muuttaa tämän värin puhtaan valkoiseksi."
 
 #: ../src/iop/channelmixerrgb.c:3867 ../src/iop/temperature.c:2009
-#, fuzzy
 msgid "set white balance to detected from area"
-msgstr "Valitse kameran valkotasapainon asetus."
+msgstr "Valitse alueesta tunnistettu valkotasapaino."
 
 #: ../src/iop/channelmixerrgb.c:3871
 msgid "illuminant"
@@ -12631,7 +12549,6 @@ msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "Virheellinen kuvasuhde '%s'. Kuvasuhteen tulee olla \"numero:numero\"."
 
 #: ../src/iop/clipping.c:2266 ../src/iop/crop.c:1203
-#, fuzzy
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -12639,7 +12556,9 @@ msgid ""
 "decimal format"
 msgstr ""
 "Aseta kuvasuhde.\n"
-"Lista on lajiteltu alkaen neliöstä ja päättyen vähiten neliömäiseen."
+"Lista on lajiteltu alkaen neliöstä ja päättyen vähiten neliömäiseen.\n"
+"Syötä oma kuvasuhde avaamalla laatikko ja antamalla suhde muodossa x:y tai "
+"desimaalina."
 
 #: ../src/iop/clipping.c:2273 ../src/iop/crop.c:1213
 msgid "margins"
@@ -12702,7 +12621,6 @@ msgstr ""
 "<b>Suorista</b>: oikea-raahaa, <b>Toteuta</b>: kaksoisnapsauta"
 
 #: ../src/iop/clipping.c:3373 ../src/iop/crop.c:1666
-#, fuzzy
 msgid "commit"
 msgstr "Toteuta"
 
@@ -12886,58 +12804,48 @@ msgid "factor of lift/offset"
 msgstr "Kerroin nostolle / poikkeamalle."
 
 #: ../src/iop/colorbalance.c:2065
-#, fuzzy
 msgid "factor of red for lift/offset"
-msgstr "Punaisen kerroin nostolle"
+msgstr "Punaisen kerroin nostolle / poikkeamalle."
 
 #: ../src/iop/colorbalance.c:2066
-#, fuzzy
 msgid "factor of green for lift/offset"
-msgstr "Vihreän kerroin nostolle"
+msgstr "Vihreän kerroin nostolle / poikkeamalle."
 
 #: ../src/iop/colorbalance.c:2067
-#, fuzzy
 msgid "factor of blue for lift/offset"
-msgstr "Sinisen kerroin nostolle"
+msgstr "Sinisen kerroin nostolle / poikkeamalle."
 
 #: ../src/iop/colorbalance.c:2070
-#, fuzzy
 msgid "factor of gamma/power"
-msgstr "Kerroin gammalle"
+msgstr "Kerroin gammalle / voimakkuudelle."
 
 #: ../src/iop/colorbalance.c:2071
-#, fuzzy
 msgid "factor of red for gamma/power"
-msgstr "Punaisen kerroin gammalle"
+msgstr "Punaisen kerroin gammalle / voimakkuudelle."
 
 #: ../src/iop/colorbalance.c:2072
-#, fuzzy
 msgid "factor of green for gamma/power"
-msgstr "Vihreän kerroin gammalle"
+msgstr "Vihreän kerroin gammalle / voimakkuudelle."
 
 #: ../src/iop/colorbalance.c:2073
-#, fuzzy
 msgid "factor of blue for gamma/power"
-msgstr "Sinisen kerroin gammalle"
+msgstr "Sinisen kerroin gammalle / voimakkuudelle."
 
 #: ../src/iop/colorbalance.c:2076
 msgid "factor of gain/slope"
 msgstr "Kerroin vahvistukselle / kallistukselle."
 
 #: ../src/iop/colorbalance.c:2077
-#, fuzzy
 msgid "factor of red for gain/slope"
-msgstr "Punaisen kerroin vahvistukselle"
+msgstr "Punaisen kerroin vahvistukselle / kallistukselle."
 
 #: ../src/iop/colorbalance.c:2078
-#, fuzzy
 msgid "factor of green for gain/slope"
-msgstr "Vihreän kerroin vahvistukselle"
+msgstr "Vihreän kerroin vahvistukselle / kallistukselle."
 
 #: ../src/iop/colorbalance.c:2079
-#, fuzzy
 msgid "factor of blue for gain/slope"
-msgstr "Sinisen kerroin vahvistukselle"
+msgstr "Sinisen kerroin vahvistukselle / kallistukselle."
 
 #: ../src/iop/colorbalance.c:2088
 msgid "auto optimizers"
@@ -13258,7 +13166,7 @@ msgid "patch #%d"
 msgstr "Paikka #%d"
 
 #: ../src/iop/colorchecker.c:1208
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
 "altered patches are marked with an outline\n"
@@ -13300,9 +13208,8 @@ msgstr ""
 "Alhaiset arvot muuttavat kohdevärin vihreään ja korkeat magentaan."
 
 #: ../src/iop/colorchecker.c:1362
-#, fuzzy
 msgid "green-magenta offset"
-msgstr "Vihreä-magenta kontrasti"
+msgstr "Vihreä-magenta poikkeama"
 
 #: ../src/iop/colorchecker.c:1368
 msgid ""
@@ -13333,14 +13240,14 @@ msgid "target color"
 msgstr "Kohdeväri"
 
 #: ../src/iop/colorchecker.c:1381
-#, fuzzy
 msgid ""
 "control target color of the patches\n"
 "relative - target color is relative from the patch original color\n"
 "absolute - target color is absolute Lab value"
 msgstr ""
-"Ohjaa paikkojen kohdeväriä suhteellisen poikkeaman tai absoluuttisten Lab "
-"arvojen avulla."
+"Ohjaa paikkojen kohdeväriä\n"
+"Suhteellinen - kohdeväri on suhteessa paikan alkuperäiseen väriin.\n"
+"Absoluuttinen- kohdeväri on absoluuttinen Lab-arvoon."
 
 #: ../src/iop/colorchecker.c:1382
 msgid "relative"
@@ -13399,7 +13306,6 @@ msgid "cooling filter"
 msgstr "Viilentävä suodin"
 
 #: ../src/iop/colorcorrection.c:265
-#, fuzzy
 msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
@@ -13479,9 +13385,8 @@ msgid "colorize"
 msgstr "Väritys"
 
 #: ../src/iop/colorize.c:104
-#, fuzzy
 msgid "overlay a solid color on the image"
-msgstr "Aseta lähennetyn kuvan päälle tekstiaputiedosto"
+msgstr "Aseta kuvan päälle kiinteävärinen peittokuva"
 
 #: ../src/iop/colorize.c:360 ../src/iop/splittoning.c:486
 msgid "select the hue tone"
@@ -13757,7 +13662,6 @@ msgid "aqua"
 msgstr "Aqua"
 
 #: ../src/iop/colorzones.c:2464 ../src/iop/rgbcurve.c:1399
-#, fuzzy
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -13765,9 +13669,9 @@ msgid ""
 "shift+drag to create a negative curve"
 msgstr ""
 "Luo käyrä perustuen kuvan alueeseen.\n"
-"Napsautus luo suoran käyrän.\n"
-"CTRL+napsaus luo positiivisen käyrän.\n"
-"SHIFT+napsaus luo negatiivisen käyrän."
+"Raahaus luo suoran käyrän.\n"
+"CTRL+raahaus luo positiivisen käyrän.\n"
+"SHIFT+raahaus luo negatiivisen käyrän."
 
 #. edit by area
 #: ../src/iop/colorzones.c:2485
@@ -13944,7 +13848,6 @@ msgstr ""
 "Mosaiikin kaksoispalausmenetelmät kaksinkertaistavat käsittelyajan."
 
 #: ../src/iop/demosaic.c:5778
-#, fuzzy
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -13989,11 +13892,8 @@ msgid "not applicable"
 msgstr "Ei sovelleta"
 
 #: ../src/iop/demosaic.c:5806
-#, fuzzy
 msgid "demosaicing is only used for color raw images"
-msgstr ""
-"Mosaiikin palautus\n"
-"tarvitaan ainoastaan raakakuville."
+msgstr "Mosaiikin palautus tarvitaan ainoastaan värillisille raakakuville."
 
 #: ../src/iop/denoiseprofile.c:707
 msgid "wavelets: chroma only"
@@ -14128,14 +14028,14 @@ msgid "profile used for variance stabilization"
 msgstr "Vaihtelun tasaamiseen käytetty profiili."
 
 #: ../src/iop/denoiseprofile.c:3728
-#, fuzzy
 msgid ""
 "method used in the denoising core.\n"
 "non-local means works best for `lightness' blending,\n"
 "wavelets work best for `color' blending"
 msgstr ""
-"Kohinanpoiston ytimen menetelmä. Epäpaikallinen keskiarvo toimii parhaiten "
-"'valoisuuden' yhdistykselle. Wavelets toimii parhaiten 'värin' yhdistykselle."
+"Kohinanpoiston ytimen menetelmä.\n"
+"Epäpaikallinen keskiarvo toimii parhaiten 'valoisuuden' yhdistykselle.\n"
+"Wavelets toimii parhaiten 'värin' yhdistykselle."
 
 #: ../src/iop/denoiseprofile.c:3731
 msgid ""
@@ -14150,7 +14050,6 @@ msgstr ""
 "luman erilliseen kohinan poistoon."
 
 #: ../src/iop/denoiseprofile.c:3735
-#, fuzzy
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -14175,14 +14074,14 @@ msgstr ""
 "pidempään! Suuren toimintasäteen käyttö kestää erittäin pitkään."
 
 #: ../src/iop/denoiseprofile.c:3741
-#, fuzzy
 msgid ""
 "scattering of the neighbourhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
 "does not affect execution time."
 msgstr ""
-"Lähialueen paikkojen etsinnän sironta. Kasvata arvoa vähentääksesi "
-"karkearakeista kohinaa. Ei vaikuta suorituskykyyn."
+"Lähialueen paikkojen etsinnän sironta.\n"
+"Kasvata arvoa vähentääksesi karkearakeista kohinaa.\n"
+"Ei vaikuta suorituskykyyn."
 
 #: ../src/iop/denoiseprofile.c:3744
 msgid ""
@@ -14213,7 +14112,6 @@ msgstr ""
 "Tämä saattaa johtua kuvan alivalotuksesta."
 
 #: ../src/iop/denoiseprofile.c:3753
-#, fuzzy
 msgid ""
 "finetune shadows denoising.\n"
 "decrease to denoise more aggressively\n"
@@ -14221,7 +14119,7 @@ msgid ""
 msgstr ""
 "Hienosäädä varjojen kohinanpoistoa.\n"
 "Vähennä arvoa voimakkaamman kohinanpoiston\n"
-"saavuttamiseksi kuvan tummilla alueilla.\n"
+"saavuttamiseksi kuvan tummilla alueilla."
 
 #: ../src/iop/denoiseprofile.c:3756
 msgid ""
@@ -14980,16 +14878,14 @@ msgstr "(Aukkoa)"
 
 #. we are over the graph area
 #: ../src/iop/filmicrgb.c:3825
-#, fuzzy
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve."
 msgstr ""
-"Lukutilassa oleva asteikko. Käytä alla olevia asetuksia solmujen "
-"asettamiseksi.\n"
+"Käytä alla olevia asetuksia solmujen asettamiseksi.\n"
 "Kirkas käyrä on elävän kuvan sävyjen kartoituksen käyrä.\n"
-"Tumma käyrä on saturaation vähentämisen käyrä.\n"
+"Tumma käyrä on saturaation vähentämisen käyrä."
 
 #: ../src/iop/filmicrgb.c:3831
 msgid "toggle axis labels and values display"
@@ -15162,7 +15058,6 @@ msgstr ""
 "Vähennä arvoa huippuvalojen latistamiseksi."
 
 #: ../src/iop/filmicrgb.c:4050
-#, fuzzy
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -15170,8 +15065,6 @@ msgid ""
 "this has no effect on mid-tones."
 msgstr ""
 "Käyrän keskellä olevan lineaarisen osan leveys.\n"
-"Prosentteja dynaamisesta alueesta (valkoisen suhteellinen valotus - mustan "
-"suhteellinen valotus)\n"
 "Kasvata arvoa kontrastin lisäämiseksi ja värikylläisyyden vähentämiseksi "
 "äärimmäisillä kirkkauksilla,\n"
 "muutoin vähennä arvoa. Värikylläisyyden vähenemää ei tapahdu "
@@ -15190,9 +15083,8 @@ msgstr ""
 
 #. Page OPTIONS
 #: ../src/iop/filmicrgb.c:4097
-#, fuzzy
 msgid "options"
-msgstr "GUI:n asetukset"
+msgstr "Asetukset"
 
 #: ../src/iop/filmicrgb.c:4102
 msgid ""
@@ -15449,7 +15341,7 @@ msgid "the density in EV for the filter"
 msgstr "Suotimen tummuus aukkoina."
 
 #: ../src/iop/graduatednd.c:1110
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "hardness of graduation:\n"
 "0% = soft, 100% = hard"
@@ -15485,9 +15377,9 @@ msgid "[%s on line] change density"
 msgstr "[%s viivassa] Muuta leveyttä"
 
 #: ../src/iop/graduatednd.c:1150
-#, fuzzy, c-format
+#, c-format
 msgid "[%s on line] change hardness"
-msgstr "[%s viivassa] Muuta leveyttä"
+msgstr "[%s viivassa] Muuta kovuutta"
 
 #: ../src/iop/grain.c:419
 msgid "grain"
@@ -15511,7 +15403,6 @@ msgid "the strength of applied grain"
 msgstr "Käytetyn rakeen voimakkuus."
 
 #: ../src/iop/grain.c:587
-#, fuzzy
 msgid ""
 "amount of mid-tones bias from the photographic paper response modeling. the "
 "greater the bias, the more pronounced the fall off of the grain in shadows "
@@ -15702,9 +15593,8 @@ msgstr ""
 "Rajauskerroin:\t%.1f"
 
 #: ../src/iop/lens.cc:1740
-#, fuzzy
 msgid "camera/lens not found"
-msgstr "Kameraa/objektiivia ei löydy - ole hyvä ja valitse käsin"
+msgstr "Kameraa/objektiivia ei löydy"
 
 #: ../src/iop/lens.cc:1741
 msgid ""
@@ -15780,7 +15670,6 @@ msgid "only vignetting"
 msgstr "Vain vinjetointi"
 
 #: ../src/iop/lens.cc:2290
-#, fuzzy
 msgid "camera model"
 msgstr "Kameran malli"
 
@@ -15937,37 +15826,34 @@ msgid "distort parts of the image"
 msgstr "Vääristä kuvan osia"
 
 #: ../src/iop/liquify.c:3598
-#, fuzzy
 msgid ""
 "click and drag to add point\n"
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
 "change direction"
 msgstr ""
 "Napsaus ja raahaaminen lisää pisteen.\n"
-"Hiiren rulla muuttaa kokoa.\n"
-"SHIFT+hiiren rulla säätää voimakkuutta - CTRL+hiiren rulla muuttaa suuntaa."
+"Hiiren rulla muuttaa kokoa - SHIFT+rulla säätää voimakkuutta - CTRL+rulla "
+"muuttaa suuntaa."
 
 #: ../src/iop/liquify.c:3602
-#, fuzzy
 msgid ""
 "click to add line\n"
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
 "change direction"
 msgstr ""
 "Napsaus lisää viivan.\n"
-"Hiiren rulla muuttaa kokoa.\n"
-"SHIFT+hiiren rulla säätää voimakkuutta - CTRL+hiiren rulla muuttaa suuntaa."
+"Hiiren rulla muuttaa kokoa - SHIFT+rulla säätää voimakkuutta - CTRL+rulla "
+"muuttaa suuntaa."
 
 #: ../src/iop/liquify.c:3606
-#, fuzzy
 msgid ""
 "click to add curve\n"
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
 "change direction"
 msgstr ""
 "Napsaus lisää käyrän.\n"
-"Hiiren rulla muuttaa kokoa.\n"
-"SHIFT+hiiren rulla säätää voimakkuutta - CTRL+hiiren rulla muuttaa suuntaa."
+"Hiiren rulla muuttaa kokoa - SHIFT+rulla säätää voimakkuutta - CTRL+rulla "
+"muuttaa suuntaa."
 
 #: ../src/iop/liquify.c:3609
 msgid "click to edit nodes"
@@ -15986,9 +15872,8 @@ msgid "warps|nodes count:"
 msgstr "Vääristymät|Solmujen määrä:"
 
 #: ../src/iop/liquify.c:3667
-#, fuzzy
 msgid "edit, add and delete nodes"
-msgstr "Solmutyökalu: muokkaa, lisää ja poista solmuja"
+msgstr "Muokkaa, lisää ja poista solmupisteitä."
 
 #. shapes
 #: ../src/iop/liquify.c:3671 ../src/iop/liquify.c:3675
@@ -16024,7 +15909,6 @@ msgid "draw multiple points"
 msgstr "Piirrä useita pisteitä"
 
 #: ../src/iop/liquify.c:3683
-#, fuzzy
 msgid ""
 "ctrl+click: add node - right click: remove path\n"
 "ctrl+alt+click: toggle line/curve"
@@ -16033,7 +15917,6 @@ msgstr ""
 "CTRL+ALT+napsaus: vaihda viiva/käyrä."
 
 #: ../src/iop/liquify.c:3685
-#, fuzzy
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl+click: autosmooth, cusp, smooth, symmetrical - right click to remove"
@@ -16060,7 +15943,6 @@ msgid "drag to adjust hardness (feather)"
 msgstr "Häivytyksen kovuus säätyy raahaamalla."
 
 #: ../src/iop/liquify.c:3693
-#, fuzzy
 msgid ""
 "drag to adjust warp strength\n"
 "ctrl+click: linear, grow, and shrink"
@@ -16187,9 +16069,9 @@ msgid "error allocating buffer for gmz lut"
 msgstr "Virhe GMZ LUT:n puskurin varauksessa."
 
 #: ../src/iop/lut3d.c:492
-#, fuzzy, c-format
+#, c-format
 msgid "invalid png file %s"
-msgstr "Virheellinen taso PNG-tiedostossa %d %d"
+msgstr "Virheellinen PNG-tiedosto %s"
 
 #: ../src/iop/lut3d.c:500
 #, c-format
@@ -16237,9 +16119,8 @@ msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMAIN MAX <> 1.0 ei ole tuettu"
 
 #: ../src/iop/lut3d.c:774
-#, fuzzy
 msgid "[1D cube lut is not supported"
-msgstr "1D cube LUT ei ole tuettu"
+msgstr "[1D cube LUT ei ole tuettu"
 
 #: ../src/iop/lut3d.c:796 ../src/iop/lut3d.c:900
 msgid "error - allocating buffer for cube lut"
@@ -16283,7 +16164,6 @@ msgid "error - the maximum lut value does not match any valid bit depth"
 msgstr "Virhe - LUT:n maksimiarvo ei vastaa mitään tuettua värisyvyyttä"
 
 #: ../src/iop/lut3d.c:1550
-#, fuzzy
 msgid "lut root folder not defined"
 msgstr "LUT:ien juurihakemistoa ei ole määritetty"
 
@@ -16304,7 +16184,6 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "Hald CLUT (PNG) tai 3D LUT (cube tai 3DL)"
 
 #: ../src/iop/lut3d.c:1603
-#, fuzzy
 msgid "select file outside Lut root folder is not allowed"
 msgstr ""
 "Tiedoston valitseminen LUT:ien juurihakemiston ulkopuolelta ei ole sallittu."
@@ -16337,13 +16216,12 @@ msgstr ""
 "kuvan mukana LUT:n kanssa, jos se ei ole pakattu LUT (GMZ)"
 
 #: ../src/iop/lut3d.c:1695
-#, fuzzy
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)"
 msgstr ""
 "Tiedoston polku (suhteellinen LUT-tiedostojen hakemistoon) tallennetaan "
-"kuvan mukana LUT:n kanssa, jos se ei ole pakattu LUT (GMZ)"
+"kuvan mukana (ilman varsinaista LUT-tietoa)."
 
 #: ../src/iop/lut3d.c:1704
 msgid "enter lut name"
@@ -16683,7 +16561,6 @@ msgid "adjust to match the average luma of the subject"
 msgstr "Säädä vastaamaan kohteen luman keskiarvoa."
 
 #: ../src/iop/profile_gamma.c:662
-#, fuzzy
 msgid ""
 "number of stops between middle gray and pure black\n"
 "this is a reading a posemeter would give you on the scene"
@@ -16763,9 +16640,8 @@ msgid "passthrough"
 msgstr "Läpipäästö"
 
 #: ../src/iop/rawprepare.c:643
-#, fuzzy
 msgid "black level 0"
-msgstr "Mustan taso 1"
+msgstr "Mustan taso 0"
 
 #: ../src/iop/rawprepare.c:644
 msgid "black level 1"
@@ -16928,9 +16804,8 @@ msgid "tools"
 msgstr "Työkalut"
 
 #: ../src/iop/retouch.c:2166 ../src/iop/retouch.c:2184
-#, fuzzy
 msgid "activate blur tool"
-msgstr "Aktivoi sumennustyökalun."
+msgstr "Aktivoi sumennustyökalu."
 
 #: ../src/iop/retouch.c:2166 ../src/iop/retouch.c:2170
 #: ../src/iop/retouch.c:2174 ../src/iop/retouch.c:2178
@@ -16938,19 +16813,16 @@ msgid "change algorithm for current form"
 msgstr "Muuta valitun muodon algoritmia."
 
 #: ../src/iop/retouch.c:2170 ../src/iop/retouch.c:2187
-#, fuzzy
 msgid "activate fill tool"
-msgstr "Aktivoi täyttötyökalun."
+msgstr "Aktivoi täyttötyökalu."
 
 #: ../src/iop/retouch.c:2174 ../src/iop/retouch.c:2190
-#, fuzzy
 msgid "activate cloning tool"
-msgstr "Aktivoi kloonaustyökalun."
+msgstr "Aktivoi kloonaustyökalu."
 
 #: ../src/iop/retouch.c:2178 ../src/iop/retouch.c:2193
-#, fuzzy
 msgid "activate healing tool"
-msgstr "Aktivoi parannustyökalun."
+msgstr "Aktivoi parannustyökalu."
 
 #. overwrite tooltip ourself to handle shift+click
 #: ../src/iop/retouch.c:2182
@@ -16962,9 +16834,8 @@ msgid "shift+click to set the tool as default"
 msgstr "SHIFT+napsaus asettaa työkalun oletukseksi."
 
 #: ../src/iop/retouch.c:2202
-#, fuzzy
 msgid "scales:"
-msgstr "# Asteikot:"
+msgstr "Asteikot:"
 
 #: ../src/iop/retouch.c:2207
 msgid "current:"
@@ -16975,7 +16846,6 @@ msgid "merge from:"
 msgstr "Yhdistä kohteesta:"
 
 #: ../src/iop/retouch.c:2220
-#, fuzzy
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -16985,8 +16855,9 @@ msgid ""
 msgstr ""
 "Ylempi liukusäädin säätää mistä yhdistettävä asteikko alkaa.\n"
 "Alempi liukusäädin muuttaa asteikkojen määrää.\n"
-"Punainen laatikko näyttää nykyisen asteikon.\n"
-"Vihreä viiva näyttää, että asteikolla on muotoja."
+"Piste näytää nykyisen asteikon.\n"
+"Ylempi viiva näyttää, että asteikko näkyy nykyisellä zoomauksen tasolla.\n"
+"Alempi viiva näyttää, että asteikolla on muotoja."
 
 #: ../src/iop/retouch.c:2240
 msgid "display masks"
@@ -17182,13 +17053,12 @@ msgid "automatic pixel rotation"
 msgstr "Automaattinen pikselien kierto"
 
 #: ../src/iop/rotatepixels.c:365
-#, fuzzy
 msgid ""
 "automatic pixel rotation\n"
 "only works for the sensors that need it."
 msgstr ""
-"Automaattinen pikselien kierto toimii ainoastaan korjausta tarvitsevilla "
-"kuvakennoilla."
+"Automaattinen pikselien kierto\n"
+"käytettävissä ainoastaan korjausta tarvitsevilla kuvakennoilla."
 
 #: ../src/iop/scalepixels.c:54
 msgctxt "modulename"
@@ -17200,13 +17070,12 @@ msgid "automatic pixel scaling"
 msgstr "Automaattinen pikselien skaalaus"
 
 #: ../src/iop/scalepixels.c:269
-#, fuzzy
 msgid ""
 "automatic pixel scaling\n"
 "only works for the sensors that need it."
 msgstr ""
-"Automaattinen pikselien skaalaus toimii ainoastaan korjausta tarvitsevilla "
-"kuvakennoilla."
+"Automaattinen pikselien skaalaus\n"
+"käytettävissä ainoastaan korjausta tarvitsevilla kuvakennoilla."
 
 #: ../src/iop/shadhi.c:175
 msgid "shadows and highlights"
@@ -17241,7 +17110,6 @@ msgid "filter to use for softening. bilateral avoids halos"
 msgstr "Pehmennyssuodin. Kaksipuolinen suodin lieventää haloja."
 
 #: ../src/iop/shadhi.c:711
-#, fuzzy
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve mid-tones"
@@ -17319,7 +17187,6 @@ msgid "the mix of effect"
 msgstr "Tehosteen sekoitus."
 
 #: ../src/iop/splittoning.c:81
-#, fuzzy
 msgid "split-toning"
 msgstr "Jakosävytys"
 
@@ -17363,12 +17230,10 @@ msgid "properties"
 msgstr "Ominaisuudet"
 
 #: ../src/iop/splittoning.c:542
-#, fuzzy
 msgid "the balance of center of split-toning"
 msgstr "Jakosävytyksen keskikohdan tasapaino."
 
 #: ../src/iop/splittoning.c:546
-#, fuzzy
 msgid ""
 "compress the effect on highlights/shadows and\n"
 "preserve mid-tones"
@@ -17586,9 +17451,8 @@ msgid "%.0f mired"
 msgstr "%.0f mired"
 
 #: ../src/iop/temperature.c:2037
-#, fuzzy
 msgid "fine tune camera's white balance setting"
-msgstr "Hienosäädä valkotasapainon asetusta."
+msgstr "Hienosäädä kameran valkotasapainon asetusta."
 
 #: ../src/iop/temperature.c:2054
 msgid "white balance disabled for camera"
@@ -17665,9 +17529,8 @@ msgid "compress shadows/highlights (eigf) : strong"
 msgstr "Pakkaa varjot/huippuvalot (EIGF) : voimakas"
 
 #: ../src/iop/toneequal.c:479
-#, fuzzy
 msgid "compress shadows/highlights (gf) : strong"
-msgstr "Pakkaa varjot/huippuvalot (EIGF) : voimakas"
+msgstr "Pakkaa varjot/huippuvalot (GF) : voimakas"
 
 #: ../src/iop/toneequal.c:487
 msgid "compress shadows/highlights (eigf) : medium"
@@ -17678,9 +17541,8 @@ msgid "compress shadows/highlights (gf) : medium"
 msgstr "Pakkaa varjot/huippuvalot (GF) : keskimääräinen"
 
 #: ../src/iop/toneequal.c:499
-#, fuzzy
 msgid "compress shadows/highlights (eigf) : soft"
-msgstr "Pakkaa varjot/huippuvalot (GF) : pehmeä"
+msgstr "Pakkaa varjot/huippuvalot (EIGF) : pehmeä"
 
 #: ../src/iop/toneequal.c:503
 msgid "compress shadows/highlights (gf) : soft"
@@ -17703,7 +17565,6 @@ msgid "relight : fill-in"
 msgstr "Udelleen valaisu: täytevalo"
 
 #: ../src/iop/toneequal.c:591
-#, fuzzy
 msgid ""
 "tone equalizer needs to be after distortion modules in the pipeline – "
 "disabled"
@@ -17941,7 +17802,6 @@ msgstr ""
 "palakohtaisesti tasaisia alueita, kun käytetään suuria häivytyksen arvoja."
 
 #: ../src/iop/toneequal.c:3280
-#, fuzzy
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -17949,10 +17809,9 @@ msgid ""
 msgstr ""
 "Käytä tätä liu'uttamaan maskin keskiarvoista valotusta kanavilla \n"
 "paremman valotuksen hallinnan saavuttamiseksi käytettävillä solmupisteillä.\n"
-"Valitsin säätää automaattisesti keskiarvoista valotusta -4EV."
+"Taikasauva säätää automaattisesti keskiarvoista valotusta."
 
 #: ../src/iop/toneequal.c:3290
-#, fuzzy
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -17961,9 +17820,10 @@ msgid ""
 "the magic wand will auto-adjust the contrast"
 msgstr ""
 "Käytä tätä korjaamaan ohjatun suotimen keskiarvotuksen\n"
-"vaikutusta ja laajenna maskin kontrastia noin -4EV.\n"
+"vaikutusta ja laajenna maskin kontrastia noin -4 aukkoa.\n"
 "Tämä mahdollistaa valotuksen histogrammin levityksen\n"
-"muiden kanavien yli paremman valotuksen korjauksen saavuttamiseksi."
+"muiden kanavien yli paremman valotuksen korjauksen saavuttamiseksi.\n"
+"Taikasauva säätää automaattisesti kontrastin."
 
 #: ../src/iop/toneequal.c:3310 ../src/iop/toneequal.c:3314
 msgid "display exposure mask"
@@ -18280,7 +18140,6 @@ msgid "the count of seconds before actually doing a capture"
 msgstr "Viive kameran laukaisussa."
 
 #: ../src/libs/camera.c:482
-#, fuzzy
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -18291,7 +18150,6 @@ msgstr ""
 "luonnissa."
 
 #: ../src/libs/camera.c:485
-#, fuzzy
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2) + 1"
@@ -18300,7 +18158,6 @@ msgstr ""
 "kokonaismäärä on haarukointimäärä tuplattuna ja yksi päälle."
 
 #: ../src/libs/camera.c:487
-#, fuzzy
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
@@ -18406,9 +18263,8 @@ msgid "group followers"
 msgstr "Ryhmän seuraajat"
 
 #: ../src/libs/collect.c:2102
-#, fuzzy
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
-msgstr "Syötä hakusi, käytä <, <=, >, >=, <>, =, [;] -merkkejä operaattoreina."
+msgstr "Käytä <, <=, >, >=, <>, =, [;] -merkkejä operaattoreina."
 
 #: ../src/libs/collect.c:2106
 msgid ""
@@ -18421,13 +18277,12 @@ msgstr ""
 "Hylätyt kuvat: -1"
 
 #: ../src/libs/collect.c:2113
-#, fuzzy
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
 msgstr ""
-"Syötä hakusi, käytä <, <=, >, >=, <>, =, [;] -merkkejä operaattoreina. Syötä "
-"ajankohta muodossa : YYYY:MM:DD HH:MM:SS (vain vuosi on pakollinen)"
+"Käytä <, <=, >, >=, <>, =, [;] -merkkejä operaattoreina.\n"
+"Syötä ajankohta muodossa: YYYY:MM:DD HH:MM:SS (vain vuosi on pakollinen)"
 
 #: ../src/libs/collect.c:2120
 #, no-c-format
@@ -18589,14 +18444,14 @@ msgid "add sample"
 msgstr "Lisää näyte"
 
 #: ../src/libs/colorpicker.c:463
-#, fuzzy
 msgid ""
 "hover to highlight sample on canvas,\n"
 "click to lock sample,\n"
 "right-click to load sample area into active color picker"
 msgstr ""
-"Pidä osoitinta kuvan päällä korostaaksesi näytteen. Napsauta lukitaksesi "
-"näytteen."
+"Pidä osoitinta kuvan päällä korostaaksesi näytteen.\n"
+"Napsauta lukitaksesi näyteen.\n"
+"Oikea napsaus lataa näytealueen aktiiviseen värinvalitsimeen."
 
 #: ../src/libs/colorpicker.c:562 ../src/libs/colorpicker.c:612
 msgid "click to (un)hide large color patch"
@@ -18628,14 +18483,12 @@ msgid "live samples"
 msgstr "Käytössä olevat näytteet"
 
 #: ../src/libs/colorpicker.c:648
-#, fuzzy
 msgid "display samples on image/vectorscope"
-msgstr "Näytä näytealueet kuvassa"
+msgstr "Näytä näytteet kuvassa/vektorialueessa"
 
 #: ../src/libs/colorpicker.c:657
-#, fuzzy
 msgid "restrict scope to selection"
-msgstr "Rajoita histogrammi valintaan"
+msgstr "Rajoita alue valintaan"
 
 #: ../src/libs/copy_history.c:53
 msgid "history stack"
@@ -18655,7 +18508,7 @@ msgid "error loading file '%s'"
 msgstr "Virhe ladattaessa tiedostoa '%s'"
 
 #: ../src/libs/copy_history.c:197
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "no history compression of 1 image.\n"
 "see tag: darktable|problem|history-compress"
@@ -18709,7 +18562,6 @@ msgid "choose which modules to paste to the target image(s)"
 msgstr "Valitse kuvaan/kuviin liitettävä muokkaushistoria"
 
 #: ../src/libs/copy_history.c:375 ../src/libs/image.c:583
-#, fuzzy
 msgid "paste"
 msgstr "Liitä"
 
@@ -19168,7 +19020,6 @@ msgid "formula"
 msgstr "Kaava"
 
 #: ../src/libs/export_metadata.c:374
-#, fuzzy
 msgid ""
 "list of calculated metadata\n"
 "if formula is empty, the corresponding metadata is removed from exported "
@@ -19181,8 +19032,10 @@ msgid ""
 msgstr ""
 "Lasketun metatiedon lista.\n"
 "Jos kaava on tyhjä, kyseinen metatieto poistetaan vietävästä tiedostosta.\n"
+"Jos kaava on '=', EXIF-metatiedot viedään, vaikka EXIF-tiedot on pois "
+"käytöstä.\n"
 "Muussa tapauksessa kyseinen metatieto lasketaan ja lisätään tiedostoon.\n"
-"Napsauta kaavan solua muokataksesi. Tunnistetut muuttujat:"
+"Napsauta kaavan solua muokataksesi. Tunnistetut muuttujat:\n"
 
 #: ../src/libs/export_metadata.c:432
 msgid "add an output metadata tag"
@@ -19221,14 +19074,12 @@ msgid "start time"
 msgstr "Aika alussa"
 
 #: ../src/libs/geotagging.c:838
-#, fuzzy
 msgid "end time"
-msgstr "Kerran"
+msgstr "Aika lopussa"
 
 #: ../src/libs/geotagging.c:839 ../src/libs/geotagging.c:1854
-#, fuzzy
 msgid "points"
-msgstr "Piste"
+msgstr "Pisteet"
 
 #: ../src/libs/geotagging.c:840 ../src/libs/geotagging.c:1856
 #: ../src/libs/image.c:464
@@ -19283,7 +19134,6 @@ msgid "apply offset"
 msgstr "Aseta poikkeama"
 
 #: ../src/libs/geotagging.c:1739
-#, fuzzy
 msgid "apply offset to selected images"
 msgstr "Aseta ajan poikkeama valittuihin kuviin."
 
@@ -19346,9 +19196,8 @@ msgid "show on map matching images"
 msgstr "Näytä kartalla reittiä vastaavat kuvat."
 
 #: ../src/libs/geotagging.c:1881
-#, fuzzy
 msgid "select images"
-msgstr "Valittu kuva"
+msgstr "Valitse kuvat"
 
 #: ../src/libs/geotagging.c:1881
 msgid "select matching images"
@@ -19367,32 +19216,30 @@ msgid "ctrl+scroll to change display height"
 msgstr "CTRL+hiiren rulla muuttaa näytön korkeutta."
 
 #: ../src/libs/histogram.c:1313
-#, fuzzy
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 "Musta piste säätyy raahaamalla.\n"
-"Kaksoisnapsaus nollaa."
+"Kaksoisnapsaus nollaa.\n"
+"CTRL+hiiren rulla muuttaa näytön korkeutta."
 
 #: ../src/libs/histogram.c:1318
-#, fuzzy
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
 "ctrl+scroll to change display height"
 msgstr ""
 "Valotus säätyy raahaamalla.\n"
-"Kaksoisnapsaus nollaa."
+"Kaksoisnapsaus nollaa.\n"
+"CTRL+hiiren rulla muuttaa näytön korkeutta."
 
 #: ../src/libs/histogram.c:1431 ../src/libs/histogram.c:1471
-#, fuzzy
 msgid "set scale to linear"
 msgstr "Aseta asteikko lineaariseksi."
 
 #: ../src/libs/histogram.c:1436 ../src/libs/histogram.c:1476
-#, fuzzy
 msgid "set scale to logarithmic"
 msgstr "Aseta asteikko logaritmiseksi."
 
@@ -19417,7 +19264,6 @@ msgid "set view to u*v*"
 msgstr "Aseta näkymäksi u*v*"
 
 #: ../src/libs/histogram.c:1510
-#, fuzzy
 msgid "set mode to waveform"
 msgstr "Aseta tila aaltomuotoiseksi."
 
@@ -19519,11 +19365,12 @@ msgid "compress history stack"
 msgstr "Pakkaa muokkaushistoria"
 
 #: ../src/libs/history.c:142
-#, fuzzy
 msgid ""
 "create a minimal history stack which produces the same image\n"
 "ctrl-click to truncate history to the selected item"
-msgstr "Luo pienimmän mahdollisen muokkaushistorian, joka tuottaa saman kuvan."
+msgstr ""
+"Luo pienimmän mahdollisen muokkaushistorian, joka tuottaa saman kuvan.\n"
+"CTRL+napsaus pienentää valitun kohteen muokkaushistorian."
 
 #: ../src/libs/history.c:152
 msgid "create a style from the current history stack"
@@ -19613,7 +19460,6 @@ msgid "physically delete from disk (using trash if possible)"
 msgstr "Poista levyltä (käyttäen roskakoria, jos mahdollista)"
 
 #: ../src/libs/image.c:186
-#, fuzzy
 msgid "physically delete from disk immediately"
 msgstr "Poista levyltä lopullisesti"
 
@@ -19653,7 +19499,6 @@ msgid "create a high dynamic range image from selected shots"
 msgstr "Luo valituista kuvista suuren dynamiikan kuva (HDR)."
 
 #: ../src/libs/image.c:496
-#, fuzzy
 msgid "add a duplicate to the image library, including its history stack"
 msgstr "Lisää muokkaushistorian sisältävä kopio kirjastoon."
 
@@ -19779,10 +19624,9 @@ msgid "remove from darktable"
 msgstr "Poista Darktablesta"
 
 #: ../src/libs/image.c:652
-#, fuzzy
 msgctxt "accel"
 msgid "delete from disk using trash if possible"
-msgstr "Poista levyltä (käyttäen roskakoria, jos mahdollista)"
+msgstr "Poista levyltä roskakoriin, jos mahdollista"
 
 #: ../src/libs/image.c:653
 msgctxt "accel"
@@ -19871,10 +19715,9 @@ msgid "ungroup"
 msgstr "Pura ryhmitys"
 
 #: ../src/libs/import.c:199
-#, fuzzy
 msgctxt "accel"
 msgid "copy & import from camera"
-msgstr "Tuo kamerasta"
+msgstr "Kopioi ja tuo kamerasta"
 
 #: ../src/libs/import.c:200
 msgctxt "accel"
@@ -19907,9 +19750,8 @@ msgid "device \"%s\" connected on port \"%s\"."
 msgstr "Laite \"%s\" liitetty porttiin \"%s\"."
 
 #: ../src/libs/import.c:301 ../src/libs/import.c:1756
-#, fuzzy
 msgid "copy & import from camera"
-msgstr "Tuo kamerasta"
+msgstr "Kopioi ja tuo kamerasta"
 
 #: ../src/libs/import.c:308
 msgid "tethered shoot"
@@ -20025,9 +19867,8 @@ msgid "select new"
 msgstr "Valitse uudet"
 
 #: ../src/libs/import.c:1840
-#, fuzzy
 msgid "please wait while prefetching the list of images from camera..."
-msgstr "Ole hyvä ja odota, kun kamerasta haetaan esikatselukuvia..."
+msgstr "Ole hyvä ja odota. Kamerasta haetaan esikatselukuvia..."
 
 #: ../src/libs/import.c:2065
 msgid "add to library..."
@@ -20081,7 +19922,6 @@ msgid "nothing to save"
 msgstr "Ei mitään tallennettavaa"
 
 #: ../src/libs/lib.c:977
-#, fuzzy
 msgid "show module"
 msgstr "Näytä moduuli"
 
@@ -20309,9 +20149,8 @@ msgid "delete location"
 msgstr "Poista sijainti"
 
 #: ../src/libs/map_locations.c:817
-#, fuzzy
 msgid "update filmstrip"
-msgstr "Ota filminauha käyttöön"
+msgstr "Päivitä filminauha"
 
 #: ../src/libs/map_locations.c:824
 msgid "go to collection (lighttable)"
@@ -20419,7 +20258,6 @@ msgid "group the forms"
 msgstr "Ryhmitä muodot"
 
 #: ../src/libs/masks.c:1085
-#, fuzzy
 msgid "use inverted shape"
 msgstr "Käytä käänteistä muotoa"
 
@@ -20791,10 +20629,9 @@ msgstr "Värisäädöt"
 
 #: ../src/libs/modulegroups.c:1680 ../src/libs/modulegroups.c:1837
 #: ../src/libs/modulegroups.c:2412
-#, fuzzy
 msgctxt "modulegroup"
 msgid "effects"
-msgstr "Vaikutus"
+msgstr "Tehosteet"
 
 #: ../src/libs/modulegroups.c:1688
 msgid "workflow: beginner"
@@ -20874,9 +20711,8 @@ msgid "add module"
 msgstr "Lisää moduuli"
 
 #: ../src/libs/modulegroups.c:2459
-#, fuzzy
 msgid "remove module"
-msgstr "Poista tämä moduuli"
+msgstr "Poista moduuli"
 
 #: ../src/libs/modulegroups.c:2569 ../src/libs/modulegroups.c:2576
 msgid "add this widget"
@@ -20957,9 +20793,8 @@ msgid "effect icon"
 msgstr "Tehostekuvake"
 
 #: ../src/libs/modulegroups.c:3120
-#, fuzzy
 msgid "favorites icon"
-msgstr "Suosikit"
+msgstr "Suosikkien kuvake"
 
 #: ../src/libs/modulegroups.c:3130
 msgid "tone icon"
@@ -21042,9 +20877,8 @@ msgid "create a new empty preset"
 msgstr "Luo uusi tyhjä esiasetus"
 
 #: ../src/libs/modulegroups.c:3850
-#, fuzzy
 msgid "show search line"
-msgstr "Näytä haun teksti"
+msgstr "Näytä hakun teksti"
 
 #: ../src/libs/modulegroups.c:3854
 msgid "show quick access panel"
@@ -21548,9 +21382,8 @@ msgid "edit..."
 msgstr "Muokkaa"
 
 #: ../src/libs/styles.c:865
-#, fuzzy
 msgid "edit the selected styles in list above"
-msgstr "Muokkaa listalta valittua tyyliä"
+msgstr "Muokkaa listalta valittuja tyylejä"
 
 #: ../src/libs/styles.c:870
 msgid "removes the selected styles in list above"
@@ -21563,14 +21396,12 @@ msgid "import..."
 msgstr "Tuo..."
 
 #: ../src/libs/styles.c:875
-#, fuzzy
 msgid "import styles from a style files"
-msgstr "Tuo tyyli tiedostosta"
+msgstr "Tuo tyylit tiedostoista"
 
 #: ../src/libs/styles.c:880
-#, fuzzy
 msgid "export the selected styles into a style files"
-msgstr "Vie valittu tyyli tiedostoon"
+msgstr "Vie valitut tyylit tiedostoon"
 
 #: ../src/libs/styles.c:885
 msgid "apply the selected styles in list above to selected images"
@@ -21629,9 +21460,9 @@ msgstr "Poista tunniste?"
 
 #: ../src/libs/tagging.c:1363 ../src/libs/tagging.c:1451
 #: ../src/libs/tagging.c:1662 ../src/libs/tagging.c:1937
-#, fuzzy, c-format
+#, c-format
 msgid "selected: %s"
-msgstr "Valittu polku: %s "
+msgstr "Valittu: %s"
 
 #: ../src/libs/tagging.c:1370
 #, c-format
@@ -21658,7 +21489,7 @@ msgid "delete node?"
 msgstr "Poista solmu?"
 
 #: ../src/libs/tagging.c:1458
-#, fuzzy, c-format
+#, c-format
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
 msgstr[0] "<u>%d</u> tunniste poistetaan."
@@ -21666,7 +21497,7 @@ msgstr[1] "<u>%d</u> tunnistetta poistetaan."
 
 #: ../src/libs/tagging.c:1463 ../src/libs/tagging.c:1674
 #: ../src/libs/tagging.c:1949
-#, fuzzy, c-format
+#, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
 msgstr[0] "<u>%d</u> kuva päivitetään."
@@ -21708,14 +21539,13 @@ msgid "tag name already exists. aborting."
 msgstr "Tunniste nimellä '%s' on jo olemassa, keskeytetään."
 
 #: ../src/libs/tagging.c:1669 ../src/libs/tagging.c:1944
-#, fuzzy, c-format
+#, c-format
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
 msgstr[0] "<u>%d</u> tunniste päivitetään."
 msgstr[1] "<u>%d</u> tunnistetta päivitetään."
 
 #: ../src/libs/tagging.c:1730
-#, fuzzy
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
@@ -21792,7 +21622,6 @@ msgid "(private)"
 msgstr "(yksityinen)"
 
 #: ../src/libs/tagging.c:2299
-#, fuzzy
 msgid "select a keyword file"
 msgstr "Valitse avainsanatiedosto"
 
@@ -21806,7 +21635,6 @@ msgid "%zd tags imported"
 msgstr "%zd tunnistetta tuotu."
 
 #: ../src/libs/tagging.c:2335
-#, fuzzy
 msgid "select file to export to"
 msgstr "Valitse vietävä tiedosto"
 
@@ -22076,9 +21904,8 @@ msgstr "Kuvapeitteen tila koolle"
 
 #: ../src/libs/tools/global_toolbox.c:434
 #: ../src/libs/tools/global_toolbox.c:478
-#, fuzzy
 msgid "no overlays"
-msgstr "Näytä kuvapeitteet"
+msgstr "Ei kuvapeitteitä"
 
 #: ../src/libs/tools/global_toolbox.c:438
 msgid "overlays on mouse hover"
@@ -22095,9 +21922,8 @@ msgstr "Pysyvät kuvapeitteet"
 
 #: ../src/libs/tools/global_toolbox.c:449
 #: ../src/libs/tools/global_toolbox.c:486
-#, fuzzy
 msgid "permanent extended overlays"
-msgstr "Pysyvät kuvapeitteet"
+msgstr "Pysyvät laajennetut kuvapeitteet"
 
 #: ../src/libs/tools/global_toolbox.c:453
 msgid "permanent overlays extended on mouse hover"
@@ -22266,10 +22092,9 @@ msgid "toggle filemanager layout"
 msgstr "Vaihda tiedostonhalintatilaan."
 
 #: ../src/libs/tools/lighttable.c:573
-#, fuzzy
 msgctxt "accel"
 msgid "toggle zoomable lighttable layout"
-msgstr "Napsauta siirtyäksesi suurentavaan valopöydäntilaan."
+msgstr "Vaihda suurentavan valopöydän tilaan."
 
 #: ../src/libs/tools/lighttable.c:574
 msgctxt "accel"
@@ -22401,9 +22226,8 @@ msgid "no styles have been created yet"
 msgstr "Tyylejä ei ole vielä luotu."
 
 #: ../src/views/darkroom.c:2253
-#, fuzzy
 msgid "quick access to presets"
-msgstr "Pikavalintapaneelin pienoisohjelmat"
+msgstr "Pikavalinta esiasetuksiin."
 
 #: ../src/views/darkroom.c:2262
 msgid "quick access for applying any of your styles"
@@ -22520,9 +22344,8 @@ msgid "saturation only"
 msgstr "Vain värikylläisyys"
 
 #: ../src/views/darkroom.c:2377
-#, fuzzy
 msgid "select colors to indicate clipping"
-msgstr "Valitse yli- ja alivalotuksen ilmaisuun käytettävät värit."
+msgstr "Valitse ylivalotuksen ja alivalotuksen ilmaisuun käytettävät värit."
 
 #: ../src/views/darkroom.c:2379
 msgid "red & blue"
@@ -22858,7 +22681,6 @@ msgid "try to relax the filter settings in the top panel"
 msgstr "Väljennä yläpaneelista suodatusta"
 
 #: ../src/views/lighttable.c:427
-#, fuzzy
 msgid "or add images in the collections module in the left panel"
 msgstr "tai lisää kuvia vasemman paneelin Kokoelmat-moduulissa."
 
@@ -22867,7 +22689,6 @@ msgid "middle"
 msgstr "Keskinappi"
 
 #: ../src/views/lighttable.c:876
-#, fuzzy
 msgctxt "accel"
 msgid "align images to grid"
 msgstr "Kohdista kuvat ruudukkoon"
@@ -23080,42 +22901,34 @@ msgid "no camera with tethering support available for use..."
 msgstr "Liitettyä kuvausta tukevaa kameraa ei ole saatavilla..."
 
 #: ../src/views/view.c:1520
-#, fuzzy
 msgid "left click"
 msgstr "Vasen napsaus"
 
 #: ../src/views/view.c:1523
-#, fuzzy
 msgid "right click"
 msgstr "Oikea napsaus"
 
 #: ../src/views/view.c:1526
-#, fuzzy
 msgid "middle click"
 msgstr "Keskinapin napsaus"
 
 #: ../src/views/view.c:1532
-#, fuzzy
 msgid "left double-click"
 msgstr "Vasen kaksoisnapsaus"
 
 #: ../src/views/view.c:1535
-#, fuzzy
 msgid "right double-click"
 msgstr "Oikea kaksoisnapsaus"
 
 #: ../src/views/view.c:1538
-#, fuzzy
 msgid "drag and drop"
 msgstr "Raahaa ja vapauta"
 
 #: ../src/views/view.c:1541
-#, fuzzy
 msgid "left click+drag"
 msgstr "Vasen napsaus+Raahaus"
 
 #: ../src/views/view.c:1544
-#, fuzzy
 msgid "right click+drag"
 msgstr "Oikea napsaus+Raahaus"
 
@@ -23124,7 +22937,6 @@ msgid "darktable - accels window"
 msgstr "Darktable - esiasetusikkuna"
 
 #: ../src/views/view.c:1620
-#, fuzzy
 msgid "switch to a classic window which will stay open after key release"
 msgstr ""
 "Vaihda klassiseen ikkunaan joka pysyy auki näppäimen vapautuksen jälkeen."
@@ -23313,16 +23125,13 @@ msgstr "Hiiren toiminnat"
 #~ "heurestiikkaan perustuvan host_memory_limit -asetukseen verrattuna "
 #~ "(vaatii uudelleenkäynnistyksen)."
 
-#, c-format
 #~| msgid "%s / %s: %s"
 #~ msgid "%s/%s: %s"
 #~ msgstr "%s/%s: %s"
 
-#, c-format
 #~ msgid "%s: %s"
 #~ msgstr "%s: %s"
 
-#, c-format
 #~ msgid "error: output file is a directory. please specify file name"
 #~ msgstr ""
 #~ "Virhe: Vietävä tiedosto on hakemisto. Ole hyvä ja määritä tiedostolle "
@@ -23331,7 +23140,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "darktable - error locking database"
 #~ msgstr "Darktable - virhe tietokannan lukitsemisessa"
 
-#, c-format
 #~ msgid ""
 #~ "an error has occurred while trying to open the database from\n"
 #~ "\n"
@@ -23349,7 +23157,6 @@ msgstr "Hiiren toiminnat"
 #~ "Haluatko sulkea Darktablen ja palauttaa tietokannan\n"
 #~ "käsin varmuuskopiosta vai luodaanko uusi tietokanta?"
 
-#, c-format
 #~ msgid "scroll to change <b>%s</b> of %s module"
 #~ msgstr "Hiiren rulla muuttaa <b>%s</b> moduulin %s"
 
@@ -23362,20 +23169,17 @@ msgstr "Hiiren toiminnat"
 #~ msgid "only remove from the collection"
 #~ msgstr "Poista vain nykyisestä kokoelmasta."
 
-#, c-format
 #~ msgid "exporting %d image to %s"
 #~ msgid_plural "exporting %d images to %s"
 #~ msgstr[0] "Viedään %d kuva sijaintiin %s"
 #~ msgstr[1] "Viedään %d kuvaa sijaintiin %s"
 
-#, c-format
 #~ msgid "do you really want to remove %d selected image from the collection?"
 #~ msgid_plural ""
 #~ "do you really want to remove %d selected images from the collection?"
 #~ msgstr[0] "Haluatko varmasti poistaa %d valitun kuvan kokoelmasta?"
 #~ msgstr[1] "Haluatko varmasti poistaa %d valittua kuvaa kokoelmasta?"
 
-#, c-format
 #~ msgid "do you really want to send %d selected image to trash?"
 #~ msgid_plural "do you really want to send %d selected images to trash?"
 #~ msgstr[0] "Haluatko varmasti siirtää %d valitun kuvan roskakoriin?"
@@ -23464,21 +23268,18 @@ msgstr "Hiiren toiminnat"
 #~ msgid "ctrl+click to add a node"
 #~ msgstr "CTRL+napsaus lisää solmun."
 
-#, c-format
 #~ msgid ""
 #~ "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
 #~ msgstr ""
 #~ "SHIFT+hiiren rulla säätää häivytyksen kokoa, CTRL+hiiren rulla säätää "
 #~ "muodon läpinäkyvyyttä (%d%%)."
 
-#, c-format
 #~ msgid "ctrl+scroll to set shape opacity (%d%%)"
 #~ msgstr "CTRL+rulla säätää muodon läpinäkyvyyttä (%d%%)."
 
 #~ msgid "move to rotate shape"
 #~ msgstr "Siirrä kääntääksesi muotoa."
 
-#, c-format
 #~ msgid ""
 #~ "scroll to set size, shift+scroll to set feather size\n"
 #~ "ctrl+scroll to set shape opacity (%d%%)"
@@ -23489,7 +23290,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "ctrl+click to rotate"
 #~ msgstr "CTRL+napsaus kiertää muotoa."
 
-#, c-format
 #~ msgid ""
 #~ "shift+click to switch feathering mode, ctrl+click to rotate\n"
 #~ "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
@@ -23498,7 +23298,6 @@ msgstr "Hiiren toiminnat"
 #~ "SHIFT+hiiren rulla säätää häivytyksen kokoa, CTRL+hiiren rulla säätää "
 #~ "muodon läpinäkyvyyttä (%d%%)."
 
-#, c-format
 #~ msgid ""
 #~ "scroll to set brush size, shift+scroll to set hardness,\n"
 #~ "ctrl+scroll to set opacity (%d%%)"
@@ -23506,7 +23305,6 @@ msgstr "Hiiren toiminnat"
 #~ "Hiiren rulla säätää kokoa, SHIFT+hiiren rulla säätää \n"
 #~ "kovuutta, CTRL+hiiren rulla säätää läpinäkyvyyttä  (%d%%)."
 
-#, c-format
 #~ msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
 #~ msgstr ""
 #~ "Hiiren rulla säätää kovuutta, CTRL+hiiren rulla säätää muodon "
@@ -23652,7 +23450,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "press key combination to remap..."
 #~ msgstr "Anna uusi näppäinyhdistelmä pikavalinnalle..."
 
-#, c-format
 #~ msgid ""
 #~ "%s accel is already mapped to\n"
 #~ "%s.\n"
@@ -23672,14 +23469,12 @@ msgstr "Hiiren toiminnat"
 #~ "Haluatko varmasti palauttaa pikanäppäinten oletukset? Tämä poistaa kaikki "
 #~ "tekemäsi muutokset."
 
-#, c-format
 #~ msgid "preset %s was successfully saved"
 #~ msgstr "Tyylin %s tallennus onnistui"
 
 #~ msgid "deflate with predictor (float)"
 #~ msgstr "ennustava deflate (liukuluku)"
 
-#, c-format
 #~ msgid "[facebook] unexpected URL format\n"
 #~ msgstr "[facebook] odottamaton URL:n muoto\n"
 
@@ -23762,13 +23557,11 @@ msgstr "Hiiren toiminnat"
 #~ msgid "unable to export photo to webalbum"
 #~ msgstr "Valokuvan vienti verkkoalbumiin epäonnistui."
 
-#, c-format
 #~ msgid "%d/%d exported to facebook webalbum"
 #~ msgid_plural "%d/%d exported to facebook webalbum"
 #~ msgstr[0] "%d/%d vietiin Facebook-albumiin."
 #~ msgstr[1] "%d/%d vietiin Facebook-albumiin."
 
-#, c-format
 #~ msgid "flickr authentication: %s"
 #~ msgstr "Flickr-tunnistautuminen: %s"
 
@@ -23814,7 +23607,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "could not upload to flickr!"
 #~ msgstr "Kuvien vienti Flickriin epäonnistui!"
 
-#, c-format
 #~ msgid "%d/%d exported to flickr webalbum"
 #~ msgid_plural "%d/%d exported to flickr webalbum"
 #~ msgstr[0] "%d/%d vietiin Flickr-albumiin."
@@ -23851,7 +23643,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "unable to export to google photos album"
 #~ msgstr "Vienti Google Kuvat-albumiin ei onnistu"
 
-#, c-format
 #~ msgid "%d/%d exported to google photos album"
 #~ msgid_plural "%d/%d exported to google photos album"
 #~ msgstr[0] "%d/%d vietiin Google Kuvat-albumiin."
@@ -24209,7 +24000,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "compression"
 #~ msgstr "Pakkaus"
 
-#, c-format
 #~ msgid "[%s on line] change compression"
 #~ msgstr "[%s viivassa] Muuta pakkausta"
 
@@ -24315,7 +24105,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "brightness"
 #~ msgstr "Kirkkaus"
 
-#, c-format
 #~ msgid "invalid png header from %s"
 #~ msgstr "Virheellinen PNG-tiedoston alku %s"
 
@@ -24389,7 +24178,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "crop width"
 #~ msgstr "Rajauksen leveys"
 
-#, c-format
 #~ msgid "black level %i"
 #~ msgstr "Mustan taso %i"
 
@@ -24665,7 +24453,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "not altered"
 #~ msgstr "Ei muutetut"
 
-#, no-c-format
 #~ msgid "type your query, use `%' as wildcard"
 #~ msgstr "Syötä hakulause, `%-merkkiä' jokerina"
 
@@ -24830,7 +24617,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "scan for newly attached devices"
 #~ msgstr "Etsi liitettyjä laitteita."
 
-#, c-format
 #~ msgid "edit `%s'"
 #~ msgstr "Muokkaa `%s'"
 
@@ -24929,7 +24715,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "delete"
 #~ msgstr "Poista"
 
-#, c-format
 #~ msgid "do you really want to delete style '%s'?"
 #~ msgstr "Haluatko varmasti poistaa tyylin '%s'?"
 
@@ -24939,7 +24724,6 @@ msgstr "Hiiren toiminnat"
 #~ msgid "deletes the selected style in list above"
 #~ msgstr "Poista listalta valittu tyyli"
 
-#, c-format
 #~ msgid "tag: %s "
 #~ msgstr "Tunniste: %s "
 
@@ -25105,13 +24889,11 @@ msgstr "Hiiren toiminnat"
 #~ msgid "overexposed"
 #~ msgstr "Näytä tai piilota ylivalottuneet alueet"
 
-#, c-format
 #~ msgid "you have reached the start of your selection (%d image)"
 #~ msgid_plural "you have reached the start of your selection (%d images)"
 #~ msgstr[0] "Saavutit valinnan alun (%d kuva)."
 #~ msgstr[1] "Saavutit valinnan alun (%d kuvaa)."
 
-#, c-format
 #~ msgid "you have reached the end of your selection (%d image)"
 #~ msgid_plural "you have reached the end of your selection (%d images)"
 #~ msgstr[0] "Saavutit valinnan lopun (%d kuva)."
