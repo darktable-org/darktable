@@ -305,7 +305,11 @@ static void _color_picker_proxy_preview_pipe_callback(gpointer instance, gpointe
     // provide swatch color for a point sample overlay
     darktable.lib->proxy.colorpicker.update_panel(module);
     darktable.lib->proxy.colorpicker.update_samples(module);
-    // FIXME: It appears that DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED -- which redraws the center view -- isn't called until all the DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED signal handlers are called. Hence the UI will always update once the picker data updates. But I'm not clear how this is guaranteed to be so.
+    // FIXME: It appears that DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED --
+    // which redraws the center view -- isn't called until all the
+    // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED signal handlers are
+    // called. Hence the UI will always update once the picker data
+    // updates. But I'm not clear how this is guaranteed to be so.
   }
 }
 
