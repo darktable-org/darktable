@@ -288,20 +288,25 @@ static void _iop_color_picker_pickerdata_ready_callback(gpointer instance, dt_io
 static void _color_picker_proxy_preview_pipe_callback(gpointer instance, gpointer user_data)
 {
   dt_iop_color_picker_t *picker = darktable.lib->proxy.colorpicker.picker_proxy;
-  if(!picker) return;
+  if(picker)
+  {
+    // lib picker is active? record new picker area, but we don't care
+    // about changed value as regardless we want to handle the new
+    // sample
+    if(!picker->module)
+      _record_point_area(picker);
+  }
 
-  // lib picker is active? record new picker area, but we don't care
-  // about changed value as regardless we want to handle the new
-  // sample
-  if(!picker->module)
-    _record_point_area(picker);
-
-  // pixelpipe may have run because sample area changed or an iop,
-  // regardless we want to the colorpicker lib, which also can
-  // provide swatch color for a point sample overlay
-  darktable.lib->proxy.colorpicker.update_panel(darktable.lib->proxy.colorpicker.module);
-  darktable.lib->proxy.colorpicker.update_samples(darktable.lib->proxy.colorpicker.module);
-  // FIXME: It appears that DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED -- which redraws the center view -- isn't called until all the DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED signal handlers are called. Hence the UI will always update once the picker data updates. But I'm not clear how this is guaranteed to be so.
+  dt_lib_module_t *module = darktable.lib->proxy.colorpicker.module;
+  if(module)
+  {
+    // pixelpipe may have run because sample area changed or an iop,
+    // regardless we want to the colorpicker lib, which also can
+    // provide swatch color for a point sample overlay
+    darktable.lib->proxy.colorpicker.update_panel(module);
+    darktable.lib->proxy.colorpicker.update_samples(module);
+    // FIXME: It appears that DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED -- which redraws the center view -- isn't called until all the DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED signal handlers are called. Hence the UI will always update once the picker data updates. But I'm not clear how this is guaranteed to be so.
+  }
 }
 
 void dt_iop_color_picker_init(void)
