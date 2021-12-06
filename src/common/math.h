@@ -26,6 +26,8 @@
 #endif
 #include "common/darktable.h"
 
+#define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
+
 // work around missing standard math.h symbols
 /** ln(10) */
 #ifndef M_LN10
@@ -224,6 +226,45 @@ static inline void dot_product(const dt_aligned_pixel_t v_in, const dt_colormatr
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
+static inline float sqf(const float x)
+{
+  return x * x;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(vector:16)
+#endif
+static inline float euclidean_norm(const dt_aligned_pixel_t vector)
+{
+  return fmaxf(sqrtf(sqf(vector[0]) + sqf(vector[1]) + sqf(vector[2])), NORM_MIN);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(vector:16)
+#endif
+static inline void downscale_vector(dt_aligned_pixel_t vector, const float scaling)
+{
+  // check zero or NaN
+  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + NORM_MIN) : vector[c] / NORM_MIN;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(vector:16)
+#endif
+static inline void upscale_vector(dt_aligned_pixel_t vector, const float scaling)
+{
+  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline float dt_log2f(const float f)
 {
 #ifdef __GLIBC__
@@ -240,7 +281,7 @@ union float_int {
 
 // a faster, vectorizable version of hypotf() when we know that there won't be overflow, NaNs, or infinities
 #ifdef _OPENMP
-#pragma omp declare simd 
+#pragma omp declare simd
 #endif
 static inline float dt_fast_hypotf(const float x, const float y)
 {
@@ -250,7 +291,7 @@ static inline float dt_fast_hypotf(const float x, const float y)
 // fast approximation of expf()
 /****** if you change this function, you need to make the same change in data/kernels/{basecurve,basic}.cl ***/
 #ifdef _OPENMP
-#pragma omp declare simd 
+#pragma omp declare simd
 #endif
 static inline float dt_fast_expf(const float x)
 {
