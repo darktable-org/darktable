@@ -68,7 +68,6 @@ DT_MODULE_INTROSPECTION(3, dt_iop_channelmixer_rgb_params_t)
 
 
 #define CHANNEL_SIZE 4
-#define NORM_MIN 1e-6f
 #define INVERSE_SQRT_3 0.5773502691896258f
 
 typedef enum dt_iop_channelmixer_rgb_version_t
@@ -499,36 +498,6 @@ static int get_white_balance_coeff(struct dt_iop_module_t *self, dt_aligned_pixe
   }
 
   return 0;
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
-static inline float euclidean_norm(const dt_aligned_pixel_t vector)
-{
-  return fmaxf(sqrtf(sqf(vector[0]) + sqf(vector[1]) + sqf(vector[2])), NORM_MIN);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
-static inline void downscale_vector(dt_aligned_pixel_t vector, const float scaling)
-{
-  // check zero or NaN
-  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
-  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + NORM_MIN) : vector[c] / NORM_MIN;
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(vector:16)
-#endif
-static inline void upscale_vector(dt_aligned_pixel_t vector, const float scaling)
-{
-  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
-  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;
 }
 
 
