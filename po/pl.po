@@ -1,13 +1,10 @@
-#: ../build/bin/conf_gen.h:850 ../build/bin/conf_gen.h:856
-#: ../build/bin/conf_gen.h:862 ../build/bin/conf_gen.h:868
-#: ../build/bin/conf_gen.h:874
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-01 23:25+0100\n"
-"PO-Revision-Date: 2021-12-01 20:57+0100\n"
-"Last-Translator: Łukasz Karcz <pan.karcz@gmail.com>\n"
+"PO-Revision-Date: 2021-12-05 15:26+0100\n"
+"Last-Translator: Tomasz Golinski <tomaszg@math.uwb.edu.pl>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
 "MIME-Version: 1.0\n"
@@ -15,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.3.1\n"
 
 #: ../build/bin/preferences_gen.h:81 ../build/bin/preferences_gen.h:3746
 #: ../build/bin/preferences_gen.h:3782 ../build/bin/preferences_gen.h:3818
@@ -2315,7 +2312,7 @@ msgstr "maks. RGB"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:156
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:273
 msgid "average RGB"
-msgstr "uśrednione RGB"
+msgstr "średnia RGB"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:266
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:253
@@ -2331,7 +2328,7 @@ msgstr "suma RGB"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:158
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:275
 msgid "norm RGB"
-msgstr "znormalizowane RGB"
+msgstr "norma RGB"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:268
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:255
@@ -2339,7 +2336,7 @@ msgstr "znormalizowane RGB"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:159
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:276
 msgid "basic power"
-msgstr "prosta potęga"
+msgstr "prosta moc"
 
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:92
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:195
@@ -2591,7 +2588,7 @@ msgstr "standard"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:165
 msgid "darken only"
-msgstr "tylko ciemniejsze"
+msgstr "tylko sciemnij"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:166
 msgid "brighten only"
@@ -2645,12 +2642,12 @@ msgstr "światło LED"
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:330
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:485
 msgid "gamut compression"
-msgstr "kompresja gamy kolorów"
+msgstr "kompresja gamutu"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:336
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:489
 msgid "clip negative RGB from gamut"
-msgstr "odetnij ujemne wartości RGB z gamy kolorów"
+msgstr "odetnij ujemne wartości RGB z gamutu"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:342
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:493
@@ -3055,7 +3052,7 @@ msgstr "kontrast niebieski-żółty"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:149
 #: ../build/lib/darktable/plugins/introspection_colorin.c:232
 msgid "gamut clipping"
-msgstr "przycinanie gamy kolorów"
+msgstr "przycinanie do gamutu"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:302
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:201
@@ -3679,7 +3676,7 @@ msgstr "skompensuj punkt czerni wyjściowego profilu ICC"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:367
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:518
 msgid "spline handling"
-msgstr "Dopasowanie krzywej"
+msgstr "dopasowanie krzywej"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:532
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
@@ -3698,7 +3695,7 @@ msgstr "luminancja Y"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:535
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:384
 msgid "RGB power norm"
-msgstr "znormalizowana potęga RGB"
+msgstr "moc RGB"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:536
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:383
@@ -3719,7 +3716,7 @@ msgstr "v4 (2020)"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:543
 msgid "v5 (2021)"
-msgstr "v4 (2021)"
+msgstr "v5 (2021)"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:547
 msgid "uniform"
@@ -4295,7 +4292,7 @@ msgstr "suma RGB"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:385
 msgid "RGB geometric mean"
-msgstr "uśrednione geometrycznie RGB"
+msgstr "średnia geometryczna RGB"
 
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:39
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:88
@@ -5765,9 +5762,9 @@ msgstr "nie wybrano stylów!"
 #: ../src/common/styles.c:694
 msgid "style successfully applied!"
 msgid_plural "styles successfully applied!"
-msgstr[0] "styl zaaplikowany!"
-msgstr[1] "style zaaplikowane"
-msgstr[2] "style zaaplikowane"
+msgstr[0] "styl zastosowany!"
+msgstr[1] "style zastosowane!"
+msgstr[2] "style zastosowane!"
 
 #: ../src/common/styles.c:765
 #, c-format
@@ -8898,10 +8895,9 @@ msgstr "przełącz widoki/wydruk"
 
 #. an action that does nothing - used for overriding/removing default shortcuts
 #: ../src/gui/gtk.c:1215
-#, fuzzy
 msgctxt "accel"
 msgid "no-op"
-msgstr "brak operatora"
+msgstr "brak operacji"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:1242
@@ -9545,7 +9541,7 @@ msgstr "BŁĄD Ładowanie user.css"
 #. load default text
 #: ../src/gui/preferences.c:466
 msgid "Enter CSS theme tweaks here"
-msgstr "tutaj wprowadź zmiany w motywie CSS"
+msgstr "Tutaj wprowadź zmiany w motywie CSS"
 
 #: ../src/gui/preferences.c:502
 msgid "darktable preferences"
@@ -9581,7 +9577,7 @@ msgid ""
 "incrementally search the list of presets\n"
 "press up or down keys to cycle through matches"
 msgstr ""
-"Przyrostowo przeszukaj listę styli\n"
+"przyrostowo przeszukaj listę styli\n"
 "naciśnij w górę lub w dół, aby przełączyć między wyszukaniami"
 
 #: ../src/gui/preferences.c:861
@@ -10428,7 +10424,7 @@ msgstr "wprowadź nazwę strony"
 
 #: ../src/imageio/storage/latex.c:71
 msgid "LaTeX book template"
-msgstr "szablon książki LaTeX"
+msgstr "LaTeXowy szablon książki"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
 #: ../src/imageio/storage/latex.c:187
@@ -10976,7 +10972,7 @@ msgstr ""
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:935
 #: ../src/iop/toneequal.c:3197
 msgid "graph"
-msgstr "grafika"
+msgstr "wykres"
 
 #: ../src/iop/atrous.c:1768 ../src/iop/colorzones.c:2513
 msgid "make effect stronger or weaker"
@@ -11189,8 +11185,7 @@ msgid ""
 msgstr ""
 "zmień poziom czerni, żeby odzyskać ujemne wartości RGB.\n"
 "nigdy nie powinieneś tego używać, żeby dodawać więcej gęstości w czerniach!\n"
-"złe ustawienie spowoduje wypadnięcie kolorów bliskich czerni poza gamę "
-"kolorów\n"
+"złe ustawienie spowoduje wypadnięcie kolorów bliskich czerni poza gamut\n"
 "przesuwając wartości RGB poniżej zera"
 
 #: ../src/iop/basicadj.c:601 ../src/iop/exposure.c:833
@@ -11667,11 +11662,11 @@ msgid ""
 "try changing guide channel if you\n"
 "have artifacts."
 msgstr ""
-"użyj kanału jako odniesienia do\n"
-"koryguj pozostałe kanały\n"
-"użyj najostrzejszego kanału, jeśli któreś \n"
-"z kanałów są nieostre\n"
-"jeśli występują artefakty, spróbuj zmienić kanał wiodący"
+"kanał używany jako odniesienie do\n"
+"korygowania pozostałych kanałów.\n"
+"użyj najostrzejszego kanału, jeśli któreś\n"
+"z kanałów są nieostre.\n"
+"jeśli występują artefakty, spróbuj zmienić kanał wiodący."
 
 #: ../src/iop/cacorrectrgb.c:751
 msgid "increase for stronger correction"
@@ -11702,13 +11697,13 @@ msgid ""
 "efficient to correct blue\n"
 "chromatic aberration."
 msgstr ""
-"tryb korekcji do użycia\n"
+"tryb korekcji do użycia.\n"
 "może pomóc w wielu\n"
 "instancjach dla mocno uszkodzonych\n"
-"obrazów\n"
-"tylko ciemniejsze jest szczególnie\n"
+"obrazów.\n"
+"tylko sciemnij jest szczególnie\n"
 "wydajne w korygowaniu niebieskiej\n"
-"aberracji chromatycznej"
+"aberracji chromatycznej."
 
 #: ../src/iop/cacorrectrgb.c:768
 msgid ""
@@ -12071,7 +12066,7 @@ msgstr ""
 "przybliżona skorelowana temperatura barw.\n"
 "to oświetlenie może być dokładnie modelowane za pomocą spektrum światła "
 "dziennego,\n"
-"więc jego temperatura barwowa ma sens dla oświetlenia typu D"
+"więc jego temperatura barwowa ma sens dla oświetlenia typu D."
 
 #: ../src/iop/channelmixerrgb.c:3286
 #, c-format
@@ -12087,7 +12082,7 @@ msgstr ""
 "przybliżona skorelowana temperatura barw.\n"
 "to oświetlenie może być dokładnie modelowane za pomocą spektrum ciała "
 "doskonale czarnego,\n"
-"więc jego temperatura barwowa ma sens dla oświetlenia typu Plancka"
+"więc jego temperatura barwowa ma sens dla oświetlenia typu Plancka."
 
 #: ../src/iop/channelmixerrgb.c:3294
 #, c-format
@@ -12106,7 +12101,7 @@ msgstr ""
 "to oświetlenie nie może być modelowane ani za pomocą spektrum światła "
 "dziennego ani ciała doskonale czarnego, więc temperatura barwowa nie ma dla "
 "niego sensu\n"
-"i należy użyć niestandardowego rodzaju oświetlenia"
+"i należy użyć niestandardowego rodzaju oświetlenia."
 
 #: ../src/iop/channelmixerrgb.c:3303
 #, c-format
@@ -12120,7 +12115,7 @@ msgid ""
 msgstr ""
 "przybliżona skorelowana temperatura barw\n"
 "nie może zostać obliczona, więc konieczne będzie użycie niestandardowego "
-"rodzaju oświetlenia"
+"rodzaju oświetlenia."
 
 #: ../src/iop/channelmixerrgb.c:3561
 msgid "white balance successfully extracted from raw image"
@@ -12308,7 +12303,7 @@ msgstr "neutralne kolory"
 
 #: ../src/iop/channelmixerrgb.c:3880
 msgid "skin and soil colors"
-msgstr "Kolory skóry i gleby"
+msgstr "kolory skóry i gleby"
 
 #: ../src/iop/channelmixerrgb.c:3881
 msgid "foliage colors"
@@ -12336,9 +12331,9 @@ msgid ""
 "useful when the perspective correction is sloppy or\n"
 "the patches frame cast a shadows on the edges of the patch."
 msgstr ""
-"zredukuj promień łatek aby wybrać mniej więcej środkowy obszar\n"
-"użyteczne, gdy korekcja perspektywy jest nieskuteczna, lub\n"
-"gdy ramka łatki rzuca cienie na krawędzie łatki"
+"zredukuj promień łatek, aby wybrać mniej więcej środkowy obszar.\n"
+"użyteczne, gdy korekcja perspektywy jest nieskuteczna lub\n"
+"gdy ramka łatki rzuca cienie na krawędzie łatki."
 
 #: ../src/iop/channelmixerrgb.c:3897
 msgid "the delta E is using the CIE 2000 formula."
@@ -13361,7 +13356,7 @@ msgstr "profile ICC w %s lub %s"
 
 #: ../src/iop/colorin.c:2099
 msgid "confine Lab values to gamut of RGB color space"
-msgstr "ogranicz wartości Lab do gamy przestrzeni koloru RGB"
+msgstr "ogranicz wartości Lab do gamutu przestrzeni barw RGB"
 
 #: ../src/iop/colorize.c:84
 msgid "colorize"
@@ -13813,7 +13808,7 @@ msgstr ""
 "metoda demozaikowania filtra Bayera, PPG i RCD są szybkie, AMaZE i LMMSE są "
 "wolne.\n"
 "LMMSE sprawdza się ze zdjęciami z wysokim ISO\n"
-"podwójne demozaikowanie podwaja czas przetwarzania"
+"podwójne demozaikowanie podwaja czas przetwarzania."
 
 #: ../src/iop/demosaic.c:5773
 msgid ""
@@ -13832,8 +13827,8 @@ msgid ""
 "set to 1.0 to ignore edges"
 msgstr ""
 "próg dla mediany krawędzi.\n"
-"ustaw 0.0, aby wyłączyć.\n"
-"ustaw 1.0, aby zignorować krawędzie."
+"ustaw 0.0, aby wyłączyć\n"
+"ustaw 1.0, aby zignorować krawędzie"
 
 #: ../src/iop/demosaic.c:5783
 msgid ""
@@ -13841,7 +13836,7 @@ msgid ""
 "set to 0.0 for high frequency content\n"
 "set to 1.0 for flat content"
 msgstr ""
-"Próg kontrastu dla podwójnego demozaikowania\n"
+"Próg kontrastu dla podwójnego demozaikowania.\n"
 "ustaw na 0 dla obrazów z dużą szczegółowością tekstur\n"
 "ustaw na 1 dla obrazów z gładkimi teksturami."
 
@@ -13919,7 +13914,7 @@ msgid ""
 msgstr ""
 "używaj wyłącznie z perfekcyjnie\n"
 "jednolitym obrazem jeśli chcesz\n"
-"estymować wariancję szumu"
+"estymować wariancję szumu."
 
 #: ../src/iop/denoiseprofile.c:3645
 msgid "variance red: "
@@ -14112,9 +14107,9 @@ msgid ""
 "decrease if shadows are too purple.\n"
 "increase if shadows are too green."
 msgstr ""
-"skoryguj koloryzację cieni\n"
-"zmniejsz, jeśli cienie są zbyt purpurowe\n"
-"zwiększ, jeśli cienie są zbyt zielone"
+"skoryguj zafarb w cieniach.\n"
+"zmniejsz, jeśli cienie są zbyt purpurowe.\n"
+"zwiększ, jeśli cienie są zbyt zielone."
 
 #: ../src/iop/denoiseprofile.c:3759
 msgid ""
@@ -14146,23 +14141,23 @@ msgstr ""
 "symulacja kierunkowej dyfuzji światła modelem przepływu ciepła\n"
 "służy do iteracyjnego rozmywania krawędzi,\n"
 "rekonstrukcji uszkodzonych partii obrazu,\n"
-"usuwania rozmycia ze ślepą dekonwolucją"
+"usuwania rozmycia ze ślepą dekonwolucją."
 
 #: ../src/iop/diffuse.c:229
 msgid "lens deblur: soft"
-msgstr "Rozmycie obiektywu: miękkie"
+msgstr "usunięcie rozmycia obiektywu: miękkie"
 
 #: ../src/iop/diffuse.c:234
 msgid "lens deblur: medium"
-msgstr "wyostrzenie nieostrości obiektywu: średnie"
+msgstr "usunięcie rozmycia obiektywu: średnie"
 
 #: ../src/iop/diffuse.c:239
 msgid "lens deblur: hard"
-msgstr "rozmycie obiektywu: twarde"
+msgstr "usunięcie rozmycia obiektywu: twarde"
 
 #: ../src/iop/diffuse.c:258
 msgid "dehaze"
-msgstr "odmrożenie"
+msgstr "usuwanie zamglenia"
 
 #: ../src/iop/diffuse.c:279
 msgid "denoise: fine"
@@ -14186,11 +14181,11 @@ msgstr "demozaikowanie wygładzenia (filtr antyaliasingowy)"
 
 #: ../src/iop/diffuse.c:376
 msgid "simulate watercolor"
-msgstr "symuluj rozmycie wodą"
+msgstr "symuluj akwarele"
 
 #: ../src/iop/diffuse.c:394
 msgid "simulate line drawing"
-msgstr "symuluj rysowanie linii"
+msgstr "symuluj grafikę liniową"
 
 #: ../src/iop/diffuse.c:415
 msgid "add local contrast"
@@ -14198,7 +14193,7 @@ msgstr "dodaj kontrast miejscowy"
 
 #: ../src/iop/diffuse.c:435
 msgid "inpaint highlights"
-msgstr "światła rekonstrukcji obrazu"
+msgstr "rekonstrukcja świateł"
 
 #: ../src/iop/diffuse.c:456
 msgid "fast sharpness"
@@ -14309,8 +14304,8 @@ msgid ""
 "positives make the diffusion follow isophotes more closely\n"
 "negatives make the diffusion follow gradients more closely"
 msgstr ""
-"anizotropia dyfuzji\n"
-"zero oznacza dyfuzję anizotropową (jednakowo we wszystkich kierunkach)\n"
+"anizotropia dyfuzji.\n"
+"zero oznacza dyfuzję izotropową (jednakowo we wszystkich kierunkach)\n"
 "dodatnie wartości powodują podążanie w kierunku izofot (linii o jednakowej "
 "jasności, analogicznie do izobar na mapie terenu)\n"
 "ujemne wartości powodują podążanie w kierunku gradientów"
@@ -14357,10 +14352,10 @@ msgid ""
 "any higher value excludes pixels with luminance lower than the threshold.\n"
 "this can be used to inpaint highlights."
 msgstr ""
-"próg jasności dla maski\n"
-"0 wyłącza maskowanie po jasności i aplikuje moduł na cały obraz\n"
-"dowolna dodatnia wartość wyklucza piksele o jasności niższej niż próg\n"
-"można tego użyć do rekonstrukcji świateł"
+"próg jasności dla maski.\n"
+"0 wyłącza maskowanie po jasności i aplikuje moduł na cały obraz.\n"
+"dowolna dodatnia wartość wyklucza piksele o jasności niższej niż próg.\n"
+"można tego użyć do rekonstrukcji świateł."
 
 #: ../src/iop/dither.c:97 ../src/iop/vignette.c:997
 msgid "dithering"
@@ -14502,7 +14497,7 @@ msgid ""
 msgstr ""
 "zmień poziom czerni, żeby odzyskać ujemne wartości RGB.\n"
 "nigdy nie powinieneś tego używać, żeby dodawać więcej gęstości w czerniach!\n"
-"złe ustawienie spowoduje wypadnięcie kolorów bliskich czerni poza gamę\n"
+"złe ustawienie spowoduje wypadnięcie kolorów bliskich czerni poza gamut\n"
 "przesuwając wartości RGB poniżej zera."
 
 #: ../src/iop/filmic.c:179
@@ -14856,9 +14851,9 @@ msgid ""
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve."
 msgstr ""
-"użyj parametrów poniżej aby ustawić węzły\n"
+"użyj parametrów poniżej, aby ustawić węzły.\n"
 "jasna krzywa obrazuje filmowe mapowanie tonów\n"
-"ciemna krzywa to krzywa desaturacji kolorów"
+"ciemna krzywa to krzywa desaturacji kolorów."
 
 #: ../src/iop/filmicrgb.c:3831
 msgid "toggle axis labels and values display"
@@ -15016,8 +15011,7 @@ msgstr ""
 "odzyskiwanie monochromatycznych, czy kolorowych prześwietleń.\n"
 "0% oznacza równomierny miks obu strategii.\n"
 "zwiększ, jeśli chcesz więcej koloru.\n"
-"zmniejsz, jeśli widzisz prześwietlenia w kolorze magenta lub poza gamą "
-"kolorów."
+"zmniejsz, jeśli widzisz magenta lub wartości poza gamutem w światłach."
 
 #. Page LOOK
 #: ../src/iop/filmicrgb.c:4031
@@ -15391,7 +15385,7 @@ msgstr "usuwanie zamglenia"
 
 #: ../src/iop/hazeremoval.c:105
 msgid "dehaze|defog|smoke|smog"
-msgstr "mgła|smog"
+msgstr "usuwanie mgły|usuwanie zamglenia|dym|smog"
 
 #: ../src/iop/hazeremoval.c:110
 msgid "remove fog and atmospheric hazing from pictures"
@@ -15470,7 +15464,7 @@ msgstr "gorące piksele"
 msgid "remove abnormally bright pixels by dampening them with neighbours"
 msgstr ""
 "usuwa nienaturalnie jasne piksele przez tłumienie ich wartościami pikseli "
-"sąsiadujących."
+"sąsiadujących"
 
 #: ../src/iop/hotpixels.c:355
 #, c-format
@@ -16966,7 +16960,7 @@ msgstr "wykładnicza (podstawa 2)"
 
 #: ../src/iop/rgbcurve.c:1377 ../src/iop/rgblevels.c:1009
 msgid "choose between linked and independent channels."
-msgstr "wybierz pomiędzy połączonymi i niezależnymi kanałami"
+msgstr "wybierz pomiędzy połączonymi i niezależnymi kanałami."
 
 #: ../src/iop/rgbcurve.c:1383 ../src/iop/rgblevels.c:1013
 msgid "curve nodes for r channel"
@@ -17057,7 +17051,7 @@ msgid ""
 "of an image by enhancing local contrast."
 msgstr ""
 "modyfikuje zakres tonalny cieni i świateł\n"
-"przez zwiększenie lokalnego kontrastu"
+"przez zwiększenie lokalnego kontrastu."
 
 #: ../src/iop/shadhi.c:699 ../src/iop/splittoning.c:544
 msgid "compress"
@@ -18798,15 +18792,18 @@ msgid ""
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
-"• percepcyjny:miękko przesuwa kolory spoza gamutu w zakres gamutu, "
+"• percepcyjny: miękko przesuwa kolory spoza gamutu w zakres gamutu, "
 "zachowując gradacje, ale jednocześnie przesuwa kolory wewnątrz gamutu. "
-"Percepcyjny zazwyczaj jest zastrzeżonym prawnie LUTem który polega na "
+"Percepcyjny zazwyczaj jest zastrzeżonym prawnie LUTem, który zależy od "
 "docelowej przestrzeni barwnej.\n"
+"\n"
 "• relatywny kolorymetryczny: zachowuje luminancję, redukując nasycenie aż do "
-"momentu zmieszczenia wszystkich kolorów w przestrzeni gamutu\n"
+"momentu zmieszczenia wszystkich kolorów w gamucie\n"
+"\n"
 "• nasycenie: nadaje się do przyciągających wzrok grafik biznesowych, poprzez "
 "zachowanie saturacji. Nieprzeznaczony dla fotografii.\n"
-"• bezwzględny kolorymetryczny: Adaptuje punkt bieli obrazu do punktu bieli "
+"\n"
+"• bezwzględny kolorymetryczny: adaptuje punkt bieli obrazu do punktu bieli "
 "docelowego medium i nic ponad to. Używany głównie do proofowania kolorów. "
 "Nieprzeznaczony do fotografii."
 
@@ -21527,7 +21524,7 @@ msgstr "istnieje już przynajmniej jedna etykieta o nazwie „%s”"
 #: ../src/libs/tagging.c:1877
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
-msgstr "istnieje już przynajmniej jedna etykieta o nazwie „%s”"
+msgstr "istnieje już przynajmniej jedna etykieta o nazwie „%s”, przerywam."
 
 #: ../src/libs/tagging.c:1930
 msgid "change path"
@@ -22160,7 +22157,7 @@ msgstr "ładuję „%s”..."
 
 #: ../src/views/darkroom.c:783
 msgid "gamut check"
-msgstr "sprawdzanie zakresu kolorów"
+msgstr "sprawdzanie gamutu"
 
 #: ../src/views/darkroom.c:783
 msgid "soft proof"
@@ -22285,11 +22282,11 @@ msgid ""
 "full gamut is the combination of all other modes"
 msgstr ""
 "wybierz metrykę, jaką chcesz zobaczyć\n"
-"pełna gama kolorów jest kombinacją pozostałych trybów"
+"pełny gamut jest kombinacją pozostałych trybów"
 
 #: ../src/views/darkroom.c:2371
 msgid "full gamut"
-msgstr "pełna gama kolorów"
+msgstr "pełny gamut"
 
 #: ../src/views/darkroom.c:2371
 msgid "any RGB channel"
@@ -22365,7 +22362,7 @@ msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
-"przełącz sprawdzanie zakresu kolorów\n"
+"przełącz sprawdzanie gamutu\n"
 "kliknij prawym przyciskiem, by wyświetlić opcje"
 
 #: ../src/views/darkroom.c:2454 ../src/views/darkroom.c:2461
@@ -22515,7 +22512,7 @@ msgstr "korekta ekranowa"
 #: ../src/views/darkroom.c:3886
 msgctxt "accel"
 msgid "gamut check"
-msgstr "sprawdzanie zakresu kolorów"
+msgstr "sprawdzanie gamutu"
 
 #. toggle visibility of drawn masks for current gui module
 #: ../src/views/darkroom.c:3889

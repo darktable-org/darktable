@@ -1295,8 +1295,9 @@ typedef struct {
 
 static const extraction_result_t _extract_patches(const float *const restrict in, const dt_iop_roi_t *const roi_in,
                                                   dt_iop_channelmixer_rgb_gui_data_t *g,
-                                                  const dt_colormatrix_t RGB_to_XYZ,
-                                                  float *const restrict patches)
+                                                  const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t XYZ_to_CAM,
+                                                  float *const restrict patches,
+                                                  const gboolean normalize_exposure)
 {
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
@@ -1375,50 +1376,6 @@ static const extraction_result_t _extract_patches(const float *const restrict in
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c];
   }
 
-  /* match global exposure */
-  // white exposure depends on camera settings and raw white point,
-  // we want our profile to be independent from that
-  dt_aligned_pixel_t XYZ_white_ref;
-  float *XYZ_white_test = patches + g->checker->white * 4;
-  dt_Lab_to_XYZ(g->checker->values[g->checker->white].Lab, XYZ_white_ref);
-  const float exposure = XYZ_white_ref[1] / XYZ_white_test[1];
-
-  // black point is evaluated by rawspeed on each picture using the dark pixels
-  // we want our profile to be also independent from its discrepancies
-  dt_aligned_pixel_t XYZ_black_ref;
-  float *XYZ_black_test = patches + g->checker->black * 4;
-  dt_Lab_to_XYZ(g->checker->values[g->checker->black].Lab, XYZ_black_ref);
-  float black = 0.f;
-  for(size_t c = 0; c < 3; c++) black += XYZ_black_test[c] * exposure - XYZ_black_ref[c];
-  black /= 3.f;
-
-  // the exposure module applies output  = (input - offset) * exposure
-  // but we compute output = input * exposure - offset
-  // so, rescale offset to adapt our offset to exposure module GUI
-  black /= exposure;
-
-  for(size_t k = 0; k < g->checker->patches; k++)
-  {
-    // compensate global exposure
-    for(size_t c = 0; c < 3; c++) patches[k * 4 + c] *= exposure;
-  }
-
-  const extraction_result_t result = { black, exposure };
-  return result;
-}
-
-void extract_color_checker(const float *const restrict in, float *const restrict out,
-                           const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
-                           const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t XYZ_to_RGB,
-                           const dt_adaptation_t kind)
-{
-  float *const restrict patches = dt_alloc_sse_ps(g->checker->patches * 4);
-
-  dt_simd_memcpy(in, out, (size_t)roi_in->width * roi_in->height * 4);
-
-  extraction_result_t extraction_result = _extract_patches(out, roi_in, g, RGB_to_XYZ,
-                                                           patches);
-
   // find reference white patch
   dt_aligned_pixel_t XYZ_white_ref;
   dt_Lab_to_XYZ(g->checker->values[g->checker->white].Lab, XYZ_white_ref);
@@ -1429,26 +1386,135 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   for(size_t c = 0; c < 3; c++) XYZ_white_test[c] = patches[g->checker->white * 4 + c];
   const float white_test_norm = euclidean_norm(XYZ_white_test);
 
-  // Exposure compensation
+  /* match global exposure */
+  // white exposure depends on camera settings and raw white point,
+  // we want our profile to be independent from that
+  float exposure = white_ref_norm / white_test_norm;
+
+  /* Exposure compensation */
   // Ensure the relative luminance of the test patch (compared to white patch)
   // is the same as the relative luminance of the reference patch.
   // This compensate for lighting fall-off and unevenness
-  for(size_t k = 0; k < g->checker->patches; k++)
+  if(normalize_exposure)
   {
-    float *const sample = patches + k * 4;
+    for(size_t k = 0; k < g->checker->patches; k++)
+    {
+      float *const sample = patches + k * 4;
 
-    dt_aligned_pixel_t XYZ_ref;
-    dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
+      dt_aligned_pixel_t XYZ_ref;
+      dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
 
-    const float sample_norm = euclidean_norm(sample);
-    const float ref_norm = euclidean_norm(XYZ_ref);
+      const float sample_norm = euclidean_norm(sample);
+      const float ref_norm = euclidean_norm(XYZ_ref);
 
-    const float relative_luminance_test = sample_norm / white_test_norm;
-    const float relative_luminance_ref = ref_norm / white_ref_norm;
+      const float relative_luminance_test = sample_norm / white_test_norm;
+      const float relative_luminance_ref = ref_norm / white_ref_norm;
 
-    const float luma_correction = relative_luminance_ref / relative_luminance_test;
-    for(size_t c = 0; c < 3; ++c) sample[c] *= luma_correction;
+      const float luma_correction = relative_luminance_ref / relative_luminance_test;
+      for(size_t c = 0; c < 3; ++c) sample[c] *= luma_correction * exposure;
+    }
   }
+
+  // black point is evaluated by rawspeed on each picture using the dark pixels
+  // we want our profile to be also independent from its discrepancies
+  // so we convert back the patches to camera RGB space and search the best fit of
+  // RGB_ref = exposure * (RGB_test - offset) for offset.
+  float black = 0.f;
+  const float user_exposure = exp2f(dt_dev_exposure_get_exposure(darktable.develop));
+  const float user_black = dt_dev_exposure_get_black(darktable.develop);
+
+  if(XYZ_to_CAM)
+  {
+    float mean_ref = 0.f;
+    float mean_test = 0.f;
+
+    for(size_t k = 0; k < g->checker->patches; k++)
+    {
+      dt_aligned_pixel_t XYZ_ref, RGB_ref;
+      dt_aligned_pixel_t XYZ_test, RGB_test;
+
+      for(size_t c = 0; c < 3; c++) XYZ_test[c] = patches[k * 4 + c];
+      dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
+
+      dot_product(XYZ_test, XYZ_to_CAM, RGB_test);
+      dot_product(XYZ_ref, XYZ_to_CAM, RGB_ref);
+
+      // Undo exposure module settings
+      for(int c = 0; c < 3; c++)
+      {
+        RGB_test[c] = RGB_test[c] / user_exposure / exposure + user_black;
+      }
+
+      // From now on, we have all the reference and test data in camera RGB space
+      // where exposure and black level are applied
+
+      for(int c = 0; c < 3; c++)
+      {
+        mean_test += RGB_test[c];
+        mean_ref += RGB_ref[c];
+      }
+    }
+    mean_test /= 3.f * g->checker->patches;
+    mean_ref /= 3.f * g->checker->patches;
+
+    float variance = 0.f;
+    float covariance = 0.f;
+
+    for(size_t k = 0; k < g->checker->patches; k++)
+    {
+      dt_aligned_pixel_t XYZ_ref, RGB_ref;
+      dt_aligned_pixel_t XYZ_test, RGB_test;
+
+      for(size_t c = 0; c < 3; c++) XYZ_test[c] = patches[k * 4 + c];
+      dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
+
+      dot_product(XYZ_test, XYZ_to_CAM, RGB_test);
+      dot_product(XYZ_ref, XYZ_to_CAM, RGB_ref);
+
+      // Undo exposure module settings
+      for(int c = 0; c < 3; c++)
+      {
+        RGB_test[c] = RGB_test[c] / user_exposure / exposure + user_black;
+      }
+
+      for(int c = 0; c < 3; c++)
+      {
+        variance += sqf(RGB_test[c] - mean_test);
+        covariance += (RGB_ref[c] - mean_ref) * (RGB_test[c] - mean_ref);
+      }
+    }
+    variance /= 3.f * g->checker->patches;
+    covariance /= 3.f * g->checker->patches;
+
+    // Here, we solve the least-squares problem RGB_ref = exposure * RGB_test + offset
+    // using :
+    //   exposure = covariance(RGB_test, RGB_ref) / variance(RGB_test)
+    //   offset = mean(RGB_ref) - exposure * mean(RGB_test)
+    exposure = covariance / variance;
+    black = mean_ref - exposure * mean_test;
+  }
+
+  // the exposure module applies output  = (input - offset) * exposure
+  // but we compute output = input * exposure + offset
+  // so, rescale offset to adapt our offset to exposure module GUI
+  black /= -exposure;
+
+  const extraction_result_t result = { black, exposure };
+  return result;
+}
+
+void extract_color_checker(const float *const restrict in, float *const restrict out,
+                           const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
+                           const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t XYZ_to_RGB,
+                           const dt_colormatrix_t XYZ_to_CAM,
+                           const dt_adaptation_t kind)
+{
+  float *const restrict patches = dt_alloc_sse_ps(g->checker->patches * 4);
+
+  dt_simd_memcpy(in, out, (size_t)roi_in->width * roi_in->height * 4);
+
+  extraction_result_t extraction_result = _extract_patches(out, roi_in, g, RGB_to_XYZ, XYZ_to_CAM,
+                                                           patches, TRUE);
 
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
@@ -1721,10 +1787,10 @@ void extract_color_checker(const float *const restrict in, float *const restrict
 
 void validate_color_checker(const float *const restrict in,
                             const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
-                            const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t XYZ_to_RGB)
+                            const dt_colormatrix_t RGB_to_XYZ, const dt_colormatrix_t XYZ_to_RGB, const dt_colormatrix_t XYZ_to_CAM)
 {
   float *const restrict patches = dt_alloc_sse_ps(4 * g->checker->patches);
-  extraction_result_t extraction_result = _extract_patches(in, roi_in, g, RGB_to_XYZ, patches);
+  extraction_result_t extraction_result = _extract_patches(in, roi_in, g, RGB_to_XYZ, XYZ_to_CAM, patches, FALSE);
 
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
@@ -1795,6 +1861,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 {
   dt_iop_channelmixer_rbg_data_t *data = (dt_iop_channelmixer_rbg_data_t *)piece->data;
   const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
+  const struct dt_iop_order_iccprofile_info_t *const input_profile = dt_ioppr_get_pipe_input_profile_info(piece->pipe);
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
   if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
@@ -1809,6 +1876,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   dt_colormatrix_t RGB_to_XYZ;
   dt_colormatrix_t XYZ_to_RGB;
+  dt_colormatrix_t XYZ_to_CAM;
 
   // repack the matrices as flat AVX2-compliant matrice
   if(work_profile)
@@ -1816,6 +1884,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     // work profile can't be fetched in commit_params since it is not yet initialised
     memcpy(RGB_to_XYZ, work_profile->matrix_in, sizeof(RGB_to_XYZ));
     memcpy(XYZ_to_RGB, work_profile->matrix_out, sizeof(XYZ_to_RGB));
+    memcpy(XYZ_to_CAM, input_profile->matrix_out, sizeof(XYZ_to_CAM));
   }
 
   assert(piece->colors == 4);
@@ -1832,7 +1901,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     if(g->run_profile && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
       dt_iop_gui_enter_critical_section(self);
-      extract_color_checker(in, out, roi_in, g, RGB_to_XYZ, XYZ_to_RGB, data->adaptation);
+      extract_color_checker(in, out, roi_in, g, RGB_to_XYZ, XYZ_to_RGB, XYZ_to_CAM, data->adaptation);
       g->run_profile = FALSE;
       dt_iop_gui_leave_critical_section(self);
     }
@@ -1939,7 +2008,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(self->dev->gui_attached && g)
     if(g->run_validation && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
-      validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB);
+      validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB, XYZ_to_CAM);
       g->run_validation = FALSE;
     }
 }
