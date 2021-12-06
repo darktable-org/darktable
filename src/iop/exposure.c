@@ -78,7 +78,6 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkWidget *black;
   GtkStack *mode_stack;
   GtkWidget *exposure;
-  GtkWidget *autoexpp;
   GtkWidget *deflicker_percentile;
   GtkWidget *deflicker_target_level;
   uint32_t *deflicker_histogram; // used to cache histogram of source file
@@ -560,9 +559,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->black, p->black);
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
-  dt_bauhaus_slider_set(g->autoexpp, 0.01);
-  dt_bauhaus_widget_set_quad_active(g->autoexpp, FALSE);
-
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
   dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
 
@@ -586,16 +582,6 @@ void gui_update(struct dt_iop_module_t *self)
       gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "manual");
       break;
   }
-}
-
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
-{
-  // switch off auto exposure when we lose focus (switching images etc)
-
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  ++darktable.gui->reset;
-  dt_bauhaus_slider_set(g->autoexpp, 0.01);
-  --darktable.gui->reset;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -708,23 +694,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  //dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]),
-                            self->picked_color_max[2]) * (1.0 - dt_bauhaus_slider_get(g->autoexpp));
-  exposure_set_white(self, white);
-}
-
-static void autoexpp_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE ||
-     !dt_bauhaus_widget_get_quad_active(g->autoexpp) ||
-     self->picked_color_max[0] < 0.0f) return;
-
-  const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]),
-                            self->picked_color_max[2]) * (1.0 - dt_bauhaus_slider_get(g->autoexpp));
+                            self->picked_color_max[2]);
   exposure_set_white(self, white);
 }
 
@@ -795,11 +767,11 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   // if color-picker active and is the one in the main module (not blending ones)
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE ||
-     !dt_bauhaus_widget_get_quad_active(g->autoexpp) ||
+     //!dt_bauhaus_widget_get_quad_active(g->autoexpp) ||
      self->picked_color_max[0] < 0.0f) return FALSE;
 
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]),
-                            self->picked_color_max[2]) * (1.0 - dt_bauhaus_slider_get(g->autoexpp));
+                            self->picked_color_max[2]);
   const float black
       = fminf(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
 
@@ -836,13 +808,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
 
-  g->autoexpp = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
-                dt_bauhaus_slider_new_with_range(self, 0.0, 0.2, .001, 0.01, 3));
-  gtk_widget_set_tooltip_text(g->autoexpp, _("percentage of bright values clipped out, toggle color picker to activate"));
-  dt_bauhaus_slider_set_format(g->autoexpp, "%.3f%%");
-  dt_bauhaus_widget_set_label(g->autoexpp, NULL, N_("clipping threshold"));
-  g_signal_connect(G_OBJECT(g->autoexpp), "value-changed", G_CALLBACK(autoexpp_callback), self);
-  gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
+  
+  
+  
 
   GtkWidget *vbox_deflicker = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");
