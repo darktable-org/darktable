@@ -3618,10 +3618,29 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
+  // always reset the mode the correct
   dt_bauhaus_combobox_set(g->spot_mode, DT_SPOT_MODE_CORRECT);
-  dt_bauhaus_slider_set(g->lightness_spot, 50.f);
-  dt_bauhaus_slider_set(g->chroma_spot, 0.f);
-  dt_bauhaus_slider_set(g->hue_spot, 0.f);
+
+  // get the saved params
+  dt_iop_gui_enter_critical_section(self);
+
+  float lightness = 50.f;
+  if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/lightness"))
+    lightness = dt_conf_get_float("darkroom/modules/channelmixerrgb/lightness");
+  dt_bauhaus_slider_set(g->lightness_spot, lightness);
+
+  float hue = 0.f;
+  if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/hue"))
+    hue = dt_conf_get_float("darkroom/modules/channelmixerrgb/hue");
+  dt_bauhaus_slider_set(g->hue_spot, hue);
+
+  float chroma = 0.f;
+  if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/chroma"))
+    chroma = dt_conf_get_float("darkroom/modules/channelmixerrgb/chroma");
+  dt_bauhaus_slider_set(g->chroma_spot, chroma);
+
+  dt_iop_gui_leave_critical_section(self);
+
   gtk_widget_hide(g->collapsible_spot);
 
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
@@ -4009,6 +4028,10 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     dt_bauhaus_slider_set_soft(g->hue_spot, Lch_output[2] * 360.f);
     paint_hue(self);
     --darktable.gui->reset;
+
+    dt_conf_set_float("darkroom/modules/channelmixerrgb/lightness", Lch_output[0]);
+    dt_conf_set_float("darkroom/modules/channelmixerrgb/chroma", Lch_output[1]);
+    dt_conf_set_float("darkroom/modules/channelmixerrgb/hue", Lch_output[2] * 360.f);
   }
   else if(mode == DT_SPOT_MODE_CORRECT)
   {
@@ -4017,9 +4040,13 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     dt_aligned_pixel_t Lab_target = { 0.f };
     dt_aligned_pixel_t XYZ_target = { 0.f };
     dt_aligned_pixel_t LMS_target = { 0.f };
+
+    dt_iop_gui_enter_critical_section(self);
     Lch_target[0] = dt_bauhaus_slider_get(g->lightness_spot);
     Lch_target[1] = dt_bauhaus_slider_get(g->chroma_spot);
     Lch_target[2] = dt_bauhaus_slider_get(g->hue_spot) / 360.f;
+    dt_iop_gui_leave_critical_section(self);
+
     dt_LCH_2_Lab(Lch_target, Lab_target);
     dt_Lab_to_XYZ(Lab_target, XYZ_target);
     const float Y_target = XYZ_target[1];
