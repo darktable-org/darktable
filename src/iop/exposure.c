@@ -58,6 +58,13 @@ typedef enum dt_iop_exposure_mode_t
   EXPOSURE_MODE_DEFLICKER // $DESCRIPTION: "automatic"
 } dt_iop_exposure_mode_t;
 
+typedef enum dt_spot_mode_t
+{
+  DT_SPOT_MODE_CORRECT = 0,
+  DT_SPOT_MODE_MEASURE = 1,
+  DT_SPOT_MODE_LAST
+} dt_spot_mode_t;
+
 // uint16_t pixel can have any value in range [0, 65535], thus, there is
 // 65536 possible values.
 #define DEFLICKER_BINS_COUNT (UINT16_MAX + 1)
@@ -85,6 +92,14 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkLabel *deflicker_used_EC;
   GtkWidget *compensate_exposure_bias;
   float deflicker_computed_exposure;
+
+  GtkWidget *spot_settings, *spot_mode;
+  GtkWidget *collapsible_spot, *lightness_spot;
+  GtkWidget *origin_spot, *target_spot;
+  GtkWidget *Lch_origin;
+
+  dt_aligned_pixel_t spot_RGB;
+
 } dt_iop_exposure_gui_data_t;
 
 typedef struct dt_iop_exposure_data_t
@@ -135,6 +150,7 @@ static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const flo
 static float dt_iop_exposure_get_exposure(struct dt_iop_module_t *self);
 static void dt_iop_exposure_set_black(struct dt_iop_module_t *self, const float black);
 static float dt_iop_exposure_get_black(struct dt_iop_module_t *self);
+static void paint_hue(dt_iop_module_t *self);
 
 void connect_key_accels(dt_iop_module_t *self)
 {
@@ -559,6 +575,23 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->black, p->black);
   dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
+  g->spot_RGB[0] = 0.f;
+  g->spot_RGB[1] = 0.f;
+  g->spot_RGB[2] = 0.f;
+  g->spot_RGB[3] = 0.f;
+
+  // get the saved params
+  dt_iop_gui_enter_critical_section(self);
+
+  float lightness = 50.f;
+  if(dt_conf_key_exists("darkroom/modules/exposure/lightness"))
+    lightness = dt_conf_get_float("darkroom/modules/exposure/lightness");
+  dt_bauhaus_slider_set(g->lightness_spot, lightness);
+
+  dt_iop_gui_leave_critical_section(self);
+
+  gtk_widget_hide(g->collapsible_spot);
+
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
   dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
 
@@ -694,10 +727,89 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 {
   if(darktable.gui->reset) return;
 
-  //dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]),
-                            self->picked_color_max[2]);
-  exposure_set_white(self, white);
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+
+  // capture gui color picked event.
+  if(self->picked_color_max[0] < self->picked_color_min[0]) return;
+  const float *RGB = self->picked_color;
+
+  // Get input profile, assuming we are before colorin
+  const dt_iop_order_iccprofile_info_t *const input_profile = dt_ioppr_get_pipe_input_profile_info(piece->pipe);
+  if(input_profile == NULL) return;
+
+  // Convert to XYZ
+  dt_aligned_pixel_t XYZ;
+  dt_aligned_pixel_t Lab;
+  dot_product(RGB, input_profile->matrix_in, XYZ);
+  dt_XYZ_to_Lab(XYZ, Lab);
+  Lab[1] = Lab[2] = 0.f; // make color grey to get only the equivalent lighness
+  dt_Lab_to_XYZ(Lab, XYZ);
+  dt_XYZ_to_sRGB(XYZ, g->spot_RGB);
+
+  // Convert to Lch for GUI feedback (input)
+  dt_aligned_pixel_t Lch;
+  dt_Lab_2_LCH(Lab, Lch);
+
+  // Write report in GUI
+  ++darktable.gui->reset;
+  gtk_label_set_text(GTK_LABEL(g->Lch_origin),
+                     g_strdup_printf(_("L : \t%.1f %%"), Lch[0]));
+  --darktable.gui->reset;
+
+  const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
+
+  if(mode == DT_SPOT_MODE_MEASURE)
+  {
+    // get the exposure setting
+    float expo = p->exposure;
+
+    // If the exposure bias compensation is on, we need to add it to the user param
+    if(p->compensate_exposure_bias) expo -= get_exposure_bias(self);
+
+    float white = exposure2white(-expo);
+
+    // apply the exposure compensation
+    dt_aligned_pixel_t XYZ_out;
+    for(int c = 0; c < 3; c++) XYZ_out[c] = XYZ[c] * white;
+
+    // Convert to Lab for GUI feedback
+    dt_aligned_pixel_t Lab_out;
+    dt_XYZ_to_Lab(XYZ_out, Lab_out);
+    Lab_out[1] = Lab_out[2] = 0.f; // make it grey
+
+    // Return the values in sliders
+    ++darktable.gui->reset;
+    dt_bauhaus_slider_set_soft(g->lightness_spot, Lab_out[0]);
+    paint_hue(self);
+    --darktable.gui->reset;
+
+    dt_conf_set_float("darkroom/modules/exposure/lightness", Lab_out[0]);
+  }
+  else if(mode == DT_SPOT_MODE_CORRECT)
+  {
+    // Get the target color in XYZ space
+    dt_aligned_pixel_t Lch_target = { 0.f };
+    dt_iop_gui_enter_critical_section(self);
+    Lch_target[0] = dt_bauhaus_slider_get(g->lightness_spot);
+    dt_iop_gui_leave_critical_section(self);
+
+    dt_aligned_pixel_t Lab_target = { 0.f };
+    dt_LCH_2_Lab(Lch_target, Lab_target);
+
+    dt_aligned_pixel_t XYZ_target = { 0.f };
+    dt_Lab_to_XYZ(Lab_target, XYZ_target);
+
+    // Get the ratio
+    float white =  XYZ[1] / XYZ_target[1];
+    float expo = -white2exposure(white);
+
+    // If the exposure bias compensation is on, we need to subtract it from the user param
+    if(p->compensate_exposure_bias) expo -= get_exposure_bias(self);
+
+    white = exposure2white(-expo);
+    exposure_set_white(self, white);
+  }
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -743,7 +855,13 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(p->black >= white)
       exposure_set_white(self, p->black + 0.01);
   }
+
+  if(!w || w == g->lightness_spot || w == g->spot_settings)
+  {
+    paint_hue(self);
+  }
 }
+
 
 static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
@@ -763,22 +881,144 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
     g_free(str);
   }
   dt_iop_gui_leave_critical_section(self);
-
-  // if color-picker active and is the one in the main module (not blending ones)
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE ||
-     //!dt_bauhaus_widget_get_quad_active(g->autoexpp) ||
-     self->picked_color_max[0] < 0.0f) return FALSE;
-
-  const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]),
-                            self->picked_color_max[2]);
-  const float black
-      = fminf(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
-
-  exposure_set_white(self, white);
-  exposure_set_black(self, black);
   return FALSE;
 }
+
+
+static gboolean target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+  // Init
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+
+  // Margins
+  const double INNER_PADDING = 4.0;
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  width -= 2* INNER_PADDING;
+  height -= 2 * margin;
+
+  // Paint target color
+  dt_aligned_pixel_t RGB = { 0 };
+  dt_aligned_pixel_t Lch = { 0 };
+  dt_aligned_pixel_t Lab = { 0 };
+  dt_aligned_pixel_t XYZ = { 0 };
+  Lch[0] = dt_bauhaus_slider_get(g->lightness_spot);
+  Lch[1] = 0.f;
+  Lch[2] = 0.f;
+  dt_LCH_2_Lab(Lch, Lab);
+  dt_Lab_to_XYZ(Lab, XYZ);
+  dt_XYZ_to_sRGB(XYZ, RGB);
+
+  cairo_set_source_rgb(cr, RGB[0], RGB[1], RGB[2]);
+  cairo_rectangle(cr, INNER_PADDING, margin, width, height);
+  cairo_fill(cr);
+
+  // Clean
+  cairo_stroke(cr);
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
+  return TRUE;
+}
+
+
+static gboolean origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+  // Init
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+
+  // Margins
+  const double INNER_PADDING = 4.0;
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  width -= 2* INNER_PADDING;
+  height -= 2 * margin;
+
+  cairo_set_source_rgb(cr, g->spot_RGB[0], g->spot_RGB[1], g->spot_RGB[2]);
+  cairo_rectangle(cr, INNER_PADDING, margin, width, height);
+  cairo_fill(cr);
+
+  // Clean
+  cairo_stroke(cr);
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
+  return TRUE;
+}
+
+
+
+static void set_spot_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_request_focus(self);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+
+  // stupid toggle on/off
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  const gboolean state = gtk_widget_get_visible(g->collapsible_spot);
+  gtk_widget_set_visible(g->collapsible_spot, !state);
+
+  if(!state)
+    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
+  else
+    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+}
+
+static void paint_hue(dt_iop_module_t *self)
+{
+  // update the fill background color of LCh sliders
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+  const float lightness_min = DT_BAUHAUS_WIDGET(g->lightness_spot)->data.slider.min;
+  const float lightness_max = DT_BAUHAUS_WIDGET(g->lightness_spot)->data.slider.max;
+
+  const float lightness_range = lightness_max - lightness_min;
+
+  for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
+  {
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float x = lightness_min + stop * lightness_range;
+    dt_aligned_pixel_t RGB = { 0 };
+    const dt_aligned_pixel_t Lch = { x, 0.f, 0. };
+    dt_aligned_pixel_t Lab = { 0 };
+    dt_aligned_pixel_t XYZ = { 0 };
+
+    dt_LCH_2_Lab(Lch, Lab);
+    dt_Lab_to_XYZ(Lab, XYZ);
+    dt_XYZ_to_sRGB(XYZ, RGB);
+
+    dt_bauhaus_slider_set_stop(g->lightness_spot, stop, RGB[0], RGB[1], RGB[2]);
+  }
+
+  gtk_widget_queue_draw(g->lightness_spot);
+  gtk_widget_queue_draw(g->target_spot);
+}
+
+
+static void spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  ++darktable.gui->reset;
+  paint_hue(self);
+  --darktable.gui->reset;
+}
+
 
 void gui_reset(struct dt_iop_module_t *self)
 {
@@ -801,16 +1041,79 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->compensate_exposure_bias, _("automatically remove the camera exposure bias\n"
                                                              "this is useful if you exposed the image to the right."));
 
-  g->exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
+  g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
+                                    dt_bauhaus_slider_from_params(self, N_("exposure")));
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
   dt_bauhaus_slider_set_step(g->exposure, 0.02);
   dt_bauhaus_slider_set_digits(g->exposure, 3);
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
 
-  
-  
-  
+  g->spot_settings = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->spot_settings, NULL, N_("spot exposure mapping settings"));
+  dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->spot_settings, TRUE);
+  gtk_widget_set_tooltip_text(g->spot_settings, _("use a color checker target to autoset CAT and channels"));
+  g_signal_connect(G_OBJECT(g->spot_settings), "quad-pressed", G_CALLBACK(set_spot_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->spot_settings), TRUE, TRUE, 0);
+
+  g->collapsible_spot = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
+                                _("correction automatically adjust exposure\n"
+                                  "such that the input lightness is mapped to the target.\n"
+                                  "measure simply shows how an input color is mapped by the exposure compensation."),
+                                0, NULL, self,
+                                N_("correction"),
+                                N_("measure"));
+  gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
+
+  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
+  GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("input")), FALSE, FALSE, 0);
+
+  g->origin_spot = GTK_WIDGET(gtk_drawing_area_new());
+  gtk_widget_set_size_request(g->origin_spot, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
+                                              DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->origin_spot),
+                              _("this is the input color that should be mapped to the target."));
+
+  g_signal_connect(G_OBJECT(g->origin_spot), "draw", G_CALLBACK(origin_color_draw), self);
+  gtk_box_pack_start(GTK_BOX(vvbox), g->origin_spot, TRUE, TRUE, 0);
+
+  g->Lch_origin = gtk_label_new(_("L : \tN/A"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->Lch_origin),
+                              _("these Lch coordinates are computed from CIE Lab 1976 coordinates."));
+  gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->Lch_origin), FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), FALSE, FALSE, DT_BAUHAUS_SPACE);
+
+  vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("target")), TRUE, TRUE, 0);
+
+  g->target_spot = GTK_WIDGET(gtk_drawing_area_new());
+  gtk_widget_set_size_request(g->target_spot, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
+                                              DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->target_spot),
+                              _("this is the desired target color after mapping."));
+
+  g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(target_color_draw), self);
+  gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
+
+  g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.5, 0, 1);
+  dt_bauhaus_widget_set_label(g->lightness_spot, NULL, _("lightness"));
+  dt_bauhaus_slider_set_format(g->lightness_spot, "%.1f %%");
+  dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
+  gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
+
+  gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), TRUE, TRUE, DT_BAUHAUS_SPACE);
+
+  gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->collapsible_spot), FALSE, FALSE, 0);
 
   GtkWidget *vbox_deflicker = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");
