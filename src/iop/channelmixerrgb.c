@@ -3814,6 +3814,21 @@ static void spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *s
 {
   if(darktable.gui->reset) return;
 
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+
+  dt_aligned_pixel_t Lch_target = { 0.f };
+
+  dt_iop_gui_enter_critical_section(self);
+  Lch_target[0] = dt_bauhaus_slider_get(g->lightness_spot);
+  Lch_target[1] = dt_bauhaus_slider_get(g->chroma_spot);
+  Lch_target[2] = dt_bauhaus_slider_get(g->hue_spot) / 360.f;
+  dt_iop_gui_leave_critical_section(self);
+
+  // Save the color on change
+  dt_conf_set_float("darkroom/modules/channelmixerrgb/lightness", Lch_target[0]);
+  dt_conf_set_float("darkroom/modules/channelmixerrgb/chroma", Lch_target[1]);
+  dt_conf_set_float("darkroom/modules/channelmixerrgb/hue", Lch_target[2] * 360.f);
+
   ++darktable.gui->reset;
   paint_hue(self);
   --darktable.gui->reset;
