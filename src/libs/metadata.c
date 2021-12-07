@@ -795,6 +795,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    g_signal_handlers_block_by_func(d->textview[i], _lost_focus, self);
     g_free(d->setting_name[i]);
   }
   free(self->data);
