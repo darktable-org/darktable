@@ -173,6 +173,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *collapsible_spot, *hue_spot, *chroma_spot, *lightness_spot;
   GtkWidget *origin_spot, *target_spot;
   GtkWidget *Lch_origin, *Lch_target;
+  GtkWidget *use_mixing;
   dt_aligned_pixel_t spot_RGB;
 } dt_iop_channelmixer_rgb_gui_data_t;
 
@@ -3619,6 +3620,11 @@ void gui_update(struct dt_iop_module_t *self)
   // get the saved params
   dt_iop_gui_enter_critical_section(self);
 
+  gboolean use_mixing = TRUE;
+  if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/use_mixing"))
+    use_mixing = dt_conf_get_bool("darkroom/modules/channelmixerrgb/use_mixing");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->use_mixing), use_mixing);
+
   float lightness = 50.f;
   if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/lightness"))
     lightness = dt_conf_get_float("darkroom/modules/channelmixerrgb/lightness");
@@ -3977,6 +3983,26 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   --darktable.gui->reset;
 
   const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
+  const gboolean use_mixing = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->use_mixing));
+
+  // build the channel mixing matrix - keep in synch with commit_params()
+  dt_colormatrix_t MIX = { { 0.f } };
+
+  float norm_R = 1.0f;
+  if(p->normalize_R) norm_R = p->red[0] + p->red[1] + p->red[2];
+
+  float norm_G = 1.0f;
+  if(p->normalize_G) norm_G = p->green[0] + p->green[1] + p->green[2];
+
+  float norm_B = 1.0f;
+  if(p->normalize_B) norm_B = p->blue[0] + p->blue[1] + p->blue[2];
+
+  for(int i = 0; i < 3; i++)
+  {
+    MIX[0][i] = p->red[i] / norm_R;
+    MIX[1][i] = p->green[i] / norm_G;
+    MIX[2][i] = p->blue[i] / norm_B;
+  }
 
   if(mode == DT_SPOT_MODE_MEASURE)
   {
@@ -4013,6 +4039,16 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     dt_aligned_pixel_t XYZ_output = { 0.f };
     chroma_adapt_pixel(XYZ, XYZ_output, LMS_illuminant, adaptation, pp);
 
+    // Optionaly, apply the channel mixing
+    if(use_mixing)
+    {
+      dt_aligned_pixel_t LMS_output = { 0.f };
+      convert_any_XYZ_to_LMS(XYZ_output, LMS_output, adaptation);
+      dt_aligned_pixel_t temp = { 0.f };
+      dot_product(LMS_output, MIX, temp);
+      convert_any_LMS_to_XYZ(temp, XYZ_output, adaptation);
+    }
+
     // Convert to Lab and Lch for GUI feedback
     dt_aligned_pixel_t Lab_output = { 0.f };
     dt_aligned_pixel_t Lch_output = { 0.f };
@@ -4030,6 +4066,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     dt_conf_set_float("darkroom/modules/channelmixerrgb/lightness", Lch_output[0]);
     dt_conf_set_float("darkroom/modules/channelmixerrgb/chroma", Lch_output[1]);
     dt_conf_set_float("darkroom/modules/channelmixerrgb/hue", Lch_output[2] * 360.f);
+    dt_conf_set_bool("darkroom/modules/channelmixerrgb/use_mixing", use_mixing);
   }
   else if(mode == DT_SPOT_MODE_CORRECT)
   {
@@ -4050,6 +4087,57 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     const float Y_target = XYZ_target[1];
     for(int c = 0; c < 3; c++) XYZ_target[c] /= Y_target;
     convert_any_XYZ_to_LMS(XYZ_target, LMS_target, p->adaptation);
+
+    // optionaly, apply the inverse mixing on the target
+    if(use_mixing)
+    {
+      // Repack the MIX matrix to 3×3 to support the pseudoinverse function
+      // I'm just too lazy to rewrite the pseudo-inverse for 3×4 padded input
+      float MIX_3x3[3][3];
+      pack_3xSSE_to_3x3(MIX, &MIX_3x3[0][0]);
+
+      /* DEBUG
+      fprintf(stdout, "Repacked channel mixer matrix :\n");
+      fprintf(stdout, "%f \t%f \t%f\n", MIX_3x3[0][0], MIX_3x3[0][1], MIX_3x3[0][2]);
+      fprintf(stdout, "%f \t%f \t%f\n", MIX_3x3[1][0], MIX_3x3[1][1], MIX_3x3[1][2]);
+      fprintf(stdout, "%f \t%f \t%f\n", MIX_3x3[2][0], MIX_3x3[2][1], MIX_3x3[2][2]);
+      */
+
+      // Invert the matrix
+      float MIX_INV_3x3[3][3];
+      matrice_pseudoinverse(MIX_3x3, MIX_INV_3x3, 3);
+
+      // Transpose and repack the inverse to SSE matrix because the inversion transposes too
+      dt_colormatrix_t MIX_INV;
+      transpose_3x3_to_3xSSE(&MIX_INV_3x3[0][0], MIX_INV);
+
+      /* DEBUG
+      fprintf(stdout, "Repacked inverted channel mixer matrix :\n");
+      fprintf(stdout, "%f \t%f \t%f\n", MIX_INV[0][0], MIX_INV[0][1], MIX_INV[0][2]);
+      fprintf(stdout, "%f \t%f \t%f\n", MIX_INV[1][0], MIX_INV[1][1], MIX_INV[1][2]);
+      fprintf(stdout, "%f \t%f \t%f\n", MIX_INV[2][0], MIX_INV[2][1], MIX_INV[2][2]);
+      */
+
+      // Undo the channel mixing on the reference color
+      // So we get the expected target color after the CAT
+      dt_aligned_pixel_t temp;
+      dot_product(LMS_target, MIX_INV, temp);
+
+      //fprintf(stdout, "LMS before channel mixer inversion : \t%f \t%f \t%f\n", LMS_target[0], LMS_target[1], LMS_target[2]);
+      //fprintf(stdout, "LMS after channel mixer inversion : \t%f \t%f \t%f\n", temp[0], temp[1], temp[2]);
+
+      // convert back to XYZ to normalize luminance again
+      // in case the matrix is not normalized
+      convert_any_LMS_to_XYZ(temp, XYZ_target, p->adaptation);
+      const float Y_mix = XYZ_target[1];
+      for(int c = 0; c < 3; c++) XYZ_target[c] /= Y_mix;
+      convert_any_XYZ_to_LMS(XYZ_target, LMS_target, p->adaptation);
+
+      //fprintf(stdout, "LMS target after everything : %f \t%f \t%f\n", LMS_target[0], LMS_target[1], LMS_target[2]);
+
+      // So now we got the target color after CAT and before mixing
+      // in LMS space
+    }
 
     // Get the input color in LMS space
     dt_aligned_pixel_t LMS = { 0.f };
@@ -4194,6 +4282,13 @@ void gui_init(struct dt_iop_module_t *self)
                                 N_("correction"),
                                 N_("measure"));
   gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
+
+  g->use_mixing = gtk_check_button_new_with_label(_("take channel mixing into account"));
+  gtk_widget_set_tooltip_text(g->use_mixing,
+                              _("compute the target by taking the channel mixing into account.\n"
+                                "if disabled, only the CAT is considered."));
+  gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(g->use_mixing), TRUE, TRUE, 0);
+
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
