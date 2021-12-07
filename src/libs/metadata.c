@@ -759,10 +759,6 @@ void gui_init(dt_lib_module_t *self)
     d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
-
-    // doesn't work. Workaround => gui_post_expose
-    // gtk_widget_set_no_show_all(GTK_WIDGET(label), TRUE);
-    // gtk_widget_set_no_show_all(GTK_WIDGET(textview), TRUE);
   }
 
   d->init_layout = FALSE;
