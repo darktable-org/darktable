@@ -3390,11 +3390,6 @@ void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
       }
     }
   }
-  else
-  {
-    if(key != GDK_KEY_Left && key != GDK_KEY_Right && key != GDK_KEY_Up && key != GDK_KEY_Down)
-      fprintf(stderr, "[dt_shortcut_key_release] released key wasn't stored\n");
-  }
 }
 
 gboolean dt_shortcut_key_active(dt_input_device_t id, guint key)
