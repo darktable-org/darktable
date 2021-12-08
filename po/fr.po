@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-07 08:52-0300\n"
+"PO-Revision-Date: 2021-12-08 19:33-0300\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3137,7 +3137,7 @@ msgstr "étendue spatiale"
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:68
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:131
 msgid "range extent"
-msgstr "étendue de clarté"
+msgstr "étendue de luminance"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
 #: ../src/iop/channelmixerrgb.c:3879
