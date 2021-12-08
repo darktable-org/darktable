@@ -153,7 +153,7 @@ static void _update(dt_lib_module_t *self)
 
   GList *metadata[DT_METADATA_NUMBER];
   uint32_t metadata_count[DT_METADATA_NUMBER];
-  uint32_t imgs_count = 0;
+
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     metadata[i] = NULL;
@@ -163,7 +163,7 @@ static void _update(dt_lib_module_t *self)
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
   gchar *images = dt_view_get_images_to_act_on_query(FALSE);
-  imgs_count = g_list_length((GList *)imgs);
+  const uint32_t imgs_count = g_list_length((GList *)imgs);
 
   if(images)
   {
@@ -330,6 +330,7 @@ int position()
 static void _update_layout(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const gchar *name = dt_metadata_get_name_by_display_order(i);
@@ -834,7 +835,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 {
   if(old_version == 1)
   {
-    size_t new_params_size = old_params_size + 1;
+    const size_t new_params_size = old_params_size + 1;
     char *new_params = calloc(sizeof(char), new_params_size);
 
     const char *buf = (const char *)old_params;
@@ -872,7 +873,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   }
   else if(old_version == 2)
   {
-    size_t new_params_size = old_params_size + 1;
+    const size_t new_params_size = old_params_size + 1;
     char *new_params = calloc(sizeof(char), new_params_size);
 
     memcpy(new_params, old_params, old_params_size);
