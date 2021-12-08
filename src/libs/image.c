@@ -291,7 +291,7 @@ static void _image_preference_changed(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t*)user_data;
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  gtk_button_set_label(GTK_BUTTON(d->delete_button), _image_get_delete_button_label());
+  gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->delete_button))), _image_get_delete_button_label());
   gtk_widget_set_tooltip_text(d->delete_button, _image_get_delete_button_tooltip());
 }
 

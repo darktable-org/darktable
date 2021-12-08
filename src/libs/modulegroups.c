@@ -3908,9 +3908,8 @@ static void _manage_show_window(dt_lib_module_t *self)
 
   // reset button
   hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  d->preset_reset_btn = gtk_button_new();
+  d->preset_reset_btn = gtk_button_new_with_label(_("reset"));
   gtk_widget_set_name(d->preset_reset_btn, "modulegroups-reset");
-  gtk_button_set_label(GTK_BUTTON(d->preset_reset_btn), _("reset"));
   g_signal_connect(G_OBJECT(d->preset_reset_btn), "button-press-event", G_CALLBACK(_manage_editor_reset), self);
   gtk_box_pack_end(GTK_BOX(hb2), d->preset_reset_btn, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vb_main), hb2, FALSE, TRUE, 0);
