@@ -312,6 +312,8 @@ static gboolean _got_focus(GtkWidget *textview, dt_lib_module_t *self)
     }
     g_free(text);
   }
+  // Workaround for Gtk bug #4042
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(gtk_widget_get_parent(textview)), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   return FALSE;
 }
 
@@ -319,6 +321,8 @@ static gboolean _lost_focus(GtkWidget *textview, GdkEventFocus *event, dt_lib_mo
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   d->editing = FALSE;
+  // Workaround for Gtk bug #4042
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(gtk_widget_get_parent(textview)), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   return FALSE;
 }
 
@@ -747,7 +751,7 @@ void gui_init(dt_lib_module_t *self)
     d->swindow[i] = swindow;
     gtk_widget_set_size_request(d->swindow[i], -1, DT_PIXEL_APPLY_DPI(30));
 
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
     gtk_widget_add_events(textview, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(textview, "key-press-event", G_CALLBACK(_key_pressed), self);
