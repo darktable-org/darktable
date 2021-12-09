@@ -203,6 +203,9 @@ typedef struct dt_iop_channelmixer_rgb_global_data_t
 } dt_iop_channelmixer_rgb_global_data_t;
 
 
+void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe);
+
+
 const char *
 name()
 {
@@ -3834,6 +3837,9 @@ static void spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *s
   ++darktable.gui->reset;
   paint_hue(self);
   --darktable.gui->reset;
+
+  // Re-run auto illuminant if color picker is active
+  _auto_set_illuminant(self, darktable.develop->pipe);
 }
 
 
@@ -3965,11 +3971,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   gui_changed(self, NULL, NULL);
 }
 
-
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 {
-  if(darktable.gui->reset) return;
-
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
 
@@ -3978,7 +3981,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   const float *RGB = self->picked_color;
 
   // Get work profile
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
   if(work_profile == NULL) return;
 
   // Convert to XYZ
@@ -4211,6 +4214,13 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
+}
+
+
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+{
+  if(darktable.gui->reset) return;
+  _auto_set_illuminant(self, piece->pipe);
 }
 
 
