@@ -4111,8 +4111,8 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     {
       // Repack the MIX matrix to 3×3 to support the pseudoinverse function
       // I'm just too lazy to rewrite the pseudo-inverse for 3×4 padded input
-      float MIX_3x3[3][3];
-      pack_3xSSE_to_3x3(MIX, &MIX_3x3[0][0]);
+      float MIX_3x3[9];
+      pack_3xSSE_to_3x3(MIX, MIX_3x3);
 
       /* DEBUG
       fprintf(stdout, "Repacked channel mixer matrix :\n");
@@ -4122,12 +4122,12 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
       */
 
       // Invert the matrix
-      float MIX_INV_3x3[3][3];
-      matrice_pseudoinverse(MIX_3x3, MIX_INV_3x3, 3);
+      float MIX_INV_3x3[9];
+      matrice_pseudoinverse((float (*)[3])MIX_3x3, (float (*)[3])MIX_INV_3x3, 3);
 
       // Transpose and repack the inverse to SSE matrix because the inversion transposes too
       dt_colormatrix_t MIX_INV;
-      transpose_3x3_to_3xSSE(&MIX_INV_3x3[0][0], MIX_INV);
+      transpose_3x3_to_3xSSE(MIX_INV_3x3, MIX_INV);
 
       /* DEBUG
       fprintf(stdout, "Repacked inverted channel mixer matrix :\n");
