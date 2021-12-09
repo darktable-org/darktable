@@ -723,10 +723,8 @@ static float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
   return p->black;
 }
 
-void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 {
-  if(darktable.gui->reset) return;
-
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
@@ -735,7 +733,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   const float *RGB = self->picked_color;
 
   // Get input profile, assuming we are before colorin
-  const dt_iop_order_iccprofile_info_t *const input_profile = dt_ioppr_get_pipe_input_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const input_profile = dt_ioppr_get_pipe_input_profile_info(pipe);
   if(input_profile == NULL) return;
 
   // Convert to XYZ
@@ -811,6 +809,14 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     exposure_set_white(self, white);
   }
 }
+
+
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
+{
+  if(darktable.gui->reset) return;
+  _auto_set_exposure(self, piece->pipe);
+}
+
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
@@ -1028,6 +1034,9 @@ static void spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *s
   ++darktable.gui->reset;
   paint_hue(self);
   --darktable.gui->reset;
+
+  // Re-run auto compute if color picker active
+  _auto_set_exposure(self, darktable.develop->pipe);
 }
 
 
