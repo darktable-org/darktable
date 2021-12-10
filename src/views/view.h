@@ -109,7 +109,7 @@ typedef enum dt_view_surface_value_t
 
 typedef struct dt_mouse_action_t
 {
-  GtkAccelKey key;
+  GdkModifierType mods;
   dt_mouse_action_type_t action;
   gchar name[256];
 } dt_mouse_action_t;

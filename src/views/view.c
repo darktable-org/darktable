@@ -1493,7 +1493,7 @@ GSList *dt_mouse_action_create_simple(GSList *actions, dt_mouse_action_type_t ty
 {
   dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = type;
-  a->key.accel_mods = accel;
+  a->mods = accel;
   g_strlcpy(a->name, description, sizeof(a->name));
   return g_slist_append(actions, a);
 }
@@ -1503,16 +1503,17 @@ GSList *dt_mouse_action_create_format(GSList *actions, dt_mouse_action_type_t ty
 {
   dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = type;
-  a->key.accel_mods = accel;
+  a->mods = accel;
   g_snprintf(a->name, sizeof(a->name), format_string, replacement);
   return g_slist_append(actions, a);
 }
 
 static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
 {
-  gchar *atxt = gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods);
-  if(strcmp(atxt, ""))
-    atxt = dt_util_dstrcat(atxt, "+");
+  gchar *atxt = NULL;
+  if(ma->mods & GDK_SHIFT_MASK  ) atxt = dt_util_dstrcat(atxt, "%s+", _("shift"));
+  if(ma->mods & GDK_CONTROL_MASK) atxt = dt_util_dstrcat(atxt, "%s+", _("ctrl"));
+  if(ma->mods & GDK_MOD1_MASK   ) atxt = dt_util_dstrcat(atxt, "%s+", _("alt"));
 
   switch(ma->action)
   {
