@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-01 15:21-0600\n"
-"PO-Revision-Date: 2021-12-01 23:12-0600\n"
+"POT-Creation-Date: 2021-12-02 13:50-0600\n"
+"PO-Revision-Date: 2021-12-10 21:55-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -376,7 +376,7 @@ msgstr "Apagado"
 #: ../build/bin/preferences_gen.h:4334 ../build/bin/conf_gen.h:1130
 msgctxt "preferences"
 msgid "hardness (relative)"
-msgstr "Dureza (relativo)"
+msgstr "Dureza (relativa)"
 
 #: ../build/bin/preferences_gen.h:4339 ../build/bin/conf_gen.h:1131
 msgctxt "preferences"
@@ -2449,7 +2449,7 @@ msgstr "linealidad"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:5667
+#: ../src/iop/ashift.c:5711
 msgid "rotation"
 msgstr "rotación"
 
@@ -7994,7 +7994,7 @@ msgid "grouped images"
 msgstr "Imágenes agrupadas"
 
 #: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1414
-#: ../src/iop/ashift.c:5760
+#: ../src/iop/ashift.c:5804
 msgid "fit"
 msgstr "normal"
 
@@ -8331,16 +8331,16 @@ msgstr "Desplazamiento"
 msgid "pan"
 msgstr "PNG"
 
-#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5375
-#: ../src/iop/ashift.c:5376 ../src/iop/ashift.c:5478 ../src/iop/ashift.c:5479
+#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5419
+#: ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522 ../src/iop/ashift.c:5523
 #: ../src/iop/clipping.c:1920 ../src/iop/clipping.c:2130
 #: ../src/iop/clipping.c:2147 ../src/views/darkroom.c:2618
 #: ../src/views/lighttable.c:1399
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5375
-#: ../src/iop/ashift.c:5376 ../src/iop/ashift.c:5478 ../src/iop/ashift.c:5479
+#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5419
+#: ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522 ../src/iop/ashift.c:5523
 #: ../src/iop/clipping.c:1919 ../src/iop/clipping.c:2131
 #: ../src/iop/clipping.c:2146 ../src/views/darkroom.c:2621
 #: ../src/views/lighttable.c:1403
@@ -8643,11 +8643,11 @@ msgstr "¿Confirma la eliminación del preajuste?"
 
 #: ../src/gui/accelerators.c:1027
 msgid "remove these existing shortcuts?"
-msgstr "¿Eliminar estos los atajos de teclado existentes?"
+msgstr "¿Desea eliminar estos atajos de teclado existentes?"
 
 #: ../src/gui/accelerators.c:1029
 msgid "clashing shortcuts exist"
-msgstr ""
+msgstr "Se han encontrado conflictos en los atajos de teclado"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
@@ -8719,6 +8719,8 @@ msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
 msgstr ""
+"Borrar todos los atajos nuevos\n"
+"(en lugar de sólo restaurar los modificados)"
 
 #: ../src/gui/accelerators.c:1802 ../src/gui/preferences.c:894
 #: ../src/libs/tools/global_toolbox.c:842
@@ -8854,7 +8856,7 @@ msgstr "Restaurar"
 
 #: ../src/gui/accelerators.c:2179
 msgid "restore default shortcuts or previous state"
-msgstr ""
+msgstr "Restaura los atajos predefinidos o a un estado anterior"
 
 #: ../src/gui/accelerators.c:2183
 msgid "import..."
@@ -8863,6 +8865,7 @@ msgstr "Importar"
 #: ../src/gui/accelerators.c:2184
 msgid "fully or partially import shortcuts from file"
 msgstr ""
+"Importa de manera completa o parcial los atajos de teclado desde un archivo"
 
 #. export button
 #: ../src/gui/accelerators.c:2188 ../src/libs/styles.c:880
@@ -8872,6 +8875,7 @@ msgstr "Exportar"
 #: ../src/gui/accelerators.c:2189
 msgid "fully or partially export shortcuts to file"
 msgstr ""
+"Exporta de manera completa o parcial los atajos de teclado desde un archivo"
 
 #: ../src/gui/accelerators.c:2597
 msgid "input devices reinitialised"
@@ -9313,7 +9317,7 @@ msgstr "regla de los tercios"
 msgid "metering"
 msgstr "medida"
 
-#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5679
+#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5723
 msgid "perspective"
 msgstr "perspectiva"
 
@@ -10634,9 +10638,8 @@ msgid "rotate and perspective"
 msgstr "rotación y perspectiva"
 
 #: ../src/iop/ashift.c:125
-#, fuzzy
 msgid "rotation|keystone|distortion|crop|reframe"
-msgstr "trapezoidal|distorsión"
+msgstr "rotación|perspectiva|distorsión|recorte|reencuadre"
 
 #: ../src/iop/ashift.c:130
 msgid "rotate or distort perspective"
@@ -10702,46 +10705,46 @@ msgstr "La corrección automática falló. Deberá corregir manualmente."
 
 #. if count > MAX_SAVED_LINES we alert that the next lines won't be saved in params
 #. but they still may be used for the current section (that's why we still allow them)
-#: ../src/iop/ashift.c:4654
+#: ../src/iop/ashift.c:4698
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr ""
 
-#: ../src/iop/ashift.c:5375 ../src/iop/ashift.c:5376 ../src/iop/ashift.c:5478
-#: ../src/iop/ashift.c:5479
+#: ../src/iop/ashift.c:5419 ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522
+#: ../src/iop/ashift.c:5523
 #, c-format
 msgid "lens shift (%s)"
 msgstr "desplazamiento %s"
 
-#: ../src/iop/ashift.c:5739
+#: ../src/iop/ashift.c:5783
 #, fuzzy
 msgid "perspective helpers"
 msgstr "perspectiva"
 
-#: ../src/iop/ashift.c:5746
+#: ../src/iop/ashift.c:5790
 msgid "structure"
 msgstr "estructura"
 
-#: ../src/iop/ashift.c:5779
+#: ../src/iop/ashift.c:5823
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
 "the image"
 msgstr ""
 
-#: ../src/iop/ashift.c:5780 ../src/iop/ashift.c:5781
+#: ../src/iop/ashift.c:5824 ../src/iop/ashift.c:5825
 msgid "apply lens shift correction in one direction"
 msgstr "Efectúa la corrección del desplazamiento de lente en una dirección"
 
-#: ../src/iop/ashift.c:5782
+#: ../src/iop/ashift.c:5826
 msgid "shear the image along one diagonal"
 msgstr "Corta la imagen de acuerdo a la diagonal"
 
-#: ../src/iop/ashift.c:5783 ../src/iop/clipping.c:2154
+#: ../src/iop/ashift.c:5827 ../src/iop/clipping.c:2154
 msgid "automatically crop to avoid black edges"
 msgstr "Cortar automáticamente para evitar bordes negros"
 
-#: ../src/iop/ashift.c:5784
+#: ../src/iop/ashift.c:5828
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -10749,13 +10752,13 @@ msgstr ""
 "Modelo del lente de la corrección de perspectiva: genérico o en función de "
 "la distancia focal"
 
-#: ../src/iop/ashift.c:5786
+#: ../src/iop/ashift.c:5830
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "Distancia focal del lente. Se fija el valor por defecto desde los datos Exif "
 "si están disponibles."
 
-#: ../src/iop/ashift.c:5788
+#: ../src/iop/ashift.c:5832
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -10764,7 +10767,7 @@ msgstr ""
 "desde los datos Exif si están disponibles. Normalmente los ajustes manuales "
 "son requeridos."
 
-#: ../src/iop/ashift.c:5791
+#: ../src/iop/ashift.c:5835
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -10772,13 +10775,13 @@ msgstr ""
 "Nivel de corrección en función de la lente. Se fija el valor máximo como "
 "corrrespondencia total de la lente. Se fija en cero para los genéricos."
 
-#: ../src/iop/ashift.c:5793
+#: ../src/iop/ashift.c:5837
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "Ajusta la relación de aspecto de la imagen mediante cambiar la escala "
 "horizontal y vertical"
 
-#: ../src/iop/ashift.c:5794
+#: ../src/iop/ashift.c:5838
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10788,7 +10791,7 @@ msgstr ""
 "Ctrl+Clic para corregir solo la rotación\n"
 "Mayús+Clic para corregir el desplazamiento del lente"
 
-#: ../src/iop/ashift.c:5797
+#: ../src/iop/ashift.c:5841
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10798,7 +10801,7 @@ msgstr ""
 "Ctrl+Clic para solo corregir la rotación\n"
 "Mayús+Clic para solo corregir el desplazamiento del lente"
 
-#: ../src/iop/ashift.c:5800
+#: ../src/iop/ashift.c:5844
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -10812,7 +10815,7 @@ msgstr ""
 "Mayús+Clic para solo corregir el desplazamiento del lente\n"
 "Ctrl+Mayús+Clic para ajustar la rotación y el desplazamiento del lente"
 
-#: ../src/iop/ashift.c:5806
+#: ../src/iop/ashift.c:5850
 #, fuzzy
 msgid ""
 "automatically analyse line structure in image\n"
@@ -10825,36 +10828,36 @@ msgstr ""
 "Mayús+Clic para mejoras adicionales en el detalle\n"
 "Ctrl+Mayús+Clic para una combinación de ambos métodos"
 
-#: ../src/iop/ashift.c:5810
+#: ../src/iop/ashift.c:5854
 msgid "manually define perspective rectangle"
-msgstr ""
+msgstr "Se modifica manualmente el cuadro de perspectiva"
 
-#: ../src/iop/ashift.c:5811
+#: ../src/iop/ashift.c:5855
 #, fuzzy
 msgid "manually draw structure lines"
 msgstr "Cambiar la visibilidad de las líneas de la estructura"
 
-#: ../src/iop/ashift.c:5848 ../src/iop/clipping.c:3387
+#: ../src/iop/ashift.c:5892 ../src/iop/clipping.c:3387
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] definir o rotar horizonte"
 
-#: ../src/iop/ashift.c:5849
+#: ../src/iop/ashift.c:5893
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s en el segmento] seleccionar segmento"
 
-#: ../src/iop/ashift.c:5851
+#: ../src/iop/ashift.c:5895
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s en el segmento] anular selección de segmento"
 
-#: ../src/iop/ashift.c:5853
+#: ../src/iop/ashift.c:5897
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] seleccionar todos los segmentos de la zona"
 
-#: ../src/iop/ashift.c:5855
+#: ../src/iop/ashift.c:5899
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] anular la selección de todos los segmentos de la zona"
@@ -11468,6 +11471,7 @@ msgstr "desenfoque|lente|movimiento"
 #: ../src/iop/blurs.c:92
 msgid "simulate physically-accurate lens and motion blurs"
 msgstr ""
+"Emula el desenfoque de movimiento y ciertas propiedades físicas del diafragma"
 
 #: ../src/iop/borders.c:181
 msgid "framing"
@@ -13285,6 +13289,9 @@ msgid ""
 "adjust target color Lab 'L' channel\n"
 "lower values darken target color while higher brighten it"
 msgstr ""
+"Ajusta el color de destino en el canal \"L\" de Lab.\n"
+"Con valores bajos, el color objetivo se oscurece mientras que con los más "
+"altos se aclara."
 
 #: ../src/iop/colorchecker.c:1361
 msgid ""
@@ -13292,9 +13299,11 @@ msgid ""
 "lower values shift target color towards greens while higher shift towards "
 "magentas"
 msgstr ""
+"Ajusta el color de destino en el canal \"a\" de Lab.\n"
+"Con valores bajos, el color objetivo se desplaza hacia los verdes, mientras "
+"que con los más altos se desplaza hacia los magentas."
 
 #: ../src/iop/colorchecker.c:1362
-#, fuzzy
 msgid "green-magenta offset"
 msgstr "contraste verde/magenta"
 
@@ -13304,9 +13313,11 @@ msgid ""
 "lower values shift target color towards blues while higher shift towards "
 "yellows"
 msgstr ""
+"Ajusta el color de destino en el canal \"b\" de Lab.\n"
+"Con valores bajos, el color objetivo se desplaza hacia los azules, mientras "
+"que con los más altos se desplaza hacia los amarillos."
 
 #: ../src/iop/colorchecker.c:1369
-#, fuzzy
 msgid "blue-yellow offset"
 msgstr "contraste amarillo/azul"
 
@@ -13317,6 +13328,11 @@ msgid ""
 "lower values scale towards lower saturation while higher scale towards "
 "higher saturation"
 msgstr ""
+"Ajusta la saturación del color objetivo.\n"
+"De manera simultánea, ajusta los canales \"a\" y \"b\" del color objetivo en "
+"el espacio Lab.\n"
+"Con valores más bajos, se lleva hacia una menor saturación, mientras que con "
+"los más altos se lleva hacia una mayor saturación."
 
 #: ../src/iop/colorchecker.c:1380
 msgid "target color"
@@ -13508,7 +13524,7 @@ msgstr "agrupaciones fuente:"
 
 #: ../src/iop/colormapping.c:1057
 msgid "target clusters:"
-msgstr "agrupaciones objetivo:"
+msgstr "agrupaciones destino:"
 
 #: ../src/iop/colormapping.c:1066
 msgid "acquire as source"
@@ -14259,11 +14275,11 @@ msgid ""
 "inpaint damaged parts of the image,\n"
 "or to remove blur with blind deconvolution."
 msgstr ""
-"Puede imitar la dispersión direccional de la luz basándose en un modelo de "
-"transferencia de calor\n"
-"para generar un desenfoque iterativo a lo largo de los bordes,\n"
-"puede reconstruir las zonas dañadas de una imagen o\n"
-" logra reducir el desenfoque por el método de deconvolución ciega."
+"Imita la dispersión direccional de la luz basándose\n"
+"en un modelo de transferencia de calor para generar\n"
+"un desenfoque iterativo a lo largo de los bordes,\n"
+"reconstruye zonas dañadas de la imagen y\n"
+"logra reducir el desenfoque por el método de deconvolución ciega"
 
 #: ../src/iop/diffuse.c:229
 msgid "lens deblur: soft"
@@ -17218,8 +17234,7 @@ msgstr "enfoque"
 #: ../src/iop/sharpen.c:93
 msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
 msgstr ""
-"Aumenta la nitidez en los detalles utilizando una máscara de desenfoque "
-"(UnSharp Mask [USM])"
+"Aumenta la nitidez en los detalles utilizando una máscara de desenfoque"
 
 #: ../src/iop/sharpen.c:95
 msgid "linear or non-linear, Lab, display or scene-referred"
@@ -21315,9 +21330,8 @@ msgid " but not "
 msgstr " pero no "
 
 #: ../src/libs/recentcollect.c:317
-#, fuzzy
 msgid "recent collections settings"
-msgstr "Parámetros de las colecciones"
+msgstr "Preferencias de colecciones recientes"
 
 #: ../src/libs/select.c:134
 msgid "select all images in current collection"
@@ -21514,7 +21528,7 @@ msgstr "Elimina los estilos seleccionados de la lista anterior"
 #: ../src/libs/styles.c:875 ../src/libs/tagging.c:3080
 msgctxt "verb"
 msgid "import..."
-msgstr "importar..."
+msgstr "importar"
 
 #: ../src/libs/styles.c:875
 msgid "import styles from a style files"
@@ -21552,12 +21566,12 @@ msgstr "nueva"
 #: ../src/libs/tagging.c:131
 msgctxt "accel"
 msgid "import..."
-msgstr "importar..."
+msgstr "importar"
 
 #: ../src/libs/tagging.c:132
 msgctxt "accel"
 msgid "export..."
-msgstr "exportar..."
+msgstr "exportar"
 
 #: ../src/libs/tagging.c:133
 msgctxt "accel"
@@ -21851,7 +21865,7 @@ msgstr "Importar etiquetas desde el archivo Lightroom"
 #: ../src/libs/tagging.c:3084
 msgctxt "verb"
 msgid "export..."
-msgstr "exportar..."
+msgstr "exportar"
 
 #: ../src/libs/tagging.c:3084
 msgid "export all tags to a Lightroom keyword file"
@@ -21921,29 +21935,24 @@ msgid "filmstrip"
 msgstr "tira de imágenes"
 
 #: ../src/libs/tools/filter.c:90
-#, fuzzy
 msgid "capture time"
-msgstr "Capturar imágenes"
+msgstr "fecha de captura"
 
 #: ../src/libs/tools/filter.c:91
-#, fuzzy
 msgid "import time"
-msgstr "importar imagen"
+msgstr "fecha de importación"
 
 #: ../src/libs/tools/filter.c:92
-#, fuzzy
 msgid "last modification time"
 msgstr "última modificación"
 
 #: ../src/libs/tools/filter.c:93
-#, fuzzy
 msgid "last export time"
-msgstr "hora inicial"
+msgstr "última exportación"
 
 #: ../src/libs/tools/filter.c:94
-#, fuzzy
 msgid "last print time"
-msgstr "hora inicial"
+msgstr "última impresión"
 
 #: ../src/libs/tools/filter.c:100
 msgid "custom sort"
@@ -22921,7 +22930,7 @@ msgstr "Ajustar perfil de pantalla"
 
 #: ../src/views/lighttable.c:1395
 msgid "whole"
-msgstr ""
+msgstr "todo"
 
 #. Preview key
 #: ../src/views/lighttable.c:1412 ../src/views/lighttable.c:1413
