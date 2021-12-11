@@ -513,9 +513,9 @@ static gchar *_shortcut_description(dt_shortcut_t *s)
 
   add_hint("%s%s", key_name, s->key_device || s->key ? "" : move_name);
 
-  if(s->press & DT_SHORTCUT_DOUBLE) add_hint(" %s", _("double"));
-  if(s->press & DT_SHORTCUT_TRIPLE) add_hint(" %s", _("triple"));
   if(s->press & DT_SHORTCUT_LONG  ) add_hint(" %s", _("long"));
+  if(s->press & DT_SHORTCUT_DOUBLE) add_hint(" %s", _("double-press")); else
+  if(s->press & DT_SHORTCUT_TRIPLE) add_hint(" %s", _("triple-press")); else
   if(s->press) add_hint(" %s", _("press"));
   if(s->button)
   {
@@ -523,10 +523,10 @@ static gchar *_shortcut_description(dt_shortcut_t *s)
     if(s->button & DT_SHORTCUT_LEFT  ) add_hint(" %s", C_("accel", "left"));
     if(s->button & DT_SHORTCUT_RIGHT ) add_hint(" %s", C_("accel", "right"));
     if(s->button & DT_SHORTCUT_MIDDLE) add_hint(" %s", C_("accel", "middle"));
-    if(s->click  & DT_SHORTCUT_DOUBLE) add_hint(" %s", C_("accel", "double"));
-    if(s->click  & DT_SHORTCUT_TRIPLE) add_hint(" %s", C_("accel", "triple"));
     if(s->click  & DT_SHORTCUT_LONG  ) add_hint(" %s", C_("accel", "long"));
-    add_hint(" %s", _("click"));
+    if(s->click  & DT_SHORTCUT_DOUBLE) add_hint(" %s", C_("accel", "double-click")); else
+    if(s->click  & DT_SHORTCUT_TRIPLE) add_hint(" %s", C_("accel", "triple-click")); else
+      add_hint(" %s", _("click"));
   }
 
   if(*move_name && (s->key_device || s->key))
