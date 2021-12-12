@@ -2454,7 +2454,7 @@ msgstr "Art der Unschärfe"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:255
 #: ../build/lib/darktable/plugins/introspection_retouch.c:398
 msgid "blur radius"
-msgstr "Unschärferadius"
+msgstr "Radius"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:95
 #: ../build/lib/darktable/plugins/introspection_blurs.c:182
