@@ -213,6 +213,7 @@ typedef struct dt_view_manager_t
     GSList *active_imgs;
     gboolean image_over_inside_sel;
     gboolean ordered;
+    gboolean only_visible;
   } act_on;
 
   /* reusable db statements
