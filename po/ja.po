@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-09 13:24+0900\n"
+"PO-Revision-Date: 2021-12-13 00:23+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -2448,7 +2448,7 @@ msgstr "レンズ"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:221
 msgid "motion"
-msgstr "被写体ブレ"
+msgstr "被写体ぶれ"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:222
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:548
@@ -3304,11 +3304,11 @@ msgstr "LMMSE"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:218
 msgid "RCD + VNG4"
-msgstr "RCD+VNG4"
+msgstr "RCD + VNG4"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:219
 msgid "AMaZE + VNG4"
-msgstr "AMaZE+VNG4"
+msgstr "AMaZE + VNG4"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:220
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:227
@@ -3338,7 +3338,7 @@ msgstr "周波数領域の彩度（クロマ）"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:226
 msgid "Markesteijn 3-pass + VNG"
-msgstr "Markesteijn 3-pass+VNG"
+msgstr "Markesteijn 3-pass + VNG"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
 #: ../src/common/collection.c:1523 ../src/common/collection.c:1531
@@ -3569,13 +3569,13 @@ msgstr "ミドルグレーの輝度"
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:166
 #: ../src/iop/filmic.c:1617
 msgid "black relative exposure"
-msgstr "対黒露出量"
+msgstr "黒の相対露出値"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:217
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:418
 #: ../src/iop/filmic.c:1605
 msgid "white relative exposure"
-msgstr "対白露出量"
+msgstr "白の相対露出値"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:229
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:426
@@ -3666,7 +3666,7 @@ msgstr "カスタム設定のミドルグレー値を使用"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:337
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:498
 msgid "iterations of high-quality reconstruction"
-msgstr "高品質な再構成を反復する"
+msgstr "高クオリティな再構成を反復する"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:343
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:502
@@ -4299,7 +4299,7 @@ msgstr "HSV 明度"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
-msgstr "HSV 値 / RGB 最大"
+msgstr "HSV 値／RGB 最大"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:382
 msgid "RGB sum"
@@ -4530,8 +4530,8 @@ msgid ""
 "average dE: %.02f\n"
 "max dE: %.02f"
 msgstr ""
-"平均 dE: %.02f\n"
-"最大 dE: %.02f"
+"平均dE：%.02f\n"
+"最大dE：%.02f"
 
 #: ../src/cli/main.c:247
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
@@ -4572,7 +4572,7 @@ msgstr "--icc-type: '%s'に不適切なICC 形式です \n"
 #: ../src/cli/main.c:369
 #, c-format
 msgid "notice: ICC file '%s' doesn't exist, skipping\n"
-msgstr "ICC ファイル '%s' は存在しません. スキップします\n"
+msgstr "ICC ファイル'%s'は存在しません. スキップします\n"
 
 #: ../src/cli/main.c:378
 #, c-format
@@ -4582,12 +4582,12 @@ msgstr "- --icc-intent: '%s'に不適切なICC インテントです \n"
 #: ../src/cli/main.c:396
 #, c-format
 msgid "warning: unknown option '%s'\n"
-msgstr "警告：不明なオプション '%s'\n"
+msgstr "警告：不明なオプション'%s'\n"
 
 #: ../src/cli/main.c:454
 #, c-format
 msgid "error: input file and import opts specified! that's not supported!\n"
-msgstr "エラー：入力ファイルと入力オプションが指定されましたが、無効です!\n"
+msgstr "エラー：入力ファイルと入力オプションが指定されましたが、無効です！\n"
 
 #: ../src/cli/main.c:488
 #, c-format
@@ -4595,7 +4595,7 @@ msgid ""
 "notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output "
 "pattern"
 msgstr ""
-"出力場所はディレクトリーです. 出力ひな型 '%s/$(FILE_NAME).%s'が必要です"
+"出力場所はディレクトリーです。出力ひな型 '%s/$(FILE_NAME).%s'が必要です"
 
 #. output file exists or there's output ext specified and it's same as file...
 #: ../src/cli/main.c:503
@@ -4606,12 +4606,12 @@ msgstr "出力ファイルは既に存在します。名前が変更されます
 #: ../src/cli/main.c:533
 #, c-format
 msgid "error: can't open folder %s"
-msgstr "エラー：%s フォルダを開くことが出来ません"
+msgstr "エラー：フォルダ%sを開くことが出来ません"
 
 #: ../src/cli/main.c:550
 #, c-format
 msgid "error: can't open file %s"
-msgstr "エラー：%s ファイルを開くことが出来ません"
+msgstr "エラー：ファイル%sを開くことが出来ません"
 
 #: ../src/cli/main.c:567
 #, c-format
@@ -4621,7 +4621,7 @@ msgstr "エクスポートする画像がありません、中止します\n"
 #: ../src/cli/main.c:584
 #, c-format
 msgid "error: can't open xmp file %s"
-msgstr "エラー：%s xmpファイルを開くことが出来ません"
+msgstr "エラー：xmpファイル%sを開くことが出来ません"
 
 #: ../src/cli/main.c:605
 msgid "empty history stack"
@@ -4656,7 +4656,7 @@ msgstr ""
 #: ../src/cli/main.c:690
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr "不明な拡張子 '.%s'"
+msgstr "不明な拡張子'.%s'"
 
 #: ../src/cli/main.c:700
 msgid "failed to get parameters from format module, aborting export ..."
@@ -4950,8 +4950,8 @@ msgstr "BRG （テスト用）"
 msgid ""
 "profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
 msgstr ""
-"プロファイル `%s' は ヒストグラムプロファイルとして利用出来ません。sRGBに置き"
-"換えられています！"
+"プロファイル`%s'はヒストグラムプロファイルとして利用出来ません。sRGBに置き換"
+"えられています！"
 
 #: ../src/common/colorspaces.c:1668
 msgid "embedded ICC profile"
@@ -5000,7 +5000,7 @@ msgstr "HLG P3"
 #: ../src/common/cups_print.c:420
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
-msgstr "ファイル`%s'が見つかりません。画像 %d を `%s'で印刷するのに必要です"
+msgstr "ファイル`%s'が見つかりません。画像%dを`%s'で印刷するのに必要です"
 
 #: ../src/common/cups_print.c:439
 msgid "failed to create temporary file for printing options"
@@ -5014,12 +5014,12 @@ msgstr "`%s' での印刷をキャンセルしました"
 #: ../src/common/cups_print.c:571
 #, c-format
 msgid "error while printing `%s' on `%s'"
-msgstr "`%s' を`%s'で印刷する途中でエラーが発生しました"
+msgstr "`%s'を`%s'で印刷する途中でエラーが発生しました"
 
 #: ../src/common/cups_print.c:573
 #, c-format
 msgid "printing `%s' on `%s'"
-msgstr "`%s' を`%s'で印刷しています"
+msgstr "`%s'を`%s'で印刷しています"
 
 #: ../src/common/darktable.c:239
 #, c-format
@@ -5029,12 +5029,12 @@ msgstr "不明なパス`%s'が見つかりました"
 #: ../src/common/darktable.c:254
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "ディレクトリ `%s'読み込みエラー"
+msgstr "ディレクトリ`%s'読み込みエラー"
 
 #: ../src/common/darktable.c:277
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "ファイル`%s' は不明な形式です！"
+msgstr "ファイル`%s'は不明な形式です！"
 
 #: ../src/common/darktable.c:290 ../src/control/jobs/control_jobs.c:2107
 #: ../src/control/jobs/control_jobs.c:2150
@@ -5146,7 +5146,7 @@ msgstr "データベースロックファイルを削除"
 
 #: ../src/common/database.c:2542
 msgid "are you sure?"
-msgstr "本当に実行しますか?"
+msgstr "本当に実行しますか？"
 
 #: ../src/common/database.c:2543
 msgid ""
@@ -5212,7 +5212,7 @@ msgstr "データベースロックファイルは空のようです"
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
-"%s を読み込むためにデータベースロックファイルを開く際にエラーが発生しました"
+"%sを読み込むためにデータベースロックファイルを開く際にエラーが発生しました"
 
 #. the database has to be upgraded, let's ask user
 #: ../src/common/database.c:2732
@@ -5320,7 +5320,7 @@ msgstr "後でをクリックすると、darktableを閉じる時に確認しま
 
 #: ../src/common/database.c:3587
 msgid "click later to be asked next time when closing darktable"
-msgstr "後でをクリックすると、次回darktableを閉じる時に確認します"
+msgstr "後でをクリックすると、次にdarktableを閉じる時に確認します"
 
 #: ../src/common/database.c:3590
 #, c-format
@@ -5453,17 +5453,17 @@ msgstr "画像%dに日時を再適用しました"
 #: ../src/common/image.c:1942
 #, c-format
 msgid "cannot access local copy `%s'"
-msgstr "ローカルコピー`%s' にアクセス出来ません"
+msgstr "ローカルコピー`%s'にアクセス出来ません"
 
 #: ../src/common/image.c:1949
 #, c-format
 msgid "cannot write local copy `%s'"
-msgstr "ローカルコピー`%s' を書き込めません"
+msgstr "ローカルコピー`%s'を書き込めません"
 
 #: ../src/common/image.c:1956
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
-msgstr "ローカルコピーの移動`%s' -> `%s' にエラーがありました"
+msgstr "ローカルコピーの移動`%s' -> `%s'にエラーがありました"
 
 #: ../src/common/image.c:1972
 #, c-format
@@ -5478,7 +5478,7 @@ msgstr "`%s' -> `%s'の移動中にエラーが発生しました：ファイル
 #: ../src/common/image.c:1986
 #, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr "`%s' -> `%s' の移動中にエラーが発生しました"
+msgstr "`%s' -> `%s'の移動中にエラーが発生しました"
 
 #: ../src/common/image.c:2284
 msgid "cannot create local copy when the original file is not accessible."
@@ -5504,7 +5504,7 @@ msgstr[1] "%d 枚のローカルコピーが同期化されました"
 #: ../src/common/imageio.c:696 ../src/common/mipmap_cache.c:1075
 #, c-format
 msgid "image `%s' is not available!"
-msgstr "画像 `%s' は使用不可能です!"
+msgstr "画像 `%s'は使用出来ません！"
 
 #: ../src/common/imageio.c:714
 #, c-format
@@ -5528,7 +5528,7 @@ msgstr "エクスポート"
 #: ../src/common/imageio.c:727
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr "エクスポート時に適用するスタイル '%s' を見つけることが出来ません"
+msgstr "エクスポート時に適用するスタイル'%s'を見つけることが出来ません"
 
 #: ../src/common/import_session.c:295
 msgid ""
@@ -5603,7 +5603,7 @@ msgstr "汎用ポアソン分布"
 #: ../src/common/noiseprofiles.c:61
 #, c-format
 msgid "noiseprofile file `%s' is not valid"
-msgstr "ノイズプロファイル `%s' は有効ではありません"
+msgstr "ノイズプロファイル`%s'は有効ではありません"
 
 #: ../src/common/opencl.c:815
 msgid ""
@@ -5679,8 +5679,8 @@ msgstr[1] "%d 枚の画像を除外しています"
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
-msgstr[0] "評価 %d を %d 枚の画像に適用しています"
-msgstr[1] "評価 %d を %d 枚の画像に適用しています"
+msgstr[0] "評価 %dを%d 枚の画像に適用しています"
+msgstr[1] "評価 %dを%d 枚の画像に適用しています"
 
 #: ../src/common/ratings.c:200
 msgid "no images selected to apply rating"
@@ -5697,7 +5697,7 @@ msgstr "評価0の画像"
 #: ../src/common/ratings.c:257
 #, c-format
 msgid "image rated to %s"
-msgstr "評価 %s の画像"
+msgstr "評価%sの画像"
 
 #: ../src/common/ratings.c:262 ../src/libs/history.c:777
 #: ../src/libs/snapshots.c:467
@@ -5748,7 +5748,7 @@ msgstr "除外"
 #: ../src/common/styles.c:227
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "`%s' という名前のスタイルは既に存在しています"
+msgstr "`%s'という名前のスタイルは既に存在しています"
 
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:406 ../src/common/styles.c:497
@@ -5778,11 +5778,11 @@ msgstr "画像が選択されていません！"
 #: ../src/common/styles.c:645
 #, c-format
 msgid "style %s successfully applied!"
-msgstr "スタイル %s が正常に適用されました!"
+msgstr "スタイル%sが正常に適用されました！"
 
 #: ../src/common/styles.c:659
 msgid "no images nor styles selected!"
-msgstr "画像もスタイルも選択されていません!"
+msgstr "画像もスタイルも選択されていません！"
 
 #: ../src/common/styles.c:664
 msgid "no styles selected!"
@@ -5798,7 +5798,7 @@ msgstr[1] "スタイルが正常に適用されました"
 #: ../src/common/styles.c:765
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
-msgstr "モデュール `%s' バージョンの不一致：%d != %d"
+msgstr "モジュール`%s'のバージョンの不一致：%d != %d"
 
 #: ../src/common/styles.c:1207
 #, c-format
@@ -5813,13 +5813,13 @@ msgstr "%s というスタイルファイルは既に存在しています"
 #: ../src/common/styles.c:1461
 #, c-format
 msgid "style %s was successfully imported"
-msgstr "スタイル %s が正常にインポートされました"
+msgstr "スタイル%sが正常にインポートされました"
 
 #. Failed to open file, clean up.
 #: ../src/common/styles.c:1505
 #, c-format
 msgid "could not read file `%s'"
-msgstr "ファイル`%s' を読み込めませんでした"
+msgstr "ファイル`%s'を読み込めませんでした"
 
 #: ../src/common/utility.c:495
 msgid "above sea level"
@@ -6052,12 +6052,12 @@ msgstr "同期ログ"
 #, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
-msgstr[0] "%d 枚の画像をキャプチャーしています"
-msgstr[1] "%d 枚の画像を取り込んでいます"
+msgstr[0] "%d枚の画像をキャプチャーしています"
+msgstr[1] "%d枚の画像を取り込んでいます"
 
 #: ../src/control/jobs/camera_jobs.c:113
 msgid "please set your camera to manual mode first!"
-msgstr "先にカメラをマニュアルモードに設定して下さい!"
+msgstr "先にカメラをマニュアルモードに設定して下さい！"
 
 #: ../src/control/jobs/camera_jobs.c:210
 msgid "capture images"
@@ -6067,8 +6067,8 @@ msgstr "画像を撮影する"
 #, c-format
 msgid "%d/%d imported to %s"
 msgid_plural "%d/%d imported to %s"
-msgstr[0] "%d/%d 枚の画像を %s にインポートしました"
-msgstr[1] "%d/%d 画像を %s にインポートしました"
+msgstr[0] "%d/%d枚の画像を%sにインポートしました"
+msgstr[1] "%d/%d枚の画像を%sにインポートしました"
 
 #: ../src/control/jobs/camera_jobs.c:286
 msgid "starting to import images from camera"
@@ -6078,8 +6078,8 @@ msgstr "カメラから画像をインポートし始めました"
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
-msgstr[0] "カメラから %d 枚の画像をインポートしています"
-msgstr[1] "カメラから %d 枚の画像をインポートしています"
+msgstr[0] "カメラから%d枚の画像をインポートしています"
+msgstr[1] "カメラから%d枚の画像をインポートしています"
 
 #: ../src/control/jobs/camera_jobs.c:357
 msgid "import images from camera"
@@ -6102,58 +6102,58 @@ msgstr "画像は同じサイズと向きでなければなりません！"
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
-msgstr[0] "%d 枚の画像を結合します"
-msgstr[1] "%d 枚の画像を結合します"
+msgstr[0] "%d枚の画像を結合します"
+msgstr[1] "%d枚の画像を結合します"
 
 #: ../src/control/jobs/control_jobs.c:544
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "結合されたHDR `%s'を書き込みました"
+msgstr "結合されたHDR`%s'を書き込みました"
 
 #: ../src/control/jobs/control_jobs.c:576
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
-msgstr[0] "%d 枚の画像を複製しています"
-msgstr[1] "%d 枚の画像を複製しています"
+msgstr[0] "%d枚の画像を複製しています"
+msgstr[1] "%d枚の画像を複製しています"
 
 #: ../src/control/jobs/control_jobs.c:613
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
-msgstr[0] "%d 枚の画像を反転しています"
-msgstr[1] "%d 枚の画像を反転しています"
+msgstr[0] "%d枚の画像を反転しています"
+msgstr[1] "%d枚の画像を反転しています"
 
 #: ../src/control/jobs/control_jobs.c:644
 #, c-format
 msgid "set %d color image"
 msgid_plural "setting %d color images"
-msgstr[0] "%d をカラー画像に設定します"
-msgstr[1] "%d をカラー画像に設定しています"
+msgstr[0] "%d枚の画像をカラーに設定します"
+msgstr[1] "%d枚の画像をカラーに設定します"
 
 #: ../src/control/jobs/control_jobs.c:646
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
-msgstr[0] "%d をモノクロ画像に設定します"
-msgstr[1] "%d をモノクロ画像に設定しています"
+msgstr[0] "%d枚の画像をモノクロに設定します"
+msgstr[1] "%d枚の画像をモノクロに設定します"
 
 #: ../src/control/jobs/control_jobs.c:729
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
-msgstr[0] "%d 枚の画像を取り除いています"
-msgstr[1] "%d 枚の画像を取り除いています"
+msgstr[0] "%d枚の画像を除去しています"
+msgstr[1] "%d枚の画像を除去しています"
 
 #: ../src/control/jobs/control_jobs.c:833
 #, c-format
 msgid "could not send %s to trash%s%s"
-msgstr "%s をゴミ箱%s%sに移動することが出来ませんでした"
+msgstr "%sをゴミ箱%s%sに移動することが出来ませんでした"
 
 #: ../src/control/jobs/control_jobs.c:834
 #, c-format
 msgid "could not physically delete %s%s%s"
-msgstr "%s%s%s を物理的に削除することが出来ませんでした"
+msgstr "%s%s%sを物理的に削除することが出来ませんでした"
 
 #: ../src/control/jobs/control_jobs.c:844
 msgid "physically delete"
@@ -6187,15 +6187,15 @@ msgstr "削除エラー"
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
-msgstr[0] "%d 枚の画像をゴミ箱に移動しています"
-msgstr[1] "%d 枚の画像をゴミ箱に移動しています"
+msgstr[0] "%d枚の画像をゴミ箱に移動しています"
+msgstr[1] "%d枚の画像をゴミ箱に移動しています"
 
 #: ../src/control/jobs/control_jobs.c:999
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
-msgstr[0] "%d 枚の画像を削除しています"
-msgstr[1] "%d 枚の画像を削除しています"
+msgstr[0] "%d枚の画像を削除しています"
+msgstr[1] "%d枚の画像を削除しています"
 
 #: ../src/control/jobs/control_jobs.c:1125
 msgid "failed to parse GPX file"
@@ -6211,61 +6211,61 @@ msgstr[1] "%d 枚の画像に一致するGPX位置情報を適用しました"
 #: ../src/control/jobs/control_jobs.c:1211
 #, c-format
 msgid "moving %d image"
-msgstr "%d 枚の画像を移動しています"
+msgstr "%d枚の画像を移動しています"
 
 #: ../src/control/jobs/control_jobs.c:1212
 #, c-format
 msgid "moving %d images"
-msgstr "%d 枚の画像を移動しています"
+msgstr "%d枚の画像を移動しています"
 
 #: ../src/control/jobs/control_jobs.c:1217
 #, c-format
 msgid "copying %d image"
-msgstr "%d 枚の画像をコピーしています"
+msgstr "%d枚の画像をコピーしています"
 
 #: ../src/control/jobs/control_jobs.c:1218
 #, c-format
 msgid "copying %d images"
-msgstr "%d 枚の画像をコピーしています"
+msgstr "%d枚の画像をコピーしています"
 
 #: ../src/control/jobs/control_jobs.c:1233
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
-msgstr[0] "%d 枚の画像のローカルコピーを作成しています"
-msgstr[1] "%d 枚の画像のローカルコピーを作成しています"
+msgstr[0] "%d枚の画像のローカルコピーを作成しています"
+msgstr[1] "%d枚の画像のローカルコピーを作成しています"
 
 #: ../src/control/jobs/control_jobs.c:1236
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
-msgstr[0] "%d 枚の画像のローカルコピーを取り除いています"
-msgstr[1] "%d 枚の画像のローカルコピーを取り除いています"
+msgstr[0] "%d枚の画像のローカルコピーを取り除いています"
+msgstr[1] "%d枚の画像のローカルコピーを取り除いています"
 
 #: ../src/control/jobs/control_jobs.c:1282
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
-msgstr[0] "%d 枚の画像の情報を更新しています"
-msgstr[1] "%d 枚の画像の情報を更新しています"
+msgstr[0] "%d枚の画像の情報を更新しています"
+msgstr[1] "%d枚の画像の情報を更新しています"
 
 #: ../src/control/jobs/control_jobs.c:1366
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
-msgstr[0] "%d 枚の画像をエクスポートしています.."
-msgstr[1] "%d 枚の画像をエクスポートしています.."
+msgstr[0] "%d枚の画像をエクスポートしています.."
+msgstr[1] "%d枚の画像をエクスポートしています.."
 
 #: ../src/control/jobs/control_jobs.c:1398
 #, c-format
 msgid "exporting %d / %d to %s"
-msgstr "%d / %d 枚の画像を %sにエクスポートしています"
+msgstr "%d/%d枚の画像を%sにエクスポートしています"
 
 #: ../src/control/jobs/control_jobs.c:1419 ../src/views/darkroom.c:834
 #: ../src/views/print.c:337
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "画像 `%s' は現在使用出来ません"
+msgstr "画像`%s'は現在使用出来ません"
 
 #: ../src/control/jobs/control_jobs.c:1511
 msgid "merge hdr image"
@@ -6297,19 +6297,19 @@ msgid_plural ""
 "do you really want to remove %d images from darktable\n"
 "(without deleting files on disk)?"
 msgstr[0] ""
-"%d 枚の画像を本当にdarktableから除去しますか？（ファイルをディスクから削除し"
-"ない）"
+"%d枚の画像を本当にdarktableから除去しますか？（ファイルをディスクから削除しな"
+"い）"
 msgstr[1] ""
-"%d 枚の画像を本当にdarktableから取り除きますか？（ファイルをディスクから削除"
-"しない）"
+"%d枚の画像を本当にdarktableから取り除きますか？（ファイルをディスクから削除し"
+"ない）"
 
 #: ../src/control/jobs/control_jobs.c:1569
 msgid "remove image?"
-msgstr "画像を除去しますか?"
+msgstr "画像を除去しますか？"
 
 #: ../src/control/jobs/control_jobs.c:1569
 msgid "remove images?"
-msgstr "画像を除去しますか?"
+msgstr "画像を除去しますか？"
 
 #. first get all selected images, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1585
@@ -6326,32 +6326,35 @@ msgid_plural ""
 "do you really want to physically delete %d images\n"
 "(using trash if possible)?"
 msgstr[0] ""
-"%d 枚の画像を本当に物理的に削除しますか？（出来ればゴミ箱を使用します）"
+"%d枚の画像を本当に物理的に削除しますか？\n"
+"（出来ればゴミ箱を使用します）"
 msgstr[1] ""
-"%d 枚の画像を本当に物理的に削除しますか？（出来ればゴミ箱を使用します）"
+"%d枚の画像を本当に物理的に削除しますか？\n"
+"（出来ればゴミ箱を使用します）"
 
 #: ../src/control/jobs/control_jobs.c:1607
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
-msgstr[0] "%d 枚の画像を本当にディスクから物理的に削除しますか？"
+msgstr[0] "%d枚の画像を本当にディスクから物理的に削除しますか？"
 msgstr[1] "%d枚の画像を本当にディスクから物理的に削除しますか？"
 
 #: ../src/control/jobs/control_jobs.c:1614
 #: ../src/control/jobs/control_jobs.c:1652
 msgid "delete image?"
-msgstr "画像を削除しますか?"
+msgstr "画像を削除しますか？"
 
 #: ../src/control/jobs/control_jobs.c:1614
 msgid "delete images?"
-msgstr "画像を削除しますか?"
+msgstr "画像を削除しますか？"
 
 #: ../src/control/jobs/control_jobs.c:1646
 msgid ""
 "do you really want to physically delete selected image (using trash if "
 "possible)?"
 msgstr ""
-"選択した画像を本当に物理的に削除しますか？（出来ればゴミ箱を使用します）"
+"選択した画像を本当に物理的に削除しますか？\n"
+"（出来ればゴミ箱を使用します）"
 
 #: ../src/control/jobs/control_jobs.c:1647
 msgid "do you really want to physically delete selected image from disk?"
@@ -6375,17 +6378,17 @@ msgid_plural ""
 "do you really want to physically move %d images to %s?\n"
 "(all duplicates will be moved along)"
 msgstr[0] ""
-"%d 枚の画像を本当に%sに物理的に移動しますか？\n"
+"%d枚の画像を本当に%sに物理的に移動しますか？\n"
 "（全ての複製画像が移動します）"
 msgstr[1] ""
-"%d 枚の画像を本当に%sに物理的に移動しますか？\n"
+"%d枚の画像を本当に%sに物理的に移動しますか？\n"
 "（全ての複製画像が移動します）"
 
 #: ../src/control/jobs/control_jobs.c:1711
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "画像を移動しますか?"
-msgstr[1] "画像を移動しますか?"
+msgstr[0] "画像を移動しますか？"
+msgstr[1] "画像を移動しますか？"
 
 #: ../src/control/jobs/control_jobs.c:1732
 msgid "copy images"
@@ -6395,8 +6398,8 @@ msgstr "画像をコピーする"
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
-msgstr[0] "%d 枚の画像を 本当に%s に物理的にコピーしますか？"
-msgstr[1] "%d 枚の画像を本当に%s に物理的にコピーしますか？"
+msgstr[0] "%d枚の画像を 本当に%s に物理的にコピーしますか？"
+msgstr[1] "%d枚の画像を本当に%s に物理的にコピーしますか？"
 
 #: ../src/control/jobs/control_jobs.c:1770
 msgid "copy image?"
@@ -6411,13 +6414,13 @@ msgstr "画像をローカルコピーする"
 
 #: ../src/control/jobs/control_jobs.c:1805 ../src/libs/image.c:600
 msgid "refresh exif"
-msgstr "exifを更新する"
+msgstr "exifを更新"
 
 #: ../src/control/jobs/control_jobs.c:1869
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"ストレージモジュール `%s'からパラメータを取得出来ません。エクスポートを中止し"
+"ストレージモジュール`%s'からパラメータを取得出来ません。エクスポートを中止し"
 "ています.."
 
 #: ../src/control/jobs/control_jobs.c:1885
@@ -6427,12 +6430,12 @@ msgstr "画像をエクスポートする"
 #: ../src/control/jobs/control_jobs.c:1948
 #, c-format
 msgid "adding time offset to %d image"
-msgstr "%d 枚の画像に時間オフセットを追加しています"
+msgstr "%d枚の画像に時間オフセットを追加しています"
 
 #: ../src/control/jobs/control_jobs.c:1948
 #, c-format
 msgid "setting date/time of %d image"
-msgstr "%d 枚の画像の時間オフセットを設定しています"
+msgstr "%d枚の画像の時間オフセットを設定しています"
 
 #: ../src/control/jobs/control_jobs.c:1949
 #, c-format
@@ -6447,7 +6450,7 @@ msgstr "%d枚の画像の時間オフセットを設定しています"
 #: ../src/control/jobs/control_jobs.c:1990
 #, c-format
 msgid "added time offset to %d image"
-msgstr "%d枚の画像に時間オフセットを追加しました"
+msgstr "%d枚の画像に時差を追加しました"
 
 #: ../src/control/jobs/control_jobs.c:1990
 #, c-format
@@ -6457,7 +6460,7 @@ msgstr "%d枚の画像の日時を設定しました"
 #: ../src/control/jobs/control_jobs.c:1991
 #, c-format
 msgid "added time offset to %d images"
-msgstr "%d枚の画像に時間オフセットを追加しました"
+msgstr "%d枚の画像に時差を追加しました"
 
 #: ../src/control/jobs/control_jobs.c:1991
 #, c-format
@@ -6476,22 +6479,22 @@ msgstr "サイドカーファイル書き込み"
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
-msgstr[0] "%d 枚の画像をインポートしています"
-msgstr[1] "%d 枚の画像をインポートしています"
+msgstr[0] "%d枚の画像をインポートしています"
+msgstr[1] "%d枚の画像をインポートしています"
 
 #: ../src/control/jobs/control_jobs.c:2265
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
-msgstr[0] "%d/%d 枚の画像をインポートしています"
-msgstr[1] "%d/%d 枚の画像をインポートしています"
+msgstr[0] "%d/%d枚の画像をインポートしています"
+msgstr[1] "%d/%d枚の画像をインポートしています"
 
 #: ../src/control/jobs/control_jobs.c:2273
 #, c-format
 msgid "imported %d image"
 msgid_plural "imported %d images"
-msgstr[0] "%d 枚の画像をインポートしました"
-msgstr[1] "%d 枚の画像をインポートしました"
+msgstr[0] "%d枚の画像をインポートしました"
+msgstr[1] "%d枚の画像をインポートしました"
 
 #: ../src/control/jobs/film_jobs.c:73 ../src/control/jobs/film_jobs.c:109
 msgid "import images"
@@ -6505,7 +6508,7 @@ msgstr ""
 #: ../src/control/jobs/image_jobs.c:76
 #, c-format
 msgid "importing image %s"
-msgstr "画像 %s をインポートしています"
+msgstr "画像%s をインポートしています"
 
 #: ../src/control/jobs/image_jobs.c:110
 msgid "import image"
@@ -6518,7 +6521,7 @@ msgstr "ディテールマスクブレンドエラー"
 #: ../src/develop/blend.c:457 ../src/develop/blend.c:843
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "モジュール '%s' でブレンドをスキップしました：roiが一致しません"
+msgstr "モジュール'%s'でブレンドをスキップしました：roiが一致しません"
 
 #: ../src/develop/blend.c:488 ../src/develop/blend.c:878
 msgid "could not allocate buffer for blending"
@@ -7038,7 +7041,7 @@ msgstr "全てのチャンネルの極性を反転"
 #: ../src/develop/blend_gui.c:2199
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr ""
-"極性を切り替えます。「マスクを表示」を有効にすると分かりやすく可視化されます"
+"極性を切り替えます。【マスクを表示】を有効にすると分かりやすく可視化されます"
 
 #: ../src/develop/blend_gui.c:2226
 msgid ""
@@ -7157,7 +7160,7 @@ msgstr "ラスターマスクの極性を切り替えます"
 
 #: ../src/develop/blend_gui.c:2659
 msgid "normal & difference modes"
-msgstr "標準&差モード"
+msgstr "標準＆差モード"
 
 #: ../src/develop/blend_gui.c:2664
 msgid "lighten modes"
@@ -7178,11 +7181,11 @@ msgstr "カラーチャンネルモード"
 
 #: ../src/develop/blend_gui.c:2710
 msgid "normal & arithmetic modes"
-msgstr "標準&演算モード"
+msgstr "標準＆演算モード"
 
 #: ../src/develop/blend_gui.c:2724
 msgid "chrominance & luminance modes"
-msgstr "クロミナンス&輝度モード"
+msgstr "クロミナンス＆輝度モード"
 
 #. add deprecated blend mode
 #: ../src/develop/blend_gui.c:2735
@@ -7362,7 +7365,7 @@ msgstr "シーン参照デフォルト"
 #: ../src/develop/develop.c:1976
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s：モジュール `%s'バージョンの不一致：%d != %d"
+msgstr "%s：モジュール`%s'のバージョンの不一致：%d != %d"
 
 #: ../src/develop/imageop.c:928
 msgid "new instance"
@@ -7431,7 +7434,7 @@ msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
 msgstr ""
-"マルチインスタンスの振る舞い\n"
+"マルチインスタンスのアクション\n"
 "右クリックで新しいインスタンスが作成されます"
 
 #: ../src/develop/imageop.c:2444
@@ -7531,13 +7534,13 @@ msgstr ""
 
 #: ../src/develop/lightroom.c:1079
 msgid "cannot find lightroom XMP!"
-msgstr "Lightroom XMPを見つけることが出来ません!"
+msgstr "Lightroom XMPを見つけることが出来ません！"
 
 #: ../src/develop/lightroom.c:1111 ../src/develop/lightroom.c:1133
 #: ../src/develop/lightroom.c:1153
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "`%s'はLightroom XMPではありません!"
+msgstr "`%s'はLightroom XMPではありません！"
 
 #: ../src/develop/lightroom.c:1552
 #, c-format
@@ -7586,8 +7589,7 @@ msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>サイズ</b>：スクロール\n"
-"<b>硬さ</b>：Shift+スクロール\n"
+"<b>サイズ</b>：スクロール　　<b>硬さ</b>：Shift+スクロール\n"
 "<b>不透明度</b>：Ctrl+スクロール (%d%%)"
 
 #: ../src/develop/masks/brush.c:2943
@@ -7624,8 +7626,7 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>サイズ</b>：スクロール\n"
-"<b>境界ぼかしのサイズ</b>：Shift +スクロール\n"
+"<b>サイズ</b>：スクロール　　<b>境界ぼかしのサイズ</b>：Shift +スクロール\n"
 "<b>不透明度</b>：Ctrl +スクロール(%d%%)"
 
 #: ../src/develop/masks/ellipse.c:491 ../src/develop/masks/ellipse.c:593
@@ -7898,8 +7899,8 @@ msgstr ""
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
-"モジュール '%s' のタイリングに失敗しました。出力が文字化けしている可能性があ"
-"ります"
+"モジュール'%s'のタイリングに失敗しました。出力が文字化けしている可能性があり"
+"ます"
 
 #: ../src/dtgtk/culling.c:228
 msgid "you have reached the start of your selection"
@@ -7920,7 +7921,7 @@ msgstr "コレクションの末尾に達しました"
 #: ../src/dtgtk/culling.c:395
 #, c-format
 msgid "zooming is limited to %d images"
-msgstr "ズームは %d 枚の画像に制限されています"
+msgstr "ズームは%d枚の画像に制限されています"
 
 #: ../src/dtgtk/culling.c:972
 msgid "no image selected !"
@@ -7965,7 +7966,7 @@ msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
 msgstr ""
-"レベル %d から始まるキャッシュされたサムネイルを無効にする必要があります\n"
+"レベル%dから始まるキャッシュされたサムネイルを無効にする必要があります\n"
 
 #: ../src/dtgtk/thumbtable.c:1182
 #, c-format
@@ -8218,7 +8219,7 @@ msgstr "キャッシュディレクトリ'%s'を作成しています\n"
 #: ../src/generate-cache/main.c:59
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "ディレクトリ'%s'を作成出来ませんでした!\n"
+msgstr "ディレクトリ'%s'を作成出来ませんでした！\n"
 
 #: ../src/generate-cache/main.c:83
 #, c-format
@@ -8228,7 +8229,7 @@ msgstr "警告：要求された画像IDの範囲に合致する画像があり�
 #: ../src/generate-cache/main.c:86
 #, c-format
 msgid "warning: did you want to swap these boundaries?\n"
-msgstr "警告：これらの境界線を入れ替えようとしましたか?\n"
+msgstr "警告：これらの境界線を入れ替えようとしましたか？\n"
 
 #: ../src/generate-cache/main.c:227
 #, c-format
@@ -9437,7 +9438,7 @@ msgid ""
 msgstr ""
 "デフォルトでメタデータが適用されます\n"
 "ラベルの上でダブルクリックすると対応するエントリを消去します\n"
-"「プリセット」の上でダブルクリックすると全てのエントリを削除します"
+"【プリセット】の上でダブルクリックすると全てのエントリを削除します"
 
 #: ../src/gui/import_metadata.c:422
 msgid "from xmp"
@@ -9451,8 +9452,8 @@ msgid ""
 " CAUTION: not selected metadata are cleaned up when xmp file is updated"
 msgstr ""
 "選択されたメタデータが画像からインポートされ、デフォルトの値を上書きします\n"
-"これによって、「アップデートされたxmpファイルを探す」と「サイドカーファイルを"
-"読み込み」も実行されます\n"
+"これによって、【更新されたxmpファイルを探す】と【サイドカーファイル読み込み】"
+"も実行されます\n"
 "注意：xmpファイルがアップデートされる際、選択されていないメタデータが除去され"
 "ます"
 
@@ -9621,7 +9622,7 @@ msgstr "_開く"
 
 #: ../src/gui/preferences.c:1023
 msgid "darktable preset files"
-msgstr "darktable プリセットファイル"
+msgstr "darktableプリセットファイル"
 
 #: ../src/gui/preferences.c:1028 ../src/iop/lut3d.c:1588
 #: ../src/libs/copy_history.c:145 ../src/libs/geotagging.c:952
@@ -9655,7 +9656,7 @@ msgstr "プリセット`%s'は書き込み保護されています。削除出�
 #: ../src/libs/modulegroups.c:3718
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "プリセット `%s' を本当に削除しますか？"
+msgstr "プリセット`%s'を本当に削除しますか？"
 
 #: ../src/gui/presets.c:177 ../src/gui/presets.c:408 ../src/libs/lib.c:244
 #: ../src/libs/modulegroups.c:3722
@@ -9683,7 +9684,7 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"プリセット `%s' は既に存在しています\n"
+"プリセット`%s'は既に存在しています\n"
 "上書きしますか？"
 
 #: ../src/gui/presets.c:248
@@ -9698,7 +9699,7 @@ msgstr "_出力先として選択する"
 #: ../src/gui/presets.c:374
 #, c-format
 msgid "preset %s was successfully exported"
-msgstr "プリセット %s は正常にエクスポートされました"
+msgstr "プリセット%sは正常にエクスポートされました"
 
 #: ../src/gui/presets.c:463
 #, c-format
@@ -9720,12 +9721,12 @@ msgstr "説明または詳細情報"
 # 適合する画像にこのプリセットを自動的に適用します
 #: ../src/gui/presets.c:495
 msgid "auto apply this preset to matching images"
-msgstr "マッチする画像にこのプリセットを自動的に適用します"
+msgstr "マッチする画像にこのプリセットを自動的に適用する"
 
 # 適合する画像でのみこのプリセットを表示します
 #: ../src/gui/presets.c:498
 msgid "only show this preset for matching images"
-msgstr "マッチする画像にのみこのプリセットを表示します"
+msgstr "マッチする画像にのみこのプリセットを表示する"
 
 # このオプションは充分に注意してください。これによってプリセットが失われ。復元することも出来なくなるかもしれません
 #: ../src/gui/presets.c:499
@@ -9795,12 +9796,12 @@ msgstr "このプリセットを利用可能にしたい画像のタイプを選
 #: ../src/gui/presets.c:779
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
-msgstr "プリセット`%s' は書き込み保護されています。編集出来ません！"
+msgstr "プリセット`%s'は書き込み保護されています。編集出来ません！"
 
 #: ../src/gui/presets.c:808 ../src/libs/lib.c:157
 #, c-format
 msgid "do you really want to update the preset `%s'?"
-msgstr "プリセット`%s' を本当にアップデートしますか？"
+msgstr "プリセット`%s'を本当にアップデートしますか？"
 
 #: ../src/gui/presets.c:812 ../src/libs/lib.c:161
 msgid "update preset?"
@@ -9849,7 +9850,7 @@ msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"スタイル `%s' は既に存在します\n"
+"スタイル`%s'は既に存在します\n"
 "上書きしますか？"
 
 #: ../src/gui/styles_dialog.c:211 ../src/libs/styles.c:440
@@ -9868,7 +9869,7 @@ msgstr "名称未設定のスタイル"
 #: ../src/gui/styles_dialog.c:291
 #, c-format
 msgid "style %s was successfully saved"
-msgstr "スタイル%s は正常に保存されました"
+msgstr "スタイル%sは正常に保存されました"
 
 #: ../src/gui/styles_dialog.c:406
 msgid "edit style"
@@ -10100,7 +10101,7 @@ msgstr "無効なボーダーサイズ、0を使用します"
 #: ../src/imageio/storage/gallery.c:388 ../src/imageio/storage/piwigo.c:976
 #, c-format
 msgid "could not export to file `%s'!"
-msgstr "ファイル`%s'にエクスポート出来ませんでした!"
+msgstr "ファイル`%s'にエクスポート出来ませんでした！"
 
 #: ../src/imageio/format/pdf.c:408
 msgid "PDF"
@@ -10368,7 +10369,7 @@ msgstr ""
 
 #: ../src/imageio/storage/disk.c:196
 msgid "on conflict"
-msgstr "同名ファイルがある場合"
+msgstr "ファイル名重複の場合"
 
 #: ../src/imageio/storage/disk.c:197
 msgid "create unique filename"
@@ -10400,8 +10401,8 @@ msgstr "ディレクトリ`%s'に書き込めませんでした！"
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
-msgstr[0] "%d／%d枚スキップする `%s'"
-msgstr[1] "%d／%d枚スキップする `%s'"
+msgstr[0] "%d／%d枚  `%s'をスキップ"
+msgstr[1] "%d／%d枚  `%s'をスキップ"
 
 #: ../src/imageio/storage/disk.c:337 ../src/imageio/storage/email.c:144
 #: ../src/imageio/storage/gallery.c:396 ../src/imageio/storage/latex.c:357
@@ -10409,7 +10410,7 @@ msgstr[1] "%d／%d枚スキップする `%s'"
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
 msgstr[0] "%d／%d枚を`%s'にエクスポートしました"
-msgstr[1] "%d／%d枚を `%s'にエクスポートしました"
+msgstr[1] "%d／%d枚を`%s'にエクスポートしました"
 
 #: ../src/imageio/storage/disk.c:396
 msgid ""
@@ -10491,8 +10492,8 @@ msgid ""
 "specify http:// if non secure server"
 msgstr ""
 "サーバー名\n"
-"デフォルトのプロトコルは https\n"
-"安全でないサーバーの場合は http：// を指定します"
+"デフォルトのプロトコルはhttps\n"
+"安全でないサーバーの場合はhttp：//を指定します"
 
 #: ../src/imageio/storage/piwigo.c:789
 msgid "server"
@@ -10565,11 +10566,11 @@ msgstr "ログインボタンをクリックして開始する"
 
 #: ../src/imageio/storage/piwigo.c:995
 msgid "cannot create a new piwigo album!"
-msgstr "新しいpiwigoアルバムを作成することが出来ません!"
+msgstr "新しいpiwigoアルバムを作成することが出来ません！"
 
 #: ../src/imageio/storage/piwigo.c:1004
 msgid "could not upload to piwigo!"
-msgstr "piwigo にアップロードすることが出来ませんでした!"
+msgstr "piwigo にアップロードすることが出来ませんでした！"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/piwigo.c:1033
@@ -10632,7 +10633,7 @@ msgstr "データ保留中 - 繰り返してください"
 
 #: ../src/iop/ashift.c:3041
 msgid "could not detect structural data in image"
-msgstr "画像内に構造化データを検出することが出来ませんでした"
+msgstr "画像内に構造データを検出することが出来ませんでした"
 
 #: ../src/iop/ashift.c:3052
 msgid "could not run outlier removal"
@@ -10644,8 +10645,8 @@ msgid ""
 "not enough structure for automatic correction\n"
 "minimum %d lines in each relevant direction"
 msgstr ""
-"自動補正の条件を満たさない構造です\n"
-"関連する宛先にそれぞれ最低%d行必要です"
+"自動補正に必要な構造が描かれていません\n"
+"水平方向の線と垂直方向の線がそれぞれ最低%d本必要です"
 
 #: ../src/iop/ashift.c:3218
 msgid "automatic correction failed, please correct manually"
@@ -10656,7 +10657,7 @@ msgstr "自動補正に失敗しました。手動で補正してください"
 #: ../src/iop/ashift.c:4654
 #, c-format
 msgid "only %d lines can be saved in parameters"
-msgstr "%d行のみパラメータに保存することが出来ます"
+msgstr "パラメータに保存することが出来る線は%d本のみです"
 
 #: ../src/iop/ashift.c:5375 ../src/iop/ashift.c:5376 ../src/iop/ashift.c:5478
 #: ../src/iop/ashift.c:5479
@@ -10779,32 +10780,32 @@ msgstr "パースペクティブの矩形を手動で定義します"
 
 #: ../src/iop/ashift.c:5811
 msgid "manually draw structure lines"
-msgstr "構造線を手書きします"
+msgstr "構造線を手描きします"
 
 #: ../src/iop/ashift.c:5848 ../src/iop/clipping.c:3387
 #, c-format
 msgid "[%s] define/rotate horizon"
-msgstr "【%s】 水平線を定義する／回転する"
+msgstr "【%s】水平線を定義する／回転する"
 
 #: ../src/iop/ashift.c:5849
 #, c-format
 msgid "[%s on segment] select segment"
-msgstr "【線分の上で%s】 線分を選択する"
+msgstr "【線分の上で%s】線分を選択する"
 
 #: ../src/iop/ashift.c:5851
 #, c-format
 msgid "[%s on segment] unselect segment"
-msgstr "【線分の上で%s】 線分の選択を解除する"
+msgstr "【線分の上で%s】線分の選択を解除する"
 
 #: ../src/iop/ashift.c:5853
 #, c-format
 msgid "[%s] select all segments from zone"
-msgstr "【%s】 ゾーンの全ての線分を選択します"
+msgstr "【%s】ゾーンの全ての線分を選択します"
 
 #: ../src/iop/ashift.c:5855
 #, c-format
 msgid "[%s] unselect all segments from zone"
-msgstr "【%s】 ゾーンの全ての線分の選択を解除します"
+msgstr "【%s】ゾーンの全ての線分の選択を解除します"
 
 #: ../src/iop/atrous.c:128 ../src/iop/atrous.c:1709
 msgid "contrast equalizer"
@@ -11165,13 +11166,15 @@ msgstr ""
 
 #: ../src/iop/basecurve.c:2108
 msgid "how many stops to shift the individual exposures apart"
-msgstr "露出を何段ずつずらすか"
+msgstr "合成する画像の露出を何段刻みにするか"
 
 #: ../src/iop/basecurve.c:2117
 msgid ""
 "whether to shift exposure up or down (-1: reduce highlight, +1: reduce "
 "shadows)"
-msgstr "露出を上下どちらかにずらす （-1： ハイライト低減、+1：シャドウ低減）"
+msgstr ""
+"露出を明暗どちらにシフトするか\n"
+"（-1： ハイライト低減、+1：シャドウ低減）"
 
 #: ../src/iop/basecurve.c:2122 ../src/iop/tonecurve.c:1230
 msgid "scale for graph"
@@ -11276,7 +11279,7 @@ msgstr "ローカルコントラスト"
 
 #: ../src/iop/bilat.c:99
 msgid "manipulate local and global contrast separately"
-msgstr "局所のコントラストと全体のコントラストを個別に操作します"
+msgstr "局所的なコントラストと全体のコントラストを分けて操作します"
 
 #: ../src/iop/bilat.c:101 ../src/iop/bilat.c:103 ../src/iop/bloom.c:82
 #: ../src/iop/bloom.c:84 ../src/iop/colisa.c:86 ../src/iop/colisa.c:88
@@ -11311,7 +11314,7 @@ msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
 msgstr ""
-"ローカルコントラストの強調に使用されるフィルター\n"
+"局所的なコントラスの強調に使用されるフィルター\n"
 "バイラテラルは高速ですが、極端な設定ではエッジの周りにアーティファクトが発生"
 "する可能性があります"
 
@@ -11321,12 +11324,13 @@ msgstr "ディテール"
 
 #: ../src/iop/bilat.c:437
 msgid "changes the local contrast"
-msgstr "ローカルコントラストを変更します"
+msgstr "局所的なコントラストを変更します"
 
 #: ../src/iop/bilat.c:449
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr ""
-"局所的ディテールのフィーチャーサイズ（バイラテラルフィルターの空間標準偏差）"
+"局所的なディテールのフィーチャーサイズ（バイラテラルフィルターの空間標準偏"
+"差）"
 
 #: ../src/iop/bilat.c:454
 msgid "L difference to detect edges (range sigma of bilateral filter)"
@@ -11334,11 +11338,11 @@ msgstr "エッジ検出のL差（バイラテラルフィルターのレンジ�
 
 #: ../src/iop/bilat.c:460
 msgid "changes the local contrast of highlights"
-msgstr "ハイライトのローカルコントラストを変更します"
+msgstr "ハイライトの局所的なコントラストを変更します"
 
 #: ../src/iop/bilat.c:466
 msgid "changes the local contrast of shadows"
-msgstr "シャドウのローカルコントラストを変更します"
+msgstr "シャドウの局所的なコントラストを変更します"
 
 #: ../src/iop/bilat.c:470
 msgid ""
@@ -11348,8 +11352,8 @@ msgid ""
 msgstr ""
 "中間トーンを定めます\n"
 "値を下げると、より良好なダイナミックレンジ圧縮（シャドウとハイライトのコント"
-"ラスト低減）がなされます\n"
-"値を上げると、ローカルコントラストがより強くなります"
+"ラスト低減）が行われます\n"
+"値を上げると、局所的なコントラストがより強くなります"
 
 #: ../src/iop/bilateral.cc:73 ../src/iop/diffuse.c:317
 msgid "surface blur"
@@ -11418,7 +11422,7 @@ msgstr "ぼかし|レンズ|被写体ぶれ"
 
 #: ../src/iop/blurs.c:92
 msgid "simulate physically-accurate lens and motion blurs"
-msgstr "物理的に正確なレンズと被写体ブレをシミュレートします"
+msgstr "物理的に正確なレンズと被写体ぶれをシミュレートします"
 
 #: ../src/iop/borders.c:181
 msgid "framing"
@@ -11636,7 +11640,7 @@ msgid ""
 "you can get more info by running dt via the console."
 msgstr ""
 "補正パラメータの計算中に内部の計算が失敗したため、モジュールは無視されます\n"
-"コンソールからdtを実行すると、より多くの情報を取得出来ます"
+"コンソールからdarktableを実行すると、より多くの情報を取得出来ます"
 
 #: ../src/iop/cacorrect.c:1344
 msgid ""
@@ -12542,8 +12546,7 @@ msgstr "3:1, パノラマ"
 #: ../src/iop/crop.c:1157
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr ""
-"`%s' のアスペクト比の形式が無効です。\"数字:数字\" でなければなりません"
+msgstr "`%s'のアスペクト比の形式が無効です。\"数字:数字\" でなければなりません"
 
 #: ../src/iop/clipping.c:2266 ../src/iop/crop.c:1203
 msgid ""
@@ -12579,16 +12582,17 @@ msgstr "下の余白を上の余白に重ねることは出来ません"
 
 #: ../src/iop/clipping.c:3058
 msgid "<b>commit</b>: double click, <b>straighten</b>: right-drag"
-msgstr "<b>コミットする</b>：ダブルクリック　<b>まっすぐにする</b>：右ドラッグ"
+msgstr ""
+"<b>コミットする</b>：ダブルクリック　　<b>真っ直ぐにする</b>：右ドラッグ"
 
 #: ../src/iop/clipping.c:3062
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>サイズを変更する</b>：ドラッグ　 <b>アスペクト比を維持する</b>：Shift+ド"
+"<b>サイズを変更する</b>：ドラッグ　　 <b>アスペクト比を維持する</b>：Shift+ド"
 "ラッグ\n"
-"<b>まっすぐにする</b>：右ドラッグ"
+"<b>真っ直ぐにする</b>：右ドラッグ"
 
 #: ../src/iop/clipping.c:3105
 msgid "<b>move control point</b>: drag"
@@ -12597,7 +12601,7 @@ msgstr "<b>コントロール点を移動する</b>：ドラッグ"
 #: ../src/iop/clipping.c:3110
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
 msgstr ""
-"<b>線を移動する</b>：ドラッグ　<b>シンメトリーを切り替える</b>：クリック "
+"<b>線を移動する</b>：ドラッグ　　<b>シンメトリーを切り替える</b>：クリック "
 "<tt>ꝏ</tt>"
 
 #: ../src/iop/clipping.c:3115
@@ -12605,7 +12609,7 @@ msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
-"<b>適用する</b>：クリック <tt>ok</tt>　<b>シンメトリーを切り替える</b>：ク"
+"<b>適用する</b>：クリック <tt>ok</tt>　　<b>シンメトリーを切り替える</b>：ク"
 "リック <tt>ꝏ</tt>\n"
 "<b>線／コントロールポイントを移動する</b>：ドラッグ"
 
@@ -12615,9 +12619,9 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double click"
 msgstr ""
-"<b>移動する</b>：ドラッグ　<b>垂直に移動する</b>：Shift+ドラッグ　<b>水平に移"
-"動する</b>：Ctrl+ドラッグ\n"
-"<b>まっすぐにする</b>：右ドラッグ　<b>コミット</b>：ダブルクリック"
+"<b>移動する</b>：ドラッグ　　<b>垂直に移動する</b>：Shift+ドラッグ　　<b>水平"
+"に移動する</b>：Ctrl+ドラッグ\n"
+"<b>真っ直ぐにする</b>：右ドラッグ　<b>コミット</b>：ダブルクリック"
 
 #: ../src/iop/clipping.c:3373 ../src/iop/crop.c:1666
 msgid "commit"
@@ -12626,12 +12630,12 @@ msgstr "コミット"
 #: ../src/iop/clipping.c:3384 ../src/iop/crop.c:1677
 #, c-format
 msgid "[%s on borders] crop"
-msgstr "【縁の上で%s】 トリミングする"
+msgstr "【縁の上で%s】トリミングする"
 
 #: ../src/iop/clipping.c:3386 ../src/iop/crop.c:1679
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
-msgstr "【縁の上で%s】 アスペクト比を維持してトリミングする"
+msgstr "【縁の上で%s】アスペクト比を維持してトリミングする"
 
 #: ../src/iop/colisa.c:79
 msgid "contrast brightness saturation"
@@ -12984,7 +12988,7 @@ msgstr "画像全体の色のオフセットの彩度（クロマ）"
 
 #: ../src/iop/colorbalancergb.c:1711
 msgid "shadows lift"
-msgstr "シャドウ　リフト"
+msgstr "シャドウ リフト"
 
 #: ../src/iop/colorbalancergb.c:1718
 msgid "luminance gain in shadows"
@@ -13000,7 +13004,7 @@ msgstr "シャドウの色の増幅の彩度（クロマ）"
 
 #: ../src/iop/colorbalancergb.c:1735
 msgid "highlights gain"
-msgstr "ハイライト　ゲイン"
+msgstr "ハイライト ゲイン"
 
 #: ../src/iop/colorbalancergb.c:1742
 msgid "luminance gain in highlights"
@@ -13167,7 +13171,7 @@ msgstr "Fuji Velviaエミュレーション"
 #: ../src/iop/colorchecker.c:844 ../src/iop/colorchecker.c:1350
 #, c-format
 msgid "patch #%d"
-msgstr "パッチ #%d"
+msgstr "パッチ#%d"
 
 #: ../src/iop/colorchecker.c:1208
 #, c-format
@@ -13359,17 +13363,17 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr ""
-"カラースペース `%s'からマトリクスを抽出出来ません。Rec2020 RGB に置き換えられ"
+"カラースペース`%s'からマトリクスを抽出出来ません。Rec2020 RGB に置き換えられ"
 "ます！"
 
 #: ../src/iop/colorin.c:1554
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "`%s' カラーマトリクスは見つかりませんでした！"
+msgstr "`%s'カラーマトリクスは見つかりませんでした！"
 
 #: ../src/iop/colorin.c:1589
 msgid "input profile could not be generated!"
-msgstr "入力プロファイルを生成することが出来ませんでした!"
+msgstr "入力プロファイルを生成することが出来ませんでした！"
 
 #: ../src/iop/colorin.c:1672
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
@@ -13389,7 +13393,7 @@ msgstr "作業プロファイル"
 #: ../src/iop/colorout.c:890
 #, c-format
 msgid "ICC profiles in %s or %s"
-msgstr "%sまたは%sのICCプロファイル"
+msgstr "%sまたは%s内のICCプロファイル"
 
 #: ../src/iop/colorin.c:2099
 msgid "confine Lab values to gamut of RGB color space"
@@ -13455,7 +13459,8 @@ msgstr "この画像をターゲット画像として分析します"
 #: ../src/iop/colormapping.c:1079
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
-"画像内で探すクラスタの数。値を変更すると全てのクラスタがリセットされます"
+"画像内で探すクラスタの数\n"
+"値を変更すると全てのクラスタがリセットされます"
 
 #: ../src/iop/colormapping.c:1082
 msgid ""
@@ -13554,7 +13559,7 @@ msgstr "不整合なアウトプット"
 
 #: ../src/iop/colorreconstruction.c:670
 msgid "module `color reconstruction' failed"
-msgstr "モジュール「色の再構成」が正しく機能しませんでした"
+msgstr "モジュール【色の再構成】が正しく機能しませんでした"
 
 #: ../src/iop/colorreconstruction.c:1286
 msgid "spatial"
@@ -13766,7 +13771,7 @@ msgstr "<b>コミット</b>：ダブルクリック"
 #: ../src/iop/crop.c:1587
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>サイズ変更</b>：ドラッグ　 <b>アスペクト比を維持する</b>：Shift+ドラッグ"
+"<b>サイズ変更</b>：ドラッグ　　 <b>アスペクト比を維持する</b>：Shift+ドラッグ"
 
 #: ../src/iop/crop.c:1594
 msgid ""
@@ -13774,8 +13779,8 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>commit</b>: double click"
 msgstr ""
-"<b>移動する</b>：ドラッグ　<b>水平方向に移動する</b>：Shift+ドラッグ　<b>水平"
-"方向に移動する</b>：Ctrl+ドラッグ\n"
+"<b>移動する</b>：ドラッグ　　<b>水平方向に移動する</b>：Shift+ドラッグ　　<b>"
+"水平方向に移動する</b>：Ctrl+ドラッグ\n"
 "<b>コミット</b>：ダブルクリック"
 
 #: ../src/iop/defringe.c:70
@@ -13836,7 +13841,7 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:5267
 msgid "[dual demosaic_cl] internal problem"
-msgstr "【dual demosaic_cl】 内部に問題があります"
+msgstr "【dual demosaic_cl】内部に問題があります"
 
 #: ../src/iop/demosaic.c:5634
 #, c-format
@@ -14312,7 +14317,7 @@ msgid ""
 "negative values sharpen.\n"
 "zero does nothing."
 msgstr ""
-"シャープなディテールの平滑化またはシャープ化\n"
+"シャープな細部の平滑化またはシャープ化\n"
 "正の値に設定すると、拡散およびぼかし\n"
 "負の値に設定すると、シャープ化\n"
 "0に設定すると、何もしません"
@@ -14429,7 +14434,7 @@ msgstr "不規則なディザの減衰のレベル"
 
 #: ../src/iop/dual_demosaic.c:50
 msgid "[dual demosaic] can't allocate internal buffers"
-msgstr "【二重デモザイク】 が内部バッファを割り当てることが出来ません"
+msgstr "【二重デモザイク】内部バッファを割り当てることが出来ません"
 
 #: ../src/iop/equalizer.c:89
 msgid "legacy equalizer"
@@ -14593,7 +14598,9 @@ msgstr "18 EV（HDR++）"
 
 #: ../src/iop/filmic.c:1585
 msgid "read-only graph, use the parameters below to set the nodes"
-msgstr "読み取り専用グラフ。下のパラメーターを使用してノードを設定します"
+msgstr ""
+"読み取り専用グラフ\n"
+"下のパラメーターを使用してノードを設定します"
 
 #: ../src/iop/filmic.c:1589
 msgid "logarithmic shaper"
@@ -14637,7 +14644,7 @@ msgid ""
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
 "算出されたダイナミックレンジを拡大または縮小します\n"
-"「レベルの自動調整」と併せると有用です"
+"【レベルの自動調整】と併せると有用です"
 
 #: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:3947
 #: ../src/iop/profile_gamma.c:678
@@ -15137,7 +15144,7 @@ msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
-"バージョン3は、カラーバランスと同様に、darktable3.0の彩度低減方式です\n"
+"バージョン3は、カラーバランスと同様に、darktable 3.0の彩度低減方式です\n"
 "バージョン4は新しい彩度低減方式であり、光のスペクトル純度に基づいています"
 
 #: ../src/iop/filmicrgb.c:4106
@@ -15181,7 +15188,7 @@ msgstr ""
 "ミドルグレーのカスタム設定値を入力できるようにします\n"
 "たいていの場合非推奨です\n"
 "これを利用せずに、露出モジュールで画像全体の露出を修正してください\n"
-"標準の18.45 %%ミドルグレーの使用を無効にします"
+"標準の18.45%%ミドルグレーの使用を無効にします"
 
 #: ../src/iop/filmicrgb.c:4129
 msgid ""
@@ -15690,15 +15697,15 @@ msgstr "被写体までの距離"
 
 #: ../src/iop/lens.cc:2251
 msgid "distortion & TCA"
-msgstr "歪曲&倍率色収差"
+msgstr "歪曲＆倍率色収差"
 
 #: ../src/iop/lens.cc:2257
 msgid "distortion & vignetting"
-msgstr "歪曲&周辺減光"
+msgstr "歪曲＆周辺減光"
 
 #: ../src/iop/lens.cc:2263
 msgid "TCA & vignetting"
-msgstr "倍率色収差&周辺減光"
+msgstr "倍率色収差＆周辺減光"
 
 #: ../src/iop/lens.cc:2269
 msgid "only distortion"
@@ -15875,10 +15882,9 @@ msgid ""
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
 "change direction"
 msgstr ""
-"クリックとドラッグでポイントを追加します\n"
-"スクロールでサイズを変更します\n"
-"Shift+スクロールで強さを変更します\n"
-"Ctrl+スクロールで方向を変更します"
+"クリックとドラッグで点を追加します\n"
+"スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　Ctrl"
+"+スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3602
 msgid ""
@@ -15887,9 +15893,8 @@ msgid ""
 "change direction"
 msgstr ""
 "クリックで線を追加します\n"
-"スクロールでサイズを変更します\n"
-"Shift+スクロールで強さを変更します\n"
-"Ctrl+スクロールで方向を変更します"
+"スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　Ctrl"
+"+スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3606
 msgid ""
@@ -15898,9 +15903,8 @@ msgid ""
 "change direction"
 msgstr ""
 "クリックでカーブを追加します\n"
-"スクロールでサイズを変更します\n"
-"Shift+スクロールで強さを変更します\n"
-"Ctrl+スクロールで方向を変更します"
+"スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　Ctrl"
+"+スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3609
 msgid "click to edit nodes"
@@ -15962,8 +15966,7 @@ msgid ""
 "ctrl+click: add node - right click: remove path\n"
 "ctrl+alt+click: toggle line/curve"
 msgstr ""
-"Ctrl+クリック：ノードを追加する\n"
-"右クリック：パスを削除する\n"
+"Ctrl+クリック：ノードを追加する　　右クリック：パスを削除する\n"
 "Ctrl+Alt+クリック：直線／カーブを切り替える"
 
 #: ../src/iop/liquify.c:3685
@@ -16123,7 +16126,7 @@ msgstr "pngファイル%sは無効です"
 #: ../src/iop/lut3d.c:500
 #, c-format
 msgid "png bit-depth %d not supported"
-msgstr "pngのビット深度 %d はサポートされていません"
+msgstr "pngのビット深度%dはサポートされていません"
 
 #: ../src/iop/lut3d.c:514 ../src/iop/lut3d.c:524
 #, c-format
@@ -16596,7 +16599,7 @@ msgstr "08EVダイナミックレンジ（汎用）"
 
 #: ../src/iop/profile_gamma.c:640
 msgid "linear part"
-msgstr "リニアな部分"
+msgstr "リニア部分"
 
 #: ../src/iop/profile_gamma.c:644
 msgid "gamma exponential factor"
@@ -16724,7 +16727,7 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"RAWブラック／ホワイトポインの補正\n"
+"RAWのブラック／ホワイトポイントの補正\n"
 "処理が必要なセンサーに対してのみ動作します"
 
 #: ../src/iop/rcd_demosaic.c:310
@@ -17367,8 +17370,7 @@ msgstr "`%s'画像のカラーマトリクスが見つかりませんでした"
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr ""
-"`%s'からのカメラで設定したホワイトバランス情報を読み取ることが出来ませんでし"
-"た！"
+"`%s'のカメラで設定したホワイトバランス情報を読み取ることが出来ませんでした！"
 
 #: ../src/iop/temperature.c:1536
 msgctxt "white balance"
@@ -17567,7 +17569,7 @@ msgstr "単純なトーンカーブ"
 
 #: ../src/iop/toneequal.c:453
 msgid "mask blending : all purposes"
-msgstr "マスクブレンド ：全ての目的"
+msgstr "マスクブレンド：汎用"
 
 #: ../src/iop/toneequal.c:459
 msgid "mask blending : people with backlight"
@@ -18134,7 +18136,7 @@ msgstr "センタービューのビュープロパティを切り替えます"
 
 #: ../src/libs/camera.c:213
 msgid "connection with camera lost, exiting tethering mode"
-msgstr "カメラとの接続が切れました。テザリングモードを終了します"
+msgstr "カメラの接続が切れました。テザリングモードを終了します"
 
 #: ../src/libs/camera.c:354
 msgid "battery"
@@ -18213,8 +18215,8 @@ msgid ""
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets"
 msgstr ""
-"ブラケットあたりのステップ数\n"
-"ステップはカメラで設定出来、通常は1段あたり3ステップです\n"
+"ブラケットあたりのステップ数。ステップはカメラで設定出来、通常は1段あたり3ス"
+"テップです\n"
 "言い換えると、3ステップがブラケット間の1EVの露出ステップにあたります"
 
 #. user specified properties
@@ -18407,15 +18409,15 @@ msgstr "画像を除外する"
 
 #: ../src/libs/collect.c:2810
 msgid "change to: and"
-msgstr "変更します： および"
+msgstr "次に変更します：および"
 
 #: ../src/libs/collect.c:2815
 msgid "change to: or"
-msgstr "変更します： または"
+msgstr "次に変更します：または"
 
 #: ../src/libs/collect.c:2820
 msgid "change to: except"
-msgstr "変更します： 例外"
+msgstr "次に変更します：例外は"
 
 #: ../src/libs/collect.c:2846
 msgid "files"
@@ -18570,7 +18572,7 @@ msgstr[0] ""
 "1枚の画像の履歴圧縮が出来ません\n"
 "タグを参照してください：darktable|問題|履歴の圧縮"
 msgstr[1] ""
-"%d 枚の画像の履歴圧縮が出来ません\n"
+"%d枚の画像の履歴圧縮が出来ません\n"
 "タグを参照してください：darktable | 問題点 | 履歴の圧縮"
 
 #: ../src/libs/copy_history.c:203
@@ -18581,8 +18583,8 @@ msgstr "履歴圧縮 警告"
 #, c-format
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
-msgstr[0] "%d 枚の選択画像の履歴を本当に削除しますか？"
-msgstr[1] "%d 枚の選択画像の履歴を本当に削除しますか？"
+msgstr[0] "%d枚の選択画像の履歴を本当に削除しますか？"
+msgstr[1] "%d枚の選択画像の履歴を本当に削除しますか？"
 
 #: ../src/libs/copy_history.c:256
 msgid "delete images' history?"
@@ -18858,7 +18860,7 @@ msgstr "画像設定"
 #: ../src/libs/export.c:1292 ../src/libs/print_settings.c:2482
 #, c-format
 msgid "output ICC profiles in %s or %s"
-msgstr "%s または %s 内の出力ICCプロファイル"
+msgstr "%sまたは%s内の出力ICCプロファイル"
 
 #: ../src/libs/export.c:1309
 #, c-format
@@ -18938,8 +18940,8 @@ msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
-"利用可能なタグのリスト。 '追加する'ボタンをクリックするかタグ上でダブルクリッ"
-"クして、選択したものを追加します"
+"利用可能なタグのリスト。【追加する】ボタンをクリックするか、タグ上でダブルク"
+"リックして、選択したタグを追加します"
 
 #: ../src/libs/export_metadata.c:280
 msgid "edit metadata exportation"
@@ -18960,7 +18962,7 @@ msgstr "exifメタデータをエクスポートします"
 #: ../src/libs/export_metadata.c:302
 msgid "export dt xmp metadata (from metadata editor module)"
 msgstr ""
-"dt xmp メタデータをエクスポートします （メタデータエディターモジュールから）"
+"dt xmpメタデータをエクスポートします（メタデータエディターモジュールから）"
 
 #: ../src/libs/export_metadata.c:312
 msgid "only embedded"
@@ -19026,7 +19028,7 @@ msgstr "階層タグ"
 
 #: ../src/libs/export_metadata.c:342
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
-msgstr "階層タグを（Xmp.lr.Hierarchical Subjectに）エクスポートします"
+msgstr "階層タグを（Xmp.lr.Hierarchical Subjectへ）エクスポートします"
 
 #: ../src/libs/export_metadata.c:344
 msgid "develop history"
@@ -19097,7 +19099,7 @@ msgid ""
 "double operation: two ctrl-Z to undo"
 msgstr ""
 "マッチする画像にオフセットと位置情報を適用します\n"
-"二重操作：2回Ctrl+zで取り消し"
+"二重操作：2回Ctrl+zで取り消します"
 
 #: ../src/libs/geotagging.c:380 ../src/libs/geotagging.c:1894
 msgid "apply geo-location to matching images"
@@ -19477,11 +19479,11 @@ msgstr "パラメトリック入力マスク："
 
 #: ../src/libs/history.c:1220
 msgid "do you really want to clear history of current image?"
-msgstr "この画像の履歴を本当に削除しますか?"
+msgstr "この画像の履歴を本当に削除しますか？"
 
 #: ../src/libs/history.c:1225
 msgid "delete image's history?"
-msgstr "画像の履歴を削除しますか?"
+msgstr "画像の履歴を削除しますか？"
 
 #: ../src/libs/image.c:72
 msgid "selected image[s]"
@@ -19495,7 +19497,7 @@ msgstr "削除 （ゴミ箱）"
 msgid "physically delete from disk (using trash if possible)"
 msgstr ""
 "ディスクから物理的に削除します\n"
-"（出来ればゴミ箱を使用）"
+"（出来ればゴミ箱を使用します）"
 
 #: ../src/libs/image.c:186
 msgid "physically delete from disk immediately"
@@ -19582,7 +19584,7 @@ msgstr ""
 
 #: ../src/libs/image.c:528
 msgid "ungroup"
-msgstr "グループ解除"
+msgstr "グループ化を解除"
 
 #: ../src/libs/image.c:528
 msgid "remove selected images from the group"
@@ -19748,7 +19750,7 @@ msgstr "グループ化"
 #: ../src/libs/image.c:670
 msgctxt "accel"
 msgid "ungroup"
-msgstr "グループ解除"
+msgstr "グループ化を解除"
 
 #: ../src/libs/import.c:199
 msgctxt "accel"
@@ -19819,8 +19821,8 @@ msgstr "カメラをマウントする"
 #, c-format
 msgid "%d image out of %d selected"
 msgid_plural "%d images out of %d selected"
-msgstr[0] "%d 枚の画像のうち %d 枚が選択されました"
-msgstr[1] "%d 枚の画像のうち %d 枚が選択されました"
+msgstr[0] "%d枚の画像のうち%d枚が選択されました"
+msgstr[1] "%d枚の画像のうち%d枚が選択されました"
 
 #: ../src/libs/import.c:1118
 msgid "you can't delete the selected place"
@@ -20175,7 +20177,7 @@ msgstr "新しいロケーション"
 #: ../src/libs/map_locations.c:611
 #, c-format
 msgid "location name '%s' already exists"
-msgstr "ロケーション名`%s' は既に存在します"
+msgstr "ロケーション名`%s'は既に存在します"
 
 #: ../src/libs/map_locations.c:804
 msgid "edit location"
@@ -20569,7 +20571,7 @@ msgid ""
 "untick to hide metadata which are not of interest for you\n"
 "if different settings are needed, use presets"
 msgstr ""
-"希望の順序になるまで、一度に1行ずつドラッグ&ドロップします\n"
+"希望の順序になるまで、一度に1行ずつドラッグ＆ドロップします\n"
 "必要ないメタデータを非表示にするにはチェックを外します\n"
 "複数の異なる設定が必要な場合は、プリセットを使用してください"
 
@@ -20994,17 +20996,17 @@ msgstr "`%s'に`%s'を処理しています"
 #: ../src/libs/print_settings.c:329
 #, c-format
 msgid "cannot open printer profile `%s'"
-msgstr "プリンタープロファイル`%s' を開くことが出来ませんでした"
+msgstr "プリンタープロファイル`%s'を開くことが出来ませんでした"
 
 #: ../src/libs/print_settings.c:338
 #, c-format
 msgid "error getting output profile for image %d"
-msgstr "画像%d の出力プロファイルの取得中にエラーが発生しました"
+msgstr "画像%dの出力プロファイルの取得中にエラーが発生しました"
 
 #: ../src/libs/print_settings.c:347
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "プリンタープロファイル`%s' を適用することが出来ませんでした"
+msgstr "プリンタープロファイル`%s'を適用することが出来ませんでした"
 
 #: ../src/libs/print_settings.c:493
 msgid "failed to create temporary pdf for printing"
@@ -21053,7 +21055,7 @@ msgstr "プリンタードライバのカラーマネジメント"
 #: ../src/libs/print_settings.c:2150
 #, c-format
 msgid "printer ICC profiles in %s or %s"
-msgstr "%sあるいは%s内のプリンターICCプロファイル"
+msgstr "%sまたは%s内のプリンターICCプロファイル"
 
 #: ../src/libs/print_settings.c:2172
 msgid "black point compensation"
@@ -21153,7 +21155,7 @@ msgid ""
 "drag&drop image from film strip on it"
 msgstr ""
 "ページに新しい画像エリアを追加します\n"
-"ページ上でクリック&ドラッグして領域を配置し、\n"
+"ページ上でクリック＆ドラッグして領域を配置し、\n"
 "その上にフィルムストリップから画像をドラッグ＆ドロップしてください"
 
 #: ../src/libs/print_settings.c:2376
@@ -21360,7 +21362,7 @@ msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite existing style?\n"
 msgstr ""
-"スタイル `%s' は既に存在します\n"
+"スタイル`%s'は既に存在します\n"
 "上書きしますか？\n"
 
 #: ../src/libs/styles.c:449 ../src/libs/styles.c:632
@@ -21506,10 +21508,10 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"タグ`%s'を本当に削除しますか?\n"
+"タグ`%s'を本当に削除しますか？\n"
 "%d枚の画像にこのタグが付いています！"
 msgstr[1] ""
-"タグ`%s'を本当に削除しますか?\n"
+"タグ`%s'を本当に削除しますか？\n"
 "%d枚の画像にこのタグが付いています！"
 
 #: ../src/libs/tagging.c:1404
@@ -21802,7 +21804,7 @@ msgstr "デジタルカメラで撮影した画像を整理し現像します"
 
 #: ../src/libs/tools/darktable.c:301
 msgid "all those of you that made previous releases possible"
-msgstr "以前のリリースを可能にした全ての人たち"
+msgstr "これまでのリリースを可能にした全ての人たち"
 
 #: ../src/libs/tools/darktable.c:306
 msgid "and..."
@@ -21996,7 +21998,7 @@ msgstr "全体の設定を表示します"
 #: ../src/libs/tools/global_toolbox.c:662
 #, c-format
 msgid "do you want to access `%s'?"
-msgstr "`%s' にアクセスしますか？"
+msgstr "`%s'にアクセスしますか？"
 
 #: ../src/libs/tools/global_toolbox.c:667
 msgid "access the online usermanual?"
@@ -22141,7 +22143,7 @@ msgstr "継続プレビューモードのオン／オフを切り替える"
 #: ../src/libs/tools/lighttable.c:579
 msgctxt "accel"
 msgid "toggle sticky preview mode with focus detection"
-msgstr "継続プレビューモード+ピント検出のオン／オフを切り替える"
+msgstr "継続プレビューモード＋ピント検出のオン／オフを切り替える"
 
 #: ../src/libs/tools/lighttable.c:581
 msgctxt "accel"
@@ -22491,7 +22493,7 @@ msgstr "フルプレビュー"
 #: ../src/views/darkroom.c:2613
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
-msgstr "マスク編集中にパン&ズームを許可"
+msgstr "マスク編集中にパン＆ズームを許可"
 
 #: ../src/views/darkroom.c:3816
 msgid "keyboard shortcut slider precision: fine"
@@ -22964,7 +22966,7 @@ msgstr "キーを離した後も開いたままになる、クラシックウィ
 #. we add the mouse actions too
 #: ../src/views/view.c:1680
 msgid "mouse actions"
-msgstr "マウス操作"
+msgstr "マウスアクション"
 
 #, fuzzy
 #~| msgid "radius"
