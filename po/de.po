@@ -14272,7 +14272,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:127
 msgid "diffuse or sharpen"
-msgstr "Diffusion / Schärfen"
+msgstr "Diffusion / Schärfe"
 
 #: ../src/iop/diffuse.c:132
 msgid "diffusion|deconvolution|blur|sharpening"
