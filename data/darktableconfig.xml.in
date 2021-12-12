@@ -1344,6 +1344,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/culling_dynamic_num_images</name>
+    <type>int</type>
+    <default>25</default>
+    <shortdescription>images to display in culling dynamic layout</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/culling_zoom_mode</name>
     <type>int</type>
     <default>0</default>
