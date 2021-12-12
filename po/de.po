@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-11-28 16:53+0100\n"
+"PO-Revision-Date: 2021-12-12 15:36+0100\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 "X-Poedit-Bookmarks: 3066,376,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/bin/preferences_gen.h:81 ../build/bin/preferences_gen.h:3746
@@ -2447,14 +2447,14 @@ msgstr "lokaler Laplace-Filter"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:249
 #: ../build/lib/darktable/plugins/introspection_retouch.c:394
 msgid "blur type"
-msgstr "Weichzeichnungsfilter"
+msgstr "Art der Unschärfe"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:89
 #: ../build/lib/darktable/plugins/introspection_blurs.c:178
 #: ../build/lib/darktable/plugins/introspection_retouch.c:255
 #: ../build/lib/darktable/plugins/introspection_retouch.c:398
 msgid "blur radius"
-msgstr "Weichzeichnungsradius"
+msgstr "Unschärferadius"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:95
 #: ../build/lib/darktable/plugins/introspection_blurs.c:182
@@ -11507,11 +11507,11 @@ msgstr "Stärke der Überstrahlung"
 
 #: ../src/iop/blurs.c:81
 msgid "blurs"
-msgstr "Physisches Weichzeichnen"
+msgstr "Unschärfe"
 
 #: ../src/iop/blurs.c:86
 msgid "blur|lens|motion"
-msgstr "Weichzeichnen|Objektiv|Bewegung"
+msgstr "Unschärfe|Objektiv|Bewegung"
 
 #: ../src/iop/blurs.c:92
 msgid "simulate physically-accurate lens and motion blurs"
@@ -14382,7 +14382,7 @@ msgstr ""
 "Hauptgröße der Diffusion.\n"
 "Null bewirkt, dass die Diffusion stärker auf die feinsten Details wirkt.\n"
 "Nicht-Null definiert die Größe der Details auf die die Diffusion wirkt.\n"
-"Für Entschärfung und Rauschunterdrückung auf Null setzen,\n"
+"Für Schärfen und Entrauschen auf Null setzen,\n"
 "erhöhen, um stattdessen auf den lokalen Kontrast einzuwirken."
 
 #: ../src/iop/diffuse.c:1517
@@ -14410,7 +14410,7 @@ msgid ""
 "negative values sharpen.\n"
 "zero does nothing."
 msgstr ""
-"Glätten oder Schärfen von glatten Details (Gradienten).\n"
+"Glätten oder Schärfen von weichen Details (Gradienten).\n"
 "Positive Werte erhöhen Diffusion und Weichzeichnung\n"
 "Negative Werte schärfen\n"
 "Null bewirkt nichts"
