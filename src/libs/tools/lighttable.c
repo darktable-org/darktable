@@ -168,8 +168,6 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layo
       d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
     }
 
-    gtk_widget_set_sensitive(d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
-    gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
     gtk_range_set_value(GTK_RANGE(d->zoom), d->current_zoom);
 
     dt_conf_set_int("plugins/lighttable/layout", layout);
