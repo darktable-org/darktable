@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-04 21:27+0200\n"
+"PO-Revision-Date: 2021-12-13 18:15+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: ../build/bin/preferences_gen.h:81 ../build/bin/preferences_gen.h:3746
 #: ../build/bin/preferences_gen.h:3782 ../build/bin/preferences_gen.h:3818
@@ -5982,7 +5982,7 @@ msgstr "УСПІШНО: %s синхронізовано в напрямку с�
 #: ../src/control/crawler.c:558
 #, c-format
 msgid "%id %02dh %02dm %02ds"
-msgstr ""
+msgstr "%iд %02dгод %02dхв %02dс"
 
 #: ../src/control/crawler.c:623
 msgid "path"
@@ -8328,7 +8328,7 @@ msgstr "діагональ"
 
 #: ../src/gui/accelerators.c:82
 msgid "skew"
-msgstr ""
+msgstr "skew"
 
 #: ../src/gui/accelerators.c:83
 msgid "leftright"
@@ -8336,11 +8336,11 @@ msgstr "ліво-право"
 
 #: ../src/gui/accelerators.c:84
 msgid "updown"
-msgstr ""
+msgstr "updown"
 
 #: ../src/gui/accelerators.c:85
 msgid "pgupdown"
-msgstr ""
+msgstr "pgupdown"
 
 #: ../src/gui/accelerators.c:93
 msgid "shift"
@@ -8381,7 +8381,7 @@ msgstr "встановити"
 
 #: ../src/gui/accelerators.c:113
 msgid "popup"
-msgstr ""
+msgstr "popup"
 
 #: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:143
 #: ../src/gui/gtk.c:2961 ../src/views/lighttable.c:816
@@ -8413,7 +8413,7 @@ msgstr "ctrl-перемикач"
 
 #: ../src/gui/accelerators.c:125
 msgid "ctrl-on"
-msgstr ""
+msgstr "ctrl-вмикання"
 
 #: ../src/gui/accelerators.c:126
 msgid "right-toggle"
@@ -8436,10 +8436,8 @@ msgid "right-activate"
 msgstr "права-активація"
 
 #: ../src/gui/accelerators.c:144
-#, fuzzy
-#| msgid "storage"
 msgid "store"
-msgstr "збереження даних"
+msgstr "зберегти"
 
 #: ../src/gui/accelerators.c:147 ../src/gui/styles_dialog.c:507
 msgid "update"
@@ -8465,15 +8463,15 @@ msgstr "невідомий драйвер"
 
 #: ../src/gui/accelerators.c:516
 msgid "double"
-msgstr "подвійний"
+msgstr "подвійне"
 
 #: ../src/gui/accelerators.c:517
 msgid "triple"
-msgstr "потрійний"
+msgstr "потрійне"
 
 #: ../src/gui/accelerators.c:518
 msgid "long"
-msgstr "довгий"
+msgstr "довге"
 
 #: ../src/gui/accelerators.c:519
 msgid "press"
@@ -8490,8 +8488,6 @@ msgid "right"
 msgstr "правий"
 
 #: ../src/gui/accelerators.c:525
-#, fuzzy
-#| msgid "middle"
 msgctxt "accel"
 msgid "middle"
 msgstr "середній"
@@ -8507,7 +8503,6 @@ msgid "triple"
 msgstr "потрійний"
 
 #: ../src/gui/accelerators.c:528
-#, fuzzy
 msgctxt "accel"
 msgid "long"
 msgstr "довгий"
@@ -8872,10 +8867,8 @@ msgid "input devices reinitialised"
 msgstr "пристрої введення повторно ініціалізовані"
 
 #: ../src/gui/accelerators.c:2806
-#, fuzzy
-#| msgid "fallbacks"
 msgid "fallback to move"
-msgstr "резервні дії"
+msgstr "резервна дія з рухом"
 
 #: ../src/gui/accelerators.c:2980
 #, c-format
@@ -8885,7 +8878,7 @@ msgstr "%s не призначено"
 #: ../src/gui/accelerators.c:3128
 #, c-format
 msgid "%s assigned to %s"
-msgstr ""
+msgstr "%s призначено на %s"
 
 #: ../src/gui/gtk.c:158 ../src/views/darkroom.c:4659
 msgid "darktable - darkroom preview"
@@ -10974,19 +10967,19 @@ msgstr "нечітко"
 
 #: ../src/iop/atrous.c:1584 ../src/iop/atrous.c:1635
 msgid "boost"
-msgstr ""
+msgstr "посилити"
 
 #: ../src/iop/atrous.c:1585
 msgid "reduce"
-msgstr ""
+msgstr "послабити"
 
 #: ../src/iop/atrous.c:1586
 msgid "raise"
-msgstr ""
+msgstr "підняти"
 
 #: ../src/iop/atrous.c:1587
 msgid "lower"
-msgstr "нижче"
+msgstr "опустити"
 
 #: ../src/iop/atrous.c:1594
 msgid "coarsest"
@@ -20809,16 +20802,16 @@ msgid "remove widget"
 msgstr "видалити віджет"
 
 #: ../src/libs/modulegroups.c:2695
-#, fuzzy
-#| msgid "show only active modules"
 msgid "show all history modules"
-msgstr "показувати лише активні модулі"
+msgstr "показувати всі модулі зі стеку історії"
 
 #: ../src/libs/modulegroups.c:2698 ../src/libs/modulegroups.c:3862
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 msgstr ""
+"показувати модулі, які присутні в стеку історії, незалежно від того, чи "
+"ввімкнено їх зараз"
 
 #: ../src/libs/modulegroups.c:2796
 msgid "quick access panel"
@@ -20967,10 +20960,8 @@ msgid "show quick access panel"
 msgstr "показати панель швидкого доступу"
 
 #: ../src/libs/modulegroups.c:3858
-#, fuzzy
-#| msgid "only collapse modules in current group"
 msgid "show all history modules in active group"
-msgstr "згортати модулі лише в поточній групі"
+msgstr "показувати всі модулі зі стеку історії в групі активних"
 
 #: ../src/libs/modulegroups.c:3871
 msgid "auto-apply this preset"
@@ -21172,10 +21163,8 @@ msgid "snap to grid"
 msgstr "прив'язати до сітки"
 
 #: ../src/libs/print_settings.c:2322
-#, fuzzy
-#| msgid "enabled as required"
 msgid "borderless mode required"
-msgstr "увімкнено за необхідності"
+msgstr "потрібен режим без полів"
 
 #: ../src/libs/print_settings.c:2325
 msgid ""
@@ -21183,6 +21172,9 @@ msgid ""
 "in the printer driver because the selected margins are\n"
 "below the printer hardware margins"
 msgstr ""
+"вказує на те, що потрібно активувати режим без полів\n"
+"у драйвері принтера, оскільки вибрані значення полів є\n"
+"меншими за значення апаратних полів принтера"
 
 #. pack image dimension hbox here
 #: ../src/libs/print_settings.c:2332
