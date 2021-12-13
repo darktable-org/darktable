@@ -207,7 +207,9 @@ static float _action_process_button(gpointer target, dt_action_element_t element
 
   if(!isnan(move_size) && gtk_widget_is_sensitive(target))
   {
-    if(effect != DT_ACTION_EFFECT_ACTIVATE || !gtk_widget_activate(GTK_WIDGET(target)))
+    if(effect != DT_ACTION_EFFECT_ACTIVATE
+      || !g_signal_handler_find(target, G_SIGNAL_MATCH_ID, g_signal_lookup("clicked", gtk_button_get_type()), 0, NULL, NULL, NULL)
+      || !gtk_widget_activate(GTK_WIDGET(target)))
     {
       GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
       event->button.state = effect == DT_ACTION_EFFECT_ACTIVATE_CTRL
