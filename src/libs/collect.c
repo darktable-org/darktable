@@ -2233,6 +2233,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   }
 
   // update list of proposals
+  d->active_rule = active;
   update_view(d->rule + d->active_rule);
   --darktable.gui->reset;
 }
