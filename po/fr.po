@@ -2299,7 +2299,7 @@ msgstr "biais d'exposition"
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:244
 msgid "preserve colors"
-msgstr "préserver couleur"
+msgstr "préserver couleurs"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:262
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:249
