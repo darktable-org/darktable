@@ -156,13 +156,7 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layo
   {
     if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     {
-      d->current_zoom = MAX(
-        1,
-        MIN(
-          dt_conf_get_int("plugins/lighttable/culling_dynamic_num_images"),
-          dt_collection_get_selected_count(darktable.collection)
-        )
-      );
+      d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_dynamic_num_images");
     }
     else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
@@ -247,13 +241,7 @@ void gui_init(dt_lib_module_t *self)
     d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
   else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
-    d->current_zoom = MAX(
-      1,
-      MIN(
-        dt_conf_get_int("plugins/lighttable/culling_dynamic_num_images"),
-        dt_collection_get_selected_count(darktable.collection)
-      )
-    );
+    d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_dynamic_num_images");
   }
   else
     d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
