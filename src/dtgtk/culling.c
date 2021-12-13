@@ -390,7 +390,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, co
                                  const float y_root, int state)
 {
   const int max_in_memory_images = _get_max_in_memory_images();
-  if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images)
+  if(table->mode == DT_CULLING_MODE_CULLING && g_list_length(table->list) > max_in_memory_images)
   {
     dt_control_log(_("zooming is limited to %d images"), max_in_memory_images);
     return TRUE;
