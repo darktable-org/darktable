@@ -404,7 +404,7 @@ spinbutton>button
 {
   font-size: 1.5em;
   border-radius: 0.14em;
-  color: @section_label;
+  color: @button_checked_bg;
 }
 
 #view_dropdown menu,
@@ -2046,7 +2046,7 @@ treeview#delete-dialog:selected
 #view_dropdown *:selected,
 #view_label:selected
 {
-  color: @plugin_fg_color;
+  color: @button_fg;
 }
 
 #view_label:disabled

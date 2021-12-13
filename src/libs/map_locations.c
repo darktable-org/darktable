@@ -253,11 +253,11 @@ static void _display_buttons(dt_lib_module_t *self)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
-    gtk_button_set_label(GTK_BUTTON(d->new_button), _("new sub-location"));
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->new_button))), _("new sub-location"));
   }
   else
   {
-    gtk_button_set_label(GTK_BUTTON(d->new_button), _("new location"));
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->new_button))), _("new location"));
   }
 }
 
@@ -998,6 +998,7 @@ void gui_init(dt_lib_module_t *self)
 
   dt_conf_set_bool("plugins/map/showalllocations", FALSE);
   d->show_all_button = gtk_check_button_new_with_label(_("show all"));
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->show_all_button))), PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(d->show_all_button,
                               _("show all locations which are on the visible map"));
   gtk_box_pack_end(hbox, d->show_all_button, FALSE, FALSE, 8);

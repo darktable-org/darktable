@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-05 17:14+0100\n"
+"PO-Revision-Date: 2021-12-08 19:33-0300\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3137,7 +3137,7 @@ msgstr "étendue spatiale"
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:68
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:131
 msgid "range extent"
-msgstr "étendue de clarté"
+msgstr "étendue de luminance"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
 #: ../src/iop/channelmixerrgb.c:3879
@@ -8647,11 +8647,11 @@ msgstr ""
 "un modificateur (ctrl/shift/alt)\n"
 "une touche peut être appuyée deux ou trois fois, avec un appui long pour "
 "finir\n"
-"pendant que la touche est maintenue, une combinaison de clic (double/triple/"
-"long) souris peut être effectué\n"
-"en maintenant encore la touche (et modificateur et/ou boutons) la molette ou "
-"un déplacement peut être ajouté\n"
-"les périphériques connectés peuvent envoyer touches et déplacements en "
+"pendant que la touche est maintenue, une combinaison de clics (double/triple/"
+"long) souris peut être effectuée\n"
+"un mouvement de molette ou de souris peut être ajouté tout en maintenant la "
+"touche (et les modificateurs et/ou boutons)\n"
+"les périphériques connectés peuvent envoyer des touches et des mouvements en "
 "utilisant leurs contrôles physiques.\n"
 "\n"
 "clic-droit pour annuler"
@@ -8670,7 +8670,7 @@ msgstr "restauration raccourci"
 
 #: ../src/gui/accelerators.c:1740
 msgid "_defaults"
-msgstr "_défauts"
+msgstr "_défaut"
 
 #: ../src/gui/accelerators.c:1741
 msgid "_startup"
@@ -8678,7 +8678,7 @@ msgstr "_démarrage"
 
 #: ../src/gui/accelerators.c:1742
 msgid "_edits"
-msgstr "_modifier"
+msgstr "_avant modif"
 
 #: ../src/gui/accelerators.c:1747
 msgid ""
@@ -8765,7 +8765,7 @@ msgstr "id lorsque chargé"
 
 #: ../src/gui/accelerators.c:1926
 msgid "clear device first"
-msgstr "effacer la liste des périphériques"
+msgstr "effacer d'abord les raccourcis du périphérique"
 
 #: ../src/gui/accelerators.c:1950
 msgid "select file to import"
@@ -8784,7 +8784,7 @@ msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
 msgstr ""
-"recherche incrémental la liste des raccourcis\n"
+"recherche incrémentale dans la liste des raccourcis\n"
 "appuyer les touches haut ou bas pour parcourir la sélection"
 
 #. Setting up the cell renderers
@@ -8814,7 +8814,7 @@ msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
 msgstr ""
-"recherche incrémental la liste des actions\n"
+"recherche incrémentale dans la liste des actions\n"
 "appuyer les touches haut ou bas pour parcourir la sélection"
 
 #: ../src/gui/accelerators.c:2136 ../src/gui/guides.c:689

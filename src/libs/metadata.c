@@ -153,7 +153,7 @@ static void _update(dt_lib_module_t *self)
 
   GList *metadata[DT_METADATA_NUMBER];
   uint32_t metadata_count[DT_METADATA_NUMBER];
-  uint32_t imgs_count = 0;
+
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     metadata[i] = NULL;
@@ -163,7 +163,7 @@ static void _update(dt_lib_module_t *self)
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
   gchar *images = dt_view_get_images_to_act_on_query(FALSE);
-  imgs_count = g_list_length((GList *)imgs);
+  const uint32_t imgs_count = g_list_length((GList *)imgs);
 
   if(images)
   {
@@ -330,6 +330,7 @@ int position()
 static void _update_layout(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const gchar *name = dt_metadata_get_name_by_display_order(i);
@@ -747,7 +748,14 @@ void gui_init(dt_lib_module_t *self)
     d->swindow[i] = swindow;
     gtk_widget_set_size_request(d->swindow[i], -1, DT_PIXEL_APPLY_DPI(30));
 
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
+    //workaround for a Gtk issue where the textview does not wrap correctly
+    //while resizing the panel or typing into the widget
+    //reported upstream to https://gitlab.gnome.org/GNOME/gtk/-/issues/4042
+    //see also discussions on https://github.com/darktable-org/darktable/pull/10584
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+
+
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
     gtk_widget_add_events(textview, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(textview, "key-press-event", G_CALLBACK(_key_pressed), self);
@@ -759,10 +767,6 @@ void gui_init(dt_lib_module_t *self)
     d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
-
-    // doesn't work. Workaround => gui_post_expose
-    // gtk_widget_set_no_show_all(GTK_WIDGET(label), TRUE);
-    // gtk_widget_set_no_show_all(GTK_WIDGET(textview), TRUE);
   }
 
   d->init_layout = FALSE;
@@ -799,6 +803,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    g_signal_handlers_block_by_func(d->textview[i], _lost_focus, self);
     g_free(d->setting_name[i]);
   }
   free(self->data);
@@ -837,7 +842,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 {
   if(old_version == 1)
   {
-    size_t new_params_size = old_params_size + 1;
+    const size_t new_params_size = old_params_size + 1;
     char *new_params = calloc(sizeof(char), new_params_size);
 
     const char *buf = (const char *)old_params;
@@ -875,7 +880,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   }
   else if(old_version == 2)
   {
-    size_t new_params_size = old_params_size + 1;
+    const size_t new_params_size = old_params_size + 1;
     char *new_params = calloc(sizeof(char), new_params_size);
 
     memcpy(new_params, old_params, old_params_size);

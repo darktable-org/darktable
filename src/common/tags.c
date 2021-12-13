@@ -645,7 +645,7 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
       t->leave = t->leave ? t->leave + 1 : t->tag;
       t->flags = sqlite3_column_int(stmt, 2);
       t->synonym = g_strdup((char *)sqlite3_column_text(stmt, 3));
-      uint32_t imgnb = sqlite3_column_int(stmt, 4);
+      const uint32_t imgnb = sqlite3_column_int(stmt, 4);
       t->count = imgnb;
       t->select = (nb_selected == 0) ? DT_TS_NO_IMAGE :
                   (imgnb == nb_selected) ? DT_TS_ALL_IMAGES :
@@ -1074,7 +1074,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
     t->leave = t->leave ? t->leave + 1 : t->tag;
     t->id = sqlite3_column_int(stmt, 1);
     t->count = sqlite3_column_int(stmt, 2);
-    uint32_t imgnb = sqlite3_column_int(stmt, 3);
+    const uint32_t imgnb = sqlite3_column_int(stmt, 3);
     t->select = (nb_selected == 0) ? DT_TS_NO_IMAGE :
                 (imgnb == nb_selected) ? DT_TS_ALL_IMAGES :
                 (imgnb == 0) ? DT_TS_NO_IMAGE : DT_TS_SOME_IMAGES;
@@ -1254,7 +1254,7 @@ uint32_t dt_tag_get_with_usage(GList **result)
     t->leave = t->leave ? t->leave + 1 : t->tag;
     t->id = sqlite3_column_int(stmt, 1);
     t->count = sqlite3_column_int(stmt, 2);
-    uint32_t imgnb = sqlite3_column_int(stmt, 3);
+    const uint32_t imgnb = sqlite3_column_int(stmt, 3);
     t->select = (nb_selected == 0) ? DT_TS_NO_IMAGE :
                 (imgnb == nb_selected) ? DT_TS_ALL_IMAGES :
                 (imgnb == 0) ? DT_TS_NO_IMAGE : DT_TS_SOME_IMAGES;
