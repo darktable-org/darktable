@@ -36,6 +36,8 @@ void dt_shortcuts_reinitialise();
 void dt_shortcuts_select_view(dt_view_type_flags_t view);
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data);
+gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
+                                      GtkTooltip *tooltip, gpointer user_data);
 
 float dt_action_process(const gchar *action, int instance, const gchar *element, const gchar *effect, float size);
 
