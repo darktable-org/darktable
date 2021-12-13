@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-06 18:07+0200\n"
-"PO-Revision-Date: 2021-12-06 18:07+0200\n"
+"PO-Revision-Date: 2021-12-13 15:51+0200\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -838,7 +838,7 @@ msgstr "Tämä on hitaampi kuin oletustapa."
 
 #: ../build/bin/preferences_gen.h:5509
 msgid "pixel interpolator (warp)"
-msgstr "Pikselien interpolointi (warp)"
+msgstr "Pikselien interpolointi (vääristymät)"
 
 #: ../build/bin/preferences_gen.h:5520 ../build/bin/preferences_gen.h:5585
 #: ../build/bin/conf_gen.h:1994 ../build/bin/conf_gen.h:2004
@@ -2821,7 +2821,7 @@ msgstr "Epälineaarinen Bradford"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:554
 msgid "XYZ"
-msgstr "XYZ "
+msgstr "XYZ"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:555
 msgid "none (bypass)"
@@ -4603,8 +4603,8 @@ msgid ""
 "notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output "
 "pattern"
 msgstr ""
-"Huomio: Viennin sijainti on hakemisto. Oletetaan %s/$(FILE_NAME).%s' viennin "
-"nimeämiskäytännöksi."
+"Huomio: Viennin sijainti on hakemisto. Oletetaan '%s/$(FILE_NAME).%s' "
+"viennin nimeämiskäytännöksi."
 
 #. output file exists or there's output ext specified and it's same as file...
 #: ../src/cli/main.c:503
@@ -5473,7 +5473,7 @@ msgstr "Virhe paikallisen kopion siirrossa `%s' -> `%s'"
 #: ../src/common/image.c:1972
 #, c-format
 msgid "error moving `%s': file not found"
-msgstr "Virhe siirrettäessä tiedostoa '%s': tiedostoa ei löydy"
+msgstr "Virhe siirrettäessä tiedostoa `%s': tiedostoa ei löydy"
 
 #: ../src/common/image.c:1982
 #, c-format
@@ -5895,7 +5895,7 @@ msgstr "Näytä esiasetusikkuna"
 
 #: ../src/control/control.c:310
 msgid "working..."
-msgstr "Työstetään.."
+msgstr "Työstetään..."
 
 #: ../src/control/crawler.c:357
 #, c-format
@@ -7100,7 +7100,7 @@ msgstr "Vaihda piirretyn maskin polarisaatio"
 
 #: ../src/develop/blend_gui.c:2353
 msgid "show and edit mask elements"
-msgstr "näytää ja muokkaa maskin elementtejä."
+msgstr "Näytä ja muokkaa maskin elementtejä."
 
 #: ../src/develop/blend_gui.c:2353
 msgid "show and edit in restricted mode"
@@ -11514,8 +11514,7 @@ msgstr "Kuvasuhde"
 #: ../src/iop/borders.c:1045
 msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr ""
-"Valitse kuvasuhde tai napsauta hiiren oikealla napilla\n"
-"ja syötä oma (leveys:korkeus)."
+"Valitse kuvasuhde tai napsauta hiiren oikealla napilla ja syötä oma (l:k)."
 
 #: ../src/iop/borders.c:1047
 msgid "set the custom aspect ratio"
@@ -11534,8 +11533,8 @@ msgid ""
 "select the horizontal position ratio relative to top or right click and type "
 "your own (y:h)"
 msgstr ""
-"Valitse vaakasuuntainen sijainti suhteessa yläreunaan tai\n"
-"napsauta hiiren oikealla napilla ja syötä oma (Y-akseli:korkeus)."
+"Valitse vaakasuuntainen sijainti suhteessa yläreunaan tai napsauta hiiren "
+"oikealla napilla ja syötä oma (y:k)."
 
 #: ../src/iop/borders.c:1064
 msgid "custom horizontal position"
@@ -11550,8 +11549,8 @@ msgid ""
 "select the vertical position ratio relative to left or right click and type "
 "your own (x:w)"
 msgstr ""
-"Valitse pystysuuntainen sijainti suhteessa yläreunaan tai\n"
-"napsauta hiiren oikealla napilla ja syötä oma (X-akseli:leveys)."
+"Valitse pystysuuntainen sijainti suhteessa yläreunaan tai napsauta hiiren "
+"oikealla napilla ja syötä oma (x:l)."
 
 #: ../src/iop/borders.c:1075
 msgid "custom vertical position"
@@ -12367,7 +12366,7 @@ msgstr "Delta E käyttää CIE 2000 kaavaa."
 
 #: ../src/iop/channelmixerrgb.c:4003
 msgid "accept the computed profile and set it in the module"
-msgstr "Hyväksy laskettu profiili ja aseta se moduliin."
+msgstr "Hyväksy laskettu profiili ja aseta se moduuliin."
 
 #: ../src/iop/channelmixerrgb.c:4008
 msgid "recompute the profile"
@@ -19152,7 +19151,7 @@ msgid ""
 msgstr ""
 "Aloita kirjoittamaan nähdäksesi sallitut arvot ja valitaksesi "
 "aikavyöhykkeen.\n"
-"Paina Enter vahvistaaksesi valinnan jotta  jokerimerkki * häviää."
+"Paina Enter vahvistaaksesi valinnan jotta jokerimerkki * häviää."
 
 #. gpx
 #: ../src/libs/geotagging.c:1797
@@ -20958,7 +20957,7 @@ msgstr "Käsitellään `%s' kohteelle `%s'"
 #: ../src/libs/print_settings.c:329
 #, c-format
 msgid "cannot open printer profile `%s'"
-msgstr "Tulostimen profiilin '%s' avaus ei onnistu."
+msgstr "Tulostimen profiilin `%s' avaus ei onnistu."
 
 #: ../src/libs/print_settings.c:338
 #, c-format
@@ -20968,7 +20967,7 @@ msgstr "Virhe haettaessa vientiväriprofiilia kuvalle %d"
 #: ../src/libs/print_settings.c:347
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "Tulostimen profiilin '%s' käyttöönotto ei onnistu."
+msgstr "Tulostimen profiilin `%s' käyttöönotto ei onnistu."
 
 #: ../src/libs/print_settings.c:500
 msgid "failed to create temporary pdf for printing"
