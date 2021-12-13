@@ -722,22 +722,6 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   // if we are in selection synchronisation mode, we exit this mode
   if(table->selection_sync) table->selection_sync = FALSE;
 
-  // if we are in dynamic mode, zoom = selection count
-  if(table->mode == DT_CULLING_MODE_CULLING
-     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
-  {
-    sqlite3_stmt *stmt;
-    int sel_count = 0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT count(*) "
-                                "FROM memory.collected_images AS col, main.selected_images as sel "
-                                "WHERE col.imgid=sel.imgid",
-                                -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-    const int nz = (sel_count <= 1) ? dt_conf_get_int("plugins/lighttable/culling_num_images") : sel_count;
-    dt_view_lighttable_set_zoom(darktable.view_manager, nz);
-  }
   // if we navigate only in the selection we just redraw to ensure no unselected image is present
   if(table->navigate_inside_selection)
   {
@@ -922,7 +906,6 @@ void dt_culling_init(dt_culling_t *table, int offset)
 
   // get first id
   sqlite3_stmt *stmt;
-  gchar *query = NULL;
   int first_id = -1;
 
   if(offset > 0)
@@ -975,52 +958,6 @@ void dt_culling_init(dt_culling_t *table, int offset)
     table->navigate_inside_selection = TRUE;
     table->offset = _thumb_get_rowid(first_id);
     table->offset_imgid = first_id;
-    return;
-  }
-
-  // is first_id inside selection ?
-  gboolean inside = FALSE;
-  query = g_strdup_printf("SELECT col.imgid "
-                          "FROM memory.collected_images AS col, main.selected_images AS sel "
-                          "WHERE col.imgid=sel.imgid AND col.imgid=%d",
-                          first_id);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW) inside = TRUE;
-  sqlite3_finalize(stmt);
-  g_free(query);
-
-  if(table->mode == DT_CULLING_MODE_PREVIEW)
-  {
-    table->navigate_inside_selection = (sel_count > 1 && inside);
-    table->selection_sync = (sel_count == 1 && inside);
-  }
-  else if(table->mode == DT_CULLING_MODE_CULLING)
-  {
-    const int zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
-    // we first determine if we synchronize the selection with culling images
-    table->selection_sync = FALSE;
-    if(sel_count == 1 && inside)
-      table->selection_sync = TRUE;
-    else if(sel_count == zoom && inside)
-    {
-      // we ensure that the selection is continuous
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT MIN(rowid), MAX(rowid) "
-                                  "FROM memory.collected_images AS col, main.selected_images as sel "
-                                  "WHERE col.imgid=sel.imgid ",
-                                  -1, &stmt, NULL);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        if(sqlite3_column_int(stmt, 0) + sel_count - 1 == sqlite3_column_int(stmt, 1))
-        {
-          table->selection_sync = TRUE;
-        }
-      }
-      sqlite3_finalize(stmt);
-    }
-
-    // we now determine if we limit culling images to the selection
-    table->navigate_inside_selection = (!table->selection_sync && inside);
   }
 
   table->offset = _thumb_get_rowid(first_id);
