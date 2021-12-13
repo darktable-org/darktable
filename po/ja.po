@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-13 00:23+0900\n"
+"PO-Revision-Date: 2021-12-13 16:04+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -67,7 +67,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:8271 ../build/bin/preferences_gen.h:8331
 #: ../build/bin/preferences_gen.h:8383
 msgid "this setting has been modified"
-msgstr "このセッティングは変更されました"
+msgstr "この設定は変更されています"
 
 #: ../build/bin/preferences_gen.h:3726 ../src/libs/tools/lighttable.c:68
 #: ../src/views/lighttable.c:88
@@ -225,7 +225,7 @@ msgstr "TRUE"
 
 #: ../build/bin/preferences_gen.h:3943 ../build/bin/preferences_gen.h:4675
 msgid "defines whether scrollbars should be displayed"
-msgstr "スクロールバーを表示するかいなか定義します"
+msgstr "スクロールバーを表示するかいなかを定義します"
 
 #: ../build/bin/preferences_gen.h:3953
 msgid "thumbnails"
@@ -315,7 +315,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4068
 msgid "high quality processing from size"
-msgstr "次のサイズより大きい場合、高品質な処理を行う"
+msgstr "次のサイズより大きい場合、高クオリティな処理を行う"
 
 #: ../build/bin/preferences_gen.h:4141
 msgid ""
@@ -352,7 +352,7 @@ msgstr "サムネイル上の拡張オーバーレイテキストのひな型"
 
 #: ../build/bin/preferences_gen.h:4224 ../build/bin/preferences_gen.h:4267
 msgid "see manual to know all the tags you can use."
-msgstr "使用出来るタグの全てについては、マニュアルを参照してください."
+msgstr "使用出来るタグの全てについては、マニュアルを参照してください"
 
 #: ../build/bin/preferences_gen.h:4246
 msgid "pattern for the thumbnail tooltip (empty to disable)"
@@ -460,7 +460,7 @@ msgstr "画像情報のひな型"
 
 #: ../build/bin/preferences_gen.h:4520
 msgid "see manual for a list of the tags you can use."
-msgstr "使用できるタグのリストは マニュアルを参照してください."
+msgstr "使用できるタグのリストは マニュアルを参照してください"
 
 #: ../build/bin/preferences_gen.h:4542
 msgid "position of the image information line"
@@ -546,7 +546,7 @@ msgstr ""
 "【RCD以下に限定】ではRCDと【処理】タブ内の【ピクセル補間】オプションで指定さ"
 "れた補間モードを使用します\n"
 "【最高】はフルサイズエクスポートの設定をそのまま使用します\n"
-"X-Transセンサーは中庸の処理としてRCDではなくVNGを使用します."
+"X-Transセンサーは中庸の処理としてRCDではなくVNGを使用します"
 
 #: ../build/bin/preferences_gen.h:4762
 msgid "reduce resolution of preview image"
@@ -664,7 +664,7 @@ msgid ""
 "enabled or disabled."
 msgstr ""
 "このオプションを使用すると、モジュールを有効化または無効化した時に、モジュー"
-"ルを自動的に展開または折りたたみます."
+"ルを自動的に展開または折りたたみます"
 
 #: ../build/bin/preferences_gen.h:5116
 msgid "scroll to processing modules when expanded/collapsed"
@@ -838,7 +838,7 @@ msgstr "出力カラープロファイルを適用する際、常にLittleCMS 2�
 
 #: ../build/bin/preferences_gen.h:5487
 msgid "this is slower than the default."
-msgstr "デフォルトより速度が遅くなります."
+msgstr "デフォルトより速度が遅くなります"
 
 #: ../build/bin/preferences_gen.h:5509
 msgid "pixel interpolator (warp)"
@@ -901,7 +901,7 @@ msgstr "3D lutのルートフォルダ"
 #: ../src/libs/import.c:1674 ../src/libs/import.c:1728 ../src/libs/styles.c:394
 #: ../src/lua/preferences.c:665
 msgid "select directory"
-msgstr "ディレクトリの選択"
+msgstr "ディレクトリを選択してください"
 
 #: ../build/bin/preferences_gen.h:5665
 msgid ""
@@ -1036,7 +1036,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5944
 msgid "cpu / gpu / memory"
-msgstr "cpu / gpu / メモリ"
+msgstr "cpu／gpu／メモリ"
 
 #: ../build/bin/preferences_gen.h:5964
 msgid "memory in MB to use for thumbnail cache"
@@ -1062,9 +1062,9 @@ msgid ""
 "be increased greatly when browsing a lot. to generate all thumbnails of your "
 "entire collection offline, run 'darktable-generate-cache'."
 msgstr ""
-"有効にした場合、完全なプレビューをキャッシュメモリから削除しディスク （."
-"cache/darktable/）に書き込みます\n"
-" これはメモリを大量に消費する可能性があり （20k画像に対して数ギガバイト）、"
+"有効にした場合、完全なプレビューをキャッシュメモリから削除しディスク（.cache/"
+"darktable/）に書き込みます\n"
+" これはメモリを大量に消費する可能性があり（20k画像に対して数ギガバイト）、"
 "キャッシュされたサムネイルを再び削除することはないので注意してください。 しか"
 "し、必要な場合には、これを手動で削除しても安全です\n"
 "大量に閲覧する際のライトテーブルのパフォーマンスが大幅に向上します\n"
@@ -1085,7 +1085,7 @@ msgid ""
 msgstr ""
 "有効にした場合、完全なプレビューをキャッシュメモリから削除しディスク（.cache/"
 "darktable/）に書き込みます\n"
-" これはメモリを大量に消費する可能性があり （20k画像に対して数ギガバイト）、"
+" これはメモリを大量に消費する可能性があり（20k画像に対して数ギガバイト）、"
 "キャッシュされたサムネイルを再び削除することはないので注意してください。 しか"
 "し、必要な場合には、これを手動で削除しても安全です\n"
 " フルプレビューモードで画像をズームする際のライトテーブルのパフォーマンスが大"
@@ -1105,7 +1105,7 @@ msgstr ""
 "画像処理中にモジュールが使用できるメモリの最大量（MB）を制御します\n"
 "低い値にすると、メモリ消費量の多いモジュールが画像を処理する際、タイルの数が"
 "増加していきます\n"
-"0は無制限、500以下の値は500として扱われます （要再起動）."
+"0は無制限、500以下の値は500として扱われます （要再起動）"
 
 #: ../build/bin/preferences_gen.h:6126
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
@@ -1119,7 +1119,7 @@ msgstr "タイリング用バッファのメモリの最小量（MB単位）"
 
 #: ../build/bin/preferences_gen.h:6172
 msgid "activate OpenCL support"
-msgstr "OpenCLサポートを有効にします"
+msgstr "OpenCLサポートを有効にする"
 
 #: ../build/bin/preferences_gen.h:6186
 msgid ""
@@ -1176,7 +1176,7 @@ msgstr ""
 "デフォルト：GPU はフルピクセルパイプを処理し、CPUはプレビューパイプを処理しま"
 "す （設定パラメーターで修正可能）\n"
 "複数のGPU：2つの異なるGPUで両方のピクセルパイプを並列処理します\n"
-"非常に高速なGPU：両方のピクセルパイプを同一のGPUで順次処理します."
+"非常に高速なGPU：両方のピクセルパイプを同一のGPUで順次処理します"
 
 #: ../build/bin/preferences_gen.h:6291
 msgid "security"
@@ -1214,7 +1214,7 @@ msgstr "画像を削除する際、ゴミ箱を使用するよう試みる"
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
-msgstr "ファイルを永久に削除するのではなくゴミ箱に送ります"
+msgstr "ファイルを永久に削除するのではなくゴミ箱へ送ります"
 
 #: ../build/bin/preferences_gen.h:6458
 msgid "ask before moving images from film roll folder"
@@ -1422,8 +1422,8 @@ msgid ""
 "recent one for successful restore"
 msgstr ""
 "スナップショットの作成に成功した後、以前に作成したスナップショットをいくつ保"
-"持するか選択します（必須であるヴァージョンアップデート時のスナップショットを"
-"のぞいて）\n"
+"持するか選択します（必須であるバージョンアップデート時のスナップショットをの"
+"ぞいて）\n"
 "-1を入力すると、全てのスナップショットを保持します\n"
 "スナップショットを保存するとストレージが消費されること、最新のスナップショッ"
 "トだけで復元可能であることに留意してください"
@@ -1611,10 +1611,10 @@ msgid ""
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"XMPファイルを作成するとき、階層タグは非階層タグの簡易リストとしても追加され、"
-"他のプログラムでも見られるようになります\n"
+"XMPファイルを作成する時、階層タグは非階層タグの簡易リストとしても追加され、他"
+"のプログラムでも見られるようになります\n"
 "このオプションがチェックされると、darktableは最後の部分のみを追加し、残りを無"
-"視します。したがって'foo|bar|baz'は'baz'のみを追加します."
+"視します。したがって'foo|bar|baz'は'baz'のみを追加します"
 
 #: ../build/bin/preferences_gen.h:7587
 msgid "disable the entry completion"
@@ -1639,7 +1639,7 @@ msgid ""
 "that are applied (in order) to decide which module instance shortcuts will "
 "be applied to"
 msgstr ""
-"複数のモジュールインスタンスが存在するとき、以下の設定は、どのモジュールイン"
+"複数のモジュールインスタンスが存在する場合、以下の設定は、どのモジュールイン"
 "スタンスにキーボードショートカットを適用するか決定するために（順番に）適用さ"
 "れるルールを制御します"
 
@@ -1710,8 +1710,8 @@ msgid ""
 "visually assigned to those specific instances\n"
 "otherwise shortcuts will always be assigned to the preferred instance"
 msgstr ""
-"画像に複数のインスタンスが存在するとき、これによってキーボードショートカット"
-"が特定のインスタンスへ目に見えるかたちで割り当てられるようになります\n"
+"画像に複数のインスタンスが存在する時、これによってキーボードショートカットが"
+"特定のインスタンスへ目に見えるかたちで割り当てられるようになります\n"
 "チェックしない場合、キーボードショートカットは常に優先されているインスタンス"
 "に割り当てられます"
 
@@ -1789,26 +1789,26 @@ msgstr "子を持たないタグに「未分類」エントリを設定しない
 
 #: ../build/bin/preferences_gen.h:8168
 msgid "tags case sensitivity"
-msgstr "タグの大文字／小文字区別"
+msgstr "タグの大文字／小文字の区別"
 
 #: ../build/bin/preferences_gen.h:8179 ../build/bin/conf_gen.h:418
 msgctxt "preferences"
 msgid "sensitive"
-msgstr "大文字／小文字を区別する"
+msgstr "区別する"
 
 #: ../build/bin/preferences_gen.h:8184 ../build/bin/preferences_gen.h:8203
 #: ../build/bin/conf_gen.h:419
 msgctxt "preferences"
 msgid "insensitive"
-msgstr "大文字／小文字を区別しない"
+msgstr "区別しない"
 
 #: ../build/bin/preferences_gen.h:8206
 msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensivity works "
 "only for the 26 latin letters"
 msgstr ""
-"タグにおいて大文字と小文字を区別します。拡張機能 Sqlite ICUがない場合、26個の"
-"ラテン文字に対してのみ区別がされません"
+"タグにおいて大文字と小文字を区別するかいなか\n"
+"拡張機能 Sqlite ICUがない場合、区別が無効になるのは26個のラテン文字のみです"
 
 #: ../build/bin/preferences_gen.h:8228
 msgid "number of folder levels to show in lists"
@@ -1924,16 +1924,16 @@ msgstr "インポートされていない画像のみ選択"
 
 #: ../build/bin/conf_gen.h:831
 msgid "ignore JPEG images"
-msgstr "JPEG画像を無視します"
+msgstr "JPEG画像を無視"
 
 #: ../build/bin/conf_gen.h:832
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"同一のディレクトリ内にRAW+JPEG画像があるとき、両方ともにインポートする意味は"
-"ありません。このフラグによって、検出された全てのJPEG画像を無視することが出来"
-"ます"
+"同一のディレクトリ内にRAW+JPEG画像がある時、両方ともにインポートする意味はあ"
+"りません\n"
+"このフラグによって、検出された全てのJPEG画像を無視することが出来ます"
 
 #: ../build/bin/conf_gen.h:837
 msgid "apply metadata"
@@ -1941,7 +1941,7 @@ msgstr "メタデータを適用"
 
 #: ../build/bin/conf_gen.h:838
 msgid "apply some metadata to all newly imported images."
-msgstr "新しくインポートした画像全てにメタデータを適用します."
+msgstr "新しくインポートした画像全てにメタデータを適用します"
 
 #: ../build/bin/conf_gen.h:843
 msgid "recursive directory"
@@ -1949,7 +1949,7 @@ msgstr "再帰ディレクトリ"
 
 #: ../build/bin/conf_gen.h:844
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "フィルムロールをインポートするとき、再帰的にディレクトリを辿ります"
+msgstr "フィルムロールをインポートする時、再帰的にディレクトリを辿ります"
 
 #: ../build/bin/conf_gen.h:849
 msgid "creator to be applied when importing"
@@ -2002,7 +2002,7 @@ msgstr "インポート作業名"
 
 #: ../build/bin/conf_gen.h:917
 msgid "override today's date"
-msgstr "今日の日付を上書きします"
+msgstr "今日の日付を上書き"
 
 #: ../build/bin/conf_gen.h:918
 msgid ""
@@ -2011,9 +2011,9 @@ msgid ""
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\n"
 "let the field empty otherwise"
 msgstr ""
-"変数を展開する時に使われる日時を上書きしたい場合、有効な日時を入力してくださ"
-"い(YYYY-MM-DD[Thh:mm:ss] )：\n"
-"$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\n"
+"変数$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS)を展開する時に使"
+"われる日時を上書きしたい場合、\n"
+"有効な日時をここに入力してください(YYYY-MM-DD[Thh:mm:ss] )\n"
 "上書きしたくない場合は空欄にしてください"
 
 #: ../build/bin/conf_gen.h:923
@@ -2473,7 +2473,7 @@ msgstr "画像の向き"
 #: ../build/lib/darktable/plugins/introspection_borders.c:134
 #: ../build/lib/darktable/plugins/introspection_borders.c:267
 msgid "border size"
-msgstr "縁取りのサイズ"
+msgstr "縁のサイズ"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:140
 #: ../build/lib/darktable/plugins/introspection_borders.c:271
@@ -2674,11 +2674,11 @@ msgstr "パイプラインと同じ（D50）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:508
 msgid "A (incandescent)"
-msgstr "A （電球（白熱灯））"
+msgstr "A（電球（白熱灯））"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:509
 msgid "D (daylight)"
-msgstr "D （太陽光）"
+msgstr "D（太陽光）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:510
 msgid "E (equi-energy)"
@@ -2690,7 +2690,7 @@ msgstr "F（蛍光灯）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:512
 msgid "LED (LED light)"
-msgstr "LED （LED光）"
+msgstr "LED（LED光）"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:513
 msgid "Planckian (black body)"
@@ -2703,7 +2703,7 @@ msgstr "カスタム"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
 msgid "(AI) detect from image surfaces..."
-msgstr "（AI） 画像表面から判断..."
+msgstr "（AI）画像表面から判断..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:516
 msgid "(AI) detect from image edges..."
@@ -2736,7 +2736,7 @@ msgstr "F5（昼光色 6350 K）– 演色性 中"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:527
 msgid "F6 (Lite White 4150 K) – medium CRI"
-msgstr "F6（ライトホワイト（一般的蛍光灯） 4150 K）– 演色性 中"
+msgstr "F6（ライトホワイト（一般的蛍光灯）4150 K）– 演色性 中"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:528
 msgid "F7 (D65 simulator 6500 K) – high CRI"
@@ -2879,7 +2879,7 @@ msgstr "出力彩度（サチュレーション）"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:229
 msgid "lift, gamma, gain (ProPhotoRGB)"
-msgstr "リフト、ガンマ、ゲイン （ProPhotoRGB）"
+msgstr "リフト、ガンマ、ゲイン（ProPhotoRGB）"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:230
 msgid "slope, offset, power (ProPhotoRGB)"
@@ -3360,7 +3360,7 @@ msgstr "精緻化＆メディアン"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:236
 msgid "2x refine + medians"
-msgstr "2x精緻化+メディアン"
+msgstr "2x精緻化 + メディアン"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:125
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:300
@@ -3641,7 +3641,7 @@ msgstr "バランス　シャドウ ↔ ハイライト"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:307
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:478
 msgid "add noise in highlights"
-msgstr "ハイライトにノイズを加える"
+msgstr "ハイライトにノイズを追加"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:313
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:482
@@ -3666,7 +3666,7 @@ msgstr "カスタム設定のミドルグレー値を使用"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:337
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:498
 msgid "iterations of high-quality reconstruction"
-msgstr "高クオリティな再構成を反復する"
+msgstr "高クオリティな再構成を反復"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:343
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:502
@@ -4562,7 +4562,7 @@ msgstr "--out-extの長すぎるext拡張子"
 #: ../src/cli/main.c:344
 #, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
-msgstr "入力ファイルまたはディレクトリ '%s' は存在しません. スキップします\n"
+msgstr "入力ファイルまたはディレクトリ '%s' は存在しません。スキップします\n"
 
 #: ../src/cli/main.c:353
 #, c-format
@@ -4572,7 +4572,7 @@ msgstr "--icc-type: '%s'に不適切なICC 形式です \n"
 #: ../src/cli/main.c:369
 #, c-format
 msgid "notice: ICC file '%s' doesn't exist, skipping\n"
-msgstr "ICC ファイル'%s'は存在しません. スキップします\n"
+msgstr "ICC ファイル'%s'は存在しません。スキップします\n"
 
 #: ../src/cli/main.c:378
 #, c-format
@@ -4862,8 +4862,7 @@ msgstr "未定義"
 #: ../src/common/collection.c:2245
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
-msgstr ""
-"%d枚の画像が現在のコレクション内の%d 枚の画像から選択されています (#%d)"
+msgstr "%d枚の画像が現在のコレクション内の%d枚の画像から選択されています (#%d)"
 
 #: ../src/common/collection.c:2251
 #, c-format
@@ -5054,11 +5053,11 @@ msgid ""
 "in case you have manually modified them to custom values.\n"
 "would you like to execute this update of the performance configuration?\n"
 msgstr ""
-"パフォーマンス設定ロジックがアップデートされます。darktableのパフォーマンスが"
-"向上する可能性があります\n"
+"パフォーマンス設定ロジックが更新されます。darktableのパフォーマンスが向上する"
+"可能性があります\n"
 "これは、既存の設定の一部を上書きする可能性があります。特にユーザーが手動でカ"
 "スタム値に変更した場合に起こります\n"
-"このパフォーマンス設定のアップデートを実行しますか？\n"
+"このパフォーマンス設定の更新を実行しますか？\n"
 
 #: ../src/common/darktable.c:920 ../src/common/database.c:2543
 #: ../src/common/database.c:3601 ../src/common/variables.c:508
@@ -5662,7 +5661,7 @@ msgstr "レターサイズ"
 
 #: ../src/common/pdf.h:107
 msgid "legal"
-msgstr "リーガル"
+msgstr "リーガルサイズ"
 
 #: ../src/common/pwstorage/pwstorage.c:83
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
@@ -6007,7 +6006,7 @@ msgstr "更新されたXMPサイドカーファイルが見つかりました"
 
 #: ../src/control/crawler.c:655
 msgid "_close"
-msgstr "_閉じる"
+msgstr "_閉じます"
 
 #. action-box
 #: ../src/control/crawler.c:669 ../src/libs/import.c:1785
@@ -6061,14 +6060,14 @@ msgstr "先にカメラをマニュアルモードに設定して下さい！"
 
 #: ../src/control/jobs/camera_jobs.c:210
 msgid "capture images"
-msgstr "画像を撮影する"
+msgstr "画像を撮影します"
 
 #: ../src/control/jobs/camera_jobs.c:231
 #, c-format
 msgid "%d/%d imported to %s"
 msgid_plural "%d/%d imported to %s"
-msgstr[0] "%d/%d枚の画像を%sにインポートしました"
-msgstr[1] "%d/%d枚の画像を%sにインポートしました"
+msgstr[0] "%d／%d枚の画像を%sにインポートしました"
+msgstr[1] "%d／%d枚の画像を%sにインポートしました"
 
 #: ../src/control/jobs/camera_jobs.c:286
 msgid "starting to import images from camera"
@@ -6083,7 +6082,7 @@ msgstr[1] "カメラから%d枚の画像をインポートしています"
 
 #: ../src/control/jobs/camera_jobs.c:357
 msgid "import images from camera"
-msgstr "カメラから画像をインポートする"
+msgstr "カメラから画像をインポートします"
 
 #: ../src/control/jobs/control_jobs.c:142
 msgid "failed to create film roll for destination directory, aborting move.."
@@ -6148,7 +6147,7 @@ msgstr[1] "%d枚の画像を除去しています"
 #: ../src/control/jobs/control_jobs.c:833
 #, c-format
 msgid "could not send %s to trash%s%s"
-msgstr "%sをゴミ箱%s%sに移動することが出来ませんでした"
+msgstr "%sをゴミ箱%s%sへ移動することが出来ませんでした"
 
 #: ../src/control/jobs/control_jobs.c:834
 #, c-format
@@ -6157,15 +6156,15 @@ msgstr "%s%s%sを物理的に削除することが出来ませんでした"
 
 #: ../src/control/jobs/control_jobs.c:844
 msgid "physically delete"
-msgstr "物理的に削除する"
+msgstr "物理的に削除します"
 
 #: ../src/control/jobs/control_jobs.c:845
 msgid "physically delete all files"
-msgstr "全てのファイルを物理的に削除する"
+msgstr "全てのファイルを物理的に削除します"
 
 #: ../src/control/jobs/control_jobs.c:847
 msgid "only remove from the image library"
-msgstr "画像ライブラリのみから除去する"
+msgstr "画像ライブラリのみから除去します"
 
 #: ../src/control/jobs/control_jobs.c:848
 msgid "skip to next file"
@@ -6187,8 +6186,8 @@ msgstr "削除エラー"
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
-msgstr[0] "%d枚の画像をゴミ箱に移動しています"
-msgstr[1] "%d枚の画像をゴミ箱に移動しています"
+msgstr[0] "%d枚の画像をゴミ箱へ移動しています"
+msgstr[1] "%d枚の画像をゴミ箱へ移動しています"
 
 #: ../src/control/jobs/control_jobs.c:999
 #, c-format
@@ -6239,8 +6238,8 @@ msgstr[1] "%d枚の画像のローカルコピーを作成しています"
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
-msgstr[0] "%d枚の画像のローカルコピーを取り除いています"
-msgstr[1] "%d枚の画像のローカルコピーを取り除いています"
+msgstr[0] "%d枚の画像のローカルコピーを除去しています"
+msgstr[1] "%d枚の画像のローカルコピーを除去しています"
 
 #: ../src/control/jobs/control_jobs.c:1282
 #, c-format
@@ -6259,7 +6258,7 @@ msgstr[1] "%d枚の画像をエクスポートしています.."
 #: ../src/control/jobs/control_jobs.c:1398
 #, c-format
 msgid "exporting %d / %d to %s"
-msgstr "%d/%d枚の画像を%sにエクスポートしています"
+msgstr "%d／%d枚の画像を%sにエクスポートしています"
 
 #: ../src/control/jobs/control_jobs.c:1419 ../src/views/darkroom.c:834
 #: ../src/views/print.c:337
@@ -6273,20 +6272,20 @@ msgstr "HDR画像を結合する"
 
 #: ../src/control/jobs/control_jobs.c:1525
 msgid "duplicate images"
-msgstr "画像を複製する"
+msgstr "画像を複製します"
 
 #: ../src/control/jobs/control_jobs.c:1531
 msgid "flip images"
-msgstr "画像を反転する"
+msgstr "画像を反転します"
 
 #: ../src/control/jobs/control_jobs.c:1538
 msgid "set monochrome images"
-msgstr "モノクロ画像を設定する"
+msgstr "画像をモノクロに設定します"
 
 #. get all selected images now, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1545
 msgid "remove images"
-msgstr "画像を除去する"
+msgstr "画像を除去します"
 
 #: ../src/control/jobs/control_jobs.c:1562
 #, c-format
@@ -6297,11 +6296,11 @@ msgid_plural ""
 "do you really want to remove %d images from darktable\n"
 "(without deleting files on disk)?"
 msgstr[0] ""
-"%d枚の画像を本当にdarktableから除去しますか？（ファイルをディスクから削除しな"
-"い）"
+"%d枚の画像を本当にdarktableから除去しますか？\n"
+"（ファイルをディスクから削除しません）"
 msgstr[1] ""
-"%d枚の画像を本当にdarktableから取り除きますか？（ファイルをディスクから削除し"
-"ない）"
+"%d枚の画像を本当にdarktableから除去しますか？\n"
+"（ファイルをディスクから削除しません）"
 
 #: ../src/control/jobs/control_jobs.c:1569
 msgid "remove image?"
@@ -6315,7 +6314,7 @@ msgstr "画像を除去しますか？"
 #: ../src/control/jobs/control_jobs.c:1585
 #: ../src/control/jobs/control_jobs.c:1629
 msgid "delete images"
-msgstr "画像を削除する"
+msgstr "画像を削除します"
 
 #: ../src/control/jobs/control_jobs.c:1605
 #, c-format
@@ -6362,12 +6361,12 @@ msgstr "選択した画像を本当にディスクから物理的に削除しま
 
 #: ../src/control/jobs/control_jobs.c:1670
 msgid "move images"
-msgstr "画像を移動する"
+msgstr "画像を移動します"
 
 #: ../src/control/jobs/control_jobs.c:1682
 #: ../src/control/jobs/control_jobs.c:1744
 msgid "_select as destination"
-msgstr "_送り先として選択"
+msgstr "_送り先として選択します"
 
 #: ../src/control/jobs/control_jobs.c:1702
 #, c-format
@@ -6378,7 +6377,7 @@ msgid_plural ""
 "do you really want to physically move %d images to %s?\n"
 "(all duplicates will be moved along)"
 msgstr[0] ""
-"%d枚の画像を本当に%sに物理的に移動しますか？\n"
+"%d枚の画像を本当に%sへ物理的に移動しますか？\n"
 "（全ての複製画像が移動します）"
 msgstr[1] ""
 "%d枚の画像を本当に%sに物理的に移動しますか？\n"
@@ -6392,7 +6391,7 @@ msgstr[1] "画像を移動しますか？"
 
 #: ../src/control/jobs/control_jobs.c:1732
 msgid "copy images"
-msgstr "画像をコピーする"
+msgstr "画像をコピーします"
 
 #: ../src/control/jobs/control_jobs.c:1764
 #, c-format
@@ -6410,11 +6409,11 @@ msgstr[1] "画像をコピーしますか？"
 #: ../src/control/jobs/control_jobs.c:1790
 #: ../src/control/jobs/control_jobs.c:1798
 msgid "local copy images"
-msgstr "画像をローカルコピーする"
+msgstr "画像をローカルコピーします"
 
 #: ../src/control/jobs/control_jobs.c:1805 ../src/libs/image.c:600
 msgid "refresh exif"
-msgstr "exifを更新"
+msgstr "exifを更新します"
 
 #: ../src/control/jobs/control_jobs.c:1869
 #, c-format
@@ -6425,7 +6424,7 @@ msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:1885
 msgid "export images"
-msgstr "画像をエクスポートする"
+msgstr "画像をエクスポートします"
 
 #: ../src/control/jobs/control_jobs.c:1948
 #, c-format
@@ -6486,8 +6485,8 @@ msgstr[1] "%d枚の画像をインポートしています"
 #, c-format
 msgid "importing %d/%d image"
 msgid_plural "importing %d/%d images"
-msgstr[0] "%d/%d枚の画像をインポートしています"
-msgstr[1] "%d/%d枚の画像をインポートしています"
+msgstr[0] "%d／%d枚の画像をインポートしています"
+msgstr[1] "%d／%d枚の画像をインポートしています"
 
 #: ../src/control/jobs/control_jobs.c:2273
 #, c-format
@@ -6498,7 +6497,7 @@ msgstr[1] "%d枚の画像をインポートしました"
 
 #: ../src/control/jobs/film_jobs.c:73 ../src/control/jobs/film_jobs.c:109
 msgid "import images"
-msgstr "画像をインポートする"
+msgstr "画像をインポートします"
 
 #: ../src/control/jobs/film_jobs.c:239
 msgid "no supported images were found to be imported"
@@ -6512,7 +6511,7 @@ msgstr "画像%s をインポートしています"
 
 #: ../src/control/jobs/image_jobs.c:110
 msgid "import image"
-msgstr "画像をインポートする"
+msgstr "画像をインポートします"
 
 #: ../src/develop/blend.c:289
 msgid "detail mask blending error"
@@ -6766,7 +6765,7 @@ msgstr "ラスターマスク"
 
 #: ../src/develop/blend_gui.c:106 ../src/develop/blend_gui.c:3017
 msgid "drawn & parametric mask"
-msgstr "描画 ＆ パラメトリックマスク"
+msgstr "描画＆パラメトリックマスク"
 
 #: ../src/develop/blend_gui.c:110
 msgid "exclusive"
@@ -7238,7 +7237,7 @@ msgstr "ブレンドの不透明度を設定します"
 
 #: ../src/develop/blend_gui.c:3084 ../src/libs/history.c:877
 msgid "combine masks"
-msgstr "マスク組み合わせの方式"
+msgstr "マスク組み合わせ方式"
 
 #: ../src/develop/blend_gui.c:3085
 msgid ""
@@ -7248,7 +7247,7 @@ msgstr "個々の描画マスクとパラメトリック マスクの諸チャ�
 
 #: ../src/develop/blend_gui.c:3089 ../src/libs/history.c:885
 msgid "invert mask"
-msgstr "マスクを反転"
+msgstr "マスク反転"
 
 #: ../src/develop/blend_gui.c:3090
 msgid "apply mask in normal or inverted mode"
@@ -8643,7 +8642,7 @@ msgstr "選択したショートカットを削除しますか？"
 
 #: ../src/gui/accelerators.c:1736
 msgid "restore shortcuts"
-msgstr "ショートカットを復元する"
+msgstr "ショートカットを復元します"
 
 #: ../src/gui/accelerators.c:1740
 msgid "_defaults"
@@ -8682,7 +8681,7 @@ msgstr "ショートカット"
 
 #: ../src/gui/accelerators.c:1811
 msgid "export shortcuts"
-msgstr "ショートカットをエクスポートする"
+msgstr "ショートカットをエクスポートします"
 
 #: ../src/gui/accelerators.c:1814 ../src/gui/accelerators.c:1893
 #: ../src/gui/hist_dialog.c:196 ../src/gui/presets.c:467
@@ -8714,7 +8713,7 @@ msgstr "デバイスID"
 
 #: ../src/gui/accelerators.c:1863
 msgid "select file to export"
-msgstr "エクスポートするファイルを選択"
+msgstr "エクスポートするファイルを選択してください"
 
 #: ../src/gui/accelerators.c:1864 ../src/libs/tagging.c:2336
 msgid "_export"
@@ -8722,7 +8721,7 @@ msgstr "_エクスポート"
 
 #: ../src/gui/accelerators.c:1890
 msgid "import shortcuts"
-msgstr "ショートカットをインポートする"
+msgstr "ショートカットをインポートします"
 
 #: ../src/gui/accelerators.c:1898
 msgid ""
@@ -8738,15 +8737,15 @@ msgstr "ファイル内のID"
 
 #: ../src/gui/accelerators.c:1922
 msgid "id when loaded"
-msgstr "読み取られたときのID"
+msgstr "読み取られた時のID"
 
 #: ../src/gui/accelerators.c:1926
 msgid "clear device first"
-msgstr "最初にデバイスをクリアします"
+msgstr "読み込み前にデバイスを消去"
 
 #: ../src/gui/accelerators.c:1950
 msgid "select file to import"
-msgstr "インポートするファイルを選択"
+msgstr "インポートするファイルを選択してください"
 
 #: ../src/gui/accelerators.c:1951 ../src/libs/tagging.c:2300
 msgid "_import"
@@ -8754,7 +8753,7 @@ msgstr "_インポート"
 
 #: ../src/gui/accelerators.c:2024
 msgid "search shortcuts list"
-msgstr "ショートカットのリストを検索する"
+msgstr "ショートカットのリストを検索"
 
 #: ../src/gui/accelerators.c:2025
 msgid ""
@@ -8784,7 +8783,7 @@ msgstr "効果"
 
 #: ../src/gui/accelerators.c:2115
 msgid "search actions list"
-msgstr "アクションのリストを検索する"
+msgstr "アクションのリストを検索"
 
 #: ../src/gui/accelerators.c:2116
 msgid ""
@@ -8809,7 +8808,7 @@ msgid ""
 "when used in combination with a base shortcut"
 msgstr ""
 "追加されたボタン、修飾キーあるいはマウスの移動がベースとなるショートカットと"
-"組み合わせて使用されたとき、デフォルト設定の意味を有効にします"
+"組み合わせて使用された時、デフォルト設定の意味を有効にします"
 
 #: ../src/gui/accelerators.c:2178
 msgid "restore..."
@@ -9397,11 +9396,11 @@ msgstr ""
 
 #: ../src/gui/hist_dialog.c:191
 msgid "select parts to copy"
-msgstr "部分を選択してコピーする"
+msgstr "コピーするものを選択してください"
 
 #: ../src/gui/hist_dialog.c:191
 msgid "select parts to paste"
-msgstr "部分を選択して貼り付ける"
+msgstr "貼り付けるものを選択してください"
 
 #: ../src/gui/hist_dialog.c:194 ../src/gui/styles_dialog.c:419
 msgid "select _all"
@@ -9454,8 +9453,7 @@ msgstr ""
 "選択されたメタデータが画像からインポートされ、デフォルトの値を上書きします\n"
 "これによって、【更新されたxmpファイルを探す】と【サイドカーファイル読み込み】"
 "も実行されます\n"
-"注意：xmpファイルがアップデートされる際、選択されていないメタデータが除去され"
-"ます"
+"注意：xmpファイルが更新される際、選択されていないメタデータが除去されます"
 
 #. tags
 #: ../src/gui/import_metadata.c:461
@@ -9585,7 +9583,7 @@ msgstr "自動"
 
 #: ../src/gui/preferences.c:854
 msgid "search presets list"
-msgstr "プリセットリストを検索する"
+msgstr "プリセットリストを検索"
 
 #: ../src/gui/preferences.c:855
 msgid ""
@@ -9801,7 +9799,7 @@ msgstr "プリセット`%s'は書き込み保護されています。編集出�
 #: ../src/gui/presets.c:808 ../src/libs/lib.c:157
 #, c-format
 msgid "do you really want to update the preset `%s'?"
-msgstr "プリセット`%s'を本当にアップデートしますか？"
+msgstr "プリセット`%s'を本当に更新しますか？"
 
 #: ../src/gui/presets.c:812 ../src/libs/lib.c:161
 msgid "update preset?"
@@ -9873,11 +9871,11 @@ msgstr "スタイル%sは正常に保存されました"
 
 #: ../src/gui/styles_dialog.c:406
 msgid "edit style"
-msgstr "スタイルを編集する"
+msgstr "スタイルを編集します"
 
 #: ../src/gui/styles_dialog.c:407
 msgid "duplicate style"
-msgstr "スタイルを複製する"
+msgstr "スタイルを複製します"
 
 #: ../src/gui/styles_dialog.c:408
 msgid "creates a duplicate of the style before applying changes"
@@ -9885,7 +9883,7 @@ msgstr "変更を適用する前にスタイルの複製を作成します"
 
 #: ../src/gui/styles_dialog.c:412
 msgid "create new style"
-msgstr "新しいスタイルを作成する"
+msgstr "新しいスタイルを作成します"
 
 #: ../src/gui/styles_dialog.c:446
 msgid "enter a name for the new style"
@@ -9927,7 +9925,7 @@ msgstr "ビット深度"
 
 #: ../src/imageio/format/avif.c:776
 msgid "color information stored in an image, higher is better"
-msgstr "画像に保存される色情報。高いほど質が高いです"
+msgstr "画像に保存される色情報。値が大きいほど良質です"
 
 #: ../src/imageio/format/avif.c:788
 msgid "rgb colors"
@@ -10009,7 +10007,7 @@ msgid ""
 "the global options below do not apply!"
 msgstr ""
 "選択した画像を1：1コピーします\n"
-"以下のグローバルオプションは適用されません！"
+"以下の【全般設定】は適用されません！"
 
 #: ../src/imageio/format/exr.cc:189
 msgid "the selected output profile doesn't work well with exr"
@@ -10017,7 +10015,7 @@ msgstr "選択した出力プロファイルは、exrtoにはうまく動作し�
 
 #: ../src/imageio/format/exr.cc:355
 msgid "OpenEXR (float)"
-msgstr "OpenEXR （フロート）"
+msgstr "OpenEXR（浮動小数点）"
 
 #: ../src/imageio/format/exr.cc:374
 msgid "compression mode"
@@ -10037,11 +10035,11 @@ msgstr "ZIP"
 
 #: ../src/imageio/format/exr.cc:380
 msgid "PIZ (default)"
-msgstr "PIZ （デフォルト）"
+msgstr "PIZ（デフォルト）"
 
 #: ../src/imageio/format/exr.cc:381
 msgid "PXR24 (lossy)"
-msgstr "PXR24 （非可逆）"
+msgstr "PXR24（非可逆）"
 
 #: ../src/imageio/format/exr.cc:382
 msgid "B44 (lossy)"
@@ -10081,7 +10079,7 @@ msgstr "Cinema4K, 24FPS"
 
 #: ../src/imageio/format/jpeg.c:555
 msgid "JPEG (8-bit)"
-msgstr "JPEG （8ビット）"
+msgstr "JPEG（8ビット）"
 
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:527
 #: ../src/imageio/format/tiff.c:809
@@ -10090,11 +10088,11 @@ msgstr "16ビット"
 
 #: ../src/imageio/format/pdf.c:199 ../src/imageio/format/pdf.c:482
 msgid "invalid paper size"
-msgstr "無効な用紙サイズ"
+msgstr "無効な用紙のサイズです"
 
 #: ../src/imageio/format/pdf.c:206
 msgid "invalid border size, using 0"
-msgstr "無効なボーダーサイズ、0を使用します"
+msgstr "無効な縁のサイズです。0を使用します"
 
 #: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:332
 #: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:349
@@ -10109,12 +10107,12 @@ msgstr "PDF"
 
 #: ../src/imageio/format/pdf.c:583
 msgid "enter the title of the pdf"
-msgstr "PDFのタイトルを入力"
+msgstr "PDFのタイトルを入力してください"
 
 #. // papers
 #: ../src/imageio/format/pdf.c:595 ../src/libs/print_settings.c:2192
 msgid "paper size"
-msgstr "用紙サイズ"
+msgstr "用紙のサイズ"
 
 # PDFの用紙のサイズ
 # リストから選択 または "<幅> [単位] x <高さ> <単位>
@@ -10176,7 +10174,7 @@ msgstr "PDF内の画像の解像度"
 
 #: ../src/imageio/format/pdf.c:649
 msgid "rotate images"
-msgstr "画像を回転する"
+msgstr "画像を回転"
 
 #: ../src/imageio/format/pdf.c:654
 msgid ""
@@ -10226,7 +10224,7 @@ msgstr "非圧縮"
 
 #: ../src/imageio/format/pdf.c:703 ../src/imageio/format/tiff.c:824
 msgid "deflate"
-msgstr "デフレート 圧縮"
+msgstr "デフレート圧縮"
 
 #: ../src/imageio/format/pdf.c:706
 msgid ""
@@ -10235,8 +10233,8 @@ msgid ""
 "deflate -- smaller files but slower"
 msgstr ""
 "画像の圧縮方法\n"
-"非圧縮 -- 高速ですがファイルサイズが大きくなります\n"
-"デフレート圧縮 -- ファイルサイズが小さくなりますが遅くなります"
+"非圧縮： 高速ですがファイルサイズが大きくなります\n"
+"デフレート圧縮：ファイルサイズが小さくなりますが遅くなります"
 
 #: ../src/imageio/format/pdf.c:714
 msgid "image mode"
@@ -10260,13 +10258,13 @@ msgid ""
 "draft -- images are replaced with boxes\n"
 "debug -- only show the outlines and bounding boxen"
 msgstr ""
-"標準 - 画像をPDFに挿入します\n"
-"ドラフト - 画像はボックスに置き換えられます\n"
-"デバッグ - 輪郭と境界ボックスのみ表示します"
+"標準：画像をPDFに挿入します\n"
+"ドラフト：画像はボックスに置き換えられます\n"
+"デバッグ：輪郭と境界ボックスのみ表示します"
 
 #: ../src/imageio/format/pfm.c:118
 msgid "PFM (float)"
-msgstr "PFM（フロート）"
+msgstr "PFM（浮動小数点）"
 
 #: ../src/imageio/format/png.c:483
 msgid "PNG (8/16-bit)"
@@ -10286,7 +10284,7 @@ msgstr "TIFF（8／16／32ビット）"
 
 #: ../src/imageio/format/tiff.c:810
 msgid "32 bit (float)"
-msgstr "32ビット（フロート）"
+msgstr "32ビット（浮動小数点）"
 
 #: ../src/imageio/format/tiff.c:825
 msgid "deflate with predictor"
@@ -10302,11 +10300,11 @@ msgstr "白黒画像"
 
 #: ../src/imageio/format/tiff.c:849
 msgid "write rgb colors"
-msgstr "RGBカラーを書き込みます"
+msgstr "RGBカラーを書き込む"
 
 #: ../src/imageio/format/tiff.c:850
 msgid "write grayscale"
-msgstr "グレースケールを書き込みます"
+msgstr "グレースケールを書き込む"
 
 #: ../src/imageio/format/webp.c:288
 msgid "WebP (8-bit)"
@@ -10322,7 +10320,7 @@ msgstr "ロスレス"
 
 #: ../src/imageio/format/webp.c:340
 msgid "applies only to lossy setting"
-msgstr "非可逆設定のみに適用する"
+msgstr "非可逆設定にのみ適用する"
 
 #: ../src/imageio/format/webp.c:351
 msgid "image hint"
@@ -10577,8 +10575,8 @@ msgstr "piwigo にアップロードすることが出来ませんでした！"
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
-msgstr[0] "%d/%d枚をpiwigoウェブ アルバムにエクスポートしました"
-msgstr[1] "%d/%d枚をpiwigoウェブ アルバムにエクスポートしました"
+msgstr[0] "%d／%d枚をpiwigoウェブ アルバムにエクスポートしました"
+msgstr[1] "%d／%d枚をpiwigoウェブ アルバムにエクスポートしました"
 
 #: ../src/iop/ashift.c:120
 msgid "rotate and perspective"
@@ -10818,7 +10816,7 @@ msgstr "シャープネス|アキュータンス|ローカルコントラスト"
 #: ../src/iop/atrous.c:138
 msgid "add or remove local contrast, sharpness, acutance"
 msgstr ""
-"ローカルコントラスト、シャープネス、アキュータンスを追加または削除します"
+"局所的なコントラスト、シャープネス、アキュータンスを追加または削除します"
 
 #: ../src/iop/atrous.c:139 ../src/iop/bilateral.cc:99 ../src/iop/diffuse.c:142
 #: ../src/iop/exposure.c:114 ../src/iop/filmicrgb.c:354
@@ -10916,7 +10914,7 @@ msgstr "細かい"
 
 #: ../src/iop/atrous.c:1369
 msgid "contrasty"
-msgstr "コントラスト強"
+msgstr "コントラスト強い"
 
 #: ../src/iop/atrous.c:1375 ../src/iop/denoiseprofile.c:3427
 #: ../src/iop/rawdenoise.c:764
@@ -11487,7 +11485,7 @@ msgstr "正方形"
 
 #: ../src/iop/borders.c:979
 msgid "constant border"
-msgstr "一定のボーダー"
+msgstr "同じ幅の縁"
 
 #: ../src/iop/borders.c:980 ../src/iop/borders.c:1006 ../src/iop/borders.c:1012
 msgid "custom..."
@@ -11679,8 +11677,8 @@ msgid ""
 "automatic chromatic aberration correction\n"
 "only for bayer raw files"
 msgstr ""
-"自動色収差補正\n"
-"ベイヤーセンサーのRAWファイルでのみ動作します"
+"色収差の自動補正\n"
+"ベイヤーセンサーのRAWファイルでのみ動作"
 
 #: ../src/iop/cacorrectrgb.c:161 ../src/iop/defringe.c:75
 msgid "chromatic aberrations"
@@ -11706,7 +11704,7 @@ msgstr ""
 
 #: ../src/iop/cacorrectrgb.c:751
 msgid "increase for stronger correction"
-msgstr "値を上げるとより強い補正をおこないます"
+msgstr "値を上げるとより強い補正を行います"
 
 #: ../src/iop/cacorrectrgb.c:753
 msgid ""
@@ -12094,7 +12092,7 @@ msgstr ""
 "相関色感度の概算値\n"
 "このイルミナントは太陽光スペクトルをモデルとして用いることで正確に計算されま"
 "す\n"
-"ゆえにこの温度はイルミナントDと関連し意味があるものです"
+"それゆえこの温度はイルミナントDと関連し意味があるものです"
 
 #: ../src/iop/channelmixerrgb.c:3286
 #, c-format
@@ -12110,7 +12108,7 @@ msgstr ""
 "相関色感度の概算値\n"
 "このイルミナントは黒体スペクトルをモデルとして用いることで正確に計算されま"
 "す\n"
-"ゆえにこの温度はプランキアンイルミナントと関連し意味があるものです"
+"それゆえこの温度はプランキアンイルミナントと関連し意味があるものです"
 
 #: ../src/iop/channelmixerrgb.c:3294
 #, c-format
@@ -12128,8 +12126,8 @@ msgstr ""
 "相関色感度の概算値\n"
 "このイルミナントは太陽光スペクトルをモデルとしても黒体スペクトルをモデルとし"
 "ても正確に計算されません\n"
-"ゆえにこの温度は関連するものがなく意味がありません。カスタム設定のイルミナン"
-"トを使用する必要があります"
+"それゆえこの温度は関連するものがなく意味がありません。カスタム設定のイルミナ"
+"ントを使用する必要があります"
 
 #: ../src/iop/channelmixerrgb.c:3303
 #, c-format
@@ -12988,7 +12986,7 @@ msgstr "画像全体の色のオフセットの彩度（クロマ）"
 
 #: ../src/iop/colorbalancergb.c:1711
 msgid "shadows lift"
-msgstr "シャドウ リフト"
+msgstr "シャドウ　リフト"
 
 #: ../src/iop/colorbalancergb.c:1718
 msgid "luminance gain in shadows"
@@ -13004,7 +13002,7 @@ msgstr "シャドウの色の増幅の彩度（クロマ）"
 
 #: ../src/iop/colorbalancergb.c:1735
 msgid "highlights gain"
-msgstr "ハイライト ゲイン"
+msgstr "ハイライト　ゲイン"
 
 #: ../src/iop/colorbalancergb.c:1742
 msgid "luminance gain in highlights"
@@ -13912,7 +13910,7 @@ msgstr "緑チャンネルのマッチング方式"
 
 #: ../src/iop/demosaic.c:5805
 msgid "not applicable"
-msgstr "適用出来ません"
+msgstr "適用不可"
 
 #: ../src/iop/demosaic.c:5806
 msgid "demosaicing is only used for color raw images"
@@ -14261,10 +14259,10 @@ msgid ""
 "this is analogous to giving more time to the diffusion reaction.\n"
 "if you plan on sharpening or inpainting, more iterations help reconstruction."
 msgstr ""
-"反復の値を上げると、効果は強くなりますが、モジュールの動作が遅くなります\n"
+"反復を増やすと、効果が強まりますが、モジュールの動作は遅くなります\n"
 "これは拡散の反応により多くの時間を与えるのに似たことです\n"
-"もしシャープ化や修復をするつもりであれば、反復を増やすと再構成の性能が向上し"
-"ます"
+"もしシャープ化や修復を行うつもりであれば、反復を増やすと再構成の質が向上しま"
+"す"
 
 #: ../src/iop/diffuse.c:1507
 msgid ""
@@ -14276,9 +14274,9 @@ msgid ""
 msgstr ""
 "拡散の主要なスケール\n"
 "設定を0にすると、拡散が最も精緻なディテールにおいてより強く働きます\n"
-"0以外の値に設定すると、強く拡散するディテールのサイズを定義します\n"
+"0以外の値に設定すると、拡散が強く働くディテールのサイズを定義します\n"
 "ぼけやノイズを除去する場合、設定を0にしてください\n"
-"値を上げるとローカルコントラストに作用します"
+"値を上げると局所的なコントラストに作用します"
 
 #: ../src/iop/diffuse.c:1517
 msgid ""
@@ -14796,7 +14794,7 @@ msgid ""
 "except if you want a faded look"
 msgstr ""
 "出力の純粋な黒の輝度\n"
-"退色したルックにいたい場合をのぞいて、この値は0％であるべきです"
+"退色したルックにしたい場合以外、この値は0％であるべきです"
 
 #: ../src/iop/filmic.c:1751 ../src/iop/filmicrgb.c:4085
 msgid ""
@@ -14812,7 +14810,7 @@ msgid ""
 "except if you want a faded look"
 msgstr ""
 "出力の純粋な白の輝度\n"
-"退色したルックにいたい場合をのぞいて、この値は0％であるべきです"
+"退色したルックにしたい場合以外、この値は0％であるべきです"
 
 #: ../src/iop/filmic.c:1766
 msgid "target gamma"
@@ -14997,11 +14995,11 @@ msgid ""
 "this is not an artificial intelligence, but a simple guess.\n"
 "ensure you understand its assumptions before using it."
 msgstr ""
-"統計的な仮定をもとに設定を最適化するよう試みます\n"
+"統計的な推定をもとに設定を最適化するよう試みます\n"
 "これによって輝度の分布域はヒストグラムの境界内におさまります\n"
 "風景や照明の均一な写真でより適切に機能しますが、ハイキーやローキー、高ISOの写"
 "真ではうまく機能しません\n"
-"これは人工知能ではなく、単純な推測です。使用する前にその仮定を理解してくださ"
+"これは人工知能ではなく、単純な推測です。使用する前にその推定を理解してくださ"
 "い"
 
 #. Page RECONSTRUCT
@@ -15568,8 +15566,8 @@ msgid ""
 "hot pixel correction\n"
 "only works for raw images."
 msgstr ""
-"ホットピクセル補正\n"
-"RAW画像でのみ動作します"
+"ホットピクセルの補正\n"
+"RAW画像でのみ動作"
 
 #: ../src/iop/invert.c:94 ../src/iop/invert.c:537
 #, c-format
@@ -15796,7 +15794,7 @@ msgstr "歪曲"
 
 #: ../src/iop/lens.cc:2376
 msgid "correct distortions or apply them"
-msgstr "歪曲を補正するか適用します"
+msgstr "歪曲を補正または適用します"
 
 #: ../src/iop/lens.cc:2383
 msgid "Transversal Chromatic Aberration red"
@@ -15812,7 +15810,7 @@ msgstr "実行した補正："
 
 #: ../src/iop/lens.cc:2394
 msgid "which corrections have actually been done"
-msgstr "どの補正が実行されたか"
+msgstr "どの補正が実際に行われたか"
 
 #: ../src/iop/levels.c:110 ../src/iop/rgblevels.c:994
 #: ../src/iop/rgblevels.c:1025
@@ -16219,7 +16217,7 @@ msgstr "lutのルートフォルダが設定されていません"
 
 #: ../src/iop/lut3d.c:1556
 msgid "select lut file"
-msgstr "lutファイルを選択します"
+msgstr "lutファイルを選択してください"
 
 #: ../src/iop/lut3d.c:1557
 msgid "_select"
@@ -16245,7 +16243,8 @@ msgid ""
 "CAUTION: 3D lut folder must be set in preferences/processing before choosing "
 "the lut file"
 msgstr ""
-"png（haldclut）、キューブ、3dl、またはgmz（圧縮lut）ファイルを選択します\n"
+"png（haldclut）、キューブ、3dl、またはgmz（圧縮lut）ファイルを選択してくださ"
+"い\n"
 "注意：lutファイルを選択する前に、【設定】の【処理】タブで3D lutフォルダを設定"
 "する必要があります"
 
@@ -16254,7 +16253,7 @@ msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D lut folder must be "
 "set in preferences/processing before choosing the lut file"
 msgstr ""
-"png（haldclut）、キューブ、または3dlファイルを選択します\n"
+"png（haldclut）、キューブ、または3dlファイルを選択してください\n"
 "注意：lutファイルを選択する前に、【設定】の【処理】タブで3D lutフォルダを設定"
 "する必要があります"
 
@@ -16658,8 +16657,8 @@ msgid ""
 "raw denoising\n"
 "only works for raw images."
 msgstr ""
-"RAWノイズ除去\n"
-"RAW画像でのみ動作します"
+"RAWのノイズの除去\n"
+"RAW画像でのみ動作"
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
@@ -16728,7 +16727,7 @@ msgid ""
 "only works for the sensors that need it."
 msgstr ""
 "RAWのブラック／ホワイトポイントの補正\n"
-"処理が必要なセンサーに対してのみ動作します"
+"処理が必要なセンサーに対してのみ動作"
 
 #: ../src/iop/rcd_demosaic.c:310
 msgid "[rcd_demosaic] too small area"
@@ -17111,7 +17110,9 @@ msgstr "ピクセルの自動回転"
 msgid ""
 "automatic pixel rotation\n"
 "only works for the sensors that need it."
-msgstr "ピクセルの自動回転は、それを必要とするセンサーでのみ動作します"
+msgstr ""
+"ピクセルの自動回転\n"
+"処理が必要なセンサーに対してのみ動作"
 
 #: ../src/iop/scalepixels.c:54
 msgctxt "modulename"
@@ -17126,7 +17127,9 @@ msgstr "ピクセルの自動スケール調整"
 msgid ""
 "automatic pixel scaling\n"
 "only works for the sensors that need it."
-msgstr "ピクセルの自動スケール調整は、それを必要とするセンサーのみ動作します"
+msgstr ""
+"ピクセルのスケールの自動調整\n"
+"処理が必要なセンサーに対してのみ動作"
 
 #: ../src/iop/shadhi.c:175
 msgid "shadows and highlights"
@@ -17137,8 +17140,8 @@ msgid ""
 "modify the tonal range of the shadows and highlights\n"
 "of an image by enhancing local contrast."
 msgstr ""
-"ローカルコントラストを強化して、\n"
-"画像のシャドウとハイライトの階調範囲を変更します"
+"局所的なコントラストを強化して、\n"
+"画像のシャドウとハイライトの階調の範囲を変更します"
 
 #: ../src/iop/shadhi.c:699 ../src/iop/splittoning.c:544
 msgid "compress"
@@ -17745,8 +17748,8 @@ msgid ""
 msgstr ""
 "正の値は、より滑らかなトーンを生成しますが、設定によってはカーブが揺れる場合"
 "があります\n"
-"負の値は、揺れを防ぎ、動作はより堅牢になりますが、トーンの転移は雑になり、"
-"ローカルコントラストを損なう可能性があります"
+"負の値は、揺れを防ぎ、動作はより堅牢になりますが、トーンの遷移は急になり、局"
+"所的なコントラストを損なう可能性があります"
 
 #. Masking options
 #: ../src/iop/toneequal.c:3223
@@ -17783,9 +17786,9 @@ msgid ""
 "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided "
 "filter' methods"
 msgstr ""
-"【なし】は全体のコントラストとローカルコントラストに影響します（コントラスト"
+"【なし】は全体のコントラストと局所的なコントラストに影響します（コントラスト"
 "を加えるだけの場合安全です）\n"
-"【ガイドフィルター】は全体のコントラストにのみ影響し、ローカルコントラストを"
+"【ガイドフィルター】は全体のコントラストにのみ影響し、局所的なコントラストを"
 "保持するよう試みます\n"
 "【平均ガイドフィルター】は【なし】と【ガイドフィルター】の幾何学的平均です\n"
 "【eigf（露光非依存ガイドフィルター）は露出に依存しないガイドフィルターです。"
@@ -17820,7 +17823,7 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
-"境界ぼかしの精度：\n"
+"境界ぼかしの精度\n"
 "値を上げると、マスクはより厳密にエッジに沿いますが、平滑化の効果が失われるか"
 "もしれません\n"
 "値を下げると、グラデーションが滑らかになり、平滑化が向上しますが、エッジ部の"
@@ -18027,14 +18030,15 @@ msgstr "マーカー"
 #: ../src/iop/watermark.c:1244
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
-msgstr "%s/watermarks または %s/watermarks 内のSVG形式の透かし"
+msgstr "%s/watermarksまたは%s/watermarks内のSVG形式の透かし"
 
 #: ../src/iop/watermark.c:1261
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
 msgstr ""
-"透かしの色　タグ：\n"
+"透かしの色\n"
+"タグ：\n"
 "$(WATERMARK_COLOR)"
 
 #: ../src/iop/watermark.c:1263
@@ -18055,7 +18059,8 @@ msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
 msgstr ""
-"テキストの文字列　タグ\n"
+"テキストの文字列\n"
+"タグ：\n"
 "$(WATERMARK_TEXT)"
 
 #. Text font
@@ -18070,7 +18075,8 @@ msgid ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 msgstr ""
-"テキストのフォント　タグ\n"
+"テキストのフォント\n"
+"タグ：\n"
 "$(WATERMARK_FONT_FAMILY)\n"
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
@@ -18299,7 +18305,7 @@ msgstr "フィルムロールを検索..."
 
 #: ../src/libs/collect.c:615
 msgid "remove..."
-msgstr "除去する..."
+msgstr "除去..."
 
 #: ../src/libs/collect.c:1245
 msgid "uncategorized"
@@ -18549,7 +18555,7 @@ msgstr "履歴スタック"
 
 #: ../src/libs/copy_history.c:107
 msgid "open sidecar file"
-msgstr "サイドカーファイルを開く"
+msgstr "サイドカーファイルを開いてください"
 
 #: ../src/libs/copy_history.c:140
 msgid "XMP sidecar files"
@@ -18836,11 +18842,11 @@ msgstr "アップスケーリングを許可"
 
 #: ../src/libs/export.c:1257
 msgid "high quality resampling"
-msgstr "高クオリティのリサンプリング"
+msgstr "高クオリティなリサンプリング"
 
 #: ../src/libs/export.c:1260
 msgid "do high quality resampling during export"
-msgstr "エクスポート中に高クオリティのリサンプリングを行います"
+msgstr "エクスポート中に高クオリティなリサンプリングを行います"
 
 #: ../src/libs/export.c:1264
 msgid "store masks"
@@ -18903,7 +18909,7 @@ msgstr "エクスポート用に一時的に使用するスタイル"
 
 #: ../src/libs/export.c:1350 ../src/libs/print_settings.c:2550
 msgid "replace history"
-msgstr "履歴を置き換える"
+msgstr "履歴を置き換え"
 
 #: ../src/libs/export.c:1351 ../src/libs/print_settings.c:2551
 msgid "append history"
@@ -19208,7 +19214,7 @@ msgstr "gpxファイル"
 
 #: ../src/libs/geotagging.c:1817
 msgid "select a GPX track file..."
-msgstr "GPXトラックファイルを選択する..."
+msgstr "GPXトラックファイルを選択してください..."
 
 #: ../src/libs/geotagging.c:1834
 msgid ""
@@ -19519,7 +19525,7 @@ msgstr "移動..."
 
 #: ../src/libs/image.c:484
 msgid "move to other folder"
-msgstr "他のフォルダに移動します"
+msgstr "他のフォルダへ移動します"
 
 #: ../src/libs/image.c:488
 msgid "copy..."
@@ -19669,7 +19675,7 @@ msgstr "ディスクから物理的に削除（出来ればゴミ箱を使用）
 #: ../src/libs/image.c:653
 msgctxt "accel"
 msgid "move to other folder"
-msgstr "他のフォルダに移動"
+msgstr "他のフォルダへ移動"
 
 #: ../src/libs/image.c:654
 msgctxt "accel"
@@ -19719,12 +19725,12 @@ msgstr "exifを更新"
 #: ../src/libs/image.c:663
 msgctxt "accel"
 msgid "set monochrome image"
-msgstr "モノクローム画像に設定"
+msgstr "画像をモノクロームに設定"
 
 #: ../src/libs/image.c:664
 msgctxt "accel"
 msgid "set color image"
-msgstr "カラー画像を設定"
+msgstr "画像をカラーに設定"
 
 #: ../src/libs/image.c:665
 msgctxt "accel"
@@ -19815,7 +19821,7 @@ msgstr "このカメラでのテザリングとインポートが無効になり
 
 #: ../src/libs/import.c:353
 msgid "mount camera"
-msgstr "カメラをマウントする"
+msgstr "カメラをマウント"
 
 #: ../src/libs/import.c:770
 #, c-format
@@ -19830,7 +19836,7 @@ msgstr "選択した場所は削除出来ません"
 
 #: ../src/libs/import.c:1232
 msgid "choose the root of the folder tree below"
-msgstr "以下のフォルダツリーのルートを選択する"
+msgstr "下のフォルダツリーのルートを選択してください"
 
 #: ../src/libs/import.c:1235
 msgid "places"
@@ -19876,12 +19882,12 @@ msgstr "インポート済みの写真をマークする"
 
 #: ../src/libs/import.c:1627
 msgid "modified"
-msgstr "変更済み"
+msgstr "変更"
 
 #: ../src/libs/import.c:1632
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
-"ファイル'修正された日時'\n"
+"ファイルの'変更日時'\n"
 "'Exif日時'と異なっているかもしれません"
 
 #: ../src/libs/import.c:1643
@@ -19895,7 +19901,7 @@ msgstr "命名規則"
 
 #: ../src/libs/import.c:1754
 msgid "add to library"
-msgstr "ライブラリーへ追加"
+msgstr "ライブラリーに追加"
 
 #: ../src/libs/import.c:1755
 msgid "copy & import"
@@ -20193,7 +20199,7 @@ msgstr "フィルムストリップを更新"
 
 #: ../src/libs/map_locations.c:824
 msgid "go to collection (lighttable)"
-msgstr "コレクション（ライトテーブル）に移動"
+msgstr "コレクション（ライトテーブル）へ移動"
 
 #: ../src/libs/map_locations.c:870
 msgid ""
@@ -20626,7 +20632,7 @@ msgstr ""
 #: ../src/libs/modulegroups.c:633
 #, c-format
 msgid "go to the full version of the %s module"
-msgstr "%sモジュールの本体に移動します"
+msgstr "%sモジュールの本体へ移動します"
 
 #: ../src/libs/modulegroups.c:1573 ../src/libs/modulegroups.c:1657
 #: ../src/libs/modulegroups.c:1693 ../src/libs/modulegroups.c:1743
@@ -20783,7 +20789,7 @@ msgstr "クイックアクセスパネル"
 
 #: ../src/libs/modulegroups.c:2806
 msgid "show only active modules"
-msgstr "有効なモジュールのみ表示する"
+msgstr "有効なモジュールのみ表示します"
 
 #: ../src/libs/modulegroups.c:2811
 msgid ""
@@ -21641,7 +21647,7 @@ msgstr "エントリにコピー"
 
 #: ../src/libs/tagging.c:2172
 msgid "go to tag collection"
-msgstr "タグコレクションに移動"
+msgstr "タグコレクションへ移動"
 
 #: ../src/libs/tagging.c:2178
 msgid "go back to work"
@@ -22328,8 +22334,8 @@ msgid ""
 "0.0 - black level"
 msgstr ""
 "露出過多とみなすしきい値\n"
-"1.0 - 白レベル\n"
-"0.0 - 黒レベル"
+"1.0：白レベル\n"
+"0.0：黒レベル"
 
 #: ../src/views/darkroom.c:2351
 msgid ""
@@ -22481,7 +22487,7 @@ msgid ""
 "right click for guides options"
 msgstr ""
 "ガイド線の表示／非表示を切り替えます\n"
-"右クリックでプガイド線のオプション"
+"右クリックでガイド線のオプション"
 
 #. Fullscreen preview key
 #: ../src/views/darkroom.c:2609
@@ -22957,7 +22963,7 @@ msgstr "右クリック+ドラッグ"
 
 #: ../src/views/view.c:1565
 msgid "darktable - accels window"
-msgstr "darktable - アクセル ウィンドウ"
+msgstr "darktable - アクセルウィンドウ"
 
 #: ../src/views/view.c:1620
 msgid "switch to a classic window which will stay open after key release"
