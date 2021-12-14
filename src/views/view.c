@@ -712,134 +712,269 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
    *  if ordered is TRUE, we return the list in the gui order. Otherwise the order is undefined (but quicker)
    **/
 
-  const int mouseover = dt_control_get_mouse_over_id();
-
-  // if possible, we return the cached list
-  if(!force
-     && darktable.view_manager->act_on.ok
-     && darktable.view_manager->act_on.image_over == mouseover
-     && darktable.view_manager->act_on.ordered == ordered
-     && darktable.view_manager->act_on.inside_table
-            == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
-     && g_slist_length(darktable.view_manager->act_on.active_imgs)
-            == g_slist_length(darktable.view_manager->active_images))
+  if(!dt_conf_get_bool("images_to_act_on_legacy"))
   {
-    // we test active images if mouse outside table
-    gboolean ok = TRUE;
-    if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
-       && darktable.view_manager->act_on.active_imgs)
+    const int mouseover = dt_control_get_mouse_over_id();
+
+    // if possible, we return the cached list
+    if(!force
+       && darktable.view_manager->act_on.ok
+       && darktable.view_manager->act_on.image_over == mouseover
+       && darktable.view_manager->act_on.ordered == ordered
+       && darktable.view_manager->act_on.inside_table
+              == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
+       && g_slist_length(darktable.view_manager->act_on.active_imgs)
+              == g_slist_length(darktable.view_manager->active_images))
     {
-      GSList *l1 = darktable.view_manager->act_on.active_imgs;
-      GSList *l2 = darktable.view_manager->active_images;
-      while(l1 && l2)
+      // we test active images if mouse outside table
+      gboolean ok = TRUE;
+      if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
+         && darktable.view_manager->act_on.active_imgs)
       {
-        if(GPOINTER_TO_INT(l1->data) != GPOINTER_TO_INT(l2->data))
+        GSList *l1 = darktable.view_manager->act_on.active_imgs;
+        GSList *l2 = darktable.view_manager->active_images;
+        while(l1 && l2)
         {
-          ok = FALSE;
-          break;
+          if(GPOINTER_TO_INT(l1->data) != GPOINTER_TO_INT(l2->data))
+          {
+            ok = FALSE;
+            break;
+          }
+          l2 = g_slist_next(l2);
+          l1 = g_slist_next(l1);
         }
-        l2 = g_slist_next(l2);
-        l1 = g_slist_next(l1);
       }
+      if(ok) return darktable.view_manager->act_on.images;
     }
-    if(ok) return darktable.view_manager->act_on.images;
-  }
 
-  GList *l = NULL;
-  gboolean inside_sel = FALSE;
-  if(mouseover > 0)
-  {
-    // column 1,2,3
-    if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
+    GList *l = NULL;
+    gboolean inside_sel = FALSE;
+    if(mouseover > 0)
     {
-      // column 1,2
-      sqlite3_stmt *stmt;
-      gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      // column 1,2,3
+      if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
       {
-        inside_sel = TRUE;
-        sqlite3_finalize(stmt);
-      }
-      g_free(query);
-
-      if(inside_sel)
-      {
-        // column 1
-
-        // first, we try to return cached list if we were already
-        // inside sel and the selection has not changed
-        if(!force
-           && darktable.view_manager->act_on.ok
-           && darktable.view_manager->act_on.image_over_inside_sel
-           && darktable.view_manager->act_on.inside_table
-           && darktable.view_manager->act_on.ordered == ordered)
+        // column 1,2
+        sqlite3_stmt *stmt;
+        gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
         {
-          return darktable.view_manager->act_on.images;
+          inside_sel = TRUE;
+          sqlite3_finalize(stmt);
         }
+        g_free(query);
 
-        // we return the list of the selection
-        l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+        if(inside_sel)
+        {
+          // column 1
+
+          // first, we try to return cached list if we were already
+          // inside sel and the selection has not changed
+          if(!force
+             && darktable.view_manager->act_on.ok
+             && darktable.view_manager->act_on.image_over_inside_sel
+             && darktable.view_manager->act_on.inside_table
+             && darktable.view_manager->act_on.ordered == ordered)
+          {
+            return darktable.view_manager->act_on.images;
+          }
+
+          // we return the list of the selection
+          l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+        }
+        else
+        {
+          // column 2
+          _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+        }
       }
       else
       {
-        // column 2
+        // column 3
         _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+        // be absolutely sure we have the id in the list (in darkroom,
+        // the active image can be out of collection)
+        if(!only_visible) _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
       }
     }
     else
     {
-      // column 3
-      _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
-      // be absolutely sure we have the id in the list (in darkroom,
-      // the active image can be out of collection)
-      if(!only_visible) _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
+      // column 4,5
+      if(darktable.view_manager->active_images)
+      {
+        // column 5
+        for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
+        {
+          const int id = GPOINTER_TO_INT(ll->data);
+          _images_to_act_on_insert_in_list(&l, id, only_visible);
+          // be absolutely sure we have the id in the list (in darkroom,
+          // the active image can be out of collection)
+          if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
+        }
+      }
+      else
+      {
+        // column 4
+        // we return the list of the selection
+        l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+      }
     }
+
+    // let's register the new list as cached
+    darktable.view_manager->act_on.image_over_inside_sel = inside_sel;
+    darktable.view_manager->act_on.ordered = ordered;
+    darktable.view_manager->act_on.image_over = mouseover;
+    g_list_free(darktable.view_manager->act_on.images);
+    darktable.view_manager->act_on.images = l;
+    g_slist_free(darktable.view_manager->act_on.active_imgs);
+    darktable.view_manager->act_on.active_imgs = g_slist_copy(darktable.view_manager->active_images);
+    darktable.view_manager->act_on.inside_table = dt_ui_thumbtable(darktable.gui->ui)->mouse_inside;
+    darktable.view_manager->act_on.ok = TRUE;
+
+    if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
+    {
+      gchar *tx = dt_util_dstrcat(NULL, "[images to act on] images list : ");
+      for(GList *ll = darktable.view_manager->act_on.images; ll; ll = g_list_next(ll))
+        tx = dt_util_dstrcat(tx, "%d ", GPOINTER_TO_INT(ll->data));
+      dt_print(DT_DEBUG_ACT_ON, "%s\n", tx);
+      g_free(tx);
+    }
+
+    return darktable.view_manager->act_on.images;
   }
   else
   {
-    // column 4,5
-    if(darktable.view_manager->active_images)
+    const int mouseover = dt_control_get_mouse_over_id();
+
+    // if possible, we return the cached list
+    if(!force
+       && darktable.view_manager->act_on.ok
+       && darktable.view_manager->act_on.image_over == mouseover
+       && darktable.view_manager->act_on.ordered == ordered
+       && darktable.view_manager->act_on.inside_table
+              == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
+       && g_slist_length(darktable.view_manager->act_on.active_imgs)
+              == g_slist_length(darktable.view_manager->active_images))
     {
-      // column 5
-      for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
+      // we test active images if mouse outside table
+      gboolean ok = TRUE;
+      if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
+         && darktable.view_manager->act_on.active_imgs)
       {
-        const int id = GPOINTER_TO_INT(ll->data);
-        _images_to_act_on_insert_in_list(&l, id, only_visible);
+        GSList *l1 = darktable.view_manager->act_on.active_imgs;
+        GSList *l2 = darktable.view_manager->active_images;
+        while(l1 && l2)
+        {
+          if(GPOINTER_TO_INT(l1->data) != GPOINTER_TO_INT(l2->data))
+          {
+            ok = FALSE;
+            break;
+          }
+          l2 = g_slist_next(l2);
+          l1 = g_slist_next(l1);
+        }
+      }
+      if(ok) return darktable.view_manager->act_on.images;
+    }
+
+    GList *l = NULL;
+    gboolean inside_sel = FALSE;
+    if(mouseover > 0)
+    {
+      // column 1,2,3
+      if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
+      {
+        // column 1,2
+        sqlite3_stmt *stmt;
+        gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          inside_sel = TRUE;
+          sqlite3_finalize(stmt);
+        }
+        g_free(query);
+
+        if(inside_sel)
+        {
+          // column 1
+
+          // first, we try to return cached list if we were already
+          // inside sel and the selection has not changed
+          if(!force
+             && darktable.view_manager->act_on.ok
+             && darktable.view_manager->act_on.image_over_inside_sel
+             && darktable.view_manager->act_on.inside_table
+             && darktable.view_manager->act_on.ordered == ordered)
+          {
+            return darktable.view_manager->act_on.images;
+          }
+
+          // we return the list of the selection
+          l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+        }
+        else
+        {
+          // column 2
+          _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+        }
+      }
+      else
+      {
+        // column 3
+        _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
         // be absolutely sure we have the id in the list (in darkroom,
         // the active image can be out of collection)
-        if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
+        if(!only_visible) _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
       }
     }
     else
     {
-      // column 4
-      // we return the list of the selection
-      l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+      // column 4,5
+      if(darktable.view_manager->active_images)
+      {
+        // column 5
+        for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
+        {
+          const int id = GPOINTER_TO_INT(ll->data);
+          _images_to_act_on_insert_in_list(&l, id, only_visible);
+          // be absolutely sure we have the id in the list (in darkroom,
+          // the active image can be out of collection)
+          if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
+        }
+      }
+      else
+      {
+        // column 4
+        // we return the list of the selection
+        l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+      }
     }
+
+    // let's register the new list as cached
+    darktable.view_manager->act_on.image_over_inside_sel = inside_sel;
+    darktable.view_manager->act_on.ordered = ordered;
+    darktable.view_manager->act_on.image_over = mouseover;
+    g_list_free(darktable.view_manager->act_on.images);
+    darktable.view_manager->act_on.images = l;
+    g_slist_free(darktable.view_manager->act_on.active_imgs);
+    darktable.view_manager->act_on.active_imgs = g_slist_copy(darktable.view_manager->active_images);
+    darktable.view_manager->act_on.inside_table = dt_ui_thumbtable(darktable.gui->ui)->mouse_inside;
+    darktable.view_manager->act_on.ok = TRUE;
+
+    if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
+    {
+      gchar *tx = dt_util_dstrcat(NULL, "[images to act on] images list : ");
+      for(GList *ll = darktable.view_manager->act_on.images; ll; ll = g_list_next(ll))
+        tx = dt_util_dstrcat(tx, "%d ", GPOINTER_TO_INT(ll->data));
+      dt_print(DT_DEBUG_ACT_ON, "%s\n", tx);
+      g_free(tx);
+    }
+
+    return darktable.view_manager->act_on.images;
   }
 
-  // let's register the new list as cached
-  darktable.view_manager->act_on.image_over_inside_sel = inside_sel;
-  darktable.view_manager->act_on.ordered = ordered;
-  darktable.view_manager->act_on.image_over = mouseover;
-  g_list_free(darktable.view_manager->act_on.images);
-  darktable.view_manager->act_on.images = l;
-  g_slist_free(darktable.view_manager->act_on.active_imgs);
-  darktable.view_manager->act_on.active_imgs = g_slist_copy(darktable.view_manager->active_images);
-  darktable.view_manager->act_on.inside_table = dt_ui_thumbtable(darktable.gui->ui)->mouse_inside;
-  darktable.view_manager->act_on.ok = TRUE;
-
-  if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
-  {
-    gchar *tx = dt_util_dstrcat(NULL, "[images to act on] images list : ");
-    for(GList *ll = darktable.view_manager->act_on.images; ll; ll = g_list_next(ll))
-      tx = dt_util_dstrcat(tx, "%d ", GPOINTER_TO_INT(ll->data));
-    dt_print(DT_DEBUG_ACT_ON, "%s\n", tx);
-    g_free(tx);
-  }
-
-  return darktable.view_manager->act_on.images;
 }
 
 // get the query to retrieve images to act on. this is useful to speedup actions if they already use sqlite queries
