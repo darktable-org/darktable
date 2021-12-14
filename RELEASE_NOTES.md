@@ -40,7 +40,7 @@ You are strongly advised to take a backup first.
 - New diffuse and sharpen module, allowing to simulate or to revert
   diffusion processes to reconstruct images from lens blur, hazing,
   sensor low-pass filter, or noise. It can also be used to simulate
-  watercolour smudges, increase local contrast, simulate blooming or
+  watercolor smudges, increase local contrast, simulate blooming or
   apply surface blur. Special rules can be defined to specifically
   diffuse across or along edges, as well as to avoid sharpening or
   blurring them.
