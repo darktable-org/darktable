@@ -1580,7 +1580,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
     else if(grab == GRAB_NONE)
     {
-      dt_control_hinter_message(darktable.control, _("<b>commit</b>: double click"));
+      dt_control_hinter_message(darktable.control, _("<b>commit</b>: double-click"));
       dt_control_change_cursor(GDK_LEFT_PTR);
     }
     if(grab != GRAB_NONE)
@@ -1592,7 +1592,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     dt_control_change_cursor(GDK_FLEUR);
     g->cropping = 0;
     dt_control_hinter_message(darktable.control, _("<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</b>: ctrl+drag\n"
-                                                   "<b>commit</b>: double click"));
+                                                   "<b>commit</b>: double-click"));
     dt_control_queue_redraw_center();
   }
   return 0;
