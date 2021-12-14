@@ -638,7 +638,7 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
     if(!gtk_widget_is_sensitive(widget)) return FALSE;
     if(user_data) // shortcuts treeview
     {
-      gtk_tooltip_set_text(tooltip, _("press Del to delete selected shortcut\ndouble click to add new shortcut\nstart typing for incremental search"));
+      gtk_tooltip_set_text(tooltip, _("press Del to delete selected shortcut\ndouble-click to add new shortcut\nstart typing for incremental search"));
       return TRUE;
     }
 
@@ -652,7 +652,7 @@ static gboolean _shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gb
     gtk_tree_view_set_tooltip_row(GTK_TREE_VIEW(widget), tooltip, path);
     gtk_tree_path_free(path);
 
-    markup_text = g_markup_escape_text(_("click to filter shortcut list\ndouble click to define new shortcut\nstart typing for incremental search"), -1);
+    markup_text = g_markup_escape_text(_("click to filter shortcut list\ndouble-click to define new shortcut\nstart typing for incremental search"), -1);
   }
   else
   {

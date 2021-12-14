@@ -140,7 +140,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->compress_button = dt_ui_button_new(_("compress history stack"),
                                         _("create a minimal history stack which produces the same image\n"
-                                          "ctrl-click to truncate history to the selected item"), NULL);
+                                          "ctrl+click to truncate history to the selected item"), NULL);
   g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), self);
   g_signal_connect(G_OBJECT(d->compress_button), "button-press-event", G_CALLBACK(_lib_history_compress_pressed_callback), self);
 
