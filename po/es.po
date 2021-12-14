@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.8\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-11 22:46-0600\n"
-"PO-Revision-Date: 2021-12-14 00:20-0600\n"
+"PO-Revision-Date: 2021-12-14 01:15-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -8655,7 +8655,6 @@ msgid "(unchanged)"
 msgstr "(sin cambios)"
 
 #: ../src/gui/accelerators.c:1358
-#, fuzzy
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -8668,16 +8667,17 @@ msgid ""
 "\n"
 "right-click to cancel"
 msgstr ""
-"define a shortcut by pressing a key, optionally combined with modifier keys "
-"(ctrl/shift/alt)\n"
-"a key can be double or triple pressed, with a long last press\n"
-"while the key is held, a combination of mouse buttons can be (double/triple/"
-"long) clicked\n"
-"still holding the key (and modifiers and/or buttons) a scroll or mouse move "
-"can be added\n"
-"connected devices can send keys or moves using their physical controllers\n"
+"Define un atajo pulsando una tecla, combinada opcionalmente con teclas "
+"modificadoras (Ctrl/Mayús/Alt).\n"
+"Una tecla puede ser pulsada doble o triple, con una última pulsación larga.\n"
+"Mientras se mantiene pulsada la tecla, se puede usar una combinación con los "
+"botones del ratón (doble/triple/larga)\n"
+"Mientras se mantiene pulsada la tecla (y los modificadores o botones), se "
+"puede añadir un desplazamiento o movimiento del ratón.\n"
+"Los dispositivos conectados pueden enviar señales de teclas o movimientos "
+"utilizando sus controladores físicos.\n"
 "\n"
-"right-click to cancel"
+"Pulse con el botón secundario del ratón para cancelar."
 
 #: ../src/gui/accelerators.c:1405
 msgid "removing shortcut"
@@ -9436,15 +9436,14 @@ msgid "show guide overlay when this module has focus"
 msgstr "Muestra una retícula mientras este módulo tenga el foco"
 
 #: ../src/gui/guides.c:863
-#, fuzzy
 msgid ""
 "change global guide settings\n"
 "note that these settings are applied globally and will impact any module "
 "that shows guide overlays"
 msgstr ""
-"change global guide settings\n"
-"note that these settings are applied globally and will impact any module "
-"that shows guide overlays"
+"Cambiar la configuración general de la retícula.\n"
+"Tenga en cuenta que los ajustes aquí expuestos se aplican a nivel general y "
+"tendrán efecto en cualquier módulo que muestre la retícula superpuesta."
 
 #: ../src/gui/hist_dialog.c:191
 msgid "select parts to copy"
@@ -9643,13 +9642,12 @@ msgid "search presets list"
 msgstr "Buscar en la lista de preajustes"
 
 #: ../src/gui/preferences.c:855
-#, fuzzy
 msgid ""
 "incrementally search the list of presets\n"
 "press up or down keys to cycle through matches"
 msgstr ""
-"incrementally search the list of presets\n"
-"press up or down keys to cycle through matches"
+"Búsqueda dinámica en la lista de preajutes.\n"
+"Pulse las teclas arriba o abajo para recorrer las coincidencias."
 
 #: ../src/gui/preferences.c:861
 msgctxt "preferences"
@@ -14516,7 +14514,6 @@ msgid "diffusion spatiality"
 msgstr "extensión espacial"
 
 #: ../src/iop/diffuse.c:1630
-#, fuzzy
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -14524,11 +14521,12 @@ msgid ""
 "any higher value excludes pixels with luminance lower than the threshold.\n"
 "this can be used to inpaint highlights."
 msgstr ""
-"luminance threshold for the mask.\n"
-"0. disables the luminance masking and applies the module on the whole "
-"image.\n"
-"any higher value excludes pixels with luminance lower than the threshold.\n"
-"this can be used to inpaint highlights."
+"Umbral de luminancia para la máscara.\n"
+"0. desactiva el enmascaramiento de luminancia y aplica el efecto en toda la "
+"imagen.\n"
+"Cualquier valor superior excluye a los pixeles con luminancia inferior al "
+"umbral.\n"
+"Se puede utilizar para reconstruir las luces."
 
 #: ../src/iop/dither.c:97 ../src/iop/vignette.c:997
 msgid "dithering"
@@ -14564,9 +14562,9 @@ msgid "damping level of random dither"
 msgstr "Nivel de atenuación del tramado aleatorio"
 
 #: ../src/iop/dual_demosaic.c:50
-#, fuzzy
 msgid "[dual demosaic] can't allocate internal buffers"
-msgstr "Problema interno [doble interpolación cromática OpenCL]"
+msgstr ""
+" [doble interpolación cromática] No es posible asignar búferes internos."
 
 #: ../src/iop/equalizer.c:89
 msgid "legacy equalizer"
@@ -16112,9 +16110,8 @@ msgstr ""
 "Ctrl+Clic : lineal, aumentar y encoger"
 
 #: ../src/iop/lmmse_demosaic.c:142
-#, fuzzy
 msgid "[lmmse_demosaic] too small area"
-msgstr "[lmmse_demosaic] too small area"
+msgstr "[interpolación cromática_LMMSE] Área muy pequeña."
 
 #: ../src/iop/lowlight.c:86
 msgid "lowlight vision"
@@ -16853,9 +16850,8 @@ msgstr ""
 "Funciona solo con los sensores que lo necesiten."
 
 #: ../src/iop/rcd_demosaic.c:310
-#, fuzzy
 msgid "[rcd_demosaic] too small area"
-msgstr "[rcd_demosaic] too small area"
+msgstr "[interpolación cromática_RCD] Área muy pequeña."
 
 #: ../src/iop/relight.c:54
 msgid "fill-light 0.25EV with 4 zones"
@@ -20937,18 +20933,16 @@ msgid "remove widget"
 msgstr "Quitar elemento de control"
 
 #: ../src/libs/modulegroups.c:2695
-#, fuzzy
 msgid "show all history modules"
-msgstr "Mostrar únicamente los módulos activos"
+msgstr "mostrar todos los módulos del historial"
 
 #: ../src/libs/modulegroups.c:2698 ../src/libs/modulegroups.c:3862
-#, fuzzy
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 msgstr ""
-"show modules that are present in the history stack, regardless of whether or "
-"not they are currently enabled"
+"Mostrar los módulos que están presentes en historial de acciones, "
+"independientemente de si actualmente están o no habilitados"
 
 #: ../src/libs/modulegroups.c:2796
 msgid "quick access panel"
@@ -21098,9 +21092,8 @@ msgid "show quick access panel"
 msgstr "Mostrar panel de control modular"
 
 #: ../src/libs/modulegroups.c:3858
-#, fuzzy
 msgid "show all history modules in active group"
-msgstr "Plegar sólo los módulos del grupo en curso"
+msgstr "mostrar todos los módulos del historial en el grupo activo"
 
 #: ../src/libs/modulegroups.c:3871
 msgid "auto-apply this preset"
@@ -21307,15 +21300,14 @@ msgid "borderless mode required"
 msgstr "modo sin bordes requerido"
 
 #: ../src/libs/print_settings.c:2350
-#, fuzzy
 msgid ""
 "indicates that the borderless mode should be activated\n"
 "in the printer driver because the selected margins are\n"
 "below the printer hardware margins"
 msgstr ""
-"indicates that the borderless mode should be activated\n"
-"in the printer driver because the selected margins are\n"
-"below the printer hardware margins"
+"Indica que debe ser activado el modo sin bordes\n"
+"en el controlador de la impresora porque los márgenes seleccionados son\n"
+"inferiores que los márgenes del hardware de la impresora."
 
 #. pack image dimension hbox here
 #: ../src/libs/print_settings.c:2357
@@ -21327,15 +21319,14 @@ msgid "new image area"
 msgstr "nueva área de imagen"
 
 #: ../src/libs/print_settings.c:2395
-#, fuzzy
 msgid ""
 "add a new image area on the page\n"
 "click and drag on the page to place the area\n"
 "drag&drop image from film strip on it"
 msgstr ""
-"add a new image area on the page\n"
-"click and drag on the page to place the area\n"
-"drag&drop image from film strip on it"
+"Añadir una nueva área de imagen en la página.\n"
+"Pulse y arrastre sobre la página para situar el área.\n"
+"Arrastre y suelte encima desde la tira de imágenes."
 
 #: ../src/libs/print_settings.c:2401
 msgid "delete image area"
