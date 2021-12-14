@@ -2439,9 +2439,20 @@ void dt_dev_clear_rawdetail_mask(dt_dev_pixelpipe_t *pipe)
 gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
-  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0) return FALSE;
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
+
+  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0)
+  {
+    if(p->rawdetail_mask_data)
+    {
+      fprintf(stderr, "[dt_dev_write_rawdetail_mask] detail mask not required but found old data %p\n", p->rawdetail_mask_data);  
+      dt_dev_clear_rawdetail_mask(p);
+    }
+    return FALSE;
+  }
   if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
 
+  if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask] %i (%ix%i), olddata %p", mode, roi_in->width, roi_in->height, p->rawdetail_mask_data); 
   dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
@@ -2462,9 +2473,11 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
   }
   dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
   dt_free_align(tmp);
+  if(info) fprintf(stderr, " done\n"); 
   return FALSE;
 
   error:
+  if(info) fprintf(stderr, " ERROR\n"); 
   dt_free_align(mask);
   dt_free_align(tmp);
   return TRUE;
@@ -2474,10 +2487,21 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
 gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in, const dt_iop_roi_t *const roi_in, const int mode)
 {
   dt_dev_pixelpipe_t *p = piece->pipe;
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
 
-  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0) return FALSE;
+  if((p->want_detail_mask & DT_DEV_DETAIL_MASK_REQUIRED) == 0)
+  {
+    if(p->rawdetail_mask_data)
+    {
+      if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask_cl] detail mask not required but found old data %p\n", p->rawdetail_mask_data);  
+      dt_dev_clear_rawdetail_mask(p);
+    }
+    return FALSE;
+  }
+
   if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
 
+  if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask_cl] mode %i (%ix%i), olddata %p", mode, roi_in->width, roi_in->height, p->rawdetail_mask_data); 
   dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
@@ -2535,9 +2559,11 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
 
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
+  if(info) fprintf(stderr, " done\n"); 
   return FALSE;
 
   error:
+  if(info) fprintf(stderr, " ERROR\n"); 
   dt_dev_clear_rawdetail_mask(p);
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
@@ -2551,6 +2577,8 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
 float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, const dt_iop_module_t *target_module)
 {
   if(!pipe->rawdetail_mask_data) return NULL;
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (pipe->type == DT_DEV_PIXELPIPE_FULL));
+
   gboolean valid = FALSE;
   const int check = pipe->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED;
 
@@ -2571,6 +2599,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
   }
 
   if(!valid) return NULL;
+  if(info) fprintf(stderr, "[dt_dev_distort_detail_mask] (%ix%i) for module %s: ", pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height, target_module->op); 
 
   float *resmask = src;
   float *inmask  = src;
@@ -2589,15 +2618,28 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
                     && module->processed_roi_in.height == 0))
         {
           float *tmp = dt_alloc_align_float((size_t)module->processed_roi_out.width * module->processed_roi_out.height);
+          if(info) fprintf(stderr," %s %ix%i -> %ix%i,", module->module->op, module->processed_roi_in.width, module->processed_roi_in.height, module->processed_roi_out.width, module->processed_roi_out.height);
           module->module->distort_mask(module->module, module, inmask, tmp, &module->processed_roi_in, &module->processed_roi_out);
           resmask = tmp;
           if(inmask != src) dt_free_align(inmask);
           inmask = tmp;
         }
+        else if(!module->module->distort_mask &&
+                (module->processed_roi_in.width != module->processed_roi_out.width ||
+                 module->processed_roi_in.height != module->processed_roi_out.height ||
+                 module->processed_roi_in.x != module->processed_roi_out.x ||
+                 module->processed_roi_in.y != module->processed_roi_out.y))
+              printf("FIXME: module `%s' changed the roi from %d x %d @ %d / %d to %d x %d | %d / %d but doesn't have "
+                 "distort_mask() implemented!\n", module->module->op, module->processed_roi_in.width,
+                 module->processed_roi_in.height, module->processed_roi_in.x, module->processed_roi_in.y,
+                 module->processed_roi_out.width, module->processed_roi_out.height, module->processed_roi_out.x,
+                 module->processed_roi_out.y);
+
         if(module->module == target_module) break;
       }
     }
   }
+  if(info) fprintf(stderr, " done\n"); 
   return resmask;
 }
 
