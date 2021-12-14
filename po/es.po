@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.8\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-11 22:46-0600\n"
-"PO-Revision-Date: 2021-12-14 01:56-0600\n"
+"PO-Revision-Date: 2021-12-14 02:26-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -13998,13 +13998,18 @@ msgid "display blending mask"
 msgstr "mostrar fusión de máscara"
 
 #: ../src/iop/demosaic.c:5793
-#, fuzzy
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
 msgstr ""
-"LMMSE refinement steps. the median steps average the output,\n"
-"refine adds some recalculation of red & blue channels"
+"pasos de refinamiento LMMSE. los pasos de la mediana promedian la salida,"
+"\\n\n"
+"refine añade algún recálculo de los canales rojo y azul\n"
+"\n"
+"Pasos de refinamiento para LMMSE. Los pasos de la mediana se promedian en la "
+"salida. \n"
+"En el refinamiento, se vuelven a hacer algunos cálculos de los canales rojo "
+"y azul y se añanden."
 
 # Demosaicing -> Algoritmo de interpolación cromática.
 #: ../src/iop/demosaic.c:5796
@@ -18522,7 +18527,7 @@ msgstr "Use '%' como comodín"
 #: ../src/libs/collect.c:2214 ../src/libs/collect.c:2229
 #: ../src/libs/collect.c:2788
 msgid "clear this rule"
-msgstr "eliminar esta regla"
+msgstr "Eliminar esta regla"
 
 #: ../src/libs/collect.c:2218
 msgid "clear this rule or add new rules"
@@ -21830,7 +21835,6 @@ msgid "(private)"
 msgstr "(privado)"
 
 #: ../src/libs/tagging.c:2299
-#, fuzzy
 msgid "select a keyword file"
 msgstr "Selecciona un archivo de palabras clave"
 
@@ -21844,7 +21848,6 @@ msgid "%zd tags imported"
 msgstr "%zd etiquetas importadas"
 
 #: ../src/libs/tagging.c:2335
-#, fuzzy
 msgid "select file to export to"
 msgstr "Seleccione el archivo para exportar"
 
@@ -22038,9 +22041,8 @@ msgid "filter"
 msgstr "filtro"
 
 #: ../src/libs/tools/filter.c:162
-#, fuzzy
 msgid "comparator"
-msgstr "operador"
+msgstr "operador de comparación"
 
 #: ../src/libs/tools/filter.c:163 ../src/libs/tools/filter.c:182
 msgid "which images should be shown"
@@ -22155,7 +22157,6 @@ msgstr "fijar información parcialmente y extender sólo al pasar el ratón"
 
 #: ../src/libs/tools/global_toolbox.c:458
 #: ../src/libs/tools/global_toolbox.c:491
-#, fuzzy
 msgid "overlays block on mouse hover during (s)"
 msgstr "duración del bloqueo de la información visible al pasar el ratón (s)"
 
@@ -22537,13 +22538,12 @@ msgid "clipping preview mode"
 msgstr "vista previa del recorte"
 
 #: ../src/views/darkroom.c:2369
-#, fuzzy
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
 msgstr ""
-"Seleccionar el modo de previsualización\n"
-"\"Toda la gama\" es la combinación de los demás modos\n"
+"Establece la métrica mostrada.\n"
+"\"Toda la gama\" es una combinación de todas las demás métricas."
 
 #: ../src/views/darkroom.c:2371
 msgid "full gamut"
@@ -22635,9 +22635,8 @@ msgid "profiles"
 msgstr "perfiles"
 
 #: ../src/views/darkroom.c:2461
-#, fuzzy
 msgid "preview intent"
-msgstr "vista previa de salida en pantalla"
+msgstr "finalidad en la vista preliminar"
 
 #: ../src/views/darkroom.c:2480 ../src/views/lighttable.c:1332
 msgid "display profile"
@@ -22672,13 +22671,12 @@ msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "histograma y selector de color de perfiles ICC en %s o %s"
 
 #: ../src/views/darkroom.c:2591
-#, fuzzy
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
 msgstr ""
-"Activar la revisión de gama\n"
-"Pulse botón secundario para ver las opciones del perfil"
+"Activar/desactivar la retícula.\n"
+"Pulse botón secundario para ver las opciones disponibles."
 
 #. Fullscreen preview key
 #: ../src/views/darkroom.c:2610
@@ -23038,9 +23036,8 @@ msgid "print"
 msgstr "imprimir"
 
 #: ../src/views/slideshow.c:314
-#, fuzzy
 msgid "end of images"
-msgstr "añadir más imágenes"
+msgstr "Fin de las diapositivas"
 
 #: ../src/views/slideshow.c:330
 msgid "end of images. press any key to return to lighttable mode"
