@@ -715,10 +715,12 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   const int mouseover = dt_control_get_mouse_over_id();
 
   // if possible, we return the cached list
-  if(!force && darktable.view_manager->act_on.ok && darktable.view_manager->act_on.image_over == mouseover
+  if(!force
+     && darktable.view_manager->act_on.ok
+     && darktable.view_manager->act_on.image_over == mouseover
      && darktable.view_manager->act_on.ordered == ordered
-     && darktable.view_manager->act_on.only_visible == only_visible
-     && darktable.view_manager->act_on.inside_table == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
+     && darktable.view_manager->act_on.inside_table
+            == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
      && g_slist_length(darktable.view_manager->act_on.active_imgs)
             == g_slist_length(darktable.view_manager->active_images))
   {
@@ -771,8 +773,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
            && darktable.view_manager->act_on.ok
            && darktable.view_manager->act_on.image_over_inside_sel
            && darktable.view_manager->act_on.inside_table
-           && darktable.view_manager->act_on.ordered == ordered
-           && darktable.view_manager->act_on.only_visible == only_visible)
+           && darktable.view_manager->act_on.ordered == ordered)
         {
           return darktable.view_manager->act_on.images;
         }
@@ -827,7 +828,6 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   g_slist_free(darktable.view_manager->act_on.active_imgs);
   darktable.view_manager->act_on.active_imgs = g_slist_copy(darktable.view_manager->active_images);
   darktable.view_manager->act_on.inside_table = dt_ui_thumbtable(darktable.gui->ui)->mouse_inside;
-  darktable.view_manager->act_on.only_visible = only_visible;
   darktable.view_manager->act_on.ok = TRUE;
 
   if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
