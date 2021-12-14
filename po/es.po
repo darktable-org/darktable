@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.8\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-11 22:46-0600\n"
-"PO-Revision-Date: 2021-12-14 01:15-0600\n"
+"PO-Revision-Date: 2021-12-14 01:56-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -634,9 +634,9 @@ msgstr ""
 "preajustes y de favoritos."
 
 #: ../build/bin/preferences_gen.h:4972 ../build/bin/preferences_gen.h:4986
-#, fuzzy
 msgid "show the guides widget in modules UI"
-msgstr "show the guides widget in modules UI"
+msgstr ""
+"Mostrar el componente de control de la retícula en los ajustes del módulo"
 
 #: ../build/bin/preferences_gen.h:5008
 msgid "expand a single processing module at a time"
@@ -10726,24 +10726,22 @@ msgid "lens shift (%s)"
 msgstr "desplazamiento %s"
 
 #: ../src/iop/ashift.c:5783
-#, fuzzy
 msgid "perspective helpers"
-msgstr "perspectiva"
+msgstr "herramientas de corrección de perspectiva"
 
 #: ../src/iop/ashift.c:5790
 msgid "structure"
 msgstr "estructura"
 
 #: ../src/iop/ashift.c:5823
-#, fuzzy
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
 "the image"
 msgstr ""
-"rotate image\n"
-"right-click and drag to define a horizontal or vertical line by drawing on "
-"the image"
+"Rotación de imagen.\n"
+"Pulse el botón secundario y arrastre para trazar una línea vertical u "
+"horizontal sobre la imagen."
 
 #: ../src/iop/ashift.c:5824 ../src/iop/ashift.c:5825
 msgid "apply lens shift correction in one direction"
@@ -12676,48 +12674,46 @@ msgid "the bottom margin cannot overlap with the top margin"
 msgstr "El margen inferior no puede superponerse con el margen superior"
 
 #: ../src/iop/clipping.c:3058
-#, fuzzy
 msgid "<b>commit</b>: double click, <b>straighten</b>: right-drag"
-msgstr "<b>commit</b>: double click, <b>straighten</b>: right-drag"
+msgstr ""
+"<b>Confirmar</b>: Pulsado Doble, <b>Enderezar</b>: Clic Secundario + Arrastre"
 
 #: ../src/iop/clipping.c:3062
-#, fuzzy
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
-"<b>straighten</b>: right-drag"
+"<b>Redimensionar</b>: Arrastre, <b>Conservar la proporción</b>: Mayús"
+"+Arrastre\n"
+"<b>Enderezar</b>: Clic Secundario + Arrastre"
 
 #: ../src/iop/clipping.c:3105
-#, fuzzy
 msgid "<b>move control point</b>: drag"
-msgstr "<b>Rotar</b>: Arrastre"
+msgstr "<b>Mover el punto de control</b>: Arrastre"
 
 #: ../src/iop/clipping.c:3110
-#, fuzzy
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
-msgstr "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
+msgstr ""
+"<b>Mover línea</b>: Arrastre, <b>Alternar simetría</b>: Pulsar <tt>ꝏ</tt>"
 
 #: ../src/iop/clipping.c:3115
-#, fuzzy
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
-"<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
-"<b>move line/control point</b>: drag"
+"<b>Aplicar</b>: Pulsar <tt>OK</tt>, <b>Alternar simetría</b>: Pulsar <tt>ꝏ</"
+"tt>\n"
+"<b>Mover línea / punto de control</b>: Arrastre"
 
 #: ../src/iop/clipping.c:3122
-#, fuzzy
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double click"
 msgstr ""
-"<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
-"b>: ctrl+drag\n"
-"<b>straighten</b>: right-drag, <b>commit</b>: double click"
+"<b>Mover</b>: Arrastre, <b>Mover verticalmente</b>: Mayús+Arrastre, <b>Mover "
+"horizontalmente</b>: Ctrl+Arrastre\n"
+"<b>Enderezar</b>: Clic Secundario + Arrastre, <b>Confirmar</b>: Pulsado doble"
 
 #: ../src/iop/clipping.c:3373 ../src/iop/crop.c:1666
 msgid "commit"
@@ -13873,23 +13869,23 @@ msgstr "opciones de recorte"
 
 #: ../src/iop/crop.c:1583
 msgid "<b>commit</b>: double click"
-msgstr "<b>confirmar</b>: doble pulsación"
+msgstr "<b>Confirmar</b>: Pulsado doble"
 
 #: ../src/iop/crop.c:1587
-#, fuzzy
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
-msgstr "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
+msgstr ""
+"<b>Redimensionar</b>: Arrastre, <b>Conservar la proporción</b>: Mayús"
+"+Arrastre"
 
 #: ../src/iop/crop.c:1594
-#, fuzzy
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag\n"
 "<b>commit</b>: double click"
 msgstr ""
-"<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
-"b>: ctrl+drag\n"
-"<b>commit</b>: double click"
+"<b>Mover</b>: Arrastre, <b>Mover verticalmente</b>: Mayús+Arrastre, <b>Mover "
+"horizontalmente</b>: Ctrl+Arrastre\n"
+"<b>Confirmar</b>: Pulsado doble"
 
 #: ../src/iop/defringe.c:70
 msgid "defringe"
