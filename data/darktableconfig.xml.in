@@ -3365,4 +3365,11 @@
     <shortdescription>order or exclude midi devices</shortdescription>
     <longdescription>comma-separated list of device name fragments that if matched load midi device at id given by location in list or if preceded by - prevent matching devices from loading</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>images_to_act_on_legacy</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>Use legacy images to act on code</shortdescription>
+    <longdescription>Images to act on decides which image should be manipulated if multiple options are available: e.g. the image hovered over by the mouse takes priority over selected pictures. Enableling this flag returns to the legacy code which has been changed due to https://github.com/darktable-org/darktable/issues/6025 </longdescription>
+  </dtconfig>
 </dtconfiglist>
