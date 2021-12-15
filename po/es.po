@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-11 22:46-0600\n"
-"PO-Revision-Date: 2021-12-14 03:11-0600\n"
+"POT-Creation-Date: 2021-12-14 19:23-0600\n"
+"PO-Revision-Date: 2021-12-15 01:02-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1483,10 +1483,10 @@ msgstr ""
 "Los archivos asociados contienen toda la información sobre cada paso de "
 "revelado, \n"
 "que en el caso de una reimportación de los archivos de imagen, esa "
-"información se conservaría.\\n\n"
-"\\n\n"
+"información se conservaría.\n"
+"\n"
 "Los archivos asociados se generarán o se escribirán de acuerdo a las "
-"siguientes opciones:\\n\n"
+"siguientes opciones:\n"
 " · Nunca\n"
 " · Al importar: al instante de importar la imagen.\n"
 " · Después de editar: después de cualquier modificación hecha a la imagen."
@@ -4869,7 +4869,7 @@ msgstr "alterado"
 #: ../src/common/collection.c:1539 ../src/common/collection.c:1622
 #: ../src/libs/collect.c:1211 ../src/libs/collect.c:1343
 #: ../src/libs/collect.c:1365 ../src/libs/collect.c:1470
-#: ../src/libs/collect.c:2397
+#: ../src/libs/collect.c:2398
 msgid "not tagged"
 msgstr "sin etiquetar"
 
@@ -5092,9 +5092,9 @@ msgid ""
 msgstr ""
 "Existe una configuración de rendimiento actualizada que podría mejorar el "
 "desempeño de darktable.\n"
-"Algunas de sus configuraciones existentes muy probablemente se reemplazarán; "
-"especialmente en el caso de que se hayan modificado manualmente con valores "
-"personalizados.\n"
+"Algunas de las configuraciones existentes muy probablemente se reemplazarán; "
+"especialmente en\n"
+"el caso de que se hayan modificado manualmente con valores personalizados.\n"
 "¿Acepta ejecutar la actualización de la configuración de rendimiento?\n"
 
 #: ../src/common/darktable.c:920 ../src/common/database.c:2543
@@ -5170,7 +5170,7 @@ msgstr ""
 msgid "error starting darktable"
 msgstr "Error de inicio de darktable"
 
-#: ../src/common/database.c:2536 ../src/libs/collect.c:2903
+#: ../src/common/database.c:2536 ../src/libs/collect.c:2904
 #: ../src/libs/export_metadata.c:281 ../src/libs/import.c:1766
 #: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1239
 #: ../src/libs/modulegroups.c:3483 ../src/libs/recentcollect.c:319
@@ -11710,7 +11710,7 @@ msgid ""
 "you might view bad correction results."
 msgstr ""
 "Se encontraron muy pocos puntos como datos, por lo que utilizará un orden "
-"lineal simple.\\n\n"
+"lineal simple.\n"
 "Es posible que los resultados de corrección sean insatisfactorios."
 
 #: ../src/iop/cacorrect.c:1348
@@ -11781,7 +11781,7 @@ msgid ""
 "high values can lead to overshooting\n"
 "and edge bleeding."
 msgstr ""
-"Equilibra entre suavizar los colores\\n\n"
+"Equilibra entre suavizar los colores\n"
 "y la preservación de los mismos.\n"
 "Los valores altos pueden llevar a un exceso de color\n"
 "y a la aparición de halos."
@@ -11800,8 +11800,8 @@ msgid ""
 "efficient to correct blue\n"
 "chromatic aberration."
 msgstr ""
-"Opciones de corrección disponibles.\\n\n"
-"Para imágenes muy afectadas, duplicar y usar\\n\n"
+"Opciones de corrección disponibles.\n"
+"Para imágenes muy afectadas, duplicar y usar\n"
 "varios módulos se puede obtener un mejor\n"
 "resultado.\n"
 "El modo «oscurecer» es particularmente\n"
@@ -14002,10 +14002,6 @@ msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
 msgstr ""
-"pasos de refinamiento LMMSE. los pasos de la mediana promedian la salida,"
-"\\n\n"
-"refine añade algún recálculo de los canales rojo y azul\n"
-"\n"
 "Pasos de refinamiento para LMMSE. Los pasos de la mediana se promedian en la "
 "salida. \n"
 "En el refinamiento, se vuelven a hacer algunos cálculos de los canales rojo "
@@ -14383,7 +14379,7 @@ msgid ""
 "if you plan on sharpening or inpainting, more iterations help reconstruction."
 msgstr ""
 "A mayor número de iteraciones, mayor se vuelve el efecto. Sin embargo, el "
-"módulo se vuelve más lento.\\n\n"
+"módulo se vuelve más lento.\n"
 "De manera análoga, es a dar más tiempo a la reacción de difusión.\n"
 "Si la intención es aumentar la nitidez o reconstruir, se recomienda un mayor "
 "número iteraciones."
@@ -14396,7 +14392,7 @@ msgid ""
 "for deblurring and denoising, set to zero.\n"
 "increase to act on local contrast instead."
 msgstr ""
-"Escala principal de la difusión.\\n\n"
+"Escala principal de la difusión.\n"
 "El valor cero hace que la difusión actúe sobre los detalles más finos con "
 "mayor intensidad.\n"
 "Un valor diferente de cero define el tamaño de los detalles sobre los que "
@@ -14492,7 +14488,7 @@ msgid ""
 "increase to exclude more edges from diffusion,\n"
 "if fringes or halos appear."
 msgstr ""
-"Define la sensibilidad de la penalización de la varianza en los bordes.\n"
+"Define la sensibilidad en la varianza de la supresión de los bordes.\n"
 "Aumentar para excluir más bordes de la dispersión\n"
 "cuando se produzcan franjas de color o halos."
 
@@ -14503,8 +14499,7 @@ msgid ""
 "increase if you see noise appear on smooth surfaces or\n"
 "if dark areas seem oversharpened compared to bright areas."
 msgstr ""
-"Define el umbral de la varianza entre el realce de los bordes y la "
-"penalización.\n"
+"Define el umbral de la varianza entre el realce y supresión de los bordes.\n"
 "Disminuya para potenciar el efecto en los pixeles de las zonas lisas.\n"
 "Aumente si se produce ruido en las superficies lisas o si las zonas oscuras\n"
 "aparecen sobreenfocadas en comparación con las zonas claras."
@@ -14522,8 +14517,8 @@ msgid ""
 "this can be used to inpaint highlights."
 msgstr ""
 "Umbral de luminancia para la máscara.\n"
-"0. desactiva el enmascaramiento de luminancia y aplica el efecto en toda la "
-"imagen.\n"
+"Con el valor 0 se desactiva el enmascaramiento de luminancia y aplica el "
+"efecto en toda la imagen.\n"
 "Cualquier valor superior excluye a los pixeles con luminancia inferior al "
 "umbral.\n"
 "Se puede utilizar para reconstruir las luces."
@@ -18524,7 +18519,7 @@ msgid "use `%' as wildcard"
 msgstr "Use '%' como comodín"
 
 #: ../src/libs/collect.c:2214 ../src/libs/collect.c:2229
-#: ../src/libs/collect.c:2788
+#: ../src/libs/collect.c:2789
 msgid "clear this rule"
 msgstr "Eliminar esta regla"
 
@@ -18532,64 +18527,64 @@ msgstr "Eliminar esta regla"
 msgid "clear this rule or add new rules"
 msgstr "Eliminar esta regla o añadir nuevas reglas"
 
-#: ../src/libs/collect.c:2794
+#: ../src/libs/collect.c:2795
 msgid "narrow down search"
 msgstr "reducir la búsqueda"
 
-#: ../src/libs/collect.c:2799
+#: ../src/libs/collect.c:2800
 msgid "add more images"
 msgstr "añadir más imágenes"
 
-#: ../src/libs/collect.c:2804
+#: ../src/libs/collect.c:2805
 msgid "exclude images"
 msgstr "excluir imágenes"
 
-#: ../src/libs/collect.c:2811
+#: ../src/libs/collect.c:2812
 msgid "change to: and"
 msgstr "cambiar a: y"
 
-#: ../src/libs/collect.c:2816
+#: ../src/libs/collect.c:2817
 msgid "change to: or"
 msgstr "cambiar a: o"
 
-#: ../src/libs/collect.c:2821
+#: ../src/libs/collect.c:2822
 msgid "change to: except"
 msgstr "cambiar a: excepto"
 
-#: ../src/libs/collect.c:2847
+#: ../src/libs/collect.c:2848
 msgid "files"
 msgstr "archivos"
 
-#: ../src/libs/collect.c:2852 ../src/libs/export_metadata.c:301
+#: ../src/libs/collect.c:2853 ../src/libs/export_metadata.c:301
 #: ../src/libs/image.c:465 ../src/libs/image.c:570 ../src/libs/metadata.c:486
 #: ../src/libs/metadata.c:657 ../src/libs/metadata_view.c:1270
 msgid "metadata"
 msgstr "metadatos"
 
-#: ../src/libs/collect.c:2871
+#: ../src/libs/collect.c:2872
 msgid "times"
 msgstr "periodos"
 
-#: ../src/libs/collect.c:2879
+#: ../src/libs/collect.c:2880
 msgid "capture details"
 msgstr "detalles de la captura"
 
-#: ../src/libs/collect.c:2888 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2889 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2901
+#: ../src/libs/collect.c:2902
 msgid "collections settings"
 msgstr "Parámetros de las colecciones"
 
-#: ../src/libs/collect.c:2904 ../src/libs/export_metadata.c:281
+#: ../src/libs/collect.c:2905 ../src/libs/export_metadata.c:281
 #: ../src/libs/metadata.c:446 ../src/libs/metadata_view.c:1239
 #: ../src/libs/recentcollect.c:320 ../src/libs/tagging.c:1526
 #: ../src/libs/tagging.c:1656 ../src/libs/tagging.c:1931
 msgid "save"
 msgstr "guardar"
 
-#: ../src/libs/collect.c:2918 ../src/libs/export.c:1097
+#: ../src/libs/collect.c:2919 ../src/libs/export.c:1097
 #: ../src/libs/metadata.c:580 ../src/libs/metadata_view.c:1350
 #: ../src/libs/recentcollect.c:382
 msgid "preferences..."
