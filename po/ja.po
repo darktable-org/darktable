@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-15 00:43+0900\n"
+"PO-Revision-Date: 2021-12-15 16:07+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -243,7 +243,7 @@ msgstr "次のサイズより大きい場合、埋め込みJPEGではなくRAW�
 #: ../build/bin/conf_gen.h:2910
 msgctxt "preferences"
 msgid "always"
-msgstr "常に使用"
+msgstr "常に"
 
 #: ../build/bin/preferences_gen.h:3989 ../build/bin/preferences_gen.h:4084
 #: ../build/bin/conf_gen.h:1080 ../build/bin/conf_gen.h:1096
@@ -309,8 +309,8 @@ msgid ""
 msgstr ""
 "サムネイルのサイズがこの値より大きい場合、埋め込みプレビューJPEGではなくRAW"
 "ファイルを使用して処理されます（高クオリティですが低速です）\n"
-"全てのサムネイルとプリレンダ画像を最高のクオリティにしたい場合は、【常に使"
-"用】 オプションを選択してください\n"
+"全てのサムネイルとプリレンダ画像を最高のクオリティにしたい場合は、【常に】 オ"
+"プションを選択してください\n"
 "（マニュアルに詳しい説明があります）"
 
 #: ../build/bin/preferences_gen.h:4068
@@ -327,8 +327,8 @@ msgid ""
 msgstr ""
 "サムネイルのサイズがこの値より大きい場合、完全なクオリティのレンダリングパス"
 "を使用して処理されます。（高クオリティですが低速です）\n"
-"全てのサムネイルとプリレンダ画像を最高のクオリティにしたい場合は、【常に使"
-"用】 オプションを選択してください\n"
+"全てのサムネイルとプリレンダ画像を最高のクオリティにしたい場合は、【常に】 オ"
+"プションを選択してください\n"
 "（マニュアルに詳しい説明があります）"
 
 #: ../build/bin/preferences_gen.h:4163
@@ -730,7 +730,7 @@ msgid ""
 "columns - the blocks of sliders are shown next to each other (in narrow "
 "columns)"
 msgstr ""
-"リフト、ガンマ、ゲインのスライダーの表示され方を選択します\n"
+"リフト、ガンマ、ゲインのスライダーの表示され方を選択してください\n"
 "リスト：全てのスライダーが長いリスト（ヘッダー付き）状に同時に表示されます\n"
 "タブ：タブを使用してスライダーを切り替えます\n"
 "列：スライダーが（狭い段のかたちで）それぞれ隣り合って表示されます"
@@ -1047,7 +1047,7 @@ msgid ""
 "this controls how much memory is going to be used for thumbnails and other "
 "buffers (needs a restart)."
 msgstr ""
-"サムネイルやその他のバッファに使用されるメモリの量を制御します （要再起動）"
+"サムネイルやその他のバッファに使用されるメモリの量を制御します（要再起動）"
 
 #: ../build/bin/preferences_gen.h:6009
 msgid "enable disk backend for thumbnail cache"
@@ -1105,7 +1105,7 @@ msgstr ""
 "画像処理中にモジュールが使用できるメモリの最大量（MB）を制御します\n"
 "低い値にすると、メモリ消費量の多いモジュールが画像を処理する際、タイルの数が"
 "増加していきます\n"
-"0は無制限、500以下の値は500として扱われます （要再起動）"
+"0は無制限、500以下の値は500として扱われます（要再起動）"
 
 #: ../build/bin/preferences_gen.h:6126
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
@@ -1499,7 +1499,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7287
 msgid "miscellaneous"
-msgstr "その他の項目"
+msgstr "その他"
 
 #: ../build/bin/preferences_gen.h:7290
 msgid "interface"
@@ -2865,7 +2865,7 @@ msgstr "下"
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:114
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:203
 msgid "input saturation"
-msgstr "入力彩度（サチュレーション）"
+msgstr "入力彩度"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:126
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:211
@@ -2875,7 +2875,7 @@ msgstr "コントラスト支点"
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:132
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:215
 msgid "output saturation"
-msgstr "出力彩度（サチュレーション）"
+msgstr "出力彩度"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:229
 msgid "lift, gamma, gain (ProPhotoRGB)"
@@ -3037,7 +3037,7 @@ msgstr "マスクのミドルグレー支点"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:393
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:564
 msgid "global vibrance"
-msgstr "全体の自然な彩度"
+msgstr "全体の自然な彩度（バイブランス）"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:399
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:568
@@ -3189,7 +3189,7 @@ msgstr "明度"
 #: ../src/iop/soften.c:410 ../src/iop/splittoning.c:489 ../src/iop/velvia.c:84
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:991
 msgid "saturation"
-msgstr "彩度（サチュレーション）"
+msgstr "彩度"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
 #: ../src/iop/atrous.c:1370 ../src/iop/atrous.c:1374
@@ -3413,7 +3413,7 @@ msgstr "アルゴリズムのバグを修正"
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:251
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:384
 msgid "upgrade profiled transform"
-msgstr "プロファイルによる変換をアップグレードします"
+msgstr "プロファイルによる変換をアップグレード"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
@@ -3545,7 +3545,7 @@ msgstr "ターゲットレベル"
 #: ../build/lib/darktable/plugins/introspection_exposure.c:91
 #: ../build/lib/darktable/plugins/introspection_exposure.c:154
 msgid "compensate exposure bias"
-msgstr "露出補正を取り消す"
+msgstr "露出補正の取り消し"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:168
 #: ../build/lib/darktable/plugins/introspection_levels.c:160
@@ -6413,7 +6413,7 @@ msgstr "画像をローカルコピーします"
 
 #: ../src/control/jobs/control_jobs.c:1805 ../src/libs/image.c:600
 msgid "refresh exif"
-msgstr "exifを更新します"
+msgstr "exifを更新"
 
 #: ../src/control/jobs/control_jobs.c:1869
 #, c-format
@@ -7029,7 +7029,7 @@ msgid ""
 "drag to use the input image\n"
 "ctrl+drag to use the output image"
 msgstr ""
-"画像の領域に基づいて範囲を設定します\n"
+"画像の領域に基づいて範囲を設定\n"
 "入力画像を使用するには ドラッグ\n"
 "出力画像を使用するには Ctrl+ドラッグ"
 
@@ -7040,7 +7040,8 @@ msgstr "全てのチャンネルの極性を反転"
 #: ../src/develop/blend_gui.c:2199
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr ""
-"極性を切り替えます。【マスクを表示】を有効にすると分かりやすく可視化されます"
+"極性の切り替え\n"
+"【マスクを表示】を有効にすると分かりやすく可視化されます"
 
 #: ../src/develop/blend_gui.c:2226
 msgid ""
@@ -7092,70 +7093,70 @@ msgstr "使用マスクなし"
 
 #: ../src/develop/blend_gui.c:2347
 msgid "toggle polarity of drawn mask"
-msgstr "描画マスクの極性を切り替えます"
+msgstr "描画マスクの極性の切り替え"
 
 #: ../src/develop/blend_gui.c:2353
 msgid "show and edit mask elements"
-msgstr "マスク要素を表示および編集します"
+msgstr "マスク要素の表示・編集"
 
 #: ../src/develop/blend_gui.c:2353
 msgid "show and edit in restricted mode"
-msgstr "制限モードで表示と編集"
+msgstr "制限モードで表示・編集"
 
 #: ../src/develop/blend_gui.c:2358 ../src/libs/masks.c:1018
 #: ../src/libs/masks.c:1046 ../src/libs/masks.c:1628
 msgid "add gradient"
-msgstr "グラデーションを追加します"
+msgstr "グラデーションを追加"
 
 #: ../src/develop/blend_gui.c:2358
 msgid "add multiple gradients"
-msgstr "複数のグラデーションを追加します"
+msgstr "複数のグラデーションを追加"
 
 #: ../src/develop/blend_gui.c:2363 ../src/iop/retouch.c:2144
 #: ../src/libs/masks.c:1030 ../src/libs/masks.c:1654
 msgid "add brush"
-msgstr "ブラシを追加します"
+msgstr "ブラシを追加"
 
 #: ../src/develop/blend_gui.c:2363 ../src/iop/retouch.c:2144
 msgid "add multiple brush strokes"
-msgstr "複数のブラシストロークを追加します"
+msgstr "複数のブラシストロークを追加"
 
 #: ../src/develop/blend_gui.c:2368 ../src/iop/retouch.c:2148
 #: ../src/iop/spots.c:822 ../src/libs/masks.c:1014 ../src/libs/masks.c:1042
 #: ../src/libs/masks.c:1634
 msgid "add path"
-msgstr "パスを追加します"
+msgstr "パスを追加"
 
 #: ../src/develop/blend_gui.c:2368 ../src/iop/retouch.c:2148
 #: ../src/iop/spots.c:822
 msgid "add multiple paths"
-msgstr "複数のパスを追加します"
+msgstr "複数のパスを追加"
 
 #: ../src/develop/blend_gui.c:2373 ../src/iop/retouch.c:2152
 #: ../src/iop/spots.c:826 ../src/libs/masks.c:1010 ../src/libs/masks.c:1038
 #: ../src/libs/masks.c:1641
 msgid "add ellipse"
-msgstr "楕円を追加します"
+msgstr "楕円を追加"
 
 #: ../src/develop/blend_gui.c:2373 ../src/iop/retouch.c:2152
 #: ../src/iop/spots.c:826
 msgid "add multiple ellipses"
-msgstr "複数の楕円を追加します"
+msgstr "複数の楕円を追加"
 
 #: ../src/develop/blend_gui.c:2378 ../src/iop/retouch.c:2156
 #: ../src/iop/spots.c:830 ../src/libs/masks.c:1006 ../src/libs/masks.c:1034
 #: ../src/libs/masks.c:1648
 msgid "add circle"
-msgstr "円を追加します"
+msgstr "円を追加"
 
 #: ../src/develop/blend_gui.c:2378 ../src/iop/retouch.c:2156
 #: ../src/iop/spots.c:830
 msgid "add multiple circles"
-msgstr "複数の円を追加します"
+msgstr "複数の円を追加"
 
 #: ../src/develop/blend_gui.c:2527
 msgid "toggle polarity of raster mask"
-msgstr "ラスターマスクの極性を切り替えます"
+msgstr "ラスターマスクの極性の切り替え"
 
 #: ../src/develop/blend_gui.c:2659
 msgid "normal & difference modes"
@@ -7201,11 +7202,11 @@ msgstr "ブレンドモード"
 
 #: ../src/develop/blend_gui.c:3053
 msgid "choose blending mode"
-msgstr "ブレンドモードを選択します"
+msgstr "ブレンドモードを選択してください"
 
 #: ../src/develop/blend_gui.c:3060
 msgid "toggle blend order"
-msgstr "ブレンドの順序を切り替える"
+msgstr "ブレンド順序の切り替え"
 
 #: ../src/develop/blend_gui.c:3063
 msgid ""
@@ -7213,7 +7214,7 @@ msgid ""
 "by default the output will be blended on top of the input,\n"
 "order can be reversed by clicking on the icon (input on top of output)"
 msgstr ""
-"モジュールの入力と出力の間でブレンドの順序を切り替えます\n"
+"モジュールの入力と出力のブレンド順序の切り替え\n"
 "デフォルトでは、出力が入力の上にブレンドされます\n"
 "アイコンをクリックすると順序を逆にすることが出来ます（出力の上に入力をブレン"
 "ド）"
@@ -7335,19 +7336,20 @@ msgid ""
 "to display channel. hover over parametric mask slider to select channel for "
 "display"
 msgstr ""
-"マスクおよび／またはカラーチャンネルを表示します\n"
+"マスクおよび／またはカラーチャンネルを表示\n"
 "Ctrl+クリックでマスクを表示、Shift+クリックでカラーチャンネルを表示します\n"
 "パラメトリックマスクのスライダーの上にカーソルを乗せて、表示するチャンネルを"
 "選択します"
 
 #: ../src/develop/blend_gui.c:3153
 msgid "temporarily switch off blend mask"
-msgstr "ブレンドマスクを一時的にオフにする"
+msgstr "ブレンドマスクを一時的にオフ"
 
 #: ../src/develop/blend_gui.c:3155
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
-"ブレンドマスクを一時的にオフにします。アクティブなモジュールにのみ有効です"
+"ブレンドマスクを一時的にオフ\n"
+"アクティブなモジュールにのみ有効です"
 
 #: ../src/develop/develop.c:1504 ../src/gui/presets.c:944
 msgid "display-referred default"
@@ -8998,13 +9000,13 @@ msgstr "アクセルウィンドウを表示する"
 #: ../src/gui/gtk.c:1305
 msgctxt "accel"
 msgid "toggle tooltip visibility"
-msgstr "ツールチップの表示／非表示を切り替える"
+msgstr "ツールチップの表示／非表示切り替え"
 
 #. reinitialise input devices
 #: ../src/gui/gtk.c:1311
 msgctxt "accel"
 msgid "reinitialise input devices"
-msgstr "インプットデバイスを再初期化する"
+msgstr "インプットデバイスを再初期化"
 
 #: ../src/gui/gtk.c:1352
 msgid "toggle focus-peaking mode"
@@ -9812,7 +9814,7 @@ msgstr "モジュールのレイアウトを管理します"
 
 #: ../src/gui/presets.c:1086
 msgid "manage quick presets"
-msgstr "クイックプリセットを管理する"
+msgstr "クイックプリセットを管理してください"
 
 #: ../src/gui/presets.c:1257
 msgid "manage quick presets list..."
@@ -9828,11 +9830,11 @@ msgstr "無効：モジュールのバージョンが違います"
 
 #: ../src/gui/presets.c:1436 ../src/libs/lib.c:511
 msgid "edit this preset.."
-msgstr "このプリセットを編集する..."
+msgstr "このプリセットを編集..."
 
 #: ../src/gui/presets.c:1440 ../src/libs/lib.c:515
 msgid "delete this preset"
-msgstr "このプリセットを削除する"
+msgstr "このプリセットを削除"
 
 #: ../src/gui/presets.c:1446 ../src/libs/lib.c:523
 msgid "store new preset.."
@@ -9840,7 +9842,7 @@ msgstr "新しいプリセットを保存..."
 
 #: ../src/gui/presets.c:1452 ../src/libs/lib.c:535
 msgid "update preset"
-msgstr "プリセットを更新する"
+msgstr "プリセットを更新"
 
 #: ../src/gui/styles_dialog.c:206
 #, c-format
@@ -10732,7 +10734,7 @@ msgid ""
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
-"垂直方向のパースペクティブの歪みを自動的に補正します\n"
+"垂直方向のパースペクティブの歪みの自動補正\n"
 "Ctrl+クリックで回転のみ補正します\n"
 "Shift+クリックでレンズシフトのみ補正します"
 
@@ -10742,7 +10744,7 @@ msgid ""
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
-"水平方向のパースペクティブの歪みを自動的に補正します\n"
+"水平方向のパースペクティブの歪みの自動補正\n"
 "Ctrl+クリックで回転のみ補正します\n"
 "Shift+クリックでレンズシフトのみ補正します"
 
@@ -10754,8 +10756,8 @@ msgid ""
 "shift+click to only fit lens shift\n"
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
-"垂直方向と水平方向のパースペクティブの歪みを自動的に補正します。回転、両方向"
-"のレンズシフト、せん断変形を補正します\n"
+"垂直方向と水平方向のパースペクティブの歪みの自動補正\n"
+"回転、両方向のレンズシフト、せん断変形を補正します\n"
 "Ctrl+クリックで回転のみ補正します\n"
 "Shift+クリックでレンズシフトのみ補正します\n"
 "Ctrl+Shift +クリックで回転とレンズシフトのみ補正します"
@@ -10767,18 +10769,18 @@ msgid ""
 "shift+click for an additional detail enhancement\n"
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
-"画像の線構成を自動的に分析します\n"
+"画像の線の構成を自動で分析\n"
 "Ctrl+クリックでエッジ強化をさらに強めます\n"
 "Shift+クリックでディテール強化をさらに強めます\n"
 "Ctrl+Shift +クリックで両方の方法を組み合わせて用います"
 
 #: ../src/iop/ashift.c:5810
 msgid "manually define perspective rectangle"
-msgstr "パースペクティブの矩形を手動で定義します"
+msgstr "パースペクティブの矩形を手動で定義"
 
 #: ../src/iop/ashift.c:5811
 msgid "manually draw structure lines"
-msgstr "構造線を手描きします"
+msgstr "構造線を手描き"
 
 #: ../src/iop/ashift.c:5848 ../src/iop/clipping.c:3387
 #, c-format
@@ -11243,7 +11245,7 @@ msgstr "明るさ（ブライトネス）を調整します"
 
 #: ../src/iop/basicadj.c:626
 msgid "saturation adjustment"
-msgstr "彩度（サチュレーション）調整"
+msgstr "彩度調整"
 
 #: ../src/iop/basicadj.c:629
 msgid "vibrance adjustment"
@@ -11578,11 +11580,11 @@ msgstr "縁の色"
 
 #: ../src/iop/borders.c:1102
 msgid "select border color"
-msgstr "縁の色を選択します"
+msgstr "縁の色を選択してください"
 
 #: ../src/iop/borders.c:1106
 msgid "pick border color from image"
-msgstr "縁の色を画像から抽出する"
+msgstr "画像から縁の色を抽出"
 
 #: ../src/iop/borders.c:1110
 msgid "frame line color"
@@ -11590,11 +11592,11 @@ msgstr "フレームラインの色"
 
 #: ../src/iop/borders.c:1114
 msgid "select frame line color"
-msgstr "フレームラインの色を選択する"
+msgstr "フレームラインの色を選択してください"
 
 #: ../src/iop/borders.c:1118
 msgid "pick frame line color from image"
-msgstr "フレームラインの色を画像から抽出する"
+msgstr "画像からフレームラインの色を抽出"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:82
@@ -11841,23 +11843,23 @@ msgstr "出力チャンネルにおける青チャンネルの量"
 
 #: ../src/iop/channelmixer.c:662 ../src/iop/channelmixerrgb.c:465
 msgid "swap R and B"
-msgstr "赤チャンネルと青チャンネルを入れ替える"
+msgstr "赤／青チャンネル入れ替え"
 
 #: ../src/iop/channelmixer.c:668 ../src/iop/channelmixerrgb.c:439
 msgid "swap G and B"
-msgstr "緑チャンネルと青チャンネルを入れ替える"
+msgstr "緑／青チャンネル入れ替え"
 
 #: ../src/iop/channelmixer.c:674
 msgid "color contrast boost"
-msgstr "色のコントラストをブーストする"
+msgstr "色のコントラストをブースト"
 
 #: ../src/iop/channelmixer.c:680
 msgid "color details boost"
-msgstr "色のディテールをブーストする"
+msgstr "色のディテールをブースト"
 
 #: ../src/iop/channelmixer.c:686
 msgid "color artifacts boost"
-msgstr "色のアーティファクトをブーストする"
+msgstr "色のアーティファクトをブースト"
 
 #: ../src/iop/channelmixer.c:692
 msgid "B/W luminance-based"
@@ -11949,7 +11951,7 @@ msgstr "チャンネルミキサー ベーシック"
 
 #: ../src/iop/channelmixerrgb.c:452
 msgid "swap G and R"
-msgstr "緑チャンネルと赤チャンネルを入れ替える"
+msgstr "緑／赤チャンネル入れ替え"
 
 #: ../src/iop/channelmixerrgb.c:1648
 msgid "(daylight)"
@@ -12211,7 +12213,7 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:3767 ../src/iop/temperature.c:2011
 msgid "set white balance to detected from area"
-msgstr "領域から検出されたホワイトバランスに設定します"
+msgstr "画像内の領域からホワイトバランスを検出"
 
 #: ../src/iop/channelmixerrgb.c:3771
 msgid "illuminant"
@@ -12315,7 +12317,7 @@ msgid ""
 "none is a trade-off between both\n"
 "the others are special behaviours to protect some hues"
 msgstr ""
-"最適化において優先される色を選択します\n"
+"最適化において優先される色を選択してください\n"
 "ニュートラルな色を選ぶと、平均デルタE値が最も低くなりますが、最大デルタE値が"
 "高くなります\n"
 "高彩度の色を選ぶと、最大デルタE値が最も低くなりますが、平均デルタE値が高くな"
@@ -12367,15 +12369,15 @@ msgstr "デルタEはCIE2000の方式を用いています"
 
 #: ../src/iop/channelmixerrgb.c:3903
 msgid "accept the computed profile and set it in the module"
-msgstr "算出されたプロファイルを受け入れて、モジュールの設定として使用します"
+msgstr "算出されたプロファイルを受け入れて、モジュールの設定として使用"
 
 #: ../src/iop/channelmixerrgb.c:3908
 msgid "recompute the profile"
-msgstr "プロファイルを再計算します"
+msgstr "プロファイルの再計算"
 
 #: ../src/iop/channelmixerrgb.c:3913
 msgid "check the output delta E"
-msgstr "出力デルタEをチェックします"
+msgstr "出力デルタEのチェック"
 
 #: ../src/iop/choleski.h:304 ../src/iop/choleski.h:402
 msgid ""
@@ -12553,7 +12555,7 @@ msgid ""
 "to enter custom aspect ratio open the combobox and type ratio in x:y or "
 "decimal format"
 msgstr ""
-"アスペクト比を設定します\n"
+"アスペクト比を設定してください\n"
 "正方形から離れていくようにリストに並べられています\n"
 "カスタム設定のアスペクト比を入力するには、コンボボックスを開いて比をx:yあるい"
 "は少数でタイプしてください"
@@ -12775,11 +12777,11 @@ msgstr "マスター"
 
 #: ../src/iop/colorbalance.c:1910
 msgid "saturation correction before the color balance"
-msgstr "カラーバランス前の彩度（サチュレーション）補正"
+msgstr "カラーバランスの前の彩度の補正"
 
 #: ../src/iop/colorbalance.c:1918
 msgid "saturation correction after the color balance"
-msgstr "カラーバランス後の彩度（サチュレーション）補正"
+msgstr "カラーバランスの後の彩度の補正"
 
 #: ../src/iop/colorbalance.c:1924
 msgid "adjust to match a neutral tone"
@@ -12796,11 +12798,11 @@ msgstr "ファクター"
 
 #: ../src/iop/colorbalance.c:2033
 msgid "select the hue"
-msgstr "色相を選択します"
+msgstr "色相を選択してください"
 
 #: ../src/iop/colorbalance.c:2045
 msgid "select the saturation"
-msgstr "彩度（サチュレーション）を選択します"
+msgstr "彩度を選択してください"
 
 #: ../src/iop/colorbalance.c:2064
 msgid "factor of lift/offset"
@@ -12871,11 +12873,11 @@ msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance"
 msgstr ""
 "オフセット、パワー、スロープ|CDL|カラーグレーディング|コントラスト|彩度（クロ"
-"マ）ハイライト|色相|自然な彩度"
+"マ）ハイライト|色相|自然な彩度（バイブランス）"
 
 #: ../src/iop/colorbalancergb.c:368
 msgid "add basic colorfulness"
-msgstr "基本的な色鮮やかさ（カラフルネス）を加える"
+msgstr "基本的な色鮮やかさ（カラフルネス）を追加"
 
 #: ../src/iop/colorbalancergb.c:772
 msgid "colorbalance works only on RGB input"
@@ -12939,8 +12941,7 @@ msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
 msgstr ""
-"元のピクセルの彩度（サチュレーション）に比例して、絶対量で彩度（サチュレー"
-"ション）を増減させます"
+"元のピクセルの彩度（サチュレーション）に比例して、絶対量で彩度を増減させます"
 
 #: ../src/iop/colorbalancergb.c:1655
 msgid "perceptual brilliance grading"
@@ -12956,8 +12957,7 @@ msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
 msgstr ""
-"元のピクセルの明るさ（ブリリアンス）に比例して、絶対量で明るさ（ブリリアン"
-"ス）を増減させます"
+"元のピクセルの明るさ（ブリリアンス）に比例して、絶対量で明るさを増減させます"
 
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:1686
@@ -13076,7 +13076,7 @@ msgstr "チェッカーボードの色 1"
 
 #: ../src/iop/colorbalancergb.c:1855 ../src/iop/colorbalancergb.c:1864
 msgid "select color of the checkerboard from a swatch"
-msgstr "色見本からチェッカーボードの色を選択します"
+msgstr "色見本からチェッカーボードの色を選択してください"
 
 #: ../src/iop/colorbalancergb.c:1861
 msgid "checkerboard color 2"
@@ -13240,7 +13240,7 @@ msgid ""
 "lower values scale towards lower saturation while higher scale towards "
 "higher saturation"
 msgstr ""
-"ターゲットの色の彩度（サチュレーション）を調整します\n"
+"ターゲットの色の彩度を調整します\n"
 "Lab空間におけるターゲットの色のaチャンネとbチャンネルを同時に調整します\n"
 "値を下げると、彩度を下げます\n"
 "値を上げると、彩度を上げます"
@@ -13275,7 +13275,7 @@ msgstr "色のコントラスト"
 msgid ""
 "increase saturation and separation between\n"
 "opposite colors"
-msgstr "彩度（サチュレーション）と、相反する色の間の分離を増大させます"
+msgstr "彩度と、相反する色の間の分離を増大させます"
 
 # Lab色空間でのa *曲線の傾き
 # 値が小さいほど緑とマゼンタの彩度が低くなり、値が大きいほど緑とマゼンタの彩度が高くなります。
@@ -13324,13 +13324,13 @@ msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"線をドラッグしてスプリットトーン調整を行います\n"
+"ドラッグで線を描いてください\n"
 "白点はハイライト、黒点はシャドウを意味します\n"
-"彩度（サチュレーション）を変更するにはマウスホイールを使用します"
+"彩度を変更するにはマウスホイールを使用します"
 
 #: ../src/iop/colorcorrection.c:284
 msgid "set the global saturation"
-msgstr "全体の彩度（サチュレーション）を設定します"
+msgstr "全体の彩度を設定します"
 
 #: ../src/iop/colorin.c:130
 msgid "input color profile"
@@ -13407,11 +13407,11 @@ msgstr "画像に無地の色を被せます"
 
 #: ../src/iop/colorize.c:360 ../src/iop/splittoning.c:486
 msgid "select the hue tone"
-msgstr "色相トーンを選択します"
+msgstr "色相トーンを選択してください"
 
 #: ../src/iop/colorize.c:367
 msgid "select the saturation shadow tone"
-msgstr "シャドウトーンの彩度（サチュレーション）を選択します"
+msgstr "シャドウトーンの彩度を選択してください"
 
 #: ../src/iop/colorize.c:372
 msgid "lightness of color"
@@ -13527,7 +13527,7 @@ msgstr "相対的な色彩を保持"
 #: ../src/views/lighttable.c:1321 ../src/views/lighttable.c:1328
 msgctxt "rendering intent"
 msgid "saturation"
-msgstr "彩度（サチュレーション）"
+msgstr "彩度"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:1306
 #: ../src/libs/print_settings.c:2163 ../src/libs/print_settings.c:2497
@@ -13644,8 +13644,7 @@ msgstr "カラーゾーン"
 
 #: ../src/iop/colorzones.c:144
 msgid "selectively shift hues, saturation and brightness of pixels"
-msgstr ""
-"ピクセルの色相、彩度（サチュレーション）、明るさ（ブライトネス）を変えます"
+msgstr "ピクセルの色相、彩度、明るさ（ブライトネス）を変えます"
 
 #: ../src/iop/colorzones.c:613
 msgid "red black white"
@@ -13810,11 +13809,11 @@ msgid ""
 msgstr ""
 "色の保護の方式\n"
 " - 全体平均：高速ですが、高倍率拡大時にわずかに誤りのあるプレビューが表示され"
-"ることがあります。局所平均と比較して、彩度（サチュレーション）の保護が過剰ま"
-"たは不十分になることがあります\n"
+"ることがあります。局所平均と比較して、彩度の保護が過剰または不十分になること"
+"があります\n"
 " - 局所平均：低速ですが、近くのピクセルを色のリファレンスとして用いることで全"
-"体平均よりも優れた彩度（サチュレーション）保護を行うかもしれません。それゆ"
-"え、必要な場合にさらに彩度を低下させる余裕があります\n"
+"体平均よりも優れた彩度の保護を行うかもしれません。それゆえ、必要な場合にさら"
+"に彩度を低下させる余裕があります\n"
 " - 静的：高速です。しきい値を静的な制限値としてのみ使用します"
 
 #: ../src/iop/defringe.c:424
@@ -14719,7 +14718,7 @@ msgid ""
 "if the chrominance preservation is enabled."
 msgstr ""
 "モジュールの入力の彩度を画像全体で低減します\n"
-"クロミナンス保持が有効になっている場合、この値を100％未満に設定する必要があり"
+"クロミナンス保持が有効になっている場合、この値を100%未満に設定する必要があり"
 "ます"
 
 # モジュールの出力の彩度(Saturation)を、特に極端な輝度の部分において、低減します
@@ -14781,8 +14780,7 @@ msgid ""
 msgstr ""
 "元の色が保持されていることを確認してください\n"
 "色収差を強める可能性があります\n"
-"このモードを使用する場合、手動で彩度（サチュレーション）を調整する必要があり"
-"ます"
+"このモードを使用する場合、手動で彩度を調整する必要があります"
 
 #: ../src/iop/filmic.c:1723
 msgid "destination/display"
@@ -14794,7 +14792,7 @@ msgid ""
 "except if you want a faded look"
 msgstr ""
 "出力の純粋な黒の輝度\n"
-"退色したルックにしたい場合以外、この値は0％であるべきです"
+"退色したルックにしたい場合以外、この値は0%であるべきです"
 
 #: ../src/iop/filmic.c:1751 ../src/iop/filmicrgb.c:4085
 msgid ""
@@ -14810,7 +14808,7 @@ msgid ""
 "except if you want a faded look"
 msgstr ""
 "出力の純粋な白の輝度\n"
-"退色したルックにしたい場合以外、この値は0％であるべきです"
+"退色したルックにしたい場合以外、この値は100%であるべきです"
 
 #: ../src/iop/filmic.c:1766
 msgid "target gamma"
@@ -14833,9 +14831,7 @@ msgstr "フィルミックRGB"
 
 #: ../src/iop/filmicrgb.c:346
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
-msgstr ""
-"トーンマッピング|カーブ|ビュー変換|コントラスト|彩度（サチュレーション）|ハイ"
-"ライト"
+msgstr "トーンマッピング|カーブ|ビュー変換|コントラスト|彩度|ハイライト"
 
 #: ../src/iop/filmicrgb.c:351
 msgid ""
@@ -14927,7 +14923,7 @@ msgid ""
 msgstr ""
 "下のパラメータを使用してノードを設定します\n"
 "明るい曲線はフィルミックトーンマッピングカーブです\n"
-"暗い曲線は彩度低減（ディサチュレーション）カーブです"
+"暗い曲線は彩度低減カーブです"
 
 #: ../src/iop/filmicrgb.c:3831
 msgid "toggle axis labels and values display"
@@ -14955,7 +14951,7 @@ msgid ""
 "decrease the value to increase the overall brightness."
 msgstr ""
 "画像の被写体の平均輝度に合わせて調整します\n"
-"ここに入力した値が18.45％に再マップされます\n"
+"ここに入力した値が18.45%に再マップされます\n"
 "値を下げると、全体の明るさ（ブライトネス）が上がります"
 
 #: ../src/iop/filmicrgb.c:3922 ../src/iop/filmicrgb.c:3932
@@ -15161,7 +15157,7 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
-"フィルミックのスプライン曲線のハイライト部の曲率を選択します\n"
+"フィルミックのスプライン曲線のハイライト部の曲率を選択してください\n"
 "ハードを選択すると、高い曲率を用いて、トーンの圧縮を強めます\n"
 "ソフトを選択すると、低い曲率を用いて、トーンの圧縮を弱めます"
 
@@ -15171,7 +15167,7 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
-"フィルミックのスプライン曲線のシャドウ部の曲率を選択します\n"
+"フィルミックのスプライン曲線のシャドウ部の曲率を選択してください\n"
 "ハードを選択すると、高い曲率を用いて、トーンの圧縮を強めます\n"
 "ソフトを選択すると、低い曲率を用いて、トーンの圧縮を弱めます"
 
@@ -15229,12 +15225,12 @@ msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
 msgstr ""
-"ノイズの統計的分布を選択します\n"
+"ノイズの統計的分布を選択してください\n"
 "センサーの固有のノイズパターンに一致させるのに有用です\n"
 
 #: ../src/iop/filmicrgb.c:4211
 msgid "mid-tones saturation"
-msgstr "中間トーンの彩度（サチュレーション）"
+msgstr "中間トーンの彩度"
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
@@ -15259,11 +15255,11 @@ msgstr "回転なし"
 
 #: ../src/iop/flip.c:430 ../src/iop/flip.c:560
 msgid "flip horizontally"
-msgstr "水平に反転します"
+msgstr "水平に反転"
 
 #: ../src/iop/flip.c:434 ../src/iop/flip.c:563
 msgid "flip vertically"
-msgstr "垂直に反転します"
+msgstr "垂直に反転"
 
 #: ../src/iop/flip.c:438
 msgid "rotate by -90 degrees"
@@ -15283,11 +15279,11 @@ msgstr "変形"
 
 #: ../src/iop/flip.c:552
 msgid "rotate 90 degrees CCW"
-msgstr "反時計回りに90°回転します"
+msgstr "反時計回りに90°回転"
 
 #: ../src/iop/flip.c:556
 msgid "rotate 90 degrees CW"
-msgstr "時計回りに90°回転します"
+msgstr "時計回りに90°回転"
 
 #: ../src/iop/gamma.c:43
 msgctxt "modulename"
@@ -15405,11 +15401,11 @@ msgstr ""
 
 #: ../src/iop/graduatednd.c:1127
 msgid "select the hue tone of filter"
-msgstr "フィルターの色相トーンを選択します"
+msgstr "フィルターの色相トーンを選択してください"
 
 #: ../src/iop/graduatednd.c:1134
 msgid "select the saturation of filter"
-msgstr "フィルターの彩度（サチュレーション）を選択します"
+msgstr "フィルターの彩度を選択してください"
 
 #: ../src/iop/graduatednd.c:1145
 #, c-format
@@ -15595,7 +15591,7 @@ msgstr "リニア、RAW、ディスプレイ参照"
 
 #: ../src/iop/invert.c:145 ../src/iop/negadoctor.c:820
 msgid "pick color of film material from image"
-msgstr "画像からフィルムの素材の色を抽出します"
+msgstr "画像からフィルムの素材の色を抽出"
 
 #. Here we could provide more for monochrome special cases. As no monochrome camera
 #. has a bayer sensor we don't need g->RGB_to_CAM and g->CAM_to_RGB corrections
@@ -15609,7 +15605,7 @@ msgstr "フィルムの素材の色"
 
 #: ../src/iop/invert.c:611
 msgid "select color of film material"
-msgstr "フィルムの素材の色を選択します"
+msgstr "フィルムの素材の色を選択してください"
 
 #: ../src/iop/lens.cc:148
 msgid "lens correction"
@@ -15782,7 +15778,7 @@ msgstr "スケール"
 
 #: ../src/iop/lens.cc:2370
 msgid "auto scale"
-msgstr "スケールを自動設定します"
+msgstr "スケールの自動設定"
 
 #: ../src/iop/lens.cc:2374 ../src/libs/modulegroups.c:2405
 msgid "correct"
@@ -15832,19 +15828,19 @@ msgstr ""
 
 #: ../src/iop/levels.c:641 ../src/iop/rgblevels.c:1068
 msgid "apply auto levels"
-msgstr "自動レベル設定を適用します"
+msgstr "レベルの自動設定を適用"
 
 #: ../src/iop/levels.c:645 ../src/iop/rgblevels.c:1043
 msgid "pick black point from image"
-msgstr "画像からブラックポイントを抽出します"
+msgstr "画像からブラックポイントを抽出"
 
 #: ../src/iop/levels.c:649 ../src/iop/rgblevels.c:1049
 msgid "pick medium gray point from image"
-msgstr "画像からミドルグレーポイントを抽出します"
+msgstr "画像からミドルグレーポイントを抽出"
 
 #: ../src/iop/levels.c:653 ../src/iop/rgblevels.c:1055
 msgid "pick white point from image"
-msgstr "画像からホワイトポイントを抽出します"
+msgstr "画像からホワイトポイントを抽出"
 
 #: ../src/iop/levels.c:666 ../src/iop/rgblevels.c:946
 msgid "black"
@@ -15924,7 +15920,7 @@ msgstr "ワープ|ノード数："
 
 #: ../src/iop/liquify.c:3667
 msgid "edit, add and delete nodes"
-msgstr "ノードを編集、追加、削除します"
+msgstr "ノードの編集・追加・削除"
 
 #. shapes
 #: ../src/iop/liquify.c:3671 ../src/iop/liquify.c:3675
@@ -15937,27 +15933,27 @@ msgstr "シェイプ"
 
 #: ../src/iop/liquify.c:3671
 msgid "draw curves"
-msgstr "カーブを描きます"
+msgstr "カーブを描画"
 
 #: ../src/iop/liquify.c:3671
 msgid "draw multiple curves"
-msgstr "複数のカーブを描きます"
+msgstr "複数のカーブを描画"
 
 #: ../src/iop/liquify.c:3675
 msgid "draw lines"
-msgstr "直線を描きます"
+msgstr "直線を描画"
 
 #: ../src/iop/liquify.c:3675
 msgid "draw multiple lines"
-msgstr "複数の直線を描きます"
+msgstr "複数の直線を描画"
 
 #: ../src/iop/liquify.c:3679
 msgid "draw points"
-msgstr "点を打ちます"
+msgstr "点を打つ"
 
 #: ../src/iop/liquify.c:3679
 msgid "draw multiple points"
-msgstr "複数の点を打ちます"
+msgstr "複数の点を打つ"
 
 #: ../src/iop/liquify.c:3683
 msgid ""
@@ -16094,7 +16090,7 @@ msgstr "ローパスフィルターの明るさ（ブライトネス）の調整
 
 #: ../src/iop/lowpass.c:597
 msgid "color saturation of lowpass filter"
-msgstr "ローパスフィルターの色の彩度（サチュレーション）"
+msgstr "ローパスフィルターの色の彩度"
 
 #: ../src/iop/lowpass.c:598
 msgid "which filter to use for blurring"
@@ -16275,15 +16271,15 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1704
 msgid "enter lut name"
-msgstr "lut名を入力します"
+msgstr "lut名を入力してください"
 
 #: ../src/iop/lut3d.c:1725
 msgid "select the LUT"
-msgstr "lutを選択します"
+msgstr "lutを選択してください"
 
 #: ../src/iop/lut3d.c:1738
 msgid "select the color space in which the LUT has to be applied"
-msgstr "使用するlutが適用されるべき色空間を選択します"
+msgstr "使用するlutが適用されるべき色空間を選択してください"
 
 #: ../src/iop/lut3d.c:1740
 msgid "interpolation"
@@ -16291,7 +16287,7 @@ msgstr "補間"
 
 #: ../src/iop/lut3d.c:1741
 msgid "select the interpolation method"
-msgstr "補間方式を選択します"
+msgstr "補間方式を選択してください"
 
 #: ../src/iop/mask_manager.c:46 ../src/libs/masks.c:55
 msgid "mask manager"
@@ -16346,7 +16342,7 @@ msgstr "フィルムベースの色"
 
 #: ../src/iop/negadoctor.c:815
 msgid "select color of film material from a swatch"
-msgstr "色見本からフィルムの素材の色を選択します"
+msgstr "色見本からフィルムの素材の色を選択してください"
 
 # フィルムの透明ベースの色調を調整します。
 # この値はフィルムの素材、フィルムの現像中に生成される化学的な色被り、
@@ -16405,11 +16401,11 @@ msgstr "シャドウの色かぶり"
 
 #: ../src/iop/negadoctor.c:885
 msgid "select color of shadows from a swatch"
-msgstr "色見本からシャドーの色を選択します"
+msgstr "色見本からシャドーの色を選択してください"
 
 #: ../src/iop/negadoctor.c:890
 msgid "pick shadows color from image"
-msgstr "画像からシャドーの色を抽出します"
+msgstr "画像からシャドーの色を抽出"
 
 #: ../src/iop/negadoctor.c:895
 msgid "shadows red offset"
@@ -16442,11 +16438,11 @@ msgstr "ハイライト ホワイトバランス"
 
 #: ../src/iop/negadoctor.c:922
 msgid "select color of illuminant from a swatch"
-msgstr "色見本からイルミナントの色を選択します"
+msgstr "色見本からイルミナントの色を選択してください"
 
 #: ../src/iop/negadoctor.c:927
 msgid "pick illuminant color from image"
-msgstr "画像からイルミナントの色を抽出します"
+msgstr "画像からイルミナントの色を抽出"
 
 #: ../src/iop/negadoctor.c:932
 msgid "illuminant red gain"
@@ -16569,7 +16565,7 @@ msgstr "モジュール露出過多が色変換に失敗しました"
 
 #: ../src/iop/profile_gamma.c:95
 msgid "unbreak input profile"
-msgstr "入力プロファイルを修復する"
+msgstr "入力プロファイルの修復"
 
 #: ../src/iop/profile_gamma.c:100
 msgid "correct input color profiles meant to be applied on non-linear RGB"
@@ -16606,7 +16602,7 @@ msgstr "ガンマの指数因子"
 
 #: ../src/iop/profile_gamma.c:656
 msgid "adjust to match the average luma of the subject"
-msgstr "被写体の平均輝度（ルーマ）に一致するように調整します"
+msgstr "被写体の平均輝度（ルーマ）に一致するように調整してください"
 
 #: ../src/iop/profile_gamma.c:662
 msgid ""
@@ -16626,7 +16622,7 @@ msgstr ""
 
 #: ../src/iop/profile_gamma.c:670
 msgid "optimize automatically"
-msgstr "自動的に最適化します"
+msgstr "自動最適化"
 
 #: ../src/iop/profile_gamma.c:675
 msgid ""
@@ -16839,11 +16835,11 @@ msgstr "編集"
 
 #: ../src/iop/retouch.c:2139
 msgid "show and edit shapes on the current scale"
-msgstr "選択中のスケール上にあるシェイプを表示し編集します"
+msgstr "選択中のスケール上にあるシェイプの表示・編集"
 
 #: ../src/iop/retouch.c:2140
 msgid "show and edit shapes in restricted mode"
-msgstr "制限モードでシェイプを表示し編集します"
+msgstr "制限モードでシェイプを表示・編集"
 
 #: ../src/iop/retouch.c:2163
 msgid "algorithms:"
@@ -16856,7 +16852,7 @@ msgstr "ツール"
 
 #: ../src/iop/retouch.c:2166 ../src/iop/retouch.c:2184
 msgid "activate blur tool"
-msgstr "ぼかしツールを有効化します"
+msgstr "ぼかしツールの有効化"
 
 #: ../src/iop/retouch.c:2166 ../src/iop/retouch.c:2170
 #: ../src/iop/retouch.c:2174 ../src/iop/retouch.c:2178
@@ -16865,15 +16861,15 @@ msgstr "選択中のシェープのアルゴリズムを変更します"
 
 #: ../src/iop/retouch.c:2170 ../src/iop/retouch.c:2187
 msgid "activate fill tool"
-msgstr "塗りつぶしツールを有効化します"
+msgstr "塗りつぶしツールの有効化"
 
 #: ../src/iop/retouch.c:2174 ../src/iop/retouch.c:2190
 msgid "activate cloning tool"
-msgstr "クローンツールを有効化します"
+msgstr "クローンツールの有効化"
 
 #: ../src/iop/retouch.c:2178 ../src/iop/retouch.c:2193
 msgid "activate healing tool"
-msgstr "修復ツールを有効化します"
+msgstr "修復ツールの有効化"
 
 # Ctrlキーを押しながらクリックして、選択しているシェイプに用いるツールを変更します
 #. overwrite tooltip ourself to handle shift+click
@@ -16913,23 +16909,23 @@ msgstr ""
 
 #: ../src/iop/retouch.c:2240
 msgid "display masks"
-msgstr "マスクを表示します"
+msgstr "マスクを表示"
 
 #: ../src/iop/retouch.c:2244
 msgid "temporarily switch off shapes"
-msgstr "シェイプを一時的にオフにします"
+msgstr "シェイプを一時的にオフ"
 
 #: ../src/iop/retouch.c:2251
 msgid "paste cut shapes to current scale"
-msgstr "切り取られたシェイプを現在のスケールに貼り付けます"
+msgstr "切り取られたシェイプを現在のスケールに貼り付け"
 
 #: ../src/iop/retouch.c:2255
 msgid "cut shapes from current scale"
-msgstr "選択中のスケールからシェイプを切り取ります"
+msgstr "選択中のスケールからシェイプを切り取り"
 
 #: ../src/iop/retouch.c:2262
 msgid "display wavelet scale"
-msgstr "ウェーブレットスケールを表示します"
+msgstr "ウェーブレットスケールを表示"
 
 #: ../src/iop/retouch.c:2269
 msgid "preview single scale"
@@ -16941,7 +16937,7 @@ msgstr "プレビューのレベルを調整します"
 
 #: ../src/iop/retouch.c:2295
 msgid "auto levels"
-msgstr "レベルを自動で調整します"
+msgstr "レベルの自動設定"
 
 #: ../src/iop/retouch.c:2303
 msgid "shape selected:"
@@ -16952,7 +16948,7 @@ msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
 msgstr ""
-"シェイプ上でクリックしてシェイプを選択します\n"
+"シェイプ上でクリックするとシェイプを選択します\n"
 "シェイプのない箇所でクリックすると選択を解除します"
 
 #: ../src/iop/retouch.c:2315
@@ -16965,7 +16961,7 @@ msgstr "塗りつぶしの色："
 
 #: ../src/iop/retouch.c:2327 ../src/iop/retouch.c:2328
 msgid "select fill color"
-msgstr "塗りつぶしの色を選択します"
+msgstr "塗りつぶしの色を選択してください"
 
 #: ../src/iop/retouch.c:2333
 msgid "pick fill color from image"
@@ -16973,7 +16969,9 @@ msgstr "画像から塗りつぶしの色を抽出します"
 
 #: ../src/iop/retouch.c:2342
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
-msgstr "色の明るさ（ブライトネス）を調整します。 消去モードでも動作します"
+msgstr ""
+"色の明るさ（ブライトネス）を調整します\n"
+"消去モードでも動作します"
 
 #: ../src/iop/retouch.c:2348
 msgid "type for the blur algorithm"
@@ -17083,7 +17081,7 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
-"ユーザーが定めた領域に基づいてレベルの自動設定を適用します\n"
+"ユーザーが定めた領域に基づいてレベルの自動設定を適用\n"
 "クリックしながらドラッグして領域を描きます\n"
 "右クリックでキャンセルします"
 
@@ -17175,11 +17173,11 @@ msgstr ""
 
 #: ../src/iop/shadhi.c:712
 msgid "adjust saturation of shadows"
-msgstr "シャドウの彩度（サチュレーション）を調整します"
+msgstr "シャドウの彩度を調整します"
 
 #: ../src/iop/shadhi.c:713
 msgid "adjust saturation of highlights"
-msgstr "ハイライトの彩度（サチュレーション）を調整します"
+msgstr "ハイライトの彩度を調整します"
 
 #: ../src/iop/sharpen.c:73
 msgctxt "modulename"
@@ -17231,7 +17229,7 @@ msgstr "ぼかしのサイズ"
 
 #: ../src/iop/soften.c:412
 msgid "the saturation of blur"
-msgstr "ぼかしの彩度（サチュレーション）"
+msgstr "ぼかしの彩度"
 
 #: ../src/iop/soften.c:416
 msgid "the brightness of blur"
@@ -17271,11 +17269,11 @@ msgstr "チョコレートブラウン"
 
 #: ../src/iop/splittoning.c:492
 msgid "select the saturation tone"
-msgstr "彩度（サチュレーション）のトーンを選択します"
+msgstr "彩度のトーンを選択してください"
 
 #: ../src/iop/splittoning.c:496
 msgid "select tone color"
-msgstr "トーンの色を選択します"
+msgstr "トーンの色を選択してください"
 
 #. Additional parameters
 #. Camera settings
@@ -17336,7 +17334,7 @@ msgstr ""
 
 #: ../src/iop/spots.c:818
 msgid "show and edit shapes"
-msgstr "シェイプを表示し、編集します"
+msgstr "シェイプの表示・編集"
 
 #: ../src/iop/temperature.c:195
 msgctxt "modulename"
@@ -17467,11 +17465,11 @@ msgstr "撮影時の設定"
 
 #: ../src/iop/temperature.c:2002
 msgid "set white balance to as shot"
-msgstr "ホワイトバランスを撮影時の設定にします"
+msgstr "撮影時のホワイトバランス設定"
 
 #: ../src/iop/temperature.c:2009
 msgid "from image area"
-msgstr "画像の領域から設定"
+msgstr "画像内の領域から検出"
 
 #: ../src/iop/temperature.c:2013
 msgid "user modified"
@@ -17479,7 +17477,7 @@ msgstr "ユーザによる修正"
 
 #: ../src/iop/temperature.c:2016
 msgid "set white balance to user modified"
-msgstr "ユーザが修正したホワイトバランスに設定します"
+msgstr "ユーザが修正したホワイトバランス"
 
 #: ../src/iop/temperature.c:2019
 msgid "camera reference"
@@ -17490,13 +17488,13 @@ msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
 msgstr ""
-"ホワイトバランスをカメラのリファレンス値に設定します\n"
+"カメラのリファレンス値にホワイトバランスを設定\n"
 "ほとんどの場合D65であるはずです"
 
 #. relabel to settings to remove confusion between module presets and white balance settings
 #: ../src/iop/temperature.c:2033
 msgid "choose white balance setting"
-msgstr "ホワイトバランスの設定を選択します"
+msgstr "ホワイトバランスの設定を選択してください"
 
 #: ../src/iop/temperature.c:2037
 msgid "finetune"
@@ -17547,7 +17545,7 @@ msgstr "bチャンネルのトーンカーブ"
 
 #: ../src/iop/toneequal.c:309
 msgid "tone equalizer"
-msgstr "トーン イコライザー"
+msgstr "トーンイコライザー"
 
 #: ../src/iop/toneequal.c:314
 msgid "tone curve|tone mapping|relight|background light|shadows highlights"
@@ -17576,7 +17574,7 @@ msgstr "マスクブレンド：汎用"
 
 #: ../src/iop/toneequal.c:459
 msgid "mask blending : people with backlight"
-msgstr "マスクブレンド：背後から照らされた人物"
+msgstr "マスクブレンド：逆光内の人物"
 
 #: ../src/iop/toneequal.c:475
 msgid "compress shadows/highlights (eigf) : strong"
@@ -17762,8 +17760,8 @@ msgid ""
 "higher contrast between areas to dodge and areas to burn"
 msgstr ""
 "マスクをプレビューし、\n"
-"覆い焼きする領域と焼き込む領域の間のコントラストが高くなる評価方式を選択しま"
-"す"
+"覆い焼きする領域と焼き込む領域の間のコントラストが高くなる評価方式を選択して"
+"ください"
 
 #: ../src/iop/toneequal.c:3230
 msgid "details"
@@ -17884,7 +17882,7 @@ msgstr "露出マスクを表示"
 
 #: ../src/iop/tonemap.cc:74
 msgid "tone mapping"
-msgstr "トーン マッピング"
+msgstr "トーンマッピング"
 
 #: ../src/iop/tonemap.cc:90
 msgid ""
@@ -17903,12 +17901,12 @@ msgstr "ベルビア"
 msgid ""
 "resaturate giving more weight to blacks, whites and low-saturation pixels"
 msgstr ""
-"色の彩度（サチュレーション）を高めます\n"
+"色の彩度を高めます\n"
 "黒や白、低彩度のピクセルにウェイトをおいて作用します"
 
 #: ../src/iop/velvia.c:268
 msgid "the strength of saturation boost"
-msgstr "彩度（サチュレーション）ブーストの強さ"
+msgstr "彩度のブーストの強さ"
 
 #: ../src/iop/velvia.c:271
 msgid "how much to spare highlights and shadows"
@@ -17920,14 +17918,15 @@ msgid ""
 "balance rgb module instead."
 msgstr ""
 "このモジュールは非推奨です\n"
-"代わりにカラーバランスRGBモジュールの自然な彩度スライダーを使用してください"
+"代わりにカラーバランスRGBモジュールの【自然な彩度（バイブランス）】スライダー"
+"を使用してください"
 
 #: ../src/iop/vibrance.c:93
 msgid ""
 "saturate and reduce the lightness of the most saturated pixels\n"
 "to make the colors more vivid."
 msgstr ""
-"彩度を上げ（サチュレート）、彩度の最も高いピクセルの明度を下げること、\n"
+"彩度を上げ、彩度の最も高いピクセルの明度を下げることで、\n"
 "色をよりビビットにします"
 
 #: ../src/iop/vibrance.c:223
@@ -17956,11 +17955,11 @@ msgstr "ビネットの半径のスケール（減光の終わり）"
 
 #: ../src/iop/vignette.c:1010
 msgid "strength of effect on brightness"
-msgstr "明るさ（ブライトネス）に関する効果の強さ"
+msgstr "明るさ（ブライトネス）に及ぼす効果の強さ"
 
 #: ../src/iop/vignette.c:1011
 msgid "strength of effect on saturation"
-msgstr "彩度（サチュレーション）に関する効果の強さ"
+msgstr "彩度に及ぼす効果の強さ"
 
 #: ../src/iop/vignette.c:1012
 msgid "horizontal offset of center of the effect"
@@ -18043,11 +18042,11 @@ msgstr ""
 
 #: ../src/iop/watermark.c:1263
 msgid "select watermark color"
-msgstr "透かしの色を選択します"
+msgstr "透かしの色を選択してください"
 
 #: ../src/iop/watermark.c:1265
 msgid "pick color from image"
-msgstr "画像から色を抽出します"
+msgstr "画像から色を抽出"
 
 #. Simple text
 #: ../src/iop/watermark.c:1272
@@ -18395,7 +18394,7 @@ msgstr "`%'をワイルドカード文字として使用してください"
 #: ../src/libs/collect.c:2214 ../src/libs/collect.c:2229
 #: ../src/libs/collect.c:2787
 msgid "clear this rule"
-msgstr "このルールを削除する"
+msgstr "このルールを削除"
 
 #: ../src/libs/collect.c:2218
 msgid "clear this rule or add new rules"
@@ -18407,11 +18406,11 @@ msgstr "検索を絞り込む"
 
 #: ../src/libs/collect.c:2798
 msgid "add more images"
-msgstr "画像を追加する"
+msgstr "画像を追加"
 
 #: ../src/libs/collect.c:2803
 msgid "exclude images"
-msgstr "画像を除外する"
+msgstr "画像を除外"
 
 #: ../src/libs/collect.c:2810
 msgid "change to: and"
@@ -18522,11 +18521,11 @@ msgstr "統計"
 
 #: ../src/libs/colorpicker.c:577
 msgid "select which statistic to show"
-msgstr "表示する統計を選択します"
+msgstr "表示する統計を選択してください"
 
 #: ../src/libs/colorpicker.c:586
 msgid "select which color mode to use"
-msgstr "使用するカラーモードを選択します"
+msgstr "使用するカラーモードを選択してください"
 
 #: ../src/libs/colorpicker.c:595
 msgid ""
@@ -18893,8 +18892,8 @@ msgstr ""
 "・相対的な色彩：色が色域内に合うまで可能な限り控えめに彩度を下げつつ、輝度を"
 "保持します\n"
 "\n"
-"・彩度（サチュレーション）：ビジネス用の人目を引くグラフィックのためにデザイ"
-"ンされたもので、彩度を保持します（写真には適していません）\n"
+"・彩度：ビジネス用の人目を引くグラフィックのためにデザインされたもので、彩度"
+"を保持します（写真には適していません）\n"
 "\n"
 "・絶対的な色彩：画像のホワイトポイントを出力先媒体のホワイトポイントに合わせ"
 "る以外のことをしません。主に色校正のために用います（写真には適していません）"
@@ -18918,7 +18917,7 @@ msgstr "履歴に追加"
 #: ../src/libs/export.c:1356 ../src/libs/print_settings.c:2558
 msgid ""
 "whether the style items are appended to the history or replacing the history"
-msgstr "スタイルの項目を履歴に追加するか履歴を置き換えます"
+msgstr "スタイルの項目を履歴に追加するか、履歴を置き換えます"
 
 #: ../src/libs/export.c:1379
 msgid "export with current settings"
@@ -19134,7 +19133,7 @@ msgstr "画像"
 
 #: ../src/libs/geotagging.c:933
 msgid "open GPX file"
-msgstr "GPX ファイルを開く"
+msgstr "GPXファイルを開いてください"
 
 #: ../src/libs/geotagging.c:934 ../src/views/darkroom.c:2160
 #: ../src/views/lighttable.c:716
@@ -19197,7 +19196,7 @@ msgid ""
 msgstr ""
 "タイプして、許可された値のリストを表示し、あなたのタイムゾーンを選択してくだ"
 "さい\n"
-"Enterを押すと認証し、アスタリスクが消えます"
+"Enterで確定し、アスタリスクが消えます"
 
 #. gpx
 #: ../src/libs/geotagging.c:1797
@@ -19356,53 +19355,53 @@ msgstr "クリックで青チャンネルを表示します"
 #: ../src/libs/histogram.c:2120
 msgctxt "accel"
 msgid "histogram/hide histogram"
-msgstr "ヒストグラム／ヒストグラムを非表示にする"
+msgstr "ヒストグラム／ヒストグラムを非表示"
 
 #: ../src/libs/histogram.c:2121
 msgctxt "accel"
 msgid "hide histogram"
-msgstr "ヒストグラムを非表示にする"
+msgstr "ヒストグラムを非表示"
 
 #: ../src/libs/histogram.c:2122
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
-msgstr "ヒストグラム／ヒストグラムのモードを順番に切り替える"
+msgstr "ヒストグラム／ヒストグラムのモードを順番に切り替え"
 
 #: ../src/libs/histogram.c:2123
 msgctxt "accel"
 msgid "cycle histogram modes"
-msgstr "ヒストグラムのモードを順番に切り替える"
+msgstr "ヒストグラムのモードを順番に切り替え"
 
 #: ../src/libs/histogram.c:2124
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
-msgstr "ヒストグラム／ヒストグラムのモードを切り替える"
+msgstr "ヒストグラム／ヒストグラムのモード切り替え"
 
 #: ../src/libs/histogram.c:2125
 msgctxt "accel"
 msgid "switch histogram mode"
-msgstr "ヒストグラムのモードを切り替える"
+msgstr "ヒストグラムのモード切り替え"
 
 #: ../src/libs/histogram.c:2126
 msgctxt "accel"
 msgid "histogram/switch histogram type"
-msgstr "ヒストグラム／ヒストグラムの種類を切り替える"
+msgstr "ヒストグラム／ヒストグラムの種類切り替え"
 
 #: ../src/libs/histogram.c:2127
 msgctxt "accel"
 msgid "switch histogram type"
-msgstr "ヒストグラムの種類を切り替える"
+msgstr "ヒストグラムの種類切り替え"
 
 #: ../src/libs/history.c:106
 msgctxt "accel"
 msgid "create style from history"
-msgstr "履歴からスタイルを作成する"
+msgstr "履歴からスタイルを作成"
 
 #. dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
 #: ../src/libs/history.c:108
 msgctxt "accel"
 msgid "compress history stack"
-msgstr "履歴スタックを圧縮する"
+msgstr "履歴スタックを圧縮"
 
 #: ../src/libs/history.c:141
 msgid "compress history stack"
@@ -19622,7 +19621,7 @@ msgstr "ジオタグのメタデータを選択します"
 
 #: ../src/libs/image.c:572
 msgid "select dt metadata (from metadata editor module)"
-msgstr "dtメタデータを選択します （メタデータエディターモジュールから）"
+msgstr "dtメタデータを選択します（メタデータエディターモジュールから）"
 
 #: ../src/libs/image.c:578
 msgid "set the (first) selected image as source of metadata"
@@ -19642,7 +19641,7 @@ msgstr "選択した画像の選択したメタデータを削除します"
 
 #: ../src/libs/image.c:593
 msgid "merge"
-msgstr "統合する"
+msgstr "統合"
 
 #: ../src/libs/image.c:595
 msgid "how to handle existing metadata"
@@ -19665,7 +19664,7 @@ msgstr "選択画像をカラー画像として設定します"
 #: ../src/libs/image.c:651
 msgctxt "accel"
 msgid "remove from darktable"
-msgstr "darktableから除去する"
+msgstr "darktableから除去"
 
 #: ../src/libs/image.c:652
 msgctxt "accel"
@@ -19981,7 +19980,7 @@ msgstr "ライブビュー"
 #: ../src/libs/live_view.c:132
 msgctxt "accel"
 msgid "toggle live view"
-msgstr "ライブビューのオン／オフを切り替える"
+msgstr "ライブビューのオン／オフ切り替え"
 
 #: ../src/libs/live_view.c:133
 msgctxt "accel"
@@ -20242,7 +20241,7 @@ msgid ""
 "or even polygon if available (select first a polygon place in 'find "
 "location' module)"
 msgstr ""
-"地図上のロケーションの境界の形状を選択します。円または矩形があります\n"
+"地図上のロケーションの境界の形状を選択してください。円または矩形があります\n"
 "可能であれば多角形も選択出来ます（【ロケーションを検索】モジュールで最初に多"
 "角形の場所を選択します）"
 
@@ -20269,7 +20268,7 @@ msgstr "地図のソース"
 #: ../src/libs/map_settings.c:112
 msgid "select the source of the map. some entries might not work"
 msgstr ""
-"地図のソースを選択します\n"
+"地図のソースを選択してください\n"
 "動作しないエントリがあるかもしれません"
 
 #: ../src/libs/map_settings.c:194
@@ -20719,11 +20718,11 @@ msgstr "新しいレイアウトで以前の設定"
 
 #: ../src/libs/modulegroups.c:2043 ../src/libs/modulegroups.c:2560
 msgid "remove this widget"
-msgstr "このウィジェットを削除する"
+msgstr "このウィジェットを削除します"
 
 #: ../src/libs/modulegroups.c:2194 ../src/libs/modulegroups.c:2434
 msgid "remove this module"
-msgstr "このモジュールを削除する"
+msgstr "このモジュールを削除します"
 
 #. does it belong to recommended modules ?
 #: ../src/libs/modulegroups.c:2403
@@ -20812,9 +20811,9 @@ msgid ""
 "mistakes which can't be solved and alternative modules which solve them.\n"
 "they will be removed for new edits in the next release."
 msgstr ""
-"これらのモジュールは、解決出来ないデザイン上の誤りが含まれており、それを解決"
-"する代替モジュールがあるため、非推奨です\n"
-"次のリリースで新しい編集のために削除されます"
+"これらのモジュールは、解決出来ない設計上の問題があり、それを解決する代替モ"
+"ジュールがあるため、非推奨です\n"
+"新しい編集方法に移行するために、次のリリースで削除されます"
 
 #: ../src/libs/modulegroups.c:3070
 msgid "basic icon"
@@ -20862,7 +20861,7 @@ msgstr "クイックアクセス"
 
 #: ../src/libs/modulegroups.c:3206
 msgid "add widget to the quick access panel"
-msgstr "クイックアクセスパネルにウィジェットを追加"
+msgstr "クイックアクセスパネルにウィジェットを追加します"
 
 #: ../src/libs/modulegroups.c:3238
 msgid "group icon"
@@ -20874,7 +20873,7 @@ msgstr "グループ名"
 
 #: ../src/libs/modulegroups.c:3258
 msgid "remove group"
-msgstr "グループを削除する"
+msgstr "グループを削除します"
 
 #: ../src/libs/modulegroups.c:3285
 msgid "move group to the left"
@@ -20890,7 +20889,7 @@ msgstr "グループを右に移動します"
 
 #: ../src/libs/modulegroups.c:3482
 msgid "rename preset"
-msgstr "プリセット名を変更"
+msgstr "プリセット名を変更してください"
 
 #: ../src/libs/modulegroups.c:3489
 msgid "new preset name :"
@@ -20985,7 +20984,7 @@ msgstr "1600%"
 #: ../src/libs/navigation.c:569
 msgctxt "accel"
 msgid "hide navigation thumbnail"
-msgstr "ナビゲーションのサムネイルを非表示にする"
+msgstr "ナビゲーションのサムネイルを非表示"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:46 ../src/libs/print_settings.c:2438
@@ -21300,12 +21299,12 @@ msgstr "スナップショット"
 #: ../src/libs/snapshots.c:105
 msgctxt "accel"
 msgid "take snapshot"
-msgstr "スナップショットを撮る"
+msgstr "スナップショット撮影"
 
 #: ../src/libs/snapshots.c:106
 msgctxt "accel"
 msgid "toggle last snapshot"
-msgstr "最後のスナップショットのオン／オフを切り替える"
+msgstr "最後のスナップショットのオン／オフ切り替え"
 
 #: ../src/libs/snapshots.c:131
 msgctxt "snapshot sign"
@@ -21381,7 +21380,7 @@ msgstr "スタイル%sは正常にインポートされました"
 
 #: ../src/libs/styles.c:529
 msgid "select style"
-msgstr "スタイルを選択"
+msgstr "スタイルを選択してください"
 
 #: ../src/libs/styles.c:539
 msgid "darktable style files"
@@ -21484,7 +21483,7 @@ msgstr "タグ"
 #: ../src/libs/tagging.c:134
 msgctxt "accel"
 msgid "redo last tag"
-msgstr "最後のタグをやり直す"
+msgstr "最後のタグのやり直し"
 
 #: ../src/libs/tagging.c:1205
 msgid "attach tag to all"
@@ -21663,7 +21662,7 @@ msgstr "（プライベート）"
 
 #: ../src/libs/tagging.c:2299
 msgid "select a keyword file"
-msgstr "キーワードファイルを選択"
+msgstr "キーワードファイルを選択してください"
 
 #: ../src/libs/tagging.c:2312
 msgid "error importing tags"
@@ -22118,37 +22117,37 @@ msgstr "クリックでズーム可能なライトテーブルレイアウトに
 #: ../src/libs/tools/lighttable.c:572
 msgctxt "accel"
 msgid "toggle filemanager layout"
-msgstr "ファイルマネージャーレイアウトのオン／オフを切り替える"
+msgstr "ファイルマネージャーレイアウトのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:573
 msgctxt "accel"
 msgid "toggle zoomable lighttable layout"
-msgstr "ズーム可能なライトテーブルのオン／オフを切り替える"
+msgstr "ズーム可能なライトテーブルのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:574
 msgctxt "accel"
 msgid "toggle culling mode"
-msgstr "選別モードのオン／オフを切り替える"
+msgstr "選別モードのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:575
 msgctxt "accel"
 msgid "toggle culling dynamic mode"
-msgstr "動的選別モードのオン／オフを切り替える"
+msgstr "動的選別モードのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:577
 msgctxt "accel"
 msgid "toggle culling zoom mode"
-msgstr "選別ズームモードのオン／オフを切り替える"
+msgstr "選別ズームモードのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:578
 msgctxt "accel"
 msgid "toggle sticky preview mode"
-msgstr "継続プレビューモードのオン／オフを切り替える"
+msgstr "継続プレビューモードのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:579
 msgctxt "accel"
 msgid "toggle sticky preview mode with focus detection"
-msgstr "継続プレビューモード＋ピント検出のオン／オフを切り替える"
+msgstr "継続プレビューモード＋ピント検出のオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:581
 msgctxt "accel"
@@ -22280,7 +22279,7 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2312
 msgid "select how to mark the clipped pixels"
-msgstr "クリップしたピクセルをマークする方法を選択します"
+msgstr "クリップしたピクセルをマークする方法を選択してください"
 
 #: ../src/views/darkroom.c:2314
 msgid "mark with CFA color"
@@ -22323,7 +22322,7 @@ msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
 msgstr ""
-"露出過多を示す色を選択します\n"
+"露出過多を示す色を選択してください\n"
 "単色でマークを選択している時のみ使用されます"
 
 #: ../src/views/darkroom.c:2339
@@ -22353,7 +22352,7 @@ msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
 msgstr ""
-"プレビューの測定基準を選択します\n"
+"プレビューの測定基準を選択してください\n"
 "【全て】は他のモード全ての組み合わせです"
 
 #: ../src/views/darkroom.c:2370
@@ -22374,7 +22373,7 @@ msgstr "彩度のみ"
 
 #: ../src/views/darkroom.c:2376
 msgid "select colors to indicate clipping"
-msgstr "クリッピングを示す色を選択します"
+msgstr "クリッピングを示す色を選択してください"
 
 #: ../src/views/darkroom.c:2378
 msgid "red & blue"
@@ -22661,7 +22660,7 @@ msgstr "モジュールを検索"
 #: ../src/views/darkroom.c:3916
 msgctxt "accel"
 msgid "change keyboard shortcut slider precision"
-msgstr "キーボードショートカットのスライダーの精度を変更する"
+msgstr "キーボードショートカットのスライダーの精度を変更"
 
 #: ../src/views/darkroom.c:4006
 msgid "switch to lighttable"
@@ -22800,7 +22799,7 @@ msgstr "現在の画像内をパン"
 #: ../src/views/lighttable.c:1058
 #, no-c-format
 msgid "zoom current image to 100% and back"
-msgstr "現在の画像を100％にズームして戻る"
+msgstr "現在の画像を100%にズームして戻る"
 
 #: ../src/views/lighttable.c:1062
 msgid "zoom the main view"
@@ -22878,7 +22877,7 @@ msgstr[1] "スライドショーの遅延を%d 秒に設定しました"
 #: ../src/views/slideshow.c:623
 msgctxt "accel"
 msgid "start and stop"
-msgstr "開始および停止"
+msgstr "開始と停止"
 
 #: ../src/views/slideshow.c:624
 msgctxt "accel"
