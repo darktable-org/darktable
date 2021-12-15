@@ -128,7 +128,7 @@ You are strongly advised to take a backup first.
     orientation, and rotate and perspective modules.
 
     Note that the new crop module is now placed after the retouch module
-    to ensure that the full image can be used a source area.
+    to ensure that the full image can be used as a source area.
 
 - A new option has been added to allow you to choose when to start writing
   changes to the XMP sidecar files. Choose to (a) never write XMP,
