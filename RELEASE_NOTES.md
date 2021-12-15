@@ -16,7 +16,7 @@ $ sha256sum darktable-3.8.0.exe
 
 When updating from the currently stable 3.6.x series, please bear in
 mind that your edits will be preserved during this process, but the new
-library and configuration will not be usable with 3.6.x any more.
+library and configuration will not be usable with 3.6.x anymore.
 
 You are strongly advised to take a backup first.
 
