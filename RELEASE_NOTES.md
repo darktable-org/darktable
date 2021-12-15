@@ -270,27 +270,27 @@ You are strongly advised to take a backup first.
 
 ## Lua
 
-- Moved from Lua 5.3 to Lua 5.4
+- Moved from Lua 5.3 to Lua 5.4.
 
-- Lua API is now 8.0.0
+- Lua API is now 8.0.0.
 
 - Added darktable.print_toast() and darktable.print_hinter() functions
-  to print toast and hinter messages respectively
+  to print toast and hinter messages respectively.
 
 - Added is_altered() field to dt_lua_image data type to determine if
-  and image has been altered since being imported
+  an image has been altered since being imported.
 
 - Added generate_cache() function to the dt_lua_image data type so
   that a mipmap cache image can be generated without having to run
-  darktable-generate-cache
+  darktable-generate-cache.
 
 - Added function darktable.gui.libs.snapshots.clear_snapshots() to delete any snapshots.
 
 - Added event darkroom-image-loaded that is triggered when an image is
-  loaded into darkroom view.  The image is returned.
+  loaded into darkroom view. The image is returned.
 
 - Added event darkroom-image-history-changed that is triggered when an
-  the image history is changed in darkroom view.  The image is
+  the image history is changed in darkroom view. The image is
   returned.
 
 ## Notes
