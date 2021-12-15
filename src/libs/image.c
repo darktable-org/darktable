@@ -190,14 +190,14 @@ static void _update(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE, FALSE);
+  const int nbimgs = dt_act_on_get_images_nb(FALSE, FALSE);
 
-  const int act_on_any = imgs != NULL;              // list length > 0 ?
-  const int act_on_one = g_list_is_singleton(imgs); // list length == 1 ?
-  const int act_on_mult = act_on_any && !act_on_one;// list length > 1 ?
+  const int act_on_any = (nbimgs > 0);
+  const int act_on_one = (nbimgs == 1);
+  const int act_on_mult = (nbimgs > 1);
   const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
   const gboolean can_paste
-      = d->imageid > 0 && (act_on_mult || (act_on_one && (d->imageid != dt_view_get_image_to_act_on())));
+      = d->imageid > 0 && (act_on_mult || (act_on_one && (d->imageid != dt_act_on_get_main_image())));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->remove_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_any);
@@ -238,7 +238,7 @@ static void _update(dt_lib_module_t *self)
   else
   {
     // exact one image to act on
-    const int imgid = dt_view_get_image_to_act_on();
+    const int imgid = dt_act_on_get_main_image();
     if(imgid >= 0)
     {
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -317,7 +317,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   const gboolean geotag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags");
   const gboolean dttag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/tags");
   const int imageid = d->imageid;
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
+  GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   if(imgs)
   {
     // for all the above actions, we don't use the grpu_on tag, as grouped images have already been added to image
@@ -374,8 +374,12 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
       dt_undo_end_group(darktable.undo);
       dt_image_synch_xmps(imgs);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_METADATA,
-                                 g_list_copy((GList *)imgs));
+                                 imgs);
       dt_control_queue_redraw_center();
+    }
+    else
+    {
+      g_list_free(imgs);
     }
   }
 }
@@ -384,7 +388,7 @@ static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
 
-  d->imageid = dt_view_get_image_to_act_on();
+  d->imageid = dt_act_on_get_main_image();
 
   _update(self);
 }

@@ -251,7 +251,7 @@ static float _action_process_color_label(gpointer target, dt_action_element_t el
 
   if(!isnan(move_size))
   {
-    GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE, FALSE));
+    GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
     dt_colorlabels_toggle_label_on_list(imgs, element ? element - 1 : 5, TRUE);
 
     // if we are in darkroom we show a message as there might be no other indication
