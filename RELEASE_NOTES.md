@@ -151,7 +151,7 @@ You are strongly advised to take a backup first.
 
 - HSV has been added as an option in the global color picker module.
 
-- the color scheme of the timeline is improved.
+- The color scheme of the timeline is improved.
 
 - The scopes module (previously named histogram) can be moved to the
   left panel.
