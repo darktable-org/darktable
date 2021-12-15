@@ -644,7 +644,7 @@ static float get_luminance_from_buffer(const float *const buffer,
     }
     return luminance;
   }
-  
+
   const size_t x_abs[4] DT_ALIGNED_PIXEL =
                           { MAX(x, 1) - 1,                  // previous column
                             x,                              // center column
@@ -2311,9 +2311,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
 
   dt_iop_gui_leave_critical_section(self);
-  
+
   if(isnan(correction) || isnan(exposure_in)) return; // something went wrong
- 
+
   // Rescale and shift Cairo drawing coordinates
   const float wd = dev->preview_pipe->backbuf_width;
   const float ht = dev->preview_pipe->backbuf_height;

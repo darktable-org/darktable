@@ -167,7 +167,7 @@ static int get_keys(lua_State *L)
   g_list_free(keys);
   return 1;
 }
-  
+
 static void get_pref_name(char *tgt, size_t size, const char *script, const char *name)
 {
   snprintf(tgt, size, "lua/%s/%s", script, name);
@@ -184,7 +184,7 @@ static int read_pref(lua_State *L)
   char pref_name[1024];
   if(strcmp(script, "darktable") != 0)
     get_pref_name(pref_name, sizeof(pref_name), script, name);
-  else 
+  else
     snprintf(pref_name, sizeof(pref_name), "%s", name);
   switch(i)
   {

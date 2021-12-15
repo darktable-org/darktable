@@ -383,7 +383,7 @@ static inline void convert_to_spline_v3(dt_iop_filmicrgb_params_t* n)
 
   dt_iop_filmic_rgb_spline_t spline;
   dt_iop_filmic_rgb_compute_spline(n, &spline);
-  
+
   // from the spline, compute new values for contrast, balance, and latitude to update spline_version to v3
   float grey_log = spline.x[2];
   float toe_log = fminf(spline.x[1], grey_log);
@@ -677,7 +677,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
       gint internal_version; // $DEFAULT: 2020 $DESCRIPTION: "version of the spline generator"
     } dt_iop_filmicrgb_params_v4_t;
-    
+
     dt_iop_filmicrgb_params_v4_t *o = (dt_iop_filmicrgb_params_v4_t *)old_params;
     dt_iop_filmicrgb_params_t *n = (dt_iop_filmicrgb_params_t *)new_params;
     *n = *(dt_iop_filmicrgb_params_t*)o; // structure didn't change except the enum instead of gint for internal_version
@@ -3151,7 +3151,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         const float ymax = g->spline.y[4];
         // we multiply SAFETY_MARGIN by 1.1f to avoid possible false negatives due to float errors
         const float y_margin = SAFETY_MARGIN * 1.1f * (ymax - ymin);
-        gboolean red = (((k == 1) && (y - ymin <= y_margin)) 
+        gboolean red = (((k == 1) && (y - ymin <= y_margin))
                      || ((k == 3) && (ymax - y <= y_margin)));
         float start_angle = 0.0f;
         float end_angle = 2.f * M_PI;

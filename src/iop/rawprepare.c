@@ -609,7 +609,7 @@ void gui_update(dt_iop_module_t *self)
 
   // don't show upper three black levels for monochromes
   for(int i = 1; i < 4; i++)
-    gtk_widget_set_visible(g->black_level_separate[i], !is_monochrome);     
+    gtk_widget_set_visible(g->black_level_separate[i], !is_monochrome);
 
   dt_bauhaus_slider_set_soft(g->white_point, p->raw_white_point);
 

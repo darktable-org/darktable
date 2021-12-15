@@ -118,7 +118,7 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
 {
   gchar *result = NULL;
   gchar *path = NULL;
-  
+
   if(absolute_value)
   {
     // the only adjustment the absolute path needs is transforming the possible tilde '~' to an absolute path
@@ -128,7 +128,7 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
   {
     // the default_value could be absolute or relative. we decide upon presence of the application_directory.
     if(application_directory)
-    {   
+    {
       // default_value is relative.
       // combine basename (application_directory) and relative path (default_value).
       gchar complete_path[PATH_MAX] = { 0 };
@@ -144,9 +144,9 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
         // <bundleroot>/Contents/Resources/lib
         // <bundleroot>/Contents/Resources/share
         // so the relative path from the binary directory to the other directories differs to the non-bundle version by
-        // ../etc -> ../Resources/etc, 
-        // ../lib -> ../Resources/lib, 
-        // ../share -> ../Resources/share, 
+        // ../etc -> ../Resources/etc,
+        // ../lib -> ../Resources/lib,
+        // ../share -> ../Resources/share,
         // So we have to modify the relative default value
 
         // +2: removes the two dots '..'
@@ -171,7 +171,7 @@ gchar *dt_loc_init_generic(const char *absolute_value, const char *application_d
 
   // create file if it does not exist
   if(g_file_test(path, G_FILE_TEST_EXISTS) == FALSE) g_mkdir_with_parents(path, 0700);
-  
+
   // removes '.', '..', and extra '/' characters.
   result = g_realpath(path);
 
@@ -213,7 +213,7 @@ void dt_check_opendir(const char* context, const char* directory)
   {
     fprintf(stderr, "directory for %s has not been set.\n", context);
     exit(EXIT_FAILURE);
-  } 
+  }
 
 #if _WIN32
   wchar_t *wdirectory = g_utf8_to_utf16 (directory, -1, NULL, NULL, NULL);
@@ -235,8 +235,8 @@ void dt_check_opendir(const char* context, const char* directory)
   {
     dt_print(DT_DEBUG_DEV, "%s: %s\n", context, directory);
     closedir(dir);
-  } 
-  else 
+  }
+  else
   {
     fprintf(stderr, "opendir '%s' fails with: '%s'\n", directory, strerror(errno));
     exit(EXIT_FAILURE);

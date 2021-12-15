@@ -31,12 +31,12 @@ static inline gchar *g_realpath(const char *path)
 
   char* res = realpath(path, buffer);
 
-  if(res) 
+  if(res)
   {
     return g_strdup(buffer);
   }
-  else 
-  {     
+  else
+  {
     fprintf(stderr, "path lookup '%s' fails with: '%s'\n", path, strerror(errno));
     exit(EXIT_FAILURE);
   }

@@ -628,10 +628,10 @@ GSList *mouse_actions(dt_iop_module_t *self)
 {
   GSList *lm = NULL;
   // add the first action
-  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, 
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK,
                                      _("[%s] some action"), self->name());
   // append a second action to the list we will return
-  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK | GDK_SHIFT_MASK, 
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK | GDK_SHIFT_MASK,
                                      _("[%s] other action"), self->name());
   return lm;
 }

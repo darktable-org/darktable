@@ -87,7 +87,7 @@ int main ( int argc, char **argv )
   }
 
   if (image1->columns != image2->columns || image1->rows != image2->rows) {
-    fprintf(stderr, "Images are not same size %ldx%ld vs %ldx%ld\n", 
+    fprintf(stderr, "Images are not same size %ldx%ld vs %ldx%ld\n",
                     image1->rows, image1->columns,
                     image2->rows, image2->columns);
     exit(2);
