@@ -678,7 +678,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   transpose_3xSSE(d->nmatrix, nmatrix);
   dt_colormatrix_t lmatrix;
   transpose_3xSSE(d->lmatrix, lmatrix);
-  
+
     // fprintf(stderr, "Using cmatrix codepath\n");
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
@@ -740,7 +740,7 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev
 
   dt_colormatrix_t cmatrix;
   transpose_3xSSE(d->cmatrix, cmatrix);
-  
+
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
@@ -771,7 +771,7 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
   dt_colormatrix_t lmatrix;
   transpose_3xSSE(d->nmatrix, nmatrix);
   transpose_3xSSE(d->lmatrix, lmatrix);
-  
+
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
@@ -830,7 +830,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
   transpose_3xSSE(d->nmatrix, nmatrix);
   dt_colormatrix_t lmatrix;
   transpose_3xSSE(d->lmatrix, lmatrix);
-  
+
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP

@@ -28,4 +28,4 @@ int main (int argc, char **argv)
 	fprintf(stdout,"%s", (ecx>>19)&1?"SSE4.1 ":"");
 	fprintf(stdout,"%s", (ecx>>20)&1?"SSE4.2 ":"");
 	fprintf(stdout,"\n");
-} 
+}

@@ -1540,16 +1540,16 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         const gboolean no_location = strcmp(escaped_text, _("tagged")) == 0;
         const gboolean all_tagged = strcmp(escaped_text, _("tagged*")) == 0;
         char *escaped_text2 = g_strstr_len(escaped_text, -1, "|");
-        char *name_clause = g_strdup_printf("t.name LIKE \'%s\' || \'%s\'", 
+        char *name_clause = g_strdup_printf("t.name LIKE \'%s\' || \'%s\'",
             dt_map_location_data_tag_root(), escaped_text2 ? escaped_text2 : "%");
 
         if (escaped_text2 && (escaped_text2[strlen(escaped_text2)-1] == '*'))
         {
           escaped_text2[strlen(escaped_text2)-1] = '\0';
-          name_clause = g_strdup_printf("(t.name LIKE \'%s\' || \'%s\' OR t.name LIKE \'%s\' || \'%s|%%\')", 
+          name_clause = g_strdup_printf("(t.name LIKE \'%s\' || \'%s\' OR t.name LIKE \'%s\' || \'%s|%%\')",
           dt_map_location_data_tag_root(), escaped_text2 , dt_map_location_data_tag_root(), escaped_text2);
         }
-        
+
         if(not_tagged || all_tagged)
           query = g_strdup_printf("(id %s IN (SELECT id AS imgid FROM main.images "
                                   "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",

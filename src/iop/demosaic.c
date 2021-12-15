@@ -61,7 +61,7 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_AMAZE = 1, // $DESCRIPTION: "AMaZE"
   DT_IOP_DEMOSAIC_VNG4 = 2,  // $DESCRIPTION: "VNG4"
   DT_IOP_DEMOSAIC_RCD = 5,   // $DESCRIPTION: "RCD"
-  DT_IOP_DEMOSAIC_LMMSE = 6, // $DESCRIPTION: "LMMSE" 
+  DT_IOP_DEMOSAIC_LMMSE = 6, // $DESCRIPTION: "LMMSE"
   DT_IOP_DEMOSAIC_RCD_VNG = DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_RCD, // $DESCRIPTION: "RCD + VNG4"
   DT_IOP_DEMOSAIC_AMAZE_VNG = DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_AMAZE, // $DESCRIPTION: "AMaZE + VNG4"
   DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3, // $DESCRIPTION: "passthrough (monochrome)"
@@ -2964,7 +2964,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   int demosaicing_method = data->demosaicing_method;
   // There might be a module in the pipeline that wants the output displayed as a mask (highlights reconstruction in recovery mode)
-  // for that case we pass as monochrome 
+  // for that case we pass as monochrome
   if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
     demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
 
@@ -2972,7 +2972,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // only overwrite setting if quality << requested and in dr mode and not a special method
   && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
   && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
-  // dual demosaicing with the show mask option on is also a special method for ui 
+  // dual demosaicing with the show mask option on is also a special method for ui
   && !((demosaicing_method & DEMOSAIC_DUAL) && showmask))
     demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
@@ -3513,7 +3513,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_populate, 5, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_populate, 6, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_populate, 7, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_populate, 8, sizeof(float), &scaler);    
+      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_populate, 8, sizeof(float), &scaler);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_rcd_populate, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -3580,7 +3580,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_rcd_step_4_1, sizes);
       if(err != CL_SUCCESS) goto error;
     }
-    
+
     {
       // Step 4.2: Calculate P/Q diagonal local discrimination
       size_t sizes[3] = { ROUNDUPWD(width / 2), ROUNDUPHT(height), 1 };
@@ -3619,7 +3619,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_step_5_2, 5, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_step_5_2, 6, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_rcd_step_5_2, sizes);
-      if(err != CL_SUCCESS) goto error;    
+      if(err != CL_SUCCESS) goto error;
     }
     const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
 
@@ -5127,7 +5127,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   int demosaicing_method = data->demosaicing_method;
   // There might be a module in the pipeline that wants the output displayed as a mask (highlights reconstruction in recovery mode)
-  // for that case we pass as monochrome 
+  // for that case we pass as monochrome
   if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
     demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
 
@@ -5241,8 +5241,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       retval = FALSE;
       goto finish;
     }
-    retval = dual_demosaic_cl(self, piece, details, blend, high_image, low_image, dev_aux, width, height, showmask);   
-  } 
+    retval = dual_demosaic_cl(self, piece, details, blend, high_image, low_image, dev_aux, width, height, showmask);
+  }
 
   if(info)
   {
@@ -5257,7 +5257,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS)
       retval = FALSE;
   }
-  
+
   finish:
   dt_opencl_release_mem_object(high_image);
   dt_opencl_release_mem_object(low_image);
@@ -5460,7 +5460,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_rcd_step_5_2 = dt_opencl_create_kernel(rcd, "rcd_step_5_2");
   gd->kernel_rcd_border_redblue = dt_opencl_create_kernel(rcd, "rcd_border_redblue");
   gd->kernel_rcd_border_green = dt_opencl_create_kernel(rcd, "rcd_border_green");
-  gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");  
+  gd->kernel_write_blended_dual  = dt_opencl_create_kernel(rcd, "write_blended_dual");
   gd->lmmse_gamma_in = NULL;
   gd->lmmse_gamma_out = NULL;
 }
@@ -5516,7 +5516,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_2);
   dt_opencl_free_kernel(gd->kernel_rcd_border_redblue);
   dt_opencl_free_kernel(gd->kernel_rcd_border_green);
-  dt_opencl_free_kernel(gd->kernel_write_blended_dual);  
+  dt_opencl_free_kernel(gd->kernel_write_blended_dual);
   dt_free_align(gd->lmmse_gamma_in);
   dt_free_align(gd->lmmse_gamma_out);
   free(module->data);
@@ -5620,7 +5620,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   {
     piece->process_tiling_ready = 0;
   }
- 
+
   if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
   {
     // 4Bayer images not implemented in OpenCL yet
@@ -5751,7 +5751,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     const gboolean was_mask = g->show_mask;
-    g->show_mask = FALSE;  
+    g->show_mask = FALSE;
     dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->dual_mask), FALSE);
     if(was_mask) dt_dev_reprocess_center(self->dev);
   }

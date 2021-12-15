@@ -17,12 +17,12 @@
 */
 
 /*
-  eucledian distance transform for darktable Hanno Schwalm (hanno@schwalm-bremen.de) 2021/09  
+  eucledian distance transform for darktable Hanno Schwalm (hanno@schwalm-bremen.de) 2021/09
    - adopted to C
    - omp support
-   - reduced alloc/free using dt_alloc_align variants for better debug support 
+   - reduced alloc/free using dt_alloc_align variants for better debug support
    - tuned for performance in collaboration with Ingo Weyrich (heckflosse67@gmx.de) from rawtherapee
-  
+
   The original code is from:
 
   *** Original copyright note ***
@@ -30,7 +30,7 @@
 
   Distance Transforms of Sampled Functions
   Pedro F. Felzenszwalb and Daniel P. Huttenlocher
-  Cornell Computing and Information Science TR2004-1963 
+  Cornell Computing and Information Science TR2004-1963
   Copyright (C) 2006 Pedro Felzenszwalb
 
   This program is free software; you can redistribute it and/or modify
@@ -129,7 +129,7 @@ float dt_image_distance_transform(float *const restrict src, float *const restri
 #endif
   {
     float *f = dt_alloc_align_float(maxdim);
-    float *z = dt_alloc_align_float(maxdim + 1); 
+    float *z = dt_alloc_align_float(maxdim + 1);
     float *d = dt_alloc_align_float(maxdim);
     int *v = dt_alloc_align(64, maxdim * sizeof (int));
 

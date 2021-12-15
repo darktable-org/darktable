@@ -21,8 +21,8 @@
   The detail masks (DM) are used by the dual demosaicer and as a further refinement step for
   shape / parametric masks.
   They contain threshold weighed values of pixel-wise local signal changes so they can be
-  understood as "areas with or without local detail". 
-  
+  understood as "areas with or without local detail".
+
   As the DM using algorithms (like dual demosaicing, sharpening ...) are all pixel peeping we
   want the "original data" from the sensor to calculate it.
   (Calculating the mask from the modules roi might not detect such regions at all because of
@@ -33,7 +33,7 @@
   Positive values will select regions with lots of local detail, negatives select for flat areas.
   (The dual demosaicer only wants positives as we always look for high frequency content.)
   A threshold value of 0.0 means bypassing.
-  
+
   So the first important point is:
   We make sure taking the input data for the DM right from the demosaicer for normal raws
   or from rawprepare in case of monochromes. This means some additional housekeeping for the
@@ -41,7 +41,7 @@
   If any mask in any module selects a threshold of != 0.0 we leave a flag in the pipe struct
   telling a) we want a DM and b) we want it from either demosaic or from rawprepare.
   If such a flag has not been previously set we will force a pipeline reprocessing.
-  
+
   gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const rgb, const dt_iop_roi_t *const roi_in, const int mode, const dt_aligned_pixel_t wb);
   or it's _cl equivalent write a preliminary mask holding signal-change values for every pixel.
   These mask values are calculated as
@@ -53,11 +53,11 @@
   The pipe gets roi copy of the writing module so we can later scale/distort the LM.
 
   Calculating the RM is done for performance and lower mem pressure reasons, so we don't have to
-  pass full data to the module. Also the RM can be used by other modules. 
- 
+  pass full data to the module. Also the RM can be used by other modules.
+
   If a mask uses the details refinement step it takes the raw details mask RM and calculates an
   intermediate mask (IM) which is still not scaled but has the roi of the writing module.
- 
+
   For every pixel we calculate the IM value via a sigmoid function with the threshold and RM as parameters.
 
   At last the IM is slightly blurred to avoid hard transitions, as there still is no scaling we can use
@@ -337,7 +337,7 @@ int dt_masks_blur_fast(float *const restrict src, float *const restrict out, con
 #endif
     for(int i = 0; i < width * height; i++)
       out[i] = fmaxf(0.0f, fminf(clip, gain * src[i]));
-    return 0;  
+    return 0;
   }
   else if(sigma <= 0.8f)
   {
@@ -397,11 +397,11 @@ void dt_masks_blur_approx_weighed(float *const restrict src, float *const restri
   float coeffs[maxmat][20];
 
   for(int i = 1; i < 9; i++)
-    _masks_blur_5x5_coeff(coeffs[i-1], 0.1f * (float) (i));  
+    _masks_blur_5x5_coeff(coeffs[i-1], 0.1f * (float) (i));
   for(int i = 9; i < 16; i++)
-    dt_masks_blur_9x9_coeff(coeffs[i-1], 0.1f * (float) (i));  
+    dt_masks_blur_9x9_coeff(coeffs[i-1], 0.1f * (float) (i));
   for(int i = 16; i <= maxmat; i++)
-    _masks_blur_13x13_coeff(coeffs[i-1], 0.1f * (float) (i));  
+    _masks_blur_13x13_coeff(coeffs[i-1], 0.1f * (float) (i));
 
   const int w1 = width;
   const int w2 = 2*width;
@@ -421,12 +421,12 @@ void dt_masks_blur_approx_weighed(float *const restrict src, float *const restri
     for(int col = 6; col < width - 6; col++)
     {
       const int i = row * width + col;
-      const int d = MIN(maxmat, MAX(0, ((int) (10.0f * weight[i])))) ;      
+      const int d = MIN(maxmat, MAX(0, ((int) (10.0f * weight[i])))) ;
       float *blurmat = coeffs[d-1];
       if(d == 0)      out[i] = src[i];
       else if(d < 9)  out[i] = FAST_BLUR_5;
       else if(d < 16) out[i] = FAST_BLUR_9;
-      else            out[i] = FAST_BLUR_13;               
+      else            out[i] = FAST_BLUR_13;
     }
   }
 }

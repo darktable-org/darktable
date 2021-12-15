@@ -2445,14 +2445,14 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
   {
     if(p->rawdetail_mask_data)
     {
-      fprintf(stderr, "[dt_dev_write_rawdetail_mask] detail mask not required but found old data %p\n", p->rawdetail_mask_data);  
+      fprintf(stderr, "[dt_dev_write_rawdetail_mask] detail mask not required but found old data %p\n", p->rawdetail_mask_data);
       dt_dev_clear_rawdetail_mask(p);
     }
     return FALSE;
   }
   if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
 
-  if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask] %i (%ix%i), olddata %p", mode, roi_in->width, roi_in->height, p->rawdetail_mask_data); 
+  if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask] %i (%ix%i), olddata %p", mode, roi_in->width, roi_in->height, p->rawdetail_mask_data);
   dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
@@ -2473,11 +2473,11 @@ gboolean dt_dev_write_rawdetail_mask(dt_dev_pixelpipe_iop_t *piece, float *const
   }
   dt_masks_calc_rawdetail_mask(rgb, mask, tmp, width, height, wb);
   dt_free_align(tmp);
-  if(info) fprintf(stderr, " done\n"); 
+  if(info) fprintf(stderr, " done\n");
   return FALSE;
 
   error:
-  if(info) fprintf(stderr, " ERROR\n"); 
+  if(info) fprintf(stderr, " ERROR\n");
   dt_free_align(mask);
   dt_free_align(tmp);
   return TRUE;
@@ -2493,7 +2493,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
   {
     if(p->rawdetail_mask_data)
     {
-      if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask_cl] detail mask not required but found old data %p\n", p->rawdetail_mask_data);  
+      if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask_cl] detail mask not required but found old data %p\n", p->rawdetail_mask_data);
       dt_dev_clear_rawdetail_mask(p);
     }
     return FALSE;
@@ -2501,7 +2501,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
 
   if((p->want_detail_mask & ~DT_DEV_DETAIL_MASK_REQUIRED) != mode) return FALSE;
 
-  if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask_cl] mode %i (%ix%i), olddata %p", mode, roi_in->width, roi_in->height, p->rawdetail_mask_data); 
+  if(info) fprintf(stderr, "[dt_dev_write_rawdetail_mask_cl] mode %i (%ix%i), olddata %p", mode, roi_in->width, roi_in->height, p->rawdetail_mask_data);
   dt_dev_clear_rawdetail_mask(p);
 
   const int width = roi_in->width;
@@ -2559,11 +2559,11 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
 
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
-  if(info) fprintf(stderr, " done\n"); 
+  if(info) fprintf(stderr, " done\n");
   return FALSE;
 
   error:
-  if(info) fprintf(stderr, " ERROR\n"); 
+  if(info) fprintf(stderr, " ERROR\n");
   dt_dev_clear_rawdetail_mask(p);
   dt_opencl_release_mem_object(out);
   dt_opencl_release_mem_object(tmp);
@@ -2599,7 +2599,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
   }
 
   if(!valid) return NULL;
-  if(info) fprintf(stderr, "[dt_dev_distort_detail_mask] (%ix%i) for module %s: ", pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height, target_module->op); 
+  if(info) fprintf(stderr, "[dt_dev_distort_detail_mask] (%ix%i) for module %s: ", pipe->rawdetail_mask_roi.width, pipe->rawdetail_mask_roi.height, target_module->op);
 
   float *resmask = src;
   float *inmask  = src;
@@ -2639,7 +2639,7 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
       }
     }
   }
-  if(info) fprintf(stderr, " done\n"); 
+  if(info) fprintf(stderr, " done\n");
   return resmask;
 }
 

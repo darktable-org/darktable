@@ -106,7 +106,7 @@ static int generate_cache(lua_State *L)
   const gboolean create_dirs = lua_toboolean(L, 2);
   const int min = luaL_checkinteger(L, 3);
   const int max = luaL_checkinteger(L, 4);
-  
+
   if(create_dirs)
   {
     for(dt_mipmap_size_t k = min; k <= max; k++)
