@@ -417,3 +417,18 @@ No samples on raw.pixls.us
 - ST Micro STV680
 
 ## Translations
+
+- German
+- Esperanto
+- European Spanish
+- Finnish
+- French
+- Hebrew
+- Hungarian
+- Italian
+- Japanese
+- Polish
+- Brazilian Portuguese
+- Slovenian
+- Ukrainian
+- Chinese - China
