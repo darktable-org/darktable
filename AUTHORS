@@ -1,102 +1,84 @@
 * developers:
 Pascal Obry
-Aldric Renaudin
 Aurélien PIERRE
-Roman Lebedev
+Aldric Renaudin
 parafin
-Peter Budai
+Roman Lebedev
 
 * translators:
 Pascal Obry
 Jeronimo Pellegrini
 Martin Straeten
 EdgarLux
+Marcus Gama
 Matt Maguire
-Kevin Vermassen
+篠崎亮　Ryo Shinozaki
+Philippe Weyland
 Victor Forsiuk
-Nicolas Auffray
-Matteo Mardegan
-Nameless-J
-Timur Davletshin
-chrisaga
-Báthory Péter
+vertama
 Matjaž Jeran
-thisnamewasnottaken
-Arch Ont
 Aurélien PIERRE
-Bernhard
-Danilo Bargen
-Mik-
+Matteo Mardegan
 Miloš Komarčević
-Miroslav Fikar
-Shlomi Alon-Braitbart
-jpellegrini
-quovadit
+Michel Leblond
+Nicolas Auffray
+Tianhao Chai
+Bogusław Ciastek
+Báthory Péter
+PeterWem
+Tomasz Golinski
+Wiktor Nowak
+sbraitbart
 
 * contributors (at least 4 commits):
 ralfbrown
-Philippe Weyland
-hanno@schwalm-bremen.de
-Hubert Kowalski
-Dan Torop
-Chris.Elston
-Jeronimo Pellegrini
-rawfiner
-Martin Straeten
-Miloš Komarčević
 Diederik ter Rahe
+Dan Torop
+Hubert Kowalski
+Philippe Weyland
+Miloš Komarčević
+Bill Ferguson
+Jeronimo Pellegrini
+hanno@schwalm-bremen.de
+Marco Carrarini
+Martin Straeten
+Daniel Vogelbacher
+Mark-64
+EdgarLux
+rawfiner
 Nicolas Auffray
+Chris Elston
+Chris.Elston
+Marcus Gama
 Sakari Kapanen
 Victor Forsiuk
-lhietal
-EdgarLux
-Matt Maguire
+Arnaud TANGUY
 wpferguson
-Ralf Brown
-Kevin Vermassen
-Vincent THOMAS
-Daniel Vogelbacher
-Bill Ferguson
-Harold le Clément de Saint-Marcq
-quovadit
-Andreas Schneider
-Fabio Heer
-Hanno Schwalm
-HansBull
-Heiko Bauke
+Matt Maguire
+David-Tillmann Schaefer
 Marco
-Marco Carrarini
-Mark-64
-vrnhgd
-Roman Khatko
-Philipp Lutz
-Harald
-Wolfgang Goetz
-Jim Robinson
-dterrahe
+Paolo DePetrillo
+quovadit
+篠崎亮　Ryo Shinozaki
+vertama
+Matjaž Jeran
+darkelectron
+piratenpanda
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
+Jordan Neumeyer
 Miloš Komarčević
-Hubert Kowalski
-Dan Torop
-Daniel Vogelbacher
-Elizeu Santos
-Frank Loemker
-Matt Maguire
+Andreas Schneider
+Marko Toplak
 hanno@schwalm-bremen.de
-jas01
-
-* Sub-module OpenCL contributors (at least 1 commit):
-
-* Sub-module libxcf contributors (at least 1 commit):
-
-* Sub-module whereami contributors (at least 1 commit):
+helloqiu
+luz paz
 
 * Sub-module integration contributors (at least 1 commit):
 Pascal Obry
-Miloš Komarčević
-hanno@schwalm-bremen.de
+Sakari Kapanen
+ralfbrown
 Aurélien PIERRE
 
 And all those of you that made previous releases possible

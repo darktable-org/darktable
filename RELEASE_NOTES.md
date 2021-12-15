@@ -22,9 +22,9 @@ You are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- Almost 2680 commits to darktable+rawspeed since 3.6
-- 954 pull requests handled
-- 110 issues closed
+- Almost 3915 commits to darktable+rawspeed since 3.6
+- 571 pull requests handled
+- 265 issues closed
 
 ## The Big Ones
 
@@ -68,10 +68,10 @@ You are strongly advised to take a backup first.
   section below). This support is done by LibRaw and requires at least exiv2 version
   0.27.4 with BMFF support activated.
 
-- The color checker profiling tool, introduced in darktable 3.4 as part of the 
-  color calibration module, is now normalized patch-wise in exposure to discard the effect 
-  of uneven lighting and fall-off when shooting color checkers hand-held and on-location. 
-  This robustly decreases the residual average dE after calibration and noticeably 
+- The color checker profiling tool, introduced in darktable 3.4 as part of the
+  color calibration module, is now normalized patch-wise in exposure to discard the effect
+  of uneven lighting and fall-off when shooting color checkers hand-held and on-location.
+  This robustly decreases the residual average dE after calibration and noticeably
   helps to recover natural dark blues while preventing yellow shifts in highlights.
 
 ## Other New Features And Changes
@@ -331,15 +331,13 @@ You are strongly advised to take a backup first.
 - Canon EOS M200
 - Canon PowerShot G5 X Mark II
 - Canon PowerShot G7 X Mark III
-- Fujifilm GFX50S II (except lossy compressed)
-- Nikon D6
-- Nikon Z fc
-- Leica C-Lux
-- Leica Digilux 3
+- Fujifilm GFX50S II (compressed)
+- Leica C (Typ 112) (3:2)
+- Leica Digilux 3 (4:3)
+- Leica M10 (dng)
+- Ricoh GR II
 - Sony DSC-HX95
-- Sony ILCE-7M4 (except lossless compressed)
-- Sony ILCE-7RM3A
-- Sony ILCE-7RM4A
+- Sony ILCE-7M4
 - Sony ZV-E10
 
 ### White Balance Presets
@@ -349,6 +347,7 @@ You are strongly advised to take a backup first.
 - Canon EOS R5 (with fine-tuning)
 - Canon EOS R6
 - Canon EOS M50 (with fine-tuning)
+- Ricoh GR II
 
 ### Noise Profiles
 
@@ -356,6 +355,17 @@ You are strongly advised to take a backup first.
 - Canon EOS RP
 - Canon EOS R5
 - Canon EOS R6
+- Fujifilm X100V
+- Leica D-Lux 7
+- Leica M10
+- Leica SL (Typ 601)
+- Panasonic DC-S5
+- Panasonic DC-FZ91
+- Panasonic DC-FZ92
+- Panasonic DC-FZ93
+- Panasonic DC-TZ90
+- Panasonic DC-TZ91
+- Panasonic DC-ZS70
 
 ### Custom Color Matrices
 
