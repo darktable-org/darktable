@@ -69,15 +69,14 @@ static void _update(dt_lib_module_t *self)
   dt_lib_cancel_postponed_update(self);
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
-  const int act_on_any = imgs != NULL;
-  const int act_on_one = g_list_is_singleton(imgs);
+  const int nbimgs = dt_act_on_get_images_nb(TRUE, FALSE);
+  const int act_on_any = (nbimgs > 0);
+  const int act_on_one = (nbimgs == 1);
   const int act_on_mult = act_on_any && !act_on_one;
   const gboolean can_paste
       = darktable.view_manager->copy_paste.copied_imageid > 0
         && (act_on_mult
-            || (act_on_one
-                && (darktable.view_manager->copy_paste.copied_imageid != dt_view_get_image_to_act_on())));
+            || (act_on_one && (darktable.view_manager->copy_paste.copied_imageid != dt_act_on_get_main_image())));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->discard_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->compress_button), act_on_any);
@@ -98,7 +97,7 @@ static void write_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
 static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
+  GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
   if(!imgs)
     return;
   const int act_on_one = g_list_is_singleton(imgs); // list length == 1?
@@ -182,13 +181,12 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+  GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
   if(!imgs) return;  // do nothing if no images to be acted on
 
   const int missing = dt_history_compress_on_list(imgs);
 
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                             g_list_copy((GList *)imgs));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
   dt_control_queue_redraw_center();
   if (missing)
   {
@@ -211,7 +209,7 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
-  const int id = dt_view_get_image_to_act_on();
+  const int id = dt_act_on_get_main_image();
 
   if(id > 0 && dt_history_copy(id))
   {
@@ -223,7 +221,7 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
-  const int id = dt_view_get_image_to_act_on();
+  const int id = dt_act_on_get_main_image();
 
   if(id > 0 && dt_history_copy_parts(id))
   {
@@ -235,15 +233,14 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+  GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
+  if(!imgs) return;
 
   if(dt_conf_get_bool("ask_before_discard"))
   {
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
     const int number = g_list_length((GList *)imgs);
-
-    if (number == 0) return;
 
     GtkWidget *dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
@@ -261,10 +258,13 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   if(res == GTK_RESPONSE_YES)
   {
     dt_history_delete_on_list(imgs, TRUE);
-    GList *imgs_copy = g_list_copy((GList *)imgs);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                               imgs_copy); // frees imgs_copy
+                               imgs); // frees imgs
     dt_control_queue_redraw_center();
+  }
+  else
+  {
+    g_list_free(imgs);
   }
 }
 
@@ -279,33 +279,31 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from previously copied image and past onto selection */
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+  GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                               g_list_copy((GList *)imgs));
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
+  }
+  else
+  {
+    g_list_free(imgs);
   }
 }
 
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   /* copy history from previously copied image and past onto selection */
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+  GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
-  // at the time the dialog is started, some signals are sent and this in turn call
-  // back dt_view_get_images_to_act_on() which free list and create a new one. So we
-  // make a copy because the above imgs will be invalidated.
-
-  GList* imgs_copy = g_list_copy((GList*)imgs);
-  if(dt_history_paste_parts_on_list(imgs_copy, TRUE))
+  if(dt_history_paste_parts_on_list(imgs, TRUE))
   {
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
-                               imgs_copy); // frees imgs_copy
+                               imgs); // frees imgs
   }
   else
   {
-    g_list_free(imgs_copy);
+    g_list_free(imgs);
   }
 }
 

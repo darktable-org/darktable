@@ -854,7 +854,7 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   if(!thumb)
   {
     // otherwise we use the classic retrieving method
-    const int id = dt_view_get_image_to_act_on();
+    const int id = dt_act_on_get_main_image();
     thumb = _thumbtable_get_thumb(table, id);
     if(thumb)
     {
@@ -1639,7 +1639,7 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
 
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
-  table->drag_list = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE, TRUE));
+  table->drag_list = dt_act_on_get_images(FALSE, TRUE, TRUE);
 
 #ifdef HAVE_MAP
   dt_view_manager_t *vm = darktable.view_manager;
@@ -2180,19 +2180,19 @@ gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const int imgid,
 static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                             GdkModifierType modifier, gpointer data)
 {
-  dt_history_copy(dt_view_get_image_to_act_on());
+  dt_history_copy(dt_act_on_get_main_image());
   return TRUE;
 }
 static gboolean _accel_copy_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                   GdkModifierType modifier, gpointer data)
 {
-  dt_history_copy_parts(dt_view_get_image_to_act_on());
+  dt_history_copy_parts(dt_act_on_get_main_image());
   return TRUE;
 }
 static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                              GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
+  GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
   dt_dev_undo_start_record(darktable.develop);
 
@@ -2209,7 +2209,7 @@ static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable,
 static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                    GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
+  GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
   dt_dev_undo_start_record(darktable.develop);
 
@@ -2225,7 +2225,7 @@ static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *accelera
 static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                     GdkModifierType modifier, gpointer data)
 {
-  GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, FALSE));
+  GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
   const gboolean ret = dt_history_delete_on_list(imgs, TRUE);
   if(ret)
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
@@ -2238,7 +2238,7 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
 {
   dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
 
-  const int32_t sourceid = dt_view_get_image_to_act_on();
+  const int32_t sourceid = dt_act_on_get_main_image();
   const int32_t newimgid = dt_image_duplicate(sourceid);
   if(newimgid <= 0) return FALSE;
 

@@ -418,7 +418,7 @@ void enter(dt_view_t *self)
   }
 
   // if one selected start with it, otherwise start at the current lighttable offset
-  const int imgid = dt_view_get_image_to_act_on();
+  const int imgid = dt_act_on_get_main_image();
   gint selrank = -1;
 
   if(imgid > 0)

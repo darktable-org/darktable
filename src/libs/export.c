@@ -179,8 +179,7 @@ static void _update(dt_lib_module_t *self)
   dt_lib_cancel_postponed_update(self);
   const dt_lib_export_t *d = (dt_lib_export_t *)self->data;
 
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
-  const gboolean has_act_on = imgs != NULL;
+  const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
 
   const char *format_name = dt_conf_get_string_const(CONFIG_PREFIX "format_name");
   const char *storage_name = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
@@ -364,7 +363,7 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
   gchar *icc_filename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   const dt_iop_color_intent_t icc_intent = dt_conf_get_int(CONFIG_PREFIX "iccintent");
 
-  GList *list = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE, TRUE));
+  GList *list = dt_act_on_get_images(TRUE, TRUE, TRUE);
   dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks,
                     style, style_append, icc_type, icc_filename, icc_intent, d->metadata_export);
 

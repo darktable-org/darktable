@@ -102,10 +102,10 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user_data)
 {
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
+  GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(user_data), TRUE);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL,
-                             g_list_copy((GList *)imgs));
+                             imgs);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

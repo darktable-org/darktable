@@ -42,7 +42,8 @@ const dt_collection_t *dt_selection_get_collection(struct dt_selection_t *select
 static void _selection_raise_signal()
 {
   // discard cached images_to_act_on list
-  darktable.view_manager->act_on.ok = FALSE;
+  dt_act_on_reset_cache(TRUE);
+  dt_act_on_reset_cache(FALSE);
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 }
