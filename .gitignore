@@ -21,3 +21,4 @@ compile_commands.json
 diff*png
 output*png
 *.code-workspace
+Brewfile.lock.json
