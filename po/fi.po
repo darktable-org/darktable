@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-13 18:43+0200\n"
+"PO-Revision-Date: 2021-12-15 15:09+0200\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -4634,7 +4634,7 @@ msgstr "Virhe: XMP-tiedoston %s avaus ei onnistu."
 
 #: ../src/cli/main.c:605
 msgid "empty history stack"
-msgstr "Tyhjä muokkaushistorian pino."
+msgstr "Tyhjä muokkaushistoria."
 
 #. too long ext, no point in wasting time
 #: ../src/cli/main.c:617
@@ -7463,7 +7463,7 @@ msgstr "VIRHE"
 
 #: ../src/develop/imageop.c:3089
 msgid "purpose"
-msgstr "tarkoitus "
+msgstr "tarkoitus"
 
 #: ../src/develop/imageop.c:3091
 msgid "process"
@@ -22726,7 +22726,6 @@ msgctxt "accel"
 msgid "zoom min"
 msgstr "Pienin suurennus"
 
-# kehys vai reuna?
 #: ../src/views/lighttable.c:1025
 msgid "open image in darkroom"
 msgstr "Avaa kuva pimiössä"
