@@ -21865,7 +21865,7 @@ msgstr "Tag von allen ausgewählten Bildern entfernen"
 
 #: ../src/libs/tagging.c:2952
 msgid "toggle list with / without hierarchy"
-msgstr "Wechseln zwischen Liste mit / ohne Hirarchie"
+msgstr "Wechseln zwischen Liste mit / ohne Hierarchie"
 
 #: ../src/libs/tagging.c:2960
 msgid "toggle sort by name or by count"
