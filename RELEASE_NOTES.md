@@ -16,7 +16,7 @@ $ sha256sum darktable-3.8.0.exe
 
 When updating from the currently stable 3.6.x series, please bear in
 mind that your edits will be preserved during this process, but the new
-library and configuration will not be usable with 3.6.x anymore.
+library and configuration will no longer be usable with 3.6.x.
 
 You are strongly advised to take a backup first.
 
@@ -37,7 +37,7 @@ You are strongly advised to take a backup first.
   Please note that any shortcuts you have previously created are not transferred
   to the new functionality and will need to be redefined in darktable 3.8.
 
-- New diffuse and sharpen module, allowing to simulate or to revert
+- New diffuse or sharpen module, allowing you to simulate or to revert
   diffusion processes to reconstruct images from lens blur, hazing,
   sensor low-pass filter, or noise. It can also be used to simulate
   watercolor smudges, increase local contrast, simulate blooming or
@@ -46,7 +46,7 @@ You are strongly advised to take a backup first.
   blurring them.
 
 - New scene-referred blurs module, to synthesize motion and lens blurs in a parametric
-  and physically-accurate way. It lets you define the motion path or the lens
+  and physically-accurate way. This module allows you to define the motion path or the lens
   diaphragm and then generates the corresponding blur.
 
 - Perspective correction module has been renamed to rotate and perspective
@@ -61,11 +61,11 @@ You are strongly advised to take a backup first.
 - A new LMMSE demosaic algorithm has been introduced. This algorithm is particularly
   suited to high ISO and/or noisy images.
 
-- The composition guides from the crop module are now available globally and do
-  not require the crop module to be activated.
+- The composition guides from the crop module are now available globally and no
+  longer require the crop module to be activated.
 
 - The Canon raw CR3 format is now supported (see list of supported cameras in the
-  section below). This support is done by LibRaw and requires at least exiv2 version
+  section below). This support is provided by LibRaw and requires at least exiv2 version
   0.27.4 with BMFF support activated.
 
 - The color checker profiling tool, introduced in darktable 3.4 as part of the
@@ -87,13 +87,13 @@ You are strongly advised to take a backup first.
 - Much of the SSE-specific code has been removed, since compiler-generated code
   is usually faster.
 
-- The darktable-generate-cache script now displays filenames and image ids.
+- The darktable-generate-cache script now displays filenames and image IDs.
 
 - File name matches in the collections module are now faster.
 
 - Mask handling is faster.
 
-- Processing module order can now be automatically applied based on the image
+- Processing module order can now be automatically applied based on image
   properties.
 
 - Folder status is properly refreshed when a mount is changed.
@@ -111,7 +111,7 @@ You are strongly advised to take a backup first.
   better vectorization and/or OpenMP definition. Notably, the
   split-toning, haze removal and soften modules have been improved.
 
-- The beginner preset in module groups now takes the chosen workflow
+- The "beginner" module group preset now takes the chosen workflow
   (display or scene referred) into account.
 
 - The quick access panel now takes the chosen workflow
@@ -124,7 +124,7 @@ You are strongly advised to take a backup first.
 
 - The following modules have been deprecated:
 
-  - Crop & rotate - the features of this module are now shared between the crop,
+  - Crop and rotate - the features of this module are now shared between the crop,
     orientation, and rotate and perspective modules.
 
     Note that the new crop module is now placed after the retouch module
@@ -139,21 +139,19 @@ You are strongly advised to take a backup first.
 
 - A new preference has been added to choose the number of recent collections to display.
 
-- Rating support has been added to the collections module making possible to create
+- Rating support has been added to the collections module making it possible to create
   presets, for example, to select the best images of 2021.
 
 - PNG files are now supported in the watermark module.
 
-- Minor usability improvements have been made to the tone equalizer,
-  ensuring that the cursor is shown on focus and the module is activated on scroll.
-
-- The values in the global color picker module are now selectable.
+- The values in the global color picker module are now selectable and can be copied
+  to the clipboard.
 
 - HSV has been added as an option in the global color picker module.
 
 - The color scheme of the timeline is improved.
 
-- The scopes module (previously named histogram) can be moved to the
+- The scopes module (previously named histogram) can now be moved to the
   left panel.
 
 - Improved color rendering for waveform and parade scopes.
@@ -164,9 +162,15 @@ You are strongly advised to take a backup first.
 
 - An RYB option has been added to the vectorscope.
 
-- The lut3d module has been moved after filmic.
+- The lut3d module has been moved after filmic in the pixelpipe.
+
+- Minor usability improvements have been made to the tone equalizer,
+  ensuring that the cursor is shown on focus and the module is activated on scroll.
 
 - The automatic mask tuning has been improved in the tone equalizer module.
+
+- New "magic wand" icons are now used for the auto-tune actions in
+  the tone equalizer module.
 
 - Tiling has been enabled in the color balance rgb, diffuse and filmic rgb modules
   to allow very large images to be processed.
@@ -182,27 +186,24 @@ You are strongly advised to take a backup first.
   mask attributes. At the same time, and for consistency, the scroll-up action has been
   set to increase all mask attributes by default.
 
-- Added timestamp in camera import dialog for consistency with other
+- Added timestamp in camera import dialog for consistency with the other
   import dialog.
 
 - The current module order is now shown in the module order module header to
   save space in the GUI.
 
-- The split toning module now displays the hue in degree for consistency
+- The "module order" entry is now moved to the end of the copy/paste dialog
+  for better usability, as this option is rarely used.
+
+- The split toning module now displays the hue in degrees for consistency
   with other modules.
 
 - Rejected images in the lighttable view are now dimmed for clarity.
 
 - The last selected Piwigo album is now remembered in the export module.
 
-- New "magic wand" icons are now used for the auto-tune actions in
-  the tone equalizer module.
-
 - For advanced users and developers, OpenCL build options are now exposed in
   darktablerc.
-
-- The "module order" entry is now moved to the end of the copy/paste dialog
-  for better usability, as this option is rarely used.
 
 - The collections module now offers some new presets based on image time to
   complement the existing presets based on the import time.
@@ -210,7 +211,7 @@ You are strongly advised to take a backup first.
 - Add a borderless requirement indicator in the print module when the user's
   selected margins are below the hardware margins.
 
-- Add an option to show all modules in the history into the active
+- Add an option to show all modules in the history within the active
   module group regardeless of whether or not they are currently
   enabled.
 
@@ -231,10 +232,10 @@ You are strongly advised to take a backup first.
   where no camera is attached), make sure to reset the combobox back to
   the previous view.
 
-- Fix calibration optimizations for delta E in Channel Mixer RGB module.
+- Fix calibration optimizations for delta E in the color calibration module.
 
-- Fix focus peaking, which was in some cases displaying some wrong
-  random pixels on the borders.
+- Fix focus peaking, which was in some cases displaying some 
+  random wrong pixels on the borders.
 
 - Fix refresh when pasting the whole or part of history.
 
@@ -245,7 +246,7 @@ You are strongly advised to take a backup first.
 - Fix creation of liquify interpolated path to be closer to what the user
   would expect.
 
-- Multiple Windows PATH specific issues have been fixed. Also, UNC
+- Multiple Windows PATH-specific issues have been fixed. Also, UNC
   path-names are now supported.
 
 - Make sure RAW+Jpeg files keep the same filename during copy & import.
@@ -295,14 +296,14 @@ You are strongly advised to take a backup first.
 
 ## Notes
 
-- The 3.8.x series of darktable releases will be the last which
+- The 3.8.x series of darktable releases will be the last that
   supports macOS 10.7 and building with Xcode 11.
 
   The next major release will require at least macOS 10.14 to run and
   Xcode 12 to build.
 
-- The module deprecated in 3.4 have now been removed from the
-  deprecated module group. The modules are: Zone System, Invert,
+- The modules deprecated in 3.4 have now been removed from the
+  deprecated module group. The modules affected are: Zone System, Invert,
   Channel Mixer, Global Tonemap, Relight, Tonemap, Vibrance and Basic
   Adjustements.
 
