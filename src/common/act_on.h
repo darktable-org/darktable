@@ -24,6 +24,7 @@
 typedef struct dt_act_on_cache_t
 {
   GList *images;
+  int images_nb;
   gboolean ok;
   int image_over;
   gboolean inside_table;

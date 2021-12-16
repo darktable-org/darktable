@@ -205,6 +205,7 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
   GList *ltmp = cache->images;
   cache->images = l;
   g_list_free(ltmp);
+  cache->images_nb = g_list_length(cache->images);
   GSList *sl = cache->active_imgs;
   cache->active_imgs = g_slist_copy(darktable.view_manager->active_images);
   g_slist_free(sl);
@@ -393,9 +394,9 @@ int dt_act_on_get_images_nb(const gboolean only_visible, const gboolean force)
 
   // and we return a copy of the cached list
   if(only_visible && darktable.view_manager->act_on_cache_visible.ok)
-    return g_list_length((GList *)darktable.view_manager->act_on_cache_visible.images);
+    return darktable.view_manager->act_on_cache_visible.images_nb;
   else if(!only_visible && darktable.view_manager->act_on_cache_all.ok)
-    return g_list_length((GList *)darktable.view_manager->act_on_cache_all.images);
+    return darktable.view_manager->act_on_cache_all.images_nb;
   else
     return 0;
 }
