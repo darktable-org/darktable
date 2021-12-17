@@ -1,60 +1,71 @@
-To build darktable for Windows operating system you have two basic option:
-A) Native compile using MSYS
+To build darktable for the Windows operating system you have two basic options:
+
+A) Native compile using MSYS2
+
 B) Cross compile on Linux
 
 ## A) Native compile using MSYS2:
-How to make a darktable windows installer (64 bit only):
+How to make a darktable Windows installer (x64 only):
 
-* Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
+* Install MSYS2 (instructions and prerequisites can be found on the official website: https://www.msys2.org)
 
-* Update the base MSYS2 system until no further updates are available using: `$ pacman -Syu`
+* Start the MSYS terminal and update the base system until no further updates are available by repeating:
+    ```bash
+    $ pacman -Syu
+    ```
 
-* From MSYS2 terminal, install x64 developer tools and x86_64 toolchain and git from the MSYS2 prompt:
+* From the MSYS terminal, install x64 developer tools, x86_64 toolchain and git:
+    ```bash
+    $ pacman -S --needed base-devel intltool git
+    $ pacman -S --needed mingw-w64-x86_64-{toolchain,cmake,ninja,nsis}
     ```
-    $ pacman -S base-devel
-    $ pacman -S mingw-w64-x86_64-{toolchain,cmake,nsis}
-    $ pacman -S git
-    ```
-* Install required libraries and dependencies:
-    ```
-    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+
+* Install required libraries and dependencies for darktable:
+    ```bash
+    $ pacman -S --needed mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libheif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
     ```
 
 * Install optional libraries and dependencies:
+
+    for cLUT
+    ```bash
+    $ pacman -S --needed mingw-w64-x86_64-gmic
     ```
-    $ pacman -S mingw-w64-x86_64-gmic
-    ```
-    for NG Input with midi or gamepad devices
-    ```
-    $ pacman -S mingw-w64-x86_64-portmidi mingw-w64-x86_64-SDL2
+    for NG input with midi or gamepad devices
+    ```bash
+    $ pacman -S --needed mingw-w64-x86_64-{portmidi,SDL2}
     ```
 
-* Optional: Install libraries required for [testing](../../src/tests/unittests/README.md)
-    ```
-    $ pacman -S mingw-w64-x86_64-cmocka
+* Install optional libraries required for [testing](../../src/tests/unittests/README.md):
+    ```bash
+    $ pacman -S --needed mingw-w64-x86_64-cmocka
     ```
 
-* For gphoto2:
-    * You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available.
-    * make sure they aren't pointing into your normal windows installation in case you already have darktable installed. You can check them with:
-        ```
+* Switch to the MINGW64 terminal and update your lensfun database:
+    ```bash
+    $ lensfun-update-data
+    ```
+
+* For libgphoto2 tethering:
+    * You might need to restart the MINGW64 terminal to have CAMLIBS and IOLIBS environment variables properly set.
+    Make sure they aren't pointing into your normal Windows installation in case you already have darktable installed.
+    You can check them with:
+        ```bash
         $ echo $CAMLIBS
         $ echo $IOLIBS
         ```
-    * If you have to set them manually you can do so by setting the variables in your .bash_profile. Example:
+    * If you have to set them manually you can do so by setting the variables in your `~/.bash_profile`. Example:
         ```bash
-        export CAMLIBS="/mingw64/lib/libgphoto2/2.5.23/"
+        export CAMLIBS="/mingw64/lib/libgphoto2/2.5.27/"
         export IOLIBS="/mingw64/lib/libgphoto2_port/0.12.0/"
         ```
 
-* From MINGW64 terminal, update your lensfun database:
-    `lensfun-update-data`
+    Also use this program to install the USB driver on Windows for your camera:
+    https://zadig.akeo.ie
 
-    Also use this program to install USB driver on Windows for your camera:
-    http://zadig.akeo.ie/
-    When you run it, replace current Windows camera driver with WinUSB driver
+    When you run it, it will replace the current Windows camera driver with the WinUSB driver.
 
-* Modify your bash_profile file in your HOME directory and add the    following lines:
+* Modify the `.bash_profile` file in your `$HOME` directory and add the following lines:
     ```bash
     # Added as per http://wiki.gimp.org/wiki/Hacking:Building/Windows
     export PREFIX="/mingw64"
@@ -62,16 +73,19 @@ How to make a darktable windows installer (64 bit only):
     export PATH="$PREFIX/bin:$PATH"
     ```
 
-* By default cmake will only use one core during the build process.  To speed things up you might wish to add a line like:
+* By default CMake will only use one core during the build process. To speed things up you might wish to add a line like:
     ```bash
-   	export CMAKE_BUILD_PARALLEL_LEVEL="6"
+    export CMAKE_BUILD_PARALLEL_LEVEL="6"
     ```
-   to your .bash_profile file. This would use 6 cores.
+    to your `~/.bash_profile` file. This would use 6 cores.
 
-* Execute the following command to actviate profile changes `$ . .bash_profile`
-
-* From MINGW64 terminal, clone darktable git repository (in this example into ~/darktable):
+* Execute the following command to actviate profile changes:
+    ```bash
+    $ . .bash_profile
     ```
+
+* From the MINGW64 terminal, clone the darktable git repository (in this example into `~/darktable`):
+    ```bash
     $ cd ~
     $ git clone git://github.com/darktable-org/darktable.git
     $ cd darktable
@@ -80,37 +94,47 @@ How to make a darktable windows installer (64 bit only):
     ```
 
 * Finally build and install darktable:
-    ```
+    ```bash
     $ mkdir build
     $ cd build
-    $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
+    $ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
     $ cmake --build .
-    $ cmake --build . --target install
+    $ cmake --install .
     ```
     After this darktable will be installed in `/opt/darktable `directory and can be started by typing `/opt/darktable/bin/darktable.exe` in MSYS2 MINGW64 terminal.
 
     *NOTE: If you are using the Lua scripts, build the installer and install darktable.
-    The Lua scripts check the operating system and see windows and expect a windows shell when executing system commands.
+    The Lua scripts check the operating system and see Windows and expect a Windows shell when executing system commands.
     Running darktable from the MSYS2 MINGW64 terminal gives a bash shell and therefore the commands will not work.*
 
-* For building the installer image, which will  create darktable-<VERSION>.exe installer in current build directory, use: `$ cmake --build . --target package`
+* For building the installer image, which will create darktable-<VERSION>.exe installer in the current build directory, use:
+    ```bash
+    $ cmake --build . --target package
+    ```
 
     *NOTE: The package created will be optimized for the machine on which it has been built, but it could not run on other PCs with different hardware or different Windows version. If you want to create a "generic" package, change the first cmake command line as follows:*
+    ```bash
+    $ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON ../.
     ```
-    $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON ../.
-    ```
-It is now possible to build darktable on Windows using Ninja rather than Make.  This offers advantages of reduced build times for incremental builds (builds on Windows are significantly slower than with linux based systems).  To use Ninja you need to install it from an MSYS terminal with:
 
-`$ pacman -S mingw-w64-x86_64-ninja`
+While Ninja offers advantages of reduced build times for incremental builds (builds on Windows are significantly slower than with linux based systems), you can also fall back to more traditional Makefiles should the need arise. You'll need to install Autotools from an MSYS terminal with:
 
-Be careful as there is also a version of Ninja for MSYS and this will not work here.  Now return to a MINGW64 terminal and use this sequence
+```bash
+$ pacman -S --needed mingw-w64-x86_64-autotools
 ```
+
+Now return to the MINGW64 terminal and use this sequence instead:
+
+```bash
 $ mkdir build
 $ cd build
-$ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
+$ cmake -G 'MSYS Makefiles' -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
 $ cmake --build .
 ```
-If you are in a hurry you can now run darktable by executing the darktable.exe found in the build/bin folder, install in /opt/darktable as described earlier, or create an install image.  If you like experimenting you could also install clang and use that instead of gcc/g++ as the toolchain.
+
+If you are in a hurry you can now run darktable by executing the `darktable.exe` found in the `build/bin` folder, install in `/opt/darktable` as described earlier, or create an install image.
+
+If you like experimenting you could also install clang and use that instead of gcc/g++ as the toolchain.
 
 
 ## B) Cross compile on Linux

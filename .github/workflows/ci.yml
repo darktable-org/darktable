@@ -36,7 +36,7 @@ on:
 jobs:
 
   Linux-minimal:
-    name: Linux-minimal.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
+    name: Linux-minimal.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -59,15 +59,20 @@ jobs:
           #- build
           - nofeatures
           - nofeatures_nosse
+        generator:
+          #- Unix Makefiles
+          - Ninja
         include:
           - os: { label: ubuntu-18.04, code: bionic }
             btype: RelWithDebInfo
             compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
             target: nofeatures
+            generator: Ninja
           - os: { label: ubuntu-18.04, code: bionic }
             btype: RelWithDebInfo
             compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
             target: nofeatures_nosse
+            generator: Ninja
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -75,8 +80,7 @@ jobs:
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      #GENERATOR: Ninja
-      GENERATOR: Unix Makefiles
+      GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
     steps:
@@ -164,7 +168,7 @@ jobs:
                  --conf plugins/lighttable/export/iccintent=0
 
   Linux:
-    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
+    name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     needs: Linux-minimal
     runs-on: ${{ matrix.os.label }}
     strategy:
@@ -189,40 +193,51 @@ jobs:
           - build
           - nofeatures
           - nofeatures_nosse
+        generator:
+          #- Unix Makefiles
+          - Ninja
         include:
           - os: { label: ubuntu-18.04, code: bionic }
             btype: RelWithDebInfo
             compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
             target: build
+            generator: Ninja
           - os: { label: ubuntu-18.04, code: bionic }
             btype: Release
             compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
             target: build
+            generator: Ninja
           - os: { label: ubuntu-latest, code: latest }
             btype: Debug
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
             target: skiptest
+            generator: Ninja
           - os: { label: ubuntu-latest, code: latest }
             btype: Debug
             compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
             target: skiptest
+            generator: Ninja
         exclude:
           - os: { label: ubuntu-20.04, code: focal }
             btype: RelWithDebInfo
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
             target: nofeatures
+            generator: Ninja
           - os: { label: ubuntu-20.04, code: focal }
             btype: RelWithDebInfo
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
             target: nofeatures_nosse
+            generator: Ninja
           - os: { label: ubuntu-20.04, code: focal }
             btype: RelWithDebInfo
             compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
             target: nofeatures
+            generator: Ninja
           - os: { label: ubuntu-20.04, code: focal }
             btype: RelWithDebInfo
             compiler: { compiler: LLVM12, CC: clang-12, CXX: clang++-12, packages: clang-12 libomp-12-dev libclang-common-12-dev llvm-12-dev clang++-12 libc++-12-dev libc++1-12 libc++abi1-12 lld-12}
             target: nofeatures_nosse
+            generator: Ninja
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -230,8 +245,7 @@ jobs:
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      #GENERATOR: Ninja # for some reason ninja started acting weird and generating files which called `ar` with linker flags instead of ar flags.
-      GENERATOR: Unix Makefiles
+      GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
       DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
     steps:
@@ -340,6 +354,9 @@ jobs:
         target:
           - skiptest
           - nofeatures
+        generator:
+          #- MSYS Makefiles
+          - Ninja
         include:
           # Uncomment if PR needs to generate windows package for testing.
           #- btype: Release
@@ -349,10 +366,7 @@ jobs:
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
-            generator: MSYS Makefiles
-        generator:
-          - MSYS Makefiles
-          #- Ninja # do enable if confirmed that ninja is innocent in libxcf case
+            generator: Ninja
     defaults:
       run:
         shell: msys2 {0}
@@ -374,6 +388,7 @@ jobs:
           install: >-
             base-devel
             git
+            intltool
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-cmocka
@@ -416,6 +431,10 @@ jobs:
         with:
           submodules: true
           path: src
+      - name: Update lensfun data
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        run: |
+          lensfun-update-data
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}"
@@ -441,7 +460,6 @@ jobs:
       - name: Package
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         run: |
-          lensfun-update-data
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
       - name: Package upload
@@ -453,7 +471,7 @@ jobs:
           retention-days: 1
 
   macOS:
-    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}
+    name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.build.xcode }}.${{ matrix.target }}.${{ matrix.generator }}
     needs: Linux-minimal
     runs-on: ${{ matrix.build.os }}
     strategy:
@@ -470,12 +488,15 @@ jobs:
         target:
           - skiptest
           - nofeatures
+        generator:
+          #- Unix Makefiles
+          - Ninja
         exclude:
           - build: { os: macos-10.15, xcode: 11.7 }
             compiler: { compiler: XCode,   CC: cc, CXX: c++ }
             btype: RelWithDebInfo
             target: skiptest
-
+            generator: Ninja
     env:
       DEVELOPER_DIR: /Applications/Xcode_${{ matrix.build.xcode }}.app/Contents/Developer
       CC: ${{ matrix.compiler.CC }}
@@ -488,8 +509,7 @@ jobs:
       INSTALL_PREFIX: ${{ github.workspace }}/install
       CMAKE_PREFIX_PATH: /usr/local/opt/libsoup@2:/usr/local/opt/icu4c
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      #GENERATOR: Ninja
-      GENERATOR: Unix Makefiles
+      GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v2
