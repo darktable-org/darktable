@@ -291,7 +291,7 @@ You are strongly advised to take a backup first.
   loaded into darkroom view. The image is returned.
 
 - Added event darkroom-image-history-changed that is triggered when an
-  the image history is changed in darkroom view. The image is
+  image history is changed in darkroom view. The image is
   returned.
 
 ## Notes
@@ -305,7 +305,7 @@ You are strongly advised to take a backup first.
 - The modules deprecated in 3.4 have now been removed from the
   deprecated module group. The modules affected are: Zone System, Invert,
   Channel Mixer, Global Tonemap, Relight, Tonemap, Vibrance and Basic
-  Adjustements.
+  Adjustments.
 
 ## Changed Dependencies
 
