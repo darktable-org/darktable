@@ -219,6 +219,8 @@ You are strongly advised to take a backup first.
 
 - Improved curve handling in filmic. Curve should be easier to control, as
   some side-effects of some parameters on others have been eliminated.
+  
+- Add thumbnail preview support for DNG files in import dialog.
 
 ## Bug Fixes
 
