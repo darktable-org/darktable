@@ -192,9 +192,9 @@ static void _update(dt_lib_module_t *self)
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   const int nbimgs = dt_act_on_get_images_nb(FALSE, FALSE);
 
-  const int act_on_any = (nbimgs > 0);
-  const int act_on_one = (nbimgs == 1);
-  const int act_on_mult = (nbimgs > 1);
+  const gboolean act_on_any = (nbimgs > 0);
+  const gboolean act_on_one = (nbimgs == 1);
+  const gboolean act_on_mult = (nbimgs > 1);
   const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
   const gboolean can_paste
       = d->imageid > 0 && (act_on_mult || (act_on_one && (d->imageid != dt_act_on_get_main_image())));
