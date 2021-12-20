@@ -458,7 +458,10 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
   self->data = (void *)d;
   self->timeout_handle = 0;
-  self->widget = gtk_notebook_new();
+
+  static struct dt_action_def_t notebook_def = { };
+  self->widget = GTK_WIDGET(dt_ui_notebook_new(&notebook_def));
+  dt_action_define(DT_ACTION(self), NULL, N_("page"), GTK_WIDGET(self->widget), &notebook_def);
   dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
 
   GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("images"), NULL);
