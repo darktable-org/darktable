@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -75,6 +75,37 @@ static void _insert_in_list(GList **list, const int imgid, gboolean only_visible
   }
 }
 
+// test if the cache is still valid
+static gboolean _test_cache(dt_act_on_cache_t *cache)
+{
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  if(cache->ok && cache->image_over == mouseover
+     && cache->inside_table == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
+     && g_slist_length(cache->active_imgs) == g_slist_length(darktable.view_manager->active_images))
+  {
+    // we test active images if mouse outside table
+    gboolean ok = TRUE;
+    if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && cache->active_imgs)
+    {
+      GSList *l1 = cache->active_imgs;
+      GSList *l2 = darktable.view_manager->active_images;
+      while(l1 && l2)
+      {
+        if(GPOINTER_TO_INT(l1->data) != GPOINTER_TO_INT(l2->data))
+        {
+          ok = FALSE;
+          break;
+        }
+        l2 = g_slist_next(l2);
+        l1 = g_slist_next(l1);
+      }
+    }
+    if(ok) return TRUE;
+  }
+  return FALSE;
+}
+
 // cache the list of images to act on during global changes (libs, accels)
 // return TRUE if the cache is updated, FALSE if it's still up to date
 gboolean _cache_update(const gboolean only_visible, const gboolean force, const gboolean ordered)
@@ -104,28 +135,9 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
     cache = &darktable.view_manager->act_on_cache_all;
 
   // if possible, we return the cached list
-  if(!force && cache->ok && cache->image_over == mouseover && cache->ordered == ordered
-     && cache->inside_table == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
-     && g_slist_length(cache->active_imgs) == g_slist_length(darktable.view_manager->active_images))
+  if(!force && cache->ordered == ordered && _test_cache(cache))
   {
-    // we test active images if mouse outside table
-    gboolean ok = TRUE;
-    if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && cache->active_imgs)
-    {
-      GSList *l1 = cache->active_imgs;
-      GSList *l2 = darktable.view_manager->active_images;
-      while(l1 && l2)
-      {
-        if(GPOINTER_TO_INT(l1->data) != GPOINTER_TO_INT(l2->data))
-        {
-          ok = FALSE;
-          break;
-        }
-        l2 = g_slist_next(l2);
-        l1 = g_slist_next(l1);
-      }
-    }
-    if(ok) return FALSE;
+    return FALSE;
   }
 
   GList *l = NULL;
@@ -389,10 +401,23 @@ int dt_act_on_get_main_image()
 // get only the number of images to act on
 int dt_act_on_get_images_nb(const gboolean only_visible, const gboolean force)
 {
-  // we first update the cache if needed
+  // if the cache is valid (whatever the ordering) we return its value
+  if(!force)
+  {
+    dt_act_on_cache_t *cache;
+    if(only_visible)
+      cache = &darktable.view_manager->act_on_cache_visible;
+    else
+      cache = &darktable.view_manager->act_on_cache_all;
+
+    if(_test_cache(cache)) return cache->images_nb;
+  }
+
+
+  // otherwise we update the cache
   _cache_update(only_visible, force, FALSE);
 
-  // and we return a copy of the cached list
+  // and we return the number of images in cache
   if(only_visible && darktable.view_manager->act_on_cache_visible.ok)
     return darktable.view_manager->act_on_cache_visible.images_nb;
   else if(!only_visible && darktable.view_manager->act_on_cache_all.ok)
