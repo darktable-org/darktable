@@ -748,62 +748,43 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     }
 
     GList *l = NULL;
-    gboolean inside_sel = FALSE;
-    if(mouseover > 0)
+
+    // Selection has highest priority
+
+    //Note: In dynamic mode everything is selected, so
+    // it should be: hover > active > selected
+
+    // first, we try to return cached list if the selection has not changed
+    if(!force
+       && darktable.view_manager->act_on.ok
+       && darktable.view_manager->act_on.image_over_inside_sel
+       && darktable.view_manager->act_on.inside_table
+       && darktable.view_manager->act_on.ordered == ordered)
     {
-      // column 1,2,3
-      if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
+      return darktable.view_manager->act_on.images;
+    }
+
+    // otherwise we return the new list of the selection
+    l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+
+    if(!l) //selection empty so mouse over is next
+    {
+      if(mouseover > 0)
       {
-        // column 1,2
-        sqlite3_stmt *stmt;
-        gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-        if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          inside_sel = TRUE;
-          sqlite3_finalize(stmt);
-        }
-        g_free(query);
-
-        if(inside_sel)
-        {
-          // column 1
-
-          // first, we try to return cached list if we were already
-          // inside sel and the selection has not changed
-          if(!force
-             && darktable.view_manager->act_on.ok
-             && darktable.view_manager->act_on.image_over_inside_sel
-             && darktable.view_manager->act_on.inside_table
-             && darktable.view_manager->act_on.ordered == ordered)
-          {
-            return darktable.view_manager->act_on.images;
-          }
-
-          // we return the list of the selection
-          l = dt_selection_get_list(darktable.selection, only_visible, ordered);
-        }
-        else
-        {
-          // column 2
-          _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
-        }
-      }
-      else
-      {
-        // column 3
+        // if selection empty and we hover an image, select this image
         _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+
+        // Todo:
+        // not sure what the following line is supposed to do, just copied it from previous code
+
         // be absolutely sure we have the id in the list (in darkroom,
         // the active image can be out of collection)
-        if(!only_visible) _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
+        if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && !only_visible)
+          _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
       }
-    }
-    else
-    {
-      // column 4,5
-      if(darktable.view_manager->active_images)
+      else if(darktable.view_manager->active_images)
       {
-        // column 5
+        // if no mouse over, we pick active images
         for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
         {
           const int id = GPOINTER_TO_INT(ll->data);
@@ -813,16 +794,8 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
           if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
         }
       }
-      else
-      {
-        // column 4
-        // we return the list of the selection
-        l = dt_selection_get_list(darktable.selection, only_visible, ordered);
-      }
-    }
 
     // let's register the new list as cached
-    darktable.view_manager->act_on.image_over_inside_sel = inside_sel;
     darktable.view_manager->act_on.ordered = ordered;
     darktable.view_manager->act_on.image_over = mouseover;
     g_list_free(darktable.view_manager->act_on.images);
@@ -845,6 +818,10 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   }
   else
   {
+    //////////////////////////
+    // legacy images_to_act_on
+    //////////////////////////
+
     const int mouseover = dt_control_get_mouse_over_id();
 
     // if possible, we return the cached list
