@@ -698,14 +698,18 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
 {
   /** Here's how it works
    *
-   *             mouse over| x | x | x |   |   |
-   *     mouse inside table| x | x |   |   |   |
-   * mouse inside selection| x |   |   |   |   |
-   *          active images| ? | ? | x |   | x |
-   *                       |   |   |   |   |   |
-   *                       | S | O | O | S | A |
-   *  S = selection ; O = mouseover ; A = active images
-   *  the mouse can be outside thumbtable in case of filmstrip + mouse in center widget
+   * New algorithm
+   * -------------
+   *
+   * Priority is:
+   * Selection > Mouse Hover > Active Images
+   *
+   *
+   * Culling Dynamic has a different order:
+   * Mouse Hover > Active Images
+   *
+   * Fullscreen Views:
+   * Always full-screen image
    *
    *  if only_visible is FALSE, then it will add also not visible images because of grouping
    *  force define if we try to use cache or not
@@ -724,7 +728,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     if(dt_view_lighttable_preview_state(darktable.view_manager))
     {
       // if no mouse over, we pick active images
-      const int id = GPOINTER_TO_INT(g_slist_nth(darktable.view_manager->active_images, 0)->data);
+      const int id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
       _images_to_act_on_insert_in_list(&l, id, only_visible);
       // be absolutely sure we have the id in the list (in darkroom,
       // the active image can be out of collection)
@@ -875,6 +879,25 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     //////////////////////////
     // legacy images_to_act_on
     //////////////////////////
+
+  /**
+   *
+   * Legacy Algorithm
+   * ----------------
+   *
+   *             mouse over| x | x | x |   |   |
+   *     mouse inside table| x | x |   |   |   |
+   * mouse inside selection| x |   |   |   |   |
+   *          active images| ? | ? | x |   | x |
+   *                       |   |   |   |   |   |
+   *                       | S | O | O | S | A |
+   *  S = selection ; O = mouseover ; A = active images
+   *  the mouse can be outside thumbtable in case of filmstrip + mouse in center widget
+   *
+   *  if only_visible is FALSE, then it will add also not visible images because of grouping
+   *  force define if we try to use cache or not
+   *  if ordered is TRUE, we return the list in the gui order. Otherwise the order is undefined (but quicker)
+   **/
 
     const int mouseover = dt_control_get_mouse_over_id();
 
