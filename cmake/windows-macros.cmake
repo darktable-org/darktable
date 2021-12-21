@@ -31,9 +31,9 @@ endmacro()
 #-------------------------------------------------------------------------------
 # _copy_required_library(<target> <library>)
 #
-# Helper function to copy required library (specified by target) alongside the 
-# target binary. 
-# 
+# Helper function to copy required library (specified by target) alongside the
+# target binary.
+#
 # This is required as Win doesn't have a RPATH
 #-------------------------------------------------------------------------------
 function(_copy_required_library target library)
@@ -169,8 +169,6 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
 
-  install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTApplication)
-
   # TODO: Add auxiliary files for openssl?
 
   # Add pixbuf loader libraries
@@ -205,19 +203,30 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       DESTINATION share/libthai/
       COMPONENT DTApplication)
 
-  # Add libgphoto2 files
-  install(DIRECTORY
-      "${MINGW_PATH}/../lib/libgphoto2"
-      DESTINATION lib/
-      COMPONENT DTApplication
-      PATTERN "*.a" EXCLUDE)
+  # Add libgphoto2 files and dependencies
+  if(Gphoto2_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      ${MINGW_PATH}/imagequant.dll
+      ${MINGW_PATH}/libexif*.dll
+      ${MINGW_PATH}/libgd.dll
+      ${MINGW_PATH}/libusb*.dll
+      ${MINGW_PATH}/libXpm-noX*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
 
-  install(DIRECTORY
-      "${MINGW_PATH}/../lib/libgphoto2_port"
-      DESTINATION lib/
-      COMPONENT DTApplication
-      PATTERN "*.a" EXCLUDE
-      PATTERN "usb.dll" EXCLUDE)
+    install(DIRECTORY
+        "${MINGW_PATH}/../lib/libgphoto2"
+        DESTINATION lib/
+        COMPONENT DTApplication
+        PATTERN "*.a" EXCLUDE)
+
+    install(DIRECTORY
+        "${MINGW_PATH}/../lib/libgphoto2_port"
+        DESTINATION lib/
+        COMPONENT DTApplication
+        PATTERN "*.a" EXCLUDE
+        PATTERN "usb.dll" EXCLUDE)
+  endif()
 
   # Add GraphicsMagick libraries
   if(GraphicsMagick_FOUND)
@@ -293,6 +302,10 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     )
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif(Rsvg2_FOUND)
+
+  list(REMOVE_DUPLICATES CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+
+  install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTApplication)
 
 endif(WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
