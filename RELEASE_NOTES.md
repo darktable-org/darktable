@@ -219,7 +219,7 @@ You are strongly advised to take a backup first.
 
 - Improved curve handling in filmic. Curve should be easier to control, as
   some side-effects of some parameters on others have been eliminated.
-  
+
 - Add thumbnail preview support for DNG files in import dialog.
 
 ## Bug Fixes
@@ -236,7 +236,7 @@ You are strongly advised to take a backup first.
 
 - Fix calibration optimizations for delta E in the color calibration module.
 
-- Fix focus peaking, which was in some cases displaying some 
+- Fix focus peaking, which was in some cases displaying some
   random wrong pixels on the borders.
 
 - Fix refresh when pasting the whole or part of history.
