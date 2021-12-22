@@ -316,7 +316,7 @@ int try_enter(dt_view_t *self)
 
   //  now check that there is at least one selected image
 
-  const int imgid = dt_view_get_image_to_act_on();
+  const int imgid = dt_view_get_image_to_act_on(FALSE);
 
   if(imgid < 0)
   {

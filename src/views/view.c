@@ -704,12 +704,13 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
    * Priority is:
    * Selection > Mouse Hover > Active Images
    *
-   *
    * Culling Dynamic has a different order:
    * Mouse Hover > Active Images
    *
    * Fullscreen Views:
    * Always full-screen image
+   *
+   *
    *
    *  if only_visible is FALSE, then it will add also not visible images because of grouping
    *  force define if we try to use cache or not
@@ -1131,7 +1132,7 @@ gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible)
 }
 
 // get the main image to act on during global changes (libs, accels)
-int dt_view_get_image_to_act_on()
+int dt_view_get_image_to_act_on(const gboolean prioritize_hover)
 {
   /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
    *
@@ -1146,31 +1147,41 @@ int dt_view_get_image_to_act_on()
   int ret = -1;
   const int mouseover = dt_control_get_mouse_over_id();
 
-  if(mouseover > 0)
+  // return mouseover if mouseover should be prioritized and we have a mouse over target ...
+  if(prioritize_hover && mouseover > 0)
   {
     ret = mouseover;
   }
   else
   {
-    if(darktable.view_manager->active_images)
+    // ... otherwise try and get a selected picture
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "SELECT s.imgid"
+       " FROM main.selected_images as s, memory.collected_images as c"
+       " WHERE s.imgid=c.imgid"
+       " ORDER BY c.rowid LIMIT 1",
+                                -1, &stmt, NULL);
+    if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
     {
-      ret = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+      ret = sqlite3_column_int(stmt, 0);
     }
-    else
+    if(stmt) sqlite3_finalize(stmt);
+
+    // if selection is empty, we try active images next
+    if(!ret)
     {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "SELECT s.imgid"
-         " FROM main.selected_images as s, memory.collected_images as c"
-         " WHERE s.imgid=c.imgid"
-         " ORDER BY c.rowid LIMIT 1",
-                                  -1, &stmt, NULL);
-      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      if(darktable.view_manager->active_images)
       {
-        ret = sqlite3_column_int(stmt, 0);
+        ret = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
       }
-      if(stmt) sqlite3_finalize(stmt);
+      else
+      {
+        // and if active images is also empty, we set return to mouseover
+        // we don't have to check if mouseover is >0 because ret=-1 at this point anyway, so nothing changes
+        ret = mouseover;
+      }
     }
   }
 

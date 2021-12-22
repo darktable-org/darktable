@@ -166,7 +166,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
                                           const gboolean ordered);
 gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible);
 // get the main image to act on during global changes (libs, accels)
-int dt_view_get_image_to_act_on();
+int dt_view_get_image_to_act_on(const gboolean prioritize_hover);
 
 /** returns an uppercase string of file extension **plus** some flag information **/
 char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow);
