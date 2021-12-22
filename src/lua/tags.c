@@ -218,6 +218,27 @@ int dt_lua_tag_detach(lua_State *L)
   return 0;
 }
 
+int tag_rename(lua_State *L)
+{
+  dt_lua_tag_t tagid;
+  luaA_to(L, dt_lua_tag_t, &tagid, 1);
+  const char *new_name = luaL_checkstring(L, 2);
+  dt_tag_rename(tagid, new_name);
+  if(dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT imgid FROM main.tagged_images WHERE tagid=?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+      dt_image_synch_xmp(sqlite3_column_int(stmt, 0));
+    sqlite3_finalize(stmt);
+  }
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  return 1;
+}
+
 static int tag_lib_find(lua_State *L)
 {
   const char *name = luaL_checkstring(L, 1);
@@ -331,7 +352,9 @@ int dt_lua_init_tags(lua_State *L)
   lua_pushcfunction(L, dt_lua_tag_get_tagged_images);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "get_tagged_images");
-
+  lua_pushcfunction(L, tag_rename);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "rename");
 
   return 0;
 }
