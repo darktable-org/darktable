@@ -222,6 +222,13 @@ You are strongly advised to take a backup first.
 
 - Add thumbnail preview support for DNG files in import dialog.
 
+- The darktable 3.8.0 documentation now includes four (French, German,
+  Ukranian, Brazilian Portuguese) translated languages (the first time
+  complete, translated documentation has been made available on the
+  release date), fully integrated into darktable's help link
+  system. Translated versions of the epub and pdf manuals are also
+  available.
+
 ## Bug Fixes
 
 - Multiple memory leaks have been fixed.
