@@ -133,6 +133,8 @@ typedef unsigned int u_int;
 # elif defined(__PPC64__)
 /* __PPC64__ is the only macro tested for in is_supported_platform.h, other macros would fail there anyway. */
 #define __DT_CLONE_TARGETS__ __attribute__((target_clones("default","cpu=power9")))
+# else
+#define __DT_CLONE_TARGETS__
 # endif
 #else
 #define __DT_CLONE_TARGETS__
