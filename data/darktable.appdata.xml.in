@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2013 Pascal de Bruijn <pmjdebruijn@pcode.nl>
-               2013-2016 Tobias Ellinghaus <me@houz.org>
-               2016 Richard Hughes <richard@hughsie.com>
+<!-- Copyright (C) 2009-2021 darktable developers.
 -->
 <component type="desktop">
   <id>darktable.desktop</id>
@@ -64,7 +62,7 @@
     <release date="2018-12-24" version="2.6.0"/>
   </releases>
   <url type="homepage">https://www.darktable.org/</url>
-  <url type="bugtracker">https://redmine.darktable.org/projects/darktable/issues</url>
-  <url type="help">https://www.darktable.org/usermanual/</url>
+  <url type="bugtracker">https://github.com/darktable-org/darktable/issues</url>
+  <url type="help">https://www.darktable.org/resources/</url>
   <update_contact>darktable-dev@lists.darktable.org</update_contact>
 </component>
