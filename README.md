@@ -85,10 +85,10 @@ you can build the software yourself following the instructions [below](#building
 
 ### Latest release
 
-3.6.1 (stable)
+3.8.0 (stable)
 
-* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.6.1/darktable-3.6.1-win64.exe)
-* [Download executable for mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.6.1/darktable-3.6.1.6.dmg)
+* [Download executable for Windows](https://github.com/darktable-org/darktable/releases/download/release-3.8.0/darktable-3.8.0-win64.exe)
+* [Download executable for mac OS](https://github.com/darktable-org/darktable/releases/download/release-3.8.0/darktable-3.8.0.dmg)
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:stable&package=darktable)
 * [Install Flatpak package for Linux](https://flathub.org/apps/details/org.darktable.Darktable)
 * [More information about installing darktable on any system](https://www.darktable.org/install/)
@@ -125,7 +125,7 @@ darktable automatically backs up the library database when a new version causes 
 you can revert to the previous release by restoring this backup if needed
 (simply rename it to `library.db`).
 
-If you try to open a newer database with an older version of the software, any portions of your edits that were 
+If you try to open a newer database with an older version of the software, any portions of your edits that were
 undertaken with new features will be discarded and you will lose them. This also applies to the sidecar XMP files.
 
 If you plan to move regularly between two versions (new/unstable and old/stable) see [below](#testunstable-version)
@@ -217,7 +217,7 @@ then install it. This can usually be done in your package manager (not the appli
 customarily provided by default in your distribution) or from the internet with a search engine.
 You may need to install a package manager first (like Synaptic on Debian/Ubuntu, or DNF Dragora on Fedora/RHEL).
 
-This process might be tedious but you only need to do it once. See 
+This process might be tedious but you only need to do it once. See
 [this page on building darktable](https://github.com/darktable-org/darktable/wiki/Building-darktable)
 for one-line commands that will install most dependencies on the most common Linux distributions.
 
@@ -249,7 +249,7 @@ See below (in "Using") how to start a test install of the unstable version witho
 
 #### Latest stable release
 
-3.6.1
+3.8.0
 
 The darktable project releases two major versions every year, in mid-Summer and at Christmas, tagged with even numbers (e.g. 3.0, 3.2, 3.4, 3.6).
 Minor revisions are tagged with a third digit (e.g. 3.0.1, 3.0.2) and mostly provide bug fixes and camera support.
@@ -259,7 +259,7 @@ You may want to compile these stable releases yourself to get better performance
 git clone --recurse-submodules --depth 1 https://github.com/darktable-org/darktable.git
 cd darktable
 git fetch --tags
-git checkout tags/release-3.6.1
+git checkout tags/release-3.8.0
 ```
 
 ### Get submodules
@@ -328,7 +328,7 @@ To use a test version of darktable without damaging your regular/stable version'
 ```
 
 and ensure that you set the option "write sidecar file for each image" to "never" in preferences -> storage -> XMP. This way,
-your regular/stable version will save its configuration files in `~/.config/darktable`, as usual, 
+your regular/stable version will save its configuration files in `~/.config/darktable`, as usual,
 the test/unstable one will save in `~/.config/darktable-test`, and the two versions will not produce database conflicts.
 
 #### Regular/stable version
@@ -388,7 +388,7 @@ or alternatively
 
 ### Why do the thumbnails in the lighttable view look different to the preview in the darkroom view ?
 
-For RAW files that have never been edited in darktable (when you have just imported them), the lighttable view, by default, shows 
+For RAW files that have never been edited in darktable (when you have just imported them), the lighttable view, by default, shows
 the JPEG preview placed into the RAW file by your camera. Loading this JPEG file is faster and makes the
 lighttable view more responsive when importing large collections of images.
 
