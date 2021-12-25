@@ -553,7 +553,7 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
     {
       /* extract name from xml file */
       gchar *bname = NULL;
-      xmlDoc *document = xmlReadFile((char*)filename->data, NULL, 0);
+      xmlDoc *document = xmlReadFile((char*)filename->data, NULL, XML_PARSE_NOBLANKS);
       xmlNode *root = NULL;
       if(document != NULL)
         root = xmlDocGetRootElement(document);
