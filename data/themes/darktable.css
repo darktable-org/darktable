@@ -721,6 +721,11 @@ l
   padding-top: 0.28em;
 }
 
+#filter-box entry
+{
+  background-color: @field_active_bg;
+}
+
 /*-------------------
   - Scope/Histogram -
   -------------------*/

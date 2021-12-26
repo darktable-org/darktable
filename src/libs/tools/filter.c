@@ -22,6 +22,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "bauhaus/bauhaus.h"
@@ -34,6 +35,7 @@ typedef struct dt_lib_tool_filter_t
   GtkWidget *comparator;
   GtkWidget *sort;
   GtkWidget *reverse;
+  GtkWidget *text;
 } dt_lib_tool_filter_t;
 
 #ifdef USE_LUA
@@ -146,6 +148,27 @@ int position()
   return 2001;
 }
 
+static void _text_entry_activated(GtkEntry *entry, dt_lib_module_t *self)
+{
+  g_free(dt_collection_get_text_filter(darktable.collection));
+  dt_collection_set_text_filter(darktable.collection, g_strdup(gtk_entry_get_text(entry)));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+}
+
+static void _reset_text_filter(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  g_free(dt_collection_get_text_filter(darktable.collection));
+  dt_collection_set_text_filter(darktable.collection, NULL);
+  gtk_entry_set_text(GTK_ENTRY(d->text), "");
+}
+
+static void _reset_text_entry(GtkButton *button, dt_lib_module_t *self)
+{
+  _reset_text_filter(self);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -153,8 +176,11 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(self->widget, "filter-box");
+  GtkWidget *dropdowns = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(dropdowns, "filter-box");
+  gtk_box_set_homogeneous(GTK_BOX(dropdowns), TRUE);
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(self->widget), dropdowns, TRUE, TRUE, 0);
 
   GtkWidget *overlay = gtk_overlay_new();
 
@@ -196,12 +222,26 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_margin_end (overlay, 20);
 
   /* sort combobox */
+  GtkWidget *sort_box= gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
   d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
                                          _("determine the sort order of shown images"),
                                          _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
                                          _sort_names);
   gtk_box_pack_start(GTK_BOX(self->widget), d->sort, TRUE, TRUE, 2);
+
+  // filter text
+  GtkWidget *text_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  d->text = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(d->text), 10);
+  gtk_box_pack_start(GTK_BOX(text_box), d->text, FALSE, FALSE, 0);
+  gtk_widget_set_tooltip_text(d->text, _("filter the text across metadata, tags and complete filename"
+                                         "\nuse `%' as wildcard"));
+  g_signal_connect(G_OBJECT(d->text), "activate", G_CALLBACK(_text_entry_activated), self);
+  GtkWidget *reset_button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, CPF_STYLE_FLAT, NULL);
+  gtk_box_pack_start(GTK_BOX(text_box), reset_button, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(reset_button), "clicked", G_CALLBACK(_reset_text_entry), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), text_box, FALSE, FALSE, 4);
 
   /* reverse order checkbutton */
   d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
@@ -219,6 +259,10 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->reverse), "toggled", G_CALLBACK(_lib_filter_reverse_button_changed),
                    (gpointer)self);
 
+  // workaround: seems to prevent the previous horizontal box to expand until the preference buttons.
+  GtkWidget *fake_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), fake_box, TRUE, TRUE, 4);
+
   /* initialize proxy */
   darktable.view_manager->proxy.filter.module = self;
   darktable.view_manager->proxy.filter.reset_filter = _lib_filter_reset;
@@ -232,6 +276,8 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  g_free(dt_collection_get_text_filter(darktable.collection));
+  dt_collection_set_text_filter(darktable.collection, NULL);
   g_free(self->data);
   self->data = NULL;
 }
@@ -393,6 +439,7 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
     /* Reset to topmost item, 'all' */
     dt_bauhaus_combobox_set(dropdowns->filter, 0);
   }
+  _reset_text_filter(self);
 }
 
 #ifdef USE_LUA
