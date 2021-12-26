@@ -1059,33 +1059,27 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
   if(query)
   {
     sqlite3_stmt *stmt = NULL;
-    gchar *q;
-
-    if(selected)
-      q = g_strdup_printf("SELECT id FROM main.selected_images AS s JOIN (%s) AS mi WHERE mi.id = s.imgid LIMIT -1, ?3", query);
-    else
-      q = g_strdup(query);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), q, -1, &stmt, NULL);
-
     if(selected)
     {
-      if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
-      {
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, -1);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-      }
-
-      // the limit is done on the main select and not on the JOIN
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, limit);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT mi.imgid FROM main.selected_images AS s"
+                                  " JOIN memory.collected_images AS mi WHERE mi.imgid = s.imgid LIMIT -1, ?1",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, limit);
     }
     else
     {
       if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
       {
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, -1);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, limit);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "SELECT imgid FROM memory.collected_images LIMIT -1, ?1",
+                                    -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, limit);
       }
+      else
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "SELECT imgid FROM memory.collected_images",
+                                    -1, &stmt, NULL);
     }
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1095,7 +1089,6 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
     }
 
     sqlite3_finalize(stmt);
-    g_free(q);
   }
 
   return g_list_reverse(list);  // list built in reverse order, so un-reverse it
