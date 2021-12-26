@@ -308,7 +308,15 @@ gboolean dt_util_test_writable_dir(const char *path)
   if(path == NULL) return FALSE;
 #ifdef _WIN32
   struct _stati64 stats;
-  if(_stati64(path, &stats)) return FALSE;
+
+  wchar_t *wpath = g_utf8_to_utf16(path, -1, NULL, NULL, NULL);
+  const int result = _wstati64(wpath, &stats);
+  g_free(wpath);
+
+  if(result)
+  { // error while testing path:
+    return FALSE;
+  }
 #else
   struct stat stats;
   if(stat(path, &stats)) return FALSE;
