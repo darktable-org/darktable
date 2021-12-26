@@ -2212,38 +2212,30 @@ void dt_collection_hint_message(const dt_collection_t *collection)
 static int dt_collection_image_offset_with_collection(const dt_collection_t *collection, int imgid)
 {
   if(imgid == -1) return 0;
-  const gchar *qin = dt_collection_get_query(collection);
   int offset = 0;
   sqlite3_stmt *stmt;
 
-  if(qin)
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT imgid FROM memory.collected_images",
+                              -1, &stmt, NULL);
+
+  gboolean found = FALSE;
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qin, -1, &stmt, NULL);
-
-    // was the limit portion of the query tacked on?
-    if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
+    const int id = sqlite3_column_int(stmt, 0);
+    if(imgid == id)
     {
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+      found = TRUE;
+      break;
     }
-
-    gboolean found = FALSE;
-
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const int id = sqlite3_column_int(stmt, 0);
-      if(imgid == id)
-      {
-        found = TRUE;
-        break;
-      }
-      offset++;
-    }
-
-    if(!found) offset = 0;
-
-    sqlite3_finalize(stmt);
+    offset++;
   }
+
+  if(!found) offset = 0;
+
+  sqlite3_finalize(stmt);
+
   return offset;
 }
 
