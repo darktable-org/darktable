@@ -341,6 +341,7 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
   if(self->current_path && strcmp(self->current_path, new_path) == 0)
   {
     g_free(new_path);
+    new_path = NULL;
     if(currentok) return self->current_path;
   }
 
