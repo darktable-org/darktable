@@ -257,6 +257,22 @@ int dt_collection_update(const dt_collection_t *collection)
                                            " (current_hash == basic_hash OR current_hash == auto_hash))",
                            and_operator(&and_term));
 
+    /* add text filter if any */
+    if(collection->params.text_filter && collection->params.text_filter[0])
+    {
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM main.meta_data WHERE id=mi.id AND value LIKE '%s'"
+                                          " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
+                                          "   WHERE imgid=mi.id AND t.id=ti.tagid AND t.name LIKE '%s'"
+                                          " UNION SELECT id FROM main.images"
+                                          "   WHERE id=mi.id AND filename LIKE '%s'"
+                                          " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
+                                          "   WHERE i.id=mi.id AND fr.id=i.film_id AND fr.folder LIKE '%s')",
+                           and_operator(&and_term), collection->params.text_filter,
+                                                    collection->params.text_filter,
+                                                    collection->params.text_filter,
+                                                    collection->params.text_filter);
+    }
+
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
       wq = dt_util_dstrcat(wq, " %s %s", and_operator(&and_term), where_ext);
@@ -530,6 +546,17 @@ void dt_collection_set_filter_flags(const dt_collection_t *collection, uint32_t 
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
   params->filter_flags = flags;
+}
+
+char *dt_collection_get_text_filter(const dt_collection_t *collection)
+{
+  return collection->params.text_filter;
+}
+
+void dt_collection_set_text_filter(const dt_collection_t *collection, char *text_filter)
+{
+  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
+  params->text_filter = text_filter;
 }
 
 uint32_t dt_collection_get_query_flags(const dt_collection_t *collection)
