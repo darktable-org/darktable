@@ -744,22 +744,30 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     // image is always part of the selection we can ignore selected pictures completely
 
     // Todo: is this sufficiant or is it necessary to check table->mode == DT_CULLING_MODE_CULLING as well?
+    //       It was done that way in the old code
     else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     {
       if(mouseover > 0)
       {
-        // if selection empty and we hover an image, select this image
-        _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+        //otherwise we need to walk through all active images and find the mouseover image among them
+        for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
+        {
+          if(GPOINTER_TO_INT(ll->data) == mouseover)
+          {
+            _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
 
-        // Todo:
-        // not sure what the following line is supposed to do, just copied it from previous code
+            // Todo:
+            // not sure what the following line is supposed to do, just copied it from previous code
 
-        // be absolutely sure we have the id in the list (in darkroom,
-        // the active image can be out of collection)
-        if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && !only_visible)
-          _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
+            // be absolutely sure we have the id in the list (in darkroom,
+            // the active image can be out of collection)
+            if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && !only_visible)
+              _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
+            break;
+          }
+        }
       }
-      else if(darktable.view_manager->active_images)
+      if(!l && darktable.view_manager->active_images)
       {
         // if no mouse over, we pick active images
         for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
@@ -824,9 +832,12 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
       // otherwise we return the new list of the selection
       l = dt_selection_get_list(darktable.selection, only_visible, ordered);
 
-      if(!l) //selection empty so mouse over is next
+
+      if(!l && mouseover > 0)
       {
-        if(mouseover > 0)
+        // we only accept mouseover on an active image to avoid picking unrelated images from the filmstrip by accident
+        // if there are no active images, we accept the mouseover directly
+        if (!l && !(darktable.view_manager->active_images))
         {
           // if selection empty and we hover an image, select this image
           _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
@@ -839,17 +850,36 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
           if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && !only_visible)
             _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
         }
-        else if(darktable.view_manager->active_images)
+
+        //otherwise we need to walk through all active images and find the mouseover image among them
+        for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
         {
-          // if no mouse over, we pick active images
-          for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
+          if(GPOINTER_TO_INT(ll->data) == mouseover)
           {
-            const int id = GPOINTER_TO_INT(ll->data);
-            _images_to_act_on_insert_in_list(&l, id, only_visible);
+            _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+
+            // Todo:
+            // not sure what the following line is supposed to do, just copied it from previous code
+
             // be absolutely sure we have the id in the list (in darkroom,
             // the active image can be out of collection)
-            if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
+            if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && !only_visible)
+              _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
+            break;
           }
+        }
+      }
+
+      if(!l && darktable.view_manager->active_images)
+      {
+        // if no images to act on until now, we pick active images
+        for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
+        {
+          const int id = GPOINTER_TO_INT(ll->data);
+          _images_to_act_on_insert_in_list(&l, id, only_visible);
+          // be absolutely sure we have the id in the list (in darkroom,
+          // the active image can be out of collection)
+          if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
         }
       }
     }
