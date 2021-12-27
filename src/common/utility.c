@@ -911,10 +911,18 @@ RsvgDimensionData dt_get_svg_dimension(RsvgHandle *svg)
     }
     else
     {
+#define VIEWPORT_SIZE 32767 //use maximum cairo surface size to have enough precision when size is converted to int
+      const RsvgRectangle viewport = {
+        .x = 0,
+        .y = 0,
+        .width = VIEWPORT_SIZE,
+        .height = VIEWPORT_SIZE,
+      };
+#undef VIEWPORT_SIZE
       RsvgRectangle rectangle;
-      rsvg_handle_get_geometry_for_element(svg, NULL, NULL, &rectangle, NULL);
-      dimension.width = lround(rectangle.width + rectangle.x);
-      dimension.height = lround(rectangle.height + rectangle.y);
+      rsvg_handle_get_geometry_for_layer(svg, NULL, &viewport, NULL, &rectangle, NULL);
+      dimension.width = lround(rectangle.width);
+      dimension.height = lround(rectangle.height);
     }
   #else
     rsvg_handle_get_dimensions(svg, &dimension);
