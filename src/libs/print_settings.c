@@ -70,6 +70,18 @@ typedef enum _set_controls
   BOX_ALL          = BOX_LEFT | BOX_RIGHT | BOX_TOP | BOX_BOTTOM
 } dt_box_control_set;
 
+typedef enum _unit_t
+{
+  UNIT_MM = 0,
+  UNIT_CM,
+  UNIT_IN,
+  UNIT_N // needs to be the last one
+} _unit_t;
+
+
+static const float units[UNIT_N] = { 1.0f, 0.1f, 1.0f/25.4f };
+static const gchar *_unit_names[] = { N_("mm"), N_("cm"), N_("inch"), NULL };
+
 typedef struct dt_lib_print_settings_t
 {
   GtkWidget *profile, *intent, *style, *style_mode, *papers, *media;
@@ -90,7 +102,7 @@ typedef struct dt_lib_print_settings_t
   gboolean lock_activated;
   dt_print_info_t prt;
   dt_images_box imgs;
-  int unit;
+  _unit_t unit;
   int v_intent, v_pintent;
   int v_icctype, v_picctype;
   char *v_iccprofile, *v_piccprofile, *v_style;
@@ -135,8 +147,6 @@ typedef struct _dialog_description
 {
   const char *name;
 } dialog_description_t;
-
-static const float units[3] = { 1.0f, 0.1f, 1.0f/25.4f };
 
 static void _update_slider(dt_lib_print_settings_t *ps);
 static void _width_changed(GtkWidget *widget, gpointer user_data);
@@ -1014,7 +1024,7 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   const int unit = dt_bauhaus_combobox_get(combo);
   if(unit < 0) return; // shouldn't happen, but it could be -1 if nothing is selected
   ps->unit = unit;
-  dt_conf_set_int("plugins/print/print/unit", ps->unit);
+  dt_conf_set_string("plugins/print/print/unit", _unit_names[unit]);
 
   const double margin_top = ps->prt.page.margin_top;
   const double margin_left = ps->prt.page.margin_left;
@@ -2118,6 +2128,12 @@ void gui_init(dt_lib_module_t *self)
 
   d->imgs.motion_over = -1;
 
+  const char *str = dt_conf_get_string_const("plugins/print/print/unit");
+  const char **names = _unit_names;
+  for(_unit_t i=0; *names; names++, i++)
+    if(g_strcmp0(str, *names) == 0)
+      d->unit = i;
+
   dt_printing_clear_boxes(&d->imgs);
 
   // set all margins + unit from settings
@@ -2127,7 +2143,6 @@ void gui_init(dt_lib_module_t *self)
   const float left_b = dt_conf_get_float("plugins/print/print/left_margin");
   const float right_b = dt_conf_get_float("plugins/print/print/right_margin");
 
-  d->unit = dt_conf_get_int("plugins/print/print/unit");
   d->prt.page.margin_top = to_mm(d, top_b);
   d->prt.page.margin_bottom = to_mm(d, bottom_b);
   d->prt.page.margin_left = to_mm(d, left_b);
@@ -2280,21 +2295,17 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_widget_set_label(d->orientation, NULL, N_("orientation"));
   dt_bauhaus_combobox_add(d->orientation, _("portrait"));
   dt_bauhaus_combobox_add(d->orientation, _("landscape"));
-
+  g_signal_connect(G_OBJECT(d->orientation), "value-changed", G_CALLBACK(_orientation_changed), self);
+  dt_bauhaus_combobox_set(d->orientation, d->prt.page.landscape?1:0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->orientation), TRUE, TRUE, 0);
 
-  GtkWidget *ucomb = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_combobox_add(ucomb, _("mm"));
-  dt_bauhaus_combobox_add(ucomb, _("cm"));
-  dt_bauhaus_combobox_add(ucomb, _("inch"));
+  // NOTE: units has no label, which makes for cleaner UI but means that no action can be assigned
+  GtkWidget *ucomb =
+    dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, NULL,
+                                 _("measurement units"),
+                                 d->unit, (GtkCallback)_unit_changed, self,
+                                 _unit_names);
   gtk_box_pack_start(GTK_BOX(self->widget), ucomb, TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(d->orientation), "value-changed", G_CALLBACK(_orientation_changed), self);
-  g_signal_connect(G_OBJECT(ucomb), "value-changed", G_CALLBACK(_unit_changed), self);
-
-  dt_bauhaus_combobox_set(ucomb, d->unit);
-
-  dt_bauhaus_combobox_set(d->orientation, d->prt.page.landscape?1:0);
 
   //// image dimensions, create them now as we need them
 
