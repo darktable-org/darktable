@@ -3007,6 +3007,19 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/print/print/unit</name>
+    <type>
+      <enum>
+	<option>mm</option>
+	<option>cm</option>
+	<option>inch</option>
+      </enum>
+    </type>
+    <default>mm</default>
+    <shortdescription>measurement units</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/print/print/top_margin</name>
     <type min="-50" max="500">float</type>
     <default>17</default>
