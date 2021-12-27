@@ -1526,9 +1526,42 @@ filechooser row:hover,
 
 #basics-box-labels #basics-header-box:first-child,
 #basics-box-labels #section_label,
+#basics-header-box #section_label,
 #basics-link
 {
   border: none;
+}
+
+/*--------------------
+  - collect module -
+  --------------------*/
+  #collect-rule-widget
+  {
+    background-color: @button_bg;
+    margin: 0.2em 0;
+    padding: 0 0.2em;
+  }
+#collect-rule-widget #section_label
+{
+  border: none;
+}
+#collect-operator arrow
+{
+  -gtk-icon-source: none;
+}
+#collect-operator
+{
+  background-image: none;
+}
+#collect-operator button
+{
+  background-image: none;
+  background-color: transparent;
+}
+#collect-expand-line *
+{
+  margin: 0;
+  padding: 0;
 }
 
 /*--------------------------------
