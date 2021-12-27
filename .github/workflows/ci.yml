@@ -486,6 +486,7 @@ jobs:
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
+      CMAKE_PREFIX_PATH: /usr/local/opt/libsoup@2:/usr/local/opt/icu4c
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       #GENERATOR: Ninja
       GENERATOR: Unix Makefiles
