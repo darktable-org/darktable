@@ -723,10 +723,14 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
 
     GList *l = NULL;
 
+    const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+    gboolean darkroom_view = FALSE;
+    if(v) lightroom_view = (v->view(v) == DT_VIEW_LIGHTTABLE);
+
     // check if we are in full preview mode
     // if yes, the active image has priority over everything else
     //if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_PREVIEW)
-    if(dt_view_lighttable_preview_state(darktable.view_manager))
+    if(lightroom_view && dt_view_lighttable_preview_state(darktable.view_manager))
     {
       // if no mouse over, we pick active images
       const int id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
@@ -745,7 +749,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
 
     // Todo: is this sufficiant or is it necessary to check table->mode == DT_CULLING_MODE_CULLING as well?
     //       It was done that way in the old code
-    else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+    else if(lightroom_view && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     {
       if(mouseover > 0)
       {

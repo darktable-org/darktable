@@ -3372,7 +3372,7 @@
     <shortdescription>Enable copying editing history via Ctrl-C on mouse hover without selecting an image</shortdescription>
     <longdescription>If an image has been selected, all actions will be applied on that selected image. Originally mouse-hover had higher priority and some people liked using it when copying edits. This flag returns to the legacy behavior which has been changed due to https://github.com/darktable-org/darktable/issues/6025 </longdescription>
   </dtconfig>
-    <dtconfig>
+  <dtconfig>
     <name>images_to_act_on_legacy</name>
     <type>bool</type>
     <default>false</default>
