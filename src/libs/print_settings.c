@@ -150,8 +150,8 @@ position()
   return 990;
 }
 
-/* get paper dimention for the orientation (in mm) */
-static void _get_page_dimention(dt_print_info_t *prt, float *width, float *height)
+/* get paper dimension for the orientation (in mm) */
+static void _get_page_dimension(dt_print_info_t *prt, float *width, float *height)
 {
   if(prt->page.landscape)
   {
@@ -176,7 +176,7 @@ static float to_mm(dt_lib_print_settings_t *ps, double value)
 static float _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
-  _get_page_dimention(&ps->prt, &width, &height);
+  _get_page_dimension(&ps->prt, &width, &height);
 
   return (offset ? ps->imgs.screen.page.x : 0)
     + (ps->imgs.screen.page.width * value / width);
@@ -186,7 +186,7 @@ static float _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, cons
 static float _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
-  _get_page_dimention(&ps->prt, &width, &height);
+  _get_page_dimension(&ps->prt, &width, &height);
 
   return (offset ? ps->imgs.screen.page.y : 0)
     + (ps->imgs.screen.page.height * value / height);
@@ -195,7 +195,7 @@ static float _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, cons
 static float _hscreen_to_mm(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
-  _get_page_dimention(&ps->prt, &width, &height);
+  _get_page_dimension(&ps->prt, &width, &height);
 
   return width * (value - (offset ? ps->imgs.screen.page.x : 0.0f))
     / ps->imgs.screen.page.width;
@@ -204,7 +204,7 @@ static float _hscreen_to_mm(dt_lib_print_settings_t *ps, const float value, cons
 static float _vscreen_to_mm(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
-  _get_page_dimention(&ps->prt, &width, &height);
+  _get_page_dimension(&ps->prt, &width, &height);
 
   return height * (value - (offset ? ps->imgs.screen.page.y : 0.0f))
     / ps->imgs.screen.page.height;
@@ -421,7 +421,7 @@ void _fill_box_values(dt_lib_print_settings_t *ps)
     dt_image_box *box = &ps->imgs.box[ps->last_selected];
 
     float width, height;
-    _get_page_dimention(&ps->prt, &width, &height);
+    _get_page_dimension(&ps->prt, &width, &height);
 
     x       = _percent_unit_of(ps, width, box->pos.x);
     y       = _percent_unit_of(ps, height, box->pos.y);
@@ -454,7 +454,7 @@ static int _export_and_setup_pos(dt_job_t *job, dt_image_box *img, const int32_t
   dt_lib_print_job_t *params = dt_control_job_get_params(job);
 
   float width, height;
-  _get_page_dimention(&params->prt, &width, &height);
+  _get_page_dimension(&params->prt, &width, &height);
 
   dt_printing_setup_page(&params->imgs, width, height, params->prt.printer.resolution);
 
@@ -505,7 +505,7 @@ static int _print_job_run(dt_job_t *job)
   close(fd);
 
   float width, height;
-  _get_page_dimention(&params->prt, &width, &height);
+  _get_page_dimension(&params->prt, &width, &height);
 
   _create_pdf(job, params->imgs, width, height);
 
@@ -814,7 +814,7 @@ _paper_changed(GtkWidget *combo, const dt_lib_module_t *self)
     memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
 
   float width, height;
-  _get_page_dimention(&ps->prt, &width, &height);
+  _get_page_dimension(&ps->prt, &width, &height);
 
   dt_printing_setup_page(&ps->imgs, width, height, ps->prt.printer.resolution);
 
@@ -1262,7 +1262,7 @@ static void _load_image_full_page(dt_lib_print_settings_t *ps, int32_t imgid)
                         ps->imgs.screen.page.x, ps->imgs.screen.page.y,
                         ps->imgs.screen.page.width, ps->imgs.screen.page.height);
   float width, height;
-  _get_page_dimention(&ps->prt, &width, &height);
+  _get_page_dimension(&ps->prt, &width, &height);
 
   dt_printing_setup_page(&ps->imgs, width, height, ps->prt.printer.resolution);
 
@@ -1891,7 +1891,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
       // to rounding errors.
 
       float pwidth, pheight;
-      _get_page_dimention(&ps->prt, &pwidth, &pheight);
+      _get_page_dimension(&ps->prt, &pwidth, &pheight);
 
       dx1     = _percent_unit_of(ps, pwidth, box->pos.x);
       dy1     = _percent_unit_of(ps, pheight, box->pos.y);
