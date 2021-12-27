@@ -1479,6 +1479,88 @@ filechooser row:hover .sidebar-icon
   min-height: 18em;
 }
 
+/*--------------------
+  - collect module -
+--------------------*/
+#collect-rule-widget,
+#collect-sort-widget
+{
+  background-color: @button_border;
+  margin: 0.3em 0 0.5em 0;
+  padding: 0 0.2em;
+}
+#collect-sort-widget
+{
+  margin: 0.2em 0;
+}
+#collect-treeview
+{
+  margin-bottom: 0.2em;
+}
+#collect-property,
+#collect-property *
+{
+  background-color: @button_border;
+  padding: 0;
+  color: @button_checked_fg;
+  font-family: sans-serif;
+  font-weight: 500;
+}
+#collect-property:hover,
+#collect-property:hover *
+{
+  background-color: @button_hover_bg;
+}
+#collect-operator arrow
+{
+  -gtk-icon-source: none;
+}
+#collect-operator
+{
+  background-image: none;
+}
+#collect-operator button
+{
+  background-image: none;
+  background-color: transparent;
+}
+#collect-rule-special,
+#collect-rule-special *
+{
+  background-color: @button_bg;
+}
+#collect-rule-special
+{
+  margin: 0 0.3em 0.4em 0.3em;
+  padding : 0.2em;
+}
+#collect-rating box
+{
+  background-color: transparent;
+}
+#collect-expand-line *
+{
+  margin: 0;
+  padding: 0;
+  font-size: 0.6em;
+}
+#collect-spacer
+{
+  margin-top: 1em;
+}
+#collect-spacer2
+{
+  margin-top: 2em;
+}
+#collect-actions-widget :nth-child(2)
+{
+  margin-right: 0.6em;
+}
+#collect-actions-widget :nth-child(3)
+{
+  margin-left: 0.6em;
+}
+
 /*--------------------------------
   - Tree view (lists and tables) -
   --------------------------------*/

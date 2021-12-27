@@ -939,6 +939,12 @@ void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter)
     vm->proxy.filter.reset_filter(vm->proxy.filter.module, smart_filter);
 }
 
+void dt_view_filter_update_sort(const dt_view_manager_t *vm, int sort, gboolean asc)
+{
+  if(vm->proxy.filter.module && vm->proxy.filter.update_sort)
+    vm->proxy.filter.update_sort(vm->proxy.filter.module, sort, asc);
+}
+
 void dt_view_active_images_reset(gboolean raise)
 {
   if(!darktable.view_manager->active_images) return;
@@ -1044,6 +1050,11 @@ void dt_view_collection_update(const dt_view_manager_t *vm)
     vm->proxy.module_collect.update(vm->proxy.module_collect.module);
 }
 
+void dt_view_collect_set_sort(const dt_view_manager_t *vm, int sort, gboolean asc)
+{
+  if(vm->proxy.module_collect.module)
+    vm->proxy.module_collect.set_sort(vm->proxy.module_collect.module, sort, asc);
+}
 
 int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm)
 {
