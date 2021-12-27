@@ -805,6 +805,68 @@ gboolean dt_collection_get_sort_descending(const dt_collection_t *collection)
   return collection->params.descending;
 }
 
+const char *dt_collection_comparator_name(dt_collection_rating_comperator_t comp)
+{
+  switch(comp)
+  {
+    case DT_COLLECTION_RATING_COMP_LT:
+      return "<";
+    case DT_COLLECTION_RATING_COMP_LEQ:
+      return "<=";
+    case DT_COLLECTION_RATING_COMP_EQ:
+      return "=";
+    case DT_COLLECTION_RATING_COMP_GEQ:
+      return ">=";
+    case DT_COLLECTION_RATING_COMP_GT:
+      return ">";
+    case DT_COLLECTION_RATING_COMP_NE:
+      return "!=";
+    default:
+      return "";
+  }
+};
+
+const char *dt_collection_sort_name(dt_collection_sort_t sort)
+{
+  switch(sort)
+  {
+    case DT_COLLECTION_SORT_FILENAME:
+      return _("filename");
+    case DT_COLLECTION_SORT_DATETIME:
+      return _("capture time");
+    case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+      return _("import time");
+    case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+      return _("last modification time");
+    case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+      return _("last export time");
+    case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+      return _("last print time");
+    case DT_COLLECTION_SORT_RATING:
+      return _("rating");
+    case DT_COLLECTION_SORT_ID:
+      return _("id");
+    case DT_COLLECTION_SORT_COLOR:
+      return _("color label");
+    case DT_COLLECTION_SORT_GROUP:
+      return _("group");
+    case DT_COLLECTION_SORT_PATH:
+      return _("full path");
+    case DT_COLLECTION_SORT_CUSTOM_ORDER:
+      return _("custom sort");
+    case DT_COLLECTION_SORT_TITLE:
+      return _("title");
+    case DT_COLLECTION_SORT_DESCRIPTION:
+      return _("description");
+    case DT_COLLECTION_SORT_ASPECT_RATIO:
+      return _("aspect ratio");
+    case DT_COLLECTION_SORT_SHUFFLE:
+      return _("shuffle");
+    default:
+      return "";
+  }
+};
+
 const char *dt_collection_name(dt_collection_properties_t prop)
 {
   char *col_name = NULL;
@@ -2076,7 +2138,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
             }
           }
         }
-        else if(operator && number1)
+        else if(operator&& g_strcmp0(operator, "=") && number1)
         {
           if(g_strcmp0(operator, "<=") == 0 || g_strcmp0(operator, "<") == 0)
           { // all below rating + rejected
@@ -2315,12 +2377,15 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   char confname[200];
 
   const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  const int _n_f = dt_conf_get_int("plugins/lighttable/filtering/num_rules");
   const int num_rules = CLAMP(_n_r, 1, 10);
+  const int num_filters = MIN(_n_f, 10);
   char *conj[] = { "AND", "OR", "AND NOT" };
 
-  gchar **query_parts = g_new (gchar*, num_rules + 1);
-  query_parts[num_rules] =  NULL;
+  gchar **query_parts = g_new(gchar *, num_rules + num_filters + 1);
+  query_parts[num_rules + num_filters] = NULL;
 
+  // the main rules part
   for(int i = 0; i < num_rules; i++)
   {
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
@@ -2342,6 +2407,34 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
       gchar *query = get_query_string(property, text);
 
       query_parts[i] =  g_strdup_printf(" %s %s", conj[mode], query);
+
+      g_free(query);
+    }
+    g_free(text);
+  }
+
+  // the filtering part (same syntax as for collect rules)
+  for(int i = 0; i < num_filters; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
+    const int property = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
+    gchar *text = dt_conf_get_string(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
+    const int mode = dt_conf_get_int(confname);
+
+    if(!text || text[0] == '\0')
+    {
+      if(mode == 1) // for OR show all
+        query_parts[i + num_rules] = g_strdup(" OR 1=1");
+      else
+        query_parts[i + num_rules] = g_strdup("");
+    }
+    else
+    {
+      gchar *query = get_query_string(property, text);
+
+      query_parts[i + num_rules] = g_strdup_printf(" %s %s", conj[mode], query);
 
       g_free(query);
     }

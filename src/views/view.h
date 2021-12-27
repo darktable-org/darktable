@@ -256,6 +256,7 @@ typedef struct dt_view_manager_t
     {
       struct dt_lib_module_t *module;
       void (*reset_filter)(struct dt_lib_module_t *, gboolean smart_filter);
+      void (*update_sort)(struct dt_lib_module_t *, int sort, gboolean asc);
     } filter;
 
     /* module collection proxy object */
@@ -263,6 +264,7 @@ typedef struct dt_view_manager_t
     {
       struct dt_lib_module_t *module;
       void (*update)(struct dt_lib_module_t *);
+      void (*set_sort)(struct dt_lib_module_t *, int sort, gboolean asc);
     } module_collect;
 
     /* filmstrip proxy object */
@@ -398,11 +400,13 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
 
 /** update the collection module */
 void dt_view_collection_update(const dt_view_manager_t *vm);
+void dt_view_collect_set_sort(const dt_view_manager_t *vm, int sort, gboolean asc);
 
 /*
  * Filter dropdown proxy
  */
 void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter);
+void dt_view_filter_update_sort(const dt_view_manager_t *vm, int sort, gboolean asc);
 
 // active images functions
 void dt_view_active_images_reset(gboolean raise);
