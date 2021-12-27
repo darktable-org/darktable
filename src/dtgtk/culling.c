@@ -947,7 +947,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
   if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  // special culling dynamic mode
+  // culling dynamic mode limits navigation to selection
   if(culling_dynamic)
   {
     if(sel_count == 0)
