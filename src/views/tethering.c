@@ -396,7 +396,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     // darkroom view
     // FIXME: instead export image in work profile, then pass that to histogram process as well as converting to display profile for output, eliminating dt_view_image_get_surface() above
     if(!dt_imageio_export_with_flags(lib->image_id, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE,
-                                     FALSE, FALSE, FALSE, FALSE, NULL, FALSE, FALSE, histogram_type, histogram_filename,
+                                     FALSE, FALSE, FALSE, FALSE, FALSE, NULL, FALSE, FALSE, histogram_type, histogram_filename,
                                      DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL))
     {
       const dt_iop_order_iccprofile_info_t *const histogram_profile =
