@@ -120,6 +120,9 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled);
 /** get list of history items for image as a nice string */
 char *dt_history_get_items_as_string(int32_t imgid);
 
+/** get a single history item as string with enabled status */
+char *dt_history_item_as_string(const char *name, gboolean enabled);
+
 /* check if a module exists in the history of corresponding image */
 gboolean dt_history_check_module_exists(int32_t imgid, const char *operation);
 
