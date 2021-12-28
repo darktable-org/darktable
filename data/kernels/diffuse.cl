@@ -58,18 +58,19 @@ diffuse_blur_bspline(read_only image2d_t in,
 
   float4 acc = 0.f;
 
-  for(int ii = 0; ii < FSIZE; ++ii)
-    for(int jj = 0; jj < FSIZE; ++jj)
+  const float filter[FSIZE][FSIZE] =
+    { { 0.00390625f, 0.015625f  , 0.0234375f , 0.015625f  , 0.00390625f },
+      { 0.015625f  , 0.0625f    , 0.09375f   , 0.0625f    , 0.015625f   },
+      { 0.0234375f , 0.09375f   , 0.140625f  , 0.09375f   , 0.0234375f  },
+      { 0.015625f  , 0.0625f    , 0.09375f   , 0.0625f    , 0.015625f   },
+      { 0.00390625f, 0.015625f  , 0.0234375f , 0.015625f  , 0.00390625f } };
+
+  for(int ii = -2; ii < 3; ++ii)
+    for(int jj = -2; jj < 3; ++jj)
     {
-      const int row = clamp(y + mult * (int)(ii - (FSIZE - 1) / 2), 0, height - 1);
-      const int col = clamp(x + mult * (int)(jj - (FSIZE - 1) / 2), 0, width - 1);
-      const int k_index = (row * width + col);
-
-      const float filter[FSIZE]
-          = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
-      const float filters = filter[ii] * filter[jj];
-
-      acc += filters * read_imagef(in, samplerA, (int2)(col, row));
+      const int row = clamp(y + mult * ii, 0, height - 1);
+      const int col = clamp(x + mult * jj, 0, width - 1);
+      acc += filter[ii + 2][jj + 2] * read_imagef(in, samplerA, (int2)(col, row));
     }
 
   write_imagef(LF, (int2)(x, y), acc);
@@ -77,7 +78,7 @@ diffuse_blur_bspline(read_only image2d_t in,
 }
 
 // Discretization parameters for the Partial Derivative Equation solver
-#define H 1         // spatial step
+#define H_STEP 1    // spatial step
 #define KAPPA 0.25f // 0.25 if h = 1, 1 if h = 2
 
 
@@ -236,13 +237,13 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
   {
     // non-local neighbours coordinates
     const int j_neighbours[3] = {
-      clamp((x - mult * H), 0, width - 1),
+      clamp((x - mult * H_STEP), 0, width - 1),
       x,
-      clamp((x + mult * H), 0, width - 1) };
+      clamp((x + mult * H_STEP), 0, width - 1) };
     const int i_neighbours[3] = {
-      clamp((y - mult * H), 0, height - 1),
+      clamp((y - mult * H_STEP), 0, height - 1),
       y,
-      clamp((y + mult * H), 0, height - 1) };
+      clamp((y + mult * H_STEP), 0, height - 1) };
 
     // fetch non-local pixels and store them locally and contiguously
     float4 neighbour_pixel_HF[9];
