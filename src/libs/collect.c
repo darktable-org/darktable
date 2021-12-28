@@ -66,6 +66,27 @@ static const char *_sort_names[] = { N_("filename"),
                                      N_("shuffle"),
                                      NULL };
 
+static const char *_comparators[] = {
+  "<",  // DT_COLLECTION_RATING_COMP_LT = 0,
+  "<=", // DT_COLLECTION_RATING_COMP_LEQ,
+  "=",  // DT_COLLECTION_RATING_COMP_EQ,
+  ">=", // DT_COLLECTION_RATING_COMP_GEQ,
+  ">",  // DT_COLLECTION_RATING_COMP_GT,
+  "!=", // DT_COLLECTION_RATING_COMP_NE,
+};
+
+typedef struct _widgets_rating_t
+{
+  GtkWidget *comparator;
+  GtkWidget *combo;
+} _widgets_rating_t;
+
+typedef struct _widgets_folder_t
+{
+  GtkWidget *text;
+  GtkWidget *open;
+} _widgets_folder_t;
+
 typedef struct dt_lib_collect_rule_t
 {
   int num;
@@ -74,9 +95,14 @@ typedef struct dt_lib_collect_rule_t
   GtkWidget *w_operator;
   GtkWidget *w_combo;
   GtkWidget *w_close;
-  GtkWidget *w_text;
-  GtkWidget *w_text_btn;
+
+  GtkWidget *w_widget_box;
+  GtkWidget *w_raw_text;
+  GtkWidget *w_raw_switch;
+  GtkWidget *w_special_box;
+  void *w_specific; // structure which contains all the widgets specific to the rule type
   GtkWidget *w_expand;
+  int manual_widget_set; // when we update manually the widget, we don't want events to be handled
 
   GtkWidget *hbox;
   GtkWidget *combo;
@@ -1105,7 +1131,7 @@ static void set_properties(dt_lib_collect_rule_t *dr)
 static void _conf_update_rule(dt_lib_collect_rule_t *dr)
 {
   const int property = _combo_get_active_collection(dr->combo);
-  const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->w_text));
+  const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->w_raw_text));
   const dt_lib_collect_mode_t mode = gtk_combo_box_get_active(GTK_COMBO_BOX(dr->w_operator));
 
   char confname[200] = { 0 };
@@ -2269,8 +2295,192 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
   return TRUE;
 }
 
+static void _rating_decode(const gchar *txt, int *comp, int *mode)
+{
+  // --- First, the special cases
+  // easy case : select all
+  if(!strcmp(txt, ""))
+  {
+    *mode = DT_COLLECTION_FILTER_ALL;
+    return;
+  }
+  // unstarred only
+  if(!strcmp(txt, "=0"))
+  {
+    *mode = DT_COLLECTION_FILTER_STAR_NO;
+    return;
+  }
+  // rejected only
+  if(!strcmp(txt, "X"))
+  {
+    *mode = DT_COLLECTION_FILTER_REJECT;
+    return;
+  }
+  // all except rejected
+  if(!strcmp(txt, "!X"))
+  {
+    *mode = DT_COLLECTION_FILTER_NOT_REJECT;
+    return;
+  }
+
+  // --- Now we need to decode the comparator and the value
+  if(g_str_has_prefix(txt, "<"))
+    *comp = DT_COLLECTION_RATING_COMP_LT;
+  else if(g_str_has_prefix(txt, "<="))
+    *comp = DT_COLLECTION_RATING_COMP_LEQ;
+  else if(g_str_has_prefix(txt, "="))
+    *comp = DT_COLLECTION_RATING_COMP_EQ;
+  else if(g_str_has_prefix(txt, ">="))
+    *comp = DT_COLLECTION_RATING_COMP_GEQ;
+  else if(g_str_has_prefix(txt, ">"))
+    *comp = DT_COLLECTION_RATING_COMP_GT;
+  else if(g_str_has_prefix(txt, "!="))
+    *comp = DT_COLLECTION_RATING_COMP_NE;
+  else
+  {
+    // can't read the format...
+    return;
+  }
+
+  const gchar *txt2 = (*comp % 2) ? txt + 2 : txt + 1;
+
+  const int val = atoi(txt2);
+  if(val > 0 && val < 6) *mode = val + 1;
+}
+
+static void _rating_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)user_data;
+  if(rule->manual_widget_set) return;
+  if(!rule->w_specific) return;
+  _widgets_rating_t *rate = (_widgets_rating_t *)rule->w_specific;
+
+  // we recreate the right raw text and put it in the raw entry
+  const int mode = dt_bauhaus_combobox_get(rate->combo);
+  const int comp = dt_bauhaus_combobox_get(rate->comparator);
+
+  gchar *txt = dt_util_dstrcat(NULL, "%s", "");
+  if(mode >= DT_COLLECTION_FILTER_STAR_1 && mode <= DT_COLLECTION_FILTER_STAR_5)
+  {
+    // for the stars, comparator is needed
+    txt = dt_util_dstrcat(txt, "%s%d", _comparators[comp], mode - 1);
+  }
+  else
+  {
+    // direct content
+    if(mode == DT_COLLECTION_FILTER_STAR_NO)
+      txt = dt_util_dstrcat(txt, "=0");
+    else if(mode == DT_COLLECTION_FILTER_REJECT)
+      txt = dt_util_dstrcat(txt, "X");
+    else if(mode == DT_COLLECTION_FILTER_NOT_REJECT)
+      txt = dt_util_dstrcat(txt, "!X");
+  }
+
+  gtk_entry_set_text(GTK_ENTRY(rule->w_raw_text), txt);
+  gtk_widget_activate(rule->w_raw_text);
+  g_free(txt);
+
+  // we also update the visibility of the comparator widget
+  gtk_widget_set_visible(rate->comparator,
+                         (mode >= DT_COLLECTION_FILTER_STAR_1 && mode <= DT_COLLECTION_FILTER_STAR_5));
+}
+
+static gboolean _rating_update(dt_lib_collect_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+  int comp = DT_COLLECTION_RATING_COMP_GEQ;
+  int mode = -1;
+  _rating_decode(gtk_entry_get_text(GTK_ENTRY(rule->w_raw_text)), &comp, &mode);
+
+  // if we don't manage to decode, we don't refresh and return false
+  if(mode < 0) return FALSE;
+
+  rule->manual_widget_set++;
+  _widgets_rating_t *rate = (_widgets_rating_t *)rule->w_specific;
+  dt_bauhaus_combobox_set(rate->combo, mode);
+  dt_bauhaus_combobox_set(rate->comparator, comp);
+  gtk_widget_set_visible(rate->comparator,
+                         (mode >= DT_COLLECTION_FILTER_STAR_1 && mode <= DT_COLLECTION_FILTER_STAR_5));
+  rule->manual_widget_set--;
+  return TRUE;
+}
+
+static void _rating_widget_init(dt_lib_collect_rule_t *rule, const dt_collection_properties_t prop,
+                                const gchar *text, dt_lib_module_t *self)
+{
+  _widgets_rating_t *rate = (_widgets_rating_t *)g_malloc0(sizeof(_widgets_rating_t));
+
+  int comp = DT_COLLECTION_RATING_COMP_GEQ;
+  int mode = DT_COLLECTION_FILTER_ALL;
+  _rating_decode(text, &comp, &mode);
+
+  rule->w_special_box = gtk_overlay_new();
+
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(rate->comparator, self, NULL, N_("comparator"), _("which images should be shown"),
+                               comp, _rating_changed, rule,
+                               "<",  // DT_COLLECTION_RATING_COMP_LT = 0,
+                               "≤",  // DT_COLLECTION_RATING_COMP_LEQ,
+                               "=",  // DT_COLLECTION_RATING_COMP_EQ,
+                               "≥",  // DT_COLLECTION_RATING_COMP_GEQ,
+                               ">",  // DT_COLLECTION_RATING_COMP_GT,
+                               "≠"); // DT_COLLECTION_RATING_COMP_NE,
+  dt_bauhaus_widget_set_label(rate->comparator, NULL, NULL);
+  gtk_widget_set_no_show_all(rate->comparator, TRUE);
+  // we also update the visibility of the comparator widget
+  gtk_widget_set_visible(rate->comparator, (mode > 1 && mode < 7));
+  GtkWidget *spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_set_homogeneous(GTK_BOX(spacer), TRUE);
+  gtk_box_pack_start(GTK_BOX(spacer), rate->comparator, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(spacer), gtk_grid_new(), FALSE, FALSE, 0);
+  gtk_overlay_add_overlay(GTK_OVERLAY(rule->w_special_box), spacer);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(rule->w_special_box), spacer, TRUE);
+
+  /* create the filter combobox */
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(rate->combo, self, NULL, N_("view"), _("which images should be shown"), mode,
+                               _rating_changed, rule, N_("all"), N_("unstarred only"), "★", "★ ★", "★ ★ ★",
+                               "★ ★ ★ ★", "★ ★ ★ ★ ★", N_("rejected only"), N_("all except rejected"));
+  gtk_container_add(GTK_CONTAINER(rule->w_special_box), rate->combo);
+
+  gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_special_box, TRUE, TRUE, 0);
+  rule->w_specific = rate;
+}
+
+static gboolean _widget_update(dt_lib_collect_rule_t *rule)
+{
+  const dt_collection_properties_t prop = _combo_get_active_collection(rule->combo);
+  switch(prop)
+  {
+    case DT_COLLECTION_PROP_RATING:
+      return _rating_update(rule);
+    default:
+      // no specific widgets
+      return FALSE;
+  }
+  return FALSE;
+}
+
+static gboolean _event_rule_raw_switch(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+  const gboolean raw = gtk_widget_get_visible(rule->w_raw_text);
+  // if we switch from raw to specific, we need to update the widgets first
+  if(raw)
+  {
+    // validate the raw entry first
+    _event_rule_changed(rule->w_raw_text, rule);
+
+    // try to update the specific widgets. If it fails
+    // that means we can't show specific widgets for the current raw value
+    if(!_widget_update(rule)) return TRUE;
+  }
+
+  gtk_widget_set_visible(rule->w_raw_text, !raw);
+  gtk_widget_set_visible(rule->w_special_box, raw);
+  return TRUE;
+}
+
 static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_properties_t prop, const gchar *text,
-                         const dt_lib_collect_mode_t mode, const int pos)
+                         const dt_lib_collect_mode_t mode, const int pos, dt_lib_module_t *self)
 {
   // the main box
   rule->w_main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -2310,20 +2520,35 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   gtk_box_pack_start(GTK_BOX(hbox), rule->w_close, FALSE, FALSE, 0);
 
   // the second line
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(rule->w_main), hbox, TRUE, TRUE, 0);
-  gtk_widget_set_name(hbox, "collect-module-hbox");
+  rule->w_widget_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(rule->w_main), rule->w_widget_box, TRUE, TRUE, 0);
+  gtk_widget_set_name(rule->w_widget_box, "collect-module-hbox");
 
   // the raw entry
-  rule->w_text = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(rule->w_text), text);
-  g_signal_connect(G_OBJECT(rule->w_text), "activate", G_CALLBACK(_event_rule_changed), rule);
-  gtk_box_pack_start(GTK_BOX(hbox), rule->w_text, TRUE, TRUE, 0);
+  rule->w_raw_text = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(rule->w_raw_text), text);
+  g_signal_connect(G_OBJECT(rule->w_raw_text), "activate", G_CALLBACK(_event_rule_changed), rule);
+  gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_raw_text, TRUE, TRUE, 0);
 
-  // the button associated
-  rule->w_text_btn = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_name(GTK_WIDGET(rule->w_text_btn), "control-button");
-  gtk_box_pack_start(GTK_BOX(hbox), rule->w_text_btn, FALSE, FALSE, 0);
+  // initialize the specific entries if any
+  switch(prop)
+  {
+    case DT_COLLECTION_PROP_RATING:
+      _rating_widget_init(rule, prop, text, self);
+      break;
+    default:
+      // nothing to do
+      break;
+  }
+
+  gtk_widget_set_no_show_all(rule->w_raw_text, (rule->w_specific != NULL));
+
+  // the button to switch from raw to specific widgets (only shown if there's some)
+  rule->w_raw_switch = dtgtk_button_new(dtgtk_cairo_paint_sorting, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_name(GTK_WIDGET(rule->w_raw_switch), "control-button");
+  g_signal_connect(G_OBJECT(rule->w_raw_switch), "button-press-event", G_CALLBACK(_event_rule_raw_switch), rule);
+  gtk_box_pack_end(GTK_BOX(rule->w_widget_box), rule->w_raw_switch, FALSE, TRUE, 0);
+  gtk_widget_set_no_show_all(rule->w_raw_switch, !rule->w_specific);
 
   // the third line
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2370,7 +2595,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     const gchar *txt = dt_conf_get_string_const(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const dt_lib_collect_mode_t rmode = dt_conf_get_int(confname);
-    _widget_init(&d->rule[i], prop, txt, rmode, i);
+    _widget_init(&d->rule[i], prop, txt, rmode, i, self);
     gtk_box_pack_start(GTK_BOX(d->rules_box), d->rule[i].w_main, FALSE, TRUE, 0);
     gtk_widget_show_all(d->rule[i].w_main);
 
