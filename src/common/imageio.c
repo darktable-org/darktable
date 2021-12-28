@@ -169,7 +169,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 
     image = NewMagickWand();
 	mret = MagickReadImageBlob(image, buf, bufsize);
-    if (mret != MagickTrue)
+    if(mret != MagickTrue)
     {
       fprintf(stderr, "[dt_imageio_large_thumbnail IM] thumbnail not found?\n");
       goto error_im;
@@ -189,10 +189,10 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     }
 
     *buffer = malloc(sizeof(uint8_t) * (*width) * (*height) * 4);
-    if (*buffer == NULL) goto error_im;
+    if(*buffer == NULL) goto error_im;
 
     mret = MagickExportImagePixels(image, 0, 0, *width, *height, "RGBP", CharPixel, *buffer);
-    if (mret != MagickTrue) {
+    if(mret != MagickTrue) {
       free(*buffer);
       *buffer = NULL;
       fprintf(stderr,
@@ -204,7 +204,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
 
 error_im:
     DestroyMagickWand(image);
-    if (res != 0) goto error;
+    if(res != 0) goto error;
 #else
     fprintf(stderr,
       "[dt_imageio_large_thumbnail] error: The thumbnail image is not in "
@@ -834,15 +834,15 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   */
 
   const gboolean iscropped =
-    ((pipe.processed_width < (wd - img->crop_x - img->crop_width)) ||
-     (pipe.processed_height < (ht - img->crop_y - img->crop_height)));
+    (   (pipe.processed_width < (wd - img->crop_x - img->crop_width))
+     || (pipe.processed_height < (ht - img->crop_y - img->crop_height)));
 
-  const gboolean exact_size = (
-      iscropped ||
-      upscale ||
-      (format_params->max_width != 0) ||
-      (format_params->max_height != 0) ||
-      thumbnail_export);
+  const gboolean exact_size =
+         iscropped
+      || upscale
+      || (format_params->max_width != 0)
+      || (format_params->max_height != 0)
+      || thumbnail_export;
 
   int width = format_params->max_width > 0 ? format_params->max_width : 0;
   int height = format_params->max_height > 0 ? format_params->max_height : 0;
@@ -853,7 +853,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     height = pipe.processed_height;
   }
 
-  const double max_scale = ( upscale && ( width > 0 || height > 0 )) ? 100.0 : 1.0;
+  const double max_scale = (upscale && (width > 0 || height > 0)) ? 100.0 : 1.0;
 
   const double scalex = width > 0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale;
   const double scaley = height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale;
@@ -879,16 +879,15 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     const gboolean is_scaling =
       dt_conf_is_equal("plugins/lighttable/export/resizing", "scaling");
 
-    if (is_scaling)
+    if(is_scaling)
     {
       // scaling
-      double scale_factor = 1;
       double _num, _denum;
       dt_imageio_resizing_factor_get_and_parsing(&_num, &_denum);
 
-      scale_factor = _num / _denum;
+      const double scale_factor = _num / _denum;
 
-      if (!thumbnail_export)
+      if(!thumbnail_export)
       {
         scale = fmin(scale_factor, max_scale);
       }

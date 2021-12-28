@@ -513,7 +513,7 @@ static int _print_job_run(dt_job_t *job)
 
   // send to CUPS
 
-  dt_print_file (imgid, params->pdf_filename, params->job_title, &params->prt);
+  dt_print_file(imgid, params->pdf_filename, params->job_title, &params->prt);
   dt_control_job_set_progress(job, 1.0);
 
   // add tag for this image
