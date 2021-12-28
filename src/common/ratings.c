@@ -231,7 +231,7 @@ static float _action_process_rating(gpointer target, dt_action_element_t element
       }
     }
 
-    GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE, FALSE));
+    GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
     dt_ratings_apply_on_list(imgs, element, TRUE);
 
     // if we are in darkroom we show a message as there might be no other indication
