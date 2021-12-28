@@ -82,12 +82,14 @@ static int _act_on_cb(lua_State *L)
 {
   lua_newtable(L);
   int table_index = 1;
-  for(const GList *image = dt_view_get_images_to_act_on(FALSE, TRUE, TRUE); image; image = g_list_next(image))
+  GList *l = dt_act_on_get_images(FALSE, TRUE, TRUE);
+  for(const GList *image = l; image; image = g_list_next(image))
   {
     luaA_push(L, dt_lua_image_t, &image->data);
     lua_seti(L, -2, table_index);
     table_index++;
   }
+  g_list_free(l);
   return 1;
 }
 

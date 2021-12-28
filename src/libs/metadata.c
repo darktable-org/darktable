@@ -126,7 +126,7 @@ static void _update(dt_lib_module_t *self)
   dt_lib_cancel_postponed_update(self);
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE, FALSE);
+  GList *imgs = dt_act_on_get_images(FALSE, FALSE, FALSE);
 
   // first we want to make sure the list of images to act on has changed
   // this is not the case if mouse hover change but still stay in selection for ex.
@@ -146,10 +146,14 @@ static void _update(dt_lib_module_t *self)
       l = g_list_next(l);
       ll = g_list_next(ll);
     }
-    if(!changed) return;
+    if(!changed)
+    {
+      g_list_free(imgs);
+      return;
+    }
   }
   g_list_free(d->last_act_on);
-  d->last_act_on = g_list_copy((GList *)imgs);
+  d->last_act_on = imgs;
 
   GList *metadata[DT_METADATA_NUMBER];
   uint32_t metadata_count[DT_METADATA_NUMBER];
@@ -162,7 +166,7 @@ static void _update(dt_lib_module_t *self)
 
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
-  gchar *images = dt_view_get_images_to_act_on_query(FALSE);
+  gchar *images = dt_act_on_get_query(FALSE);
   const uint32_t imgs_count = g_list_length((GList *)imgs);
 
   if(images)
@@ -235,7 +239,7 @@ static void _write_metadata(dt_lib_module_t *self)
       _append_kv(&key_value, dt_metadata_get_key(keyid), metadata[i]);
   }
 
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
+  GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   dt_metadata_set_list(imgs, key_value, TRUE);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -248,6 +252,7 @@ static void _write_metadata(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
   dt_image_synch_xmps(imgs);
+  g_list_free(imgs);
   _update(self);
 }
 
@@ -352,10 +357,11 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   d->editing = FALSE;
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
+  GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   dt_metadata_clear(imgs, TRUE);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
+  g_list_free(imgs);
   _update(self);
 }
 
@@ -957,13 +963,14 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     if(metadata[i][0] != '\0') _append_kv(&key_value, dt_metadata_get_key(i), metadata[i]);
   }
 
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
+  GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   dt_metadata_set_list(imgs, key_value, TRUE);
 
   g_list_free(key_value);
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
+  g_list_free(imgs);
   // force the ui refresh to update the info from preset
   g_list_free(d->last_act_on);
   d->last_act_on = NULL;

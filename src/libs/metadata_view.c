@@ -505,7 +505,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
     else
     {
-      images = dt_view_get_images_to_act_on_query(FALSE);
+      images = dt_act_on_get_query(FALSE);
       sqlite3_stmt *stmt;
       gchar *query = g_strdup_printf("SELECT id, COUNT(id) "
                                      "FROM main.images "
@@ -536,7 +536,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
   if(count > 1)
   {
-    if(!images) images = dt_view_get_images_to_act_on_query(FALSE);
+    if(!images) images = dt_act_on_get_query(FALSE);
     sqlite3_stmt *stmt = NULL;
     gchar *query = g_strdup_printf("SELECT COUNT(DISTINCT film_id), "
                                          "2, " //id always different
