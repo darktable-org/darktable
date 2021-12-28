@@ -53,12 +53,6 @@
 
 #include "common/imagebuf.h"
 
-// We don't want to use the SIMD version as we might access unaligned memory
-static inline float sqrf(float a)
-{
-  return a * a;
-}
-
 typedef enum dt_distance_transform_t
 {
   DT_DISTANCE_TRANSFORM_NONE = 0,
@@ -66,6 +60,7 @@ typedef enum dt_distance_transform_t
 } dt_distance_transform_t;
 
 #define DT_DISTANCE_TRANSFORM_MAX (1e20)
+#define SQR(x) ((x) * (x))
 
 static void _image_distance_transform(const float *f, float *z, float *d, int *v, const int n)
 {
@@ -75,11 +70,11 @@ static void _image_distance_transform(const float *f, float *z, float *d, int *v
   z[1] = DT_DISTANCE_TRANSFORM_MAX;
   for(int q = 1; q <= n-1; q++)
   {
-    float s = (f[q] + sqrf((float)q)) - (f[v[k]] + sqrf((float)v[k]));
+    float s = (f[q] + SQR((float)q)) - (f[v[k]] + SQR((float)v[k]));
     while(s <= z[k] * (float)(2*q - 2*v[k]))
     {
       k--;
-      s = (f[q] + sqrf((float)q)) - (f[v[k]] + sqrf((float)v[k]));
+      s = (f[q] + SQR((float)q)) - (f[v[k]] + SQR((float)v[k]));
     }
     s /= (float)(2*q - 2*v[k]);
     k++;
@@ -93,7 +88,7 @@ static void _image_distance_transform(const float *f, float *z, float *d, int *v
   {
     while(z[k+1] < (float)q)
       k++;
-    d[q] = sqrf((float)(q-v[k])) + f[v[k]];
+    d[q] = SQR((float)(q-v[k])) + f[v[k]];
   }
 }
 
@@ -148,7 +143,7 @@ float dt_image_distance_transform(float *const restrict src, float *const restri
     // implicit barrier :-)
     // transform along rows
 #ifdef _OPENMP
-  #pragma omp for schedule(simd:static) nowait
+  #pragma omp for schedule(simd:static)
 #endif
     for(size_t y = 0; y < height; y++)
     {
@@ -167,4 +162,5 @@ float dt_image_distance_transform(float *const restrict src, float *const restri
   }
   return max_distance;
 }
+#undef SQR
 
