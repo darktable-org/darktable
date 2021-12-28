@@ -1929,7 +1929,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     const float xp = (x1 + x2 - text_w) * .5f;
     float yp = y1 - text_h - (margin * 2.0f);
 
-    // put text in the center if not enought space on top
+    // put text in the center if not enough space on top
     if(yp < text_h)
       yp = (y1 + y2 - text_h) * .5f;
 
