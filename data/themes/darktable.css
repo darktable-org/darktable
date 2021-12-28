@@ -2278,11 +2278,6 @@ Details :
   margin: 1.4em;
 }
 
-#thumb_ext /* adjust margin to better align to group, audio... icons and match to near all thumbnails sizes */
-{
-  margin-top: -0.07em;
-}
-
 /* Set top margin on active image in filmstrip */
 #thumbtable_filmstrip #thumb_main:active #thumb_back
 {
@@ -2301,19 +2296,23 @@ Details :
 }
 
 /* Set border color around thumbnails */
-.dt_group_left #thumb_back
+.dt_group_left #thumb_back,
+#thumb_main.dt_group_left:selected #thumb_back
 {
   border-left: 2px solid rgb(255, 187, 0);
 }
-.dt_group_top #thumb_back
+.dt_group_top #thumb_back,
+#thumb_main.dt_group_top:selected #thumb_back
 {
   border-top: 2px solid rgb(255, 187, 0);
 }
-.dt_group_right #thumb_back
+.dt_group_right #thumb_back,
+#thumb_main.dt_group_right:selected #thumb_back
 {
   border-right: 2px solid rgb(255, 187, 0);
 }
-.dt_group_bottom #thumb_back
+.dt_group_bottom #thumb_back,
+#thumb_main.dt_group_bottom:selected #thumb_back
 {
   border-bottom: 2px solid rgb(255, 187, 0);
 }
@@ -2582,7 +2581,6 @@ Details :
 /*---------------------------------------------------------
   - Hide icons on all lighttable modes and duplicate ones -
   ---------------------------------------------------------*/
-
 .dt_overlays_hover #thumb_main:hover #thumb_group,
 .dt_overlays_hover #thumb_main:hover #thumb_altered,
 .dt_overlays_hover #thumb_main:hover #thumb_audio,
