@@ -1874,10 +1874,10 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
       x2      = ps->x2;
       y2      = ps->y2;
 
-      dx1     = _hscreen_to_mm(ps, ps->x1, TRUE);
-      dy1     = _vscreen_to_mm(ps, ps->y1, TRUE);
-      dx2     = _hscreen_to_mm(ps, ps->x2, TRUE);
-      dy2     = _vscreen_to_mm(ps, ps->y2, TRUE);
+      dx1     = _hscreen_to_mm(ps, ps->x1, TRUE) * units[ps->unit];
+      dy1     = _vscreen_to_mm(ps, ps->y1, TRUE) * units[ps->unit];
+      dx2     = _hscreen_to_mm(ps, ps->x2, TRUE) * units[ps->unit];
+      dy2     = _vscreen_to_mm(ps, ps->y2, TRUE) * units[ps->unit];
       dwidth  = fabsf(dx2 - dx1);
       dheight = fabsf(dy2 - dy1);
     }
@@ -1920,10 +1920,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     snprintf(dimensions, sizeof(dimensions),
              "(%.2f %.2f) -> (%.2f %.2f) | (%.2f x %.2f)",
-             dx1 * units[ps->unit],    dy1 * units[ps->unit],
-             dx2 * units[ps->unit],    dy2 * units[ps->unit],
-             dwidth * units[ps->unit], dheight * units[ps->unit]);
-
+             dx1, dy1, dx2, dy2, dwidth, dheight);
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
     const float text_w = ext.width;
