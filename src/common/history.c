@@ -807,6 +807,11 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
   return ret_val;
 }
 
+char *dt_history_item_as_string(const char *name, gboolean enabled)
+{
+  return g_strconcat(enabled ? "●" : "○", "  ", name, NULL);
+}
+
 GList *dt_history_get_items(const int32_t imgid, gboolean enabled)
 {
   GList *result = NULL;
@@ -848,13 +853,17 @@ GList *dt_history_get_items(const int32_t imgid, gboolean enabled)
       }
       else
       {
+        char *iname = dt_history_item_as_string
+          (dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)),
+           is_active);
+
         if(strcmp(mname, "0") == 0)
-          g_snprintf(name, sizeof(name), "%s (%s)",
-                     dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)),
-                     (is_active != 0) ? _("on") : _("off"));
-        g_snprintf(name, sizeof(name), "%s %s (%s)",
-                   dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)),
-                   (char *)sqlite3_column_text(stmt, 3), (is_active != 0) ? _("on") : _("off"));
+          g_strlcpy(name, iname, sizeof(name));
+        else
+          g_snprintf(name, sizeof(name), "%s %s",
+                     iname, (char *)sqlite3_column_text(stmt, 3));
+
+        g_free(iname);
       }
       item->name = g_strdup(name);
       item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
@@ -870,24 +879,31 @@ GList *dt_history_get_items(const int32_t imgid, gboolean enabled)
 char *dt_history_get_items_as_string(const int32_t imgid)
 {
   GList *items = NULL;
-  const char *onoff[2] = { _("off"), _("on") };
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT operation, enabled, multi_name FROM main.history WHERE imgid=?1 ORDER BY num DESC", -1, &stmt, NULL);
+      "SELECT operation, enabled, multi_name"
+      " FROM main.history"
+      " WHERE imgid=?1 ORDER BY num DESC", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   // collect all the entries in the history from the db
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *name = NULL, *multi_name = NULL;
+    char *multi_name = NULL;
     const char *mn = (char *)sqlite3_column_text(stmt, 2);
+
     if(mn && *mn && g_strcmp0(mn, " ") != 0 && g_strcmp0(mn, "0") != 0)
       multi_name = g_strconcat(" ", sqlite3_column_text(stmt, 2), NULL);
-    name = g_strconcat(dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 0)),
-                       multi_name ? multi_name : "", " (",
-                       (sqlite3_column_int(stmt, 1) == 0) ? onoff[0] : onoff[1], ")", NULL);
+
+    char *iname = dt_history_item_as_string
+      (dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 0)),
+       sqlite3_column_int(stmt, 1));
+
+    char *name = g_strconcat(iname, multi_name ? multi_name : "", NULL);
     items = g_list_prepend(items, name);
+
+    g_free(iname);
     g_free(multi_name);
   }
   sqlite3_finalize(stmt);
