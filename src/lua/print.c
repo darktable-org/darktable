@@ -33,7 +33,7 @@ static int lua_print(lua_State *L)
 
 static int lua_print_toast(lua_State *L)
 {
-  
+
   const int init_gui = (darktable.gui != NULL);
   if(init_gui)
     dt_toast_log("%s", luaL_checkstring(L, -1));
@@ -45,7 +45,7 @@ static int lua_print_toast(lua_State *L)
 
 static int lua_print_hinter(lua_State *L)
 {
-  
+
   const int init_gui = (darktable.gui != NULL);
   if(init_gui)
   {

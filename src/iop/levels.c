@@ -371,7 +371,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
-  
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, d) \

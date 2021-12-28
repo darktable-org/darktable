@@ -562,7 +562,8 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
   }
 
   // if we leave thumbtable in favour of an inferior (a thumbnail) it's not a real leave !
-  if(event->detail == GDK_NOTIFY_INFERIOR || event->detail == GDK_NOTIFY_VIRTUAL) return FALSE;
+  // same if this is not a mouse move action (shortcut that activate a buuton for example)
+  if(event->detail == GDK_NOTIFY_INFERIOR || event->mode == GDK_CROSSING_GTK_GRAB) return FALSE;
 
   table->mouse_inside = FALSE;
   dt_control_set_mouse_over_id(-1);

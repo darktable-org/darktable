@@ -13,15 +13,15 @@ Function :   kth_smallest()
 In       :   array of elements, # of elements in the array, rank k
 Out      :   one element
 Job      :   find the kth smallest element in the array
-Notice   :   use the median() macro defined below to get the median. 
+Notice   :   use the median() macro defined below to get the median.
 
 Reference:
 
-Author: Wirth, Niklaus 
-Title: Algorithms + data structures = programs 
-Publisher: Englewood Cliffs: Prentice-Hall, 1976 
-Physical description: 366 p. 
-Series: Prentice-Hall Series in Automatic Computation 
+Author: Wirth, Niklaus
+Title: Algorithms + data structures = programs
+Publisher: Englewood Cliffs: Prentice-Hall, 1976
+Physical description: 366 p.
+Series: Prentice-Hall Series in Automatic Computation
 
 ---------------------------------------------------------------------------*/
 

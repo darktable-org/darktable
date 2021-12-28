@@ -155,6 +155,13 @@ fi
 
 echo -e "\t\t<Crop x=\"0\" y=\"0\" width=\"0\" height=\"0\"/>"
 echo -e "\t\t<Sensor black=\"$BLACK\" white=\"$WHITE\"$SENSOR_ISO/>"
+echo -e "\t\t<ColorMatrices>"
+echo -e "\t\t\t<ColorMatrix planes=\"3\">"
+echo -e "\t\t\t\t<ColorMatrixRow plane=\"0\">$MATRIX_XR $MATRIX_XG $MATRIX_XB</ColorMatrixRow>"
+echo -e "\t\t\t\t<ColorMatrixRow plane=\"1\">$MATRIX_YR $MATRIX_YG $MATRIX_YB</ColorMatrixRow>"
+echo -e "\t\t\t\t<ColorMatrixRow plane=\"2\">$MATRIX_ZR $MATRIX_ZG $MATRIX_ZB</ColorMatrixRow>"
+echo -e "\t\t\t</ColorMatrix>"
+echo -e "\t\t</ColorMatrices>"
 echo -e "\t</Camera>"
 echo ""
 

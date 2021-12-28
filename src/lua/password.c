@@ -44,7 +44,7 @@ static int save_password(lua_State *L)
   gboolean result = TRUE;
 
   GHashTable *table = g_hash_table_new(g_str_hash, g_str_equal);
-  
+
   g_hash_table_insert(table, (gchar *)username, (gchar *)password);
 
   if(!dt_pwstorage_set(application, table))

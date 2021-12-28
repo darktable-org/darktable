@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2013 Pascal de Bruijn <pmjdebruijn@pcode.nl>
-               2013-2016 Tobias Ellinghaus <me@houz.org>
-               2016 Richard Hughes <richard@hughsie.com>
+<!-- Copyright (C) 2009-2021 darktable developers.
 -->
 <component type="desktop">
   <id>darktable.desktop</id>
   <name>darktable</name>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>GPL-3.0+ AND GPL-2.0+ AND LGPL-2.0+ AND BSD-3-Clause AND MIT AND CC-BY-SA-1.0 AND CC-BY-2.5 AND CC-BY-NC-3.0</project_license>
+  <project_license>GPL-3.0+</project_license>
   <_summary>Organize and develop images from digital cameras</_summary>
   <translation type="gettext">darktable</translation>
   <description>
@@ -49,6 +47,8 @@
   </screenshots>
   <content_rating type="oars-1.1" />
   <releases>
+    <release date="2021-12-24" version="3.8.0"/>
+    <release date="2021-09-15" version="3.6.1"/>
     <release date="2021-07-03" version="3.6.0"/>
     <release date="2021-02-06" version="3.4.1"/>
     <release date="2020-12-24" version="3.4.0"/>
@@ -62,7 +62,7 @@
     <release date="2018-12-24" version="2.6.0"/>
   </releases>
   <url type="homepage">https://www.darktable.org/</url>
-  <url type="bugtracker">https://redmine.darktable.org/projects/darktable/issues</url>
-  <url type="help">https://www.darktable.org/usermanual/</url>
+  <url type="bugtracker">https://github.com/darktable-org/darktable/issues</url>
+  <url type="help">https://www.darktable.org/resources/</url>
   <update_contact>darktable-dev@lists.darktable.org</update_contact>
 </component>

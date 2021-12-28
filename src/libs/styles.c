@@ -222,12 +222,13 @@ static void _styles_row_activated_callback(GtkTreeView *view, GtkTreePath *path,
   gchar *name;
   gtk_tree_model_get(model, &iter, DT_STYLES_COL_FULLNAME, &name, -1);
 
-  const GList *list = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+  GList *list = dt_act_on_get_images(TRUE, TRUE, FALSE);
   if(name)
   {
     dt_styles_apply_to_list(name, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
     g_free(name);
   }
+  g_list_free(list);
 }
 
 // get list of style names from selection
@@ -262,19 +263,21 @@ static void apply_clicked(GtkWidget *w, gpointer user_data)
 
   if(style_names == NULL) return;
 
-  const GList *list = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+  GList *list = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
   if(list) dt_multiple_styles_apply_to_list(style_names, list, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
 
   g_list_free_full(style_names, g_free);
+  g_list_free(list);
 }
 
 static void create_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
 
-  const GList *list = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+  GList *list = dt_act_on_get_images(TRUE, TRUE, FALSE);
   dt_styles_create_from_list(list);
+  g_list_free(list);
   _gui_styles_update_view(d);
 }
 
@@ -553,7 +556,7 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
     {
       /* extract name from xml file */
       gchar *bname = NULL;
-      xmlDoc *document = xmlReadFile((char*)filename->data, NULL, 0);
+      xmlDoc *document = xmlReadFile((char*)filename->data, NULL, XML_PARSE_NOBLANKS);
       xmlNode *root = NULL;
       if(document != NULL)
         root = xmlDocGetRootElement(document);
@@ -717,8 +720,9 @@ static gboolean entry_activated(GtkEntry *entry, gpointer user_data)
   const gchar *name = gtk_entry_get_text(d->entry);
   if(name)
   {
-    const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
+    GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
     dt_styles_apply_to_list(name, imgs, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->duplicate)));
+    g_list_free(imgs);
   }
 
   return FALSE;
@@ -743,8 +747,7 @@ static void _update(dt_lib_module_t *self)
   dt_lib_cancel_postponed_update(self);
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
 
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
-  const gboolean has_act_on = imgs != NULL;
+  const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
 
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->tree));
   const gint sel_styles_cnt = gtk_tree_selection_count_selected_rows(selection);

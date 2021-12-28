@@ -242,7 +242,7 @@ static int visible_member(lua_State *L)
     if(value)
     {
       gtk_widget_show(widget->widget);
-      // enable gtk_widget_show_all() in case it was disabled by 
+      // enable gtk_widget_show_all() in case it was disabled by
       // setting a widget to hidden
       gtk_widget_set_no_show_all(widget->widget, FALSE);
     }

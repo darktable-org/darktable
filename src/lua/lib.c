@@ -86,14 +86,14 @@ static int on_screen_member(lua_State *L)
   return 1;
 }
 
-static int position_member(lua_State*L) 
+static int position_member(lua_State*L)
 {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L, 1);
   lua_pushinteger(L, module->position(module));
   return 1;
 }
 
-static int container_member(lua_State*L) 
+static int container_member(lua_State*L)
 {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L, 1);
   dt_ui_container_t container;
@@ -103,7 +103,7 @@ static int container_member(lua_State*L)
 }
 
 
-static int views_member(lua_State*L) 
+static int views_member(lua_State*L)
 {
   dt_lib_module_t * module = *(dt_lib_module_t**)lua_touserdata(L, 1);
   lua_newtable(L);

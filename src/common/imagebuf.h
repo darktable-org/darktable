@@ -114,7 +114,7 @@ void dt_iop_image_add_image(float *const buf, const float *const other_buf, cons
 void dt_iop_image_sub_image(float *const buf, const float *const other_buf, const size_t width, const size_t height,
                             const size_t ch);
 
-// Subtract each element of the image buffer from the given constant value 
+// Subtract each element of the image buffer from the given constant value
 void dt_iop_image_invert(float *const buf, const float max_value, const size_t width, const size_t height,
                          const size_t ch);
 

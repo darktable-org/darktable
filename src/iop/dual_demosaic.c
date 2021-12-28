@@ -61,7 +61,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
   const float contrastf = slider2contrast(dual_threshold);
 
   dt_masks_calc_rawdetail_mask(rgb_data, blend, tmp, width, height, piece->pipe->dsc.temperature.coeffs);
-  dt_masks_calc_detail_mask(blend, blend, tmp, width, height, contrastf, TRUE);  
+  dt_masks_calc_detail_mask(blend, blend, tmp, width, height, contrastf, TRUE);
 
   if(dual_mask)
   {
@@ -69,7 +69,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(blend, rgb_data, vng_image, width, height) \
-  schedule(simd:static) aligned(blend, vng_image, rgb_data : 64) 
+  schedule(simd:static) aligned(blend, vng_image, rgb_data : 64)
 #endif
     for(int idx = 0; idx < width * height; idx++)
     {
@@ -82,7 +82,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(blend, rgb_data, vng_image, width, height) \
-  schedule(simd:static) aligned(blend, vng_image, rgb_data : 64) 
+  schedule(simd:static) aligned(blend, vng_image, rgb_data : 64)
 #endif
     for(int idx = 0; idx < width * height; idx++)
     {
@@ -126,7 +126,7 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(float), &wb[2]);
     const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) return FALSE;
-  }  
+  }
 
   {
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -137,14 +137,14 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
     const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) return FALSE;
-  }  
+  }
 
   {
     const int flag = 1;
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
     const int kernel = darktable.opencl->blendop->kernel_calc_blend;
-    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &blend);  
-    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &detail);  
+    dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &blend);
+    dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &detail);
     dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(float), &contrastf);

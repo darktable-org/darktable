@@ -37,7 +37,7 @@ static int container_reset(lua_State* L)
   lua_getiuservalue(L, 1, 1);
   GList *children = gtk_container_get_children(GTK_CONTAINER(container->widget));
   for(const GList *curelt = children; curelt; curelt = g_list_next(curelt))
-  {      
+  {
     lua_pushcfunction(L,dt_lua_widget_trigger_callback);
     GtkWidget* cur_widget = curelt->data;
     luaA_push(L,lua_widget,&cur_widget);

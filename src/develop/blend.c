@@ -240,10 +240,11 @@ static inline float _detail_mask_threshold(const float level, const gboolean det
 static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *mask, const struct dt_iop_roi_t *const roi_in, const struct dt_iop_roi_t *const roi_out, const float level)
 {
   if(level == 0.0f) return;
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
 
   const gboolean detail = (level > 0.0f);
   const float threshold = _detail_mask_threshold(level, detail);
-  
+
   float *tmp = NULL;
   float *lum = NULL;
   float *warp_mask = NULL;
@@ -253,11 +254,12 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
 
   const int iwidth  = p->rawdetail_mask_roi.width;
   const int iheight = p->rawdetail_mask_roi.height;
-  const int owidth  = roi_in->width;
-  const int oheight = roi_in->height;
+  const int owidth  = roi_out->width;
+  const int oheight = roi_out->height;
+  if(info) fprintf(stderr, "[_refine_with_detail_mask] in module %s %ix%i --> %ix%i\n", self->op, iwidth, iheight, owidth, oheight);
 
   const int bufsize = MAX(iwidth * iheight, owidth * oheight);
-  
+
   tmp = dt_alloc_align_float(bufsize);
   lum = dt_alloc_align_float(bufsize);
   if((tmp == NULL) || (lum == NULL)) goto error;
@@ -265,6 +267,7 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
   dt_masks_calc_detail_mask(p->rawdetail_mask_data, lum, tmp, iwidth, iheight, threshold, detail);
   dt_free_align(tmp);
   tmp = NULL;
+
   // here we have the slightly blurred full detail mask available
   warp_mask = dt_dev_distort_detail_mask(p, lum, self);
   dt_free_align(lum);
@@ -276,13 +279,14 @@ static void _refine_with_detail_mask(struct dt_iop_module_t *self, struct dt_dev
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask, warp_mask, msize) \
-  schedule(simd:static) aligned(mask, warp_mask : 64) 
+  schedule(simd:static) aligned(mask, warp_mask : 64)
  #endif
   for(int idx =0; idx < msize; idx++)
   {
     mask[idx] = mask[idx] * warp_mask[idx];
   }
   dt_free_align(warp_mask);
+
   return;
 
   error:
@@ -671,9 +675,10 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
                                 const struct dt_iop_roi_t *roi_out, const float level, const int devid)
 {
   if(level == 0.0f) return;
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_MASKS) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
 
   const int detail = (level > 0.0f);
-  const float threshold = _detail_mask_threshold(level, detail);  
+  const float threshold = _detail_mask_threshold(level, detail);
   float *lum = NULL;
   cl_mem tmp = NULL;
   cl_mem blur = NULL;
@@ -684,8 +689,9 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
 
   const int iwidth  = p->rawdetail_mask_roi.width;
   const int iheight = p->rawdetail_mask_roi.height;
-  const int owidth  = roi_in->width;
-  const int oheight = roi_in->height;
+  const int owidth  = roi_out->width;
+  const int oheight = roi_out->height;
+  if(info) fprintf(stderr, "[_refine_with_detail_mask_cl] in module %s %ix%i --> %ix%i\n", self->op, iwidth, iheight, owidth, oheight);
 
   lum = dt_alloc_align_float((size_t)iwidth * iheight);
   if(lum == NULL) goto error;
@@ -710,7 +716,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &iheight);
     const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
-  }  
+  }
 
   {
     size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
@@ -723,7 +729,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), &detail);
     const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
-  }  
+  }
 
   {
     float blurmat[13];
@@ -759,7 +765,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), &iheight);
     const int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
-  }  
+  }
 
   {
     const int err = dt_opencl_read_host_from_device(devid, lum, tmp, iwidth, iheight, sizeof(float));
@@ -781,7 +787,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(mask, warp_mask, msize) \
-  schedule(simd:static) aligned(mask, warp_mask : 64) 
+  schedule(simd:static) aligned(mask, warp_mask : 64)
  #endif
   for(int idx = 0; idx < msize; idx++)
   {
@@ -789,7 +795,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   }
   dt_free_align(warp_mask);
   return;
-  
+
   error:
   dt_control_log(_("detail mask CL blending problem"));
   dt_free_align(lum);

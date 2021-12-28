@@ -455,17 +455,17 @@ gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolea
 
 gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)
 {
-  GList *imgs = NULL;
   gboolean res = FALSE;
   if(imgid == -1)
   {
-    imgs = (GList *)dt_view_get_images_to_act_on(!group_on, TRUE, FALSE);
+    GList *imgs = dt_act_on_get_images(!group_on, TRUE, FALSE);
     res = dt_tag_attach_images(tagid, imgs, undo_on);
+    g_list_free(imgs);
   }
   else
   {
     if(dt_is_tag_attached(tagid, imgid)) return FALSE;
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+    GList *imgs = g_list_append(NULL, GINT_TO_POINTER(imgid));
     res = dt_tag_attach_images(tagid, imgs, undo_on);
     g_list_free(imgs);
   }
@@ -561,7 +561,7 @@ gboolean dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_
 {
   GList *imgs = NULL;
   if(imgid == -1)
-    imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(!group_on, TRUE, FALSE));
+    imgs = dt_act_on_get_images(!group_on, TRUE, FALSE);
   else
     imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
   if(group_on) dt_grouping_add_grouped_images(&imgs);
@@ -665,10 +665,18 @@ static uint32_t _tag_get_attached_export(const gint imgid, GList **result)
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT DISTINCT TI.tagid, T.name, T.flags, T.synonyms"
-                              " FROM main.tagged_images AS TI"
-                              " JOIN data.tags AS T ON T.id = TI.tagid"
-                              " WHERE TI.imgid = ?1 AND TI.tagid NOT IN memory.darktable_tags",
+                              "SELECT DISTINCT T.id, T.name, T.flags, T.synonyms"
+                              " FROM data.tags AS T"
+                              // tags attached to image(s), not dt tag, ordered by name
+                              " JOIN (SELECT DISTINCT I.tagid, T.name"
+                              "       FROM main.tagged_images AS I"
+                              "       JOIN data.tags AS T ON T.id = I.tagid"
+                              "       WHERE I.imgid = ?1 AND T.id NOT IN memory.darktable_tags"
+                              "       ORDER by T.name) AS T1"
+                              // keep also tags in the path to be able to check category in path
+                              " ON T.id = T1.tagid"
+                              "    OR (T.name = SUBSTR(T1.name, 1, LENGTH(T.name))"
+                              "       AND SUBSTR(T1.name, LENGTH(T.name) + 1, 1) = '|')",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   // Create result

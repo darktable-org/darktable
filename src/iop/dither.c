@@ -405,7 +405,7 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
     _diffuse_error(pixel_ + down, err, DOWN_WT);                        \
     _diffuse_error(pixel_ + downright, err, DOWNRIGHT_WT);              \
   }
-  
+
 #define PROCESS_PIXEL_LEFT(_pixel, inpix)                               \
   {                                                                     \
     float *const pixel_ = (_pixel);                                     \
@@ -416,12 +416,12 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
     _diffuse_error(pixel_ + down, err, DOWN_WT);                        \
     _diffuse_error(pixel_ + downright, err, DOWNRIGHT_WT);              \
   }
-  
+
 #define PROCESS_PIXEL_RIGHT(pixel)                                      \
   nearest_color(pixel, err, graymode, f, rf);             /* quantize pixel */ \
   _diffuse_error(pixel + downleft, err, DOWNLEFT_WT);     /* diffuse quantization error to neighbors */ \
   _diffuse_error(pixel + down, err, DOWN_WT);
-  
+
   // once the FS dithering gets started, we can copy&clip the downright pixel, as that will be the first time
   // it will be accessed.  But to get the process started, we need to prepare the top row of pixels
 #ifdef _OPENMP
@@ -588,7 +588,7 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
     _diffuse_error_sse(pixel_ + down, err, DOWN_WT);                    \
     _diffuse_error_sse(pixel_ + downright, err, DOWNRIGHT_WT);          \
   }
-  
+
 #define PROCESS_PIXEL_LEFT_SSE(_pixel, inpix)                           \
   {                                                                     \
     float *const pixel_ = (_pixel);                                     \
@@ -599,12 +599,12 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
     _diffuse_error_sse(pixel_ + down, err, DOWN_WT);                    \
     _diffuse_error_sse(pixel_ + downright, err, DOWNRIGHT_WT);          \
   }
-  
+
 #define PROCESS_PIXEL_RIGHT_SSE(pixel)                                  \
   err = nearest_color_sse(pixel, graymode, f, rf);             /* quantize pixel */ \
   _diffuse_error_sse(pixel + downleft, err, DOWNLEFT_WT);      /* diffuse quantization error to neighbors */ \
   _diffuse_error_sse(pixel + down, err, DOWN_WT);
-  
+
   // once the FS dithering gets started, we can copy&clip the downright pixel, as that will be the first time
   // it will be accessed.  But to get the process started, we need to prepare the top row of pixels
   for (int j = 0; j < width; j++)
