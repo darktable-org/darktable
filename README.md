@@ -161,7 +161,7 @@ Optional dependencies (minimum version):
 * OpenMP 4.5 *(for CPU multi-threading and SIMD vectorization)*
 * LLVM 3.9 *(for OpenCL checks at compilation time)*
 * OpenCL 1.2 *(for GPU-accelerated computing)*
-* Lua 5.3 *(for plugins and extension scripting)*
+* Lua 5.4 *(for plugins and extension scripting)*
 * libavif 0.7.2 *(for AVIF import/export)*
 * WebP 0.3.0 *(for WebP exports)*
 
