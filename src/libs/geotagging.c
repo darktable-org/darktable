@@ -1751,7 +1751,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, label, 0, line, 2, 1);
 
   d->timezone = gtk_entry_new();
-  gtk_widget_set_tooltip_text(d->timezone, _("start typing to show a list of permitted values and select your timezone.\npress enter to confirm, so that the asterisk * disappers"));
+  gtk_widget_set_tooltip_text(d->timezone, _("start typing to show a list of permitted values and select your timezone.\npress enter to confirm, so that the asterisk * disappears"));
   d->timezone_changed = dt_ui_label_new("");
 
   GtkWidget *timezone_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
