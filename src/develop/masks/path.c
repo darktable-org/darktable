@@ -772,8 +772,8 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
         // now we want to write the skipping zones
         for(int i = 0; i < inter_count; i++)
         {
-          int v = (dt_masks_dynbuf_buffer(intersections))[i * 2];
-          int w = (dt_masks_dynbuf_buffer(intersections))[ i * 2 + 1];
+          const int v = (dt_masks_dynbuf_buffer(intersections))[i * 2];
+          const int w = (dt_masks_dynbuf_buffer(intersections))[ i * 2 + 1];
           if(v <= w)
           {
             (*border)[v * 2] = NAN;
