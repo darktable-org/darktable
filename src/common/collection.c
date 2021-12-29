@@ -273,6 +273,43 @@ int dt_collection_update(const dt_collection_t *collection)
                                                     collection->params.text_filter);
     }
 
+    /* add colorlabel filter if any */
+    if(collection->params.colors_filter & ~0x80000000)
+    {
+      const int colors_set = collection->params.colors_filter & 0xFF;
+      const int colors_unset = (collection->params.colors_filter & 0xFF00) >> 8;
+      const gboolean op = collection->params.colors_filter & 0x80000000;
+      if(op) // AND
+      {
+        if(colors_set)
+          wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                              "  FROM main.color_labels GROUP BY imgid)"
+                                              "  WHERE ((mask & %d) = %d) AND (mask & %d = 0))",
+                               and_operator(&and_term), colors_set, colors_set, colors_unset);
+        else if(colors_unset)
+          wq = dt_util_dstrcat(wq, " %s NOT id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                              "  FROM main.color_labels GROUP BY imgid)"
+                                              "  WHERE ((mask & %d) <> 0))",
+                               and_operator(&and_term), colors_unset);
+      }
+      else  // OR
+      {
+        if(!colors_unset)
+          wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                              "  FROM main.color_labels GROUP BY imgid)"
+                                              "  WHERE ((mask & %d) <> 0))",
+                               and_operator(&and_term), colors_set);
+        else
+          wq = dt_util_dstrcat(wq, " %s (id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                              "  FROM main.color_labels GROUP BY imgid)"
+                                              "  WHERE ((mask & %d) <> 0))"
+                                   " OR id NOT IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                              "  FROM main.color_labels GROUP BY imgid)"
+                                              "  WHERE ((mask & %d) = %d)))",
+                               and_operator(&and_term), colors_set, colors_unset, colors_unset);
+      }
+    }
+
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
       wq = dt_util_dstrcat(wq, " %s %s", and_operator(&and_term), where_ext);
@@ -557,6 +594,17 @@ void dt_collection_set_text_filter(const dt_collection_t *collection, char *text
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
   params->text_filter = text_filter;
+}
+
+int dt_collection_get_colors_filter(const dt_collection_t *collection)
+{
+  return collection->params.colors_filter;
+}
+
+void dt_collection_set_colors_filter(const dt_collection_t *collection, int colors_filter)
+{
+  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
+  params->colors_filter = colors_filter;
 }
 
 uint32_t dt_collection_get_query_flags(const dt_collection_t *collection)

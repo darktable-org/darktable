@@ -36,6 +36,8 @@ typedef struct dt_lib_tool_filter_t
   GtkWidget *sort;
   GtkWidget *reverse;
   GtkWidget *text;
+  GtkWidget *colors[6];
+  GtkWidget *colors_op;
 } dt_lib_tool_filter_t;
 
 #ifdef USE_LUA
@@ -45,6 +47,9 @@ typedef enum dt_collection_sort_order_t
   DT_COLLECTION_SORT_ORDER_DESCENDING
 } dt_collection_sort_order_t;
 #endif
+
+#define CPF_USER_DATA_INCLUDE CPF_USER_DATA
+#define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
 
 /* proxy function to intelligently reset filter */
 static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter);
@@ -169,6 +174,94 @@ static void _reset_text_entry(GtkButton *button, dt_lib_module_t *self)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
 }
 
+static void _update_colors_operation(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  int nb = 0;
+  int mask = 0;
+
+  for(int k = 0; k < DT_COLORLABELS_LAST; k++)
+  {
+    const int sel_value = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->colors[k]), "sel_value"));
+    if(sel_value)
+    {
+      nb++;
+      mask = sel_value == 1 ? (mask | 1 << k) : (mask | 1 << (8 + k));
+    }
+  }
+
+  const gboolean and_op = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->colors_op), "sel_value"));
+
+  if(nb > 1)
+  {
+    dtgtk_button_set_paint(DTGTK_BUTTON(d->colors_op),
+                           and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
+                           CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_sensitive(d->colors_op, TRUE);
+  }
+  else
+  {
+    dtgtk_button_set_paint(DTGTK_BUTTON(d->colors_op),
+                           dtgtk_cairo_paint_empty,
+                           CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_sensitive(d->colors_op, FALSE);
+  }
+  if(and_op || nb == 1)
+    mask |= 0x80000000;
+
+  dt_collection_set_colors_filter(darktable.collection, mask);
+}
+
+static gboolean _colorlabel_clicked(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  dt_lib_module_t *self = g_object_get_data(G_OBJECT(w), "colors_self");
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  const int k = GPOINTER_TO_INT(user_data);
+  int sel_value = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
+  if(sel_value)
+    sel_value = 0;
+  else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
+    sel_value = 2;
+  else if(dt_modifier_is(e->state, 0))
+    sel_value = 1;
+  const int mask = sel_value == 0 ? 0 : sel_value == 1 ? CPF_USER_DATA_INCLUDE : CPF_USER_DATA_EXCLUDE;
+
+  if(k == DT_COLORLABELS_LAST)
+  {
+    g_object_set_data(G_OBJECT(d->colors[DT_COLORLABELS_LAST]), "sel_value", GINT_TO_POINTER(sel_value));
+    for(int i = 0; i < DT_COLORLABELS_LAST; i++)
+    {
+      g_object_set_data(G_OBJECT(d->colors[i]), "sel_value", GINT_TO_POINTER(sel_value));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
+                            (i | mask | CPF_BG_TRANSPARENT), NULL);
+      gtk_widget_queue_draw(d->colors[i]);
+    }
+  }
+  else
+  {
+    g_object_set_data(G_OBJECT(d->colors[DT_COLORLABELS_LAST]), "sel_value", GINT_TO_POINTER(0));
+    g_object_set_data(G_OBJECT(w), "sel_value", GINT_TO_POINTER(sel_value));
+    dtgtk_button_set_paint(DTGTK_BUTTON(w), dtgtk_cairo_paint_label_sel,
+                           (k | mask | CPF_BG_TRANSPARENT), NULL);
+    gtk_widget_queue_draw(w);
+  }
+
+  _update_colors_operation(self);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL, NULL);
+  return FALSE;
+}
+
+static void _colors_operation_clicked(GtkWidget *w, dt_lib_module_t *self)
+{
+  const gboolean and_op = !GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
+  g_object_set_data(G_OBJECT(w), "sel_value", GINT_TO_POINTER(and_op));
+  dtgtk_button_set_paint(DTGTK_BUTTON(w),
+                         and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
+                         CPF_STYLE_FLAT, NULL);
+  _update_colors_operation(self);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL, NULL);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -221,14 +314,28 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), overlay, TRUE, TRUE, 0);
   gtk_widget_set_margin_end (overlay, 20);
 
-  /* sort combobox */
-  GtkWidget *sort_box= gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
-  d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
-                                         _("determine the sort order of shown images"),
-                                         _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
-                                         _sort_names);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->sort, TRUE, TRUE, 2);
+  // colorlabels filter
+  GtkWidget *color_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(color_box, "colors-filter-box");
+  for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
+  {
+    d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, (k | CPF_BG_TRANSPARENT), NULL);
+    g_object_set_data(G_OBJECT(d->colors[k]), "sel_value", GINT_TO_POINTER(0));
+    g_object_set_data(G_OBJECT(d->colors[k]), "colors_self", self);
+    gtk_box_pack_start(GTK_BOX(color_box), d->colors[k], FALSE, FALSE, 0);
+    gtk_widget_set_tooltip_text(d->colors[k], _("toggle color label selection, ctrl_click to exclude"
+                                                "\ngrey button toggles all color labels"));
+    g_signal_connect(G_OBJECT(d->colors[k]), "button-press-event", G_CALLBACK(_colorlabel_clicked),
+                     GINT_TO_POINTER(k));
+  }
+  d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_sensitive(d->colors_op, FALSE);
+  g_object_set_data(G_OBJECT(d->colors_op), "sel_value", GINT_TO_POINTER(1));
+  gtk_box_pack_start(GTK_BOX(color_box), d->colors_op, FALSE, FALSE, 4);
+  gtk_widget_set_tooltip_text(d->colors_op, _("intersection (∩): images having all selections"
+                                              "\nunion (∪): images with at least one selection"));
+  g_signal_connect(G_OBJECT(d->colors_op), "clicked", G_CALLBACK(_colors_operation_clicked), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), color_box, FALSE, FALSE, 4);
 
   // filter text
   GtkWidget *text_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -242,6 +349,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(text_box), reset_button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(reset_button), "clicked", G_CALLBACK(_reset_text_entry), self);
   gtk_box_pack_start(GTK_BOX(self->widget), text_box, FALSE, FALSE, 4);
+
+  /* sort combobox */
+  const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
+  d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
+                                         _("determine the sort order of shown images"),
+                                         _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
+                                         _sort_names);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->sort, TRUE, TRUE, 4);
 
   /* reverse order checkbutton */
   d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
@@ -258,10 +373,6 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(d->reverse), "toggled", G_CALLBACK(_lib_filter_reverse_button_changed),
                    (gpointer)self);
-
-  // workaround: seems to prevent the previous horizontal box to expand until the preference buttons.
-  GtkWidget *fake_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), fake_box, TRUE, TRUE, 4);
 
   /* initialize proxy */
   darktable.view_manager->proxy.filter.module = self;

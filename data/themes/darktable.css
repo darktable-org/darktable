@@ -726,6 +726,11 @@ l
   background-color: @field_active_bg;
 }
 
+#colors-filter-box
+{
+  font-size: 0.7em;
+}
+
 /*-------------------
   - Scope/Histogram -
   -------------------*/
