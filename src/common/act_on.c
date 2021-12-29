@@ -108,7 +108,7 @@ static gboolean _test_cache(dt_act_on_cache_t *cache)
 
 // cache the list of images to act on during global changes (libs, accels)
 // return TRUE if the cache is updated, FALSE if it's still up to date
-gboolean _cache_update(const gboolean only_visible, const gboolean force, const gboolean ordered)
+gboolean _cache_update_refactored(const gboolean only_visible, const gboolean force, const gboolean ordered)
 {
   /** Here's how it works
    *
@@ -275,6 +275,145 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
   return TRUE;
 }
 
+
+// cache the list of images to act on during global changes (libs, accels)
+// return TRUE if the cache is updated, FALSE if it's still up to date
+gboolean _cache_update_legacy(const gboolean only_visible, const gboolean force, const gboolean ordered)
+{
+  /** Here's how it works
+   *
+   *             mouse over| x | x | x |   |   |
+   *     mouse inside table| x | x |   |   |   |
+   * mouse inside selection| x |   |   |   |   |
+   *          active images| ? | ? | x |   | x |
+   *                       |   |   |   |   |   |
+   *                       | S | O | O | S | A |
+   *  S = selection ; O = mouseover ; A = active images
+   *  the mouse can be outside thumbtable in case of filmstrip + mouse in center widget
+   *
+   *  if only_visible is FALSE, then it will add also not visible images because of grouping
+   *  force define if we try to use cache or not
+   *  if ordered is TRUE, we return the list in the gui order. Otherwise the order is undefined (but quicker)
+   **/
+
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  dt_act_on_cache_t *cache;
+  if(only_visible)
+    cache = &darktable.view_manager->act_on_cache_visible;
+  else
+    cache = &darktable.view_manager->act_on_cache_all;
+
+  // if possible, we return the cached list
+  if(!force && cache->ordered == ordered && _test_cache(cache))
+  {
+    return FALSE;
+  }
+
+  GList *l = NULL;
+  gboolean inside_sel = FALSE;
+  if(mouseover > 0)
+  {
+    // column 1,2,3
+    if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
+    {
+      // column 1,2
+      sqlite3_stmt *stmt;
+      gchar *query = g_strdup_printf("SELECT imgid FROM main.selected_images WHERE imgid=%d", mouseover);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        inside_sel = TRUE;
+        sqlite3_finalize(stmt);
+      }
+      g_free(query);
+
+      if(inside_sel)
+      {
+        // column 1
+
+        // first, we try to return cached list if we were already
+        // inside sel and the selection has not changed
+        if(!force && cache->ok && cache->image_over_inside_sel && cache->inside_table && cache->ordered == ordered)
+        {
+          return FALSE;
+        }
+
+        // we return the list of the selection
+        l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+      }
+      else
+      {
+        // column 2
+        _insert_in_list(&l, mouseover, only_visible);
+      }
+    }
+    else
+    {
+      // column 3
+      _insert_in_list(&l, mouseover, only_visible);
+      // be absolutely sure we have the id in the list (in darkroom,
+      // the active image can be out of collection)
+      if(!only_visible) _insert_in_list(&l, mouseover, TRUE);
+    }
+  }
+  else
+  {
+    // column 4,5
+    if(darktable.view_manager->active_images)
+    {
+      // column 5
+      for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
+      {
+        const int id = GPOINTER_TO_INT(ll->data);
+        _insert_in_list(&l, id, only_visible);
+        // be absolutely sure we have the id in the list (in darkroom,
+        // the active image can be out of collection)
+        if(!only_visible) _insert_in_list(&l, id, TRUE);
+      }
+    }
+    else
+    {
+      // column 4
+      // we return the list of the selection
+      l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+    }
+  }
+
+  // let's register the new list as cached
+  cache->image_over_inside_sel = inside_sel;
+  cache->ordered = ordered;
+  cache->image_over = mouseover;
+  GList *ltmp = cache->images;
+  cache->images = l;
+  g_list_free(ltmp);
+  cache->images_nb = g_list_length(cache->images);
+  GSList *sl = cache->active_imgs;
+  cache->active_imgs = g_slist_copy(darktable.view_manager->active_images);
+  g_slist_free(sl);
+  cache->inside_table = dt_ui_thumbtable(darktable.gui->ui)->mouse_inside;
+  cache->ok = TRUE;
+
+  // if needed, we show the list of cached images in terminal
+  if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
+  {
+    gchar *tx = dt_util_dstrcat(NULL, "[images to act on] new cache (%s) : ", only_visible ? "visible" : "all");
+    for(GList *ll = l; ll; ll = g_list_next(ll)) tx = dt_util_dstrcat(tx, "%d ", GPOINTER_TO_INT(ll->data));
+    dt_print(DT_DEBUG_ACT_ON, "%s\n", tx);
+    g_free(tx);
+  }
+
+  return TRUE;
+}
+
+gboolean _cache_update(const gboolean only_visible, const gboolean force, const gboolean ordered)
+{
+  if(dt_conf_get_bool("images_to_act_on_legacy"))
+    return _cache_update_legacy(only_visible, force, ordered);
+  else
+    return _cache_update_refactored(only_visible, force, ordered);
+}
+
 // get the list of images to act on during global changes (libs, accels)
 GList *dt_act_on_get_images(const gboolean only_visible, const gboolean force, const gboolean ordered)
 {
@@ -313,8 +452,55 @@ gchar *dt_act_on_get_query(const gboolean only_visible)
   return images;
 }
 
-// get the main image to act on during global changes (libs, accels)
-int dt_act_on_get_main_image(const gboolean prioritize_hover)
+int dt_act_on_get_main_image_legacy()
+{
+  /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
+   *
+   *             mouse over| x |   |   |
+   *          active images| ? |   | x |
+   *                       |   |   |   |
+   *                       | O | S | A |
+   *  First image of ...
+   *  S = selection ; O = mouseover ; A = active images
+   **/
+
+  int ret = -1;
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  if(mouseover > 0)
+  {
+    ret = mouseover;
+  }
+  else
+  {
+    if(darktable.view_manager->active_images)
+    {
+      ret = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+    }
+    else
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT s.imgid"
+                                  " FROM main.selected_images as s, memory.collected_images as c"
+                                  " WHERE s.imgid=c.imgid"
+                                  " ORDER BY c.rowid LIMIT 1",
+                                  -1, &stmt, NULL);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        ret = sqlite3_column_int(stmt, 0);
+      }
+      if(stmt) sqlite3_finalize(stmt);
+    }
+  }
+
+  if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
+    dt_print(DT_DEBUG_ACT_ON, "[images to act on] single image : %d\n", ret);
+
+  return ret;
+}
+
+int dt_act_on_get_main_image_refactored(const gboolean prioritize_hover)
 {
   /** Here's how it works -- same as for list, except we don't care about mouse inside selection or table
    *
@@ -391,6 +577,15 @@ int dt_act_on_get_images_nb(const gboolean only_visible, const gboolean force)
     return darktable.view_manager->act_on_cache_all.images_nb;
   else
     return 0;
+}
+
+// get the main image to act on during global changes (libs, accels)
+int dt_act_on_get_main_image(const gboolean prioritize_hover)
+{
+  if(dt_conf_get_bool("images_to_act_on_legacy"))
+    return dt_act_on_get_main_image_legacy();
+  else
+    return dt_act_on_get_main_image_refactored(prioritize_hover);
 }
 
 // reset the cache
