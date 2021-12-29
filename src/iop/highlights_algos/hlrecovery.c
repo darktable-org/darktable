@@ -447,7 +447,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
         if(restore)
         {
-          const float correction = corr_coeff[p] * (1.0 + 0.5f * reconstruct);
+          const float correction = corr_coeff[p] * (0.7 + 1.5f * reconstruct);
           float val = candidate + pminimum[i] - candidates_minimum;
           val = 1.0f + (val - 1.0f) * correction;
           val = clip * fmaxf(1.0f, val);

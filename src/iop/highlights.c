@@ -98,7 +98,7 @@ typedef struct dt_iop_highlights_params_t
 {
   dt_iop_highlights_mode_t mode;         // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
   float allclipped;                      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights synthesis"
-  float reconstructing;                  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.2 $DESCRIPTION: "reconstruct color"
+  float reconstructing;                  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "reconstruct color"
   float combine;                         // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
   float clip;                            // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
   dt_iop_highlights_maskmode_t maskmode; // $DEFAULT: DT_IO_HIGHLIGHTSMASK_CLIPPED_PLANES $DESCRIPTION: "debugging helpers"
@@ -184,7 +184,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     memcpy(n, o, sizeof *o);
     n->maskmode = DT_IO_HIGHLIGHTSMASK_CLIPPED_PLANES;
     n->allclipped = 0.0f;
-    n->reconstructing = 0.2f;
+    n->reconstructing = 0.4f;
     n->floatoption = 0.0f;
     n->option = DT_IO_HIGHLIGHTSMASK_OPTION_0;
     n->plane = DT_IO_PLANE_RED;
