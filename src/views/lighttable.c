@@ -558,7 +558,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   dt_culling_init(lib->preview, -1);
   gtk_widget_show(lib->preview->widget);
 
-  lib->preview->navigate_inside_selection = (lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
+  lib->preview->navigate_inside_selection = (dt_collection_get_selected_count(darktable.collection) && mouse_over_id = -1);
   dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->preview->navigate_inside_selection;
 
   // show/hide filmstrip & timeline when entering the view

@@ -153,12 +153,12 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
   // if yes, the active image has priority over everything else
   if(lightroom_view && dt_view_lighttable_preview_state(darktable.view_manager))
   {
-      // if no mouse over, we pick active images
-      const int id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
-      _insert_in_list(&l, id, only_visible);
-      // be absolutely sure we have the id in the list (in darkroom,
-      // the active image can be out of collection)
-      if(!only_visible) _insert_in_list(&l, id, TRUE);
+    // if no mouse over, we pick active images
+    const int id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+    _insert_in_list(&l, id, only_visible);
+    // be absolutely sure we have the id in the list (in darkroom,
+    // the active image can be out of collection)
+    if(!only_visible) _insert_in_list(&l, id, TRUE);
   }
 
 
