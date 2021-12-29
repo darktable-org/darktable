@@ -222,7 +222,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  const float clip = data->clip;
+  const float clip = fminf(1.0f, 0.97f * data->clip);
   const float reconstruct = data->reconstructing;
   const int combining = (int) data->combine;
   const dt_iop_highlights_maskmode_t maskmode = data->maskmode;
