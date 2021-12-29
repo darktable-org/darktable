@@ -137,9 +137,9 @@ static void _colorlabels_execute(const GList *imgs, const int labels, GList **un
   if(action == DT_CA_TOGGLE)
   {
     // if we are supposed to toggle color labels, first check if all images have that label
-    for(const GList *images = imgs; images; images = g_list_next((GList *)images))
+    for(const GList *image = imgs; image; image = g_list_next((GList *)image))
     {
-      const int image_id = GPOINTER_TO_INT(images->data);
+      const int image_id = GPOINTER_TO_INT(image->data);
       const uint8_t before = dt_colorlabels_get_labels(image_id);
 
       // as long as a single image does not have the label we do not toggle the label for all images
@@ -155,9 +155,9 @@ static void _colorlabels_execute(const GList *imgs, const int labels, GList **un
 
 
 
-  for(const GList *images = imgs; images; images = g_list_next((GList *)images))
+  for(const GList *image = imgs; image; image = g_list_next((GList *)image))
   {
-    const int image_id = GPOINTER_TO_INT(images->data);
+    const int image_id = GPOINTER_TO_INT(image->data);
     const uint8_t before = dt_colorlabels_get_labels(image_id);
     uint8_t after = 0;
     switch(action)
