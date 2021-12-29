@@ -19145,7 +19145,7 @@ msgstr "Aseta sama päivä/aika valittuihin kuviin."
 #: ../src/libs/geotagging.c:1754
 msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
-"press enter to confirm, so that the asterisk * disappers"
+"press enter to confirm, so that the asterisk * disappears"
 msgstr ""
 "Aloita kirjoittamaan nähdäksesi sallitut arvot ja valitaksesi "
 "aikavyöhykkeen.\n"
