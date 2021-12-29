@@ -18558,7 +18558,7 @@ msgstr "为选中图像设置拍摄日期与时间"
 #: ../src/libs/geotagging.c:1754
 msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
-"press enter to confirm, so that the asterisk * disappers"
+"press enter to confirm, so that the asterisk * disappears"
 msgstr ""
 "开始键入以显示并选择您的时区。\n"
 "按 enter 确认，这样星号 * 就会消失"

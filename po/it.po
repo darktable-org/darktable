@@ -19305,7 +19305,7 @@ msgstr "Applica la stessa data/ora alle immagini selezionate"
 #: ../src/libs/geotagging.c:1754
 msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
-"press enter to confirm, so that the asterisk * disappers"
+"press enter to confirm, so that the asterisk * disappears"
 msgstr ""
 "Inizia a digitare per mostrare una lista di valori permessi e selezionare il"
 " tuo fuso orario.\n"

@@ -19337,7 +19337,7 @@ msgstr "establecer la misma fecha/hora en la selección"
 #: ../src/libs/geotagging.c:1754
 msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
-"press enter to confirm, so that the asterisk * disappers"
+"press enter to confirm, so that the asterisk * disappears"
 msgstr ""
 "Comience a teclear para mostrar una lista de ítems válidos, luego seleccione "
 "la zona horaria.\n"
