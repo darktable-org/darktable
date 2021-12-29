@@ -1724,8 +1724,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     if(gui->creation && !g_list_shorter_than(form->points, 4))
     {
       // if we are near the first point, we have to say that the form should be closed
-      if(pts[0] - gpt->points[2] < as && pts[0] - gpt->points[2] > -as && pts[1] - gpt->points[3] < as
-         && pts[1] - gpt->points[3] > -as)
+      if(pts[0] - gpt->points[2] < as && pts[0] - gpt->points[2] > -as
+         && pts[1] - gpt->points[3] < as && pts[1] - gpt->points[3] > -as)
       {
         gui->creation_closing_form = TRUE;
       }
@@ -1894,14 +1894,15 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
   // are we near a point or feather ?
   const guint nb = g_list_length(form->points);
 
-  pzx *= darktable.develop->preview_pipe->backbuf_width,
-      pzy *= darktable.develop->preview_pipe->backbuf_height;
+  pzx *= darktable.develop->preview_pipe->backbuf_width;
+  pzy *= darktable.develop->preview_pipe->backbuf_height;
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
     const int k = gui->point_edited;
     // we only select feather if the point is not "sharp"
-    if(gpt->points[k * 6 + 2] != gpt->points[k * 6 + 4] && gpt->points[k * 6 + 3] != gpt->points[k * 6 + 5])
+    if(gpt->points[k * 6 + 2] != gpt->points[k * 6 + 4]
+       && gpt->points[k * 6 + 3] != gpt->points[k * 6 + 5])
     {
       int ffx, ffy;
       _path_ctrl2_to_feather(gpt->points[k * 6 + 2], gpt->points[k * 6 + 3], gpt->points[k * 6 + 4],
@@ -1935,8 +1936,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     }
 
     // border corner ??
-    if(pzx - gpt->border[k * 6] > -as && pzx - gpt->border[k * 6] < as && pzy - gpt->border[k * 6 + 1] > -as
-       && pzy - gpt->border[k * 6 + 1] < as)
+    if(pzx - gpt->border[k * 6] > -as && pzx - gpt->border[k * 6] < as
+       && pzy - gpt->border[k * 6 + 1] > -as && pzy - gpt->border[k * 6 + 1] < as)
     {
       gui->point_border_selected = k;
       dt_control_queue_redraw_center();
@@ -1993,7 +1994,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
     {
       cairo_line_to(cr, gpt->points[i * 2], gpt->points[i * 2 + 1]);
       // we decide to highlight the form segment by segment
-      if(gpt->points[i * 2 + 1] == gpt->points[seg * 6 + 3] && gpt->points[i * 2] == gpt->points[seg * 6 + 2])
+      if(gpt->points[i * 2 + 1] == gpt->points[seg * 6 + 3]
+         && gpt->points[i * 2] == gpt->points[seg * 6 + 2])
       {
         // this is the end of the last segment, so we have to draw it
         if((gui->group_selected == index)
@@ -2148,7 +2150,9 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
   }
 
   // draw a cross where the source will be created
-  if(gui->creation && darktable.develop->form_visible && (darktable.develop->form_visible->type & DT_MASKS_CLONE))
+  if(gui->creation
+     && darktable.develop->form_visible
+     && (darktable.develop->form_visible->type & DT_MASKS_CLONE))
   {
     const int k = nb - 1;
     if((k * 6 + 2) >= 0)
@@ -2575,7 +2579,8 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
     float x = path[2 * k];
     float y = path[2 * k + 1];
 
-    if(x >= xmin + 1 && y >= ymin + 1 && x <= xmax - 1 && y <= ymax - 1)
+    if(x >= xmin + 1 && y >= ymin + 1
+       && x <= xmax - 1 && y <= ymax - 1)
     {
       point_start = k;
       break;
@@ -2721,7 +2726,8 @@ static void _path_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh)
     const int y = (int)((float)i * ly / (float)l) + p0[1];
     const float op = 1.0f - (float)i / (float)l;
     float *buf = buffer + (size_t)y * bw + x;
-    if(x >= 0 && x < bw && y >= 0 && y < bh) buf[0] = MAX(buf[0], op);
+    if(x >= 0 && x < bw && y >= 0 && y < bh)
+      buf[0] = MAX(buf[0], op);
     if(x + dx >= 0 && x + dx < bw && y >= 0 && y < bh)
       buf[dx] = MAX(buf[dx], op); // this one is to avoid gap due to int rounding
     if(x >= 0 && x < bw && y + dy >= 0 && y + dy < bh)
