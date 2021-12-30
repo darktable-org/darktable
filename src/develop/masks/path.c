@@ -80,7 +80,7 @@ static void _path_border_get_XY(float p0x, float p0y, float p1x, float p1y, floa
 
 /** get feather extremity from the control point n°2 */
 /** the values should be in orthonormal space */
-static void _path_ctrl2_to_feather(int ptx, int pty, int ctrlx, int ctrly, int *fx, int *fy,
+static void _path_ctrl2_to_feather(float ptx, float pty, float ctrlx, float ctrly, float *fx, float *fy,
                                    gboolean clockwise)
 {
   if(clockwise)
@@ -97,8 +97,9 @@ static void _path_ctrl2_to_feather(int ptx, int pty, int ctrlx, int ctrly, int *
 
 /** get bezier control points from feather extremity */
 /** the values should be in orthonormal space */
-static void _path_feather_to_ctrl(int ptx, int pty, int fx, int fy, int *ctrl1x, int *ctrl1y, int *ctrl2x,
-                                  int *ctrl2y, gboolean clockwise)
+static void _path_feather_to_ctrl(float ptx, float pty, float fx, float fy,
+                                  float *ctrl1x, float *ctrl1y, float *ctrl2x, float *ctrl2y,
+                                  gboolean clockwise)
 {
   if(clockwise)
   {
@@ -1665,14 +1666,15 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
-    int p1x, p1y, p2x, p2y;
+    float p1x, p1y, p2x, p2y;
     _path_feather_to_ctrl(point->corner[0] * darktable.develop->preview_pipe->iwidth,
-                          point->corner[1] * darktable.develop->preview_pipe->iheight, pts[0], pts[1], &p1x,
-                          &p1y, &p2x, &p2y, gpt->clockwise);
-    point->ctrl1[0] = (float)p1x / darktable.develop->preview_pipe->iwidth;
-    point->ctrl1[1] = (float)p1y / darktable.develop->preview_pipe->iheight;
-    point->ctrl2[0] = (float)p2x / darktable.develop->preview_pipe->iwidth;
-    point->ctrl2[1] = (float)p2y / darktable.develop->preview_pipe->iheight;
+                          point->corner[1] * darktable.develop->preview_pipe->iheight,
+                          pts[0], pts[1],
+                          &p1x, &p1y, &p2x, &p2y, gpt->clockwise);
+    point->ctrl1[0] = p1x / darktable.develop->preview_pipe->iwidth;
+    point->ctrl1[1] = p1y / darktable.develop->preview_pipe->iheight;
+    point->ctrl2[0] = p2x / darktable.develop->preview_pipe->iwidth;
+    point->ctrl2[1] = p2y / darktable.develop->preview_pipe->iheight;
 
     point->state = DT_MASKS_POINT_STATE_USER;
 
@@ -1800,14 +1802,15 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_dragging);
 
-    int p1x, p1y, p2x, p2y;
+    float p1x, p1y, p2x, p2y;
     _path_feather_to_ctrl(point->corner[0] * darktable.develop->preview_pipe->iwidth,
-                          point->corner[1] * darktable.develop->preview_pipe->iheight, pts[0], pts[1], &p1x,
-                          &p1y, &p2x, &p2y, gpt->clockwise);
-    point->ctrl1[0] = (float)p1x / darktable.develop->preview_pipe->iwidth;
-    point->ctrl1[1] = (float)p1y / darktable.develop->preview_pipe->iheight;
-    point->ctrl2[0] = (float)p2x / darktable.develop->preview_pipe->iwidth;
-    point->ctrl2[1] = (float)p2y / darktable.develop->preview_pipe->iheight;
+                          point->corner[1] * darktable.develop->preview_pipe->iheight,
+                          pts[0], pts[1],
+                          &p1x, &p1y, &p2x, &p2y, gpt->clockwise);
+    point->ctrl1[0] = p1x / darktable.develop->preview_pipe->iwidth;
+    point->ctrl1[1] = p1y / darktable.develop->preview_pipe->iheight;
+    point->ctrl2[0] = p2x / darktable.develop->preview_pipe->iwidth;
+    point->ctrl2[1] = p2y / darktable.develop->preview_pipe->iheight;
     point->state = DT_MASKS_POINT_STATE_USER;
 
     _path_init_ctrl_points(form);
@@ -1904,7 +1907,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     if(gpt->points[k * 6 + 2] != gpt->points[k * 6 + 4]
        && gpt->points[k * 6 + 3] != gpt->points[k * 6 + 5])
     {
-      int ffx, ffy;
+      float ffx, ffy;
       _path_ctrl2_to_feather(gpt->points[k * 6 + 2], gpt->points[k * 6 + 3], gpt->points[k * 6 + 4],
                              gpt->points[k * 6 + 5], &ffx, &ffy, gpt->clockwise);
       if(pzx - ffx > -as && pzx - ffx < as && pzy - ffy > -as && pzy - ffy < as)
@@ -2062,7 +2065,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
     cairo_move_to(cr, gui->points[k*6+2],gui->points[k*6+3]);
     cairo_line_to(cr, gui->points[k*6+4],gui->points[k*6+5]);
     cairo_stroke(cr);*/
-    int ffx = 0, ffy = 0;
+    float ffx = 0.0f, ffy = 0.0f;
     _path_ctrl2_to_feather(gpt->points[k * 6 + 2], gpt->points[k * 6 + 3], gpt->points[k * 6 + 4],
                            gpt->points[k * 6 + 5], &ffx, &ffy, gpt->clockwise);
     cairo_move_to(cr, gpt->points[k * 6 + 2], gpt->points[k * 6 + 3]);
