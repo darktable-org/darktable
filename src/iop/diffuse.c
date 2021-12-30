@@ -926,8 +926,8 @@ static inline gint wavelets_process(const float *const restrict in, float *const
           check_isotropy_mode(data->anisotropy_third),
           check_isotropy_mode(data->anisotropy_fourth) };
 
-  float regularization = powf(10.f, data->regularization) - 1.f;
-  float variance_threshold = powf(10.f, data->variance_threshold);
+  const float regularization = powf(10.f, data->regularization) - 1.f;
+  const float variance_threshold = powf(10.f, data->variance_threshold);
 
   // À trous decimated wavelet decompose
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
@@ -1071,11 +1071,13 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
       xoshiro128plus(state);
       xoshiro128plus(state);
 
-      for_four_channels(c, aligned(inpainted, original, state:64)) inpainted[k + c] = fabsf(gaussian_noise(original[k + c], original[k + c], i % 2 || j % 2, state));
+      for_four_channels(c, aligned(inpainted, original, state:64))
+        inpainted[k + c] = fabsf(gaussian_noise(original[k + c], original[k + c], i % 2 || j % 2, state));
     }
     else
     {
-      for_four_channels(c, aligned(original, inpainted:64)) inpainted[k + c] = original[k + c];
+      for_four_channels(c, aligned(original, inpainted:64))
+        inpainted[k + c] = original[k + c];
     }
   }
 }
@@ -1083,8 +1085,6 @@ static inline void inpaint_mask(float *const restrict inpainted, const float *co
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
              void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  int out_of_memory = FALSE;
-
   const dt_iop_diffuse_data_t *const data = (dt_iop_diffuse_data_t *)piece->data;
 
   const size_t width = roi_out->width;
@@ -1107,6 +1107,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+
+  gboolean out_of_memory = FALSE;
 
   // wavelets scales buffers
   float *restrict HF[MAX_NUM_SCALES];
@@ -1160,8 +1162,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       temp_out = temp1;
     }
 
-    if(it == (int)iterations - 1) temp_out = out;
-    wavelets_process(temp_in, temp_out, mask, roi_out->width, roi_out->height, data, final_radius, scale, scales, has_mask, HF, LF_odd, LF_even);
+    if(it == (int)iterations - 1)
+      temp_out = out;
+
+    wavelets_process(temp_in, temp_out, mask,
+                     roi_out->width, roi_out->height,
+                     data, final_radius, scale, scales, has_mask, HF, LF_odd, LF_even);
   }
 
 error:

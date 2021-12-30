@@ -118,7 +118,7 @@ inline static void decompose_2D_Bspline(const float *const DT_ALIGNED_PIXEL rest
     // Convolve B-spline filter horizontally over current row
     for(size_t j = 0; j < width; j++)
     {
-      size_t index = 4U * (i * width + j);
+      const size_t index = 4U * (i * width + j);
       _bspline_horizontal(temp, LF + index, j, width, mult);
       // compute the HF component by subtracting the LF from the original input
       for_each_channel(c)
