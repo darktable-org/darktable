@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-29 13:53+0100\n"
-"PO-Revision-Date: 2021-12-30 14:07+0900\n"
+"PO-Revision-Date: 2021-12-30 14:09+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1184,11 +1184,11 @@ msgstr "セキュリティ"
 
 #: ../build/bin/preferences_gen.h:6314
 msgid "ask before removing images from the library"
-msgstr "画像をライブラリーから除去する前に確認する"
+msgstr "画像をライブラリから除去する前に確認する"
 
 #: ../build/bin/preferences_gen.h:6328
 msgid "always ask the user before any image is removed from the library"
-msgstr "画像がライブラリーから除去される前に必ずユーザーに確認します"
+msgstr "画像がライブラリから除去される前に必ずユーザーに確認します"
 
 #: ../build/bin/preferences_gen.h:6350
 msgid "ask before deleting images from disk"
@@ -6165,7 +6165,7 @@ msgstr "全てのファイルを物理的に削除します"
 
 #: ../src/control/jobs/control_jobs.c:847
 msgid "only remove from the image library"
-msgstr "画像ライブラリーのみから除去します"
+msgstr "画像ライブラリのみから除去します"
 
 #: ../src/control/jobs/control_jobs.c:848
 msgid "skip to next file"
@@ -19513,7 +19513,7 @@ msgstr "除去"
 
 #: ../src/libs/image.c:480
 msgid "remove images from the image library, without deleting"
-msgstr "画像を削除せずに画像ライブラリーから除去します"
+msgstr "画像を削除せずに画像ライブラリから除去します"
 
 #: ../src/libs/image.c:488
 msgid "move..."
@@ -19541,7 +19541,7 @@ msgstr "選択したショットからハイダイナミックレンジ画像を
 
 #: ../src/libs/image.c:500
 msgid "add a duplicate to the image library, including its history stack"
-msgstr "画像ライブラリーに履歴スタックを含む複製画像を追加します"
+msgstr "画像ライブラリに履歴スタックを含む複製画像を追加します"
 
 #: ../src/libs/image.c:506
 msgid "rotate selected images 90 degrees CCW"
@@ -19767,7 +19767,7 @@ msgstr "テザー撮影"
 #: ../src/libs/import.c:201
 msgctxt "accel"
 msgid "add to library"
-msgstr "ライブラリーに追加"
+msgstr "ライブラリに追加"
 
 #: ../src/libs/import.c:202
 msgctxt "accel"
@@ -19897,7 +19897,7 @@ msgstr "命名規則"
 
 #: ../src/libs/import.c:1754
 msgid "add to library"
-msgstr "ライブラリーに追加"
+msgstr "ライブラリに追加"
 
 #: ../src/libs/import.c:1755
 msgid "copy & import"
@@ -19913,11 +19913,11 @@ msgstr "カメラから画像リストをピリフェッチしています、お
 
 #: ../src/libs/import.c:2065
 msgid "add to library..."
-msgstr "ライブラリーに追加"
+msgstr "ライブラリに追加"
 
 #: ../src/libs/import.c:2066
 msgid "add existing images to the library"
-msgstr "既存の画像をライブラリーに追加します"
+msgstr "既存の画像をライブラリに追加します"
 
 #: ../src/libs/import.c:2073
 msgid "copy & import..."
@@ -19929,7 +19929,7 @@ msgid ""
 "patterns can be defined to rename the images and specify the destination "
 "folders"
 msgstr ""
-"ライブラリーに追加する前に、画像をコピーし、必要であれば、名前を変更します\n"
+"ライブラリに追加する前に、画像をコピーし、必要であれば、名前を変更します\n"
 "画像の名前の変更および宛先フォルダの指定のためのひな型を定義することが出来ま"
 "す"
 
