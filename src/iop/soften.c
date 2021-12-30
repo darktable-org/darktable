@@ -142,8 +142,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float w = piece->iwidth * piece->iscale;
   const float h = piece->iheight * piece->iscale;
-  int mrad = sqrt(w * w + h * h) * 0.01;
-  int rad = mrad * (fmin(100.0, d->size + 1) / 100.0);
+  const int mrad = sqrt(w * w + h * h) * 0.01;
+  const int rad = mrad * (fmin(100.0, d->size + 1) / 100.0);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   dt_box_mean(out, roi_out->height, roi_out->width, 4, radius, BOX_ITERATIONS);
@@ -174,9 +174,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const float w = piece->iwidth * piece->iscale;
   const float h = piece->iheight * piece->iscale;
-  int mrad = sqrt(w * w + h * h) * 0.01f;
+  const int mrad = sqrt(w * w + h * h) * 0.01f;
 
-  int rad = mrad * (fmin(100.0f, d->size + 1) / 100.0f);
+  const int rad = mrad * (fmin(100.0f, d->size + 1) / 100.0f);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
@@ -321,9 +321,9 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   const float w = piece->iwidth * piece->iscale;
   const float h = piece->iheight * piece->iscale;
-  int mrad = sqrt(w * w + h * h) * 0.01f;
+  const int mrad = sqrt(w * w + h * h) * 0.01f;
 
-  int rad = mrad * (fmin(100.0f, d->size + 1) / 100.0f);
+  const int rad = mrad * (fmin(100.0f, d->size + 1) / 100.0f);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
