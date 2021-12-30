@@ -527,7 +527,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const float final_radius = (data->radius + data->radius_center) * 2.f / scale;
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
-  const int max_filter_radius = (1 << scales);
+  const int max_filter_radius = fminf(256, (1 << scales));
 
   // in + out + 2 * tmp + 2 * LF + s details + grey mask
   tiling->factor = 6.25f + scales;
