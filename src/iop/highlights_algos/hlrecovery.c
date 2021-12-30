@@ -51,11 +51,6 @@ The algorithm follows these basic ideas:
    We also tried using some gamma correction which helped in some cases but was unstable in others.
 6. The restored value at position 'i' is basically calculated as
      val = candidate + pminimum[i] - pminimum[candidate_location;
-7. For locations with all planes clipped we might do a synthesis in pminimum, the value for every position is derived
-   from the local gradient at the border and basically the distance.
-   This code part has been surprisingly difficult to implement (avoiding ridges, good transition, … ),
-   the existing code is working ok (with some minor issues) but is rather slow and not perfect.
-   It has not been included in the first pr and will be re-evaluated.
 
 For segmentation i implemented and tested several approaches including Felszenzwalb and a watershed algo,
 both have problems with identifying the clipped segments in a plane. I ended up with this:
@@ -69,12 +64,6 @@ both have problems with identifying the clipped segments in a plane. I ended up 
 4. To combine small segments for a shared candidate we use a morphological closing operation, the radius of that op
    can be chosen interactively between 0 and 10.
 
-Hanno & Ian 2021/12
-
-Issues not solved yet:
-1. possibly combine segments over larger distances, but how can we define a rule for that?
-2. for segments with all color channels clipped the colors might be bad.
-   Some preps to check for inter-channel work has been done already ... 
 */
 
 #define HLFPLANES 5
@@ -87,12 +76,15 @@ Issues not solved yet:
   #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno", "ivopts")
 #endif
 
-#include "iop/highlights_algos/segmentation.h"
-#include "common/distance_transform.h"
+typedef enum dt_iop_highlights_plane_t
+{
+  DT_IO_PLANE_RED = 0,          // $DESCRIPTION: "red"
+  DT_IO_PLANE_GREEN1 = 1,       // $DESCRIPTION: "green1"
+  DT_IO_PLANE_GREEN2 = 2,       // $DESCRIPTION: "green2"
+  DT_IO_PLANE_BLUE = 3,         // $DESCRIPTION: "blue"
+} dt_iop_highlights_plane_t;
 
-#if HLMINSYNTHESIS
- #include "iop/highlights_algos/min_synthesis.c"
-#endif
+#include "iop/highlights_algos/segmentation.h"
 
 #define SQR(x) ((x) * (x))
 static float calc_weight(float *p, const int w)
@@ -217,19 +209,14 @@ static inline int plane2bitmask(const int p)
 
 static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
-                         const uint32_t filters, dt_iop_highlights_data_t *data, const gboolean debug)
+                         const uint32_t filters, dt_iop_highlights_data_t *data)
 {
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  const float clip = fminf(1.0f, 0.97f * data->clip);
+  const float clip = 0.97f * data->clip;
   const float reconstruct = data->reconstructing;
   const int combining = (int) data->combine;
-  const dt_iop_highlights_maskmode_t maskmode = data->maskmode;
-  const dt_iop_highlights_plane_t selplane = MAX( 0, MIN(HLSEGPLANES -1, data->plane));
-
-  const int doption = data->option;
-  const float foption = data->floatoption;
 
   const int width = roi_out->width;
   const int height = roi_out->height;
@@ -257,8 +244,8 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
     return;
   }
 
-  dt_times_t time0 = { 0 }, time1 = { 0 }, time2 = { 0 }, time3 = { 0 }, time4 = { 0 };
-  const gboolean info = (((darktable.unmuted & DT_DEBUG_PERF) || HLDEVELOP) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
+  dt_times_t time0 = { 0 }, time1 = { 0 }, time2 = { 0 }, time3 = { 0 };
+  const gboolean info = ((darktable.unmuted & DT_DEBUG_PERF) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
   if(info) dt_get_times(&time0);
 
   float icoeffs[4] = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2], 0.0f};  
@@ -309,7 +296,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
       if(row >= height-2)     plane[p][o+pwidth] = val;
     }
   }
-  if((maxval < 1.0f) && !debug)
+  if(maxval < 1.0f)
   {
     if(info) fprintf(stderr, "[highlights reconstruction recovery mode] early exit because of no clipped data\n");
     dt_free_align(fbuffer);
@@ -344,11 +331,6 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   }
 
   if(info) dt_get_times(&time1);
-#if HLMINSYNTHESIS
-  if((data->allclipped > 0.0f) && (maxval >= 1.0f))
-    maxval = reconstruct_minimum_plane(pminimum, pwidth, pheight, data->allclipped);
-#endif
-  if(info) dt_get_times(&time2);
 
   // prepare the segmentation process by writing the int mask; 1 for condition on, otherwise 0
   for(int p = 0; p < 4; p++)
@@ -393,14 +375,14 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   for(int p = 0; p < HLSEGPLANES; p++)
     calc_plane_candidates(plane[p], pminimum, &isegments[p], pwidth, pheight, maxval);
 
-  if(info) dt_get_times(&time3);
+  if(info) dt_get_times(&time2);
 
   float max_correction = 1.0f;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   reduction(max : max_correction) \
   dt_omp_firstprivate(out, plane, pminimum, isegments, coeffs, corr_coeff, locmask) \
-  dt_omp_sharedconst(width, height, pheight, pwidth, p_size, clip, reconstruct, p_off, filters, debug, maskmode, doption, foption) \
+  dt_omp_sharedconst(width, height, pheight, pwidth, p_size, clip, reconstruct, p_off, filters) \
   schedule(simd:static) aligned(out, plane, pminimum : 64)
 #endif
   for(int row = 0; row < height; row++)
@@ -467,7 +449,6 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
           val = clip * fmaxf(1.0f, val);
           out[o] = val * coeffs[p];
           max_correction = fmaxf(max_correction, val);
-          if(debug && ((maskmode == DT_IO_HIGHLIGHTSMASK_PLANELATE) || (maskmode == DT_IO_HIGHLIGHTSMASK_PLANEABOVE))) plane[p][i] = val;
         }
       }
     }
@@ -478,91 +459,14 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
   if(info) 
   {
-    dt_get_times(&time4);
-    fprintf(stderr, "Highlight recovery: %4.1fMpix, maxval=%.2f, maxcorr=%.2f, option=%i, foption=%.3f", (float) (width * height) / 1.0e6f, maxval, max_correction, doption, foption);
+    dt_get_times(&time3);
+    fprintf(stderr, "Highlight recovery: %4.1fMpix, maxval=%.2f, maxcorr=%.2f", (float) (width * height) / 1.0e6f, maxval, max_correction);
     fprintf(stderr, "\n Segments(combine %i): ", combining);
     for(int i=0; i<HLSEGPLANES; i++)  { fprintf(stderr, " %6i", isegments[i].nr); }
-    fprintf(stderr, "\n Performance (all)   %.3f",   time4.clock - time0.clock);
+    fprintf(stderr, "\n Performance (all)   %.3f",   time3.clock - time0.clock);
     fprintf(stderr, "\n    initialize       %.3f",   time1.clock - time0.clock);
-    fprintf(stderr, "\n    synth minimum    %.3f",   time2.clock - time1.clock);
-    fprintf(stderr, "\n    segmentation     %.3f",   time3.clock - time2.clock);
-    fprintf(stderr, "\n    output           %.3f\n", time4.clock - time3.clock);
-  }
-
-  if(debug && maskmode)
-  {
-    dt_iop_image_fill(out, 0.0f, width, height, 1);
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(out, plane, pminimum, isegments, locmask, coeffs) \
-  dt_omp_sharedconst(maskmode, width, height, pwidth, p_off, selplane, filters, p_size) \
-  schedule(static) aligned(out, plane, pminimum : 64)
-#endif
-    for(size_t row = 0; row < height; row++)
-    {
-      for(size_t col = 0, o = row*width; col < width; col++, o++)
-      {
-        const size_t i = (row/2)*pwidth + (col/2) + p_off;
-        const int p = pos2plane(row, col, filters);
-        dt_iop_segmentation_t *seg = &isegments[selplane];            
-        const int c = seg->data[i];
-        const int cc = c & (HLMAXSEGMENTS - 1);
-        float val = 0.0f;
-        switch(maskmode)
-        {
-          case DT_IO_HIGHLIGHTSMASK_RECONSTR_NO:
-            break;
-          case DT_IO_HIGHLIGHTSMASK_CLIPPED_PLANES:
-            if(locmask[i] & (1 << p)) val = 1.0f;
-            break;
-          case DT_IO_HIGHLIGHTSMASK_MINIMUM_PLANE:
-            if(((locmask[i] >> 4) & plane2bitmask(p)) != 0) val = 1.0f;
-            break;
-          case DT_IO_HIGHLIGHTSMASK_SEGMENTS:
-            if((c>1) && (c < HLMAXSEGMENTS)) val = 0.1f + (0.1f * (float) (c & 7));
-            break;
-          case DT_IO_HIGHLIGHTSMASK_SEGMENTWEIGHT:
-            if((c>1) && (c < HLMAXSEGMENTS))
-            {
-             const size_t cref = seg->ref[cc];
-             const float wht = (cref) ? calc_weight(&plane[selplane][cref], pwidth) : 0.0f;            
-             val = (wht < HLBADWEIGHT) ? 0.1f : 0.4f + 0.6f * wht;
-            }
-            break;
-          case DT_IO_HIGHLIGHTSMASK_CANDIDATE:
-            if((c>1) && (c < HLMAXSEGMENTS)) val = seg->refcol[cc];
-            break;
-          case DT_IO_HIGHLIGHTSMASK_CANDIDATE_LOC:
-            if((c > 1) && (c < HLMAXSEGMENTS))  val = 0.1f;
-            else if(c > 2*HLMAXSEGMENTS+1)              // mark the reference point
-            {
-              val = 1.0f;
-              if((row > 0) && (row < height-1) && (col > 0) && (col < width-1))
-                out[o-1] = out[o+1] = out[o-width] = out[o+width] = 1.0f; 
-            }
-            break;
-          case DT_IO_HIGHLIGHTSMASK_PLANE:
-            val = 0.5f * plane[selplane][i];
-            break;
-          case DT_IO_HIGHLIGHTSMASK_PLANELATE:
-            val = 0.5f * plane[selplane][i];
-            break;
-          case DT_IO_HIGHLIGHTSMASK_PLANEABOVE:
-            val = 0.5f * (plane[selplane][i] - 1.0f);
-            break;
-          case DT_IO_HIGHLIGHTSMASK_PLANEWEIGHT:
-            val = calc_weight(&plane[selplane][i], pwidth);
-            break;
-          case DT_IO_HIGHLIGHTSMASK_MINIMUMPLANE:
-            val = 0.5f * pminimum[i];
-            break;
-        }
-        if(maskmode == DT_IO_HIGHLIGHTSMASK_CANDIDATE_LOC)
-          out[o] = fmaxf(out[o], fminf(1.0f, fmaxf(0.0f, val)));
-        else
-          out[o] = fminf(1.0f, fmaxf(0.0f, val));
-      }
-    }
+    fprintf(stderr, "\n    segmentation     %.3f",   time2.clock - time1.clock);
+    fprintf(stderr, "\n    output           %.3f\n", time3.clock - time2.clock);
   }
 
   for(int i = 0; i < HLSEGPLANES; i++)

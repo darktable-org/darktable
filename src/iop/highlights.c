@@ -25,7 +25,6 @@
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
 #include "common/imagebuf.h"
-#include "common/box_filters.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -40,19 +39,16 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE_INTROSPECTION(3, dt_iop_highlights_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_highlights_params_t)
 
 /* defines for the highlights recovery section */
-#define HLDEVELOP 0
 #define HLBORDER 8
 #define HLEPSILON 1e-5
-#define HLMINSYNTHESIS 0
 
 static size_t plane_size(size_t width, size_t height)
 {
   return (size_t) dt_round_size((width + 4) * (height + 4), 16);
 }
-
 
 typedef enum dt_iop_highlights_mode_t
 {
@@ -62,49 +58,13 @@ typedef enum dt_iop_highlights_mode_t
   DT_IOP_HIGHLIGHTS_RECOVERY = 3, // $DESCRIPTION: "highlights recovery"
 } dt_iop_highlights_mode_t;
 
-typedef enum dt_iop_highlights_maskmode_t
-{
-  DT_IO_HIGHLIGHTSMASK_RECONSTR_NO = 0,    // $DESCRIPTION: "none"
-  DT_IO_HIGHLIGHTSMASK_CLIPPED_PLANES = 1, // $DESCRIPTION: "clipped planes"
-  DT_IO_HIGHLIGHTSMASK_MINIMUM_PLANE = 2,  // $DESCRIPTION: "colorize minimum"
-  DT_IO_HIGHLIGHTSMASK_SEGMENTS = 3,       // $DESCRIPTION: "segments"
-  DT_IO_HIGHLIGHTSMASK_SEGMENTWEIGHT = 4,  // $DESCRIPTION: "segment weight"
-  DT_IO_HIGHLIGHTSMASK_CANDIDATE = 5,      // $DESCRIPTION: "candidate"
-  DT_IO_HIGHLIGHTSMASK_CANDIDATE_LOC = 6,  // $DESCRIPTION: "candidate location"
-  DT_IO_HIGHLIGHTSMASK_PLANE = 7,          // $DESCRIPTION: "input plane"
-  DT_IO_HIGHLIGHTSMASK_PLANELATE = 8,      // $DESCRIPTION: "plane"
-  DT_IO_HIGHLIGHTSMASK_PLANEABOVE = 9,     // $DESCRIPTION: "plane over clip"
-  DT_IO_HIGHLIGHTSMASK_PLANEWEIGHT = 10,   // $DESCRIPTION: "plane weight"
-  DT_IO_HIGHLIGHTSMASK_MINIMUMPLANE = 11,  // $DESCRIPTION: "minimum plane"
-} dt_iop_highlights_maskmode_t;
-
-typedef enum dt_iop_highlights_option_t
-{
-  DT_IO_HIGHLIGHTSMASK_OPTION_0 = 0,  // $DESCRIPTION: "null"
-  DT_IO_HIGHLIGHTSMASK_OPTION_1 = 1,  // $DESCRIPTION: "one"
-  DT_IO_HIGHLIGHTSMASK_OPTION_2 = 2,  // $DESCRIPTION: "two"
-  DT_IO_HIGHLIGHTSMASK_OPTION_3 = 3,  // $DESCRIPTION: "three"
-} dt_iop_highlights_option_t;
-
-typedef enum dt_iop_highlights_plane_t
-{
-  DT_IO_PLANE_RED = 0,          // $DESCRIPTION: "red"
-  DT_IO_PLANE_GREEN1 = 1,       // $DESCRIPTION: "green1"
-  DT_IO_PLANE_GREEN2 = 2,       // $DESCRIPTION: "green2"
-  DT_IO_PLANE_BLUE = 3,         // $DESCRIPTION: "blue"
-} dt_iop_highlights_plane_t;
-
 typedef struct dt_iop_highlights_params_t
 {
-  dt_iop_highlights_mode_t mode;         // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
-  float allclipped;                      // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights synthesis"
-  float reconstructing;                  // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.4 $DESCRIPTION: "reconstruct color"
-  float combine;                         // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
-  float clip;                            // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
-  dt_iop_highlights_maskmode_t maskmode; // $DEFAULT: DT_IO_HIGHLIGHTSMASK_CLIPPED_PLANES $DESCRIPTION: "debugging helpers"
-  dt_iop_highlights_plane_t plane;       // $DEFAULT: DT_IO_PLANE_RED $DESCRIPTION: "plane"
-  float floatoption;                     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "float option"
-  dt_iop_highlights_option_t option;     // $DEFAULT: DT_IO_HIGHLIGHTSMASK_OPTION_0 $DESCRIPTION: "doption"
+  dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
+  float reconstructing;          // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "effect strength"
+  float combine;                 // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
+  float reserved3;
+  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -113,15 +73,8 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *mode_bayer;
   GtkWidget *mode_xtrans;
   GtkWidget *nonraw;
-  GtkWidget *allclipped;
   GtkWidget *reconstructing;
   GtkWidget *combine;
-  GtkWidget *maskmode;
-  GtkWidget *wdebug;
-  GtkWidget *plane;
-  GtkWidget *option;
-  GtkWidget *floatoption;
-  gint debug;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -182,12 +135,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_highlights_params_v2_t *o = (dt_iop_highlights_params_v2_t *)old_params;
     dt_iop_highlights_params_v3_t *n = (dt_iop_highlights_params_v3_t *)new_params;
     memcpy(n, o, sizeof *o);
-    n->maskmode = DT_IO_HIGHLIGHTSMASK_CLIPPED_PLANES;
-    n->allclipped = 0.0f;
+    n->reserved3 = 0.0f;
     n->reconstructing = 0.4f;
-    n->floatoption = 0.0f;
-    n->option = DT_IO_HIGHLIGHTSMASK_OPTION_0;
-    n->plane = DT_IO_PLANE_RED;
     n->combine = 2.0f;
     return 0;  
   }
@@ -983,20 +932,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
 
     case DT_IOP_HIGHLIGHTS_RECOVERY:
-      {
-        gboolean debug = FALSE;
-        if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
-        {
-          dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-          debug = g->debug;
-          const gboolean nomask = (data->maskmode == DT_IO_HIGHLIGHTSMASK_RECONSTR_NO) ||
-                                  (data->maskmode == DT_IO_HIGHLIGHTSMASK_MINIMUM_PLANE) ||
-                                  (data->maskmode == DT_IO_HIGHLIGHTSMASK_CLIPPED_PLANES);
-          if(!nomask && debug)
-            piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
-        }
-        process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data, debug);
-      }
+      process_recovery(piece, ivoid, ovoid, roi_in, roi_out, filters, data);
       break;
 
     default:
@@ -1069,49 +1005,25 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static int _inplanemode(dt_iop_highlights_params_t *p)
-{
-  const gboolean planemode = (p->maskmode == DT_IO_HIGHLIGHTSMASK_SEGMENTS) ||
-                             (p->maskmode == DT_IO_HIGHLIGHTSMASK_SEGMENTWEIGHT) ||
-                             (p->maskmode == DT_IO_HIGHLIGHTSMASK_CANDIDATE) ||
-                             (p->maskmode == DT_IO_HIGHLIGHTSMASK_CANDIDATE_LOC) ||
-                             (p->maskmode == DT_IO_HIGHLIGHTSMASK_PLANE) ||
-                             (p->maskmode == DT_IO_HIGHLIGHTSMASK_PLANELATE) ||
-                             (p->maskmode == DT_IO_HIGHLIGHTSMASK_PLANEWEIGHT) ||
-                             (p->maskmode == DT_IO_HIGHLIGHTSMASK_PLANEABOVE);
-  return planemode;
-}
-
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean bayer =     (self->dev->image_storage.buf_dsc.filters != 9u);
   const gboolean israw =     (self->dev->image_storage.buf_dsc.filters != 0);
-  const gboolean debug =     g->debug;
 
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  const gboolean planemode = _inplanemode(p);
   const gboolean recover =   bayer && (p->mode == DT_IOP_HIGHLIGHTS_RECOVERY);
 
   if(israw)
   {
     gtk_widget_set_visible(g->mode_bayer, bayer);
-    gtk_widget_set_visible(g->allclipped, recover && HLMINSYNTHESIS);
-    gtk_widget_set_visible(g->wdebug, recover);
     gtk_widget_set_visible(g->combine, recover);
     gtk_widget_set_visible(g->reconstructing, recover);
-    gtk_widget_set_visible(g->maskmode, recover && debug);
-    gtk_widget_set_visible(g->option, recover && debug && HLDEVELOP);
-    gtk_widget_set_visible(g->floatoption, recover && debug && HLDEVELOP);
-    gtk_widget_set_visible(g->plane, recover && debug && planemode);
     gtk_widget_set_visible(g->mode_xtrans, !bayer);
     gtk_widget_set_visible(g->nonraw, FALSE); 
     if(bayer)
     {
       dt_bauhaus_combobox_set_from_value(g->mode_bayer, p->mode);  
-      dt_bauhaus_combobox_set_from_value(g->maskmode, p->maskmode);
-      dt_bauhaus_combobox_set_from_value(g->option, p->option);
-      dt_bauhaus_combobox_set_from_value(g->plane, p->plane);
     }
     else
       dt_bauhaus_combobox_set_from_value(g->mode_xtrans, p->mode);  
@@ -1120,28 +1032,17 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     gtk_widget_set_visible(g->mode_bayer, FALSE);
     gtk_widget_set_visible(g->mode_xtrans, FALSE);
-    gtk_widget_set_visible(g->allclipped, FALSE);
     gtk_widget_set_visible(g->reconstructing, FALSE);
-    gtk_widget_set_visible(g->maskmode, FALSE);
-    gtk_widget_set_visible(g->option, FALSE);
-    gtk_widget_set_visible(g->floatoption, FALSE);
-    gtk_widget_set_visible(g->plane, FALSE);
-    gtk_widget_set_visible(g->wdebug, FALSE);
     gtk_widget_set_visible(g->nonraw, TRUE);
     dt_bauhaus_combobox_set_from_value(g->nonraw, p->mode);  
   }
   dt_bauhaus_slider_set(g->clip, p->clip);
   dt_bauhaus_slider_set(g->reconstructing, p->reconstructing);
-  dt_bauhaus_slider_set(g->allclipped, p->allclipped);
   dt_bauhaus_slider_set(g->combine, p->combine);
 }
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->debug = FALSE;
-  dt_bauhaus_widget_set_quad_active(g->wdebug, g->debug);
-  dt_bauhaus_widget_set_quad_toggle(g->wdebug, g->debug);
   gui_changed(self, NULL, NULL);
 }
 
@@ -1151,50 +1052,9 @@ void reload_defaults(dt_iop_module_t *module)
   module->default_enabled = dt_image_is_rawprepare_supported(&(module->dev->image_storage));
 }
 
-static void debug_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_request_focus(self);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  g->debug = !(g->debug);
-  dt_bauhaus_widget_set_quad_active(g->wdebug, g->debug);
-
-  gtk_widget_set_visible(g->maskmode, g->debug);
-  gtk_widget_set_visible(g->option, g->debug && HLDEVELOP);
-  gtk_widget_set_visible(g->floatoption, g->debug && HLDEVELOP);
-
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  const gboolean planemode = _inplanemode(p);
-
-  gtk_widget_set_visible(g->plane, g->debug && planemode);
-  dt_dev_reprocess_center(self->dev);
-}
-
-void gui_focus(struct dt_iop_module_t *self, gboolean in)
-{
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  if(!in)
-  {
-    const gboolean was_debug = g->debug;
-    g->debug = FALSE;
-    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->wdebug), FALSE);
-    gtk_widget_set_visible(g->maskmode, g->debug);
-    gtk_widget_set_visible(g->option, g->debug && HLDEVELOP);
-    gtk_widget_set_visible(g->floatoption, g->debug && HLDEVELOP);
-    dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-    const gboolean planemode = _inplanemode(p);
-
-    gtk_widget_set_visible(g->plane, g->debug && planemode);
-    if(was_debug) dt_dev_reprocess_center(self->dev);
-  }
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_highlights_gui_data_t *g = IOP_GUI_ALLOC(highlights);
-  g->debug = FALSE;
   g->nonraw = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->nonraw, _("highlight reconstruction method"));
   for(int i=0;i<3;i++) dt_bauhaus_combobox_remove_at(g->nonraw, 1);
@@ -1211,11 +1071,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold against magenta highlights."
                                          " Necessary for images with incorrect white point settings."));
 
-  g->allclipped = dt_bauhaus_slider_from_params(self, "allclipped");
-  gtk_widget_set_tooltip_text(g->allclipped, _("amount of highlights synthesis if all color planes are clipped")); 
-  dt_bauhaus_slider_set_factor(g->allclipped, 100.0f);
-  dt_bauhaus_slider_set_format(g->allclipped, "%.0f%%");
-
   g->reconstructing = dt_bauhaus_slider_from_params(self, "reconstructing");
   gtk_widget_set_tooltip_text(g->reconstructing, _("reduces an existing color cast in regions where color planes are clipped")); 
   dt_bauhaus_slider_set_factor(g->reconstructing, 100.0f);
@@ -1224,32 +1079,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
   gtk_widget_set_tooltip_text(g->combine, _("combine close segments")); 
-
-  g->wdebug = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->wdebug, NULL, N_("debugging aids"));
-  dt_bauhaus_widget_set_quad_paint(g->wdebug, dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->wdebug, TRUE);
-  g_signal_connect(G_OBJECT(g->wdebug), "quad-pressed", G_CALLBACK(debug_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->wdebug, FALSE, FALSE, 0);
-
-  g->maskmode = dt_bauhaus_combobox_from_params(self, "maskmode");
-  gtk_widget_set_tooltip_text(g->maskmode, _("show some of the internal algorithm masks")); 
-
-  g->plane = dt_bauhaus_combobox_from_params(self, "plane");
-  gtk_widget_set_tooltip_text(g->plane, _("select plane")); 
-
-  g->option = dt_bauhaus_combobox_from_params(self, "option");
-  gtk_widget_set_tooltip_text(g->option, _("developer option, usage changes")); 
-
-  g->floatoption = dt_bauhaus_slider_from_params(self, "floatoption");
-  gtk_widget_set_tooltip_text(g->floatoption, _("developer float option, usage changes")); 
-  dt_bauhaus_slider_set_digits(g->floatoption, 3);
 }
 
 #undef HLBORDER
-#undef HLDEVELOP
 #undef HLEPSILON
-#undef HLMINSYNTHESIS
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
