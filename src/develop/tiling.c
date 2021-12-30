@@ -603,7 +603,9 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   const gboolean force_tile = (darktable.unmuted & DT_DEBUG_TILING);
   /* tiling really does not make sense in these cases. standard process() is not better or worse than we are
    */
-  if((tiling.factor < 2.2f && tiling.overhead < 0.2f * roi_in->width * roi_in->height * max_bpp) && !force_tile)
+  if((tiling.factor < 2.2f)
+     && (tiling.overhead < 0.2f * roi_in->width * roi_in->height * max_bpp)
+     && !force_tile)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] no need to use tiling for module '%s' as no real "
                            "memory saving to be expected\n",
