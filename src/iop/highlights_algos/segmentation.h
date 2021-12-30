@@ -92,6 +92,41 @@ void dt_segmentation_free_struct(dt_iop_segmentation_t *seg)
   dt_free_align(seg->refcol);
 }
 
+static inline void _dilate_0(int *img, int *o, const int w1, const int height, const int border)
+{
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(img, o) \
+  dt_omp_sharedconst(height, w1, border) \
+  schedule(simd:static) aligned(o, img : 64)
+#endif
+  for(int row = border; row < height - border; row++)
+  {
+    for(int col = border, i = row*w1 + col; col < w1 - border; col++, i++)
+      o[i] =                 img[i-w1] |
+               img[i-1]    | img[i]    | img[i+1] |
+                             img[i+w1];
+  }
+}
+
+static inline void _erode_0(int *img, int *o, const int w1, const int height, const int border)
+{
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(img, o) \
+  dt_omp_sharedconst(height, w1, border) \
+  schedule(simd:static) aligned(o, img : 64)
+#endif
+  for(int row = border; row < height - border; row++)
+  {
+    for(int col = border, i = row*w1 + col; col < w1 - border; col++, i++)
+      o[i] =                 img[i-w1] &
+               img[i-1]    & img[i]    & img[i+1] &
+                             img[i+w1];
+
+  }
+}
+
 static inline void _dilate_1(int *img, int *o, const int w1, const int height, const int border)
 {
 #ifdef _OPENMP
@@ -354,7 +389,8 @@ static inline void _intimage_borderfill(int *d, const int width, const int heigh
 static void _intimage_dilate(int *src, int *out, const int width, const int height, const int rad, const int border)
 {
   _intimage_borderfill(src, width, height, 0, border);
-  if(rad == 1)       _dilate_1(src, out, width, height, border);
+  if(rad == 0)       _dilate_0(src, out, width, height, border);
+  else if(rad == 1)  _dilate_1(src, out, width, height, border);
   else if(rad == 2)  _dilate_2(src, out, width, height, border);
   else if(rad == 3)  _dilate_3(src, out, width, height, border);
   else if(rad == 4)  _dilate_4(src, out, width, height, border);
@@ -364,16 +400,18 @@ static void _intimage_dilate(int *src, int *out, const int width, const int heig
 static void _intimage_erode(int *src, int *out, const int width, const int height, const int rad, const int border)
 {
   _intimage_borderfill(src, width, height, 1, border);
-  if(rad == 1)       _erode_1(src, out, width, height, border);
+  if(rad == 0)       _erode_0(src, out, width, height, border);
+  else if(rad == 1)  _erode_1(src, out, width, height, border);
   else if(rad == 2)  _erode_2(src, out, width, height, border);
   else if(rad == 3)  _erode_3(src, out, width, height, border);
   else if(rad == 4)  _erode_4(src, out, width, height, border);
   else               _erode_5(src, out, width, height, border);
 }
 
-void dt_image_transform_closing(int *img, const int width, const int height, const int radius, const int border)
+
+void dt_image_transform_dilate(int *img, const int width, const int height, const int radius, const int border)
 {
-  if(radius < 1) return;
+  if(radius < 0) return;
   int *tmp = dt_alloc_align(16, width * height * sizeof(int));
   if(!tmp) return;
 
@@ -383,14 +421,37 @@ void dt_image_transform_closing(int *img, const int width, const int height, con
 
   if(rad < 6)
   {
-    _intimage_erode(tmp, img, width, height, MIN(5, rad), border);
+    memcpy(img, tmp, width*height * sizeof(int));
     dt_free_align(tmp);
     return;
   }
-  _intimage_dilate(tmp, img, width, height, rad2, border);
-  _intimage_erode(img, tmp, width, height, 5, border);
-  _intimage_erode(tmp, img, width, height, rad2, border);
-  dt_free_align(tmp);
+  _intimage_dilate(tmp, img, width, height, MIN(5, rad2), border);
+}
+  
+void dt_image_transform_erode(int *img, const int width, const int height, const int radius, const int border)
+{
+  if(radius < 0) return;
+  int *tmp = dt_alloc_align(16, width * height * sizeof(int));
+  if(!tmp) return;
+
+  const int rad = MIN(radius, 10);
+  _intimage_erode(img, tmp, width, height, MIN(5, rad), border);
+  const int rad2 = rad - 5;
+
+  if(rad < 6)
+  {
+    memcpy(img, tmp, width*height * sizeof(int));
+    dt_free_align(tmp);
+    return;
+  }
+  _intimage_erode(tmp, img, width, height, MIN(5, rad2), border);
+}
+  
+void dt_image_transform_closing(int *img, const int width, const int height, const int radius, const int border)
+{
+  if(radius < 1) return;
+  dt_image_transform_dilate(img, width, height, radius, border);
+  dt_image_transform_erode(img, width, height, radius, border);
 }
 
 static int floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, int w, const int h, const int id, dt_ff_stack_t *stack)
