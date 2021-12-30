@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-29 13:53+0100\n"
-"PO-Revision-Date: 2021-12-30 14:09+0900\n"
+"PO-Revision-Date: 2021-12-30 15:09+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -22639,7 +22639,7 @@ msgstr "ブラシの不透明度を下げる"
 #: ../src/views/map.c:2087
 msgctxt "accel"
 msgid "undo"
-msgstr "元に戻す"
+msgstr "取り消す"
 
 #: ../src/views/darkroom.c:3911 ../src/views/lighttable.c:883
 #: ../src/views/map.c:2088
