@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-29 13:53+0100\n"
-"PO-Revision-Date: 2021-12-30 01:11+0900\n"
+"PO-Revision-Date: 2021-12-30 13:44+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -14194,7 +14194,7 @@ msgstr "レンズぼけの除去：強"
 
 #: ../src/iop/diffuse.c:258
 msgid "dehaze"
-msgstr "霞の除去"
+msgstr "かすみの除去"
 
 #: ../src/iop/diffuse.c:279
 msgid "denoise: fine"
