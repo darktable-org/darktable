@@ -202,12 +202,12 @@
     <shortdescription>host memory limit (in MB) for tiling</shortdescription>
     <longdescription>this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500.</longdescription>
   </dtconfig>
-  <dtconfig prefs="processing" section="cpugpu" restart="true">
+  <dtconfig prefs="processing" section="cpugpu">
     <name>singlebuffer_limit</name>
-    <type min="2" max="64">int</type>
+    <type min="2" max="128">int</type>
     <default>16</default>
     <shortdescription>minimum amount of memory (in MB) for a single buffer in tiling</shortdescription>
-    <longdescription>minimum amount of memory (in MB) that tiling should take for a single image buffer (needs a restart).</longdescription>
+    <longdescription>minimum amount of memory (in MB) that tiling should take for a single image buffer.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_memory_headroom</name>
