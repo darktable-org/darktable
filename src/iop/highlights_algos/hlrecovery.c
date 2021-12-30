@@ -367,8 +367,14 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   }
 
   for(int p = 0; p < 4; p++)
-    if(combining) dt_image_transform_closing(isegments[p].data, pwidth, pheight, combining, HLBORDER);
-
+  {
+    if(combining)
+    {
+      dt_image_transform_erode(isegments[p].data, pwidth, pheight, 0, HLBORDER);
+      dt_image_transform_dilate(isegments[p].data, pwidth, pheight, 1, HLBORDER);
+      dt_image_transform_closing(isegments[p].data, pwidth, pheight, combining, HLBORDER);
+    }
+  }
   if(dt_get_num_threads() >= HLSEGPLANES)
   {
 #ifdef _OPENMP
@@ -423,6 +429,14 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
             candidates[pp]    = isegments[pp].refcol[pid];   
             const size_t loc  = isegments[pp].ref[pid];
             if(loc) cand_minimum[pp] = pminimum[loc];
+          }
+          else if(pid == 0)
+          {
+            segid[pp] = 1;          
+            float sum = 0.0f;
+            for(int y = -2; y < 3; y++)
+              for(int x = -2; x < 3; x++) sum += pminimum[i + y*pwidth +x];
+            candidates[pp]    = 1.0f - (0.04f * sum);   
           }
         }     
 
