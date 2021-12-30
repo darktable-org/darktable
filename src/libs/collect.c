@@ -102,6 +102,8 @@ typedef struct dt_lib_collect_rule_t
   GtkWidget *w_special_box;
   void *w_specific; // structure which contains all the widgets specific to the rule type
   GtkWidget *w_expand;
+  GtkTreeView *w_view;
+  GtkTreeModel *filter;
   int manual_widget_set; // when we update manually the widget, we don't want events to be handled
 
   GtkWidget *hbox;
@@ -860,7 +862,6 @@ gboolean _combo_set_active_collection(GtkWidget *combo, const int property)
 static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
-  dt_lib_collect_t *d = get_collect(dr);
   gchar *str = NULL;
   gchar *txt = NULL;
   gboolean startwildcard = FALSE;
@@ -869,7 +870,7 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_TEXT, &txt, -1);
 
   gchar *haystack = g_utf8_strdown(str, -1);
-  gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+  gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->w_raw_text)), -1);
   gchar *txt2 = g_utf8_strdown(txt, -1);
 
   if(g_str_has_prefix(needle, "%")) startwildcard = TRUE;
@@ -898,7 +899,7 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   }
   if(dr->typing && g_strrstr(txt2, needle) != NULL)
   {
-    gtk_tree_view_expand_to_path(d->view, path);
+    gtk_tree_view_expand_to_path(dr->w_view, path);
     expanded = TRUE;
   }
 
@@ -908,20 +909,20 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   }
   else if(strcmp(haystack, needle) == 0)
   {
-    gtk_tree_view_expand_to_path(d->view, path);
-    gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
-    gtk_tree_view_scroll_to_cell(d->view, path, NULL, FALSE, 0.2, 0);
+    gtk_tree_view_expand_to_path(dr->w_view, path);
+    gtk_tree_selection_select_path(gtk_tree_view_get_selection(dr->w_view), path);
+    gtk_tree_view_scroll_to_cell(dr->w_view, path, NULL, FALSE, 0.2, 0);
     expanded = TRUE;
   }
   else if(startwildcard && g_strrstr(haystack, needle+1) != NULL)
   {
-    gtk_tree_view_expand_to_path(d->view, path);
+    gtk_tree_view_expand_to_path(dr->w_view, path);
     expanded = TRUE;
   }
   else if((dr->typing || _combo_get_active_collection(dr->combo) != DT_COLLECTION_PROP_FOLDERS)
           && g_str_has_prefix(haystack, needle))
   {
-    gtk_tree_view_expand_to_path(d->view, path);
+    gtk_tree_view_expand_to_path(dr->w_view, path);
     expanded = TRUE;
   }
 
@@ -1049,7 +1050,7 @@ static gboolean tree_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   else
   {
     gchar *haystack = g_utf8_strdown(str, -1),
-          *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+          *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->w_raw_text)), -1);
     visible = (g_strrstr(haystack, needle) != NULL);
     g_free(haystack);
     g_free(needle);
@@ -1119,7 +1120,7 @@ static void _lib_folders_update_collection(const gchar *filmroll)
 static void set_properties(dt_lib_collect_rule_t *dr)
 {
   const int property = _combo_get_active_collection(dr->combo);
-  const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->text));
+  const gchar *text = gtk_entry_get_text(GTK_ENTRY(dr->w_raw_text));
 
   char confname[200] = { 0 };
   snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", dr->num);
@@ -1343,13 +1344,13 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
   set_properties(dr);
 
-  GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(d->treefilter));
+  GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(dr->filter));
   // since we'll be inserting elements in the same order that we want them displayed, there is no need for the
   // overhead of having the tree view sort itself
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID, GTK_SORT_ASCENDING);
 
-  if(d->view_rule != property)
+  // if(d->view_rule != property)
   {
     // tree creation/recreation
     sqlite3_stmt *stmt;
@@ -1357,10 +1358,10 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     GtkTreeIter temp;
 
     g_object_ref(model);
-    g_object_unref(d->treefilter);
-    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
+    g_object_unref(dr->filter);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(dr->w_view), NULL);
     gtk_tree_store_clear(GTK_TREE_STORE(model));
-    gtk_widget_hide(GTK_WIDGET(d->view));
+    gtk_widget_hide(GTK_WIDGET(dr->w_view));
 
     /* query construction */
     gchar *where_ext = dt_collection_get_extended_where(darktable.collection, dr->num);
@@ -1656,11 +1657,11 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     }
     g_list_free_full(sorted_names, free_tuple);
 
-    gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->view), DT_LIB_COLLECT_COL_TOOLTIP);
+    gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(dr->w_view), DT_LIB_COLLECT_COL_TOOLTIP);
 
-    d->treefilter = _create_filtered_model(model, dr);
+    dr->filter = _create_filtered_model(model, dr);
 
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(dr->w_view));
     if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
     {
       gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
@@ -1670,9 +1671,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
     }
 
-    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->treefilter);
-    gtk_widget_set_no_show_all(GTK_WIDGET(d->view), FALSE);
-    // gtk_widget_show_all(GTK_WIDGET(d->view));
+    gtk_tree_view_set_model(GTK_TREE_VIEW(dr->w_view), dr->filter);
+    gtk_widget_set_no_show_all(GTK_WIDGET(dr->w_view), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(dr->w_view));
 
     g_object_unref(model);
     g_strfreev(last_tokens);
@@ -1682,8 +1683,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   // if needed, we restrict the tree to matching entries
   if(dr->typing) tree_set_visibility(model, dr);
   // we update tree expansion and selection
-  gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
-  gtk_tree_view_collapse_all(d->view);
+  gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(dr->w_view));
+  gtk_tree_view_collapse_all(dr->w_view);
 
   if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
@@ -1693,7 +1694,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     int match_count;
 
     regex = g_regex_new("^\\s*\\[\\s*(.*)\\s*;\\s*(.*)\\s*\\]\\s*$", 0, 0, NULL);
-    g_regex_match_full(regex, gtk_entry_get_text(GTK_ENTRY(dr->text)), -1, 0, 0, &match_info, NULL);
+    g_regex_match_full(regex, gtk_entry_get_text(GTK_ENTRY(dr->w_raw_text)), -1, 0, 0, &match_info, NULL);
     match_count = g_match_info_get_match_count(match_info);
 
     if(match_count == 3)
@@ -1703,10 +1704,10 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       range->start = g_match_info_fetch(match_info, 2);
       range->stop = g_match_info_fetch(match_info, 1);
 
-      gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)range_select, range);
+      gtk_tree_model_foreach(dr->filter, (GtkTreeModelForeachFunc)range_select, range);
       if(range->path1 && range->path2)
       {
-        gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), range->path1, range->path2);
+        gtk_tree_selection_select_range(gtk_tree_view_get_selection(dr->w_view), range->path1, range->path2);
       }
       g_free(range->start);
       g_free(range->stop);
@@ -1715,13 +1716,13 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       free(range);
     }
     else
-      gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
+      gtk_tree_model_foreach(dr->filter, (GtkTreeModelForeachFunc)tree_expand, dr);
 
     g_match_info_free(match_info);
     g_regex_unref(regex);
   }
   else
-    gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
+    gtk_tree_model_foreach(dr->filter, (GtkTreeModelForeachFunc)tree_expand, dr);
 }
 
 static void list_view(dt_lib_collect_rule_t *dr)
@@ -2479,6 +2480,12 @@ static gboolean _event_rule_raw_switch(GtkWidget *widget, GdkEventButton *event,
   return TRUE;
 }
 
+static void _event_entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *dr)
+{
+  dr->typing = TRUE;
+  update_view(dr);
+}
+
 static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_properties_t prop, const gchar *text,
                          const dt_lib_collect_mode_t mode, const int pos, dt_lib_module_t *self)
 {
@@ -2528,6 +2535,7 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   rule->w_raw_text = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(rule->w_raw_text), text);
   g_signal_connect(G_OBJECT(rule->w_raw_text), "activate", G_CALLBACK(_event_rule_changed), rule);
+  g_signal_connect(G_OBJECT(rule->w_raw_text), "changed", G_CALLBACK(_event_entry_changed), rule);
   gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_raw_text, TRUE, TRUE, 0);
 
   // initialize the specific entries if any
@@ -2559,6 +2567,30 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   rule->w_expand = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
   gtk_widget_set_name(GTK_WIDGET(rule->w_expand), "control-button");
   gtk_box_pack_start(GTK_BOX(hbox), rule->w_expand, TRUE, TRUE, 0);
+
+  // the listview/treeview
+  rule->w_view = GTK_TREE_VIEW(gtk_tree_view_new());
+  gtk_box_pack_start(GTK_BOX(rule->w_main), GTK_WIDGET(rule->w_view), TRUE, TRUE, 0);
+  gtk_tree_view_set_headers_visible(rule->w_view, FALSE);
+  // g_signal_connect(G_OBJECT(rule->w_view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
+  // g_signal_connect(G_OBJECT(rule->w_view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
+
+  GtkTreeViewColumn *col = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(rule->w_view, col);
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_set_cell_data_func(col, renderer, tree_count_show, NULL, NULL);
+  g_object_set(renderer, "strikethrough", TRUE, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
+  gtk_tree_view_column_add_attribute(col, renderer, "strikethrough-set", DT_LIB_COLLECT_COL_UNREACHABLE);
+
+  GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT,
+                                                          G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
+                                                          G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT));
+  // gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), DT_LIB_COLLECT_COL_INDEX,
+  //                 (GtkTreeIterCompareFunc)_sort_model_func, self, NULL);
+  rule->filter = gtk_tree_model_filter_new(model, NULL);
+  gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(rule->filter), DT_LIB_COLLECT_COL_VISIBLE);
+  g_object_unref(model);
 }
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
