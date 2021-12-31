@@ -42,13 +42,6 @@
 DT_MODULE_INTROSPECTION(2, dt_iop_highlights_params_t)
 
 /* defines for the highlights recovery section */
-#define HLBORDER 8
-#define HLEPSILON 1e-5
-
-static size_t plane_size(size_t width, size_t height)
-{
-  return (size_t) dt_round_size((width + 4) * (height + 4), 16);
-}
 
 typedef enum dt_iop_highlights_mode_t
 {
@@ -1081,8 +1074,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->combine, _("combine close segments")); 
 }
 
-#undef HLBORDER
-#undef HLEPSILON
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

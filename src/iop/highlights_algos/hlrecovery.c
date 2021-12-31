@@ -70,11 +70,18 @@ both have problems with identifying the clipped segments in a plane. I ended up 
 #define HLSEGPLANES 4
 #define HLMAXSEGMENTS 0x4000
 #define HLBADWEIGHT 0.3f
+#define HLBORDER 8
+#define HLEPSILON 1e-5
 
 #ifdef __GNUC__
   #pragma GCC push_options
   #pragma GCC optimize ("fast-math", "fp-contract=fast", "finite-math-only", "no-math-errno", "ivopts")
 #endif
+
+static size_t plane_size(size_t width, size_t height)
+{
+  return (size_t) dt_round_size((width + 4) * (height + 4), 16);
+}
 
 typedef enum dt_iop_highlights_plane_t
 {
@@ -258,7 +265,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
     icoeffs[2] = 1.5f;
   }
   const float coeffs[4] = { icoeffs[0], icoeffs[1], icoeffs[1], icoeffs[2]};
-  float corr_coeff[4]   = { icoeffs[1] + icoeffs[2], icoeffs[0] + icoeffs[2], icoeffs[0] + icoeffs[2], icoeffs[0] + icoeffs[1]};
+  float corr_coeff[4]   = { fmaxf(icoeffs[1], icoeffs[2]), fmaxf(icoeffs[0], icoeffs[2]), fmaxf(icoeffs[0], icoeffs[2]), fmaxf(icoeffs[0], icoeffs[1])};
   const float mincoeff  = fminf(corr_coeff[0], fminf(corr_coeff[1], corr_coeff[3]));
   for(int c = 0; c < 4; c++) corr_coeff[c] /= mincoeff;
 
@@ -485,4 +492,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 #undef HLMAXSEGMENTS
 #undef HLBADWEIGHT
 #undef HLSEGPLANES
+#undef HLBORDER
+#undef HLEPSILON
+
 
