@@ -982,22 +982,13 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
         entry++;
       }
       g_strfreev(tokens);
-      GList *tags_r = dt_tag_get_tags(-1, TRUE);
       const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE, FALSE);
-      dt_tag_set_tags(tags, imgs, TRUE, TRUE, TRUE);
+      dt_tag_set_tags(tags, imgs, TRUE, FALSE, TRUE);
       gboolean change = FALSE;
       for(GList *tag = tags; tag; tag = g_list_next(tag))
       {
         _update_attached_count(GPOINTER_TO_INT(tag->data), d->dictionary_view, d->tree_flag);
         change = TRUE;
-      }
-      for(GList *tag = tags_r; tag; tag = g_list_next(tag))
-      {
-        if(!g_list_find(tags, tag->data))
-        {
-          _update_attached_count(GPOINTER_TO_INT(tag->data), d->dictionary_view, d->tree_flag);
-          change = TRUE;
-        }
       }
 
       if(change)
@@ -1007,7 +998,6 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
         dt_image_synch_xmp(-1);
       }
       g_list_free(tags);
-      g_list_free(tags_r);
     }
   }
   return 0;
