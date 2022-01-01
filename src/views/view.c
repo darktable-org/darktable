@@ -346,7 +346,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       GtkWidget *w = dt_lib_gui_get_expander(plugin);
 
       if(plugin->connect_key_accels) plugin->connect_key_accels(plugin);
-      dt_lib_connect_common_accels(plugin);
 
       /* if we didn't get an expander let's add the widget */
       if(!w) w = plugin->widget;

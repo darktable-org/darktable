@@ -645,9 +645,6 @@ bail_out:
   g_free(place);
 }
 
-void init_presets(dt_lib_module_t *self)
-{}
-
 struct params_fixed_t
 {
   int32_t relevance;

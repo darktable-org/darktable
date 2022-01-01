@@ -726,6 +726,21 @@ void dt_lib_init_presets(dt_lib_module_t *module)
     module->init_presets(module);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
                                   g_strdup(module->plugin_name));
+
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT name"
+                                " FROM data.presets"
+                                " WHERE operation=?1 AND op_version=?2"
+                                " ORDER BY writeprotect DESC, name, rowid",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      dt_action_define_preset(&module->actions, (char *)sqlite3_column_text(stmt, 0));
+    }
+    sqlite3_finalize(stmt);
   }
 }
 
@@ -1127,27 +1142,6 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
       gtk_widget_show(GTK_WIDGET(widget));
     else
       gtk_widget_hide(GTK_WIDGET(widget));
-  }
-}
-
-void dt_lib_connect_common_accels(dt_lib_module_t *module)
-{
-  if(module->init_presets)
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT name"
-                                " FROM data.presets"
-                                " WHERE operation=?1 AND op_version=?2"
-                                " ORDER BY writeprotect DESC, name, rowid",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      dt_action_define_preset(&module->actions, (char *)sqlite3_column_text(stmt, 0));
-    }
-    sqlite3_finalize(stmt);
   }
 }
 

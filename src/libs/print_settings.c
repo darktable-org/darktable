@@ -2604,10 +2604,6 @@ void gui_init(dt_lib_module_t *self)
   dt_printers_discovery(_new_printer_callback, self);
 }
 
-void init_presets(dt_lib_module_t *self)
-{
-}
-
 void *legacy_params(dt_lib_module_t *self, const void *const old_params, const size_t old_params_size,
                     const int old_version, int *new_version, size_t *new_size)
 {
