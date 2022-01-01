@@ -295,7 +295,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(language_callback), 0);
   gtk_widget_set_tooltip_text(labelev,  _("double click to reset to the system language"));
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-  gtk_widget_set_tooltip_text(widget, _("set the language of the user interface. the system default is marked with an *. User of the Japanese interface on Linux is adviced to install IPAPGothic font (needs a restart)"));
+  gtk_widget_set_tooltip_text(widget, _("set the language of the user interface. the system default is marked with an * (needs a restart)"));
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
