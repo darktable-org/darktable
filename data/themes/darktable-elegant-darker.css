@@ -74,9 +74,9 @@ box *
     font-family: "Roboto Light", "Roboto",                  /* best case scenario */
                  "Segoe UI Light", "Segoe UI",              /* Windows 10 default */
                  "SF Pro Display Light", "SF Pro Display",  /* Mac OS X default */
-                 "Ubuntu Light", "Ubuntu",                  /* Ubuntu default */
+                 "Ubuntu Light", "Ubuntu", "IPAPGothic",    /* Ubuntu default */
                  "Cantarell",                               /* Gnome default */
-                 sans-serif;                                /* default default */
+                  sans-serif;                                /* default default */
 }
 
 button,
@@ -86,7 +86,7 @@ button,
     font-family: "Roboto Medium", "Roboto",
                  "Segoe UI Semibold", "Segoe UI",
                  "SF Pro Display Medium", "SF Pro Display",
-                 "Ubuntu Medium", "Ubuntu",
+                 "Ubuntu Medium", "Ubuntu", "IPAPGothic",
                  "Cantarell",
                   sans-serif;
 }
@@ -97,9 +97,9 @@ button,
     font-family: "Roboto Condensed", "Roboto",
                  "Segoe UI Condensed", "Segoe UI",
                  "SF Pro Display", "SF Pro Display",
-                 "Ubuntu Condensed", "Ubuntu",
+                 "Ubuntu Condensed", "Ubuntu", "IPAPGothic",
                  "Cantarell",
-                 sans-serif;
+                  sans-serif;
 }
 
 notebook tabs,
@@ -111,7 +111,7 @@ tooltip label,
     font-family: "Roboto",
                  "Segoe UI",
                  "SF Pro Text",
-                 "Ubuntu",
+                 "Ubuntu", "IPAPGothic",
                  "Cantarell",
                   sans-serif;
 }
