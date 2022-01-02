@@ -153,8 +153,9 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(self->widget, "filter-box");
-  gtk_box_set_homogeneous(GTK_BOX(self->widget), TRUE);
+  GtkWidget *dropdowns = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(dropdowns, "filter-box");
+  gtk_box_set_homogeneous(GTK_BOX(dropdowns), TRUE);
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
 
   GtkWidget *overlay = gtk_overlay_new();
@@ -193,7 +194,7 @@ void gui_init(dt_lib_module_t *self)
                                N_("all except rejected"));
   gtk_container_add(GTK_CONTAINER(overlay), d->filter);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), overlay, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(dropdowns), overlay, TRUE, TRUE, 0);
 
   /* sort combobox */
   const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
@@ -201,8 +202,7 @@ void gui_init(dt_lib_module_t *self)
                                          _("determine the sort order of shown images"),
                                          _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
                                          _sort_names);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), d->sort, TRUE, TRUE, 4);
+  gtk_box_pack_start(GTK_BOX(dropdowns), d->sort, TRUE, TRUE, 4);
 
   /* reverse order checkbutton */
   d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_UP, NULL);
@@ -212,7 +212,8 @@ void gui_init(dt_lib_module_t *self)
                                  CPF_DIRECTION_DOWN, NULL);
   gtk_widget_set_halign(d->reverse, GTK_ALIGN_START);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), d->reverse, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), dropdowns, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->reverse, FALSE, FALSE, 0);
 
   /* select the last value and connect callback */
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),
