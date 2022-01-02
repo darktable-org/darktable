@@ -1535,12 +1535,12 @@ filechooser row:hover,
 /*--------------------
   - collect module -
   --------------------*/
-  #collect-rule-widget
-  {
-    background-color: @button_bg;
-    margin: 0.2em 0;
-    padding: 0 0.2em;
-  }
+#collect-rule-widget
+{
+  background-color: @button_bg;
+  margin: 0.3em 0;
+  padding: 0 0.2em;
+}
 #collect-rule-widget #section_label
 {
   border: none;

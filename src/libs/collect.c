@@ -1747,8 +1747,8 @@ static void _widget_rule_list_view(dt_lib_collect_rule_t *rule)
     rule->w_view = GTK_TREE_VIEW(gtk_tree_view_new());
     gtk_container_add(GTK_CONTAINER(rule->w_view_sw), GTK_WIDGET(rule->w_view));
     gtk_tree_view_set_headers_visible(rule->w_view, FALSE);
-    // g_signal_connect(G_OBJECT(rule->w_view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
-    // g_signal_connect(G_OBJECT(rule->w_view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
+    g_signal_connect(G_OBJECT(rule->w_view), "button-press-event", G_CALLBACK(_event_view_onButtonPressed), rule);
+    g_signal_connect(G_OBJECT(rule->w_view), "popup-menu", G_CALLBACK(_event_view_onPopupMenu), rule);
 
     GtkTreeViewColumn *col = gtk_tree_view_column_new();
     gtk_tree_view_append_column(rule->w_view, col);
@@ -2466,10 +2466,6 @@ static gboolean _event_rule_expand(GtkWidget *widget, GdkEventButton *event, dt_
 
     // hide the scrollwindow
     gtk_widget_set_visible(rule->w_view_sw, FALSE);
-
-    // destroy the tree/list view
-    gtk_widget_destroy(GTK_WIDGET(rule->w_view));
-    rule->w_view = NULL;
   }
   else
   {
@@ -2511,6 +2507,31 @@ static void _event_entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *rule)
 {
   // dr->typing = TRUE;
   // update_view(dr);
+}
+
+static gboolean _event_completion_match_selected(GtkEntryCompletion *self, GtkTreeModel *model, GtkTreeIter *iter,
+                                                 dt_lib_collect_rule_t *rule)
+{
+  gchar *text;
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+  gtk_entry_set_text(GTK_ENTRY(gtk_entry_completion_get_entry(self)), text);
+  g_free(text);
+  gtk_widget_activate(gtk_entry_completion_get_entry(self));
+
+  return TRUE;
+}
+
+static gboolean _completion_match_func(GtkEntryCompletion *self, const gchar *key, GtkTreeIter *iter,
+                                       gpointer user_data)
+{
+  GtkTreeModel *model = gtk_entry_completion_get_model(self);
+  gchar *text;
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+  gchar *txt2 = g_utf8_strdown(text, -1);
+  g_free(text);
+  gboolean rep = (g_strrstr(txt2, key) != NULL);
+  g_free(txt2);
+  return rep;
 }
 
 static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_properties_t prop, const gchar *text,
@@ -2602,6 +2623,18 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   gtk_widget_set_size_request(rule->w_view_sw, -1, DT_PIXEL_APPLY_DPI(300));
   gtk_box_pack_start(GTK_BOX(rule->w_main), rule->w_view_sw, TRUE, TRUE, 0);
   gtk_widget_set_no_show_all(rule->w_view_sw, TRUE);
+
+  // we create the list/treeview for real
+  _widget_rule_view_update(rule);
+
+  // we can now fill the entry completion
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(rule->filter));
+  gtk_entry_completion_set_model(completion, model);
+  gtk_entry_completion_set_text_column(completion, DT_LIB_COLLECT_COL_TEXT);
+  g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(_event_completion_match_selected), rule);
+  gtk_entry_completion_set_match_func(completion, _completion_match_func, rule, NULL);
+  gtk_entry_set_completion(GTK_ENTRY(rule->w_raw_text), completion);
 }
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
@@ -2623,6 +2656,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     {
       gtk_widget_destroy(d->rule[i].w_main);
       d->rule[i].w_main = NULL;
+      d->rule[i].w_view = NULL;
     }
   }
   for(int i = 0; i < d->nb_rules; i++)
@@ -3575,18 +3609,13 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // the box to insert the collect rules
-  GtkWidget *label = dt_ui_section_label_new(_("collect rules"));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
-  gtk_style_context_add_class(context, "section_label_top");
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-
   d->rules_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget),
                      dt_ui_scroll_wrap(GTK_WIDGET(d->rules_box), 200, "plugins/lighttable/collect/windowheight"),
                      TRUE, TRUE, 0);
 
   // the sorting part
-  label = dt_ui_section_label_new(_("sorting"));
+  GtkWidget *label = dt_ui_section_label_new(_("sorting"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
   GtkWidget *sort_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(sort_box, "collect-rule-widget");
