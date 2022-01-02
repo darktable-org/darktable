@@ -1581,6 +1581,7 @@ void init_presets(dt_lib_module_t *self)
   AM("finalscale");
   AM("flip");
   AM("highlights");
+  AM("highlightsrgb");
   AM("negadoctor");
   AM("overexposed");
   AM("rawoverexposed");
@@ -1703,6 +1704,7 @@ void init_presets(dt_lib_module_t *self)
   AM("bilat");
   AM("shadhi");
   AM("highlights");
+  AM("highlightsrgb");
 
   SMG(C_("modulegroup", "color"), "color");
   AM("channelmixerrgb");
@@ -1804,6 +1806,7 @@ void init_presets(dt_lib_module_t *self)
   AM("flip");
   AM("hazeremoval");
   AM("highlights");
+  AM("highlightsrgb");
   AM("hotpixels");
   AM("lens");
   AM("lut3d");
