@@ -136,6 +136,13 @@ static void _ungroup_helper_function(void)
   }
 }
 
+static gboolean _duplicate_virgin(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, gpointer data)
+{
+  dt_control_duplicate_images(TRUE);
+
+  return TRUE;
+}
+
 static void button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const int i = GPOINTER_TO_INT(user_data);
@@ -145,7 +152,7 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
     dt_control_delete_images();
   // else if(i == 2) dt_control_write_sidecar_files();
   else if(i == 3)
-    dt_control_duplicate_images();
+    dt_control_duplicate_images(FALSE);
   else if(i == 4)
     dt_control_flip_images(1);
   else if(i == 5)
@@ -462,7 +469,10 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_image_t *d = (dt_lib_image_t *)malloc(sizeof(dt_lib_image_t));
   self->data = (void *)d;
   self->timeout_handle = 0;
-  self->widget = gtk_notebook_new();
+
+  static struct dt_action_def_t notebook_def = { };
+  self->widget = GTK_WIDGET(dt_ui_notebook_new(&notebook_def));
+  dt_action_define(DT_ACTION(self), NULL, N_("page"), GTK_WIDGET(self->widget), &notebook_def);
   dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
 
   GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), N_("images"), NULL);
@@ -660,6 +670,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "rotate selected images 90 degrees CCW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "create HDR"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "duplicate"), GDK_KEY_d, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "duplicate virgin"), GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "copy the image locally"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "resync the local copy"), 0, 0);
@@ -686,6 +697,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CCW", d->rotate_ccw_button);
   dt_accel_connect_button_lib(self, "create HDR", d->create_hdr_button);
   dt_accel_connect_button_lib(self, "duplicate", d->duplicate_button);
+  dt_accel_connect_lib(self, "duplicate virgin", g_cclosure_new(G_CALLBACK(_duplicate_virgin), self, NULL));
   dt_accel_connect_button_lib(self, "reset rotation", d->reset_button);
   dt_accel_connect_button_lib(self, "copy the image locally", d->cache_button);
   dt_accel_connect_button_lib(self, "resync the local copy", d->uncache_button);
