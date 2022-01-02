@@ -664,7 +664,7 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
       int id = -1;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
-      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 1);
+      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 0);
     }
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
@@ -696,7 +696,7 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
       int id = -1;
       _lib_masks_get_values(model, &iter, NULL, &grid, &id);
 
-      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 0);
+      dt_masks_form_move(dt_masks_get_from_id(darktable.develop, grid), id, 1);
     }
   }
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
