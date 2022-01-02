@@ -264,7 +264,7 @@ static void _sort_dictionary_list(dt_lib_module_t *self, gboolean force)
 
 // find a tag on the tree
 static gboolean _find_tag_iter_tagname(GtkTreeModel *model, GtkTreeIter *iter,
-                                       const char *tagname)
+                                       const char *tagname, const gboolean needle)
 {
   gboolean found = FALSE;
   if(!tagname) return found;
@@ -272,13 +272,20 @@ static gboolean _find_tag_iter_tagname(GtkTreeModel *model, GtkTreeIter *iter,
   do
   {
     gtk_tree_model_get(model, iter, DT_LIB_TAGGING_COL_PATH, &path, -1);
-    found = !g_strcmp0(tagname, path);
+    if(needle)
+    {
+      gchar *haystack = g_utf8_strdown(path, -1);
+      found = g_strstr_len(haystack, strlen(haystack), tagname) != NULL;
+      g_free(haystack);
+    }
+    else
+      found = !g_strcmp0(tagname, path);
     g_free(path);
     if(found) return found;
     GtkTreeIter child, parent = *iter;
     if(gtk_tree_model_iter_children(model, &child, &parent))
     {
-      found = _find_tag_iter_tagname(model, &child, tagname);
+      found = _find_tag_iter_tagname(model, &child, tagname, needle);
       if(found)
       {
         *iter = child;
@@ -300,7 +307,7 @@ static void _show_tag_on_view(GtkTreeView *view, const char *tagname)
     GtkTreeModel *model = gtk_tree_view_get_model(view);
     if(gtk_tree_model_get_iter_first(model, &iter))
     {
-      if(_find_tag_iter_tagname(model, &iter, t))
+      if(_find_tag_iter_tagname(model, &iter, t, FALSE))
       {
         GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
         gtk_tree_view_expand_to_path(view, path);
@@ -1283,7 +1290,7 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
                     tagname ? tagname + 1 : d->last_tag);
 }
 
-static gboolean _key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+static gboolean _enter_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
 {
   switch(event->keyval)
   {
@@ -1294,6 +1301,24 @@ static gboolean _key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module
     case GDK_KEY_Escape:
       gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
       break;
+    case GDK_KEY_Down:
+    {
+      dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+      const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
+      GtkTreeModel *model = gtk_tree_view_get_model(d->dictionary_view);
+      GtkTreeIter iter;
+      if(gtk_tree_model_get_iter_first(model, &iter))
+      {
+        gchar *needle = g_utf8_strdown(text, -1);
+        _find_tag_iter_tagname(model, &iter, needle, TRUE);
+        g_free(needle);
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(d->dictionary_view);
+        gtk_tree_selection_select_iter(selection, &iter);
+        gtk_widget_grab_focus(GTK_WIDGET(d->dictionary_view));
+        return TRUE;
+      }
+      break;
+    }
     default:
       break;
   }
@@ -2239,6 +2264,44 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
   return FALSE;
 }
 
+static gboolean _dictionary_key_pressed(GtkWidget *view, GdkEventKey *event, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  GtkTreeIter iter;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
+  {
+    GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+    switch(event->keyval)
+    {
+      case GDK_KEY_Return:
+      case GDK_KEY_KP_Enter:
+        _attach_selected_tag(self, d);
+        break;
+      case GDK_KEY_Left:
+        if(path)
+        {
+          gtk_tree_view_collapse_row(GTK_TREE_VIEW(view), path);
+          return TRUE;
+        }
+        break;
+      case GDK_KEY_Right:
+        if(path)
+        {
+          gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path,
+                                   dt_modifier_is(event->state, GDK_SHIFT_MASK));
+          return TRUE;
+        }
+        break;
+      default:
+        break;
+    }
+    gtk_tree_path_free(path);
+  }
+  return FALSE;
+}
+
 static gboolean _row_tooltip_setup(GtkWidget *treeview, gint x, gint y, gboolean kb_mode,
       GtkTooltip* tooltip, dt_lib_module_t *self)
 {
@@ -3039,6 +3102,7 @@ void gui_init(dt_lib_module_t *self)
                                                       "\nctrl-wheel scroll to resize the window"));
   dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
+  g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_dictionary_key_pressed), (gpointer)self);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(d->dictionary_listfilter));
   g_object_unref(d->dictionary_listfilter);
   g_object_set(G_OBJECT(view), "has-tooltip", TRUE, NULL);
@@ -3109,7 +3173,7 @@ void gui_init(dt_lib_module_t *self)
   else d->completion = NULL;
 
   // completion works better if this happens after completion connection
-  g_signal_connect(G_OBJECT(d->entry), "key-press-event", G_CALLBACK(_key_pressed), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->entry), "key-press-event", G_CALLBACK(_enter_key_pressed), (gpointer)self);
 
   /* connect to mouse over id */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
