@@ -5868,6 +5868,13 @@ void gui_init(struct dt_iop_module_t *self)
                    (gpointer)self);
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_event_draw), self);
 
+  dt_action_define_iop(self, N_("fit"), N_("vertical"), g->fit_v, &dt_action_def_button);
+  dt_action_define_iop(self, N_("fit"), N_("horizontal"), g->fit_h, &dt_action_def_button);
+  dt_action_define_iop(self, N_("fit"), N_("both"), g->fit_both, &dt_action_def_button);
+  dt_action_define_iop(self, N_("structure"), N_("rectangle"), g->structure_quad, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("structure"), N_("lines"), g->structure_lines, &dt_action_def_toggle);
+  dt_action_define_iop(self, N_("structure"), N_("auto"), g->structure_auto, &dt_action_def_toggle);
+
   /* add signal handler for preview pipe finish to redraw the overlay */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                                   G_CALLBACK(_event_process_after_preview_callback), self);
