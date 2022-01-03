@@ -584,7 +584,11 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     const int newimgid = dt_image_duplicate(imgid);
     if(newimgid != -1)
     {
-      dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE);
+      if(GPOINTER_TO_INT(params->data))
+        dt_history_delete_on_image(newimgid);
+      else
+        dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE);
+
       // a duplicate should keep the change time stamp of the original
       dt_image_cache_set_change_timestamp_from_image(darktable.image_cache, newimgid, imgid);
 
@@ -1521,11 +1525,11 @@ void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz
                      _control_gpx_apply_job_create(filename, filmid, tz, imgs));
 }
 
-void dt_control_duplicate_images()
+void dt_control_duplicate_images(gboolean virgin)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_duplicate_images_job_run,
-                                                          N_("duplicate images"), 0, NULL, PROGRESS_SIMPLE, TRUE));
+                                                          N_("duplicate images"), 0, GINT_TO_POINTER(virgin), PROGRESS_SIMPLE, TRUE));
 }
 
 void dt_control_flip_images(const int32_t cw)
