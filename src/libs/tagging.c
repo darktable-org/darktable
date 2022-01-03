@@ -1329,6 +1329,10 @@ static void _tag_name_changed(GtkEntry *entry, dt_lib_module_t *self)
     gtk_tree_model_foreach(store, (GtkTreeModelForeachFunc)_tree_reveal_func, NULL);
     gtk_tree_view_expand_all(d->dictionary_view);
   }
+  
+  // when entering a new tag or filter expression we don't want to see any selected item in the dictionary:
+  gtk_tree_selection_unselect_all( gtk_tree_view_get_selection( d->dictionary_view ) );
+
 }
 
 static void _pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t *self, gboolean branch)
@@ -2657,6 +2661,189 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
   return res;
 }
 
+/**
+ * @brief Detaches the tag that is currently selected in the attached tag view and tries to reselect the next
+ *        best tag in the view to allow continuing deletion
+ * 
+ * @param dt_lib_module pointer to the library module
+ * @param dt_lib_tagging pointer to the tagging library module
+ */
+static void _detach_selected_tag_and_refocus( dt_lib_module_t *dt_lib_module, dt_lib_tagging_t *dt_lib_tagging )
+{
+  GtkTreeModel *model = gtk_tree_view_get_model( GTK_TREE_VIEW( dt_lib_tagging->attached_view ) );
+  GtkTreeSelection *selection = gtk_tree_view_get_selection( GTK_TREE_VIEW( dt_lib_tagging->attached_view ) );
+
+  GList *selected = gtk_tree_selection_get_selected_rows( selection, &model );
+  GtkTreePath *selected_row = NULL;
+  gint indexOfSelected = 0;
+
+  if( selected )
+  {
+    selected_row = g_list_first( selected )->data;
+    if( selected_row ) 
+    {
+      gint* indices = gtk_tree_path_get_indices( selected_row );
+      if( indices )
+      {
+        indexOfSelected = *indices;
+      }
+    }
+  }
+  
+  _detach_selected_tag( dt_lib_tagging->attached_view, dt_lib_module, dt_lib_tagging );
+
+  guint count = gtk_tree_model_iter_n_children( model, NULL );
+  if( 0 == count ) { // set focus to entry widget after deleting last attached tag
+    gtk_widget_grab_focus(GTK_WIDGET( dt_lib_tagging->entry ) );
+  }
+
+  if( selected_row )
+  {
+    if( indexOfSelected >= count )
+    {
+      GtkTreePath *pathLast = gtk_tree_path_new_from_indices( count - 1, -1 );
+      gtk_tree_view_set_cursor( dt_lib_tagging->attached_view, pathLast /*selected_row*/, NULL, FALSE ); // re-select the just deleted index
+      gtk_tree_path_free( pathLast );
+    }
+    else
+    {
+      gtk_tree_view_set_cursor( dt_lib_tagging->attached_view, selected_row, NULL, FALSE ); // re-select the just deleted index
+    }
+  }
+
+  g_list_free_full( selected, ( GDestroyNotify )gtk_tree_path_free );
+}
+
+/**
+ * @brief callback handler for key press events in the attached tag list view.
+ * Allows detaching tags via delete key. Escape brings focus to tag entry widget.
+ * 
+ * @param widget pointer to tag list
+ * @param event key event
+ * @param dt_lib_module pointer to module
+ * @return gboolean TRUE to stop event handling when delete or escape key was handled.
+ */
+static gboolean _on_tag_listview_key_press( GtkWidget *widget, GdkEventKey event, dt_lib_module_t *dt_lib_module )
+{
+  gboolean continueEventHandling = FALSE;
+
+  dt_lib_tagging_t *d = ( dt_lib_tagging_t * )dt_lib_module->data;
+
+  switch( event.keyval ) 
+  {
+    case GDK_KEY_Delete:
+      // TODO: Must not be done when it is an internal tag!
+      _detach_selected_tag_and_refocus( dt_lib_module, d );
+      break;
+    case GDK_KEY_Escape:
+      gtk_widget_grab_focus( GTK_WIDGET( d->entry ) );
+      gtk_tree_selection_unselect_all( gtk_tree_view_get_selection( d->dictionary_view ) );
+      break;
+    default:
+      continueEventHandling = TRUE;
+      break;
+  }
+
+  return ! continueEventHandling;
+}
+
+/**
+ * @brief Callback function for key press events in dictionary tree view to add the currently selected tag
+ *        when enter/return is pressed 
+ * 
+ * @param widget pointer to the dictionary tree view
+ * @param event  key event
+ * @param self   pointer to the dt_lib_module
+ * @return gboolean FALSE to signal the event queue to continue handling the event, TRUE to stop handling
+ */
+static gboolean _on_dict_treeview_key_press( GtkWidget *widget, GdkEventKey event, dt_lib_module_t *dt_lib_module )
+{
+  gboolean continueEventHandling = TRUE;
+
+  dt_lib_tagging_t *d = ( dt_lib_tagging_t * )dt_lib_module->data;
+  switch( event.keyval ) 
+  {
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
+      _attach_selected_tag( dt_lib_module, d );
+      if( ! event.state & GDK_SHIFT_MASK ) 
+      {
+        gtk_tree_selection_unselect_all( gtk_tree_view_get_selection( d->dictionary_view ) );
+        gtk_entry_set_text( d->entry, "" );
+        gtk_widget_grab_focus( GTK_WIDGET( d->entry ) );
+      }
+      continueEventHandling = FALSE;
+      break;
+    case GDK_KEY_Delete:
+    case GDK_KEY_KP_Delete:
+      _detach_selected_tag( GTK_TREE_VIEW( widget ), dt_lib_module, d );
+      continueEventHandling = FALSE;
+      break;
+    case GDK_KEY_Escape:
+      gtk_widget_grab_focus( GTK_WIDGET( d->entry ) );
+      gtk_tree_selection_unselect_all( gtk_tree_view_get_selection( d->dictionary_view ) );
+      continueEventHandling = FALSE;
+      break;
+  }
+
+  return ! continueEventHandling;  
+}
+
+/**
+ * @brief Callback handler function for key press event in tag entry widget.
+ * Handles arrow up and down to set focus to attached tags or dictionary tree.
+ * 
+ * @param widget Pointer to tag entry widget
+ * @param event key event
+ * @param dt_lib_module pointer to library module
+ * @return gboolean TRUE to stop event handling when up or down key was handled.
+ */
+static gboolean _on_tag_entry_key_press( GtkWidget *widget, GdkEventKey event, dt_lib_module_t *dt_lib_module )
+{
+  gboolean continueEventHandling = FALSE;
+
+  dt_lib_tagging_t *d = ( dt_lib_tagging_t * )dt_lib_module->data;
+  switch( event.keyval )
+  {
+    case GDK_KEY_Down:
+      gtk_widget_grab_focus( GTK_WIDGET( d->dictionary_view ) );
+      GtkTreePath *first = gtk_tree_path_new_first();
+
+      gtk_tree_view_set_cursor( d->dictionary_view, first, NULL, FALSE );
+      gtk_tree_path_free( first );
+      
+      break;
+    case GDK_KEY_Up:
+      gtk_widget_grab_focus( GTK_WIDGET( d->attached_view ) );
+      break;
+    default:
+      continueEventHandling = TRUE;
+      break;
+  }
+
+  return ! continueEventHandling;
+}
+
+/**
+ * @brief focus-in handler function for tag entry widget
+ * Deselects all rows in the dictionary view to avoid confusion about what shall be added as tag (entered or selected dict entry?)
+ * 
+ * @param widget pointer to tag entry widget
+ * @param event focus event
+ * @param dt_lib_module pointer to library module
+ * @return gboolean FALSE to pass event to next handler.
+ */
+static gboolean _on_tag_entry_focus_in( GtkWidget *widget, GdkEventFocus event, dt_lib_module_t *dt_lib_module )
+{
+  const gboolean continueEventHandling = TRUE;
+  
+  dt_lib_tagging_t *d = ( dt_lib_tagging_t * )dt_lib_module->data;
+
+  gtk_tree_selection_unselect_all( gtk_tree_view_get_selection( d->dictionary_view ) );
+
+  return ! continueEventHandling;
+}
+
 static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer data)
 {
   _update_atdetach_buttons((dt_lib_module_t *)data);
@@ -2886,7 +3073,8 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *box, *hbox;
   GtkWidget *button;
   GtkWidget *w;
-  GtkTreeView *view;
+  GtkTreeView *tag_list_view;
+  GtkTreeView *dict_tree_view;
   GtkTreeModel *model;
   GtkListStore *liststore;
   GtkTreeStore *treestore;
@@ -2897,11 +3085,11 @@ void gui_init(dt_lib_module_t *self)
   box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
-  view = GTK_TREE_VIEW(gtk_tree_view_new());
-  w = dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightattachedwindow");
+  tag_list_view = GTK_TREE_VIEW(gtk_tree_view_new());
+  w = dt_ui_scroll_wrap(GTK_WIDGET(tag_list_view), 200, "plugins/lighttable/tagging/heightattachedwindow");
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
-  d->attached_view = view;
-  gtk_tree_view_set_headers_visible(view, FALSE);
+  d->attached_view = tag_list_view;
+  gtk_tree_view_set_headers_visible(tag_list_view, FALSE);
   liststore = gtk_list_store_new(DT_LIB_TAGGING_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
                                 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_BOOLEAN);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(liststore), DT_TAG_SORT_PATH_ID,
@@ -2911,32 +3099,33 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(liststore), DT_TAG_SORT_COUNT_ID,
                   (GtkTreeIterCompareFunc)_sort_tree_count_func, self, NULL);
   d->attached_liststore = liststore;
-  g_object_set(G_OBJECT(view), "has-tooltip", TRUE, NULL);
-  g_signal_connect(G_OBJECT(view), "query-tooltip", G_CALLBACK(_row_tooltip_setup), (gpointer)self);
+  g_object_set(G_OBJECT(tag_list_view), "has-tooltip", TRUE, NULL);
+  g_signal_connect(G_OBJECT(tag_list_view), "query-tooltip", G_CALLBACK(_row_tooltip_setup), (gpointer)self);
 
   col = gtk_tree_view_column_new();
-  gtk_tree_view_append_column(view, col);
+  gtk_tree_view_append_column(tag_list_view, col);
   renderer = gtk_cell_renderer_toggle_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_select_show, NULL, NULL);
   g_object_set(renderer, "indicator-size", 8, NULL);  // too big by default
 
   col = gtk_tree_view_column_new();
-  gtk_tree_view_append_column(view, col);
+  gtk_tree_view_append_column(tag_list_view, col);
   renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_tagname_show_attached, (gpointer)self, NULL);
 
-  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
-  gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(tag_list_view), GTK_SELECTION_SINGLE);
+  gtk_tree_view_set_model(tag_list_view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("attached tags,\ndouble-click to detach"
+  gtk_widget_set_tooltip_text(GTK_WIDGET(tag_list_view), _("attached tags,\ndouble-click to detach"
                                                   "\nright-click for other actions on attached tag,"
                                                   "\nctrl-wheel scroll to resize the window"));
-  dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
-  g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
-  g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
+  dt_gui_add_help_link(GTK_WIDGET(tag_list_view), dt_get_help_url("tagging"));
+  g_signal_connect(G_OBJECT(tag_list_view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
+  g_signal_connect(GTK_WIDGET(tag_list_view), "key-press-event", G_CALLBACK(_on_tag_listview_key_press), self);
+  g_signal_connect(gtk_tree_view_get_selection(tag_list_view), "changed", G_CALLBACK(_tree_selection_changed), self);
 
   // attach/detach buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -2992,6 +3181,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_tag_name_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(_on_tag_entry_key_press), (gpointer)self);
+  g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(_on_tag_entry_focus_in), (gpointer)self);
   d->entry = GTK_ENTRY(w);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, CPF_STYLE_FLAT, NULL);
@@ -3001,11 +3192,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // dictionary_view tree view
-  view = GTK_TREE_VIEW(gtk_tree_view_new());
-  w = dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightdictionarywindow");
+  dict_tree_view = GTK_TREE_VIEW(gtk_tree_view_new());
+  w = dt_ui_scroll_wrap(GTK_WIDGET(dict_tree_view), 200, "plugins/lighttable/tagging/heightdictionarywindow");
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
-  d->dictionary_view = view;
-  gtk_tree_view_set_headers_visible(view, FALSE);
+  d->dictionary_view = dict_tree_view;
+  gtk_tree_view_set_headers_visible(dict_tree_view, FALSE);
   liststore = gtk_list_store_new(DT_LIB_TAGGING_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
                                 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_BOOLEAN);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(liststore), DT_TAG_SORT_PATH_ID,
@@ -3028,7 +3219,7 @@ void gui_init(dt_lib_module_t *self)
   d->dictionary_treefilter = GTK_TREE_MODEL_FILTER(model);
 
   col = gtk_tree_view_column_new();
-  gtk_tree_view_append_column(view, col);
+  gtk_tree_view_append_column(dict_tree_view, col);
   renderer = gtk_cell_renderer_toggle_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
@@ -3036,24 +3227,25 @@ void gui_init(dt_lib_module_t *self)
   g_object_set(renderer, "indicator-size", 8, NULL);  // too big by default
 
   col = gtk_tree_view_column_new();
-  gtk_tree_view_append_column(view, col);
+  gtk_tree_view_append_column(dict_tree_view, col);
   renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_tagname_show_dictionary, (gpointer)self, NULL);
-  gtk_tree_view_set_expander_column(view, col);
+  gtk_tree_view_set_expander_column(dict_tree_view, col);
 
-  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("tag dictionary,\ndouble-click to attach,"
+  gtk_tree_selection_set_mode(gtk_tree_view_get_selection(dict_tree_view), GTK_SELECTION_SINGLE);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(dict_tree_view), _("tag dictionary,\ndouble-click to attach,"
                                                       "\nright-click for other actions on selected tag,"
                                                       "\nctrl-wheel scroll to resize the window"));
-  dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
-  g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
-  gtk_tree_view_set_model(view, GTK_TREE_MODEL(d->dictionary_listfilter));
+  dt_gui_add_help_link(GTK_WIDGET(dict_tree_view), dt_get_help_url("tagging"));
+  g_signal_connect(G_OBJECT(dict_tree_view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
+  gtk_tree_view_set_model(dict_tree_view, GTK_TREE_MODEL(d->dictionary_listfilter));
   g_object_unref(d->dictionary_listfilter);
-  g_object_set(G_OBJECT(view), "has-tooltip", TRUE, NULL);
-  g_signal_connect(G_OBJECT(view), "query-tooltip", G_CALLBACK(_row_tooltip_setup), (gpointer)self);
-  g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
+  g_object_set(G_OBJECT(dict_tree_view), "has-tooltip", TRUE, NULL);
+  g_signal_connect(G_OBJECT(dict_tree_view), "query-tooltip", G_CALLBACK(_row_tooltip_setup), (gpointer)self);
+  g_signal_connect(gtk_tree_view_get_selection(dict_tree_view), "changed", G_CALLBACK(_tree_selection_changed), self);
+  g_signal_connect(GTK_WIDGET(dict_tree_view), "key-press-event", G_CALLBACK(_on_dict_treeview_key_press), self);
 
   // drag & drop
   {
@@ -3220,6 +3412,12 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
                                       GdkModifierType modifier, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+
+  // TODO: Open the tagging panel and bring it to view
+  // TODO: Only use the tagging panel in thumbnail or darkroom mode (not culling or preview)
+  // gtk_widget_grab_focus(GTK_WIDGET(d->entry));  
+  // return TRUE;
+
   if(d->tree_flag)
   {
     dt_control_log(_("tag shortcut is not active with tag tree view. please switch to list view"));
