@@ -320,40 +320,26 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(plane, pminimum, locmask) \
-  dt_omp_sharedconst(p_size) \
+  dt_omp_firstprivate(plane, pminimum, locmask, isegments) \
+  dt_omp_sharedconst(pwidth, pheight) \
   schedule(simd:static) aligned(pminimum, plane, : 64)
 #endif
-  for(int i = 0; i < p_size; i++)
+  for(size_t i = 0; i < pwidth * pheight; i++)
   {
     const float minval = fminf(plane[0][i], fminf(plane[1][i], fminf(plane[2][i], plane[3][i])));
     pminimum[i] = minval;
     uint8_t mask = 0;
     for(int p = 0; p < 4; p++)
     {
-      if(plane[p][i] >= 1.0f)   mask |= (0x01 << p); // mark as clipped
-      if(plane[p][i] == minval) mask |= (0x10 << p); // mark as minimum defined by this plane
+      const float pval = plane[p][i];
+      if(pval >= 1.0f)   mask |= (0x01 << p); // mark as clipped
+      if(pval == minval) mask |= (0x10 << p); // mark as minimum defined by this plane
+      isegments[p].data[i] = (pval >= 1.0f) ? 1 : 0;
     }
     locmask[i] = mask;   
   }
 
   if(info) dt_get_times(&time1);
-
-  // prepare the segmentation process by writing the int mask; 1 for condition on, otherwise 0
-  for(int p = 0; p < 4; p++)
-  {
-    dt_iop_segmentation_t *seg = &isegments[p];
-    float *src = plane[p];
-    int *map  = seg->data; 
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(src, map) \
-  dt_omp_sharedconst(pwidth, pheight) \
-  schedule(static)
-#endif
-    for(size_t i = 0; i < pwidth * pheight; i++)
-      map[i]  = (src[i] >= 1.0f) ? 1 : 0;
-  }
 
   for(int p = 0; p < 4; p++)
   {
@@ -394,9 +380,10 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 #endif
   for(int row = 0; row < height; row++)
   {
-    for(int col = 0, o = row * width; col < width; col++, o++)
+    for(int col = 0; col < width; col++)
     {
-      const int i = (row/2)*pwidth + (col/2) + p_off;
+      const size_t o = row * width + col;
+      const size_t i = (row/2)*pwidth + (col/2) + p_off;
       const int p = pos2plane(row, col, filters);
       if(locmask[i] & (0x01 << p))
       {
@@ -423,9 +410,9 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
           {
             segid[pp] = 1;          
             float sum = 0.0f;
-            for(int y = -2; y < 3; y++)
-              for(int x = -2; x < 3; x++) sum += pminimum[i + y*pwidth +x];
-            candidates[pp]    = 1.0f - (0.04f * sum);   
+            for(int y = -1; y < 2; y++)
+              for(int x = -1; x < 2; x++) sum += pminimum[i + y*pwidth +x];
+            candidates[pp]    = 1.0f - (0.12f * sum);   
           }
         }     
 
