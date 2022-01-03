@@ -212,7 +212,7 @@ static void _lighttable_check_layout(dt_view_t *self)
       dt_culling_init(lib->culling, id);
     }
     else
-      dt_culling_init(lib->culling, -1);
+      dt_culling_init(lib->culling, lib->thumbtable_offset);
 
 
     // ensure that thumbtable is not visible in the main view
@@ -479,7 +479,7 @@ void enter(dt_view_t *self)
   dt_ui_restore_panels(darktable.gui->ui);
 }
 
-static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int32_t mouse_over_id)
+static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
@@ -492,7 +492,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   lib->preview_sticky = sticky;
   lib->preview->focus = focus;
   lib->preview_state = TRUE;
-  dt_culling_init(lib->preview, -1);
+  dt_culling_init(lib->preview, lib->thumbtable_offset);
   gtk_widget_show(lib->preview->widget);
 
   dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->preview->navigate_inside_selection;
@@ -520,7 +520,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
 static void _preview_set_state(dt_view_t *self, gboolean state, gboolean focus)
 {
   if(state)
-    _preview_enter(self, TRUE, focus, dt_control_get_mouse_over_id());
+    _preview_enter(self, TRUE, focus);
   else
     _preview_quit(self);
 }
@@ -630,12 +630,11 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
     {
       if(effect != DT_ACTION_EFFECT_OFF)
       {
-        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-        if(mouse_over_id != -1)
+        if(dt_control_get_mouse_over_id() != -1)
         {
           gboolean focus = element == DT_ACTION_ELEMENT_FOCUS_DETECT;
 
-          _preview_enter(self, FALSE, focus, mouse_over_id);
+          _preview_enter(self, FALSE, focus);
         }
       }
     }
