@@ -691,7 +691,6 @@ static void _settings_contrast_changed(GtkWidget *slider, _guides_settings_t *gw
 GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
 {
   GtkWidget *pop = gtk_popover_new(button);
-  gtk_widget_set_size_request(GTK_WIDGET(pop), 350, -1);
 
   // create a new struct for all the widgets
   _guides_settings_t *gw = (_guides_settings_t *)g_malloc0(sizeof(_guides_settings_t));

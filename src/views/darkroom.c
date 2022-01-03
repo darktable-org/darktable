@@ -2275,9 +2275,6 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
-  const int dialog_width       = 350;
-  const int large_dialog_width = 550; // for dialog with profile names
-
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
@@ -2305,7 +2302,6 @@ void gui_init(dt_view_t *self)
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
     connect_button_press_release(dev->rawoverexposed.button, dev->rawoverexposed.floating_window);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), dialog_width, -1);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->rawoverexposed.floating_window), vbox);
@@ -2363,7 +2359,6 @@ void gui_init(dt_view_t *self)
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
     connect_button_press_release(dev->overexposed.button, dev->overexposed.floating_window);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), dialog_width, -1);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), vbox);
@@ -2445,7 +2440,6 @@ void gui_init(dt_view_t *self)
     connect_button_press_release(dev->second_window.button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.softproof_button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.gamut_button, dev->profile.floating_window);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), large_dialog_width, -1);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
