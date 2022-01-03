@@ -743,11 +743,6 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
   //  paper not found in this printer
   if(!ispaperset) dt_bauhaus_combobox_set(ps->papers, 0);
 
-  const dt_paper_info_t *paper = dt_get_paper(ps->paper_list, default_paper);
-
-  if(paper)
-    memcpy(&ps->prt.paper, paper, sizeof(dt_paper_info_t));
-
   // next add corresponding supported media
 
   const char *default_medium = dt_conf_get_string_const("plugins/print/print/medium");
@@ -781,11 +776,6 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   //  media not found in this printer
   if(!ismediaset) dt_bauhaus_combobox_set(ps->media, 0);
-
-  const dt_medium_info_t *medium = dt_get_medium(ps->media_list, default_medium);
-
-  if(medium)
-    memcpy(&ps->prt.medium, medium, sizeof(dt_medium_info_t));
 
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 }
