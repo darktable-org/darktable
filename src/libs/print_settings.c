@@ -710,72 +710,31 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
 
   dt_conf_set_string("plugins/print/print/printer", printer_name);
 
-  const char *default_paper = dt_conf_get_string_const("plugins/print/print/paper");
-
-  // next add corresponding papers
-
-  // first clear current list
-
+  // add papers for the given printer
   dt_bauhaus_combobox_clear(ps->papers);
-
-  // then add papers for the given printer
-
   if(ps->paper_list) g_list_free_full(ps->paper_list, free);
-
   ps->paper_list = dt_get_papers (&ps->prt.printer);
-  int np = 0;
-  gboolean ispaperset = FALSE;
-
   for(const GList *papers = ps->paper_list; papers; papers = g_list_next (papers))
   {
     const dt_paper_info_t *p = (dt_paper_info_t *)papers->data;
     dt_bauhaus_combobox_add(ps->papers, p->common_name);
-
-    if(ispaperset == FALSE && (!g_strcmp0(default_paper, p->common_name) || default_paper[0] == '\0'))
-    {
-      dt_bauhaus_combobox_set(ps->papers, np);
-      ispaperset = TRUE;
-    }
-
-    np++;
   }
+  const char *default_paper = dt_conf_get_string_const("plugins/print/print/paper");
+  if(!dt_bauhaus_combobox_set_from_text(ps->papers, default_paper))
+    dt_bauhaus_combobox_set(ps->papers, 0);
 
-  //  paper not found in this printer
-  if(!ispaperset) dt_bauhaus_combobox_set(ps->papers, 0);
-
-  // next add corresponding supported media
-
-  const char *default_medium = dt_conf_get_string_const("plugins/print/print/medium");
-
-  // first clear current list
-
+  // add corresponding supported media
   dt_bauhaus_combobox_clear(ps->media);
-
-  // then add papers for the given printer
-
   if(ps->media_list) g_list_free_full(ps->media_list, free);
-
-  ps->media_list = dt_get_media_type (&ps->prt.printer);
-  gboolean ismediaset = FALSE;
-
-  np = 0;
-
+  ps->media_list = dt_get_media_type(&ps->prt.printer);
   for(const GList *media = ps->media_list; media; media = g_list_next (media))
   {
     const dt_medium_info_t *m = (dt_medium_info_t *)media->data;
     dt_bauhaus_combobox_add(ps->media, m->common_name);
-
-    if(ismediaset == FALSE && (!g_strcmp0(default_medium, m->common_name) || default_medium[0] == '\0'))
-    {
-      dt_bauhaus_combobox_set(ps->media, np);
-      ismediaset = TRUE;
-    }
-
-    np++;
   }
-
-  //  media not found in this printer
-  if(!ismediaset) dt_bauhaus_combobox_set(ps->media, 0);
+  const char *default_medium = dt_conf_get_string_const("plugins/print/print/medium");
+  if(!dt_bauhaus_combobox_set_from_text(ps->media, default_medium))
+    dt_bauhaus_combobox_set(ps->media, 0);
 
   dt_view_print_settings(darktable.view_manager, &ps->prt, &ps->imgs);
 }
