@@ -960,6 +960,12 @@ void dt_culling_init(dt_culling_t *table, int offset)
     table->offset = _thumb_get_rowid(first_id);
     table->offset_imgid = first_id;
   }
+  else if(sel_count == 1)
+  {
+    // release selection if culling fixed is entered with only a single selected image
+    // the image was most likely only clicked in filemanager to select a starting point for culling so it should be released
+    dt_selection_clear(darktable.selection);
+  }
 
   table->offset = _thumb_get_rowid(first_id);
   table->offset_imgid = first_id;
