@@ -39,7 +39,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE_INTROSPECTION(2, dt_iop_highlights_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_highlights_params_t)
 
 /* defines for the highlights recovery section */
 
@@ -56,8 +56,11 @@ typedef struct dt_iop_highlights_params_t
   dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
   float reconstructing;          // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "effect strength"
   float combine;                 // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
-  float reserved3;
-  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
+  float reserved_recovery;
+  float clip;                    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
+  float feathering_details;      // $MIN: 2.0 $MAX: 8.0 $DEFAULT: 6.0 $DESCRIPTION: "details feathering"
+  float feathering_colors;       // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "colors feathering"
+  float noise_level;             // $MIN: 0. $MAX: 1.0 $DEFAULT: 0.05 $DESCRIPTION: "noise level"
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -128,9 +131,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_highlights_params_v2_t *o = (dt_iop_highlights_params_v2_t *)old_params;
     dt_iop_highlights_params_v3_t *n = (dt_iop_highlights_params_v3_t *)new_params;
     memcpy(n, o, sizeof *o);
-    n->reserved3 = 0.0f;
+    n->reserved_recovery = 0.0f;
     n->reconstructing = 0.4f;
     n->combine = 2.0f;
+    n->feathering_details = 6.0f;
+    n->feathering_colors = 0.0f;
+    n->noise_level = 0.05f;
     return 0;  
   }
 
