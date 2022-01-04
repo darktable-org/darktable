@@ -3092,7 +3092,7 @@ static void _do_get_structure_lines(dt_iop_module_t *self)
 
   do_clean_structure(self, p, TRUE);
 
-  // if the button is unselcted, we don't go further
+  // if the button is unselected, we don't go further
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_lines)))
   {
     dt_control_queue_redraw_center();
@@ -4683,7 +4683,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     g->lastx = x;
     g->lasty = y;
 
-    // we instanciate a new line with both extrema at the current position
+    // we instantiate a new line with both extrema at the current position
     // and enable the "move point" mode with the second extrema
     const float pr_d = self->dev->preview_downsampling;
     float pts[2] = { pzx * wd, pzy * ht };
@@ -5207,7 +5207,7 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
     else
       enhance = ASHIFT_ENHANCE_NONE;
 
-    // if the button is unselcted, we don't go further
+    // if the button is unselected, we don't go further
     if(enhance == ASHIFT_ENHANCE_NONE && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
     {
       _gui_update_structure_states(self, widget);
@@ -5716,7 +5716,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
 
-  // we put the detailled values under an expander
+  // we put the detailed values under an expander
   g->values_expanded = dt_conf_get_bool("plugins/darkroom/ashift/expand_values");
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *header_evb = gtk_event_box_new();

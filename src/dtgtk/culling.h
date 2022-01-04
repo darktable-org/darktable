@@ -79,7 +79,7 @@ typedef struct dt_culling_t
 dt_culling_t *dt_culling_new(dt_culling_mode_t mode);
 // reload all thumbs from scratch.
 void dt_culling_full_redraw(dt_culling_t *table, gboolean force);
-// initialise culling offset/naviagtion mode, etc before entering.
+// initialise culling offset/navigation mode, etc before entering.
 // if offset is > 0 it'll be used as offset, otherwise offset will be determined by other means
 void dt_culling_init(dt_culling_t *table, int offset);
 // move by key actions.
