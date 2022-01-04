@@ -142,25 +142,12 @@ static void _gphoto_log25(GPLogLevel level, const char *domain, const char *log,
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] %s %s\n", domain, log);
 }
 
-#ifndef HAVE_GPHOTO_25_OR_NEWER
-static void _gphoto_log(GPLogLevel level, const char *domain, const char *format, va_list args, void *data)
-{
-  char log[4096] = { 0 };
-  vsnprintf(log, sizeof(log), format, args);
-  _gphoto_log25(level, domain, log, data);
-}
-#endif
-
 static void _enable_debug() __attribute__((unused));
 static void _disable_debug() __attribute__((unused));
 
 static void _enable_debug()
 {
-#ifdef HAVE_GPHOTO_25_OR_NEWER
   logid = gp_log_add_func(GP_LOG_DATA, (GPLogFunc)_gphoto_log25, NULL);
-#else
-  logid = gp_log_add_func(GP_LOG_DATA, (GPLogFunc)_gphoto_log, NULL);
-#endif
 }
 
 static void _disable_debug()
@@ -203,31 +190,6 @@ static void _message_func_dispatch25(GPContext *context, const char *text, void 
 {
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto2 message: %s\n", text);
 }
-
-#ifndef HAVE_GPHOTO_25_OR_NEWER
-static void _status_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
-{
-  char buffer[4096];
-  vsnprintf(buffer, sizeof(buffer), format, args);
-
-  _status_func_dispatch25(context, buffer, data);
-}
-
-static void _error_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
-{
-  char buffer[4096];
-  vsnprintf(buffer, sizeof(buffer), format, args);
-
-  _error_func_dispatch25(context, buffer, data);
-}
-
-static void _message_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
-{
-  char buffer[4096];
-  vsnprintf(buffer, sizeof(buffer), format, args);
-  _message_func_dispatch25(context, buffer, data);
-}
-#endif
 
 static gboolean _camera_timeout_job(gpointer data)
 {
@@ -657,15 +619,9 @@ dt_camctl_t *dt_camctl_new()
   camctl->ticker = 1;
   camctl->tickmask = 0x0F;
 
-#ifdef HAVE_GPHOTO_25_OR_NEWER
   gp_context_set_status_func(camctl->gpcontext, (GPContextStatusFunc)_status_func_dispatch25, camctl);
   gp_context_set_error_func(camctl->gpcontext, (GPContextErrorFunc)_error_func_dispatch25, camctl);
   gp_context_set_message_func(camctl->gpcontext, (GPContextMessageFunc)_message_func_dispatch25, camctl);
-#else
-  gp_context_set_status_func(camctl->gpcontext, (GPContextStatusFunc)_status_func_dispatch, camctl);
-  gp_context_set_error_func(camctl->gpcontext, (GPContextErrorFunc)_error_func_dispatch, camctl);
-  gp_context_set_message_func(camctl->gpcontext, (GPContextMessageFunc)_message_func_dispatch, camctl);
-#endif
 
   // Load all camera drivers we know...
   gp_abilities_list_new(&camctl->gpcams);

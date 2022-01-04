@@ -143,8 +143,8 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
       do
       {
-        dt_bauhaus_combobox_add(prop->values, g_dgettext("libgphoto2-2", value));
-        if(!strcmp(current_value, g_dgettext("libgphoto2-2", value)))
+        dt_bauhaus_combobox_add(prop->values, g_dgettext("libgphoto2-6", value));
+        if(!strcmp(current_value, g_dgettext("libgphoto2-6", value)))
           dt_bauhaus_combobox_set(prop->values, i);
         i++;
       } while((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, propertyname))
