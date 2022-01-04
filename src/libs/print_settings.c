@@ -182,7 +182,7 @@ static float _mm_to_hscreen(dt_lib_print_settings_t *ps, const float value, cons
     + (ps->imgs.screen.page.width * value / width);
 }
 
-// vertial mm to pixels
+// vertical mm to pixels
 static float _mm_to_vscreen(dt_lib_print_settings_t *ps, const float value, const gboolean offset)
 {
   float width, height;
@@ -1836,7 +1836,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
       const dt_image_box *box = &ps->imgs.box[ps->selected];
 
       // we could use a simpler solution but we want to use the same formulae used
-      // to fill the editable box values to avoid discrepencies between values due
+      // to fill the editable box values to avoid discrepancies between values due
       // to rounding errors.
 
       float pwidth, pheight;

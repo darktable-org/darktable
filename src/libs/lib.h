@@ -108,7 +108,7 @@ void dt_lib_cleanup(dt_lib_t *lib);
 
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);
-/** set a expand/collaps plugin expander */
+/** set an expand/collapse plugin expander */
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded);
 /** get the expanded state of a plugin */
 gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module);
