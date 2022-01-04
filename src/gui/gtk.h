@@ -318,7 +318,7 @@ void dt_ui_restore_panels(struct dt_ui_t *ui);
 void dt_ui_update_scrollbars(struct dt_ui_t *ui);
 /** show or hide scrollbars */
 void dt_ui_scrollbars_show(struct dt_ui_t *ui, gboolean show);
-/** \brief toggle view of panels eg. collaps/expands to previous view state */
+/** \brief toggle view of panels eg. collapse/expands to previous view state */
 void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
 /** \brief draw user's attention */
 void dt_ui_notify_user();

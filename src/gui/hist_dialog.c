@@ -40,7 +40,7 @@ typedef enum _style_items_columns_t
 
 static gboolean _gui_hist_is_copy_module_order_set(dt_history_copy_item_t *d)
 {
-  /* iterate trough TreeModel to find if module order was copied (num=-1 and active)  */
+  /* iterate through TreeModel to find if module order was copied (num=-1 and active)  */
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->items));
 

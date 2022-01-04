@@ -1651,7 +1651,7 @@ static void _fill_mask(const size_t numpoints, float *const bufptr, const float 
   const float sin_alpha = sinf(alpha);
 
   // Determine the strength of the mask for each of the distorted points.  If inside the border of the ellipse,
-  // the strength is always 1.0; if outside the fallow region, it is 0.0, and in between it falls off quadratically.
+  // the strength is always 1.0; if outside the falloff region, it is 0.0, and in between it falls off quadratically.
   // To compute this, we need to do the equivalent of projecting the vector from the center of the ellipse to the
   // given point until it intersect the ellipse and the outer edge of the falloff, respectively.  The ellipse can
   // be rotated, but we can compensate for that by applying a rotation matrix for the same rotation in the opposite

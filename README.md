@@ -396,7 +396,7 @@ However, this JPEG thumbnail is processed by the firmware of the camera, with pr
 and colors, sharpness and contrast that might not look the same as
 darktable processing (which is what you see when opening the image in the darkroom view).
 Camera manufacturers don't publish details of the pixel processing they perform in their firmware
-so their look is not exactly or easily reproducable by other software.
+so their look is not exactly or easily reproducible by other software.
 
 However, once RAW images have been edited in darktable,
 the lighttable thumbnail should exactly match the darkroom preview, as they are processed in the same way.

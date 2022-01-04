@@ -1335,7 +1335,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
                              { 0.0f, 0.0f, 0.0f } };
   set_up_conversion_matrices(toY0U0V0, toRGB, wb);
 
-  // more stength in Y0U0V0 in order to get a similar smoothing as in other modes
+  // more strength in Y0U0V0 in order to get a similar smoothing as in other modes
   // otherwise, result was much less denoised in Y0U0V0 mode.
   const float compensate_strength = (d->wavelet_color_mode == MODE_RGB) ? 1.0f : 2.5f;
   // update the coeffs with strength and scale
@@ -2247,7 +2247,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
                                  { 0.0f, 0.0f, 0.0f } };
   set_up_conversion_matrices(toY0U0V0_tmp, toRGB_tmp, wb);
 
-  // more stength in Y0U0V0 in order to get a similar smoothing as in other modes
+  // more strength in Y0U0V0 in order to get a similar smoothing as in other modes
   // otherwise, result was much less denoised in Y0U0V0 mode.
   const float compensate_strength = (d->wavelet_color_mode == MODE_RGB) ? 1.0f : 2.5f;
 

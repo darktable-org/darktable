@@ -350,7 +350,7 @@ static inline float4 chroma_adapt_RGB(const float4 RGB,
 * while keeping the same overall code structure for maintenance.
 *
 * The reference C version in src/iop/channelmixerrgb.c does it differently
-* since C has an explicite -funswitchloop option, but OpenCL doesn't and
+* since C has an explicit -funswitchloop option, but OpenCL doesn't and
 * we have to do it manually using macros and duplicating kernels.
 */
 
