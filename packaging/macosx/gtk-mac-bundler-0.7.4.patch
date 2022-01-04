@@ -21,7 +21,7 @@ diff -uNr gtk-mac-bundler-0.7.4-orig/bundler/bundler.py gtk-mac-bundler-0.7.4/bu
          def name_filter(filename):
 @@ -585,14 +587,21 @@
              if program.name == "" or program.name == None:
-                 raise "No program name to translate!"
+                 raise "No program name to tranlate!"
  
 +            p = re.compile("^\${prefix(:.*?)?}/")
 +            m = p.match(program.source)
