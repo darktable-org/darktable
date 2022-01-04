@@ -2099,24 +2099,23 @@ static void dt_bauhaus_get_preferred_width(GtkWidget *widget, gint *minimum_size
   {
     dt_bauhaus_combobox_data_t *d = &w->data.combobox;
 
-    int label_width, entry_width, pango_height;
-
-    PangoLayout *layout = gtk_widget_create_pango_layout(widget, w->label);
+    PangoLayout *layout = gtk_widget_create_pango_layout(widget, NULL);
     pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
-    pango_layout_get_size(layout, &label_width, &pango_height);
+    int pango_width;
 
     for(GList *i = d->entries; i; i = i->next)
     {
       const dt_bauhaus_combobox_entry_t *entry = i->data;
       pango_layout_set_text(layout, entry->label, -1);
-      pango_layout_get_size(layout, &entry_width, &pango_height);
-      const gint text_width = entry_width/PANGO_SCALE;
+      pango_layout_get_size(layout, &pango_width, NULL);
 
-      if(text_width > *natural_size)
-        *natural_size = text_width;
+      if(pango_width / PANGO_SCALE > *natural_size)
+        *natural_size = pango_width / PANGO_SCALE;
     }
 
-    *natural_size += label_width/PANGO_SCALE + darktable.bauhaus->quad_width + 3 * INNER_PADDING;
+    pango_layout_set_text(layout, w->label, -1);
+    pango_layout_get_size(layout, &pango_width, NULL);
+    *natural_size += pango_width / PANGO_SCALE + darktable.bauhaus->quad_width + 3 * INNER_PADDING;
 
     g_object_unref(layout);
   }
