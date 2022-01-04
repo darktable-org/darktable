@@ -261,6 +261,64 @@ static void _apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
   _write_metadata(self);
 }
 
+static int _get_textview_index(GtkWidget *textview, const dt_lib_metadata_t *d)
+{
+  for(int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    if(GTK_TEXT_VIEW(textview) == d->textview[i])
+      return i;
+  }
+  return -1;
+}
+
+static int _get_first_visible_textview_index()
+{
+  for(int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const gchar *name = dt_metadata_get_name_by_display_order(i);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    if(!hidden)
+      return i;
+  }
+  return -1;
+}
+
+static int _get_last_visible_textview_index()
+{
+  for(int i = DT_METADATA_NUMBER; i > 0; i--)
+  {
+    const gchar *name = dt_metadata_get_name_by_display_order(i - 1);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    if(!hidden)
+      return i - 1;
+  }
+  return -1;
+}
+
+static int _is_last_visible_textview(GtkWidget *textview, const dt_lib_metadata_t *d)
+{
+  const int i = _get_textview_index(textview, d);
+  const int j = _get_last_visible_textview_index();
+  if(i == j && i != -1)
+    return _get_first_visible_textview_index();
+  else
+    return -1;
+}
+
+static int _is_first_visible_textview(GtkWidget *textview, const dt_lib_metadata_t *d)
+{
+  const int i = _get_textview_index(textview, d);
+  const int j = _get_first_visible_textview_index();
+  if(i == j && i != -1)
+    return _get_last_visible_textview_index();
+  else
+    return -1;
+}
+
 static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
@@ -283,18 +341,48 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
     {
       case GDK_KEY_Return:
       case GDK_KEY_KP_Enter:
+      {
         _write_metadata(self);
         // go to next field
-        event->keyval = GDK_KEY_Tab;
+        const int first = _is_last_visible_textview(textview, d);
+        if(first != -1)
+        {
+          gtk_widget_grab_focus(GTK_WIDGET(d->textview[first]));
+          return TRUE;
+        }
+        else event->keyval = GDK_KEY_Tab;
         break;
+      }
       case GDK_KEY_Escape:
+      {
         _update(self);
         gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
         d->editing = FALSE;
         break;
+      }
       case GDK_KEY_Tab:
+      {
         _write_metadata(self);
+        // workaround to come back to first field
+        const int first = _is_last_visible_textview(textview, d);
+        if(first != -1)
+        {
+          gtk_widget_grab_focus(GTK_WIDGET(d->textview[first]));
+          return TRUE;
+        }
         break;
+      }
+      case GDK_KEY_ISO_Left_Tab:
+      { // workaround to come back to last field
+        _write_metadata(self);
+        const int last = _is_first_visible_textview(textview, d);
+        if(last != -1)
+        {
+          gtk_widget_grab_focus(GTK_WIDGET(d->textview[last]));
+          return TRUE;
+        }
+        break;
+      }
       default:
         d->editing = TRUE;
     }
@@ -597,20 +685,15 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "apply", d->apply_button);
+  dt_accel_connect_button_lib(self, "applly", d->apply_button);
 }
 
 static gboolean _click_on_textview(GtkWidget *textview, GdkEventButton *event, dt_lib_module_t *self)
 {
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   // get grid line number
-  uint32_t i;
-  for(i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    if(GTK_TEXT_VIEW(textview) == d->textview[i])
-      break;
-  }
-  if(i >= DT_METADATA_NUMBER) return FALSE;
+  int i = _get_textview_index(textview, d);
+  if(i == -1) return FALSE;
 
   if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)) return FALSE;
 
