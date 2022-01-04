@@ -2777,9 +2777,17 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
         dt_bauhaus_slider_data_t *d = &w->data.slider;
         d->is_dragging = 1;
       }
-      else if(event->x > allocation.width / 2)
+      else
       {
-        dt_bauhaus_show_popup(w);
+        int value_width;
+        char *text = dt_bauhaus_slider_get_text(GTK_WIDGET(w));
+        PangoLayout *layout = gtk_widget_create_pango_layout(widget, text);
+        pango_layout_get_size(layout, &value_width, NULL);
+        g_object_unref(layout);
+        g_free(text);
+
+        if(event->x > allocation.width - value_width/PANGO_SCALE - darktable.bauhaus->quad_width - INNER_PADDING)
+          dt_bauhaus_show_popup(w);
       }
     }
     return TRUE;
