@@ -521,32 +521,17 @@ void _set_dimensions(dt_lib_export_t *d, uint32_t max_width, uint32_t max_height
 }
 
 
-void _print_size_update_display(dt_lib_export_t *self)
+void _size_update_display(dt_lib_export_t *self)
 {
   const dt_dimensions_type_t d_type = (dt_dimensions_type_t)dt_bauhaus_combobox_get(self->dimensions_type);
 
-  if(d_type == DT_DIMENSIONS_PIXELS)
-  {
-    gtk_widget_set_visible(GTK_WIDGET(self->print_size), FALSE);
-    gtk_widget_set_sensitive(GTK_WIDGET(self->width), TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(self->height), TRUE);
-  }
-  else
-  {
-    const gboolean is_scaling = dt_conf_is_equal(CONFIG_PREFIX "resizing", "scaling");
-    if(!is_scaling)
-    {
-      // max size
-      gtk_widget_set_visible(GTK_WIDGET(self->print_size), TRUE);
-    }
-    gtk_widget_set_sensitive(GTK_WIDGET(self->width), FALSE);
-    gtk_widget_set_sensitive(GTK_WIDGET(self->height), FALSE);
+  gtk_widget_set_visible(self->px_size, d_type == DT_DIMENSIONS_PIXELS);
+  gtk_widget_set_visible(self->print_size, d_type == DT_DIMENSIONS_CM || d_type == DT_DIMENSIONS_INCH);
+  gtk_widget_set_visible(self->scale, d_type == DT_DIMENSIONS_SCALE);
 
-    if(d_type == DT_DIMENSIONS_CM)
-      gtk_label_set_text(GTK_LABEL(self->unit_label), _("cm"));
-    else // DT_DIMENSIONS_INCH
-      gtk_label_set_text(GTK_LABEL(self->unit_label), C_("unit", "in"));
-  }
+  gtk_label_set_text(GTK_LABEL(self->unit_label),
+                     d_type == DT_DIMENSIONS_CM ? _("cm") : C_("unit", "in"));
+  _size_in_px_update(self);
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -557,7 +542,7 @@ void gui_reset(dt_lib_module_t *self)
   gtk_entry_set_text(GTK_ENTRY(d->width), dt_confgen_get(CONFIG_PREFIX "width", DT_DEFAULT));
   gtk_entry_set_text(GTK_ENTRY(d->height), dt_confgen_get(CONFIG_PREFIX "height", DT_DEFAULT));
   dt_bauhaus_combobox_set(d->dimensions_type, dt_confgen_get_int(CONFIG_PREFIX "dimensions_type", DT_DEFAULT));
-  _print_size_update_display(d);
+  _size_update_display(d);
 
   // Set storage
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(dt_confgen_get(CONFIG_PREFIX "storage_name", DT_DEFAULT)));
@@ -835,42 +820,20 @@ static void _dimensions_type_changed(GtkWidget *widget, dt_lib_export_t *d)
   const dt_dimensions_type_t d_type = (dt_dimensions_type_t)dt_bauhaus_combobox_get(widget);
 
   dt_conf_set_int(CONFIG_PREFIX "dimensions_type", d_type);
-  if(d_type != DT_DIMENSIONS_SCALE)
-  {
-    if(d_type != DT_DIMENSIONS_PIXELS)
-    {
-      gtk_widget_hide(GTK_WIDGET(d->px_size));
-      gtk_widget_show(GTK_WIDGET(d->print_size));
-      gtk_widget_hide(GTK_WIDGET(d->scale));
-      _resync_print_dimensions(d);
-    }
-    else
-    {
-      gtk_widget_show(GTK_WIDGET(d->px_size));
-      gtk_widget_hide(GTK_WIDGET(d->print_size));
-      gtk_widget_hide(GTK_WIDGET(d->scale));
-    }
-    dt_conf_set_string(CONFIG_PREFIX "resizing", "max_size");
-    _print_size_update_display(d);
-  }
-  else
-  {
-    gtk_widget_show(GTK_WIDGET(d->scale));
-    gtk_widget_hide(GTK_WIDGET(d->px_size));
-    gtk_widget_hide(GTK_WIDGET(d->print_size));
-    dt_conf_set_string(CONFIG_PREFIX "resizing", "scaling");
-  }
+  dt_conf_set_string(CONFIG_PREFIX "resizing",
+                     d_type == DT_DIMENSIONS_SCALE ? "scaling" : "max_size");
   if(d_type == DT_DIMENSIONS_CM || d_type == DT_DIMENSIONS_INCH)
   {
     // set dpi to user-set dpi
     dt_conf_set_int("metadata/resolution", dt_conf_get_int(CONFIG_PREFIX "print_dpi"));
+    _resync_print_dimensions(d);
   }
   else
   {
     // reset export dpi to default value for scale/pixel specific export
     dt_conf_set_int("metadata/resolution", dt_confgen_get_int("metadata/resolution", DT_DEFAULT));
   }
-  _size_in_px_update(d);
+  _size_update_display(d);
 }
 
 static void _resync_print_dimensions(dt_lib_export_t *self)
@@ -1404,25 +1367,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_text(GTK_ENTRY(d->width), setting);
   setting = dt_conf_get_string_const(CONFIG_PREFIX "height");
   gtk_entry_set_text(GTK_ENTRY(d->height), setting);
-  dt_bauhaus_combobox_set(d->dimensions_type, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"));
 
-  const gboolean is_scaling = dt_conf_is_equal(CONFIG_PREFIX "resizing", "scaling");
-  if(is_scaling)
-  {
-    // scaling
-    gtk_widget_show(GTK_WIDGET(d->scale));
-    gtk_widget_hide(GTK_WIDGET(d->px_size));
-    gtk_widget_hide(GTK_WIDGET(d->print_size));
-  }
-  else
-  {
-    // max size
-    gtk_widget_hide(GTK_WIDGET(d->scale));
-    gtk_widget_show(GTK_WIDGET(d->px_size));
-    gtk_widget_show(GTK_WIDGET(d->print_size));
-  }
-
-  _print_size_update_display(d);
+  _size_update_display(d);
 
   // Set storage
   setting = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
