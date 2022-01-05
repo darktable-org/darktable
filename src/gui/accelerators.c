@@ -2731,6 +2731,8 @@ gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboo
 
 static gboolean _shortcut_match(dt_shortcut_t *f, gchar **fb_log)
 {
+  if(!darktable.view_manager->current_view) return FALSE;
+
   f->views = darktable.view_manager->current_view->view(darktable.view_manager->current_view);
   gpointer v = GINT_TO_POINTER(f->views);
 
