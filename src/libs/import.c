@@ -1574,17 +1574,6 @@ static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self)
   _update_files_list(self);
 }
 
-static gboolean _handle_enter(GtkWidget *widget, GdkEventKey *event, dt_lib_module_t* self)
-{
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  if((d->from.nb) && (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter))
-  {
-    gtk_dialog_response(GTK_DIALOG(d->from.dialog), GTK_RESPONSE_ACCEPT);
-    return TRUE;
-  }
-  return FALSE;
-}
-
 static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
@@ -1776,7 +1765,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->from.dialog));
   g_signal_connect(d->from.dialog, "check-resize", G_CALLBACK(_resize_dialog), self);
-  g_signal_connect(d->from.dialog, "key-press-event", G_CALLBACK(_handle_enter), self);
+  g_signal_connect(d->from.dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), self);
 
   // images numbers in action-box
   GtkWidget *box = dt_gui_container_first_child(GTK_CONTAINER(d->from.dialog));

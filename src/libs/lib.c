@@ -1270,6 +1270,16 @@ const dt_action_def_t dt_action_def_lib
       _action_elements,
       _action_fallbacks };
 
+gboolean dt_handle_dialog_enter(GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+  if(event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
+  {
+    gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_ACCEPT);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
