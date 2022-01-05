@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-29 13:53+0100\n"
-"PO-Revision-Date: 2021-12-30 21:51+0900\n"
+"PO-Revision-Date: 2022-01-05 19:18+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -802,7 +802,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5372
 msgid "show mask indicator in module headers"
-msgstr "モジュールヘッダーにマスクインジケーターを表示する"
+msgstr "モジュールのヘッダーにマスクインジケーターを表示する"
 
 #: ../build/bin/preferences_gen.h:5386
 msgid ""
@@ -20930,7 +20930,7 @@ msgstr "アクティブなグループの履歴中の全てのモジュールを
 
 #: ../src/libs/modulegroups.c:3871
 msgid "auto-apply this preset"
-msgstr "このプリセットを自動適用"
+msgstr "プリセットの自動適用"
 
 #: ../src/libs/modulegroups.c:3887
 msgid "module groups"
