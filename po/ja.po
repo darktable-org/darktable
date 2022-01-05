@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-29 13:53+0100\n"
-"PO-Revision-Date: 2021-12-30 01:11+0900\n"
+"PO-Revision-Date: 2022-01-06 01:36+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -802,7 +802,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5372
 msgid "show mask indicator in module headers"
-msgstr "モジュールヘッダーにマスクインジケーターを表示する"
+msgstr "モジュールのヘッダーにマスクインジケーターを表示する"
 
 #: ../build/bin/preferences_gen.h:5386
 msgid ""
@@ -1184,11 +1184,11 @@ msgstr "セキュリティ"
 
 #: ../build/bin/preferences_gen.h:6314
 msgid "ask before removing images from the library"
-msgstr "画像をライブラリーから除去する前に確認する"
+msgstr "画像をライブラリから除去する前に確認する"
 
 #: ../build/bin/preferences_gen.h:6328
 msgid "always ask the user before any image is removed from the library"
-msgstr "画像がライブラリーから除去される前に必ずユーザーに確認します"
+msgstr "画像がライブラリから除去される前に必ずユーザーに確認します"
 
 #: ../build/bin/preferences_gen.h:6350
 msgid "ask before deleting images from disk"
@@ -3449,22 +3449,22 @@ msgstr "エッジ感度"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:147
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:264
 msgid "1st order anisotropy"
-msgstr "1次異方性"
+msgstr "1次の異方性"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:153
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:268
 msgid "2nd order anisotropy"
-msgstr "2次異方性"
+msgstr "2次の異方性"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:159
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:272
 msgid "3rd order anisotropy"
-msgstr "3次異方性"
+msgstr "3次の異方性"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:165
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:276
 msgid "4th order anisotropy"
-msgstr "4次異方性"
+msgstr "4次の異方性"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:171
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:280
@@ -3474,22 +3474,22 @@ msgstr "輝度マスクのしきい値"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
 msgid "1st order speed"
-msgstr "1次速度"
+msgstr "1次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:183
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:288
 msgid "2nd order speed"
-msgstr "2次速度"
+msgstr "2次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:189
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:292
 msgid "3rd order speed"
-msgstr "3次速度"
+msgstr "3次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:195
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:296
 msgid "4th order speed"
-msgstr "4次速度"
+msgstr "4次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:201
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:300
@@ -9573,7 +9573,7 @@ msgstr "設定を有効にするためにはdarktableを再起動する必要が
 #: ../src/gui/preferences.c:813 ../src/gui/presets.c:525
 #: ../src/libs/metadata_view.c:136
 msgid "model"
-msgstr "機種"
+msgstr "カメラ機種"
 
 #: ../src/gui/preferences.c:817 ../src/gui/presets.c:533
 #: ../src/libs/metadata_view.c:137
@@ -9724,12 +9724,12 @@ msgstr "説明または詳細情報"
 # 適合する画像にこのプリセットを自動的に適用します
 #: ../src/gui/presets.c:495
 msgid "auto apply this preset to matching images"
-msgstr "条件に合う画像にこのプリセットを自動的に適用する"
+msgstr "条件に合う画像にこのプリセットを自動適用"
 
 # 適合する画像でのみこのプリセットを表示します
 #: ../src/gui/presets.c:498
 msgid "only show this preset for matching images"
-msgstr "条件に合う画像にのみこのプリセットを表示する"
+msgstr "条件に合う画像にのみこのプリセットを表示"
 
 # このオプションは充分に注意してください。これによってプリセットが失われ。復元することも出来なくなるかもしれません
 #: ../src/gui/presets.c:499
@@ -9743,7 +9743,7 @@ msgstr ""
 #: ../src/gui/presets.c:524
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
-msgstr "条件に合う機種（ワイルドカード文字として%を使用してください）"
+msgstr "条件に合うカメラ機種（ワイルドカード文字として%を使用してください）"
 
 #: ../src/gui/presets.c:532
 #, no-c-format
@@ -14194,7 +14194,7 @@ msgstr "レンズぼけの除去：強"
 
 #: ../src/iop/diffuse.c:258
 msgid "dehaze"
-msgstr "霞の除去"
+msgstr "かすみの除去"
 
 #: ../src/iop/diffuse.c:279
 msgid "denoise: fine"
@@ -15629,7 +15629,7 @@ msgid ""
 "crop factor:\t%.1f"
 msgstr ""
 "メーカー：\t\t%s\n"
-"機種：\t\t%s%s\n"
+"カメラ機種：\t\t%s%s\n"
 "マウント：\t\t%s\n"
 "クロップファクター：\t%.1f"
 
@@ -15659,7 +15659,7 @@ msgid ""
 "mounts:\t%s"
 msgstr ""
 "メーカー：\t\t%s\n"
-"機種：\t\t%s\n"
+"カメラ機種：\t\t%s\n"
 "焦点距離：\t%s\n"
 "絞り：\t%s\n"
 "クロップファクター：\t%.1f\n"
@@ -17650,7 +17650,7 @@ msgid ""
 "shift+scroll for large steps; ctrl+scroll for small steps"
 msgstr ""
 "画像上でスクロールしてトーンの露出を変更します\n"
-"Shift+スクロールで大きなステップ、Ctrl+スクロールで小さなステップです"
+"Shift+スクロールで大きなステップ　　Ctrl+スクロールで小さなステップ"
 
 #: ../src/iop/toneequal.c:2094
 msgid "some parameters are out-of-bounds"
@@ -19767,7 +19767,7 @@ msgstr "テザー撮影"
 #: ../src/libs/import.c:201
 msgctxt "accel"
 msgid "add to library"
-msgstr "ライブラリーに追加"
+msgstr "ライブラリに追加"
 
 #: ../src/libs/import.c:202
 msgctxt "accel"
@@ -19897,7 +19897,7 @@ msgstr "命名規則"
 
 #: ../src/libs/import.c:1754
 msgid "add to library"
-msgstr "ライブラリーに追加"
+msgstr "ライブラリに追加"
 
 #: ../src/libs/import.c:1755
 msgid "copy & import"
@@ -19913,11 +19913,11 @@ msgstr "カメラから画像リストをピリフェッチしています、お
 
 #: ../src/libs/import.c:2065
 msgid "add to library..."
-msgstr "ライブラリーに追加"
+msgstr "ライブラリに追加"
 
 #: ../src/libs/import.c:2066
 msgid "add existing images to the library"
-msgstr "既存の画像をライブラリーに追加します"
+msgstr "既存の画像をライブラリに追加します"
 
 #: ../src/libs/import.c:2073
 msgid "copy & import..."
@@ -20930,7 +20930,7 @@ msgstr "アクティブなグループの履歴中の全てのモジュールを
 
 #: ../src/libs/modulegroups.c:3871
 msgid "auto-apply this preset"
-msgstr "このプリセットを自動適用"
+msgstr "プリセットの自動適用"
 
 #: ../src/libs/modulegroups.c:3887
 msgid "module groups"
@@ -22639,7 +22639,7 @@ msgstr "ブラシの不透明度を下げる"
 #: ../src/views/map.c:2087
 msgctxt "accel"
 msgid "undo"
-msgstr "元に戻す"
+msgstr "取り消す"
 
 #: ../src/views/darkroom.c:3911 ../src/views/lighttable.c:883
 #: ../src/views/map.c:2088
