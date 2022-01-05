@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-29 13:53+0100\n"
-"PO-Revision-Date: 2022-01-05 21:20+0900\n"
+"PO-Revision-Date: 2022-01-05 22:05+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -9724,12 +9724,12 @@ msgstr "説明または詳細情報"
 # 適合する画像にこのプリセットを自動的に適用します
 #: ../src/gui/presets.c:495
 msgid "auto apply this preset to matching images"
-msgstr "条件に合う画像にこのプリセットを自動的に適用する"
+msgstr "条件に合う画像にこのプリセットを自動適用"
 
 # 適合する画像でのみこのプリセットを表示します
 #: ../src/gui/presets.c:498
 msgid "only show this preset for matching images"
-msgstr "条件に合う画像にのみこのプリセットを表示する"
+msgstr "条件に合う画像にのみこのプリセットを表示"
 
 # このオプションは充分に注意してください。これによってプリセットが失われ。復元することも出来なくなるかもしれません
 #: ../src/gui/presets.c:499
