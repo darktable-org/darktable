@@ -532,12 +532,24 @@ static void _private_toggled_callback(GtkCellRendererToggle *cell_renderer, gcha
   _toggled_callback(path_str, user_data, DT_METADATA_PREF_COL_PRIVATE);
 }
 
+static gboolean _handle_enter(GtkWidget *widget, GdkEventKey *event, dt_lib_module_t* self)
+{
+  if(event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
+  {
+    gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_YES);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
                                        GTK_DIALOG_DESTROY_WITH_PARENT, _("default"), GTK_RESPONSE_ACCEPT,
                                        _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
+  g_signal_connect(dialog, "key-press-event", G_CALLBACK(_handle_enter), self);
+
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
