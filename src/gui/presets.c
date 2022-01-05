@@ -667,7 +667,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
     gtk_entry_set_text(GTK_ENTRY(g->maker), "%");
     gtk_entry_set_text(GTK_ENTRY(g->lens), "%");
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_min), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_max), FLT_MAX);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->iso_max), 3276800);
 
     float val = 0;
     int k = 0;
