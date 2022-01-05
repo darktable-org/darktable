@@ -44,6 +44,20 @@ function(_copy_required_library target library)
 endfunction()
 
 
+#-------------------------------------------------------------------------------
+# _install_translations(<catalog> <src_localedir>)
+#
+# Helper macro to install all available translations for a given catalog.
+#-------------------------------------------------------------------------------
+macro(_install_translations catalog src_localedir)
+  file(GLOB MO_FILES RELATIVE "${src_localedir}" "${src_localedir}/*/LC_MESSAGES/${catalog}.mo")
+  foreach(MO ${MO_FILES})
+    get_filename_component(MO_TARGET_DIR "${MO}" DIRECTORY)
+    install(FILES "${src_localedir}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
+  endforeach()
+endmacro()
+
+
 function(InstallDependencyFiles)
 
 if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
@@ -169,6 +183,10 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
 
+  # Add GLib and GTK translations
+  _install_translations(glib20 ${MINGW_PATH}/../share/locale)
+  _install_translations(gtk30 ${MINGW_PATH}/../share/locale)
+
   # TODO: Add auxiliary files for openssl?
 
   # Add pixbuf loader libraries
@@ -219,6 +237,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
         DESTINATION lib/
         COMPONENT DTApplication
         PATTERN "*.a" EXCLUDE)
+    _install_translations(libgphoto2-6 ${MINGW_PATH}/../share/locale)
 
     install(DIRECTORY
         "${MINGW_PATH}/../lib/libgphoto2_port"
@@ -265,17 +284,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
         DESTINATION share/iso-codes/json/
         COMPONENT DTApplication
     )
-    file(GLOB IsoCodes_MO_FILES RELATIVE "${IsoCodes_LOCALEDIR}" "${IsoCodes_LOCALEDIR}/*/LC_MESSAGES/iso_639.mo")
-    foreach(MO ${IsoCodes_MO_FILES})
-      string(REPLACE "iso_639.mo" "" MO_TARGET_DIR "${MO}")
-      install(FILES "${IsoCodes_LOCALEDIR}/${MO}" DESTINATION "share/locale/${MO_TARGET_DIR}" COMPONENT DTApplication)
-      file(GLOB mofiles "${IsoCodes_LOCALEDIR}/${MO_TARGET_DIR}/*")
-      foreach(sysfile ${mofiles})
-        install(FILES ${sysfile}
-                DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${MO_TARGET_DIR}
-                COMPONENT DTApplication)
-      endforeach(sysfile)
-    endforeach()
+    _install_translations(iso_639-2 ${IsoCodes_LOCALEDIR})
   endif(IsoCodes_FOUND)
 
   # Add ca-cert for curl

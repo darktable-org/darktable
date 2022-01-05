@@ -27,7 +27,7 @@
   <translations name="libgphoto2-6">${prefix}/share/locale</translations>
   <translations name="gtk30">${prefix}/share/locale</translations>
   <translations name="gtk-mac-integration">${prefix}/share/locale</translations>
-  <translations name="iso_639">${prefix}/share/locale</translations>
+  <translations name="iso_639-2">${prefix}/share/locale</translations>
   <translations name="darktable">${prefix:dt}/share/locale</translations>
   <data>${prefix:dt}/share/darktable</data>
   <data>${prefix}/share/glib-2.0/schemas/org.gtk.Settings.*.gschema.xml</data>
