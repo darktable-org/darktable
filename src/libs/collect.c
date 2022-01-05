@@ -2585,20 +2585,32 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   _widget_raw_set_tooltip(rule);
   g_signal_connect(G_OBJECT(rule->w_raw_text), "activate", G_CALLBACK(_event_rule_changed), rule);
   g_signal_connect(G_OBJECT(rule->w_raw_text), "changed", G_CALLBACK(_event_entry_changed), rule);
+  gtk_widget_set_no_show_all(rule->w_raw_text, TRUE);
   gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_raw_text, TRUE, TRUE, 0);
 
   // initialize the specific entries if any
+  gboolean widgets_ok = FALSE;
   switch(prop)
   {
     case DT_COLLECTION_PROP_RATING:
       _rating_widget_init(rule, prop, text, self);
+      widgets_ok = _widget_update(rule);
       break;
     default:
       // nothing to do
       break;
   }
 
-  gtk_widget_set_no_show_all(rule->w_raw_text, (rule->w_specific != NULL));
+  // set the visibility for the eventual special widgets
+  if(rule->w_special_box)
+  {
+    gtk_widget_show_all(rule->w_special_box); // we ensure all the childs widgets are shown by default
+    gtk_widget_set_no_show_all(rule->w_special_box, TRUE);
+    gtk_widget_set_visible(rule->w_special_box, widgets_ok);
+    gtk_widget_set_visible(rule->w_raw_text, !widgets_ok);
+  }
+  else
+    gtk_widget_set_visible(rule->w_raw_text, TRUE);
 
   // the button to switch from raw to specific widgets (only shown if there's some)
   rule->w_raw_switch = dtgtk_button_new(dtgtk_cairo_paint_sorting, CPF_STYLE_FLAT, NULL);
