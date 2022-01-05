@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-29 13:53+0100\n"
-"PO-Revision-Date: 2022-01-05 19:18+0900\n"
+"PO-Revision-Date: 2022-01-05 21:20+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -3449,22 +3449,22 @@ msgstr "エッジ感度"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:147
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:264
 msgid "1st order anisotropy"
-msgstr "1次異方性"
+msgstr "1次の異方性"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:153
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:268
 msgid "2nd order anisotropy"
-msgstr "2次異方性"
+msgstr "2次の異方性"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:159
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:272
 msgid "3rd order anisotropy"
-msgstr "3次異方性"
+msgstr "3次の異方性"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:165
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:276
 msgid "4th order anisotropy"
-msgstr "4次異方性"
+msgstr "4次の異方性"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:171
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:280
@@ -3474,22 +3474,22 @@ msgstr "輝度マスクのしきい値"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:177
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:284
 msgid "1st order speed"
-msgstr "1次速度"
+msgstr "1次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:183
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:288
 msgid "2nd order speed"
-msgstr "2次速度"
+msgstr "2次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:189
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:292
 msgid "3rd order speed"
-msgstr "3次速度"
+msgstr "3次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:195
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:296
 msgid "4th order speed"
-msgstr "4次速度"
+msgstr "4次の速さ"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:201
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:300
