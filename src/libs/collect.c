@@ -2902,8 +2902,9 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("collections settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                  _("cancel"), GTK_RESPONSE_NONE,
-                                                 _("save"), GTK_RESPONSE_YES, NULL);
+                                                 _("save"), GTK_RESPONSE_ACCEPT, NULL);
   dt_prefs_init_dialog_collect(dialog);
+  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);

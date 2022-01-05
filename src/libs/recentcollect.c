@@ -317,8 +317,9 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("recent collections settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                  _("cancel"), GTK_RESPONSE_NONE,
-                                                 _("save"), GTK_RESPONSE_YES, NULL);
+                                                 _("save"), GTK_RESPONSE_ACCEPT, NULL);
   dt_prefs_init_dialog_recentcollect(dialog);
+  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -327,7 +328,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 
   const int old_nb_items = _conf_get_max_items(); // preserve previous value
 
-  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
   {
     dt_lib_recentcollect_t *d = self->data;
 

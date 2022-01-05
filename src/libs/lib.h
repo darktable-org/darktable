@@ -166,6 +166,9 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b);
 /** init presets for a newly created lib */
 void dt_lib_init_presets(dt_lib_module_t *module);
 
+/** handle Enter key for dialog. Note it uses GTK_RESPONSE_ACCEPT code */
+gboolean dt_handle_dialog_enter(GtkWidget *widget, GdkEventKey *event, gpointer data);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
