@@ -54,10 +54,10 @@ typedef enum dt_iop_highlights_mode_t
 typedef struct dt_iop_highlights_params_t
 {
   dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
-  float reconstructing;          // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "effect strength"
+  float reconstructing;          // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast balance"
   float combine;                 // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
-  float reserved_recovery;
-  float clip;                    // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
+  float threshold;
+  float clip;                    // $MIN: 0.0 $MAX: 2.0  $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
   float feathering_details;      // $MIN: 2.0 $MAX: 8.0 $DEFAULT: 6.0 $DESCRIPTION: "details feathering"
   float feathering_colors;       // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "colors feathering"
   float noise_level;             // $MIN: 0. $MAX: 1.0 $DEFAULT: 0.05 $DESCRIPTION: "noise level"
@@ -66,11 +66,8 @@ typedef struct dt_iop_highlights_params_t
 typedef struct dt_iop_highlights_gui_data_t
 {
   GtkWidget *clip;
-  GtkWidget *mode_bayer;
-  GtkWidget *mode_xtrans;
-  GtkWidget *nonraw;
-  GtkWidget *reconstructing;
-  GtkWidget *combine;
+  GtkWidget *mode_bayer, *mode_xtrans, *nonraw;
+  GtkWidget *reconstructing, *combine;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -120,9 +117,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   typedef struct dt_iop_highlights_params_v2_t
   {
     dt_iop_highlights_mode_t mode;
-    float reserved1;
-    float reserved2;
-    float reserved3;
+    float blendL; // unused $DEFAULT: 1.0
+    float blendC; // unused $DEFAULT: 0.0
+    float blendh; // unused $DEFAULT: 0.0    float reserved1;
     float clip;
   } dt_iop_highlights_params_v2_t;
 
@@ -130,8 +127,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   {
     dt_iop_highlights_params_v2_t *o = (dt_iop_highlights_params_v2_t *)old_params;
     dt_iop_highlights_params_v3_t *n = (dt_iop_highlights_params_v3_t *)new_params;
-    memcpy(n, o, sizeof *o);
-    n->reserved_recovery = 0.0f;
+    n->clip = o->clip;
+    n->threshold = 0.0f;
     n->reconstructing = 0.4f;
     n->combine = 2.0f;
     n->feathering_details = 6.0f;
