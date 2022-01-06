@@ -829,9 +829,10 @@ typedef struct _dt_delete_modal_dialog_t
 enum _dt_delete_status
 {
   _DT_DELETE_STATUS_UNKNOWN = 0,
-  _DT_DELETE_STATUS_OK_TO_REMOVE = 1,
-  _DT_DELETE_STATUS_SKIP_FILE = 2,
-  _DT_DELETE_STATUS_STOP_PROCESSING = 3
+  _DT_DELETE_STATUS_DELETED = 1,
+  _DT_DELETE_STATUS_REMOVE = 2,
+  _DT_DELETE_STATUS_SKIP_FILE = 3,
+  _DT_DELETE_STATUS_STOP_PROCESSING = 4
 };
 
 enum _dt_delete_dialog_choice
@@ -854,8 +855,8 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
       GTK_MESSAGE_QUESTION,
       GTK_BUTTONS_NONE,
       modal_dialog->send_to_trash
-        ? _("could not send %s to trash%s%s")
-        : _("could not physically delete %s%s%s"),
+        ? _("could not send %s to trash%s\n%s\n\n do you want to physically delete the file from disk without using trash?")
+        : _("could not physically delete from disk %s%s\n%s"),
       modal_dialog->filename,
       modal_dialog->error_message != NULL ? ": " : "",
       modal_dialog->error_message != NULL ? modal_dialog->error_message : "");
@@ -865,12 +866,16 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
 
   if(modal_dialog->send_to_trash)
   {
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete all files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("yes, physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("yes, physically delete this and subsequent files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("no, only remove this image from library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
   }
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the image library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
+  else
+  {
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("remove this image from library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
+  }
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("abort process"), _DT_DELETE_DIALOG_CHOICE_STOP);
 
   gtk_window_set_title(
       GTK_WINDOW(dialog),
@@ -943,7 +948,7 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
     if(delete_success
         || g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
     {
-      delete_status = _DT_DELETE_STATUS_OK_TO_REMOVE;
+      delete_status = _DT_DELETE_STATUS_DELETED;
     }
     else if(send_to_trash && *delete_on_trash_error)
     {
@@ -985,7 +990,8 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
       }
       else if(res == _DT_DELETE_DIALOG_CHOICE_REMOVE)
       {
-        delete_status = _DT_DELETE_STATUS_OK_TO_REMOVE;
+        // only remove the file from the database
+        delete_status = _DT_DELETE_STATUS_REMOVE;
       }
       else if(res == _DT_DELETE_DIALOG_CHOICE_CONTINUE)
       {
@@ -1036,6 +1042,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
                               "SELECT COUNT(*) FROM main.images WHERE filename IN (SELECT filename FROM "
                               "main.images WHERE id = ?1) AND film_id IN (SELECT film_id FROM main.images WHERE "
                               "id = ?1)", -1, &stmt, NULL);
+  // loop through all images to delete
   while(t)
   {
     enum _dt_delete_status delete_status = _DT_DELETE_STATUS_UNKNOWN;
@@ -1061,31 +1068,40 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       if(dt_image_local_copy_reset(imgid))
         goto delete_next_file;
 
-      snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
-      _set_remove_flag(imgidstr);
-      dt_image_remove(imgid);
-
       // there are no further duplicates so we can remove the source data file
       delete_status = delete_file_from_disk(filename, &delete_on_trash_error);
-      if(delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
-        goto delete_next_file;
-
-      // all sidecar files - including left-overs - can be deleted;
-      // left-overs can result when previously duplicates have been REMOVED;
-      // no need to keep them as the source data file is gone.
-
-      GList *files = dt_image_find_duplicates(filename);
-
-      for(GList *file_iter = files; file_iter; file_iter = g_list_next(file_iter))
+      if(delete_status == _DT_DELETE_STATUS_REMOVE || delete_status == _DT_DELETE_STATUS_DELETED)
       {
-        delete_status = delete_file_from_disk(file_iter->data, &delete_on_trash_error);
-        if(delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
-          break;
-      }
+        // if the file has been deleted or should only be removed -> remove image from collection
+        snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
+        _set_remove_flag(imgidstr);
+        dt_image_remove(imgid);
 
-      g_list_free_full(files, g_free);
+        if(delete_status == _DT_DELETE_STATUS_DELETED)
+        {
+          // if image has been deleted,
+          // all sidecar files - including left-overs - can be deleted;
+          // left-overs can result when previously duplicates have been REMOVED;
+          // no need to keep them as the source data file is gone.
+
+          GList *files = dt_image_find_duplicates(filename);
+
+          for(GList *file_iter = files; file_iter; file_iter = g_list_next(file_iter))
+          {
+            delete_status = delete_file_from_disk(file_iter->data, &delete_on_trash_error);
+            if (delete_status != _DT_DELETE_STATUS_DELETED)
+              break;
+          }
+          g_list_free_full(files, g_free);
+        }
+      }
+      else
+      {
+        // no deletion nor removal from library
+        goto delete_next_file;
+      }
     }
-    else
+    else // duplicates exist
     {
       // don't remove the actual source data if there are further duplicates using it;
       // just delete the xmp file of the duplicate selected.
