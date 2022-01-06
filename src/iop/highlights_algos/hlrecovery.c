@@ -17,11 +17,11 @@
 */
 
 /*
-Highlights restoration II
+Highlights recovery
 
 ** Overview **
 
-The new highlight restoration II algorithm only works for standard bayer sensors.
+The new highlight recovery algorithm only works for standard bayer sensors.
 It has been developed in collaboration by Iain from the gmic team and Hanno Schwalm from dt.
 
 The original idea was presented by Iain in pixls.us in: https://discuss.pixls.us/t/highlight-recovery-teaser/17670
@@ -39,20 +39,20 @@ The algorithm follows these basic ideas:
 3. We want to keep details as much as possible; we assume that details are best represented in the color channel having
    the minimum value. So beside the 4 color planes we also have a plane holding the minimum values (pminimum)
 4. In all 4 color planes we look for isolated areas being clipped (segments).
-   Inside these segments including borders around we look for a candidate to represent the value we take for restoration.
+   Inside these segments (including borders around) we look for a candidate to represent the value we take for restoration.
    Choosing the candidate is done at all non-clipped locations of a segment, the best candidate is selected via a weighing
    function - the weight is derived from
    - the local standard deviation in a 5x5 area and
    - the median value of unclipped positions also in a 5x5 area.
    The best candidate points to the location in the color plane holding the reference value.
-   If there is no good candidate we use an approximation.
+   If there is no good candidate we use an averaging approximation over the whole sehment.
 5. We evaluated several ways to further reduce the pre-existing color cast, atm we calc linearly while using a correction
    coeff for every plane.
    We also tried using some gamma correction which helped in some cases but was unstable in others.
 6. The restored value at position 'i' is basically calculated as
-     val = candidate + pminimum[i] - pminimum[candidate_location;
+     val = candidate + pminimum[i] - pminimum[candidate_location];
 
-For segmentation i implemented and tested several approaches including Felszenzwalb and a watershed algo,
+For the segmentation i implemented and tested several approaches including Felszenzwalb and a watershed algo,
 both have problems with identifying the clipped segments in a plane. I ended up with this:
 
 1. Doing the segmentation in every color plane.
@@ -63,15 +63,15 @@ both have problems with identifying the clipped segments in a plane. I ended up 
    - the candidates location
 4. To combine small segments for a shared candidate we use a morphological closing operation, the radius of that op
    can be chosen interactively between 0 and 10.
-
+5. To avoid single clipped photosites (often found at smooth transitions from not-clipped to clipped) we prepose
+   a morphological opening with a very small radius before segmentation. 
 */
 
 #define HLFPLANES 5
 #define HLSEGPLANES 4
 #define HLMAXSEGMENTS 0x4000
-#define HLBADWEIGHT 0.3f
 #define HLBORDER 8
-#define HLEPSILON 1e-5
+#define HLEPSILON 1e-3
 
 #ifdef __GNUC__
   #pragma GCC push_options
@@ -140,9 +140,9 @@ static void calc_plane_candidates(float *s, float *pmin, dt_iop_segmentation_t *
     int *segmap    = seg->data;
     size_t testref = 0;
     float testweight = 0.0f;
-    for(int row = seg->ymin[id] -1 ; row < seg->ymax[id] + 2; row++)
+    for(int row = seg->ymin[id] -2 ; row < seg->ymax[id] + 3; row++)
     {
-      for(int col = seg->xmin[id] -1; col < seg->xmax[id] + 2; col++)
+      for(int col = seg->xmin[id] -2; col < seg->xmax[id] + 3; col++)
       {
         const size_t pos = row * width + col;
         const int sid = segmap[pos] & (HLMAXSEGMENTS-1);
@@ -158,45 +158,44 @@ static void calc_plane_candidates(float *s, float *pmin, dt_iop_segmentation_t *
       }
     }
 
-    if(testref)
+    if(testref && (testweight > 0.3f)) // We have found a reference locations
+    {
+      seg->ref[id] = testref;
+      segmap[testref] = 2*HLMAXSEGMENTS + id;
+      float sum  = 0.0f;
+      float pix = 0.0f;
+      for(int y = -2; y < 3; y++)
+      {
+        for(int x = -2; x < 3; x++)
+        {
+          const float rr = s[testref + y*width + x];
+          sum += (rr < 1.0f) ? rr   : 0.0f;
+          pix += (rr < 1.0f) ? 1.0f : 0.0f;
+        }
+      }
+      seg->val1[id] = fminf(1.0f - HLEPSILON, sum / fmaxf(1.0f, pix));
+      seg->val2[id] = pmin[testref];
+    }
+    else
     {
       float sum  = 0.0f;
       float pix = 0.0f;
-      float candidate = 0.0f;
-      if(testweight > HLBADWEIGHT)
+      for(int row = seg->ymin[id]; row < seg->ymax[id] + 1; row++)
       {
-        seg->ref[id] = testref;
-        segmap[testref] = 2*HLMAXSEGMENTS + id;
-        for(int y = -2; y < 3; y++)
+        for(int col = seg->xmin[id]; col < seg->xmax[id] + 1; col++)
         {
-          for(int x = -2; x < 3; x++)
+          const size_t pos = row * width + col;
+          const int sid = segmap[pos];
+          if(segmap[pos] == sid)
           {
-            const float rr = s[testref + y*width + x];
-            sum += (rr < 1.0f) ? rr   : 0.0f;
-            pix += (rr < 1.0f) ? 1.0f : 0.0f;
+            sum += pmin[pos];
+            pix += 1.0f;
           }
         }
-        candidate = sum / fmaxf(1.0f, pix);
       }
-      else
-      {
-        for(int row = seg->ymin[id]; row < seg->ymax[id] + 1; row++)
-        {
-          for(int col = seg->xmin[id]; col < seg->xmax[id] + 1; col++)
-          {
-            const size_t pos = row * width + col;
-            const int sid = segmap[pos];
-            if(segmap[pos] == sid)
-            {
-              sum += pmin[pos];
-              pix += 1.0f;
-            }
-          }
-        }
-        candidate = 1.0f - sum / fmaxf(1.0f, pix);
-      }
-      seg->refcol[id] = fminf(1.0f - HLEPSILON, candidate);
-    }  
+      seg->val1[id] = 1.0f - HLEPSILON;
+      seg->val2[id] = sum / fmaxf(1.0f, pix);
+    }
   }
 }
 
@@ -206,12 +205,6 @@ static inline int pos2plane(const int row, const int col, const uint32_t filters
   if(c == 0)      return 0;
   else if(c == 2) return 3;
   else return 1 + (row&1);
-}
-
-static inline int plane2bitmask(const int p)
-{
-  const int masks[4] = { 0x01, 0x06, 0x06, 0x08 };
-  return masks[p&3];
 }
 
 static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -343,12 +336,9 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
   for(int p = 0; p < 4; p++)
   {
-    if(combining)
-    {
-      dt_image_transform_erode(isegments[p].data, pwidth, pheight, 0, HLBORDER);
-      dt_image_transform_dilate(isegments[p].data, pwidth, pheight, 1, HLBORDER);
-      dt_image_transform_closing(isegments[p].data, pwidth, pheight, combining, HLBORDER);
-    }
+    dt_image_transform_erode(isegments[p].data, pwidth, pheight, 0, HLBORDER);
+    dt_image_transform_dilate(isegments[p].data, pwidth, pheight, 1, HLBORDER);
+    if(combining) dt_image_transform_closing(isegments[p].data, pwidth, pheight, combining, HLBORDER);
   }
   if(dt_get_num_threads() >= HLSEGPLANES)
   {
@@ -370,80 +360,98 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
   if(info) dt_get_times(&time2);
 
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(plane, pminimum, isegments, corr_coeff, locmask) \
+  dt_omp_sharedconst(pheight, pwidth, p_size, clip, reconstruct) \
+  schedule(simd:static) aligned(plane, pminimum : 64)
+#endif
+  for(int row = HLBORDER; row < pheight - HLBORDER; row++)
+  {
+    for(int col = HLBORDER; col < pwidth - HLBORDER; col++)
+    {
+      const size_t ix = row * pwidth + col;
+
+      float candidates[4]   = { 0.0f, 0.0f, 0.0f, 0.0f };
+      float cand_minimum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+      for(int p = 0; p < 4; p++)
+      {
+        if(locmask[ix] & (0x01 << p))
+        {
+          const int pid = isegments[p].data[ix] & (HLMAXSEGMENTS-1);
+          if((pid > 1) && (pid < isegments[p].nr+2))
+          {
+            candidates[p]   = isegments[p].val1[pid];
+            cand_minimum[p] = isegments[p].val2[pid];
+          }
+          else if(pid == 0)
+          {
+            float summin = 0.0f;
+            for(int y = -2; y < 3; y++)
+              for(int x = -2; x < 3; x++) summin += pminimum[ix + y*pwidth +x];
+            candidates[p]   = 1.0f - HLEPSILON;
+            cand_minimum[p] = 0.04f * summin;  
+          }
+        }
+      }
+
+      for(int p = 0; p < 4; p++)
+      {
+        if(locmask[ix] & (0x01 << p))
+        {
+          float candidates_minimum = 0.0f;
+          float candidate = 0.0f;
+
+          if((p == DT_IO_PLANE_GREEN1 || p == DT_IO_PLANE_GREEN2) && ((locmask[ix] & 0x06) == 0x06))
+          {
+            // we take the median of greens candidates.          
+            if((candidates[DT_IO_PLANE_GREEN1] >= 0.0f) && (cand_minimum[DT_IO_PLANE_GREEN1] >= 0.0f) &&
+               (candidates[DT_IO_PLANE_GREEN2] >= 0.0f) && (cand_minimum[DT_IO_PLANE_GREEN2] >= 0.0f))                  
+            {
+              candidate = 0.5f * (candidates[DT_IO_PLANE_GREEN1] + candidates[DT_IO_PLANE_GREEN2]);
+              candidates_minimum = 0.5f * (cand_minimum[DT_IO_PLANE_GREEN1] + cand_minimum[DT_IO_PLANE_GREEN2]);
+            }
+          }
+          else
+          {
+            candidate = candidates[p];
+            candidates_minimum = cand_minimum[p];
+          }
+
+          const float correction = corr_coeff[p] * (0.7 + 1.5f * reconstruct);
+          float val = candidate + pminimum[ix] - candidates_minimum;
+          val = 1.0f + (val - 1.0f) * correction;
+          plane[p][ix] = clip * fmaxf(1.0f, val);
+        }
+      }
+    }
+  }
+
+  for(int i = 0; i < 4; i++)
+    dt_masks_extend_border(plane[i], pwidth, pheight, HLBORDER);
+
   float max_correction = 1.0f;
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   reduction(max : max_correction) \
-  dt_omp_firstprivate(out, plane, pminimum, isegments, coeffs, corr_coeff, locmask) \
-  dt_omp_sharedconst(width, height, pheight, pwidth, p_size, clip, reconstruct, p_off, filters) \
-  schedule(simd:static) aligned(out, plane, pminimum : 64)
+  dt_omp_firstprivate(out, plane, coeffs, locmask) \
+  dt_omp_sharedconst(width, height, pwidth, p_off, filters) \
+  schedule(simd:static) aligned(out, plane : 64)
 #endif
   for(int row = 0; row < height; row++)
   {
     for(int col = 0; col < width; col++)
     {
-      const size_t o = row * width + col;
       const size_t i = (row/2)*pwidth + (col/2) + p_off;
       const int p = pos2plane(row, col, filters);
       if(locmask[i] & (0x01 << p))
       {
-        float candidates_minimum = 0.0f;
-        float candidate = 0.0f;
-        gboolean restore = FALSE;
-
-        int segid[4]          = { 0, 0, 0, 0 };
-        float candidates[4]   = { 0.0f, 0.0f, 0.0f, 0.0f };
-        float cand_minimum[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-        // Prepare data for interchannel corrections, so far only used by greens mixing
-        for(int pp = 0; pp < 4; pp++)
-        {
-          const int pid = isegments[pp].data[i] & (HLMAXSEGMENTS-1);
-          if((pid > 1) && (pid < isegments[pp].nr+2))
-          {
-            segid[pp]         = pid;          
-            candidates[pp]    = isegments[pp].refcol[pid];   
-            const size_t loc  = isegments[pp].ref[pid];
-            if(loc) cand_minimum[pp] = pminimum[loc];
-          }
-          else if(pid == 0)
-          {
-            segid[pp] = 1;          
-            float sum = 0.0f;
-            for(int y = -1; y < 2; y++)
-              for(int x = -1; x < 2; x++) sum += pminimum[i + y*pwidth +x];
-            candidates[pp]    = 1.0f - (0.12f * sum);   
-          }
-        }     
-
-        if((p == DT_IO_PLANE_GREEN1 || p == DT_IO_PLANE_GREEN2) && segid[DT_IO_PLANE_GREEN1] && segid[DT_IO_PLANE_GREEN2])
-        {
-          // we take the median of greens candidates.          
-          if((candidates[DT_IO_PLANE_GREEN1] >= 0.0f) && (cand_minimum[DT_IO_PLANE_GREEN1] >= 0.0f) &&
-             (candidates[DT_IO_PLANE_GREEN2] >= 0.0f) && (cand_minimum[DT_IO_PLANE_GREEN2] >= 0.0f))                  
-          {
-            candidate = 0.5f * (candidates[DT_IO_PLANE_GREEN1] + candidates[DT_IO_PLANE_GREEN2]);
-            candidates_minimum = 0.5f * (cand_minimum[DT_IO_PLANE_GREEN1] + cand_minimum[DT_IO_PLANE_GREEN2]);
-            restore = TRUE;
-          }
-        }
-
-        if(segid[p] && !restore)
-        {
-          candidate = candidates[p];
-          candidates_minimum = cand_minimum[p];
-          restore = TRUE;
-        }
-
-        if(restore)
-        {
-          const float correction = corr_coeff[p] * (0.7 + 1.5f * reconstruct);
-          float val = candidate + pminimum[i] - candidates_minimum;
-          val = 1.0f + (val - 1.0f) * correction;
-          val = clip * fmaxf(1.0f, val);
-          out[o] = val * coeffs[p];
-          max_correction = fmaxf(max_correction, val);
-        }
+        const float val =  0.5f *  plane[p][i] +
+                         0.075f * (plane[p][i-1] + plane[p][i+1] + plane[p][i-pwidth] + plane[p][i+pwidth]) +
+                         0.050f * (plane[p][i-1-pwidth] + plane[p][i+1-pwidth] + plane[p][i-1+pwidth] + plane[p][i+1+pwidth]);
+        out[row * width + col] = val * coeffs[p];
+        max_correction = fmaxf(max_correction, val);
       }
     }
   }
@@ -477,7 +485,6 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
 #undef HLFPLANES
 #undef HLMAXSEGMENTS
-#undef HLBADWEIGHT
 #undef HLSEGPLANES
 #undef HLBORDER
 #undef HLEPSILON
