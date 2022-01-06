@@ -94,7 +94,7 @@ typedef enum dt_iop_highlights_plane_t
 #include "iop/highlights_algos/segmentation.h"
 
 #define SQR(x) ((x) * (x))
-static float calc_weight(float *p, const int w)
+static float calc_weight(const float *p, const int w)
 {
   if(p[0] >= 1.0f) return HLEPSILON;
   const int w2 = 2*w;
@@ -127,13 +127,13 @@ static float calc_weight(float *p, const int w)
 }
 #undef SQR
 
-static void calc_plane_candidates(float *s, float *pmin, dt_iop_segmentation_t *seg, const int width, const int height, const float maxval)
+static void calc_plane_candidates(const float *s, const float *pmin, dt_iop_segmentation_t *seg, const int width, const int height, const float maxval)
 {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(s, pmin, seg) \
   dt_omp_sharedconst(width, height) \
-  schedule(dynamic)
+  schedule(dynamic) aligned(s, pmin : 64)
 #endif
   for(int id = 2; id < seg->nr + 2; id++)
   {
