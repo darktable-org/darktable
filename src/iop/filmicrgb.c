@@ -2670,8 +2670,6 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->noise_distribution, p->noise_distribution);
 
   gui_changed(self, NULL, NULL);
-
-  gtk_widget_queue_draw(self->widget);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -4232,7 +4230,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     gtk_widget_set_visible(g->grey_point_target, p->custom_grey);
   }
 
-  if(w) gtk_widget_queue_draw(self->widget);
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
