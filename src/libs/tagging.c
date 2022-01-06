@@ -2756,7 +2756,7 @@ static gboolean _on_dict_treeview_key_press( GtkWidget *widget, GdkEventKey even
     case GDK_KEY_Return:
     case GDK_KEY_KP_Enter:
       _attach_selected_tag( dt_lib_module, d );
-      if( ! event.state & GDK_SHIFT_MASK ) 
+      if( ! ( event.state & GDK_SHIFT_MASK ) )
       {
         gtk_tree_selection_unselect_all( gtk_tree_view_get_selection( d->dictionary_view ) );
         gtk_entry_set_text( d->entry, "" );
