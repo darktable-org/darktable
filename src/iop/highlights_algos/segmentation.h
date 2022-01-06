@@ -36,7 +36,8 @@ typedef struct dt_iop_segmentation_t
   int *ymin;
   int *ymax;
   size_t *ref;    // possibly a reference point for location
-  float *refcol;  // holds averaged reference color or 0  
+  float *val1;
+  float *val2;  
   int nr;         // number of found segments
 } dt_iop_segmentation_t;
 
@@ -70,14 +71,8 @@ void dt_segmentation_init_struct(dt_iop_segmentation_t *seg, const int width, co
   seg->ymin =   dt_alloc_align(64, segments * sizeof(int));
   seg->ymax =   dt_alloc_align(64, segments * sizeof(int));
   seg->ref =    dt_alloc_align(64, segments * sizeof(size_t));
-  seg->refcol = dt_alloc_align_float(segments);
-  // make sure for the first 2 segments
-  for(int i = 0; i < 2; i++)
-  {
-    seg->size[i] = 0;
-    seg->ref[i] = 0;
-    seg->refcol[i] = 0.0f;
-  }
+  seg->val1 =   dt_alloc_align_float(segments);
+  seg->val2 =   dt_alloc_align_float(segments);
 }
 
 void dt_segmentation_free_struct(dt_iop_segmentation_t *seg)
@@ -89,7 +84,8 @@ void dt_segmentation_free_struct(dt_iop_segmentation_t *seg)
   dt_free_align(seg->xmax);
   dt_free_align(seg->ymax);
   dt_free_align(seg->ref);
-  dt_free_align(seg->refcol);
+  dt_free_align(seg->val1);
+  dt_free_align(seg->val2);
 }
 
 static inline void _dilate_0(int *img, int *o, const int w1, const int height, const int border)
@@ -473,7 +469,8 @@ static int floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, in
 
   seg->size[id] = 0;
   seg->ref[id] = 0;
-  seg->refcol[id] = 0.0f;
+  seg->val1[id] = 0.0f;
+  seg->val2[id] = 0.0f;
   seg->xmin[id] = min_x;
   seg->xmax[id] = max_x;
   seg->ymin[id] = min_y;
