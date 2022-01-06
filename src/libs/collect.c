@@ -2245,10 +2245,10 @@ static void _widget_raw_set_tooltip(dt_lib_collect_rule_t *rule)
   g_free(tip);*/
 }
 
-static void _event_rule_changed(GtkWidget *entry, dt_lib_collect_rule_t *d)
+static void _event_rule_changed(GtkWidget *entry, dt_lib_collect_rule_t *rule)
 {
   // update the config files
-  _conf_update_rule(d);
+  _conf_update_rule(rule);
 
   // update the query without throwing signal everywhere
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
@@ -2483,6 +2483,258 @@ static gboolean _event_rule_expand(GtkWidget *widget, GdkEventButton *event, dt_
   return TRUE;
 }
 
+static gboolean _event_completion_match_selected(GtkEntryCompletion *self, GtkTreeModel *model, GtkTreeIter *iter,
+                                                 dt_lib_collect_rule_t *rule)
+{
+  gchar *text;
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+  gtk_entry_set_text(GTK_ENTRY(gtk_entry_completion_get_entry(self)), text);
+  g_free(text);
+  gtk_widget_activate(gtk_entry_completion_get_entry(self));
+
+  return TRUE;
+}
+
+static gboolean _completion_match_func(GtkEntryCompletion *self, const gchar *key, GtkTreeIter *iter,
+                                       gpointer user_data)
+{
+  GtkTreeModel *model = gtk_entry_completion_get_model(self);
+  gchar *text;
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+  gchar *txt2 = g_utf8_strdown(text, -1);
+  g_free(text);
+  gboolean rep = (g_strrstr(txt2, key) != NULL);
+  g_free(txt2);
+  return rep;
+}
+
+
+static void _widget_init_completion(dt_lib_collect_rule_t *rule)
+{
+  // if needed, we remove the old completion
+  if(gtk_entry_get_completion(GTK_ENTRY(rule->w_raw_text)) != NULL)
+  {
+    // TODO
+    // g_free(gtk_entry_get_completion(GTK_ENTRY(rule->w_raw_text)));
+  }
+
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(rule->filter));
+  gtk_entry_completion_set_model(completion, model);
+  gtk_entry_completion_set_text_column(completion, DT_LIB_COLLECT_COL_TEXT);
+  g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(_event_completion_match_selected), rule);
+  gtk_entry_completion_set_match_func(completion, _completion_match_func, rule, NULL);
+  gtk_entry_set_completion(GTK_ENTRY(rule->w_raw_text), completion);
+}
+
+static gboolean _widget_init_special(dt_lib_collect_rule_t *rule, const gchar *text, dt_lib_module_t *self)
+{
+  // if the widgets already exits, destroy them
+  if(rule->w_special_box)
+  {
+    gtk_widget_destroy(rule->w_special_box);
+    rule->w_special_box = NULL;
+    g_free(rule->w_specific);
+    rule->w_specific = NULL;
+  }
+
+  // initialize the specific entries if any
+  gboolean widgets_ok = FALSE;
+  switch(rule->prop)
+  {
+    case DT_COLLECTION_PROP_RATING:
+      _rating_widget_init(rule, rule->prop, text, self);
+      widgets_ok = _widget_update(rule);
+      break;
+    default:
+      // nothing to do
+      break;
+  }
+
+  // set the visibility for the eventual special widgets
+  if(rule->w_special_box)
+  {
+    gtk_widget_show_all(rule->w_special_box); // we ensure all the childs widgets are shown by default
+    gtk_widget_set_no_show_all(rule->w_special_box, TRUE);
+    gtk_widget_set_visible(rule->w_special_box, widgets_ok);
+    gtk_widget_set_visible(rule->w_raw_text, !widgets_ok);
+  }
+  else
+    gtk_widget_set_visible(rule->w_raw_text, TRUE);
+
+  return (rule->w_special_box != NULL);
+}
+
+static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
+{
+  const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
+  dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+  rule->prop = mode;
+  gtk_label_set_label(GTK_LABEL(rule->w_combo), dt_collection_name(mode));
+
+  // re-init the special widgets
+  _widget_init_special(rule, "", self);
+
+  // reset the raw entry
+  gtk_entry_set_text(GTK_ENTRY(rule->w_raw_text), "");
+  gtk_widget_set_visible(rule->w_raw_switch, (rule->w_specific != NULL));
+
+  // reconstruct the tree/list view
+  gtk_widget_destroy(GTK_WIDGET(rule->w_view));
+  rule->w_view = NULL;
+  _widget_rule_view_update(rule);
+  _widget_init_completion(rule);
+
+  // update the config files
+  _conf_update_rule(rule);
+
+  // update the query without throwing signal everywhere
+  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                  darktable.view_manager->proxy.module_collect.module);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                    darktable.view_manager->proxy.module_collect.module);
+}
+
+static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
+{
+  // add new rule
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  if(d->nb_rules >= MAX_RULES) return;
+  const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
+  char confname[200] = { 0 };
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", d->nb_rules);
+  dt_conf_set_int(confname, mode);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", d->nb_rules);
+  dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", d->nb_rules);
+  dt_conf_set_string(confname, "");
+  d->nb_rules++;
+  dt_conf_set_int("plugins/lighttable/collect/num_rules", d->nb_rules);
+
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+}
+
+static void _widget_add_rule_popup_item(GtkMenuShell *pop, const gchar *name, const int id, const gboolean title,
+                                        dt_lib_collect_rule_t *rule, dt_lib_module_t *self)
+{
+  GtkWidget *smt = gtk_menu_item_new_with_label(name);
+  if(title)
+  {
+    gtk_widget_set_name(smt, "collect-popup-title");
+    gtk_widget_set_sensitive(smt, FALSE);
+  }
+  else
+  {
+    gtk_widget_set_name(smt, "collect-popup-item");
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
+    gtk_label_set_xalign(GTK_LABEL(child), 1.0);
+    g_object_set_data(G_OBJECT(smt), "collect_id", GINT_TO_POINTER(id));
+    if(rule)
+    {
+      g_object_set_data(G_OBJECT(smt), "rule", rule);
+      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_event_rule_change_type), self);
+    }
+    else
+      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_event_append_rule), self);
+  }
+  gtk_menu_shell_append(pop, smt);
+}
+
+static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rule, dt_lib_module_t *self)
+{
+#define ADD_COLLECT_ENTRY(value)                                                                                  \
+  _widget_add_rule_popup_item(pop, dt_collection_name(value), value, FALSE, rule, self);
+
+  // we show a popup with all the possible rules
+  GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
+  gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
+  gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
+
+  // show the preset part
+  if(!rule)
+  {
+    _widget_add_rule_popup_item(pop, _("append preset"), 0, TRUE, rule, self);
+
+    _widget_add_rule_popup_item(pop, _("unstarred only"), -1, FALSE, rule, self);
+    _widget_add_rule_popup_item(pop, "★", -1, FALSE, rule, self);
+    _widget_add_rule_popup_item(pop, "★ ★", -1, FALSE, rule, self);
+    _widget_add_rule_popup_item(pop, "★ ★ ★", -1, FALSE, rule, self);
+    _widget_add_rule_popup_item(pop, "★ ★ ★ ★", -1, FALSE, rule, self);
+    _widget_add_rule_popup_item(pop, "★ ★ ★ ★ ★", -1, FALSE, rule, self);
+    _widget_add_rule_popup_item(pop, _("rejected only"), -1, FALSE, rule, self);
+    _widget_add_rule_popup_item(pop, _("all except rejected"), -1, FALSE, rule, self);
+
+    // separator
+    _widget_add_rule_popup_item(pop, " ", 0, TRUE, rule, self);
+  }
+
+  // the differents categories
+  _widget_add_rule_popup_item(pop, _("files"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILMROLL);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOLDERS);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILENAME);
+
+  _widget_add_rule_popup_item(pop, _("metadata"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    const gchar *name = dt_metadata_get_name(keyid);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    const int meta_type = dt_metadata_get_type(keyid);
+    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
+    {
+      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
+    }
+  }
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
+
+  _widget_add_rule_popup_item(pop, _("times"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);
+
+  _widget_add_rule_popup_item(pop, _("capture details"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
+
+  _widget_add_rule_popup_item(pop, _("darktable"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
+
+  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  return TRUE;
+}
+
+static gboolean _event_add_rule(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  _widget_rule_popup(widget, NULL, self);
+  return TRUE;
+}
+
+static gboolean _event_rule_change_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+  _widget_rule_popup(rule->w_combo, rule, self);
+  return TRUE;
+}
+
 static gboolean _event_rule_raw_switch(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
@@ -2507,31 +2759,6 @@ static void _event_entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *rule)
 {
   // dr->typing = TRUE;
   // update_view(dr);
-}
-
-static gboolean _event_completion_match_selected(GtkEntryCompletion *self, GtkTreeModel *model, GtkTreeIter *iter,
-                                                 dt_lib_collect_rule_t *rule)
-{
-  gchar *text;
-  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
-  gtk_entry_set_text(GTK_ENTRY(gtk_entry_completion_get_entry(self)), text);
-  g_free(text);
-  gtk_widget_activate(gtk_entry_completion_get_entry(self));
-
-  return TRUE;
-}
-
-static gboolean _completion_match_func(GtkEntryCompletion *self, const gchar *key, GtkTreeIter *iter,
-                                       gpointer user_data)
-{
-  GtkTreeModel *model = gtk_entry_completion_get_model(self);
-  gchar *text;
-  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
-  gchar *txt2 = g_utf8_strdown(text, -1);
-  g_free(text);
-  gboolean rep = (g_strrstr(txt2, key) != NULL);
-  g_free(txt2);
-  return rep;
 }
 
 static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_properties_t prop, const gchar *text,
@@ -2564,15 +2791,32 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   gtk_box_pack_start(GTK_BOX(hbox), rule->w_operator, FALSE, FALSE, 0);
 
   // property
+  GtkWidget *eb = gtk_event_box_new();
   rule->w_combo = gtk_label_new(dt_collection_name(prop));
   gtk_widget_set_name(rule->w_combo, "section_label");
-  gtk_box_pack_start(GTK_BOX(hbox), rule->w_combo, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(eb), rule->w_combo);
+  g_object_set_data(G_OBJECT(eb), "rule", rule);
+  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
+  gtk_box_pack_start(GTK_BOX(hbox), eb, TRUE, TRUE, 0);
+
+  // in order to ensure the property is correctly centered, we add an invisible widget at the right
+  GtkWidget *overlay = gtk_overlay_new();
+  GtkWidget *false_cb = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("and"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("or"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("and not"));
+  gtk_widget_set_sensitive(false_cb, FALSE);
+  gtk_widget_set_name(false_cb, "collect-operator");
+  gtk_container_add(GTK_CONTAINER(overlay), false_cb);
+  gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
 
   // remove button
   rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_name(GTK_WIDGET(rule->w_close), "basics-link");
   g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), rule);
-  gtk_box_pack_start(GTK_BOX(hbox), rule->w_close, FALSE, FALSE, 0);
+  gtk_widget_set_halign(rule->w_close, GTK_ALIGN_END);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_close);
+  // gtk_box_pack_start(GTK_BOX(hbox), rule->w_close, FALSE, FALSE, 0);
 
   // the second line
   rule->w_widget_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2589,35 +2833,15 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_raw_text, TRUE, TRUE, 0);
 
   // initialize the specific entries if any
-  gboolean widgets_ok = FALSE;
-  switch(prop)
-  {
-    case DT_COLLECTION_PROP_RATING:
-      _rating_widget_init(rule, prop, text, self);
-      widgets_ok = _widget_update(rule);
-      break;
-    default:
-      // nothing to do
-      break;
-  }
-
-  // set the visibility for the eventual special widgets
-  if(rule->w_special_box)
-  {
-    gtk_widget_show_all(rule->w_special_box); // we ensure all the childs widgets are shown by default
-    gtk_widget_set_no_show_all(rule->w_special_box, TRUE);
-    gtk_widget_set_visible(rule->w_special_box, widgets_ok);
-    gtk_widget_set_visible(rule->w_raw_text, !widgets_ok);
-  }
-  else
-    gtk_widget_set_visible(rule->w_raw_text, TRUE);
+  _widget_init_special(rule, text, self);
 
   // the button to switch from raw to specific widgets (only shown if there's some)
   rule->w_raw_switch = dtgtk_button_new(dtgtk_cairo_paint_sorting, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_name(GTK_WIDGET(rule->w_raw_switch), "control-button");
   g_signal_connect(G_OBJECT(rule->w_raw_switch), "button-press-event", G_CALLBACK(_event_rule_raw_switch), rule);
   gtk_box_pack_end(GTK_BOX(rule->w_widget_box), rule->w_raw_switch, FALSE, TRUE, 0);
-  gtk_widget_set_no_show_all(rule->w_raw_switch, !rule->w_specific);
+  gtk_widget_set_no_show_all(rule->w_raw_switch, TRUE);
+  gtk_widget_set_visible(rule->w_raw_switch, (rule->w_specific != NULL));
 
   // the third line
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2640,13 +2864,7 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   _widget_rule_view_update(rule);
 
   // we can now fill the entry completion
-  GtkEntryCompletion *completion = gtk_entry_completion_new();
-  GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(rule->filter));
-  gtk_entry_completion_set_model(completion, model);
-  gtk_entry_completion_set_text_column(completion, DT_LIB_COLLECT_COL_TEXT);
-  g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(_event_completion_match_selected), rule);
-  gtk_entry_completion_set_match_func(completion, _completion_match_func, rule, NULL);
-  gtk_entry_set_completion(GTK_ENTRY(rule->w_raw_text), completion);
+  _widget_init_completion(rule);
 }
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
@@ -3381,122 +3599,6 @@ void _mount_changed(GUnixMountMonitor *monitor, dt_lib_module_t *self)
       _widget_rule_list_view(&d->rule[i]);
     }
   }
-}
-
-static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
-{
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
-  // add new rule
-  if(d->nb_rules >= MAX_RULES) return;
-  const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
-  char confname[200] = { 0 };
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", d->nb_rules);
-  dt_conf_set_int(confname, mode);
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", d->nb_rules);
-  dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", d->nb_rules);
-  dt_conf_set_string(confname, "");
-  d->nb_rules++;
-  dt_conf_set_int("plugins/lighttable/collect/num_rules", d->nb_rules);
-
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-}
-
-static void _widget_add_rule_popup_item(GtkMenuShell *pop, const gchar *name, const int id, const gboolean title,
-                                        dt_lib_module_t *self)
-{
-  GtkWidget *smt = gtk_menu_item_new_with_label(name);
-  if(title)
-  {
-    gtk_widget_set_name(smt, "collect-popup-title");
-    gtk_widget_set_sensitive(smt, FALSE);
-  }
-  else
-  {
-    gtk_widget_set_name(smt, "collect-popup-item");
-    GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
-    gtk_label_set_xalign(GTK_LABEL(child), 1.0);
-    g_object_set_data(G_OBJECT(smt), "collect_id", GINT_TO_POINTER(id));
-    g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_event_append_rule), self);
-  }
-  gtk_menu_shell_append(pop, smt);
-}
-
-static gboolean _event_add_rule(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
-{
-#define ADD_COLLECT_ENTRY(value) _widget_add_rule_popup_item(pop, dt_collection_name(value), value, FALSE, self);
-
-  // we show a popup with all the possible rules
-  GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
-  gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
-
-  // show the preset part
-  _widget_add_rule_popup_item(pop, _("append preset"), 0, TRUE, self);
-
-  _widget_add_rule_popup_item(pop, _("unstarred only"), -1, FALSE, self);
-  _widget_add_rule_popup_item(pop, "★", -1, FALSE, self);
-  _widget_add_rule_popup_item(pop, "★ ★", -1, FALSE, self);
-  _widget_add_rule_popup_item(pop, "★ ★ ★", -1, FALSE, self);
-  _widget_add_rule_popup_item(pop, "★ ★ ★ ★", -1, FALSE, self);
-  _widget_add_rule_popup_item(pop, "★ ★ ★ ★ ★", -1, FALSE, self);
-  _widget_add_rule_popup_item(pop, _("rejected only"), -1, FALSE, self);
-  _widget_add_rule_popup_item(pop, _("all except rejected"), -1, FALSE, self);
-
-  // separator
-  _widget_add_rule_popup_item(pop, " ", 0, TRUE, self);
-
-  // the differents categories
-  _widget_add_rule_popup_item(pop, _("files"), 0, TRUE, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILMROLL);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOLDERS);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILENAME);
-
-  _widget_add_rule_popup_item(pop, _("metadata"), 0, TRUE, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    const gchar *name = dt_metadata_get_name(keyid);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    const int meta_type = dt_metadata_get_type(keyid);
-    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-    {
-      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
-    }
-  }
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
-
-  _widget_add_rule_popup_item(pop, _("times"), 0, TRUE, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);
-
-  _widget_add_rule_popup_item(pop, _("capture details"), 0, TRUE, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
-
-  _widget_add_rule_popup_item(pop, _("darktable"), 0, TRUE, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
-
-  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
-  return TRUE;
 }
 
 static void _history_pretty_print(const char *buf, char *out, size_t outsize)
