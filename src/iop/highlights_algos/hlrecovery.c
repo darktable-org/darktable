@@ -281,7 +281,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   reduction(max : maxval) \
   dt_omp_firstprivate(in, plane, coeffs) \
   dt_omp_sharedconst(width, p_off, height, pwidth, filters, clip) \
-  schedule(simd:static) aligned(in : 64)
+  schedule(simd:static) aligned(in, plane : 64)
 #endif
   for(size_t row = 0; row < height; row++)
   {
@@ -315,7 +315,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(plane, pminimum, locmask, isegments) \
   dt_omp_sharedconst(pwidth, pheight) \
-  schedule(simd:static) aligned(pminimum, plane, : 64)
+  schedule(simd:static) aligned(pminimum, plane : 64)
 #endif
   for(size_t i = 0; i < pwidth * pheight; i++)
   {
