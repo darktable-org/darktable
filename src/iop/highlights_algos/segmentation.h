@@ -88,7 +88,7 @@ void dt_segmentation_free_struct(dt_iop_segmentation_t *seg)
   dt_free_align(seg->val2);
 }
 
-static inline void _dilate_0(int *img, int *o, const int w1, const int height, const int border)
+static inline void _dilate_0(const int *img, int *o, const int w1, const int height, const int border)
 {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
@@ -105,7 +105,7 @@ static inline void _dilate_0(int *img, int *o, const int w1, const int height, c
   }
 }
 
-static inline void _erode_0(int *img, int *o, const int w1, const int height, const int border)
+static inline void _erode_0(const int *img, int *o, const int w1, const int height, const int border)
 {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
@@ -123,7 +123,7 @@ static inline void _erode_0(int *img, int *o, const int w1, const int height, co
   }
 }
 
-static inline void _dilate_1(int *img, int *o, const int w1, const int height, const int border)
+static inline void _dilate_1(const int *img, int *o, const int w1, const int height, const int border)
 {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
@@ -140,7 +140,7 @@ static inline void _dilate_1(int *img, int *o, const int w1, const int height, c
   }
 }
 
-static inline void _erode_1(int *img, int *o, const int w1, const int height, const int border)
+static inline void _erode_1(const int *img, int *o, const int w1, const int height, const int border)
 {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
@@ -158,7 +158,7 @@ static inline void _erode_1(int *img, int *o, const int w1, const int height, co
   }
 }
 
-static inline void _dilate_2(int *img, int *o, const int w1, const int height, const int border)
+static inline void _dilate_2(const int *img, int *o, const int w1, const int height, const int border)
 {
   const int w2 = 2*w1;
 #ifdef _OPENMP
@@ -178,7 +178,7 @@ static inline void _dilate_2(int *img, int *o, const int w1, const int height, c
   }
 }
 
-static inline void _erode_2(int *img, int *o, const int w1, const int height, const int border)
+static inline void _erode_2(const int *img, int *o, const int w1, const int height, const int border)
 {
   const int w2 = 2*w1;
 #ifdef _OPENMP
@@ -198,7 +198,7 @@ static inline void _erode_2(int *img, int *o, const int w1, const int height, co
   }
 }
 
-static inline void _dilate_3(int *img, int *o, const int w1, const int height, const int border)
+static inline void _dilate_3(const int *img, int *o, const int w1, const int height, const int border)
 {
   const int w2 = 2*w1;
   const int w3 = 3*w1;
@@ -223,7 +223,7 @@ static inline void _dilate_3(int *img, int *o, const int w1, const int height, c
   }
 }
 
-static inline void _erode_3(int *img, int *o, const int w1, const int height, const int border)
+static inline void _erode_3(const int *img, int *o, const int w1, const int height, const int border)
 {
   const int w2 = 2*w1;
   const int w3 = 3*w1;
@@ -248,7 +248,7 @@ static inline void _erode_3(int *img, int *o, const int w1, const int height, co
   }
 }
 
-static inline void _dilate_4(int *img, int *o, const int w1, const int height, const int border)
+static inline void _dilate_4(const int *img, int *o, const int w1, const int height, const int border)
 {
   const int w2 = 2*w1;
   const int w3 = 3*w1;
@@ -276,7 +276,7 @@ static inline void _dilate_4(int *img, int *o, const int w1, const int height, c
   }
 }
 
-static inline void _erode_4(int *img, int *o, const int w1, const int height, const int border)
+static inline void _erode_4(const int *img, int *o, const int w1, const int height, const int border)
 {
   const int w2 = 2*w1;
   const int w3 = 3*w1;
@@ -305,7 +305,7 @@ static inline void _erode_4(int *img, int *o, const int w1, const int height, co
   }
 }
 
-static inline void _dilate_5(int *img, int *o, const int w1, const int height, const int border)
+static inline void _dilate_5(const int *img, int *o, const int w1, const int height, const int border)
 {
   const int w2 = 2*w1;
   const int w3 = 3*w1;
@@ -336,7 +336,7 @@ static inline void _dilate_5(int *img, int *o, const int w1, const int height, c
   }
 }
 
-static inline void _erode_5(int *img, int *o, const int w1, const int height, const int border)
+static inline void _erode_5(const int *img, int *o, const int w1, const int height, const int border)
 {
   const int w2 = 2*w1;
   const int w3 = 3*w1;
@@ -408,12 +408,11 @@ static void _intimage_erode(int *src, int *out, const int width, const int heigh
 void dt_image_transform_dilate(int *img, const int width, const int height, const int radius, const int border)
 {
   if(radius < 0) return;
-  int *tmp = dt_alloc_align(16, width * height * sizeof(int));
+  int *tmp = dt_alloc_align(64, width * height * sizeof(int));
   if(!tmp) return;
 
   const int rad = MIN(radius, 10);
   _intimage_dilate(img, tmp, width, height, MIN(5, rad), border);
-  const int rad2 = rad - 5;
 
   if(rad < 6)
   {
@@ -421,18 +420,17 @@ void dt_image_transform_dilate(int *img, const int width, const int height, cons
     dt_free_align(tmp);
     return;
   }
-  _intimage_dilate(tmp, img, width, height, MIN(5, rad2), border);
+  _intimage_dilate(tmp, img, width, height, MIN(5, rad - 5), border);
 }
   
 void dt_image_transform_erode(int *img, const int width, const int height, const int radius, const int border)
 {
   if(radius < 0) return;
-  int *tmp = dt_alloc_align(16, width * height * sizeof(int));
+  int *tmp = dt_alloc_align(64, width * height * sizeof(int));
   if(!tmp) return;
 
   const int rad = MIN(radius, 10);
   _intimage_erode(img, tmp, width, height, MIN(5, rad), border);
-  const int rad2 = rad - 5;
 
   if(rad < 6)
   {
@@ -440,7 +438,7 @@ void dt_image_transform_erode(int *img, const int width, const int height, const
     dt_free_align(tmp);
     return;
   }
-  _intimage_erode(tmp, img, width, height, MIN(5, rad2), border);
+  _intimage_erode(tmp, img, width, height, MIN(5, rad - 5), border);
 }
   
 void dt_image_transform_closing(int *img, const int width, const int height, const int radius, const int border)
@@ -450,7 +448,7 @@ void dt_image_transform_closing(int *img, const int width, const int height, con
   dt_image_transform_erode(img, width, height, radius, border);
 }
 
-static int floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, int w, const int h, const int id, dt_ff_stack_t *stack)
+static int floodfill_segmentize(int yin, int xin, dt_iop_segmentation_t *seg, const int w, const int h, const int id, dt_ff_stack_t *stack)
 {
   if((id < 2) || (id >= HLMAXSEGMENTS - 1)) return 0;
 
