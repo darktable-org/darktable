@@ -377,10 +377,15 @@ typedef struct dt_iop_sigmoid_value_order_t
 // Assumes hue_preservation and chroma_presevation strictly in range [0, 1]
 static inline void preserve_hue_interpolated(const float pix_in[4], float pix_out[4], const dt_iop_sigmoid_value_order_t order, const float hue_preservation)
 {
-  // Hue correction of the middle channel
-  const float full_hue_correction = pix_out[order.min] + ((pix_out[order.max] - pix_out[order.min]) * (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]));
-  const float no_hue_correction = pix_out[order.mid];
-  pix_out[order.mid] = (1.0 - hue_preservation) * no_hue_correction + hue_preservation * full_hue_correction;
+  const float energy = pix_out[order.mid] + pix_out[order.min];
+  const float midscale = (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]);
+
+  const float corrected_mid = ((1.0 - hue_preservation) * pix_out[order.mid] + hue_preservation * (midscale * pix_out[order.max] + (1.0 - midscale) * energy))
+                              / (1.0 + hue_preservation * (1.0 - midscale));
+  const float corrected_min = energy - corrected_mid;
+
+  pix_out[order.mid] = corrected_mid;
+  pix_out[order.min] = corrected_min;
 }
 
 // Linear interpolation for both hue and chroma preservation
@@ -388,6 +393,26 @@ static inline void preserve_hue_interpolated(const float pix_in[4], float pix_ou
 static inline void preserve_color_interpolated(const float channel_wise[4], const float rgb_ratio[4], float out[4], const dt_iop_sigmoid_value_order_t order,
     const float hue_preservation, const float chroma_preservation)
 {
+  // Naive Hue correction of the middle channel
+  const float full_hue_correction = channel_wise[order.min] + ((channel_wise[order.max] - channel_wise[order.min]) * (rgb_ratio[order.mid] - rgb_ratio[order.min]) / (rgb_ratio[order.max] - rgb_ratio[order.min]));
+  const float naive_hue_mid = (1.0 - hue_preservation) * channel_wise[order.mid] + hue_preservation * full_hue_correction;
+
+  const float channel_wise_energy = channel_wise[order.mid] + channel_wise[order.min];
+  const float naive_hue_energy = naive_hue_mid + channel_wise[order.min];
+  const float blend_factor = 2.0 * rgb_ratio[order.min] / (rgb_ratio[order.min] + rgb_ratio[order.mid]);
+  const float energy_target = blend_factor * channel_wise_energy + (1.0 - blend_factor) * naive_hue_energy;
+
+  // Preserve hue constrained to the energy target
+  const float midscale = (rgb_ratio[order.mid] - rgb_ratio[order.min]) / (rgb_ratio[order.max] - rgb_ratio[order.min]);
+  const float corrected_mid = ((1.0 - hue_preservation) * channel_wise[order.mid] + hue_preservation * (midscale * channel_wise[order.max] + (1.0 - midscale) * energy_target))
+                              / (1.0 + hue_preservation * (1.0 - midscale));
+  const float corrected_min = energy_target - corrected_mid;
+
+  out[order.mid] = corrected_mid;
+  out[order.min] = corrected_min;
+  out[order.max] = channel_wise[order.max];
+
+  /*
   // Chroma interpolation the minimum channel
   out[order.min] = (1.0 - chroma_preservation) * channel_wise[order.min] + chroma_preservation * rgb_ratio[order.min];
 
@@ -398,6 +423,7 @@ static inline void preserve_color_interpolated(const float channel_wise[4], cons
   const float full_hue_correction = out[order.min] + ((out[order.max] - out[order.min]) * (rgb_ratio[order.mid] - rgb_ratio[order.min]) / (rgb_ratio[order.max] - rgb_ratio[order.min]));
   const float no_hue_correction = out[order.min] + ((out[order.max] - out[order.min]) * (channel_wise[order.mid] - channel_wise[order.min]) / (channel_wise[order.max] - channel_wise[order.min]));
   out[order.mid] = (1.0 - hue_preservation) * no_hue_correction + hue_preservation * full_hue_correction;
+  */
 }
 
 void process_loglogistic_crosstalk(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -605,12 +631,10 @@ void process_loglogistic_interpolated(dt_dev_pixelpipe_iop_t *piece, const void 
   const float hue_preservation = module_data->hue_preservation;
   const float chroma_preservation = module_data->chroma_preservation;
   const dt_iop_sigmoid_negative_values_type_t negative_values_method = module_data->negative_values_method;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  const dt_iop_sigmoid_norm_type_t rgb_norm_method = module_data->rgb_norm_method;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, saturation_factor, negative_values_method, white_target, paper_exp, film_fog, contrast_power, skew_power, hue_preservation, chroma_preservation, work_profile, rgb_norm_method) \
+  dt_omp_firstprivate(npixels, saturation_factor, negative_values_method, white_target, paper_exp, film_fog, contrast_power, skew_power, hue_preservation, chroma_preservation) \
   dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
@@ -620,7 +644,6 @@ void process_loglogistic_interpolated(dt_dev_pixelpipe_iop_t *piece, const void 
     float *const restrict pix_out = out + k;
     float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
     float DT_ALIGNED_ARRAY channel_wise[4];
-    float DT_ALIGNED_ARRAY rgb_ratio[4];
 
     // Force negative values to zero
     negative_values(pix_in, pix_in_strict_positive, negative_values_method);
@@ -631,15 +654,6 @@ void process_loglogistic_interpolated(dt_dev_pixelpipe_iop_t *piece, const void 
     {
       const float desaturated_value = pixel_average + saturation_factor * (pix_in_strict_positive[c] - pixel_average);
       channel_wise[c] = generalized_loglogistic_sigmoid(desaturated_value, white_target, paper_exp, film_fog, contrast_power, skew_power);
-    }
-
-    // Preserve color ratios by applying the tone curve on a luma estimate and then scale the RGB tripplet uniformly
-    const float luma = get_pixel_norm(pix_in_strict_positive, rgb_norm_method, work_profile);
-    const float mapped_luma = generalized_loglogistic_sigmoid(luma, white_target, paper_exp, film_fog, contrast_power, skew_power);
-    const float scaling_factor = mapped_luma / luma;
-    for(size_t c = 0; c < 3; c++)
-    {
-      rgb_ratio[c] = scaling_factor * pix_in_strict_positive[c];
     }
 
     // Hue correction by scaling the middle value relative to the max and min values.
@@ -680,7 +694,7 @@ void process_loglogistic_interpolated(dt_dev_pixelpipe_iop_t *piece, const void 
       }
     }
 
-    preserve_color_interpolated(channel_wise, rgb_ratio, pix_out, pixel_value_order, hue_preservation, chroma_preservation);
+    preserve_color_interpolated(channel_wise, pix_in_strict_positive, pix_out, pixel_value_order, hue_preservation, chroma_preservation);
 
     // Copy over the alpha channel
     pix_out[3] = pix_in[3];
