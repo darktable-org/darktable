@@ -392,12 +392,12 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
     /* set button state */
     char option[1024];
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
-    dt_iop_module_state_t state = DT_IOP_STATE_HIDDEN;
+    dt_iop_module_state_t state = IOP_STATE_HIDDEN;
     if(dt_conf_get_bool(option))
     {
-      state = DT_IOP_STATE_ACTIVE;
+      state = IOP_STATE_ACTIVE;
       snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
-      if(dt_conf_get_bool(option)) state = DT_IOP_STATE_FAVORITE;
+      if(dt_conf_get_bool(option)) state = IOP_STATE_FAVORITE;
     }
     dt_iop_gui_set_state(module, state);
   }
@@ -2607,9 +2607,9 @@ static gboolean _show_module_callback(GtkAccelGroup *accel_group, GObject *accel
   dt_iop_module_t *module = (dt_iop_module_t *)data;
 
   // Showing the module, if it isn't already visible
-  if(module->so->state == DT_IOP_STATE_HIDDEN)
+  if(module->so->state == IOP_STATE_HIDDEN)
   {
-    dt_iop_gui_set_state(module, DT_IOP_STATE_ACTIVE);
+    dt_iop_gui_set_state(module, IOP_STATE_ACTIVE);
   }
 
   const uint32_t current_group = dt_dev_modulegroups_get(module->dev);
@@ -2742,7 +2742,7 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
 
   char option[1024];
   GList *mods = NULL;
-  if(state == DT_IOP_STATE_HIDDEN)
+  if(state == IOP_STATE_HIDDEN)
   {
     for(mods = darktable.develop->iop; mods; mods = g_list_next(mods))
     {
@@ -2755,7 +2755,7 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool(option, FALSE);
   }
-  else if(state == DT_IOP_STATE_ACTIVE)
+  else if(state == IOP_STATE_ACTIVE)
   {
     if(!darktable.gui->reset)
     {
@@ -2782,7 +2782,7 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool(option, FALSE);
   }
-  else if(state == DT_IOP_STATE_FAVORITE)
+  else if(state == IOP_STATE_FAVORITE)
   {
     for(mods = darktable.develop->iop; mods; mods = g_list_next(mods))
     {

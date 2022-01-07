@@ -114,11 +114,10 @@ typedef enum dt_iop_flags_t
 /** status of a module*/
 typedef enum dt_iop_module_state_t
 {
-  DT_IOP_STATE_HIDDEN = 0, // keep first
-  DT_IOP_STATE_ACTIVE,
-  DT_IOP_STATE_FAVORITE,
-  DT_IOP_STATE_LAST
-
+  IOP_STATE_HIDDEN = 0, // keep first
+  IOP_STATE_ACTIVE,
+  IOP_STATE_FAVORITE,
+  IOP_STATE_LAST
 } dt_iop_module_state_t;
 
 typedef struct dt_iop_gui_data_t
