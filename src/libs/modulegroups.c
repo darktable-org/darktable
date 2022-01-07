@@ -1347,9 +1347,9 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
       const int op_len = strlen(op);
       dt_iop_module_state_t state = p[pos + op_len + 1];
 
-      if(state == dt_iop_state_ACTIVE)
+      if(state == DT_IOP_STATE_ACTIVE)
         list = dt_util_dstrcat(list, "|%s", op);
-      else if(state == dt_iop_state_FAVORITE)
+      else if(state == DT_IOP_STATE_FAVORITE)
       {
         fav = dt_util_dstrcat(fav, "|%s", op);
         list = dt_util_dstrcat(list, "|%s", op);

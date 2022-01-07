@@ -158,7 +158,7 @@ int operation_tags_filter()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 typedef enum dt_iop_ashift_method_t

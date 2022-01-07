@@ -114,10 +114,10 @@ typedef enum dt_iop_flags_t
 /** status of a module*/
 typedef enum dt_iop_module_state_t
 {
-  dt_iop_state_HIDDEN = 0, // keep first
-  dt_iop_state_ACTIVE,
-  dt_iop_state_FAVORITE,
-  dt_iop_state_LAST
+  DT_IOP_STATE_HIDDEN = 0, // keep first
+  DT_IOP_STATE_ACTIVE,
+  DT_IOP_STATE_FAVORITE,
+  DT_IOP_STATE_LAST
 
 } dt_iop_module_state_t;
 
@@ -141,13 +141,13 @@ typedef enum dt_dev_request_colorpick_flags_t
 /** colorspace enums, must be in synch with dt_iop_colorspace_type_t in color_conversion.cl */
 typedef enum dt_iop_colorspace_type_t
 {
-  iop_cs_NONE = -1,
-  iop_cs_RAW = 0,
-  iop_cs_Lab = 1,
-  iop_cs_rgb = 2,
-  iop_cs_LCh = 3,
-  iop_cs_HSL = 4,
-  iop_cs_JzCzhz = 5,
+  IOP_CS_NONE = -1,
+  IOP_CS_RAW = 0,
+  IOP_CS_LAB = 1,
+  IOP_CS_RGB = 2,
+  IOP_CS_LCH = 3,
+  IOP_CS_HSL = 4,
+  IOP_CS_JZCZHZ = 5,
 } dt_iop_colorspace_type_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
@@ -217,8 +217,8 @@ typedef struct dt_iop_module_t
   /** maximum levels in histogram, one per channel */
   uint32_t histogram_max[4];
   /** requested colorspace for the histogram, valid options are:
-   * iop_cs_NONE: module colorspace
-   * iop_cs_LCh: for Lab modules
+   * IOP_CS_NONE: module colorspace
+   * IOP_CS_LCH: for Lab modules
    */
   dt_iop_colorspace_type_t histogram_cst;
   /** scale the histogram so the middle grey is at .5 */

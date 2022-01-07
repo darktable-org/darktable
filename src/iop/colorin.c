@@ -152,7 +152,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 int input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
@@ -162,15 +162,15 @@ int input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
   {
     const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
     if(d->type == DT_COLORSPACE_LAB)
-      return iop_cs_Lab;
+      return IOP_CS_LAB;
   }
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                       dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
 static void _resolve_work_profile(dt_colorspaces_color_profile_type_t *work_type, char *work_filename)
