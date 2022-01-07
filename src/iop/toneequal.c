@@ -438,7 +438,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // No blending
   dt_gui_presets_add_generic(_("simple tone curve"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Simple utils blendings
   p.details = DT_TONEEQ_EIGF;
@@ -451,13 +451,13 @@ void init_presets(dt_iop_module_so_t *self)
   p.exposure_boost = 0.0f;
   p.contrast_boost = 0.0f;
   dt_gui_presets_add_generic(_("mask blending : all purposes"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.blending = 1.0f;
   p.feathering = 10.0f;
   p.iterations = 3;
   dt_gui_presets_add_generic(_("mask blending : people with backlight"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Shadows/highlights presets
   // move middle-grey to the center of the range
@@ -473,11 +473,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.feathering = 20.0f;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
   dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : strong"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
   dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : strong"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
   p.blending = 3.0f;
@@ -485,11 +485,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.iterations = 3;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
   dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : medium"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
   dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : medium"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
   p.blending = 5.0f;
@@ -497,25 +497,25 @@ void init_presets(dt_iop_module_so_t *self)
   p.iterations = 1;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
   dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : soft"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
   dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : soft"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // build the 1D contrast curves that revert the local compression of contrast above
   p.details = DT_TONEEQ_NONE;
   dilate_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
   dt_gui_presets_add_generic(_("contrast tone curve: soft"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   dilate_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
   dt_gui_presets_add_generic(_("contrast tone curve: medium"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   dilate_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
   dt_gui_presets_add_generic(_("contrast tone curve: strong"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // relight
   p.details = DT_TONEEQ_EIGF;
@@ -537,7 +537,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.speculars = 0.0f;
 
   dt_gui_presets_add_generic(_("relight : fill-in"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 
