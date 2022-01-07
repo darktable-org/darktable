@@ -16,8 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
-
 #include "common.h"
 
 float4
@@ -64,10 +62,10 @@ atomic_add_f(
     // the following is equivalent to old_val.f = *val. however, as according to the opencl standard
     // we can not rely on global buffer val to be consistently cached (relaxed memory consistency) we 
     // access it via a slower but consistent atomic operation.
-    old_val.i = atom_add(ival, 0);
+    old_val.i = atomic_add(ival, 0);
     new_val.f = old_val.f + delta;
   }
-  while (atom_cmpxchg (ival, old_val.i, new_val.i) != old_val.i);
+  while (atomic_cmpxchg (ival, old_val.i, new_val.i) != old_val.i);
 #endif
 }
 
