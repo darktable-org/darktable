@@ -2404,8 +2404,17 @@ static gboolean _dictionary_key_pressed(GtkWidget *view, GdkEventKey *event, dt_
     {
       case GDK_KEY_Return:
       case GDK_KEY_KP_Enter:
+      {
         _attach_selected_tag(self, d);
+        if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+        {
+          gtk_tree_selection_unselect_all(selection);
+          gtk_entry_set_text(GTK_ENTRY(d->entry), "");
+          gtk_widget_grab_focus(GTK_WIDGET(d->entry));
+          return TRUE;
+        }
         break;
+      }
       case GDK_KEY_Left:
         if(path)
         {
@@ -3133,6 +3142,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("attached tags,"
                                                   "\npress Delete or double-click to detach"
                                                   "\nright-click for other actions on attached tag,"
+                                                  "\npress Tab to give the focus to entry,"
                                                   "\nctrl-wheel scroll to resize the window"));
   dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
@@ -3190,7 +3200,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   gtk_widget_set_tooltip_text(w, _("enter tag name"
                                    "\npress Enter to create a new tag and attach it on selected images"
-                                   "\npress Tab or Down key to go to the first matching tag"));
+                                   "\npress Tab or Down key to go to the first matching tag"
+                                   "\npress Shift+Tab to select the first attached user tag"));
   dt_gui_add_help_link(w, dt_get_help_url("tagging"));
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
@@ -3251,8 +3262,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("tag dictionary,"
                                                   "\npress Enter or double-click to attach selected tag on selected images,"
+                                                  "\nidem for Shift+Enter plus gives the focus to entry,"
                                                   "\nright-click for other actions on selected tag,"
-                                                  "\nctrl-wheel scroll to resize the window"));
+                                                  "\npress Shift+Tab to give the focus to entry,"
+                                                  "\nctrl-scroll to resize the window"));
   dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_dictionary_key_pressed), (gpointer)self);
