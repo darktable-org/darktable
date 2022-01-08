@@ -1458,6 +1458,7 @@ int dt_opencl_lock_device(const int pipetype)
 
       dt_iop_nap(usec);
     }
+    dt_print(DT_DEBUG_OPENCL, "[opencl_lock_device] reached opencl_mandatory_timeout trying to lock mandatory device, fallback to CPU");
   }
   else
   {
