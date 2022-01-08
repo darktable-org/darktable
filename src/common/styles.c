@@ -1571,8 +1571,10 @@ void dt_init_styles_key_accels()
     for(GList *res_iter = result; res_iter; res_iter = g_list_next(res_iter))
     {
       dt_style_t *style = (dt_style_t *)res_iter->data;
+      gchar* tmp_name = g_strdelimit(g_strdup(style->name), "/", '-');
       char tmp_accel[1024];
-      snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), style->name);
+      snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), tmp_name);
+      g_free(tmp_name);
       dt_accel_register_global(tmp_accel, 0, 0);
     }
     g_list_free_full(result, dt_style_free);
@@ -1590,8 +1592,10 @@ void dt_connect_styles_key_accels()
       dt_style_t *style = (dt_style_t *)res_iter->data;
       closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), g_strdup(style->name),
                                _destroy_style_shortcut_callback);
+      gchar* tmp_name = g_strdelimit(g_strdup(style->name), "/", '-');
       char tmp_accel[1024];
-      snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), style->name);
+      snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), tmp_name);
+      g_free(tmp_name);
       dt_accel_connect_global(tmp_accel, closure);
     }
     g_list_free_full(result, dt_style_free);
