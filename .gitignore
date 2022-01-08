@@ -20,3 +20,4 @@ compile_commands.json
 .settings/
 diff*png
 output*png
+*.code-workspace
