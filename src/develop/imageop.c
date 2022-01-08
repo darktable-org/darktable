@@ -782,7 +782,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
   return module;
 }
 
-static void _iop_gui_rename_module(dt_iop_module_t *module);
+void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 static void dt_iop_gui_copy_callback(GtkButton *button, gpointer user_data)
 {
@@ -792,7 +792,7 @@ static void dt_iop_gui_copy_callback(GtkButton *button, gpointer user_data)
   dt_iop_connect_accels_multi(((dt_iop_module_t *)user_data)->so);
 
   if(dt_conf_get_bool("darkroom/ui/rename_new_instance"))
-    _iop_gui_rename_module(module);
+    dt_iop_gui_rename_module(module);
 }
 
 static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
@@ -803,7 +803,7 @@ static void dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   dt_iop_connect_accels_multi(((dt_iop_module_t *)user_data)->so);
 
   if(dt_conf_get_bool("darkroom/ui/rename_new_instance"))
-    _iop_gui_rename_module(module);
+    dt_iop_gui_rename_module(module);
 }
 
 static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, dt_iop_module_t *module)
@@ -873,7 +873,7 @@ static gboolean _rename_module_resize(GtkWidget *entry, GdkEventKey *event, dt_i
   return TRUE;
 }
 
-static void _iop_gui_rename_module(dt_iop_module_t *module)
+void dt_iop_gui_rename_module(dt_iop_module_t *module)
 {
   GtkWidget *focused = gtk_container_get_focus_child(GTK_CONTAINER(module->header));
   if(focused && GTK_IS_ENTRY(focused)) return;
@@ -906,7 +906,7 @@ static void _iop_gui_rename_module(dt_iop_module_t *module)
 
 static void dt_iop_gui_rename_callback(GtkButton *button, dt_iop_module_t *module)
 {
-  _iop_gui_rename_module(module);
+  dt_iop_gui_rename_module(module);
 }
 
 static gboolean dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
@@ -2064,7 +2064,7 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     }
     else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
     {
-      _iop_gui_rename_module(module);
+      dt_iop_gui_rename_module(module);
       return TRUE;
     }
     else

@@ -994,6 +994,9 @@ static gboolean _menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEvent
   {
     dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
     if(new_module) _menuitem_pick_preset(menuitem, new_module);
+
+    if(dt_conf_get_bool("darkroom/ui/rename_new_instance"))
+      dt_iop_gui_rename_module(new_module);
   }
 
   if(dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
