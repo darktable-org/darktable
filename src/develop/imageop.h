@@ -503,6 +503,9 @@ gboolean dt_iop_have_required_input_format(const int required_ch, struct dt_iop_
                                            const void *const __restrict__ ivoid, void *const __restrict__ ovoid,
                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
+/* bring up module rename dialog */
+void dt_iop_gui_rename_module(dt_iop_module_t *module);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
