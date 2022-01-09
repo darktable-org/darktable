@@ -28,6 +28,7 @@
 #include "common/opencl.h"
 #include "common/utility.h"
 #include "common/tags.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 
 #include <stdio.h>
@@ -134,7 +135,9 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   {
     const dt_image_t *img = params->img ? (dt_image_t *)params->img
                                         : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
-    if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &params->data->exif_tm.tm_year, &params->data->exif_tm.tm_mon,
+    char datetime[DT_DATETIME_LENGTH];
+    dt_datetime_img_to_exif(img, datetime);
+    if(sscanf(datetime, "%d:%d:%d %d:%d:%d", &params->data->exif_tm.tm_year, &params->data->exif_tm.tm_mon,
       &params->data->exif_tm.tm_mday, &params->data->exif_tm.tm_hour, &params->data->exif_tm.tm_min, &params->data->exif_tm.tm_sec) == 6)
     {
       params->data->exif_tm.tm_year -= 1900;

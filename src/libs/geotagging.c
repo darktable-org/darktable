@@ -22,6 +22,7 @@
 #include "common/selection.h"
 #include "common/gpx.h"
 #include "common/geo.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "dtgtk/button.h"
 #include "control/jobs.h"
@@ -774,7 +775,7 @@ static void _refresh_selected_images_datetime(dt_lib_module_t *self)
     dt_sel_img_t *img = i->data;
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, img->imgid, 'r');
     if(!cimg) continue;
-    memcpy(img->dt, cimg->exif_datetime_taken, DT_DATETIME_LENGTH);
+    dt_datetime_img_to_exif(cimg, img->dt);
     dt_image_cache_read_release(darktable.image_cache, cimg);
   }
 }
@@ -911,7 +912,7 @@ static void _setup_selected_images_list(dt_lib_module_t *self)
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     char dt[DT_DATETIME_LENGTH];
     if(!cimg) continue;
-    memcpy(dt, cimg->exif_datetime_taken, DT_DATETIME_LENGTH);
+    dt_datetime_img_to_exif(cimg, dt);
     dt_image_cache_read_release(darktable.image_cache, cimg);
 
     dt_sel_img_t *img = g_malloc0(sizeof(dt_sel_img_t));
