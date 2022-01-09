@@ -2590,17 +2590,17 @@ static gboolean _completion_match_func(GtkEntryCompletion *self, const gchar *ke
 {
   gchar *key2 = g_strdup(key);
   g_strstrip(key2);
-  if (!strcmp(key2, "") || !strcmp(key2, "%"))
+  if(!strcmp(key2, "") || !strcmp(key2, "%"))
   {
     g_free(key2);
     return TRUE;
   }
   dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)user_data;
   gchar *key3 = key2;
-  if (_rule_allow_comparison(rule->prop))
+  if(_rule_allow_comparison(rule->prop))
   {
-    if (g_str_has_prefix(key3, ">") || g_str_has_prefix(key3, "<")) key3 = key3+1;
-    if (g_str_has_prefix(key3, "=")) key3 = key3+1;
+    if(g_str_has_prefix(key3, ">") || g_str_has_prefix(key3, "<")) key3 = key3 + 1;
+    if(g_str_has_prefix(key3, "=")) key3 = key3 + 1;
   }
   GtkTreeModel *model = gtk_entry_completion_get_model(self);
   gchar *text;
@@ -2613,6 +2613,31 @@ static gboolean _completion_match_func(GtkEntryCompletion *self, const gchar *ke
   return rep;
 }
 
+static gboolean _completion_flatten_foreach(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter,
+                                            gpointer data)
+{
+  GtkTreeModel *listmodel = (GtkTreeModel *)data;
+  gchar *text;
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
+  GtkTreeIter niter;
+  gtk_tree_store_append(GTK_TREE_STORE(listmodel), &niter, NULL);
+  gtk_tree_store_set(GTK_TREE_STORE(listmodel), &niter, DT_LIB_COLLECT_COL_TEXT, text, DT_LIB_COLLECT_COL_PATH,
+                     text, -1);
+  g_free(text);
+  return FALSE;
+}
+
+static GtkTreeModel *_completion_flatten_tree(dt_lib_collect_rule_t *rule)
+{
+  GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT,
+                                                          G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
+                                                          G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT));
+  GtkTreeModel *treemodel = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(rule->filter));
+
+  gtk_tree_model_foreach(treemodel, _completion_flatten_foreach, model);
+
+  return model;
+}
 
 static void _widget_init_completion(dt_lib_collect_rule_t *rule)
 {
@@ -2624,7 +2649,15 @@ static void _widget_init_completion(dt_lib_collect_rule_t *rule)
   }
 
   GtkEntryCompletion *completion = gtk_entry_completion_new();
-  GtkTreeModel *model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(rule->filter));
+  GtkTreeModel *model = NULL;
+  // gtkentrycompletion doesn't seems to handle treeview : only root nodes are shown
+  // even if the completion match function correctly tests all the nodes...
+  // maybe ther's a solution, but I've not found it.
+  // As a workaround, let's flatten the treeview...
+  if(_rule_use_treeview(rule->prop))
+    model = _completion_flatten_tree(rule);
+  else
+    model = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(rule->filter));
   gtk_entry_completion_set_minimum_key_length(completion, 0);
   gtk_entry_completion_set_model(completion, model);
   gtk_entry_completion_set_text_column(completion, DT_LIB_COLLECT_COL_TEXT);
