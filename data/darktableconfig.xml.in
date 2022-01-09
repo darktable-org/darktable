@@ -253,7 +253,7 @@
   </dtconfig>
   <dtconfig>
     <name>opencl_mandatory_timeout</name>
-    <type min="0">int</type>
+    <type min="100">int</type>
     <default>400</default>
     <shortdescription>timeout period for locking mandatory opencl device</shortdescription>
     <longdescription>time period (in units of 5ms) after which we give up try-locking an opencl device for mandatory use. defaults to 400 (2 seconds).</longdescription>
