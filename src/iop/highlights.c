@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
+#include "common/bspline.h"
 #include "common/opencl.h"
 #include "common/imagebuf.h"
 #include "control/control.h"
@@ -31,6 +33,7 @@
 #include "develop/masks.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/noise_generator.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -41,23 +44,25 @@
 
 DT_MODULE_INTROSPECTION(3, dt_iop_highlights_params_t)
 
-/* defines for the highlights recovery section */
-
 typedef enum dt_iop_highlights_mode_t
 {
-  DT_IOP_HIGHLIGHTS_CLIP = 0,     // $DESCRIPTION: "clip highlights"
-  DT_IOP_HIGHLIGHTS_LCH = 1,      // $DESCRIPTION: "reconstruct in LCh"
-  DT_IOP_HIGHLIGHTS_INPAINT = 2,  // $DESCRIPTION: "reconstruct color"
-  DT_IOP_HIGHLIGHTS_RECOVERY = 3, // $DESCRIPTION: "highlights recovery"
+  DT_IOP_HIGHLIGHTS_CLIP = 0,      // $DESCRIPTION: "clip highlights"
+  DT_IOP_HIGHLIGHTS_LCH = 1,       // $DESCRIPTION: "reconstruct in LCh"
+  DT_IOP_HIGHLIGHTS_INPAINT = 2,   // $DESCRIPTION: "reconstruct color"
+  DT_IOP_HIGHLIGHTS_RECOVERY = 4,  // $DESCRIPTION: "highlights recovery"
 } dt_iop_highlights_mode_t;
 
 typedef struct dt_iop_highlights_params_t
 {
+  // params of v1
   dt_iop_highlights_mode_t mode; // $DEFAULT: DT_IOP_HIGHLIGHTS_CLIP $DESCRIPTION: "method"
-  float blendL;            // unused $DEFAULT: 1.0
-  float blendC;            // unused $DEFAULT: 0.0
-  float blendh;            // unused $DEFAULT: 0.0
-  float clip;              // $MIN: 0.0 $MAX: 2.0  $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
+  float blendL; // unused $DEFAULT: 1.0
+  float blendC; // unused $DEFAULT: 0.0
+  float blendh; // unused $DEFAULT: 0.0
+  // params of v2
+  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.995 $DESCRIPTION: "clipping threshold"
+  // params of v3
+  float noise_level; // $MIN: 0. $MAX: 1.0 $DEFAULT: 0.05 $DESCRIPTION: "noise level"
   float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast balance"
   float combine;           // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
   float synthesis;
@@ -113,34 +118,28 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  typedef struct dt_iop_highlights_params_t dt_iop_highlights_params_v3_t;
-  typedef struct dt_iop_highlights_params_v2_t
+  if(old_version == 1 && new_version == 3)
   {
-    dt_iop_highlights_mode_t mode;
-    float blendL; // unused $DEFAULT: 1.0
-    float blendC; // unused $DEFAULT: 0.0
-    float blendh; // unused $DEFAULT: 0.0    float reserved1;
-    float clip;
-  } dt_iop_highlights_params_v2_t;
-
-  if(old_version == 2 && new_version == 3)
-  {
-    dt_iop_highlights_params_v2_t *o = (dt_iop_highlights_params_v2_t *)old_params;
-    dt_iop_highlights_params_v3_t *n = (dt_iop_highlights_params_v3_t *)new_params;
-    memcpy(n, o, sizeof *o);
-    n->reconstructing = 0.4f;
-    n->combine = 2.0f;
-    n->synthesis = 0.0f;
-    return 0;  
-  }
-
-  if(old_version == 1 && new_version == 2)
-  {
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - sizeof(float));
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 5 * sizeof(float));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->clip = 1.0f;
+    n->noise_level = 0.05f;
+    n->reconstructing = 0.4f;
+    n->combine = 2.f;
+    n->synthesis = 0.f;
     return 0;
   }
+  if(old_version == 2 && new_version == 3)
+  {
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float));
+    dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
+    n->noise_level = 0.05f;
+    n->reconstructing = 0.4f;
+    n->combine = 2.f;
+    n->synthesis = 0.f;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -951,13 +950,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   const uint32_t filters = piece->pipe->dsc.filters;
   // for safety
-  if((filters == 0) || ((filters == 9u) && (d->mode == DT_IOP_HIGHLIGHTS_RECOVERY)))  
+  if((filters == 0 || filters == 9u) && (d->mode == DT_IOP_HIGHLIGHTS_RECOVERY))  
     d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
   piece->process_cl_ready = 1;
 
-  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
-  if((d->mode == DT_IOP_HIGHLIGHTS_INPAINT) || (d->mode == DT_IOP_HIGHLIGHTS_RECOVERY))
+  if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT || d->mode == DT_IOP_HIGHLIGHTS_RECOVERY)
     piece->process_cl_ready = 0;
 
   if(d->mode == DT_IOP_HIGHLIGHTS_RECOVERY)
@@ -1001,34 +999,28 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  const gboolean bayer =     (self->dev->image_storage.buf_dsc.filters != 9u);
-  const gboolean israw =     (self->dev->image_storage.buf_dsc.filters != 0);
-
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  const gboolean recover =   bayer && (p->mode == DT_IOP_HIGHLIGHTS_RECOVERY);
 
-  if(israw)
+  const gboolean bayer =     self->dev->image_storage.buf_dsc.filters != 9u;
+  const gboolean israw =     self->dev->image_storage.buf_dsc.filters != 0;
+  const gboolean recover =   bayer && (p->mode == DT_IOP_HIGHLIGHTS_RECOVERY);
+  dt_iop_highlights_mode_t mode = p->mode;
+  if((israw && !bayer && (mode > DT_IOP_HIGHLIGHTS_INPAINT)) || !israw)
   {
-    gtk_widget_set_visible(g->mode_bayer, bayer);
-    gtk_widget_set_visible(g->combine, recover);
-    gtk_widget_set_visible(g->reconstructing, recover);
-    gtk_widget_set_visible(g->mode_xtrans, !bayer);
-    gtk_widget_set_visible(g->nonraw, FALSE); 
-    if(bayer)
-    {
-      dt_bauhaus_combobox_set_from_value(g->mode_bayer, p->mode);  
-    }
-    else
-      dt_bauhaus_combobox_set_from_value(g->mode_xtrans, p->mode);  
+    mode = DT_IOP_HIGHLIGHTS_CLIP;
+    p->mode = mode;  
   }
-  else
-  {
-    gtk_widget_set_visible(g->mode_bayer, FALSE);
-    gtk_widget_set_visible(g->mode_xtrans, FALSE);
-    gtk_widget_set_visible(g->reconstructing, FALSE);
-    gtk_widget_set_visible(g->nonraw, TRUE);
-    dt_bauhaus_combobox_set_from_value(g->nonraw, p->mode);  
-  }
+
+  gtk_widget_set_visible(g->mode_bayer, bayer && israw);
+  gtk_widget_set_visible(g->mode_xtrans, !bayer && israw);
+  gtk_widget_set_visible(g->nonraw, !israw);
+  
+  gtk_widget_set_visible(g->combine, recover);
+  gtk_widget_set_visible(g->reconstructing, recover);
+
+  if(bayer && israw)  dt_bauhaus_combobox_set_from_value(g->mode_bayer, mode);  
+  if(!bayer && israw) dt_bauhaus_combobox_set_from_value(g->mode_xtrans, mode);  
+
   dt_bauhaus_slider_set(g->clip, p->clip);
   dt_bauhaus_slider_set(g->reconstructing, p->reconstructing);
   dt_bauhaus_slider_set(g->combine, p->combine);
