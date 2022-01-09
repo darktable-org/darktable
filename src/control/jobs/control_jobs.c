@@ -34,6 +34,7 @@
 #include "common/grouping.h"
 #include "common/import_session.h"
 #include "common/utility.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
 
@@ -1161,10 +1162,12 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     gint minute;
     gint seconds;
 
-    if(sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
+    char datetime[DT_DATETIME_LENGTH];
+    dt_datetime_img_to_exif(cimg, datetime);
+    if(sscanf(datetime, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
               (int *)&hour, (int *)&minute, (int *)&seconds) != 6)
     {
-      fprintf(stderr, "broken exif time in db, '%s'\n", cimg->exif_datetime_taken);
+      fprintf(stderr, "broken exif time in db, '%s'\n", datetime);
       dt_image_cache_read_release(darktable.image_cache, cimg);
       continue;
     }

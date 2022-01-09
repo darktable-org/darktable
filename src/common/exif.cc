@@ -69,6 +69,7 @@ extern "C" {
 #include "common/variables.h"
 #include "common/utility.h"
 #include "common/history.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -599,7 +600,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     {
       char *datetime = strdup(pos->toString().c_str());
       _sanitize_datetime(datetime);
-      g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
+      dt_datetime_exif_to_img(img, datetime);
       free(datetime);
     }
 
@@ -1105,7 +1106,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 #endif
 
-    _find_datetime_taken(exifData, pos, img->exif_datetime_taken);
+    char datetime[DT_DATETIME_LENGTH];
+    _find_datetime_taken(exifData, pos, datetime);
+    dt_datetime_exif_to_img(img, datetime);
 
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
@@ -1513,9 +1516,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
 
   if(!stat(path, &statbuf))
   {
-    struct tm result;
-    strftime(img->exif_datetime_taken, DT_DATETIME_LENGTH, "%Y:%m:%d %H:%M:%S",
-             localtime_r(&statbuf.st_mtime, &result));
+    dt_datetime_unix_to_img(img, &statbuf.st_mtime);
   }
 
   try
@@ -1921,10 +1922,12 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       // For us "keeping" it means to write out what we have in DB to support people adding a time offset in
       // the geotagging module.
       gchar new_datetime[DT_DATETIME_LENGTH];
-      dt_gettime(new_datetime, sizeof(new_datetime));
+      dt_datetime_now_to_exif(new_datetime, sizeof(new_datetime));
       exifData["Exif.Image.DateTime"] = new_datetime;
-      exifData["Exif.Image.DateTimeOriginal"] = cimg->exif_datetime_taken;
-      exifData["Exif.Photo.DateTimeOriginal"] = cimg->exif_datetime_taken;
+      char datetime[DT_DATETIME_LENGTH];
+      dt_datetime_img_to_exif(cimg, datetime);
+      exifData["Exif.Image.DateTimeOriginal"] = datetime;
+      exifData["Exif.Photo.DateTimeOriginal"] = datetime;
 
       dt_image_cache_read_release(darktable.image_cache, cimg);
     }
@@ -4296,26 +4299,7 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
     char exif_datetime_taken[DT_DATETIME_LENGTH];
     _find_datetime_taken(exifData, pos, exif_datetime_taken);
 
-    if(*exif_datetime_taken)
-    {
-      struct tm exif_tm= {0};
-      if(sscanf(exif_datetime_taken,"%d:%d:%d %d:%d:%d",
-        &exif_tm.tm_year,
-        &exif_tm.tm_mon,
-        &exif_tm.tm_mday,
-        &exif_tm.tm_hour,
-        &exif_tm.tm_min,
-        &exif_tm.tm_sec) == 6)
-      {
-        exif_tm.tm_year -= 1900;
-        exif_tm.tm_mon--;
-        exif_tm.tm_isdst = -1;    // no daylight saving time
-        *datetime_taken = mktime(&exif_tm);
-        return TRUE;
-      }
-    }
-
-    return FALSE;
+    return dt_datetime_exif_to_unix(exif_datetime_taken, datetime_taken);
   }
   catch(Exiv2::AnyError &e)
   {

@@ -35,6 +35,7 @@
 #include "common/undo.h"
 #include "common/history.h"
 #include "common/selection.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -512,7 +513,7 @@ static void _set_datetime(const int32_t imgid, const char *datetime)
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
-  g_strlcpy(image->exif_datetime_taken, datetime, sizeof(image->exif_datetime_taken));
+  dt_datetime_exif_to_img(image, datetime);
 
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
@@ -1750,7 +1751,7 @@ void dt_image_init(dt_image_t *img)
   img->loader = LOADER_UNKNOWN;
   img->exif_inited = 0;
   img->camera_missing_sample = FALSE;
-  memset(img->exif_datetime_taken, 0, sizeof(img->exif_datetime_taken));
+  dt_datetime_exif_to_img(img, "");
   memset(img->exif_maker, 0, sizeof(img->exif_maker));
   memset(img->exif_model, 0, sizeof(img->exif_model));
   memset(img->exif_lens, 0, sizeof(img->exif_lens));
@@ -2561,7 +2562,7 @@ void dt_image_get_datetime(const int32_t imgid, char *datetime)
   datetime[0] = '\0';
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(!cimg) return;
-  g_strlcpy(datetime, cimg->exif_datetime_taken, sizeof(cimg->exif_datetime_taken));
+  dt_datetime_img_to_exif(cimg, datetime);
   dt_image_cache_read_release(darktable.image_cache, cimg);
 }
 

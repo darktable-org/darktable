@@ -25,6 +25,7 @@
 
 #ifdef _WIN32
 #include "win/main_wrapper.h"
+#include "common/datetime.h"
 #endif
 
 int main(int argc, char *argv[])
@@ -36,7 +37,7 @@ int main(int argc, char *argv[])
   // on Windows we have a hard time showing stuff printed to stdout/stderr to the user.
   // because of that we write it to a log file.
   char datetime[20];
-  dt_gettime(datetime, sizeof(datetime));
+  dt_datetime_now_to_exif(datetime, sizeof(datetime));
 
   // make sure to not redirect output when the output is already being redirected, either to a file or a pipe.
   int out_type = GetFileType(GetStdHandle(STD_OUTPUT_HANDLE));
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
   if(redirect_output)
   {
-    dt_gettime(datetime, sizeof(datetime));
+    dt_datetime_now_to_exif(datetime, sizeof(datetime));
     printf("\n");
     printf("end:   %s\n", datetime);
     printf("========================================\n");
