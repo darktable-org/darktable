@@ -34,7 +34,7 @@ passthrough_monochrome (__read_only image2d_t in, __write_only image2d_t out, co
 
   color.xyz = pc.x;
 
-  write_imagef (out, (int2)(x, y), color);
+  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
 }
 
 /**
