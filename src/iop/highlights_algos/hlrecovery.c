@@ -127,7 +127,7 @@ static float calc_weight(const float *p, const int w)
 }
 #undef SQR
 
-static void calc_plane_candidates(const float *s, const float *pmin, dt_iop_segmentation_t *seg, const int width, const int height, const float maxval)
+static void calc_plane_candidates(const float *s, const float *pmin, dt_iop_segmentation_t *seg, const int width, const int height)
 {
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
@@ -231,7 +231,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
   const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
 
-  if((filters == 0) || (filters == 9u) || run_fast) return;
+  if(filters == 0 || filters == 9u || run_fast) return;
 
   float *fbuffer = dt_alloc_align_float(HLFPLANES * p_size);
   uint8_t *locmask  = dt_alloc_align(16, p_size * sizeof(uint8_t));
@@ -289,14 +289,17 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
     {
       const int p = pos2plane(row, col, filters);
       const size_t o = (row/2)*pwidth + (col/2) + p_off;
-      const float val = fminf(1.0f, (in[i] / coeffs[p]) / clip);
-      plane[p][o] = val;
-      maxval = fmaxf(maxval, val);          
+      const float pval = in[i] / coeffs[p];
+      const float val = pval / clip;
+      plane[p][o] = fminf(1.0f, val);
+
       if(col >= width-2)      plane[p][o+1] = val;
       if(row >= height-2)     plane[p][o+pwidth] = val;
+
+      maxval = fmaxf(maxval, val);          
     }
   }
-  if(maxval < 1.0f)
+  if(maxval <= 1.0f)
   {
     if(info) fprintf(stderr, "[highlights reconstruction recovery mode] early exit because of no clipped data\n");
     dt_free_align(fbuffer);
@@ -356,7 +359,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   }
 
   for(int p = 0; p < HLSEGPLANES; p++)
-    calc_plane_candidates(plane[p], pminimum, &isegments[p], pwidth, pheight, maxval);
+    calc_plane_candidates(plane[p], pminimum, &isegments[p], pwidth, pheight);
 
   if(info) dt_get_times(&time2);
 
@@ -462,7 +465,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   if(info) 
   {
     dt_get_times(&time3);
-    fprintf(stderr, "Highlight recovery: %4.1fMpix, maxval=%.2f, maxcorr=%.2f", (float) (width * height) / 1.0e6f, maxval, max_correction);
+    fprintf(stderr, "Highlight recovery: %4.1fMpix, maxcorr=%.2f", (float) (width * height) / 1.0e6f, max_correction);
     fprintf(stderr, "\n Segments(combine %i): ", combining);
     for(int i=0; i<HLSEGPLANES; i++)  { fprintf(stderr, " %6i", isegments[i].nr); }
     fprintf(stderr, "\n Performance (all)   %.3f",   time3.clock - time0.clock);
