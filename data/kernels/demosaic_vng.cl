@@ -65,9 +65,9 @@ vng_border_interpolate(read_only image2d_t in, write_only image2d_t out, const i
   for(int c = 0; c < colors; c++)
   {
     if(c != f && count[c] != 0)
-      o[c] = sum[c] / count[c];
+      o[c] = fmax(sum[c] / count[c], 0.0f);
     else
-      o[c] = i;
+      o[c] = fmax(i, 0.0f);
   }
 
   write_imagef (out, (int2)(x, y), (float4)(o[0], o[1], o[2], o[3]));
