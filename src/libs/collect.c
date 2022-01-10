@@ -321,7 +321,7 @@ void init_presets(dt_lib_module_t *self)
 
   // based on aspect-ratio
 
-  CLEAR_PARAMS(DT_COLLECTION_PROP_ASPECT_RATIO);
+  /*CLEAR_PARAMS(DT_COLLECTION_PROP_ASPECT_RATIO);
   g_strlcpy(params.rule[0].string, "= 1", PARAM_STRING_SIZE);
 
   dt_lib_presets_add(_("square"), self->plugin_name, self->version(),
@@ -387,7 +387,19 @@ void init_presets(dt_lib_module_t *self)
   CLEAR_PARAMS(DT_COLLECTION_PROP_TIME);
   g_strlcpy(params.rule[0].string, datetime_30d, PARAM_STRING_SIZE);
   dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(),
-                       &params, sizeof(params), TRUE);
+                       &params, sizeof(params), TRUE);*/
+
+  CLEAR_PARAMS(DT_COLLECTION_PROP_RATING);
+  g_strlcpy(params.rule[0].string, ">=0", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("rating : all except rejected"), self->plugin_name, self->version(), &params,
+                     sizeof(params), TRUE);
+  CLEAR_PARAMS(DT_COLLECTION_PROP_RATING);
+  g_strlcpy(params.rule[0].string, ">=2", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("rating : ★ ★"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+
+  CLEAR_PARAMS(DT_COLLECTION_PROP_COLORLABEL);
+  g_strlcpy(params.rule[0].string, "red", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("color labels : red"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
 #undef CLEAR_PARAMS
 }
@@ -2739,17 +2751,65 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
 {
   // add new rule
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
-  if(d->nb_rules >= MAX_RULES) return;
   const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
   char confname[200] = { 0 };
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", d->nb_rules);
-  dt_conf_set_int(confname, mode);
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", d->nb_rules);
-  dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", d->nb_rules);
-  dt_conf_set_string(confname, "");
-  d->nb_rules++;
-  dt_conf_set_int("plugins/lighttable/collect/num_rules", d->nb_rules);
+
+  if(mode >= 0)
+  {
+    // add an empty rule
+    if(d->nb_rules >= MAX_RULES)
+    {
+      dt_control_log("You can't have more than %d rules", MAX_RULES);
+      return;
+    }
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", d->nb_rules);
+    dt_conf_set_int(confname, mode);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", d->nb_rules);
+    dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", d->nb_rules);
+    dt_conf_set_string(confname, "");
+    d->nb_rules++;
+    dt_conf_set_int("plugins/lighttable/collect/num_rules", d->nb_rules);
+  }
+  else
+  {
+    // append a preset
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(widget));
+    const gchar *presetname = gtk_label_get_label(GTK_LABEL(child));
+    sqlite3_stmt *stmt;
+    gchar *query = g_strdup_printf("SELECT op_params"
+                                   " FROM data.presets"
+                                   " WHERE operation=?1 AND op_version=?2 AND name=?3");
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, presetname, -1, SQLITE_TRANSIENT);
+    g_free(query);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      void *op_params = (void *)sqlite3_column_blob(stmt, 0);
+      dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)op_params;
+      if(d->nb_rules + p->rules > MAX_RULES)
+      {
+        dt_control_log("You can't have more than %d rules", MAX_RULES);
+        sqlite3_finalize(stmt);
+        return;
+      }
+      for(uint32_t i = 0; i < p->rules; i++)
+      {
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", d->nb_rules);
+        dt_conf_set_int(confname, p->rule[i].item);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", d->nb_rules);
+        dt_conf_set_int(confname, p->rule[i].mode);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", d->nb_rules);
+        dt_conf_set_string(confname, p->rule[i].string);
+        d->nb_rules++;
+      }
+      dt_conf_set_int("plugins/lighttable/collect/num_rules", d->nb_rules);
+    }
+    sqlite3_finalize(stmt);
+  }
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
@@ -2795,14 +2855,46 @@ static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rul
   {
     _widget_add_rule_popup_item(pop, _("append preset"), 0, TRUE, rule, self);
 
-    _widget_add_rule_popup_item(pop, _("unstarred only"), -1, FALSE, rule, self);
-    _widget_add_rule_popup_item(pop, "★", -1, FALSE, rule, self);
-    _widget_add_rule_popup_item(pop, "★ ★", -1, FALSE, rule, self);
-    _widget_add_rule_popup_item(pop, "★ ★ ★", -1, FALSE, rule, self);
-    _widget_add_rule_popup_item(pop, "★ ★ ★ ★", -1, FALSE, rule, self);
-    _widget_add_rule_popup_item(pop, "★ ★ ★ ★ ★", -1, FALSE, rule, self);
-    _widget_add_rule_popup_item(pop, _("rejected only"), -1, FALSE, rule, self);
-    _widget_add_rule_popup_item(pop, _("all except rejected"), -1, FALSE, rule, self);
+    const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
+    const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
+
+    sqlite3_stmt *stmt;
+    // order like the pref value
+    gchar *query = g_strdup_printf("SELECT name, writeprotect, description"
+                                   " FROM data.presets"
+                                   " WHERE operation=?1 AND op_version=?2"
+                                   " ORDER BY writeprotect %s, LOWER(name), rowid",
+                                   default_first ? "DESC" : "ASC");
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+    g_free(query);
+
+    // collect all presets for op from db
+    int last_wp = -1;
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      // default vs built-in stuff
+      const gboolean writeprotect = sqlite3_column_int(stmt, 1);
+      if(hide_default && writeprotect)
+      {
+        // skip default module if set to hide them.
+        continue;
+      }
+      if(last_wp == -1)
+      {
+        last_wp = writeprotect;
+      }
+      else if(last_wp != writeprotect)
+      {
+        last_wp = writeprotect;
+        _widget_add_rule_popup_item(pop, " ", 0, TRUE, rule, self);
+      }
+
+      const char *name = (char *)sqlite3_column_text(stmt, 0);
+      _widget_add_rule_popup_item(pop, name, -1, FALSE, rule, self);
+    }
+    sqlite3_finalize(stmt);
 
     // separator
     _widget_add_rule_popup_item(pop, " ", 0, TRUE, rule, self);
