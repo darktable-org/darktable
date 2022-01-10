@@ -435,6 +435,8 @@ char *dt_image_get_text_path_from_path(const char *image_path);
 
 float dt_image_get_exposure_bias(const struct dt_image_t *image_storage);
 
+void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
