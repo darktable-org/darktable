@@ -2742,8 +2742,9 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
   {
     dt_control_log
       (_("<big><span foreground='red'><b>ATTENTION</b> : camera is missing samples</span>\n\n"
-         "You must provide samples in <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a> for:\n\n"
-         "`%s' `%s' (compressed/uncompressed/all bit depths)\n\n"
+         "You must provide samples in <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a>\n\n"
+         "for `%s' `%s'\n"
+         "in as many format/compression/bit depths as possible\n\n"
          "Or the <span foreground='red'><b>RAW won't be readable</b></span> in next version</big>\n"),
        img->camera_maker, img->camera_model);
   }
