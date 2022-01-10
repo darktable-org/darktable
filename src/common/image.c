@@ -1801,7 +1801,7 @@ void dt_image_refresh_makermodel(dt_image_t *img)
 
   // Now we just create a makermodel by concatenation
   g_strlcpy(img->camera_makermodel, img->camera_maker, sizeof(img->camera_makermodel));
-  int len = strlen(img->camera_maker);
+  const int len = strlen(img->camera_maker);
   img->camera_makermodel[len] = ' ';
   g_strlcpy(img->camera_makermodel+len+1, img->camera_model, sizeof(img->camera_makermodel)-len-1);
 }
@@ -2723,10 +2723,10 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
   if((image_storage) && (image_storage->exif_exposure_bias))
   {
     // sanity checks because I don't trust exif tags too much
-    if(image_storage->exif_exposure_bias == NAN ||
-       image_storage->exif_exposure_bias != image_storage->exif_exposure_bias ||
-       isnan(image_storage->exif_exposure_bias) ||
-       CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f) != image_storage->exif_exposure_bias)
+    if(image_storage->exif_exposure_bias == NAN
+       || image_storage->exif_exposure_bias != image_storage->exif_exposure_bias
+       || isnan(image_storage->exif_exposure_bias)
+       || CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f) != image_storage->exif_exposure_bias)
       return 0.0f; // isnan
     else
       return CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f);
