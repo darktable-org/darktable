@@ -157,6 +157,7 @@ static void _get_xmp_tags(const char *prefix, GList **taglist)
     }
   }
 }
+
 static int _illu_to_temp(dt_dng_illuminant_t illu)
 {
   switch(illu)
@@ -166,32 +167,35 @@ static int _illu_to_temp(dt_dng_illuminant_t illu)
       return 2850;
     case DT_LS_ISOStudioTungsten:
       return 3200;
+    case DT_LS_StandardLightB:
+      return 4871;
+    case DT_LS_StandardLightC:
+      return 6774;
     case DT_LS_D50:
       return 5000;
     case DT_LS_D55:
     case DT_LS_Daylight:
     case DT_LS_FineWeather:
     case DT_LS_Flash:
-    case DT_LS_StandardLightB:
       return 5500;
     case DT_LS_D65:
-    case DT_LS_StandardLightC:
     case DT_LS_CloudyWeather:
       return 6500;
     case DT_LS_D75:
     case DT_LS_Shade:
       return 7500;
     case DT_LS_DaylightFluorescent:
-      return (5700 + 7100) / 2;
+      return 6430;
     case DT_LS_DayWhiteFluorescent:
-      return (4600 + 5500) / 2;
+      return 5000;
     case DT_LS_CoolWhiteFluorescent:
+      return 4150;
     case DT_LS_Fluorescent:
-      return (3800 + 4500) / 2;
+      return 4230;
     case DT_LS_WhiteFluorescent:
-      return (3250 + 3800) / 2;
+      return 3450;
     case DT_LS_WarmWhiteFluorescent:
-      return (2600 + 3250) / 2;
+      return 2940;
     default:
       return 0;
   }
@@ -1156,7 +1160,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // The correction matrices are taken from
       // http://www.brucelindbloom.com - chromatic Adaption.
       // using Bradford method: found Illuminant -> D65
-      const float correctmat[7][9] = {
+      const float correctmat[8][9] = {
         { 0.9555766, -0.0230393, 0.0631636, -0.0282895, 1.0099416, 0.0210077, 0.0122982, -0.0204830,
           1.3299098 }, // D50
         { 0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372,
@@ -1170,7 +1174,10 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         { 0.9904476, -0.0071683, -0.0116156, -0.0123712, 1.0155950, -0.0029282, -0.0035635, 0.0067697,
           0.9181569 }, //  Standard light C
         { 0.9212269, -0.0449128, 0.1211620, -0.0553723, 1.0277243, 0.0403563, 0.0235086, -0.0391019,
-          1.6390644 }  // CoolWhiteFluorescent
+          1.6390644 }, // Fluorescent (F2)
+        // Calculated using the Bradford method above for 3200K (xy coord via DNG SDK as reference) -> D65
+        { 0.8662704, -0.0913307, 0.2772741, -0.1090739, 1.0747007, 0.0914149, 0.0551057, -0.0924980,
+          2.5124774 }  // ISO Studio Tungsten
       };
 
       if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1")) illu[0] = (dt_dng_illuminant_t) pos->toLong();
@@ -1237,10 +1244,13 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
             mat3mul(img->d65_color_matrix, correctmat[0], colmatrix[sel_illu]);
             break;
           case DT_LS_D55:
+          case DT_LS_Daylight:
+          case DT_LS_FineWeather:
+          case DT_LS_Flash:
             mat3mul(img->d65_color_matrix, correctmat[1], colmatrix[sel_illu]);
             break;
-          case DT_LS_Shade:
           case DT_LS_D75:
+          case DT_LS_Shade:
             mat3mul(img->d65_color_matrix, correctmat[2], colmatrix[sel_illu]);
             break;
           case DT_LS_Tungsten:
@@ -1253,10 +1263,14 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           case DT_LS_StandardLightC:
             mat3mul(img->d65_color_matrix, correctmat[5], colmatrix[sel_illu]);
             break;
-          case DT_LS_CoolWhiteFluorescent:
+          case DT_LS_Fluorescent:
             mat3mul(img->d65_color_matrix, correctmat[6], colmatrix[sel_illu]);
             break;
+          case DT_LS_ISOStudioTungsten:
+            mat3mul(img->d65_color_matrix, correctmat[7], colmatrix[sel_illu]);
+            break;
           case DT_LS_D65:
+          case DT_LS_CloudyWeather:
             for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[sel_illu][i];
             break;
 
