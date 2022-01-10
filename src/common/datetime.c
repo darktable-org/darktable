@@ -20,6 +20,23 @@
 #include "common/datetime.h"
 
 
+static gboolean _datetime_exif_to_tm(const char *exif,  struct tm *tt)
+{
+  if(*exif)
+  {
+    if(sscanf(exif,"%d:%d:%d %d:%d:%d",
+      &tt->tm_year, &tt->tm_mon, &tt->tm_mday,
+      &tt->tm_hour, &tt->tm_min, &tt->tm_sec) == 6)
+    {
+      tt->tm_year -= 1900;
+      tt->tm_mon--;
+      tt->tm_isdst = -1;    // no daylight saving time
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 gboolean dt_datetime_unix_to_local(char *local, const size_t local_size, const time_t *unix)
 {
   struct tm tm_val;
@@ -54,15 +71,11 @@ gboolean dt_datetime_unix_to_local(char *local, const size_t local_size, const t
 
 gboolean dt_datetime_img_to_local(const dt_image_t *img, char *local, const size_t local_size)
 {
-  struct tm tt_exif = { 0 };
-  if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &tt_exif.tm_year, &tt_exif.tm_mon,
-            &tt_exif.tm_mday, &tt_exif.tm_hour, &tt_exif.tm_min, &tt_exif.tm_sec) == 6)
+  struct tm tt = { 0 };
+  if(_datetime_exif_to_tm(img->exif_datetime_taken, &tt))
   {
-    tt_exif.tm_year -= 1900;
-    tt_exif.tm_mon--;
-    tt_exif.tm_isdst = -1;
-    const time_t exif_timestamp = mktime(&tt_exif);
-    return dt_datetime_unix_to_local(local, local_size, &exif_timestamp);
+    const time_t timestamp = mktime(&tt);
+    return dt_datetime_unix_to_local(local, local_size, &timestamp);
   }
   else
   {
@@ -71,57 +84,69 @@ gboolean dt_datetime_img_to_local(const dt_image_t *img, char *local, const size
   }
 }
 
-gboolean dt_datetime_exif_to_unix(const char *exif_datetime, time_t *unix)
+gboolean dt_datetime_exif_to_unix(const char *exif, time_t *unix)
 {
-  if(*exif_datetime)
+  struct tm tt= {0};
+  if(_datetime_exif_to_tm(exif, &tt))
   {
-    struct tm exif_tm= {0};
-    if(sscanf(exif_datetime,"%d:%d:%d %d:%d:%d",
-      &exif_tm.tm_year,
-      &exif_tm.tm_mon,
-      &exif_tm.tm_mday,
-      &exif_tm.tm_hour,
-      &exif_tm.tm_min,
-      &exif_tm.tm_sec) == 6)
-    {
-      exif_tm.tm_year -= 1900;
-      exif_tm.tm_mon--;
-      exif_tm.tm_isdst = -1;    // no daylight saving time
-      *unix = mktime(&exif_tm);
-      return TRUE;
-    }
+    *unix = mktime(&tt);
+    return TRUE;
   }
   return FALSE;
 }
 
-void dt_datetime_unix_to_exif(char *datetime, size_t datetime_len, const time_t *unix)
+void dt_datetime_unix_to_exif(char *exif, size_t exif_len, const time_t *unix)
 {
   struct tm tt;
   (void)localtime_r(unix, &tt);
-  strftime(datetime, datetime_len, "%Y:%m:%d %H:%M:%S", &tt);
+  strftime(exif, exif_len, "%Y:%m:%d %H:%M:%S", &tt);
 }
 
 void dt_datetime_unix_to_img(dt_image_t *img, const time_t *unix)
 {
-  struct tm result;
-  strftime(img->exif_datetime_taken, DT_DATETIME_LENGTH, "%Y:%m:%d %H:%M:%S",
-           localtime_r(unix, &result));
+  dt_datetime_unix_to_exif(img->exif_datetime_taken, DT_DATETIME_LENGTH, unix);
 }
 
-void dt_datetime_now_to_exif(char *datetime, size_t datetime_len)
+void dt_datetime_now_to_exif(char *exif, size_t exif_len)
 {
   const time_t now = time(NULL);
-  dt_datetime_unix_to_exif(datetime, datetime_len, &now);
+  dt_datetime_unix_to_exif(exif, exif_len, &now);
 }
 
-void dt_datetime_exif_to_img(dt_image_t *img, const char *datetime)
+void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
 {
-  g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
+  g_strlcpy(img->exif_datetime_taken, exif, sizeof(img->exif_datetime_taken));
 }
 
-void dt_datetime_img_to_exif(const dt_image_t *img, char *datetime)
+void dt_datetime_img_to_exif(const dt_image_t *img, char *exif)
 {
-  g_strlcpy(datetime, img->exif_datetime_taken, sizeof(img->exif_datetime_taken));
+  g_strlcpy(exif, img->exif_datetime_taken, sizeof(img->exif_datetime_taken));
+}
+
+GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, GTimeZone *tz)
+{
+  gint year;
+  gint month;
+  gint day;
+  gint hour;
+  gint minute;
+  gint second;
+
+  GDateTime *gdt = NULL;
+  if(sscanf(exif, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
+            (int *)&hour, (int *)&minute, (int *)&second))
+    gdt = g_date_time_new(tz, year, month, day, hour, minute, second);
+  return gdt;
+}
+
+GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, GTimeZone *tz)
+{
+  return dt_datetime_exif_to_gdatetime(img->exif_datetime_taken, tz);
+}
+
+gboolean dt_datetime_img_to_tm(const dt_image_t *img, struct tm *tt)
+{
+  return _datetime_exif_to_tm(img->exif_datetime_taken, tt);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

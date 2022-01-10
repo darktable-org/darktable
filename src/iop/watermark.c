@@ -382,13 +382,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
   // EXIF datetime
   struct tm tt_exif = { 0 };
-  dt_datetime_img_to_exif(image, datetime);
-  if(sscanf(datetime, "%d:%d:%d %d:%d:%d", &tt_exif.tm_year, &tt_exif.tm_mon,
-            &tt_exif.tm_mday, &tt_exif.tm_hour, &tt_exif.tm_min, &tt_exif.tm_sec) == 6)
-  {
-    tt_exif.tm_year -= 1900;
-    tt_exif.tm_mon--;
-  }
+  dt_datetime_img_to_tm(image, &tt_exif);
 
   // Current datetime
   struct tm tt_cur = { 0 };
