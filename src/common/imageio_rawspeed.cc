@@ -386,6 +386,14 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       dt_imageio_flip_buffers((char *)buf, (char *)r->getDataUncropped(0, 0), r->getBpp(), dimUncropped.x,
                               dimUncropped.y, dimUncropped.x, dimUncropped.y, r->pitch, ORIENTATION_NONE);
     }
+
+    //  Check if the camera is missing samples
+    const Camera *cam = meta->getCamera(r->metadata.make.c_str(),
+                                        r->metadata.model.c_str(),
+                                        r->metadata.mode.c_str());
+
+    if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples)
+      img->camera_missing_sample = TRUE;
   }
   catch(const std::exception &exc)
   {
@@ -403,6 +411,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
   img->buf_dsc.cst = iop_cs_RAW;
   img->loader = LOADER_RAWSPEED;
+
   return DT_IMAGEIO_OK;
 }
 
@@ -533,6 +542,15 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
   img->buf_dsc.cst = iop_cs_RAW;
   img->loader = LOADER_RAWSPEED;
+
+  //  Check if the camera is missing samples
+  const Camera *cam = meta->getCamera(r->metadata.make.c_str(),
+                                      r->metadata.model.c_str(),
+                                      r->metadata.mode.c_str());
+
+  if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples)
+    img->camera_missing_sample = TRUE;
+
   return DT_IMAGEIO_OK;
 }
 
