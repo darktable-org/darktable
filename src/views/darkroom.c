@@ -1148,6 +1148,8 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
   /* last set the group to update visibility of iop modules for new pipe */
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
+
+  dt_image_check_camera_missing_sample(&dev->image_storage);
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_t imgid, gpointer user_data)
@@ -3101,6 +3103,8 @@ void enter(dt_view_t *self)
                                   G_CALLBACK(_preference_changed_button_hide), dev);
 
   dt_iop_color_picker_init();
+
+  dt_image_check_camera_missing_sample(&dev->image_storage);
 }
 
 void leave(dt_view_t *self)
