@@ -1749,6 +1749,7 @@ void dt_image_init(dt_image_t *img)
   img->version = -1;
   img->loader = LOADER_UNKNOWN;
   img->exif_inited = 0;
+  img->camera_missing_sample = FALSE;
   memset(img->exif_datetime_taken, 0, sizeof(img->exif_datetime_taken));
   memset(img->exif_maker, 0, sizeof(img->exif_maker));
   memset(img->exif_model, 0, sizeof(img->exif_model));
