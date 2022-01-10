@@ -195,6 +195,28 @@ static void _lighttable_check_layout(dt_view_t *self)
     // record thumbtable offset
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
 
+    // if we are not switching between culling modes, check selection count and reset it if it is == 1
+    // the image was most likely only clicked in filemanager to select a starting point for culling so it should be released
+    // never release selection if we enter culling dynamic
+    if(layout_old != DT_LIGHTTABLE_LAYOUT_CULLING && layout_old != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+    {
+      sqlite3_stmt *stmt;
+      // selection count
+      int sel_count = 0;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT count(*) "
+                                  "FROM memory.collected_images AS col, main.selected_images as sel "
+                                  "WHERE col.imgid=sel.imgid",
+                                  -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+
+      if(sel_count == 1)
+      {
+        dt_selection_clear(darktable.selection);
+      }
+    }
+
     if(!lib->already_started)
     {
       int id = lib->thumbtable_offset;
