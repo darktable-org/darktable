@@ -219,16 +219,7 @@ static GDateTime *_localtime_text_to_utc_timeval(const char *date_time,
                                                  GTimeZone *tz_camera, GTimeZone *tz_utc,
                                                  GTimeSpan offset)
 {
-  gint year;
-  gint month;
-  gint day;
-  gint hour;
-  gint minute;
-  gint second;
-
-  sscanf(date_time, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
-            (int *)&hour, (int *)&minute, (int *)&second);
-  GDateTime *exif_time = g_date_time_new(tz_camera, year, month, day, hour, minute, second);
+  GDateTime *exif_time = dt_datetime_exif_to_gdatetime(date_time, tz_camera);
   GDateTime *dt_offset = g_date_time_add_seconds(exif_time, offset);
   GDateTime *utc_time = g_date_time_to_timezone(dt_offset, tz_utc);
 

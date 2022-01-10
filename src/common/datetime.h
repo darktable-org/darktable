@@ -15,29 +15,41 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#pragma once
+
+#include <glib.h>
 #include "common/image.h"
 
-// time_t to display local string
+// time_t to display local string. Returns TRUE if OK.
 gboolean dt_datetime_unix_to_local(char *local, const size_t local_size, const time_t *unix);
 
-// img cache datetime to display local string
+// img cache datetime to display local string. Returns TRUE if OK.
 gboolean dt_datetime_img_to_local(const dt_image_t *img, char *local, const size_t local_size);
 
 // unix datetime to img cache datetime
 void dt_datetime_unix_to_img(dt_image_t *img, const time_t *unix);
 
-// exif datetime string to unix datetime
-gboolean dt_datetime_exif_to_unix(const char *exif_datetime, time_t *unix);
+// exif datetime string to unix datetime. Returns TRUE if OK.
+gboolean dt_datetime_exif_to_unix(const char *exif, time_t *unix);
 // unix datetime to exif datetime
-void dt_datetime_unix_to_exif(char *datetime, size_t datetime_len, const time_t *unix);
+void dt_datetime_unix_to_exif(char *exif, size_t exif_len, const time_t *unix);
 
 // current datetime to exif
-void dt_datetime_now_to_exif(char *datetime, size_t datetime_len);
+void dt_datetime_now_to_exif(char *exif, size_t exif_len);
 
 // exif datetime to img cache datetime
-void dt_datetime_exif_to_img(dt_image_t *img, const char *datetime);
+void dt_datetime_exif_to_img(dt_image_t *img, const char *exif);
 // exif datetime to img cache datetime
-void dt_datetime_img_to_exif(const dt_image_t *img, char *datetime);
+void dt_datetime_img_to_exif(const dt_image_t *img, char *exif);
+
+// exif datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
+GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, GTimeZone *tz);
+
+// img cache datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
+GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, GTimeZone *tz);
+
+// exif img cache datetime to unix tm. Returns TRUE if OK.
+gboolean dt_datetime_img_to_tm(const dt_image_t *img, struct tm *tt);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

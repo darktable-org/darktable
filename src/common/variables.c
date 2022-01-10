@@ -135,15 +135,9 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   {
     const dt_image_t *img = params->img ? (dt_image_t *)params->img
                                         : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
-    char datetime[DT_DATETIME_LENGTH];
-    dt_datetime_img_to_exif(img, datetime);
-    if(sscanf(datetime, "%d:%d:%d %d:%d:%d", &params->data->exif_tm.tm_year, &params->data->exif_tm.tm_mon,
-      &params->data->exif_tm.tm_mday, &params->data->exif_tm.tm_hour, &params->data->exif_tm.tm_min, &params->data->exif_tm.tm_sec) == 6)
-    {
-      params->data->exif_tm.tm_year -= 1900;
-      params->data->exif_tm.tm_mon--;
+
+    if(dt_datetime_img_to_tm(img, &params->data->exif_tm))
       params->data->have_exif_tm = TRUE;
-    }
     params->data->exif_iso = img->exif_iso;
     params->data->camera_maker = g_strdup(img->camera_maker);
     params->data->camera_alias = g_strdup(img->camera_alias);

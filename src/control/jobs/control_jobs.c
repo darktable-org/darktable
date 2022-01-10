@@ -1143,7 +1143,6 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   /* go thru each selected image and lookup location in gpx */
   do
   {
-    GDateTime *exif_time, *utc_time;
     dt_image_geoloc_t geoloc;
     int imgid = GPOINTER_TO_INT(t->data);
 
@@ -1151,33 +1150,12 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     if(!cimg) continue;
 
-    /* convert exif datetime
-       TODO: exiv2 dates should be iso8601 and we are probably doing some ugly
-       conversion before inserting into database.
-     */
-    gint year;
-    gint month;
-    gint day;
-    gint hour;
-    gint minute;
-    gint seconds;
-
-    char datetime[DT_DATETIME_LENGTH];
-    dt_datetime_img_to_exif(cimg, datetime);
-    if(sscanf(datetime, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
-              (int *)&hour, (int *)&minute, (int *)&seconds) != 6)
-    {
-      fprintf(stderr, "broken exif time in db, '%s'\n", datetime);
-      dt_image_cache_read_release(darktable.image_cache, cimg);
-      continue;
-    }
+    GDateTime *exif_time = dt_datetime_img_to_gdatetime(cimg, tz_camera);
 
     /* release the lock */
     dt_image_cache_read_release(darktable.image_cache, cimg);
-
-    exif_time = g_date_time_new(tz_camera, year, month, day, hour, minute, seconds);
     if(!exif_time) continue;
-    utc_time = g_date_time_to_timezone(exif_time, tz_utc);
+    GDateTime *utc_time = g_date_time_to_timezone(exif_time, tz_utc);
     g_date_time_unref(exif_time);
     if(!utc_time) continue;
 
@@ -1903,22 +1881,8 @@ static void _add_datetime_offset(const uint32_t imgid, const char *odt,
                                  const long int offset, char *ndt)
 {
   // get the datetime_taken and calculate the new time
-  gint year;
-  gint month;
-  gint day;
-  gint hour;
-  gint minute;
-  gint seconds;
-
-  if(sscanf(odt, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
-            (int *)&hour, (int *)&minute, (int *)&seconds) != 6)
-  {
-    fprintf(stderr, "broken exif time in db, '%s', imgid %d\n", odt, imgid);
-    return;
-  }
-
   GTimeZone *tz = g_time_zone_new_utc();
-  GDateTime *datetime_original = g_date_time_new(tz, year, month, day, hour, minute, seconds);
+  GDateTime *datetime_original = dt_datetime_exif_to_gdatetime(odt, tz);
   g_time_zone_unref(tz);
   if(!datetime_original)
     return;
