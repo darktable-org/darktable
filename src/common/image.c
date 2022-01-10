@@ -2736,6 +2736,19 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
     return 0.0f;
 }
 
+void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
+{
+  if(img->camera_missing_sample)
+  {
+    dt_control_log
+      (_("<big><span foreground='red'><b>ATTENTION</b> : camera is missing samples</span>\n\n"
+         "You must provide samples in <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a> for:\n\n"
+         "`%s' `%s' (compressed/uncompressed/all bit depths)\n\n"
+         "Or the <span foreground='red'><b>RAW won't be readable</b></span> in next version</big>\n"),
+       img->camera_maker, img->camera_model);
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
