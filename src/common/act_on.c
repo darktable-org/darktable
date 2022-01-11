@@ -533,16 +533,16 @@ int dt_act_on_get_main_image_refactored(const gboolean prioritize_hover)
     }
     if(stmt) sqlite3_finalize(stmt);
 
-    if(ret == -1 && darktable.view_manager->active_images)
-    {
-      ret = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
-    }
-
     if(ret == -1)
     {
       // and if active images is also empty, we set return to mouseover
       // we don't have to check if mouseover is >0 because ret=-1 at this point anyway, so nothing changes
       ret = mouseover;
+    }
+
+    if(ret == -1 && darktable.view_manager->active_images)
+    {
+      ret = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
     }
   }
 
