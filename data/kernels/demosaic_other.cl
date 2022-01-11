@@ -34,7 +34,7 @@ passthrough_monochrome (__read_only image2d_t in, __write_only image2d_t out, co
 
   color.xyz = pc.x;
 
-  write_imagef (out, (int2)(x, y), color);
+  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
 }
 
 /**
@@ -75,6 +75,6 @@ clip_and_zoom_demosaic_passthrough_monochrome(__read_only image2d_t in, __write_
     color += yfilter*xfilter*(float4)(px, px, px, 0.0f);
     weight += yfilter*xfilter;
   }
-  color = weight > 0.0f ? color/weight : (float4)0.0f;
+  color = (weight > 0.0f) ? color/weight : (float4)0.0f;
   write_imagef (out, (int2)(x, y), color);
 }

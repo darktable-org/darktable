@@ -3444,10 +3444,10 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_opencl_local_buffer_t locopt
         = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
                                       .cellsize = sizeof(float) * 1, .overhead = 0,
-                                      .sizex = 1 << 8, .sizey = 1 << 8 };
+                                      .sizex = 64, .sizey = 64 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_green, &locopt)) goto error;
-      const int myborder = 9;
+      const int myborder = 32;
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border_green, 0, sizeof(cl_mem), &dev_in);
@@ -3465,10 +3465,10 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_opencl_local_buffer_t locopt
         = (dt_opencl_local_buffer_t){ .xoffset = 2*1, .xfactor = 1, .yoffset = 2*1, .yfactor = 1,
                                       .cellsize = 4 * sizeof(float), .overhead = 0,
-                                      .sizex = 1 << 8, .sizey = 1 << 8 };
+                                      .sizex = 64, .sizey = 64 };
 
       if(!dt_opencl_local_buffer_opt(devid, gd->kernel_rcd_border_redblue, &locopt)) goto error;
-      const int myborder = 6;
+      const int myborder = 16;
       size_t sizes[3] = { ROUNDUP(width, locopt.sizex), ROUNDUP(height, locopt.sizey), 1 };
       size_t local[3] = { locopt.sizex, locopt.sizey, 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border_redblue, 0, sizeof(cl_mem), &dev_tmp);
