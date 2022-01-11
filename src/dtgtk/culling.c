@@ -757,8 +757,9 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    // if needed, the change mouseover value of the thumb
-    if(th->mouse_over != (th->imgid == imgid)) dt_thumbnail_set_mouseover(th, (th->imgid == imgid));
+    // update the mouseover value for each image
+    // this will also update the white border based on 'images_to_act_on'
+    dt_thumbnail_set_mouseover(th, (th->imgid == imgid));
   }
 }
 

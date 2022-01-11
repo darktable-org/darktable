@@ -732,7 +732,8 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   gtk_widget_show(thumb->w_cursor);
   for(int i = 0; i < MAX_STARS; i++) gtk_widget_show(thumb->w_stars[i]);
 
-  _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, thumb->mouse_over);
+
+  _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, (thumb->mouse_over || thumb->selected));
   _set_flag(thumb->w_main, GTK_STATE_FLAG_ACTIVE, thumb->active);
 
   _set_flag(thumb->w_reject, GTK_STATE_FLAG_ACTIVE, (thumb->rating == DT_VIEW_REJECT));
@@ -740,7 +741,14 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
     _set_flag(thumb->w_stars[i], GTK_STATE_FLAG_ACTIVE, (thumb->rating > i && thumb->rating < DT_VIEW_REJECT));
   _set_flag(thumb->w_group, GTK_STATE_FLAG_ACTIVE, (thumb->imgid == thumb->groupid));
 
-  _set_flag(thumb->w_main, GTK_STATE_FLAG_SELECTED, thumb->selected);
+
+  // get images to act on for highlighting the right images
+  GList *act_on = dt_act_on_get_images(FALSE, FALSE, FALSE);
+
+  if(g_list_find(act_on, GINT_TO_POINTER(thumb->imgid)))
+    _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, TRUE);
+  else
+    _set_flag(thumb->w_main, GTK_STATE_FLAG_PRELIGHT, FALSE);
 
   // and the tooltip
   gchar *pattern = dt_conf_get_string("plugins/lighttable/thumbnail_tooltip_pattern");
@@ -1014,12 +1022,9 @@ void dt_thumbnail_update_selection(dt_thumbnail_t *thumb)
   if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = TRUE;
 
   // if there's a change, update the thumb
-  if(selected != thumb->selected)
-  {
-    thumb->selected = selected;
-    _thumb_update_icons(thumb);
-    gtk_widget_queue_draw(thumb->w_main);
-  }
+  thumb->selected = selected;
+  _thumb_update_icons(thumb);
+  gtk_widget_queue_draw(thumb->w_main);
 }
 
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
@@ -1847,7 +1852,6 @@ void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t 
 
 void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over)
 {
-  if(thumb->mouse_over == over) return;
   thumb->mouse_over = over;
   _thumb_update_icons(thumb);
 
