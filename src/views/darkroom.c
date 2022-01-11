@@ -98,7 +98,7 @@ static void _update_softproof_gamut_checking(dt_develop_t *d);
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
-static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid);
+static void _dev_change_image(dt_develop_t *dev, const int32_t imgid);
 
 static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
@@ -117,7 +117,7 @@ static int display_image_cb(lua_State *L)
   if(luaL_testudata(L, 1, "dt_lua_image_t"))
   {
     luaA_to(L, dt_lua_image_t, &imgid, 1);
-    dt_dev_change_image(dev, imgid);
+    _dev_change_image(dev, imgid);
   }
   else
   {
@@ -842,7 +842,7 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
-static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
+static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
@@ -1148,6 +1148,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
   /* last set the group to update visibility of iop modules for new pipe */
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
+
+  dt_image_check_camera_missing_sample(&dev->image_storage);
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_t imgid, gpointer user_data)
@@ -1158,7 +1160,7 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_
     const dt_view_t *self = (dt_view_t *)user_data;
     dt_develop_t *dev = (dt_develop_t *)self->data;
 
-    dt_dev_change_image(dev, imgid);
+    _dev_change_image(dev, imgid);
     // move filmstrip
     dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
     // force redraw
@@ -1219,7 +1221,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
   if(new_id < 0 || new_id == imgid) return;
 
   // if id seems valid, we change the image and move filmstrip
-  dt_dev_change_image(dev, new_id);
+  _dev_change_image(dev, new_id);
   dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), new_offset, TRUE);
 
   // if it's a change by key_press, we set mouse_over to the active image
@@ -3101,6 +3103,8 @@ void enter(dt_view_t *self)
                                   G_CALLBACK(_preference_changed_button_hide), dev);
 
   dt_iop_color_picker_init();
+
+  dt_image_check_camera_missing_sample(&dev->image_storage);
 }
 
 void leave(dt_view_t *self)
