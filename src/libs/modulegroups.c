@@ -2773,14 +2773,7 @@ static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *s
   // check for missing camera samples
   if(image->camera_missing_sample)
   {
-    gchar *label = g_strdup_printf
-      (_("<b>ATTENTION</b> : camera is missing samples\n"
-         "You must provide samples in\n"
-         "<a href='https://raw.pixls.us/'>https://raw.pixls.us/</a>:\n"
-         "for `%s' `%s'\n"
-         "in as many format/compression/bit depths as possible\n"
-         "Or the <b>RAW won't be readable</b> in next version"),
-       image->camera_maker, image->camera_model);
+    gchar *label = dt_image_camera_missing_sample_message(image, FALSE);
     d->force_deprecated_message = TRUE;
     gtk_label_set_markup(GTK_LABEL(d->deprecated), label);
     g_free(label);
