@@ -2395,8 +2395,8 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
                                  (dt_collection_get_filter_flags(collection) & ~COLLECTION_FILTER_FILM_ID));
 
   /* update query and at last the visual */
-  if(maybe_changed)
-    dt_collection_update(collection);
+  if(maybe_changed && collection->clone)
+    dt_collection_update(collection);  // originals get updated by signal handler in selection.c
 
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;
@@ -2513,15 +2513,36 @@ int dt_collection_image_offset(dt_imgid_t imgid)
   return dt_collection_image_offset_with_collection(darktable.collection, imgid);
 }
 
+static gboolean _property_is_collection_criterion(dt_collection_t *collection,
+                                                  const enum dt_collection_properties_t prop)
+{
+  if(prop == DT_COLLECTION_PROP_UNDEF)
+    return TRUE;
+  const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  const int num_rules = CLAMP(_n_r, 1, 10);
+  for(int i = 0; i < num_rules; i++)
+  {
+    char confname[200];
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
+    const int property = dt_conf_get_int(confname);
+    if(property == prop)
+      return TRUE;
+  }
+  return FALSE;
+}
+
 static void _collection_recount_callback(gpointer instance, gpointer user_data, enum dt_collection_properties_t prop)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
-  const int old_count = collection->count;
-  collection->count = _dt_collection_compute_count(collection, FALSE);
-  collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
+  const int old_count = collection->count_no_group;
+  if(_property_is_collection_criterion(collection, prop))
+  {
+    collection->count = -1;
+    collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
+  }
   if(!collection->clone)
   {
-    if(old_count != collection->count) dt_collection_hint_message(collection);
+    if(old_count != collection->count_no_group) dt_collection_hint_message(collection);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD,
                                   DT_COLLECTION_PROP_UNDEF, (GList *)NULL, -1);
   }
@@ -2545,12 +2566,12 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
 static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t id, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
-  const int old_count = collection->count;
-  collection->count = _dt_collection_compute_count(collection, FALSE);
+  const int old_count = collection->count_no_group;
+  collection->count = -1;
   collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   if(!collection->clone)
   {
-    if(old_count != collection->count) dt_collection_hint_message(collection);
+    if(old_count != collection->count_no_group) dt_collection_hint_message(collection);
     dt_collection_update_query(collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
   }
 }
