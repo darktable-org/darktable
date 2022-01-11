@@ -2736,17 +2736,40 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
     return 0.0f;
 }
 
+char *dt_image_camera_missing_sample_message(const struct dt_image_t *img, gboolean logmsg)
+{
+  const char *T1 = _("<b>WARNING</b> : camera is missing samples!");
+  const char *T2 = _("You must provide samples in <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a>");
+  char *T3 = g_strdup_printf(_("for `%s' `%s'\n"
+                               "in as many format/compression/bit depths as possible"),
+                             img->camera_maker, img->camera_model);
+  const char *T4 = _("or the <b>RAW won't be readable</b> in next version.");
+
+  char *NL     = logmsg ? "\n\n" : "\n";
+  char *PREFIX = logmsg ? "<big>" : "";
+  char *SUFFIX = logmsg ? "</big>" : "";
+
+  char *msg = g_strconcat(PREFIX, T1, NL, T2, NL, T3, NL, T4, SUFFIX, NULL);
+
+  if(logmsg)
+  {
+    char *newmsg = dt_util_str_replace(msg, "<b>", "<span foreground='red'><b>");
+    g_free(msg);
+    msg = dt_util_str_replace(newmsg, "</b>", "</b></span>");
+    g_free(newmsg);
+  }
+
+  g_free(T3);
+  return msg;
+}
+
 void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
 {
   if(img->camera_missing_sample)
   {
-    dt_control_log
-      (_("<big><span foreground='red'><b>ATTENTION</b> : camera is missing samples</span>\n\n"
-         "You must provide samples in <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a>\n\n"
-         "for `%s' `%s'\n"
-         "in as many format/compression/bit depths as possible\n\n"
-         "Or the <span foreground='red'><b>RAW won't be readable</b></span> in next version</big>\n"),
-       img->camera_maker, img->camera_model);
+    char *msg = dt_image_camera_missing_sample_message(img, TRUE);
+    dt_control_log (msg, NULL);
+    g_free(msg);
   }
 }
 
