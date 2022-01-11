@@ -1749,6 +1749,7 @@ void dt_image_init(dt_image_t *img)
   img->version = -1;
   img->loader = LOADER_UNKNOWN;
   img->exif_inited = 0;
+  img->camera_missing_sample = FALSE;
   memset(img->exif_datetime_taken, 0, sizeof(img->exif_datetime_taken));
   memset(img->exif_maker, 0, sizeof(img->exif_maker));
   memset(img->exif_model, 0, sizeof(img->exif_model));
@@ -1801,7 +1802,7 @@ void dt_image_refresh_makermodel(dt_image_t *img)
 
   // Now we just create a makermodel by concatenation
   g_strlcpy(img->camera_makermodel, img->camera_maker, sizeof(img->camera_makermodel));
-  int len = strlen(img->camera_maker);
+  const int len = strlen(img->camera_maker);
   img->camera_makermodel[len] = ' ';
   g_strlcpy(img->camera_makermodel+len+1, img->camera_model, sizeof(img->camera_makermodel)-len-1);
 }
@@ -2723,16 +2724,53 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
   if((image_storage) && (image_storage->exif_exposure_bias))
   {
     // sanity checks because I don't trust exif tags too much
-    if(image_storage->exif_exposure_bias == NAN ||
-       image_storage->exif_exposure_bias != image_storage->exif_exposure_bias ||
-       isnan(image_storage->exif_exposure_bias) ||
-       CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f) != image_storage->exif_exposure_bias)
+    if(image_storage->exif_exposure_bias == NAN
+       || image_storage->exif_exposure_bias != image_storage->exif_exposure_bias
+       || isnan(image_storage->exif_exposure_bias)
+       || CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f) != image_storage->exif_exposure_bias)
       return 0.0f; // isnan
     else
       return CLAMP(image_storage->exif_exposure_bias, -5.0f, 5.0f);
   }
   else
     return 0.0f;
+}
+
+char *dt_image_camera_missing_sample_message(const struct dt_image_t *img, gboolean logmsg)
+{
+  const char *T1 = _("<b>WARNING</b> : camera is missing samples!");
+  const char *T2 = _("You must provide samples in <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a>");
+  char *T3 = g_strdup_printf(_("for `%s' `%s'\n"
+                               "in as many format/compression/bit depths as possible"),
+                             img->camera_maker, img->camera_model);
+  const char *T4 = _("or the <b>RAW won't be readable</b> in next version.");
+
+  char *NL     = logmsg ? "\n\n" : "\n";
+  char *PREFIX = logmsg ? "<big>" : "";
+  char *SUFFIX = logmsg ? "</big>" : "";
+
+  char *msg = g_strconcat(PREFIX, T1, NL, T2, NL, T3, NL, T4, SUFFIX, NULL);
+
+  if(logmsg)
+  {
+    char *newmsg = dt_util_str_replace(msg, "<b>", "<span foreground='red'><b>");
+    g_free(msg);
+    msg = dt_util_str_replace(newmsg, "</b>", "</b></span>");
+    g_free(newmsg);
+  }
+
+  g_free(T3);
+  return msg;
+}
+
+void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
+{
+  if(img->camera_missing_sample)
+  {
+    char *msg = dt_image_camera_missing_sample_message(img, TRUE);
+    dt_control_log (msg, NULL);
+    g_free(msg);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

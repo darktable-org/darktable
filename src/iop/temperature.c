@@ -1386,8 +1386,12 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
 
   if(!ignore_missing_wb(&(module->dev->image_storage)))
   {
-    dt_control_log(_("failed to read camera white balance information from `%s'!"),
-                   img->filename);
+    //  only display this if we have a sample, otherwise it is better to keep
+    //  on screen the more important message about missing sample and the way
+    //  to contribute.
+    if(!img->camera_missing_sample)
+      dt_control_log(_("failed to read camera white balance information from `%s'!"),
+                     img->filename);
     fprintf(stderr, "[temperature] failed to read camera white balance information from `%s'!\n",
             img->filename);
   }

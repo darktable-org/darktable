@@ -119,7 +119,7 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *hbox_groups;
   GtkWidget *hbox_search_box;
   GtkWidget *deprecated;
-
+  gboolean force_deprecated_message;
   GList *groups;
   gboolean show_search;
   gboolean full_active;
@@ -951,7 +951,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         default:
         {
           // show deprecated module in specific group deprecated
-          gtk_widget_set_visible(d->deprecated, show_deprecated);
+          gtk_widget_set_visible(d->deprecated, show_deprecated || d->force_deprecated_message);
 
           show_module = (_lib_modulegroups_test_internal(self, d->current, module)
                          && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled || show_deprecated));
@@ -2709,6 +2709,7 @@ static gboolean _manage_direct_active_popup(GtkWidget *widget, GdkEventButton *e
 
 static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   dt_develop_t *dev = darktable.develop;
   if(!dev || dev->image_storage.id <= 0) return;
 
@@ -2768,6 +2769,26 @@ static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *s
     dt_lib_presets_apply(preset, self->plugin_name, self->version());
   }
   sqlite3_finalize(stmt);
+
+  // check for missing camera samples
+  if(image->camera_missing_sample)
+  {
+    gchar *label = dt_image_camera_missing_sample_message(image, FALSE);
+    d->force_deprecated_message = TRUE;
+    gtk_label_set_markup(GTK_LABEL(d->deprecated), label);
+    g_free(label);
+    gtk_widget_set_visible(d->deprecated, TRUE);
+  }
+  else
+  {
+    d->force_deprecated_message = FALSE;
+    gtk_label_set_markup
+      (GTK_LABEL(d->deprecated),
+       _("the following modules are deprecated because they have internal design mistakes"
+         " which can't be solved and alternative modules which solve them.\n"
+         " they will be removed for new edits in the next release."));
+  }
+
 }
 
 void gui_init(dt_lib_module_t *self)

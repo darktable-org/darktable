@@ -56,7 +56,8 @@ using namespace rawspeed;
 static dt_imageio_retval_t dt_imageio_open_rawspeed_sraw (dt_image_t *img, RawImage r, dt_mipmap_buffer_t *buf);
 static CameraMetaData *meta = NULL;
 
-static void dt_rawspeed_load_meta() {
+static void dt_rawspeed_load_meta()
+{
   /* Load rawspeed cameras.xml meta file once */
   if(meta == NULL)
   {
@@ -82,9 +83,9 @@ gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
     dt_rawspeed_load_meta();
     const Camera *cam = meta->getCamera(maker, model, "");
     // Also look for dng cameras
-    if (!cam)
+    if(!cam)
       cam = meta->getCamera(maker, model, "dng");
-    if (cam)
+    if(cam)
     {
       g_strlcpy(mk, cam->canonical_make.c_str(), mk_len);
       g_strlcpy(md, cam->canonical_model.c_str(), md_len);
@@ -94,10 +95,10 @@ gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
   }
   catch(const std::exception &exc)
   {
-    printf("[rawspeed] %s\n", exc.what());
+    fprintf(stderr, "[rawspeed] %s\n", exc.what());
   }
 
-  if (!got_it_done)
+  if(!got_it_done)
   {
     // We couldn't find the camera or caught some exception, just punt and pass
     // through the same values
@@ -165,7 +166,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     RawImage r = d->mRaw;
 
     const auto errors = r->getErrors();
-    for(const auto &error : errors) fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
+    for(const auto &error : errors)
+      fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
 
     g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
     g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
@@ -209,7 +211,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     };
 
     for(uint32_t i = 0; i < (sizeof(legacy_aliases) / sizeof(legacy_aliases[1])); i++)
-      if (!strcmp(legacy_aliases[i].origname, r->metadata.model.c_str())) {
+      if(!strcmp(legacy_aliases[i].origname, r->metadata.model.c_str()))
+      {
         g_strlcpy(img->camera_legacy_makermodel, legacy_aliases[i].mungedname, sizeof(img->camera_legacy_makermodel));
         break;
       }
@@ -217,13 +220,16 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 
-    if(r->blackLevelSeparate[0] == -1 || r->blackLevelSeparate[1] == -1 || r->blackLevelSeparate[2] == -1
+    if(r->blackLevelSeparate[0] == -1
+       || r->blackLevelSeparate[1] == -1
+       || r->blackLevelSeparate[2] == -1
        || r->blackLevelSeparate[3] == -1)
     {
       r->calculateBlackAreas();
     }
 
-    for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = r->blackLevelSeparate[i];
+    for(uint8_t i = 0; i < 4; i++)
+      img->raw_black_level_separate[i] = r->blackLevelSeparate[i];
 
     if(r->blackLevel == -1)
     {
@@ -248,7 +254,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     m.reset();
 
     // Grab the WB
-    for(int i = 0; i < 4; i++) img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
+    for(int i = 0; i < 4; i++)
+      img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
     // FIXME: grab r->metadata.colorMatrix.
 
@@ -268,17 +275,21 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->buf_dsc.filters = 0u;
     if(!r->isCFA)
     {
-      dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, mbuf);
+      const dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, mbuf);
       return ret;
     }
 
-    if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32)) return DT_IMAGEIO_FILE_CORRUPTED;
+    if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32))
+      return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getBpp() != sizeof(uint16_t)) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
+    if((r->getBpp() != sizeof(uint16_t)) && (r->getBpp() != sizeof(float)))
+      return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != sizeof(uint16_t))) return DT_IMAGEIO_FILE_CORRUPTED;
+    if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != sizeof(uint16_t)))
+      return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getDataType() == TYPE_FLOAT32) && (r->getBpp() != sizeof(float))) return DT_IMAGEIO_FILE_CORRUPTED;
+    if((r->getDataType() == TYPE_FLOAT32) && (r->getBpp() != sizeof(float)))
+      return DT_IMAGEIO_FILE_CORRUPTED;
 
     const float cpp = r->getCpp();
     if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
@@ -375,10 +386,18 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       dt_imageio_flip_buffers((char *)buf, (char *)r->getDataUncropped(0, 0), r->getBpp(), dimUncropped.x,
                               dimUncropped.y, dimUncropped.x, dimUncropped.y, r->pitch, ORIENTATION_NONE);
     }
+
+    //  Check if the camera is missing samples
+    const Camera *cam = meta->getCamera(r->metadata.make.c_str(),
+                                        r->metadata.model.c_str(),
+                                        r->metadata.mode.c_str());
+
+    if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples)
+      img->camera_missing_sample = TRUE;
   }
   catch(const std::exception &exc)
   {
-    printf("[rawspeed] (%s) %s\n", img->filename, exc.what());
+    fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, exc.what());
 
     /* if an exception is raised lets not retry or handle the
      specific ones, consider the file as corrupted */
@@ -386,12 +405,13 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   }
   catch(...)
   {
-    printf("Unhandled exception in imageio_rawspeed\n");
+    fprintf(stderr, "[rawspeed] unhandled exception in imageio_rawspeed\n");
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   img->buf_dsc.cst = iop_cs_RAW;
   img->loader = LOADER_RAWSPEED;
+
   return DT_IMAGEIO_OK;
 }
 
@@ -522,6 +542,15 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
   img->buf_dsc.cst = iop_cs_RAW;
   img->loader = LOADER_RAWSPEED;
+
+  //  Check if the camera is missing samples
+  const Camera *cam = meta->getCamera(r->metadata.make.c_str(),
+                                      r->metadata.model.c_str(),
+                                      r->metadata.mode.c_str());
+
+  if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples)
+    img->camera_missing_sample = TRUE;
+
   return DT_IMAGEIO_OK;
 }
 
