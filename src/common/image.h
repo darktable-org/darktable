@@ -435,6 +435,8 @@ char *dt_image_get_text_path_from_path(const char *image_path);
 
 float dt_image_get_exposure_bias(const struct dt_image_t *image_storage);
 
+/** handle message for missing camera samples reported by rawspeed */
+char *dt_image_camera_missing_sample_message(const struct dt_image_t *img, gboolean logmsg);
 void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
