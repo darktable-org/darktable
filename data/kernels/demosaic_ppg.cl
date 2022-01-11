@@ -107,7 +107,7 @@ green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const
     }
   }
 
-  write_imagef (out, (int2)(x, y), o);
+  write_imagef (out, (int2)(x, y), fmax(o, 0.0f));
 }
 
 
@@ -210,7 +210,7 @@ green_equilibration_favg_apply(read_only image2d_t in, write_only image2d_t out,
 
   pixel *= (isgreen1 ? gr_ratio : 1.0f);
 
-  write_imagef (out, (int2)(x, y), pixel);
+  write_imagef (out, (int2)(x, y), fmax(pixel, 0.0f));
 }
 
 #define SWAP(a, b)                \
@@ -294,7 +294,7 @@ pre_median(read_only image2d_t in, write_only image2d_t out, const int width, co
 
   float color = (c & 1) ? (cnt == 1 ? med[4] - 64.0f : med[(cnt - 1) / 2]) : buffer[0];
 
-  write_imagef (out, (int2)(x, y), color);
+  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
 }
 #undef SWAP
 
@@ -418,7 +418,7 @@ color_smoothing(read_only image2d_t in, write_only image2d_t out, const int widt
 
   o.z = fmax(s4 + o.y, 0.0f);
 
-  write_imagef(out, (int2) (x, y), o);
+  write_imagef(out, (int2) (x, y), fmax(o, 0.0f));
 }
 #undef cas
 
@@ -450,7 +450,7 @@ clip_and_zoom(read_only image2d_t in, write_only image2d_t out, const int width,
     color += px;
   }
   color /= (float4)((2*samples+1)*(2*samples+1));
-  write_imagef (out, (int2)(x, y), color);
+  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
 }
 
 
@@ -515,7 +515,7 @@ clip_and_zoom_demosaic_half_size(__read_only image2d_t in, __write_only image2d_
     color += yfilter*xfilter*(float4)(p1, (p2+p3)*0.5f, p4, 0.0f);
     weight += yfilter*xfilter;
   }
-  color = weight > 0.0f ? color/weight : (float4)0.0f;
+  color = (weight > 0.0f) ? color/weight : (float4)0.0f;
   write_imagef (out, (int2)(x, y), color);
 }
 
@@ -621,7 +621,7 @@ ppg_demosaic_green (read_only image2d_t in, write_only image2d_t out, const int 
       color.y = fmax(fmin(guessx*0.25f, M), m);
     }
   }
-  write_imagef (out, (int2)(x, y), color);
+  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
 }
 
 
@@ -679,7 +679,7 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
   float4 color = buffer[0];
   if(x == 0 || y == 0 || x == (width-1) || y == (height-1))
   {
-    write_imagef (out, (int2)(x, y), color);  
+    write_imagef (out, (int2)(x, y), fmax(color, 0.0f));  
     return;
   }
 
@@ -730,7 +730,7 @@ ppg_demosaic_redblue (read_only image2d_t in, write_only image2d_t out, const in
       else color.x = (guess1 + guess2)*0.25f;
     }
   }
-  write_imagef (out, (int2)(x, y), color);
+  write_imagef (out, (int2)(x, y), fmax(color, 0.0f));
 }
 
 /**
@@ -774,5 +774,5 @@ border_interpolate(read_only image2d_t in, write_only image2d_t out, const int w
   else if(f == 2) o.z = i;
   else            o.y = i;
 
-  write_imagef (out, (int2)(x, y), o);
+  write_imagef (out, (int2)(x, y), fmax(o, 0.0f));
 }
