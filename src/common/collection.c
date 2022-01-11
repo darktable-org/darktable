@@ -2301,6 +2301,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 
   gchar **query_parts = g_new(gchar *, num_rules + num_filters + 1);
   query_parts[num_rules + num_filters] = NULL;
+  gboolean maybe_changed = (changed_property == DT_COLLECTION_PROP_UNDEF);
 
   // the main rules part
   int nb = 0; // number of non empty rules
@@ -2313,6 +2314,8 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
 
+    if(property == changed_property)
+      maybe_changed = TRUE;
     if(!text || text[0] == '\0')
     {
       if(mode == 1) // for OR show all
@@ -2381,7 +2384,6 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     g_free(text);
   }
 
-
   /* set the extended where and the use of it in the query */
   dt_collection_set_extended_where(collection, query_parts);
   g_strfreev(query_parts);
@@ -2393,8 +2395,8 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
                                  (dt_collection_get_filter_flags(collection) & ~COLLECTION_FILTER_FILM_ID));
 
   /* update query and at last the visual */
-  //if(collection->clone)  //TODO: check whether we need an unconditional update here, slowing down the UI
-    dt_collection_update(collection);  // if original collection, this update will be made by a signal handler
+  if(maybe_changed)
+    dt_collection_update(collection);
 
   // remove from selected images where not in this query.
   sqlite3_stmt *stmt = NULL;

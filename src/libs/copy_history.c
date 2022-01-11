@@ -200,7 +200,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   const int missing = dt_history_compress_on_list(imgs);
 
   dt_collection_update_query(darktable.collection,
-                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
+                             DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_MODULE, imgs);
   dt_control_queue_redraw_center();
   if(missing)
     dt_control_log(ngettext("no history compression of %d image",
@@ -251,7 +251,7 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   {
     dt_history_delete_on_list(imgs, TRUE);
     dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_MODULE,
                                imgs); // frees imgs
     dt_control_queue_redraw_center();
   }
@@ -283,7 +283,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   {
     dt_collection_update_query(darktable.collection,
                                DT_COLLECTION_CHANGE_RELOAD,
-                               DT_COLLECTION_PROP_UNDEF, imgs);
+                               DT_COLLECTION_PROP_MODULE, imgs);
   }
   else
   {
@@ -302,7 +302,7 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   if(dt_history_paste_parts_on_list(imgs, TRUE))
   {
     dt_collection_update_query(darktable.collection,
-                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
+                               DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_MODULE,
                                imgs); // frees imgs
   }
   else
