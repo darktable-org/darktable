@@ -137,7 +137,7 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
     cache = &darktable.view_manager->act_on_cache_all;
 
   // if possible, we return the cached list
-  if(!force && cache->ordered == ordered && _test_cache(cache))
+  if(!force && (!ordered || cache->ordered == ordered) && _test_cache(cache))
   {
     return FALSE;
   }
