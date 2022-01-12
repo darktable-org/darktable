@@ -2826,8 +2826,15 @@ static gboolean _event_dnd_motion(GtkWidget *widget, GdkDragContext *context,
   {
     if(!d->drag.lastpath || ((d->drag.lastpath) && gtk_tree_path_compare(d->drag.lastpath, path) != 0))
     {
-      if(!gtk_tree_view_row_expanded(tree, path))
-        d->drag.expand_timeout = g_timeout_add(500, (GSourceFunc)_dnd_expand_timeout, self);
+      GtkTreeViewColumn *col = gtk_tree_view_get_column(d->dictionary_view, 0);
+      const int sel_width = gtk_tree_view_column_get_width(col);
+      if(x >= sel_width)
+      {
+        if(!gtk_tree_view_row_expanded(tree, path))
+          d->drag.expand_timeout = g_timeout_add(200, (GSourceFunc)_dnd_expand_timeout, self);
+      }
+      else
+        gtk_tree_view_collapse_all(d->dictionary_view);
     }
 
     GtkTreeSelection *selection = gtk_tree_view_get_selection(d->dictionary_view);
