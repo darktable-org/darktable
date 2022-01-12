@@ -159,6 +159,7 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
     // be absolutely sure we have the id in the list (in darkroom,
     // the active image can be out of collection)
     if(!only_visible) _insert_in_list(&l, id, TRUE);
+    cache->act_on_category = DT_ACT_ON_ACTIVE;
   }
 
 
@@ -189,6 +190,7 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
           // the active image can be out of collection)
           if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && !only_visible)
             _insert_in_list(&l, mouseover, TRUE);
+          cache->act_on_category = DT_ACT_ON_MOUSEOVER;
           break;
         }
       }
@@ -203,6 +205,7 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
         // be absolutely sure we have the id in the list (in darkroom,
         // the active image can be out of collection)
         if(!only_visible) _insert_in_list(&l, id, TRUE);
+        cache->act_on_category = DT_ACT_ON_ACTIVE;
       }
     }
   }
@@ -212,16 +215,18 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
 
     // Selection has highest priority
 
+
     // first, we try to return cached list if we were already
     // inside sel and the selection has not changed
     if(!force && cache->ok && cache->image_over_inside_sel && cache->inside_table && cache->ordered == ordered)
     {
+      cache->act_on_category = DT_ACT_ON_SELECTION;
       return FALSE;
     }
 
     // otherwise we return the new list of the selection
     l = dt_selection_get_list(darktable.selection, only_visible, ordered);
-
+    if(l) cache->act_on_category = DT_ACT_ON_SELECTION;
 
     if(!l && mouseover > 0)
     {
@@ -235,6 +240,7 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
       // the active image can be out of collection)
       if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && !only_visible)
         _insert_in_list(&l, mouseover, TRUE);
+      cache->act_on_category = DT_ACT_ON_MOUSEOVER;
     }
 
     if(!l && darktable.view_manager->active_images)
@@ -247,9 +253,12 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
         // be absolutely sure we have the id in the list (in darkroom,
         // the active image can be out of collection)
         if(!only_visible) _insert_in_list(&l, id, TRUE);
+        cache->act_on_category = DT_ACT_ON_ACTIVE;
       }
     }
   }
+
+  if(!l) cache->act_on_category = DT_ACT_ON_NONE;
 
   // let's register the new list as cached
   cache->ordered = ordered;
@@ -266,7 +275,7 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
 
   if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
   {
-    gchar *tx = dt_util_dstrcat(NULL, "[images to act on] new cache (%s) : ", only_visible ? "visible" : "all");
+    gchar *tx = dt_util_dstrcat(NULL, "[images to act on] new cache (%s), category: (%d), list: ", only_visible ? "visible" : "all", cache->act_on_category);
     for(GList *ll = l; ll; ll = g_list_next(ll)) tx = dt_util_dstrcat(tx, "%d ", GPOINTER_TO_INT(ll->data));
     dt_print(DT_DEBUG_ACT_ON, "%s\n", tx);
     g_free(tx);
@@ -341,11 +350,13 @@ gboolean _cache_update_legacy(const gboolean only_visible, const gboolean force,
 
         // we return the list of the selection
         l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+        cache->act_on_category = DT_ACT_ON_MOUSEOVER_SELECTION;
       }
       else
       {
         // column 2
         _insert_in_list(&l, mouseover, only_visible);
+        cache->act_on_category = DT_ACT_ON_MOUSEOVER;
       }
     }
     else
@@ -355,6 +366,7 @@ gboolean _cache_update_legacy(const gboolean only_visible, const gboolean force,
       // be absolutely sure we have the id in the list (in darkroom,
       // the active image can be out of collection)
       if(!only_visible) _insert_in_list(&l, mouseover, TRUE);
+      cache->act_on_category = DT_ACT_ON_MOUSEOVER;
     }
   }
   else
@@ -370,6 +382,7 @@ gboolean _cache_update_legacy(const gboolean only_visible, const gboolean force,
         // be absolutely sure we have the id in the list (in darkroom,
         // the active image can be out of collection)
         if(!only_visible) _insert_in_list(&l, id, TRUE);
+        cache->act_on_category = DT_ACT_ON_ACTIVE;
       }
     }
     else
@@ -377,8 +390,10 @@ gboolean _cache_update_legacy(const gboolean only_visible, const gboolean force,
       // column 4
       // we return the list of the selection
       l = dt_selection_get_list(darktable.selection, only_visible, ordered);
+      cache->act_on_category = DT_ACT_ON_SELECTION;
     }
   }
+  if(!l) cache->act_on_category = DT_ACT_ON_NONE;
 
   // let's register the new list as cached
   cache->image_over_inside_sel = inside_sel;
@@ -397,7 +412,7 @@ gboolean _cache_update_legacy(const gboolean only_visible, const gboolean force,
   // if needed, we show the list of cached images in terminal
   if((darktable.unmuted & DT_DEBUG_ACT_ON) == DT_DEBUG_ACT_ON)
   {
-    gchar *tx = dt_util_dstrcat(NULL, "[images to act on] new cache (%s) : ", only_visible ? "visible" : "all");
+    gchar *tx = dt_util_dstrcat(NULL, "[images to act on] new cache (%s), category: (%d), list: ", only_visible ? "visible" : "all", cache->act_on_category);
     for(GList *ll = l; ll; ll = g_list_next(ll)) tx = dt_util_dstrcat(tx, "%d ", GPOINTER_TO_INT(ll->data));
     dt_print(DT_DEBUG_ACT_ON, "%s\n", tx);
     g_free(tx);
@@ -588,11 +603,30 @@ int dt_act_on_get_main_image(const gboolean prioritize_hover)
     return dt_act_on_get_main_image_refactored(prioritize_hover);
 }
 
+int dt_act_on_get_category(const gboolean only_visible)
+{
+  dt_act_on_cache_t *cache;
+  if(only_visible)
+    cache = &darktable.view_manager->act_on_cache_visible;
+  else
+    cache = &darktable.view_manager->act_on_cache_all;
+
+  if(!_test_cache(cache))
+    _cache_update(only_visible, FALSE, FALSE);
+  return cache->act_on_category;
+}
+
 // reset the cache
 void dt_act_on_reset_cache(const gboolean only_visible)
 {
   if(only_visible)
+  {
     darktable.view_manager->act_on_cache_visible.ok = FALSE;
+    darktable.view_manager->act_on_cache_visible.act_on_category = DT_ACT_ON_NONE;
+  }
   else
+  {
     darktable.view_manager->act_on_cache_all.ok = FALSE;
+    darktable.view_manager->act_on_cache_all.act_on_category = DT_ACT_ON_NONE;
+  }
 }

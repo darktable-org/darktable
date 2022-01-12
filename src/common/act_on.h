@@ -20,6 +20,15 @@
 
 #include <gui/gtk.h>
 
+typedef enum dt_act_on_categories_t
+{
+  DT_ACT_ON_NONE = 0,
+  DT_ACT_ON_MOUSEOVER_SELECTION,
+  DT_ACT_ON_MOUSEOVER,
+  DT_ACT_ON_ACTIVE,
+  DT_ACT_ON_SELECTION,
+} dt_act_on_categories_t;
+
 // cache structure
 typedef struct dt_act_on_cache_t
 {
@@ -31,6 +40,7 @@ typedef struct dt_act_on_cache_t
   GSList *active_imgs;
   gboolean image_over_inside_sel;
   gboolean ordered;
+  int act_on_category;
 } dt_act_on_cache_t;
 
 // get images to act on for globals change (via libs or accels)
@@ -47,6 +57,9 @@ int dt_act_on_get_main_image_refactored(const gboolean prioritize_hover);
 
 // get only the number of images to act on
 int dt_act_on_get_images_nb(const gboolean only_visible, const gboolean force);
+
+// get category of images to act on (e.g. selection, mouseover, ...)
+int dt_act_on_get_category(const gboolean only_visible);
 
 // reset the cache
 void dt_act_on_reset_cache(const gboolean only_visible);
