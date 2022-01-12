@@ -195,6 +195,25 @@ static void _lighttable_check_layout(dt_view_t *self)
     // record thumbtable offset
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
 
+    if(!lib->already_started)
+    {
+      int id = lib->thumbtable_offset;
+      sqlite3_stmt *stmt;
+      gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d",
+                                     dt_conf_get_int("plugins/lighttable/culling_last_id"));
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        id = sqlite3_column_int(stmt, 0);
+      }
+      g_free(query);
+      sqlite3_finalize(stmt);
+
+      dt_culling_init(lib->culling, id);
+    }
+    else
+      dt_culling_init(lib->culling, -1);
+
     // if we are not switching between culling modes, check selection count and reset it if it is == 1
     // the image was most likely only clicked in filemanager to select a starting point for culling so it should be released
     // never release selection if we enter culling dynamic
@@ -217,24 +236,6 @@ static void _lighttable_check_layout(dt_view_t *self)
       }
     }
 
-    if(!lib->already_started)
-    {
-      int id = lib->thumbtable_offset;
-      sqlite3_stmt *stmt;
-      gchar *query = g_strdup_printf("SELECT rowid FROM memory.collected_images WHERE imgid=%d",
-                                     dt_conf_get_int("plugins/lighttable/culling_last_id"));
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        id = sqlite3_column_int(stmt, 0);
-      }
-      g_free(query);
-      sqlite3_finalize(stmt);
-
-      dt_culling_init(lib->culling, id);
-    }
-    else
-      dt_culling_init(lib->culling, -1);
 
 
     // ensure that thumbtable is not visible in the main view
