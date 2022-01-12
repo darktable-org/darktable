@@ -1273,8 +1273,7 @@ static void _dt_mouse_over_image_callback(gpointer instance, gpointer user_data)
   for(const GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-    // the change mouseover value of the thumb if it is true but we do not hover it or if it is false and we hover it
-    //if(th->mouse_over != (th->imgid == imgid))
+    // update the mouseover status of all images
     dt_thumbnail_set_mouseover(th, (th->imgid == imgid));
     // now the grouping stuff
     if(th->imgid == imgid && th->is_grouped) groupid = th->groupid;

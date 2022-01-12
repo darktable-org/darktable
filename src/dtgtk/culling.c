@@ -566,7 +566,6 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
   if(event->detail == GDK_NOTIFY_INFERIOR || event->mode == GDK_CROSSING_GTK_GRAB) return FALSE;
 
   table->mouse_inside = FALSE;
-  dt_control_set_mouse_over_id(-1);
   return TRUE;
 }
 
@@ -964,6 +963,9 @@ void dt_culling_init(dt_culling_t *table, int offset)
 
   table->offset = _thumb_get_rowid(first_id);
   table->offset_imgid = first_id;
+
+  // Mark first image as mouseover active
+  dt_control_set_mouse_over_id(first_id);
 }
 
 static void _thumbs_prefetch(dt_culling_t *table)
