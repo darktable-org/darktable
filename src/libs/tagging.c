@@ -1357,8 +1357,8 @@ static gboolean _attached_key_pressed(GtkWidget *view, GdkEventKey *event, dt_li
     {
       case GDK_KEY_Delete:
       case GDK_KEY_KP_Delete:
-      case GDK_KEY_BackSpace:
         _detach_selected_tag(GTK_TREE_VIEW(view), self);
+        gtk_tree_path_free(path);
         return TRUE;
       default:
         break;
@@ -2397,6 +2397,7 @@ static gboolean _dictionary_key_pressed(GtkWidget *view, GdkEventKey *event, dt_
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  gboolean res = FALSE;
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
@@ -2411,15 +2412,18 @@ static gboolean _dictionary_key_pressed(GtkWidget *view, GdkEventKey *event, dt_
           gtk_tree_selection_unselect_all(selection);
           gtk_entry_set_text(GTK_ENTRY(d->entry), "");
           gtk_widget_grab_focus(GTK_WIDGET(d->entry));
-          return TRUE;
+          res = TRUE;
         }
         break;
       }
       case GDK_KEY_Left:
         if(path)
         {
-          gtk_tree_view_collapse_row(GTK_TREE_VIEW(view), path);
-          return TRUE;
+          if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
+            gtk_tree_view_collapse_all(GTK_TREE_VIEW(view));
+          else
+            gtk_tree_view_collapse_row(GTK_TREE_VIEW(view), path);
+          res = TRUE;
         }
         break;
       case GDK_KEY_Right:
@@ -2427,7 +2431,7 @@ static gboolean _dictionary_key_pressed(GtkWidget *view, GdkEventKey *event, dt_
         {
           gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path,
                                    dt_modifier_is(event->state, GDK_SHIFT_MASK));
-          return TRUE;
+          res = TRUE;
         }
         break;
       default:
@@ -2438,15 +2442,15 @@ static gboolean _dictionary_key_pressed(GtkWidget *view, GdkEventKey *event, dt_
   if(event->keyval == GDK_KEY_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
-    return TRUE;
+    res = TRUE;
   }
   else if(event->keyval == GDK_KEY_ISO_Left_Tab)
   {
     gtk_tree_selection_unselect_all(selection);
     gtk_widget_grab_focus(GTK_WIDGET(d->entry));
-    return TRUE;
+    res = TRUE;
   }
-  return FALSE;
+  return res;
 }
 
 static gboolean _row_tooltip_setup(GtkWidget *treeview, gint x, gint y, gboolean kb_mode,
