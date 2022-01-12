@@ -2597,6 +2597,11 @@ static gboolean _event_rule_expand(GtkWidget *widget, GdkEventButton *event, dt_
     gtk_widget_set_visible(rule->w_view_sw, TRUE);
   }
 
+  // store the expanded state for this type of rule
+  char confname[200] = { 0 };
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/expand_%d", rule->prop);
+  dt_conf_set_bool(confname, !expanded);
+
   return TRUE;
 }
 
@@ -2722,8 +2727,14 @@ static gboolean _widget_init_special(dt_lib_collect_rule_t *rule, const gchar *t
   {
     gtk_widget_show_all(rule->w_special_box); // we ensure all the childs widgets are shown by default
     gtk_widget_set_no_show_all(rule->w_special_box, TRUE);
-    gtk_widget_set_visible(rule->w_special_box, widgets_ok);
-    gtk_widget_set_visible(rule->w_raw_text, !widgets_ok);
+
+    // special/raw state is stored per rule property
+    char confname[200] = { 0 };
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/raw_%d", rule->prop);
+    const gboolean special = (widgets_ok && !dt_conf_get_bool(confname));
+
+    gtk_widget_set_visible(rule->w_special_box, special);
+    gtk_widget_set_visible(rule->w_raw_text, !special);
   }
   else
     gtk_widget_set_visible(rule->w_raw_text, TRUE);
@@ -2998,6 +3009,12 @@ static gboolean _event_rule_raw_switch(GtkWidget *widget, GdkEventButton *event,
 
   gtk_widget_set_visible(rule->w_raw_text, !raw);
   gtk_widget_set_visible(rule->w_special_box, raw);
+
+  // store the raw state for this type of rule
+  char confname[200] = { 0 };
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/raw_%d", rule->prop);
+  dt_conf_set_bool(confname, !raw);
+
   return TRUE;
 }
 
@@ -3062,7 +3079,6 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), rule);
   gtk_widget_set_halign(rule->w_close, GTK_ALIGN_END);
   gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_close);
-  // gtk_box_pack_start(GTK_BOX(hbox), rule->w_close, FALSE, FALSE, 0);
 
   // the second line
   rule->w_widget_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -3095,9 +3111,19 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
   gtk_widget_set_name(hbox, "collect-expand-line");
 
   // the expand icon
-  rule->w_expand = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
+  // the expanded state is stored per rule property
+  char confname[200] = { 0 };
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/expand_%d", rule->prop);
+  const gboolean expanded = dt_conf_get_bool(confname);
+  int paintflags;
+  if(expanded)
+    paintflags = CPF_STYLE_FLAT | CPF_DIRECTION_DOWN;
+  else
+    paintflags = CPF_STYLE_FLAT | CPF_DIRECTION_UP;
+  rule->w_expand = dtgtk_button_new(dtgtk_cairo_paint_arrow, paintflags, NULL);
   gtk_widget_set_name(GTK_WIDGET(rule->w_expand), "control-button");
   gtk_box_pack_start(GTK_BOX(hbox), rule->w_expand, TRUE, TRUE, 0);
+
   g_signal_connect(G_OBJECT(rule->w_expand), "button-press-event", G_CALLBACK(_event_rule_expand), rule);
 
   // the listview/treeview
@@ -3108,6 +3134,9 @@ static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_proper
 
   // we create the list/treeview for real
   _widget_rule_view_update(rule);
+
+  // and we set its visibility
+  gtk_widget_set_visible(rule->w_view_sw, expanded);
 
   // we can now fill the entry completion
   _widget_init_completion(rule);
