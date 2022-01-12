@@ -34,6 +34,8 @@ typedef struct dt_lib_tool_filter_t
   GtkWidget *comparator;
   GtkWidget *sort;
   GtkWidget *reverse;
+
+  gboolean manual_update;
 } dt_lib_tool_filter_t;
 
 #ifdef USE_LUA
@@ -46,21 +48,21 @@ typedef enum dt_collection_sort_order_t
 
 /* proxy function to intelligently reset filter */
 static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter);
+/* proxy function to update the sort widgets without throwing events */
+static void _lib_filter_update_sort(dt_lib_module_t *self, dt_collection_sort_t sort, gboolean asc);
 
 /* callback for filter combobox change */
 static void _lib_filter_combobox_changed(GtkWidget *widget, gpointer user_data);
 /* callback for sort combobox change */
 static void _lib_filter_sort_combobox_changed(GtkWidget *widget, gpointer user_data);
 /* callback for reverse sort check button change */
-static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget, gpointer user_data);
+static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget, dt_lib_module_t *self);
 /* callback for rating comparator combobox change */
 static void _lib_filter_comparator_changed(GtkWidget *widget, gpointer user_data);
 /* updates the query and redraws the view */
 static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_properties_t changed_property);
 /* make sure that the comparator button matches what is shown in the filter dropdown */
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self);
-/* save the images order if the first collect filter is on tag*/
-static void _lib_filter_set_tag_order(dt_lib_module_t *self);
 /* images order change from outside */
 static void _lib_filter_images_order_change(gpointer instance, int order, dt_lib_module_t *self);
 
@@ -225,6 +227,7 @@ void gui_init(dt_lib_module_t *self)
   /* initialize proxy */
   darktable.view_manager->proxy.filter.module = self;
   darktable.view_manager->proxy.filter.reset_filter = _lib_filter_reset;
+  darktable.view_manager->proxy.filter.update_sort = _lib_filter_update_sort;
 
   g_signal_connect_swapped(G_OBJECT(d->comparator), "map",
                            G_CALLBACK(_lib_filter_sync_combobox_and_comparator), self);
@@ -299,18 +302,6 @@ static void _lib_filter_combobox_changed(GtkWidget *widget, gpointer user_data)
   _lib_filter_update_query(user_data, DT_COLLECTION_PROP_RATING);
 }
 
-/* save the images order if the first collect filter is on tag*/
-static void _lib_filter_set_tag_order(dt_lib_module_t *self)
-{
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  if(darktable.collection->tagid)
-  {
-    const uint32_t sort = items[dt_bauhaus_combobox_get(d->sort)];
-    const gboolean descending = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->reverse));
-    dt_tag_set_tag_order_by_id(darktable.collection->tagid, sort, descending);
-  }
-}
-
 static void _lib_filter_images_order_change(gpointer instance, const int order, dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
@@ -318,8 +309,9 @@ static void _lib_filter_images_order_change(gpointer instance, const int order, 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse), order & DT_COLLECTION_ORDER_FLAG);
 }
 
-static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget, dt_lib_module_t *self)
 {
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   const gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(reverse)
@@ -328,14 +320,9 @@ static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget,
     dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_UP, NULL);
   gtk_widget_queue_draw(GTK_WIDGET(widget));
 
-  /* update last settings */
-  dt_collection_set_sort(darktable.collection, DT_COLLECTION_SORT_NONE, reverse);
+  if(d->manual_update) return;
 
-  /* save the images order */
-  _lib_filter_set_tag_order(user_data);
-
-  /* update query and view */
-  _lib_filter_update_query(user_data, DT_COLLECTION_PROP_SORT);
+  dt_view_collect_set_sort(darktable.view_manager, items[dt_bauhaus_combobox_get(d->sort)], reverse);
 }
 
 static void _lib_filter_comparator_changed(GtkWidget *widget, gpointer user_data)
@@ -347,14 +334,11 @@ static void _lib_filter_comparator_changed(GtkWidget *widget, gpointer user_data
 
 static void _lib_filter_sort_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  /* update the ui last settings */
-  dt_collection_set_sort(darktable.collection, items[dt_bauhaus_combobox_get(widget)], -1);
-
-  /* save the images order */
-  _lib_filter_set_tag_order(user_data);
-
-  /* update the query and view */
-  _lib_filter_update_query(user_data, DT_COLLECTION_PROP_SORT);
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  if(d->manual_update) return;
+  const gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->reverse));
+  dt_view_collect_set_sort(darktable.view_manager, items[dt_bauhaus_combobox_get(d->sort)], reverse);
 }
 
 static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_properties_t changed_property)
@@ -396,6 +380,15 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
     /* Reset to topmost item, 'all' */
     dt_bauhaus_combobox_set(dropdowns->filter, 0);
   }
+}
+
+static void _lib_filter_update_sort(dt_lib_module_t *self, dt_collection_sort_t sort, gboolean asc)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  d->manual_update = TRUE;
+  dt_bauhaus_combobox_set(d->sort, sort);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse), asc);
+  d->manual_update = FALSE;
 }
 
 #ifdef USE_LUA
