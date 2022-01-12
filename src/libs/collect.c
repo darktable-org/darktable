@@ -2404,19 +2404,19 @@ static void _rating_decode(const gchar *txt, int *comp, int *mode)
     return;
   }
   // unstarred only
-  if(!strcmp(txt, "=0"))
+  if(!strcmp(txt, "0") || !strcmp(txt, "=0"))
   {
     *mode = DT_COLLECTION_FILTER_STAR_NO;
     return;
   }
   // rejected only
-  if(!strcmp(txt, "X"))
+  if(!strcmp(txt, "-1") || !strcmp(txt, "=-1"))
   {
     *mode = DT_COLLECTION_FILTER_REJECT;
     return;
   }
   // all except rejected
-  if(!strcmp(txt, "!X"))
+  if(!strcmp(txt, "<>-1"))
   {
     *mode = DT_COLLECTION_FILTER_NOT_REJECT;
     return;
@@ -2468,11 +2468,11 @@ static void _rating_changed(GtkWidget *widget, gpointer user_data)
   {
     // direct content
     if(mode == DT_COLLECTION_FILTER_STAR_NO)
-      txt = dt_util_dstrcat(txt, "=0");
+      txt = dt_util_dstrcat(txt, "0");
     else if(mode == DT_COLLECTION_FILTER_REJECT)
-      txt = dt_util_dstrcat(txt, "X");
+      txt = dt_util_dstrcat(txt, "-1");
     else if(mode == DT_COLLECTION_FILTER_NOT_REJECT)
-      txt = dt_util_dstrcat(txt, "!X");
+      txt = dt_util_dstrcat(txt, "<>-1");
   }
 
   gtk_entry_set_text(GTK_ENTRY(rule->w_raw_text), txt);

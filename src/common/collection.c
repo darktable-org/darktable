@@ -1910,7 +1910,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
             }
           }
         }
-        else if(operator && number1)
+        else if(operator&& g_strcmp0(operator, "=") && number1)
         {
           if(g_strcmp0(operator, "<=") == 0 || g_strcmp0(operator, "<") == 0)
           { // all below rating + rejected
