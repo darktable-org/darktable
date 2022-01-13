@@ -114,7 +114,7 @@ typedef struct dt_lib_collect_rule_t
 
   GtkWidget *w_main;
   GtkWidget *w_operator;
-  GtkWidget *w_combo;
+  GtkWidget *w_prop;
   GtkWidget *w_close;
 
   GtkWidget *w_widget_box;
@@ -2362,6 +2362,8 @@ static void _widget_raw_set_tooltip(dt_lib_collect_rule_t *rule)
 
 static void _event_rule_changed(GtkWidget *entry, dt_lib_collect_rule_t *rule)
 {
+  if(rule->manual_widget_set) return;
+
   // update the config files
   _conf_update_rule(rule);
   // if the tree/list view is expanded, we update it
@@ -2377,6 +2379,8 @@ static void _event_rule_changed(GtkWidget *entry, dt_lib_collect_rule_t *rule)
 
 static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_rule_t *rule)
 {
+  if(rule->manual_widget_set) return TRUE;
+
   // decrease the nb of active rules
   dt_lib_collect_t *d = get_collect(rule);
   if(d->nb_rules <= 0) return FALSE;
@@ -2571,8 +2575,11 @@ static gboolean _widget_update(dt_lib_collect_rule_t *rule)
   }
   return FALSE;
 }
+
 static gboolean _event_rule_expand(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_rule_t *rule)
 {
+  if(rule->manual_widget_set) return TRUE;
+
   const gboolean expanded = gtk_widget_get_visible(rule->w_view_sw);
 
   if(expanded)
@@ -2747,7 +2754,7 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
   const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
   dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   rule->prop = mode;
-  gtk_label_set_label(GTK_LABEL(rule->w_combo), dt_collection_name(mode));
+  gtk_label_set_label(GTK_LABEL(rule->w_prop), dt_collection_name(mode));
 
   // re-init the special widgets
   _widget_init_special(rule, "", self);
@@ -2868,6 +2875,8 @@ static void _widget_add_rule_popup_item(GtkMenuShell *pop, const gchar *name, co
 
 static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rule, dt_lib_module_t *self)
 {
+  if(rule && rule->manual_widget_set) return TRUE;
+
 #define ADD_COLLECT_ENTRY(value)                                                                                  \
   _widget_add_rule_popup_item(pop, dt_collection_name(value), value, FALSE, rule, self);
 
@@ -2988,13 +2997,14 @@ static gboolean _event_add_rule(GtkWidget *widget, GdkEventButton *event, dt_lib
 static gboolean _event_rule_change_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
-  _widget_rule_popup(rule->w_combo, rule, self);
+  _widget_rule_popup(rule->w_prop, rule, self);
   return TRUE;
 }
 
 static gboolean _event_rule_raw_switch(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
+  if(rule->manual_widget_set) return TRUE;
   const gboolean raw = gtk_widget_get_visible(rule->w_raw_text);
   // if we switch from raw to specific, we need to update the widgets first
   if(raw)
@@ -3020,134 +3030,164 @@ static gboolean _event_rule_raw_switch(GtkWidget *widget, GdkEventButton *event,
 
 static void _event_entry_changed(GtkEntry *entry, dt_lib_collect_rule_t *rule)
 {
+  if(rule->manual_widget_set) return;
   // if the tree/list view is expanded, we update it
   if(gtk_widget_get_visible(rule->w_view_sw)) _widget_rule_view_update(rule);
 }
 
-static void _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_properties_t prop, const gchar *text,
-                         const dt_lib_collect_mode_t mode, const int pos, dt_lib_module_t *self)
+// initialise or update a rule widget. Return if the a new widget has been created
+static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_properties_t prop, const gchar *text,
+                             const dt_lib_collect_mode_t mode, const int pos, dt_lib_module_t *self)
 {
-  // the main box
-  rule->w_main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(rule->w_main, "collect-rule-widget");
+  rule->manual_widget_set++;
 
-  // the first line
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(rule->w_main), hbox, TRUE, TRUE, 0);
-  gtk_widget_set_name(hbox, "collect-header-box");
+  const gboolean newmain = (rule->w_main == NULL);
+  const gboolean newprop = (prop != rule->prop);
+  GtkWidget *hbox = NULL;
 
-  // operator type
-  rule->w_operator = gtk_combo_box_text_new();
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("and"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("or"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("and not"));
-  if(pos > 0)
+  rule->prop = prop;
+
+  if(newmain)
   {
-    gtk_combo_box_set_active(GTK_COMBO_BOX(rule->w_operator), mode);
+    // the main box
+    rule->w_main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_name(rule->w_main, "collect-rule-widget");
+
+    // the first line
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(rule->w_main), hbox, TRUE, TRUE, 0);
+    gtk_widget_set_name(hbox, "collect-header-box");
+
+    // operator type
+    rule->w_operator = gtk_combo_box_text_new();
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("and"));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("or"));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("and not"));
+    gtk_widget_set_name(rule->w_operator, "collect-operator");
+    gtk_box_pack_start(GTK_BOX(hbox), rule->w_operator, FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(rule->w_operator), "changed", G_CALLBACK(_event_rule_changed), rule);
   }
-  else
-  {
-    gtk_widget_set_sensitive(rule->w_operator, FALSE);
-  }
-  gtk_widget_set_name(rule->w_operator, "collect-operator");
-  gtk_box_pack_start(GTK_BOX(hbox), rule->w_operator, FALSE, FALSE, 0);
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(rule->w_operator), (pos > 0) ? mode : -1);
+  gtk_widget_set_sensitive(rule->w_operator, (pos > 0));
 
   // property
-  GtkWidget *eb = gtk_event_box_new();
-  rule->w_combo = gtk_label_new(dt_collection_name(prop));
-  gtk_widget_set_name(rule->w_combo, "section_label");
-  gtk_container_add(GTK_CONTAINER(eb), rule->w_combo);
-  g_object_set_data(G_OBJECT(eb), "rule", rule);
-  g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
-  gtk_box_pack_start(GTK_BOX(hbox), eb, TRUE, TRUE, 0);
+  if(newmain)
+  {
+    GtkWidget *eb = gtk_event_box_new();
+    rule->w_prop = gtk_label_new(dt_collection_name(prop));
+    gtk_widget_set_name(rule->w_prop, "section_label");
+    gtk_container_add(GTK_CONTAINER(eb), rule->w_prop);
+    g_object_set_data(G_OBJECT(eb), "rule", rule);
+    g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
+    gtk_box_pack_start(GTK_BOX(hbox), eb, TRUE, TRUE, 0);
+  }
+  else if(newprop)
+  {
+    gtk_label_set_label(GTK_LABEL(rule->w_prop), dt_collection_name(prop));
+  }
 
-  // in order to ensure the property is correctly centered, we add an invisible widget at the right
-  GtkWidget *overlay = gtk_overlay_new();
-  GtkWidget *false_cb = gtk_combo_box_text_new();
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("and"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("or"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("and not"));
-  gtk_widget_set_sensitive(false_cb, FALSE);
-  gtk_widget_set_name(false_cb, "collect-operator");
-  gtk_container_add(GTK_CONTAINER(overlay), false_cb);
-  gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
+  if(newmain)
+  {
+    // in order to ensure the property is correctly centered, we add an invisible widget at the right
+    GtkWidget *overlay = gtk_overlay_new();
+    GtkWidget *false_cb = gtk_combo_box_text_new();
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("and"));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("or"));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("and not"));
+    gtk_widget_set_sensitive(false_cb, FALSE);
+    gtk_widget_set_name(false_cb, "collect-operator");
+    gtk_container_add(GTK_CONTAINER(overlay), false_cb);
+    gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
 
-  // remove button
-  rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_name(GTK_WIDGET(rule->w_close), "basics-link");
-  g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), rule);
-  gtk_widget_set_halign(rule->w_close, GTK_ALIGN_END);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_close);
+    // remove button
+    rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_name(GTK_WIDGET(rule->w_close), "basics-link");
+    g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), rule);
+    gtk_widget_set_halign(rule->w_close, GTK_ALIGN_END);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_close);
 
-  // the second line
-  rule->w_widget_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(rule->w_main), rule->w_widget_box, TRUE, TRUE, 0);
-  gtk_widget_set_name(rule->w_widget_box, "collect-module-hbox");
+    // the second line
+    rule->w_widget_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(rule->w_main), rule->w_widget_box, TRUE, TRUE, 0);
+    gtk_widget_set_name(rule->w_widget_box, "collect-module-hbox");
 
-  // the raw entry
-  rule->w_raw_text = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(rule->w_raw_text), text);
-  _widget_raw_set_tooltip(rule);
-  g_signal_connect(G_OBJECT(rule->w_raw_text), "activate", G_CALLBACK(_event_rule_changed), rule);
-  g_signal_connect(G_OBJECT(rule->w_raw_text), "changed", G_CALLBACK(_event_entry_changed), rule);
-  gtk_widget_set_no_show_all(rule->w_raw_text, TRUE);
-  gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_raw_text, TRUE, TRUE, 0);
+    // the raw entry
+    rule->w_raw_text = gtk_entry_new();
+    g_signal_connect(G_OBJECT(rule->w_raw_text), "activate", G_CALLBACK(_event_rule_changed), rule);
+    g_signal_connect(G_OBJECT(rule->w_raw_text), "changed", G_CALLBACK(_event_entry_changed), rule);
+    gtk_widget_set_no_show_all(rule->w_raw_text, TRUE);
+    gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_raw_text, TRUE, TRUE, 0);
+  }
+
+  const gboolean newraw = g_strcmp0(text, gtk_entry_get_text(GTK_ENTRY(rule->w_raw_text)));
+
+  if(newraw) gtk_entry_set_text(GTK_ENTRY(rule->w_raw_text), text);
+  if(newprop) _widget_raw_set_tooltip(rule);
 
   // initialize the specific entries if any
-  _widget_init_special(rule, text, self);
+  if(newmain || newprop || newraw) _widget_init_special(rule, text, self);
 
-  // the button to switch from raw to specific widgets (only shown if there's some)
-  rule->w_raw_switch = dtgtk_button_new(dtgtk_cairo_paint_sorting, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_name(GTK_WIDGET(rule->w_raw_switch), "control-button");
-  g_signal_connect(G_OBJECT(rule->w_raw_switch), "button-press-event", G_CALLBACK(_event_rule_raw_switch), rule);
-  gtk_box_pack_end(GTK_BOX(rule->w_widget_box), rule->w_raw_switch, FALSE, TRUE, 0);
-  gtk_widget_set_no_show_all(rule->w_raw_switch, TRUE);
+  if(newmain)
+  {
+    // the button to switch from raw to specific widgets (only shown if there's some)
+    rule->w_raw_switch = dtgtk_button_new(dtgtk_cairo_paint_sorting, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_name(GTK_WIDGET(rule->w_raw_switch), "control-button");
+    g_signal_connect(G_OBJECT(rule->w_raw_switch), "button-press-event", G_CALLBACK(_event_rule_raw_switch), rule);
+    gtk_box_pack_end(GTK_BOX(rule->w_widget_box), rule->w_raw_switch, FALSE, TRUE, 0);
+    gtk_widget_set_no_show_all(rule->w_raw_switch, TRUE);
+  }
   gtk_widget_set_visible(rule->w_raw_switch, (rule->w_specific != NULL));
 
-  // the third line
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(rule->w_main), hbox, TRUE, TRUE, 0);
-  gtk_widget_set_name(hbox, "collect-expand-line");
+  if(newmain)
+  {
+    // the third line (the expander)
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(rule->w_main), hbox, TRUE, TRUE, 0);
+    gtk_widget_set_name(hbox, "collect-expand-line");
+    rule->w_expand = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
+    gtk_widget_set_name(GTK_WIDGET(rule->w_expand), "control-button");
+    gtk_box_pack_start(GTK_BOX(hbox), rule->w_expand, TRUE, TRUE, 0);
+    g_signal_connect(G_OBJECT(rule->w_expand), "button-press-event", G_CALLBACK(_event_rule_expand), rule);
+  }
 
-  // the expand icon
-  // the expanded state is stored per rule property
-  char confname[200] = { 0 };
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/expand_%d", rule->prop);
-  const gboolean expanded = dt_conf_get_bool(confname);
-  int paintflags;
-  if(expanded)
-    paintflags = CPF_STYLE_FLAT | CPF_DIRECTION_DOWN;
-  else
-    paintflags = CPF_STYLE_FLAT | CPF_DIRECTION_UP;
-  rule->w_expand = dtgtk_button_new(dtgtk_cairo_paint_arrow, paintflags, NULL);
-  gtk_widget_set_name(GTK_WIDGET(rule->w_expand), "control-button");
-  gtk_box_pack_start(GTK_BOX(hbox), rule->w_expand, TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(rule->w_expand), "button-press-event", G_CALLBACK(_event_rule_expand), rule);
-
-  // the listview/treeview
-  rule->w_view_sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(rule->w_view_sw, -1, DT_PIXEL_APPLY_DPI(300));
-  gtk_box_pack_start(GTK_BOX(rule->w_main), rule->w_view_sw, TRUE, TRUE, 0);
-  gtk_widget_set_no_show_all(rule->w_view_sw, TRUE);
+  if(newmain)
+  {
+    // the listview/treeview
+    rule->w_view_sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_widget_set_size_request(rule->w_view_sw, -1, DT_PIXEL_APPLY_DPI(300));
+    gtk_box_pack_start(GTK_BOX(rule->w_main), rule->w_view_sw, TRUE, TRUE, 0);
+    gtk_widget_set_no_show_all(rule->w_view_sw, TRUE);
+  }
 
   // we create the list/treeview for real
-  _widget_rule_view_update(rule);
+  if(newmain || newprop || newraw) _widget_rule_view_update(rule);
 
-  // and we set its visibility
-  gtk_widget_set_visible(rule->w_view_sw, expanded);
+  if(newmain || newprop)
+  {
+    // the expanded state is stored per rule property
+    char confname[200] = { 0 };
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/expand_%d", rule->prop);
+    const gboolean expanded = dt_conf_get_bool(confname);
+    if(expanded)
+    {
+      GtkDarktableButton *btn = (GtkDarktableButton *)rule->w_expand;
+      btn->icon_flags = CPF_STYLE_FLAT | CPF_DIRECTION_DOWN;
+    }
+    // and we set its visibility
+    gtk_widget_set_visible(rule->w_view_sw, expanded);
+  }
 
   // we can now fill the entry completion
-  _widget_init_completion(rule);
+  if(newmain || newprop) _widget_init_completion(rule);
+
+  rule->manual_widget_set--;
+  return newmain;
 }
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
-
-  // we check if something has changed since last call
-  // TODO
 
   ++darktable.gui->reset;
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1;
@@ -3155,15 +3195,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   d->nb_rules = active + 1;
   char confname[200] = { 0 };
 
-  for(int i = 0; i < MAX_RULES; i++)
-  {
-    if(d->rule[i].w_main)
-    {
-      gtk_widget_destroy(d->rule[i].w_main);
-      d->rule[i].w_main = NULL;
-      d->rule[i].w_view = NULL;
-    }
-  }
+  // create or update defined rules
   for(int i = 0; i < d->nb_rules; i++)
   {
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
@@ -3172,52 +3204,22 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     const gchar *txt = dt_conf_get_string_const(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const dt_lib_collect_mode_t rmode = dt_conf_get_int(confname);
-    d->rule[i].prop = prop;
-    _widget_init(&d->rule[i], prop, txt, rmode, i, self);
-    gtk_box_pack_start(GTK_BOX(d->rules_box), d->rule[i].w_main, FALSE, TRUE, 0);
+    if(_widget_init(&d->rule[i], prop, txt, rmode, i, self))
+      gtk_box_pack_start(GTK_BOX(d->rules_box), d->rule[i].w_main, FALSE, TRUE, 0);
     gtk_widget_show_all(d->rule[i].w_main);
+  }
 
-
-    // gtk_widget_set_no_show_all(d->rule[i].hbox, FALSE);
-    // gtk_widget_set_visible(d->rule[i].hbox, TRUE);
-    // gtk_widget_show_all(d->rule[i].hbox);
-    /*snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
-    _combo_set_active_collection(d->rule[i].combo, dt_conf_get_int(confname));
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
-    const char *text = dt_conf_get_string_const(confname);
-    if(text)
+  // remove all remaining rules
+  for(int i = d->nb_rules; i < MAX_RULES; i++)
+  {
+    d->rule[i].prop = 0;
+    if(d->rule[i].w_main)
     {
-      g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-      gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
-      gtk_editable_set_position(GTK_EDITABLE(d->rule[i].text), -1);
-      g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-      d->rule[i].typing = FALSE;
+      gtk_widget_destroy(d->rule[i].w_main);
+      d->rule[i].w_main = NULL;
+      d->rule[i].w_view = NULL;
+      d->rule[i].w_special_box = NULL;
     }
-
-    GtkDarktableButton *button = DTGTK_BUTTON(d->rule[i].button);
-    if(i == MAX_RULES - 1)
-    {
-      // only clear
-      button->icon = dtgtk_cairo_paint_cancel;
-      gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
-    }
-    else if(i == active)
-    {
-      gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule or add new rules"));
-      const gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
-      dtgtk_button_set_paint(button, dtgtk_cairo_paint_solid_arrow, flags, NULL);
-    }
-    else
-    {
-      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i + 1);
-      const int mode = dt_conf_get_int(confname);
-      if(mode == DT_LIB_COLLECT_MODE_AND) button->icon = dtgtk_cairo_paint_and;
-      if(mode == DT_LIB_COLLECT_MODE_OR) button->icon = dtgtk_cairo_paint_or;
-      if(mode == DT_LIB_COLLECT_MODE_AND_NOT) button->icon = dtgtk_cairo_paint_andnot;
-      gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule"));
-    }
-
-    _set_tooltip(d->rule + i);*/
   }
 
   --darktable.gui->reset;
