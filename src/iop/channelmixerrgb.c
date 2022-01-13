@@ -2697,13 +2697,16 @@ static void set_spot_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 
   // stupid toggle on/off
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-  const gboolean state = gtk_widget_get_visible(g->collapsible_spot);
-  gtk_widget_set_visible(g->collapsible_spot, !state);
+  const gboolean state = !gtk_widget_get_visible(g->collapsible_spot);
+  gtk_widget_set_visible(g->collapsible_spot, state);
 
-  if(!state)
+  if(state)
     dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
   else
     dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+
+  // Remember the state
+  dt_conf_set_bool("darkroom/modules/channelmixerrgb/expand_picker_mapping", state);
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -3648,9 +3651,17 @@ void gui_update(struct dt_iop_module_t *self)
     chroma = dt_conf_get_float("darkroom/modules/channelmixerrgb/chroma");
   dt_bauhaus_slider_set(g->chroma_spot, chroma);
 
+  gboolean show_collapsible = FALSE;
+  if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/expand_picker_mapping"))
+    show_collapsible = dt_conf_get_bool("darkroom/modules/channelmixerrgb/expand_picker_mapping");
+  gtk_widget_set_visible(g->collapsible_spot, show_collapsible);
+
   dt_iop_gui_leave_critical_section(self);
 
-  gtk_widget_hide(g->collapsible_spot);
+  if(show_collapsible)
+    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
+  else
+    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
 
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
   dt_bauhaus_combobox_set(g->illum_fluo, p->illum_fluo);
