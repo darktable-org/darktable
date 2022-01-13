@@ -710,6 +710,17 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
 
   GFileInfo *info = NULL;
   guint nb = n;
+  /* get filmroll id for current directory. if not present, checking the db whether
+    the image has alread been imported can be skipped */
+  sqlite3_stmt *stmt;
+  guint filmroll_id = 0;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.film_rolls WHERE folder = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, folder, -1, SQLITE_TRANSIENT);
+  if(sqlite3_step(stmt) == SQLITE_ROW) filmroll_id = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
   const gboolean include_jpegs = !dt_conf_get_bool("ui_last/import_ignore_jpegs");
   while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
@@ -736,7 +747,19 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
       if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
                                && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
       {
-        const gboolean already_imported = dt_images_already_imported(fullname);
+        /* check if image is already imported, using previously fetched filroll id */
+        gboolean already_imported = FALSE;
+        if(filmroll_id != 0)
+        {
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                      "SELECT id FROM main.images WHERE film_id = ?1 AND filename = ?2",
+                                      -1, &stmt, NULL);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmroll_id);
+          DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, filename, -1, SQLITE_TRANSIENT);
+          if(sqlite3_step(stmt) == SQLITE_ROW) already_imported=TRUE;
+          sqlite3_finalize(stmt);
+        }
+
         GtkTreeIter iter;
         gtk_list_store_append(d->from.store, &iter);
         gtk_list_store_set(d->from.store, &iter,
