@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -533,30 +533,6 @@ static GdkPixbuf *_import_get_thumbnail(const gchar *filename)
   }
 
 return pixbuf;
-}
-
-static GdkPixbuf *_eye_thumbnail(GtkWidget *widget)
-{
-  GdkRGBA fg_color;
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  gtk_style_context_get_color(context, state, &fg_color);
-
-  const int dim = DT_PIXEL_APPLY_DPI(13);
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim, dim);
-  cairo_t *cr = cairo_create(cst);
-  gdk_cairo_set_source_rgba(cr, &fg_color);
-  dtgtk_cairo_paint_eye(cr, 0, 0, dim, dim, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  cairo_destroy(cr);
-  uint8_t *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, dim, dim);
-  const size_t size = (size_t)dim * dim * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
-  memcpy(buf, data, size);
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, dim, dim, dim * 4,
-                                               (GdkPixbufDestroyNotify)free, NULL);
-  cairo_surface_destroy(cst);
-  return pixbuf;
 }
 
 static void _thumb_set_in_listview(GtkTreeModel *model, GtkTreeIter *iter,
@@ -1591,7 +1567,8 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   d->from.store = gtk_list_store_new(DT_IMPORT_NUM_COLS, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF,
                                      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                                      G_TYPE_UINT64);
-  d->from.eye = _eye_thumbnail(GTK_WIDGET(d->from.dialog));
+  d->from.eye = dt_draw_paint_to_pixbuf(GTK_WIDGET(d->from.dialog), 13, dtgtk_cairo_paint_eye);
+
   // Create the treview with list model data store
   d->from.w = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->from.w), GTK_POLICY_NEVER,
