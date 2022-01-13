@@ -512,12 +512,12 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   /* active */
   renderer = gtk_cell_renderer_pixbuf_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("enabled"), renderer, "pixbuf",
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("", renderer, "pixbuf",
                                                                        DT_STYLE_ITEMS_COL_ISACTIVE, NULL);
   gtk_tree_view_append_column(GTK_TREE_VIEW(sd->items), column);
   gtk_tree_view_column_set_alignment(column, 0.5);
   gtk_tree_view_column_set_clickable(column, FALSE);
-  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(60));
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(30));
 
   /* name */
   renderer = gtk_cell_renderer_text_new();
@@ -538,7 +538,8 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   gboolean has_new_item = FALSE, has_item = FALSE;
 
-  GdkPixbuf *is_active_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_check_mark);
+  GdkPixbuf *is_active_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch);
+  GdkPixbuf *is_inactive_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch_inactive);
 
   /* fill list with history items */
   GtkTreeIter iter;
@@ -565,7 +566,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
           gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                              DT_STYLE_ITEMS_COL_ENABLED,    TRUE,
                              DT_STYLE_ITEMS_COL_UPDATE,     FALSE,
-                             DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : NULL,
+                             DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : is_inactive_pb,
                              DT_STYLE_ITEMS_COL_NAME,       item->name,
                              DT_STYLE_ITEMS_COL_NUM,        item->num,
                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
@@ -578,7 +579,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
           gtk_list_store_append(GTK_LIST_STORE(liststore_new), &iter);
           gtk_list_store_set(GTK_LIST_STORE(liststore_new), &iter,
                              DT_STYLE_ITEMS_COL_ENABLED,    item->num != -1 ? TRUE : FALSE,
-                             DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : NULL,
+                             DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : is_inactive_pb,
                              DT_STYLE_ITEMS_COL_NAME,       item->name,
                              DT_STYLE_ITEMS_COL_NUM,        item->num,
                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
@@ -630,7 +631,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                            DT_STYLE_ITEMS_COL_ENABLED,  enabled,
-                           DT_STYLE_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : NULL,
+                           DT_STYLE_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
                            DT_STYLE_ITEMS_COL_NAME,     iname,
                            DT_STYLE_ITEMS_COL_NUM,      item->num,
                            -1);
@@ -663,7 +664,9 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   gtk_widget_show_all(GTK_WIDGET(dialog));
   gtk_dialog_run(GTK_DIALOG(dialog));
+
   g_object_unref(is_active_pb);
+  g_object_unref(is_inactive_pb);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
