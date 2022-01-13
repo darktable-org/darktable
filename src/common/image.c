@@ -1700,7 +1700,7 @@ gboolean dt_images_already_imported(const gchar *filename)
   gchar *file = g_path_get_basename(filename);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT *"
+                              "SELECT images.id"
                               " FROM main.images, main.film_rolls"
                               " WHERE film_rolls.folder = ?1"
                               "       AND images.film_id = film_rolls.id"
