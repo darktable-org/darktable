@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -826,51 +826,35 @@ GList *dt_history_get_items(const int32_t imgid, gboolean enabled)
                               "               WHERE hst2.imgid=?1"
                               "                 AND hst2.operation=main.history.operation"
                               "               GROUP BY multi_priority)"
+                              "   AND enabled in (1, ?2)"
                               " ORDER BY num DESC",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, enabled ? 1 : 0);
+
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     if(strcmp((const char*)sqlite3_column_text(stmt, 1), "mask_manager") == 0) continue;
 
-    const int is_active = sqlite3_column_int(stmt, 2);
+    char name[512] = { 0 };
+    dt_history_item_t *item = g_malloc(sizeof(dt_history_item_t));
+    item->num = sqlite3_column_int(stmt, 0);
+    item->enabled = sqlite3_column_int(stmt, 2);
 
-    if(enabled == FALSE || is_active)
-    {
-      char name[512] = { 0 };
-      dt_history_item_t *item = g_malloc(sizeof(dt_history_item_t));
-      item->num = sqlite3_column_int(stmt, 0);
-      char *mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
-      if(enabled)
-      {
-        if(strcmp(mname, "0") == 0)
-          g_snprintf(name, sizeof(name), "%s",
-                     dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)));
-        else
-          g_snprintf(name, sizeof(name), "%s %s",
-                     dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)),
-                     (char *)sqlite3_column_text(stmt, 3));
-      }
-      else
-      {
-        char *iname = dt_history_item_as_string
-          (dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)),
-           is_active);
+    char *mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
 
-        if(strcmp(mname, "0") == 0)
-          g_strlcpy(name, iname, sizeof(name));
-        else
-          g_snprintf(name, sizeof(name), "%s %s",
-                     iname, (char *)sqlite3_column_text(stmt, 3));
+    if(strcmp(mname, "0") == 0)
+      g_snprintf(name, sizeof(name), "%s",
+                 dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)));
+    else
+      g_snprintf(name, sizeof(name), "%s %s",
+                 dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)),
+                 (char *)sqlite3_column_text(stmt, 3));
+    item->name = g_strdup(name);
+    item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
+    result = g_list_prepend(result, item);
 
-        g_free(iname);
-      }
-      item->name = g_strdup(name);
-      item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
-      result = g_list_prepend(result, item);
-
-      g_free(mname);
-    }
+    g_free(mname);
   }
   sqlite3_finalize(stmt);
   return g_list_reverse(result);   // list was built in reverse order, so un-reverse it
