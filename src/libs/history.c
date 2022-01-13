@@ -231,7 +231,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
   }
 
-  gtk_widget_set_sensitive (onoff, FALSE);
+  gtk_widget_set_sensitive(onoff, FALSE);
 
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
