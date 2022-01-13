@@ -4344,9 +4344,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->collapsible_spot = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
-                                _("correction automatically adjust the illuminant\n"
+                                _("\"correction\" automatically adjust the illuminant\n"
                                   "such that the input color is mapped to the target.\n"
-                                  "measure simply shows how an input color is mapped by the CAT."),
+                                  "\"measure\" simply shows how an input color is mapped by the CAT\n"
+                                  "and can be used to sample a target."),
                                 0, NULL, self,
                                 N_("correction"),
                                 N_("measure"));
