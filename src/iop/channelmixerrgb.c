@@ -4294,8 +4294,38 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
 
+  g->illuminant = dt_bauhaus_combobox_from_params(self, N_("illuminant"));
+
+  g->illum_fluo = dt_bauhaus_combobox_from_params(self, "illum_fluo");
+
+  g->illum_led = dt_bauhaus_combobox_from_params(self, "illum_led");
+
+  g->temperature = dt_bauhaus_slider_from_params(self, N_("temperature"));
+  dt_bauhaus_slider_set_soft_range(g->temperature, 3000., 7000.);
+  dt_bauhaus_slider_set_step(g->temperature, 50.);
+  dt_bauhaus_slider_set_digits(g->temperature, 0);
+  dt_bauhaus_slider_set_format(g->temperature, "%.0f K");
+
+  g->illum_x = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 360., 0.5, 0, 1, 0);
+  dt_bauhaus_widget_set_label(g->illum_x, NULL, _("hue"));
+  dt_bauhaus_slider_set_format(g->illum_x, "%.1f °");
+  g_signal_connect(G_OBJECT(g->illum_x), "value-changed", G_CALLBACK(illum_xy_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_x), FALSE, FALSE, 0);
+
+  g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.5, 0, 1);
+  dt_bauhaus_widget_set_label(g->illum_y, NULL, _("chroma"));
+  dt_bauhaus_slider_set_format(g->illum_y, "%.1f %%");
+  dt_bauhaus_slider_set_hard_max(g->illum_y, 300.f);
+  g_signal_connect(G_OBJECT(g->illum_y), "value-changed", G_CALLBACK(illum_xy_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_y), FALSE, FALSE, 0);
+
+  g->gamut = dt_bauhaus_slider_from_params(self, "gamut");
+  dt_bauhaus_slider_set_hard_max(g->gamut, 12.f);
+
+  g->clip = dt_bauhaus_toggle_from_params(self, "clip");
+
   g->spot_settings = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->spot_settings, NULL, N_("spot color mapping settings"));
+  dt_bauhaus_widget_set_label(g->spot_settings, NULL, N_("spot color mapping"));
   dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->spot_settings, TRUE);
   gtk_widget_set_tooltip_text(g->spot_settings, _("use a color checker target to autoset CAT and channels"));
@@ -4380,36 +4410,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->collapsible_spot), FALSE, FALSE, 0);
-
-  g->illuminant = dt_bauhaus_combobox_from_params(self, N_("illuminant"));
-
-  g->illum_fluo = dt_bauhaus_combobox_from_params(self, "illum_fluo");
-
-  g->illum_led = dt_bauhaus_combobox_from_params(self, "illum_led");
-
-  g->temperature = dt_bauhaus_slider_from_params(self, N_("temperature"));
-  dt_bauhaus_slider_set_soft_range(g->temperature, 3000., 7000.);
-  dt_bauhaus_slider_set_step(g->temperature, 50.);
-  dt_bauhaus_slider_set_digits(g->temperature, 0);
-  dt_bauhaus_slider_set_format(g->temperature, "%.0f K");
-
-  g->illum_x = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 360., 0.5, 0, 1, 0);
-  dt_bauhaus_widget_set_label(g->illum_x, NULL, _("hue"));
-  dt_bauhaus_slider_set_format(g->illum_x, "%.1f °");
-  g_signal_connect(G_OBJECT(g->illum_x), "value-changed", G_CALLBACK(illum_xy_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_x), FALSE, FALSE, 0);
-
-  g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.5, 0, 1);
-  dt_bauhaus_widget_set_label(g->illum_y, NULL, _("chroma"));
-  dt_bauhaus_slider_set_format(g->illum_y, "%.1f %%");
-  dt_bauhaus_slider_set_hard_max(g->illum_y, 300.f);
-  g_signal_connect(G_OBJECT(g->illum_y), "value-changed", G_CALLBACK(illum_xy_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_y), FALSE, FALSE, 0);
-
-  g->gamut = dt_bauhaus_slider_from_params(self, "gamut");
-  dt_bauhaus_slider_set_hard_max(g->gamut, 12.f);
-
-  g->clip = dt_bauhaus_toggle_from_params(self, "clip");
 
   GtkWidget *first, *second, *third;
 #define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap)              \
