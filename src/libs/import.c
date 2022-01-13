@@ -1567,7 +1567,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   d->from.store = gtk_list_store_new(DT_IMPORT_NUM_COLS, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF,
                                      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                                      G_TYPE_UINT64);
-  d->from.eye = dt_draw_paint_to_pixbuf(GTK_WIDGET(d->from.dialog), 13, dtgtk_cairo_paint_eye);
+  d->from.eye = dt_draw_paint_to_pixbuf(GTK_WIDGET(d->from.dialog), 13, 0, dtgtk_cairo_paint_eye);
 
   // Create the treview with list model data store
   d->from.w = gtk_scrolled_window_new(NULL, NULL);
