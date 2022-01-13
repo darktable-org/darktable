@@ -1069,8 +1069,51 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
 
+  GtkWidget *vbox_deflicker = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");
+
+  g->deflicker_percentile = dt_bauhaus_slider_from_params(self, "deflicker_percentile");
+  dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
+  gtk_widget_set_tooltip_text(g->deflicker_percentile,
+                              // xgettext:no-c-format
+                              _("where in the histogram to meter for deflicking. E.g. 50% is median"));
+
+  g->deflicker_target_level = dt_bauhaus_slider_from_params(self, "deflicker_target_level");
+  dt_bauhaus_slider_set_step(g->deflicker_target_level, 0.1);
+  dt_bauhaus_slider_set_format(g->deflicker_target_level, _("%.2f EV"));
+  gtk_widget_set_tooltip_text(g->deflicker_target_level,
+                              _("where to place the exposure level for processed pics, EV below overexposure."));
+
+  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(dt_ui_label_new(_("computed EC: "))), FALSE, FALSE, 0);
+  g->deflicker_used_EC = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->deflicker_used_EC), _("what exposure correction has actually been used"));
+  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
+
+  dt_iop_gui_enter_critical_section(self);
+  g->deflicker_computed_exposure = NAN;
+  dt_iop_gui_leave_critical_section(self);
+
+  gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
+
+  // Start building top level widget
+  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+
+  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode_stack), TRUE, TRUE, 0);
+
+  g->black = dt_bauhaus_slider_from_params(self, "black");
+  gtk_widget_set_tooltip_text(g->black, _("adjust the black level to unclip negative RGB values.\n"
+                                          "you should never use it to add more density in blacks!\n"
+                                          "if poorly set, it will clip near-black colors out of gamut\n"
+                                          "by pushing RGB values into negatives."));
+  dt_bauhaus_slider_set_step(g->black, 0.001);
+  dt_bauhaus_slider_set_digits(g->black, 4);
+  dt_bauhaus_slider_set_soft_range(g->black, -0.1, 0.1);
+
   g->spot_settings = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->spot_settings, NULL, N_("spot exposure mapping settings"));
+  dt_bauhaus_widget_set_label(g->spot_settings, NULL, N_("spot exposure mapping"));
   dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->spot_settings, TRUE);
   gtk_widget_set_tooltip_text(g->spot_settings, _("use a color checker target to autoset CAT and channels"));
@@ -1080,9 +1123,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->collapsible_spot = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
-                                _("correction automatically adjust exposure\n"
+                                _("\"correction\" automatically adjust exposure\n"
                                   "such that the input lightness is mapped to the target.\n"
-                                  "measure simply shows how an input color is mapped by the exposure compensation."),
+                                  "\"measure\" simply shows how an input color is mapped by the exposure compensation\n"
+                                  "and can be used to define a target."),
                                 0, NULL, self,
                                 N_("correction"),
                                 N_("measure"));
@@ -1134,49 +1178,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->collapsible_spot), FALSE, FALSE, 0);
-
-  GtkWidget *vbox_deflicker = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");
-
-  g->deflicker_percentile = dt_bauhaus_slider_from_params(self, "deflicker_percentile");
-  dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
-  gtk_widget_set_tooltip_text(g->deflicker_percentile,
-                              // xgettext:no-c-format
-                              _("where in the histogram to meter for deflicking. E.g. 50% is median"));
-
-  g->deflicker_target_level = dt_bauhaus_slider_from_params(self, "deflicker_target_level");
-  dt_bauhaus_slider_set_step(g->deflicker_target_level, 0.1);
-  dt_bauhaus_slider_set_format(g->deflicker_target_level, _("%.2f EV"));
-  gtk_widget_set_tooltip_text(g->deflicker_target_level,
-                              _("where to place the exposure level for processed pics, EV below overexposure."));
-
-  GtkBox *hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(dt_ui_label_new(_("computed EC: "))), FALSE, FALSE, 0);
-  g->deflicker_used_EC = GTK_LABEL(dt_ui_label_new("")); // This gets filled in by process
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->deflicker_used_EC), _("what exposure correction has actually been used"));
-  gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
-
-  dt_iop_gui_enter_critical_section(self);
-  g->deflicker_computed_exposure = NAN;
-  dt_iop_gui_leave_critical_section(self);
-
-  gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
-
-  // Start building top level widget
-  self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-
-  g->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode_stack), TRUE, TRUE, 0);
-
-  g->black = dt_bauhaus_slider_from_params(self, "black");
-  gtk_widget_set_tooltip_text(g->black, _("adjust the black level to unclip negative RGB values.\n"
-                                          "you should never use it to add more density in blacks!\n"
-                                          "if poorly set, it will clip near-black colors out of gamut\n"
-                                          "by pushing RGB values into negatives."));
-  dt_bauhaus_slider_set_step(g->black, 0.001);
-  dt_bauhaus_slider_set_digits(g->black, 4);
-  dt_bauhaus_slider_set_soft_range(g->black, -0.1, 0.1);
 
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
