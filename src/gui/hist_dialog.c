@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "gui/gtk.h"
 #include "gui/hist_dialog.h"
 #include "gui/styles.h"
+#include "gui/draw.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
 #endif
@@ -33,6 +34,7 @@
 typedef enum _style_items_columns_t
 {
   DT_HIST_ITEMS_COL_ENABLED = 0,
+  DT_HIST_ITEMS_COL_ISACTIVE,
   DT_HIST_ITEMS_COL_NAME,
   DT_HIST_ITEMS_COL_NUM,
   DT_HIST_ITEMS_NUM_COLS
@@ -152,10 +154,10 @@ static gboolean _gui_is_set(GList *selops, unsigned int num)
 }
 
 void
-tree_on_row_activated (GtkTreeView        *treeview,
-                       GtkTreePath        *path,
-                       GtkTreeViewColumn  *col,
-                       gpointer            userdata)
+tree_on_row_activated(GtkTreeView        *treeview,
+                      GtkTreePath        *path,
+                      GtkTreeViewColumn  *col,
+                      gpointer            userdata)
 {
   GtkDialog *dialog = GTK_DIALOG(userdata);
   GtkTreeModel *model = gtk_tree_view_get_model(treeview);
@@ -180,6 +182,30 @@ tree_on_row_activated (GtkTreeView        *treeview,
     // and finally close the dialog
     g_signal_emit_by_name(dialog, "response", GTK_RESPONSE_OK, NULL);
   }
+}
+
+static GdkPixbuf *_active_icon(GtkWidget *widget)
+{
+  GdkRGBA fg_color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  gtk_style_context_get_color(context, state, &fg_color);
+
+  const int dim = DT_PIXEL_APPLY_DPI(13);
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim, dim);
+  cairo_t *cr = cairo_create(cst);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
+  dtgtk_cairo_paint_switch(cr, 0, 0, dim, dim, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  cairo_destroy(cr);
+  uint8_t *data = cairo_image_surface_get_data(cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, dim, dim);
+  const size_t size = (size_t)dim * dim * 4;
+  uint8_t *buf = (uint8_t *)malloc(size);
+  memcpy(buf, data, size);
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, dim, dim, dim * 4,
+                                               (GdkPixbufDestroyNotify)free, NULL);
+  cairo_surface_destroy(cst);
+  return pixbuf;
 }
 
 int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy)
@@ -211,7 +237,8 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(scroll), TRUE, TRUE, 0);
 
   GtkListStore *liststore
-      = gtk_list_store_new(DT_HIST_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
+    = gtk_list_store_new(DT_HIST_ITEMS_NUM_COLS,
+                         G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_UINT);
 
   /* enabled */
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
@@ -222,6 +249,15 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("include"), renderer, "active",
                                               DT_HIST_ITEMS_COL_ENABLED, NULL);
 
+  /* active */
+  renderer = gtk_cell_renderer_pixbuf_new();
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("enabled"), renderer, "pixbuf",
+                                                                       DT_HIST_ITEMS_COL_ISACTIVE, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(d->items), column);
+  gtk_tree_view_column_set_alignment(column, 0.5);
+  gtk_tree_view_column_set_clickable(column, FALSE);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(60));
+
   /* name */
   renderer = gtk_cell_renderer_text_new();
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_HIST_ITEMS_COL_NAME);
@@ -229,9 +265,10 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(d->items), -1, _("item"), renderer, "text",
                                               DT_HIST_ITEMS_COL_NAME, NULL);
 
-
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->items), GTK_TREE_MODEL(liststore));
+
+  GdkPixbuf *is_active_pb = _active_icon(GTK_WIDGET(dialog));
 
   /* fill list with history items */
   GList *items = dt_history_get_items(imgid, FALSE);
@@ -251,6 +288,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                            DT_HIST_ITEMS_COL_ENABLED, iscopy ? is_safe : _gui_is_set(d->selops, item->num),
+                           DT_HIST_ITEMS_COL_ISACTIVE, (gboolean)item->enabled ? is_active_pb : NULL,
                            DT_HIST_ITEMS_COL_NAME, item->name,
                            DT_HIST_ITEMS_COL_NUM, (gint)item->num,
                            -1);
@@ -259,18 +297,19 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
     g_list_free_full(items, dt_history_item_free);
 
     /* last item is for copying the module order, or if paste and was selected */
-	if(iscopy || d->copy_iop_order)
-	{
-	  const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
-	  char *label = g_strdup_printf("%s (%s)", _("module order"), dt_iop_order_string(order));
-	  gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
-	  gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
-						 DT_HIST_ITEMS_COL_ENABLED, TRUE,
-						 DT_HIST_ITEMS_COL_NAME, label,
-						 DT_HIST_ITEMS_COL_NUM, -1,
-						 -1);
-	  g_free(label);
-	}
+    if(iscopy || d->copy_iop_order)
+    {
+      const dt_iop_order_t order = dt_ioppr_get_iop_order_version(imgid);
+      char *label = g_strdup_printf("%s (%s)", _("module order"), dt_iop_order_string(order));
+      gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
+      gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
+                         DT_HIST_ITEMS_COL_ENABLED, TRUE,
+                         DT_HIST_ITEMS_COL_ISACTIVE, is_active_pb,
+                         DT_HIST_ITEMS_COL_NAME, label,
+                         DT_HIST_ITEMS_COL_NUM, -1,
+                         -1);
+      g_free(label);
+    }
   }
   else
   {
@@ -278,7 +317,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
     return GTK_RESPONSE_CANCEL;
   }
 
-  g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated", (GCallback) tree_on_row_activated, GTK_WIDGET(dialog));
+  g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated", (GCallback)tree_on_row_activated, GTK_WIDGET(dialog));
   g_object_unref(liststore);
 
   g_signal_connect(dialog, "response", G_CALLBACK(_gui_hist_copy_response), d);

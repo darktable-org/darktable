@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "gui/gtk.h"
+#include "gui/draw.h"
 #include "gui/styles.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -48,6 +49,7 @@ typedef enum _style_items_columns_t
 {
   DT_STYLE_ITEMS_COL_ENABLED = 0,
   DT_STYLE_ITEMS_COL_UPDATE,
+  DT_STYLE_ITEMS_COL_ISACTIVE,
   DT_STYLE_ITEMS_COL_NAME,
   DT_STYLE_ITEMS_COL_NUM,
   DT_STYLE_ITEMS_COL_UPDATE_NUM,
@@ -389,6 +391,30 @@ static gint _g_list_find_module_by_name(gconstpointer a, gconstpointer b)
   return strncmp(((dt_iop_module_t *)a)->op, b, strlen(((dt_iop_module_t *)a)->op));
 }
 
+static GdkPixbuf *_active_icon(GtkWidget *widget)
+{
+  GdkRGBA fg_color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  gtk_style_context_get_color(context, state, &fg_color);
+
+  const int dim = DT_PIXEL_APPLY_DPI(13);
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim, dim);
+  cairo_t *cr = cairo_create(cst);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
+  dtgtk_cairo_paint_switch(cr, 0, 0, dim, dim, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  cairo_destroy(cr);
+  uint8_t *data = cairo_image_surface_get_data(cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, dim, dim);
+  const size_t size = (size_t)dim * dim * 4;
+  uint8_t *buf = (uint8_t *)malloc(size);
+  memcpy(buf, data, size);
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, dim, dim, dim * 4,
+                                               (GdkPixbufDestroyNotify)free, NULL);
+  cairo_surface_destroy(cst);
+  return pixbuf;
+}
+
 static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 {
   char title[512];
@@ -471,11 +497,11 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   /* create the list of items */
   sd->items = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkListStore *liststore = gtk_list_store_new(DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN,
-                                               G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+                                               GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
 
   sd->items_new = GTK_TREE_VIEW(gtk_tree_view_new());
   GtkListStore *liststore_new = gtk_list_store_new(DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING,
-                                                   G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+                                                   GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
 
   /* enabled */
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new();
@@ -508,12 +534,22 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                                                 DT_STYLE_ITEMS_COL_UPDATE, NULL);
   }
 
+  /* active */
+  renderer = gtk_cell_renderer_pixbuf_new();
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("enabled"), renderer, "pixbuf",
+                                                                       DT_STYLE_ITEMS_COL_ISACTIVE, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(sd->items), column);
+  gtk_tree_view_column_set_alignment(column, 0.5);
+  gtk_tree_view_column_set_clickable(column, FALSE);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(60));
+
   /* name */
   renderer = gtk_cell_renderer_text_new();
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_NAME);
   g_object_set(renderer, "xalign", 0.0, (gchar *)0);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items), -1, _("item"), renderer, "text",
                                               DT_STYLE_ITEMS_COL_NAME, NULL);
+
   if(edit)
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items_new), -1, _("item"), renderer, "text",
                                                 DT_STYLE_ITEMS_COL_NAME, NULL);
@@ -525,6 +561,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   gtk_tree_view_set_model(GTK_TREE_VIEW(sd->items_new), GTK_TREE_MODEL(liststore_new));
 
   gboolean has_new_item = FALSE, has_item = FALSE;
+  GdkPixbuf *is_active_pb = _active_icon(GTK_WIDGET(dialog));
 
   /* fill list with history items */
   GtkTreeIter iter;
@@ -532,9 +569,10 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   {
     gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
     gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
-                       DT_STYLE_ITEMS_COL_ENABLED, dt_styles_has_module_order(name),
-                       DT_STYLE_ITEMS_COL_NAME, _("module order"),
-                       DT_STYLE_ITEMS_COL_NUM, -1,
+                       DT_STYLE_ITEMS_COL_ENABLED,  dt_styles_has_module_order(name),
+                       DT_STYLE_ITEMS_COL_ISACTIVE, is_active_pb,
+                       DT_STYLE_ITEMS_COL_NAME,     _("module order"),
+                       DT_STYLE_ITEMS_COL_NUM,      -1,
                        -1);
     /* get history items for named style and populate the items list */
     GList *items = dt_styles_get_item_list(name, FALSE, imgid);
@@ -550,6 +588,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
           gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                              DT_STYLE_ITEMS_COL_ENABLED,    TRUE,
                              DT_STYLE_ITEMS_COL_UPDATE,     FALSE,
+                             DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : NULL,
                              DT_STYLE_ITEMS_COL_NAME,       item->name,
                              DT_STYLE_ITEMS_COL_NUM,        item->num,
                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
@@ -562,6 +601,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
           gtk_list_store_append(GTK_LIST_STORE(liststore_new), &iter);
           gtk_list_store_set(GTK_LIST_STORE(liststore_new), &iter,
                              DT_STYLE_ITEMS_COL_ENABLED,    item->num != -1 ? TRUE : FALSE,
+                             DT_STYLE_ITEMS_COL_ISACTIVE,   item->enabled ? is_active_pb : NULL,
                              DT_STYLE_ITEMS_COL_NAME,       item->name,
                              DT_STYLE_ITEMS_COL_NUM,        item->num,
                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
@@ -578,8 +618,9 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
     char *label = g_strdup_printf("%s (%s)", _("module order"), dt_iop_order_string(order));
     gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
     gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
-                       DT_STYLE_ITEMS_COL_ENABLED, TRUE,
-                       DT_STYLE_ITEMS_COL_NAME, label,
+                       DT_STYLE_ITEMS_COL_ENABLED,  TRUE,
+                       DT_STYLE_ITEMS_COL_ISACTIVE, is_active_pb,
+                       DT_STYLE_ITEMS_COL_NAME,     label,
                        DT_STYLE_ITEMS_COL_NUM, -1,
                        -1);
     g_free(label);
@@ -611,9 +652,10 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
-                           DT_STYLE_ITEMS_COL_ENABLED, enabled,
-                           DT_STYLE_ITEMS_COL_NAME, iname,
-                           DT_STYLE_ITEMS_COL_NUM, item->num,
+                           DT_STYLE_ITEMS_COL_ENABLED,  enabled,
+                           DT_STYLE_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : NULL,
+                           DT_STYLE_ITEMS_COL_NAME,     iname,
+                           DT_STYLE_ITEMS_COL_NUM,      item->num,
                            -1);
 
         has_item = TRUE;
