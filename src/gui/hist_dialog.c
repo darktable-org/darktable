@@ -184,30 +184,6 @@ tree_on_row_activated(GtkTreeView        *treeview,
   }
 }
 
-static GdkPixbuf *_active_icon(GtkWidget *widget)
-{
-  GdkRGBA fg_color;
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  gtk_style_context_get_color(context, state, &fg_color);
-
-  const int dim = DT_PIXEL_APPLY_DPI(13);
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim, dim);
-  cairo_t *cr = cairo_create(cst);
-  gdk_cairo_set_source_rgba(cr, &fg_color);
-  dtgtk_cairo_paint_switch(cr, 0, 0, dim, dim, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  cairo_destroy(cr);
-  uint8_t *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, dim, dim);
-  const size_t size = (size_t)dim * dim * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
-  memcpy(buf, data, size);
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, dim, dim, dim * 4,
-                                               (GdkPixbufDestroyNotify)free, NULL);
-  cairo_surface_destroy(cst);
-  return pixbuf;
-}
-
 int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy)
 {
   int res;
@@ -268,7 +244,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->items), GTK_TREE_MODEL(liststore));
 
-  GdkPixbuf *is_active_pb = _active_icon(GTK_WIDGET(dialog));
+  GdkPixbuf *is_active_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, dtgtk_cairo_paint_switch);
 
   /* fill list with history items */
   GList *items = dt_history_get_items(imgid, FALSE);
