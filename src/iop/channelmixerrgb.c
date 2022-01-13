@@ -3823,19 +3823,24 @@ static void spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *s
   Lch_target[0] = dt_bauhaus_slider_get(g->lightness_spot);
   Lch_target[1] = dt_bauhaus_slider_get(g->chroma_spot);
   Lch_target[2] = dt_bauhaus_slider_get(g->hue_spot) / 360.f;
+  const gboolean use_mixing = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->use_mixing));
   dt_iop_gui_leave_critical_section(self);
 
   // Save the color on change
   dt_conf_set_float("darkroom/modules/channelmixerrgb/lightness", Lch_target[0]);
   dt_conf_set_float("darkroom/modules/channelmixerrgb/chroma", Lch_target[1]);
   dt_conf_set_float("darkroom/modules/channelmixerrgb/hue", Lch_target[2] * 360.f);
+  dt_conf_set_bool("darkroom/modules/channelmixerrgb/use_mixing", use_mixing);
 
   ++darktable.gui->reset;
   paint_hue(self);
   --darktable.gui->reset;
 
-  // Re-run auto illuminant if color picker is active
-  _auto_set_illuminant(self, darktable.develop->pipe);
+  // Re-run auto illuminant if color picker is active and mode is correct
+  const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
+  if(mode == DT_SPOT_MODE_CORRECT)
+    _auto_set_illuminant(self, darktable.develop->pipe);
+  // else : just record new values and do nothing
 }
 
 
@@ -4305,13 +4310,14 @@ void gui_init(struct dt_iop_module_t *self)
                                 N_("correction"),
                                 N_("measure"));
   gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
 
   g->use_mixing = gtk_check_button_new_with_label(_("take channel mixing into account"));
   gtk_widget_set_tooltip_text(g->use_mixing,
                               _("compute the target by taking the channel mixing into account.\n"
                                 "if disabled, only the CAT is considered."));
   gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(g->use_mixing), TRUE, TRUE, 0);
-
+  g_signal_connect(G_OBJECT(g->use_mixing), "toggled", G_CALLBACK(spot_settings_changed_callback), self);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
