@@ -2753,6 +2753,9 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 {
   const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
   dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+  if(mode == rule->prop) return;
+
+  const dt_collection_properties_t oldprop = rule->prop;
   rule->prop = mode;
   gtk_label_set_label(GTK_LABEL(rule->w_prop), dt_collection_name(mode));
 
@@ -2762,6 +2765,7 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
   // reset the raw entry
   gtk_entry_set_text(GTK_ENTRY(rule->w_raw_text), "");
   gtk_widget_set_visible(rule->w_raw_switch, (rule->w_specific != NULL));
+  _widget_raw_set_tooltip(rule);
 
   // reconstruct the tree/list view
   gtk_widget_destroy(GTK_WIDGET(rule->w_view));
@@ -2771,6 +2775,28 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 
   // update the config files
   _conf_update_rule(rule);
+
+  // when tag was/become the first rule, we need to handle the order
+  if(rule->num == 0)
+  {
+    gboolean order_request = FALSE;
+    uint32_t order = 0;
+    if(oldprop != DT_COLLECTION_PROP_TAG && rule->prop == DT_COLLECTION_PROP_TAG)
+    {
+      // save global order
+      const uint32_t sort = dt_collection_get_sort_field(darktable.collection);
+      const gboolean descending = dt_collection_get_sort_descending(darktable.collection);
+      dt_conf_set_int("plugins/lighttable/collect/order", sort | (descending ? DT_COLLECTION_ORDER_FLAG : 0));
+    }
+    else if(oldprop == DT_COLLECTION_PROP_TAG && rule->prop != DT_COLLECTION_PROP_TAG)
+    {
+      // restore global order
+      order = dt_conf_get_int("plugins/lighttable/collect/order");
+      order_request = TRUE;
+      dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
+    }
+    if(order_request) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
+  }
 
   // update the query without throwing signal everywhere
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
@@ -3235,57 +3261,6 @@ void gui_reset(dt_lib_module_t *self)
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
-
-/*static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
-{
-  if(darktable.gui->reset) return;
-  g_signal_handlers_block_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-  gtk_entry_set_text(GTK_ENTRY(d->text), "");
-  g_signal_handlers_unblock_matched(d->text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-  dt_lib_collect_t *c = get_collect(d);
-  c->active_rule = d->num;
-  const int property = _combo_get_active_collection(d->combo);
-
-  if(property == DT_COLLECTION_PROP_FOLDERS
-     || property == DT_COLLECTION_PROP_TAG
-     || property == DT_COLLECTION_PROP_GEOTAGGING
-     || property == DT_COLLECTION_PROP_DAY
-     || is_time_property(property)
-    )
-  {
-    d->typing = FALSE;
-  }
-
-  _set_tooltip(d);
-
-  gboolean order_request = FALSE;
-  uint32_t order = 0;
-  if(c->active_rule == 0)
-  {
-    const int prev_property = dt_conf_get_int("plugins/lighttable/collect/item0");
-
-    if(prev_property != DT_COLLECTION_PROP_TAG && property == DT_COLLECTION_PROP_TAG)
-    {
-      // save global order
-      const uint32_t sort = dt_collection_get_sort_field(darktable.collection);
-      const gboolean descending = dt_collection_get_sort_descending(darktable.collection);
-      dt_conf_set_int("plugins/lighttable/collect/order", sort | (descending ? DT_COLLECTION_ORDER_FLAG : 0));
-    }
-    else if(prev_property == DT_COLLECTION_PROP_TAG && property != DT_COLLECTION_PROP_TAG)
-    {
-      // restore global order
-      order = dt_conf_get_int("plugins/lighttable/collect/order");
-      order_request = TRUE;
-      dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
-    }
-  }
-
-  set_properties(d);
-  c->view_rule = -1;
-  if(order_request)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-}*/
 
 static void _event_row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col,
                                             GdkEventButton *event, dt_lib_collect_rule_t *rule)
