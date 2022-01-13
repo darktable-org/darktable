@@ -65,8 +65,8 @@ void dtgtk_cairo_paint_presets(cairo_t *cr, gint x, gint y, gint w, gint h, gint
 void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a switch icon */
 void dtgtk_cairo_paint_switch(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
-/** Paint an active switch icon */
-void dtgtk_cairo_paint_switch_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint an in-active switch icon */
+void dtgtk_cairo_paint_switch_inactive(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an always-on switch icon */
 void dtgtk_cairo_paint_switch_on(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an always-off switch icon */
