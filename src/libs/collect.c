@@ -3132,7 +3132,15 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), rule);
     gtk_widget_set_halign(rule->w_close, GTK_ALIGN_END);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_close);
+    gtk_widget_set_no_show_all(rule->w_close, TRUE);
+  }
 
+  // we only show the close button if there's more than 1 rule
+  dt_lib_collect_t *d = get_collect(rule);
+  gtk_widget_set_visible(rule->w_close, (d->nb_rules > 1));
+
+  if(newmain)
+  {
     // the second line
     rule->w_widget_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(rule->w_main), rule->w_widget_box, TRUE, TRUE, 0);
