@@ -244,7 +244,8 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->items), GTK_TREE_MODEL(liststore));
 
-  GdkPixbuf *is_active_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, dtgtk_cairo_paint_switch);
+  GdkPixbuf *is_active_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, CPF_FOCUS, dtgtk_cairo_paint_switch_active);
+  GdkPixbuf *is_inactive_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch);
 
   /* fill list with history items */
   GList *items = dt_history_get_items(imgid, FALSE);
@@ -264,7 +265,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                            DT_HIST_ITEMS_COL_ENABLED, iscopy ? is_safe : _gui_is_set(d->selops, item->num),
-                           DT_HIST_ITEMS_COL_ISACTIVE, (gboolean)item->enabled ? is_active_pb : NULL,
+                           DT_HIST_ITEMS_COL_ISACTIVE, (gboolean)item->enabled ? is_active_pb : is_inactive_pb,
                            DT_HIST_ITEMS_COL_NAME, item->name,
                            DT_HIST_ITEMS_COL_NUM, (gint)item->num,
                            -1);
@@ -307,6 +308,9 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
+
+  g_object_unref(is_active_pb);
+  g_object_unref(is_inactive_pb);
   return res;
 }
 
