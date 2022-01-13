@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <gui/gtk.h>
 
 #ifndef M_PI
 #define M_PI 3.141592654
@@ -511,6 +512,32 @@ static inline void dt_cairo_perceptual_gradient(cairo_pattern_t *grad, double al
   // Create a linear gradient from black to white
   cairo_pattern_add_color_stop_rgba(grad, 0.0, 0.0, 0.0, 0.0, alpha);
   cairo_pattern_add_color_stop_rgba(grad, 1.0, 1.0, 1.0, 1.0, alpha);
+}
+
+static inline GdkPixbuf *dt_draw_paint_to_pixbuf
+ (GtkWidget *widget, const guint pixbuf_size,
+  void (*dtgtk_cairo_paint_fct)(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data))
+{
+  GdkRGBA fg_color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  gtk_style_context_get_color(context, state, &fg_color);
+
+  const int dim = DT_PIXEL_APPLY_DPI(pixbuf_size);
+  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, dim, dim);
+  cairo_t *cr = cairo_create(cst);
+  gdk_cairo_set_source_rgba(cr, &fg_color);
+  (*dtgtk_cairo_paint_fct)(cr, 0, 0, dim, dim, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  cairo_destroy(cr);
+  uint8_t *data = cairo_image_surface_get_data(cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, dim, dim);
+  const size_t size = (size_t)dim * dim * 4;
+  uint8_t *buf = (uint8_t *)malloc(size);
+  memcpy(buf, data, size);
+  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, dim, dim, dim * 4,
+                                               (GdkPixbufDestroyNotify)free, NULL);
+  cairo_surface_destroy(cst);
+  return pixbuf;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
