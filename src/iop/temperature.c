@@ -363,7 +363,7 @@ static void XYZ_to_temperature(cmsCIEXYZ XYZ, float *TempK, float *tint)
       mintemp = *TempK;
   }
 
-  *tint = (_xyz.Y / _xyz.X) / (XYZ.Y / XYZ.X); // TODO: Fix this to move orthoigonally to planckian locus
+  *tint = (_xyz.Y / _xyz.X) / (XYZ.Y / XYZ.X); // TODO: Fix this to move orthogonally to planckian locus
 
 
   if(*TempK < DT_IOP_LOWEST_TEMPERATURE) *TempK = DT_IOP_LOWEST_TEMPERATURE;
@@ -936,7 +936,7 @@ void color_rgb_sliders(struct dt_iop_module_t *self)
   else
   {
     //real (ish)
-    //we consider dalight wb to be "reference white"
+    //we consider daylight wb to be "reference white"
     const double white[3] = {
       1.0/g->daylight_wb[0],
       1.0/g->daylight_wb[1],
@@ -989,7 +989,7 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
   const float cur_temp = dt_bauhaus_slider_get(g->scale_k);
   const float cur_tint = dt_bauhaus_slider_get(g->scale_tint);
 
-  //we consider dalight wb to be "reference white"
+  //we consider daylight wb to be "reference white"
   const double dayligh_white[3] = {
     1.0/g->daylight_wb[0],
     1.0/g->daylight_wb[1],
@@ -1278,7 +1278,7 @@ void gui_update(struct dt_iop_module_t *self)
     }
   }
 
-  if (!found || isnan(g->mod_temp)) // reset or initialise user-defined
+  if (!found || isnan(g->mod_temp)) // reset or initialize user-defined
   {
     g->mod_temp = tempK;
     g->mod_tint = tint;
