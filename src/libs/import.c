@@ -751,13 +751,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
         gboolean already_imported = FALSE;
         if(filmroll_id != 0)
         {
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                      "SELECT id FROM main.images WHERE film_id = ?1 AND filename = ?2",
-                                      -1, &stmt, NULL);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmroll_id);
-          DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, filename, -1, SQLITE_TRANSIENT);
-          if(sqlite3_step(stmt) == SQLITE_ROW) already_imported=TRUE;
-          sqlite3_finalize(stmt);
+          already_imported=dt_image_get_id(filmroll_id, filename) ? TRUE : FALSE;
         }
 
         GtkTreeIter iter;
