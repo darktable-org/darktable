@@ -584,13 +584,12 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
 #define INCLUDE_API_FROM_MODULE_LOAD "lib_load_module"
 #include "libs/lib_api.h"
 
-  if(!module->get_params || !module->set_params || !module->init_presets)
+  if(!module->get_params || !module->set_params)
   {
     // need all at the same time, or none.
     module->legacy_params = NULL;
     module->set_params = NULL;
     module->get_params = NULL;
-    module->init_presets = NULL;
     module->manage_presets = NULL;
   }
 
@@ -722,26 +721,25 @@ void dt_lib_init_presets(dt_lib_module_t *module)
   }
 
   if(module->init_presets)
-  {
     module->init_presets(module);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
-                                  g_strdup(module->plugin_name));
 
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT name"
-                                " FROM data.presets"
-                                " WHERE operation=?1 AND op_version=?2"
-                                " ORDER BY writeprotect DESC, name, rowid",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      dt_action_define_preset(&module->actions, (char *)sqlite3_column_text(stmt, 0));
-    }
-    sqlite3_finalize(stmt);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
+                                g_strdup(module->plugin_name));
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT name"
+                              " FROM data.presets"
+                              " WHERE operation=?1 AND op_version=?2"
+                              " ORDER BY writeprotect DESC, name, rowid",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    dt_action_define_preset(&module->actions, (char *)sqlite3_column_text(stmt, 0));
   }
+  sqlite3_finalize(stmt);
 }
 
 static void dt_lib_init_module(void *m)
