@@ -1450,20 +1450,14 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     return 0;
   }
   int rc;
+  sqlite3_stmt *stmt;
   uint32_t id = 0;
   // select from images; if found => return
   gchar *imgfname = g_path_get_basename(normalized_filename);
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "SELECT id FROM main.images WHERE film_id = ?1 AND filename = ?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  id = dt_image_get_id(film_id, imgfname);
+  if(id)
   {
-    id = sqlite3_column_int(stmt, 0);
     g_free(imgfname);
-    sqlite3_finalize(stmt);
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
     img->flags &= ~DT_IMAGE_REMOVE;
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -1478,7 +1472,6 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     }
     return id;
   }
-  sqlite3_finalize(stmt);
 
   // also need to set the no-legacy bit, to make sure we get the right presets (new ones)
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
@@ -1515,13 +1508,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   if(rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
-     "SELECT id FROM main.images WHERE film_id = ?1 AND filename = ?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_STATIC);
-  if(sqlite3_step(stmt) == SQLITE_ROW) id = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  id = dt_image_get_id(film_id, imgfname);
 
   // Try to find out if this should be grouped already.
   gchar *basename = g_strdup(imgfname);
@@ -1691,6 +1678,42 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   // from dt_tag_new above, but this could lead to too rapid signals, being able to lock up the
   // keywords side pane when trying to use it, which can lock up the whole dt GUI ..
   // if(new_tags_set) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals,DT_SIGNAL_TAG_CHANGED);
+  return id;
+}
+
+gboolean dt_images_already_imported(const gchar *filename)
+{
+  gchar *dir = g_path_get_dirname(filename);
+  gchar *file = g_path_get_basename(filename);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT images.id"
+                              " FROM main.images, main.film_rolls"
+                              " WHERE film_rolls.folder = ?1"
+                              "       AND images.film_id = film_rolls.id"
+                              "       AND images.filename = ?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, dir, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, file, -1, SQLITE_STATIC);
+  const gboolean result = sqlite3_step(stmt) == SQLITE_ROW;
+  sqlite3_finalize(stmt);
+  g_free(dir);
+  g_free(file);
+
+  return result;
+}
+
+uint32_t dt_image_get_id(uint32_t film_id, const gchar *filename)
+{
+  uint32_t id = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM main.images WHERE film_id = ?1 AND filename = ?2",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, filename, -1, SQLITE_TRANSIENT);
+  if(sqlite3_step(stmt) == SQLITE_ROW) id=sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
   return id;
 }
 
