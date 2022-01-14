@@ -945,10 +945,7 @@ void dt_bauhaus_widget_press_quad(GtkWidget *widget)
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if (w->quad_toggle)
   {
-    if (w->quad_paint_flags & CPF_ACTIVE)
-      w->quad_paint_flags &= ~CPF_ACTIVE;
-    else
-      w->quad_paint_flags |= CPF_ACTIVE;
+    w->quad_paint_flags ^= CPF_ACTIVE;
   }
   else
     w->quad_paint_flags |= CPF_ACTIVE;
@@ -2942,6 +2939,18 @@ void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget)
   d->mute_scrolling = TRUE;
 }
 
+static void _action_process_button(GtkWidget *widget, dt_action_effect_t effect)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(effect != (w->quad_paint_flags & CPF_ACTIVE ? DT_ACTION_EFFECT_ON : DT_ACTION_EFFECT_OFF))
+    dt_bauhaus_widget_press_quad(widget);
+
+  gchar *text = w->quad_paint_flags & CPF_ACTIVE ? _("button on") : _("button off");
+  dt_action_widget_toast(w->module, widget, text);
+
+  gtk_widget_queue_draw(widget);
+}
+
 static float _action_process_slider(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
 {
   GtkWidget *widget = GTK_WIDGET(target);
@@ -3004,7 +3013,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
 
       break;
     case DT_ACTION_ELEMENT_BUTTON:
-      dt_bauhaus_widget_press_quad(widget);
+      _action_process_button(widget, effect);
       break;
     case DT_ACTION_ELEMENT_ZOOM:
       switch(effect)
@@ -3055,6 +3064,9 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
     }
   }
 
+  if(element == DT_ACTION_ELEMENT_BUTTON)
+    return dt_bauhaus_widget_get_quad_active(widget);
+
   if(effect == DT_ACTION_EFFECT_SET)
     return dt_bauhaus_slider_get(widget);
 
@@ -3081,7 +3093,10 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
   if(!isnan(move_size))
   {
     if(element == DT_ACTION_ELEMENT_BUTTON)
-      dt_bauhaus_widget_press_quad(widget);
+    {
+      _action_process_button(widget, effect);
+      return dt_bauhaus_widget_get_quad_active(widget);
+    }
     else switch(effect)
     {
     case DT_ACTION_EFFECT_POPUP:
@@ -3119,6 +3134,9 @@ static float _action_process_combo(gpointer target, dt_action_element_t element,
     dt_action_widget_toast(w->module, widget, text);
     g_free(text);
   }
+
+  if(element == DT_ACTION_ELEMENT_BUTTON)
+    return dt_bauhaus_widget_get_quad_active(widget);
 
   GList *e = w->data.combobox.entries;
   for(int above = value; above && e; above--, e = e->next)
