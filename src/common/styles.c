@@ -1078,16 +1078,18 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
 
       item->enabled = sqlite3_column_int(stmt, 4);
 
+      const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
+      const gboolean has_multi_name = multi_name && *multi_name && (strcmp(multi_name, "0") != 0);
+
       if(params)
       {
         // when we get the parameters we do not want to get the operation localized as this
         // is used to compare against the internal module name.
-        const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
 
-        if(!(multi_name && *multi_name))
-          g_snprintf(iname, sizeof(iname), "%s", sqlite3_column_text(stmt, 3));
-        else
+        if(has_multi_name)
           g_snprintf(iname, sizeof(iname), "%s %s", sqlite3_column_text(stmt, 3), multi_name);
+        else
+          g_snprintf(iname, sizeof(iname), "%s", sqlite3_column_text(stmt, 3));
 
         const unsigned char *op_blob = sqlite3_column_blob(stmt, 5);
         const int32_t op_len = sqlite3_column_bytes(stmt, 5);
@@ -1106,11 +1108,6 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
       }
       else
       {
-        const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
-        gboolean has_multi_name = FALSE;
-
-        if(multi_name && *multi_name && strcmp(multi_name, "0") != 0) has_multi_name = TRUE;
-
         const gchar *itname = dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 3));
 
         if(has_multi_name)
