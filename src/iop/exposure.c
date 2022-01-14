@@ -588,9 +588,18 @@ void gui_update(struct dt_iop_module_t *self)
     lightness = dt_conf_get_float("darkroom/modules/exposure/lightness");
   dt_bauhaus_slider_set(g->lightness_spot, lightness);
 
+  gboolean show_collapsible = FALSE;
+  if(dt_conf_key_exists("darkroom/modules/exposure/expand_picker_mapping"))
+    show_collapsible = dt_conf_get_bool("darkroom/modules/exposure/expand_picker_mapping");
+  gtk_widget_set_visible(g->collapsible_spot, show_collapsible);
+
   dt_iop_gui_leave_critical_section(self);
 
-  gtk_widget_hide(g->collapsible_spot);
+  if(show_collapsible)
+    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
+  else
+    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+
 
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
   dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
@@ -861,11 +870,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(p->black >= white)
       exposure_set_white(self, p->black + 0.01);
   }
-
-  if(!w || w == g->lightness_spot || w == g->spot_settings)
-  {
-    paint_hue(self);
-  }
 }
 
 
@@ -976,13 +980,16 @@ static void set_spot_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 
   // stupid toggle on/off
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  const gboolean state = gtk_widget_get_visible(g->collapsible_spot);
-  gtk_widget_set_visible(g->collapsible_spot, !state);
+  const gboolean state = !gtk_widget_get_visible(g->collapsible_spot);
+  gtk_widget_set_visible(g->collapsible_spot, state);
 
-  if(!state)
+  if(state)
     dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
   else
     dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+
+  // Remember the state
+  dt_conf_set_bool("darkroom/modules/exposure/expand_picker_mapping", state);
 }
 
 static void paint_hue(dt_iop_module_t *self)
@@ -1035,8 +1042,11 @@ static void spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *s
   paint_hue(self);
   --darktable.gui->reset;
 
-  // Re-run auto compute if color picker active
-  _auto_set_exposure(self, darktable.develop->pipe);
+  // Re-run auto compute if color picker active and mode is correct
+  const dt_spot_mode_t mode = dt_bauhaus_combobox_get(g->spot_mode);
+  if(mode == DT_SPOT_MODE_CORRECT)
+    _auto_set_exposure(self, darktable.develop->pipe);
+  // else : just record new values and do nothing
 }
 
 
@@ -1131,6 +1141,7 @@ void gui_init(struct dt_iop_module_t *self)
                                 N_("correction"),
                                 N_("measure"));
   gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
