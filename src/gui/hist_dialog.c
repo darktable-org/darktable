@@ -256,7 +256,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
     for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
     {
       const dt_history_item_t *item = (dt_history_item_t *)items_iter->data;
-      const int flags = get_module_flags(item->op);
+      const int flags = dt_iop_get_module_flags(item->op);
 
       if(!(flags & IOP_FLAGS_HIDDEN))
       {
