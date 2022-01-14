@@ -519,6 +519,16 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   gtk_tree_view_column_set_clickable(column, FALSE);
   gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(30));
 
+  if(edit)
+  {
+    column = gtk_tree_view_column_new_with_attributes("", renderer, "pixbuf",
+                                                      DT_STYLE_ITEMS_COL_ISACTIVE, NULL);
+    gtk_tree_view_column_set_alignment(column, 0.5);
+    gtk_tree_view_column_set_clickable(column, FALSE);
+    gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(30));
+    gtk_tree_view_append_column(GTK_TREE_VIEW(sd->items_new), column);
+  }
+
   /* name */
   renderer = gtk_cell_renderer_text_new();
   g_object_set_data(G_OBJECT(renderer), "column", (gint *)DT_STYLE_ITEMS_COL_NAME);
