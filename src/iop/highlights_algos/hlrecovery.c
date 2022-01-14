@@ -45,32 +45,27 @@ The algorithm follows these basic ideas:
    - the local standard deviation in a 5x5 area and
    - the median value of unclipped positions also in a 5x5 area.
    The best candidate points to the location in the color plane holding the reference value.
-   If there is no good candidate we use an averaging approximation over the whole sehment.
+   If there is no good candidate we use an averaging approximation over the whole segment.
 5. We evaluated several ways to further reduce the pre-existing color cast, atm we calc linearly while using a correction
    coeff for every plane.
-   We also tried using some gamma correction which helped in some cases but was unstable in others.
 6. The restored value at position 'i' is basically calculated as
      val = candidate + pminimum[i] - pminimum[candidate_location];
 
-For the segmentation i implemented and tested several approaches including Felszenzwalb and a watershed algo,
-both have problems with identifying the clipped segments in a plane. I ended up with this:
-
+The chosen segmentation algorithm works like this:
 1. Doing the segmentation in every color plane.
-2. The segmentation algorithm uses a modified floodfill, it also takes care of the surrounding rectangle of every segment
+2. To combine small segments for a shared candidate we use a morphological closing operation, the radius of that op
+   can be chosen interactively between 0 and 10.
+3. The segmentation algorithm uses a modified floodfill, it also takes care of the surrounding rectangle of every segment
    and marks the segment borders.
-3. After segmentation we check every segment for
+4. After segmentation we check every segment for
    - the segment's best candidate via the weighing function
    - the candidates location
-4. To combine small segments for a shared candidate we use a morphological closing operation, the radius of that op
-   can be chosen interactively between 0 and 10.
-5. To avoid single clipped photosites (often found at smooth transitions from not-clipped to clipped) we prepose
-   a morphological opening with a very small radius before segmentation. 
 */
 
 #define HLFPLANES 5
 #define HLSEGPLANES 4
 #define HLMAXSEGMENTS 0x4000
-#define HLBORDER 8
+#define HLBORDER 10
 #define HLEPSILON 1e-3
 
 #ifdef __GNUC__
@@ -126,6 +121,37 @@ static float calc_weight(const float *p, const int w)
   return fmaxf(HLEPSILON, smoothness * (val / fmaxf(1.0f, cnt)));
 }
 #undef SQR
+
+static void prepare_segmentation(int *m, const size_t width, const size_t height)
+{
+  const size_t p_size = plane_size(width, height);
+  int *t  = dt_alloc_align(16, p_size * sizeof(int));
+  if(t == NULL) return;
+  const size_t w1 = width;
+  const size_t w2 = 2*width;
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(m, t) \
+  dt_omp_sharedconst(w1, w2, height) \
+  schedule(simd:static)
+#endif
+  for(size_t row = HLBORDER; row < height- HLBORDER; row++)
+  {
+    for(size_t col = HLBORDER, i = row * w1 + col; col < w1 - HLBORDER; col++, i++)
+    {
+      // fast 5x5 gaussian with a sigma of 1.4
+      const int val = 2 * (m[i-w2-2] + m[i-w2+2] + m[i+w2-2] + m[i+w2+2]) +
+                      4 * (m[i-w2-1] + m[i-w2+1] + m[i-w1-2] + m[i-w1+2] + m[i+w2-1] + m[i+w2+1] + m[i+w1-2] + m[i+w1+2]) +
+                      5 * (m[i-w2]   + m[i-2]    + m[i+2]    + m[i+w2]) +
+                      9 * (m[i-w1-1] + m[i-w1+1] + m[i+w1-1] + m[i+w1+1]) +
+                     12 * (m[i-w1]   + m[i-1]    + m[i+1]    + m[i+w1]) +
+                     15 * m[i];
+      t[i] = (val > 25) ? 1 : 0;
+    }
+  }
+  memcpy(m, t, width * height * sizeof(int));
+  dt_free_align(t);
+}
 
 static void calc_plane_candidates(const float *s, const float *pmin, dt_iop_segmentation_t *seg, const int width, const int height)
 {
@@ -214,7 +240,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  const float clip = 0.97f * data->clip;
+  const float clip = data->clip;
   const float reconstruct = data->reconstructing;
   const int combining = (int) data->combine;
 
@@ -229,9 +255,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
   dt_iop_image_copy(out, in, width * height);
 
-  const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
-
-  if(filters == 0 || filters == 9u || run_fast) return;
+  if(filters == 0 || filters == 9u) return;
 
   float *fbuffer = dt_alloc_align_float(HLFPLANES * p_size);
   uint8_t *locmask  = dt_alloc_align(16, p_size * sizeof(uint8_t));
@@ -250,7 +274,7 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 
   float icoeffs[4] = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2], 0.0f};  
   // make sure we have so wb coeffs
-  if((icoeffs[0] < 0.1f) || (icoeffs[0] < 0.1f) || (icoeffs[0] < 0.1f))
+  if((icoeffs[0] < 0.1f) || (icoeffs[1] < 0.1f) || (icoeffs[2] < 0.1f))
   {
     fprintf(stderr, "[highlights reconstruction in recovery mode] no white balance coeffs found, choosing stupid defaults\n");
     icoeffs[0] = 2.0f;
@@ -291,7 +315,8 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
       const size_t o = (row/2)*pwidth + (col/2) + p_off;
       const float pval = in[i] / coeffs[p];
       const float val = pval / clip;
-      plane[p][o] = fminf(1.0f, val);
+      // plane[p][o] = fminf(1.0f, val);
+      plane[p][o] = val;
 
       if(col >= width-2)      plane[p][o+1] = val;
       if(row >= height-2)     plane[p][o+pwidth] = val;
@@ -332,17 +357,17 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
       if(pval == minval) mask |= (0x10 << p); // mark as minimum defined by this plane
       isegments[p].data[i] = (pval >= 1.0f) ? 1 : 0;
     }
-    locmask[i] = mask;   
+    locmask[i] = mask;
   }
 
   if(info) dt_get_times(&time1);
 
   for(int p = 0; p < 4; p++)
   {
-    dt_image_transform_erode(isegments[p].data, pwidth, pheight, 0, HLBORDER);
-    dt_image_transform_dilate(isegments[p].data, pwidth, pheight, 1, HLBORDER);
-    if(combining) dt_image_transform_closing(isegments[p].data, pwidth, pheight, combining, HLBORDER);
+    prepare_segmentation(isegments[p].data, pwidth, pheight);    
+    dt_image_transform_closing(isegments[p].data, pwidth, pheight, combining, HLBORDER);
   }
+
   if(dt_get_num_threads() >= HLSEGPLANES)
   {
 #ifdef _OPENMP
@@ -421,10 +446,9 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
             candidate = candidates[p];
             candidates_minimum = cand_minimum[p];
           }
-
-          const float correction = corr_coeff[p] * (0.7 + 1.5f * reconstruct);
-          float val = candidate + pminimum[ix] - candidates_minimum;
-          val = 1.0f + (val - 1.0f) * correction;
+          const float cval = candidate + pminimum[ix] - candidates_minimum;
+          const float correction = corr_coeff[p] * (0.5f + 1.5f * reconstruct);
+          const float val = 1.0f + (cval - 1.0f) * correction;
           plane[p][ix] = clip * fmaxf(1.0f, val);
         }
       }
@@ -491,5 +515,4 @@ static void process_recovery(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 #undef HLSEGPLANES
 #undef HLBORDER
 #undef HLEPSILON
-
 
