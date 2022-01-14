@@ -584,6 +584,13 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
 #define INCLUDE_API_FROM_MODULE_LOAD "lib_load_module"
 #include "libs/lib_api.h"
 
+  if(((!module->get_params || !module->set_params)
+      && (module->legacy_params || module->set_params || module->get_params))
+     || (!module->init_presets && module->manage_presets))
+  {
+    fprintf(stderr,"[dt_lib_load_module] illegal method combination in '%s'\n", module->plugin_name);
+  }
+
   if(!module->get_params || !module->set_params)
   {
     // need all at the same time, or none.
