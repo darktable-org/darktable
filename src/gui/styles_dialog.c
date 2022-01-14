@@ -527,8 +527,10 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
                                               DT_STYLE_ITEMS_COL_NAME, NULL);
 
   if(edit)
+  {
     gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(sd->items_new), -1, _("item"), renderer, "text",
                                                 DT_STYLE_ITEMS_COL_NAME, NULL);
+  }
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(sd->items)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(sd->items), GTK_TREE_MODEL(liststore));
@@ -538,8 +540,10 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   gboolean has_new_item = FALSE, has_item = FALSE;
 
-  GdkPixbuf *is_active_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch);
-  GdkPixbuf *is_inactive_pb = dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch_inactive);
+  GdkPixbuf *is_active_pb =
+    dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch);
+  GdkPixbuf *is_inactive_pb =
+    dt_draw_paint_to_pixbuf(GTK_WIDGET(dialog), 10, 0, dtgtk_cairo_paint_switch_inactive);
 
   /* fill list with history items */
   GtkTreeIter iter;
@@ -625,14 +629,11 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
           }
         }
 
-        gchar iname[256] = { 0 };
-        g_strlcpy(iname, item->name, sizeof(iname));
-
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
                            DT_STYLE_ITEMS_COL_ENABLED,  enabled,
                            DT_STYLE_ITEMS_COL_ISACTIVE, item->enabled ? is_active_pb : is_inactive_pb,
-                           DT_STYLE_ITEMS_COL_NAME,     iname,
+                           DT_STYLE_ITEMS_COL_NAME,     item->name,
                            DT_STYLE_ITEMS_COL_NUM,      item->num,
                            -1);
 

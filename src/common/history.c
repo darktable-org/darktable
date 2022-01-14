@@ -838,20 +838,20 @@ GList *dt_history_get_items(const int32_t imgid, gboolean enabled)
 
     char name[512] = { 0 };
     dt_history_item_t *item = g_malloc(sizeof(dt_history_item_t));
+    const char *op = (char *)sqlite3_column_text(stmt, 1);
     item->num = sqlite3_column_int(stmt, 0);
     item->enabled = sqlite3_column_int(stmt, 2);
 
     char *mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
 
     if(strcmp(mname, "0") == 0)
-      g_snprintf(name, sizeof(name), "%s",
-                 dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)));
+      g_snprintf(name, sizeof(name), "%s", dt_iop_get_localized_name(op));
     else
       g_snprintf(name, sizeof(name), "%s %s",
-                 dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 1)),
+                 dt_iop_get_localized_name(op),
                  (char *)sqlite3_column_text(stmt, 3));
     item->name = g_strdup(name);
-    item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
+    item->op = g_strdup(op);
     result = g_list_prepend(result, item);
 
     g_free(mname);

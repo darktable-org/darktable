@@ -420,11 +420,11 @@ gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
 
 
 /** get module flags, works in dev and lt mode */
-int get_module_flags(const char *op);
+int dt_iop_get_module_flags(const char *op);
 
 /** returns the localized plugin name for a given op name. must not be freed. */
-gchar *dt_iop_get_localized_name(const gchar *op);
-gchar *dt_iop_get_localized_aliases(const gchar *op);
+const gchar *dt_iop_get_localized_name(const gchar *op);
+const gchar *dt_iop_get_localized_aliases(const gchar *op);
 
 /** set multi_priority and update raster mask links */
 void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);
