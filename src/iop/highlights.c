@@ -63,7 +63,7 @@ typedef struct dt_iop_highlights_params_t
   float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.995 $DESCRIPTION: "clipping threshold"
   // params of v3
   float noise_level; // $MIN: 0. $MAX: 1.0 $DEFAULT: 0.05 $DESCRIPTION: "noise level"
-  float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast balance"
+  float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast correction"
   float combine;           // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
   float synthesis;
 } dt_iop_highlights_params_t;
@@ -73,9 +73,18 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *clip;
   GtkWidget *mode_bayer, *mode_xtrans, *nonraw;
   GtkWidget *reconstructing, *combine;
+  GtkWidget *debug;
 } dt_iop_highlights_gui_data_t;
 
-typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
+typedef struct dt_iop_highlights_data_t
+{ 
+  dt_iop_highlights_mode_t mode;
+  float blendL, blendC, blendh;
+  float clip;
+  float noise_level;
+  float reconstructing, combine, synthesis;
+  gboolean debug;
+} dt_iop_highlights_data_t;
 
 typedef struct dt_iop_highlights_global_data_t
 {
@@ -829,6 +838,40 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
     }
   }
 }
+static void process_debug(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                         const uint32_t filters, dt_iop_highlights_data_t *data)
+{
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const float clip = data->clip;
+  float icoeffs[4] = { piece->pipe->dsc.temperature.coeffs[0], piece->pipe->dsc.temperature.coeffs[1], piece->pipe->dsc.temperature.coeffs[2], 1.0f};  
+  // make sure we have so wb coeffs
+  if((icoeffs[0] < 0.1f) || (icoeffs[0] < 0.1f) || (icoeffs[0] < 0.1f))
+  {
+    fprintf(stderr, "[highlights reconstruction in recovery mode] no white balance coeffs found, choosing stupid defaults\n");
+    icoeffs[0] = 2.0f;
+    icoeffs[1] = 1.0f;
+    icoeffs[2] = 1.5f;
+  }
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, out, icoeffs) \
+  dt_omp_sharedconst(height, width, filters, clip) \
+  schedule(simd:static) aligned(in, out : 64)
+#endif
+  for(size_t row = 0; row < height; row++)
+  {
+    for(size_t col = 0, i = row*width; col < width; col++, i++)
+    {
+      const int c = FC(row, col, filters);
+      const float val = in[i] / icoeffs[c];
+      out[i] = (val < clip) ? 0.0f : 1.0f;
+    }
+  }
+}
 
 #include "iop/highlights_algos/hlrecovery.c"
 
@@ -837,6 +880,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const uint32_t filters = piece->pipe->dsc.filters;
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
+
+  if(data->debug)
+  {
+    process_debug(piece, ivoid, ovoid, roi_in, roi_out, filters, data);
+    return;
+  }
 
   const float clip
       = data->clip * fminf(piece->pipe->dsc.processed_maximum[0],
@@ -946,7 +995,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)p1;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+
   memcpy(d, p, sizeof(*p));
+
+  d->debug = (g != NULL) ? dt_bauhaus_widget_get_quad_active(g->debug) : FALSE;
 
   const uint32_t filters = piece->pipe->dsc.filters;
   // for safety
@@ -955,7 +1008,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   piece->process_cl_ready = 1;
 
-  if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT || d->mode == DT_IOP_HIGHLIGHTS_RECOVERY)
+  if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT || d->mode == DT_IOP_HIGHLIGHTS_RECOVERY || d->debug)
     piece->process_cl_ready = 0;
 
   if(d->mode == DT_IOP_HIGHLIGHTS_RECOVERY)
@@ -1017,6 +1070,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   
   gtk_widget_set_visible(g->combine, recover);
   gtk_widget_set_visible(g->reconstructing, recover);
+  gtk_widget_set_visible(g->debug, israw);
 
   if(bayer && israw)  dt_bauhaus_combobox_set_from_value(g->mode_bayer, mode);  
   if(!bayer && israw) dt_bauhaus_combobox_set_from_value(g->mode_xtrans, mode);  
@@ -1028,13 +1082,41 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  gui_changed(self, NULL, NULL);
+   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+   dt_bauhaus_widget_set_quad_active(g->debug, FALSE);
+ 
+   gui_changed(self, NULL, NULL);
 }
 
 void reload_defaults(dt_iop_module_t *module)
 {
   // enable this per default if raw or sraw,
   module->default_enabled = dt_image_is_rawprepare_supported(&(module->dev->image_storage));
+}
+
+static void debug_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_request_focus(self);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+
+  const gboolean state = dt_bauhaus_widget_get_quad_active(g->debug);
+  dt_bauhaus_widget_set_quad_active(g->debug, state);
+
+  dt_dev_reprocess_center(self->dev);
+}
+
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  if(!in)
+  {
+    const gboolean was_debug = dt_bauhaus_widget_get_quad_active(g->debug);
+    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->debug), FALSE);
+    if(was_debug) dt_dev_reprocess_center(self->dev);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1053,8 +1135,17 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->clip = dt_bauhaus_slider_from_params(self, "clip");
   dt_bauhaus_slider_set_digits(g->clip, 3);
-  gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold against magenta highlights."
-                                         " Necessary for images with incorrect white point settings."));
+  gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold.\n"
+                                         " - helps against magenta highlights in images with incorrect white point settings.\n"
+                                         " - some algorithms might need a refinement."));
+
+  g->debug = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->debug, NULL, N_("above clip threshold"));
+  dt_bauhaus_widget_set_quad_paint(g->debug, dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->debug, TRUE);
+  gtk_widget_set_tooltip_text(g->debug, _("visualize photosizes if above clip threshold")); 
+  g_signal_connect(G_OBJECT(g->debug), "quad-pressed", G_CALLBACK(debug_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->debug, FALSE, FALSE, 0);
 
   g->reconstructing = dt_bauhaus_slider_from_params(self, "reconstructing");
   gtk_widget_set_tooltip_text(g->reconstructing, _("reduces an existing color cast in regions where color planes are clipped")); 
@@ -1063,7 +1154,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->combine = dt_bauhaus_slider_from_params(self, "combine");
   dt_bauhaus_slider_set_digits(g->combine, 0);
-  gtk_widget_set_tooltip_text(g->combine, _("combine close segments")); 
+  gtk_widget_set_tooltip_text(g->combine, _("combine closely related clipped areas.")); 
+
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
