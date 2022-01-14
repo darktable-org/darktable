@@ -676,6 +676,68 @@ gboolean dt_collection_get_sort_descending(const dt_collection_t *collection)
   return collection->params.descending;
 }
 
+const char *dt_collection_comparator_name(dt_collection_rating_comperator_t comp)
+{
+  switch(comp)
+  {
+    case DT_COLLECTION_RATING_COMP_LT:
+      return "<";
+    case DT_COLLECTION_RATING_COMP_LEQ:
+      return "<=";
+    case DT_COLLECTION_RATING_COMP_EQ:
+      return "=";
+    case DT_COLLECTION_RATING_COMP_GEQ:
+      return ">=";
+    case DT_COLLECTION_RATING_COMP_GT:
+      return ">";
+    case DT_COLLECTION_RATING_COMP_NE:
+      return "!=";
+    default:
+      return "";
+  }
+};
+
+const char *dt_collection_sort_name(dt_collection_sort_t sort)
+{
+  switch(sort)
+  {
+    case DT_COLLECTION_SORT_FILENAME:
+      return _("filename");
+    case DT_COLLECTION_SORT_DATETIME:
+      return _("capture time");
+    case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+      return _("import time");
+    case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+      return _("last modification time");
+    case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+      return _("last export time");
+    case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+      return _("last print time");
+    case DT_COLLECTION_SORT_RATING:
+      return _("rating");
+    case DT_COLLECTION_SORT_ID:
+      return _("id");
+    case DT_COLLECTION_SORT_COLOR:
+      return _("color label");
+    case DT_COLLECTION_SORT_GROUP:
+      return _("group");
+    case DT_COLLECTION_SORT_PATH:
+      return _("full path");
+    case DT_COLLECTION_SORT_CUSTOM_ORDER:
+      return _("custom sort");
+    case DT_COLLECTION_SORT_TITLE:
+      return _("title");
+    case DT_COLLECTION_SORT_DESCRIPTION:
+      return _("description");
+    case DT_COLLECTION_SORT_ASPECT_RATIO:
+      return _("aspect ratio");
+    case DT_COLLECTION_SORT_SHUFFLE:
+      return _("shuffle");
+    default:
+      return "";
+  }
+};
+
 const char *dt_collection_name(dt_collection_properties_t prop)
 {
   char *col_name = NULL;
