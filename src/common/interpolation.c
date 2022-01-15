@@ -1715,6 +1715,12 @@ void dt_interpolation_resample(const struct dt_interpolation *itor, float *out,
                                const float *const in, const dt_iop_roi_t *const roi_in,
                                const int32_t in_stride)
 {
+  if(out == NULL)
+  {
+    dt_print(DT_DEBUG_MEMORY, "[dt_interpolation_resample] no valid output buffer\n");
+    return;
+  }
+
   if(darktable.codepath.OPENMP_SIMD)
     return dt_interpolation_resample_plain(itor, out, roi_out, out_stride, in, roi_in, in_stride);
 #if defined(__SSE2__)
