@@ -1352,6 +1352,10 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
+void init_presets(dt_lib_module_t *self)
+{
+}
+
 void *get_params(dt_lib_module_t *self, int *size)
 {
   *size = 0;
