@@ -838,8 +838,8 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
       GTK_MESSAGE_QUESTION,
       GTK_BUTTONS_NONE,
       modal_dialog->send_to_trash
-        ? _("could not send %s to trash%s\n%s\n\n do you want to try to remove the file from disk without using trash?")
-        : _("could not remove from disk %s%s\n%s"),
+        ? _("could not send %s to trash%s\n%s\n\n do you want to physically delete the file from disk without using trash?")
+        : _("could not physically delete from disk %s%s\n%s"),
       modal_dialog->filename,
       modal_dialog->error_message != NULL ? ": " : "",
       modal_dialog->error_message != NULL ? modal_dialog->error_message : "");
@@ -849,15 +849,15 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
 
   if (modal_dialog->send_to_trash)
   {
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("yes, delete this image"), _DT_DELETE_DIALOG_CHOICE_DELETE);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("yes, delete this and subsequent images"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
-    gtk_dialog_add_button(GTK_DIALOG(dialog), _("no, remove this image from library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("yes, physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("yes, physically delete this and subsequent files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("no, only remove this image from library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
   }
   else
   {
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("remove this image from library"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
   }
-  gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip image"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
+  gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("abort process"), _DT_DELETE_DIALOG_CHOICE_STOP);
 
   gtk_window_set_title(
@@ -1625,8 +1625,8 @@ void dt_control_delete_images()
 
     dialog = gtk_message_dialog_new(
         GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-        send_to_trash ? ngettext("do you really want to physically delete %d image\n(using trash if possible)?",
-                                 "do you really want to physically delete %d images\n(using trash if possible)?", number)
+        send_to_trash ? ngettext("do you really want to physically delete %d image?\n(using trash if possible)",
+                                 "do you really want to physically delete %d images?\n(using trash if possible)", number)
                       : ngettext("do you really want to physically delete %d image from disk?",
                                  "do you really want to physically delete %d images from disk?", number),
         number);
