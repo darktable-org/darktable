@@ -3235,6 +3235,7 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("or"));
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("and not"));
     gtk_widget_set_name(rule->w_operator, "collect-operator");
+    gtk_widget_set_tooltip_text(rule->w_operator, _("define how this rule should interact with the previous one"));
     gtk_box_pack_start(GTK_BOX(hbox), rule->w_operator, FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(rule->w_operator), "changed", G_CALLBACK(_event_rule_changed), rule);
   }
@@ -3248,6 +3249,7 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     GtkWidget *eb = gtk_event_box_new();
     rule->w_prop = gtk_label_new(dt_collection_name(prop));
     gtk_widget_set_name(rule->w_prop, "section_label");
+    gtk_widget_set_tooltip_text(rule->w_prop, _("rule property"));
     gtk_container_add(GTK_CONTAINER(eb), rule->w_prop);
     g_object_set_data(G_OBJECT(eb), "rule", rule);
     g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
@@ -3274,6 +3276,7 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     // remove button
     rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_name(GTK_WIDGET(rule->w_close), "basics-link");
+    gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
     g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), rule);
     gtk_widget_set_halign(rule->w_close, GTK_ALIGN_END);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_close);
@@ -3312,6 +3315,7 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     // the button to switch from raw to specific widgets (only shown if there's some)
     rule->w_raw_switch = dtgtk_button_new(dtgtk_cairo_paint_sorting, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_name(GTK_WIDGET(rule->w_raw_switch), "control-button");
+    gtk_widget_set_tooltip_text(rule->w_raw_switch, _("switch from raw UI to more friendly widgets"));
     g_signal_connect(G_OBJECT(rule->w_raw_switch), "button-press-event", G_CALLBACK(_event_rule_raw_switch), rule);
     gtk_box_pack_end(GTK_BOX(rule->w_widget_box), rule->w_raw_switch, FALSE, TRUE, 0);
     gtk_widget_set_no_show_all(rule->w_raw_switch, TRUE);
@@ -3326,6 +3330,7 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     gtk_widget_set_name(hbox, "collect-expand-line");
     rule->w_expand = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
     gtk_widget_set_name(GTK_WIDGET(rule->w_expand), "control-button");
+    gtk_widget_set_tooltip_text(rule->w_expand, _("show/hide the list of proposals"));
     gtk_box_pack_start(GTK_BOX(hbox), rule->w_expand, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(rule->w_expand), "button-press-event", G_CALLBACK(_event_rule_expand), rule);
   }
@@ -4266,14 +4271,15 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_end(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  GtkWidget *btn = dt_ui_button_new(_("add rule..."), _("add new rule to collect images"), NULL);
+  GtkWidget *btn = dt_ui_button_new(_("add rule..."), _("append new rule to collect images"), NULL);
   g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_add_rule), self);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_ui_button_new(_("add sort..."), _("add new sorting"), NULL);
+  btn = dt_ui_button_new(_("add sort..."), _("append new sorting"), NULL);
   // g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_add_rule), self);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, FALSE, TRUE, 0);
   btn = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_history_show), self);
+  gtk_widget_set_tooltip_text(btn, _("revert to a previous set of rules"));
   gtk_box_pack_start(GTK_BOX(bhbox), btn, FALSE, TRUE, 0);
   gtk_widget_show_all(bhbox);
 
