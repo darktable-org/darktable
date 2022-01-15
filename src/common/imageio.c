@@ -978,6 +978,11 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                          : "[dev_process_export] pixel pipeline processing");
 
   uint8_t *outbuf = pipe.backbuf;
+  if(outbuf == NULL)
+  {
+    dt_print(DT_DEBUG_IMAGEIO, "[dt_imageio_export_with_flags] no valid output buffer\n");
+    goto error;
+  }
 
   // downconversion to low-precision formats:
   if(bpp == 8)
