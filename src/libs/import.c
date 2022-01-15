@@ -712,14 +712,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
   guint nb = n;
   /* get filmroll id for current directory. if not present, checking the db whether
     the image has alread been imported can be skipped */
-  sqlite3_stmt *stmt;
-  guint filmroll_id = 0;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM main.film_rolls WHERE folder = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, folder, -1, SQLITE_TRANSIENT);
-  if(sqlite3_step(stmt) == SQLITE_ROW) filmroll_id = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+  uint32_t filmroll_id = dt_film_get_id(folder);
 
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
   const gboolean include_jpegs = !dt_conf_get_bool("ui_last/import_ignore_jpegs");
@@ -751,7 +744,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
         gboolean already_imported = FALSE;
         if(filmroll_id != 0)
         {
-          already_imported=dt_image_get_id(filmroll_id, filename) ? TRUE : FALSE;
+          already_imported = dt_image_get_id(filmroll_id, filename) ? TRUE : FALSE;
         }
 
         GtkTreeIter iter;
