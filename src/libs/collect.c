@@ -42,6 +42,8 @@
 #include "osx/osx.h"
 #endif
 
+#include <locale.h>
+
 DT_MODULE(3)
 
 #define MAX_RULES 10
@@ -61,11 +63,11 @@ typedef struct _widgets_rating_t
   GtkWidget *combo;
 } _widgets_rating_t;
 
-typedef struct _widgets_folder_t
+typedef struct _widgets_aspect_ratio_t
 {
-  GtkWidget *text;
-  GtkWidget *open;
-} _widgets_folder_t;
+  GtkWidget *mode;
+  GtkWidget *value;
+} _widgets_aspect_ratio_t;
 
 typedef struct dt_lib_collect_rule_t
 {
@@ -2523,12 +2525,191 @@ static void _rating_widget_init(dt_lib_collect_rule_t *rule, const dt_collection
   rule->w_specific = rate;
 }
 
+typedef enum _ratio_mode_t
+{
+  RATIO_INVALID = -1,
+  RATIO_ALL = 0,
+  RATIO_LANDSCAPE,
+  RATIO_PORTRAIT,
+  RATIO_SQUARE,
+  RATIO_PANO,
+  RATIO_LEQ,
+  RATIO_EQ,
+  RATIO_GEQ,
+  RATIO_NE
+} _ratio_mode_t;
+
+static void _ratio_decode(const gchar *txt, int *mode, float *value)
+{
+  // --- First, the special cases
+  if(!strcmp(txt, ""))
+  {
+    *mode = RATIO_ALL;
+    return;
+  }
+  if(!strcmp(txt, ">1") || !strcmp(txt, ">1.0"))
+  {
+    *mode = RATIO_LANDSCAPE;
+    return;
+  }
+  if(!strcmp(txt, "<1") || !strcmp(txt, "<1.0"))
+  {
+    *mode = RATIO_PORTRAIT;
+    return;
+  }
+  if(!strcmp(txt, "=1") || !strcmp(txt, "=1.0") || !strcmp(txt, "1") || !strcmp(txt, "1.0"))
+  {
+    *mode = RATIO_SQUARE;
+    return;
+  }
+  if(!strcmp(txt, ">2") || !strcmp(txt, ">2.0"))
+  {
+    *mode = RATIO_PANO;
+    return;
+  }
+
+  // --- Now we need to decode the comparator and the value
+  if(g_str_has_prefix(txt, "<="))
+    *mode = RATIO_LEQ;
+  else if(g_str_has_prefix(txt, "="))
+    *mode = RATIO_EQ;
+  else if(g_str_has_prefix(txt, ">="))
+    *mode = RATIO_GEQ;
+  else if(g_str_has_prefix(txt, "!="))
+    *mode = RATIO_NE;
+  else
+  {
+    // can't read the format...
+    return;
+  }
+
+  const gchar *txt2 = (*mode == 6) ? txt + 1 : txt + 2;
+
+  *value = atof(txt2);
+}
+
+static void _ratio_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)user_data;
+  if(rule->manual_widget_set) return;
+  if(!rule->w_specific) return;
+  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
+
+  // we recreate the right raw text and put it in the raw entry
+  const int mode = dt_bauhaus_combobox_get(ratio->mode);
+  const gchar *value = gtk_entry_get_text(GTK_ENTRY(ratio->value));
+
+  gchar *txt = dt_util_dstrcat(NULL, "%s", "");
+  switch(mode)
+  {
+    case RATIO_LANDSCAPE:
+      txt = dt_util_dstrcat(txt, ">1");
+      break;
+    case RATIO_PORTRAIT:
+      txt = dt_util_dstrcat(txt, "<1");
+      break;
+    case RATIO_SQUARE:
+      txt = dt_util_dstrcat(txt, "=1");
+      break;
+    case RATIO_PANO:
+      txt = dt_util_dstrcat(txt, ">2");
+      break;
+    case RATIO_LEQ:
+      txt = dt_util_dstrcat(txt, "<=%s", value);
+      break;
+    case RATIO_EQ:
+      txt = dt_util_dstrcat(txt, "=%s", value);
+      break;
+    case RATIO_GEQ:
+      txt = dt_util_dstrcat(txt, ">=%s", value);
+      break;
+    case RATIO_NE:
+      txt = dt_util_dstrcat(txt, "!=%s", value);
+      break;
+  }
+
+  gtk_entry_set_text(GTK_ENTRY(rule->w_raw_text), txt);
+  gtk_widget_activate(rule->w_raw_text);
+  g_free(txt);
+
+  // we also update the sensitivity of the numeric widget
+  gtk_widget_set_sensitive(ratio->value, (mode >= RATIO_LEQ));
+}
+
+static gboolean _ratio_update(dt_lib_collect_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+  int mode = RATIO_INVALID;
+  float value = 1.0;
+  _ratio_decode(gtk_entry_get_text(GTK_ENTRY(rule->w_raw_text)), &mode, &value);
+
+  // if we don't manage to decode, we don't refresh and return false
+  if(mode == RATIO_INVALID) return FALSE;
+
+  rule->manual_widget_set++;
+  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
+  dt_bauhaus_combobox_set(ratio->mode, mode);
+  // get the string of the value. Note that we need to temprorarily switch locale to C in order to ensure the point
+  // as decimal separator
+  char valstr[10] = { 0 };
+  gchar *loc = setlocale(LC_NUMERIC, NULL);
+  setlocale(LC_NUMERIC, "C");
+  snprintf(valstr, sizeof(valstr), "%.2f", value);
+  setlocale(LC_NUMERIC, loc);
+  gtk_entry_set_text(GTK_ENTRY(ratio->value), valstr);
+  gtk_widget_set_sensitive(ratio->value, (mode >= RATIO_LEQ));
+  rule->manual_widget_set--;
+  return TRUE;
+}
+
+static void _ratio_widget_init(dt_lib_collect_rule_t *rule, const dt_collection_properties_t prop,
+                               const gchar *text, dt_lib_module_t *self)
+{
+  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)g_malloc0(sizeof(_widgets_aspect_ratio_t));
+
+  int mode = RATIO_GEQ;
+  float value = 1.0;
+  _ratio_decode(text, &mode, &value);
+  char valstr[10] = { 0 };
+  snprintf(valstr, sizeof(valstr), "%f", value);
+
+  rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(ratio->mode, self, NULL, N_("ratio"), _("ratio to show"),
+                               mode, _ratio_changed, rule,
+                               N_("all"),
+                               N_("landscape"),
+                               N_("portrait"),
+                               N_("square"),
+                               N_("panoramic"),
+                               "≤",
+                               "=",
+                               "≥",
+                               "≠");
+  dt_bauhaus_widget_set_label(ratio->mode, NULL, NULL);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->mode, TRUE, TRUE, 0);
+
+  ratio->value = gtk_entry_new();
+  gtk_widget_set_tooltip_text(ratio->value, _("ratio value.\n"
+                                              ">1 means landscaoe. <1 means portrait"));
+  gtk_entry_set_width_chars(GTK_ENTRY(ratio->value), 5);
+  gtk_entry_set_text(GTK_ENTRY(ratio->value), valstr);
+  gtk_widget_set_sensitive(ratio->value, (mode >= RATIO_LEQ));
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->value, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(ratio->value), "activate", G_CALLBACK(_ratio_changed), rule);
+
+  gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_special_box, TRUE, TRUE, 0);
+  rule->w_specific = ratio;
+}
+
 static gboolean _widget_update(dt_lib_collect_rule_t *rule)
 {
   switch(rule->prop)
   {
     case DT_COLLECTION_PROP_RATING:
       return _rating_update(rule);
+    case DT_COLLECTION_PROP_ASPECT_RATIO:
+      return _ratio_update(rule);
     default:
       // no specific widgets
       return FALSE;
@@ -2682,6 +2863,10 @@ static gboolean _widget_init_special(dt_lib_collect_rule_t *rule, const gchar *t
   {
     case DT_COLLECTION_PROP_RATING:
       _rating_widget_init(rule, rule->prop, text, self);
+      widgets_ok = _widget_update(rule);
+      break;
+    case DT_COLLECTION_PROP_ASPECT_RATIO:
+      _ratio_widget_init(rule, rule->prop, text, self);
       widgets_ok = _widget_update(rule);
       break;
     default:
