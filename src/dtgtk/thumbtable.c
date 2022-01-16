@@ -957,6 +957,70 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
   return TRUE;
 }
 
+// display help text in the center view if there's no image to show
+static int _lighttable_expose_empty(cairo_t *cr, int32_t width, int32_t height, const gboolean lighttable)
+{
+  const float fs = DT_PIXEL_APPLY_DPI(15.0f);
+  const float ls = 1.5f * fs;
+  const float offy = height * 0.2f;
+  const float offx = DT_PIXEL_APPLY_DPI(60);
+  const float at = 0.3f;
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_fill(cr);
+
+  PangoLayout *layout;
+  PangoRectangle ink;
+  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  pango_font_description_set_absolute_size(desc, fs * PANGO_SCALE);
+  layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
+  cairo_set_font_size(cr, fs);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
+  pango_layout_set_text(layout, _("there are no images in this collection"), -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, offx, offy - ink.height - ink.x);
+  pango_cairo_show_layout(cr, layout);
+
+  if(lighttable)
+  {
+    pango_layout_set_text(layout, _("if you have not imported any images yet"), -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, offx, offy + 2 * ls - ink.height - ink.x);
+    pango_cairo_show_layout(cr, layout);
+    pango_layout_set_text(layout, _("you can do so in the import module"), -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, offx, offy + 3 * ls - ink.height - ink.x);
+    pango_cairo_show_layout(cr, layout);
+    cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 3 * ls - ls * .25f);
+    cairo_line_to(cr, 0.0f, 10.0f);
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
+    cairo_stroke(cr);
+    pango_layout_set_text(layout, _("try to relax the filter settings in the top panel"), -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, offx, offy + 5 * ls - ink.height - ink.x);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
+    pango_cairo_show_layout(cr, layout);
+    cairo_rel_move_to(cr, 10.0f + ink.width, ink.height * 0.5f);
+    cairo_line_to(cr, width * 0.5f, 0.0f);
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
+    cairo_stroke(cr);
+    pango_layout_set_text(layout, _("or add images in the collections module in the left panel"), -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, offx, offy + 6 * ls - ink.height - ink.x);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
+    pango_cairo_show_layout(cr, layout);
+    cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 6 * ls - ls * 0.25f);
+    cairo_rel_line_to(cr, -offx + 10.0f, 0.0f);
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
+    cairo_stroke(cr);
+  }
+  
+  pango_font_description_free(desc);
+  g_object_unref(layout);
+  return 0;
+}
+
 static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!GTK_IS_CONTAINER(gtk_widget_get_parent(widget))) return TRUE;
@@ -968,7 +1032,16 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
   // but we don't really want to draw something, this is just to know when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  dt_thumbtable_full_redraw(table, FALSE);
+  if(!darktable.collection || darktable.collection->count <= 0)
+  {
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(table->widget, &allocation);
+    _lighttable_expose_empty(cr, allocation.width, allocation.height,
+                             table->mode != DT_THUMBTABLE_MODE_FILMSTRIP);
+    return TRUE;
+  }
+  else
+    dt_thumbtable_full_redraw(table, FALSE);
   return FALSE; // let's propagate this event
 }
 
