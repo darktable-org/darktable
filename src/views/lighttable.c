@@ -378,67 +378,6 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-// display help text in the center view if there's no image to show
-static int _lighttable_expose_empty(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                                    int32_t pointery)
-{
-  const float fs = DT_PIXEL_APPLY_DPI(15.0f);
-  const float ls = 1.5f * fs;
-  const float offy = height * 0.2f;
-  const float offx = DT_PIXEL_APPLY_DPI(60);
-  const float at = 0.3f;
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
-  cairo_rectangle(cr, 0, 0, width, height);
-  cairo_fill(cr);
-
-  PangoLayout *layout;
-  PangoRectangle ink;
-  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-  pango_font_description_set_absolute_size(desc, fs * PANGO_SCALE);
-  layout = pango_cairo_create_layout(cr);
-  pango_layout_set_font_description(layout, desc);
-  cairo_set_font_size(cr, fs);
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-  pango_layout_set_text(layout, _("there are no images in this collection"), -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, offx, offy - ink.height - ink.x);
-  pango_cairo_show_layout(cr, layout);
-  pango_layout_set_text(layout, _("if you have not imported any images yet"), -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, offx, offy + 2 * ls - ink.height - ink.x);
-  pango_cairo_show_layout(cr, layout);
-  pango_layout_set_text(layout, _("you can do so in the import module"), -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, offx, offy + 3 * ls - ink.height - ink.x);
-  pango_cairo_show_layout(cr, layout);
-  cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 3 * ls - ls * .25f);
-  cairo_line_to(cr, 0.0f, 10.0f);
-  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-  cairo_stroke(cr);
-  pango_layout_set_text(layout, _("try to relax the filter settings in the top panel"), -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, offx, offy + 5 * ls - ink.height - ink.x);
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-  pango_cairo_show_layout(cr, layout);
-  cairo_rel_move_to(cr, 10.0f + ink.width, ink.height * 0.5f);
-  cairo_line_to(cr, width * 0.5f, 0.0f);
-  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-  cairo_stroke(cr);
-  pango_layout_set_text(layout, _("or add images in the collections module in the left panel"), -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, offx, offy + 6 * ls - ink.height - ink.x);
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_FONT);
-  pango_cairo_show_layout(cr, layout);
-  cairo_move_to(cr, offx - DT_PIXEL_APPLY_DPI(10.0f), offy + 6 * ls - ls * 0.25f);
-  cairo_rel_line_to(cr, -offx + 10.0f, 0.0f);
-  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
-  cairo_stroke(cr);
-
-  pango_font_description_free(desc);
-  g_object_unref(layout);
-  return 0;
-}
-
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -451,9 +390,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   if(!darktable.collection || darktable.collection->count <= 0)
   {
-    if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
-      gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
-    _lighttable_expose_empty(self, cr, width, height, pointerx, pointery);
+    // thumbtable displays an help message
   }
   else if(lib->preview_state)
   {
@@ -1283,10 +1220,6 @@ void gui_init(dt_view_t *self)
                               gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                               gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
-
-  // enable drag & drop
-  gtk_drag_dest_set(dt_ui_center_base(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_external, n_targets_external, GDK_ACTION_MOVE);
-  g_signal_connect(G_OBJECT(dt_ui_center_base(darktable.gui->ui)), "drag-data-received", G_CALLBACK(dt_thumbtable_event_dnd_received), NULL);
 
   /* add the global focus peaking button in toolbox */
   dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button,
