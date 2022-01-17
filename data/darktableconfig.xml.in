@@ -401,6 +401,27 @@
     <shortdescription>nb of use for the rule property</shortdescription>
     <longdescription>nb of use for the rule property</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/collect/expand_0</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>visibility of the treeview</shortdescription>
+    <longdescription>visibility of the treeview for this rule</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/collect/expand_1</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>visibility of the treeview</shortdescription>
+    <longdescription>visibility of the treeview for this rule</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/collect/expand_17</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>visibility of the treeview</shortdescription>
+    <longdescription>visibility of the treeview for this rule</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
