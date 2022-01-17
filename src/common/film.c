@@ -85,9 +85,9 @@ void dt_film_set_query(const int32_t id)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
-uint32_t dt_film_get_id(const char *folder)
+int32_t dt_film_get_id(const char *folder)
 {
-  uint32_t filmroll_id = 0;
+  int32_t filmroll_id = -1;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM main.film_rolls WHERE folder = ?1",
