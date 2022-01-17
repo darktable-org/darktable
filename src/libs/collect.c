@@ -2717,27 +2717,19 @@ static gboolean _widget_update(dt_lib_collect_rule_t *rule)
   return FALSE;
 }
 
-static gboolean _event_rule_expand(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_rule_t *rule)
+static void _event_rule_expand(GtkWidget *widget, dt_lib_collect_rule_t *rule)
 {
-  if(rule->manual_widget_set) return TRUE;
+  if(rule->manual_widget_set) return;
 
   const gboolean expanded = gtk_widget_get_visible(rule->w_view_sw);
 
   if(expanded)
   {
-    // change the button icon
-    GtkDarktableButton *btn = (GtkDarktableButton *)rule->w_expand;
-    btn->icon_flags = CPF_STYLE_FLAT | CPF_DIRECTION_UP;
-
     // hide the scrollwindow
     gtk_widget_set_visible(rule->w_view_sw, FALSE);
   }
   else
   {
-    // change the button icon
-    GtkDarktableButton *btn = (GtkDarktableButton *)rule->w_expand;
-    btn->icon_flags = CPF_STYLE_FLAT | CPF_DIRECTION_DOWN;
-
     // recreate the list/tree view
     _widget_rule_view_update(rule);
 
@@ -2750,7 +2742,7 @@ static gboolean _event_rule_expand(GtkWidget *widget, GdkEventButton *event, dt_
   snprintf(confname, sizeof(confname), "plugins/lighttable/collect/expand_%d", rule->prop);
   dt_conf_set_bool(confname, !expanded);
 
-  return TRUE;
+  return;
 }
 
 static gboolean _event_completion_match_selected(GtkEntryCompletion *self, GtkTreeModel *model, GtkTreeIter *iter,
@@ -3318,6 +3310,13 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     gtk_widget_set_halign(rule->w_close, GTK_ALIGN_END);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_close);
     gtk_widget_set_no_show_all(rule->w_close, TRUE);
+
+    // expand button
+    rule->w_expand = dtgtk_togglebutton_new(dtgtk_cairo_paint_treelist, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_tooltip_text(rule->w_expand, _("show/hide the list of proposals"));
+    gtk_widget_set_halign(rule->w_expand, GTK_ALIGN_START);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_expand);
+    g_signal_connect(G_OBJECT(rule->w_expand), "clicked", G_CALLBACK(_event_rule_expand), rule);
   }
 
   // we only show the close button if there's more than 1 rule
@@ -3361,19 +3360,6 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
 
   if(newmain)
   {
-    // the third line (the expander)
-    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(rule->w_main), hbox, TRUE, TRUE, 0);
-    gtk_widget_set_name(hbox, "collect-expand-line");
-    rule->w_expand = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
-    gtk_widget_set_name(GTK_WIDGET(rule->w_expand), "control-button");
-    gtk_widget_set_tooltip_text(rule->w_expand, _("show/hide the list of proposals"));
-    gtk_box_pack_start(GTK_BOX(hbox), rule->w_expand, TRUE, TRUE, 0);
-    g_signal_connect(G_OBJECT(rule->w_expand), "button-press-event", G_CALLBACK(_event_rule_expand), rule);
-  }
-
-  if(newmain)
-  {
     // the listview/treeview
     rule->w_view_sw = gtk_scrolled_window_new(NULL, NULL);
     gtk_widget_set_size_request(rule->w_view_sw, -1, DT_PIXEL_APPLY_DPI(300));
@@ -3390,11 +3376,7 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/expand_%d", rule->prop);
     const gboolean expanded = dt_conf_get_bool(confname);
-    if(expanded)
-    {
-      GtkDarktableButton *btn = (GtkDarktableButton *)rule->w_expand;
-      btn->icon_flags = CPF_STYLE_FLAT | CPF_DIRECTION_DOWN;
-    }
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_expand), expanded);
     // and we set its visibility
     gtk_widget_set_visible(rule->w_view_sw, expanded);
   }
