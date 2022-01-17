@@ -2904,6 +2904,11 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
   rule->prop = mode;
   gtk_label_set_label(GTK_LABEL(rule->w_prop), dt_collection_name(mode));
 
+  // increase the nb of use of this property
+  char confname[200] = { 0 };
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/nb_use_%d", mode);
+  dt_conf_set_int(confname, dt_conf_get_int(confname) + 1);
+
   // re-init the special widgets
   _widget_init_special(rule, "", self);
 
@@ -2974,6 +2979,8 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     dt_conf_set_string(confname, "");
     d->nb_rules++;
     dt_conf_set_int("plugins/lighttable/collect/num_rules", d->nb_rules);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/nb_use_%d", mode);
+    dt_conf_set_int(confname, dt_conf_get_int(confname) + 1);
   }
   else
   {
@@ -3025,13 +3032,13 @@ static void _widget_add_rule_popup_item(GtkMenuShell *pop, const gchar *name, co
   if(title)
   {
     gtk_widget_set_name(smt, "collect-popup-title");
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
+    gtk_label_set_xalign(GTK_LABEL(child), 1.0);
     gtk_widget_set_sensitive(smt, FALSE);
   }
   else
   {
     gtk_widget_set_name(smt, "collect-popup-item");
-    GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
-    gtk_label_set_xalign(GTK_LABEL(child), 1.0);
     g_object_set_data(G_OBJECT(smt), "collect_id", GINT_TO_POINTER(id));
     if(rule)
     {
@@ -3044,21 +3051,103 @@ static void _widget_add_rule_popup_item(GtkMenuShell *pop, const gchar *name, co
   gtk_menu_shell_append(pop, smt);
 }
 
+static int _prop_most_used_sort(gconstpointer a, gconstpointer b)
+{
+  char confname[200] = { 0 };
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/nb_use_%d", GPOINTER_TO_INT(a));
+  const int ai = dt_conf_get_int(confname);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/nb_use_%d", GPOINTER_TO_INT(b));
+  const int bi = dt_conf_get_int(confname);
+  return bi - ai;
+}
+
 static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rule, dt_lib_module_t *self)
 {
   if(rule && rule->manual_widget_set) return TRUE;
 
-#define ADD_COLLECT_ENTRY(value)                                                                                  \
-  _widget_add_rule_popup_item(pop, dt_collection_name(value), value, FALSE, rule, self);
+#define ADD_COLLECT_ENTRY(menu, value)                                                                            \
+  _widget_add_rule_popup_item(menu, dt_collection_name(value), value, FALSE, rule, self);
 
   // we show a popup with all the possible rules
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
 
+  // most used properties
+  if(!rule) _widget_add_rule_popup_item(pop, _("append new rule"), 0, TRUE, rule, self);
+  const int nbitems = dt_conf_get_int("plugins/lighttable/collect/most_used_nb");
+  GSList *props = NULL;
+  for(int i = 0; i < DT_COLLECTION_PROP_LAST; i++) props = g_slist_prepend(props, GINT_TO_POINTER(i));
+  props = g_slist_sort(props, _prop_most_used_sort);
+  int j = 0;
+  for(GSList *l = props; l && j < nbitems; l = g_slist_next(l), j++)
+  {
+    const dt_collection_properties_t p = GPOINTER_TO_INT(l->data);
+    ADD_COLLECT_ENTRY(pop, p);
+  }
+
+  // all properties submenu
+  GtkWidget *smt = gtk_menu_item_new_with_label(_("other rules properties"));
+  GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
+  gtk_widget_set_name(GTK_WIDGET(spop), "collect-popup");
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(smt), GTK_WIDGET(spop));
+  gtk_menu_shell_append(pop, smt);
+
+  // the differents categories
+  _widget_add_rule_popup_item(spop, _("files"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FILMROLL);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FOLDERS);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FILENAME);
+
+  _widget_add_rule_popup_item(spop, _("metadata"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TAG);
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    const gchar *name = dt_metadata_get_name(keyid);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    const int meta_type = dt_metadata_get_type(keyid);
+    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
+    {
+      ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_METADATA + i);
+    }
+  }
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GEOTAGGING);
+
+  _widget_add_rule_popup_item(spop, _("times"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_DAY);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TIME);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_PRINT_TIMESTAMP);
+
+  _widget_add_rule_popup_item(spop, _("capture details"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_CAMERA);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LENS);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_APERTURE);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FOCAL_LENGTH);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ISO);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ASPECT_RATIO);
+
+  _widget_add_rule_popup_item(spop, _("darktable"), 0, TRUE, rule, self);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GROUPING);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LOCAL_COPY);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_HISTORY);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_MODULE);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ORDER);
+
   // show the preset part
   if(!rule)
   {
+    // separator
+    _widget_add_rule_popup_item(pop, " ", 0, TRUE, rule, self);
+
     _widget_add_rule_popup_item(pop, _("append preset"), 0, TRUE, rule, self);
 
     const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
@@ -3101,59 +3190,7 @@ static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rul
       _widget_add_rule_popup_item(pop, name, -1, FALSE, rule, self);
     }
     sqlite3_finalize(stmt);
-
-    // separator
-    _widget_add_rule_popup_item(pop, " ", 0, TRUE, rule, self);
   }
-
-  // the differents categories
-  _widget_add_rule_popup_item(pop, _("files"), 0, TRUE, rule, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILMROLL);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOLDERS);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILENAME);
-
-  _widget_add_rule_popup_item(pop, _("metadata"), 0, TRUE, rule, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    const gchar *name = dt_metadata_get_name(keyid);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    const int meta_type = dt_metadata_get_type(keyid);
-    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-    {
-      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
-    }
-  }
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
-
-  _widget_add_rule_popup_item(pop, _("times"), 0, TRUE, rule, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);
-
-  _widget_add_rule_popup_item(pop, _("capture details"), 0, TRUE, rule, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
-
-  _widget_add_rule_popup_item(pop, _("darktable"), 0, TRUE, rule, self);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
 
   dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
   return TRUE;
