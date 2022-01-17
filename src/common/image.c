@@ -2498,7 +2498,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
   if(dt_image_get_xmp_mode() != DT_WRITE_XMP_NEVER)
   {
     const int imgid = dt_image_get_id_full_path(pathname);
-    if(imgid >= -1)
+    if(imgid != -1)
     {
       dt_image_write_sidecar_file(imgid);
     }
