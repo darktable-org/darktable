@@ -82,7 +82,10 @@ static void dt_heal_sub(const float *const top_buffer, const float *const bottom
       const size_t res_idx = (width-1)/2;
       const size_t idx = 4 * (row * width + (width-1));
       for_each_channel(c)
-        buf1[res_idx + c] = top_buffer[idx + c] - bottom_buffer[idx + c];
+      {
+        buf1[4*res_idx + c] = top_buffer[idx + c] - bottom_buffer[idx + c];
+        buf2[4*res_idx + c] = 0.0f;
+      }
     }
   }
   // clear the top and bottom rows, used for padding
@@ -129,7 +132,7 @@ static void dt_heal_add(const float *const restrict red_buffer, const float *con
       const size_t res_idx = (width-1)/2;
       const size_t idx = 4 * (row * width + (width-1));
       for_each_channel(c)
-        result_buffer[idx + c] = buf1[res_idx + c] + second_buffer[idx + c];
+        result_buffer[idx + c] = buf1[4*res_idx + c] + second_buffer[idx + c];
     }
   }
 }
@@ -190,7 +193,7 @@ static float dt_heal_laplace_iteration(float *const restrict active_pixels,
       if (row == 1) a -= 1.0f;  // we added a padding row at top and bottom
       if (row == height) a -= 1.0f;
       const size_t vert_offset = 4 * width;
-      const size_t lroffset = 4 * (start_parity ^ (row % 1)); // how many floats to offset the left/right neighbors
+      const size_t lroffset = 4 * (start_parity ^ (row & 1)); // how many floats to offset the left/right neighbors
       if (count == 1)
       {
         const size_t col = idx % width;
@@ -314,7 +317,7 @@ static void dt_heal_laplace_loop(float *const restrict red_pixels, float *const 
   // arrangement will yield fewer runs.  For any mask a user would have the patience to draw, there will only be
   // a handful of runs in each row of pixels.
   // Note that using `unsigned` instead of size_t, the stamp is limited to ~8 gigapixels (the main image can be larger)
-  const size_t subwidth = (width+1)/2;
+  const size_t subwidth = (width+1)/2;  // round up to be able to handle odd widths
   unsigned *const restrict red_runs = dt_alloc_align(64, sizeof(unsigned) * subwidth * (height + 2));
   unsigned *const restrict black_runs = dt_alloc_align(64, sizeof(unsigned) * subwidth * (height + 2));
   if (!red_runs || !black_runs)
@@ -357,8 +360,8 @@ static void dt_heal_laplace_loop(float *const restrict red_pixels, float *const 
   for(iter = 0; iter < max_iter; iter++)
   {
     // process red/black cells separately
-    float err = dt_heal_laplace_iteration(red_pixels, black_pixels, height, subwidth, red_runs, num_red, 0, w);
-    err += dt_heal_laplace_iteration(black_pixels, red_pixels, height, subwidth, black_runs, num_black, 1, w);
+    float err = dt_heal_laplace_iteration(black_pixels, red_pixels, height, subwidth, black_runs, num_black, 1, w);
+    err += dt_heal_laplace_iteration(red_pixels, black_pixels, height, subwidth, red_runs, num_red, 0, w);
 
     if(err < err_exit) break;
   }
@@ -382,8 +385,9 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
     fprintf(stderr,"dt_heal: full-color image required\n");
     return;
   }
-  float *const restrict red_buffer = dt_alloc_align_float((size_t)ch * ((width+1)/2) * (height + 2));
-  float *const restrict black_buffer = dt_alloc_align_float((size_t)ch * ((width+1)/2) * (height + 2));
+  const size_t subwidth = 4 * ((width+1)/2);  // round up to be able to handle odd widths
+  float *const restrict red_buffer = dt_alloc_align_float(subwidth * (height + 2));
+  float *const restrict black_buffer = dt_alloc_align_float(subwidth * (height + 2));
   if(red_buffer == NULL || black_buffer == NULL)
   {
     fprintf(stderr, "dt_heal: error allocating memory for healing\n");
