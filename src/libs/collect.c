@@ -100,8 +100,10 @@ typedef struct dt_lib_collect_t
   int nb_rules;
 
   GtkWidget *rules_box;
+  GtkWidget *rules_sw;
   _widgets_sort_t *sort;
   gboolean manual_sort_set;
+  gboolean scroll_to_bottom;
 
   gboolean singleclick;
   struct dt_lib_collect_params_t *params;
@@ -2494,7 +2496,8 @@ static void _rating_widget_init(dt_lib_collect_rule_t *rule, const dt_collection
   int mode = DT_COLLECTION_FILTER_ALL;
   _rating_decode(text, &comp, &mode);
 
-  rule->w_special_box = gtk_overlay_new();
+  GtkWidget *overlay = gtk_overlay_new();
+  gtk_widget_set_name(overlay, "collect-rating");
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(rate->comparator, self, NULL, N_("comparator"), _("which images should be shown"),
                                comp, _rating_changed, rule,
@@ -2512,16 +2515,16 @@ static void _rating_widget_init(dt_lib_collect_rule_t *rule, const dt_collection
   gtk_box_set_homogeneous(GTK_BOX(spacer), TRUE);
   gtk_box_pack_start(GTK_BOX(spacer), rate->comparator, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(spacer), gtk_grid_new(), FALSE, FALSE, 0);
-  gtk_overlay_add_overlay(GTK_OVERLAY(rule->w_special_box), spacer);
-  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(rule->w_special_box), spacer, TRUE);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), spacer);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), spacer, TRUE);
 
   /* create the filter combobox */
   DT_BAUHAUS_COMBOBOX_NEW_FULL(rate->combo, self, NULL, N_("view"), _("which images should be shown"), mode,
                                _rating_changed, rule, N_("all"), N_("unstarred only"), "★", "★ ★", "★ ★ ★",
                                "★ ★ ★ ★", "★ ★ ★ ★ ★", N_("rejected only"), N_("all except rejected"));
-  gtk_container_add(GTK_CONTAINER(rule->w_special_box), rate->combo);
+  gtk_container_add(GTK_CONTAINER(overlay), rate->combo);
 
-  gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_special_box, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), overlay, TRUE, TRUE, 0);
   rule->w_specific = rate;
 }
 
@@ -2673,8 +2676,6 @@ static void _ratio_widget_init(dt_lib_collect_rule_t *rule, const dt_collection_
   char valstr[10] = { 0 };
   snprintf(valstr, sizeof(valstr), "%f", value);
 
-  rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
   DT_BAUHAUS_COMBOBOX_NEW_FULL(ratio->mode, self, NULL, N_("ratio"), _("ratio to show"),
                                mode, _ratio_changed, rule,
                                N_("all"),
@@ -2695,10 +2696,9 @@ static void _ratio_widget_init(dt_lib_collect_rule_t *rule, const dt_collection_
   gtk_entry_set_width_chars(GTK_ENTRY(ratio->value), 5);
   gtk_entry_set_text(GTK_ENTRY(ratio->value), valstr);
   gtk_widget_set_sensitive(ratio->value, (mode >= RATIO_LEQ));
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->value, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->value, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(ratio->value), "activate", G_CALLBACK(_ratio_changed), rule);
 
-  gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_special_box, TRUE, TRUE, 0);
   rule->w_specific = ratio;
 }
 
@@ -2717,19 +2717,27 @@ static gboolean _widget_update(dt_lib_collect_rule_t *rule)
   return FALSE;
 }
 
-static void _event_rule_expand(GtkWidget *widget, dt_lib_collect_rule_t *rule)
+static gboolean _event_rule_expand(GtkWidget *widget, GdkEventButton *event, dt_lib_collect_rule_t *rule)
 {
-  if(rule->manual_widget_set) return;
+  if(rule->manual_widget_set) return TRUE;
 
   const gboolean expanded = gtk_widget_get_visible(rule->w_view_sw);
 
   if(expanded)
   {
+    // change the button icon
+    GtkDarktableButton *btn = (GtkDarktableButton *)rule->w_expand;
+    btn->icon_flags = CPF_STYLE_FLAT | CPF_DIRECTION_UP;
+
     // hide the scrollwindow
     gtk_widget_set_visible(rule->w_view_sw, FALSE);
   }
   else
   {
+    // change the button icon
+    GtkDarktableButton *btn = (GtkDarktableButton *)rule->w_expand;
+    btn->icon_flags = CPF_STYLE_FLAT | CPF_DIRECTION_DOWN;
+
     // recreate the list/tree view
     _widget_rule_view_update(rule);
 
@@ -2742,7 +2750,7 @@ static void _event_rule_expand(GtkWidget *widget, dt_lib_collect_rule_t *rule)
   snprintf(confname, sizeof(confname), "plugins/lighttable/collect/expand_%d", rule->prop);
   dt_conf_set_bool(confname, !expanded);
 
-  return;
+  return TRUE;
 }
 
 static gboolean _event_completion_match_selected(GtkEntryCompletion *self, GtkTreeModel *model, GtkTreeIter *iter,
@@ -2849,6 +2857,11 @@ static gboolean _widget_init_special(dt_lib_collect_rule_t *rule, const gchar *t
     rule->w_specific = NULL;
   }
 
+  // recreate the box
+  rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(rule->w_special_box, "collect-rule-special");
+  gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_special_box, TRUE, TRUE, 0);
+
   // initialize the specific entries if any
   gboolean widgets_ok = FALSE;
   switch(rule->prop)
@@ -2867,7 +2880,7 @@ static gboolean _widget_init_special(dt_lib_collect_rule_t *rule, const gchar *t
   }
 
   // set the visibility for the eventual special widgets
-  if(rule->w_special_box)
+  if(rule->w_specific)
   {
     gtk_widget_show_all(rule->w_special_box); // we ensure all the childs widgets are shown by default
     gtk_widget_set_no_show_all(rule->w_special_box, TRUE);
@@ -2881,9 +2894,14 @@ static gboolean _widget_init_special(dt_lib_collect_rule_t *rule, const gchar *t
     gtk_widget_set_visible(rule->w_raw_text, !special);
   }
   else
+  {
+    gtk_widget_set_no_show_all(rule->w_special_box, TRUE);
+    gtk_widget_set_visible(rule->w_special_box, FALSE);
     gtk_widget_set_visible(rule->w_raw_text, TRUE);
+  }
 
-  return (rule->w_special_box != NULL);
+
+  return (rule->w_specific != NULL);
 }
 
 static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
@@ -2894,7 +2912,7 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 
   const dt_collection_properties_t oldprop = rule->prop;
   rule->prop = mode;
-  gtk_label_set_label(GTK_LABEL(rule->w_prop), dt_collection_name(mode));
+  gtk_button_set_label(GTK_BUTTON(rule->w_prop), dt_collection_name(mode));
 
   // increase the nb of use of this property
   char confname[200] = { 0 };
@@ -3014,6 +3032,9 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     sqlite3_finalize(stmt);
   }
 
+  // indicate that we need to scroll to the bottom when we will redraw the rules
+  d->scroll_to_bottom = TRUE;
+
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
@@ -3079,7 +3100,7 @@ static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rul
   }
 
   // all properties submenu
-  GtkWidget *smt = gtk_menu_item_new_with_label(_("other rules properties"));
+  GtkWidget *smt = gtk_menu_item_new_with_label(_("other properties"));
   GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_name(GTK_WIDGET(spop), "collect-popup");
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(smt), GTK_WIDGET(spop));
@@ -3275,18 +3296,16 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
   // property
   if(newmain)
   {
-    GtkWidget *eb = gtk_event_box_new();
-    rule->w_prop = gtk_label_new(dt_collection_name(prop));
-    gtk_widget_set_name(rule->w_prop, "section_label");
+    rule->w_prop = gtk_button_new_with_label(dt_collection_name(prop));
+    gtk_widget_set_name(rule->w_prop, "collect-property");
     gtk_widget_set_tooltip_text(rule->w_prop, _("rule property"));
-    gtk_container_add(GTK_CONTAINER(eb), rule->w_prop);
-    g_object_set_data(G_OBJECT(eb), "rule", rule);
-    g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
-    gtk_box_pack_start(GTK_BOX(hbox), eb, TRUE, TRUE, 0);
+    g_object_set_data(G_OBJECT(rule->w_prop), "rule", rule);
+    g_signal_connect(G_OBJECT(rule->w_prop), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
+    gtk_box_pack_start(GTK_BOX(hbox), rule->w_prop, TRUE, TRUE, 0);
   }
   else if(newprop)
   {
-    gtk_label_set_label(GTK_LABEL(rule->w_prop), dt_collection_name(prop));
+    gtk_button_set_label(GTK_BUTTON(rule->w_prop), dt_collection_name(prop));
   }
 
   if(newmain)
@@ -3310,13 +3329,6 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     gtk_widget_set_halign(rule->w_close, GTK_ALIGN_END);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_close);
     gtk_widget_set_no_show_all(rule->w_close, TRUE);
-
-    // expand button
-    rule->w_expand = dtgtk_togglebutton_new(dtgtk_cairo_paint_treelist, CPF_STYLE_FLAT, NULL);
-    gtk_widget_set_tooltip_text(rule->w_expand, _("show/hide the list of proposals"));
-    gtk_widget_set_halign(rule->w_expand, GTK_ALIGN_START);
-    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_expand);
-    g_signal_connect(G_OBJECT(rule->w_expand), "clicked", G_CALLBACK(_event_rule_expand), rule);
   }
 
   // we only show the close button if there's more than 1 rule
@@ -3360,8 +3372,21 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
 
   if(newmain)
   {
+    // the third line (the expander)
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(rule->w_main), hbox, TRUE, TRUE, 0);
+    gtk_widget_set_name(hbox, "collect-expand-line");
+    rule->w_expand = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
+    gtk_widget_set_tooltip_text(rule->w_expand, _("show/hide the list of proposals"));
+    gtk_box_pack_start(GTK_BOX(hbox), rule->w_expand, TRUE, TRUE, 0);
+    g_signal_connect(G_OBJECT(rule->w_expand), "button-press-event", G_CALLBACK(_event_rule_expand), rule);
+  }
+
+  if(newmain)
+  {
     // the listview/treeview
     rule->w_view_sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_widget_set_name(rule->w_view_sw, "collect-treeview");
     gtk_widget_set_size_request(rule->w_view_sw, -1, DT_PIXEL_APPLY_DPI(300));
     gtk_box_pack_start(GTK_BOX(rule->w_main), rule->w_view_sw, TRUE, TRUE, 0);
     gtk_widget_set_no_show_all(rule->w_view_sw, TRUE);
@@ -3376,7 +3401,11 @@ static gboolean _widget_init(dt_lib_collect_rule_t *rule, const dt_collection_pr
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/expand_%d", rule->prop);
     const gboolean expanded = dt_conf_get_bool(confname);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_expand), expanded);
+    if(expanded)
+    {
+      GtkDarktableButton *btn = (GtkDarktableButton *)rule->w_expand;
+      btn->icon_flags = CPF_STYLE_FLAT | CPF_DIRECTION_DOWN;
+    }
     // and we set its visibility
     gtk_widget_set_visible(rule->w_view_sw, expanded);
   }
@@ -4256,6 +4285,17 @@ static _widgets_sort_t *_sort_get_widgets(dt_lib_module_t *self)
   return wsort;
 }
 
+static void _event_rules_box_changed(GtkAdjustment *adj, dt_lib_module_t *self)
+{
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  // if needed, we scroll to the bottom in order to be sure that the last rule is visible
+  if(d->scroll_to_bottom)
+  {
+    d->scroll_to_bottom = FALSE;
+    gtk_adjustment_set_value(adj, gtk_adjustment_get_upper(adj));
+  }
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
@@ -4274,21 +4314,28 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // the box to insert the collect rules
+  d->rules_sw = gtk_scrolled_window_new(NULL, NULL);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->rules_sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_widget_set_size_request(d->rules_sw, -1, DT_PIXEL_APPLY_DPI(400));
   d->rules_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget),
-                     dt_ui_scroll_wrap(GTK_WIDGET(d->rules_box), 200, "plugins/lighttable/collect/windowheight"),
-                     TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(d->rules_sw), d->rules_box);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->rules_sw, TRUE, TRUE, 0);
+  GtkAdjustment *vadj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(d->rules_sw));
+  g_signal_connect(G_OBJECT(vadj), "changed", G_CALLBACK(_event_rules_box_changed), self);
 
   // the sorting part
-  GtkWidget *label = dt_ui_section_label_new(_("sorting"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
+  GtkWidget *spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(spacer, "collect-spacer-widget");
+  gtk_box_pack_start(GTK_BOX(self->widget), spacer, TRUE, TRUE, 0);
   d->sort = _sort_get_widgets(self);
   gtk_box_pack_start(GTK_BOX(self->widget), d->sort->box, FALSE, TRUE, 0);
 
   // the botton buttons
-  label = dt_ui_section_label_new(_("actions"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
+  spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(spacer, "collect-spacer-widget");
+  gtk_box_pack_start(GTK_BOX(self->widget), spacer, TRUE, TRUE, 0);
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(bhbox, "collect-actions-widget");
   gtk_box_pack_end(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
   GtkWidget *btn = dt_ui_button_new(_("add rule..."), _("append new rule to collect images"), NULL);
   g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_add_rule), self);

@@ -1537,13 +1537,27 @@ filechooser row:hover,
   --------------------*/
 #collect-rule-widget
 {
-  background-color: @button_bg;
-  margin: 0.3em 0;
+  background-color: @button_border;
+  margin: 0.3em 0 0.5em 0;
   padding: 0 0.2em;
 }
-#collect-rule-widget #section_label
+#collect-treeview
 {
-  border: none;
+  margin-bottom: 0.2em;
+}
+#collect-property,
+#collect-property *
+{
+  background-color: @button_border;
+  padding: 0;
+  color: @button_checked_fg;
+  font-family: sans-serif;
+  font-weight: 500;
+}
+#collect-property:hover,
+#collect-property:hover *
+{
+  background-color: @button_hover_bg;
 }
 #collect-operator arrow
 {
@@ -1558,10 +1572,27 @@ filechooser row:hover,
   background-image: none;
   background-color: transparent;
 }
+#collect-rule-special *
+{
+  background-color: @button_bg;
+}
+#collect-rule-special
+{
+  margin-left: 0.5em;
+}
+#collect-rating box
+{
+  background-color: transparent;
+}
 #collect-expand-line *
 {
   margin: 0;
   padding: 0;
+  font-size: 0.6em;
+}
+#collect-spacer-widget
+{
+  margin-top: 1em;
 }
 
 /*--------------------------------
