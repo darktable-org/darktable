@@ -23,6 +23,7 @@
 #include "control/control.h"
 #include "gui/gtk.h"
 #include "views/view.h"
+#include "dtgtk/thumbtable.h"
 
 #define FULL_PREVIEW_IN_MEMORY_LIMIT 9
 #define ZOOM_MAX 100000.0f
@@ -1637,18 +1638,22 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move)
   switch(move)
   {
     case DT_CULLING_MOVE_LEFT:
-    case DT_CULLING_MOVE_UP:
       val = -1;
       break;
-    case DT_CULLING_MOVE_RIGHT:
-    case DT_CULLING_MOVE_DOWN:
-      val = 1;
-      break;
-    case DT_CULLING_MOVE_PAGEUP:
+    case DT_CULLING_MOVE_UP:
       val = -1 * table->thumbs_count;
       break;
+    case DT_CULLING_MOVE_RIGHT:
+      val = 1;
+      break;
+    case DT_CULLING_MOVE_DOWN:
+      val = 1 * table->thumbs_count;
+      break;
+    case DT_CULLING_MOVE_PAGEUP:
+      val = -1 * dt_ui_thumbtable(darktable.gui->ui)->rows;
+      break;
     case DT_CULLING_MOVE_PAGEDOWN:
-      val = table->thumbs_count;
+      val = 1 * dt_ui_thumbtable(darktable.gui->ui)->rows;
       break;
     case DT_CULLING_MOVE_START:
       val = -1 * INT_MAX;
