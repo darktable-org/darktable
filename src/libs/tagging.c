@@ -2335,17 +2335,16 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
 
   const int button_pressed = (event->type == GDK_BUTTON_PRESS) ? event->button : 0;
   const gboolean shift_pressed = dt_modifier_is(event->state, GDK_SHIFT_MASK);
-  if((button_pressed == 3)
-     || (d->tree_flag && button_pressed == 1 && shift_pressed)
-    || (event->type == GDK_2BUTTON_PRESS && event->button == 1)
-    || (button_pressed == 1))
+  if((button_pressed == 3)                                        // contextual menu
+     || (d->tree_flag && button_pressed == 1)                     // expand & drag
+     || (event->type == GDK_2BUTTON_PRESS && event->button == 1)) // attach
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
     {
-      if(button_pressed == 1)
+      if(d->tree_flag && button_pressed == 1 && !shift_pressed)
       {
         GtkTreeModel *model = gtk_tree_view_get_model(d->dictionary_view);
         GtkTreeIter iter;
@@ -3267,9 +3266,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("tag dictionary,"
                                                   "\npress Enter or double-click to attach selected tag on selected images,"
                                                   "\nidem for Shift+Enter plus gives the focus to entry,"
+                                                  "\nShift+click to fully expand the selected tag,"
                                                   "\nright-click for other actions on selected tag,"
                                                   "\npress Shift+Tab to give the focus to entry,"
                                                   "\nctrl-scroll to resize the window"));
+
   dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_dictionary_key_pressed), (gpointer)self);
