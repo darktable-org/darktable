@@ -320,8 +320,8 @@ void gui_init(dt_lib_module_t *self)
                                                                  // fire a value-changed signal when setting
                                                                  // it to 1 => empty text box
 
-  gtk_widget_set_sensitive(d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
-  gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
+  gtk_widget_set_sensitive(d->zoom_entry, !(d->fullpreview));
+  gtk_widget_set_sensitive(d->zoom, !(d->fullpreview));
 
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
