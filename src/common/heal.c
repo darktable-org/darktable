@@ -200,11 +200,11 @@ static float dt_heal_laplace_iteration(float *const restrict active_pixels,
         float aa = a;
         dt_aligned_pixel_t left = { 0.0f };
         dt_aligned_pixel_t right = { 0.0f };
-        if (col >= lroffset/4) // first pixel in original stamp?
+        if (col > 0 || lroffset) // first pixel in original stamp?
           for_each_channel(c) left[c] = neighbor_pixels[index - 4 + lroffset + c];
         else
           aa -= 1.0f;
-        if (col <= 1 && col + lroffset/4 < width) // last pixel in original stamp?
+        if (col + 1 < width || lroffset == 0) // last pixel in original stamp?
           for_each_channel(c) right[c] = neighbor_pixels[index + lroffset + c];
         else
           aa -= 1.0f;
@@ -258,7 +258,8 @@ static size_t collect_color_runs(const float *const restrict mask, const size_t 
   }
   gboolean in_run = FALSE;
   unsigned run_start = 0;
-  for(size_t col = start; col < width; col += 2)
+  size_t col;
+  for(col = start; col < width; col += 2)
   {
     if(mask[col])
     {
@@ -280,9 +281,9 @@ static size_t collect_color_runs(const float *const restrict mask, const size_t 
   if(in_run)  // finish off a run that doesn't have a zero pixel to its right
   {
     runs[2*count] = start_index + run_start / 2;
-    const unsigned runlen = (width - run_start) / 2;
+    const unsigned runlen = (col - run_start) / 2;
     runs[2*count + 1] = runlen;
-    if (runlen > 1 && run_start + 2*runlen == width)
+    if (runlen > 1 && col > width)
     {
       // split off the final pixel into its own run
       runs[2*count + 1]--;
