@@ -3204,7 +3204,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(w, _("enter tag name"
                                    "\npress Enter to create a new tag and attach it on selected images"
                                    "\npress Tab or Down key to go to the first matching tag"
-                                   "\npress Shift+Tab to select the first attached user tag"));
+                                   "\npress shift+Tab to select the first attached user tag"));
   dt_gui_add_help_link(w, dt_get_help_url("tagging"));
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
@@ -3265,10 +3265,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("tag dictionary,"
                                                   "\npress Enter or double-click to attach selected tag on selected images,"
-                                                  "\nidem for Shift+Enter plus gives the focus to entry,"
-                                                  "\nShift+click to fully expand the selected tag,"
+                                                  "\nidem for shift+Enter plus gives the focus to entry,"
+                                                  "\nshift+click to fully expand the selected tag,"
                                                   "\nright-click for other actions on selected tag,"
-                                                  "\npress Shift+Tab to give the focus to entry,"
+                                                  "\npress shift+Tab to give the focus to entry,"
                                                   "\nctrl-scroll to resize the window"));
 
   dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
