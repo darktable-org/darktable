@@ -221,7 +221,8 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
     return 1;
   }
   else if(gui->creation && which == 1
-          && ((dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)) || dt_modifier_is(state, GDK_SHIFT_MASK)))
+          && ((dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+              || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
