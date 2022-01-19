@@ -2347,6 +2347,25 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/exr/bpp</name>
+    <type>
+      <enum>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
+    <default>32</default>
+    <shortdescription>EXR float bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/exr/compression</name>
+    <type>int</type>
+    <default>4</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/jpeg/quality</name>
     <type min="5" max="100">int</type>
     <default>95</default>
