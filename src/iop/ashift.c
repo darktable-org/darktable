@@ -2879,7 +2879,7 @@ static void _draw_save_lines_to_params(dt_iop_module_t *self)
     }
   }
   // save drawn lines (we drop the unselected ones)
-  if(g->current_structure_method == ASHIFT_METHOD_LINES && g->lines && g->lines_count >= 0)
+  if(g->current_structure_method == ASHIFT_METHOD_LINES && g->lines)
   {
     p->last_drawn_lines_count = 0;
     for(int i = 0; i < g->lines_count; i++)
