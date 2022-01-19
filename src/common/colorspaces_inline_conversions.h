@@ -1237,6 +1237,55 @@ static inline void Ych_to_XYZ(const dt_aligned_pixel_t Ych, dt_aligned_pixel_t X
   LMS_to_XYZ(LMS, XYZ);
 }
 
+// Oklab perceptual color space by Björn Ottosson
+// https://bottosson.github.io/posts/oklab/
+
+static const dt_colormatrix_t Oklab_M1_T = {
+  { 0.8189330101f, 0.0329845436f, 0.0482003018f, 0.f },
+  { 0.3618667424f, 0.9293118715f, 0.2643662691f, 0.f },
+  { -0.1288597137f, 0.0361456387f, 0.6338517070f, 0.f },
+};
+
+static const dt_colormatrix_t Oklab_M2_T = {
+  { 0.2104542553f, 1.9779984951f, 0.0259040371f, 0.f },
+  { 0.7936177850f, -2.4285922050f, 0.7827717662f, 0.f },
+  { -0.0040720468f, 0.4505937099f, -0.8086757660f, 0.f },
+};
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(lms, Lab : 16)
+#endif
+static inline void lms_to_Oklab(const dt_aligned_pixel_t lms, dt_aligned_pixel_t Lab)
+{
+  dt_aligned_pixel_t lms_;
+  for_three_channels(c) lms_[c] = cbrtf(MAX(lms[c], 0.f));
+  dt_apply_transposed_color_matrix(lms_, Oklab_M2_T, Lab);
+}
+
+static const dt_colormatrix_t Oklab_M2_inv_T = {
+  { 1.f, 1.f, 1.f, 0.f },
+  { 0.3963377774f, -0.1055613458f, -0.0894841775f, 0.f },
+  { 0.2158037573f, -0.0638541728f, -1.2914855480f, 0.f },
+};
+
+static const dt_colormatrix_t Oklab_M1_inv_T = {
+  { 1.2270138511f, -0.0405801784f, -0.0763812845f, 0.f },
+  { -0.5577999807f, 1.1122568696f, -0.4214819784f, 0.f },
+  { 0.2812561490f, -0.0716766787f, 1.5861632204f, 0.f },
+};
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(lms, Lab : 16)
+#endif
+static inline void Oklab_to_lms(const dt_aligned_pixel_t Lab, dt_aligned_pixel_t lms)
+{
+
+  dt_aligned_pixel_t lms_;
+  dt_apply_transposed_color_matrix(Lab, Oklab_M2_inv_T, lms_);
+  for_each_channel(c)
+    lms[c] = MAX(lms_[c] * lms_[c] * lms_[c], 0.f);
+}
+
 #undef DT_RESTRICT
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -35,6 +35,7 @@ FILE(GLOB SOURCE_FILES
   "common/film.c"
   "common/file_location.c"
   "common/fswatch.c"
+  "common/gamut_mapping.c"
   "common/gaussian.c"
   "common/grouping.c"
   "common/guided_filter.c"

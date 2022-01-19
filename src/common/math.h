@@ -431,6 +431,68 @@ static inline __m128 sinf_fast_sse(__m128 t)
 #endif
 
 
+static inline float dt_evaluate_polynomial(const float coeffs[], const size_t degree, const float x)
+{
+  // Evaluate a polynomial efficiently using the Horner scheme.
+  // The index of each element of coeffs is the degree of the monomial.
+  // Hence coeffs is assumed to have length of degree + 1.
+  float result = coeffs[degree];
+  for(ssize_t i = degree - 1; i >= 0; i--) result = coeffs[i] + result * x;
+  return result;
+}
+
+
+static inline float dt_evaluate_polynomial_derivative(const float coeffs[], const size_t degree, const float x)
+{
+  // The same as above but evaluates the first derivative of the polynomial.
+  float result = degree * coeffs[degree];
+  for(ssize_t i = degree - 1; i >= 1; i--) result = i * coeffs[i] + result * x;
+  return result;
+}
+
+
+static inline float dt_evaluate_polynomial_2nd_derivative(const float coeffs[], const size_t degree, const float x)
+{
+  // The same as above but evaluates the second derivative of the polynomial.
+  float result = degree * (degree - 1) * coeffs[degree];
+  for(ssize_t i = degree - 1; i >= 2; i--) result = i * (i - 1) * coeffs[i] + result * x;
+  return result;
+}
+
+
+static inline float dt_polynomial_halley_iteration(const float coeffs[], const size_t degree, const float x_initial)
+{
+  // An iteration of Halley's method for finding root of the polynomial.
+
+  const float y = dt_evaluate_polynomial(coeffs, degree, x_initial);
+  const float dy = dt_evaluate_polynomial_derivative(coeffs, degree, x_initial);
+  const float d2y = dt_evaluate_polynomial_2nd_derivative(coeffs, degree, x_initial);
+
+  const float numerator = 2.f * y * dy;
+  const float denominator = 2.f * dy * dy - y * d2y;
+
+  if(denominator == 0.f) return x_initial; // can't do much better really
+
+  return x_initial - numerator / denominator;
+}
+
+
+static inline float dt_find_polynomial_root(const float coeffs[], const size_t degree, const float x_initial,
+                                            const float tolerance, const int max_iter)
+{
+  // Finds a root of the given polynomial by iterating Halley's method.
+  int iter = 0;
+  float x = x_initial;
+  float y;
+  do
+  {
+    x = dt_polynomial_halley_iteration(coeffs, degree, x);
+    y = dt_evaluate_polynomial(coeffs, degree, x);
+    iter++;
+  } while(fabsf(y) > tolerance && iter < max_iter);
+  return x;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
