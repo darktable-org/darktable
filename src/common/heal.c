@@ -220,17 +220,22 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
         }
         continue;
       }
+      dt_aligned_pixel_t left;
+      copy_pixel(left, neighbor_pixels + index - 4 + lroffset);
       for(size_t j = 0; j < count; j++)
       {
         const size_t pixidx = index + 4*j;
         dt_aligned_pixel_t diff;
+        dt_aligned_pixel_t right;
         for_each_channel(c, aligned(active_pixels,neighbor_pixels))
         {
+          right[c] = neighbor_pixels[pixidx + lroffset + c];
           diff[c] = w * (a * active_pixels[pixidx+c]
                          - (neighbor_pixels[pixidx - vert_offset + c] + neighbor_pixels[pixidx + vert_offset + c]
-                            + neighbor_pixels[pixidx - 4 + lroffset + c] + neighbor_pixels[pixidx + lroffset + c]));
+                            + left[c] + right[c]));
           active_pixels[pixidx + c] -= diff[c];
           err.v[c] += (diff[c] * diff[c]);
+          left[c] = right[c];
         }
       }
     }
@@ -329,7 +334,6 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
     fprintf(stderr, "_heal_laplace_loop: error allocating memory for healing\n");
     goto cleanup;
   }
-  double start = dt_get_wtime();
 
   size_t num_red = 0;
   size_t num_black = 0;
@@ -347,7 +351,6 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
     collect_runs(0, mask, width, height, subwidth, black_runs, &num_black, &nmask_black);
   }
   const size_t nmask = nmask_red + nmask_black;
-  fprintf(stderr,"* collect_runs: %4.3g  ms\n",1000.0*(dt_get_wtime()-start));
 
   /* Empirically optimal over-relaxation factor. (Benchmarked on
    * round brushes, at least. I don't know whether aspect ratio
