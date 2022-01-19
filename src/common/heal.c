@@ -47,9 +47,9 @@
 
 // Subtract bottom from top and store in result as a float; separate 'red' and 'black' pixels into
 // two contiguous regions
-static void dt_heal_sub(const float *const top_buffer, const float *const bottom_buffer,
-                        float *const restrict red_buffer, float *const restrict black_buffer,
-                        const size_t width, const size_t height)
+static void _heal_sub(const float *const top_buffer, const float *const bottom_buffer,
+                      float *const restrict red_buffer, float *const restrict black_buffer,
+                      const size_t width, const size_t height)
 {
   // how many red or black pixels per line?  For consistency, we need the larger of the two, so round up
   const size_t res_stride = 4 * ((width + 1) / 2);
@@ -96,9 +96,9 @@ static void dt_heal_sub(const float *const top_buffer, const float *const bottom
 }
 
 // Add first to second and store in result, re-interleaving the 'red' and 'black' pixels
-static void dt_heal_add(const float *const restrict red_buffer, const float *const black_buffer,
-                        const float *const restrict second_buffer, float *const restrict result_buffer,
-                        const size_t width, const size_t height)
+static void _heal_add(const float *const restrict red_buffer, const float *const black_buffer,
+                      const float *const restrict second_buffer, float *const restrict result_buffer,
+                      const size_t width, const size_t height)
 {
   // how many red or black pixels per line?  For consistency, we need the larger of the two, so round up, then
   // add one to ensure a padding pixel on the right
@@ -141,20 +141,20 @@ static void dt_heal_add(const float *const restrict red_buffer, const float *con
 // we can't return an array from a function, so wrap the array type in a struct
 typedef struct _aligned_pixel { dt_aligned_pixel_t v; } _aligned_pixel;
 #ifdef _OPENMP
-static inline _aligned_pixel add_float4(_aligned_pixel acc, _aligned_pixel newval)
+static inline _aligned_pixel _add_float4(_aligned_pixel acc, _aligned_pixel newval)
 {
   for_each_channel(c) acc.v[c] += newval.v[c];
   return acc;
 }
-#pragma omp declare reduction(vsum:_aligned_pixel:omp_out=add_float4(omp_out,omp_in)) \
+#pragma omp declare reduction(vsum:_aligned_pixel:omp_out=_add_float4(omp_out,omp_in)) \
   initializer(omp_priv = { { 0.0f, 0.0f, 0.0f, 0.0f } })
 #endif
 
 // Perform one iteration of Gauss-Seidel, and return the sum squared residual.
-static float dt_heal_laplace_iteration(float *const restrict active_pixels,
-                                       const float *const restrict neighbor_pixels,
-                                       const size_t height, const size_t width, const unsigned *const restrict runs,
-                                       const size_t num_runs, const size_t start_parity, const float w)
+static float _heal_laplace_iteration(float *const restrict active_pixels,
+                                     const float *const restrict neighbor_pixels,
+                                     const size_t height, const size_t width, const unsigned *const restrict runs,
+                                     const size_t num_runs, const size_t start_parity, const float w)
 {
   _aligned_pixel err = { { 0.f } };
 
@@ -190,21 +190,21 @@ static float dt_heal_laplace_iteration(float *const restrict active_pixels,
       const size_t index = (size_t)4 * idx;
       const size_t row = idx / width;
       float a = 4.0f; // four neighboring pixels except at the edges
-      if (row == 1) a -= 1.0f;  // we added a padding row at top and bottom
-      if (row == height) a -= 1.0f;
+      if(row == 1) a -= 1.0f;  // we added a padding row at top and bottom
+      if(row == height) a -= 1.0f;
       const size_t vert_offset = 4 * width;
       const size_t lroffset = 4 * (start_parity ^ (row & 1)); // how many floats to offset the left/right neighbors
-      if (count == 1)
+      if(count == 1)
       {
         const size_t col = idx % width;
         float aa = a;
         dt_aligned_pixel_t left = { 0.0f };
         dt_aligned_pixel_t right = { 0.0f };
-        if (col > 0 || lroffset) // first pixel in original stamp?
+        if(col > 0 || lroffset) // first pixel in original stamp?
           for_each_channel(c) left[c] = neighbor_pixels[index - 4 + lroffset + c];
         else
           aa -= 1.0f;
-        if (col + 1 < width || lroffset == 0) // last pixel in original stamp?
+        if(col + 1 < width || lroffset == 0) // last pixel in original stamp?
           for_each_channel(c) right[c] = neighbor_pixels[index + lroffset + c];
         else
           aa -= 1.0f;
@@ -240,9 +240,9 @@ static float dt_heal_laplace_iteration(float *const restrict active_pixels,
 
 // convert alternating pixels of one row of the opacity mask into a set of runs of opaque pixels of the
 // form (start_index, count), and return the updated number of runs
-static size_t collect_color_runs(const float *const restrict mask, const size_t start_index,
-                                 size_t start, const size_t width,
-                                 unsigned *const restrict runs, size_t count, size_t *nmask)
+static size_t _collect_color_runs(const float *const restrict mask, const size_t start_index,
+                                  size_t start, const size_t width,
+                                  unsigned *const restrict runs, size_t count, size_t *nmask)
 {
   size_t masked = 0;
   // handle the first and last pixels of the row specially so that we don't need checks on every pixel in the
@@ -283,7 +283,7 @@ static size_t collect_color_runs(const float *const restrict mask, const size_t 
     runs[2*count] = start_index + run_start / 2;
     const unsigned runlen = (col - run_start) / 2;
     runs[2*count + 1] = runlen;
-    if (runlen > 1 && col > width)
+    if(runlen > 1 && col > width)
     {
       // split off the final pixel into its own run
       runs[2*count + 1]--;
@@ -298,18 +298,18 @@ static size_t collect_color_runs(const float *const restrict mask, const size_t 
 }
 
 // convert one row of the opacity mask into a set of runs of opaque pixels of the form (start_index, count)
-static void collect_runs(const float *const restrict mask, const size_t start_index, const size_t width,
-                         unsigned *const restrict runs1, size_t *count1,
-                         unsigned *const restrict runs2, size_t *count2, size_t *nmask)
+static void _collect_runs(const float *const restrict mask, const size_t start_index, const size_t width,
+                          unsigned *const restrict runs1, size_t *count1,
+                          unsigned *const restrict runs2, size_t *count2, size_t *nmask)
 {
-  *count1 = collect_color_runs(mask, start_index, 0, width, runs1, *count1, nmask);
-  *count2 = collect_color_runs(mask, start_index, 1, width, runs2, *count2, nmask);
+  *count1 = _collect_color_runs(mask, start_index, 0, width, runs1, *count1, nmask);
+  *count2 = _collect_color_runs(mask, start_index, 1, width, runs2, *count2, nmask);
 }
 
 // Solve the laplace equation for pixels and store the result in-place.
-static void dt_heal_laplace_loop(float *const restrict red_pixels, float *const restrict black_pixels,
-                                 const size_t width, const size_t height,
-                                 const float *const restrict mask)
+static void _heal_laplace_loop(float *const restrict red_pixels, float *const restrict black_pixels,
+                               const size_t width, const size_t height,
+                               const float *const restrict mask)
 {
   // we start by converting the opacity mask into runs of nonzero positions, handling the 'red' and 'black'
   // checkerboarded pixels separately
@@ -321,9 +321,9 @@ static void dt_heal_laplace_loop(float *const restrict red_pixels, float *const 
   const size_t subwidth = (width+1)/2;  // round up to be able to handle odd widths
   unsigned *const restrict red_runs = dt_alloc_align(64, sizeof(unsigned) * subwidth * (height + 2));
   unsigned *const restrict black_runs = dt_alloc_align(64, sizeof(unsigned) * subwidth * (height + 2));
-  if (!red_runs || !black_runs)
+  if(!red_runs || !black_runs)
   {
-    fprintf(stderr, "dt_heal_laplace_loop: error allocating memory for healing\n");
+    fprintf(stderr, "_heal_laplace_loop: error allocating memory for healing\n");
     goto cleanup;
   }
 
@@ -336,13 +336,13 @@ static void dt_heal_laplace_loop(float *const restrict red_pixels, float *const 
     const int parity = (row & 1);
     const size_t index = (row + 1) * subwidth; // each color only has half as many, and we've padded a row on top
     const size_t mask_index = row * width;
-    if (parity)
+    if(parity)
     {
-      collect_runs(mask + mask_index, index, width, red_runs, &num_red, black_runs, &num_black, &nmask);
+      _collect_runs(mask + mask_index, index, width, red_runs, &num_red, black_runs, &num_black, &nmask);
     }
     else
     {
-      collect_runs(mask + mask_index, index, width, black_runs, &num_black, red_runs, &num_red, &nmask);
+      _collect_runs(mask + mask_index, index, width, black_runs, &num_black, red_runs, &num_red, &nmask);
     }
   }
 
@@ -357,12 +357,11 @@ static void dt_heal_laplace_loop(float *const restrict red_pixels, float *const 
   const float err_exit = epsilon * epsilon * w * w;
 
   /* Gauss-Seidel with successive over-relaxation */
-  int iter;
-  for(iter = 0; iter < max_iter; iter++)
+  for(int iter = 0; iter < max_iter; iter++)
   {
     // process red/black cells separately
-    float err = dt_heal_laplace_iteration(black_pixels, red_pixels, height, subwidth, black_runs, num_black, 1, w);
-    err += dt_heal_laplace_iteration(red_pixels, black_pixels, height, subwidth, red_runs, num_red, 0, w);
+    float err = _heal_laplace_iteration(black_pixels, red_pixels, height, subwidth, black_runs, num_black, 1, w);
+    err += _heal_laplace_iteration(red_pixels, black_pixels, height, subwidth, red_runs, num_red, 0, w);
 
     if(err < err_exit) break;
   }
@@ -396,12 +395,12 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
   }
 
   /* subtract pattern from image and store the result split by 'red' and 'black' positions  */
-  dt_heal_sub(dest_buffer, src_buffer, red_buffer, black_buffer, width, height);
+  _heal_sub(dest_buffer, src_buffer, red_buffer, black_buffer, width, height);
 
-  dt_heal_laplace_loop(red_buffer, black_buffer, width, height, mask_buffer);
+  _heal_laplace_loop(red_buffer, black_buffer, width, height, mask_buffer);
 
   /* add solution to original image and store in dest */
-  dt_heal_add(red_buffer, black_buffer, src_buffer, dest_buffer, width, height);
+  _heal_add(red_buffer, black_buffer, src_buffer, dest_buffer, width, height);
 
 cleanup:
   if(red_buffer) dt_free_align(red_buffer);
