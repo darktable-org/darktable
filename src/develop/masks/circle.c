@@ -448,6 +448,13 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
       darktable.develop->form_gui->creation = TRUE;
       darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
     }
+
+    // and select the source as default, if the mouse is not moved we are inside the
+    // source and so want to move the source.
+    gui->form_selected = TRUE;
+    gui->source_selected = TRUE;
+    gui->border_selected = FALSE;
+
     return 1;
   }
   return 0;
