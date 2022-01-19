@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-01-18 13:53+0100\n"
-"PO-Revision-Date: 2022-01-18 23:14+0900\n"
+"PO-Revision-Date: 2022-01-19 14:31+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -131,7 +131,7 @@ msgstr "ユーティリティモジュールの内蔵プリセットを非表示
 #: ../src/lua/preferences.c:708 ../src/lua/preferences.c:772
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "ダブルクリックで `%s' にリセット"
+msgstr "ダブルクリックすると、 `%s' にリセット"
 
 #: ../build/bin/preferences_gen.h:3758 ../build/bin/preferences_gen.h:3794
 #: ../build/bin/preferences_gen.h:3830 ../build/bin/preferences_gen.h:3866
@@ -503,7 +503,7 @@ msgstr "ダークルームモードの画像の周囲の余白"
 #: ../src/lua/preferences.c:731
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "ダブルクリックで`%d' にリセットします"
+msgstr "ダブルクリックすると、`%d' にリセットします"
 
 #: ../build/bin/preferences_gen.h:4637
 msgid ""
@@ -7047,7 +7047,7 @@ msgid ""
 "ctrl+click or right-click to select an area"
 msgstr ""
 "画像からGUIの色を抽出\n"
-"Ctrl+クリックあるいは右クリックで領域を選択します"
+"Ctrl+クリックあるいは右クリックすると、領域を選択します"
 
 #: ../src/develop/blend_gui.c:2177
 msgid ""
@@ -7074,7 +7074,7 @@ msgid ""
 "double click to reset. press 'a' to toggle available slider modes.\n"
 "press 'c' to toggle view of channel data. press 'm' to toggle mask view."
 msgstr ""
-"ダブルクリックでリセットします\n"
+"ダブルクリックすると、リセットします\n"
 "'a'を押すと、使用可能なスライダーモードを切り替えます\n"
 "'c'を押すと、チャネルデータの表示／非表示を切り替えます\n"
 "'m'を押すと、マスクの表示／非表示を切り替えます"
@@ -7242,8 +7242,8 @@ msgid ""
 msgstr ""
 "モジュールの入力と出力のブレンド順序の切り替え\n"
 "デフォルトでは、出力が入力の上にブレンドされます\n"
-"アイコンをクリックすると順序を逆にすることが出来ます（出力の上に入力をブレン"
-"ド）"
+"アイコンをクリックすると、順序を逆にすることが出来ます（出力の上に入力をブレ"
+"ンド）"
 
 #: ../src/develop/blend_gui.c:3069 ../src/libs/history.c:875
 msgid "blend fulcrum"
@@ -7363,7 +7363,8 @@ msgid ""
 "display"
 msgstr ""
 "マスクおよび／またはカラーチャンネルを表示\n"
-"Ctrl+クリックでマスクを表示、Shift+クリックでカラーチャンネルを表示します\n"
+"Ctrl+クリックするとマスクを表示、Shift+クリックするとカラーチャンネルを表示し"
+"ます\n"
 "パラメトリックマスクのスライダーの上にカーソルを乗せて、表示するチャンネルを"
 "選択します"
 
@@ -7464,7 +7465,7 @@ msgid ""
 "right-click creates new instance"
 msgstr ""
 "マルチインスタンスのアクション\n"
-"右クリックで新しいインスタンスが作成されます"
+"右クリックすると、新しいインスタンスが作成されます"
 
 #: ../src/develop/imageop.c:2448
 msgid ""
@@ -7472,7 +7473,7 @@ msgid ""
 "ctrl+click to reapply any automatic presets"
 msgstr ""
 "パラメータをリセットします\n"
-"Ctrl+クリックで自動プリセットを再適用します"
+"Ctrl+クリックすると、自動プリセットを再適用します"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2458 ../src/develop/imageop.c:3259
@@ -7486,7 +7487,7 @@ msgid ""
 "right-click to apply on new instance"
 msgstr ""
 "プリセット\n"
-"右クリックで新しいインスタンスに適用します"
+"右クリックすると、新しいインスタンスに適用します"
 
 #: ../src/develop/imageop.c:2713 ../src/develop/imageop.c:2735
 msgid "ERROR"
@@ -7559,7 +7560,7 @@ msgid ""
 "ctrl+click to %s"
 msgstr ""
 "%s\n"
-"Ctrl+クリックで %s"
+"Ctrl+クリックすると、 %s"
 
 #: ../src/develop/lightroom.c:1079
 msgid "cannot find lightroom XMP!"
@@ -7958,7 +7959,7 @@ msgstr "画像が選択されていません！"
 
 #: ../src/dtgtk/resetlabel.c:59
 msgid "double-click to reset"
-msgstr "ダブルクリックでリセットします"
+msgstr "ダブルクリックすると、リセットします"
 
 #: ../src/dtgtk/thumbnail.c:92 ../src/dtgtk/thumbnail.c:118
 msgid "current"
@@ -8555,9 +8556,9 @@ msgid ""
 "double click to add new shortcut\n"
 "start typing for incremental search"
 msgstr ""
-"Delを押すと選択したショートカットを削除します\n"
-"ダブルクリックすると新しいショートカットを追加します\n"
-"文字入力するとインクリメンタルサーチを行います"
+"Delキーを押すと、選択したショートカットを削除します\n"
+"ダブルクリックすると、新しいショートカットを追加します\n"
+"文字入力すると、インクリメンタルサーチを行います"
 
 #: ../src/gui/accelerators.c:657
 msgid ""
@@ -8565,9 +8566,9 @@ msgid ""
 "double click to define new shortcut\n"
 "start typing for incremental search"
 msgstr ""
-"クリックするとショートカットのリストをフィルター検索します\n"
-"ダブルクリックすると新しいショートカットを定義します\n"
-"文字入力するとインクリメンタルサーチを行います"
+"クリックすると、ショートカットのリストをフィルター検索します\n"
+"ダブルクリックすると、新しいショートカットを定義します\n"
+"文字入力すると、インクリメンタルサーチを行います"
 
 #: ../src/gui/accelerators.c:670
 msgid ""
@@ -8579,19 +8580,19 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:671
 msgid "click to open shortcut configuration"
-msgstr "クリックするとショートカットの設定を開きます"
+msgstr "クリックすると、ショートカットの設定を開きます"
 
 #: ../src/gui/accelerators.c:672
 msgid "ctrl+click to add to quick access panel\n"
-msgstr "Ctrl +クリックでクイックアクセスパネルに追加します\n"
+msgstr "Ctrl +クリックすると、クイックアクセスパネルに追加します\n"
 
 #: ../src/gui/accelerators.c:673
 msgid "ctrl+click to remove from quick access panel\n"
-msgstr "Ctrl +クリックでクイックアクセスパネルから削除します\n"
+msgstr "Ctrl +クリックすると、クイックアクセスパネルから削除します\n"
 
 #: ../src/gui/accelerators.c:674
 msgid "right click to exit mapping mode"
-msgstr "右クリックで割り当てモードを終了します"
+msgstr "右クリックすると、割り当てモードを終了します"
 
 #: ../src/gui/accelerators.c:817
 msgid "active view"
@@ -8681,7 +8682,7 @@ msgstr ""
 "接続されているデバイスは物理的コントローラーを用いてキーまたは移動を送信する"
 "ことが出来ます\n"
 "\n"
-"右クリックするとキャンセルします"
+"右クリックすると、キャンセルします"
 
 #: ../src/gui/accelerators.c:1407
 msgid "removing shortcut"
@@ -9491,8 +9492,8 @@ msgid ""
 "double-click on 'preset' to clear all entries"
 msgstr ""
 "デフォルトでメタデータが適用されます\n"
-"ラベルの上でダブルクリックすると対応するエントリを消去します\n"
-"【プリセット】の上でダブルクリックすると全てのエントリを削除します"
+"ラベルの上でダブルクリックすると、対応するエントリを消去します\n"
+"【プリセット】の上でダブルクリックすると、全てのエントリを削除します"
 
 #: ../src/gui/import_metadata.c:422
 msgid "from xmp"
@@ -10789,8 +10790,8 @@ msgid ""
 "shift+click to only fit lens shift"
 msgstr ""
 "垂直方向のパースペクティブの歪みの自動補正\n"
-"Ctrl+クリックで回転のみ補正します\n"
-"Shift+クリックでレンズシフトのみ補正します"
+"Ctrl+クリックすると、回転のみ補正します\n"
+"Shift+クリックすると、レンズシフトのみ補正します"
 
 #: ../src/iop/ashift.c:5841
 msgid ""
@@ -10799,8 +10800,8 @@ msgid ""
 "shift+click to only fit lens shift"
 msgstr ""
 "水平方向のパースペクティブの歪みの自動補正\n"
-"Ctrl+クリックで回転のみ補正します\n"
-"Shift+クリックでレンズシフトのみ補正します"
+"Ctrl+クリックすると、回転のみ補正します\n"
+"Shift+クリックすると、レンズシフトのみ補正します"
 
 #: ../src/iop/ashift.c:5844
 msgid ""
@@ -10812,9 +10813,9 @@ msgid ""
 msgstr ""
 "垂直方向と水平方向のパースペクティブの歪みの自動補正\n"
 "回転、両方向のレンズシフト、せん断変形を補正します\n"
-"Ctrl+クリックで回転のみ補正します\n"
-"Shift+クリックでレンズシフトのみ補正します\n"
-"Ctrl+Shift +クリックで回転とレンズシフトのみ補正します"
+"Ctrl+クリックすると、回転のみ補正します\n"
+"Shift+クリックすると、レンズシフトのみ補正します\n"
+"Ctrl+Shift +クリックすると、回転とレンズシフトのみ補正します"
 
 #: ../src/iop/ashift.c:5850
 msgid ""
@@ -10824,9 +10825,9 @@ msgid ""
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
 "画像の線の構成を自動で分析\n"
-"Ctrl+クリックでエッジ強化をさらに強めます\n"
-"Shift+クリックでディテール強化をさらに強めます\n"
-"Ctrl+Shift +クリックで両方の方法を組み合わせて用います"
+"Ctrl+クリックすると、エッジ強化をさらに強めます\n"
+"Shift+クリックすると、ディテール強化をさらに強めます\n"
+"Ctrl+Shift +クリックすると、両方の方法を組み合わせて用います"
 
 #: ../src/iop/ashift.c:5854
 msgid "manually define perspective rectangle"
@@ -11325,7 +11326,7 @@ msgid ""
 msgstr ""
 "ユーザーが定めた領域に基づいて自動露出を適用します\n"
 "クリックとドラッグで領域を描きます\n"
-"右クリックでキャンセルします"
+"右クリックすると、キャンセルします"
 
 #: ../src/iop/basicadj.c:648
 msgid "clip"
@@ -13246,10 +13247,11 @@ msgid ""
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
 "変更されたパッチには枠線が付きます\n"
-"クリックで選択します\n"
-"ダブルクリックでリセットします\n"
-"右クリックでパッチを削除します\n"
-"画像内で色をピッカーで選択している間にShift+クリックでパッチを置き換えます"
+"クリックすると、選択します\n"
+"ダブルクリックすると、リセットします\n"
+"右クリックすると、パッチを削除します\n"
+"画像内で色をピッカーで選択している間にShift+クリックすると、パッチを置き換え"
+"ます"
 
 #: ../src/iop/colorchecker.c:1345
 msgid "patch"
@@ -15943,7 +15945,7 @@ msgid ""
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
 "change direction"
 msgstr ""
-"クリックで線を追加します\n"
+"クリックすると、線を追加します\n"
 "スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　Ctrl"
 "+スクロールで方向を変更します"
 
@@ -15953,13 +15955,13 @@ msgid ""
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
 "change direction"
 msgstr ""
-"クリックでカーブを追加します\n"
+"クリックすると、カーブを追加します\n"
 "スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　Ctrl"
 "+スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3609
 msgid "click to edit nodes"
-msgstr "クリックでノードを編集します"
+msgstr "クリックすると、ノードを編集します"
 
 # ツールを使用して歪みを加えます
 # 右クリックで歪みを削除します
@@ -15969,7 +15971,7 @@ msgid ""
 "right-click to remove a warp."
 msgstr ""
 "ツールを使用してワープを追加します\n"
-"右クリックでワープを削除します"
+"右クリックすると、ワープを削除します"
 
 #: ../src/iop/liquify.c:3659
 msgid "warps|nodes count:"
@@ -16932,11 +16934,11 @@ msgstr "修復ツールの有効化"
 #. overwrite tooltip ourself to handle shift+click
 #: ../src/iop/retouch.c:2182
 msgid "ctrl+click to change tool for current form"
-msgstr "Ctrl+クリックで、選択中のシェイプで使用するツールを変更します"
+msgstr "Ctrl+クリックすると、選択中のシェイプで使用するツールを変更します"
 
 #: ../src/iop/retouch.c:2183
 msgid "shift+click to set the tool as default"
-msgstr "Shift+クリックで、選択したツールをデフォルトに設定します"
+msgstr "Shift+クリックすると、選択したツールをデフォルトに設定します"
 
 #: ../src/iop/retouch.c:2202
 msgid "scales:"
@@ -17005,8 +17007,8 @@ msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
 msgstr ""
-"シェイプ上でクリックするとシェイプを選択します\n"
-"シェイプのない箇所でクリックすると選択を解除します"
+"シェイプ上でクリックすると、シェイプを選択します\n"
+"シェイプのない箇所でクリックすると、選択を解除します"
 
 #: ../src/iop/retouch.c:2315
 msgid "erase the detail or fills with chosen color"
@@ -17140,7 +17142,7 @@ msgid ""
 msgstr ""
 "ユーザーが定めた領域に基づいてレベルの自動設定を適用\n"
 "クリックしながらドラッグして領域を描きます\n"
-"右クリックでキャンセルします"
+"右クリックすると、キャンセルします"
 
 #: ../src/iop/rotatepixels.c:70
 msgctxt "modulename"
@@ -17387,7 +17389,7 @@ msgid ""
 msgstr ""
 "シェイプ上でクリックし、キャンバス上でドラッグします\n"
 "マウスホイールでサイズを調節します\n"
-"右クリックでシェイプを削除します"
+"右クリックすると、シェイプを削除します"
 
 #: ../src/iop/spots.c:818
 msgid "show and edit shapes"
@@ -17486,7 +17488,7 @@ msgstr "シーンのイルミナントの温度"
 
 #: ../src/iop/temperature.c:1935
 msgid "click to cycle color mode on sliders"
-msgstr "クリックでスライダーの色のモードを切り替えます"
+msgstr "クリックすると、スライダーの色のモードを切り替えます"
 
 #: ../src/iop/temperature.c:1949
 msgid "color temperature (in Kelvin)"
@@ -17788,7 +17790,7 @@ msgstr "高度"
 
 #: ../src/iop/toneequal.c:3209
 msgid "double-click to reset the curve"
-msgstr "ダブルクリックでカーブをリセットします"
+msgstr "ダブルクリックすると、カーブをリセットします"
 
 #: ../src/iop/toneequal.c:3213
 msgid "curve smoothing"
@@ -18413,9 +18415,9 @@ msgid ""
 "ctrl+click to include only sub-hierarchies (suffix `|%')"
 msgstr ""
 "`%'をワイルドカード文字として使用してください\n"
-"クリックで、階層とサブ階層を含めます（サフィックスは`*'）\n"
-"Shift+クリックで、現在の階層のみを含めます（サフィックスなし）\n"
-"Ctrl+クリックでサブ階層のみを含めます（サフィックスは`|%'）"
+"クリックすると、階層とサブ階層を含めます（サフィックスは`*'）\n"
+"Shift+クリックすると、現在の階層のみを含めます（サフィックスなし）\n"
+"Ctrl+クリックすると、サブ階層のみを含めます（サフィックスは`|%'）"
 
 #: ../src/libs/collect.c:2138
 #, no-c-format
@@ -18426,9 +18428,10 @@ msgid ""
 "ctrl+click to include only sub-locations (suffix `|%')"
 msgstr ""
 "`%'をワイルドカード文字として使用してください\n"
-"クリックで、ロケーションとサブロケーションを含めます（サフィックスは`*'）\n"
-"Shift+クリックで、現在のロケーションのみを含めます（サフィックスなし）\n"
-"Ctrl+クリックでサブロケーションのみを含めます（サフィックスは`|%'）"
+"クリックすると、ロケーションとサブロケーションを含めます（サフィックスは"
+"`*'）\n"
+"Shift+クリックすると、現在のロケーションのみを含めます（サフィックスなし）\n"
+"Ctrl+クリックすると、サブロケーションのみを含めます（サフィックスは`|%'）"
 
 #: ../src/libs/collect.c:2150
 #, no-c-format
@@ -18439,9 +18442,10 @@ msgid ""
 "ctrl+click to include only sub-folders (suffix `|%')"
 msgstr ""
 "`%'をワイルドカード文字として使用してください\n"
-"クリックで、カレントフォルダとサブフォルダを含めます（サフィックスは`*'）\n"
-"Shift+クリックで、カレントフォルダのみを含めます（サフィックスなし）\n"
-"Ctrl+クリックでサブフォルダのみを含めます（サフィックスは`|%'）"
+"クリックすると、カレントフォルダとサブフォルダを含めます（サフィックスは"
+"`*'）\n"
+"Shift+クリックすると、カレントフォルダのみを含めます（サフィックスなし）\n"
+"Ctrl+クリックすると、サブフォルダのみを含めます（サフィックスは`|%'）"
 
 #: ../src/libs/collect.c:2161
 #, no-c-format
@@ -18565,12 +18569,12 @@ msgid ""
 "right-click to load sample area into active color picker"
 msgstr ""
 "キャンバス上にカーソルを置くと、サンプルをハイライトします\n"
-"クリックでサンプルをロックします\n"
-"右クリックでサンプル領域をアクティブなカラーピッカーに読み込みます"
+"クリックすると、サンプルをロックします\n"
+"右クリックすると、サンプル領域をアクティブなカラーピッカーに読み込みます"
 
 #: ../src/libs/colorpicker.c:562 ../src/libs/colorpicker.c:612
 msgid "click to (un)hide large color patch"
-msgstr "クリックで大きなカラーパッチの表示／非表示を切り替えます"
+msgstr "クリックすると、大きなカラーパッチの表示／非表示を切り替えます"
 
 #: ../src/libs/colorpicker.c:576
 msgid "statistic"
@@ -18590,7 +18594,7 @@ msgid ""
 "ctrl+click or right-click to select an area"
 msgstr ""
 "カラーピッカーをオンにします\n"
-"Ctrl+クリックまたは右クリックで領域を選択します"
+"Ctrl+クリックまたは右クリックすると、領域を選択します"
 
 #. Adding the live samples section
 #: ../src/libs/colorpicker.c:638
@@ -19252,7 +19256,7 @@ msgid ""
 msgstr ""
 "タイプして許可された値のリストを表示し、あなたのタイムゾーンを選択してくださ"
 "い\n"
-"Enterを押すと確定し、アスタリスクが消えます"
+"Enterを押すと、確定し、アスタリスクが消えます"
 
 #. gpx
 #: ../src/libs/geotagging.c:1797
@@ -19321,7 +19325,7 @@ msgid ""
 "ctrl+scroll to change display height"
 msgstr ""
 "ドラッグでブラックポイント変更します\n"
-"ダブルクリックでリセットします\n"
+"ダブルクリックすると、リセットします\n"
 "Ctrl+スクロールでディスプレイの高さを変更します"
 
 #: ../src/libs/histogram.c:1318
@@ -19331,7 +19335,7 @@ msgid ""
 "ctrl+scroll to change display height"
 msgstr ""
 "ドラッグで露出を変更します\n"
-"ダブルクリックでリセットします\n"
+"ダブルクリックすると、リセットします\n"
 "Ctrl+スクロールでディスプレイの高さを変更します"
 
 #: ../src/libs/histogram.c:1431 ../src/libs/histogram.c:1471
@@ -19381,32 +19385,32 @@ msgstr "ヒストグラムモードにします"
 #: ../src/libs/histogram.c:1633 ../src/libs/histogram.c:1669
 #: ../src/libs/histogram.c:1998
 msgid "click to hide red channel"
-msgstr "クリックで赤チャンネルを非表示にします"
+msgstr "クリックすると、赤チャンネルを非表示にします"
 
 #: ../src/libs/histogram.c:1633 ../src/libs/histogram.c:1669
 #: ../src/libs/histogram.c:1998
 msgid "click to show red channel"
-msgstr "クリックで赤チャンネルを表示します"
+msgstr "クリックすると、赤チャンネルを表示します"
 
 #: ../src/libs/histogram.c:1641 ../src/libs/histogram.c:1667
 #: ../src/libs/histogram.c:2005
 msgid "click to hide green channel"
-msgstr "クリックで緑チャンネルを非表示にします"
+msgstr "クリックすると、緑チャンネルを非表示にします"
 
 #: ../src/libs/histogram.c:1641 ../src/libs/histogram.c:1667
 #: ../src/libs/histogram.c:2005
 msgid "click to show green channel"
-msgstr "クリックで緑チャンネルを表示します"
+msgstr "クリックすると、緑チャンネルを表示します"
 
 #: ../src/libs/histogram.c:1649 ../src/libs/histogram.c:1668
 #: ../src/libs/histogram.c:2011
 msgid "click to hide blue channel"
-msgstr "クリックで青チャンネルを非表示にします"
+msgstr "クリックすると、青チャンネルを非表示にします"
 
 #: ../src/libs/histogram.c:1649 ../src/libs/histogram.c:1668
 #: ../src/libs/histogram.c:2011
 msgid "click to show blue channel"
-msgstr "クリックで青チャンネルを表示します"
+msgstr "クリックすると、青チャンネルを表示します"
 
 #: ../src/libs/histogram.c:2120
 msgctxt "accel"
@@ -19469,7 +19473,7 @@ msgid ""
 "ctrl-click to truncate history to the selected item"
 msgstr ""
 "同じ画像を生成する最小限の履歴スタックを作成します\n"
-"Ctrl+クリックで、選択した項目の履歴を切り捨てます"
+"Ctrl+クリックすると、選択した項目の履歴を切り捨てます"
 
 #: ../src/libs/history.c:152
 msgid "create a style from the current history stack"
@@ -19904,7 +19908,7 @@ msgstr "場所"
 
 #: ../src/libs/import.c:1217
 msgid "restore all default places you have removed by right-click"
-msgstr "右クリックで削除したデフォルト設定の位置を全て復元します"
+msgstr "右クリックすると、削除したデフォルト設定の位置を全て復元します"
 
 #: ../src/libs/import.c:1222
 msgid ""
@@ -19914,7 +19918,7 @@ msgid ""
 msgstr ""
 "カスタム設定の場所を追加します\n"
 "\n"
-"場所の上で右クリックで削除します"
+"場所の上で右クリックすると、削除します"
 
 #: ../src/libs/import.c:1229
 msgid "you can add custom places using the plus icon"
@@ -20284,16 +20288,17 @@ msgid ""
 "ctrl-wheel scroll to resize the window"
 msgstr ""
 "ユーザーのロケーションのリスト\n"
-"クリックで地図上のロケーションの表示／非表示を切り替えます\n"
+"クリックすると、地図上のロケーションの表示／非表示を切り替えます\n"
 " ・シェイプの中でホイールをスクロールすると、サイズを変更します\n"
 " ・<Shift>または<Ctrl>+スクロールで、幅または高さを変更します\n"
 " ・シェイプの中でクリックしてドラッグすると、位置を変更します\n"
-" ・Ctrl+クリックで、ロケーションの中から画像を移動します\n"
-"Ctrl+クリックでロケーションの名前を編集します\n"
+" ・Ctrl+クリックすると、ロケーションの中から画像を移動します\n"
+"Ctrl+クリックすると、ロケーションの名前を編集します\n"
 " ・パイプ記号 '|' は名前をいくつかのレベルに分割します\n"
 " ・ロケーションのグループを削除するには、その名前を削除してください\n"
-" ・Enterキーで新しい名前を有効にし、Escキーで編集をキャンセルします\n"
-"右クリックで他のアクション：ロケーションの削除とコレクションへ移動\n"
+" ・Enterキーを押すと新しい名前を有効にし、Escキーを押すと編集をキャンセルしま"
+"す\n"
+"右クリックすると、他のアクション：ロケーションの削除とコレクションへ移動\n"
 "Ctrl+ホイールスクロールでウィンドウのサイズを変更します"
 
 #: ../src/libs/map_locations.c:991
@@ -20444,10 +20449,10 @@ msgid ""
 msgstr ""
 "メタデータテキスト。Ctrl+ホイールスクロールでテキストボックスのサイズを変更し"
 "ます\n"
-"Ctrl+Enterで新しい行を挿入します（標準的なメタデータと互換性がない場合があり"
-"ます）\n"
+"Ctrl+Enterキーを押すと、新しい行を挿入します（標準的なメタデータと互換性がな"
+"い場合があります）\n"
 "<変更しない>場合、選択した画像は様々なメタデータを持ちます\n"
-"その場合、右クリックするとそのうちの1つを選択出来ます\n"
+"その場合、右クリックすると、そのうちの1つを選択出来ます\n"
 "Escキーでポップアップウィンドウから出ます"
 
 #: ../src/libs/metadata.c:783
@@ -20618,7 +20623,7 @@ msgid ""
 "double click to jump to film roll\n"
 "%s"
 msgstr ""
-"ダブルクリックでフィルムロールへ移動します\n"
+"ダブルクリックすると、フィルムロールへ移動します\n"
 "%s"
 
 #: ../src/libs/metadata_view.c:782
@@ -20843,11 +20848,6 @@ msgstr ""
 "履歴スタック内にあるモジュールを、現在有効であるかに関わらず、表示します"
 
 #: ../src/libs/modulegroups.c:2787
-#, fuzzy
-#| msgid ""
-#| "the following modules are deprecated because they have internal design "
-#| "mistakes which can't be solved and alternative modules which solve them.\n"
-#| "they will be removed for new edits in the next release."
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes which can't be solved and alternative modules which solve them.\n"
@@ -20871,7 +20871,7 @@ msgid ""
 "ctrl+click to manage"
 msgstr ""
 "プリセット\n"
-"Ctrl+クリックで管理画面を表示します"
+"Ctrl+クリックすると、管理画面を表示します"
 
 #: ../src/libs/modulegroups.c:2839
 msgid "search modules by name or tag"
@@ -21468,7 +21468,7 @@ msgid ""
 "doubleclick to apply"
 msgstr ""
 "使用可能なスタイル\n"
-"ダブルクリックで適用します"
+"ダブルクリックすると、適用します"
 
 #: ../src/libs/styles.c:827 ../src/libs/styles.c:828
 msgid "filter style names"
@@ -21806,8 +21806,8 @@ msgid ""
 msgstr ""
 "添付済みタグ\n"
 "Deleteキーを押す、またはダブルクリックすると、タグを外します\n"
-"右クリックで添付済みタグに対して他のアクションをします\n"
-"Tabキーを押すと入力にフォーカスします\n"
+"右クリックすると、添付済みタグに対して他のアクションをします\n"
+"Tabキーを押すと、入力にフォーカスします\n"
 "Ctrl+ホイールスクロールでウィンドウのサイズを変更します"
 
 #: ../src/libs/tagging.c:3158
@@ -21867,10 +21867,10 @@ msgstr ""
 "タグのディクショナリー\n"
 "Enterキーを押す、またはダブルクリックすると、選択した画像に選択したタグを付け"
 "ます\n"
-"Shift+Enterで、同じ操作を行い、さらに入力にフォーカスします\n"
-"Shift+クリックで、選択したタグを完全に展開します\n"
-"右クリックで、選択したタグに対して他のアクションをします\n"
-"Shift+Tabで入力にフォーカスします\n"
+"Shift+Enterキーを押すと、上と同じ操作を行い、さらに入力にフォーカスします\n"
+"Shift+クリックすると、選択したタグを完全に展開します\n"
+"右クリックすると、選択したタグに対して他のアクションをします\n"
+"Shift+Tabキーを押すと、入力にフォーカスします\n"
 "Ctrl+ホイールスクロールでウィンドウのサイズを変更します"
 
 #: ../src/libs/tagging.c:3303
@@ -22210,31 +22210,31 @@ msgstr "画像情報"
 
 #: ../src/libs/tools/lighttable.c:117
 msgid "click to exit from full preview layout."
-msgstr "クリックでフルプレビューレイアウトから出ます"
+msgstr "クリックすると、フルプレビューレイアウトから出ます"
 
 #: ../src/libs/tools/lighttable.c:119
 msgid "click to enter full preview layout."
-msgstr "クリックでフルプレビューレイアウトに入ります"
+msgstr "クリックすると、フルプレビューレイアウトに入ります"
 
 #: ../src/libs/tools/lighttable.c:122
 msgid "click to enter culling layout in fixed mode."
-msgstr "クリックで選別カリングレイアウト固定モードを出ます"
+msgstr "クリックすると、選別カリングレイアウト固定モードを出ます"
 
 #: ../src/libs/tools/lighttable.c:124 ../src/libs/tools/lighttable.c:129
 msgid "click to exit culling layout."
-msgstr "クリックで選別レイアウトを出ます"
+msgstr "クリックすると、選別レイアウトを出ます"
 
 #: ../src/libs/tools/lighttable.c:127
 msgid "click to enter culling layout in dynamic mode."
-msgstr "クリックで選別レイアウト動的モードに入ります"
+msgstr "クリックすると、選別レイアウト動的モードに入ります"
 
 #: ../src/libs/tools/lighttable.c:262
 msgid "click to enter filemanager layout."
-msgstr "クリックでファイルマネージャーレイアウトに入ります"
+msgstr "クリックすると、ファイルマネージャーレイアウトに入ります"
 
 #: ../src/libs/tools/lighttable.c:271
 msgid "click to enter zoomable lighttable layout."
-msgstr "クリックでズーム可能なライトテーブルレイアウトに入ります"
+msgstr "クリックすると、ズーム可能なライトテーブルレイアウトに入ります"
 
 #. view accels
 #: ../src/libs/tools/lighttable.c:572
@@ -22315,7 +22315,7 @@ msgstr "ファイルを選択する"
 #: ../src/lua/preferences.c:758
 #, c-format
 msgid "double click to reset to `%f'"
-msgstr "ダブルクリックで`%f'にリセット"
+msgstr "ダブルクリックすると、`%f'にリセット"
 
 #: ../src/lua/preferences.c:834
 msgid "lua options"
@@ -22955,7 +22955,7 @@ msgstr "最後の画像"
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "最後の画像\n"
-"任意のキーを押すとライトテーブルモードに戻ります"
+"任意のキーを押すと、ライトテーブルモードに戻ります"
 
 #: ../src/views/slideshow.c:344
 msgid "slideshow"
