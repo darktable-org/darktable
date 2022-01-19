@@ -682,7 +682,7 @@ static void print_roi(const dt_iop_roi_t *roi, const char *label)
 }
 #endif
 
-static inline void shadow_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+static inline void _shadow_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
 {
   // copy actual crop box values into shadow variables
   g->cl = p->cl;
@@ -691,7 +691,7 @@ static inline void shadow_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_
   g->cb = p->cb;
 }
 
-static void clear_shadow_crop_box(dt_iop_ashift_gui_data_t *g)
+static void _clear_shadow_crop_box(dt_iop_ashift_gui_data_t *g)
 {
   // reset the crop to the full image
   g->cl = 0.0f;
@@ -700,7 +700,7 @@ static void clear_shadow_crop_box(dt_iop_ashift_gui_data_t *g)
   g->cb = 1.0f;
 }
 
-static inline void commit_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+static inline void _commit_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
 {
   // copy shadow values for crop box into actual parameters
   p->cl = g->cl;
@@ -709,7 +709,7 @@ static inline void commit_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_
   p->cb = g->cb;
 }
 
-static inline void swap_shadow_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
+static inline void _swap_shadow_crop_box(dt_iop_ashift_params_t *p, dt_iop_ashift_gui_data_t *g)
 {
   // exchange shadow values and actual crop values
   // this is needed for a temporary commit to be able to properly update the undo history
@@ -1494,18 +1494,18 @@ static int line_detect(float *in, const int width, const int height, const int x
 
     for(int n = 0; n < lines_count; n++)
     {
-      float x1 = lsd_lines[n * 7 + 0];
-      float y1 = lsd_lines[n * 7 + 1];
-      float x2 = lsd_lines[n * 7 + 2];
-      float y2 = lsd_lines[n * 7 + 3];
+      const float x1 = lsd_lines[n * 7 + 0];
+      const float y1 = lsd_lines[n * 7 + 1];
+      const float x2 = lsd_lines[n * 7 + 2];
+      const float y2 = lsd_lines[n * 7 + 3];
 
       // check for lines running along image borders and skip them.
       // these would likely be false-positives which could result
       // from any kind of processing artifacts
-      if((fabsf(x1 - x2) < 1 && fmaxf(x1, x2) < 2) ||
-         (fabsf(x1 - x2) < 1 && fminf(x1, x2) > width - 3) ||
-         (fabsf(y1 - y2) < 1 && fmaxf(y1, y2) < 2) ||
-         (fabsf(y1 - y2) < 1 && fminf(y1, y2) > height - 3))
+      if((fabsf(x1 - x2) < 1 && fmaxf(x1, x2) < 2)
+         || (fabsf(x1 - x2) < 1 && fminf(x1, x2) > width - 3)
+         || (fabsf(y1 - y2) < 1 && fmaxf(y1, y2) < 2)
+         || (fabsf(y1 - y2) < 1 && fminf(y1, y2) > height - 3))
         continue;
 
       // line position in absolute coordinates
@@ -1610,7 +1610,7 @@ error:
 }
 
 // get image from buffer, analyze for structure and save results
-static int get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhance)
+static int _get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhance)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -1912,7 +1912,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
 
 // try to clean up structural data by eliminating outliers and thereby increasing
 // the chance of a convergent fitting
-static int remove_outliers(dt_iop_module_t *module)
+static int _remove_outliers(dt_iop_module_t *module)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -2531,8 +2531,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   // reset fit margins if auto-cropping is off
   if(p->cropmode == ASHIFT_CROP_OFF)
   {
-    clear_shadow_crop_box(g);
-    commit_crop_box(p,g);
+    _clear_shadow_crop_box(g);
+    _commit_crop_box(p, g);
     return;
   }
 
@@ -2664,8 +2664,8 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 failed:
   // in case of failure: reset clipping margins, set "automatic cropping" parameter
   // to "off" state, and display warning message
-  clear_shadow_crop_box(g);
-  commit_crop_box(p,g);
+  _clear_shadow_crop_box(g);
+  _commit_crop_box(p, g);
   p->cropmode = ASHIFT_CROP_OFF;
   dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
   g->fitting = 0;
@@ -2882,12 +2882,14 @@ static void _draw_save_lines_to_params(dt_iop_module_t *self)
   if(g->current_structure_method == ASHIFT_METHOD_LINES && g->lines && g->lines_count > 0)
   {
     p->last_drawn_lines_count = 0;
+
     for(int i = 0; i < g->lines_count; i++)
     {
       // we only save selected lines, not removed ones
-      if(g->lines[i].type == ASHIFT_LINE_HORIZONTAL_SELECTED || g->lines[i].type == ASHIFT_LINE_VERTICAL_SELECTED)
+      if(g->lines[i].type == ASHIFT_LINE_HORIZONTAL_SELECTED
+         || g->lines[i].type == ASHIFT_LINE_VERTICAL_SELECTED)
       {
-        p->last_drawn_lines[p->last_drawn_lines_count * 4] = g->lines[i].p1[0];
+        p->last_drawn_lines[p->last_drawn_lines_count * 4    ] = g->lines[i].p1[0];
         p->last_drawn_lines[p->last_drawn_lines_count * 4 + 1] = g->lines[i].p1[1];
         p->last_drawn_lines[p->last_drawn_lines_count * 4 + 2] = g->lines[i].p2[0];
         p->last_drawn_lines[p->last_drawn_lines_count * 4 + 3] = g->lines[i].p2[1];
@@ -2916,11 +2918,14 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self, dt_iop_a
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
   const float pr_d = self->dev->preview_downsampling;
 
-  if(method == ASHIFT_METHOD_QUAD && p->last_quad_lines[0] > 0.0f && p->last_quad_lines[1] > 0.0f
+  if(method == ASHIFT_METHOD_QUAD
+     && p->last_quad_lines[0] > 0.0f && p->last_quad_lines[1] > 0.0f
      && p->last_quad_lines[2] > 0.0f && p->last_quad_lines[3] > 0.0f)
   {
-    float pts[8] = { p->last_quad_lines[0], p->last_quad_lines[1], p->last_quad_lines[2], p->last_quad_lines[3],
-                     p->last_quad_lines[4], p->last_quad_lines[5], p->last_quad_lines[6], p->last_quad_lines[7] };
+    float pts[8] = { p->last_quad_lines[0], p->last_quad_lines[1],
+                     p->last_quad_lines[2], p->last_quad_lines[3],
+                     p->last_quad_lines[4], p->last_quad_lines[5],
+                     p->last_quad_lines[6], p->last_quad_lines[7] };
     if(dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                      DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, 4))
     {
@@ -2953,7 +2958,9 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self, dt_iop_a
   if(method == ASHIFT_METHOD_LINES && p->last_drawn_lines_count > 0)
   {
     float pts[MAX_SAVED_LINES * 4] = { 0.0f };
-    for(int i = 0; i < p->last_drawn_lines_count * 4; i++) pts[i] = p->last_drawn_lines[i];
+
+    for(int i = 0; i < p->last_drawn_lines_count * 4; i++)
+      pts[i] = p->last_drawn_lines[i];
 
     if(dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                      DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, p->last_drawn_lines_count * 2))
@@ -2992,7 +2999,7 @@ static gboolean _draw_retrieve_lines_from_params(dt_iop_module_t *self, dt_iop_a
 }
 
 // helper function to clean structural data
-static int do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p, gboolean save_drawn)
+static int _do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p, gboolean save_drawn)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
@@ -3036,7 +3043,7 @@ static int _do_get_structure_auto(dt_iop_module_t *module, dt_iop_ashift_params_
     goto error;
   }
 
-  if(!get_structure(module, enhance))
+  if(!_get_structure(module, enhance))
   {
     dt_control_log(_("could not detect structural data in image"));
 #ifdef ASHIFT_DEBUG
@@ -3047,12 +3054,12 @@ static int _do_get_structure_auto(dt_iop_module_t *module, dt_iop_ashift_params_
     goto error;
   }
 
-  if(!remove_outliers(module))
+  if(!_remove_outliers(module))
   {
     dt_control_log(_("could not run outlier removal"));
 #ifdef ASHIFT_DEBUG
     // find out more
-    printf("remove_outliers: buf %p, buf_hash %lu, buf_width %d, buf_height %d, lines %p, lines_count %d\n",
+    printf("_remove_outliers: buf %p, buf_hash %lu, buf_width %d, buf_height %d, lines %p, lines_count %d\n",
            g->buf, g->buf_hash, g->buf_width, g->buf_height, g->lines, g->lines_count);
 #endif
     goto error;
@@ -3090,7 +3097,7 @@ static void _do_get_structure_lines(dt_iop_module_t *self)
 
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
 
-  do_clean_structure(self, p, TRUE);
+  _do_clean_structure(self, p, TRUE);
 
   // if the button is unselected, we don't go further
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_lines)))
@@ -3137,7 +3144,7 @@ static void _do_get_structure_quad(dt_iop_module_t *self)
 
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
 
-  do_clean_structure(self, p, TRUE);
+  _do_clean_structure(self, p, TRUE);
 
   // if the button is unselected, we don't go further
   if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->structure_quad)))
@@ -3517,8 +3524,8 @@ error:
 #endif
 
 // gather information about "near"-ness in g->points_idx
-static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, const int lines_count, float pzx,
-                     float pzy, float delta, gboolean multiple)
+static void _get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx, const int lines_count, float pzx,
+                      float pzy, float delta, gboolean multiple)
 {
   const float delta2 = delta * delta;
 
@@ -3562,9 +3569,9 @@ static void get_near(const float *points, dt_iop_ashift_points_idx_t *points_idx
 }
 
 // mark lines which are inside a rectangular area in isbounding mode
-static void get_bounded_inside(const float *points, dt_iop_ashift_points_idx_t *points_idx,
-                               const int points_lines_count, float pzx, float pzy,
-                               float pzx2, float pzy2, dt_iop_ashift_bounding_t mode)
+static void _get_bounded_inside(const float *points, dt_iop_ashift_points_idx_t *points_idx,
+                                const int points_lines_count, float pzx, float pzy,
+                                float pzx2, float pzy2, dt_iop_ashift_bounding_t mode)
 {
   // get bounding box coordinates
   float ax = pzx;
@@ -3609,7 +3616,7 @@ static void get_bounded_inside(const float *points, dt_iop_ashift_points_idx_t *
 }
 
 // generate hash value for lines taking into account only the end point coordinates
-static uint64_t get_lines_hash(const dt_iop_ashift_line_t *lines, const int lines_count)
+static uint64_t _get_lines_hash(const dt_iop_ashift_line_t *lines, const int lines_count)
 {
   uint64_t hash = 5381;
   for(int n = 0; n < lines_count; n++)
@@ -3928,7 +3935,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_stroke(cr);
 
     // if adjusting crop, draw indicator
-    if (g->adjust_crop && p->cropmode == ASHIFT_CROP_ASPECT)
+    if(g->adjust_crop && p->cropmode == ASHIFT_CROP_ASPECT)
     {
       const double x1 = C[0][0];
       const double x2 = fabs(x1 - C[1][0]) < 0.001f ? C[2][0] : C[1][0];
@@ -4057,7 +4064,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // get hash value that changes if distortions from here to the end of the pixelpipe changed
   uint64_t hash = dt_dev_hash_distort(dev);
   // get hash value that changes if coordinates of lines have changed
-  uint64_t lines_hash = get_lines_hash(g->lines, g->lines_count);
+  uint64_t lines_hash = _get_lines_hash(g->lines, g->lines_count);
 
   // points data are missing or outdated, or distortion has changed?
   if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash ||
@@ -4225,8 +4232,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 }
 
 // update the number of selected vertical and horizontal lines
-static void update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
-                               int *vertical_count, int *horizontal_count)
+static void _update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
+                                int *vertical_count, int *horizontal_count)
 {
   int vlines = 0;
   int hlines = 0;
@@ -4288,7 +4295,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   pzx += 0.5f;
   pzy += 0.5f;
 
-  if (g->adjust_crop)
+  if(g->adjust_crop)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 
@@ -4458,8 +4465,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     if(wd >= 1.0 && ht >= 1.0)
     {
       // mark lines inside the rectangle
-      get_bounded_inside(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->lastx * wd,
-                         g->lasty * ht, g->isbounding);
+      _get_bounded_inside(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->lastx * wd,
+                          g->lasty * ht, g->isbounding);
     }
 
     dt_control_queue_redraw_center();
@@ -4467,7 +4474,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   }
 
   // gather information about "near"-ness in g->points_idx
-  get_near(
+  _get_near(
       g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta,
       !(g->current_structure_method == ASHIFT_METHOD_LINES || g->current_structure_method == ASHIFT_METHOD_QUAD));
 
@@ -4494,7 +4501,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
   if(handled)
   {
-    update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
+    _update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
     g->lines_version++;
     g->selecting_lines_version++;
   }
@@ -4509,7 +4516,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
                    uint32_t state)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  int handled = 0;
+  gboolean handled = FALSE;
 
   // avoid unexpected back to lt mode:
   if(type == GDK_2BUTTON_PRESS && which == 1)
@@ -4540,7 +4547,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   if(g->current_structure_method != ASHIFT_METHOD_LINES && !g->lines)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-    if (p->cropmode == ASHIFT_CROP_ASPECT)
+    if(p->cropmode == ASHIFT_CROP_ASPECT)
     {
       dt_control_change_cursor(GDK_HAND1);
       g->adjust_crop = TRUE;
@@ -4600,9 +4607,10 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     g->near_delta = dt_conf_get_float("plugins/darkroom/ashift/near_delta");
 
   // gather information about "near"-ness in g->points_idx
-  get_near(
-      g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta,
-      !(g->current_structure_method == ASHIFT_METHOD_QUAD || g->current_structure_method == ASHIFT_METHOD_LINES));
+  _get_near(g->points, g->points_idx, g->points_lines_count,
+            pzx * wd, pzy * ht, g->near_delta,
+            !(g->current_structure_method == ASHIFT_METHOD_QUAD
+              || g->current_structure_method == ASHIFT_METHOD_LINES));
 
   if((g->current_structure_method == ASHIFT_METHOD_LINES && which == 1)
      || g->current_structure_method == ASHIFT_METHOD_QUAD)
@@ -4666,17 +4674,17 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
           g->lines_count = count;
         }
 
-        handled = 1;
+        handled = TRUE;
       }
       else if(g->current_structure_method != ASHIFT_METHOD_LINES)
       {
         g->lines[n].type |= ASHIFT_LINE_SELECTED;
-        handled = 1;
+        handled = TRUE;
       }
     }
   }
 
-  if(handled == 0 && g->current_structure_method == ASHIFT_METHOD_LINES && which == 1)
+  if(!handled && g->current_structure_method == ASHIFT_METHOD_LINES && which == 1)
   {
     // start to draw a manual line
     g->draw_point_move = TRUE;
@@ -4729,7 +4737,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   if(handled)
   {
-    update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
+    _update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
     g->lines_version++;
     g->selecting_lines_version++;
   }
@@ -4825,14 +4833,14 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     return TRUE;
   }
 
-  if (g->adjust_crop)
+  if(g->adjust_crop)
   {
     // stop adjust crop
     g->adjust_crop = FALSE;
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-    swap_shadow_crop_box(p,g);  // temporarily update the crop box in p
+    _swap_shadow_crop_box(p,g);  // temporarily update the crop box in p
     dt_dev_add_history_item(darktable.develop, self, TRUE);
-    swap_shadow_crop_box(p,g);  // restore p
+    _swap_shadow_crop_box(p,g);  // restore p
   }
 
   // finalize the isbounding mode
@@ -4851,8 +4859,8 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(wd >= 1.0 && ht >= 1.0)
     {
       // mark lines inside the rectangle
-      get_bounded_inside(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->lastx * wd,
-                         g->lasty * ht, g->isbounding);
+      _get_bounded_inside(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->lastx * wd,
+                          g->lasty * ht, g->isbounding);
 
       // select or deselect lines within the rectangle according to isbounding state
       for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
@@ -4873,7 +4881,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
       if(handled)
       {
-        update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
+        _update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
         g->lines_version++;
         g->selecting_lines_version++;
       }
@@ -4936,7 +4944,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
       return TRUE;
 
     // gather information about "near"-ness in g->points_idx
-    get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta, TRUE);
+    _get_near(g->points, g->points_idx, g->points_lines_count, pzx * wd, pzy * ht, g->near_delta, TRUE);
 
     // iterate over all lines close to the pointer and change "selected" state.
     for(int n = 0; g->selecting_lines_version == g->lines_version && n < g->points_lines_count; n++)
@@ -4960,7 +4968,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
 
     if(handled)
     {
-      update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
+      _update_lines_count(g->lines, g->lines_count, &g->vertical_count, &g->horizontal_count);
       g->lines_version++;
       g->selecting_lines_version++;
     }
@@ -4983,7 +4991,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(g->buf_height > 0 && g->buf_width > 0)
   {
     do_crop(self, p);
-    commit_crop_box(p, g);
+    _commit_crop_box(p, g);
   }
   else
   {
@@ -5000,7 +5008,7 @@ void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
   /* reset eventual remaining structures */
-  do_clean_structure(self, p, FALSE);
+  _do_clean_structure(self, p, FALSE);
   _gui_update_structure_states(self, NULL);
   // force to reprocess the preview, otherwise the buffer is ko
   dt_dev_pixelpipe_flush_caches(self->dev->preview_pipe);
@@ -5015,9 +5023,9 @@ static void cropmode_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   dt_conf_set_int("plugins/darkroom/ashift/autocrop_value", dt_bauhaus_combobox_get(g->cropmode));
-  swap_shadow_crop_box(p,g);	//temporarily update real crop box
+  _swap_shadow_crop_box(p,g);	//temporarily update real crop box
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  swap_shadow_crop_box(p,g);
+  _swap_shadow_crop_box(p,g);
 }
 
 static int _event_fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -5065,9 +5073,9 @@ static int _event_fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event,
       g->jobparams = g->lastfit = fitaxis;
     }
 
-    swap_shadow_crop_box(p, g);                             // temporarily update real crop box
+    _swap_shadow_crop_box(p, g);                             // temporarily update real crop box
     dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
-    swap_shadow_crop_box(p, g);
+    _swap_shadow_crop_box(p, g);
     return TRUE;
   }
   return FALSE;
@@ -5118,9 +5126,9 @@ static int _event_fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event,
       g->jobparams = g->lastfit = fitaxis;
     }
 
-    swap_shadow_crop_box(p, g);                             // temporarily update real crop box
+    _swap_shadow_crop_box(p, g);                             // temporarily update real crop box
     dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
-    swap_shadow_crop_box(p, g);
+    _swap_shadow_crop_box(p, g);
     return TRUE;
   }
   return FALSE;
@@ -5173,9 +5181,9 @@ static int _event_fit_both_button_clicked(GtkWidget *widget, GdkEventButton *eve
       g->jobparams = g->lastfit = fitaxis;
     }
 
-    swap_shadow_crop_box(p, g);                             // temporarily update real crop box
+    _swap_shadow_crop_box(p, g);                             // temporarily update real crop box
     dt_dev_add_history_item(darktable.develop, self, TRUE); //also calls dt_control_queue_redraw_center
-    swap_shadow_crop_box(p, g);
+    _swap_shadow_crop_box(p, g);
     return TRUE;
   }
   return FALSE;
@@ -5191,7 +5199,7 @@ static int _event_structure_auto_clicked(GtkWidget *widget, GdkEventButton *even
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-    do_clean_structure(self, p, TRUE);
+    _do_clean_structure(self, p, TRUE);
 
     const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
     const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
@@ -5266,11 +5274,11 @@ static void _event_process_after_preview_callback(gpointer instance, gpointer us
   {
     case ASHIFT_JOBCODE_DO_CROP:
       do_crop(self, p);
-      commit_crop_box(p, g);
+      _commit_crop_box(p, g);
       // save all that
-      swap_shadow_crop_box(p, g); // temporarily update real crop box
+      _swap_shadow_crop_box(p, g); // temporarily update real crop box
       dt_dev_add_history_item(darktable.develop, self, TRUE);
-      swap_shadow_crop_box(p, g);
+      _swap_shadow_crop_box(p, g);
       break;
 
     case ASHIFT_JOBCODE_GET_STRUCTURE_QUAD:
@@ -5368,7 +5376,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
 
   // copy crop box into shadow variables
-  shadow_crop_box(p,g);
+  _shadow_crop_box(p,g);
 
   // update values expander
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle));
@@ -5545,9 +5553,9 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-    if (in)
+    if(in)
     {
-      shadow_crop_box(p,g);
+      _shadow_crop_box(p,g);
       dt_control_queue_redraw_center();
     }
     else
@@ -5555,7 +5563,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       // once the pipe is recomputed, we want to update final sizes
       DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                                       G_CALLBACK(_event_preview_updated_callback), self);
-      commit_crop_box(p,g);
+      _commit_crop_box(p, g);
     }
   }
 }
