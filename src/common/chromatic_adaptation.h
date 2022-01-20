@@ -36,13 +36,17 @@ typedef enum dt_adaptation_t
 // but coeffs are wrong in the above, so they come from :
 // http://www2.cmp.uea.ac.uk/Research/compvis/Papers/FinSuss_COL00.pdf
 // At any time, ensure XYZ_to_LMS is the exact matrice inverse of LMS_to_XYZ
-const dt_colormatrix_t XYZ_to_Bradford_LMS = { {  0.8951f,  0.2664f, -0.1614f, 0.f },
-                                               { -0.7502f,  1.7135f,  0.0367f, 0.f },
-                                               {  0.0389f, -0.0685f,  1.0296f, 0.f } };
+const dt_colormatrix_t XYZ_to_Bradford_LMS_transposed = {
+  {  0.8951f, -0.7502f,  0.0389f, 0.f },
+  {  0.2664f,  1.7135f, -0.0685f, 0.f },
+  { -0.1614f,  0.0367f,  1.0296f, 0.f }
+};
 
-const dt_colormatrix_t Bradford_LMS_to_XYZ = { {  0.9870f, -0.1471f,  0.1600f, 0.f },
-                                               {  0.4323f,  0.5184f,  0.0493f, 0.f },
-                                               { -0.0085f,  0.0400f,  0.9685f, 0.f } };
+const dt_colormatrix_t Bradford_LMS_to_XYZ_transposed = {
+  {  0.9870f, 0.4323f, -0.0085f, 0.f },
+  { -0.1471f, 0.5184f,  0.0400f, 0.f },
+  {  0.1600f, 0.0493f,  0.9685f, 0.f },
+};
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
@@ -50,7 +54,7 @@ const dt_colormatrix_t Bradford_LMS_to_XYZ = { {  0.9870f, -0.1471f,  0.1600f, 0
 static inline void convert_XYZ_to_bradford_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
   // Warning : needs XYZ normalized with Y - you need to downscale before
-  dot_product(XYZ, XYZ_to_Bradford_LMS, LMS);
+  dt_apply_transposed_color_matrix(XYZ, XYZ_to_Bradford_LMS_transposed, LMS);
 }
 
 #ifdef _OPENMP
@@ -59,20 +63,24 @@ static inline void convert_XYZ_to_bradford_LMS(const dt_aligned_pixel_t XYZ, dt_
 static inline void convert_bradford_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
   // Warning : output XYZ normalized with Y - you need to upscale later
-  dot_product(LMS, Bradford_LMS_to_XYZ, XYZ);
+  dt_apply_transposed_color_matrix(LMS, Bradford_LMS_to_XYZ_transposed, XYZ);
 }
 
 
 // modified LMS cone response for CAT16, from CIECAM16
 // reference : https://ntnuopen.ntnu.no/ntnu-xmlui/bitstream/handle/11250/2626317/CCIW-23.pdf?sequence=1
 // At any time, ensure XYZ_to_LMS is the exact matrice inverse of LMS_to_XYZ
-const dt_colormatrix_t XYZ_to_CAT16_LMS = { {  0.401288f, 0.650173f, -0.051461f, 0.f },
-                                            { -0.250268f, 1.204414f,  0.045854f, 0.f },
-                                            { -0.002079f, 0.048952f,  0.953127f, 0.f } };
+const dt_colormatrix_t XYZ_to_CAT16_LMS_transposed = {
+  {  0.401288f, -0.250268f, -0.002079f, 0.f },
+  {  0.650173f,  1.204414f,  0.048952f, 0.f },
+  { -0.051461f,  0.045854f,  0.953127f, 0.f },
+};
 
-const dt_colormatrix_t CAT16_LMS_to_XYZ = { {  1.862068f, -1.011255f,  0.149187f, 0.f },
-                                            {  0.38752f ,  0.621447f, -0.008974f, 0.f },
-                                            { -0.015841f, -0.034123f,  1.049964f, 0.f } };
+const dt_colormatrix_t CAT16_LMS_to_XYZ_transposed = {
+  {  1.862068f,  0.38752f,  -0.015841f, 0.f },
+  { -1.011255f,  0.621447f, -0.034123f, 0.f },
+  {  0.149187f, -0.008974f,  1.049964f, 0.f },
+};
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, LMS:16)
@@ -80,7 +88,7 @@ const dt_colormatrix_t CAT16_LMS_to_XYZ = { {  1.862068f, -1.011255f,  0.149187f
 static inline void convert_XYZ_to_CAT16_LMS(const dt_aligned_pixel_t XYZ, dt_aligned_pixel_t LMS)
 {
   // Warning : needs XYZ normalized with Y - you need to downscale before
-  dot_product(XYZ, XYZ_to_CAT16_LMS, LMS);
+  dt_apply_transposed_color_matrix(XYZ, XYZ_to_CAT16_LMS_transposed, LMS);
 }
 
 #ifdef _OPENMP
@@ -89,7 +97,7 @@ static inline void convert_XYZ_to_CAT16_LMS(const dt_aligned_pixel_t XYZ, dt_ali
 static inline void convert_CAT16_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_aligned_pixel_t XYZ)
 {
   // Warning : output XYZ normalized with Y - you need to upscale later
-  dot_product(LMS, CAT16_LMS_to_XYZ, XYZ);
+  dt_apply_transposed_color_matrix(LMS, CAT16_LMS_to_XYZ_transposed, XYZ);
 }
 
 
@@ -348,34 +356,35 @@ static inline void XYZ_adapt_D50(const dt_aligned_pixel_t lms_in,
   lms_out[2] = lms_in[2] * D50[2] / origin_illuminant[2];
 }
 
-/* Pre-solved matrices to adjust white point for triplets in CIE XYZ 1931 2° observer */
+/* Pre-solved matrices to adjust white point for triplets in CIE XYZ 1931 2° observer.
+   They are transposed to allow more efficient SIMD calculations. */
 
-const dt_colormatrix_t XYZ_D50_to_D65_CAT16
-    = { { 9.89466254e-01f, -4.00304626e-02f, 4.40530317e-02f, 0.f },
-        { -5.40518733e-03f, 1.00666069e+00f, -1.75551955e-03f, 0.f },
-        { -4.03920992e-04f, 1.50768030e-02f, 1.30210211e+00f, 0.f } };
+const dt_colormatrix_t XYZ_D50_to_D65_CAT16_transposed
+    = { {  9.89466254e-01f, -5.40518733e-03f, -4.03920992e-04f, 0.f },
+        { -4.00304626e-02f,  1.00666069e+00f,  1.50768030e-02f, 0.f },
+        {  4.40530317e-02f, -1.75551955e-03f,  1.30210211e+00f, 0.f } };
 
-const dt_colormatrix_t XYZ_D50_to_D65_Bradford
-    = { { 0.95547342f, -0.02309845f, 0.06325924f, 0.f },
-        { -0.02836971f, 1.00999540f, 0.02104144f, 0.f },
-        { 0.01231401f, -0.02050765f, 1.33036593f, 0.f } };
+const dt_colormatrix_t XYZ_D50_to_D65_Bradford_transposed
+    = { {  0.95547342f, -0.02836971f,  0.01231401f, 0.f },
+        { -0.02309845f,  1.00999540f, -0.02050765f, 0.f },
+        {  0.06325924f,  0.02104144f,  1.33036593f, 0.f } };
 
-const dt_colormatrix_t XYZ_D65_to_D50_CAT16
-    = { { 1.01085433e+00f, 4.07086103e-02f, -3.41445825e-02f, 0.f },
-        { 5.42814201e-03f, 9.93581926e-01f, 1.15592039e-03f, 0.f },
-        { 2.50722468e-04f, -1.14918759e-02f, 7.67964947e-01f, 0.f } };
+const dt_colormatrix_t XYZ_D65_to_D50_CAT16_transposed
+    = { {  1.01085433e+00f, 5.42814201e-03f,  2.50722468e-04f, 0.f },
+        {  4.07086103e-02f, 9.93581926e-01f, -1.14918759e-02f, 0.f },
+        { -3.41445825e-02f, 1.15592039e-03f,  7.67964947e-01f, 0.f } };
 
-const dt_colormatrix_t XYZ_D65_to_D50_Bradford
-    = { { 1.04792979f, 0.02294687f, -0.05019227f, 0.f },
-        { 0.02962781f, 0.99043443f, -0.0170738f, 0.f },
-        { -0.00924304f, 0.01505519f, 0.75187428f, 0.f } };
+const dt_colormatrix_t XYZ_D65_to_D50_Bradford_transposed
+    = { {  1.04792979f,  0.02962781f, -0.00924304f, 0.f },
+        {  0.02294687f,  0.99043443f,  0.01505519f, 0.f },
+        { -0.05019227f, -0.01707380f,  0.75187428f, 0.f } };
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ_in, XYZ_out:16)
 #endif
 static inline void XYZ_D50_to_D65(const dt_aligned_pixel_t XYZ_in, dt_aligned_pixel_t XYZ_out)
 {
-  dot_product(XYZ_in, XYZ_D50_to_D65_CAT16, XYZ_out);
+  dt_apply_transposed_color_matrix(XYZ_in, XYZ_D50_to_D65_CAT16_transposed, XYZ_out);
 }
 
 #ifdef _OPENMP
@@ -383,5 +392,5 @@ static inline void XYZ_D50_to_D65(const dt_aligned_pixel_t XYZ_in, dt_aligned_pi
 #endif
 static inline void XYZ_D65_to_D50(const dt_aligned_pixel_t XYZ_in, dt_aligned_pixel_t XYZ_out)
 {
-  dot_product(XYZ_in, XYZ_D65_to_D50_CAT16, XYZ_out);
+  dt_apply_transposed_color_matrix(XYZ_in, XYZ_D65_to_D50_CAT16_transposed, XYZ_out);
 }
