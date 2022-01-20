@@ -341,7 +341,7 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
     g_string_free(gargs, TRUE);
   }
 
-  int res = curl_easy_perform(ctx->curl_ctx);
+  const int res = curl_easy_perform(ctx->curl_ctx);
 
 #if piwigo_EXTRA_VERBOSE == TRUE
   g_printf("curl_easy_perform status %d\n", res);
@@ -523,7 +523,7 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
   {
     gtk_widget_hide(GTK_WIDGET(ui->create_box));
 
-    // As the album name is have spaces as prefix (for indentation) and a
+    // As the album name has spaces as prefix (for indentation) and a
     // count of entries in parenthesis as suffix, we need to do some clean-up.
     gchar *v = g_strstrip(g_strdup(value));
     gchar *p = v + strlen(v) - 1;
@@ -620,6 +620,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar
 
       if(!isroot)
       {
+        // Ids of parent albums coma separated
         const char *hierarchy = json_object_get_string_member(album, "uppercats");
         char const *p = hierarchy;
         while(*p++) if(*p == ',') indent++;
@@ -707,6 +708,7 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *f
 
   if(p->tags && strlen(p->tags)>0)
     args = _piwigo_query_add_arguments(args, "tags", p->tags);
+
   _piwigo_api_post(p->api, args, fname, FALSE);
 
   g_list_free(args);
