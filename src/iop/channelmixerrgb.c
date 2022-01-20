@@ -687,7 +687,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       case DT_ADAPTATION_FULL_BRADFORD:
       {
         // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, RGB_to_XYZ, temp_one);
         const float Y = temp_one[1];
 
         // Convert to LMS
@@ -699,7 +699,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
           upscale_vector(temp_one, Y);
 
           // Compute the 3D mix - this is a rotation + homothety of the vector base
-          dot_product(temp_one, MIX, temp_two);
+          dt_apply_transposed_color_matrix(temp_one, MIX, temp_two);
         }
         convert_bradford_LMS_to_XYZ(temp_two, temp_one);
 
@@ -708,7 +708,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       case DT_ADAPTATION_LINEAR_BRADFORD:
       {
         // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, RGB_to_XYZ, temp_one);
         const float Y = temp_one[1];
 
         // Convert to LMS
@@ -720,7 +720,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
           upscale_vector(temp_one, Y);
 
           // Compute the 3D mix - this is a rotation + homothety of the vector base
-          dot_product(temp_one, MIX, temp_two);
+          dt_apply_transposed_color_matrix(temp_one, MIX, temp_two);
         }
         convert_bradford_LMS_to_XYZ(temp_two, temp_one);
 
@@ -729,7 +729,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       case DT_ADAPTATION_CAT16:
       {
         // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, RGB_to_XYZ, temp_one);
         const float Y = temp_one[1];
 
         // Convert to LMS
@@ -741,7 +741,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
           upscale_vector(temp_one, Y);
 
           // Compute the 3D mix - this is a rotation + homothety of the vector base
-          dot_product(temp_one, MIX, temp_two);
+          dt_apply_transposed_color_matrix(temp_one, MIX, temp_two);
         }
         convert_CAT16_LMS_to_XYZ(temp_two, temp_one);
 
@@ -750,7 +750,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       case DT_ADAPTATION_XYZ:
       {
         // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, RGB_to_XYZ, temp_one);
         const float Y = temp_one[1];
 
         // Do white balance in XYZ
@@ -759,7 +759,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
         upscale_vector(temp_two, Y);
 
         // Compute the 3D mix in XYZ - this is a rotation + homothety of the vector base
-        dot_product(temp_two, MIX, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, MIX, temp_one);
 
         break;
       }
@@ -769,10 +769,10 @@ static inline void loop_switch(const float *const restrict in, float *const rest
         // No white balance.
 
         // Compute the 3D mix in RGB - this is a rotation + homothety of the vector base
-        dot_product(temp_two, MIX, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, MIX, temp_one);
 
         // Convert from RGB to XYZ
-        dot_product(temp_one, RGB_to_XYZ, temp_two);
+        dt_apply_transposed_color_matrix(temp_one, RGB_to_XYZ, temp_two);
 
         for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_one[c] = temp_two[c];
         break;
@@ -804,7 +804,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       case DT_ADAPTATION_LAST:
       {
         // Convert from XYZ to RGB
-        dot_product(temp_two, XYZ_to_RGB, temp_one);
+        dt_apply_transposed_color_matrix(temp_two, XYZ_to_RGB, temp_one);
         break;
       }
     }
@@ -846,7 +846,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
         case DT_ADAPTATION_LAST:
         {
           // Convert from RBG to XYZ
-          dot_product(temp_two, RGB_to_XYZ, temp_one);
+          dt_apply_transposed_color_matrix(temp_two, RGB_to_XYZ, temp_one);
           break;
         }
       }
@@ -857,7 +857,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       if(clip) for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
 
       // Convert back to RGB
-      dot_product(temp_one, XYZ_to_RGB, temp_two);
+      dt_apply_transposed_color_matrix(temp_one, XYZ_to_RGB, temp_two);
 
       if(clip)
         for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; c++) out[k + c] = fmaxf(temp_two[c], 0.0f);
@@ -910,7 +910,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
         RGB[c] = fmaxf(in[index + c], 0.0f);
 
       // Convert to XYZ
-      dot_product(RGB, RGB_to_XYZ, XYZ);
+      dt_apply_transposed_color_matrix(RGB, RGB_to_XYZ, XYZ);
 
       // Convert to xyY
       const float sum = fmaxf(XYZ[0] + XYZ[1] + XYZ[2], NORM_MIN);
@@ -1372,7 +1372,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
 
     // Convert to XYZ
     dt_aligned_pixel_t XYZ = { 0 };
-    dot_product(patches + k * 4, RGB_to_XYZ, XYZ);
+    dt_apply_transposed_color_matrix(patches + k * 4, RGB_to_XYZ, XYZ);
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c];
   }
 
@@ -1436,8 +1436,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
       for(size_t c = 0; c < 3; c++) XYZ_test[c] = patches[k * 4 + c];
       dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
 
-      dot_product(XYZ_test, XYZ_to_CAM, RGB_test);
-      dot_product(XYZ_ref, XYZ_to_CAM, RGB_ref);
+      dt_apply_transposed_color_matrix(XYZ_test, XYZ_to_CAM, RGB_test);
+      dt_apply_transposed_color_matrix(XYZ_ref, XYZ_to_CAM, RGB_ref);
 
       // Undo exposure module settings
       for(int c = 0; c < 3; c++)
@@ -1468,8 +1468,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
       for(size_t c = 0; c < 3; c++) XYZ_test[c] = patches[k * 4 + c];
       dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
 
-      dot_product(XYZ_test, XYZ_to_CAM, RGB_test);
-      dot_product(XYZ_ref, XYZ_to_CAM, RGB_ref);
+      dt_apply_transposed_color_matrix(XYZ_test, XYZ_to_CAM, RGB_test);
+      dt_apply_transposed_color_matrix(XYZ_ref, XYZ_to_CAM, RGB_ref);
 
       // Undo exposure module settings
       for(int c = 0; c < 3; c++)
@@ -1714,6 +1714,9 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   dt_free_align(Y);
   dt_free_align(A);
 
+  dt_colormatrix_t mix_transposed;
+  transpose_3xSSE(g->mix, mix_transposed);
+
   // apply the matrix mix
   for(size_t k = 0; k < g->checker->patches; k++)
   {
@@ -1725,7 +1728,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
     for(size_t c = 0; c < 3; c++) temp[c] = sample[c];
 
     convert_any_XYZ_to_LMS(temp, LMS_test, kind);
-      dot_product(LMS_test, g->mix, temp);
+      dt_apply_transposed_color_matrix(LMS_test, mix_transposed, temp);
     convert_any_LMS_to_XYZ(temp, sample, kind);
   }
 
@@ -1882,9 +1885,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(work_profile)
   {
     // work profile can't be fetched in commit_params since it is not yet initialised
-    memcpy(RGB_to_XYZ, work_profile->matrix_in, sizeof(RGB_to_XYZ));
-    memcpy(XYZ_to_RGB, work_profile->matrix_out, sizeof(XYZ_to_RGB));
-    memcpy(XYZ_to_CAM, input_profile->matrix_out, sizeof(XYZ_to_CAM));
+    memcpy(RGB_to_XYZ, work_profile->matrix_in_transposed, sizeof(RGB_to_XYZ));
+    memcpy(XYZ_to_RGB, work_profile->matrix_out_transposed, sizeof(XYZ_to_RGB));
+    memcpy(XYZ_to_CAM, input_profile->matrix_out_transposed, sizeof(XYZ_to_CAM));
   }
 
   assert(piece->colors == 4);
@@ -1927,6 +1930,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     if(exit) return;
   }
 
+  dt_colormatrix_t MIX_transposed;
+  transpose_3xSSE(data->MIX, MIX_transposed);
+
   if(data->illuminant_type == DT_ILLUMINANT_CAMERA)
   {
     // The camera illuminant is a behaviour rather than a preset of values:
@@ -1961,7 +1967,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     case DT_ADAPTATION_FULL_BRADFORD:
     {
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
-                  XYZ_to_RGB, RGB_to_XYZ, data->MIX,
+                  XYZ_to_RGB, RGB_to_XYZ, MIX_transposed,
                   data->illuminant, data->saturation, data->lightness, data->grey,
                   data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_FULL_BRADFORD, data->version);
       break;
@@ -1969,7 +1975,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     case DT_ADAPTATION_LINEAR_BRADFORD:
     {
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
-                  XYZ_to_RGB, RGB_to_XYZ, data->MIX,
+                  XYZ_to_RGB, RGB_to_XYZ, MIX_transposed,
                   data->illuminant, data->saturation, data->lightness, data->grey,
                   data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_LINEAR_BRADFORD, data->version);
       break;
@@ -1977,7 +1983,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     case DT_ADAPTATION_CAT16:
     {
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
-                  XYZ_to_RGB, RGB_to_XYZ, data->MIX,
+                  XYZ_to_RGB, RGB_to_XYZ, MIX_transposed,
                   data->illuminant, data->saturation, data->lightness, data->grey,
                   data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_CAT16, data->version);
       break;
@@ -1985,7 +1991,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     case DT_ADAPTATION_XYZ:
     {
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
-                  XYZ_to_RGB, RGB_to_XYZ, data->MIX,
+                  XYZ_to_RGB, RGB_to_XYZ, MIX_transposed,
                   data->illuminant, data->saturation, data->lightness, data->grey,
                   data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_XYZ, data->version);
       break;
@@ -1993,7 +1999,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     case DT_ADAPTATION_RGB:
     {
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
-                  XYZ_to_RGB, RGB_to_XYZ, data->MIX,
+                  XYZ_to_RGB, RGB_to_XYZ, MIX_transposed,
                   data->illuminant, data->saturation, data->lightness, data->grey,
                   data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_RGB, data->version);
       break;
@@ -3767,7 +3773,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   // Convert to XYZ
   dt_aligned_pixel_t XYZ;
-  dot_product(RGB, work_profile->matrix_in, XYZ);
+  dt_apply_transposed_color_matrix(RGB, work_profile->matrix_in_transposed, XYZ);
 
   // Convert to xyY
   const float sum = fmaxf(XYZ[0] + XYZ[1] + XYZ[2], NORM_MIN);
