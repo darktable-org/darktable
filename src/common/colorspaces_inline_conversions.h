@@ -172,6 +172,10 @@ static inline void dt_apply_transposed_color_matrix(const dt_aligned_pixel_t in,
 {
   // using dt_aligned_pixel_t instead of float* for the function parameters gives GCC enough info to vectorize
   // and eliminate intermediate memory writes without going through major contortions
+  //
+  // N.B. there used to be a function called dot_product() which multiplied the input vector by the
+  // untransposed color matrix. However the transposed version is faster (better SIMD code) so
+  // this shall be used instead in all occasions.
   for_each_channel(r)
     out[r] = matrix[0][r] * in[0] + matrix[1][r] * in[1] + matrix[2][r] * in[2];
 }
