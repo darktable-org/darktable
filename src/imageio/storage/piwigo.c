@@ -688,7 +688,7 @@ static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
 
   g_list_free(args);
 
-  if (!p->api->response || p->api->error_occured)
+  if(!p->api->response || p->api->error_occured)
   {
     return FALSE;
   }
@@ -972,7 +972,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   }
   close(fd);
 
-  if ((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
+  if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   // If title is not existing, then use the filename without extension. If not, then use title instead
@@ -1039,14 +1039,14 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
         dt_control_log(_("could not upload to piwigo!"));
         result = 1;
       }
-      else if (p->new_album)
+      else if(p->new_album)
       {
         // we do not want to create more albums when multiple upload
         p->new_album = FALSE;
         _piwigo_refresh_albums(ui, p->album);
       }
     }
-    if (p->tags)
+    if(p->tags)
     {
       g_free(p->tags);
       p->tags = NULL;
@@ -1114,6 +1114,7 @@ void *get_params(dt_imageio_module_storage_t *self)
     p->api->server = g_strdup(ui->api->server);
     p->api->username = g_strdup(ui->api->username);
     p->api->password = g_strdup(ui->api->password);
+
     _piwigo_api_authenticate(p->api);
 
     int index = dt_bauhaus_combobox_get(ui->album_list);
