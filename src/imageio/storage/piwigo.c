@@ -534,7 +534,10 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
   dt_storage_piwigo_gui_data_t *ui = (dt_storage_piwigo_gui_data_t *)data;
   const gchar *value = dt_bauhaus_combobox_get_text(ui->album_list);
 
-  if(value != NULL && strcmp(value, _("create new album")) == 0)
+  // early return if the combo is not yet populated
+  if(value == NULL) return;
+
+  if(strcmp(value, _("create new album")) == 0)
   {
     gtk_widget_set_no_show_all(GTK_WIDGET(ui->create_box), FALSE);
     gtk_widget_show_all(GTK_WIDGET(ui->create_box));
