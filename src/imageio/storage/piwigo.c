@@ -733,17 +733,6 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *f
 
   g_list_free(args);
 
-  // notify that upload is completed to empty the loundge
-
-  args = NULL;
-
-  args = _piwigo_query_add_arguments(args, "method", "pwg.images.uploadCompleted");
-  args = _piwigo_query_add_arguments(args, "pwg_token", p->api->pwg_token);
-
-  _piwigo_api_post(p->api, args, NULL, FALSE);
-
-  g_list_free(args);
-
   return !p->api->error_occured;
 }
 
@@ -928,7 +917,23 @@ void gui_reset(dt_imageio_module_storage_t *self)
 static gboolean _finalize_store(gpointer user_data)
 {
   dt_storage_piwigo_gui_data_t *g = (dt_storage_piwigo_gui_data_t *)user_data;
+
+  // notify that uploads are completed to empty the lounge
+
+  if(!g->api->error_occured)
+  {
+    GList *args = NULL;
+
+    args = _piwigo_query_add_arguments(args, "method", "pwg.images.uploadCompleted");
+    args = _piwigo_query_add_arguments(args, "pwg_token", g->api->pwg_token);
+
+    _piwigo_api_post(g->api, args, NULL, FALSE);
+
+    g_list_free(args);
+  }
+
   _piwigo_refresh_albums(g, dt_bauhaus_combobox_get_text(g->album_list));
+
   return FALSE;
 }
 
