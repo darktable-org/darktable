@@ -1344,10 +1344,17 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/culling_dynamic_num_images</name>
+    <name>plugins/lighttable/culling_num_images_previous</name>
     <type>int</type>
-    <default>25</default>
-    <shortdescription>images to display in culling dynamic layout</shortdescription>
+    <default>2</default>
+    <shortdescription>number of images to display in culling when deactivating max_zoom_btn</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/max_zoom_btn</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>max zoom button position</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>

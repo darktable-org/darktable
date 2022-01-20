@@ -237,7 +237,6 @@ static void _lighttable_check_layout(dt_view_t *self)
     }
 
 
-
     // ensure that thumbtable is not visible in the main view
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
     gtk_widget_hide(lib->preview->widget);

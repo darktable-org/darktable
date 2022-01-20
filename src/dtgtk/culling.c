@@ -728,6 +728,14 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   // if we are in selection synchronisation mode, we exit this mode
   if(table->selection_sync) table->selection_sync = FALSE;
 
+  // if we are in dynamic mode with max_zoom == True, set zoom to selection count
+  if(table->mode == DT_CULLING_MODE_CULLING
+     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC
+     && dt_conf_get_bool("plugins/lighttable/max_zoom_btn"))
+  {
+    dt_view_lighttable_set_zoom(darktable.view_manager, dt_collection_get_selected_count(darktable.collection));
+  }
+
   // if we navigate only in the selection we just redraw to ensure no unselected image is present
   if(table->navigate_inside_selection)
   {

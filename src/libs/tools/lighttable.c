@@ -35,6 +35,8 @@ typedef struct dt_lib_tool_lighttable_t
 {
   GtkWidget *zoom;
   GtkWidget *zoom_entry;
+  GtkWidget *zoom_max_btn;
+  gboolean zoom_max;
   GtkWidget *layout_box;
   GtkWidget *layout_filemanager;
   GtkWidget *layout_zoomable;
@@ -104,6 +106,10 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
   else if(d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     active = d->layout_zoomable;
 
+  // set the max zoom button active
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->zoom_max_btn), d->zoom_max);
+
+
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->layout_box));
   for(const GList *l = children; l; l = g_list_next(l))
   {
@@ -127,6 +133,17 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
     gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to enter culling layout in dynamic mode."));
   else
     gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to exit culling layout."));
+
+  if(d->zoom_max)
+    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to reset zoom level."));
+  else
+    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to set zoom level to max (default:25)."));
+
+  // only display max zoom button in culling dynamic
+  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+    gtk_widget_hide(d->zoom_max_btn);
+  else
+    gtk_widget_show(d->zoom_max_btn);
 }
 
 static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layout_t layout)
@@ -156,11 +173,31 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layo
   {
     if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     {
-      d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_dynamic_num_images");
+      // enable sliders if neither zoom_max or fullpreview is true
+      gtk_widget_set_sensitive(d->zoom_entry, !(d->zoom_max || d->fullpreview));
+      gtk_widget_set_sensitive(d->zoom, !(d->zoom_max || d->fullpreview));
+      gtk_widget_set_sensitive(d->zoom_max_btn, TRUE);
+
+      if(d->zoom_max)
+      {
+        d->current_zoom = MAX(
+          1,
+          MIN(
+            25,
+            dt_collection_get_selected_count(darktable.collection)
+          )
+        );
+      }
+      else
+        d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
     }
     else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
-      d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
+      d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images_previous");
+
+      // enable sliders if neither zoom_max or fullpreview is true
+      gtk_widget_set_sensitive(d->zoom_entry, TRUE);
+      gtk_widget_set_sensitive(d->zoom, TRUE);
     }
     else
     {
@@ -208,6 +245,12 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
       new_layout = DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC;
     else if(w == d->layout_zoomable)
       new_layout = DT_LIGHTTABLE_LAYOUT_ZOOMABLE;
+    else if(w == d->zoom_max_btn)
+    {
+      d->zoom_max = TRUE;
+      dt_conf_set_bool("plugins/lighttable/max_zoom_btn", TRUE);
+      new_layout = d->layout;
+    }
   }
   else
   {
@@ -216,6 +259,12 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
       new_layout = d->layout;
     else if(w == d->layout_culling_dynamic || w == d->layout_culling_fix)
       new_layout = d->base_layout;
+    else if(w == d->zoom_max_btn)
+    {
+      d->zoom_max = FALSE;
+      dt_conf_set_bool("plugins/lighttable/max_zoom_btn", FALSE);
+      new_layout = d->layout;
+    }
     else
     {
       // we can't exit from filemanager or zoomable
@@ -224,6 +273,46 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
   }
 
   _lib_lighttable_set_layout(self, new_layout);
+  return TRUE;
+}
+
+static gboolean _lib_lighttable_layout_max_zoom_btn_pressed(GtkWidget *w, GdkEventButton *event, dt_lib_module_t *self)
+{
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  if(d->combo_evt_reset) return FALSE;
+
+  const gboolean active
+      = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)); // note : this is the state before the change
+
+  // toggle the button
+  d->zoom_max = !active;
+  dt_conf_set_bool("plugins/lighttable/max_zoom_btn", d->zoom_max);
+
+  // enable sliders if zoom_max is false
+  gtk_widget_set_sensitive(d->zoom_entry, !d->zoom_max);
+  gtk_widget_set_sensitive(d->zoom, !d->zoom_max);
+
+  if(d->zoom_max)
+  {
+    // store current zoom value
+    dt_conf_set_int("plugins/lighttable/culling_num_images_previous", d->current_zoom);
+    d->current_zoom = MAX(
+      1,
+      MIN(
+        25,
+        dt_collection_get_selected_count(darktable.collection)
+      )
+    );
+  }
+  else // restore old value
+    d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images_previous");
+
+  // update slider position but keep the original zoom value stored
+  gtk_range_set_value(GTK_RANGE(d->zoom), d->current_zoom);
+
+  dt_control_queue_redraw_center();
+  _lib_lighttable_update_btn(self);
+
   return TRUE;
 }
 
@@ -237,12 +326,18 @@ void gui_init(dt_lib_module_t *self)
   d->layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/layout"));
   d->base_layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/base_layout"));
 
-  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-    d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
-  else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && dt_conf_get_bool("plugins/lighttable/max_zoom_btn"))
   {
-    d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_dynamic_num_images");
+    d->current_zoom = MAX(
+      1,
+      MIN(
+        25,
+        dt_collection_get_selected_count(darktable.collection)
+      )
+    );
   }
+  else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+    d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
   else
     d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
 
@@ -294,7 +389,6 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_preview, TRUE, TRUE, 0);
 
-  _lib_lighttable_update_btn(self);
 
   /* create horizontal zoom slider */
   d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, DT_LIGHTTABLE_MAX_ZOOM, 1);
@@ -311,6 +405,28 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_max_width_chars(GTK_ENTRY(d->zoom_entry), 3);
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_entry, TRUE, TRUE, 0);
 
+  // button to quickly set zoom slider to the max value in culling dynamic
+  d->zoom_max_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_btn_maxzoom, CPF_STYLE_FLAT, NULL);
+  dt_action_define(&darktable.view_manager->proxy.lighttable.view->actions, NULL,
+                   "toggle max zoom", d->zoom_max_btn, NULL);
+  dt_gui_add_help_link(d->zoom_max_btn, dt_get_help_url("zoom_max_btn"));
+  gtk_widget_set_tooltip_text(d->zoom_max_btn, _("click to display the max amout of images (default: 25)."));
+  g_signal_connect(G_OBJECT(d->zoom_max_btn), "button-release-event",
+                   G_CALLBACK(_lib_lighttable_layout_max_zoom_btn_pressed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_max_btn, TRUE, TRUE, 0);
+
+  // disable zoom slider if max_zoom button active
+  gtk_widget_set_sensitive(d->zoom_entry, !(d->fullpreview));
+  gtk_widget_set_sensitive(d->zoom, !(d->fullpreview));
+
+  // only display max zoom button in culling dynamic
+  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+    gtk_widget_hide(d->zoom_max_btn);
+
+  // get active state
+  d->zoom_max = dt_conf_get_bool("plugins/lighttable/max_zoom_btn");
+
+
   g_signal_connect(G_OBJECT(d->zoom), "value-changed", G_CALLBACK(_lib_lighttable_zoom_slider_changed),
                    (gpointer)self);
   g_signal_connect(d->zoom_entry, "key-press-event", G_CALLBACK(_lib_lighttable_zoom_entry_changed), self);
@@ -320,8 +436,9 @@ void gui_init(dt_lib_module_t *self)
                                                                  // fire a value-changed signal when setting
                                                                  // it to 1 => empty text box
 
-  gtk_widget_set_sensitive(d->zoom_entry, !(d->fullpreview));
-  gtk_widget_set_sensitive(d->zoom, !(d->fullpreview));
+
+
+  _lib_lighttable_update_btn(self);
 
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
@@ -339,14 +456,14 @@ void gui_cleanup(dt_lib_module_t *self)
 static void _set_zoom(dt_lib_module_t *self, int zoom)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     dt_conf_set_int("plugins/lighttable/culling_num_images", zoom);
-    dt_control_queue_redraw_center();
-  }
-  else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
-  {
-    dt_conf_set_int("plugins/lighttable/culling_dynamic_num_images", zoom);
+
+    // update previous zoom value only if the zoom button is disabled or if we are in culling
+    // otherwise this is also triggered by pressing the max_zoom button and the value would be overwritten by the max zoom value
+    if(!d->zoom_max || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+      dt_conf_set_int("plugins/lighttable/culling_num_images_previous", zoom);
     dt_control_queue_redraw_center();
   }
   else if(d->layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
@@ -380,10 +497,8 @@ static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey
     {
       // reset
       int i = 0;
-      if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+      if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
         i = dt_conf_get_int("plugins/lighttable/culling_num_images");
-      else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
-        i = dt_conf_get_int("plugins/lighttable/culling_dynamic_num_images");
       else
         i = dt_conf_get_int("plugins/lighttable/images_in_row");
       gchar *i_as_str = g_strdup_printf("%d", i);
