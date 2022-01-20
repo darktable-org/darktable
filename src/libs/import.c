@@ -666,7 +666,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GError *error = NULL;
-  GFile *gfolder = g_file_parse_name(folder);
+  GFile *gfolder = g_file_new_for_path(folder);
 
   // if folder is root, consider one folder separator less
   int offset = (g_path_skip_root(folder)[0] ? folder_lgth + 1 : folder_lgth);
@@ -955,7 +955,7 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
   // each time a new folder is added, it is set as not expanded and assigned a fake child
   // when expanded, the children are added and the fake child is reused
   GError *error = NULL;
-  GFile *gfolder = g_file_parse_name(folder);
+  GFile *gfolder = g_file_new_for_path(folder);
   GFileEnumerator *dir_files = g_file_enumerate_children(gfolder,
                                   G_FILE_ATTRIBUTE_STANDARD_NAME ","
                                   G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
