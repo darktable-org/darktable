@@ -58,6 +58,7 @@ typedef struct _piwigo_api_context_t
   gchar *server;
   gchar *username;
   gchar *password;
+  gchar *pwg_token;
   gboolean error_occured;
 } _piwigo_api_context_t;
 
@@ -142,6 +143,7 @@ static _piwigo_api_context_t *_piwigo_ctx_init(void)
   ctx->url = NULL;
   ctx->cookie_file = NULL;
   ctx->error_occured = FALSE;
+  ctx->pwg_token = NULL;
   return ctx;
 }
 
@@ -157,6 +159,7 @@ static void _piwigo_ctx_destroy(_piwigo_api_context_t **ctx)
     g_free((*ctx)->server);
     g_free((*ctx)->username);
     g_free((*ctx)->password);
+    g_free((*ctx)->pwg_token);
     free(*ctx);
     *ctx = NULL;
   }
@@ -388,6 +391,23 @@ static void _piwigo_api_authenticate(_piwigo_api_context_t *ctx)
     ctx->url = g_strdup_printf("https://%s/ws.php?format=json", ctx->server);
 
   _piwigo_api_post(ctx, args, NULL, TRUE);
+
+  g_list_free(args);
+
+  //  getStatus to retrieve the pwd_token
+
+  args = NULL;
+
+  args = _piwigo_query_add_arguments(args, "method", "pwg.session.getStatus");
+
+  _piwigo_api_post(ctx, args, NULL, TRUE);
+
+  if(ctx->response && !ctx->error_occured)
+  {
+    JsonObject *result = json_node_get_object(json_object_get_member(ctx->response, "result"));
+    const gchar *pwg_token = json_object_get_string_member(result, "pwg_token");
+    ctx->pwg_token = g_strdup(pwg_token);
+  }
 
   g_list_free(args);
 }
@@ -689,6 +709,8 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *f
   char cat[10];
   char privacy[10];
 
+  // upload picture
+
   snprintf(cat, sizeof(cat), "%"PRId64, p->album_id);
   snprintf(privacy, sizeof(privacy), "%d", p->privacy);
 
@@ -710,6 +732,17 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *f
     args = _piwigo_query_add_arguments(args, "tags", p->tags);
 
   _piwigo_api_post(p->api, args, fname, FALSE);
+
+  g_list_free(args);
+
+  // notify that upload is completed to empty the loundge
+
+  args = NULL;
+
+  args = _piwigo_query_add_arguments(args, "method", "pwg.images.uploadCompleted");
+  args = _piwigo_query_add_arguments(args, "pwg_token", p->api->pwg_token);
+
+  _piwigo_api_post(p->api, args, NULL, FALSE);
 
   g_list_free(args);
 
