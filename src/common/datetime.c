@@ -115,8 +115,7 @@ void dt_datetime_now_to_exif(char *exif, size_t exif_len)
 
 void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
 {
-  const int lgth = (strlen(exif) == DT_DATETIME_LENGTH - 1) ? DT_DATETIME_LENGTH : DT_DATETIME_EXIF_LENGTH;
-  g_strlcpy(img->exif_datetime_taken, exif, lgth);
+  g_strlcpy(img->exif_datetime_taken, exif, sizeof(img->exif_datetime_taken));
 }
 
 void dt_datetime_img_to_exif(char *exif, const int exif_lgth, const dt_image_t *img)
