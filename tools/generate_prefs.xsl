@@ -440,6 +440,19 @@ gboolean restart_required = FALSE;
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='otherviews' and @section='slideshow']">
     <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
+  <xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("act on algorithm"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+
+</xsl:text>
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='misc' and @section='acton']">
+    <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
   <xsl:value-of select="$tab_end" />
 
   <!-- import -->

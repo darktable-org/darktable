@@ -316,7 +316,7 @@ int try_enter(dt_view_t *self)
 
   //  now check that there is at least one selected image
 
-  const int imgid = dt_act_on_get_main_image(FALSE);
+  const int imgid = dt_act_on_get_main_image(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always"));
 
   if(imgid < 0)
   {

@@ -978,10 +978,13 @@ void dt_culling_init(dt_culling_t *table, int offset)
   table->offset = _thumb_get_rowid(first_id);
   table->offset_imgid = first_id;
 
-  // next, mark the first image as 'mouseover' to enable highlighting. That means we need to check first if the priority of
+  // next, mark the first image as 'mouseover' to enable highlighting IF the priority of
   // mouseover in the current situation is equal or higher than whatever images_to_act_on() returned to us. If yes, we accept the new value for first_id. Otherwise, do only
   // highlight what images_to_act_on tells us to. Make an exception if only one image is selected because when entering culling with a single image selected, the selection will be removed
-  if(dt_conf_get_bool("images_to_act_on_legacy"))
+  if(
+    !g_strcmp0(dt_conf_get_string_const("acton/algorithm"), "mouseover selection > mouseover > active > selection")
+    || !g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always")
+  )
     dt_control_set_mouse_over_id(first_id);
   else if(dt_act_on_get_category(FALSE) <= DT_ACT_ON_ACTIVE || (dt_act_on_get_category(FALSE) == DT_ACT_ON_SELECTION && dt_act_on_get_images_nb(FALSE, FALSE) == 1))
     dt_control_set_mouse_over_id(first_id);

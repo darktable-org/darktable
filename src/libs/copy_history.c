@@ -76,7 +76,7 @@ static void _update(dt_lib_module_t *self)
   const gboolean can_paste
       = darktable.view_manager->copy_paste.copied_imageid > 0
         && (act_on_mult
-            || (act_on_one && (darktable.view_manager->copy_paste.copied_imageid != dt_act_on_get_main_image(FALSE))));
+            || (act_on_one && (darktable.view_manager->copy_paste.copied_imageid != dt_act_on_get_main_image(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always")))));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->discard_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->compress_button), act_on_any);
@@ -209,7 +209,7 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
-  const int id = dt_act_on_get_main_image(FALSE);
+  const int id = dt_act_on_get_main_image(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always"));
 
   if(id > 0 && dt_history_copy(id))
   {
@@ -221,7 +221,7 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
-  const int id = dt_act_on_get_main_image(FALSE);
+  const int id = dt_act_on_get_main_image(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always"));
 
   if(id > 0 && dt_history_copy_parts(id))
   {

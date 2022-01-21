@@ -197,7 +197,13 @@ static void _update(dt_lib_module_t *self)
   const gboolean act_on_mult = (nbimgs > 1);
   const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
   const gboolean can_paste
-      = d->imageid > 0 && (act_on_mult || (act_on_one && (d->imageid != dt_act_on_get_main_image(FALSE))));
+      = d->imageid > 0
+      && (
+        act_on_mult
+        || (act_on_one
+          && (d->imageid != dt_act_on_get_main_image(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always")))
+        )
+      );
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->remove_button), act_on_any);
   gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_any);
@@ -238,7 +244,7 @@ static void _update(dt_lib_module_t *self)
   else
   {
     // exact one image to act on
-    const int imgid = dt_act_on_get_main_image(FALSE);
+    const int imgid = dt_act_on_get_main_image(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always"));
     if(imgid >= 0)
     {
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -388,7 +394,7 @@ static void copy_metadata_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
 
-  d->imageid = dt_act_on_get_main_image(FALSE);
+  d->imageid = dt_act_on_get_main_image(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always"));
 
   _update(self);
 }

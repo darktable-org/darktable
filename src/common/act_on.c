@@ -163,6 +163,22 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
   }
 
 
+  // if mouseover has priority over everything we check mouseover first
+  else if(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always"))
+  {
+    if(mouseover > 0)
+    {
+      // if selection empty and we hover an image, select this image
+      _insert_in_list(&l, mouseover, only_visible);
+      // be absolutely sure we have the id in the list (in darkroom,
+      // the active image can be out of collection)
+      if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && !only_visible)
+        _insert_in_list(&l, mouseover, TRUE);
+      cache->act_on_category = DT_ACT_ON_MOUSEOVER;
+    }
+  }
+
+
   // check if we are in culling dynamic because then we use a different order:
   // hover > active > selected
   // This is necessary since in culling dynamic mode we work on a subset of all images
@@ -172,7 +188,7 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
 
   // Todo: is this sufficiant or is it necessary to check table->mode == DT_CULLING_MODE_CULLING as well?
   //       It was done that way in the old code
-  else if(lightroom_view && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  if(!l && lightroom_view && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     if(mouseover > 0)
     {
@@ -209,12 +225,10 @@ gboolean _cache_update_refactored(const gboolean only_visible, const gboolean fo
       }
     }
   }
-  else
+  else if(!l)
   {
     // any mode other than culling dynamic
-
     // Selection has highest priority
-
 
     // first, we try to return cached list if we were already
     // inside sel and the selection has not changed
@@ -321,7 +335,23 @@ gboolean _cache_update_legacy(const gboolean only_visible, const gboolean force,
 
   GList *l = NULL;
   gboolean inside_sel = FALSE;
-  if(mouseover > 0)
+
+  // if mouseover has priority over everything we check mouseover first
+  if(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always"))
+  {
+    if(mouseover > 0)
+    {
+      // if selection empty and we hover an image, select this image
+      _insert_in_list(&l, mouseover, only_visible);
+      // be absolutely sure we have the id in the list (in darkroom,
+      // the active image can be out of collection)
+      if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && !only_visible)
+        _insert_in_list(&l, mouseover, TRUE);
+      cache->act_on_category = DT_ACT_ON_MOUSEOVER;
+    }
+  }
+
+  if(!l && mouseover > 0)
   {
     // column 1,2,3
     if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
@@ -369,7 +399,7 @@ gboolean _cache_update_legacy(const gboolean only_visible, const gboolean force,
       cache->act_on_category = DT_ACT_ON_MOUSEOVER;
     }
   }
-  else
+  else if(!l)
   {
     // column 4,5
     if(darktable.view_manager->active_images)
@@ -423,7 +453,7 @@ gboolean _cache_update_legacy(const gboolean only_visible, const gboolean force,
 
 gboolean _cache_update(const gboolean only_visible, const gboolean force, const gboolean ordered)
 {
-  if(dt_conf_get_bool("images_to_act_on_legacy"))
+  if(!g_strcmp0(dt_conf_get_string_const("acton/algorithm"), "mouseover selection > mouseover > active > selection"))
     return _cache_update_legacy(only_visible, force, ordered);
   else
     return _cache_update_refactored(only_visible, force, ordered);
@@ -597,7 +627,7 @@ int dt_act_on_get_images_nb(const gboolean only_visible, const gboolean force)
 // get the main image to act on during global changes (libs, accels)
 int dt_act_on_get_main_image(const gboolean prioritize_hover)
 {
-  if(dt_conf_get_bool("images_to_act_on_legacy"))
+  if(!g_strcmp0(dt_conf_get_string_const("acton/algorithm"), "mouseover selection > mouseover > active > selection"))
     return dt_act_on_get_main_image_legacy();
   else
     return dt_act_on_get_main_image_refactored(prioritize_hover);

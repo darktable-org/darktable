@@ -418,7 +418,7 @@ void enter(dt_view_t *self)
   }
 
   // if one selected start with it, otherwise start at the current lighttable offset
-  const int imgid = dt_act_on_get_main_image(FALSE);
+  const int imgid = dt_act_on_get_main_image(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always"));
   gint selrank = -1;
 
   if(imgid > 0)

@@ -1331,7 +1331,7 @@ static GDateTime *_get_image_datetime(dt_lib_module_t *self)
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   GList *selected = dt_collection_get_selected(darktable.collection, 1);
   const int selid = selected ? GPOINTER_TO_INT(selected->data) : 0;
-  const int imgid = dt_act_on_get_main_image(FALSE);
+  const int imgid = dt_act_on_get_main_image(!g_strcmp0(dt_conf_get_string_const("acton/mouse_over_priority"), "always"));
   GDateTime *datetime = NULL;
   if((selid != 0) || ((selid == 0) && (imgid != -1)))
   {
