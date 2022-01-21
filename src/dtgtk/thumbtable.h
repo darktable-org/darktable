@@ -83,7 +83,7 @@ typedef struct dt_thumbtable_t
   // in that case, we count the number of "scroll-top" try and reallign after 2 try
   int realign_top_try;
 
-  gboolean mouse_inside; // is the mouse pointer inside thumbatable widget ?
+  gboolean mouse_inside; // is the mouse pointer inside thumbtable widget ?
 
   GSList *accel_closures; // list of associated accels
 

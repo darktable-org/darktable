@@ -631,9 +631,36 @@ static gboolean _lib_lighttable_key_accel_toggle_culling_dynamic_mode(GtkAccelGr
 
   // if we are already in any culling layout, we return to the base layout
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING && d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
-    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
-  else
     _lib_lighttable_set_layout(self, d->base_layout);
+  else
+  {
+    //otherwise disable the button and/or enter culling dynamic
+    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
+  }
+
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
+static gboolean _lib_lighttable_key_accel_toggle_culling_dynamic_mode_max_zoom(GtkAccelGroup *accel_group,
+                                                                      GObject *acceleratable, guint keyval,
+                                                                      GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+
+  // if we are already in culling dynamic max zoom layout, toggle the max_zoom button and enter culling dynamic
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC_MAX_ZOOM)
+  {
+    d->zoom_max = FALSE;
+    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
+  }
+  else
+  {
+    //otherwise enable the button and enter culling dynamic max zoom
+    d->zoom_max = TRUE;
+    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC_MAX_ZOOM);
+  }
 
   dt_control_queue_redraw_center();
   return TRUE;
@@ -690,8 +717,9 @@ void init_key_accels(dt_lib_module_t *self)
   // view accels
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle filemanager layout"), 0, 0);
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle zoomable lighttable layout"), 0, 0);
-  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling mode"), GDK_KEY_x, 0);
-  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling dynamic mode"), GDK_KEY_x,
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling mode"), GDK_KEY_c, 0);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling dynamic mode"), GDK_KEY_x, 0);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling dynamic mode max zoom"), GDK_KEY_x,
                                 GDK_CONTROL_MASK);
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling zoom mode"), GDK_KEY_less, 0);
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle sticky preview mode"), GDK_KEY_f, 0);
@@ -713,6 +741,9 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_lib_as_view(
       self, "lighttable", "toggle culling dynamic mode",
       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_dynamic_mode), self, NULL));
+  dt_accel_connect_lib_as_view(
+      self, "lighttable", "toggle culling dynamic mode max zoom",
+      g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_dynamic_mode_max_zoom), self, NULL));
   dt_accel_connect_lib_as_view(
       self, "lighttable", "toggle culling mode",
       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_mode), self, NULL));

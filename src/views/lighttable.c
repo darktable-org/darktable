@@ -109,7 +109,8 @@ static void _preview_quit(dt_view_t *self)
 
   // show/hide filmstrip & timeline when entering the view
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
-     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC
+     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC_MAX_ZOOM)
   {
     // update thumbtable, to indicate if we navigate inside selection or not
     // this is needed as collection change is handle there
@@ -172,7 +173,9 @@ static void _lighttable_check_layout(dt_view_t *self)
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
 
     // if we arrive from culling, we just need to ensure the offset is right
-    if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING || layout_old == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+    if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING
+      || layout_old == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC
+      || layout_old == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC_MAX_ZOOM)
     {
       dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, FALSE);
     }
@@ -190,7 +193,9 @@ static void _lighttable_check_layout(dt_view_t *self)
     dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
     gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
-  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING
+    || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC
+    || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC_MAX_ZOOM)
   {
     // record thumbtable offset
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
@@ -493,6 +498,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
         break;
       case DT_LIGHTTABLE_LAYOUT_CULLING:
       case DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC:
+      case DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC_MAX_ZOOM:
         if(!gtk_widget_get_visible(lib->culling->widget)) gtk_widget_show(lib->culling->widget);
         gtk_widget_hide(lib->preview->widget);
         break;
