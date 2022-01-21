@@ -37,7 +37,7 @@ static gboolean _datetime_exif_to_tm(const char *exif,  struct tm *tt)
   return FALSE;
 }
 
-gboolean dt_datetime_unix_to_local(char *local, const size_t local_size, const time_t *unix)
+gboolean dt_datetime_unix_lt_to_local(char *local, const size_t local_size, const time_t *unix)
 {
   struct tm tm_val;
   // just %c is too long and includes a time zone that we don't know from exif
@@ -69,13 +69,13 @@ gboolean dt_datetime_unix_to_local(char *local, const size_t local_size, const t
     return FALSE;
 }
 
-gboolean dt_datetime_img_to_local(const dt_image_t *img, char *local, const size_t local_size)
+gboolean dt_datetime_img_to_local(char *local, const size_t local_size, const dt_image_t *img)
 {
   struct tm tt = { 0 };
   if(_datetime_exif_to_tm(img->exif_datetime_taken, &tt))
   {
     const time_t timestamp = mktime(&tt);
-    return dt_datetime_unix_to_local(local, local_size, &timestamp);
+    return dt_datetime_unix_lt_to_local(local, local_size, &timestamp);
   }
   else
   {
@@ -84,7 +84,7 @@ gboolean dt_datetime_img_to_local(const dt_image_t *img, char *local, const size
   }
 }
 
-gboolean dt_datetime_exif_to_unix(const char *exif, time_t *unix)
+gboolean dt_datetime_exif_to_unix_lt(time_t *unix, const char *exif)
 {
   struct tm tt= {0};
   if(_datetime_exif_to_tm(exif, &tt))
@@ -95,35 +95,36 @@ gboolean dt_datetime_exif_to_unix(const char *exif, time_t *unix)
   return FALSE;
 }
 
-void dt_datetime_unix_to_exif(char *exif, size_t exif_len, const time_t *unix)
+void dt_datetime_unix_lt_to_exif(char *exif, size_t exif_len, const time_t *unix)
 {
   struct tm tt;
   (void)localtime_r(unix, &tt);
   strftime(exif, exif_len, "%Y:%m:%d %H:%M:%S", &tt);
 }
 
-void dt_datetime_unix_to_img(dt_image_t *img, const time_t *unix)
+void dt_datetime_unix_lt_to_img(dt_image_t *img, const time_t *unix)
 {
-  dt_datetime_unix_to_exif(img->exif_datetime_taken, DT_DATETIME_LENGTH, unix);
+  dt_datetime_unix_lt_to_exif(img->exif_datetime_taken, DT_DATETIME_LENGTH, unix);
 }
 
 void dt_datetime_now_to_exif(char *exif, size_t exif_len)
 {
   const time_t now = time(NULL);
-  dt_datetime_unix_to_exif(exif, exif_len, &now);
+  dt_datetime_unix_lt_to_exif(exif, exif_len, &now);
 }
 
 void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
 {
-  g_strlcpy(img->exif_datetime_taken, exif, sizeof(img->exif_datetime_taken));
+  const int lgth = (strlen(exif) == DT_DATETIME_LENGTH - 1) ? DT_DATETIME_LENGTH : DT_DATETIME_EXIF_LENGTH;
+  g_strlcpy(img->exif_datetime_taken, exif, lgth);
 }
 
-void dt_datetime_img_to_exif(const dt_image_t *img, char *exif)
+void dt_datetime_img_to_exif(char *exif, const int exif_lgth, const dt_image_t *img)
 {
-  g_strlcpy(exif, img->exif_datetime_taken, sizeof(img->exif_datetime_taken));
+  g_strlcpy(exif, img->exif_datetime_taken, exif_lgth);
 }
 
-GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, GTimeZone *tz)
+GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
 {
   gint year;
   gint month;
@@ -131,20 +132,30 @@ GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, GTimeZone *tz)
   gint hour;
   gint minute;
   gint second;
+  gint millisecond;
 
+  const int nb = sscanf(exif, "%d:%d:%d %d:%d:%d,%d", (int *)&year, (int *)&month, (int *)&day,
+                (int *)&hour, (int *)&minute, (int *)&second, (int *)&millisecond);
   GDateTime *gdt = NULL;
-  if(sscanf(exif, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
-            (int *)&hour, (int *)&minute, (int *)&second))
-    gdt = g_date_time_new(tz, year, month, day, hour, minute, second);
+  if(nb >= 6)
+  {
+    gdt = g_date_time_new((GTimeZone *)tz, year, month, day, hour, minute, second);
+    if(nb == 7)
+    {
+      GDateTime *gdt2 = g_date_time_add(gdt, millisecond * 1000);
+      g_date_time_unref(gdt);
+      return gdt2;
+    }
+  }
   return gdt;
 }
 
-GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, GTimeZone *tz)
+GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz)
 {
   return dt_datetime_exif_to_gdatetime(img->exif_datetime_taken, tz);
 }
 
-gboolean dt_datetime_img_to_tm(const dt_image_t *img, struct tm *tt)
+gboolean dt_datetime_img_to_tm_lt(struct tm *tt, const dt_image_t *img)
 {
   return _datetime_exif_to_tm(img->exif_datetime_taken, tt);
 }

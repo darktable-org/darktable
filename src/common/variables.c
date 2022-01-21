@@ -136,7 +136,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     const dt_image_t *img = params->img ? (dt_image_t *)params->img
                                         : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
 
-    if(dt_datetime_img_to_tm(img, &params->data->exif_tm))
+    if(dt_datetime_img_to_tm_lt(&params->data->exif_tm, img))
       params->data->have_exif_tm = TRUE;
     params->data->exif_iso = img->exif_iso;
     params->data->camera_maker = g_strdup(img->camera_maker);

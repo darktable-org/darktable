@@ -747,9 +747,9 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
                                  char *exif_datetime_taken)
 {
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal") || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-     && pos->size() == DT_DATETIME_LENGTH)
+     && pos->size() == DT_DATETIME_EXIF_LENGTH)
   {
-    dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_LENGTH, pos, exifData);
+    dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     _sanitize_datetime(exif_datetime_taken);
   }
   else
@@ -1106,7 +1106,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 #endif
 
-    char datetime[DT_DATETIME_LENGTH];
+    char datetime[DT_DATETIME_EXIF_LENGTH];
     _find_datetime_taken(exifData, pos, datetime);
     dt_datetime_exif_to_img(img, datetime);
 
@@ -1516,7 +1516,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
 
   if(!stat(path, &statbuf))
   {
-    dt_datetime_unix_to_img(img, &statbuf.st_mtime);
+    dt_datetime_unix_lt_to_img(img, &statbuf.st_mtime);
   }
 
   try
@@ -1921,11 +1921,11 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       // DateTimeOriginal is to be kept.
       // For us "keeping" it means to write out what we have in DB to support people adding a time offset in
       // the geotagging module.
-      gchar new_datetime[DT_DATETIME_LENGTH];
+      gchar new_datetime[DT_DATETIME_EXIF_LENGTH];
       dt_datetime_now_to_exif(new_datetime, sizeof(new_datetime));
       exifData["Exif.Image.DateTime"] = new_datetime;
-      char datetime[DT_DATETIME_LENGTH];
-      dt_datetime_img_to_exif(cimg, datetime);
+      gchar datetime[DT_DATETIME_EXIF_LENGTH];
+      dt_datetime_img_to_exif(datetime, sizeof(datetime), cimg);
       exifData["Exif.Image.DateTimeOriginal"] = datetime;
       exifData["Exif.Photo.DateTimeOriginal"] = datetime;
 
@@ -3589,7 +3589,9 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   g_list_free_full(iop_list, free);
 
   // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-  xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
+  gchar exif_datetime[DT_DATETIME_EXIF_LENGTH];
+  g_strlcpy(exif_datetime, datetime_taken, sizeof(exif_datetime));
+  xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
 
   // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
@@ -3716,8 +3718,11 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
   {
     // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
     if (!(metadata->flags & DT_META_EXIF))
-      xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
-
+    {
+      gchar exif_datetime[DT_DATETIME_EXIF_LENGTH];
+      g_strlcpy(exif_datetime, datetime_taken, sizeof(exif_datetime));
+      xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
+    }
     // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
     Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
     if(pos != xmpData.end()) xmpData.erase(pos);
@@ -4296,10 +4301,10 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
-    char exif_datetime_taken[DT_DATETIME_LENGTH];
+    char exif_datetime_taken[DT_DATETIME_EXIF_LENGTH];
     _find_datetime_taken(exifData, pos, exif_datetime_taken);
 
-    return dt_datetime_exif_to_unix(exif_datetime_taken, datetime_taken);
+    return dt_datetime_exif_to_unix_lt(datetime_taken, exif_datetime_taken);
   }
   catch(Exiv2::AnyError &e)
   {
