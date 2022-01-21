@@ -744,13 +744,23 @@ static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::co
 #define FIND_EXIF_TAG(key) dt_exif_read_exif_tag(exifData, &pos, key)
 
 static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos,
-                                 char *exif_datetime_taken)
+                                 char *exif_datetime_taken, const int dt_lgth)
 {
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal") || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
      && pos->size() == DT_DATETIME_EXIF_LENGTH)
   {
     dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     _sanitize_datetime(exif_datetime_taken);
+    if(dt_lgth == DT_DATETIME_LENGTH && FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
+       && pos->size() > 1)
+    {
+      char msec[4];
+      dt_strlcpy_to_utf8(msec, 4, pos, exifData);
+      g_strlcpy(&exif_datetime_taken[DT_DATETIME_EXIF_LENGTH - 1], ",000",
+                DT_DATETIME_LENGTH - DT_DATETIME_EXIF_LENGTH + 1);
+      for(int i = 0; i < 4 && msec[i] != '\0'; i++)
+        exif_datetime_taken[DT_DATETIME_EXIF_LENGTH + i] = msec[i];
+    }
   }
   else
   {
@@ -1106,8 +1116,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 #endif
 
-    char datetime[DT_DATETIME_EXIF_LENGTH];
-    _find_datetime_taken(exifData, pos, datetime);
+    char datetime[DT_DATETIME_LENGTH];
+    _find_datetime_taken(exifData, pos, datetime, sizeof(datetime));
     dt_datetime_exif_to_img(img, datetime);
 
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
@@ -1924,10 +1934,12 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       gchar new_datetime[DT_DATETIME_EXIF_LENGTH];
       dt_datetime_now_to_exif(new_datetime, sizeof(new_datetime));
       exifData["Exif.Image.DateTime"] = new_datetime;
-      gchar datetime[DT_DATETIME_EXIF_LENGTH];
+      gchar datetime[DT_DATETIME_LENGTH];
       dt_datetime_img_to_exif(datetime, sizeof(datetime), cimg);
+      datetime[DT_DATETIME_EXIF_LENGTH - 1] = '\0';
       exifData["Exif.Image.DateTimeOriginal"] = datetime;
       exifData["Exif.Photo.DateTimeOriginal"] = datetime;
+      exifData["Exif.Photo.SubSecTimeOriginal"] = &datetime[DT_DATETIME_EXIF_LENGTH];
 
       dt_image_cache_read_release(darktable.image_cache, cimg);
     }
@@ -3589,7 +3601,7 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   g_list_free_full(iop_list, free);
 
   // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-  gchar exif_datetime[DT_DATETIME_EXIF_LENGTH];
+  gchar exif_datetime[DT_DATETIME_LENGTH];
   g_strlcpy(exif_datetime, datetime_taken, sizeof(exif_datetime));
   xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
 
@@ -3719,7 +3731,7 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
     // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
     if (!(metadata->flags & DT_META_EXIF))
     {
-      gchar exif_datetime[DT_DATETIME_EXIF_LENGTH];
+      gchar exif_datetime[DT_DATETIME_LENGTH];
       g_strlcpy(exif_datetime, datetime_taken, sizeof(exif_datetime));
       xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
     }
@@ -4302,7 +4314,7 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
     Exiv2::ExifData &exifData = image->exifData();
 
     char exif_datetime_taken[DT_DATETIME_EXIF_LENGTH];
-    _find_datetime_taken(exifData, pos, exif_datetime_taken);
+    _find_datetime_taken(exifData, pos, exif_datetime_taken, sizeof(exif_datetime_taken));
 
     return dt_datetime_exif_to_unix_lt(datetime_taken, exif_datetime_taken);
   }
