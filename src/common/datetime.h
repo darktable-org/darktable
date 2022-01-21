@@ -20,36 +20,41 @@
 #include <glib.h>
 #include "common/image.h"
 
+#define DT_DATETIME_ORIGIN "0001-01-01 00:00:00"
+#define DT_DATETIME_EPOCH "1970-01-01 00:00:00"
+//  #define DT_DATETIME_LENGTH 24 // defined in image.h
+#define DT_DATETIME_EXIF_LENGTH 20
+
 // time_t to display local string. Returns TRUE if OK.
-gboolean dt_datetime_unix_to_local(char *local, const size_t local_size, const time_t *unix);
+gboolean dt_datetime_unix_lt_to_local(char *local, const size_t local_size, const time_t *unix);
 
 // img cache datetime to display local string. Returns TRUE if OK.
-gboolean dt_datetime_img_to_local(const dt_image_t *img, char *local, const size_t local_size);
+gboolean dt_datetime_img_to_local(char *local, const size_t local_size, const dt_image_t *img);
 
 // unix datetime to img cache datetime
-void dt_datetime_unix_to_img(dt_image_t *img, const time_t *unix);
+void dt_datetime_unix_lt_to_img(dt_image_t *img, const time_t *unix);
 
 // exif datetime string to unix datetime. Returns TRUE if OK.
-gboolean dt_datetime_exif_to_unix(const char *exif, time_t *unix);
+gboolean dt_datetime_exif_to_unix_lt(time_t *unix, const char *exif);
 // unix datetime to exif datetime
-void dt_datetime_unix_to_exif(char *exif, size_t exif_len, const time_t *unix);
+void dt_datetime_unix_lt_to_exif(char *exif, size_t exif_len, const time_t *unix);
 
 // current datetime to exif
 void dt_datetime_now_to_exif(char *exif, size_t exif_len);
 
 // exif datetime to img cache datetime
 void dt_datetime_exif_to_img(dt_image_t *img, const char *exif);
-// exif datetime to img cache datetime
-void dt_datetime_img_to_exif(const dt_image_t *img, char *exif);
+// img cache datetime to exif datetime
+void dt_datetime_img_to_exif(char *exif, const int exif_lgth, const dt_image_t *img);
 
 // exif datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
-GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, GTimeZone *tz);
+GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz);
 
 // img cache datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
-GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, GTimeZone *tz);
+GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz);
 
 // exif img cache datetime to unix tm. Returns TRUE if OK.
-gboolean dt_datetime_img_to_tm(const dt_image_t *img, struct tm *tt);
+gboolean dt_datetime_img_to_tm_lt(struct tm *tt, const dt_image_t *img);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

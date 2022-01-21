@@ -300,7 +300,7 @@ static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_mo
 static void _metadata_update_timestamp(const int i, const time_t *value, dt_lib_module_t *self)
 {
   char datetime[200];
-  const gboolean valid = dt_datetime_unix_to_local(datetime, sizeof(datetime), value);
+  const gboolean valid = dt_datetime_unix_lt_to_local(datetime, sizeof(datetime), value);
   _metadata_update_value(i, valid ? datetime : NODATA_STRING, self);
 }
 
@@ -766,7 +766,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       case md_exif_datetime:
       {
         char datetime[200];
-        const gboolean valid = dt_datetime_img_to_local(img, datetime, sizeof(datetime));
+        const gboolean valid = dt_datetime_img_to_local(datetime, sizeof(datetime), img);
         _metadata_update_value(md_exif_datetime, valid ? datetime : NODATA_STRING, self);
       }
       break;

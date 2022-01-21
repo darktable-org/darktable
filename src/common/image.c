@@ -2556,13 +2556,13 @@ void dt_image_local_copy_synch(void)
   }
 }
 
-void dt_image_get_datetime(const int32_t imgid, char *datetime)
+void dt_image_get_datetime(const int32_t imgid, char *datetime, const int dt_lgth)
 {
   if(!datetime) return;
   datetime[0] = '\0';
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(!cimg) return;
-  dt_datetime_img_to_exif(cimg, datetime);
+  dt_datetime_img_to_exif(datetime, dt_lgth, cimg);
   dt_image_cache_read_release(darktable.image_cache, cimg);
 }
 
@@ -2590,7 +2590,7 @@ static void _image_set_datetimes(const GList *img, const GArray *dtime,
     {
       dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)malloc(sizeof(dt_undo_datetime_t));
       undodatetime->imgid = imgid;
-      dt_image_get_datetime(imgid, undodatetime->before);
+      dt_image_get_datetime(imgid, undodatetime->before, sizeof(undodatetime->before));
 
       memcpy(&undodatetime->after, datetime->dt, DT_DATETIME_LENGTH);
 
@@ -2628,7 +2628,7 @@ static void _image_set_datetime(const GList *img, const char *datetime,
     {
       dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)malloc(sizeof(dt_undo_datetime_t));
       undodatetime->imgid = imgid;
-      dt_image_get_datetime(imgid, undodatetime->before);
+      dt_image_get_datetime(imgid, undodatetime->before, sizeof(undodatetime->before));
 
       memcpy(&undodatetime->after, datetime, DT_DATETIME_LENGTH);
 

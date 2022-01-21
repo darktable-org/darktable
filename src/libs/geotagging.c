@@ -45,7 +45,7 @@ typedef struct tz_tuple_t
 
 typedef struct dt_lib_datetime_t
 {
-  GtkWidget *widget[6];
+  GtkWidget *widget[7];
   GtkWidget *sign;
 } dt_lib_datetime_t;
 
@@ -173,7 +173,8 @@ static void _apply_datetime_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   if(d->datetime)
   {
-    char *dt = g_date_time_format(d->datetime, "%Y:%m:%d %H:%M:%S");
+    char *dt = g_date_time_format(d->datetime, "%Y:%m:%d %H:%M:%S,%f");
+    dt[DT_DATETIME_LENGTH - 1] = '\0'; // skip microseconds
     dt_control_datetime(0, dt, NULL);
     g_free(dt);
   }
@@ -220,7 +221,7 @@ static GDateTime *_localtime_text_to_utc_timeval(const char *date_time,
                                                  GTimeSpan offset)
 {
   GDateTime *exif_time = dt_datetime_exif_to_gdatetime(date_time, tz_camera);
-  GDateTime *dt_offset = g_date_time_add_seconds(exif_time, offset);
+  GDateTime *dt_offset = g_date_time_add(exif_time, offset);
   GDateTime *utc_time = g_date_time_to_timezone(dt_offset, tz_utc);
 
   g_date_time_unref(exif_time);
@@ -766,7 +767,7 @@ static void _refresh_selected_images_datetime(dt_lib_module_t *self)
     dt_sel_img_t *img = i->data;
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, img->imgid, 'r');
     if(!cimg) continue;
-    dt_datetime_img_to_exif(cimg, img->dt);
+    dt_datetime_img_to_exif(img->dt, sizeof(img->dt), cimg);
     dt_image_cache_read_release(darktable.image_cache, cimg);
   }
 }
@@ -903,7 +904,7 @@ static void _setup_selected_images_list(dt_lib_module_t *self)
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     char dt[DT_DATETIME_LENGTH];
     if(!cimg) continue;
-    dt_datetime_img_to_exif(cimg, dt);
+    dt_datetime_img_to_exif(dt, sizeof(dt), cimg);
     dt_image_cache_read_release(darktable.image_cache, cimg);
 
     dt_sel_img_t *img = g_malloc0(sizeof(dt_sel_img_t));
@@ -1202,6 +1203,12 @@ static void _display_offset(const GTimeSpan offset_int, const gboolean valid, dt
     gtk_label_set_text(GTK_LABEL(d->of.sign), neg ? "- " : "");
     char text[4];
     GTimeSpan off = neg ? -offset_int : offset_int;
+    off2 = off / 1000;  // skip microseconds
+    off = off2;
+    off2 = off / 1000;
+    snprintf(text, sizeof(text), "%03d", (int)(off - off2 * 1000));
+    gtk_entry_set_text(GTK_ENTRY(d->of.widget[6]), text);
+    off = off2;
     off2 = off / 60;
     snprintf(text, sizeof(text), "%02d", (int)(off - off2 * 60));
     gtk_entry_set_text(GTK_ENTRY(d->of.widget[5]), text);
@@ -1221,7 +1228,7 @@ static void _display_offset(const GTimeSpan offset_int, const gboolean valid, dt
   if(!valid || off2)
   {
     gtk_label_set_text(GTK_LABEL(d->of.sign), "");
-    for(int i = 2; i < 6; i++)
+    for(int i = 2; i < 7; i++)
       gtk_entry_set_text(GTK_ENTRY(d->of.widget[i]), "-");
   }
   const gboolean locked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->lock_offset));
@@ -1237,7 +1244,7 @@ static void _display_datetime(dt_lib_datetime_t *dtw, GDateTime *datetime,
                               const gboolean lock, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-  for(int i = 0; lock && i < 6; i++)
+  for(int i = 0; lock && i < 7; i++)
     g_signal_handlers_block_by_func(d->dt.widget[i], _datetime_entry_changed, self);
   if(datetime)
   {
@@ -1254,13 +1261,15 @@ static void _display_datetime(dt_lib_datetime_t *dtw, GDateTime *datetime,
     gtk_entry_set_text(GTK_ENTRY(dtw->widget[4]),value);
     snprintf(value, sizeof(value), "%02d", g_date_time_get_second(datetime));
     gtk_entry_set_text(GTK_ENTRY(dtw->widget[5]), value);
+    snprintf(value, sizeof(value), "%03d", (int)(g_date_time_get_microsecond(datetime) * 0.001));
+    gtk_entry_set_text(GTK_ENTRY(dtw->widget[6]), value);
   }
   else
   {
-    for(int i = 0; i < 6; i++)
+    for(int i = 0; i < 7; i++)
       gtk_entry_set_text(GTK_ENTRY(dtw->widget[i]), "-");
   }
-  for(int i = 0; lock && i < 6; i++)
+  for(int i = 0; lock && i < 7; i++)
     g_signal_handlers_unblock_by_func(d->dt.widget[i], _datetime_entry_changed, self);
 }
 
@@ -1289,7 +1298,7 @@ static void _new_datetime(GDateTime *datetime, dt_lib_module_t *self)
     if(d->datetime)
       g_date_time_unref(d->datetime);
     d->datetime = datetime;
-    d->offset = g_date_time_difference(d->datetime, d->datetime0) / G_TIME_SPAN_SECOND;
+    d->offset = g_date_time_difference(d->datetime, d->datetime0);
     _display_offset(d->offset, d->datetime != NULL, self);
 #ifdef HAVE_MAP
     if(d->map.view)
@@ -1329,7 +1338,7 @@ static GDateTime *_get_image_datetime(dt_lib_module_t *self)
   {
     // consider act on only if no selected
     char datetime_s[DT_DATETIME_LENGTH];
-    dt_image_get_datetime(selid ? selid : imgid, datetime_s);
+    dt_image_get_datetime(selid ? selid : imgid, datetime_s, sizeof(datetime_s));
     if(datetime_s[0] != '\0')
       datetime = _get_datetime_from_text(datetime_s, d->tz_utc);
     else
@@ -1350,7 +1359,7 @@ static void _refresh_image_datetime(dt_lib_module_t *self)
   _display_datetime(&d->dt0, datetime, FALSE, self);
   if(locked)
   {
-    GDateTime *datetime2 = g_date_time_add(datetime, d->offset * G_TIME_SPAN_SECOND);
+    GDateTime *datetime2 = g_date_time_add(datetime, d->offset);
     _new_datetime(datetime2, self);
   }
   else
@@ -1412,7 +1421,7 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
   if(!d->editing)
   {
     int i = 0;
-    for(i = 0; i < 6; i++)
+    for(i = 0; i < 7; i++)
       if(w == d->dt.widget[i]) break;
 
     int delta_y;
@@ -1447,6 +1456,9 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
       case 5:
         datetime = g_date_time_add_seconds(d->datetime, increment);
         break;
+      case 6:
+        datetime = g_date_time_add(d->datetime, increment * 1000);
+        break;
       default:
         datetime = NULL;
     }
@@ -1465,7 +1477,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
   gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(flow), 3);
 
   GtkBox *box = NULL;
-  for(int i = 0; i < 6; i++)
+  for(int i = 0; i < 7; i++)
   {
     if(!box) box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -1477,7 +1489,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
     if(i >= 2 || type != 2)
     {
       dt->widget[i] = gtk_entry_new();
-      gtk_entry_set_width_chars(GTK_ENTRY(dt->widget[i]), i == 0 ? 4 : 2);
+      gtk_entry_set_width_chars(GTK_ENTRY(dt->widget[i]), i == 0 ? 4 : i == 6 ? 3 : 2);
       gtk_entry_set_alignment(GTK_ENTRY(dt->widget[i]), 0.5);
       gtk_box_pack_start(box, dt->widget[i], FALSE, FALSE, 0);
       if(type == 0)
@@ -1490,7 +1502,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
       }
     }
 
-    if(i == 2 || i == 5)
+    if(i == 2 || i == 6)
     {
       gtk_widget_set_halign(GTK_WIDGET(box), GTK_ALIGN_END);
       gtk_widget_set_hexpand(GTK_WIDGET(box), TRUE);
@@ -1499,7 +1511,8 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
     }
     else if(i > 2 || type != 2)
     {
-      GtkWidget *label = gtk_label_new(i < 2 ? "-" : ":");
+//      GtkWidget *label = gtk_label_new(i < 2 ? "-" : ":");
+      GtkWidget *label = gtk_label_new(i < 2 ? "-" : i == 5 ? "," :":");
       gtk_box_pack_start(box, label, FALSE, FALSE, 0);
     }
   }
@@ -1905,7 +1918,7 @@ void gui_init(dt_lib_module_t *self)
   d->offset = 0;
   _display_offset(d->offset, TRUE, self);
 
-  for(int i = 0; i < 6; i++)
+  for(int i = 0; i < 7; i++)
   {
     g_signal_connect(d->dt.widget[i], "changed", G_CALLBACK(_datetime_entry_changed), self);
     g_signal_connect(d->dt.widget[i], "key-press-event", G_CALLBACK(_datetime_key_pressed), self);

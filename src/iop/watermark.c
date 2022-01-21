@@ -382,7 +382,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
   // EXIF datetime
   struct tm tt_exif = { 0 };
-  dt_datetime_img_to_tm(image, &tt_exif);
+  dt_datetime_img_to_tm_lt(&tt_exif, image);
 
   // Current datetime
   struct tm tt_cur = { 0 };
@@ -484,7 +484,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
     // Current date
     // $(DATE) -- YYYY:
-    dt_datetime_unix_to_exif(datetime, sizeof(datetime), &t);
+    dt_datetime_unix_lt_to_exif(datetime, sizeof(datetime), &t);
     svgdata = _string_substitute(svgdata, "$(DATE)", datetime);
     // $(DATE.SECOND) -- 00..60
     strftime(datetime, sizeof(datetime), "%S", &tt_cur);

@@ -64,7 +64,7 @@
 
 typedef struct dt_control_datetime_t
 {
-  long int offset;
+  GTimeSpan offset;
   char datetime[DT_DATETIME_LENGTH];
 } dt_control_datetime_t;
 
@@ -1888,13 +1888,13 @@ static void _add_datetime_offset(const uint32_t imgid, const char *odt,
     return;
 
   // let's add our offset
-  GDateTime *datetime_new = g_date_time_add_seconds(datetime_original, offset);
+  GDateTime *datetime_new = g_date_time_add(datetime_original, offset);
   g_date_time_unref(datetime_original);
 
   if(!datetime_new)
     return;
-
-  gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S");
+  gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S,%f");
+  datetime[DT_DATETIME_LENGTH - 1] = '\0';  // limit to milliseconds
   g_date_time_unref(datetime_new);
 
   if(datetime)
@@ -1907,7 +1907,7 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   uint32_t cntr = 0;
   GList *t = params->index;
-  const long int offset = ((dt_control_datetime_t *)params->data)->offset;
+  const GTimeSpan offset = ((dt_control_datetime_t *)params->data)->offset;
   const char *datetime = ((dt_control_datetime_t *)params->data)->datetime;
   char message[512] = { 0 };
 
@@ -1932,7 +1932,7 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
     for(GList *img = t; img; img = g_list_next(img))
     {
       char odt[DT_DATETIME_LENGTH] = {0};
-      dt_image_get_datetime(GPOINTER_TO_INT(img->data), odt);
+      dt_image_get_datetime(GPOINTER_TO_INT(img->data), odt, sizeof(odt));
       if(!odt[0]) continue;
 
       char ndt[DT_DATETIME_LENGTH] = {0};
@@ -1993,7 +1993,7 @@ static void dt_control_datetime_job_cleanup(void *p)
   dt_control_image_enumerator_cleanup(params);
 }
 
-static dt_job_t *dt_control_datetime_job_create(const long int offset, const char *datetime, GList *imgs)
+static dt_job_t *dt_control_datetime_job_create(const GTimeSpan offset, const char *datetime, GList *imgs)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_datetime_job_run, "time offset");
   if(!job) return NULL;
@@ -2021,7 +2021,7 @@ static dt_job_t *dt_control_datetime_job_create(const long int offset, const cha
   return job;
 }
 
-void dt_control_datetime(const long int offset, const char *datetime, GList *imgs)
+void dt_control_datetime(const GTimeSpan offset, const char *datetime, GList *imgs)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_datetime_job_create(offset, datetime, imgs));
