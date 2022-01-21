@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "colorspaces_inline_conversions.h"
 #include "common/math.h"
 
 typedef enum dt_adaptation_t
