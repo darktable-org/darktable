@@ -353,55 +353,6 @@
     <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 26 latin letters</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/lighttable/collect/most_used_nb</name>
-    <type>int</type>
-    <default>6</default>
-    <shortdescription>number of rules to show in the most used part of the menu.</shortdescription>
-    <longdescription>number of rules to show in the most used part of the menu.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/nb_use_1</name>
-    <type>int</type>
-    <default>6</default>
-    <shortdescription>nb of use for the rule property</shortdescription>
-    <longdescription>nb of use for the rule property</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/nb_use_3</name>
-    <type>int</type>
-    <default>2</default>
-    <shortdescription>nb of use for the rule property</shortdescription>
-    <longdescription>nb of use for the rule property</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/nb_use_12</name>
-    <type>int</type>
-    <default>1</default>
-    <shortdescription>nb of use for the rule property</shortdescription>
-    <longdescription>nb of use for the rule property</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/nb_use_17</name>
-    <type>int</type>
-    <default>5</default>
-    <shortdescription>nb of use for the rule property</shortdescription>
-    <longdescription>nb of use for the rule property</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/nb_use_18</name>
-    <type>int</type>
-    <default>3</default>
-    <shortdescription>nb of use for the rule property</shortdescription>
-    <longdescription>nb of use for the rule property</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/nb_use_31</name>
-    <type>int</type>
-    <default>4</default>
-    <shortdescription>nb of use for the rule property</shortdescription>
-    <longdescription>nb of use for the rule property</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/collect/expand_0</name>
     <type>bool</type>
     <default>true</default>

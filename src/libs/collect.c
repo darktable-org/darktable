@@ -103,7 +103,6 @@ typedef struct dt_lib_collect_t
   GtkWidget *rules_sw;
   _widgets_sort_t *sort;
   gboolean manual_sort_set;
-  gboolean scroll_to_bottom;
 
   gboolean singleclick;
   struct dt_lib_collect_params_t *params;
@@ -2907,7 +2906,7 @@ static gboolean _widget_init_special(dt_lib_collect_rule_t *rule, const gchar *t
 static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 {
   const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
-  dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+  dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)g_object_get_data(G_OBJECT(widget), "collect_data");
   if(mode == rule->prop) return;
 
   const dt_collection_properties_t oldprop = rule->prop;
@@ -2991,25 +2990,37 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     dt_conf_set_int("plugins/lighttable/collect/num_rules", d->nb_rules);
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/nb_use_%d", mode);
     dt_conf_set_int(confname, dt_conf_get_int(confname) + 1);
-  }
-  else
-  {
-    // append a preset
-    GtkWidget *child = gtk_bin_get_child(GTK_BIN(widget));
-    const gchar *presetname = gtk_label_get_label(GTK_LABEL(child));
-    sqlite3_stmt *stmt;
-    gchar *query = g_strdup_printf("SELECT op_params"
-                                   " FROM data.presets"
-                                   " WHERE operation=?1 AND op_version=?2 AND name=?3");
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, presetname, -1, SQLITE_TRANSIENT);
-    g_free(query);
 
-    if(sqlite3_step(stmt) == SQLITE_ROW)
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
+                               NULL);
+  }
+}
+
+static void _preset_load(GtkWidget *widget, dt_lib_module_t *self)
+{
+  // add new rule
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  const gboolean append = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_data"));
+  char confname[200] = { 0 };
+
+  GtkWidget *child = gtk_bin_get_child(GTK_BIN(widget));
+  const gchar *presetname = gtk_label_get_label(GTK_LABEL(child));
+  sqlite3_stmt *stmt;
+  gchar *query = g_strdup_printf("SELECT op_params"
+                                 " FROM data.presets"
+                                 " WHERE operation=?1 AND op_version=?2 AND name=?3");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, presetname, -1, SQLITE_TRANSIENT);
+  g_free(query);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    void *op_params = (void *)sqlite3_column_blob(stmt, 0);
+    if(append)
     {
-      void *op_params = (void *)sqlite3_column_blob(stmt, 0);
+      // we append the presets rules to the existing ones
       dt_lib_collect_params_t *p = (dt_lib_collect_params_t *)op_params;
       if(d->nb_rules + p->rules > MAX_RULES)
       {
@@ -3028,91 +3039,122 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
         d->nb_rules++;
       }
       dt_conf_set_int("plugins/lighttable/collect/num_rules", d->nb_rules);
+
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
+                                 NULL);
     }
-    sqlite3_finalize(stmt);
+    else
+    {
+      // we replace the existing rules by the preset
+      set_params(self, op_params, sqlite3_column_bytes(stmt, 0));
+    }
   }
-
-  // indicate that we need to scroll to the bottom when we will redraw the rules
-  d->scroll_to_bottom = TRUE;
-
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  sqlite3_finalize(stmt);
 }
 
-static void _widget_add_rule_popup_item(GtkMenuShell *pop, const gchar *name, const int id, const gboolean title,
-                                        dt_lib_collect_rule_t *rule, dt_lib_module_t *self)
+static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, const gboolean title,
+                            GCallback callback, gpointer data, dt_lib_module_t *self)
 {
   GtkWidget *smt = gtk_menu_item_new_with_label(name);
   if(title)
   {
     gtk_widget_set_name(smt, "collect-popup-title");
-    GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
-    gtk_label_set_xalign(GTK_LABEL(child), 1.0);
     gtk_widget_set_sensitive(smt, FALSE);
   }
   else
   {
     gtk_widget_set_name(smt, "collect-popup-item");
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
+    gtk_label_set_xalign(GTK_LABEL(child), 1.0);
     g_object_set_data(G_OBJECT(smt), "collect_id", GINT_TO_POINTER(id));
-    if(rule)
-    {
-      g_object_set_data(G_OBJECT(smt), "rule", rule);
-      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_event_rule_change_type), self);
-    }
-    else
-      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_event_append_rule), self);
+    if(data) g_object_set_data(G_OBJECT(smt), "collect_data", data);
+    g_signal_connect(G_OBJECT(smt), "activate", callback, self);
   }
   gtk_menu_shell_append(pop, smt);
 }
 
-static int _prop_most_used_sort(gconstpointer a, gconstpointer b)
+static gboolean _preset_show_popup(GtkWidget *widget, gboolean append, dt_lib_module_t *self)
 {
-  char confname[200] = { 0 };
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/nb_use_%d", GPOINTER_TO_INT(a));
-  const int ai = dt_conf_get_int(confname);
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/nb_use_%d", GPOINTER_TO_INT(b));
-  const int bi = dt_conf_get_int(confname);
-  return bi - ai;
-}
-
-static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rule, dt_lib_module_t *self)
-{
-  if(rule && rule->manual_widget_set) return TRUE;
-
-#define ADD_COLLECT_ENTRY(menu, value)                                                                            \
-  _widget_add_rule_popup_item(menu, dt_collection_name(value), value, FALSE, rule, self);
-
   // we show a popup with all the possible rules
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
 
-  // most used properties
-  if(!rule) _widget_add_rule_popup_item(pop, _("append new rule"), 0, TRUE, rule, self);
-  const int nbitems = dt_conf_get_int("plugins/lighttable/collect/most_used_nb");
-  GSList *props = NULL;
-  for(int i = 0; i < DT_COLLECTION_PROP_LAST; i++) props = g_slist_prepend(props, GINT_TO_POINTER(i));
-  props = g_slist_sort(props, _prop_most_used_sort);
-  int j = 0;
-  for(GSList *l = props; l && j < nbitems; l = g_slist_next(l), j++)
-  {
-    const dt_collection_properties_t p = GPOINTER_TO_INT(l->data);
-    ADD_COLLECT_ENTRY(pop, p);
-  }
+  if(append)
+    _popup_add_item(pop, _("append preset"), 0, TRUE, NULL, NULL, self);
+  else
+    _popup_add_item(pop, _("load preset"), 0, TRUE, NULL, NULL, self);
 
-  // all properties submenu
-  GtkWidget *smt = gtk_menu_item_new_with_label(_("other properties"));
+  const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
+  const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
+
+  sqlite3_stmt *stmt;
+  // order like the pref value
+  gchar *query = g_strdup_printf("SELECT name, writeprotect, description"
+                                 " FROM data.presets"
+                                 " WHERE operation=?1 AND op_version=?2"
+                                 " ORDER BY writeprotect %s, LOWER(name), rowid",
+                                 default_first ? "DESC" : "ASC");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
+  g_free(query);
+
+  // collect all presets for op from db
+  int last_wp = -1;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    // default vs built-in stuff
+    const gboolean writeprotect = sqlite3_column_int(stmt, 1);
+    if(hide_default && writeprotect)
+    {
+      // skip default module if set to hide them.
+      continue;
+    }
+    if(last_wp == -1)
+    {
+      last_wp = writeprotect;
+    }
+    else if(last_wp != writeprotect)
+    {
+      last_wp = writeprotect;
+      _popup_add_item(pop, " ", 0, TRUE, NULL, NULL, self);
+    }
+
+    const char *name = (char *)sqlite3_column_text(stmt, 0);
+    _popup_add_item(pop, name, -1, FALSE, G_CALLBACK(_preset_load), GINT_TO_POINTER(append), self);
+  }
+  sqlite3_finalize(stmt);
+
+  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  return TRUE;
+}
+
+static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_collect_rule_t *rule, dt_lib_module_t *self)
+{
+  if(rule && rule->manual_widget_set) return TRUE;
+
+  GCallback callback;
+  if(rule)
+    callback = G_CALLBACK(_event_rule_change_type);
+  else
+    callback = G_CALLBACK(_event_append_rule);
+
+#define ADD_COLLECT_ENTRY(menu, value)                                                                            \
+  _popup_add_item(menu, dt_collection_name(value), value, FALSE, callback, rule, self);
+
+  // we show a popup with all the possible rules
   GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_name(GTK_WIDGET(spop), "collect-popup");
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(smt), GTK_WIDGET(spop));
-  gtk_menu_shell_append(pop, smt);
+  gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
 
   // the differents categories
-  _widget_add_rule_popup_item(spop, _("files"), 0, TRUE, rule, self);
+  _popup_add_item(spop, _("files"), 0, TRUE, NULL, NULL, self);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FILMROLL);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FOLDERS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FILENAME);
 
-  _widget_add_rule_popup_item(spop, _("metadata"), 0, TRUE, rule, self);
+  _popup_add_item(spop, _("metadata"), 0, TRUE, NULL, NULL, self);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TAG);
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -3131,7 +3173,7 @@ static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GEOTAGGING);
 
-  _widget_add_rule_popup_item(spop, _("times"), 0, TRUE, rule, self);
+  _popup_add_item(spop, _("times"), 0, TRUE, NULL, NULL, self);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_DAY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TIME);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
@@ -3139,7 +3181,7 @@ static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_PRINT_TIMESTAMP);
 
-  _widget_add_rule_popup_item(spop, _("capture details"), 0, TRUE, rule, self);
+  _popup_add_item(spop, _("capture details"), 0, TRUE, NULL, NULL, self);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_CAMERA);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_APERTURE);
@@ -3148,77 +3190,39 @@ static gboolean _widget_rule_popup(GtkWidget *widget, dt_lib_collect_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ASPECT_RATIO);
 
-  _widget_add_rule_popup_item(spop, _("darktable"), 0, TRUE, rule, self);
+  _popup_add_item(spop, _("darktable"), 0, TRUE, NULL, NULL, self);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GROUPING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_MODULE);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ORDER);
 
-  // show the preset part
-  if(!rule)
-  {
-    // separator
-    _widget_add_rule_popup_item(pop, " ", 0, TRUE, rule, self);
-
-    _widget_add_rule_popup_item(pop, _("append preset"), 0, TRUE, rule, self);
-
-    const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
-    const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
-
-    sqlite3_stmt *stmt;
-    // order like the pref value
-    gchar *query = g_strdup_printf("SELECT name, writeprotect, description"
-                                   " FROM data.presets"
-                                   " WHERE operation=?1 AND op_version=?2"
-                                   " ORDER BY writeprotect %s, LOWER(name), rowid",
-                                   default_first ? "DESC" : "ASC");
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
-    g_free(query);
-
-    // collect all presets for op from db
-    int last_wp = -1;
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      // default vs built-in stuff
-      const gboolean writeprotect = sqlite3_column_int(stmt, 1);
-      if(hide_default && writeprotect)
-      {
-        // skip default module if set to hide them.
-        continue;
-      }
-      if(last_wp == -1)
-      {
-        last_wp = writeprotect;
-      }
-      else if(last_wp != writeprotect)
-      {
-        last_wp = writeprotect;
-        _widget_add_rule_popup_item(pop, " ", 0, TRUE, rule, self);
-      }
-
-      const char *name = (char *)sqlite3_column_text(stmt, 0);
-      _widget_add_rule_popup_item(pop, name, -1, FALSE, rule, self);
-    }
-    sqlite3_finalize(stmt);
-  }
-
-  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  dt_gui_menu_popup(GTK_MENU(spop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
   return TRUE;
 }
 
-static gboolean _event_add_rule(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean _event_rule_append(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  _widget_rule_popup(widget, NULL, self);
+  _rule_show_popup(widget, NULL, self);
   return TRUE;
 }
 
 static gboolean _event_rule_change_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_collect_rule_t *rule = (dt_lib_collect_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
-  _widget_rule_popup(rule->w_prop, rule, self);
+  _rule_show_popup(rule->w_prop, rule, self);
+  return TRUE;
+}
+
+static gboolean _event_preset_append(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  _preset_show_popup(widget, TRUE, self);
+  return TRUE;
+}
+
+static gboolean _event_preset_load(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  _preset_show_popup(widget, FALSE, self);
   return TRUE;
 }
 
@@ -4236,7 +4240,7 @@ static _widgets_sort_t *_sort_get_widgets(dt_lib_module_t *self)
 {
   _widgets_sort_t *wsort = (_widgets_sort_t *)g_malloc0(sizeof(_widgets_sort_t));
   wsort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(wsort->box, "collect-rule-widget");
+  gtk_widget_set_name(wsort->box, "collect-sort-widget");
   const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
   wsort->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
                                              _("determine the sort order of shown images"), sort,
@@ -4285,17 +4289,6 @@ static _widgets_sort_t *_sort_get_widgets(dt_lib_module_t *self)
   return wsort;
 }
 
-static void _event_rules_box_changed(GtkAdjustment *adj, dt_lib_module_t *self)
-{
-  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
-  // if needed, we scroll to the bottom in order to be sure that the last rule is visible
-  if(d->scroll_to_bottom)
-  {
-    d->scroll_to_bottom = FALSE;
-    gtk_adjustment_set_value(adj, gtk_adjustment_get_upper(adj));
-  }
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
@@ -4314,40 +4307,42 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // the box to insert the collect rules
-  d->rules_sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->rules_sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_widget_set_size_request(d->rules_sw, -1, DT_PIXEL_APPLY_DPI(400));
   d->rules_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(d->rules_sw), d->rules_box);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->rules_sw, TRUE, TRUE, 0);
-  GtkAdjustment *vadj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(d->rules_sw));
-  g_signal_connect(G_OBJECT(vadj), "changed", G_CALLBACK(_event_rules_box_changed), self);
-
-  // the sorting part
-  GtkWidget *spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(spacer, "collect-spacer-widget");
-  gtk_box_pack_start(GTK_BOX(self->widget), spacer, TRUE, TRUE, 0);
-  d->sort = _sort_get_widgets(self);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->sort->box, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->rules_box, FALSE, TRUE, 0);
 
   // the botton buttons
-  spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(spacer, "collect-spacer-widget");
+  GtkWidget *spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(spacer, "collect-spacer");
   gtk_box_pack_start(GTK_BOX(self->widget), spacer, TRUE, TRUE, 0);
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(bhbox, "collect-actions-widget");
-  gtk_box_pack_end(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  GtkWidget *btn = dt_ui_button_new(_("add rule..."), _("append new rule to collect images"), NULL);
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_add_rule), self);
+  gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
+  GtkWidget *btn = dt_ui_button_new(_("+ rule"), _("append new rule to collect images"), NULL);
+  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_rule_append), self);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_ui_button_new(_("add sort..."), _("append new sorting"), NULL);
-  // g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_add_rule), self);
-  gtk_box_pack_start(GTK_BOX(bhbox), btn, FALSE, TRUE, 0);
-  btn = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT, NULL);
+  btn = dt_ui_button_new(_("+ preset"), _("append preset to collect images"), NULL);
+  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_preset_append), self);
+  gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
+  btn = dt_ui_button_new(_("load"), _("load a collect preset"), NULL);
+  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_preset_load), self);
+  gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
+  btn = dt_ui_button_new(_("history"), _("revert to a previous set of rules"), NULL);
   g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_history_show), self);
-  gtk_widget_set_tooltip_text(btn, _("revert to a previous set of rules"));
-  gtk_box_pack_start(GTK_BOX(bhbox), btn, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
+
+  // the sorting part
+  spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(spacer, "collect-spacer2");
+  bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), spacer, TRUE, TRUE, 0);
+  d->sort = _sort_get_widgets(self);
+  gtk_box_pack_start(GTK_BOX(bhbox), d->sort->box, TRUE, TRUE, 0);
+  btn = dt_ui_button_new(_("+"), _("add sort order"), NULL);
+  // g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_history_show), self);
+  gtk_box_pack_start(GTK_BOX(bhbox), btn, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), bhbox, FALSE, TRUE, 0);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
