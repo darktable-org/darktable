@@ -1184,6 +1184,24 @@ static gboolean _event_main_drag_motion(GtkWidget *widget, GdkDragContext *dc, g
   return TRUE;
 }
 
+static void _event_image_style_updated(GtkWidget *w, dt_thumbnail_t *thumb)
+{
+  // for some reason the style has changed. We have to recompute margins and resize the overlays
+
+  // we retrieve the eventual new margins
+  int oldt = thumb->img_margin->top;
+  int oldr = thumb->img_margin->right;
+  int oldb = thumb->img_margin->bottom;
+  int oldl = thumb->img_margin->left;
+  _thumb_retrieve_margins(thumb);
+
+  if(oldt != thumb->img_margin->top || oldr != thumb->img_margin->right || oldb != thumb->img_margin->bottom
+     || oldl != thumb->img_margin->left)
+  {
+    _thumb_resize_overlays(thumb);
+  }
+}
+
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 {
   // main widget (overlay)
@@ -1274,6 +1292,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     g_signal_connect(G_OBJECT(thumb->w_image), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
     g_signal_connect(G_OBJECT(thumb->w_image), "enter-notify-event", G_CALLBACK(_event_image_enter_leave), thumb);
     g_signal_connect(G_OBJECT(thumb->w_image), "leave-notify-event", G_CALLBACK(_event_image_enter_leave), thumb);
+    g_signal_connect(G_OBJECT(thumb->w_image), "style-updated", G_CALLBACK(_event_image_style_updated), thumb);
     gtk_widget_show(thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image_box);
