@@ -229,7 +229,7 @@ typedef struct dt_view_manager_t
   } audio;
 
   // toggle button for guides (in the module toolbox)
-  GtkWidget *guides_toggle, *guides, *guides_popover;
+  GtkWidget *guides_toggle, *guides, *guides_colors, *guides_popover;
 
   /*
    * Proxy
