@@ -3131,6 +3131,9 @@ static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_
 {
   if(darktable.gui->reset) return;
   g->cropping = 0;
+  const dt_boundingbox_t old = { p->cx, p->cy, p->cw, p->ch };
+  const float eps = 1e-6f; // threshold to avoid rounding errors
+
   if(!self->enabled)
   {
     // first time crop, if any data is stored in p, it's obsolete:
@@ -3154,7 +3157,9 @@ static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_
     }
   }
   g->applied = 1;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  const gboolean changed = fabs(p->cx - old[0]) > eps || fabs(p->cy - old[1]) > eps || fabs(p->cw - old[2]) > eps || fabs(p->ch - old[3]) > eps;
+  // fprintf(stderr, "[crop commit box] %i:  %e %e %e %e\n", changed, p->cx - old[0], p->cy - old[1], p->cw - old[2], p->ch - old[3]);
+  if(changed) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
