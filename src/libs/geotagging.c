@@ -94,7 +94,6 @@ typedef struct dt_lib_geotagging_t
   GtkWidget *timezone_changed;
   GtkWidget *gpx_button;
   GTimeZone *tz_camera;
-  GTimeZone *tz_utc;
 #ifdef HAVE_MAP
   struct
   {
@@ -240,7 +239,7 @@ static int _count_images_per_track(dt_gpx_track_segment_t *t, dt_gpx_track_segme
     dt_sel_img_t *im = (dt_sel_img_t *)i->data;
     if(im->segid == -1)
     {
-      GDateTime *dt = _localtime_text_to_utc_timeval(im->dt, d->tz_camera, d->tz_utc, d->offset);
+      GDateTime *dt = _localtime_text_to_utc_timeval(im->dt, d->tz_camera, darktable.utc_tz, d->offset);
       if((g_date_time_compare(dt, t->start_dt) >= 0
           && g_date_time_compare(dt, t->end_dt) <= 0)
          || (n && g_date_time_compare(dt, t->end_dt) >= 0
@@ -298,7 +297,7 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
     dt_sel_img_t *im = (dt_sel_img_t *)i->data;
     if(im->segid == segid && active)
     {
-      GDateTime *dt = _localtime_text_to_utc_timeval(im->dt, d->tz_camera, d->tz_utc, d->offset);
+      GDateTime *dt = _localtime_text_to_utc_timeval(im->dt, d->tz_camera, darktable.utc_tz, d->offset);
       if(!dt_gpx_get_location(d->map.gpx, dt, &im->gl))
         im->gl.latitude = NAN;
       g_date_time_unref(dt);
@@ -1285,7 +1284,7 @@ static GDateTime *_read_datetime_entry(dt_lib_module_t *self)
   const int minute = atoi(gtk_entry_get_text(GTK_ENTRY(d->dt.widget[4])));
   const int second = atoi(gtk_entry_get_text(GTK_ENTRY(d->dt.widget[5])));
 
-  return g_date_time_new(d->tz_utc, year, month, day, hour, minute, second);
+  return g_date_time_new(darktable.utc_tz, year, month, day, hour, minute, second);
 }
 
 static void _new_datetime(GDateTime *datetime, dt_lib_module_t *self)
@@ -1340,7 +1339,7 @@ static GDateTime *_get_image_datetime(dt_lib_module_t *self)
     char datetime_s[DT_DATETIME_LENGTH];
     dt_image_get_datetime(selid ? selid : imgid, datetime_s, sizeof(datetime_s));
     if(datetime_s[0] != '\0')
-      datetime = _get_datetime_from_text(datetime_s, d->tz_utc);
+      datetime = _get_datetime_from_text(datetime_s, darktable.utc_tz);
     else
       datetime = NULL;
   }
@@ -1775,7 +1774,6 @@ void gui_init(dt_lib_module_t *self)
 
   gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
   d->tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
-  d->tz_utc = g_time_zone_new_utc();
   for(GList *iter = d->timezones; iter; iter = g_list_next(iter))
   {
     tz_tuple_t *tz_tuple = (tz_tuple_t *)iter->data;
@@ -1944,7 +1942,6 @@ void gui_cleanup(dt_lib_module_t *self)
   g_list_free_full(d->timezones, free_tz_tuple);
   d->timezones = NULL;
   g_time_zone_unref(d->tz_camera);
-  g_time_zone_unref(d->tz_utc);
   if(d->datetime)
     g_date_time_unref(d->datetime);
   if(d->datetime0)

@@ -1136,7 +1136,6 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 
   GTimeZone *tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
   if(!tz_camera) goto bail_out;
-  GTimeZone *tz_utc = g_time_zone_new_utc();
 
   GList *imgs = NULL;
   GArray *gloc = g_array_new(FALSE, FALSE, sizeof(dt_image_geoloc_t));
@@ -1155,7 +1154,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     /* release the lock */
     dt_image_cache_read_release(darktable.image_cache, cimg);
     if(!exif_time) continue;
-    GDateTime *utc_time = g_date_time_to_timezone(exif_time, tz_utc);
+    GDateTime *utc_time = g_date_time_to_timezone(exif_time, darktable.utc_tz);
     g_date_time_unref(exif_time);
     if(!utc_time) continue;
 
@@ -1182,7 +1181,6 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
                           "applied matched GPX location onto %d images", cntr), cntr);
 
   g_time_zone_unref(tz_camera);
-  g_time_zone_unref(tz_utc);
   dt_gpx_destroy(gpx);
   g_array_unref(gloc);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
@@ -1883,9 +1881,7 @@ static void _add_datetime_offset(const uint32_t imgid, const char *odt,
                                  const long int offset, char *ndt)
 {
   // get the datetime_taken and calculate the new time
-  GTimeZone *tz = g_time_zone_new_utc();
-  GDateTime *datetime_original = dt_datetime_exif_to_gdatetime(odt, tz);
-  g_time_zone_unref(tz);
+  GDateTime *datetime_original = dt_datetime_exif_to_gdatetime(odt, darktable.utc_tz);
   if(!datetime_original)
     return;
 
