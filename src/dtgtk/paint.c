@@ -1483,17 +1483,20 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   }
   else
   {
-    cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, alpha);
+    cairo_set_line_width(cr, 0.12);
+    cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, alpha);
+    cairo_move_to(cr, 0.9, 0.1);
+    cairo_line_to(cr, 0.1, 0.9);
+    cairo_stroke(cr);
     def = TRUE;
   }
   cairo_fill(cr);
 
-  /* draw cross overlay if highlighted */
+  /* draw slash overlay on delete label icon */  
   if(def == TRUE && (flags & CPF_PRELIGHT))
   {
-    cairo_set_source_rgba(cr, 0.5, 0.0, 0.0, 0.8);
-    cairo_move_to(cr, 0.0, 0.0);
-    cairo_line_to(cr, 1.0, 1.0);
+    cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
+    cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 0.6);
     cairo_move_to(cr, 0.9, 0.1);
     cairo_line_to(cr, 0.1, 0.9);
     cairo_stroke(cr);
