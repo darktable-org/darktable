@@ -274,7 +274,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, img->exif_focus_distance);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, img->film_id);
   char datetime[DT_DATETIME_LENGTH];
-  dt_datetime_img_to_exif(datetime, sizeof(datetime), img);
+  dt_datetime_img_to_exif(datetime, img);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, datetime, -1, SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, img->flags);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 15, img->exif_crop);

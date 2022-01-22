@@ -424,7 +424,7 @@ void dt_image_set_datetime(const GList *imgs, const char *datetime, const gboole
 // set datetimeS to exif_datetime_taken field
 void dt_image_set_datetimes(const GList *imgs, const GArray *dtime, const gboolean undo_on);
 // return image datetime string into the given buffer (size = DT_DATETIME_LENGTH)
-void dt_image_get_datetime(const int32_t imgid, char *datetime, const int dt_lgth);
+void dt_image_get_datetime(const int32_t imgid, char *datetime);
 
 /** helper function to get the audio file filename that is accompanying the image. g_free() after use */
 char *dt_image_get_audio_path(const int32_t imgid);

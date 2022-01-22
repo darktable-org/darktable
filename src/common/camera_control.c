@@ -119,9 +119,9 @@ static gpointer _camera_get_job(const dt_camctl_t *c, const dt_camera_t *camera)
 static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job);
 
 /** Dispatch functions for listener interfaces */
-static const char *_dispatch_request_image_path(const dt_camctl_t *c, time_t *exif_time, const dt_camera_t *camera);
+static const char *_dispatch_request_image_path(const dt_camctl_t *c, char *exif_time, const dt_camera_t *camera);
 static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *filename,
-                                                    time_t *exif_time, const dt_camera_t *camera);
+                                                    const char *exif_time, const dt_camera_t *camera);
 static void _dispatch_camera_image_downloaded(const dt_camctl_t *c, const dt_camera_t *camera, const char *filename);
 static void _dispatch_camera_connected(const dt_camctl_t *c, const dt_camera_t *camera);
 static void _dispatch_camera_disconnected(const dt_camctl_t *c, const dt_camera_t *camera);
@@ -1155,7 +1155,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     int res = GP_OK;
     char *data = NULL;
     gsize size = 0;
-    time_t exif_time;
+    char exif_time[DT_DATETIME_LENGTH];
 
     gp_file_new(&camfile);
     if((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK)
@@ -1187,10 +1187,10 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     }
     else
     {
-      const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
+      dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
 
-      const char *output_path = _dispatch_request_image_path(c, have_exif_time ? &exif_time : NULL, cam);
-      const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
+      const char *output_path = _dispatch_request_image_path(c, exif_time, cam);
+      const char *fname = _dispatch_request_image_filename(c, filename, exif_time[0] ? exif_time : NULL, cam);
       if(!fname)
       {
         gp_file_free(camfile);
@@ -1954,7 +1954,7 @@ static void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t
 }
 
 static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *filename,
-                                                    time_t *exif_time, const dt_camera_t *camera)
+                                                    const char *exif_time, const dt_camera_t *camera)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
 
@@ -1973,7 +1973,7 @@ static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const 
   return path;
 }
 
-static const char *_dispatch_request_image_path(const dt_camctl_t *c, time_t *exif_time, const dt_camera_t *camera)
+static const char *_dispatch_request_image_path(const dt_camctl_t *c, char *exif_time, const dt_camera_t *camera)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   const char *path = NULL;

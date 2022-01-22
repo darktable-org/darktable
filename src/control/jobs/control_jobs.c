@@ -1896,7 +1896,7 @@ static void _add_datetime_offset(const uint32_t imgid, const char *odt,
   g_date_time_unref(datetime_new);
 
   if(datetime)
-    memcpy(ndt, datetime, DT_DATETIME_LENGTH);
+    g_strlcpy(ndt, datetime, DT_DATETIME_LENGTH);
   g_free(datetime);
 }
 
@@ -1930,7 +1930,7 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
     for(GList *img = t; img; img = g_list_next(img))
     {
       char odt[DT_DATETIME_LENGTH] = {0};
-      dt_image_get_datetime(GPOINTER_TO_INT(img->data), odt, sizeof(odt));
+      dt_image_get_datetime(GPOINTER_TO_INT(img->data), odt);
       if(!odt[0]) continue;
 
       char ndt[DT_DATETIME_LENGTH] = {0};
@@ -2039,7 +2039,7 @@ static int _control_import_image_copy(const char *filename,
 {
   char *data = NULL;
   gsize size = 0;
-  time_t exif_time;
+  char exif_time[DT_DATETIME_LENGTH];
   gboolean res = TRUE;
   if(!g_file_get_contents(filename, &data, &size, NULL))
   {
@@ -2055,9 +2055,9 @@ static int _control_import_image_copy(const char *filename,
   else
   {
     char *basename = g_path_get_basename(filename);
-    const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
+    dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
 
-    if(have_exif_time)
+    if(exif_time[0])
       dt_import_session_set_exif_time(session, exif_time);
     dt_import_session_set_filename(session, basename);
     const char *output_path = dt_import_session_path(session, FALSE);
@@ -2278,7 +2278,7 @@ static void *_control_import_alloc()
   return params;
 }
 
-static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_override,
+static dt_job_t *_control_import_job_create(GList *imgs, const char *datetime_override,
                                             const gboolean inplace, gboolean *wait)
 {
   dt_job_t *job = dt_control_job_create(&_control_import_job_run, "import");
@@ -2310,7 +2310,7 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
   return job;
 }
 
-void dt_control_import(GList *imgs, const time_t datetime_override, const gboolean inplace)
+void dt_control_import(GList *imgs, const char *datetime_override, const gboolean inplace)
 {
   gboolean wait = !imgs->next && inplace;
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,

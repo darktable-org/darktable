@@ -744,14 +744,14 @@ static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::co
 #define FIND_EXIF_TAG(key) dt_exif_read_exif_tag(exifData, &pos, key)
 
 static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos,
-                                 char *exif_datetime_taken, const int dt_lgth)
+                                 char *exif_datetime_taken)
 {
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal") || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
      && pos->size() == DT_DATETIME_EXIF_LENGTH)
   {
     dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     _sanitize_datetime(exif_datetime_taken);
-    if(dt_lgth == DT_DATETIME_LENGTH && FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
+    if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
        && pos->size() > 1)
     {
       char msec[4];
@@ -1117,7 +1117,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 #endif
 
     char datetime[DT_DATETIME_LENGTH];
-    _find_datetime_taken(exifData, pos, datetime, sizeof(datetime));
+    _find_datetime_taken(exifData, pos, datetime);
     dt_datetime_exif_to_img(img, datetime);
 
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
@@ -1932,10 +1932,10 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       // For us "keeping" it means to write out what we have in DB to support people adding a time offset in
       // the geotagging module.
       gchar new_datetime[DT_DATETIME_EXIF_LENGTH];
-      dt_datetime_now_to_exif(new_datetime, sizeof(new_datetime));
+      dt_datetime_now_to_exif(new_datetime);
       exifData["Exif.Image.DateTime"] = new_datetime;
       gchar datetime[DT_DATETIME_LENGTH];
-      dt_datetime_img_to_exif(datetime, sizeof(datetime), cimg);
+      dt_datetime_img_to_exif(datetime, cimg);
       datetime[DT_DATETIME_EXIF_LENGTH - 1] = '\0';
       exifData["Exif.Image.DateTimeOriginal"] = datetime;
       exifData["Exif.Photo.DateTimeOriginal"] = datetime;
@@ -4304,7 +4304,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   }
 }
 
-gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *datetime_taken)
+void dt_exif_get_datetime_taken(const uint8_t *data, size_t size, char *datetime_taken)
 {
   try
   {
@@ -4313,16 +4313,12 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
-    char exif_datetime_taken[DT_DATETIME_EXIF_LENGTH];
-    _find_datetime_taken(exifData, pos, exif_datetime_taken, sizeof(exif_datetime_taken));
-
-    return dt_datetime_exif_to_unix_lt(datetime_taken, exif_datetime_taken);
+    _find_datetime_taken(exifData, pos, datetime_taken);
   }
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
     std::cerr << "[exiv2 dt_exif_get_datetime_taken] " << s << std::endl;
-    return FALSE;
   }
 }
 

@@ -125,10 +125,10 @@ void dt_datetime_unix_lt_to_img(dt_image_t *img, const time_t *unix)
   dt_datetime_unix_lt_to_exif(img->exif_datetime_taken, DT_DATETIME_LENGTH, unix);
 }
 
-void dt_datetime_now_to_exif(char *exif, size_t exif_len)
+void dt_datetime_now_to_exif(char *exif)
 {
   const time_t now = time(NULL);
-  dt_datetime_unix_lt_to_exif(exif, exif_len, &now);
+  dt_datetime_unix_lt_to_exif(exif, DT_DATETIME_EXIF_LENGTH, &now);
 }
 
 void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
@@ -136,9 +136,9 @@ void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
   g_strlcpy(img->exif_datetime_taken, exif, sizeof(img->exif_datetime_taken));
 }
 
-void dt_datetime_img_to_exif(char *exif, const int exif_lgth, const dt_image_t *img)
+void dt_datetime_img_to_exif(char *exif, const dt_image_t *img)
 {
-  g_strlcpy(exif, img->exif_datetime_taken, exif_lgth);
+  g_strlcpy(exif, img->exif_datetime_taken, DT_DATETIME_LENGTH);
 }
 
 GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
@@ -196,6 +196,30 @@ void dt_datetime_now_to_numbers(dt_datetime_t *dt)
 {
   const time_t now = time(NULL);
   dt_datetime_unix_to_numbers(dt, &now);
+}
+
+gboolean dt_datetime_entry_to_exif(char *exif, const char *entry)
+{
+  gchar *dte = g_strdup(entry);
+  dte = g_strstrip(dte);
+  if(strlen(dte) == 10)
+  { // g_date_time_new_from_iso8601 requires time value
+    char *dte2 = g_strconcat(dte, "T00:00:00", NULL);
+    g_free(dte);
+    dte = dte2;
+  }
+  GDateTime *gdt = g_date_time_new_from_iso8601(dte, darktable.utc_tz);
+  g_free(dte);
+
+  if(gdt)
+  {
+    dte = g_date_time_format(gdt, "%Y:%m:%d %H:%M:%S");
+    g_date_time_unref(gdt);
+    g_strlcpy(exif, dte, DT_DATETIME_EXIF_LENGTH);
+    g_free(dte);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
