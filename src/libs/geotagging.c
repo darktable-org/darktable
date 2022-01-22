@@ -43,9 +43,11 @@ typedef struct tz_tuple_t
   char *name, *display;
 } tz_tuple_t;
 
+#define DT_GEOTAG_PARTS_NB 7
+
 typedef struct dt_lib_datetime_t
 {
-  GtkWidget *widget[7];
+  GtkWidget *widget[DT_GEOTAG_PARTS_NB];
   GtkWidget *sign;
 } dt_lib_datetime_t;
 
@@ -766,7 +768,7 @@ static void _refresh_selected_images_datetime(dt_lib_module_t *self)
     dt_sel_img_t *img = i->data;
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, img->imgid, 'r');
     if(!cimg) continue;
-    dt_datetime_img_to_exif(img->dt, sizeof(img->dt), cimg);
+    dt_datetime_img_to_exif(img->dt, cimg);
     dt_image_cache_read_release(darktable.image_cache, cimg);
   }
 }
@@ -903,7 +905,7 @@ static void _setup_selected_images_list(dt_lib_module_t *self)
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     char dt[DT_DATETIME_LENGTH];
     if(!cimg) continue;
-    dt_datetime_img_to_exif(dt, sizeof(dt), cimg);
+    dt_datetime_img_to_exif(dt, cimg);
     dt_image_cache_read_release(darktable.image_cache, cimg);
 
     dt_sel_img_t *img = g_malloc0(sizeof(dt_sel_img_t));
@@ -1227,7 +1229,7 @@ static void _display_offset(const GTimeSpan offset_int, const gboolean valid, dt
   if(!valid || off2)
   {
     gtk_label_set_text(GTK_LABEL(d->of.sign), "");
-    for(int i = 2; i < 7; i++)
+    for(int i = 2; i < DT_GEOTAG_PARTS_NB; i++)
       gtk_entry_set_text(GTK_ENTRY(d->of.widget[i]), "-");
   }
   const gboolean locked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->lock_offset));
@@ -1243,7 +1245,7 @@ static void _display_datetime(dt_lib_datetime_t *dtw, GDateTime *datetime,
                               const gboolean lock, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-  for(int i = 0; lock && i < 7; i++)
+  for(int i = 0; lock && i < DT_GEOTAG_PARTS_NB; i++)
     g_signal_handlers_block_by_func(d->dt.widget[i], _datetime_entry_changed, self);
   if(datetime)
   {
@@ -1265,10 +1267,10 @@ static void _display_datetime(dt_lib_datetime_t *dtw, GDateTime *datetime,
   }
   else
   {
-    for(int i = 0; i < 7; i++)
+    for(int i = 0; i < DT_GEOTAG_PARTS_NB; i++)
       gtk_entry_set_text(GTK_ENTRY(dtw->widget[i]), "-");
   }
-  for(int i = 0; lock && i < 7; i++)
+  for(int i = 0; lock && i < DT_GEOTAG_PARTS_NB; i++)
     g_signal_handlers_unblock_by_func(d->dt.widget[i], _datetime_entry_changed, self);
 }
 
@@ -1337,7 +1339,7 @@ static GDateTime *_get_image_datetime(dt_lib_module_t *self)
   {
     // consider act on only if no selected
     char datetime_s[DT_DATETIME_LENGTH];
-    dt_image_get_datetime(selid ? selid : imgid, datetime_s, sizeof(datetime_s));
+    dt_image_get_datetime(selid ? selid : imgid, datetime_s);
     if(datetime_s[0] != '\0')
       datetime = _get_datetime_from_text(datetime_s, darktable.utc_tz);
     else
@@ -1420,7 +1422,7 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
   if(!d->editing)
   {
     int i = 0;
-    for(i = 0; i < 7; i++)
+    for(i = 0; i < DT_GEOTAG_PARTS_NB; i++)
       if(w == d->dt.widget[i]) break;
 
     int delta_y;
@@ -1476,7 +1478,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
   gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(flow), 3);
 
   GtkBox *box = NULL;
-  for(int i = 0; i < 7; i++)
+  for(int i = 0; i < DT_GEOTAG_PARTS_NB; i++)
   {
     if(!box) box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -1676,7 +1678,7 @@ static void _toggle_lock_button_callback(GtkToggleButton *button, dt_lib_module_
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   const gboolean locked = gtk_toggle_button_get_active(button);
-  for(int i = 0; i < 6; i++)
+  for(int i = 0; i < DT_GEOTAG_PARTS_NB; i++)
   {
     gtk_widget_set_sensitive(d->dt.widget[i], !locked);
   }
@@ -1916,7 +1918,7 @@ void gui_init(dt_lib_module_t *self)
   d->offset = 0;
   _display_offset(d->offset, TRUE, self);
 
-  for(int i = 0; i < 7; i++)
+  for(int i = 0; i < DT_GEOTAG_PARTS_NB; i++)
   {
     g_signal_connect(d->dt.widget[i], "changed", G_CALLBACK(_datetime_entry_changed), self);
     g_signal_connect(d->dt.widget[i], "key-press-event", G_CALLBACK(_datetime_key_pressed), self);
