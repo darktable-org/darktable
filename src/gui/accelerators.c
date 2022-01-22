@@ -2961,16 +2961,12 @@ static float _process_shortcut(float move_size)
   fsc.action = NULL;
   fsc.element  = 0;
 
-  static int consecutive_unmatched = 0;
-
   gchar *fb_log = darktable.control->mapping_widget && !isnan(move_size)
                 ? g_strdup_printf("[ %s ]", _shortcut_description(&fsc))
                 : NULL;
 
   if(_shortcut_match(&fsc, &fb_log))
   {
-    consecutive_unmatched = 0;
-
     move_size *= fsc.speed;
 
     if(fsc.effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
@@ -2989,12 +2985,6 @@ static float _process_shortcut(float move_size)
   else if(!isnan(move_size) && !fsc.action)
   {
     dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc));
-
-    if(++consecutive_unmatched >= 3)
-    {
-      _ungrab_at_focus_loss();
-      consecutive_unmatched = 0;
-    }
   }
 
   if(fb_log)
@@ -3214,6 +3204,8 @@ static gboolean _button_release_delayed(gpointer timed_out)
   return G_SOURCE_REMOVE;
 }
 
+gboolean break_stuck = FALSE;
+
 void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
 {
   dt_device_key_t this_key = { id, key };
@@ -3304,8 +3296,6 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
                     gtk_widget_get_window(_grab_window ? _grab_window
                                                        : dt_ui_main_window(darktable.gui->ui)),
                     GDK_SEAT_CAPABILITY_ALL, FALSE, NULL, NULL, NULL, NULL);
-
-      _last_time = time;
     }
     else
     {
@@ -3316,10 +3306,14 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
         _sc = (dt_shortcut_t) { 0 };
         return;
       }
-
-      if(time < _last_time + delay)
-        _last_time = time; // allow extra time when pressing multiple keys "at same time"
     }
+
+    // short press after 2 seconds will clear all keys
+    break_stuck = _pressed_keys && time > _last_time + 2000;
+
+    // allow extra time when pressing multiple keys "at same time"
+    if(!_pressed_keys || time < _last_time + delay || break_stuck)
+      _last_time = time;
 
     _sc.key_device = id;
     _sc.key = key;
@@ -3353,6 +3347,12 @@ static void _delay_for_double_triple(guint time, guint is_key)
   {
     _sc.press |= DT_SHORTCUT_LONG & is_key;
     _sc.click |= DT_SHORTCUT_LONG & ~is_key;
+  }
+  else if(break_stuck && !_sc.button)
+  {
+    _ungrab_grab_widget();
+    dt_control_log("short key press resets stuck keys");
+    return;
   }
   else if((is_key ? _sc.press : _sc.click) & DT_SHORTCUT_TRIPLE)
     passed_time += delay;
@@ -3410,6 +3410,9 @@ void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
 
     g_free(stored_key->data);
     _pressed_keys = g_slist_delete_link(_pressed_keys, stored_key);
+
+    if(_sc.key_device != id || _sc.key != key)
+      break_stuck = FALSE;
 
     _sc.key_device = id;
     _sc.key = key;
@@ -3630,7 +3633,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
   case GDK_BUTTON_RELEASE:
     _pressed_button &= ~(1 << (event->button.button - 1));
 
-      _interrupt_delayed_release(FALSE);
+    _interrupt_delayed_release(FALSE);
 
     _delay_for_double_triple(event->button.time, 0);
 
