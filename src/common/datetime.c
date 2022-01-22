@@ -37,6 +37,24 @@ static gboolean _datetime_exif_to_tm(const char *exif,  struct tm *tt)
   return FALSE;
 }
 
+gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
+{
+  if(exif && *exif && dt)
+  {
+    const int nb = sscanf(exif, "%d:%d:%d %d:%d:%d,%d",
+                          &dt->year, &dt->month, &dt->day,
+                          &dt->hour, &dt->minute, &dt->second, &dt->msecond);
+    if(nb == 7)
+      return TRUE;
+    else if(nb == 6)
+    {
+      dt->msecond = 0;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 gboolean dt_datetime_unix_lt_to_local(char *local, const size_t local_size, const time_t *unix)
 {
   struct tm tm_val;
@@ -125,28 +143,20 @@ void dt_datetime_img_to_exif(char *exif, const int exif_lgth, const dt_image_t *
 
 GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
 {
-  gint year;
-  gint month;
-  gint day;
-  gint hour;
-  gint minute;
-  gint second;
-  gint millisecond;
-
-  const int nb = sscanf(exif, "%d:%d:%d %d:%d:%d,%d", (int *)&year, (int *)&month, (int *)&day,
-                (int *)&hour, (int *)&minute, (int *)&second, (int *)&millisecond);
-  GDateTime *gdt = NULL;
-  if(nb >= 6)
+  dt_datetime_t dt;
+  if(dt_datetime_exif_to_numbers(&dt, exif))
   {
-    gdt = g_date_time_new((GTimeZone *)tz, year, month, day, hour, minute, second);
-    if(nb == 7)
+    GDateTime *gdt = g_date_time_new((GTimeZone *)tz, dt.year, dt.month, dt.day,
+                                     dt.hour, dt.minute, dt.second);
+    if(dt.msecond)
     {
-      GDateTime *gdt2 = g_date_time_add(gdt, millisecond * 1000);
+      GDateTime *gdt2 = g_date_time_add(gdt, dt.msecond * 1000);
       g_date_time_unref(gdt);
       return gdt2;
     }
+    return gdt;
   }
-  return gdt;
+  return NULL;
 }
 
 GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz)
@@ -157,6 +167,35 @@ GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *
 gboolean dt_datetime_img_to_tm_lt(struct tm *tt, const dt_image_t *img)
 {
   return _datetime_exif_to_tm(img->exif_datetime_taken, tt);
+}
+
+gboolean dt_datetime_img_to_numbers(dt_datetime_t *dt, const dt_image_t *img)
+{
+  return dt_datetime_exif_to_numbers(dt, img->exif_datetime_taken);
+}
+
+gboolean dt_datetime_unix_to_numbers(dt_datetime_t *dt, const time_t *unix)
+{
+  GDateTime *gdt = g_date_time_new_from_unix_local(*unix);
+  if(gdt)
+  {
+    dt->year = g_date_time_get_year(gdt);
+    dt->month = g_date_time_get_month(gdt);
+    dt->day = g_date_time_get_day_of_month(gdt);
+    dt->hour = g_date_time_get_hour(gdt);
+    dt->minute = g_date_time_get_minute(gdt);
+    dt->second = g_date_time_get_second(gdt);
+    dt->msecond = 0;
+    g_date_time_unref(gdt);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+void dt_datetime_now_to_numbers(dt_datetime_t *dt)
+{
+  const time_t now = time(NULL);
+  dt_datetime_unix_to_numbers(dt, &now);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
