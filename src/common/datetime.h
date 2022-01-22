@@ -25,6 +25,20 @@
 //  #define DT_DATETIME_LENGTH 24 // defined in image.h
 #define DT_DATETIME_EXIF_LENGTH 20
 
+typedef struct dt_datetime_t
+{
+  gint year;
+  gint month;
+  gint day;
+  gint hour;
+  gint minute;
+  gint second;
+  gint msecond;
+} dt_datetime_t;
+
+// exif datetime to numbers. Returns TRUE if OK.
+gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif);
+
 // time_t to display local string. Returns TRUE if OK.
 gboolean dt_datetime_unix_lt_to_local(char *local, const size_t local_size, const time_t *unix);
 
@@ -53,8 +67,17 @@ GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz);
 // img cache datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
 GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz);
 
-// exif img cache datetime to unix tm. Returns TRUE if OK.
+// img cache datetime to unix tm. Returns TRUE if OK.
 gboolean dt_datetime_img_to_tm_lt(struct tm *tt, const dt_image_t *img);
+
+// img cache datetime to numbers. Returns TRUE if OK.
+gboolean dt_datetime_img_to_numbers(dt_datetime_t *dt, const dt_image_t *img);
+
+// unix datetime to numbers. Returns TRUE if OK.
+gboolean dt_datetime_unix_to_numbers(dt_datetime_t *dt, const time_t *unix);
+
+// current datetime to numbers. Returns TRUE if OK.
+void dt_datetime_now_to_numbers(dt_datetime_t *dt);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

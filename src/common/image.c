@@ -2572,7 +2572,7 @@ static void _datetime_undo_data_free(gpointer data)
   g_list_free_full(l, g_free);
 }
 
-typedef struct dt_datetime_t
+typedef struct _datetime_t
 {
   char dt[DT_DATETIME_LENGTH];
 } _datetime_t;

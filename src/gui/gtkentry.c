@@ -199,6 +199,7 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "EXIF_HOUR", N_("$(EXIF_HOUR) - EXIF hour") },
           { "EXIF_MINUTE", N_("$(EXIF_MINUTE) - EXIF minute") },
           { "EXIF_SECOND", N_("$(EXIF_SECOND) - EXIF second") },
+          { "EXIF_MSEC", N_("$(EXIF_MSEC) - EXIF millisecond") },
           { "EXIF_ISO", N_("$(EXIF_ISO) - ISO value") },
           { "EXIF_EXPOSURE", N_("$(EXIF_EXPOSURE) - EXIF exposure") },
           { "EXIF_EXPOSURE_BIAS", N_("$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias") },
