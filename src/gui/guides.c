@@ -64,7 +64,7 @@ static void dt_guides_q_rect(dt_QRect_t *R1, float left, float top, float width,
 
 typedef struct _guides_settings_t
 {
-  GtkWidget *g_flip, *g_widgets, *colors;
+  GtkWidget *g_flip, *g_widgets;
 } _guides_settings_t;
 
 
@@ -694,7 +694,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   // color section
   gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(gw->colors, self, N_("guide lines"), N_("overlay color"), _("set overlay color"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(darktable.view_manager->guides_colors, self, N_("guide lines"), N_("overlay color"), _("set overlay color"),
                                dt_conf_get_int("darkroom/ui/overlay_color"), (GtkCallback)_settings_colors_changed, gw,
                                N_("gray"),
                                N_("red"),
@@ -702,7 +702,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
                                N_("yellow"),
                                N_("cyan"),
                                N_("magenta"));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(gw->colors), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), darktable.view_manager->guides_colors, TRUE, TRUE, 0);
 
   gtk_container_add(GTK_CONTAINER(pop), vbox);
 
@@ -892,6 +892,8 @@ void dt_guides_update_popover_values()
   const int i = _guides_get_value(val);
   g_free(val);
   dt_bauhaus_combobox_set(darktable.view_manager->guides, i);
+  // colors
+  dt_bauhaus_combobox_set(darktable.view_manager->guides_colors, dt_conf_get_int("darkroom/ui/overlay_color"));
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
