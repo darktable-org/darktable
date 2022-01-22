@@ -365,6 +365,7 @@ static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_d
   gtk_entry_set_text(GTK_ENTRY(d->zoom_entry), i_as_str);
   _set_zoom(self, i);
   d->current_zoom = i;
+  gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
   g_free(i_as_str);
 }
 
