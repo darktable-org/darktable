@@ -198,6 +198,56 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
   FINISH
 }
 
+void dtgtk_cairo_paint_sortby_alt(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.15, 1, 0, 0)
+
+  cairo_move_to(cr, 0.1, 0.05);
+  cairo_line_to(cr, 0.1, 0.95);
+  cairo_move_to(cr, 0.0, 0.80);
+  cairo_line_to(cr, 0.1, 0.95);
+  cairo_move_to(cr, 0.1, 0.95);
+  cairo_line_to(cr, 0.2, 0.80);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.40, 0.05);
+  cairo_line_to(cr, 0.45, 0.05);
+  cairo_move_to(cr, 0.40, 0.35);
+  cairo_line_to(cr, 0.65, 0.35);
+  cairo_move_to(cr, 0.40, 0.65);
+  cairo_line_to(cr, 0.85, 0.65);
+  cairo_move_to(cr, 0.40, 0.95);
+  cairo_line_to(cr, 1.00, 0.95);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.15, 1, 0, 0)
+
+  cairo_move_to(cr, 0.1, 0.05);
+  cairo_line_to(cr, 0.1, 0.95);
+  cairo_move_to(cr, 0.0, 0.80);
+  cairo_line_to(cr, 0.1, 0.95);
+  cairo_move_to(cr, 0.1, 0.95);
+  cairo_line_to(cr, 0.2, 0.80);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.40, 0.05);
+  cairo_line_to(cr, 1.00, 0.05);
+  cairo_move_to(cr, 0.40, 0.35);
+  cairo_line_to(cr, 0.85, 0.35);
+  cairo_move_to(cr, 0.40, 0.65);
+  cairo_line_to(cr, 0.65, 0.65);
+  cairo_move_to(cr, 0.40, 0.95);
+  cairo_line_to(cr, 0.45, 0.95);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
