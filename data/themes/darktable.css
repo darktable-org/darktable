@@ -2297,25 +2297,27 @@ Details :
 }
 
 /* Set border color around thumbnails */
-.dt_group_left #thumb_back,
-#thumb_main.dt_group_left:selected #thumb_back
+.dt_group_left #thumb_back
 {
-  border-left: 2px solid rgb(255, 187, 0);
+  border-left: 0.07em solid rgb(255, 187, 0);
 }
+
 .dt_group_top #thumb_back,
 #thumb_main.dt_group_top:selected #thumb_back
 {
-  border-top: 2px solid rgb(255, 187, 0);
+  border-top: 0.07em solid rgb(255, 187, 0);
 }
+
 .dt_group_right #thumb_back,
 #thumb_main.dt_group_right:selected #thumb_back
 {
-  border-right: 2px solid rgb(255, 187, 0);
+  border-right: 0.07em solid rgb(255, 187, 0);
 }
+
 .dt_group_bottom #thumb_back,
 #thumb_main.dt_group_bottom:selected #thumb_back
 {
-  border-bottom: 2px solid rgb(255, 187, 0);
+  border-bottom: 0.07em solid rgb(255, 187, 0);
 }
 
 .dt_thumbtable_reorder #thumb_main:hover #thumb_back
