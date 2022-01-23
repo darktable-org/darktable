@@ -676,6 +676,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   // global guides section
   gw->g_widgets = gtk_event_box_new();
   gtk_box_pack_start(GTK_BOX(vbox), gw->g_widgets, TRUE, TRUE, 0);
+  gtk_widget_set_no_show_all(gw->g_widgets, TRUE);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(gw->g_flip, self, N_("guide lines"), N_("flip"), _("flip guides"),
                                0, (GtkCallback)_settings_flip_changed, gw,
