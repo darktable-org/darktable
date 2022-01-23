@@ -44,6 +44,7 @@ typedef enum dt_iop_filmicrgb_colorscience_type_t
   DT_FILMIC_COLORSCIENCE_V1 = 0,
   DT_FILMIC_COLORSCIENCE_V2 = 1,
   DT_FILMIC_COLORSCIENCE_V3 = 2,
+  DT_FILMIC_COLORSCIENCE_V4 = 3,
 } dt_iop_filmicrgb_colorscience_type_t;
 
 typedef enum dt_iop_filmicrgb_reconstruction_type_t
@@ -307,6 +308,166 @@ static inline float log_tonemapping_v2(const float x,
   return clamp((native_log2(x / grey) - black) / dynamic_range, 0.f, 1.f);
 }
 
+
+static inline float4 pipe_RGB_to_Ych(float4 in, constant const float *const matrix)
+{
+  // go from pipeline RGB to CIE 2006 LMS D65
+  const float4 LMS = matrix_product_float4(in, matrix);
+
+  // go from CIE LMS 2006 to Kirk/Filmlight Yrg
+  const float4 Yrg = LMS_to_Yrg(LMS);
+
+  // rewrite in polar coordinates
+  return Yrg_to_Ych(Yrg);
+}
+
+
+static inline float4 Ych_to_pipe_RGB(float4 in, constant const float *const matrix)
+{
+  // rewrite in cartesian coordinates
+  const float4 Yrg = Ych_to_Yrg(in);
+
+  // go from Kirk/Filmlight Yrg to CIE LMS 2006
+  const float4 LMS = Yrg_to_LMS(Yrg);
+
+  // go from CIE LMS 2006 to pipeline RGB
+  return matrix_product_float4(LMS, matrix);
+}
+
+
+static inline float4 filmic_desaturate_v4(const float4 Ych_original, float4 Ych_final, const float saturation)
+{
+  // Note : Ych is normalized trough the LMS conversion,
+  // meaning c is actually a saturation (saturation ~= chroma / brightness).
+  // So copy-pasting c and h from a different Y is equivalent to
+  // tonemapping with a norm, which is equivalent to doing exposure compensation :
+  // it's saturation-invariant, aka chroma will get increased
+  // if Y is increased, and the other way around.
+  const float chroma_original = Ych_original.y * Ych_original.x;  // c2
+  float chroma_final = Ych_final.y * Ych_final.x;                 // c1
+
+  // fit a linear model `chroma = f(y)`:
+  // `chroma = c1 + (yc - y1) * (c2 - c1) / (y2 - y1)`
+  // where `(yc - y1)` is user-defined as `saturation * (y2 - y1)`
+  // so `chroma = c1 + saturation * (c2 - c1)`
+  // when saturation = 0, we stay at the saturation-invariant final chroma
+  // when saturation > 1, we go back towards the initial chroma before tone-mapping
+  // when saturation < 0, we amplify the initial -> final chroma change
+  const float delta_chroma = saturation * (chroma_original - chroma_final);
+
+  const int filmic_brightens = (Ych_final.x > Ych_original.x);
+  const int filmic_resat = (chroma_original < chroma_final);
+  const int filmic_desat = (chroma_original > chroma_final);
+  const int user_resat = (saturation > 0.f);
+  const int user_desat = (saturation < 0.f);
+
+  chroma_final = (filmic_brightens && filmic_resat)
+                      ? chroma_original // force original lower sat if brightening
+                  : ((user_resat && filmic_desat) || user_desat)
+                      ? chroma_final + delta_chroma // allow resaturation only if filmic desaturated, allow desat anytime
+                      : chroma_final;
+
+  Ych_final.y = fmax(chroma_final / Ych_final.x, 0.f);
+  return Ych_final;
+}
+
+static inline float4 filmic_chroma_v4(const float4 i,
+                                      const float dynamic_range, const float black_exposure, const float grey_value,
+                                      constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                      read_only image2d_t lut, const int use_work_profile,
+                                      const float sigma_toe, const float sigma_shoulder, const float saturation,
+                                      const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                                      const float latitude_min, const float latitude_max, const float output_power,
+                                      const dt_iop_filmicrgb_methods_type_t variant,
+                                      const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
+                                      const dt_iop_filmicrgb_curve_type_t type[2],
+                                      constant const float *const matrix_in, constant const float *const matrix_out)
+
+{
+  // Save Ych in Kirk/Filmlight Yrg
+  float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
+
+  float norm = fmax(get_pixel_norm(i, variant, profile_info, lut, use_work_profile), NORM_MIN);
+
+  // Save the ratios
+  float4 ratios = i / (float4)norm;
+
+  // Log tonemapping
+  norm = log_tonemapping_v2(norm, grey_value, black_exposure, dynamic_range);
+
+  // Filmic S curve on the max RGB
+  // Apply the transfer function of the display
+  norm = native_powr(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
+
+  // Restore RGB
+  float4 o = norm * ratios;
+
+  // Get final Ych in Kirk/Filmlight Yrg
+  float4 Ych_final = pipe_RGB_to_Ych(o, matrix_in);
+
+  // Force final hue to original
+  Ych_final.z = Ych_original.z;
+
+  // Clip luminance
+  Ych_final.x = fmax(Ych_final.x, 0.f);
+
+  // Set chroma to 0 if luminance is 0
+  if(Ych_final.x == 0.f) Ych_final.y = 0.f;
+
+  // Massage chroma
+  Ych_final = filmic_desaturate_v4(Ych_original, Ych_final, saturation);
+  Ych_final = gamut_check_Yrg(Ych_final);
+  o = Ych_to_pipe_RGB(Ych_final, matrix_out);
+  return o;
+}
+
+static inline float4 filmic_split_v4(const float4 i,
+                                     const float dynamic_range, const float black_exposure, const float grey_value,
+                                     constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
+                                     read_only image2d_t lut, const int use_work_profile,
+                                     const float sigma_toe, const float sigma_shoulder, const float saturation,
+                                     const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                                     const float latitude_min, const float latitude_max, const float output_power,
+                                     const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
+                                     const dt_iop_filmicrgb_curve_type_t type[2],
+                                     constant const float *const matrix_in, constant const float *const matrix_out)
+
+{
+  // Save Ych in Kirk/Filmlight Yrg
+  float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
+
+  float *input = (float *)&i;
+  float4 o;
+  float *output = (float *)&o;
+  for(int c = 0; c < 3; c++)
+  {
+    // Log tonemapping
+    o[c] = log_tonemapping_v2(i[c], grey_value, black_exposure, dynamic_range);
+
+    // Filmic S curve on the max RGB
+    // Apply the transfer function of the display
+    o[c] = native_powr(clamp(filmic_spline(o[c], M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
+  }
+
+  // Get final Ych in Kirk/Filmlight Yrg
+  float4 Ych_final = pipe_RGB_to_Ych(o, matrix_in);
+
+  // Force final hue to original
+  Ych_final.z = Ych_original.z;
+
+  // Clip luminance
+  Ych_final.x = fmax(Ych_final.x, 0.f);
+
+  // Set chroma to 0 if luminance is 0
+  if(Ych_final.x == 0.f) Ych_final.y = 0.f;
+
+  // Massage chroma
+  Ych_final = filmic_desaturate_v4(Ych_original, Ych_final, saturation);
+  Ych_final = gamut_check_Yrg(Ych_final);
+  o = Ych_to_pipe_RGB(Ych_final, matrix_out);
+  return o;
+}
+
 static inline float4 filmic_split_v1(const float4 i,
                                      const float dynamic_range, const float black_exposure, const float grey_value,
                                      constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
@@ -391,7 +552,8 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
                  const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
                  const float latitude_min, const float latitude_max, const float output_power,
                  const dt_iop_filmicrgb_colorscience_type_t color_science,
-                 const dt_iop_filmicrgb_curve_type_t type_1, const dt_iop_filmicrgb_curve_type_t type_2)
+                 const dt_iop_filmicrgb_curve_type_t type_1, const dt_iop_filmicrgb_curve_type_t type_2,
+                 constant const float *const matrix_in, constant const float *const matrix_out)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -420,6 +582,15 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
                              profile_info, lut, use_work_profile,
                              sigma_toe, sigma_shoulder, saturation,
                              M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power, type);
+      break;
+    }
+    case DT_FILMIC_COLORSCIENCE_V4:
+    {
+      o = filmic_split_v4(i, dynamic_range, black_exposure, grey_value,
+                          profile_info, lut, use_work_profile,
+                          sigma_toe, sigma_shoulder, saturation,
+                          M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power,
+                          color_science, type, matrix_in, matrix_out);
       break;
     }
   }
@@ -523,6 +694,7 @@ static inline float4 filmic_chroma_v2_v3(const float4 i,
   return o;
 }
 
+
 kernel void
 filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                  const int width, const int height,
@@ -534,7 +706,8 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                  const float latitude_min, const float latitude_max, const float output_power,
                  const dt_iop_filmicrgb_methods_type_t variant,
                  const dt_iop_filmicrgb_colorscience_type_t color_science,
-                 const dt_iop_filmicrgb_curve_type_t type_1, const dt_iop_filmicrgb_curve_type_t type_2)
+                 const dt_iop_filmicrgb_curve_type_t type_1, const dt_iop_filmicrgb_curve_type_t type_2,
+                 constant const float *const matrix_in, constant const float *const matrix_out)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -564,6 +737,15 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                               sigma_toe, sigma_shoulder, saturation,
                               M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power, variant,
                               color_science, type);
+      break;
+    }
+    case DT_FILMIC_COLORSCIENCE_V4:
+    {
+      o = filmic_chroma_v4(i, dynamic_range, black_exposure, grey_value,
+                           profile_info, lut, use_work_profile,
+                           sigma_toe, sigma_shoulder, saturation,
+                           M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power, variant,
+                           color_science, type, matrix_in, matrix_out);
       break;
     }
   }
