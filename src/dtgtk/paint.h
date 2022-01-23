@@ -55,8 +55,6 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
 void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a solid arrow left/right/up/down */
 void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
-/** Paint a sort by alt icon */
-void dtgtk_cairo_paint_sortby_alt(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
 /** Paint a sort by icon */
 void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
 /** Paint a store icon */
