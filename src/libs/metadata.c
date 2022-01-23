@@ -265,6 +265,13 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
+  if((event->keyval >= GDK_KEY_KP_0 && event->keyval <= GDK_KEY_KP_9) ||
+     (event->keyval >= GDK_KEY_0 && event->keyval <= GDK_KEY_9) ||
+     (event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_z) ||
+     (event->keyval >= GDK_KEY_A && event->keyval <= GDK_KEY_Z) ||
+     (event->keyval == GDK_KEY_space)) // this misses the accentuated letters
+    d->editing = TRUE;
+
   if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     switch(event->keyval)
@@ -273,8 +280,10 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
       case GDK_KEY_KP_Enter:
         // insert new line
         event->state &= ~GDK_CONTROL_MASK;  //TODO: on Mac, remap Ctrl to Cmd key
-      default:
         d->editing = TRUE;
+        break;
+      default:
+        break;
     }
   }
   else
@@ -286,6 +295,7 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
         _write_metadata(self);
         // go to next field
         event->keyval = GDK_KEY_Tab;
+        d->editing = FALSE;
         break;
       case GDK_KEY_Escape:
         _update(self);
@@ -294,9 +304,10 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
         break;
       case GDK_KEY_Tab:
         _write_metadata(self);
+        d->editing = FALSE;
         break;
       default:
-        d->editing = TRUE;
+        break;
     }
   }
 
