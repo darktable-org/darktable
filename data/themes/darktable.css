@@ -1531,6 +1531,11 @@ filechooser row:hover,
   border: none;
 }
 
+#basics-widget #toneeqgraph
+{
+  min-height: 18em;
+}
+
 /*--------------------------------
   - Tree view (lists and tables) -
   --------------------------------*/
