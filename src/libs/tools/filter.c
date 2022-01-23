@@ -205,7 +205,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(dropdowns), d->sort, TRUE, TRUE, 4);
 
   /* reverse order checkbutton */
-  d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby_alt, CPF_DIRECTION_UP, NULL);
+  d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
   gtk_widget_set_name(GTK_WIDGET(d->reverse), "control-button");
   if(darktable.collection->params.descending)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(d->reverse), dtgtk_cairo_paint_sortby,
@@ -325,7 +325,7 @@ static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget,
   if(reverse)
     dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_sortby, CPF_DIRECTION_DOWN, NULL);
   else
-    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_sortby_alt, CPF_DIRECTION_UP, NULL);
+    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
   gtk_widget_queue_draw(GTK_WIDGET(widget));
 
   /* update last settings */

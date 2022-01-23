@@ -1887,6 +1887,7 @@ button:hover,
 button:hover cellview,
 button:hover image,
 button:hover label,
+#blending-box button:hover, /* needed for hover effect for some blending mask box buttons */
 button:checked cellview,
 button:checked image,
 button:checked label,
