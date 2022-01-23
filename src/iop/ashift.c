@@ -41,6 +41,7 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 #include "libs/modulegroups.h"
+#include "gui/guides.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -137,7 +138,7 @@ const char *description(struct dt_iop_module_t *self)
 int flags()
 {
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_ALLOW_FAST_PIPE
-         | IOP_FLAGS_GUIDES_WIDGET;
+         | IOP_FLAGS_GUIDES_SPECIAL_DRAW | IOP_FLAGS_GUIDES_WIDGET;
 }
 
 int default_group()
@@ -3933,6 +3934,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_line_to(cr, C[3][0], C[3][1]);
     cairo_close_path(cr);
     cairo_stroke(cr);
+
+    // we draw the guides correctly scaled here instead of using the darkroom expose callback
+    dt_guides_draw(cr, C[0][0], C[0][1], C[2][0] - C[0][0], C[1][1] - C[0][1], zoom_scale);
 
     // if adjusting crop, draw indicator
     if(g->adjust_crop && p->cropmode == ASHIFT_CROP_ASPECT)
