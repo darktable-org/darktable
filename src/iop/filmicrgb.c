@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/chromatic_adaptation.h"
 #include "common/darktable.h"
 #include "common/bspline.h"
 #include "common/dwt.h"
@@ -131,6 +132,7 @@ typedef enum dt_iop_filmicrgb_colorscience_type_t
   DT_FILMIC_COLORSCIENCE_V1 = 0, // $DESCRIPTION: "v3 (2019)"
   DT_FILMIC_COLORSCIENCE_V2 = 1, // $DESCRIPTION: "v4 (2020)"
   DT_FILMIC_COLORSCIENCE_V3 = 2, // $DESCRIPTION: "v5 (2021)"
+  DT_FILMIC_COLORSCIENCE_V4 = 3, // $DESCRIPTION: "v6 (2022)"
 } dt_iop_filmicrgb_colorscience_type_t;
 
 typedef enum dt_iop_filmicrgb_spline_version_type_t
@@ -192,11 +194,11 @@ typedef struct dt_iop_filmicrgb_params_t
   float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
   float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 50.0
   float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.1
-  float saturation;         // $MIN: -50 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
+  float saturation;         // $MIN: -200 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
   float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "add noise in highlights"
-  dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve chrominance"
-  dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V3 $DESCRIPTION: "color science"
+  dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_NONE $DESCRIPTION: "preserve chrominance"
+  dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V4 $DESCRIPTION: "color science"
   gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
   gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
   int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
@@ -1500,6 +1502,221 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in, float *co
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd uniform(matrix) aligned(in, out:16) aligned(matrix:64)
+#endif
+static inline void pipe_RGB_to_Ych(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix, dt_aligned_pixel_t out)
+{
+  dt_aligned_pixel_t LMS = { 0.f };
+  dt_aligned_pixel_t Yrg = { 0.f };
+
+  // go from pipeline RGB to CIE 2006 LMS D65
+  dot_product(in, matrix, LMS);
+
+  // go from CIE LMS 2006 to Kirk/Filmlight Yrg
+  LMS_to_Yrg(LMS, Yrg);
+
+  // rewrite in polar coordinates
+  Yrg_to_Ych(Yrg, out);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd uniform(matrix) aligned(in, out:16) aligned(matrix:64)
+#endif
+static inline void Ych_to_pipe_RGB(const dt_aligned_pixel_t in, const dt_colormatrix_t matrix, dt_aligned_pixel_t out)
+{
+  dt_aligned_pixel_t LMS = { 0.f };
+  dt_aligned_pixel_t Yrg = { 0.f };
+
+  // rewrite in cartesian coordinates
+  Ych_to_Yrg(in, Yrg);
+
+  // go from Kirk/Filmlight Yrg to CIE LMS 2006
+  Yrg_to_LMS(Yrg, LMS);
+
+  // go from CIE LMS 2006 to pipeline RGB
+  dot_product(LMS, matrix, out);
+
+  for_each_channel(c, aligned(out)) out[c] = fmaxf(out[c], 0.f);
+}
+
+static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, dt_aligned_pixel_t Ych_final, const float saturation)
+{
+  // Note : Ych is normalized trough the LMS conversion,
+  // meaning c is actually a saturation (saturation ~= chroma / brightness).
+  // So copy-pasting c and h from a different Y is equivalent to
+  // tonemapping with a norm, which is equivalent to doing exposure compensation :
+  // it's saturation-invariant, aka chroma will get increased
+  // if Y is increased, and the other way around.
+  const float chroma_original = Ych_original[1] * Ych_original[0];  // c2
+  float chroma_final = Ych_final[1] * Ych_final[0];                 // c1
+
+  // fit a linear model `chroma = f(y)`:
+  // `chroma = c1 + (yc - y1) * (c2 - c1) / (y2 - y1)`
+  // where `(yc - y1)` is user-defined as `saturation * (y2 - y1)`
+  // so `chroma = c1 + saturation * (c2 - c1)`
+  // when saturation = 0, we stay at the saturation-invariant final chroma
+  // when saturation > 1, we go back towards the initial chroma before tone-mapping
+  // when saturation < 0, we amplify the initial -> final chroma change
+  const float delta_chroma = saturation * (chroma_original - chroma_final);
+
+  const int filmic_brightens = (Ych_final[0] > Ych_original[0]);
+  const int filmic_resat = (chroma_original < chroma_final);
+  const int filmic_desat = (chroma_original > chroma_final);
+  const int user_resat = (saturation > 0.f);
+  const int user_desat = (saturation < 0.f);
+
+  chroma_final = (filmic_brightens && filmic_resat)
+                      ? chroma_original // force original lower sat if brightening
+                  : ((user_resat && filmic_desat) || user_desat)
+                      ? chroma_final + delta_chroma // allow resaturation only if filmic desaturated, allow desat anytime
+                      : chroma_final;
+
+  Ych_final[1] = fmaxf(chroma_final / Ych_final[0], 0.f);
+}
+
+
+static inline void filmic_chroma_v4(const float *const restrict in, float *const restrict out,
+                                    const dt_iop_order_iccprofile_info_t *const work_profile,
+                                    const dt_iop_filmicrgb_data_t *const data,
+                                    const dt_iop_filmic_rgb_spline_t spline, const int variant,
+                                    const size_t width, const size_t height, const size_t ch,
+                                    const dt_iop_filmicrgb_colorscience_type_t colorscience_version)
+{
+  // See colorbalancergb.c for details
+  dt_colormatrix_t input_matrix;
+  dt_colormatrix_t output_matrix;
+  dt_colormatrix_t temp_matrix;
+
+  // Prepare the pipeline RGB -> XYZ D50 -> XYZ D65 -> LMS 2006 matrix
+  dt_colormatrix_mul(temp_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
+  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, temp_matrix);
+
+  // Prepare the LMS 2006 -> XYZ D65 -> XYZ D50 -> pipeline RGB matrix
+  dt_colormatrix_mul(temp_matrix, XYZ_D65_to_D50_CAT16, LMS_2006_D65_to_XYZ_D65);
+  dt_colormatrix_mul(output_matrix, work_profile->matrix_out, temp_matrix);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none)                                                                       \
+    dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, input_matrix, output_matrix, variant, spline)    \
+    schedule(simd :static)
+#endif
+  for(size_t k = 0; k < height * width * ch; k += ch)
+  {
+    const float *const restrict pix_in = in + k;
+    float *const restrict pix_out = out + k;
+
+    // Save Ych in Kirk/Filmlight Yrg
+    dt_aligned_pixel_t Ych_original = { 0.f };
+    pipe_RGB_to_Ych(pix_in, input_matrix, Ych_original);
+
+    float norm = fmaxf(get_pixel_norm(pix_in, variant, work_profile), NORM_MIN);
+
+    // Save the ratios
+    dt_aligned_pixel_t ratios = { 0.0f };
+    for_each_channel(c,aligned(pix_in)) ratios[c] = pix_in[c] / norm;
+
+    // Log tone-mapping
+    norm = log_tonemapping_v2(norm, data->grey_source, data->black_source, data->dynamic_range);
+
+    // Filmic S curve on the max RGB
+    // Apply the transfer function of the display
+    norm = powf(clamp_simd(filmic_spline(norm, spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
+                                         spline.latitude_min, spline.latitude_max, spline.type)),
+                data->output_power);
+
+    // Restore RGB
+    for_each_channel(c,aligned(pix_out)) pix_out[c] = fmaxf(ratios[c] * norm, 0.f);
+
+    // Get final Ych in Kirk/Filmlight Yrg
+    dt_aligned_pixel_t Ych_final = { 0.f };
+    pipe_RGB_to_Ych(pix_out, input_matrix, Ych_final);
+
+    // Force final hue to original
+    Ych_final[2] = Ych_original[2];
+
+    // Clip luminance
+    Ych_final[0] = fmaxf(Ych_final[0], 0.f);
+
+    // Set chroma to 0 if luminance is 0
+    if(Ych_final[0] == 0.f) Ych_final[1] = 0.f;
+
+    // Massage chroma
+    filmic_desaturate_v4(Ych_original, Ych_final, data->saturation);
+    gamut_check_Yrg(Ych_final);
+    Ych_to_pipe_RGB(Ych_final, output_matrix, pix_out);
+  }
+}
+
+static inline void filmic_split_v4(const float *const restrict in, float *const restrict out,
+                                    const dt_iop_order_iccprofile_info_t *const work_profile,
+                                    const dt_iop_filmicrgb_data_t *const data,
+                                    const dt_iop_filmic_rgb_spline_t spline, const int variant,
+                                    const size_t width, const size_t height, const size_t ch,
+                                    const dt_iop_filmicrgb_colorscience_type_t colorscience_version)
+{
+  // See colorbalancergb.c for details
+  dt_colormatrix_t input_matrix;
+  dt_colormatrix_t output_matrix;
+  dt_colormatrix_t temp_matrix;
+
+  // Prepare the pipeline RGB -> XYZ D50 -> XYZ D65 -> LMS 2006 matrix
+  dt_colormatrix_mul(temp_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
+  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, temp_matrix);
+
+  // Prepare the LMS 2006 -> XYZ D65 -> XYZ D50 -> pipeline RGB matrix
+  dt_colormatrix_mul(temp_matrix, XYZ_D65_to_D50_CAT16, LMS_2006_D65_to_XYZ_D65);
+  dt_colormatrix_mul(output_matrix, work_profile->matrix_out, temp_matrix);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none)                                                                       \
+    dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, input_matrix, output_matrix, variant, spline)    \
+    schedule(simd :static)
+#endif
+  for(size_t k = 0; k < height * width * ch; k += ch)
+  {
+    const float *const restrict pix_in = in + k;
+    float *const restrict pix_out = out + k;
+
+    // Save Ych in Kirk/Filmlight Yrg
+    dt_aligned_pixel_t Ych_original = { 0.f };
+    pipe_RGB_to_Ych(pix_in, input_matrix, Ych_original);
+
+    for_each_channel(c,aligned(pix_in))
+    {
+      // Log tone-mapping
+      pix_out[c] = log_tonemapping_v2(pix_in[c], data->grey_source, data->black_source, data->dynamic_range);
+
+      // Filmic S curve on RGB
+      // Apply the transfer function of the display
+      pix_out[c] = powf(clamp_simd(filmic_spline(pix_out[c], spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
+                                                 spline.latitude_min, spline.latitude_max, spline.type)),
+                        data->output_power);
+    }
+
+    // Get final Ych in Kirk/Filmlight Yrg
+    dt_aligned_pixel_t Ych_final = { 0.f };
+    pipe_RGB_to_Ych(pix_out, input_matrix, Ych_final);
+
+    // Force final hue and chroma to original
+    Ych_final[2] = Ych_original[2];
+    Ych_final[1] = Ych_original[1];
+
+    // Clip luminance
+    Ych_final[0] = fmaxf(Ych_final[0], 0.f);
+
+    // Set chroma to 0 if luminance is 0
+    if(Ych_final[0] == 0.f) Ych_final[1] = 0.f;
+
+    // Massage chroma
+    filmic_desaturate_v4(Ych_original, Ych_final, data->saturation);
+    gamut_check_Yrg(Ych_final);
+    Ych_to_pipe_RGB(Ych_final, output_matrix, pix_out);
+  }
+}
+
+
 static inline void display_mask(const float *const restrict mask, float *const restrict out, const size_t width,
                                 const size_t height)
 {
@@ -1665,6 +1882,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       filmic_split_v1(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height);
     else if(data->version == DT_FILMIC_COLORSCIENCE_V2 || data->version == DT_FILMIC_COLORSCIENCE_V3)
       filmic_split_v2_v3(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height);
+    else if(data->version == DT_FILMIC_COLORSCIENCE_V4)
+      filmic_split_v4(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
+                      roi_out->height, ch, data->version);
   }
   else
   {
@@ -1675,6 +1895,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     else if(data->version == DT_FILMIC_COLORSCIENCE_V2 || data->version == DT_FILMIC_COLORSCIENCE_V3)
       filmic_chroma_v2_v3(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
                           roi_out->height, ch, data->version);
+    else if(data->version == DT_FILMIC_COLORSCIENCE_V4)
+      filmic_chroma_v4(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
+                       roi_out->height, ch, data->version);
   }
 
   if(reconstructed) dt_free_align(reconstructed);
@@ -1995,6 +2218,22 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const dt_iop_filmic_rgb_spline_t spline = (dt_iop_filmic_rgb_spline_t)d->spline;
 
+  // See colorbalancergb.c for details
+  dt_colormatrix_t input_matrix;
+  dt_colormatrix_t output_matrix;
+  dt_colormatrix_t temp_matrix;
+
+  // Prepare the pipeline RGB -> XYZ D50 -> XYZ D65 -> LMS 2006 matrix
+  dt_colormatrix_mul(temp_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
+  dt_colormatrix_mul(input_matrix, XYZ_D65_to_LMS_2006_D65, temp_matrix);
+
+  // Prepare the LMS 2006 -> XYZ D65 -> XYZ D50 -> pipeline RGB matrix
+  dt_colormatrix_mul(temp_matrix, XYZ_D65_to_D50_CAT16, LMS_2006_D65_to_XYZ_D65);
+  dt_colormatrix_mul(output_matrix, work_profile->matrix_out, temp_matrix);
+
+  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
+  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
+
   if(d->preserve_color == DT_FILMIC_METHOD_NONE)
   {
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 0, sizeof(cl_mem), (void *)&in);
@@ -2021,6 +2260,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 21, sizeof(int), (void *)&d->version);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 22, sizeof(int), (void *)&spline.type[0]);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 23, sizeof(int), (void *)&spline.type[1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 24, sizeof(cl_mem), (void *)&input_matrix_cl);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 25, sizeof(cl_mem), (void *)&output_matrix_cl);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_split, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -2052,6 +2293,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 22, sizeof(int), (void *)&d->version);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 23, sizeof(int), (void *)&spline.type[0]);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 24, sizeof(int), (void *)&spline.type[1]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 25, sizeof(cl_mem), (void *)&input_matrix_cl);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 26, sizeof(cl_mem), (void *)&output_matrix_cl);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_chroma, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -2059,6 +2302,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   dt_opencl_release_mem_object(reconstructed);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
+  dt_opencl_release_mem_object(input_matrix_cl);
+  dt_opencl_release_mem_object(output_matrix_cl);
   return TRUE;
 
 error:
@@ -2068,6 +2313,8 @@ error:
   dt_opencl_release_mem_object(mask);
   dt_opencl_release_mem_object(ratios);
   dt_opencl_release_mem_object(norms);
+  dt_opencl_release_mem_object(input_matrix_cl);
+  dt_opencl_release_mem_object(output_matrix_cl);
   dt_print(DT_DEBUG_OPENCL, "[opencl_filmicrgb] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -2583,7 +2830,12 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // compute the curves and their LUT
   dt_iop_filmic_rgb_compute_spline(p, &d->spline);
 
-  d->saturation = (2.0f * p->saturation / 100.0f + 1.0f);
+  if(p->version == DT_FILMIC_COLORSCIENCE_V4)
+    d->saturation = p->saturation / 100.0f;
+  else
+    d->saturation = (2.0f * p->saturation / 100.0f + 1.0f);
+
+  fprintf(stdout, "sat: %f\n", d->saturation);
   d->sigma_toe = powf(d->spline.latitude_min / 3.0f, 2.0f);
   d->sigma_shoulder = powf((1.0f - d->spline.latitude_max) / 3.0f, 2.0f);
 
@@ -3291,7 +3543,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_move_to(cr, -2. * g->inset - g->zero_width - g->ink.x,
                     -g->line_height - g->inset - 0.5 * g->ink.height - g->ink.y);
       pango_cairo_show_layout(cr, layout);
-      cairo_stroke(cr);
+      cairo_stroke(cr);  dt_bauhaus_slider_set_soft_max(g->saturation, 50.0);
+
 
       // mark the x axis legend
       set_color(cr, darktable.bauhaus->graph_fg);
@@ -4168,7 +4421,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(!w || w == g->version)
   {
-    if(p->version == DT_FILMIC_COLORSCIENCE_V1)
+    if(p->version == DT_FILMIC_COLORSCIENCE_V1 || p->version == DT_FILMIC_COLORSCIENCE_V4)
     {
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("extreme luminance saturation"));
       gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
@@ -4213,4 +4466,3 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
