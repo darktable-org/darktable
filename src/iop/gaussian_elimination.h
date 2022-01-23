@@ -145,12 +145,14 @@ static inline int transpose_dot_vector(double *const restrict A, // input
 }
 
 
-static inline int pseudo_solve_gaussian(double *const restrict A,
-                                        double *const restrict y,
-                                        const size_t m, const size_t n, const int checks)
+static inline int pseudo_solve_gaussian_with_preallocated_buffers(double *const restrict A,
+                                                                  double *const restrict y,
+                                                                  double *const restrict A_square,
+                                                                  double *const restrict y_square, const size_t m,
+                                                                  const size_t n, const int checks)
 {
-  // Solve the weighted linear problem w A'A x = w A' y with the over-constrained rectanguler matrice A
-  // of dimension m × n (m >= n) and w a vector of weights, by the least squares method
+  // Inner routine of pseudo_solve_gaussian to allow using it in a tight loop with
+  // preallocated inner buffer space and avoid repeated allocations and deallocations.
   int valid = 1;
 
   if(m < n)
@@ -159,24 +161,21 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
     return 0;
   }
 
-  double *const restrict A_square = dt_alloc_align(64, n * n * sizeof(double));
-  double *const restrict y_square = dt_alloc_align(64, n * sizeof(double));
-
-  #ifdef _OPENMP
-  #pragma omp parallel sections
-  #endif
+#ifdef _OPENMP
+#pragma omp parallel sections
+#endif
   {
-    #ifdef _OPENMP
-    #pragma omp section
-    #endif
+#ifdef _OPENMP
+#pragma omp section
+#endif
     {
       // Prepare the least squares matrix = A' A
       valid = transpose_dot_matrix(A, A_square, m, n);
     }
 
-    #ifdef _OPENMP
-    #pragma omp section
-    #endif
+#ifdef _OPENMP
+#pragma omp section
+#endif
     {
       // Prepare the y square vector = A' y
       valid = transpose_dot_vector(A, y, y_square, m, n);
@@ -186,6 +185,21 @@ static inline int pseudo_solve_gaussian(double *const restrict A,
   // Solve A' A x = A' y for x
   valid = gauss_solve(A_square, y_square, n);
   for(size_t k = 0; k < n; k++) y[k] = y_square[k];
+
+  return valid;
+}
+
+
+static inline int pseudo_solve_gaussian(double *const restrict A, double *const restrict y, const size_t m,
+                                        const size_t n, const int checks)
+{
+  // Solve the weighted linear problem w A'A x = w A' y with the over-constrained rectanguler matrice A
+  // of dimension m × n (m >= n) and w a vector of weights, by the least squares method
+
+  double *const restrict A_square = dt_alloc_align(64, n * n * sizeof(double));
+  double *const restrict y_square = dt_alloc_align(64, n * sizeof(double));
+
+  int valid = pseudo_solve_gaussian_with_preallocated_buffers(A, y, A_square, y_square, m, n, checks);
 
   dt_free_align(y_square);
   dt_free_align(A_square);
