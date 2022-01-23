@@ -1327,9 +1327,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   if (ch==ch_L)
   { // remove below black to white transition to improve readability of the graph
-    cairo_set_source_rgb(cr, .3, .3, .3);
-    cairo_rectangle(cr, 0, 0, width, height);
-    cairo_fill(cr);
+    gtk_render_background(gtk_widget_get_style_context(widget), cr, 0, 0, width, height);
   }
   else
   {
