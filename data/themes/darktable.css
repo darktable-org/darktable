@@ -2471,17 +2471,26 @@ Details :
 
 /* Set red reject icon when visible */
 .dt_overlays_hover #thumb_main:hover #thumb_reject:active,
+.dt_overlays_hover #thumb_main:hover #thumb_reject:hover,
 .dt_overlays_hover_extended #thumb_main:hover #thumb_reject:active,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_reject:hover,
 .dt_overlays_always #thumb_reject:active,
 .dt_overlays_always #thumb_main:hover #thumb_reject:active,
 .dt_overlays_always #thumb_main:selected #thumb_reject:active,
+.dt_overlays_always #thumb_reject:hover,
+.dt_overlays_always #thumb_main:hover #thumb_reject:hover,
 .dt_overlays_always_extended #thumb_reject:active,
 .dt_overlays_always_extended #thumb_main:hover #thumb_reject:active,
 .dt_overlays_always_extended #thumb_main:selected #thumb_reject:active,
+.dt_overlays_always_extended #thumb_reject:hover,
+.dt_overlays_always_extended #thumb_main:hover #thumb_reject:hover,
 .dt_overlays_mixed #thumb_reject:active,
 .dt_overlays_mixed #thumb_main:hover #thumb_reject:active,
 .dt_overlays_mixed #thumb_main:selected #thumb_reject:active,
-.dt_overlays_hover_block #thumb_image:hover #thumb_reject:active
+.dt_overlays_mixed #thumb_reject:hover,
+.dt_overlays_mixed #thumb_main:hover #thumb_reject:hover,
+.dt_overlays_hover_block #thumb_main:hover #thumb_reject:active,
+.dt_overlays_hover_block #thumb_main:hover #thumb_reject:hover
 {
   color: red;
 }

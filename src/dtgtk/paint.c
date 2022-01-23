@@ -1546,26 +1546,21 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
 void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 1, 0, 0)
+  PREAMBLE(0.9, 1, 0, 0)
 
-  // circle around (mouse over effect)
-  if(flags & CPF_PRELIGHT)
-  {
-    cairo_arc(cr, 0.5, 0.5, 0.5, 0.0, 2.0 * M_PI);
-  }
+  // the reject icon
+  cairo_arc(cr, 0.5, 0.5, 0.5, 0.0, 2.0 * M_PI);
+  cairo_move_to(cr, 0.7, 0.3);
+  cairo_line_to(cr, 0.3, 0.7);
+  cairo_move_to(cr, 0.3, 0.3);
+  cairo_line_to(cr, 0.7, 0.7);
+  cairo_stroke(cr);
 
   if(flags & CPF_DIRECTION_RIGHT)
   {
     // that means the image is rejected, so we draw the cross in red bold
     cairo_set_source_rgb(cr, 1.0, 0, 0);
   }
-
-  // the cross
-  cairo_move_to(cr, 0.2, 0.2);
-  cairo_line_to(cr, 0.8, 0.8);
-  cairo_move_to(cr, 0.8, 0.2);
-  cairo_line_to(cr, 0.2, 0.8);
-  cairo_stroke(cr);
 
   FINISH
 }
