@@ -2271,12 +2271,12 @@ Details :
 
 #thumb_image
 {
-  margin: 25px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
+  margin: 1.8em 1.2em; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
 }
 
 .dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
 {
-  margin: 1.4em;
+  margin: 1em 0.75em;
 }
 
 /* Set top margin on active image in filmstrip */
