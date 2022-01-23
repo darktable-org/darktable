@@ -1189,13 +1189,15 @@ static void _event_image_style_updated(GtkWidget *w, dt_thumbnail_t *thumb)
   // for some reason the style has changed. We have to recompute margins and resize the overlays
 
   // we retrieve the eventual new margins
-  int oldt = thumb->img_margin->top;
-  int oldr = thumb->img_margin->right;
-  int oldb = thumb->img_margin->bottom;
-  int oldl = thumb->img_margin->left;
+  const int oldt = thumb->img_margin->top;
+  const int oldr = thumb->img_margin->right;
+  const int oldb = thumb->img_margin->bottom;
+  const int oldl = thumb->img_margin->left;
   _thumb_retrieve_margins(thumb);
 
-  if(oldt != thumb->img_margin->top || oldr != thumb->img_margin->right || oldb != thumb->img_margin->bottom
+  if(oldt != thumb->img_margin->top
+     || oldr != thumb->img_margin->right
+     || oldb != thumb->img_margin->bottom
      || oldl != thumb->img_margin->left)
   {
     _thumb_resize_overlays(thumb);
@@ -1548,7 +1550,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
   int height = 0;
 
   int max_size = darktable.gui->icon_size;
-  if(max_size < 2) max_size = round(1.2f * darktable.bauhaus->line_height); // fallback if toolbar icons are not realized
+  if(max_size < 2)
+    max_size = round(1.2f * darktable.bauhaus->line_height); // fallback if toolbar icons are not realized
 
   if(thumb->over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
   {
@@ -1816,7 +1819,8 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
 
   // retrieves the size of the main icons in the top panel, thumbtable overlays shall not exceed that
   int max_size = darktable.gui->icon_size;
-  if(max_size < 2) max_size = round(1.2f * darktable.bauhaus->line_height); // fallback if toolbar icons are not realized
+  if(max_size < 2)
+    max_size = round(1.2f * darktable.bauhaus->line_height); // fallback if toolbar icons are not realized
 
   const int fsize = fminf(max_size, (height - thumb->img_margin->top - thumb->img_margin->bottom) / 11.0f);
 
