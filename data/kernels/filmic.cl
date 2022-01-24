@@ -427,7 +427,7 @@ static inline float4 gamut_check_RGB(float4 RGB_in, float4 Ych_in,
     // Perform a black offset to fit back in gamut
     // This gives us a whitest version of the current color.
     // It's not saturation-invariant.
-    float4 RGB_brightened = RGB_in - min_pix;
+    float4 RGB_brightened = RGB_in + fabs(min_pix);
     float4 Ych_brightened = pipe_RGB_to_Ych(RGB_brightened, matrix_in);
 
     // Get the locus of the clamped pixel.
