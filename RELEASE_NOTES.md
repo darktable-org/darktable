@@ -111,11 +111,13 @@ You are strongly advised to take a backup first.
 - Add option to enter the new module instance name automatically when
   duplicating a preset.
 
-- Fix FilmicRGB graph update when used in the quick access panel.
+- Fix Filmic RGB graph update when used in the quick access panel.
 
 - Restore shortcut for duplicate virgin in lighttable.
 
 - Tag's preset append the tags instead of replacing them.
+
+- Fix Filmic RGB mid-tones vs extreme luminance saturation sliders' tooltip.
 
 ## Lua
 
