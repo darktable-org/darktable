@@ -261,6 +261,54 @@ static void _apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
   _write_metadata(self);
 }
 
+static int _get_first_visible_textview_index()
+{
+  for(int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const gchar *name = dt_metadata_get_name_by_display_order(i);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    if(!hidden)
+      return i;
+  }
+  return -1;
+}
+
+static int _get_last_visible_textview_index()
+{
+  for(int i = DT_METADATA_NUMBER; i > 0; i--)
+  {
+    const gchar *name = dt_metadata_get_name_by_display_order(i - 1);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    if(!hidden)
+      return i - 1;
+  }
+  return -1;
+}
+
+static int _is_last_visible_textview(GtkWidget *textview)
+{
+  const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
+  const int j = _get_last_visible_textview_index();
+  if(i == j)
+    return _get_first_visible_textview_index();
+  else
+    return -1;
+}
+
+static int _is_first_visible_textview(GtkWidget *textview)
+{
+  const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
+  const int j = _get_first_visible_textview_index();
+  if(i == j)
+    return _get_last_visible_textview_index();
+  else
+    return -1;
+}
+
 static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
@@ -293,19 +341,40 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
       case GDK_KEY_Return:
       case GDK_KEY_KP_Enter:
         _write_metadata(self);
-        // go to next field
-        event->keyval = GDK_KEY_Tab;
         d->editing = FALSE;
+        return TRUE;
         break;
       case GDK_KEY_Escape:
         _update(self);
         gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
         d->editing = FALSE;
+        return TRUE;
         break;
       case GDK_KEY_Tab:
+      {
         _write_metadata(self);
+        // workaround to come back to first field
+        const int first = _is_last_visible_textview(textview);
+        if(first != -1)
+        {
+          gtk_widget_grab_focus(GTK_WIDGET(d->textview[first]));
+          return TRUE;
+        }
+        break;
+      }
+      case GDK_KEY_ISO_Left_Tab:
+      {
+        _write_metadata(self);
+        // workaround to come back to last field
+        const int last = _is_first_visible_textview(textview);
+        if(last != -1)
+        {
+          gtk_widget_grab_focus(GTK_WIDGET(d->textview[last]));
+          return TRUE;
+        }
         d->editing = FALSE;
         break;
+      }
       default:
         break;
     }
@@ -625,13 +694,7 @@ static gboolean _click_on_textview(GtkWidget *textview, GdkEventButton *event, d
 {
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   // get grid line number
-  uint32_t i;
-  for(i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    if(GTK_TEXT_VIEW(textview) == d->textview[i])
-      break;
-  }
-  if(i >= DT_METADATA_NUMBER) return FALSE;
+  const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
 
   if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)) return FALSE;
 
@@ -762,6 +825,7 @@ void gui_init(dt_lib_module_t *self)
               "\npress escape to exit the popup window"));
 
     GtkWidget *textview = gtk_text_view_new();
+    g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
     gtk_text_buffer_create_tag (gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview)),
                                 "italic", "style", PANGO_STYLE_ITALIC, NULL);
 
