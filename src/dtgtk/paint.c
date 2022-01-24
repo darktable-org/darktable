@@ -2927,15 +2927,15 @@ void dtgtk_cairo_paint_lt_btn_maxzoom(cairo_t *cr, gint x, gint y, gint w, gint 
 {
   cairo_set_font_size (cr, DT_PIXEL_APPLY_DPI(0.4f));
   cairo_text_extents_t te;
-  cairo_text_extents(cr, "max", &te);
+  cairo_text_extents(cr, "dyn", &te);
 
   PREAMBLE(1.4, 0, 0)
 
   cairo_rectangle(cr, 0.05, 0.22, 0.95, 0.56);
   cairo_stroke(cr);
 
-  cairo_move_to (cr, 0.075, 0.6);
-  cairo_show_text (cr, "max");
+  cairo_move_to (cr, 0.09, 0.6);
+  cairo_show_text (cr, "dyn");
 
   FINISH
 }

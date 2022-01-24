@@ -126,19 +126,19 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
     gtk_widget_set_tooltip_text(d->layout_preview, _("click to enter full preview layout."));
 
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || d->fullpreview)
-    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to enter culling layout in fixed mode."));
+    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to enter culling layout."));
   else
     gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to exit culling layout."));
 
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC || d->fullpreview)
-    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to enter culling layout in dynamic mode."));
+    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to enter restricted culling layout."));
   else
-    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to exit culling layout."));
+    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to exit restricted culling layout."));
 
   if(d->zoom_max)
-    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to reset zoom level."));
+    gtk_widget_set_tooltip_text(d->zoom_max_btn, _("click to reset zoom mode."));
   else
-    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to set zoom level to max (default:25)."));
+    gtk_widget_set_tooltip_text(d->zoom_max_btn, _("click to enable dynamic zoom mode."));
 
   // only display max zoom button in culling dynamic
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
