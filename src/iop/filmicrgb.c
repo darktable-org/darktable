@@ -197,7 +197,7 @@ typedef struct dt_iop_filmicrgb_params_t
   float saturation;         // $MIN: -200 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
   float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "add noise in highlights"
-  dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_NONE $DESCRIPTION: "preserve chrominance"
+  dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_MAX_RGB $DESCRIPTION: "preserve chrominance"
   dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V4 $DESCRIPTION: "color science"
   gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
   gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
@@ -1576,13 +1576,112 @@ static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, d
   Ych_final[1] = fmaxf(chroma_final / Ych_final[0], 0.f);
 }
 
+// Pipeline and ICC luminance is CIE Y 1931
+// Kirk Ych/Yrg uses CIE Y 2006
+// 1 CIE Y 1931 = 0.945302269001 CIE Y 2006, so we need to adjust that
+#define CIE_Y_1931_to_CIE_Y_2006(x) 0.945302269001f * x
+
+
+static inline void gamut_check_RGB(dt_aligned_pixel_t RGB_in, dt_aligned_pixel_t Ych_in,
+                                   const dt_colormatrix_t matrix_in, const dt_colormatrix_t matrix_out,
+                                   const float display_black, const float display_white)
+{
+  const int max_iter = 8;
+
+  int iter = 0;
+  float max_pix = fmaxf(fmaxf(RGB_in[0], RGB_in[1]), RGB_in[2]);
+  while(max_pix > display_white && iter < max_iter)
+  {
+    // Perform exposure correction to fit back in gamut
+    // This gives us the closest in-gamut pixel at same saturation.
+    dt_aligned_pixel_t RGB_darkened = { 0.f };
+    for_each_channel(c, aligned(RGB_darkened)) RGB_darkened[c] = RGB_in[c] / max_pix;
+
+    dt_aligned_pixel_t Ych_darkened = { 0.f };
+    pipe_RGB_to_Ych(RGB_darkened, matrix_in, Ych_darkened);
+
+    // Get the locus of the clamped pixel.
+    // NB: that's where we land if we do nothing.
+    // This gives us the closest in-gamut pixel with no color property preserved.
+    dt_aligned_pixel_t RGB_clamped = { 0.f };
+    for_each_channel(c, aligned(RGB_clamped))
+      RGB_clamped[c] = CLAMP(RGB_in[c], display_black, display_white);
+
+    dt_aligned_pixel_t Ych_clamped = { 0.f };
+    pipe_RGB_to_Ych(RGB_clamped, matrix_in, Ych_clamped);
+
+    // Remapping goal:
+    // 1. at constant hue and luminance :
+    //     a) march toward the chroma of the closest same-saturation in-gamut color.
+    //        Since same-saturation is darker, its chroma should be much lower than the current.
+    //     b) march toward the chroma of the closest in-gamut color.
+    //        This gives an estimate of the max chroma available nearby, but at a different hue.
+    //     c) stop halfway in-between a) and b)
+    // 2. at constant chroma and hue, march half-way between current luminance
+    //    and the luminance of the closest in-gamut color. This usually brightens a bit
+    //    which helps preserving cognitive relationships of tones.
+    // 3. iterate until convergence.
+    Ych_in[0] = fminf((Ych_in[0] + Ych_clamped[0]) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_white));
+    Ych_in[1] = (Ych_darkened[1] * Ych_darkened[0] / Ych_in[0] + Ych_clamped[1]) / 2.f;
+
+    Ych_to_pipe_RGB(Ych_in, matrix_out, RGB_in);
+
+    max_pix = fmaxf(fmaxf(RGB_in[0], RGB_in[1]), RGB_in[2]);
+    iter++;
+  }
+
+  // Finally, look for negatives.
+  float min_pix = fminf(fminf(RGB_in[0], RGB_in[1]), RGB_in[2]);
+  iter = 0;
+  while(min_pix < display_black && iter < max_iter)
+  {
+    // Perform a black offset to fit back in gamut
+    // This gives us a whitest version of the current color.
+    // It's not saturation-invariant.
+    dt_aligned_pixel_t RGB_brightened = { 0.f };
+    for_each_channel(c, aligned(RGB_brightened)) RGB_brightened[c] = RGB_in[c] - min_pix;
+
+    dt_aligned_pixel_t Ych_brightened = { 0.f };
+    pipe_RGB_to_Ych(RGB_brightened, matrix_in, Ych_brightened);
+
+    // Get the locus of the clamped pixel.
+    // NB: that's where we land if we do nothing.
+    // This gives us the closest in-gamut pixel with no color property preserved.
+    dt_aligned_pixel_t RGB_clamped = { 0.f };
+    for_each_channel(c, aligned(RGB_clamped))
+      RGB_clamped[c] = CLAMP(RGB_in[c], display_black, display_white);
+
+    dt_aligned_pixel_t Ych_clamped = { 0.f };
+    pipe_RGB_to_Ych(RGB_clamped, matrix_in, Ych_clamped);
+
+    // Same logic as above, except we need to scale down the chroma
+    // from the brightnened projection
+    if(Ych_brightened[0] > CIE_Y_1931_to_CIE_Y_2006(display_black))
+    {
+      Ych_in[0] = fmax((Ych_in[0] + Ych_clamped[0]) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_black));
+      Ych_in[1] = (Ych_in[1] * Ych_in[0] / Ych_brightened[0] + Ych_clamped[1]) / 2.f;
+    }
+    else
+    {
+      Ych_in[0] = CIE_Y_1931_to_CIE_Y_2006(display_black);
+      Ych_in[1] = 0.f;
+    }
+
+    Ych_to_pipe_RGB(Ych_in, matrix_out, RGB_in);
+
+    min_pix = fminf(fminf(RGB_in[0], RGB_in[1]), RGB_in[2]);
+    iter++;
+  }
+}
+
 
 static inline void filmic_chroma_v4(const float *const restrict in, float *const restrict out,
                                     const dt_iop_order_iccprofile_info_t *const work_profile,
                                     const dt_iop_filmicrgb_data_t *const data,
                                     const dt_iop_filmic_rgb_spline_t spline, const int variant,
                                     const size_t width, const size_t height, const size_t ch,
-                                    const dt_iop_filmicrgb_colorscience_type_t colorscience_version)
+                                    const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
+                                    const float display_black, const float display_white)
 {
   // See colorbalancergb.c for details
   dt_colormatrix_t input_matrix;
@@ -1599,17 +1698,14 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, input_matrix, output_matrix, variant, spline)    \
+    dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, input_matrix, output_matrix, \
+    variant, spline, display_white, display_black)    \
     schedule(simd :static)
 #endif
   for(size_t k = 0; k < height * width * ch; k += ch)
   {
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
-
-    // Save Ych in Kirk/Filmlight Yrg
-    dt_aligned_pixel_t Ych_original = { 0.f };
-    pipe_RGB_to_Ych(pix_in, input_matrix, Ych_original);
 
     float norm = fmaxf(get_pixel_norm(pix_in, variant, work_profile), NORM_MIN);
 
@@ -1622,12 +1718,18 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
 
     // Filmic S curve on the max RGB
     // Apply the transfer function of the display
-    norm = powf(clamp_simd(filmic_spline(norm, spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
-                                         spline.latitude_min, spline.latitude_max, spline.type)),
+    norm = powf(CLAMP(filmic_spline(norm, spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
+                                         spline.latitude_min, spline.latitude_max, spline.type),
+                      display_black,
+                      display_white),
                 data->output_power);
 
     // Restore RGB
     for_each_channel(c,aligned(pix_out)) pix_out[c] = fmaxf(ratios[c] * norm, 0.f);
+
+    // Save Ych in Kirk/Filmlight Yrg
+    dt_aligned_pixel_t Ych_original = { 0.f };
+    pipe_RGB_to_Ych(pix_in, input_matrix, Ych_original);
 
     // Get final Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_final = { 0.f };
@@ -1637,15 +1739,18 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
     Ych_final[2] = Ych_original[2];
 
     // Clip luminance
-    Ych_final[0] = fmaxf(Ych_final[0], 0.f);
-
-    // Set chroma to 0 if luminance is 0
-    if(Ych_final[0] == 0.f) Ych_final[1] = 0.f;
+    Ych_final[0] = CLAMP(Ych_final[0],
+                         CIE_Y_1931_to_CIE_Y_2006(display_black),
+                         CIE_Y_1931_to_CIE_Y_2006(display_white));
 
     // Massage chroma
     filmic_desaturate_v4(Ych_original, Ych_final, data->saturation);
     gamut_check_Yrg(Ych_final);
     Ych_to_pipe_RGB(Ych_final, output_matrix, pix_out);
+
+    // Now, it is still possible that one channel > display white because of saturation.
+    // We have already clipped Y, so we know that any problem now is caused by c
+    gamut_check_RGB(pix_out, Ych_final, input_matrix, input_matrix, display_black, display_white);
   }
 }
 
@@ -1654,7 +1759,9 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
                                     const dt_iop_filmicrgb_data_t *const data,
                                     const dt_iop_filmic_rgb_spline_t spline, const int variant,
                                     const size_t width, const size_t height, const size_t ch,
-                                    const dt_iop_filmicrgb_colorscience_type_t colorscience_version)
+                                    const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
+                                    const float display_black, const float display_white)
+
 {
   // See colorbalancergb.c for details
   dt_colormatrix_t input_matrix;
@@ -1671,17 +1778,14 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                       \
-    dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, input_matrix, output_matrix, variant, spline)    \
+    dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, input_matrix, output_matrix, \
+    variant, spline, display_black, display_white)    \
     schedule(simd :static)
 #endif
   for(size_t k = 0; k < height * width * ch; k += ch)
   {
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
-
-    // Save Ych in Kirk/Filmlight Yrg
-    dt_aligned_pixel_t Ych_original = { 0.f };
-    pipe_RGB_to_Ych(pix_in, input_matrix, Ych_original);
 
     for_each_channel(c,aligned(pix_in))
     {
@@ -1690,10 +1794,15 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
 
       // Filmic S curve on RGB
       // Apply the transfer function of the display
-      pix_out[c] = powf(clamp_simd(filmic_spline(pix_out[c], spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
-                                                 spline.latitude_min, spline.latitude_max, spline.type)),
-                        data->output_power);
+      pix_out[c] = powf(CLAMP(filmic_spline(pix_out[c], spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
+                                                 spline.latitude_min, spline.latitude_max, spline.type),
+                              display_black,
+                              display_white), data->output_power);
     }
+
+    // Save Ych in Kirk/Filmlight Yrg
+    dt_aligned_pixel_t Ych_original = { 0.f };
+    pipe_RGB_to_Ych(pix_in, input_matrix, Ych_original);
 
     // Get final Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_final = { 0.f };
@@ -1701,10 +1810,12 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
 
     // Force final hue and chroma to original
     Ych_final[2] = Ych_original[2];
-    Ych_final[1] = Ych_original[1];
+    Ych_final[1] = fminf(Ych_original[1], Ych_final[1]);
 
     // Clip luminance
-    Ych_final[0] = fmaxf(Ych_final[0], 0.f);
+    Ych_final[0] = CLAMP(Ych_final[0],
+                         CIE_Y_1931_to_CIE_Y_2006(display_black),
+                         CIE_Y_1931_to_CIE_Y_2006(display_white));
 
     // Set chroma to 0 if luminance is 0
     if(Ych_final[0] == 0.f) Ych_final[1] = 0.f;
@@ -1713,6 +1824,10 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
     filmic_desaturate_v4(Ych_original, Ych_final, data->saturation);
     gamut_check_Yrg(Ych_final);
     Ych_to_pipe_RGB(Ych_final, output_matrix, pix_out);
+
+    // Now, it is still possible that one channel > display white because of saturation.
+    // We have already clipped Y, so we know that any problem now is caused by c
+    gamut_check_RGB(pix_out, Ych_final, input_matrix, input_matrix, display_black, display_white);
   }
 }
 
@@ -1875,6 +1990,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(mask) dt_free_align(mask);
 
+  const float white_display = powf(data->spline.y[4], data->output_power);
+  const float black_display = powf(data->spline.y[0], data->output_power);
+
   if(data->preserve_color == DT_FILMIC_METHOD_NONE)
   {
     // no chroma preservation
@@ -1884,7 +2002,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       filmic_split_v2_v3(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height);
     else if(data->version == DT_FILMIC_COLORSCIENCE_V4)
       filmic_split_v4(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
-                      roi_out->height, ch, data->version);
+                      roi_out->height, ch, data->version, black_display, white_display);
   }
   else
   {
@@ -1897,7 +2015,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                           roi_out->height, ch, data->version);
     else if(data->version == DT_FILMIC_COLORSCIENCE_V4)
       filmic_chroma_v4(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
-                       roi_out->height, ch, data->version);
+                       roi_out->height, ch, data->version, black_display, white_display);
   }
 
   if(reconstructed) dt_free_align(reconstructed);
@@ -2234,6 +2352,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
   cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
 
+  const float white_display = powf(spline.y[4], d->output_power);
+  const float black_display = powf(spline.y[0], d->output_power);
+
   if(d->preserve_color == DT_FILMIC_METHOD_NONE)
   {
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 0, sizeof(cl_mem), (void *)&in);
@@ -2262,6 +2383,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 23, sizeof(int), (void *)&spline.type[1]);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 24, sizeof(cl_mem), (void *)&input_matrix_cl);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 25, sizeof(cl_mem), (void *)&output_matrix_cl);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 26, sizeof(float), (void *)&black_display);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 27, sizeof(float), (void *)&white_display);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_split, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -2295,6 +2418,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 24, sizeof(int), (void *)&spline.type[1]);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 25, sizeof(cl_mem), (void *)&input_matrix_cl);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 26, sizeof(cl_mem), (void *)&output_matrix_cl);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 27, sizeof(float), (void *)&black_display);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 28, sizeof(float), (void *)&white_display);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_chroma, sizes);
     if(err != CL_SUCCESS) goto error;

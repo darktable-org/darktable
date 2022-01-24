@@ -371,6 +371,93 @@ static inline float4 filmic_desaturate_v4(const float4 Ych_original, float4 Ych_
   return Ych_final;
 }
 
+
+// Pipeline and ICC luminance is CIE Y 1931
+// Kirk Ych/Yrg uses CIE Y 2006
+// 1 CIE Y 1931 = 0.945302269001 CIE Y 2006, so we need to adjust that
+#define CIE_Y_1931_to_CIE_Y_2006(x) 0.945302269001f * x
+
+
+static inline float4 gamut_check_RGB(float4 RGB_in, float4 Ych_in,
+                                     constant const float *const matrix_in, constant const float *const matrix_out,
+                                     const float display_black, const float display_white)
+{
+  const int max_iter = 8;
+
+  int iter = 0;
+  float max_pix = fmax(fmax(RGB_in.x, RGB_in.y), RGB_in.z);
+  while(max_pix > display_white && iter < max_iter)
+  {
+    // Perform exposure correction to fit back in gamut
+    // This gives us the closest in-gamut pixel at same saturation.
+    float4 RGB_darkened = RGB_in / max_pix;
+    float4 Ych_darkened = pipe_RGB_to_Ych(RGB_darkened, matrix_in);
+
+    // Get the locus of the clamped pixel.
+    // NB: that's where we land if we do nothing.
+    // This gives us the closest in-gamut pixel with no color property preserved.
+    float4 RGB_clamped = clamp(RGB_in, display_black, display_white);
+    float4 Ych_clamped = pipe_RGB_to_Ych(RGB_clamped, matrix_in);
+
+    // Remapping goal:
+    // 1. at constant hue and luminance :
+    //     a) march toward the chroma of the closest same-saturation in-gamut color.
+    //        Since same-saturation is darker, its chroma should be much lower than the current.
+    //     b) march toward the chroma of the closest in-gamut color.
+    //        This gives an estimate of the max chroma available nearby, but at a different hue.
+    //     c) stop halfway in-between a) and b)
+    // 2. at constant chroma and hue, march half-way between current luminance
+    //    and the luminance of the closest in-gamut color. This usually brightens a bit
+    //    which helps preserving cognitive relationships of tones.
+    // 3. iterate until convergence.
+    Ych_in.x = fmin((Ych_in.x + Ych_clamped.x) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_white));
+    Ych_in.y = (Ych_darkened.y * Ych_darkened.x / Ych_in.x + Ych_clamped.y) / 2.f;
+
+    RGB_in = Ych_to_pipe_RGB(Ych_in, matrix_out);
+
+    max_pix = fmax(fmax(RGB_in.x, RGB_in.y), RGB_in.z);
+    iter++;
+  }
+
+  // Finally, look for negatives.
+  float min_pix = fmin(fmin(RGB_in.x, RGB_in.y), RGB_in.z);
+  iter = 0;
+  while(min_pix < display_black && iter < max_iter)
+  {
+    // Perform a black offset to fit back in gamut
+    // This gives us a whitest version of the current color.
+    // It's not saturation-invariant.
+    float4 RGB_brightened = RGB_in - min_pix;
+    float4 Ych_brightened = pipe_RGB_to_Ych(RGB_brightened, matrix_in);
+
+    // Get the locus of the clamped pixel.
+    // NB: that's where we land if we do nothing.
+    // This gives us the closest in-gamut pixel with no color property preserved.
+    float4 RGB_clamped = clamp(RGB_in, display_black, display_white);
+    float4 Ych_clamped = pipe_RGB_to_Ych(RGB_clamped, matrix_in);
+
+    // Same logic as above, except we need to scale down the chroma
+    // from the brightnened projection
+    if(Ych_brightened.x > CIE_Y_1931_to_CIE_Y_2006(display_black))
+    {
+      Ych_in.x = fmax((Ych_in.x + Ych_clamped.x) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_black));
+      Ych_in.y = (Ych_in.y * Ych_in.x / Ych_brightened.x + Ych_clamped.y) / 2.f;
+    }
+    else
+    {
+      Ych_in.x = CIE_Y_1931_to_CIE_Y_2006(display_black);
+      Ych_in.y = 0.f;
+    }
+
+    RGB_in = Ych_to_pipe_RGB(Ych_in, matrix_out);
+
+    min_pix = fmin(fmin(RGB_in.x, RGB_in.y), RGB_in.z);
+    iter++;
+  }
+
+  return clamp(RGB_in, display_black, display_white);
+}
+
 static inline float4 filmic_chroma_v4(const float4 i,
                                       const float dynamic_range, const float black_exposure, const float grey_value,
                                       constant const dt_colorspaces_iccprofile_info_cl_t *const profile_info,
@@ -381,12 +468,10 @@ static inline float4 filmic_chroma_v4(const float4 i,
                                       const dt_iop_filmicrgb_methods_type_t variant,
                                       const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
                                       const dt_iop_filmicrgb_curve_type_t type[2],
-                                      constant const float *const matrix_in, constant const float *const matrix_out)
+                                      constant const float *const matrix_in, constant const float *const matrix_out,
+                                      const float display_black, const float display_white)
 
 {
-  // Save Ych in Kirk/Filmlight Yrg
-  float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
-
   float norm = fmax(get_pixel_norm(i, variant, profile_info, lut, use_work_profile), NORM_MIN);
 
   // Save the ratios
@@ -397,10 +482,15 @@ static inline float4 filmic_chroma_v4(const float4 i,
 
   // Filmic S curve on the max RGB
   // Apply the transfer function of the display
-  norm = native_powr(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
+  norm = native_powr(clamp(filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
+                           display_black,
+                           display_white), output_power);
 
   // Restore RGB
   float4 o = norm * ratios;
+
+  // Save Ych in Kirk/Filmlight Yrg
+  float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
 
   // Get final Ych in Kirk/Filmlight Yrg
   float4 Ych_final = pipe_RGB_to_Ych(o, matrix_in);
@@ -409,15 +499,19 @@ static inline float4 filmic_chroma_v4(const float4 i,
   Ych_final.z = Ych_original.z;
 
   // Clip luminance
-  Ych_final.x = fmax(Ych_final.x, 0.f);
-
-  // Set chroma to 0 if luminance is 0
-  if(Ych_final.x == 0.f) Ych_final.y = 0.f;
+  Ych_final.x = clamp(Ych_final.x,
+                      CIE_Y_1931_to_CIE_Y_2006(display_black),
+                      CIE_Y_1931_to_CIE_Y_2006(display_white));
 
   // Massage chroma
   Ych_final = filmic_desaturate_v4(Ych_original, Ych_final, saturation);
   Ych_final = gamut_check_Yrg(Ych_final);
   o = Ych_to_pipe_RGB(Ych_final, matrix_out);
+
+  // Now, it is still possible that one channel > display white or < display black because of saturation.
+  // We have already clipped Y, so we know that any problem now is caused by c
+  o = gamut_check_RGB(o, Ych_final, matrix_in, matrix_out, display_black, display_white);
+
   return o;
 }
 
@@ -430,12 +524,10 @@ static inline float4 filmic_split_v4(const float4 i,
                                      const float latitude_min, const float latitude_max, const float output_power,
                                      const dt_iop_filmicrgb_colorscience_type_t colorscience_version,
                                      const dt_iop_filmicrgb_curve_type_t type[2],
-                                     constant const float *const matrix_in, constant const float *const matrix_out)
+                                     constant const float *const matrix_in, constant const float *const matrix_out,
+                                     const float display_black, const float display_white)
 
 {
-  // Save Ych in Kirk/Filmlight Yrg
-  float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
-
   float *input = (float *)&i;
   float4 o;
   float *output = (float *)&o;
@@ -446,25 +538,35 @@ static inline float4 filmic_split_v4(const float4 i,
 
     // Filmic S curve on the max RGB
     // Apply the transfer function of the display
-    o[c] = native_powr(clamp(filmic_spline(o[c], M1, M2, M3, M4, M5, latitude_min, latitude_max, type), 0.0f, 1.0f), output_power);
+    o[c] = native_powr(clamp(filmic_spline(o[c], M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
+                       display_black,
+                       display_white), output_power);
   }
+
+  // Save Ych in Kirk/Filmlight Yrg
+  float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
 
   // Get final Ych in Kirk/Filmlight Yrg
   float4 Ych_final = pipe_RGB_to_Ych(o, matrix_in);
 
-  // Force final hue to original
+  // Force final hue and chroma to original
   Ych_final.z = Ych_original.z;
+  Ych_final.y = fmin(Ych_original.y, Ych_final.y);
 
   // Clip luminance
-  Ych_final.x = fmax(Ych_final.x, 0.f);
-
-  // Set chroma to 0 if luminance is 0
-  if(Ych_final.x == 0.f) Ych_final.y = 0.f;
+  Ych_final.x = clamp(Ych_final.x,
+                      CIE_Y_1931_to_CIE_Y_2006(display_black),
+                      CIE_Y_1931_to_CIE_Y_2006(display_white));
 
   // Massage chroma
   Ych_final = filmic_desaturate_v4(Ych_original, Ych_final, saturation);
   Ych_final = gamut_check_Yrg(Ych_final);
   o = Ych_to_pipe_RGB(Ych_final, matrix_out);
+
+  // Now, it is still possible that one channel > display white or < display black because of saturation.
+  // We have already clipped Y, so we know that any problem now is caused by c
+  o = gamut_check_RGB(o, Ych_final, matrix_in, matrix_out, display_black, display_white);
+
   return o;
 }
 
@@ -553,7 +655,8 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
                  const float latitude_min, const float latitude_max, const float output_power,
                  const dt_iop_filmicrgb_colorscience_type_t color_science,
                  const dt_iop_filmicrgb_curve_type_t type_1, const dt_iop_filmicrgb_curve_type_t type_2,
-                 constant const float *const matrix_in, constant const float *const matrix_out)
+                 constant const float *const matrix_in, constant const float *const matrix_out,
+                 const float display_black, const float display_white)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -590,7 +693,7 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
                           profile_info, lut, use_work_profile,
                           sigma_toe, sigma_shoulder, saturation,
                           M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power,
-                          color_science, type, matrix_in, matrix_out);
+                          color_science, type, matrix_in, matrix_out, display_black, display_white);
       break;
     }
   }
@@ -707,7 +810,8 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                  const dt_iop_filmicrgb_methods_type_t variant,
                  const dt_iop_filmicrgb_colorscience_type_t color_science,
                  const dt_iop_filmicrgb_curve_type_t type_1, const dt_iop_filmicrgb_curve_type_t type_2,
-                 constant const float *const matrix_in, constant const float *const matrix_out)
+                 constant const float *const matrix_in, constant const float *const matrix_out,
+                 const float display_black, const float display_white)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -745,7 +849,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                            profile_info, lut, use_work_profile,
                            sigma_toe, sigma_shoulder, saturation,
                            M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power, variant,
-                           color_science, type, matrix_in, matrix_out);
+                           color_science, type, matrix_in, matrix_out, display_black, display_white);
       break;
     }
   }
