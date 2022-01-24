@@ -3854,7 +3854,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
-  if(g->buf && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
+  if(g->buf && self->enabled)
   {
     // roi data of the preview pipe input buffer
 
@@ -3911,6 +3911,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_translate(cr, width / 2.0, height / 2.0);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
     cairo_line_to(cr, C[2][0], C[2][1]);
