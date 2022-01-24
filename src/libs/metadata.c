@@ -370,11 +370,16 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
         return TRUE;
         break;
       case GDK_KEY_Escape:
-        _update(self);
-        gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
-        d->editing = FALSE;
-        return TRUE;
+      {
+        if(dt_modifier_is(event->state, 0))
+        {
+          _update(self);
+          gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+          d->editing = FALSE;
+          return TRUE;
+        }
         break;
+      }
       case GDK_KEY_Tab:
       {
         _text_set_all_selected(GTK_TEXT_VIEW(textview), FALSE);
