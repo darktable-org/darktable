@@ -31,6 +31,9 @@ You are strongly advised to take a backup first.
 
 ## Other New Features And Changes
 
+- Speed up the retouch's heal tool by using better parallelism.
+
+- Add new variable $(DARKTABLE_VERSION).
 
 ## Bug Fixes
 
@@ -63,11 +66,69 @@ You are strongly advised to take a backup first.
 
 - Remove the double-click hint in crop module for leaving the editing.
 
+- Better layout for the stars and rejected icons.
+
+- Fix some refresh on the guides global menu. Ensure that after
+  changes done via shortcut the menu entries are properly displaying
+  the current settings.
+
+- Fix guides lines in the rotate and perspective module to ensure the
+  guides are inside the cropped area.
+
+- Fix Piwigo export for new version of Piwigo which are using a lounge
+  for new images. We now flush it to ensure the images get assigned to
+  their corresponding album.
+
+- Fix handling of circle/ellipse sources in retouch module. We can now
+  move it right after having placed it using a drag&drop.
+
+- Fix a bug in rotate and perspective which was preventing removing
+  the last manually drawn line.
+
+- Fix multiple issues in tagging module. Some UI interactions have
+  been reworked to be closer to what a user would expect.
+
+  Also, some new keys have been added:
+  <kbd>shift-enter</kbd> attach selected tag, reset entry and give it the focus
+  <kbd>shift-left</kbd> collapse all the tree
+
+- Fix multiple drag&drop issue on the lighttable. One of them could
+  crash darktable.
+
+- Fix a possible crash with very large up-scaling at export.
+
+- Rework the history items on thumbs tooltip.
+
+- Rework the GUI for the copy / paste of history items. The on/off
+  status has been removed from the labels, a specific column is now
+  showing the on/off status.
+
+- Fix some demosaicer issues specific to AMD OpenCL drivers.
+
+- Fix possible crash in styles lib module for style name containing a
+  slash.
+
+- Add option to enter the new module instance name automatically when
+  duplicating a preset.
+
+- Fix FilmicRGB graph update when used in the quick access panel.
+
+- Restore shortcut for duplicate virgin in lighttable.
+
+- Tag's preset append the tags instead of replacing them.
+
 ## Lua
 
 
 ## Notes
 
+- We now display a big red messages for cameras having missing
+  samples. The camera that were removed in 3.8.0 are back in darktable
+  for a short period of time.
+
+  If you see the red message then your camera is missing samples. If
+  you do nothing it will get removed for good in next darktable major
+  release.
 
 ## Changed Dependencies
 
