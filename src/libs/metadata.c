@@ -50,10 +50,8 @@ typedef struct dt_lib_metadata_t
   GtkWidget *swindow[DT_METADATA_NUMBER];
   GList *metadata_list[DT_METADATA_NUMBER];
   char *setting_name[DT_METADATA_NUMBER];
-  GtkGrid *metadata_grid;
   gboolean editing;
   GtkWidget *apply_button;
-  gboolean init_layout;
   GList *last_act_on;
 } dt_lib_metadata_t;
 
@@ -107,6 +105,14 @@ static void _text_set_italic(GtkTextView *textview, const gboolean italic)
     gtk_text_buffer_remove_tag_by_name(buffer, "italic", &start, &end);
 }
 
+static void _set_text_buffer(GtkTextBuffer *buffer, const char *text)
+{
+  gulong handler = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(buffer), "tv_handler"));
+  g_signal_handler_block(buffer, handler);
+  gtk_text_buffer_set_text(buffer, text, -1);
+  g_signal_handler_unblock(buffer, handler);
+}
+
 static void _fill_text_view(const uint32_t i, const uint32_t count, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
@@ -115,16 +121,16 @@ static void _fill_text_view(const uint32_t i, const uint32_t count, dt_lib_modul
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
   if(count == 0)  // no metadata value
   {
-    gtk_text_buffer_set_text(buffer, "", -1);
+    _set_text_buffer(buffer, "");
   }
   else if(count == 1) // images with different metadata values
   {
-    gtk_text_buffer_set_text(buffer, _("<leave unchanged>"), -1);
+    _set_text_buffer(buffer, _("<leave unchanged>"));
     multi = TRUE;
   }
   else // one or several images with the same metadata value
   {
-    gtk_text_buffer_set_text(buffer, (char *)d->metadata_list[i]->data, -1);
+    _set_text_buffer(buffer, (char *)d->metadata_list[i]->data);
   }
   g_object_set_data(G_OBJECT(d->textview[i]), "tv_multiple", GINT_TO_POINTER(multi));
   _text_set_italic(d->textview[i], multi);
@@ -282,67 +288,9 @@ static void _apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
   _write_metadata(NULL, self);
 }
 
-static int _get_first_visible_textview_index()
-{
-  for(int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    const gchar *name = dt_metadata_get_name_by_display_order(i);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    if(!hidden)
-      return i;
-  }
-  return -1;
-}
-
-static int _get_last_visible_textview_index()
-{
-  for(int i = DT_METADATA_NUMBER; i > 0; i--)
-  {
-    const gchar *name = dt_metadata_get_name_by_display_order(i - 1);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
-    if(!hidden)
-      return i - 1;
-  }
-  return -1;
-}
-
-static int _is_last_visible_textview(GtkWidget *textview)
-{
-  const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
-  const int j = _get_last_visible_textview_index();
-  if(i == j)
-    return _get_first_visible_textview_index();
-  else
-    return -1;
-}
-
-static int _is_first_visible_textview(GtkWidget *textview)
-{
-  const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
-  const int j = _get_first_visible_textview_index();
-  if(i == j)
-    return _get_last_visible_textview_index();
-  else
-    return -1;
-}
-
 static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-
-  if((event->keyval >= GDK_KEY_KP_0 && event->keyval <= GDK_KEY_KP_9) ||
-     (event->keyval >= GDK_KEY_0 && event->keyval <= GDK_KEY_9) ||
-     (event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_z) ||
-     (event->keyval >= GDK_KEY_A && event->keyval <= GDK_KEY_Z) ||
-     (event->keyval == GDK_KEY_space)) // this misses the accentuated letters
-  {
-    d->editing = TRUE;
-    g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
-  }
 
   if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
@@ -380,37 +328,27 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
         }
         break;
       }
-      case GDK_KEY_Tab:
-      {
-        _text_set_all_selected(GTK_TEXT_VIEW(textview), FALSE);
-        // workaround to come back to first field
-        const int first = _is_last_visible_textview(textview);
-        if(first != -1)
-        {
-          gtk_widget_grab_focus(GTK_WIDGET(d->textview[first]));
-          return TRUE;
-        }
-        break;
-      }
-      case GDK_KEY_ISO_Left_Tab:
-      {
-        _text_set_all_selected(GTK_TEXT_VIEW(textview), FALSE);
-        // workaround to come back to last field
-        const int last = _is_first_visible_textview(textview);
-        if(last != -1)
-        {
-          gtk_widget_grab_focus(GTK_WIDGET(d->textview[last]));
-          return TRUE;
-        }
-        d->editing = FALSE;
-        break;
-      }
       default:
         break;
     }
   }
 
   return gtk_text_view_im_context_filter_keypress(GTK_TEXT_VIEW(textview), event);
+}
+
+void _textbuffer_changed(GtkTextBuffer *textbuffer, dt_lib_module_t *self)
+{
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  d->editing = TRUE;
+  GtkTextView *textview = GINT_TO_POINTER(g_object_get_data(G_OBJECT(textbuffer), "buffer_tv"));
+  g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
+}
+
+gboolean _textview_focus(GtkWidget *widget, GtkDirectionType d, gpointer user_data)
+{
+  GtkWidget *target = g_object_get_data(G_OBJECT(widget), d == GTK_DIR_TAB_FORWARD ? "meta_next" : "meta_prev");
+  gtk_widget_grab_focus(target);
+  return TRUE;
 }
 
 static gboolean _got_focus(GtkWidget *textview, dt_lib_module_t *self)
@@ -421,7 +359,7 @@ static gboolean _got_focus(GtkWidget *textview, dt_lib_module_t *self)
     if(_is_leave_unchanged(GTK_TEXT_VIEW(textview)))
     {
       GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-      gtk_text_buffer_set_text(buffer, "", -1);
+      _set_text_buffer(buffer, "");
       _text_set_italic(GTK_TEXT_VIEW(textview), FALSE);
     }
     _text_set_all_selected(GTK_TEXT_VIEW(textview), TRUE);
@@ -436,7 +374,7 @@ static gboolean _lost_focus(GtkWidget *textview, GdkEventFocus *event, dt_lib_mo
   if(_is_leave_unchanged(GTK_TEXT_VIEW(textview)))
   {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-    gtk_text_buffer_set_text(buffer, _("<leave unchanged>"), -1);
+    _set_text_buffer(buffer, _("<leave unchanged>"));
     _text_set_italic(GTK_TEXT_VIEW(textview), TRUE);
   }
   return FALSE;
@@ -451,19 +389,32 @@ static void _update_layout(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
+  GtkWidget *first = NULL, *previous = NULL;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const gchar *name = dt_metadata_get_name_by_display_order(i);
-    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    g_free(setting);
     const int type = dt_metadata_get_type_by_display_order(i);
-    for(int j = 0; j < 2; j++)
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = type == DT_METADATA_TYPE_INTERNAL ||
+                            dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+
+    GtkWidget *label = gtk_grid_get_child_at(GTK_GRID(self->widget), 0, i);
+    gtk_widget_set_visible(label, !hidden);
+    GtkWidget *current = GTK_WIDGET(d->textview[i]);
+    gtk_widget_set_visible(gtk_widget_get_parent(current), !hidden);
+
+    if(!hidden)
     {
-      GtkWidget *w = gtk_grid_get_child_at(d->metadata_grid,j,i);
-      gtk_widget_show_all(w);
-      gtk_widget_set_no_show_all(w, TRUE);
-      gtk_widget_set_visible(w, (!hidden && type != DT_METADATA_TYPE_INTERNAL));
+      if(!first) first = previous = current;
+
+      g_object_set_data(G_OBJECT(previous), "meta_next", current);
+      g_object_set_data(G_OBJECT(current), "meta_prev", previous);
+
+      g_object_set_data(G_OBJECT(current), "meta_next", first);
+      g_object_set_data(G_OBJECT(first), "meta_prev", current);
+
+      previous = current;
     }
   }
 }
@@ -532,7 +483,7 @@ static gboolean _metadata_selected(GtkWidget *listview, GdkEventButton *event, d
         gchar *text;
         gtk_tree_model_get(liststore, &iter, 0, &text, -1);
         GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview);
-        gtk_text_buffer_set_text(buffer, text, -1);
+        _set_text_buffer(buffer, text);
         g_free(text);
         gtk_tree_path_free(path);
         gtk_dialog_response(d->dialog, GTK_RESPONSE_YES);
@@ -811,7 +762,7 @@ static gboolean _metadata_reset(GtkWidget *label, GdkEventButton *event, GtkWidg
   if(event->type == GDK_2BUTTON_PRESS)
   {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
-    gtk_text_buffer_set_text(buffer, "", -1);
+    _set_text_buffer(buffer, "");
 
     GdkEventKey e = {0};
     e.type = GDK_KEY_PRESS;
@@ -831,12 +782,9 @@ void gui_init(dt_lib_module_t *self)
 
   self->timeout_handle = 0;
 
-  GtkGrid *grid = (GtkGrid *)gtk_grid_new();
+  GtkGrid *grid = GTK_GRID(gtk_grid_new());
   self->widget = GTK_WIDGET(grid);
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  grid = (GtkGrid *)gtk_grid_new();
-  d->metadata_grid = grid;
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, 0, 1, 1);
 
   dt_gui_add_help_link(self->widget, dt_get_help_url("metadata"));
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
@@ -857,6 +805,8 @@ void gui_init(dt_lib_module_t *self)
               "\npress escape to exit the popup window"));
 
     GtkWidget *textview = gtk_text_view_new();
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+    g_object_set_data(G_OBJECT(buffer), "buffer_tv", GINT_TO_POINTER(textview));
     g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
     g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
     gtk_text_buffer_create_tag (gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview)),
@@ -870,7 +820,6 @@ void gui_init(dt_lib_module_t *self)
     gtk_grid_attach(grid, swindow, 1, i, 1, 1);
     gtk_widget_set_hexpand(swindow, TRUE);
     d->swindow[i] = swindow;
-    gtk_widget_set_size_request(d->swindow[i], -1, DT_PIXEL_APPLY_DPI(30));
 
     //workaround for a Gtk issue where the textview does not wrap correctly
     //while resizing the panel or typing into the widget
@@ -878,31 +827,28 @@ void gui_init(dt_lib_module_t *self)
     //see also discussions on https://github.com/darktable-org/darktable/pull/10584
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 
-
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
     gtk_widget_add_events(textview, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(textview, "key-press-event", G_CALLBACK(_key_pressed), self);
-    g_signal_connect(G_OBJECT(textview), "button-press-event", G_CALLBACK(_click_on_textview), self);
+    g_signal_connect(textview, "focus", G_CALLBACK(_textview_focus), self);
+    g_signal_connect(textview, "button-press-event", G_CALLBACK(_click_on_textview), self);
+    g_signal_connect(textview, "button-press-event", G_CALLBACK(_click_on_textview), self);
     g_signal_connect(textview, "grab-focus", G_CALLBACK(_got_focus), self);
     g_signal_connect(textview, "focus-out-event", G_CALLBACK(_lost_focus), self);
-    g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
-                     G_CALLBACK(_metadata_reset), textview);
+    g_signal_connect(labelev, "button-press-event", G_CALLBACK(_metadata_reset), textview);
+    gulong handler = g_signal_connect(buffer, "changed", G_CALLBACK(_textbuffer_changed), self);
+    g_object_set_data(G_OBJECT(buffer), "tv_handler", GINT_TO_POINTER(handler));
     d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
   }
 
-  d->init_layout = FALSE;
-
-  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-
   // apply button
   d->apply_button = dt_ui_button_new(_("apply"), _("write metadata for selected images"), NULL);
-  gtk_box_pack_start(hbox, d->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->apply_button), "clicked", G_CALLBACK(_apply_button_clicked), self);
 
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(hbox), 0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(d->apply_button), 0, DT_METADATA_NUMBER, 2, 1);
 
   /* lets signup for mouse over image change signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
@@ -913,6 +859,10 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_image_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
+
+  gtk_widget_show_all(self->widget);
+  gtk_widget_set_no_show_all(self->widget, TRUE);
+
   _update(self);
   _update_layout(self);
 }
