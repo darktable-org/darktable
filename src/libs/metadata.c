@@ -73,9 +73,9 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static gboolean _is_leave_unchanged(const char *text)
+static gboolean _is_leave_unchanged(GtkTextView *textview)
 {
-  return g_strcmp0(text, _("<leave unchanged>")) == 0;
+  return GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_multiple"));
 }
 
 static gchar *_get_buffer_text(GtkTextView *textview)
@@ -86,6 +86,14 @@ static gchar *_get_buffer_text(GtkTextView *textview)
   GtkTextIter end;
   gtk_text_buffer_get_end_iter(buffer, &end);
   return gtk_text_buffer_get_text(buffer, &start, &end, TRUE);
+}
+
+static void _text_set_all_selected(GtkTextView *textview, const gboolean selected)
+{
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
+  GtkTextIter start, end;
+  gtk_text_buffer_get_bounds(buffer, &start, &end);
+  gtk_text_buffer_select_range(buffer, selected ? &start : &end, &end);
 }
 
 static void _text_set_italic(GtkTextView *textview, const gboolean italic)
@@ -118,6 +126,7 @@ static void _fill_text_view(const uint32_t i, const uint32_t count, dt_lib_modul
   {
     gtk_text_buffer_set_text(buffer, (char *)d->metadata_list[i]->data, -1);
   }
+  g_object_set_data(G_OBJECT(d->textview[i]), "tv_multiple", GINT_TO_POINTER(multi));
   _text_set_italic(d->textview[i], multi);
 }
 
@@ -224,27 +233,37 @@ static void _append_kv(GList **l, const gchar *key, const gchar *value)
   *l = g_list_append(*l, (gchar *)value);
 }
 
-static void _write_metadata(dt_lib_module_t *self)
+static void _metadata_set_list(const int i, GList **key_value, dt_lib_metadata_t *d)
+{
+  const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+  gchar *metadata = _get_buffer_text(GTK_TEXT_VIEW(d->textview[i]));
+  if(metadata && !_is_leave_unchanged(GTK_TEXT_VIEW(d->textview[i])))
+    _append_kv(key_value, dt_metadata_get_key(keyid), metadata);
+}
+
+static void _write_metadata(GtkTextView *textview, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  d->editing = FALSE;
 
-  gchar *metadata[DT_METADATA_NUMBER];
   GList *key_value = NULL;
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  if(textview)
   {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-    metadata[i] = _get_buffer_text((GtkTextView *)d->textview[i]);
-    if(metadata[i] && !_is_leave_unchanged(metadata[i]))
-      _append_kv(&key_value, dt_metadata_get_key(keyid), metadata[i]);
+    const int i = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_index"));
+    _metadata_set_list(i, &key_value, d);
+  }
+  else
+  {
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+      _metadata_set_list(i, &key_value, d);
   }
 
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
   dt_metadata_set_list(imgs, key_value, TRUE);
 
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  for(GList *l = key_value; l; l = l->next)
   {
-    g_free(metadata[i]);
+    l = l->next;
+    g_free(l->data);  // metadata value
   }
   g_list_free(key_value);
 
@@ -258,7 +277,9 @@ static void _write_metadata(dt_lib_module_t *self)
 
 static void _apply_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
-  _write_metadata(self);
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  d->editing = FALSE;
+  _write_metadata(NULL, self);
 }
 
 static int _get_first_visible_textview_index()
@@ -318,7 +339,10 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
      (event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_z) ||
      (event->keyval >= GDK_KEY_A && event->keyval <= GDK_KEY_Z) ||
      (event->keyval == GDK_KEY_space)) // this misses the accentuated letters
+  {
     d->editing = TRUE;
+    g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
+  }
 
   if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
@@ -340,7 +364,8 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
     {
       case GDK_KEY_Return:
       case GDK_KEY_KP_Enter:
-        _write_metadata(self);
+        _write_metadata(GTK_TEXT_VIEW(textview), self);
+        _text_set_all_selected(GTK_TEXT_VIEW(textview), FALSE);
         d->editing = FALSE;
         return TRUE;
         break;
@@ -352,7 +377,7 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
         break;
       case GDK_KEY_Tab:
       {
-        _write_metadata(self);
+        _text_set_all_selected(GTK_TEXT_VIEW(textview), FALSE);
         // workaround to come back to first field
         const int first = _is_last_visible_textview(textview);
         if(first != -1)
@@ -364,7 +389,7 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
       }
       case GDK_KEY_ISO_Left_Tab:
       {
-        _write_metadata(self);
+        _text_set_all_selected(GTK_TEXT_VIEW(textview), FALSE);
         // workaround to come back to last field
         const int last = _is_first_visible_textview(textview);
         if(last != -1)
@@ -388,22 +413,27 @@ static gboolean _got_focus(GtkWidget *textview, dt_lib_module_t *self)
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   if(!d->editing)
   {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
-    gchar *text = _get_buffer_text(GTK_TEXT_VIEW(textview));
-    if(_is_leave_unchanged(text))
+    if(_is_leave_unchanged(GTK_TEXT_VIEW(textview)))
     {
+      GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
       gtk_text_buffer_set_text(buffer, "", -1);
       _text_set_italic(GTK_TEXT_VIEW(textview), FALSE);
     }
-    g_free(text);
+    _text_set_all_selected(GTK_TEXT_VIEW(textview), TRUE);
   }
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean _lost_focus(GtkWidget *textview, GdkEventFocus *event, dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   d->editing = FALSE;
+  if(_is_leave_unchanged(GTK_TEXT_VIEW(textview)))
+  {
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+    gtk_text_buffer_set_text(buffer, _("<leave unchanged>"), -1);
+    _text_set_italic(GTK_TEXT_VIEW(textview), TRUE);
+  }
   return FALSE;
 }
 
@@ -698,10 +728,7 @@ static gboolean _click_on_textview(GtkWidget *textview, GdkEventButton *event, d
 
   if(!(event->type == GDK_BUTTON_PRESS && event->button == 3)) return FALSE;
 
-  gchar *text = _get_buffer_text(GTK_TEXT_VIEW(textview));
-  const gboolean leave_unchanged = _is_leave_unchanged(text);
-  g_free(text);
-  if (!leave_unchanged) return FALSE;
+  if (!_is_leave_unchanged(GTK_TEXT_VIEW(textview))) return FALSE;
 
   GtkWidget *dialog = gtk_dialog_new();
   gtk_window_set_decorated (GTK_WINDOW(dialog), FALSE);
@@ -826,6 +853,7 @@ void gui_init(dt_lib_module_t *self)
 
     GtkWidget *textview = gtk_text_view_new();
     g_object_set_data(G_OBJECT(textview), "tv_index", GINT_TO_POINTER(i));
+    g_object_set_data(G_OBJECT(textview), "tv_multiple", GINT_TO_POINTER(FALSE));
     gtk_text_buffer_create_tag (gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview)),
                                 "italic", "style", PANGO_STYLE_ITALIC, NULL);
 
