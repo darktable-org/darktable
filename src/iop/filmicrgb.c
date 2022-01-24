@@ -2250,6 +2250,26 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
 
+  // See colorbalancergb.c for details
+  dt_colormatrix_t input_matrix;         // pipeline RGB -> LMS 2006
+  dt_colormatrix_t output_matrix;        // LMS 2006 -> pipeline RGB
+  dt_colormatrix_t export_input_matrix;  // output RGB -> LMS 2006
+  dt_colormatrix_t export_output_matrix; // LMS 2006 -> output RGB
+
+  const int use_output_profile = filmic_v4_prepare_matrices(input_matrix, output_matrix, export_input_matrix,
+                                                            export_output_matrix, work_profile, export_profile);
+
+  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
+  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
+  cl_mem export_input_matrix_cl = NULL;
+  cl_mem export_output_matrix_cl = NULL;
+
+  if(use_output_profile)
+  {
+    export_input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), export_input_matrix);
+    export_output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), export_output_matrix);
+  }
+
   // used to adjust noise level depending on size. Don't amplify noise if magnified > 100%
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
 
@@ -2364,26 +2384,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   mask = NULL;
 
   const dt_iop_filmic_rgb_spline_t spline = (dt_iop_filmic_rgb_spline_t)d->spline;
-
-  // See colorbalancergb.c for details
-  dt_colormatrix_t input_matrix;         // pipeline RGB -> LMS 2006
-  dt_colormatrix_t output_matrix;        // LMS 2006 -> pipeline RGB
-  dt_colormatrix_t export_input_matrix;  // output RGB -> LMS 2006
-  dt_colormatrix_t export_output_matrix; // LMS 2006 -> output RGB
-
-  const int use_output_profile = filmic_v4_prepare_matrices(input_matrix, output_matrix, export_input_matrix,
-                                                            export_output_matrix, work_profile, export_profile);
-
-  cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
-  cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
-  cl_mem export_input_matrix_cl = NULL;
-  cl_mem export_output_matrix_cl = NULL;
-
-  if(use_output_profile)
-  {
-    export_input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), export_input_matrix);
-    export_output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), export_output_matrix);
-  }
 
   const float white_display = powf(spline.y[4], d->output_power);
   const float black_display = powf(spline.y[0], d->output_power);
