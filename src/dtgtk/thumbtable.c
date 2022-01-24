@@ -2649,6 +2649,8 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
     newrowid = 1;
   else if(move == DT_THUMBTABLE_MOVE_END)
     newrowid = maxrowid;
+  else if(move == DT_THUMBTABLE_MOVE_LEAVE)
+    newrowid = -1;
 
   if(newrowid == baserowid) return FALSE;
 
@@ -2658,7 +2660,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   dt_control_set_mouse_over_id(imgid);
 
   // ensure the image is visible by moving the view if needed
-  _filemanager_ensure_rowid_visibility(table, newrowid);
+  if(newrowid != -1) _filemanager_ensure_rowid_visibility(table, newrowid);
 
   // if needed, we set the selection
   if(select && imgid > 0) dt_selection_select_range(darktable.selection, imgid);

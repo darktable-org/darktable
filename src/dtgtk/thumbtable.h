@@ -42,7 +42,8 @@ typedef enum dt_thumbtable_move_t
   DT_THUMBTABLE_MOVE_START,
   DT_THUMBTABLE_MOVE_END,
   DT_THUMBTABLE_MOVE_ALIGN,
-  DT_THUMBTABLE_MOVE_RESET_FIRST
+  DT_THUMBTABLE_MOVE_RESET_FIRST,
+  DT_THUMBTABLE_MOVE_LEAVE
 } dt_thumbtable_move_t;
 
 typedef struct dt_thumbtable_t

@@ -667,6 +667,7 @@ enum
   _ACTION_TABLE_MOVE_LEFTRIGHT = 1,
   _ACTION_TABLE_MOVE_UPDOWN = 2,
   _ACTION_TABLE_MOVE_PAGE = 3,
+  _ACTION_TABLE_MOVE_LEAVE = 4,
 };
 
 static float _action_process_move(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -701,6 +702,8 @@ static float _action_process_move(gpointer target, dt_action_element_t element, 
       move = DT_THUMBTABLE_MOVE_START;
     else if(action == _ACTION_TABLE_MOVE_STARTEND && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_THUMBTABLE_MOVE_END;
+    else if(action == _ACTION_TABLE_MOVE_LEAVE && effect == DT_ACTION_EFFECT_NEXT)
+      move = DT_THUMBTABLE_MOVE_LEAVE;
     else
     {
       // MIDDLE
@@ -1340,6 +1343,9 @@ void gui_init(dt_view_t *self)
   ac = dt_action_define(sa, N_("move"), N_("page"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_PAGE), &_action_def_move);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Page_Down, 0);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Page_Up, 0);
+
+  ac = dt_action_define(sa, N_("move"), N_("leave"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEAVE), &_action_def_move);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Escape, GDK_MOD1_MASK);
 
   // Preview key
   dt_accel_register_shortcut(sa, NC_("accel", "preview"), DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);
