@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2019-2021 darktable developers.
+   Copyright (C) 2019-2022 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -4204,9 +4204,19 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(!w || w == g->version)
   {
     if(p->version == DT_FILMIC_COLORSCIENCE_V1)
+    {
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("extreme luminance saturation"));
+      gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
+                                                   "specifically at extreme luminances.\n"
+                                                   "increase if shadows and/or highlights are under-saturated."));
+    }
     else if(p->version == DT_FILMIC_COLORSCIENCE_V2 || p->version == DT_FILMIC_COLORSCIENCE_V3)
+    {
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("mid-tones saturation"));
+      gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
+                                                   "specifically at medium luminances.\n"
+                                                   "increase if midtones are under-saturated."));
+    }
   }
 
   if(!w || w == g->reconstruct_bloom_vs_details)
