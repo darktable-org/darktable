@@ -1639,7 +1639,7 @@ static inline void gamut_check_RGB(dt_aligned_pixel_t RGB_in, dt_aligned_pixel_t
     // This gives us a whitest version of the current color.
     // It's not saturation-invariant.
     dt_aligned_pixel_t RGB_brightened = { 0.f };
-    for_each_channel(c, aligned(RGB_brightened)) RGB_brightened[c] = RGB_in[c] - min_pix;
+    for_each_channel(c, aligned(RGB_brightened)) RGB_brightened[c] = RGB_in[c] + fabsf(min_pix);
 
     dt_aligned_pixel_t Ych_brightened = { 0.f };
     pipe_RGB_to_Ych(RGB_brightened, matrix_in, Ych_brightened);
@@ -1750,7 +1750,7 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
 
     // Now, it is still possible that one channel > display white because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    gamut_check_RGB(pix_out, Ych_final, input_matrix, input_matrix, display_black, display_white);
+    gamut_check_RGB(pix_out, Ych_final, input_matrix, output_matrix, display_black, display_white);
   }
 }
 
