@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-18 13:53+0100\n"
+"POT-Creation-Date: 2022-01-24 15:36+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2059,8 +2059,8 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
-#: ../src/gui/guides.c:682 ../src/iop/basecurve.c:2100
-#: ../src/iop/channelmixerrgb.c:3977 ../src/iop/clipping.c:1918
+#: ../src/gui/guides.c:683 ../src/iop/basecurve.c:2100
+#: ../src/iop/channelmixerrgb.c:3978 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2129 ../src/iop/clipping.c:2145
 #: ../src/iop/lens.cc:2239 ../src/iop/retouch.c:422 ../src/libs/collect.c:1863
 #: ../src/libs/colorpicker.c:50 ../src/libs/export.c:1036
@@ -2185,7 +2185,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:5711
+#: ../src/iop/ashift.c:5723
 msgid "rotation"
 msgstr ""
 
@@ -2334,9 +2334,9 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../src/common/collection.c:1501 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
-#: ../src/gui/gtk.c:3016 ../src/gui/guides.c:700 ../src/iop/bilateral.cc:317
+#: ../src/gui/gtk.c:3016 ../src/gui/guides.c:701 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
-#: ../src/iop/channelmixerrgb.c:3932 ../src/iop/colorzones.c:2316
+#: ../src/iop/channelmixerrgb.c:3933 ../src/iop/colorzones.c:2316
 #: ../src/iop/temperature.c:1834 ../src/iop/temperature.c:1983
 #: ../src/libs/collect.c:1764
 msgid "red"
@@ -2345,9 +2345,9 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
 #: ../src/common/collection.c:1505 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:3017 ../src/gui/guides.c:701 ../src/iop/bilateral.cc:322
+#: ../src/gui/gtk.c:3017 ../src/gui/guides.c:702 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
-#: ../src/iop/channelmixerrgb.c:3933 ../src/iop/colorzones.c:2319
+#: ../src/iop/channelmixerrgb.c:3934 ../src/iop/colorzones.c:2319
 #: ../src/iop/temperature.c:1818 ../src/iop/temperature.c:1836
 #: ../src/iop/temperature.c:1984 ../src/libs/collect.c:1764
 msgid "green"
@@ -2358,7 +2358,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
 #: ../src/gui/gtk.c:3018 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
-#: ../src/iop/channelmixerrgb.c:3934 ../src/iop/colorzones.c:2321
+#: ../src/iop/channelmixerrgb.c:3935 ../src/iop/colorzones.c:2321
 #: ../src/iop/temperature.c:1838 ../src/iop/temperature.c:1985
 #: ../src/libs/collect.c:1764
 msgid "blue"
@@ -2892,7 +2892,7 @@ msgid "range extent"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:3979
+#: ../src/iop/channelmixerrgb.c:3980
 msgid "saturated colors"
 msgstr ""
 
@@ -2906,7 +2906,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1997 ../src/develop/blend_gui.c:2016
 #: ../src/develop/blend_gui.c:2051 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:3884 ../src/iop/colorbalance.c:2024
+#: ../src/iop/channelmixerrgb.c:3885 ../src/iop/colorbalance.c:2024
 #: ../src/iop/colorbalancergb.c:1875 ../src/iop/colorbalancergb.c:1876
 #: ../src/iop/colorbalancergb.c:1877 ../src/iop/colorbalancergb.c:1878
 #: ../src/iop/colorize.c:349 ../src/iop/colorreconstruction.c:1290
@@ -3396,7 +3396,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:295
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:470
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4207
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4208
 msgid "extreme luminance saturation"
 msgstr ""
 
@@ -3852,7 +3852,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:279
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
-#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3937
+#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3938
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:591 ../src/iop/soften.c:414
 #: ../src/iop/vignette.c:990 ../src/libs/history.c:882
 msgid "brightness"
@@ -4546,7 +4546,7 @@ msgid "rating"
 msgstr ""
 
 #: ../src/common/collection.c:1503 ../src/develop/lightroom.c:832
-#: ../src/gui/guides.c:702 ../src/iop/colorzones.c:2318
+#: ../src/gui/guides.c:703 ../src/iop/colorzones.c:2318
 #: ../src/iop/temperature.c:1824 ../src/libs/collect.c:1764
 msgid "yellow"
 msgstr ""
@@ -5224,7 +5224,7 @@ msgstr ""
 #. title
 #: ../src/common/metadata.c:48 ../src/imageio/format/pdf.c:576
 #: ../src/imageio/storage/gallery.c:181 ../src/imageio/storage/latex.c:181
-#: ../src/imageio/storage/piwigo.c:866 ../src/libs/tools/filter.c:101
+#: ../src/imageio/storage/piwigo.c:893 ../src/libs/tools/filter.c:101
 msgid "title"
 msgstr ""
 
@@ -6514,13 +6514,13 @@ msgid "sliders for gray value"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2003 ../src/develop/blend_gui.c:2030
-#: ../src/gui/guides.c:699 ../src/iop/channelmixerrgb.c:3938
+#: ../src/gui/guides.c:700 ../src/iop/channelmixerrgb.c:3939
 #: ../src/iop/levels.c:671
 msgid "gray"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2004 ../src/develop/blend_gui.c:2031
-#: ../src/iop/channelmixerrgb.c:3932 ../src/iop/denoiseprofile.c:3598
+#: ../src/iop/channelmixerrgb.c:3933 ../src/iop/denoiseprofile.c:3598
 #: ../src/iop/rawdenoise.c:908 ../src/iop/rgbcurve.c:1383
 #: ../src/iop/rgblevels.c:1013
 msgid "R"
@@ -6531,7 +6531,7 @@ msgid "sliders for red channel"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2007 ../src/develop/blend_gui.c:2034
-#: ../src/iop/channelmixerrgb.c:3933 ../src/iop/denoiseprofile.c:3599
+#: ../src/iop/channelmixerrgb.c:3934 ../src/iop/denoiseprofile.c:3599
 #: ../src/iop/rawdenoise.c:909 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:1014
 msgid "G"
@@ -6542,7 +6542,7 @@ msgid "sliders for green channel"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2010 ../src/develop/blend_gui.c:2037
-#: ../src/iop/channelmixerrgb.c:3934 ../src/iop/denoiseprofile.c:3600
+#: ../src/iop/channelmixerrgb.c:3935 ../src/iop/denoiseprofile.c:3600
 #: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1385
 #: ../src/iop/rgblevels.c:1015
 msgid "B"
@@ -6569,7 +6569,7 @@ msgid "sliders for chroma channel (of HSL)"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2020 ../src/develop/blend_gui.c:2047
-#: ../src/iop/atrous.c:1739 ../src/iop/channelmixerrgb.c:3890
+#: ../src/iop/atrous.c:1739 ../src/iop/channelmixerrgb.c:3891
 #: ../src/iop/colorbalancergb.c:1879 ../src/iop/colorbalancergb.c:1880
 #: ../src/iop/colorbalancergb.c:1881 ../src/iop/colorbalancergb.c:1882
 #: ../src/iop/colorbalancergb.c:1889 ../src/iop/colorbalancergb.c:1890
@@ -7181,24 +7181,24 @@ msgstr ""
 msgid "feather size: %3.2f%%"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1323
+#: ../src/develop/masks/circle.c:1331
 msgid "[CIRCLE] change size"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1324
+#: ../src/develop/masks/circle.c:1332
 msgid "[CIRCLE] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1325
+#: ../src/develop/masks/circle.c:1333
 msgid "[CIRCLE] change feather size"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1345
+#: ../src/develop/masks/circle.c:1353
 #, c-format
 msgid "circle #%d"
 msgstr ""
 
-#: ../src/develop/masks/circle.c:1353 ../src/develop/masks/path.c:3147
+#: ../src/develop/masks/circle.c:1361 ../src/develop/masks/path.c:3147
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -7210,39 +7210,39 @@ msgstr ""
 msgid "rotation: %3.f°"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2141
+#: ../src/develop/masks/ellipse.c:2148
 msgid "[ELLIPSE] change size"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2142
+#: ../src/develop/masks/ellipse.c:2149
 msgid "[ELLIPSE] change opacity"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2143
+#: ../src/develop/masks/ellipse.c:2150
 msgid "[ELLIPSE] switch feathering mode"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2144
+#: ../src/develop/masks/ellipse.c:2151
 msgid "[ELLIPSE] rotate shape"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2150
+#: ../src/develop/masks/ellipse.c:2157
 #, c-format
 msgid "ellipse #%d"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2179
+#: ../src/develop/masks/ellipse.c:2186
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2182
+#: ../src/develop/masks/ellipse.c:2189
 msgid "<b>rotate</b>: ctrl+drag"
 msgstr ""
 
-#: ../src/develop/masks/ellipse.c:2185
+#: ../src/develop/masks/ellipse.c:2192
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
@@ -7482,9 +7482,9 @@ msgstr ""
 msgid "grouped images"
 msgstr ""
 
-#: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1414
-#: ../src/iop/ashift.c:5804 ../src/iop/ashift.c:5871 ../src/iop/ashift.c:5872
-#: ../src/iop/ashift.c:5873
+#: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1435
+#: ../src/iop/ashift.c:5816 ../src/iop/ashift.c:5883 ../src/iop/ashift.c:5884
+#: ../src/iop/ashift.c:5885
 msgid "fit"
 msgstr ""
 
@@ -7821,17 +7821,17 @@ msgstr ""
 msgid "pan"
 msgstr ""
 
-#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5419
-#: ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522 ../src/iop/ashift.c:5523
-#: ../src/iop/ashift.c:5872 ../src/iop/clipping.c:1920
+#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5431
+#: ../src/iop/ashift.c:5432 ../src/iop/ashift.c:5534 ../src/iop/ashift.c:5535
+#: ../src/iop/ashift.c:5884 ../src/iop/clipping.c:1920
 #: ../src/iop/clipping.c:2130 ../src/iop/clipping.c:2147
 #: ../src/views/darkroom.c:2620 ../src/views/lighttable.c:1332
 msgid "horizontal"
 msgstr ""
 
-#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5419
-#: ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522 ../src/iop/ashift.c:5523
-#: ../src/iop/ashift.c:5871 ../src/iop/clipping.c:1919
+#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5431
+#: ../src/iop/ashift.c:5432 ../src/iop/ashift.c:5534 ../src/iop/ashift.c:5535
+#: ../src/iop/ashift.c:5883 ../src/iop/clipping.c:1919
 #: ../src/iop/clipping.c:2131 ../src/iop/clipping.c:2146
 #: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:1336
 msgid "vertical"
@@ -8302,7 +8302,7 @@ msgid ""
 "press up or down keys to cycle through matches"
 msgstr ""
 
-#: ../src/gui/accelerators.c:2138 ../src/gui/guides.c:689
+#: ../src/gui/accelerators.c:2138 ../src/gui/guides.c:690
 #: ../src/libs/export_metadata.c:191
 msgid "type"
 msgstr ""
@@ -8780,7 +8780,7 @@ msgstr ""
 msgid "metering"
 msgstr ""
 
-#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5723
+#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5735
 msgid "perspective"
 msgstr ""
 
@@ -8837,61 +8837,61 @@ msgstr ""
 msgid "global guide overlay settings"
 msgstr ""
 
-#: ../src/gui/guides.c:680 ../src/gui/guides.c:689 ../src/gui/guides.c:697
+#: ../src/gui/guides.c:681 ../src/gui/guides.c:690 ../src/gui/guides.c:698
 msgid "guide lines"
 msgstr ""
 
-#: ../src/gui/guides.c:680 ../src/iop/clipping.c:2128
+#: ../src/gui/guides.c:681 ../src/iop/clipping.c:2128
 msgid "flip"
 msgstr ""
 
-#: ../src/gui/guides.c:680
+#: ../src/gui/guides.c:681
 msgid "flip guides"
 msgstr ""
 
-#: ../src/gui/guides.c:683
+#: ../src/gui/guides.c:684
 msgid "horizontally"
 msgstr ""
 
-#: ../src/gui/guides.c:684
+#: ../src/gui/guides.c:685
 msgid "vertically"
 msgstr ""
 
-#: ../src/gui/guides.c:685 ../src/iop/ashift.c:5873 ../src/iop/clipping.c:2132
+#: ../src/gui/guides.c:686 ../src/iop/ashift.c:5885 ../src/iop/clipping.c:2132
 #: ../src/iop/colorbalance.c:1891
 msgid "both"
 msgstr ""
 
-#: ../src/gui/guides.c:690
+#: ../src/gui/guides.c:691
 msgid "setup guide lines"
 msgstr ""
 
-#: ../src/gui/guides.c:697
+#: ../src/gui/guides.c:698
 msgid "overlay color"
 msgstr ""
 
-#: ../src/gui/guides.c:697
+#: ../src/gui/guides.c:698
 msgid "set overlay color"
 msgstr ""
 
-#: ../src/gui/guides.c:703 ../src/iop/temperature.c:1822
+#: ../src/gui/guides.c:704 ../src/iop/temperature.c:1822
 msgid "cyan"
 msgstr ""
 
-#: ../src/gui/guides.c:704 ../src/iop/colorzones.c:2323
+#: ../src/gui/guides.c:705 ../src/iop/colorzones.c:2323
 #: ../src/iop/temperature.c:1820
 msgid "magenta"
 msgstr ""
 
-#: ../src/gui/guides.c:806 ../src/gui/guides.c:852
+#: ../src/gui/guides.c:807 ../src/gui/guides.c:853
 msgid "show guides"
 msgstr ""
 
-#: ../src/gui/guides.c:861
+#: ../src/gui/guides.c:862
 msgid "show guide overlay when this module has focus"
 msgstr ""
 
-#: ../src/gui/guides.c:863
+#: ../src/gui/guides.c:864
 msgid ""
 "change global guide settings\n"
 "note that these settings are applied globally and will impact any module "
@@ -9062,7 +9062,7 @@ msgstr ""
 msgid "maker"
 msgstr ""
 
-#: ../src/gui/preferences.c:842 ../src/iop/ashift.c:5876
+#: ../src/gui/preferences.c:842 ../src/iop/ashift.c:5888
 #: ../src/iop/basicadj.c:633 ../src/iop/borders.c:1050 ../src/iop/levels.c:640
 #: ../src/iop/rgblevels.c:1066
 msgid "auto"
@@ -9557,7 +9557,7 @@ msgstr ""
 
 #: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:332
 #: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:349
-#: ../src/imageio/storage/gallery.c:388 ../src/imageio/storage/piwigo.c:976
+#: ../src/imageio/storage/gallery.c:388 ../src/imageio/storage/piwigo.c:1019
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr ""
@@ -9882,144 +9882,144 @@ msgstr ""
 msgid "enter the title of the book"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:457
+#: ../src/imageio/storage/piwigo.c:477
 msgid "authenticated"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:465 ../src/imageio/storage/piwigo.c:480
-#: ../src/imageio/storage/piwigo.c:492
+#: ../src/imageio/storage/piwigo.c:485 ../src/imageio/storage/piwigo.c:500
+#: ../src/imageio/storage/piwigo.c:512
 msgid "not authenticated"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:471
+#: ../src/imageio/storage/piwigo.c:491
 msgid "not authenticated, cannot reach server"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:517 ../src/imageio/storage/piwigo.c:599
+#: ../src/imageio/storage/piwigo.c:540 ../src/imageio/storage/piwigo.c:622
 msgid "create new album"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:600
+#: ../src/imageio/storage/piwigo.c:623
 msgid "---"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:641
+#: ../src/imageio/storage/piwigo.c:665
 msgid "cannot refresh albums"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:742
+#: ../src/imageio/storage/piwigo.c:769
 msgid "piwigo"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:767
+#: ../src/imageio/storage/piwigo.c:794
 msgid "accounts"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:784
+#: ../src/imageio/storage/piwigo.c:811
 msgid ""
 "the server name\n"
 "default protocol is https\n"
 "specify http:// if non secure server"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:789
+#: ../src/imageio/storage/piwigo.c:816
 msgid "server"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:801
+#: ../src/imageio/storage/piwigo.c:828
 msgid "user"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:813
+#: ../src/imageio/storage/piwigo.c:840
 msgid "password"
 msgstr ""
 
 #. login button
-#: ../src/imageio/storage/piwigo.c:818
+#: ../src/imageio/storage/piwigo.c:845
 msgid "login"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:819
+#: ../src/imageio/storage/piwigo.c:846
 msgid "piwigo login"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:834
+#: ../src/imageio/storage/piwigo.c:861
 msgid "visible to"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:835
+#: ../src/imageio/storage/piwigo.c:862
 msgid "everyone"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:836
+#: ../src/imageio/storage/piwigo.c:863
 msgid "contacts"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:837
+#: ../src/imageio/storage/piwigo.c:864
 msgid "friends"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:838
+#: ../src/imageio/storage/piwigo.c:865
 msgid "family"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:839
+#: ../src/imageio/storage/piwigo.c:866
 msgid "you"
 msgstr ""
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:847
+#: ../src/imageio/storage/piwigo.c:874
 msgid "album"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:853
+#: ../src/imageio/storage/piwigo.c:880
 msgid "refresh album list"
 msgstr ""
 
 #. Album title
-#: ../src/imageio/storage/piwigo.c:871
+#: ../src/imageio/storage/piwigo.c:898
 msgid "new album"
 msgstr ""
 
 #. parent album list
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:879
+#: ../src/imageio/storage/piwigo.c:906
 msgid "parent album"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:883
+#: ../src/imageio/storage/piwigo.c:910
 msgid "click login button to start"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:995
+#: ../src/imageio/storage/piwigo.c:1038
 msgid "cannot create a new piwigo album!"
 msgstr ""
 
-#: ../src/imageio/storage/piwigo.c:1004
+#: ../src/imageio/storage/piwigo.c:1047
 msgid "could not upload to piwigo!"
 msgstr ""
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/piwigo.c:1033
+#: ../src/imageio/storage/piwigo.c:1076
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/iop/ashift.c:120
+#: ../src/iop/ashift.c:121
 msgid "rotate and perspective"
 msgstr ""
 
-#: ../src/iop/ashift.c:125
+#: ../src/iop/ashift.c:126
 msgid "rotation|keystone|distortion|crop|reframe"
 msgstr ""
 
-#: ../src/iop/ashift.c:130
+#: ../src/iop/ashift.c:131
 msgid "rotate or distort perspective"
 msgstr ""
 
-#: ../src/iop/ashift.c:131 ../src/iop/channelmixer.c:139
+#: ../src/iop/ashift.c:132 ../src/iop/channelmixer.c:139
 #: ../src/iop/channelmixerrgb.c:208 ../src/iop/clipping.c:320
 #: ../src/iop/colorbalance.c:159 ../src/iop/colorbalancergb.c:171
 #: ../src/iop/colorchecker.c:126 ../src/iop/colorcorrection.c:77
@@ -10027,7 +10027,7 @@ msgstr ""
 msgid "corrective or creative"
 msgstr ""
 
-#: ../src/iop/ashift.c:132 ../src/iop/ashift.c:134 ../src/iop/basicadj.c:147
+#: ../src/iop/ashift.c:133 ../src/iop/ashift.c:135 ../src/iop/basicadj.c:147
 #: ../src/iop/bilateral.cc:100 ../src/iop/bilateral.cc:102
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:209
 #: ../src/iop/channelmixerrgb.c:211 ../src/iop/clipping.c:321
@@ -10045,120 +10045,120 @@ msgstr ""
 msgid "linear, RGB, scene-referred"
 msgstr ""
 
-#: ../src/iop/ashift.c:133 ../src/iop/borders.c:189 ../src/iop/clipping.c:322
+#: ../src/iop/ashift.c:134 ../src/iop/borders.c:189 ../src/iop/clipping.c:322
 #: ../src/iop/crop.c:141 ../src/iop/flip.c:106 ../src/iop/liquify.c:298
 msgid "geometric, RGB"
 msgstr ""
 
-#: ../src/iop/ashift.c:2672
+#: ../src/iop/ashift.c:2673
 msgid "automatic cropping failed"
 msgstr ""
 
-#: ../src/iop/ashift.c:3032 ../src/iop/ashift.c:3082 ../src/iop/ashift.c:3129
+#: ../src/iop/ashift.c:3040 ../src/iop/ashift.c:3090 ../src/iop/ashift.c:3137
 msgid "data pending - please repeat"
 msgstr ""
 
-#: ../src/iop/ashift.c:3041
+#: ../src/iop/ashift.c:3049
 msgid "could not detect structural data in image"
 msgstr ""
 
-#: ../src/iop/ashift.c:3052
+#: ../src/iop/ashift.c:3060
 msgid "could not run outlier removal"
 msgstr ""
 
-#: ../src/iop/ashift.c:3212
+#: ../src/iop/ashift.c:3220
 #, c-format
 msgid ""
 "not enough structure for automatic correction\n"
 "minimum %d lines in each relevant direction"
 msgstr ""
 
-#: ../src/iop/ashift.c:3218
+#: ../src/iop/ashift.c:3226
 msgid "automatic correction failed, please correct manually"
 msgstr ""
 
 #. if count > MAX_SAVED_LINES we alert that the next lines won't be saved in params
 #. but they still may be used for the current section (that's why we still allow them)
-#: ../src/iop/ashift.c:4698
+#: ../src/iop/ashift.c:4710
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr ""
 
-#: ../src/iop/ashift.c:5419 ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522
-#: ../src/iop/ashift.c:5523
+#: ../src/iop/ashift.c:5431 ../src/iop/ashift.c:5432 ../src/iop/ashift.c:5534
+#: ../src/iop/ashift.c:5535
 #, c-format
 msgid "lens shift (%s)"
 msgstr ""
 
-#: ../src/iop/ashift.c:5783
+#: ../src/iop/ashift.c:5795
 msgid "perspective helpers"
 msgstr ""
 
-#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5874 ../src/iop/ashift.c:5875
-#: ../src/iop/ashift.c:5876
+#: ../src/iop/ashift.c:5802 ../src/iop/ashift.c:5886 ../src/iop/ashift.c:5887
+#: ../src/iop/ashift.c:5888
 msgid "structure"
 msgstr ""
 
-#: ../src/iop/ashift.c:5823
+#: ../src/iop/ashift.c:5835
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
 "the image"
 msgstr ""
 
-#: ../src/iop/ashift.c:5824 ../src/iop/ashift.c:5825
+#: ../src/iop/ashift.c:5836 ../src/iop/ashift.c:5837
 msgid "apply lens shift correction in one direction"
 msgstr ""
 
-#: ../src/iop/ashift.c:5826
+#: ../src/iop/ashift.c:5838
 msgid "shear the image along one diagonal"
 msgstr ""
 
-#: ../src/iop/ashift.c:5827 ../src/iop/clipping.c:2154
+#: ../src/iop/ashift.c:5839 ../src/iop/clipping.c:2154
 msgid "automatically crop to avoid black edges"
 msgstr ""
 
-#: ../src/iop/ashift.c:5828
+#: ../src/iop/ashift.c:5840
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
 msgstr ""
 
-#: ../src/iop/ashift.c:5830
+#: ../src/iop/ashift.c:5842
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 
-#: ../src/iop/ashift.c:5832
+#: ../src/iop/ashift.c:5844
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
 msgstr ""
 
-#: ../src/iop/ashift.c:5835
+#: ../src/iop/ashift.c:5847
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
 msgstr ""
 
-#: ../src/iop/ashift.c:5837
+#: ../src/iop/ashift.c:5849
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 
-#: ../src/iop/ashift.c:5838
+#: ../src/iop/ashift.c:5850
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
 
-#: ../src/iop/ashift.c:5841
+#: ../src/iop/ashift.c:5853
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
 "shift+click to only fit lens shift"
 msgstr ""
 
-#: ../src/iop/ashift.c:5844
+#: ../src/iop/ashift.c:5856
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -10167,7 +10167,7 @@ msgid ""
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
 
-#: ../src/iop/ashift.c:5850
+#: ../src/iop/ashift.c:5862
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -10175,43 +10175,43 @@ msgid ""
 "ctrl+shift+click for a combination of both methods"
 msgstr ""
 
-#: ../src/iop/ashift.c:5854
+#: ../src/iop/ashift.c:5866
 msgid "manually define perspective rectangle"
 msgstr ""
 
-#: ../src/iop/ashift.c:5855
+#: ../src/iop/ashift.c:5867
 msgid "manually draw structure lines"
 msgstr ""
 
-#: ../src/iop/ashift.c:5874
+#: ../src/iop/ashift.c:5886
 msgid "rectangle"
 msgstr ""
 
-#: ../src/iop/ashift.c:5875
+#: ../src/iop/ashift.c:5887
 msgid "lines"
 msgstr ""
 
-#: ../src/iop/ashift.c:5899 ../src/iop/clipping.c:3387
+#: ../src/iop/ashift.c:5911 ../src/iop/clipping.c:3392
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr ""
 
-#: ../src/iop/ashift.c:5900
+#: ../src/iop/ashift.c:5912
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr ""
 
-#: ../src/iop/ashift.c:5902
+#: ../src/iop/ashift.c:5914
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr ""
 
-#: ../src/iop/ashift.c:5904
+#: ../src/iop/ashift.c:5916
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr ""
 
-#: ../src/iop/ashift.c:5906
+#: ../src/iop/ashift.c:5918
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr ""
@@ -10401,7 +10401,7 @@ msgstr ""
 #: ../src/iop/atrous.c:1757 ../src/iop/colorbalancergb.c:1793
 #: ../src/iop/colorzones.c:2520 ../src/iop/filmicrgb.c:3887
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:935
-#: ../src/iop/toneequal.c:3197
+#: ../src/iop/toneequal.c:3200
 msgid "graph"
 msgstr ""
 
@@ -10831,7 +10831,7 @@ msgstr ""
 msgid "16:9"
 msgstr ""
 
-#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2168 ../src/iop/crop.c:1106
+#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2168 ../src/iop/crop.c:1111
 msgid "golden cut"
 msgstr ""
 
@@ -10851,7 +10851,7 @@ msgstr ""
 msgid "4:3"
 msgstr ""
 
-#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2158 ../src/iop/crop.c:1096
+#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2158 ../src/iop/crop.c:1101
 #: ../src/libs/collect.c:271
 msgid "square"
 msgstr ""
@@ -10888,7 +10888,7 @@ msgstr ""
 msgid "size of the border in percent of the full image"
 msgstr ""
 
-#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2255 ../src/iop/crop.c:1192
+#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2255 ../src/iop/crop.c:1197
 msgid "aspect"
 msgstr ""
 
@@ -11489,103 +11489,107 @@ msgid ""
 "this color will be turned into pure white by the adaptation."
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3867 ../src/iop/temperature.c:2013
+#: ../src/iop/channelmixerrgb.c:3867
+msgid "picker"
+msgstr ""
+
+#: ../src/iop/channelmixerrgb.c:3868 ../src/iop/temperature.c:2013
 msgid "set white balance to detected from area"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3871
+#: ../src/iop/channelmixerrgb.c:3872
 msgid "illuminant"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3877 ../src/iop/temperature.c:1948
+#: ../src/iop/channelmixerrgb.c:3878 ../src/iop/temperature.c:1948
 msgid "temperature"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3910
+#: ../src/iop/channelmixerrgb.c:3911
 msgid "input R"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3917
+#: ../src/iop/channelmixerrgb.c:3918
 msgid "input G"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3924
+#: ../src/iop/channelmixerrgb.c:3925
 msgid "input B"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3932
+#: ../src/iop/channelmixerrgb.c:3933
 msgid "output R"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3933
+#: ../src/iop/channelmixerrgb.c:3934
 msgid "output G"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3934
+#: ../src/iop/channelmixerrgb.c:3935
 msgid "output B"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3935
+#: ../src/iop/channelmixerrgb.c:3936
 msgid "colorfulness"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3935
+#: ../src/iop/channelmixerrgb.c:3936
 msgid "output colorfulness"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3937
+#: ../src/iop/channelmixerrgb.c:3938
 msgid "output brightness"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3938
+#: ../src/iop/channelmixerrgb.c:3939
 msgid "output gray"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3950
+#: ../src/iop/channelmixerrgb.c:3951
 msgid "calibrate with a color checker"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3953
+#: ../src/iop/channelmixerrgb.c:3954
 msgid "use a color checker target to autoset CAT and channels"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3959
+#: ../src/iop/channelmixerrgb.c:3960
 msgid "chart"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3960
+#: ../src/iop/channelmixerrgb.c:3961
 msgid "choose the vendor and the type of your chart"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3962
+#: ../src/iop/channelmixerrgb.c:3963
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3963
+#: ../src/iop/channelmixerrgb.c:3964
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3964
+#: ../src/iop/channelmixerrgb.c:3965
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3965
+#: ../src/iop/channelmixerrgb.c:3966
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3966
+#: ../src/iop/channelmixerrgb.c:3967
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3967
+#: ../src/iop/channelmixerrgb.c:3968
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3970
+#: ../src/iop/channelmixerrgb.c:3971
 msgid "optimize for"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3971
+#: ../src/iop/channelmixerrgb.c:3972
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -11595,54 +11599,54 @@ msgid ""
 "the others are special behaviours to protect some hues"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3978
+#: ../src/iop/channelmixerrgb.c:3979
 msgid "neutral colors"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3980
+#: ../src/iop/channelmixerrgb.c:3981
 msgid "skin and soil colors"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3981
+#: ../src/iop/channelmixerrgb.c:3982
 msgid "foliage colors"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3982
+#: ../src/iop/channelmixerrgb.c:3983
 msgid "sky and water colors"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3983
+#: ../src/iop/channelmixerrgb.c:3984
 msgid "average delta E"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3984
+#: ../src/iop/channelmixerrgb.c:3985
 msgid "maximum delta E"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3988
+#: ../src/iop/channelmixerrgb.c:3989
 msgid "patch scale"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3989
+#: ../src/iop/channelmixerrgb.c:3990
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
 "the patches frame cast a shadows on the edges of the patch."
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:3997
+#: ../src/iop/channelmixerrgb.c:3998
 msgid "the delta E is using the CIE 2000 formula."
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4003
+#: ../src/iop/channelmixerrgb.c:4004
 msgid "accept the computed profile and set it in the module"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4008
+#: ../src/iop/channelmixerrgb.c:4009
 msgid "recompute the profile"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4013
+#: ../src/iop/channelmixerrgb.c:4014
 msgid "check the output delta E"
 msgstr ""
 
@@ -11686,16 +11690,16 @@ msgstr ""
 msgid "change the framing and correct the perspective"
 msgstr ""
 
-#: ../src/iop/clipping.c:1412 ../src/iop/clipping.c:2157 ../src/iop/crop.c:450
-#: ../src/iop/crop.c:1095
+#: ../src/iop/clipping.c:1412 ../src/iop/clipping.c:2157 ../src/iop/crop.c:455
+#: ../src/iop/crop.c:1100
 msgid "original image"
 msgstr ""
 
-#: ../src/iop/clipping.c:1716 ../src/iop/crop.c:754
+#: ../src/iop/clipping.c:1716 ../src/iop/crop.c:759
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr ""
 
-#: ../src/iop/clipping.c:1732 ../src/iop/crop.c:770
+#: ../src/iop/clipping.c:1732 ../src/iop/crop.c:775
 msgid "invalid ratio format. it should be a positive number"
 msgstr ""
 
@@ -11735,81 +11739,81 @@ msgstr ""
 msgid "set perspective correction for your image"
 msgstr ""
 
-#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1094
+#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1099
 msgid "freehand"
 msgstr ""
 
-#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1097
+#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1102
 msgid "10:8 in print"
 msgstr ""
 
-#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1098
+#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1103
 msgid "5:4, 4x5, 8x10"
 msgstr ""
 
-#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1099
+#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1104
 msgid "11x14"
 msgstr ""
 
-#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1100
+#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1105
 msgid "8.5x11, letter"
 msgstr ""
 
-#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1101
+#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1106
 msgid "4:3, VGA, TV"
 msgstr ""
 
-#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1102
+#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1107
 msgid "5x7"
 msgstr ""
 
-#: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1103
+#: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1108
 msgid "ISO 216, DIN 476, A4"
 msgstr ""
 
-#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1104
+#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1109
 msgid "3:2, 4x6, 35mm"
 msgstr ""
 
-#: ../src/iop/clipping.c:2167 ../src/iop/crop.c:1105
+#: ../src/iop/clipping.c:2167 ../src/iop/crop.c:1110
 msgid "16:10, 8x5"
 msgstr ""
 
-#: ../src/iop/clipping.c:2169 ../src/iop/crop.c:1107
+#: ../src/iop/clipping.c:2169 ../src/iop/crop.c:1112
 msgid "16:9, HDTV"
 msgstr ""
 
-#: ../src/iop/clipping.c:2170 ../src/iop/crop.c:1108
+#: ../src/iop/clipping.c:2170 ../src/iop/crop.c:1113
 msgid "widescreen"
 msgstr ""
 
-#: ../src/iop/clipping.c:2171 ../src/iop/crop.c:1109
+#: ../src/iop/clipping.c:2171 ../src/iop/crop.c:1114
 msgid "2:1, univisium"
 msgstr ""
 
-#: ../src/iop/clipping.c:2172 ../src/iop/crop.c:1110
+#: ../src/iop/clipping.c:2172 ../src/iop/crop.c:1115
 msgid "cinemascope"
 msgstr ""
 
-#: ../src/iop/clipping.c:2173 ../src/iop/crop.c:1111
+#: ../src/iop/clipping.c:2173 ../src/iop/crop.c:1116
 msgid "21:9"
 msgstr ""
 
-#: ../src/iop/clipping.c:2174 ../src/iop/crop.c:1112
+#: ../src/iop/clipping.c:2174 ../src/iop/crop.c:1117
 msgid "anamorphic"
 msgstr ""
 
-#: ../src/iop/clipping.c:2175 ../src/iop/crop.c:1113
+#: ../src/iop/clipping.c:2175 ../src/iop/crop.c:1118
 msgid "3:1, panorama"
 msgstr ""
 
-#: ../src/iop/clipping.c:2207 ../src/iop/clipping.c:2219 ../src/iop/crop.c:1145
-#: ../src/iop/crop.c:1157
+#: ../src/iop/clipping.c:2207 ../src/iop/clipping.c:2219 ../src/iop/crop.c:1150
+#: ../src/iop/crop.c:1162
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 
-#: ../src/iop/clipping.c:2266 ../src/iop/crop.c:1203
+#: ../src/iop/clipping.c:2266 ../src/iop/crop.c:1208
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -11817,23 +11821,23 @@ msgid ""
 "decimal format"
 msgstr ""
 
-#: ../src/iop/clipping.c:2273 ../src/iop/crop.c:1213
+#: ../src/iop/clipping.c:2273 ../src/iop/crop.c:1218
 msgid "margins"
 msgstr ""
 
-#: ../src/iop/clipping.c:2279 ../src/iop/crop.c:1241
+#: ../src/iop/clipping.c:2279 ../src/iop/crop.c:1246
 msgid "the left margin cannot overlap with the right margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2286 ../src/iop/crop.c:1248
+#: ../src/iop/clipping.c:2286 ../src/iop/crop.c:1253
 msgid "the right margin cannot overlap with the left margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2292 ../src/iop/crop.c:1254
+#: ../src/iop/clipping.c:2292 ../src/iop/crop.c:1259
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr ""
 
-#: ../src/iop/clipping.c:2299 ../src/iop/crop.c:1261
+#: ../src/iop/clipping.c:2299 ../src/iop/crop.c:1266
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr ""
 
@@ -11868,16 +11872,16 @@ msgid ""
 "<b>straighten</b>: right-drag, <b>commit</b>: double click"
 msgstr ""
 
-#: ../src/iop/clipping.c:3373 ../src/iop/crop.c:1665
+#: ../src/iop/clipping.c:3378 ../src/iop/crop.c:1670
 msgid "commit"
 msgstr ""
 
-#: ../src/iop/clipping.c:3384 ../src/iop/crop.c:1676
+#: ../src/iop/clipping.c:3389 ../src/iop/crop.c:1681
 #, c-format
 msgid "[%s on borders] crop"
 msgstr ""
 
-#: ../src/iop/clipping.c:3386 ../src/iop/crop.c:1678
+#: ../src/iop/clipping.c:3391 ../src/iop/crop.c:1683
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr ""
@@ -12925,15 +12929,15 @@ msgstr ""
 msgid "change the framing"
 msgstr ""
 
-#: ../src/iop/crop.c:1088
+#: ../src/iop/crop.c:1093
 msgid "crop settings"
 msgstr ""
 
-#: ../src/iop/crop.c:1587
+#: ../src/iop/crop.c:1592
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 
-#: ../src/iop/crop.c:1594
+#: ../src/iop/crop.c:1599
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -13992,7 +13996,7 @@ msgid ""
 "this has no effect on mid-tones."
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:4063
+#: ../src/iop/filmicrgb.c:4063 ../src/iop/filmicrgb.c:4209
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -14070,8 +14074,15 @@ msgid ""
 "this is useful to match natural sensor noise pattern.\n"
 msgstr ""
 
-#: ../src/iop/filmicrgb.c:4209
+#: ../src/iop/filmicrgb.c:4215
 msgid "mid-tones saturation"
+msgstr ""
+
+#: ../src/iop/filmicrgb.c:4216
+msgid ""
+"desaturates the output of the module\n"
+"specifically at medium luminances.\n"
+"increase if midtones are under-saturated."
 msgstr ""
 
 #: ../src/iop/finalscale.c:39
@@ -16387,15 +16398,15 @@ msgstr ""
 msgid "advanced"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3209
+#: ../src/iop/toneequal.c:3212
 msgid "double-click to reset the curve"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3213
+#: ../src/iop/toneequal.c:3216
 msgid "curve smoothing"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3214
+#: ../src/iop/toneequal.c:3217
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -16404,25 +16415,25 @@ msgid ""
 msgstr ""
 
 #. Masking options
-#: ../src/iop/toneequal.c:3223
+#: ../src/iop/toneequal.c:3226
 msgid "masking"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3227
+#: ../src/iop/toneequal.c:3230
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3230
+#: ../src/iop/toneequal.c:3233
 msgid "details"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3231
+#: ../src/iop/toneequal.c:3234
 msgid "preserve details"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3232
+#: ../src/iop/toneequal.c:3235
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -16436,20 +16447,20 @@ msgid ""
 "filter' methods"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3240
+#: ../src/iop/toneequal.c:3243
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3246
+#: ../src/iop/toneequal.c:3249
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
 "preview much slower if denoise profiled is used."
 msgstr ""
 
-#: ../src/iop/toneequal.c:3253
+#: ../src/iop/toneequal.c:3256
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -16458,32 +16469,32 @@ msgid ""
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3259
+#: ../src/iop/toneequal.c:3262
 msgid "mask post-processing"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3266
+#: ../src/iop/toneequal.c:3269
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
 "clipping occurs."
 msgstr ""
 
-#: ../src/iop/toneequal.c:3273
+#: ../src/iop/toneequal.c:3276
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3280
+#: ../src/iop/toneequal.c:3283
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
 "the magic wand will auto-adjust the average exposure"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3290
+#: ../src/iop/toneequal.c:3293
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -16492,7 +16503,7 @@ msgid ""
 "the magic wand will auto-adjust the contrast"
 msgstr ""
 
-#: ../src/iop/toneequal.c:3310 ../src/iop/toneequal.c:3314
+#: ../src/iop/toneequal.c:3313 ../src/iop/toneequal.c:3317
 msgid "display exposure mask"
 msgstr ""
 
