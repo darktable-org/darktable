@@ -29,7 +29,6 @@
 #include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
-#include "libs/tools/image_infos.h"
 #include "common/history.h"
 #include <complex.h>
 
@@ -1074,7 +1073,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   /* show all widgets */
   gtk_widget_show_all(d->history_box);
 
-  _lib_imageinfo_update_message(instance, self);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
 
   dt_pthread_mutex_unlock(&darktable.develop->history_mutex);
 }
