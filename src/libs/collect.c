@@ -1372,7 +1372,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 " GROUP BY date", where_ext);
         break;
       case DT_COLLECTION_PROP_TIME:
-        query = g_strdup_printf("SELECT datetime_taken AS date, 1, COUNT(*) AS count"
+        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 19) AS date, 1, COUNT(*) AS count"
                                 " FROM main.images AS mi"
                                 " WHERE datetime_taken IS NOT NULL AND %s"
                                 " GROUP BY date", where_ext);
