@@ -71,6 +71,8 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
+void _textbuffer_changed(GtkTextBuffer *textbuffer, dt_lib_module_t *self);
+
 static gboolean _is_leave_unchanged(GtkTextView *textview)
 {
   return GPOINTER_TO_INT(g_object_get_data(G_OBJECT(textview), "tv_multiple"));
@@ -107,10 +109,9 @@ static void _text_set_italic(GtkTextView *textview, const gboolean italic)
 
 static void _set_text_buffer(GtkTextBuffer *buffer, const char *text)
 {
-  gulong handler = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(buffer), "tv_handler"));
-  g_signal_handler_block(buffer, handler);
+  g_signal_handlers_block_matched(buffer, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _textbuffer_changed, NULL);
   gtk_text_buffer_set_text(buffer, text, -1);
-  g_signal_handler_unblock(buffer, handler);
+  g_signal_handlers_unblock_matched(buffer, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _textbuffer_changed, NULL);
 }
 
 static void _fill_text_view(const uint32_t i, const uint32_t count, dt_lib_module_t *self)
@@ -837,8 +838,7 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(textview, "grab-focus", G_CALLBACK(_got_focus), self);
     g_signal_connect(textview, "focus-out-event", G_CALLBACK(_lost_focus), self);
     g_signal_connect(labelev, "button-press-event", G_CALLBACK(_metadata_reset), textview);
-    gulong handler = g_signal_connect(buffer, "changed", G_CALLBACK(_textbuffer_changed), self);
-    g_object_set_data(G_OBJECT(buffer), "tv_handler", GINT_TO_POINTER(handler));
+    g_signal_connect(buffer, "changed", G_CALLBACK(_textbuffer_changed), self);
     d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);

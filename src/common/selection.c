@@ -494,24 +494,6 @@ GList *dt_selection_get_list(struct dt_selection_t *selection, const gboolean on
   return l;
 }
 
-// return the first selected imgid
-const int dt_selection_get_first(struct dt_selection_t *selection)
-{
-  int imgid = -1;
-  gchar *query = dt_selection_get_list_query(selection, TRUE, FALSE);
-
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  g_free(query);
-  if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    imgid = sqlite3_column_int(stmt, 0);
-  }
-  if(stmt) sqlite3_finalize(stmt);
-
-  return imgid;
-}
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
