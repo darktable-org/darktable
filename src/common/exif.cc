@@ -1674,7 +1674,13 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         "Exif.Image.StripOffsets",
         "Exif.Image.RowsPerStrip",
         "Exif.Image.StripByteCounts",
+        "Exif.Image.TileWidth",
+        "Exif.Image.TileLength",
+        "Exif.Image.TileOffsets",
+        "Exif.Image.TileByteCounts",
         "Exif.Image.PlanarConfiguration",
+        "Exif.Image.InterColorProfile",
+        "Exif.Image.TIFFEPStandardID",
         "Exif.Image.DNGVersion",
         "Exif.Image.DNGBackwardVersion"
       };
