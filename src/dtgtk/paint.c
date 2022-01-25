@@ -1515,11 +1515,6 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
     set_color(cr, colorlabels[color]);
   }
-  else if(color == 7)
-  {
-    // don't fill
-    cairo_set_source_rgba(cr, 0, 0, 0, 0);
-  }
   else
   {
     cairo_set_line_width(cr, 0.12);

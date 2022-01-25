@@ -2298,7 +2298,8 @@ Details :
 }
 
 /* Set border color around thumbnails */
-.dt_group_left #thumb_back
+.dt_group_left #thumb_back,
+#thumb_main.dt_group_left:selected #thumb_back
 {
   border-left: 0.07em solid rgb(255, 187, 0);
 }
