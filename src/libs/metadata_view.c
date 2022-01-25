@@ -27,7 +27,6 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/accelerators.h"
-#include "gui/preferences_dialogs.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -767,7 +766,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       case md_exif_datetime:
       {
         char datetime[200];
-        const gboolean milliseconds = dt_conf_get_bool("plugins/lighttable/metadata_view/show_milliseconds");
+        const gboolean milliseconds = dt_conf_get_bool("lighttable/ui/milliseconds");
         const gboolean valid = dt_datetime_img_to_local(datetime, sizeof(datetime), img, milliseconds);
         _metadata_update_value(md_exif_datetime, valid ? datetime : NODATA_STRING, self);
       }
@@ -1204,8 +1203,6 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
                                        GTK_DIALOG_DESTROY_WITH_PARENT, _("default"), GTK_RESPONSE_ACCEPT,
                                        _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
-
-  dt_prefs_init_dialog_metadata_view(dialog);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
