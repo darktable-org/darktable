@@ -3938,7 +3938,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_stroke(cr);
 
     // we draw the guides correctly scaled here instead of using the darkroom expose callback
-    dt_guides_draw(cr, C[0][0], C[0][1], C[2][0] - C[0][0], C[1][1] - C[0][1], zoom_scale);
+
+    const float cx = fminf(C[0][0], fminf(C[1][0], fminf(C[2][0], C[3][0])));
+    const float cy = fminf(C[0][1], fminf(C[1][1], fminf(C[2][1], C[3][1])));
+    const float cw = fmaxf(C[0][0], fmaxf(C[1][0], fmaxf(C[2][0], C[3][0]))) - cx;
+    const float ch = fmaxf(C[0][1], fmaxf(C[1][1], fmaxf(C[2][1], C[3][1]))) - cy;
+    dt_guides_draw(cr, cx, cy, cw, ch, zoom_scale);
 
     // if adjusting crop, draw indicator
     if(g->adjust_crop && p->cropmode == ASHIFT_CROP_ASPECT)
