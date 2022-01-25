@@ -87,19 +87,23 @@ gboolean dt_datetime_unix_lt_to_local(char *local, const size_t local_size, cons
     return FALSE;
 }
 
-gboolean dt_datetime_img_to_local(char *local, const size_t local_size, const dt_image_t *img)
+gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
+                                  const dt_image_t *img, const gboolean milliseconds)
 {
   gboolean res = FALSE;
   GDateTime *gdt = dt_datetime_exif_to_gdatetime(img->exif_datetime_taken, darktable.utc_tz);
 
   if(gdt)
   {
-    char *sdt = g_date_time_format(gdt, "%a %x %X %f");
+    char *sdt = g_date_time_format(gdt, milliseconds ? "%a %x %X %f" : "%a %x %X");
     if(sdt)
     { // keep only milliseconds
-      char *p = g_strrstr(sdt, " ");
-      for(int i = 0; i < 4 && *p != '\0'; i++) p++;
-      *p = '\0';
+      if(milliseconds)
+      {
+        char *p = g_strrstr(sdt, " ");
+        for(int i = 0; i < 4 && *p != '\0'; i++) p++;
+        *p = '\0';
+      }
       g_strlcpy(local, sdt, local_size);
       g_free(sdt);
       res = TRUE;
