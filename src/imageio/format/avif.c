@@ -453,8 +453,16 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   avifImageRGBToYUV(image, &rgb);
 
+  if(exif && exif_len > 0)
+    avifImageSetMetadataExif(image, exif, exif_len);
 
-  avifImageSetMetadataExif(image, exif, exif_len);
+  /* Workaround until exiv2 implements AVIF write support */
+  char *xmp_string = dt_exif_xmp_read_string(imgid);
+  if(xmp_string && (size_t xmp_len = strlen(xmp_string)) > 0)
+  {
+    avifImageSetMetadataXMP(image, xmp_string, xmp_len + 1);
+    g_free(xmp_string);
+  }
 
   encoder = avifEncoderCreate();
   if(encoder == NULL)
@@ -688,11 +696,6 @@ const char *extension(dt_imageio_module_data_t *data)
 const char *name()
 {
   return _("AVIF (8/10/12-bit)");
-}
-
-int flags(struct dt_imageio_module_data_t *data)
-{
-  return FORMAT_FLAGS_SUPPORT_XMP;
 }
 
 static void bit_depth_changed(GtkWidget *widget, gpointer user_data)
