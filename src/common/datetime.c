@@ -89,28 +89,31 @@ gboolean dt_datetime_unix_lt_to_local(char *local, const size_t local_size, cons
 
 gboolean dt_datetime_img_to_local(char *local, const size_t local_size, const dt_image_t *img)
 {
-  struct tm tt = { 0 };
-  if(_datetime_exif_to_tm(img->exif_datetime_taken, &tt))
+  gboolean res = FALSE;
+  GDateTime *gdt = dt_datetime_exif_to_gdatetime(img->exif_datetime_taken, darktable.utc_tz);
+
+  if(gdt)
   {
-    const time_t timestamp = mktime(&tt);
-    return dt_datetime_unix_lt_to_local(local, local_size, &timestamp);
+    char *sdt = g_date_time_format(gdt, "%a %x %X %f");
+    if(sdt)
+    { // keep only milliseconds
+      char *p = g_strrstr(sdt, " ");
+      for(int i = 0; i < 4 && *p != '\0'; i++) p++;
+      *p = '\0';
+      g_strlcpy(local, sdt, local_size);
+      g_free(sdt);
+      res = TRUE;
+    }
+    else
+      res = FALSE;
+    g_date_time_unref(gdt);
   }
   else
   {
     g_strlcpy(local, img->exif_datetime_taken, local_size);
-    return TRUE;
+    res = TRUE;
   }
-}
-
-gboolean dt_datetime_exif_to_unix_lt(time_t *unix, const char *exif)
-{
-  struct tm tt= {0};
-  if(_datetime_exif_to_tm(exif, &tt))
-  {
-    *unix = mktime(&tt);
-    return TRUE;
-  }
-  return FALSE;
+  return res;
 }
 
 void dt_datetime_unix_lt_to_exif(char *exif, size_t exif_len, const time_t *unix)

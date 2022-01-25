@@ -48,8 +48,6 @@ gboolean dt_datetime_img_to_local(char *local, const size_t local_size, const dt
 // unix datetime to img cache datetime
 void dt_datetime_unix_lt_to_img(dt_image_t *img, const time_t *unix);
 
-// exif datetime string to unix datetime. Returns TRUE if OK.
-gboolean dt_datetime_exif_to_unix_lt(time_t *unix, const char *exif);
 // unix datetime to exif datetime
 void dt_datetime_unix_lt_to_exif(char *exif, size_t exif_len, const time_t *unix);
 
