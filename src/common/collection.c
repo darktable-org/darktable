@@ -179,6 +179,8 @@ void dt_collection_memory_update()
   g_free(ins_query);
 }
 
+#define DATETIME "(CASE WHEN LENGTH(datetime_taken) = 19 THEN datetime_taken || ',000' ELSE datetime_taken END) AS datetime_taken"
+
 static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, char **selq_pre)
 {
   const uint32_t tagid = collection->tagid;
@@ -187,12 +189,12 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, 
 
   *selq_pre = dt_util_dstrcat(*selq_pre,
                               "SELECT DISTINCT mi.id FROM (SELECT"
-                              "  id, group_id, film_id, filename, datetime_taken, "
+                              "  id, group_id, film_id, filename, %s, "
                               "  flags, version, %s position, aspect_ratio,"
                               "  maker, model, lens, aperture, exposure, focal_length,"
                               "  iso, import_timestamp, change_timestamp,"
                               "  export_timestamp, print_timestamp"
-                              "  FROM main.images AS mi %s%s WHERE ",
+                              "  FROM main.images AS mi %s%s WHERE ", DATETIME,
                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                               tagid ? " LEFT JOIN main.tagged_images AS ti"
                                       " ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -409,12 +411,12 @@ int dt_collection_update(const dt_collection_t *collection)
     snprintf(tag, sizeof(tag), "%d", tagid);
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
-                               "  id, group_id, film_id, filename, datetime_taken, "
+                               "  id, group_id, film_id, filename, %s, "
                                "  flags, version, %s position, aspect_ratio,"
                                "  maker, model, lens, aperture, exposure, focal_length,"
                                "  iso, import_timestamp, change_timestamp,"
                                "  export_timestamp, print_timestamp"
-                               "  FROM main.images AS mi %s%s ) AS mi ",
+                               "  FROM main.images AS mi %s%s ) AS mi ", DATETIME,
                                tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                                tagid ? " LEFT JOIN main.tagged_images AS ti"
                                        " ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -427,12 +429,12 @@ int dt_collection_update(const dt_collection_t *collection)
     snprintf(tag, sizeof(tag), "%d", tagid);
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
-                               "  id, group_id, film_id, filename, datetime_taken, "
+                               "  id, group_id, film_id, filename, %s, "
                                "  flags, version, %s position, aspect_ratio,"
                                "  maker, model, lens, aperture, exposure, focal_length,"
                                "  iso, import_timestamp, change_timestamp,"
                                "  export_timestamp, print_timestamp"
-                               "  FROM main.images AS mi %s%s ) AS mi WHERE ",
+                               "  FROM main.images AS mi %s%s ) AS mi WHERE ", DATETIME,
                                tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                                tagid ? " LEFT JOIN main.tagged_images AS ti"
                                        " ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -480,6 +482,7 @@ int dt_collection_update(const dt_collection_t *collection)
 
   return result;
 }
+#undef DATETIME
 
 void dt_collection_reset(const dt_collection_t *collection)
 {
