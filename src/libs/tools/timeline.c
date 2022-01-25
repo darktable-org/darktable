@@ -568,9 +568,10 @@ static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   sqlite3_stmt *stmt;
-  const char *query = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 AND "
-                      "datetime_taken > '0001:01:01 00:00:00' COLLATE NOCASE ORDER BY "
-                      "datetime_taken ASC LIMIT 1";
+  const char *query = "SELECT SUBSTR(datetime_taken, 1, 19) AS dt FROM main.images "
+                      "WHERE LENGTH(dt) = 19 AND"
+                      " dt > '0001:01:01 00:00:00' "
+                      "COLLATE NOCASE ORDER BY dt ASC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -588,9 +589,10 @@ static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
     strip->has_selection = FALSE;
   sqlite3_finalize(stmt);
 
-  const char *query2 = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 AND "
-                       "datetime_taken > '0001:01:01 00:00:00' COLLATE NOCASE ORDER BY "
-                       "datetime_taken DESC LIMIT 1";
+  const char *query2 = "SELECT SUBSTR(datetime_taken, 1, 19) AS dt FROM main.images "
+                       "WHERE LENGTH(dt) = 19 AND"
+                       " dt > '0001:01:01 00:00:00' COLLATE NOCASE "
+                       "ORDER BY dt DESC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -614,10 +616,11 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   sqlite3_stmt *stmt;
-  const char *query = "SELECT db.datetime_taken FROM main.images AS db, memory.collected_images AS col WHERE "
-                      "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 AND db.datetime_taken > '0001:01:01 "
-                      "00:00:00' COLLATE NOCASE ORDER BY "
-                      "db.datetime_taken ASC LIMIT 1";
+  const char *query = "SELECT SUBSTR(db.datetime_taken, 1, 19) AS dt "
+                      "FROM main.images AS db, memory.collected_images AS col "
+                      "WHERE db.id=col.imgid AND LENGTH(dt) = 19 AND"
+                      " dt > '0001:01:01 00:00:00' "
+                      "COLLATE NOCASE ORDER BY dt ASC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -635,10 +638,11 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
     strip->has_selection = FALSE;
   sqlite3_finalize(stmt);
 
-  const char *query2 = "SELECT db.datetime_taken FROM main.images AS db, memory.collected_images AS col WHERE "
-                       "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 AND db.datetime_taken > '0001:01:01 "
-                       "00:00:00' COLLATE NOCASE ORDER BY "
-                       "db.datetime_taken DESC LIMIT 1";
+  const char *query2 = "SELECT SUBSTR(db.datetime_taken, 1, 19) AS dt "
+                       "FROM main.images AS db, memory.collected_images AS col "
+                       "WHERE db.id=col.imgid AND LENGTH(dt) = 19 AND"
+                       "  dt > '0001:01:01 00:00:00' "
+                       "COLLATE NOCASE ORDER BY dt DESC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -731,10 +735,11 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
   if(_time_compare_at_zoom(strip->stop_t, strip->time_pos, strip->zoom) < 0) strip->stop_x = -1;
 
   sqlite3_stmt *stmt;
-  gchar *query = g_strdup_printf("SELECT db.datetime_taken, col.imgid FROM main.images AS db LEFT JOIN "
-                                 "memory.collected_images AS col ON db.id=col.imgid WHERE "
-                                 "LENGTH(db.datetime_taken) = 19 AND "
-                                 "db.datetime_taken > '%s' COLLATE NOCASE ORDER BY db.datetime_taken ASC",
+  gchar *query = g_strdup_printf("SELECT SUBSTR(db.datetime_taken, 1, 19) AS dt,"
+                                 " col.imgid FROM main.images AS db "
+                                 "LEFT JOIN memory.collected_images AS col ON db.id=col.imgid "
+                                 "WHERE LENGTH(dt) = 19 AND dt > '%s' "
+                                 "COLLATE NOCASE ORDER BY dt ASC",
                                  _time_format_for_db(strip->time_pos, strip->zoom, TRUE));
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
