@@ -183,7 +183,6 @@
   background-image: none;
   color: @fg_color;
   font-size: 1em;
-  font-family: sans-serif;
   font-weight: normal;
   box-shadow:none;
   outline-style:none;
@@ -193,6 +192,16 @@
   padding: 0;
   min-width: 0;
   min-height: 0;
+}
+
+*
+{
+  font-family: "Roboto Medium", "Roboto",
+               "Segoe UI Semibold", "Segoe UI",
+               "SF Pro Display Medium", "SF Pro Display",
+               "Ubuntu Medium", "Ubuntu",
+               "Cantarell",
+                sans-serif;
 }
 
 /* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
@@ -275,7 +284,6 @@ button,
   background-color: @button_bg;
   color: @button_fg;
   font-weight: normal;
-  font-family: sans-serif;
 }
 
 button:disabled,
@@ -321,7 +329,6 @@ textview
   background-color: @field_bg;
   border: 0.035em solid @border_color;
   margin: 0.14em 0;
-  font-family: sans;
 }
 
 entry selection
@@ -644,7 +651,6 @@ l
   color: @plugin_label_color;
   padding: 0 0.14em 0.14em 0.45em;
   font-weight: normal;
-  font-family: sans-serif;
   font-size: 1.1em;
 }
 
@@ -659,7 +665,6 @@ l
 {
   padding: 0;
   color: @section_label;
-  font-family: sans-serif;
   font-weight: 500;
 }
 
@@ -1027,7 +1032,6 @@ notebook tabs,
 #guides-line
 {
   color: @button_fg;
-  font-family: sans-serif;
 }
 
 #modules-tabs,
