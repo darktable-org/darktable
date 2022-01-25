@@ -43,7 +43,8 @@ gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif);
 gboolean dt_datetime_unix_lt_to_local(char *local, const size_t local_size, const time_t *unix);
 
 // img cache datetime to display local string. Returns TRUE if OK.
-gboolean dt_datetime_img_to_local(char *local, const size_t local_size, const dt_image_t *img);
+gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
+                                  const dt_image_t *img, const gboolean milliseconds);
 
 // unix datetime to img cache datetime
 void dt_datetime_unix_lt_to_img(dt_image_t *img, const time_t *unix);

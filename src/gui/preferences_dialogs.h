@@ -21,6 +21,7 @@
 GtkWidget *dt_prefs_init_dialog_collect(GtkWidget *dialog);
 GtkWidget *dt_prefs_init_dialog_recentcollect(GtkWidget *dialog);
 GtkWidget *dt_prefs_init_dialog_import(GtkWidget *dialog);
+GtkWidget *dt_prefs_init_dialog_metadata_view(GtkWidget *dialog);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
