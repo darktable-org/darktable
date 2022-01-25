@@ -1514,8 +1514,9 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
     }
     else if(i > 2 || type != 2)
     {
-//      GtkWidget *label = gtk_label_new(i < 2 ? "-" : ":");
       GtkWidget *label = gtk_label_new(i < 2 ? "-" : i == 5 ? "," :":");
+      if(i == 5)
+        g_object_set_data(G_OBJECT(dt->widget[i]), "msec_label", label);
       gtk_box_pack_start(box, label, FALSE, FALSE, 0);
     }
   }
@@ -1704,6 +1705,22 @@ GtkTreeViewColumn *_new_tree_text_column(const char *name, const gboolean expand
   return column;
 }
 
+static void _show_milliseconds(dt_lib_geotagging_t *d)
+{
+  const gboolean milliseconds = dt_conf_get_bool("lighttable/ui/milliseconds");
+  gtk_widget_set_visible(d->dt.widget[6], milliseconds);
+  gtk_widget_set_visible(d->dt0.widget[6], milliseconds);
+  gtk_widget_set_visible(d->of.widget[6], milliseconds);
+  gtk_widget_set_visible(g_object_get_data(G_OBJECT(d->dt.widget[5]), "msec_label"), milliseconds);
+  gtk_widget_set_visible(g_object_get_data(G_OBJECT(d->dt0.widget[5]), "msec_label"), milliseconds);
+  gtk_widget_set_visible(g_object_get_data(G_OBJECT(d->of.widget[5]), "msec_label"), milliseconds);
+}
+
+static void _dt_pref_change_callback(gpointer instance, dt_lib_module_t *self)
+{
+  _show_milliseconds((dt_lib_geotagging_t *)self->data);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)g_malloc0(sizeof(dt_lib_geotagging_t));
@@ -1742,6 +1759,7 @@ void gui_init(dt_lib_module_t *self)
 
   box = _gui_init_datetime(&d->of, 2, self);
   gtk_grid_attach(grid, box, 3, line++, 1, 1);
+  _show_milliseconds(d);
 
   // apply
   d->apply_offset = dt_ui_button_new(_("apply offset"), _("apply offset to selected images"), NULL);
@@ -1932,6 +1950,8 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
                             G_CALLBACK(_image_info_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+                            G_CALLBACK(_dt_pref_change_callback), self);
 #ifdef HAVE_MAP
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
                             G_CALLBACK(_view_changed), self);

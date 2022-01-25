@@ -97,9 +97,9 @@ gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
   {
     char *sdt = g_date_time_format(gdt, milliseconds ? "%a %x %X %f" : "%a %x %X");
     if(sdt)
-    { // keep only milliseconds
+    {
       if(milliseconds)
-      {
+      { // keep only milliseconds
         char *p = g_strrstr(sdt, " ");
         for(int i = 0; i < 4 && *p != '\0'; i++) p++;
         *p = '\0';
