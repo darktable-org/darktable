@@ -3252,7 +3252,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch_width = ch * roi_in->width;
 
   // only for preview pipe: collect input buffer data and do some other evaluations
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && self->dev->gui_attached
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
@@ -3279,7 +3280,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
-    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
+    const int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
     // did modules prior to this one in pixelpipe have changed? -> check via hash value
     uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL);
@@ -3399,21 +3400,21 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     // origin of image and opposite corner as reference points
     dt_boundingbox_t points = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
-    float ivec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
+    const float ivec[2] = { points[2] - points[0], points[3] - points[1] };
+    const float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
-    float ovec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
+    const float ovec[2] = { points[2] - points[0], points[3] - points[1] };
+    const float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
 
     // angle between input vector and output vector
-    float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
+    const float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
-    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
+    const int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
     // do modules coming before this one in pixelpipe have changed? -> check via hash value
     uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL);
@@ -3777,8 +3778,8 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   {
     float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
 
-    size_t offset = my_points_idx[n].offset;
-    int length = my_points_idx[n].length;
+    const size_t offset = my_points_idx[n].offset;
+    const int length = my_points_idx[n].length;
 
     for(int l = 0; l < length; l++)
     {
@@ -3861,7 +3862,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
-  if(g->buf && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
+  if(g->buf && self->enabled)
   {
     // roi data of the preview pipe input buffer
 
@@ -3918,6 +3919,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_translate(cr, width / 2.0, height / 2.0);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
     cairo_line_to(cr, C[2][0], C[2][1]);
@@ -4066,13 +4068,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(g->lines == NULL || !gui_has_focus(self)) return;
 
   // get hash value that changes if distortions from here to the end of the pixelpipe changed
-  uint64_t hash = dt_dev_hash_distort(dev);
+  const uint64_t hash = dt_dev_hash_distort(dev);
   // get hash value that changes if coordinates of lines have changed
-  uint64_t lines_hash = _get_lines_hash(g->lines, g->lines_count);
+  const uint64_t lines_hash = _get_lines_hash(g->lines, g->lines_count);
 
   // points data are missing or outdated, or distortion has changed?
-  if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash ||
-    (g->lines_version > g->points_version && g->lines_hash != lines_hash))
+  if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash
+     || (g->lines_version > g->points_version
+         && g->lines_hash != lines_hash))
   {
     // we need to reprocess points
     free(g->points);
@@ -4195,7 +4198,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     double dashed[] = { 4.0, 4.0 };
     dashed[0] /= zoom_scale;
     dashed[1] /= zoom_scale;
-    int len = sizeof(dashed) / sizeof(dashed[0]);
+    const int len = sizeof(dashed) / sizeof(dashed[0]);
 
     cairo_rectangle(cr, g->lastx * wd, g->lasty * ht, (pzx - g->lastx) * wd,
                    (pzy - g->lasty) * ht);
@@ -4219,7 +4222,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     double dashed[] = { 4.0, 4.0 };
     dashed[0] /= zoom_scale;
     dashed[1] /= zoom_scale;
-    int len = sizeof(dashed) / sizeof(dashed[0]);
+    const int len = sizeof(dashed) / sizeof(dashed[0]);
 
     cairo_arc(cr, pzx * wd, pzy * ht, g->near_delta, 0, 2.0 * M_PI);
 
@@ -4287,7 +4290,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     return TRUE;
   }
 
-  int handled = 0;
+  gboolean handled = FALSE;
 
   const float wd = self->dev->preview_pipe->backbuf_width;
   const float ht = self->dev->preview_pipe->backbuf_height;
@@ -4493,12 +4496,12 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       if(g->isdeselecting)
       {
         g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-        handled = 1;
+        handled = TRUE;
       }
       else if(g->isselecting && g->current_structure_method != ASHIFT_METHOD_LINES)
       {
         g->lines[n].type |= ASHIFT_LINE_SELECTED;
-        handled = 1;
+        handled = TRUE;
       }
     }
   }
@@ -4851,7 +4854,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   // if user has released the shift button in-between -> do nothing
   if(g->isbounding != ASHIFT_BOUNDING_OFF && dt_modifier_is(state, GDK_SHIFT_MASK))
   {
-    int handled = 0;
+    gboolean handled = FALSE;
 
     // we compute the rectangle selection
     float pzx = 0.0f, pzy = 0.0f;
@@ -4874,12 +4877,12 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
         if(g->isbounding == ASHIFT_BOUNDING_DESELECT)
         {
           g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-          handled = 1;
+          handled = TRUE;
         }
         else if(g->current_structure_method != ASHIFT_METHOD_LINES)
         {
           g->lines[n].type |= ASHIFT_LINE_SELECTED;
-          handled = 1;
+          handled = TRUE;
         }
       }
 
@@ -4920,7 +4923,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
 
   if(g->near_delta > 0 && (g->isdeselecting || g->isselecting))
   {
-    int handled = 0;
+    gboolean handled = FALSE;
 
     float pzx = 0.0f, pzy = 0.0f;
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
@@ -4959,15 +4962,15 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
       if(g->isdeselecting)
       {
         g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-        handled = 1;
+        handled = TRUE;
       }
       else if(g->isselecting && g->current_structure_method != ASHIFT_METHOD_LINES)
       {
         g->lines[n].type |= ASHIFT_LINE_SELECTED;
-        handled = 1;
+        handled = TRUE;
       }
 
-      handled = 1;
+      handled = TRUE;
     }
 
     if(handled)
