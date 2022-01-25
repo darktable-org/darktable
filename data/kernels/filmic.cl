@@ -556,11 +556,11 @@ static inline float4 filmic_split_v4(const float4 i,
   for(int c = 0; c < 3; c++)
   {
     // Log tonemapping
-    o[c] = log_tonemapping_v2(i[c], grey_value, black_exposure, dynamic_range);
+    output[c] = log_tonemapping_v2(input[c], grey_value, black_exposure, dynamic_range);
 
     // Filmic S curve on the max RGB
     // Apply the transfer function of the display
-    o[c] = native_powr(clamp(filmic_spline(o[c], M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
+    output[c] = native_powr(clamp(filmic_spline(output[c], M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
                        display_black,
                        display_white), output_power);
   }
