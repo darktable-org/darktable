@@ -3909,7 +3909,26 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
     cairo_set_dash(cr, &dashes, 0, 0);
 
-    cairo_rectangle(cr, 0, 0, width, height);
+    float cl_x = 0.0f, cl_y = 0.0f, cl_width = 0.0f, cl_height = 0.0f;
+
+    if(wd / (float)width > ht / (float)height)
+    {
+      // more spaces top/bottom
+      cl_x      = self->dev->border_size;
+      cl_y      = ((float)height - (ht * zoom_scale)) / 2.0f;
+      cl_width  = width - 2.0f * self->dev->border_size;
+      cl_height = ht * zoom_scale;
+    }
+    else
+    {
+      // more spaces left/right
+      cl_y      = self->dev->border_size;
+      cl_x      = ((float)width - (wd * zoom_scale)) / 2.0f;
+      cl_height = height - (2.0f * self->dev->border_size);
+      cl_width  = wd * zoom_scale;
+    }
+
+    cairo_rectangle(cr, cl_x, cl_y, cl_width, cl_height);
     cairo_clip(cr);
 
     // mask parts of image outside of clipping area in dark grey
