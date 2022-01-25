@@ -1015,7 +1015,7 @@ static int _lighttable_expose_empty(cairo_t *cr, int32_t width, int32_t height, 
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
     cairo_stroke(cr);
   }
-
+  
   pango_font_description_free(desc);
   g_object_unref(layout);
   return 0;
@@ -2601,7 +2601,6 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   int baseid = dt_control_get_mouse_over_id();
   // let's be sure that the current image is selected
   if(baseid > 0 && select) dt_selection_select(darktable.selection, baseid);
-  else if(baseid <= 0) baseid = dt_selection_get_first(darktable.selection);
 
   int baserowid = 1;
   if(baseid <= 0)
