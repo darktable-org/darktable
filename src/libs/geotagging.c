@@ -1285,8 +1285,10 @@ static GDateTime *_read_datetime_entry(dt_lib_module_t *self)
   const int hour = atoi(gtk_entry_get_text(GTK_ENTRY(d->dt.widget[3])));
   const int minute = atoi(gtk_entry_get_text(GTK_ENTRY(d->dt.widget[4])));
   const int second = atoi(gtk_entry_get_text(GTK_ENTRY(d->dt.widget[5])));
+  const int millisecond = atoi(gtk_entry_get_text(GTK_ENTRY(d->dt.widget[6])));
+  const gdouble second2 = (gdouble)second + (gdouble)millisecond * 0.001;
 
-  return g_date_time_new(darktable.utc_tz, year, month, day, hour, minute, second);
+  return g_date_time_new(darktable.utc_tz, year, month, day, hour, minute, second2);
 }
 
 static void _new_datetime(GDateTime *datetime, dt_lib_module_t *self)
