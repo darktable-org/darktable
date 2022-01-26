@@ -33,7 +33,7 @@ typedef struct dt_datetime_t
   gint hour;
   gint minute;
   gint second;
-  gint msecond;
+  gint msec;
 } dt_datetime_t;
 
 // exif datetime to numbers. Returns TRUE if OK.
@@ -50,7 +50,7 @@ gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
 void dt_datetime_unix_lt_to_img(dt_image_t *img, const time_t *unix);
 
 // unix datetime to exif datetime
-void dt_datetime_unix_lt_to_exif(char *exif, size_t exif_len, const time_t *unix);
+void dt_datetime_unix_lt_to_exif(char *exif, const size_t exif_len, const time_t *unix);
 
 // current datetime to exif
 void dt_datetime_now_to_exif(char *exif);
@@ -62,6 +62,8 @@ void dt_datetime_img_to_exif(char *exif, const dt_image_t *img);
 
 // exif datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
 GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz);
+// GDateTime to exif datetime.
+void dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_len, GDateTime *gdt);
 
 // img cache datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
 GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz);
@@ -80,6 +82,9 @@ void dt_datetime_now_to_numbers(dt_datetime_t *dt);
 
 // manual entry datetime to exif datetime
 gboolean dt_datetime_entry_to_exif(char *exif, const char *entry);
+
+// add subsec (decimal numbers) to exif datetime
+void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const char*subsec);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

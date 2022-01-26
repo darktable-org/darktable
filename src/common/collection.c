@@ -179,7 +179,7 @@ void dt_collection_memory_update()
   g_free(ins_query);
 }
 
-#define DATETIME "(CASE WHEN LENGTH(datetime_taken) = 19 THEN datetime_taken || ',000' ELSE datetime_taken END) AS datetime_taken"
+#define DATETIME "(CASE WHEN LENGTH(datetime_taken) = 19 THEN datetime_taken || '.000' ELSE datetime_taken END) AS datetime_taken"
 
 static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, char **selq_pre)
 {

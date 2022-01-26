@@ -174,10 +174,9 @@ static void _apply_datetime_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   if(d->datetime)
   {
-    char *dt = g_date_time_format(d->datetime, "%Y:%m:%d %H:%M:%S,%f");
-    dt[DT_DATETIME_LENGTH - 1] = '\0'; // skip microseconds
+    char dt[DT_DATETIME_LENGTH];
+    dt_datetime_gdatetime_to_exif(dt, sizeof(dt), d->datetime);
     dt_control_datetime(0, dt, NULL);
-    g_free(dt);
   }
 }
 
@@ -1320,16 +1319,6 @@ static void _datetime_entry_changed(GtkWidget *entry, dt_lib_module_t *self)
   }
 }
 
-static GDateTime *_get_datetime_from_text(const char *text, GTimeZone *tz)
-{
-  char datetime_s[DT_DATETIME_LENGTH];
-  g_strlcpy(datetime_s, text, sizeof(datetime_s));
-  datetime_s[4] = '-';
-  datetime_s[7] = '-';
-  GDateTime *datetime = g_date_time_new_from_iso8601((const char *)&datetime_s, tz);
-  return datetime;
-}
-
 static GDateTime *_get_image_datetime(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
@@ -1343,7 +1332,7 @@ static GDateTime *_get_image_datetime(dt_lib_module_t *self)
     char datetime_s[DT_DATETIME_LENGTH];
     dt_image_get_datetime(selid ? selid : imgid, datetime_s);
     if(datetime_s[0] != '\0')
-      datetime = _get_datetime_from_text(datetime_s, darktable.utc_tz);
+      datetime = dt_datetime_exif_to_gdatetime(datetime_s, darktable.utc_tz);
     else
       datetime = NULL;
   }
@@ -1514,7 +1503,7 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
     }
     else if(i > 2 || type != 2)
     {
-      GtkWidget *label = gtk_label_new(i < 2 ? "-" : i == 5 ? "," :":");
+      GtkWidget *label = gtk_label_new(i < 2 ? "-" : i == 5 ? "." :":");
       if(i == 5)
         g_object_set_data(G_OBJECT(dt->widget[i]), "msec_label", label);
       gtk_box_pack_start(box, label, FALSE, FALSE, 0);
@@ -1759,7 +1748,6 @@ void gui_init(dt_lib_module_t *self)
 
   box = _gui_init_datetime(&d->of, 2, self);
   gtk_grid_attach(grid, box, 3, line++, 1, 1);
-  _show_milliseconds(d);
 
   // apply
   d->apply_offset = dt_ui_button_new(_("apply offset"), _("apply offset to selected images"), NULL);
@@ -1958,6 +1946,10 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
                             G_CALLBACK(_geotag_changed), self);
 #endif
+
+  _show_milliseconds(d);
+  gtk_widget_show_all(self->widget);
+  gtk_widget_set_no_show_all(self->widget, TRUE);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

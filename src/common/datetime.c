@@ -41,14 +41,20 @@ gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
 {
   if(exif && *exif && dt)
   {
-    const int nb = sscanf(exif, "%d:%d:%d %d:%d:%d,%d",
-                          &dt->year, &dt->month, &dt->day,
-                          &dt->hour, &dt->minute, &dt->second, &dt->msecond);
-    if(nb == 7)
-      return TRUE;
-    else if(nb == 6)
+    char sdt[DT_DATETIME_LENGTH];
+    g_strlcpy(sdt, exif, sizeof(sdt));
+    sdt[4] = sdt[7] = '-';
+    GDateTime *gdt = g_date_time_new_from_iso8601(sdt, darktable.utc_tz);
+    if(gdt)
     {
-      dt->msecond = 0;
+      dt->year = g_date_time_get_year(gdt);
+      dt->month = g_date_time_get_month(gdt);
+      dt->day = g_date_time_get_day_of_month(gdt);
+      dt->hour = g_date_time_get_hour(gdt);
+      dt->minute = g_date_time_get_minute(gdt);
+      dt->second = g_date_time_get_second(gdt);
+      dt->msec = g_date_time_get_microsecond(gdt) * 0.001;
+      g_date_time_unref(gdt);
       return TRUE;
     }
   }
@@ -95,12 +101,12 @@ gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
 
   if(gdt)
   {
-    char *sdt = g_date_time_format(gdt, milliseconds ? "%a %x %X %f" : "%a %x %X");
+    char *sdt = g_date_time_format(gdt, milliseconds ? "%a %x %X.%f" : "%a %x %X");
     if(sdt)
     {
       if(milliseconds)
       { // keep only milliseconds
-        char *p = g_strrstr(sdt, " ");
+        char *p = g_strrstr(sdt, ".");
         for(int i = 0; i < 4 && *p != '\0'; i++) p++;
         *p = '\0';
       }
@@ -120,7 +126,7 @@ gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
   return res;
 }
 
-void dt_datetime_unix_lt_to_exif(char *exif, size_t exif_len, const time_t *unix)
+void dt_datetime_unix_lt_to_exif(char *exif, const size_t exif_len, const time_t *unix)
 {
   struct tm tt;
   (void)localtime_r(unix, &tt);
@@ -155,15 +161,23 @@ GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
   {
     GDateTime *gdt = g_date_time_new((GTimeZone *)tz, dt.year, dt.month, dt.day,
                                      dt.hour, dt.minute, dt.second);
-    if(dt.msecond)
+    if(dt.msec)
     {
-      GDateTime *gdt2 = g_date_time_add(gdt, dt.msecond * 1000);
+      GDateTime *gdt2 = g_date_time_add(gdt, dt.msec * 1000);
       g_date_time_unref(gdt);
       return gdt2;
     }
     return gdt;
   }
   return NULL;
+}
+
+void dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_len, GDateTime *gdt)
+{
+  char *dt = g_date_time_format(gdt, "%Y:%m:%d %H:%M:%S.%f");
+  dt[DT_DATETIME_LENGTH - 1] = '\0'; // skip microseconds
+  g_strlcpy(exif, dt, exif_len);
+  g_free(dt);
 }
 
 GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz)
@@ -192,7 +206,7 @@ gboolean dt_datetime_unix_to_numbers(dt_datetime_t *dt, const time_t *unix)
     dt->hour = g_date_time_get_hour(gdt);
     dt->minute = g_date_time_get_minute(gdt);
     dt->second = g_date_time_get_second(gdt);
-    dt->msecond = 0;
+    dt->msec = 0;
     g_date_time_unref(gdt);
     return TRUE;
   }
@@ -227,6 +241,18 @@ gboolean dt_datetime_entry_to_exif(char *exif, const char *entry)
     return TRUE;
   }
   return FALSE;
+}
+
+void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const char*subsec)
+{
+  if(exif_len < DT_DATETIME_EXIF_LENGTH + 1) return;
+
+  g_strlcpy(&exif[DT_DATETIME_EXIF_LENGTH - 1], ".000000",
+            exif_len - DT_DATETIME_EXIF_LENGTH + 1);
+  int i = 0;
+  for(; i < 6 && subsec[i] != '\0' && (DT_DATETIME_EXIF_LENGTH + i < exif_len - 1); i++)
+    exif[DT_DATETIME_EXIF_LENGTH + i] = subsec[i];
+  exif[DT_DATETIME_EXIF_LENGTH + i] = '\0';
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
