@@ -119,6 +119,11 @@ You are strongly advised to take a backup first.
 
 - Fix Filmic RGB mid-tones vs extreme luminance saturation sliders' tooltip.
 
+- Fix crop adjustment in rotate and perspective module when preview
+  down-sampling is active. The movement where amplified making the
+  adjustment harder and the clicked location was not constant when
+  dragging the crop area.
+
 ## Lua
 
 
