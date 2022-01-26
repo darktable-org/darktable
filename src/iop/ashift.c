@@ -4334,6 +4334,11 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
 
+    pts[0] *= pr_d;
+    pts[1] *= pr_d;
+    pts[2] *= pr_d;
+    pts[3] *= pr_d;
+
     const float newx = g->crop_cx + (pts[0] - pts[2]) - g->lastx;
     const float newy = g->crop_cy + (pts[1] - pts[3]) - g->lasty;
 
@@ -4580,12 +4585,18 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     if(p->cropmode == ASHIFT_CROP_ASPECT)
     {
+      const float pr_d = self->dev->preview_downsampling;
       dt_control_change_cursor(GDK_HAND1);
       g->adjust_crop = TRUE;
 
       dt_boundingbox_t pts = { pzx, pzy, 1.0f, 1.0f };
       dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                         DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+      pts[0] *= pr_d;
+      pts[1] *= pr_d;
+      pts[2] *= pr_d;
+      pts[3] *= pr_d;
 
       g->lastx = pts[0] - pts[2];
       g->lasty = pts[1] - pts[3];
