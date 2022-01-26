@@ -1321,7 +1321,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float zoom_x = dt_control_get_dev_zoom_x();
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
-  const float pr_d = dev->preview_downsampling;
   const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 1);
 
   cairo_translate(cr, width / 2.0, height / 2.0);
@@ -1339,9 +1338,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   {
     cairo_set_source_rgba(cr, .2, .2, .2, .8);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-    cairo_rectangle(cr, g->clip_max_x * wd - pr_d, g->clip_max_y * ht - pr_d, g->clip_max_w * wd + 2.0 * pr_d,
-                    g->clip_max_h * ht + 2.0 * pr_d);
-    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
+    cairo_rectangle(cr, g->clip_max_x * wd, g->clip_max_y * ht,
+                        g->clip_max_w * wd, g->clip_max_h * ht);
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht,
+                        g->clip_w * wd, g->clip_h * ht);
     cairo_fill(cr);
   }
   if(g->clip_x > .0f || g->clip_y > .0f || g->clip_w < 1.0f || g->clip_h < 1.0f)
