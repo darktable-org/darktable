@@ -4598,7 +4598,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   }
 
   // grab a draw corner
-  if((g->current_structure_method == ASHIFT_METHOD_QUAD || g->current_structure_method == ASHIFT_METHOD_LINES)
+  if((g->current_structure_method == ASHIFT_METHOD_QUAD
+      || g->current_structure_method == ASHIFT_METHOD_LINES)
      && g->draw_near_point >= 0)
   {
     g->draw_point_move = TRUE;
