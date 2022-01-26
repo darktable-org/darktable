@@ -159,7 +159,7 @@ void init(dt_imageio_module_format_t *self)
             enum avif_color_mode_e);
   luaA_enum_value(darktable.lua_state.state,
                   enum avif_color_mode_e,
-                  AVIF_COLOR_MODE_GRAYSCALE);
+                  AVIF_COLOR_MODE_RGB);
   luaA_enum_value(darktable.lua_state.state,
                   enum avif_color_mode_e,
                   AVIF_COLOR_MODE_GRAYSCALE);
