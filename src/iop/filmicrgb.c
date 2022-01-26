@@ -2241,14 +2241,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   const dt_iop_order_iccprofile_info_t *const export_profile = dt_ioppr_get_pipe_output_profile_info(piece->pipe);
   const int use_work_profile = (work_profile == NULL) ? 0 : 1;
-  cl_mem dev_profile_info = NULL;
-  cl_mem dev_profile_lut = NULL;
-  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
-  cl_float *profile_lut_cl = NULL;
-
-  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
-                                            &dev_profile_info, &dev_profile_lut);
-  if(err != CL_SUCCESS) goto error;
 
   // See colorbalancergb.c for details
   dt_colormatrix_t input_matrix;         // pipeline RGB -> LMS 2006
@@ -2263,6 +2255,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
   cl_mem export_input_matrix_cl = NULL;
   cl_mem export_output_matrix_cl = NULL;
+
+  cl_mem dev_profile_info = NULL;
+  cl_mem dev_profile_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  cl_float *profile_lut_cl = NULL;
+
+  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
+                                            &dev_profile_info, &dev_profile_lut);
+  if(err != CL_SUCCESS) goto error;
 
   if(use_output_profile)
   {
@@ -3003,7 +3004,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   else
     d->saturation = (2.0f * p->saturation / 100.0f + 1.0f);
 
-  fprintf(stdout, "sat: %f\n", d->saturation);
   d->sigma_toe = powf(d->spline.latitude_min / 3.0f, 2.0f);
   d->sigma_shoulder = powf((1.0f - d->spline.latitude_max) / 3.0f, 2.0f);
 
