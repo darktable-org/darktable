@@ -1823,22 +1823,27 @@ void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 
 void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.5 * 0.95, 1, 0.5, 0.5)
+  PREAMBLE(1, 1, 0, 0)
 
-  cairo_arc(cr, 0.0, 0.0, 1., 0., 2.0f * M_PI);
+  cairo_move_to(cr, 0.30, 0.15);
+  cairo_line_to(cr, 0.95, 0.15);
+  cairo_move_to(cr, 0.95, 0.15);
+  cairo_line_to(cr, 0.95, 0.65);
+  cairo_move_to(cr, 0.20, 0.25);
+  cairo_line_to(cr, 0.85, 0.25);
+  cairo_move_to(cr, 0.85, 0.25);
+  cairo_line_to(cr, 0.85, 0.75);
   cairo_stroke(cr);
-  cairo_arc(cr, -0.35, -0.33, 0.25, 0., 2.0f * M_PI);
-  cairo_fill(cr);
-  cairo_stroke(cr);
-  cairo_arc(cr, -0.35, 0.35, 0.25, 0., 2.0f * M_PI);
-  cairo_fill(cr);
-  cairo_stroke(cr);
-  cairo_arc(cr, 0.35, -0.35, 0.25, 0., 2.0f * M_PI);
-  cairo_fill(cr);
-  cairo_stroke(cr);
-  cairo_arc(cr, 0.35, 0.35, 0.25, 0., 2.0f * M_PI);
-  cairo_fill(cr);
-  cairo_stroke(cr);
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_rectangle(cr, 0.05, 0.35, 0.7, 0.5);
+    cairo_fill(cr);
+  }
+  else
+  {
+    cairo_rectangle(cr, 0.05, 0.35, 0.7, 0.5);
+    cairo_stroke(cr);
+  }
 
   FINISH
 }
