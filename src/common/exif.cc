@@ -755,11 +755,8 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
        && pos->size() > 1)
     {
       char msec[4];
-      dt_strlcpy_to_utf8(msec, 4, pos, exifData);
-      g_strlcpy(&exif_datetime_taken[DT_DATETIME_EXIF_LENGTH - 1], ",000",
-                DT_DATETIME_LENGTH - DT_DATETIME_EXIF_LENGTH + 1);
-      for(int i = 0; i < 4 && msec[i] != '\0'; i++)
-        exif_datetime_taken[DT_DATETIME_EXIF_LENGTH + i] = msec[i];
+      dt_strlcpy_to_utf8(msec, sizeof(msec), pos, exifData);
+      dt_datetime_add_subsec_to_exif(exif_datetime_taken, DT_DATETIME_LENGTH, msec);
     }
   }
   else

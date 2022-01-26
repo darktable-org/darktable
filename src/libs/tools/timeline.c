@@ -641,7 +641,7 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
   const char *query2 = "SELECT SUBSTR(db.datetime_taken, 1, 19) AS dt "
                        "FROM main.images AS db, memory.collected_images AS col "
                        "WHERE db.id=col.imgid AND LENGTH(dt) = 19 AND"
-                       "  dt > '0001:01:01 00:00:00' "
+                       " dt > '0001:01:01 00:00:00' "
                        "COLLATE NOCASE ORDER BY dt DESC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
 

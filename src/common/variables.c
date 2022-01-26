@@ -239,7 +239,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "EXIF_SECOND"))
     result = g_strdup_printf("%.2d", datetime.second);
   else if(has_prefix(variable, "EXIF_MSEC"))
-    result = g_strdup_printf("%.3d", datetime.msecond);
+    result = g_strdup_printf("%.3d", datetime.msec);
   else if(has_prefix(variable, "EXIF_ISO"))
     result = g_strdup_printf("%d", params->data->exif_iso);
   else if(has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
