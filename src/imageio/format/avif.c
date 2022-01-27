@@ -456,7 +456,7 @@ int write_image(struct dt_imageio_module_data_t *data,
   if(exif && exif_len > 0)
     avifImageSetMetadataExif(image, exif, exif_len);
 
-  /* Workaround until exiv2 implements AVIF write support */
+  /* TODO: workaround; remove when exiv2 implements AVIF write support and update flags() */
   char *xmp_string = dt_exif_xmp_read_string(imgid);
   if(xmp_string && (size_t xmp_len = strlen(xmp_string)) > 0)
   {
@@ -696,6 +696,18 @@ const char *extension(dt_imageio_module_data_t *data)
 const char *name()
 {
   return _("AVIF (8/10/12-bit)");
+}
+
+int flags(struct dt_imageio_module_data_t *data)
+{
+  /*
+   * As of exiv2 0.27.5 there is no write support for the AVIF format, so
+   * we do not return the XMP supported flag currently.
+   * Once exiv2 write support is there, the flag can be returned, and the
+   * direct XMP embedding workaround using avifImageSetMetadataXMP() above
+   * can be removed.
+   */
+  return 0; /* FORMAT_FLAGS_SUPPORT_XMP; */
 }
 
 static void bit_depth_changed(GtkWidget *widget, gpointer user_data)
