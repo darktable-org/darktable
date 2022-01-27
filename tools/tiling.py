@@ -62,7 +62,7 @@ def parse_allocs(regex, content):
 
     for arg in args:
       # Try to find variables in arguments
-      variables_mask = r"([a-zA-Z]+\[{0,1}[0-9A-Z]*\]{0,1}[\_\-\>]*[a-zA-Z0-9]*\[{0,1}[0-9A-Z]*\]{0,1})"
+      variables_mask = r"([a-zA-Z\_]+\[{0,1}[0-9A-Z]*\]{0,1}[\-\>]*[a-zA-Z0-9\_]*\[{0,1}[0-9A-Z]*\]{0,1})"
       variables = set(re.findall(variables_mask, arg))
 
       for var in variables:
