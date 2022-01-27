@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-01-24 15:36+0100\n"
-"PO-Revision-Date: 2022-01-24 19:08+0100\n"
+"PO-Revision-Date: 2022-01-27 21:33+0100\n"
 "Last-Translator: Petr Stasiak <petr@stasiak.cz>\n"
 "Language-Team: \n"
 "Language: cs_CZ\n"
@@ -4847,7 +4847,7 @@ msgstr "Je vybrán obrázek %d z %d (#%d) v aktuální kolekci"
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "Je vybrán obrázek %d z %d v aktuální kolekci"
-msgstr[1] "Je vybráno %d obrázků z %d v aktuální kolekci"
+msgstr[1] "Jsou vybrány %d obrázky z %d v aktuální kolekci"
 msgstr[2] "Je vybráno %d obrázků z %d v aktuální kolekci"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
@@ -5347,16 +5347,16 @@ msgstr ""
 #: ../src/common/film.c:302
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
-msgstr[0] "chcete odstranit tento prázdnou složku?"
+msgstr[0] "chcete odstranit tuto prázdnou složku?"
 msgstr[1] "chcete odstranit tyto prázdné složky?"
-msgstr[2] "chcete odstranit tyto prázdné složky?"
+msgstr[2] "chcete odstranit tyto prázdných složek?"
 
 #: ../src/common/film.c:309
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "odstranit prázdnou složku?"
 msgstr[1] "odstranit prázdné složky?"
-msgstr[2] "odstranit prázdné složky?"
+msgstr[2] "odstranit prázdných složek?"
 
 #: ../src/common/film.c:328 ../src/gui/preferences.c:809
 #: ../src/gui/styles_dialog.c:447 ../src/libs/geotagging.c:836
@@ -5657,7 +5657,7 @@ msgstr "Backend Keyring GNOME již není podporován. nakonfigurovat jiný"
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
-msgstr[0] "odmítnutí obrázku %d"
+msgstr[0] "odmítnutí %d obrázku"
 msgstr[1] "odmítnutí %d obrázků"
 msgstr[2] "odmítnutí %d obrázků"
 
@@ -5665,9 +5665,9 @@ msgstr[2] "odmítnutí %d obrázků"
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
-msgstr[0] "přiřazuji hodnocení na obrázek %d až %d"
-msgstr[1] "přiřazuji hodnocení %d na %d obrázky"
-msgstr[2] "přiřazuji hodnocení %d až %d obrázků"
+msgstr[0] "aplikuji hodnocení na obrázek %d z %d"
+msgstr[1] "aplikuji hodnocení %d na %d obrázky"
+msgstr[2] "aplikuji hodnocení %d na %d obrázků"
 
 #: ../src/common/ratings.c:200
 msgid "no images selected to apply rating"
@@ -6039,7 +6039,7 @@ msgstr "log synchronizace"
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
 msgstr[0] "získávám obrázek %d"
-msgstr[1] "získávám %d obrázků"
+msgstr[1] "získávám %d obrázky"
 msgstr[2] "získávám %d obrázků"
 
 #: ../src/control/jobs/camera_jobs.c:113
@@ -6066,8 +6066,8 @@ msgstr "start importu snímků z fotoaparátu"
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
-msgstr[0] "import %d obrázku z fotoaparátu"
-msgstr[1] "import %d obrázků z fotoaparátu"
+msgstr[0] "import %d obrázek z fotoaparátu"
+msgstr[1] "import %d obrázky z fotoaparátu"
 msgstr[2] "import %d obrázků z fotoaparátu"
 
 #: ../src/control/jobs/camera_jobs.c:357
@@ -6092,7 +6092,7 @@ msgstr "obrázky musí mít stejnou velikost a orientaci!"
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "slučuji %d obázek"
-msgstr[1] "slučuji %d obázků"
+msgstr[1] "slučuji %d obázky"
 msgstr[2] "slučuji %d obázků"
 
 #: ../src/control/jobs/control_jobs.c:547
@@ -6105,7 +6105,7 @@ msgstr "sloučené HDR `%s' uloženo"
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplikuji %d obrázek"
-msgstr[1] "duplikuji %d obrázků"
+msgstr[1] "duplikuji %d obrázky"
 msgstr[2] "duplikuji %d obrázků"
 
 #: ../src/control/jobs/control_jobs.c:620
@@ -6129,7 +6129,7 @@ msgstr[2] "nastavuji barvu %d obrázků"
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
 msgstr[0] "nastavuji %d černobílý obrázek"
-msgstr[1] "nastavuji %d černobílých obrázků"
+msgstr[1] "nastavuji %d černobílé obrázky"
 msgstr[2] "nastavuji %d černobílých obrázků"
 
 #: ../src/control/jobs/control_jobs.c:736
@@ -6137,7 +6137,7 @@ msgstr[2] "nastavuji %d černobílých obrázků"
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "odstraňuji %d obrázek"
-msgstr[1] "odstraňuji %d obrázků"
+msgstr[1] "odstraňuji %d obrázky"
 msgstr[2] "odstraňuji %d obrázků"
 
 #: ../src/control/jobs/control_jobs.c:840
@@ -6183,7 +6183,7 @@ msgstr "chyba při mazání"
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "přesouvám do koše %d obrázek"
-msgstr[1] "přesouvám do koše %d obrázků"
+msgstr[1] "přesouvám do koše %d obrázky"
 msgstr[2] "přesouvám do koše %d obrázků"
 
 #: ../src/control/jobs/control_jobs.c:1006
@@ -6191,7 +6191,7 @@ msgstr[2] "přesouvám do koše %d obrázků"
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "mažu %d obrázek"
-msgstr[1] "mažu %d obrázků"
+msgstr[1] "mažu %d obrázky"
 msgstr[2] "mažu %d obrázků"
 
 #: ../src/control/jobs/control_jobs.c:1132
@@ -6255,7 +6255,7 @@ msgstr[2] "obnovuji informace o %d obrázcích"
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportuji %d obrázek.."
-msgstr[1] "exportuji %d obrázků.."
+msgstr[1] "exportuji %d obrázky.."
 msgstr[2] "exportuji %d obrázků.."
 
 #: ../src/control/jobs/control_jobs.c:1405
@@ -6400,7 +6400,7 @@ msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "přesunout obrázek?"
 msgstr[1] "přesunout obrázky?"
-msgstr[2] "přesunout obrázky?"
+msgstr[2] "přesunout obrázků?"
 
 #: ../src/control/jobs/control_jobs.c:1739
 msgid "copy images"
@@ -6419,7 +6419,7 @@ msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopírovat obrázek?"
 msgstr[1] "kopírovat obrázky?"
-msgstr[2] "kopírovat obrázky?"
+msgstr[2] "kopírovat obrázků?"
 
 #: ../src/control/jobs/control_jobs.c:1797
 #: ../src/control/jobs/control_jobs.c:1805
@@ -6493,7 +6493,7 @@ msgstr "zapsat pomocné soubory"
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "importuji %d obrázek"
-msgstr[1] "importuji %d obrázků"
+msgstr[1] "importuji %d obrázky"
 msgstr[2] "importuji %d obrázků"
 
 #: ../src/control/jobs/control_jobs.c:2272
@@ -6509,7 +6509,7 @@ msgstr[2] "importuji obrázek %d/%d"
 msgid "imported %d image"
 msgid_plural "imported %d images"
 msgstr[0] "importován %d obrázek"
-msgstr[1] "importováno %d obrázků"
+msgstr[1] "importovány %d obrázky"
 msgstr[2] "importováno %d obrázků"
 
 #: ../src/control/jobs/film_jobs.c:73 ../src/control/jobs/film_jobs.c:109
@@ -7105,7 +7105,7 @@ msgstr "upravte faktor zesílení masky kanálu"
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "použit %d tvar"
-msgstr[1] "použito %d tvarů"
+msgstr[1] "použity %d tvary"
 msgstr[2] "použito %d tvarů"
 
 #: ../src/develop/blend_gui.c:2283 ../src/develop/blend_gui.c:2339
@@ -7567,8 +7567,8 @@ msgstr "`%s' není lightroom XMP!"
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
-msgstr[0] "%s bylo importováno"
-msgstr[1] "%s bylo importováno"
+msgstr[0] "%s byl importován"
+msgstr[1] "%s byly importovány"
 msgstr[2] "%s bylo importováno"
 
 #: ../src/develop/masks/brush.c:1117 ../src/develop/masks/brush.c:1171
@@ -10436,8 +10436,8 @@ msgstr[2] "%d/%d přeskakuji `%s'"
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
 msgstr[0] "%d/%d exportován do `%s'"
-msgstr[1] "%d/%d exportován do `%s'"
-msgstr[2] "%d/%d exportován do `%s'"
+msgstr[1] "%d/%d exportovány do `%s'"
+msgstr[2] "%d/%d exportováno do `%s'"
 
 #: ../src/imageio/storage/disk.c:396
 msgid ""
@@ -15508,7 +15508,7 @@ msgstr "odstraňte abnormálně jasné body jejich tlumením sousedy"
 msgid "fixed %d pixel"
 msgid_plural "fixed %d pixels"
 msgstr[0] "opraven %d bod"
-msgstr[1] "opraveno %d bodů"
+msgstr[1] "opraveno %d body"
 msgstr[2] "opraveno %d bodů"
 
 #: ../src/iop/hotpixels.c:379
@@ -18491,13 +18491,13 @@ msgid_plural ""
 "see tag: darktable|problem|history-compress"
 msgstr[0] ""
 "žádná komprese historie 1 obrázku.\n"
-"viz odkaz: darktable|problem|history-compress"
+"viz odkaz: darktable|problém|komprimace historie"
 msgstr[1] ""
 "žádná komprese historie %d obrázků.\n"
-"viz odkaz: darktable|problem|history-compress"
+"viz odkaz: darktable|problém|komprimace historie"
 msgstr[2] ""
 "žádná komprese historie %d obrázků.\n"
-"viz odkaz: darktable|problem|history-compress"
+"viz odkaz: darktable|problém|komprimace historie"
 
 #: ../src/libs/copy_history.c:201
 msgid "history compression warning"
@@ -21298,7 +21298,7 @@ msgstr "upravit"
 msgid "do you really want to remove %d style?"
 msgid_plural "do you really want to remove %d styles?"
 msgstr[0] "opravdu vymazat styl %d?"
-msgstr[1] "opravdu vymazat %d stylů?"
+msgstr[1] "opravdu vymazat %d styly?"
 msgstr[2] "opravdu vymazat %d stylů?"
 
 #: ../src/libs/styles.c:330
@@ -21306,7 +21306,7 @@ msgid "remove style?"
 msgid_plural "remove styles?"
 msgstr[0] "odstranit styl?"
 msgstr[1] "odstranit styly?"
-msgstr[2] "odstranit styly?"
+msgstr[2] "odstranit stylů?"
 
 #: ../src/libs/styles.c:450 ../src/libs/styles.c:633
 #, c-format
