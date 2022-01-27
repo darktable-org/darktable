@@ -159,7 +159,7 @@ void init(dt_imageio_module_format_t *self)
             enum avif_color_mode_e);
   luaA_enum_value(darktable.lua_state.state,
                   enum avif_color_mode_e,
-                  AVIF_COLOR_MODE_GRAYSCALE);
+                  AVIF_COLOR_MODE_RGB);
   luaA_enum_value(darktable.lua_state.state,
                   enum avif_color_mode_e,
                   AVIF_COLOR_MODE_GRAYSCALE);
@@ -453,8 +453,16 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   avifImageRGBToYUV(image, &rgb);
 
+  if(exif && exif_len > 0)
+    avifImageSetMetadataExif(image, exif, exif_len);
 
-  avifImageSetMetadataExif(image, exif, exif_len);
+  /* TODO: workaround; remove when exiv2 implements AVIF write support and update flags() */
+  char *xmp_string = dt_exif_xmp_read_string(imgid);
+  if(xmp_string && (size_t xmp_len = strlen(xmp_string)) > 0)
+  {
+    avifImageSetMetadataXMP(image, xmp_string, xmp_len + 1);
+    g_free(xmp_string);
+  }
 
   encoder = avifEncoderCreate();
   if(encoder == NULL)
@@ -692,7 +700,14 @@ const char *name()
 
 int flags(struct dt_imageio_module_data_t *data)
 {
-  return FORMAT_FLAGS_SUPPORT_XMP;
+  /*
+   * As of exiv2 0.27.5 there is no write support for the AVIF format, so
+   * we do not return the XMP supported flag currently.
+   * Once exiv2 write support is there, the flag can be returned, and the
+   * direct XMP embedding workaround using avifImageSetMetadataXMP() above
+   * can be removed.
+   */
+  return 0; /* FORMAT_FLAGS_SUPPORT_XMP; */
 }
 
 static void bit_depth_changed(GtkWidget *widget, gpointer user_data)
