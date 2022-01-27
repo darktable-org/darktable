@@ -34,6 +34,7 @@ for file in sorted(os.listdir(directory)):
 
     safe_allocs = 0
     faulty_allocs = 0
+    suspicious_allocs = 0
 
     print("%s" % file)
 
@@ -60,18 +61,27 @@ for file in sorted(os.listdir(directory)):
       frees = len(matches3)
 
       # Note that for OpenCL, we may have more than one free for each alloc because of the error go-to
-      if(frees < allocs):
-        print("\t%s buffer `%s` is allocated %i time(s) but freed %i time(s)" % (buffer_type, variable_name, allocs, frees))
+      if(frees < allocs and frees == 0):
+        print("\tERROR: %s buffer `%s` is allocated %i time(s) but never freed" % (buffer_type, variable_name, allocs))
         for elem in matches2:
           print("\t\t", elem)
         faulty_allocs += 1
+
+      elif(frees < allocs and frees > 0):
+        print("\tWARNING: %s buffer `%s` is allocated %i time(s) but freed %i time(s)" % (buffer_type, variable_name, allocs, frees))
+        for elem in matches2:
+          print("\t\t", elem)
+        suspicious_allocs += 1
+
       else:
         safe_allocs += 1
 
     msg_type = "INFO"
-    if(faulty_allocs > 0):
+    if(suspicious_allocs > 0):
       msg_type = "WARNING"
+    if(faulty_allocs > 0):
+      msg_type = "ERROR"
 
-    print("\t%s: %i safe alloc(s) detected over %i\n" % (msg_type, safe_allocs, safe_allocs + faulty_allocs))
+    print("\t%s: %i safe alloc(s) detected over %i\n" % (msg_type, safe_allocs, safe_allocs + faulty_allocs + suspicious_allocs))
 
     f.close()
