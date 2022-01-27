@@ -29,6 +29,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "control/conf.h"
@@ -458,9 +459,10 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   /* TODO: workaround; remove when exiv2 implements AVIF write support and update flags() */
   char *xmp_string = dt_exif_xmp_read_string(imgid);
-  if(xmp_string && (size_t xmp_len = strlen(xmp_string)) > 0)
+  size_t xmp_len;
+  if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
   {
-    avifImageSetMetadataXMP(image, xmp_string, xmp_len + 1);
+    avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
     g_free(xmp_string);
   }
 
