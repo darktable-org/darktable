@@ -1724,7 +1724,7 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *label = dt_ui_label_new(_("date/time"));
   gtk_grid_attach(grid, label, 0, line, 2, 1);
-  gtk_widget_set_tooltip_text(label, _("enter the new date/time (yyyy:mm:dd hh:mm:ss)"
+  gtk_widget_set_tooltip_text(label, _("enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])"
                                        "\nkey in the new numbers or scroll over the cell"));
 
   GtkWidget *box = _gui_init_datetime(&d->dt, 0, self);
@@ -1738,7 +1738,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_label_new(_("date/time offset"));
   gtk_grid_attach(grid, label, 0, line, 2, 1);
-  gtk_widget_set_tooltip_text(label, _("offset or difference ([-]dd hh:mm:ss)"));
+  gtk_widget_set_tooltip_text(label, _("offset or difference ([-]dd hh:mm:ss[.sss])"));
 
   d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(d->lock_offset, _("lock date/time offset value to apply it onto another selection"));

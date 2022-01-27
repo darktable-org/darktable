@@ -20,8 +20,8 @@
 #include <glib.h>
 #include "common/image.h"
 
-#define DT_DATETIME_ORIGIN "0001-01-01 00:00:00"
-#define DT_DATETIME_EPOCH "1970-01-01 00:00:00"
+#define DT_DATETIME_ORIGIN "0001-01-01 00:00:00.000"
+#define DT_DATETIME_EPOCH "1970-01-01 00:00:00.000"
 //  #define DT_DATETIME_LENGTH 24 // defined in image.h
 #define DT_DATETIME_EXIF_LENGTH 20
 
@@ -74,14 +74,13 @@ gboolean dt_datetime_img_to_tm_lt(struct tm *tt, const dt_image_t *img);
 // img cache datetime to numbers. Returns TRUE if OK.
 gboolean dt_datetime_img_to_numbers(dt_datetime_t *dt, const dt_image_t *img);
 
-// unix datetime to numbers. Returns TRUE if OK.
-gboolean dt_datetime_unix_to_numbers(dt_datetime_t *dt, const time_t *unix);
-
 // current datetime to numbers. Returns TRUE if OK.
 void dt_datetime_now_to_numbers(dt_datetime_t *dt);
 
-// manual entry datetime to exif datetime
-gboolean dt_datetime_entry_to_exif(char *exif, const char *entry);
+// progressive manual entry datetime to exif datetime
+gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_len, const char *entry);
+// progressive manual entry datetime to exif datetime bound
+gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_len, const char *entry);
 
 // add subsec (decimal numbers) to exif datetime
 void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const char*subsec);

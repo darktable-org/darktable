@@ -225,6 +225,8 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%.2d", params->data->time.minute);
   else if(has_prefix(variable, "SECOND"))
     result = g_strdup_printf("%.2d", params->data->time.second);
+  else if(has_prefix(variable, "MSEC"))
+    result = g_strdup_printf("%.3d", params->data->time.msec);
 
   else if(has_prefix(variable, "EXIF_YEAR"))
     result = g_strdup_printf("%.4d", datetime.year);
