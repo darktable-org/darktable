@@ -124,6 +124,8 @@ You are strongly advised to take a backup first.
   adjustment harder and the clicked location was not constant when
   dragging the crop area.
 
+- Fix writing XMP metadata in AVIF format.
+
 ## Lua
 
 
