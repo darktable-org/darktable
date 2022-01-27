@@ -3909,7 +3909,26 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
     cairo_set_dash(cr, &dashes, 0, 0);
 
-    cairo_rectangle(cr, 0, 0, width, height);
+    float cl_x = 0.0f, cl_y = 0.0f, cl_width = 0.0f, cl_height = 0.0f;
+
+    if(wd / (float)width > ht / (float)height)
+    {
+      // more spaces top/bottom
+      cl_x      = self->dev->border_size;
+      cl_y      = ((float)height - (ht * zoom_scale)) / 2.0f;
+      cl_width  = width - 2.0f * self->dev->border_size;
+      cl_height = ht * zoom_scale;
+    }
+    else
+    {
+      // more spaces left/right
+      cl_y      = self->dev->border_size;
+      cl_x      = ((float)width - (wd * zoom_scale)) / 2.0f;
+      cl_height = height - (2.0f * self->dev->border_size);
+      cl_width  = wd * zoom_scale;
+    }
+
+    cairo_rectangle(cr, cl_x, cl_y, cl_width, cl_height);
     cairo_clip(cr);
 
     // mask parts of image outside of clipping area in dark grey
@@ -4315,6 +4334,11 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
 
+    pts[0] *= pr_d;
+    pts[1] *= pr_d;
+    pts[2] *= pr_d;
+    pts[3] *= pr_d;
+
     const float newx = g->crop_cx + (pts[0] - pts[2]) - g->lastx;
     const float newy = g->crop_cy + (pts[1] - pts[3]) - g->lasty;
 
@@ -4561,12 +4585,18 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     if(p->cropmode == ASHIFT_CROP_ASPECT)
     {
+      const float pr_d = self->dev->preview_downsampling;
       dt_control_change_cursor(GDK_HAND1);
       g->adjust_crop = TRUE;
 
       dt_boundingbox_t pts = { pzx, pzy, 1.0f, 1.0f };
       dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                         DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+      pts[0] *= pr_d;
+      pts[1] *= pr_d;
+      pts[2] *= pr_d;
+      pts[3] *= pr_d;
 
       g->lastx = pts[0] - pts[2];
       g->lasty = pts[1] - pts[3];
@@ -4579,7 +4609,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   }
 
   // grab a draw corner
-  if((g->current_structure_method == ASHIFT_METHOD_QUAD || g->current_structure_method == ASHIFT_METHOD_LINES)
+  if((g->current_structure_method == ASHIFT_METHOD_QUAD
+      || g->current_structure_method == ASHIFT_METHOD_LINES)
      && g->draw_near_point >= 0)
   {
     g->draw_point_move = TRUE;
