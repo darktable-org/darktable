@@ -22,7 +22,7 @@ import os
 import re
 directory = "../src/iop/"
 
-alloc_regex = r"([a-zA-Z0-9_-]+) = (dt_|c|m|dt_opencl_)alloc.*\(.+\)"
+alloc_regex = r"([a-zA-Z0-9_\-\>\.]+) = (dt_|c|m|dt_opencl_)alloc.*\(.+\)"
 
 for file in sorted(os.listdir(directory)):
   if file.endswith(".c") or file.endswith(".h"):
