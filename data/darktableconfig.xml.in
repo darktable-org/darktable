@@ -928,7 +928,7 @@
     <type>string</type>
     <default/>
     <shortdescription>override today's date</shortdescription>
-    <longdescription>enter a valid date/time (YYYY-MM-DD[Thh:mm:ss] format) if you want to override the current date/time used when expanding variables:\n$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\nlet the field empty otherwise</longdescription>
+    <longdescription>type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override the current date/time used when expanding variables:\n$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\nlet the field empty otherwise</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
     <name>ui_last/import_keep_open</name>
@@ -2088,8 +2088,8 @@
      <name>lighttable/ui/milliseconds</name>
      <type>bool</type>
      <default>false</default>
-     <shortdescription>show image datetime milliseconds</shortdescription>
-     <longdescription>defines whether datetime milliseconds should be displayed</longdescription>
+     <shortdescription>show image time with milliseconds</shortdescription>
+     <longdescription>defines whether time should be displayed with milliseconds</longdescription>
    </dtconfig>
   <dtconfig>
     <name>darkroom/ui/rawoverexposed/mode</name>

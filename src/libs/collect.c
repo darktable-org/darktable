@@ -2111,7 +2111,7 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   {
     gtk_widget_set_tooltip_text(d->text,
                                 _("use <, <=, >, >=, <>, =, [;] as operators\n"
-                                  "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
+                                  "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"));
   }
   else if(property == DT_COLLECTION_PROP_FILENAME)
   {

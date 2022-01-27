@@ -193,6 +193,7 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "HOUR", N_("$(HOUR) - hour") },
           { "MINUTE", N_("$(MINUTE) - minute") },
           { "SECOND", N_("$(SECOND) - second") },
+          { "MSEC", N_("$(MSEC) - millisecond") },
           { "EXIF_YEAR", N_("$(EXIF_YEAR) - EXIF year") },
           { "EXIF_MONTH", N_("$(EXIF_MONTH) - EXIF month") },
           { "EXIF_DAY", N_("$(EXIF_DAY) - EXIF day") },

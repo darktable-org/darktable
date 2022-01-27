@@ -1925,7 +1925,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
       if(d->import_case != DT_IMPORT_INPLACE)
       {
         const char *entry = gtk_entry_get_text(GTK_ENTRY(d->from.datetime));
-        if(entry[0] && !dt_datetime_entry_to_exif(datetime_override, entry))
+        if(entry[0] && !dt_datetime_entry_to_exif(datetime_override, sizeof(datetime_override), entry))
         {
           dt_control_log(_("invalid override date/time format"));
           break;
