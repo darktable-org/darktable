@@ -126,6 +126,8 @@ You are strongly advised to take a backup first.
 
 - Fix writing XMP metadata in AVIF format.
 
+- Fix importing from SMB shares mounted using gvfs.
+
 ## Lua
 
 
