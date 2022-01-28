@@ -1758,7 +1758,7 @@ static void _sort_combobox_changed(GtkWidget *widget, gpointer user_data)
 }
 
 // this proxy function is primary called when the sort part of the filter bar is changed
-/*static void _proxy_set_sort(dt_lib_module_t *self, dt_collection_sort_t sort, gboolean asc)
+static void _proxy_set_sort(dt_lib_module_t *self, dt_collection_sort_t sort, gboolean asc)
 {
   // we update the widgets
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
@@ -1770,7 +1770,7 @@ static void _sort_combobox_changed(GtkWidget *widget, gpointer user_data)
 
   // we update the collection
   _sort_update_query(self, FALSE);
-}*/
+}
 
 static _widgets_sort_t *_sort_get_widgets(dt_lib_module_t *self)
 {
@@ -1881,9 +1881,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, FALSE, TRUE, 0);
 
   /* setup proxy */
-  // darktable.view_manager->proxy.module_collect.module = self;
-  // darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
-  // darktable.view_manager->proxy.module_collect.set_sort = _proxy_set_sort;
+  darktable.view_manager->proxy.module_filtering.module = self;
+  darktable.view_manager->proxy.module_filtering.update = _filters_gui_update;
+  darktable.view_manager->proxy.module_filtering.set_sort = _proxy_set_sort;
 
   _filters_gui_update(self);
 
