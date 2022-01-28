@@ -757,6 +757,24 @@ void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboo
   }
 }
 
+gboolean dt_metadata_already_imported(const char *filename, const char *datetime)
+{
+  if(!filename || !datetime)
+    return FALSE;
+  char *id = g_strconcat(filename, "-", datetime, NULL);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.meta_data WHERE value=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, id, -1, SQLITE_TRANSIENT);
+  gboolean res = FALSE;
+  if(sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 0) != 0)
+    res = TRUE;
+  sqlite3_finalize(stmt);
+  g_free(id);
+  return res;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
