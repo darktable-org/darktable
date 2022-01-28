@@ -485,7 +485,8 @@ static const char *_camera_request_image_path(const dt_camera_t *camera, char *e
   return dt_import_session_path(lib->session, FALSE);
 }
 
-static void _camera_capture_image_downloaded(const dt_camera_t *camera, const char *filename, void *data)
+static void _camera_capture_image_downloaded(const dt_camera_t *camera, const char *in_folder,
+                                             const char *in_filename, const char *filename, void *data)
 {
   dt_capture_t *lib = (dt_capture_t *)data;
 
