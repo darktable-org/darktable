@@ -387,9 +387,13 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
       const guint64 datetime = file->timestamp;
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
+      gchar *basename = g_path_get_basename(file->filename);
+      const gboolean already_imported = dt_metadata_already_imported(basename, dt_txt);
+      g_free(basename);
       GtkTreeIter iter;
       gtk_list_store_append(d->from.store, &iter);
       gtk_list_store_set(d->from.store, &iter,
+                         DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
                          DT_IMPORT_UI_FILENAME, file->filename,
                          DT_IMPORT_FILENAME, file->filename,
                          DT_IMPORT_UI_DATETIME, dt_txt,

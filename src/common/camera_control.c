@@ -122,7 +122,8 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
 static const char *_dispatch_request_image_path(const dt_camctl_t *c, char *exif_time, const dt_camera_t *camera);
 static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *filename,
                                                     const char *exif_time, const dt_camera_t *camera);
-static void _dispatch_camera_image_downloaded(const dt_camctl_t *c, const dt_camera_t *camera, const char *filename);
+static void _dispatch_camera_image_downloaded(const dt_camctl_t *c, const dt_camera_t *camera,
+                                              const char *in_path, const char *in_filename, const char *filename);
 static void _dispatch_camera_connected(const dt_camctl_t *c, const dt_camera_t *camera);
 static void _dispatch_camera_disconnected(const dt_camctl_t *c, const dt_camera_t *camera);
 static void _dispatch_control_status(const dt_camctl_t *c, dt_camctl_status_t status);
@@ -271,7 +272,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
                                 c->gpcontext) == GP_OK)
           {
             // Notify listeners of captured image
-            _dispatch_camera_image_downloaded(c, camera, output);
+            _dispatch_camera_image_downloaded(c, camera, NULL, NULL, output);
           }
           else
             dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
@@ -1159,7 +1160,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     if(!g_file_set_contents(output, data, size, NULL))
        dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to write file %s\n", output);
     else
-      _dispatch_camera_image_downloaded(c, cam, output);
+      _dispatch_camera_image_downloaded(c, cam, folder, filename, output);
 
     gp_file_free(camfile);
     g_free(prev_output);
@@ -1178,6 +1179,22 @@ void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam)
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   camctl->wanted_camera = cam;
   _camctl_unlock(c);
+}
+
+time_t dt_camctl_get_image_file_timestamp(const dt_camctl_t *c, const char *path, const char *filename)
+{
+  time_t timestamp = 0;
+  // Lets check the type of file...
+  CameraFileInfo cfi;
+  if(!(gp_camera_file_get_info(c->active_camera->gpcam, path, filename, &cfi, c->gpcontext) == GP_OK))
+  {
+    dt_print(DT_DEBUG_CAMCTL,
+    "[camera_control] failed to get file information of %s in folder %s on device\n", filename, path);
+  }
+  else
+    timestamp = cfi.file.mtime;
+
+  return timestamp;
 }
 
 static GList *_camctl_recursive_get_list(const dt_camctl_t *c, char *path)
@@ -1780,7 +1797,7 @@ static void _camera_poll_events(const dt_camctl_t *c, const dt_camera_t *cam)
                                 c->gpcontext) == GP_OK)
           {
             // Notify listeners of captured image
-            _dispatch_camera_image_downloaded(c, cam, output);
+            _dispatch_camera_image_downloaded(c, cam, NULL, NULL, output);
           }
           else
             dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to download file %s\n", output);
@@ -1947,7 +1964,6 @@ static const char *_dispatch_request_image_path(const dt_camctl_t *c, char *exif
   return path;
 }
 
-
 static void _dispatch_camera_connected(const dt_camctl_t *c, const dt_camera_t *camera)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
@@ -1974,7 +1990,8 @@ static void _dispatch_camera_disconnected(const dt_camctl_t *c, const dt_camera_
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
 }
 
-static void _dispatch_camera_image_downloaded(const dt_camctl_t *c, const dt_camera_t *camera, const char *filename)
+static void _dispatch_camera_image_downloaded(const dt_camctl_t *c, const dt_camera_t *camera,
+                                              const char *in_path, const char *in_filename, const char *filename)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   dt_pthread_mutex_lock(&camctl->listeners_lock);
@@ -1982,7 +1999,7 @@ static void _dispatch_camera_image_downloaded(const dt_camctl_t *c, const dt_cam
   {
     dt_camctl_listener_t *lstnr = (dt_camctl_listener_t *)listener->data;
     if(lstnr->image_downloaded)
-      lstnr->image_downloaded(camera, filename, lstnr->data);
+      lstnr->image_downloaded(camera, in_path, in_filename, filename, lstnr->data);
   }
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
 }
