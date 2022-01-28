@@ -33,6 +33,7 @@ typedef enum dt_metadata_t
   DT_METADATA_XMP_DC_RIGHTS,
   DT_METADATA_XMP_ACDSEE_NOTES,
   DT_METADATA_XMP_VERSION_NAME,
+  DT_METADATA_XMP_IMAGE_ID,
   DT_METADATA_NUMBER
 }
 dt_metadata_t;
@@ -60,6 +61,9 @@ typedef enum dt_metadata_flag_t
   DT_METADATA_FLAG_IMPORTED = 1 << 2    // metadata value changed
 }
 dt_metadata_flag_t;
+
+/** return the number of user metadata (!= DT_METADATA_TYPE_INTERNAL) */
+unsigned int dt_metadata_get_nb_user_metadata();
 
 /** return the metadata key by display order */
 const char *dt_metadata_get_name_by_display_order(const uint32_t order);
