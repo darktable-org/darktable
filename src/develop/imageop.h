@@ -276,10 +276,6 @@ typedef struct dt_iop_module_t
   /** show/hide guide button and combobox */
   GtkWidget *guides_toggle;
   GtkWidget *guides_combo;
-  /** list of closures: show, enable/disable */
-  GSList *accel_closures;
-  GSList *accel_closures_local;
-  gboolean local_closures_connected;
 
   /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
   gboolean has_trouble;
@@ -293,7 +289,6 @@ typedef struct dt_iop_module_t
   gboolean multi_show_up;
   gboolean multi_show_down;
   gboolean multi_show_new;
-  GtkWidget *duplicate_button;
   GtkWidget *multimenu_button;
 
   /** delayed-event handling */
