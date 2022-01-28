@@ -49,9 +49,21 @@ static const struct
   {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
   {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
   {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5},
-  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6}
+  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6},
+  {"Xmp.darktable.image_id", N_("image id"), DT_METADATA_TYPE_INTERNAL, 7}
   // clang-format on
 };
+
+unsigned int dt_metadata_get_nb_user_metadata()
+{
+  unsigned int nb = 0;
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    if(dt_metadata_def[i].type != DT_METADATA_TYPE_INTERNAL)
+      nb++;
+  }
+  return nb;
+}
 
 const char *dt_metadata_get_name_by_display_order(const uint32_t order)
 {
