@@ -78,8 +78,6 @@ typedef struct dt_iop_gui_simple_callback_t
   int index;
 } dt_iop_gui_simple_callback_t;
 
-static void _iop_panel_label(dt_iop_module_t *module);
-
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   memcpy(module->params, module->default_params, module->params_size);
@@ -1084,7 +1082,7 @@ static void _iop_panel_label(dt_iop_module_t *module)
   g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
 }
 
-static void _iop_gui_update_header(dt_iop_module_t *module)
+void dt_iop_gui_update_header(dt_iop_module_t *module)
 {
   if (!module->header)                  /* some modules such as overexposed don't actually have a header */
     return;
@@ -1131,11 +1129,6 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
   }
 }
 
-void dt_iop_gui_update_header(dt_iop_module_t *module)
-{
-  _iop_gui_update_header(module);
-}
-
 void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
                                        const char* const trouble_msg,
                                        const char* const trouble_tooltip,
@@ -1151,12 +1144,6 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
   if(!dt_iop_is_hidden(module) && module->gui_data && dt_conf_get_bool("plugins/darkroom/show_warnings"))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
                                   module, trouble_msg, trouble_tooltip);
-}
-
-static void _iop_gui_update_label(dt_iop_module_t *module)
-{
-  if(!module->header) return;
-  _iop_panel_label(module);
 }
 
 void dt_iop_gui_init(dt_iop_module_t *module)
@@ -1189,7 +1176,7 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
   dt_iop_load_default_params(module);
   if(darktable.gui) --darktable.gui->reset;
 
-  if(module->header) _iop_gui_update_header(module);
+  if(module->header) dt_iop_gui_update_header(module);
 }
 
 void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
@@ -1808,8 +1795,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       dt_iop_gui_update_blending(module);
       dt_iop_gui_update_expanded(module);
     }
-    _iop_gui_update_label(module);
-    dt_iop_gui_set_enable_button(module);
+    dt_iop_gui_update_header(module);
     dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
     dt_guides_update_module_widget(module);
   }
@@ -2518,7 +2504,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->expander = expander;
 
   /* update header */
-  _iop_gui_update_header(module);
+  dt_iop_gui_update_header(module);
 
   gtk_widget_set_hexpand(module->widget, FALSE);
   gtk_widget_set_vexpand(module->widget, FALSE);
