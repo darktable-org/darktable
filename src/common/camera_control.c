@@ -1184,6 +1184,8 @@ void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam)
 time_t dt_camctl_get_image_file_timestamp(const dt_camctl_t *c, const char *path, const char *filename)
 {
   time_t timestamp = 0;
+  if(!path || !filename)
+    return 0;
   // Lets check the type of file...
   CameraFileInfo cfi;
   if(!(gp_camera_file_get_info(c->active_camera->gpcam, path, filename, &cfi, c->gpcontext) == GP_OK))

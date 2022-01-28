@@ -384,11 +384,13 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
     if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
                              && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
     {
-      const guint64 datetime = file->timestamp;
+      const time_t datetime = file->timestamp;
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
       gchar *basename = g_path_get_basename(file->filename);
-      const gboolean already_imported = dt_metadata_already_imported(basename, dt_txt);
+      char dtid[DT_DATETIME_LENGTH];
+      dt_metadata_unix_time_to_text(dtid, sizeof(dtid), &datetime);
+      const gboolean already_imported = dt_metadata_already_imported(basename, dtid);
       g_free(basename);
       GtkTreeIter iter;
       gtk_list_store_append(d->from.store, &iter);
@@ -688,61 +690,9 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
   /* get filmroll id for current directory. if not present, checking the db whether
     the image has already been imported can be skipped */
   int32_t filmroll_id = dt_film_get_id(folder);
-
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
   const gboolean include_jpegs = !dt_conf_get_bool("ui_last/import_ignore_jpegs");
-  while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
-  {
-    const char *uifilename = g_file_info_get_display_name(info);
-    const char *filename = g_file_info_get_name(info);
-    if(!filename)
-      continue;
-    const guint64 datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-    GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
-    gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
-    const GFileType filetype = g_file_info_get_file_type(info);
-    gchar *uifullname = g_build_filename(folder, uifilename, NULL);
-    gchar *fullname = g_build_filename(folder, filename, NULL);
 
-    if(recursive && filetype == G_FILE_TYPE_DIRECTORY)
-    {
-      nb = _import_set_file_list(fullname, folder_lgth, nb, self);
-    }
-    // supported image format to import
-    else if(filetype != G_FILE_TYPE_DIRECTORY && dt_supported_image(filename))
-    {
-      const char *ext = g_strrstr(filename, ".");
-      if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
-                               && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
-      {
-        gboolean already_imported = FALSE;
-        if(d->import_case == DT_IMPORT_INPLACE)
-        {
-          /* check if image is already imported, using previously fetched filroll id */
-          if(filmroll_id != -1)
-            already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
-        }
-        else already_imported = dt_metadata_already_imported(&fullname[offset], dt_txt);
-
-        GtkTreeIter iter;
-        gtk_list_store_append(d->from.store, &iter);
-        gtk_list_store_set(d->from.store, &iter,
-                           DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
-                           DT_IMPORT_UI_FILENAME, &uifullname[offset],
-                           DT_IMPORT_FILENAME, &fullname[offset],
-                           DT_IMPORT_UI_DATETIME, dt_txt,
-                           DT_IMPORT_DATETIME, datetime,
-                           DT_IMPORT_THUMB, d->from.eye, -1);
-        nb++;
-      }
-    }
-
-    g_free(dt_txt);
-    g_free(fullname);
-    g_free(uifullname);
-    g_date_time_unref(dt_datetime);
-    g_object_unref(info);
-  }
   if(dir_files)
   {
     while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
@@ -751,7 +701,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
       const char *filename = g_file_info_get_name(info);
       if(!filename)
         continue;
-      const guint64 datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      const time_t datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
       const GFileType filetype = g_file_info_get_file_type(info);
@@ -769,11 +719,20 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
         if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
                                  && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
         {
-          /* check if image is already imported, using previously fetched filroll id */
           gboolean already_imported = FALSE;
-          if(filmroll_id != -1)
+          if(d->import_case == DT_IMPORT_INPLACE)
           {
-            already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
+            /* check if image is already imported, using previously fetched filroll id */
+            if(filmroll_id != -1)
+              already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
+          }
+          else
+          {
+            gchar *basename = g_path_get_basename(filename);
+            char dtid[DT_DATETIME_LENGTH];
+            dt_metadata_unix_time_to_text(dtid, sizeof(dtid), &datetime);
+            already_imported = dt_metadata_already_imported(basename, dtid);
+            g_free(basename);
           }
 
           GtkTreeIter iter;

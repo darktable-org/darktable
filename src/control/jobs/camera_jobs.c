@@ -227,16 +227,15 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_p
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   const int32_t imgid = dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE, TRUE);
 
-  const time_t timestamp = dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
+  const time_t timestamp = (!in_path || !in_filename) ? 0 :
+               dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
   if(timestamp && imgid >= 0)
   {
-    GDateTime *dt_datetime = g_date_time_new_from_unix_local(timestamp);
-    gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
+    char dt_txt[DT_DATETIME_LENGTH];
+    dt_metadata_unix_time_to_text(dt_txt, sizeof(dt_txt), &timestamp);
     gchar *id = g_strconcat(in_filename, "-", dt_txt, NULL);
     dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
-    g_free(dt_txt);
     g_free(id);
-    g_date_time_unref(dt_datetime);
   }
 
   dt_control_queue_redraw_center();
