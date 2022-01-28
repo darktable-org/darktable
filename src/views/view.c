@@ -1046,14 +1046,15 @@ void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gin
 
 void dt_view_collection_update(const dt_view_manager_t *vm)
 {
+  if(vm->proxy.module_filtering.module) vm->proxy.module_filtering.update(vm->proxy.module_filtering.module);
   if(vm->proxy.module_collect.module)
     vm->proxy.module_collect.update(vm->proxy.module_collect.module);
 }
 
-void dt_view_collect_set_sort(const dt_view_manager_t *vm, int sort, gboolean asc)
+void dt_view_filtering_set_sort(const dt_view_manager_t *vm, int sort, gboolean asc)
 {
-  if(vm->proxy.module_collect.module)
-    vm->proxy.module_collect.set_sort(vm->proxy.module_collect.module, sort, asc);
+  if(vm->proxy.module_filtering.module)
+    vm->proxy.module_filtering.set_sort(vm->proxy.module_filtering.module, sort, asc);
 }
 
 int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm)

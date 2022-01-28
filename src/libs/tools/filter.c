@@ -595,7 +595,7 @@ static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget,
 
   if(d->manual_update) return;
 
-  dt_view_collect_set_sort(darktable.view_manager, items[dt_bauhaus_combobox_get(d->sort)], reverse);
+  dt_view_filtering_set_sort(darktable.view_manager, items[dt_bauhaus_combobox_get(d->sort)], reverse);
 }
 
 static void _lib_filter_comparator_changed(GtkWidget *widget, gpointer user_data)
@@ -611,7 +611,7 @@ static void _lib_filter_sort_combobox_changed(GtkWidget *widget, gpointer user_d
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   if(d->manual_update) return;
   const gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->reverse));
-  dt_view_collect_set_sort(darktable.view_manager, items[dt_bauhaus_combobox_get(d->sort)], reverse);
+  dt_view_filtering_set_sort(darktable.view_manager, items[dt_bauhaus_combobox_get(d->sort)], reverse);
 }
 
 static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_properties_t changed_property)
