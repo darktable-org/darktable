@@ -91,6 +91,7 @@ typedef struct dt_lib_filtering_rule_t
   GtkWidget *w_operator;
   GtkWidget *w_prop;
   GtkWidget *w_close;
+  GtkWidget *w_off;
 
   GtkWidget *w_widget_box;
   char raw_text[PARAM_STRING_SIZE];
@@ -120,6 +121,7 @@ typedef struct dt_lib_filtering_params_rule_t
 {
   uint32_t item : 16;
   uint32_t mode : 16;
+  uint32_t off : 16;
   char string[PARAM_STRING_SIZE];
 } dt_lib_filtering_params_rule_t;
 
@@ -189,6 +191,10 @@ static void _filters_update_params(dt_lib_filtering_t *d)
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
     p->rule[i].mode = dt_conf_get_int(confname);
 
+    /* get on-off */
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
+    p->rule[i].off = dt_conf_get_int(confname);
+
     /* get string */
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
     const char *string = dt_conf_get_string_const(confname);
@@ -228,6 +234,10 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     /* set mode */
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1u", i);
     dt_conf_set_int(confname, p->rule[i].mode);
+
+    /* set on-off */
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1u", i);
+    dt_conf_set_int(confname, p->rule[i].off);
 
     /* set string */
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1u", i);
@@ -282,6 +292,7 @@ static dt_lib_filtering_t *get_collect(dt_lib_filtering_rule_t *r)
 static void _conf_update_rule(dt_lib_filtering_rule_t *rule)
 {
   const dt_lib_collect_mode_t mode = MAX(0, gtk_combo_box_get_active(GTK_COMBO_BOX(rule->w_operator)));
+  const gboolean off = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off));
 
   char confname[200] = { 0 };
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", rule->num);
@@ -290,6 +301,8 @@ static void _conf_update_rule(dt_lib_filtering_rule_t *rule)
   dt_conf_set_int(confname, rule->prop);
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", rule->num);
   dt_conf_set_int(confname, mode);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", rule->num);
+  dt_conf_set_int(confname, off);
 }
 
 static void _event_rule_changed(GtkWidget *entry, dt_lib_filtering_rule_t *rule)
@@ -331,6 +344,8 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
     const int mode = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i + 1);
     const int item = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i + 1);
+    const int off = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i + 1);
     gchar *string = dt_conf_get_string(confname);
     if(string)
@@ -339,6 +354,8 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
       dt_conf_set_int(confname, mode);
       snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
       dt_conf_set_int(confname, item);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
+      dt_conf_set_int(confname, off);
       snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
       dt_conf_set_string(confname, string);
       g_free(string);
@@ -935,6 +952,8 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     dt_conf_set_int(confname, mode);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", d->nb_rules);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", d->nb_rules);
+    dt_conf_set_int(confname, 0);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", d->nb_rules);
     dt_conf_set_string(confname, "");
     d->nb_rules++;
@@ -985,6 +1004,8 @@ static void _preset_load(GtkWidget *widget, dt_lib_module_t *self)
         dt_conf_set_int(confname, p->rule[i].item);
         snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", d->nb_rules);
         dt_conf_set_int(confname, p->rule[i].mode);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", d->nb_rules);
+        dt_conf_set_int(confname, p->rule[i].off);
         snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", d->nb_rules);
         dt_conf_set_string(confname, p->rule[i].string);
         d->nb_rules++;
@@ -1179,7 +1200,7 @@ static gboolean _event_preset_load(GtkWidget *widget, GdkEventButton *event, dt_
 
 // initialise or update a rule widget. Return if the a new widget has been created
 static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                             const gchar *text, const dt_lib_collect_mode_t mode, const int pos,
+                             const gchar *text, const dt_lib_collect_mode_t mode, gboolean off, const int pos,
                              dt_lib_module_t *self)
 {
   rule->manual_widget_set++;
@@ -1242,14 +1263,27 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_container_add(GTK_CONTAINER(overlay), false_cb);
     gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
 
+
+    GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_set_halign(hbox2, GTK_ALIGN_FILL);
+    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), hbox2);
+
+    // on-off button
+    rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT, NULL);
+    gtk_widget_set_name(GTK_WIDGET(rule->w_off), "basics-link");
+    gtk_widget_set_tooltip_text(rule->w_off, _("disable this collect rule"));
+    g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_changed), rule);
+    gtk_box_pack_end(GTK_BOX(hbox2), rule->w_off, FALSE, FALSE, 0);
+
     // remove button
     rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_name(GTK_WIDGET(rule->w_close), "basics-link");
     gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
     g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), rule);
-    gtk_widget_set_halign(rule->w_close, GTK_ALIGN_END);
-    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), rule->w_close);
+    gtk_box_pack_end(GTK_BOX(hbox2), rule->w_close, FALSE, FALSE, 0);
   }
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), !off);
 
   if(newmain)
   {
@@ -1287,7 +1321,9 @@ static void _filters_gui_update(dt_lib_module_t *self)
     const gchar *txt = dt_conf_get_string_const(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
     const dt_lib_collect_mode_t rmode = dt_conf_get_int(confname);
-    if(_widget_init(&d->rule[i], prop, txt, rmode, i, self))
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
+    const int off = dt_conf_get_int(confname);
+    if(_widget_init(&d->rule[i], prop, txt, rmode, off, i, self))
       gtk_box_pack_start(GTK_BOX(d->rules_box), d->rule[i].w_main, FALSE, TRUE, 0);
     gtk_widget_show_all(d->rule[i].w_main);
   }
@@ -1468,102 +1504,6 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
   }*/
 }
 
-/*static void menuitem_clear(GtkMenuItem *menuitem, dt_lib_filtering_rule_t *rule)
-{
-  // remove this row, or if 1st, clear text entry box
-  const int _a = dt_conf_get_int("plugins/lighttable/filtering/num_rules");
-  const int active = CLAMP(_a, 1, MAX_RULES);
-  dt_lib_filtering_t *d = get_collect(rule);
-  if(active > 1)
-  {
-    dt_conf_set_int("plugins/lighttable/filtering/num_rules", active - 1);
-    if(d->active_rule >= active - 1) d->active_rule = active - 2;
-  }
-  else
-  {
-    dt_conf_set_int("plugins/lighttable/filtering/mode0", DT_LIB_COLLECT_MODE_AND);
-    dt_conf_set_int("plugins/lighttable/filtering/item0", 0);
-    dt_conf_set_string("plugins/lighttable/filtering/string0", "");
-  }
-  // move up all still active rules by one.
-  for(int i = rule->num; i < MAX_RULES - 1; i++)
-  {
-    char confname[200] = { 0 };
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i + 1);
-    const int mode = dt_conf_get_int(confname);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i + 1);
-    const int item = dt_conf_get_int(confname);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i + 1);
-    gchar *string = dt_conf_get_string(confname);
-    if(string)
-    {
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
-      dt_conf_set_int(confname, mode);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
-      dt_conf_set_int(confname, item);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
-      dt_conf_set_string(confname, string);
-      g_free(string);
-    }
-  }
-
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-}
-
-static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_filtering_rule_t *d)
-{
-  if(event->button != 1) return FALSE;
-
-  GtkWidget *menu = gtk_menu_new();
-  GtkWidget *mi;
-  const int _a = dt_conf_get_int("plugins/lighttable/filtering/num_rules");
-  const int active = CLAMP(_a, 1, MAX_RULES);
-
-  mi = gtk_menu_item_new_with_label(_("clear this rule"));
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_clear), d);
-
-  if(d->num == active - 1)
-  {
-    mi = gtk_menu_item_new_with_label(_("narrow down search"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
-
-    mi = gtk_menu_item_new_with_label(_("add more images"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_OR));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
-
-    mi = gtk_menu_item_new_with_label(_("exclude images"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode), d);
-  }
-  else if(d->num < active - 1)
-  {
-    mi = gtk_menu_item_new_with_label(_("change to: and"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode_change), d);
-
-    mi = gtk_menu_item_new_with_label(_("change to: or"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_OR));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode_change), d);
-
-    mi = gtk_menu_item_new_with_label(_("change to: except"));
-    g_object_set_data(G_OBJECT(mi), "menuitem_mode", GINT_TO_POINTER(DT_LIB_COLLECT_MODE_AND_NOT));
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_mode_change), d);
-  }
-
-  gtk_widget_show_all(GTK_WIDGET(menu));
-
-  gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
-
-  return TRUE;
-}*/
 
 static void view_set_click(gpointer instance, gpointer user_data)
 {
@@ -1894,9 +1834,8 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // force redraw collection images because of late update of the table memory.darktable_iop_names
-  const int _a = dt_conf_get_int("plugins/lighttable/filtering/num_rules") - 1;
-  const int active = CLAMP(_a, 0, (MAX_RULES - 1));
-  for(int i = 0; i <= active; i++)
+  d->nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, MAX_RULES);
+  for(int i = 0; i <= d->nb_rules; i++)
   {
     if(d->rule[i].prop == DT_COLLECTION_PROP_MODULE)
     {
