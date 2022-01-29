@@ -33,7 +33,7 @@ def find_call_and_line(elem, file, directory):
   for line in f:
     line_number += 1
     if elem in line:
-      print("\t\t", elem, "found at line", line_number)
+      print("\t\t line", line_number, ":", elem.strip())
 
   f.close()
 
@@ -69,7 +69,7 @@ for file in sorted(os.listdir(directory)):
         variable_free_regex  = ".*release_mem_object.*\(%s\)" % variable_name
         buffer_type = "OpenCL"
       else:
-        variable_free_regex  = ".*free.*\(%s\)" % variable_name
+        variable_free_regex  = " \S*free.*\(%s\)" % variable_name
         buffer_type = "C"
       matches3 = re.findall(variable_free_regex, content, re.MULTILINE)
       frees = len(matches3)
@@ -80,12 +80,18 @@ for file in sorted(os.listdir(directory)):
         print("\tERROR: %s buffer `%s` is allocated %i time(s) but never freed" % (buffer_type, variable_name, allocs))
         for elem in matches2:
           find_call_and_line(elem, file, directory)
+        for elem in matches3:
+          find_call_and_line(elem, file, directory)
+
         faulty_allocs += 1
 
       elif(frees < allocs and frees > 0):
         print("\tWARNING: %s buffer `%s` is allocated %i time(s) but freed %i time(s)" % (buffer_type, variable_name, allocs, frees))
         for elem in matches2:
           find_call_and_line(elem, file, directory)
+        for elem in matches3:
+          find_call_and_line(elem, file, directory)
+
         suspicious_allocs += 1
 
       else:
