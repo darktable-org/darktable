@@ -1244,6 +1244,18 @@ gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
   return result;
 }
 
+gboolean dt_history_check_module_exists_list(GList *hist, const char *operation, gboolean enabled)
+{
+  for(GList *h = hist; h; h = g_list_next(h))
+  {
+    const dt_history_item_t *item = (dt_history_item_t *)(h->data);
+
+    if(!g_strcmp0(item->op, operation) && (item->enabled || !enabled))
+      return TRUE;
+  }
+  return FALSE;
+}
+
 GList *dt_history_duplicate(GList *hist)
 {
   GList *result = NULL;
