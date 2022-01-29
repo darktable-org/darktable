@@ -1219,16 +1219,20 @@ int dt_history_compress_on_list(const GList *imgs)
   return uncompressed;
 }
 
-gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
+gboolean dt_history_check_module_exists(int32_t imgid, const char *operation, gboolean enabled)
 {
   gboolean result = FALSE;
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
-    "SELECT imgid FROM main.history WHERE imgid= ?1 AND operation = ?2", -1, &stmt, NULL);
+    "SELECT imgid"
+    " FROM main.history"
+    " WHERE imgid= ?1 AND operation = ?2 AND enabled in (1, ?3)",
+    -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, enabled);
   if (sqlite3_step(stmt) == SQLITE_ROW) result = TRUE;
   sqlite3_finalize(stmt);
 
