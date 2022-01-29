@@ -288,6 +288,58 @@ static dt_lib_filtering_t *get_collect(dt_lib_filtering_rule_t *r)
   return d;
 }
 
+static void _history_save(dt_lib_filtering_t *d)
+{
+  // get the string of the rules
+  char buf[4096] = { 0 };
+  dt_collection_serialize(buf, sizeof(buf), TRUE);
+
+  // compare to last saved history
+  char confname[200] = { 0 };
+  gchar *str = dt_conf_get_string("plugins/lighttable/filtering/history0");
+  if(!g_strcmp0(str, buf))
+  {
+    g_free(str);
+    return;
+  }
+  g_free(str);
+
+  // remove all subseqeunt history that have the same values
+  const int nbmax = dt_conf_get_int("plugins/lighttable/filtering/history_max");
+  int move = 0;
+  for(int i = 1; i < nbmax; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i);
+    gchar *string = dt_conf_get_string(confname);
+
+    if(!g_strcmp0(string, buf))
+    {
+      move++;
+      dt_conf_set_string(confname, "");
+    }
+    else if(move > 0)
+    {
+      dt_conf_set_string(confname, "");
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i - move);
+      dt_conf_set_string(confname, string);
+    }
+    g_free(string);
+  }
+
+  // move all history entries +1 (and delete the last one)
+  for(int i = nbmax - 2; i >= 0; i--)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i);
+    gchar *string = dt_conf_get_string(confname);
+
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i + 1);
+    dt_conf_set_string(confname, string);
+    g_free(string);
+  }
+
+  // save current history
+  dt_conf_set_string("plugins/lighttable/filtering/history0", buf);
+}
 
 static void _conf_update_rule(dt_lib_filtering_rule_t *rule)
 {
@@ -303,6 +355,8 @@ static void _conf_update_rule(dt_lib_filtering_rule_t *rule)
   dt_conf_set_int(confname, mode);
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", rule->num);
   dt_conf_set_int(confname, off);
+
+  _history_save(get_collect(rule));
 }
 
 static void _event_rule_changed(GtkWidget *entry, dt_lib_filtering_rule_t *rule)
@@ -370,7 +424,7 @@ static void _rating_decode(const gchar *txt, int *comp, int *mode)
 {
   // --- First, the special cases
   // easy case : select all
-  if(!strcmp(txt, ""))
+  if(!strcmp(txt, "") || !strcmp(txt, "%"))
   {
     *mode = DT_COLLECTION_FILTER_ALL;
     return;
@@ -1270,7 +1324,6 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
 
     // on-off button
     rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT, NULL);
-    gtk_widget_set_name(GTK_WIDGET(rule->w_off), "basics-link");
     gtk_widget_set_tooltip_text(rule->w_off, _("disable this collect rule"));
     g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_changed), rule);
     gtk_box_pack_end(GTK_BOX(hbox2), rule->w_off, FALSE, FALSE, 0);
@@ -1544,7 +1597,7 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
 
   int num_rules = 0;
   char str[400] = { 0 };
-  int mode, item;
+  int mode, item, off;
   int c;
   sscanf(buf, "%d", &num_rules);
   while(buf[0] != '\0' && buf[0] != ':') buf++;
@@ -1552,11 +1605,13 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
 
   for(int k = 0; k < num_rules; k++)
   {
-    const int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
+    const int n = sscanf(buf, "%d:%d:%d:%399[^$]", &mode, &item, &off, str);
 
-    if(n == 3)
+    if(n == 4)
     {
-      if(k > 0) switch(mode)
+      if(k > 0)
+      {
+        switch(mode)
         {
           case DT_LIB_COLLECT_MODE_AND:
             c = g_strlcpy(out, _(" and "), outsize);
@@ -1574,12 +1629,21 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
             outsize -= c;
             break;
         }
+      }
       int i = 0;
       while(str[i] != '\0' && str[i] != '$') i++;
       if(str[i] == '$') str[i] = '\0';
 
-      c = snprintf(out, outsize, "%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
-                   item == 0 ? dt_image_film_roll_name(str) : str);
+      if(off)
+      {
+        c = snprintf(out, outsize, "%s%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
+                     _("(off)"), item == 0 ? dt_image_film_roll_name(str) : str);
+      }
+      else
+      {
+        c = snprintf(out, outsize, "%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
+                     item == 0 ? dt_image_film_roll_name(str) : str);
+      }
       out += c;
       outsize -= c;
     }
@@ -1591,12 +1655,12 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
 static void _event_history_apply(GtkWidget *widget, dt_lib_module_t *self)
 {
   const int hid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history"));
-  if(hid < 0 || hid >= dt_conf_get_int("plugins/lighttable/recentcollect/max_items")) return;
+  if(hid < 0 || hid >= dt_conf_get_int("plugins/lighttable/filtering/history_max")) return;
 
   char confname[200];
-  snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", hid);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", hid);
   const char *line = dt_conf_get_string_const(confname);
-  if(line && line[0] != '\0') dt_collection_deserialize(line);
+  if(line && line[0] != '\0') dt_collection_deserialize(line, TRUE);
 }
 
 static gboolean _event_history_show(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -1606,13 +1670,12 @@ static gboolean _event_history_show(GtkWidget *widget, GdkEventButton *event, dt
   gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
 
-  const int maxitems = dt_conf_get_int("plugins/lighttable/recentcollect/max_items");
-  const int numitems = dt_conf_get_int("plugins/lighttable/recentcollect/num_items");
+  const int maxitems = dt_conf_get_int("plugins/lighttable/filtering/history_max");
 
-  for(int i = 0; i < maxitems && i < numitems; i++)
+  for(int i = 0; i < maxitems; i++)
   {
     char confname[200];
-    snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i);
     const char *line = dt_conf_get_string_const(confname);
     if(line && line[0] != '\0')
     {
@@ -1626,6 +1689,8 @@ static gboolean _event_history_show(GtkWidget *widget, GdkEventButton *event, dt
       g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_event_history_apply), self);
       gtk_menu_shell_append(pop, smt);
     }
+    else
+      break;
   }
 
   dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);

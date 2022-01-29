@@ -2214,27 +2214,37 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
   return query;
 }
 
-int dt_collection_serialize(char *buf, int bufsize)
+int dt_collection_serialize(char *buf, int bufsize, gboolean filtering)
 {
+  const char *plugin_name = filtering ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
   char confname[200];
   int c;
-  const int num_rules = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+  const int num_rules = dt_conf_get_int(confname);
   c = snprintf(buf, bufsize, "%d:", num_rules);
   buf += c;
   bufsize -= c;
   for(int k = 0; k < num_rules; k++)
   {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
+    snprintf(confname, sizeof(confname), "%s/mode%1d", plugin_name, k);
     const int mode = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", mode);
     buf += c;
     bufsize -= c;
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
+    snprintf(confname, sizeof(confname), "%s/item%1d", plugin_name, k);
     const int item = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", item);
     buf += c;
     bufsize -= c;
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
+    if(filtering)
+    {
+      snprintf(confname, sizeof(confname), "%s/off%1d", plugin_name, k);
+      const int off = dt_conf_get_int(confname);
+      c = snprintf(buf, bufsize, "%d:", off);
+      buf += c;
+      bufsize -= c;
+    }
+    snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
     const char *str = dt_conf_get_string_const(confname);
     if(str && (str[0] != '\0'))
       c = snprintf(buf, bufsize, "%s$", str);
@@ -2246,49 +2256,64 @@ int dt_collection_serialize(char *buf, int bufsize)
   return 0;
 }
 
-void dt_collection_deserialize(const char *buf)
+void dt_collection_deserialize(const char *buf, gboolean filtering)
 {
+  const char *plugin_name = filtering ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
+  char confname[200];
   int num_rules = 0;
   sscanf(buf, "%d", &num_rules);
-  if(num_rules == 0)
+  if(num_rules == 0 && !filtering)
   {
-    dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
-    dt_conf_set_int("plugins/lighttable/collect/mode0", 0);
-    dt_conf_set_int("plugins/lighttable/collect/item0", 0);
-    dt_conf_set_string("plugins/lighttable/collect/string0", "%");
+    // we always want at least 1 rule
+    snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+    dt_conf_set_int(confname, 1);
+    snprintf(confname, sizeof(confname), "%s/mode0", plugin_name);
+    dt_conf_set_int(confname, 0);
+    snprintf(confname, sizeof(confname), "%s/item0", plugin_name);
+    dt_conf_set_int(confname, 0);
+    snprintf(confname, sizeof(confname), "%s/string0", plugin_name);
+    dt_conf_set_string(confname, "%");
   }
   else
   {
-    int mode = 0, item = 0;
-    dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
+    int mode = 0, item = 0, off = 0;
+    snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+    dt_conf_set_int(confname, num_rules);
     while(buf[0] != '\0' && buf[0] != ':') buf++;
     if(buf[0] == ':') buf++;
-    char str[400], confname[200];
+    char str[400];
     for(int k = 0; k < num_rules; k++)
     {
-      const int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
-      if(n == 3)
+      const int n = (filtering) ? sscanf(buf, "%d:%d:%d:%399[^$]", &mode, &item, &off, str)
+                                : sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
+      if((!filtering && n == 3) || (filtering && n == 4))
       {
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
+        snprintf(confname, sizeof(confname), "%s/mode%1d", plugin_name, k);
         dt_conf_set_int(confname, mode);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
+        snprintf(confname, sizeof(confname), "%s/item%1d", plugin_name, k);
         dt_conf_set_int(confname, item);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
+        if(filtering)
+        {
+          snprintf(confname, sizeof(confname), "%s/off%1d", plugin_name, k);
+          dt_conf_set_int(confname, off);
+        }
+        snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
         dt_conf_set_string(confname, str);
       }
-      else if(num_rules == 1)
+      else if(!filtering && num_rules == 1)
       {
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
+        snprintf(confname, sizeof(confname), "%s/mode%1d", plugin_name, k);
         dt_conf_set_int(confname, 0);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
+        snprintf(confname, sizeof(confname), "%s/item%1d", plugin_name, k);
         dt_conf_set_int(confname, 0);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
+        snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
         dt_conf_set_string(confname, "%");
         break;
       }
       else
       {
-        dt_conf_set_int("plugins/lighttable/collect/num_rules", k);
+        snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+        dt_conf_set_int(confname, k);
         break;
       }
       while(buf[0] != '$' && buf[0] != '\0') buf++;

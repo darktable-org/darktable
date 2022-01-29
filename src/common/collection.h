@@ -278,8 +278,8 @@ void dt_collection_hint_message(const dt_collection_t *collection);
 int dt_collection_image_offset(int imgid);
 
 /* serialize and deserialize into a string. */
-void dt_collection_deserialize(const char *buf);
-int dt_collection_serialize(char *buf, int bufsize);
+void dt_collection_deserialize(const char *buf, gboolean filtering);
+int dt_collection_serialize(char *buf, int bufsize, gboolean filtering);
 
 /* splits an input string into a number part and an optional operator part */
 void dt_collection_split_operator_number(const gchar *input, char **number1, char **number2, char **op);
