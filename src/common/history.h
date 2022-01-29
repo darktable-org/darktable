@@ -79,10 +79,7 @@ gboolean dt_history_copy_parts(int imgid);
 gboolean dt_history_paste_on_list(const GList *list, gboolean undo);
 gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo);
 
-static inline gboolean dt_history_module_skip_copy(const int flags)
-{
-  return flags & (IOP_FLAGS_DEPRECATED | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN);
-}
+gboolean dt_history_module_skip_copy(const char*op, const int flags);
 
 /** load a dt file and applies to selected images */
 int dt_history_load_and_apply_on_list(gchar *filename, const GList *list);
