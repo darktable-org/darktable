@@ -249,6 +249,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
 
   /* fill list with history items */
   GList *items = dt_history_get_items(imgid, FALSE);
+  const gboolean has_cc = dt_history_check_module_exists_list(items, "channelmixerrgb", TRUE);
   if(items)
   {
     GtkTreeIter iter;
@@ -260,7 +261,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
 
       if(!(flags & IOP_FLAGS_HIDDEN))
       {
-        const gboolean is_safe = !dt_history_module_skip_copy(item->op, flags);
+        const gboolean is_safe = !dt_history_module_skip_copy(item->op, flags, has_cc);
 
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,

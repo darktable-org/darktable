@@ -79,7 +79,11 @@ gboolean dt_history_copy_parts(int imgid);
 gboolean dt_history_paste_on_list(const GList *list, gboolean undo);
 gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo);
 
-gboolean dt_history_module_skip_copy(const char*op, const int flags);
+/** returns wether a module is to be skip from copy by default.
+    op         : operation to check
+    flags      : module flags
+    dev_has_cc : TRUE is the current image's history has Color Calibration **/
+gboolean dt_history_module_skip_copy(const char*op, const int flags, gboolean dev_has_cc);
 
 /** load a dt file and applies to selected images */
 int dt_history_load_and_apply_on_list(gchar *filename, const GList *list);
