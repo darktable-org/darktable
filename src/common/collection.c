@@ -2422,10 +2422,12 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     gchar *text = dt_conf_get_string(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
+    const int off = dt_conf_get_int(confname);
 
-    if(!text || text[0] == '\0')
+    if(off || !text || text[0] == '\0')
     {
-      if(mode == 1) // for OR show all
+      if(!off && mode == 1) // for OR show all
         query_parts[i + num_rules] = g_strdup(" OR 1=1");
       else
         query_parts[i + num_rules] = g_strdup("");
