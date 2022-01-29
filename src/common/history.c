@@ -581,11 +581,12 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
 
 gboolean dt_history_module_skip_copy(const char*op, const int flags, gboolean dev_has_cc)
 {
-  const gboolean is_scene_referred = dt_conf_is_equal("plugins/darkroom/workflow", "scene-referred");
-  // In scene-referred mode we still want to copy the temperature module which is
+  const gboolean is_modern_chroma =
+    dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
+  // In modern chromatic-adaptation mode we still want to copy the temperature module which is
   // needed for the color-calibration module.
   return (flags & (IOP_FLAGS_DEPRECATED | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN))
-    && !(is_scene_referred && dev_has_cc && g_strcmp0(op, "temperature") == 0);
+    && !(is_modern_chroma && dev_has_cc && g_strcmp0(op, "temperature") == 0);
 }
 
 static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const int32_t dest_imgid, GList *ops, const gboolean copy_full)
