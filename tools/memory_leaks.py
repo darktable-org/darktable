@@ -44,7 +44,7 @@ for file in sorted(os.listdir(directory)):
       alloc_type = match.group(2)
 
       # Look how many times the variable is allocated
-      variable_alloc_regex = "%s = %salloc.*\(.+\)" % (variable_name, alloc_type)
+      variable_alloc_regex = " %s = %salloc.*\(.+\)" % (variable_name, alloc_type)
       matches2 = re.findall(variable_alloc_regex, content, re.MULTILINE)
       allocs = len(matches2)
 
