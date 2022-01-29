@@ -22,7 +22,20 @@ import os
 import re
 directory = "../src/iop/"
 
-alloc_regex = r"([a-zAq'-Z0-9_\-\>\.\[\]]+) = (dt_|c|m|dt_opencl_)alloc.*\(.+\)"
+alloc_regex = r"([a-zA-Z0-9_\-\>\.\[\]]+) = (dt_|c|m|dt_opencl_)alloc.*\(.+\)"
+
+
+def find_call_and_line(elem, file, directory):
+  line_number = 0
+  f = open(os.path.join(directory, file), "r")
+
+  # find the line(s) in file
+  for line in f:
+    line_number += 1
+    if elem in line:
+      print("\t\t", elem, "found at line", line_number)
+
+  f.close()
 
 for file in sorted(os.listdir(directory)):
   if file.endswith(".c") or file.endswith(".h"):
@@ -47,6 +60,7 @@ for file in sorted(os.listdir(directory)):
       variable_alloc_regex = " %s = %salloc.*\(.+\)" % (variable_name, alloc_type)
       matches2 = re.findall(variable_alloc_regex, content, re.MULTILINE)
       allocs = len(matches2)
+      matches2 = set(matches2)
 
       # Look how many times the variable is freed
       variable_free_regex = r""
@@ -59,18 +73,19 @@ for file in sorted(os.listdir(directory)):
         buffer_type = "C"
       matches3 = re.findall(variable_free_regex, content, re.MULTILINE)
       frees = len(matches3)
+      matches3 = set(matches3)
 
       # Note that for OpenCL, we may have more than one free for each alloc because of the error go-to
       if(frees < allocs and frees == 0):
         print("\tERROR: %s buffer `%s` is allocated %i time(s) but never freed" % (buffer_type, variable_name, allocs))
         for elem in matches2:
-          print("\t\t", elem)
+          find_call_and_line(elem, file, directory)
         faulty_allocs += 1
 
       elif(frees < allocs and frees > 0):
         print("\tWARNING: %s buffer `%s` is allocated %i time(s) but freed %i time(s)" % (buffer_type, variable_name, allocs, frees))
         for elem in matches2:
-          print("\t\t", elem)
+          find_call_and_line(elem, file, directory)
         suspicious_allocs += 1
 
       else:
