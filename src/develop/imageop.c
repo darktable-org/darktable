@@ -2863,12 +2863,13 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
 {
   /*
    decide which module instance keyboard shortcuts will be applied to based on user preferences, as follows
-    - Use the focused module, if it is an instance of this module type. Otherwise
+    - Use the focused module, if it is an instance of this module type and the appropriate preference is checked. Otherwise
     - prefer expanded instances (when selected and instances of the module are expanded on the RHS of the screen, collapsed instances will be ignored)
     - prefer enabled instances (when selected, after applying the above rule, if instances of the module are active, inactive instances will be ignored)
     - prefer unmasked instances (when selected, after applying the above rules, if instances of the module are unmasked, masked instances will be ignored)
     - selection order (after applying the above rules, apply the shortcut to the first or last instance remaining)
   */
+  const gboolean prefer_focused = dt_conf_get_bool("accel/prefer_focused");
   const int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded") ? 8 : 0;
   const int prefer_enabled = dt_conf_get_bool("accel/prefer_enabled") ? 4 : 0;
   const int prefer_unmasked = dt_conf_get_bool("accel/prefer_unmasked") ? 2 : 0;
@@ -2877,7 +2878,7 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
   dt_iop_module_t *accel_mod = NULL;  // The module to which accelerators are to be attached
 
   // if any instance has focus, use that one
-  if(darktable.develop->gui_module && darktable.develop->gui_module->so == module)
+  if(prefer_focused && darktable.develop->gui_module && darktable.develop->gui_module->so == module)
     accel_mod = darktable.develop->gui_module;
   else
   {
