@@ -1515,7 +1515,7 @@ static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
     switch(w->type)
     {
       case DT_BAUHAUS_COMBOBOX:
-        cairo_translate(cr, width - darktable.bauhaus->quad_width * .5f, height * .33f);
+        cairo_translate(cr, width - darktable.bauhaus->quad_width * .5f, height * .4f);
         draw_equilateral_triangle(cr, darktable.bauhaus->quad_width * .3f);
         cairo_fill_preserve(cr);
         cairo_set_line_width(cr, 0.5);
