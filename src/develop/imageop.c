@@ -2655,17 +2655,6 @@ static gboolean _enable_module_callback(GtkAccelGroup *accel_group, GObject *acc
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
 
-  if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-      darktable.gui->scroll_to[1] = module->expander;
-
-  if(dt_conf_get_bool("darkroom/ui/activate_expand"))
-    dt_iop_gui_set_expanded(module, !active, dt_conf_get_bool("darkroom/ui/single_module"));
-
-  dt_iop_request_focus(module);
-
-  // rebuild the accelerators
-  dt_iop_connect_accels_multi(module->so);
-
   return TRUE;
 }
 
