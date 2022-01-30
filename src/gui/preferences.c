@@ -553,7 +553,7 @@ void dt_gui_preferences_show()
 
   //open in the appropriate tab if currently in darkroom or lighttable view
   const gchar *current_view = darktable.view_manager->current_view->name(darktable.view_manager->current_view);
-  if(strcmp(current_view, "darkroom") == 0 || strcmp(current_view, "lighttable") == 0)
+  if(strcmp(current_view, _("darkroom")) == 0 || strcmp(current_view, _("lighttable")) == 0)
   {
     gtk_stack_set_visible_child(GTK_STACK(stack), gtk_stack_get_child_by_name(GTK_STACK(stack), current_view));
   }
