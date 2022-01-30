@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -200,7 +200,7 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
 
 void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1.15, 1, 0, 0)
+  PREAMBLE(0.8, 0.8, 0, 0)
 
   cairo_move_to(cr, 0.1, 0.05);
   cairo_line_to(cr, 0.1, 0.95);
@@ -391,7 +391,7 @@ void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   PREAMBLE(1, 1, 0, 0)
 
   cairo_arc(cr, 0.5, 0.5, 0.45, 0, 2 * M_PI);
-  cairo_stroke(cr);
+  cairo_fill(cr);
 
   if((flags & CPF_ACTIVE))
   {
