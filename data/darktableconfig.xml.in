@@ -8,6 +8,13 @@
     <shortdescription>modify theme with user tweaks</shortdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="accel">
+    <name>accel/prefer_focused</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>prefer focused instance</shortdescription>
+    <longdescription>if an instance of the module has focus, apply shortcut to that instance\nnote: blending shortcuts always apply to the focused instance</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="accel">
     <name>accel/prefer_expanded</name>
     <type>bool</type>
     <default>false</default>
