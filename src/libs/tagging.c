@@ -2569,8 +2569,7 @@ static void _update_layout(dt_lib_module_t *self)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
 
   const gboolean active_s = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->toggle_suggestion_button));
-  d->suggestion_flag = (dt_conf_key_exists("plugins/lighttable/tagging/nosuggestion")
-                        && !dt_conf_get_bool("plugins/lighttable/tagging/nosuggestion"));
+  d->suggestion_flag = dt_conf_get_bool("plugins/lighttable/tagging/nosuggestion");
   if(active_s != d->suggestion_flag)
   {
     g_signal_handler_block (d->toggle_suggestion_button, d->suggestion_button_handler);
