@@ -3870,6 +3870,14 @@ static gboolean area_scroll_callback(GtkWidget *widget, GdkEventScroll *event, g
   return FALSE;
 }
 
+static void switch_page_callback(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+
+  if( !darktable.gui->reset  && self->enabled )
+    dt_iop_color_picker_reset(self, TRUE);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_filmicrgb_gui_data_t *g = IOP_GUI_ALLOC(filmicrgb);
@@ -3899,6 +3907,7 @@ void gui_init(dt_iop_module_t *self)
   // Init GTK notebook
   static struct dt_action_def_t notebook_def = { };
   g->notebook = dt_ui_notebook_new(&notebook_def);
+  g_signal_connect(G_OBJECT(g->notebook), "switch-page", G_CALLBACK(switch_page_callback), self);
   dt_action_define_iop(self, NULL, N_("page"), GTK_WIDGET(g->notebook), &notebook_def);
 
   // Page SCENE
