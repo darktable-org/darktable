@@ -212,24 +212,24 @@ void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   
   if(flags & CPF_DIRECTION_UP)
   {
-    cairo_move_to(cr, 0.40, 0.05);
+    cairo_move_to(cr, 0.35, 0.05);
     cairo_line_to(cr, 0.45, 0.05);
-    cairo_move_to(cr, 0.40, 0.35);
+    cairo_move_to(cr, 0.35, 0.35);
     cairo_line_to(cr, 0.65, 0.35);
-    cairo_move_to(cr, 0.40, 0.65);
+    cairo_move_to(cr, 0.35, 0.65);
     cairo_line_to(cr, 0.85, 0.65);
-    cairo_move_to(cr, 0.40, 0.95);
+    cairo_move_to(cr, 0.35, 0.95);
     cairo_line_to(cr, 1.00, 0.95);
   }
   else
   {
-    cairo_move_to(cr, 0.40, 0.05);
+    cairo_move_to(cr, 0.35, 0.05);
     cairo_line_to(cr, 1.00, 0.05);
-    cairo_move_to(cr, 0.40, 0.35);
+    cairo_move_to(cr, 0.35, 0.35);
     cairo_line_to(cr, 0.85, 0.35);
-    cairo_move_to(cr, 0.40, 0.65);
+    cairo_move_to(cr, 0.35, 0.65);
     cairo_line_to(cr, 0.65, 0.65);
-    cairo_move_to(cr, 0.40, 0.95);
+    cairo_move_to(cr, 0.35, 0.95);
     cairo_line_to(cr, 0.45, 0.95);
   }
   cairo_stroke(cr);
@@ -1498,14 +1498,10 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 {
   PREAMBLE(1, 1, 0, 0)
 
-  gboolean def = FALSE;
   double r = 0.4;
 
   /* fill base color */
   cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
-  float alpha = 1.0;
-
-  if((flags & 8) && !(flags & CPF_PRELIGHT)) alpha = 0.6;
 
   const dt_colorlabels_enum color = (flags & 7);
 
@@ -1517,24 +1513,13 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   }
   else
   {
-    cairo_set_line_width(cr, 0.12);
-    cairo_set_source_rgba(cr, 0.9, 0.9, 0.9, alpha);
-    cairo_move_to(cr, 0.9, 0.1);
-    cairo_line_to(cr, 0.1, 0.9);
+    cairo_set_line_width(cr, 0.1);
+    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+    cairo_move_to(cr, 0.15, 0.85);
+    cairo_line_to(cr, 0.85, 0.15);
     cairo_stroke(cr);
-    def = TRUE;
   }
   cairo_fill(cr);
-
-  /* draw slash overlay on delete label icon */  
-  if(def == TRUE && (flags & CPF_PRELIGHT))
-  {
-    cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
-    cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 0.6);
-    cairo_move_to(cr, 0.9, 0.1);
-    cairo_line_to(cr, 0.1, 0.9);
-    cairo_stroke(cr);
-  }
 
   FINISH
 }
