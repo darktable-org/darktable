@@ -355,7 +355,6 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   {
     // we do not want to support a context as it break all translations see #5498
     // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
-      label = gtk_label_new(gettext(f->header.description));
     str = *f->header.description
         ? g_strdup(f->header.description)
         : dt_util_str_replace(f->header.field_name, "_", " ");
