@@ -1088,15 +1088,11 @@ notebook tabs,
 }
 
 /* Set notebook tabs */
-notebook tab
+notebook tab label
 {
   border-bottom: 0.14em solid transparent;
   padding: 0.21em;
   font-weight: normal;
-}
-
-notebook tab label /* disabled tabs */
-{
   color: shade(@button_checked_fg, 0.75);
 }
 

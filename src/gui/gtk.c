@@ -2879,13 +2879,7 @@ static void _notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocat
   gtk_widget_get_allocation(sizes[0].data, &first);
   gtk_widget_get_allocation(sizes[n - 1].data, &last);
 
-  GtkBorder padding = { 3, 3, 3, 3 };
-/*gtk_style_context_get_padding(gtk_style_context_get_parent(gtk_widget_get_style_context(sizes[0].data)),
-                                gtk_widget_get_state_flags(sizes[0].data),
-                                &padding); // try to get tab (not label) padding*/
-
-  const gint total_space = last.x + last.width - first.x
-                           - (n - 1) * (padding.left + padding.right);
+  const gint total_space = last.x + last.width - first.x; // ignore tab padding; CSS sets padding for label
 
   if(total_space > 0)
   {

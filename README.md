@@ -301,6 +301,14 @@ This builds the software for your architecture only, with:
 * OpenCL support (GPU offloading) if detected,
 * Lua scripting support if detected.
 
+If you want to have dartkable displayed along your other applications, you only need to add a symbolic link:
+
+```bash
+ln -s /opt/darktable/share/applications/darktable.desktop /usr/share/applications/darktable.desktop
+```
+
+Now, your custom-built darktable is ready to be used just like any pre-packaged software.
+
 #### Manual way
 
 Alternatively, you can use a manual build to pass custom arguments.
