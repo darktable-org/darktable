@@ -86,6 +86,7 @@
 @define-color plugin_fg_color @fg_color;
 @define-color section_label shade(@plugin_fg_color, 0.95);
 @define-color plugin_label_color @grey_60;
+@define-color collapsible_bg_color shade(@plugin_fg_color, 0.5);
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg @bg_color;
@@ -2727,7 +2728,13 @@ Details :
 #collapse-block,
 #collapsible #bauhaus-slider
 {
- background-color: shade(@plugin_fg_color, 0.5);
+  background-color: @collapsible_bg_color;
+}
+
+/* for the import parameters to be more aligned with the imports buttons */
+#lib-plugin-ui #collapse-block
+{
+  margin: 1px;
 }
 
 #collapsible,
@@ -2736,7 +2743,7 @@ Details :
   padding: 0px 2px 2px 10px;
   margin: 0;
   border: none;
-  background-color: shade(@plugin_fg_color, 0.5);
+  background-color: @collapsible_bg_color;
 }
 
 #collapse-block .section-expander
