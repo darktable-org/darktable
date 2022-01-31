@@ -348,8 +348,8 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
   dt_introspection_field_t *f = self->so->get_f(param);
 
-  GtkWidget *button, *label;
-  gchar *str;
+  GtkWidget *button = NULL;
+  gchar *str = NULL;
 
   if(f && f->header.type == DT_INTROSPECTION_TYPE_BOOL)
   {
@@ -359,7 +359,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
         ? g_strdup(f->header.description)
         : dt_util_str_replace(f->header.field_name, "_", " ");
 
-    label = gtk_label_new(_(str));
+    GtkWidget *label = gtk_label_new(_(str));
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
     button = gtk_check_button_new();
     gtk_container_add(GTK_CONTAINER(button), label);
