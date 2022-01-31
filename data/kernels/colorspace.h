@@ -608,7 +608,7 @@ static inline float4 dt_uvY_to_xyY(const float4 uvY)
   xyY.x = 9.f * uvY.x / denominator; // x
   xyY.y = 4.f * uvY.y / denominator; // y
   xyY.z = uvY.z;                     // Y
-  xyY.w = xyY.w;
+  xyY.w = uvY.w;
   return xyY;
 }
 
