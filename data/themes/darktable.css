@@ -2722,19 +2722,24 @@ Details :
   margin: 0 0.4em;
 }
 
-#collapsible .box *,
-#iop-plugin-ui #collapsible #bauhaus-slider
+/* Collapsible sections on lib & iop modules */
+
+#collapse-block,
+#collapsible #bauhaus-slider
 {
-    background-color: shade(@plugin_bg_color, 0.90);
-    color: shade(@plugin_fg_color, 1.2);
+ background-color: shade(@plugin_fg_color, 0.5);
 }
-#collapsible
+
+#collapsible,
+#collapse-block #section_label
 {
-    background-color: shade(@plugin_bg_color, 0.90);
-    color: shade(@plugin_fg_color, 1.2);
-    padding: 0px 2px 2px 10px;
-    margin: 0 0 5px;
-    border-style: solid;
-    border-color: shade(@plugin_fg_color, 0.8);
-    border-width: 0 0 0 1px;
+  padding: 0px 2px 2px 10px;
+  margin: 0;
+  border: none;
+  background-color: shade(@plugin_fg_color, 0.5);
+}
+
+#collapse-block .section-expander
+{
+  margin: 0.1em;
 }
