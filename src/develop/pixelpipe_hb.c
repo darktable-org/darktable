@@ -86,8 +86,6 @@ static char *_pipe_type_to_str(int pipe_type)
         r = "preview2";
       break;
     case DT_DEV_PIXELPIPE_FULL:
-      if(fast)
-      r = "full";
       r = "full";
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
