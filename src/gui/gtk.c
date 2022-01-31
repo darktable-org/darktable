@@ -3360,6 +3360,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   cs->expander = dtgtk_expander_new(destdisp_head, GTK_WIDGET(cs->container));
   gtk_box_pack_end(cs->parent, cs->expander, FALSE, FALSE, 0);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), expanded);
+  gtk_widget_set_name(cs->expander, "collapse-block");
 
   g_signal_connect(G_OBJECT(cs->toggle), "toggled",
                    G_CALLBACK(_coeffs_button_changed),  (gpointer)cs);
