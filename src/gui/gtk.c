@@ -3324,6 +3324,12 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs)
     gtk_widget_hide(GTK_WIDGET(cs->container));
 }
 
+void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs)
+{
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), FALSE);
+  gtk_widget_hide(GTK_WIDGET(cs->container));
+}
+
 void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
                                     const char *confname, const char *label, GtkBox *parent)
 {
