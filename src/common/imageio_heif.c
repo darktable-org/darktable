@@ -275,7 +275,7 @@ int dt_imageio_heif_read_profile(const char *filename,
     case heif_color_profile_type_rICC:
     case heif_color_profile_type_prof:
       icc_size = heif_image_handle_get_raw_color_profile_size(handle);
-      if(icc_size <= 0)
+      if(icc_size == 0)
       {
         // image has no embedded ICC profile
         goto out;

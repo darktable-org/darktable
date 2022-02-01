@@ -2723,10 +2723,12 @@ void dt_gui_load_theme(const char *theme)
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
   {
     // dt dir theme
+    g_free(path);
     path = g_build_filename(datadir, "themes", theme_css, NULL);
     if(!g_file_test(path, G_FILE_TEST_EXISTS))
     {
       // fallback to default theme
+      g_free(path);
       path = g_build_filename(datadir, "themes", "darktable.css", NULL);
       dt_conf_set_string("ui_last/theme", "darktable");
     }

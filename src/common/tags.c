@@ -433,24 +433,19 @@ gboolean dt_tag_attach_images(const guint tagid, const GList *img, const gboolea
   GList *undo = NULL;
   GList *tags = NULL;
 
-  if(img)
+  tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
+  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
+
+  const gboolean res = _tag_execute(tags, img, &undo, undo_on, DT_TA_ATTACH);
+
+  g_list_free(tags);
+  if(undo_on)
   {
-    tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
-    if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
-
-    const gboolean res = _tag_execute(tags, img, &undo, undo_on, DT_TA_ATTACH);
-
-    g_list_free(tags);
-    if(undo_on)
-    {
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, undo, _pop_undo, _tags_undo_data_free);
-      dt_undo_end_group(darktable.undo);
-    }
-
-    return res;
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, undo, _pop_undo, _tags_undo_data_free);
+    dt_undo_end_group(darktable.undo);
   }
 
-  return FALSE;
+  return res;
 }
 
 gboolean dt_tag_attach(const guint tagid, const gint imgid, const gboolean undo_on, const gboolean group_on)

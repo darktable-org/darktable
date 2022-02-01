@@ -41,7 +41,7 @@ static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
   dt_thumbnail_t *th = (dt_thumbnail_t *)a;
   const int imgid = GPOINTER_TO_INT(b);
-  if(th->imgid < 0 || b < 0) return 1;
+  if(th->imgid < 0 || imgid < 0) return 1;
   return (th->imgid != imgid);
 }
 static void _list_remove_thumb(gpointer user_data)
@@ -1032,7 +1032,7 @@ static gboolean _event_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
   // but we don't really want to draw something, this is just to know when the widget is really ready
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  if(!darktable.collection || darktable.collection->count <= 0)
+  if(!darktable.collection || darktable.collection->count == 0)
   {
     GtkAllocation allocation;
     gtk_widget_get_allocation(table->widget, &allocation);
