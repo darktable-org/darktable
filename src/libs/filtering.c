@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "dtgtk/button.h"
+#include "dtgtk/range.h"
 #include "gui/gtk.h"
 #include "gui/preferences_dialogs.h"
 #include "libs/collect.h"
@@ -65,8 +66,7 @@ typedef struct _widgets_rating_t
 
 typedef struct _widgets_aspect_ratio_t
 {
-  GtkWidget *mode;
-  GtkWidget *value;
+  GtkWidget *range_select;
 } _widgets_aspect_ratio_t;
 
 typedef struct _widgets_folders_t
@@ -570,67 +570,69 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   rule->w_specific = rate;
 }
 
-typedef enum _ratio_mode_t
+static void _ratio_decode(const gchar *txt, double *min, double *max, dt_range_bounds_t *bounds)
 {
-  RATIO_INVALID = -1,
-  RATIO_ALL = 0,
-  RATIO_LANDSCAPE,
-  RATIO_PORTRAIT,
-  RATIO_SQUARE,
-  RATIO_PANO,
-  RATIO_LEQ,
-  RATIO_EQ,
-  RATIO_GEQ,
-  RATIO_NE
-} _ratio_mode_t;
-
-static void _ratio_decode(const gchar *txt, int *mode, float *value)
-{
-  // --- First, the special cases
-  if(!strcmp(txt, ""))
+  gchar *n1 = NULL;
+  gchar *n2 = NULL;
+  // easy case : select all
+  if(!strcmp(txt, "") || !strcmp(txt, "%"))
   {
-    *mode = RATIO_ALL;
+    *bounds = DT_RANGE_BOUND_MAX | DT_RANGE_BOUND_MIN;
     return;
   }
-  if(!strcmp(txt, ">1") || !strcmp(txt, ">1.0"))
+  else if(g_str_has_prefix(txt, "<="))
   {
-    *mode = RATIO_LANDSCAPE;
-    return;
+    *bounds = DT_RANGE_BOUND_MIN;
+    n1 = g_strdup(txt + 2);
+    n2 = g_strdup(txt + 2);
   }
-  if(!strcmp(txt, "<1") || !strcmp(txt, "<1.0"))
-  {
-    *mode = RATIO_PORTRAIT;
-    return;
-  }
-  if(!strcmp(txt, "=1") || !strcmp(txt, "=1.0") || !strcmp(txt, "1") || !strcmp(txt, "1.0"))
-  {
-    *mode = RATIO_SQUARE;
-    return;
-  }
-  if(!strcmp(txt, ">2") || !strcmp(txt, ">2.0"))
-  {
-    *mode = RATIO_PANO;
-    return;
-  }
-
-  // --- Now we need to decode the comparator and the value
-  if(g_str_has_prefix(txt, "<="))
-    *mode = RATIO_LEQ;
   else if(g_str_has_prefix(txt, "="))
-    *mode = RATIO_EQ;
+  {
+    *bounds = DT_RANGE_BOUND_FIXED;
+    n1 = g_strdup(txt + 1);
+    n2 = g_strdup(txt + 1);
+  }
   else if(g_str_has_prefix(txt, ">="))
-    *mode = RATIO_GEQ;
-  else if(g_str_has_prefix(txt, "!="))
-    *mode = RATIO_NE;
+  {
+    *bounds = DT_RANGE_BOUND_MAX;
+    n1 = g_strdup(txt + 2);
+    n2 = g_strdup(txt + 2);
+  }
   else
   {
-    // can't read the format...
-    return;
+    GRegex *regex;
+    GMatchInfo *match_info;
+
+    // we test the range expression first
+    regex = g_regex_new("^\\s*\\[\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*;\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0,
+                        NULL);
+    g_regex_match_full(regex, txt, -1, 0, 0, &match_info, NULL);
+    int match_count = g_match_info_get_match_count(match_info);
+
+    if(match_count == 3)
+    {
+      n1 = g_match_info_fetch(match_info, 1);
+      n2 = g_match_info_fetch(match_info, 2);
+    }
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
   }
 
-  const gchar *txt2 = (*mode == 6) ? txt + 1 : txt + 2;
+  // if we still don't have values, let's try simple value
+  if(!n1 || !n2)
+  {
+    *bounds = DT_RANGE_BOUND_FIXED;
+    n1 = g_strdup(txt);
+    n2 = g_strdup(txt);
+  }
 
-  *value = atof(txt2);
+  // now we transform the text values into double
+  const double v1 = atof(n1);
+  const double v2 = atof(n2);
+  *min = fmin(v1, v2);
+  *max = fmax(v1, v2);
+  g_free(n1);
+  g_free(n2);
 }
 
 static void _ratio_changed(GtkWidget *widget, gpointer user_data)
@@ -641,67 +643,34 @@ static void _ratio_changed(GtkWidget *widget, gpointer user_data)
   _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
 
   // we recreate the right raw text and put it in the raw entry
-  const int mode = dt_bauhaus_combobox_get(ratio->mode);
-  const gchar *value = gtk_entry_get_text(GTK_ENTRY(ratio->value));
+  double min, max;
+  dt_range_bounds_t bounds = dtgtk_range_select_get_range(DTGTK_RANGE_SELECT(ratio->range_select), &min, &max);
 
-  gchar *txt = dt_util_dstrcat(NULL, "%s", "");
-  switch(mode)
-  {
-    case RATIO_LANDSCAPE:
-      txt = dt_util_dstrcat(txt, ">1");
-      break;
-    case RATIO_PORTRAIT:
-      txt = dt_util_dstrcat(txt, "<1");
-      break;
-    case RATIO_SQUARE:
-      txt = dt_util_dstrcat(txt, "=1");
-      break;
-    case RATIO_PANO:
-      txt = dt_util_dstrcat(txt, ">2");
-      break;
-    case RATIO_LEQ:
-      txt = dt_util_dstrcat(txt, "<=%s", value);
-      break;
-    case RATIO_EQ:
-      txt = dt_util_dstrcat(txt, "=%s", value);
-      break;
-    case RATIO_GEQ:
-      txt = dt_util_dstrcat(txt, ">=%s", value);
-      break;
-    case RATIO_NE:
-      txt = dt_util_dstrcat(txt, "!=%s", value);
-      break;
-  }
+  char txt[128] = { 0 };
+  if((bounds & DT_RANGE_BOUND_MAX) && (bounds & DT_RANGE_BOUND_MIN))
+    snprintf(txt, sizeof(txt), "%%");
+  else if(bounds & DT_RANGE_BOUND_MAX)
+    snprintf(txt, sizeof(txt), ">=%lf", min);
+  else if(bounds & DT_RANGE_BOUND_MIN)
+    snprintf(txt, sizeof(txt), "<=%lf", max);
+  else if(bounds & DT_RANGE_BOUND_FIXED)
+    snprintf(txt, sizeof(txt), "=%lf", min);
+  else
+    snprintf(txt, sizeof(txt), "[%lf;%lf]", min, max);
 
   _rule_set_raw_text(rule, txt, TRUE);
-  g_free(txt);
-
-  // we also update the sensitivity of the numeric widget
-  gtk_widget_set_sensitive(ratio->value, (mode >= RATIO_LEQ));
 }
 
 static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
-  int mode = RATIO_INVALID;
-  float value = 1.0;
-  _ratio_decode(rule->raw_text, &mode, &value);
-
-  // if we don't manage to decode, we don't refresh and return false
-  if(mode == RATIO_INVALID) return FALSE;
+  double min, max;
+  dt_range_bounds_t bounds;
+  _ratio_decode(rule->raw_text, &min, &max, &bounds);
 
   rule->manual_widget_set++;
   _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
-  dt_bauhaus_combobox_set(ratio->mode, mode);
-  // get the string of the value. Note that we need to temprorarily switch locale to C in order to ensure the point
-  // as decimal separator
-  char valstr[10] = { 0 };
-  gchar *loc = setlocale(LC_NUMERIC, NULL);
-  setlocale(LC_NUMERIC, "C");
-  snprintf(valstr, sizeof(valstr), "%.2f", value);
-  setlocale(LC_NUMERIC, loc);
-  gtk_entry_set_text(GTK_ENTRY(ratio->value), valstr);
-  gtk_widget_set_sensitive(ratio->value, (mode >= RATIO_LEQ));
+  dtgtk_range_select_set_range(DTGTK_RANGE_SELECT(ratio->range_select), bounds, min, max, FALSE);
   rule->manual_widget_set--;
   return TRUE;
 }
@@ -711,26 +680,14 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
 {
   _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)g_malloc0(sizeof(_widgets_aspect_ratio_t));
 
-  int mode = RATIO_GEQ;
-  float value = 1.0;
-  _ratio_decode(text, &mode, &value);
-  char valstr[10] = { 0 };
-  snprintf(valstr, sizeof(valstr), "%f", value);
+  double min, max;
+  dt_range_bounds_t bounds;
+  _ratio_decode(text, &min, &max, &bounds);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(ratio->mode, self, NULL, N_("ratio"), _("ratio to show"), mode, _ratio_changed,
-                               rule, N_("all"), N_("landscape"), N_("portrait"), N_("square"), N_("panoramic"),
-                               "≤", "=", "≥", "≠");
-  dt_bauhaus_widget_set_label(ratio->mode, NULL, NULL);
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->mode, TRUE, TRUE, 0);
-
-  ratio->value = gtk_entry_new();
-  gtk_widget_set_tooltip_text(ratio->value, _("ratio value.\n"
-                                              ">1 means landscaoe. <1 means portrait"));
-  gtk_entry_set_width_chars(GTK_ENTRY(ratio->value), 5);
-  gtk_entry_set_text(GTK_ENTRY(ratio->value), valstr);
-  gtk_widget_set_sensitive(ratio->value, (mode >= RATIO_LEQ));
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->value, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(ratio->value), "activate", G_CALLBACK(_ratio_changed), rule);
+  ratio->range_select = dtgtk_range_select_new();
+  dtgtk_range_select_set_range(DTGTK_RANGE_SELECT(ratio->range_select), bounds, min, max, FALSE);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(ratio->range_select), "value-changed", G_CALLBACK(_ratio_changed), rule);
 
   rule->w_specific = ratio;
 }
