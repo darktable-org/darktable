@@ -1032,7 +1032,6 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb) return;
 
   gboolean active = FALSE;
   for(GSList *l = darktable.view_manager->active_images; l; l = g_slist_next(l))
@@ -1061,7 +1060,6 @@ static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb) return;
   if(!gtk_widget_is_visible(thumb->w_main)) return;
 
   const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
@@ -1078,7 +1076,7 @@ static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer 
 {
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb || (imgid > 0 && thumb->imgid != imgid)) return;
+  if(imgid > 0 && thumb->imgid != imgid) return;
 
   // we recompte the history tooltip if needed
   thumb->is_altered = dt_image_altered(thumb->imgid);

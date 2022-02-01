@@ -87,6 +87,7 @@ static gchar *char2qstring(const gchar *in, gsize *size)
   if(error)
   {
     dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: error converting string: %s\n", error->message);
+    g_free(out);
     g_error_free(error);
     return NULL;
   }

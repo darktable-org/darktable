@@ -688,7 +688,7 @@ static GSList *_group_setup_mouse_actions(const struct dt_masks_form_t *const fo
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if (!sel || (sel->type & ~seen_types) == 0)
       continue;
-    if (sel && sel->functions && sel->functions->setup_mouse_actions)
+    if (sel->functions && sel->functions->setup_mouse_actions)
     {
       GSList *new_actions = sel->functions->setup_mouse_actions(sel);
       lm = g_slist_concat(lm, new_actions);

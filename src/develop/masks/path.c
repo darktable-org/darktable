@@ -2061,10 +2061,9 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
                       gpt->points[k * 6 + 3] - (anchor_size * 0.5), anchor_size, anchor_size);
       cairo_fill_preserve(cr);
 
-      if((gui->group_selected == index) && (k == gui->point_dragging || k == gui->point_selected))
+      if(k == gui->point_dragging || k == gui->point_selected)
         cairo_set_line_width(cr, 2.0 / zoom_scale);
-      else if((gui->group_selected == index)
-              && ((k == 0 || k == nb) && gui->creation && gui->creation_closing_form))
+      else if((k == 0 || k == nb) && gui->creation && gui->creation_closing_form)
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.0 / zoom_scale);
@@ -2096,7 +2095,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
     dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_stroke(cr);
 
-    if((gui->group_selected == index) && (k == gui->feather_dragging || k == gui->feather_selected))
+    if(k == gui->feather_dragging || k == gui->feather_selected)
       cairo_arc(cr, ffx, ffy, 3.0f / zoom_scale, 0, 2.0 * M_PI);
     else
       cairo_arc(cr, ffx, ffy, 1.5f / zoom_scale, 0, 2.0 * M_PI);

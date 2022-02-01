@@ -458,8 +458,7 @@ int main(int argc, char *arg[])
       g_free(output_filename);
     if(output_ext)
       g_free(output_ext);
-    if(inputs)
-      g_list_free_full(inputs, g_free);
+    g_list_free_full(inputs, g_free);
     exit(1);
   }
   else if(file_counter == 2)

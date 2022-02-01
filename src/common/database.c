@@ -3861,13 +3861,6 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
     return FALSE;
   }
 
-  gchar *lib_basename = g_file_get_basename(library);
-  g_object_unref(library);
-
-  gchar *lib_snap_format = g_strdup_printf("%s-snp-", lib_basename);
-  gchar *lib_backup_format = g_strdup_printf("%s-pre-", lib_basename);
-  g_free(lib_basename);
-
   GError *error = NULL;
   GFileEnumerator *library_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_STANDARD_NAME "," G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
 
@@ -3875,9 +3868,17 @@ gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
   {
     dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate library parent: %s.\n", error->message);
     g_object_unref(parent);
+    g_object_unref(library);
     g_error_free(error);
     return FALSE;
   }
+
+  gchar *lib_basename = g_file_get_basename(library);
+  g_object_unref(library);
+
+  gchar *lib_snap_format = g_strdup_printf("%s-snp-", lib_basename);
+  gchar *lib_backup_format = g_strdup_printf("%s-pre-", lib_basename);
+  g_free(lib_basename);
 
   GFileInfo *info = NULL;
   guint64 last_snap = 0;
@@ -4073,6 +4074,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_object_unref(dat_parent);
       g_free(lib_snap_format);
       g_free(dat_snap_format);
+      g_free(lib_tmp_format);
+      g_free(dat_tmp_format);
       g_queue_free(lib_snaps);
       g_queue_free(dat_snaps);
       g_queue_free(tmplib_snaps);
@@ -4111,6 +4114,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
       g_object_unref(lib_parent);
       g_object_unref(dat_parent);
+      g_free(lib_tmp_format);
+      g_free(dat_tmp_format);
       g_queue_free_full(lib_snaps, g_free);
       g_queue_free_full(dat_snaps, g_free);
       g_queue_free_full(tmplib_snaps, g_free);
@@ -4136,6 +4141,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_object_unref(dat_parent);
       g_free(lib_snap_format);
       g_free(dat_snap_format);
+      g_free(lib_tmp_format);
+      g_free(dat_tmp_format);
       g_error_free(error);
       g_queue_free(lib_snaps);
       g_queue_free(dat_snaps);
@@ -4152,6 +4159,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_object_unref(dat_parent);
       g_free(lib_snap_format);
       g_free(dat_snap_format);
+      g_free(lib_tmp_format);
+      g_free(dat_tmp_format);
       g_file_enumerator_close(library_dir_files, NULL, NULL);
       g_object_unref(library_dir_files);
       g_error_free(error);
@@ -4186,6 +4195,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
       g_object_unref(lib_parent);
       g_object_unref(dat_parent);
+      g_free(lib_tmp_format);
+      g_free(dat_tmp_format);
       g_queue_free_full(lib_snaps, g_free);
       g_queue_free(dat_snaps);
       g_queue_free_full(tmplib_snaps, g_free);
@@ -4216,6 +4227,8 @@ char **dt_database_snaps_to_remove(const struct dt_database_t *db)
       g_object_unref(info);
     }
     g_free(dat_snap_format);
+    g_free(lib_tmp_format);
+    g_free(dat_tmp_format);
 
     if(error)
     {
@@ -4300,13 +4313,6 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
     return NULL;
   }
 
-  gchar *db_basename = g_file_get_basename(db_file);
-  g_object_unref(db_file);
-
-  gchar *db_snap_format = g_strdup_printf("%s-snp-", db_basename);
-  gchar *db_backup_format = g_strdup_printf("%s-pre-", db_basename);
-  g_free(db_basename);
-
   GError *error = NULL;
   GFileEnumerator *db_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_STANDARD_NAME "," G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
 
@@ -4314,9 +4320,17 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   {
     dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate database parent: %s.\n", error->message);
     g_object_unref(parent);
+    g_object_unref(db_file);
     g_error_free(error);
     return NULL;
   }
+
+  gchar *db_basename = g_file_get_basename(db_file);
+  g_object_unref(db_file);
+
+  gchar *db_snap_format = g_strdup_printf("%s-snp-", db_basename);
+  gchar *db_backup_format = g_strdup_printf("%s-pre-", db_basename);
+  g_free(db_basename);
 
   GFileInfo *info = NULL;
   guint64 last_snap = 0;
