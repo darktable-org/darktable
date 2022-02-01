@@ -1280,7 +1280,7 @@ static void _effect_editing_started(GtkCellRenderer *renderer, GtkCellEditable *
   gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(combo_box), cell->data, "weight", DT_ACTION_EFFECT_COLUMN_WEIGHT);
   g_list_free(cell);
 
-  if(elements[s->element].effects == dt_action_effect_selection)
+  if(elements && elements[s->element].effects == dt_action_effect_selection)
   {
     gtk_combo_box_set_row_separator_func(combo_box, _effects_separator_func, NULL, NULL);
 
@@ -3717,13 +3717,16 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
     path++;
   }
 
-  if(owner->type <= DT_ACTION_TYPE_VIEW)
+  if(owner)
   {
-    fprintf(stderr, "[dt_action_locate] found action '%s' internal node\n", owner->id);
-    return NULL;
+    if(owner->type <= DT_ACTION_TYPE_VIEW)
+    {
+      fprintf(stderr, "[dt_action_locate] found action '%s' internal node\n", owner->id);
+      return NULL;
+    }
+    else if(owner->type == DT_ACTION_TYPE_SECTION)
+      owner->type = DT_ACTION_TYPE_CLOSURE; // mark newly created leaf as closure
   }
-  else if(owner->type == DT_ACTION_TYPE_SECTION)
-    owner->type = DT_ACTION_TYPE_CLOSURE; // mark newly created leaf as closure
 
   return owner;
 }
