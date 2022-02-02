@@ -675,6 +675,20 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
+static double _ratio_value_band_func(const double value)
+{
+  if(value >= 1.0) return value;
+  // for value < 1 (portrait), we want the inverse of the value
+  return 2.0 - 1.0 / value;
+}
+
+static double _ratio_band_value_func(const double value)
+{
+  if(value >= 1.0) return value;
+  // for value < 1 (portrait), we want the inverse of the value
+  return 1.0 / (2.0 - value);
+}
+
 static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                const gchar *text, dt_lib_module_t *self)
 {
@@ -686,6 +700,8 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
 
   ratio->range_select = dtgtk_range_select_new();
   dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(ratio->range_select), sbounds, smin, smax, FALSE);
+  dtgtk_range_select_set_band_func(DTGTK_RANGE_SELECT(ratio->range_select), _ratio_band_value_func,
+                                   _ratio_value_band_func);
 
   gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 0);
   char query[1024] = { 0 };

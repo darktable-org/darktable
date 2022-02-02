@@ -75,15 +75,16 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   if(!range->surface)
   {
     // determine the steps of blocks and extrema values
-    double start = range->value_band(range->min);
-    const double wv = range->value_band(range->max) - start;
-    const double step = wv * 2.0 / (allocation.width - 4); // we want at least blocks with width of 2 pixels
-    start -= step;
+    range->band_start = range->value_band(range->min);
+    const double wv = range->value_band(range->max) - range->band_start;
+    range->band_factor = wv / (allocation.width - 8);
+    const double step = range->band_factor * 2.0; // we want at least blocks with width of 2 pixels
+    range->band_start -= step;
 
     // get the maximum height of blocks
     // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
     // (see step above)
-    double bl_min = start;
+    double bl_min = range->band_start;
     int bl_count = 0;
     int count_max = 0;
     for(const GList *bl = range->blocks; bl; bl = g_list_next(bl))
@@ -97,7 +98,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
         // we store the previous block count
         count_max = MAX(count_max, bl_count);
         bl_count = blo->nb;
-        bl_min = (int)((blo->band_value - start) / step) * step + start;
+        bl_min = (int)((blo->band_value - range->band_start) / step) * step + range->band_start;
       }
     }
     count_max = MAX(count_max, bl_count);
@@ -110,7 +111,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     // draw the rectangles on the surface
     // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
     // (see above)
-    bl_min = start;
+    bl_min = range->band_start;
     bl_count = 0;
     for(const GList *bl = range->blocks; bl; bl = g_list_next(bl))
     {
@@ -123,19 +124,19 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
         // we draw the previous block
         if(bl_count > 0)
         {
-          const int posx = (int)((bl_min - start) / step) * 2;
+          const int posx = (int)((bl_min - range->band_start) / step) * 2 + 2;
           const int bh = sqrt(bl_count / (double)count_max) * (allocation.height - 2) + 2;
           cairo_rectangle(scr, posx, allocation.height - bh, 2, bh);
           cairo_fill(scr);
         }
         bl_count = blo->nb;
-        bl_min = (int)((blo->band_value - start) / step) * step + start;
+        bl_min = (int)((blo->band_value - range->band_start) / step) * step + range->band_start;
       }
     }
     // and we draw the last rectangle
     if(bl_count > 0)
     {
-      const int posx = (int)((bl_min - start) / step) * 2;
+      const int posx = (int)((bl_min - range->band_start) / step) * 2 + 2;
       const int bh = sqrt(bl_count / (double)count_max) * (allocation.height - 2) + 2;
       cairo_rectangle(scr, posx, allocation.height - bh, 2, bh);
       cairo_fill(scr);
@@ -150,15 +151,92 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   }
 
   // draw the selection rectangle
-
+  int sel_start = 0;
+  if(!(range->bounds & DT_RANGE_BOUND_MIN))
+    sel_start = (range->value_band(range->select_min) - range->band_start) / range->band_factor;
+  int sel_end = allocation.width;
+  if(range->set_selection)
+    sel_end = range->current_x;
+  else if(!(range->bounds & DT_RANGE_BOUND_MAX))
+    sel_end = (range->value_band(range->select_max) - range->band_start) / range->band_factor;
+  const int x1 = (sel_start < sel_end) ? sel_start : sel_end;
+  const int x2 = (sel_start < sel_end) ? sel_end : sel_start;
+  const int sel_width = MAX(2, x2 - x1);
+  cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha * 0.7);
+  cairo_rectangle(cr, x1, 0, sel_width, allocation.height);
+  cairo_fill(cr);
 
   // draw the current position line
+  if(range->mouse_inside && range->current_x > 0)
+  {
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_TIMELINE_TEXT_BG);
+    cairo_move_to(cr, range->current_x, 0);
+    cairo_line_to(cr, range->current_x, allocation.height);
+    cairo_stroke(cr);
+    char txt[16] = { 0 };
+    const double val = range->current_x * range->band_factor + range->band_start;
+    snprintf(txt, sizeof(txt), range->formater, range->band_value(val));
+    gtk_widget_set_tooltip_text(range->band, txt);
+  }
 
   return TRUE;
 }
 
 static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+  range->mouse_inside = TRUE;
+  range->current_x = event->x;
+
+  gtk_widget_queue_draw(range->band);
+  return TRUE;
+}
+
+static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
+{
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+  range->mouse_inside = FALSE;
+
+  gtk_widget_queue_draw(range->band);
+  return TRUE;
+}
+
+static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+  const double val = e->x * range->band_factor + range->band_start;
+  range->select_min = range->band_value(val);
+  range->select_max = range->select_min;
+  range->bounds = DT_RANGE_BOUND_RANGE;
+  range->set_selection = TRUE;
+
+  gtk_widget_queue_draw(range->band);
+  return TRUE;
+}
+static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+  const double val = e->x * range->band_factor + range->band_start;
+  range->select_max = range->band_value(val);
+  // we verify that the values are in the right order
+  if(range->select_max < range->select_min)
+  {
+    const double tmp = range->select_min;
+    range->select_min = range->select_max;
+    range->select_max = tmp;
+  }
+  // we also set the bounds
+  if(range->select_max - range->select_min < 0.001)
+    range->bounds = DT_RANGE_BOUND_FIXED;
+  else
+  {
+    if(range->select_min <= range->min) range->bounds |= DT_RANGE_BOUND_MIN;
+    if(range->select_max >= range->max) range->bounds |= DT_RANGE_BOUND_MAX;
+  }
+
+  range->set_selection = FALSE;
+
+  dtgtk_range_select_set_selection(range, range->bounds, range->select_min, range->select_max, TRUE);
 
   return TRUE;
 }
@@ -204,7 +282,10 @@ GtkWidget *dtgtk_range_select_new()
                                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                          | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(range->band), "draw", G_CALLBACK(_event_band_draw), range);
+  g_signal_connect(G_OBJECT(range->band), "button-press-event", G_CALLBACK(_event_band_press), range);
+  g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
   g_signal_connect(G_OBJECT(range->band), "motion-notify-event", G_CALLBACK(_event_band_motion), range);
+  g_signal_connect(G_OBJECT(range->band), "leave-notify-event", G_CALLBACK(_event_band_leave), range);
   gtk_widget_set_name(GTK_WIDGET(range->band), "range_select_band");
   gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
 
@@ -245,12 +326,20 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
 
   // update the entries
   char txt[16] = { 0 };
-  snprintf(txt, sizeof(txt), range->formater, min);
+  if(range->bounds & DT_RANGE_BOUND_MIN)
+    snprintf(txt, sizeof(txt), "%s", _("min"));
+  else
+    snprintf(txt, sizeof(txt), range->formater, min);
   gtk_entry_set_text(GTK_ENTRY(range->entry_min), txt);
-  snprintf(txt, sizeof(txt), range->formater, max);
+
+  if(range->bounds & DT_RANGE_BOUND_MAX)
+    snprintf(txt, sizeof(txt), "%s", _("max"));
+  else
+    snprintf(txt, sizeof(txt), range->formater, max);
   gtk_entry_set_text(GTK_ENTRY(range->entry_max), txt);
 
   // update the band selection
+  gtk_widget_queue_draw(range->band);
 
   // emit the signal if needed
   if(signal) g_signal_emit_by_name(G_OBJECT(range), "value-changed");
@@ -278,6 +367,20 @@ void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range)
   if(!range->blocks) return;
   g_list_free_full(range->blocks, g_free);
   range->blocks = NULL;
+}
+
+void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc band_value,
+                                      DTGTKTranslateValueFunc value_band)
+{
+  if(band_value)
+    range->band_value = band_value;
+  else
+    range->band_value = _value_translater_default;
+
+  if(value_band)
+    range->value_band = value_band;
+  else
+    range->value_band = _value_translater_default;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
