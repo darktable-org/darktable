@@ -13128,7 +13128,7 @@ msgstr "wzmocnienie"
 
 #: ../src/iop/colorbalancergb.c:1888
 msgid "global chroma"
-msgstr "globalna chrominancja"
+msgstr "globalna chroma"
 
 #: ../src/iop/colorbalancergb.c:1892 ../src/iop/filmic.c:1677
 msgid "global saturation"
