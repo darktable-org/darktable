@@ -51,6 +51,7 @@ typedef struct _GtkDarktableRangeSelect
 
   double current_x;
   gboolean mouse_inside;
+  gboolean set_selection;
 
   cairo_surface_t *surface;
 
@@ -64,6 +65,8 @@ typedef struct _GtkDarktableRangeSelect
   // if NULL, band values == real values
   DTGTKTranslateValueFunc band_value;
   DTGTKTranslateValueFunc value_band;
+  double band_start;  // band value of the start of the widget
+  double band_factor; // factor for getting band value from widget position
 
   GList *blocks;
 } GtkDarktableRangeSelect;
@@ -84,5 +87,8 @@ dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *rang
 
 void dtgtk_range_select_add_block(GtkDarktableRangeSelect *range, const double value, const int count);
 void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
+
+void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc band_value,
+                                      DTGTKTranslateValueFunc value_band);
 
 G_END_DECLS
