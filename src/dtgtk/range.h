@@ -27,24 +27,45 @@ G_BEGIN_DECLS
 #define DTGTK_IS_RANGE_SELECT(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_range_select_get_type())
 #define DTGTK_IS_RANGE_SELECT_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_range_select_get_type())
 
+typedef double (*DTGTKTranslateValueFunc)(const double value);
+
 typedef enum dt_range_bounds_t
 {
-  DT_RANGE_BOUND_FIXED = 0,
+  DT_RANGE_BOUND_RANGE = 0,
   DT_RANGE_BOUND_MIN = 1 << 0,
-  DT_RANGE_BOUND_MAX = 1 << 1
+  DT_RANGE_BOUND_MAX = 1 << 1,
+  DT_RANGE_BOUND_FIXED = 1 << 2
 } dt_range_bounds_t;
 
 typedef struct _GtkDarktableRangeSelect
 {
   GtkBin widget;
-  dt_range_bounds_t bounds;
-  double min;
-  double max;
+
+  double min; // minimal value shown
+  double max; // maximal value shown
   double step;
+
+  double select_min;        // low bound of the selection
+  double select_max;        // hight bound of the selection
+  dt_range_bounds_t bounds; // type of selection bounds
+
+  double current_x;
+  gboolean mouse_inside;
+
+  cairo_surface_t *surface;
+
   GtkWidget *entry_min;
   GtkWidget *entry_max;
   gchar formater[8];
   GtkWidget *band;
+
+  // fonction used to translate "real" value into band positions
+  // this allow to have special value repartitions on the band
+  // if NULL, band values == real values
+  DTGTKTranslateValueFunc band_value;
+  DTGTKTranslateValueFunc value_band;
+
+  GList *blocks;
 } GtkDarktableRangeSelect;
 
 typedef struct _GtkDarktableRangeSelectClass
@@ -57,8 +78,11 @@ GType dtgtk_range_select_get_type(void);
 /** instantiate a new range selection widget */
 GtkWidget *dtgtk_range_select_new();
 
-void dtgtk_range_select_set_range(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds, const double min,
-                                  const double max, gboolean signal);
-dt_range_bounds_t dtgtk_range_select_get_range(GtkDarktableRangeSelect *range, double *min, double *max);
+void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
+                                      const double min, const double max, gboolean signal);
+dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *range, double *min, double *max);
+
+void dtgtk_range_select_add_block(GtkDarktableRangeSelect *range, const double value, const int count);
+void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
 
 G_END_DECLS
