@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
+#include "gui/preferences_dialogs.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/drag_and_drop.h"
@@ -3506,6 +3507,36 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   gtk_window_present(GTK_WINDOW(d->floating_tag_window));
 
   return TRUE;
+}
+
+void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
+{
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("tagging settings"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                 _("cancel"), GTK_RESPONSE_NONE,
+                                                 _("save"), GTK_RESPONSE_YES, NULL);
+  dt_prefs_init_dialog_tagging(dialog);
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+  gtk_widget_show_all(dialog);
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  if(!d->tree_flag && d->suggestion_flag)
+  {
+    _init_treeview(self, 1);
+    _update_atdetach_buttons(self);
+  }
+}
+
+void set_preferences(void *menu, dt_lib_module_t *self)
+{
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
