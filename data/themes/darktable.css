@@ -1565,6 +1565,12 @@ filechooser row:hover .sidebar-icon
   background-color: transparent;
 }
 
+#range_select_band
+{
+  color: @timeline_bg_color;
+  background-color: @timeline_fg_color;
+}
+
 /*--------------------------------
   - Tree view (lists and tables) -
   --------------------------------*/

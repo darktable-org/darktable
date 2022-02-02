@@ -644,7 +644,7 @@ static void _ratio_changed(GtkWidget *widget, gpointer user_data)
 
   // we recreate the right raw text and put it in the raw entry
   double min, max;
-  dt_range_bounds_t bounds = dtgtk_range_select_get_range(DTGTK_RANGE_SELECT(ratio->range_select), &min, &max);
+  dt_range_bounds_t bounds = dtgtk_range_select_get_selection(DTGTK_RANGE_SELECT(ratio->range_select), &min, &max);
 
   char txt[128] = { 0 };
   if((bounds & DT_RANGE_BOUND_MAX) && (bounds & DT_RANGE_BOUND_MIN))
@@ -670,7 +670,7 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
 
   rule->manual_widget_set++;
   _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
-  dtgtk_range_select_set_range(DTGTK_RANGE_SELECT(ratio->range_select), bounds, min, max, FALSE);
+  dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(ratio->range_select), bounds, min, max, FALSE);
   rule->manual_widget_set--;
   return TRUE;
 }
@@ -680,12 +680,41 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
 {
   _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)g_malloc0(sizeof(_widgets_aspect_ratio_t));
 
-  double min, max;
-  dt_range_bounds_t bounds;
-  _ratio_decode(text, &min, &max, &bounds);
+  double smin, smax;
+  dt_range_bounds_t sbounds;
+  _ratio_decode(text, &smin, &smax, &sbounds);
 
   ratio->range_select = dtgtk_range_select_new();
-  dtgtk_range_select_set_range(DTGTK_RANGE_SELECT(ratio->range_select), bounds, min, max, FALSE);
+  dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(ratio->range_select), sbounds, smin, smax, FALSE);
+
+  gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 0);
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT ROUND(aspect_ratio,3), COUNT(*) AS count"
+             " FROM main.images AS mi "
+             " WHERE %s"
+             " GROUP BY ROUND(aspect_ratio,1)",
+             where_ext);
+  g_free(where_ext);
+  if(strlen(query) > 0)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    double min = 9999999.0;
+    double max = 0.0;
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const double val = sqlite3_column_double(stmt, 0);
+      const int count = sqlite3_column_int(stmt, 1);
+      min = fmin(min, val);
+      max = fmax(max, val);
+
+      dtgtk_range_select_add_block(DTGTK_RANGE_SELECT(ratio->range_select), val, count);
+    }
+    sqlite3_finalize(stmt);
+    DTGTK_RANGE_SELECT(ratio->range_select)->min = min;
+    DTGTK_RANGE_SELECT(ratio->range_select)->max = max;
+  }
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->range_select, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(ratio->range_select), "value-changed", G_CALLBACK(_ratio_changed), rule);
 
