@@ -55,6 +55,39 @@ static double _value_translater_default(const double value)
   return value;
 }
 
+static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
+{
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+  gchar *txt = g_strstrip(g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(entry)), -1));
+  if(range->entry_min == entry && !g_strcmp0(txt, _("min")))
+  {
+    if(range->bounds & DT_RANGE_BOUND_FIXED)
+      range->bounds = DT_RANGE_BOUND_MIN;
+    else
+      range->bounds |= DT_RANGE_BOUND_MIN;
+  }
+  else if(range->entry_min == entry && !g_strcmp0(txt, _("max")))
+  {
+    if(range->bounds & DT_RANGE_BOUND_FIXED)
+      range->bounds = DT_RANGE_BOUND_MAX;
+    else
+      range->bounds |= DT_RANGE_BOUND_MAX;
+  }
+  else if(range->entry_min == entry)
+  {
+    if(range->bounds & DT_RANGE_BOUND_MAX) range->bounds = DT_RANGE_BOUND_MAX;
+    range->select_min = atof(txt);
+  }
+  else if(range->entry_max == entry)
+  {
+    if(range->bounds & DT_RANGE_BOUND_MIN) range->bounds = DT_RANGE_BOUND_MIN;
+    range->select_max = atof(txt);
+  }
+  g_free(txt);
+
+  dtgtk_range_select_set_selection(range, range->bounds, range->select_min, range->select_max, TRUE);
+}
+
 static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
@@ -270,9 +303,12 @@ GtkWidget *dtgtk_range_select_new()
   // the entries
   range->entry_min = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 5);
+  g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
   gtk_box_pack_start(GTK_BOX(hbox), range->entry_min, FALSE, TRUE, 0);
   range->entry_max = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 5);
+  gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
+  g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
   gtk_box_pack_end(GTK_BOX(hbox), range->entry_max, FALSE, TRUE, 0);
 
   // the bottom band
