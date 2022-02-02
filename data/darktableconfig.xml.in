@@ -1740,14 +1740,21 @@
     <type min="0" max="100">int</type>
     <default>50</default>
     <shortdescription>suggested tags level of confidence</shortdescription>
-    <longdescription>level of confidence to include the tag in suggestions list, 0: all associations are listed, 100: only 100% matching associations are listed</longdescription>
+    <longdescription>level of confidence to include the tag in the suggestions list, 0: all associated tags, 99: 99% matching associated tags, 100: no matching tag to show only recent tags (faster)</longdescription>
   </dtconfig>
   <dtconfig dialog="tagging">
-    <name>plugins/lighttable/tagging/recent_tags</name>
+    <name>plugins/lighttable/tagging/nb_recent_tags</name>
     <type min="0" max="1000">int</type>
     <default>20</default>
     <shortdescription>number of recently attached tags</shortdescription>
-    <longdescription>number of recently attached tags which are included in suggestions list</longdescription>
+    <longdescription>number of recently attached tags which are included in the suggestions list</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tagging/recent_tags</name>
+    <type>string</type>
+    <default/>
+    <shortdescription/>
+    <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/metadata/creator_text_height</name>
