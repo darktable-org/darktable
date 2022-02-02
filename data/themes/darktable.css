@@ -1570,6 +1570,12 @@ filechooser row:hover .sidebar-icon
   color: @timeline_bg_color;
   background-color: @timeline_fg_color;
 }
+#dt-range-current
+{
+  color: @timeline_bg_color;
+  background-color: @timeline_fg_color;
+  padding: 0 0.2em;
+}
 
 /*--------------------------------
   - Tree view (lists and tables) -
