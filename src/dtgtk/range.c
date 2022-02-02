@@ -110,9 +110,10 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     // determine the steps of blocks and extrema values
     range->band_start = range->value_band(range->min);
     const double wv = range->value_band(range->max) - range->band_start;
-    range->band_factor = wv / (allocation.width - 8);
-    const double step = range->band_factor * 2.0; // we want at least blocks with width of 2 pixels
-    range->band_start -= step;
+    range->band_factor = wv / allocation.width;
+    const double step
+        = fmax(range->step, range->band_factor * 2.0); // we want at least blocks with width of 2 pixels
+    const int bl_width = step / range->band_factor;
 
     // get the maximum height of blocks
     // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
@@ -157,9 +158,9 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
         // we draw the previous block
         if(bl_count > 0)
         {
-          const int posx = (int)((bl_min - range->band_start) / step) * 2 + 2;
+          const int posx = (int)((bl_min - range->band_start) / step) * bl_width;
           const int bh = sqrt(bl_count / (double)count_max) * (allocation.height - 2) + 2;
-          cairo_rectangle(scr, posx, allocation.height - bh, 2, bh);
+          cairo_rectangle(scr, posx, allocation.height - bh, bl_width, bh);
           cairo_fill(scr);
         }
         bl_count = blo->nb;
@@ -169,9 +170,9 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     // and we draw the last rectangle
     if(bl_count > 0)
     {
-      const int posx = (int)((bl_min - range->band_start) / step) * 2 + 2;
+      const int posx = (int)((bl_min - range->band_start) / step) * bl_width;
       const int bh = sqrt(bl_count / (double)count_max) * (allocation.height - 2) + 2;
-      cairo_rectangle(scr, posx, allocation.height - bh, 2, bh);
+      cairo_rectangle(scr, posx, allocation.height - bh, bl_width, bh);
       cairo_fill(scr);
     }
 
@@ -289,7 +290,7 @@ GtkWidget *dtgtk_range_select_new()
   // initialize values
   range->min = 0.0;
   range->max = 1.0;
-  range->step = 0.1;
+  range->step = 0.0;
   range->select_min = 0.1;
   range->select_max = 0.9;
   range->bounds = DT_RANGE_BOUND_RANGE;

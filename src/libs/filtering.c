@@ -60,8 +60,7 @@ typedef struct _widgets_sort_t
 
 typedef struct _widgets_rating_t
 {
-  GtkWidget *comparator;
-  GtkWidget *combo;
+  GtkWidget *range_select;
 } _widgets_rating_t;
 
 typedef struct _widgets_aspect_ratio_t
@@ -420,57 +419,69 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
   return TRUE;
 }
 
-static void _rating_decode(const gchar *txt, int *comp, int *mode)
+static void _rating_decode(const gchar *txt, int *min, int *max, dt_range_bounds_t *bounds)
 {
-  // --- First, the special cases
+  gchar *n1 = NULL;
+  gchar *n2 = NULL;
   // easy case : select all
   if(!strcmp(txt, "") || !strcmp(txt, "%"))
   {
-    *mode = DT_COLLECTION_FILTER_ALL;
+    *bounds = DT_RANGE_BOUND_MAX | DT_RANGE_BOUND_MIN;
     return;
   }
-  // unstarred only
-  if(!strcmp(txt, "0") || !strcmp(txt, "=0"))
-  {
-    *mode = DT_COLLECTION_FILTER_STAR_NO;
-    return;
-  }
-  // rejected only
-  if(!strcmp(txt, "-1") || !strcmp(txt, "=-1"))
-  {
-    *mode = DT_COLLECTION_FILTER_REJECT;
-    return;
-  }
-  // all except rejected
-  if(!strcmp(txt, "<>-1"))
-  {
-    *mode = DT_COLLECTION_FILTER_NOT_REJECT;
-    return;
-  }
-
-  // --- Now we need to decode the comparator and the value
-  if(g_str_has_prefix(txt, "<"))
-    *comp = DT_COLLECTION_RATING_COMP_LT;
   else if(g_str_has_prefix(txt, "<="))
-    *comp = DT_COLLECTION_RATING_COMP_LEQ;
+  {
+    *bounds = DT_RANGE_BOUND_MIN;
+    n1 = g_strdup(txt + 2);
+    n2 = g_strdup(txt + 2);
+  }
   else if(g_str_has_prefix(txt, "="))
-    *comp = DT_COLLECTION_RATING_COMP_EQ;
+  {
+    *bounds = DT_RANGE_BOUND_FIXED;
+    n1 = g_strdup(txt + 1);
+    n2 = g_strdup(txt + 1);
+  }
   else if(g_str_has_prefix(txt, ">="))
-    *comp = DT_COLLECTION_RATING_COMP_GEQ;
-  else if(g_str_has_prefix(txt, ">"))
-    *comp = DT_COLLECTION_RATING_COMP_GT;
-  else if(g_str_has_prefix(txt, "!="))
-    *comp = DT_COLLECTION_RATING_COMP_NE;
+  {
+    *bounds = DT_RANGE_BOUND_MAX;
+    n1 = g_strdup(txt + 2);
+    n2 = g_strdup(txt + 2);
+  }
   else
   {
-    // can't read the format...
-    return;
+    GRegex *regex;
+    GMatchInfo *match_info;
+
+    // we test the range expression first
+    regex = g_regex_new("^\\s*\\[\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*;\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0,
+                        NULL);
+    g_regex_match_full(regex, txt, -1, 0, 0, &match_info, NULL);
+    int match_count = g_match_info_get_match_count(match_info);
+
+    if(match_count == 3)
+    {
+      n1 = g_match_info_fetch(match_info, 1);
+      n2 = g_match_info_fetch(match_info, 2);
+    }
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
   }
 
-  const gchar *txt2 = (*comp % 2) ? txt + 2 : txt + 1;
+  // if we still don't have values, let's try simple value
+  if(!n1 || !n2)
+  {
+    *bounds = DT_RANGE_BOUND_FIXED;
+    n1 = g_strdup(txt);
+    n2 = g_strdup(txt);
+  }
 
-  const int val = atoi(txt2);
-  if(val > 0 && val < 6) *mode = val + 1;
+  // now we transform the text values into double
+  const int v1 = atoi(n1);
+  const int v2 = atoi(n2);
+  *min = MIN(v1, v2);
+  *max = MAX(v1, v2);
+  g_free(n1);
+  g_free(n2);
 }
 
 static void _rating_changed(GtkWidget *widget, gpointer user_data)
@@ -478,53 +489,39 @@ static void _rating_changed(GtkWidget *widget, gpointer user_data)
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
   if(rule->manual_widget_set) return;
   if(!rule->w_specific) return;
-  _widgets_rating_t *rate = (_widgets_rating_t *)rule->w_specific;
+  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
 
   // we recreate the right raw text and put it in the raw entry
-  const int mode = dt_bauhaus_combobox_get(rate->combo);
-  const int comp = dt_bauhaus_combobox_get(rate->comparator);
+  double min, max;
+  dt_range_bounds_t bounds = dtgtk_range_select_get_selection(DTGTK_RANGE_SELECT(ratio->range_select), &min, &max);
+  const int mini = min;
+  const int maxi = max;
 
-  gchar *txt = dt_util_dstrcat(NULL, "%s", "");
-  if(mode >= DT_COLLECTION_FILTER_STAR_1 && mode <= DT_COLLECTION_FILTER_STAR_5)
-  {
-    // for the stars, comparator is needed
-    txt = dt_util_dstrcat(txt, "%s%d", dt_collection_comparator_name(comp), mode - 1);
-  }
+  char txt[128] = { 0 };
+  if((bounds & DT_RANGE_BOUND_MAX) && (bounds & DT_RANGE_BOUND_MIN))
+    snprintf(txt, sizeof(txt), "%%");
+  else if(bounds & DT_RANGE_BOUND_MAX)
+    snprintf(txt, sizeof(txt), ">=%d", mini);
+  else if(bounds & DT_RANGE_BOUND_MIN)
+    snprintf(txt, sizeof(txt), "<=%d", maxi);
+  else if(bounds & DT_RANGE_BOUND_FIXED)
+    snprintf(txt, sizeof(txt), "=%d", mini);
   else
-  {
-    // direct content
-    if(mode == DT_COLLECTION_FILTER_STAR_NO)
-      txt = dt_util_dstrcat(txt, "0");
-    else if(mode == DT_COLLECTION_FILTER_REJECT)
-      txt = dt_util_dstrcat(txt, "-1");
-    else if(mode == DT_COLLECTION_FILTER_NOT_REJECT)
-      txt = dt_util_dstrcat(txt, "<>-1");
-  }
+    snprintf(txt, sizeof(txt), "[%d;%d]", mini, maxi);
 
   _rule_set_raw_text(rule, txt, TRUE);
-  g_free(txt);
-
-  // we also update the visibility of the comparator widget
-  gtk_widget_set_visible(rate->comparator,
-                         (mode >= DT_COLLECTION_FILTER_STAR_1 && mode <= DT_COLLECTION_FILTER_STAR_5));
 }
 
 static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
-  int comp = DT_COLLECTION_RATING_COMP_GEQ;
-  int mode = -1;
-  _rating_decode(rule->raw_text, &comp, &mode);
-
-  // if we don't manage to decode, we don't refresh and return false
-  if(mode < 0) return FALSE;
+  int min, max;
+  dt_range_bounds_t bounds;
+  _rating_decode(rule->raw_text, &min, &max, &bounds);
 
   rule->manual_widget_set++;
-  _widgets_rating_t *rate = (_widgets_rating_t *)rule->w_specific;
-  dt_bauhaus_combobox_set(rate->combo, mode);
-  dt_bauhaus_combobox_set(rate->comparator, comp);
-  gtk_widget_set_visible(rate->comparator,
-                         (mode >= DT_COLLECTION_FILTER_STAR_1 && mode <= DT_COLLECTION_FILTER_STAR_5));
+  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
+  dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(ratio->range_select), bounds, min, max, FALSE);
   rule->manual_widget_set--;
   return TRUE;
 }
@@ -534,39 +531,45 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 {
   _widgets_rating_t *rate = (_widgets_rating_t *)g_malloc0(sizeof(_widgets_rating_t));
 
-  int comp = DT_COLLECTION_RATING_COMP_GEQ;
-  int mode = DT_COLLECTION_FILTER_ALL;
-  _rating_decode(text, &comp, &mode);
+  int smin, smax;
+  dt_range_bounds_t sbounds;
+  _rating_decode(text, &smin, &smax, &sbounds);
 
-  GtkWidget *overlay = gtk_overlay_new();
-  gtk_widget_set_name(overlay, "collect-rating");
+  rate->range_select = dtgtk_range_select_new();
+  DTGTK_RANGE_SELECT(rate->range_select)->step = 1.0;
+  snprintf(DTGTK_RANGE_SELECT(rate->range_select)->formater,
+           sizeof(DTGTK_RANGE_SELECT(rate->range_select)->formater), "%%.0lf");
+  dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(rate->range_select), sbounds, smin, smax, FALSE);
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(rate->comparator, self, NULL, N_("comparator"), _("which images should be shown"),
-                               comp, _rating_changed, rule,
-                               "<",  // DT_COLLECTION_RATING_COMP_LT = 0,
-                               "≤",  // DT_COLLECTION_RATING_COMP_LEQ,
-                               "=",  // DT_COLLECTION_RATING_COMP_EQ,
-                               "≥",  // DT_COLLECTION_RATING_COMP_GEQ,
-                               ">",  // DT_COLLECTION_RATING_COMP_GT,
-                               "≠"); // DT_COLLECTION_RATING_COMP_NE,
-  dt_bauhaus_widget_set_label(rate->comparator, NULL, NULL);
-  gtk_widget_set_no_show_all(rate->comparator, TRUE);
-  // we also update the visibility of the comparator widget
-  gtk_widget_set_visible(rate->comparator, (mode > 1 && mode < 7));
-  GtkWidget *spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_set_homogeneous(GTK_BOX(spacer), TRUE);
-  gtk_box_pack_start(GTK_BOX(spacer), rate->comparator, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(spacer), gtk_grid_new(), FALSE, FALSE, 0);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), spacer);
-  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), spacer, TRUE);
+  gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 0);
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
+             " COUNT(*) AS count"
+             " FROM main.images AS mi"
+             " WHERE %s"
+             " GROUP BY rating"
+             " ORDER BY rating",
+             where_ext);
+  g_free(where_ext);
+  if(strlen(query) > 0)
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const double val = sqlite3_column_double(stmt, 0);
+      const int count = sqlite3_column_int(stmt, 1);
 
-  /* create the filter combobox */
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(rate->combo, self, NULL, N_("view"), _("which images should be shown"), mode,
-                               _rating_changed, rule, N_("all"), N_("unstarred only"), "★", "★ ★", "★ ★ ★",
-                               "★ ★ ★ ★", "★ ★ ★ ★ ★", N_("rejected only"), N_("all except rejected"));
-  gtk_container_add(GTK_CONTAINER(overlay), rate->combo);
+      dtgtk_range_select_add_block(DTGTK_RANGE_SELECT(rate->range_select), val, count);
+    }
+    sqlite3_finalize(stmt);
+    DTGTK_RANGE_SELECT(rate->range_select)->min = -1;
+    DTGTK_RANGE_SELECT(rate->range_select)->max = 5;
+  }
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), rate->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(rate->range_select), "value-changed", G_CALLBACK(_rating_changed), rule);
 
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), overlay, TRUE, TRUE, 0);
   rule->w_specific = rate;
 }
 
