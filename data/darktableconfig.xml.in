@@ -1735,6 +1735,20 @@
     <shortdescription>height of the tagging dictionary view</shortdescription>
     <longdescription>maximum height the tagging dictionary view will grow to before scrolling</longdescription>
   </dtconfig>
+  <dtconfig dialog="tagging">
+    <name>plugins/lighttable/tagging/confidence</name>
+    <type min="0" max="100">int</type>
+    <default>50</default>
+    <shortdescription>suggested tags level of confidence</shortdescription>
+    <longdescription>level of confidence to include the tag in suggestions list, 0: all associations are listed, 100: only 100% matching associations are listed</longdescription>
+  </dtconfig>
+  <dtconfig dialog="tagging">
+    <name>plugins/lighttable/tagging/recent_tags</name>
+    <type min="0" max="1000">int</type>
+    <default>20</default>
+    <shortdescription>number of recently attached tags</shortdescription>
+    <longdescription>number of recently attached tags which are included in suggestions list</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/metadata/creator_text_height</name>
     <type>int</type>

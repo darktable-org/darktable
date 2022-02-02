@@ -1060,6 +1060,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
   sqlite3_finalize(stmt);
 
   const uint32_t nb_selected = dt_selected_images_count();
+  const uint32_t confidence = dt_conf_get_int("plugins/lighttable/tagging/confidence");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT td.name, tagid2,"
                               " CASE WHEN t21.count IS NULL THEN 0 ELSE t21.count END AS fc,"
@@ -1082,7 +1083,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
                               "    WHERE imgid IN main.selected_images"
                               "    GROUP BY tagid) AS t02"
                               "  ON t02.tagid = tagid1"
-                              "  WHERE (t01.count-c02) != 0 AND 100 * c12 / (t01.count-c02) >= 50) "
+                              "  WHERE (t01.count-c02) != 0 AND (100 * c12 / (t01.count-c02) >= ?2)) "
                               "LEFT JOIN memory.taglist AS t21 "
                               "ON t21.id = tagid2 "
                               "LEFT JOIN ("
@@ -1094,6 +1095,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
                               "WHERE sc != ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, nb_selected);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, confidence);
 
   /* ... and create the result list to send upwards */
   uint32_t count = 0;
