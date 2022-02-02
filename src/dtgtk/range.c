@@ -209,7 +209,12 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     char txt[16] = { 0 };
     const double val = range->current_x * range->band_factor + range->band_start;
     snprintf(txt, sizeof(txt), range->formater, range->band_value(val));
-    gtk_widget_set_tooltip_text(range->band, txt);
+    gtk_label_set_text(GTK_LABEL(range->current), txt);
+    gtk_widget_set_visible(range->current, TRUE);
+  }
+  else
+  {
+    gtk_widget_set_visible(range->current, FALSE);
   }
 
   return TRUE;
@@ -305,6 +310,16 @@ GtkWidget *dtgtk_range_select_new()
   gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 5);
   g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
   gtk_box_pack_start(GTK_BOX(hbox), range->entry_min, FALSE, TRUE, 0);
+
+  GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  range->current = gtk_label_new("test");
+  gtk_widget_set_name(range->current, "dt-range-current");
+  gtk_widget_set_halign(range->current, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(range->current, GTK_ALIGN_CENTER);
+  gtk_widget_set_no_show_all(range->current, TRUE);
+  gtk_box_pack_start(GTK_BOX(hb), range->current, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), hb, TRUE, TRUE, 0);
+
   range->entry_max = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 5);
   gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);

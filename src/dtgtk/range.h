@@ -56,6 +56,7 @@ typedef struct _GtkDarktableRangeSelect
   cairo_surface_t *surface;
 
   GtkWidget *entry_min;
+  GtkWidget *current;
   GtkWidget *entry_max;
   gchar formater[8];
   GtkWidget *band;
