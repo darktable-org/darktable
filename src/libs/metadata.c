@@ -348,7 +348,7 @@ static void _update_layout(dt_lib_module_t *self)
       GtkWidget *w = gtk_grid_get_child_at(d->metadata_grid,j,i);
       gtk_widget_show_all(w);
       gtk_widget_set_no_show_all(w, TRUE);
-      gtk_widget_set_visible(w, (!hidden || type == DT_METADATA_TYPE_INTERNAL));
+      gtk_widget_set_visible(w, (!hidden && type != DT_METADATA_TYPE_INTERNAL));
     }
   }
 }
@@ -357,12 +357,22 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   d->editing = FALSE;
-  GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
-  dt_metadata_clear(imgs, TRUE);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-  dt_image_synch_xmps(imgs);
-  g_list_free(imgs);
-  _update(self);
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const gchar *name = dt_metadata_get_name_by_display_order(i);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    const int type = dt_metadata_get_type_by_display_order(i);
+    // we don't want to lose hidden information
+    if(!hidden && type != DT_METADATA_TYPE_INTERNAL)
+    {
+      GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
+      gtk_text_buffer_set_text(buffer, "", -1);
+      _text_set_italic(d->textview[i], FALSE);
+    }
+  }
+  _write_metadata(self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
