@@ -179,6 +179,12 @@
 @define-color timeline_text_bg_color alpha(black, .8);
 @define-color timeline_text_fg_color alpha(white, .9);
 
+@define-color range_graph_color shade(@filmstrip_bg_color, 0.9);
+@define-color range_bg_color @text_color;
+@define-color range_cursor_color alpha(black, .8);
+@define-color range_sel_color alpha(@filmstrip_bg_color, 0.7);
+@define-color range_icon_color @thumbnail_hover_fg_color;
+
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
 @define-color brush_trace alpha(black, .8);
@@ -1565,11 +1571,6 @@ filechooser row:hover .sidebar-icon
   background-color: transparent;
 }
 
-#range_select_band
-{
-  color: @timeline_bg_color;
-  background-color: @timeline_fg_color;
-}
 #dt-range-current
 {
   color: @timeline_bg_color;

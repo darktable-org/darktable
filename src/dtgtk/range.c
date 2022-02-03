@@ -30,6 +30,14 @@ typedef struct _range_block
   int nb; // nb of item with this value
 } _range_block;
 
+typedef struct _range_icon
+{
+  int posx; // position of the icon in percent of the band width
+  DTGTKCairoPaintIconFunc paint;
+  gint flags;
+  void *data;
+} _range_icon;
+
 enum
 {
   VALUE_CHANGED,
@@ -92,17 +100,13 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
 
-  // get context and fg color
-  GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  GdkRGBA fg_color;
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gtk_style_context_get_color(context, state, &fg_color);
-
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
   // draw background
-  gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
+  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_BG, 1.0);
+  cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
+  cairo_fill(cr);
 
   // draw the graph (and create it if needed)
   if(!range->surface)
@@ -140,7 +144,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     // create the surface
     range->surface = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
     cairo_t *scr = cairo_create(range->surface);
-    cairo_set_source_rgba(scr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha);
+    dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_GRAPH, 1.0);
 
     // draw the rectangles on the surface
     // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
@@ -194,16 +198,34 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   else if(!(range->bounds & DT_RANGE_BOUND_MAX))
     sel_end = (range->value_band(range->select_max) - range->band_start) / range->band_factor;
   const int x1 = (sel_start < sel_end) ? sel_start : sel_end;
-  const int x2 = (sel_start < sel_end) ? sel_end : sel_start;
+  int x2 = (sel_start < sel_end) ? sel_end : sel_start;
+  // we need to add the step in order to show tha t the value is included in the selection
+  if(!range->set_selection) x2 += range->step / range->band_factor;
   const int sel_width = MAX(2, x2 - x1);
-  cairo_set_source_rgba(cr, fg_color.red, fg_color.green, fg_color.blue, fg_color.alpha * 0.7);
+  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_SELECTION, 1.0);
   cairo_rectangle(cr, x1, 0, sel_width, allocation.height);
   cairo_fill(cr);
+
+  // draw the icons
+  if(g_list_length(range->icons) > 0)
+  {
+    // determine icon size
+    const int size = allocation.height * 0.8;
+    const int posy = allocation.height * 0.1;
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
+
+    for(const GList *bl = range->icons; bl; bl = g_list_next(bl))
+    {
+      _range_icon *icon = bl->data;
+      const int posx = allocation.width * icon->posx / 100 - size / 2;
+      icon->paint(cr, posx, posy, size, size, icon->flags, icon->data);
+    }
+  }
 
   // draw the current position line
   if(range->mouse_inside && range->current_x > 0)
   {
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_TIMELINE_TEXT_BG);
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_CURSOR, 1.0);
     cairo_move_to(cr, range->current_x, 0);
     cairo_line_to(cr, range->current_x, allocation.height);
     cairo_stroke(cr);
@@ -375,7 +397,7 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
   if(range->step > 0.0)
   {
     range->select_min = floor(min / range->step) * range->step;
-    range->select_max = ceil(max / range->step) * range->step;
+    range->select_max = floor(max / range->step) * range->step;
   }
   else
   {
@@ -442,6 +464,25 @@ void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTrans
     range->value_band = value_band;
   else
     range->value_band = _value_translater_default;
+}
+
+void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, DTGTKCairoPaintIconFunc paint,
+                                 gint flags, void *data)
+{
+  _range_icon *icon = (_range_icon *)g_malloc0(sizeof(_range_icon));
+  icon->posx = posx;
+  icon->paint = paint;
+  icon->flags = flags;
+  icon->data = data;
+
+  range->icons = g_list_append(range->icons, icon);
+}
+
+void dtgtk_range_select_reset_icons(GtkDarktableRangeSelect *range)
+{
+  if(!range->icons) return;
+  g_list_free_full(range->icons, g_free);
+  range->icons = NULL;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
