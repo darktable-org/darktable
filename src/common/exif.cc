@@ -1322,8 +1322,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
             break;
         }
       }
-      else
-        fprintf(stderr,"[exif] did not find a supported dng illuminant and color matrix pair\n");
     }
 
     int is_monochrome = FALSE;
