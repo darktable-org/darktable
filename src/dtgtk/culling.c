@@ -390,7 +390,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, co
                                  const float y_root, int state)
 {
   const int max_in_memory_images = _get_max_in_memory_images();
-  if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images)
+  if(table->mode == DT_CULLING_MODE_CULLING && g_list_length(table->list) > max_in_memory_images)
   {
     dt_control_log(_("zooming is limited to %d images"), max_in_memory_images);
     return TRUE;
@@ -562,7 +562,7 @@ static gboolean _event_leave_notify(GtkWidget *widget, GdkEventCrossing *event, 
   }
 
   // if we leave thumbtable in favour of an inferior (a thumbnail) it's not a real leave !
-  // same if this is not a mouse move action (shortcut that activate a buuton for example)
+  // same if this is not a mouse move action (shortcut that activate a button for example)
   if(event->detail == GDK_NOTIFY_INFERIOR || event->mode == GDK_CROSSING_GTK_GRAB) return FALSE;
 
   table->mouse_inside = FALSE;
@@ -725,22 +725,14 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
   // if we are in selection synchronisation mode, we exit this mode
   if(table->selection_sync) table->selection_sync = FALSE;
 
-  // if we are in dynamic mode, zoom = selection count
+  // if we are in dynamic mode with max_zoom == True, set zoom to selection count
   if(table->mode == DT_CULLING_MODE_CULLING
-     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC
+     && dt_conf_get_bool("plugins/lighttable/max_zoom_btn"))
   {
-    sqlite3_stmt *stmt;
-    int sel_count = 0;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT count(*) "
-                                "FROM memory.collected_images AS col, main.selected_images as sel "
-                                "WHERE col.imgid=sel.imgid",
-                                -1, &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
-    sqlite3_finalize(stmt);
-    const int nz = (sel_count <= 1) ? dt_conf_get_int("plugins/lighttable/culling_num_images") : sel_count;
-    dt_view_lighttable_set_zoom(darktable.view_manager, nz);
+    dt_view_lighttable_set_zoom(darktable.view_manager, dt_collection_get_selected_count(darktable.collection));
   }
+
   // if we navigate only in the selection we just redraw to ensure no unselected image is present
   if(table->navigate_inside_selection)
   {
@@ -976,7 +968,7 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
   if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  // special culling dynamic mode
+  // culling dynamic mode limits navigation to selection
   if(culling_dynamic)
   {
     if(sel_count == 0)
@@ -1030,9 +1022,6 @@ void dt_culling_init(dt_culling_t *table, int fallback_offset)
       }
       sqlite3_finalize(stmt);
     }
-
-    // we now determine if we limit culling images to the selection
-    table->navigate_inside_selection = (!table->selection_sync && inside);
   }
 
   table->offset = _thumb_get_rowid(first_id);

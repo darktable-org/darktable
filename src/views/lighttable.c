@@ -108,8 +108,7 @@ static void _preview_quit(dt_view_t *self)
   dt_ui_restore_panels(darktable.gui->ui);
 
   // show/hide filmstrip & timeline when entering the view
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING
-     || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     // update thumbtable, to indicate if we navigate inside selection or not
     // this is needed as collection change is handle there
@@ -213,6 +212,28 @@ static void _lighttable_check_layout(dt_view_t *self)
     }
     else
       dt_culling_init(lib->culling, lib->thumbtable_offset);
+
+    // if we are not switching between culling modes, check selection count and reset it if it is == 1
+    // the image was most likely only clicked in filemanager to select a starting point for culling so it should be released
+    // never release selection if we enter culling dynamic
+    if(layout_old != DT_LIGHTTABLE_LAYOUT_CULLING && layout_old != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+    {
+      sqlite3_stmt *stmt;
+      // selection count
+      int sel_count = 0;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT count(*) "
+                                  "FROM memory.collected_images AS col, main.selected_images as sel "
+                                  "WHERE col.imgid=sel.imgid",
+                                  -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+
+      if(sel_count == 1)
+      {
+        dt_selection_clear(darktable.selection);
+      }
+    }
 
 
     // ensure that thumbtable is not visible in the main view
@@ -495,6 +516,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus)
   dt_culling_init(lib->preview, lib->thumbtable_offset);
   gtk_widget_show(lib->preview->widget);
 
+  lib->preview->navigate_inside_selection = (dt_collection_get_selected_count(darktable.collection) && mouse_over_id == -1);
   dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->preview->navigate_inside_selection;
 
   // show/hide filmstrip & timeline when entering the view

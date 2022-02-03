@@ -319,6 +319,10 @@ void dtgtk_cairo_paint_lt_mode_culling_dynamic(cairo_t *cr, gint x, gint y, gint
 /** Lighttable: Full Preview */
 void dtgtk_cairo_paint_lt_mode_fullpreview(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
+
+// Max zoom buttons
+void dtgtk_cairo_paint_lt_btn_maxzoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+
 /** Paint a link icon for basic adjustments */
 void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
