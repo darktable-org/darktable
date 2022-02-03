@@ -76,7 +76,14 @@ static inline void dt_draw_set_color_overlay(cairo_t *cr, double amt, double alp
   {
     cairo_set_source_rgba(cr, 1.0 * amt, 0.0, 1.0 * amt, alpha);
   }
-
+  else if(overlay_color == DT_DEV_OVERLAY_WHITE)
+  {
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, alpha);
+  }
+  else if(overlay_color == DT_DEV_OVERLAY_BLACK)
+  {
+    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, alpha);
+  }
 }
 
 /** draws a rating star

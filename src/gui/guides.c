@@ -702,7 +702,9 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
                                N_("green"),
                                N_("yellow"),
                                N_("cyan"),
-                               N_("magenta"));
+                               N_("magenta"),
+                               N_("white"),
+                               N_("black"));
   gtk_box_pack_start(GTK_BOX(vbox), darktable.view_manager->guides_colors, TRUE, TRUE, 0);
 
   gtk_container_add(GTK_CONTAINER(pop), vbox);
