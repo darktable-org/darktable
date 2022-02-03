@@ -371,9 +371,18 @@ GType dtgtk_range_select_get_type()
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
                                       const double min, const double max, gboolean signal)
 {
-  // set the values
-  range->select_min = min;
-  range->select_max = max;
+  // round the value to respect step if set
+  if(range->step > 0.0)
+  {
+    range->select_min = floor(min / range->step) * range->step;
+    range->select_max = ceil(max / range->step) * range->step;
+  }
+  else
+  {
+    // set the values
+    range->select_min = min;
+    range->select_max = max;
+  }
   range->bounds = bounds;
 
   // update the entries
@@ -381,13 +390,13 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
   if(range->bounds & DT_RANGE_BOUND_MIN)
     snprintf(txt, sizeof(txt), "%s", _("min"));
   else
-    snprintf(txt, sizeof(txt), range->formater, min);
+    snprintf(txt, sizeof(txt), range->formater, range->select_min);
   gtk_entry_set_text(GTK_ENTRY(range->entry_min), txt);
 
   if(range->bounds & DT_RANGE_BOUND_MAX)
     snprintf(txt, sizeof(txt), "%s", _("max"));
   else
-    snprintf(txt, sizeof(txt), range->formater, max);
+    snprintf(txt, sizeof(txt), range->formater, range->select_max);
   gtk_entry_set_text(GTK_ENTRY(range->entry_max), txt);
 
   // update the band selection
