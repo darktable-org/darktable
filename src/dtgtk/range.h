@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "paint.h"
 #include <gtk/gtk.h>
 G_BEGIN_DECLS
 #define DTGTK_RANGE_SELECT(obj)                                                                                   \
@@ -70,6 +71,7 @@ typedef struct _GtkDarktableRangeSelect
   double band_factor; // factor for getting band value from widget position
 
   GList *blocks;
+  GList *icons;
 } GtkDarktableRangeSelect;
 
 typedef struct _GtkDarktableRangeSelectClass
@@ -91,5 +93,9 @@ void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
 
 void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc band_value,
                                       DTGTKTranslateValueFunc value_band);
+
+void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, DTGTKCairoPaintIconFunc paint,
+                                 gint flags, void *data);
+void dtgtk_range_select_reset_icons(GtkDarktableRangeSelect *range);
 
 G_END_DECLS

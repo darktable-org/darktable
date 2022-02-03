@@ -539,6 +539,13 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   DTGTK_RANGE_SELECT(rate->range_select)->step = 1.0;
   snprintf(DTGTK_RANGE_SELECT(rate->range_select)->formater,
            sizeof(DTGTK_RANGE_SELECT(rate->range_select)->formater), "%%.0lf");
+  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 7, dtgtk_cairo_paint_reject, 0, NULL);
+  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 36, dtgtk_cairo_paint_star, 0, NULL);
+  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 50, dtgtk_cairo_paint_star, 0, NULL);
+  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 64, dtgtk_cairo_paint_star, 0, NULL);
+  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 78, dtgtk_cairo_paint_star, 0, NULL);
+  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 93, dtgtk_cairo_paint_star, 0, NULL);
+
   dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(rate->range_select), sbounds, smin, smax, FALSE);
 
   gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 0);
@@ -565,7 +572,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
     }
     sqlite3_finalize(stmt);
     DTGTK_RANGE_SELECT(rate->range_select)->min = -1;
-    DTGTK_RANGE_SELECT(rate->range_select)->max = 5;
+    DTGTK_RANGE_SELECT(rate->range_select)->max = 6;
   }
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), rate->range_select, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(rate->range_select), "value-changed", G_CALLBACK(_rating_changed), rule);
