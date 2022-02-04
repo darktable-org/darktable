@@ -2012,30 +2012,20 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
 post_process_collect_info:
 
-    if(dt_atomic_get_int(&pipe->shutdown))
-    {
-      return 1;
-    }
-    // Pick RGB/Lab for the primary colorpicker and live samples
-    if(dev->gui_attached && pipe == dev->preview_pipe
-       && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
-       && input)
-    {
-      if(darktable.lib->proxy.colorpicker.picker_proxy || darktable.lib->proxy.colorpicker.live_samples)
-        _pixelpipe_pick_samples(dev, module, (const float *const )input, &roi_in);
-    }
-
-    // 4) final histogram:
+    // 4) colorpicker and final histogram:
     if(dt_atomic_get_int(&pipe->shutdown))
     {
       return 1;
     }
     if(dev->gui_attached && !dev->gui_leaving
        && pipe == dev->preview_pipe
-       && (strcmp(module->op, "gamma") == 0)
-       // input is NULL if using cached output, shouldn't happen for gamma
-       && input)
+       && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
+       && input) // input is NULL if using cached output, shouldn't happen for gamma
     {
+      // Pick RGB/Lab for the primary colorpicker and live samples
+      if(darktable.lib->proxy.colorpicker.picker_proxy || darktable.lib->proxy.colorpicker.live_samples)
+        _pixelpipe_pick_samples(dev, module, (const float *const )input, &roi_in);
+
       // FIXME: read this from dt_ioppr_get_pipe_output_profile_info()?
       const dt_iop_order_iccprofile_info_t *const display_profile
         = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
