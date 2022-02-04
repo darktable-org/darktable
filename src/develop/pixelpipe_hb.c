@@ -2030,7 +2030,11 @@ post_process_collect_info:
     {
       return 1;
     }
-    if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
+    if(dev->gui_attached && !dev->gui_leaving
+       && pipe == dev->preview_pipe
+       && (strcmp(module->op, "gamma") == 0)
+       // input is NULL if using cached output, shouldn't happen for gamma
+       && input)
     {
       // FIXME: read this from dt_ioppr_get_pipe_output_profile_info()?
       const dt_iop_order_iccprofile_info_t *const display_profile
@@ -2041,36 +2045,9 @@ post_process_collect_info:
       // in the pixelpipe and has a "process" call, why not treat it
       // as an iop? Granted, other views such as tether may also
       // benefit via a histogram.
-      if(input == NULL)
-      {
-        // FIXME: really get rid of this case -- colorpicker does just fine with skipping when (if??) input is NULL
-        // input may not be available, so we use the output from gamma
-        // this may lead to some rounding errors
-        // FIXME: under what circumstances would input not be available? when this iop's result is pulled in from cache?
-        float *const buf = dt_alloc_align_float((size_t)4 * roi_out->width * roi_out->height);
-        if(buf)
-        {
-          const uint8_t *in = (uint8_t *)(*output);
-          // FIXME: it would be nice to use dt_imageio_flip_buffers_ui8_to_float() but then we'd need to make another pass to convert RGB to BGR
-          #ifdef _OPENMP
-          #pragma omp parallel for default(none) dt_omp_firstprivate(buf, in, roi_out) schedule(simd:static)
-          #endif
-          for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k += 4)
-          {
-            for_four_channels(c, aligned(in, buf:64)) buf[k + c] = (float)in[k + 2 - c] / 255.0f;
-          }
-          darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, buf,
-                                                 roi_out->width, roi_out->height,
-                                                 display_profile, dt_ioppr_get_histogram_profile_info(dev));
-          dt_free_align(buf);
-        }
-      }
-      else
-      {
-        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
-                                               roi_in.width, roi_in.height,
-                                               display_profile, dt_ioppr_get_histogram_profile_info(dev));
-      }
+      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
+                                             roi_in.width, roi_in.height,
+                                             display_profile, dt_ioppr_get_histogram_profile_info(dev));
     }
   }
 
