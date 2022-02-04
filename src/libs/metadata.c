@@ -318,6 +318,12 @@ static gboolean _key_pressed(GtkWidget *textview, GdkEventKey *event, dt_lib_mod
         d->editing = FALSE;
         return TRUE;
         break;
+      case GDK_KEY_Tab:
+      case GDK_KEY_KP_Tab:
+      case GDK_KEY_ISO_Left_Tab:
+        _write_metadata(GTK_TEXT_VIEW(textview), self);
+        d->editing = FALSE;
+        break;
       case GDK_KEY_Escape:
       {
         if(dt_modifier_is(event->state, 0))
@@ -435,11 +441,11 @@ void gui_reset(dt_lib_module_t *self)
     if(!hidden && type != DT_METADATA_TYPE_INTERNAL)
     {
       GtkTextBuffer *buffer = gtk_text_view_get_buffer(d->textview[i]);
-      gtk_text_buffer_set_text(buffer, "", -1);
+      _set_text_buffer(buffer, "");
       _text_set_italic(d->textview[i], FALSE);
     }
   }
-  _write_metadata(self);
+  _write_metadata(NULL, self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
