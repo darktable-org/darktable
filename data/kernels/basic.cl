@@ -1017,7 +1017,7 @@ clip_rotate_lanczos3(read_only image2d_t in, write_only image2d_t out, const int
 kernel void
 lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
-               const int do_nan_checks)
+               const int do_nan_checks, const int monochrome)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1070,6 +1070,7 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
 
+  if(monochrome) pixel.x = pixel.z = pixel.y;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -1077,7 +1078,7 @@ lens_distort_bilinear (read_only image2d_t in, write_only image2d_t out, const i
 kernel void
 lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                       const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
-                      const int do_nan_checks)
+                      const int do_nan_checks, const int monochrome)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1206,6 +1207,7 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
   pixel.z = sum/weight;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
+  if(monochrome) pixel.x = pixel.z = pixel.y;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -1215,7 +1217,7 @@ lens_distort_bicubic (read_only image2d_t in, write_only image2d_t out, const in
 kernel void
 lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                       const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
-                      const int do_nan_checks)
+                      const int do_nan_checks, const int monochrome)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1344,6 +1346,7 @@ lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const i
   pixel.z = sum/weight;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
+  if(monochrome) pixel.x = pixel.z = pixel.y;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
@@ -1353,7 +1356,7 @@ lens_distort_lanczos2 (read_only image2d_t in, write_only image2d_t out, const i
 kernel void
 lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                       const int iwidth, const int iheight, const int roi_in_x, const int roi_in_y, global float *pi,
-                      const int do_nan_checks)
+                      const int do_nan_checks, const int monochrome)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -1481,6 +1484,7 @@ lens_distort_lanczos3 (read_only image2d_t in, write_only image2d_t out, const i
   pixel.z = sum/weight;
 
   pixel = all(isfinite(pixel.xyz)) ? pixel : (float4)0.0f;
+  if(monochrome) pixel.x = pixel.z = pixel.y;
 
   write_imagef (out, (int2)(x, y), pixel);
 }
