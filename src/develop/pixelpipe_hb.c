@@ -1934,18 +1934,15 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     // the user is likely to change that one soon, so keep it in cache.
     dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input);
   }
+
+  // warn on NaN or infinity
 #ifndef _DEBUG
-  if(darktable.unmuted & DT_DEBUG_NAN)
+  if((darktable.unmuted & DT_DEBUG_NAN) && strcmp(module->op, "gamma") != 0)
 #endif
   {
     if(dt_atomic_get_int(&pipe->shutdown))
     {
       return 1;
-    }
-
-    if(strcmp(module->op, "gamma") == 0)
-    {
-      goto post_process_collect_info;
     }
 
 #ifdef HAVE_OPENCL
@@ -2017,8 +2014,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       g_free(module_label);
     }
   }
-
-post_process_collect_info:
 
   // 4) colorpicker and scopes:
   if(dt_atomic_get_int(&pipe->shutdown))
