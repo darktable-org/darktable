@@ -278,11 +278,11 @@ int dt_image_is_hdr(const dt_image_t *img);
 /** set the monochrome flags if monochrome is TRUE and clear it otherwise */
 void dt_image_set_monochrome_flag(const int32_t imgid, gboolean monochrome);
 /** returns non-zero if this image was taken using a monochrome camera */
-int dt_image_is_monochrome(const dt_image_t *img);
+gboolean dt_image_is_monochrome(const dt_image_t *img);
 /** returns non-zero if the image supports a color correction matrix */
-int dt_image_is_matrix_correction_supported(const dt_image_t *img);
+gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img);
 /** returns non-zero if the image supports the rawprepare module */
-int dt_image_is_rawprepare_supported(const dt_image_t *img);
+gboolean dt_image_is_rawprepare_supported(const dt_image_t *img);
 /** returns the bitmask containing info about monochrome images */
 int dt_image_monochrome_flags(const dt_image_t *img);
 /** returns true if the image has been tested to be monochrome and the image wants monochrome workflow */
