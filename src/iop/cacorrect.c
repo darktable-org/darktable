@@ -1365,11 +1365,8 @@ void reload_defaults(dt_iop_module_t *module)
 {
   dt_image_t *img = &module->dev->image_storage;
   // can't be switched on for non-raw or x-trans images:
-  if(dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) &&
-     !(dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)))
-    module->hide_enable_button = 0;
-  else
-    module->hide_enable_button = 1;
+  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
+  module->hide_enable_button = !active;
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
@@ -1380,8 +1377,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *) piece->data;
 
   dt_image_t *img = &pipe->image;
-  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) &&
-     !(dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)));
+  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
 
   if(!active) piece->enabled = 0;
 
@@ -1407,8 +1403,8 @@ void gui_update(dt_iop_module_t *self)
 
   dt_image_t *img = &self->dev->image_storage;
 
-  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) &&
-     !(dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)));
+  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
+  self->hide_enable_button = !active;
 
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), active ? "raw" : "non_raw");
 
@@ -1427,8 +1423,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   dt_image_t *img = &self->dev->image_storage;
 
-  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) &&
-     !(dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)));
+  const gboolean active = (dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !(dt_image_is_monochrome(img)));
 
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), active ? "raw" : "non_raw");
 
