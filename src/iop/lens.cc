@@ -1,6 +1,6 @@
 ﻿/*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -371,6 +371,17 @@ static inline gboolean monochrome_img(const dt_image_t *img)
 {
   return (dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ? TRUE : FALSE;
 }
+
+/* Why do we care about being a monochrome image or not?
+ The lensfun library does not have an algorithm for distortion or tca correction specialized for monochrome images,
+   the builtin correction works with subtle differences for the color channels leading to some colorizing of the images.
+ How is this fixed here:
+   Monochrome images (from pure monochrome cameras or cameras with the color filter removed from the sensor) have
+   all three rgb colors set to the same value by the demosaicer. 
+   Looking through lensfun code & docs the ApplySubpixelGeometryDistortion algorithm makes assumptions from given
+   coeffs how far data are displaced for the different wavelengths of light.
+   As green / Y channel is the most centric i took that as the canonical value instead of taking the mean.
+*/
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
