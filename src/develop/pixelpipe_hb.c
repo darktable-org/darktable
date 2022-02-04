@@ -1105,7 +1105,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   gboolean cache_available = FALSE;
   uint64_t basichash = 0;
   uint64_t hash = 0;
-  // do not get gamma from cache on preview pipe so we can compute the final histogram
+  // do not get gamma from cache on preview pipe so we can compute the final scope
+  // FIXME: better yet, don't even cache the gamma output in this case -- but then we'd need to allocate a temporary output buffer and garbage collect it
   if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW
      || module == NULL
      || strcmp(module->op, "gamma") != 0)
@@ -1121,9 +1122,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format);
 
-    if(!modules) return 0;
-    // go to post-collect directly:
-    goto post_process_collect_info;
+    if(dt_atomic_get_int(&pipe->shutdown))
+      return 1;
+
+    // we're done! as colorpicker/scopes only work on gamma iop
+    // input -- which is unavailable via cache -- there's no need to
+    // run these
+    return 0;
   }
 
   // 2) if history changed or exit event, abort processing?
@@ -2015,7 +2020,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
 post_process_collect_info:
 
-  // 4) colorpicker and final histogram:
+  // 4) colorpicker and scopes:
   if(dt_atomic_get_int(&pipe->shutdown))
   {
     return 1;
