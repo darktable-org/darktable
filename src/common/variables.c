@@ -147,7 +147,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->exif_lens = g_strdup(img->exif_lens);
     params->data->version = img->version;
     params->data->stars = (img->flags & 0x7);
-    if(params->data->stars == 6) params->data->stars = -1;
+    if(params->data->stars == 6 || (img->flags & DT_IMAGE_REJECTED) != 0) params->data->stars = -1;
 
     params->data->exif_exposure = img->exif_exposure;
     params->data->exif_exposure_bias = img->exif_exposure_bias;
