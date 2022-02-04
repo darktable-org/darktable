@@ -96,6 +96,11 @@ static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
   dtgtk_range_select_set_selection(range, range->bounds, range->select_min, range->select_max, TRUE);
 }
 
+static int _graph_get_height(const int val, const int max, const int height)
+{
+  return sqrt(val / (double)max) * (height * 0.8) + height * 0.1;
+}
+
 static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
@@ -163,7 +168,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
         if(bl_count > 0)
         {
           const int posx = (int)((bl_min - range->band_start) / step) * bl_width;
-          const int bh = sqrt(bl_count / (double)count_max) * (allocation.height - 2) + 2;
+          const int bh = _graph_get_height(bl_count, count_max, allocation.height);
           cairo_rectangle(scr, posx, allocation.height - bh, bl_width, bh);
           cairo_fill(scr);
         }
@@ -175,7 +180,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     if(bl_count > 0)
     {
       const int posx = (int)((bl_min - range->band_start) / step) * bl_width;
-      const int bh = sqrt(bl_count / (double)count_max) * (allocation.height - 2) + 2;
+      const int bh = _graph_get_height(bl_count, count_max, allocation.height);
       cairo_rectangle(scr, posx, allocation.height - bh, bl_width, bh);
       cairo_fill(scr);
     }
@@ -351,7 +356,6 @@ GtkWidget *dtgtk_range_select_new()
 
   // the bottom band
   range->band = gtk_drawing_area_new();
-  gtk_widget_set_size_request(range->band, -1, 30); // TODO : make the height changeable with css
   gtk_widget_set_events(range->band, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                          | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                          | GDK_POINTER_MOTION_MASK);
@@ -360,7 +364,12 @@ GtkWidget *dtgtk_range_select_new()
   g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
   g_signal_connect(G_OBJECT(range->band), "motion-notify-event", G_CALLBACK(_event_band_motion), range);
   g_signal_connect(G_OBJECT(range->band), "leave-notify-event", G_CALLBACK(_event_band_leave), range);
-  gtk_widget_set_name(GTK_WIDGET(range->band), "range_select_band");
+  gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
+  context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  int mh = 30;
+  gtk_style_context_get(context, state, "min-height", &mh, NULL);
+  gtk_widget_set_size_request(range->band, -1, mh);
   gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
 
   gtk_container_add(GTK_CONTAINER(range), vbox);

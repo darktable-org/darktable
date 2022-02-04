@@ -1571,6 +1571,10 @@ filechooser row:hover .sidebar-icon
   background-color: transparent;
 }
 
+#dt-range-band
+{
+  min-height: 30px;
+}
 #dt-range-current
 {
   color: @timeline_bg_color;
