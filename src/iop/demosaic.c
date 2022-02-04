@@ -5710,7 +5710,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
   if(changed)
+  {
     dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
+    // only done if one of the passthrough monochrome demosaicers has changed
+    // we reload the image so all modules respect this setting
+    dt_dev_reload_image(self->dev, self->dev->image_storage.id);
+  }
 }
 void gui_update(struct dt_iop_module_t *self)
 {
