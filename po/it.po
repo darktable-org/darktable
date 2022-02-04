@@ -84,7 +84,7 @@ msgstr "Generale"
 
 #: ../build/bin/preferences_gen.h:3749
 msgid "hide built-in presets for utility modules"
-msgstr "Nascondi le preimpostazioni incorporate per i moduli di utilità"
+msgstr "Nascondi le pre-impostazioni incorporate per i moduli di utilità"
 
 #: ../build/bin/preferences_gen.h:3760 ../build/bin/preferences_gen.h:3796
 #: ../build/bin/preferences_gen.h:3832 ../build/bin/preferences_gen.h:3868
@@ -230,7 +230,7 @@ msgstr "VERO"
 
 #: ../build/bin/preferences_gen.h:3943 ../build/bin/preferences_gen.h:4675
 msgid "defines whether scrollbars should be displayed"
-msgstr "Stabilisci dove dovrebbero essere mostrate le barre di scorrimento"
+msgstr "Stabilisci dove devono essere mostrate le barre di scorrimento"
 
 #: ../build/bin/preferences_gen.h:3953
 msgid "thumbnails"
