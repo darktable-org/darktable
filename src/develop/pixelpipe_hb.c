@@ -2022,8 +2022,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   }
   if(dev->gui_attached && !dev->gui_leaving
      && pipe == dev->preview_pipe
-     && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
-     && input) // input is NULL if using cached output, shouldn't happen for gamma
+     && (strcmp(module->op, "gamma") == 0)) // only gamma provides meaningful RGB data
   {
     // Pick RGB/Lab for the primary colorpicker and live samples
     if(darktable.lib->proxy.colorpicker.picker_proxy || darktable.lib->proxy.colorpicker.live_samples)
