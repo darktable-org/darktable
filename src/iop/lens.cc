@@ -429,8 +429,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(padded_bufsize, ch, ch_width, d, interpolation, ivoid, mask_display, ovoid, roi_in, roi_out)	\
-      dt_omp_sharedconst(buf)						\
-      shared(modifier, raw_monochrome)  \
+      dt_omp_sharedconst(buf, raw_monochrome) \
+      shared(modifier) \
       schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
