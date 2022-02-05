@@ -29,6 +29,9 @@ Since darktable 3.8.0:
 
 ## The Big Ones
 
+- Two new languages are now available for the documentation: Spanish
+  and Dutch. This brings to six languages the full translation the
+  documentation.
 
 ## Other New Features And Changes
 
