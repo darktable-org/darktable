@@ -114,8 +114,12 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   cairo_fill(cr);
 
   // draw the graph (and create it if needed)
-  if(!range->surface)
+  if(!range->surface || range->surf_width != allocation.width)
   {
+    range->surf_width = allocation.width;
+    // if the surface already exist, destroy it
+    if(range->surface) cairo_surface_destroy(range->surface);
+
     // determine the steps of blocks and extrema values
     range->band_start = range->value_band(range->min);
     const double wv = range->value_band(range->max) - range->band_start;
@@ -248,6 +252,16 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   return TRUE;
 }
 
+static void _dt_pref_changed(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+  // invalidate the surface
+  range->surf_width = 0;
+  // redraw the band
+  gtk_widget_queue_draw(range->band);
+}
+
 static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
@@ -325,6 +339,7 @@ GtkWidget *dtgtk_range_select_new()
   range->current_x = 0.0;
   snprintf(range->formater, sizeof(range->formater), "%%.2lf");
   range->surface = NULL;
+  range->surf_width = 0;
   range->band_value = _value_translater_default;
   range->value_band = _value_translater_default;
 
@@ -374,6 +389,9 @@ GtkWidget *dtgtk_range_select_new()
 
   gtk_container_add(GTK_CONTAINER(range), vbox);
   gtk_widget_set_name(GTK_WIDGET(range), "range_select");
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_changed),
+                                  range);
   return (GtkWidget *)range;
 }
 
