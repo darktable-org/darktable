@@ -55,6 +55,7 @@ typedef struct _GtkDarktableRangeSelect
   gboolean set_selection;
 
   cairo_surface_t *surface;
+  int surf_width;
 
   GtkWidget *entry_min;
   GtkWidget *current;

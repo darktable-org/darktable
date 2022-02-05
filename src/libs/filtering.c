@@ -548,17 +548,13 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(rate->range_select), sbounds, smin, smax, FALSE);
 
-  gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 0);
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
              "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
              " COUNT(*) AS count"
              " FROM main.images AS mi"
-             " WHERE %s"
              " GROUP BY rating"
-             " ORDER BY rating",
-             where_ext);
-  g_free(where_ext);
+             " ORDER BY rating");
   if(strlen(query) > 0)
   {
     sqlite3_stmt *stmt;
@@ -713,15 +709,11 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   dtgtk_range_select_set_band_func(DTGTK_RANGE_SELECT(ratio->range_select), _ratio_band_value_func,
                                    _ratio_value_band_func);
 
-  gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 0);
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
              "SELECT ROUND(aspect_ratio,3), COUNT(*) AS count"
-             " FROM main.images AS mi "
-             " WHERE %s"
-             " GROUP BY ROUND(aspect_ratio,1)",
-             where_ext);
-  g_free(where_ext);
+             " FROM main.images AS mi"
+             " GROUP BY ROUND(aspect_ratio,1)");
   if(strlen(query) > 0)
   {
     sqlite3_stmt *stmt;
