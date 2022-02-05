@@ -128,6 +128,26 @@ You are strongly advised to take a backup first.
 
 - Fix importing from SMB shares mounted using gvfs.
 
+- Fix possible color shifting when activating the lens correction on a
+  monochrome image.
+
+- Fix $(RATING_ICONS) variable substitution, displays a X when rating
+  is 0 instead of an empty string.
+
+- Add some missing variable substitution in the displayed list.
+
+- Fix reset button in metadata editor. The metadata were properly
+  removed from the selected pictures but the module itself did not
+  have the UI refreshed.
+
+- Fix enabling processing modules from a shortcut. The module is not
+  longer given the focus when activated.
+
+- Fix tab selection when opening the preferences in non English
+  languages.
+
+- Improve the unknown DNG illuminant handling.
+
 ## Lua
 
 
