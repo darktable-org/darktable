@@ -536,8 +536,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(padded_buf2size, ch, ch_width, d, interpolation, mask_display, ovoid, roi_in, roi_out) \
-      dt_omp_sharedconst(buf2)						\
-      shared(buf, modifier, raw_monochrome)	\
+      dt_omp_sharedconst(buf2, raw_monochrome) \
+      shared(buf, modifier) \
       schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
@@ -691,7 +691,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(tmpbufwidth, roi_out) \
-      shared(tmpbuf, d, modifier, raw_monochrome) \
+      dt_omp_sharedconst(raw_monochrome) \
+      shared(tmpbuf, d, modifier) \
       schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
@@ -809,7 +810,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(tmpbufwidth, roi_out) \
-      shared(tmpbuf, d, modifier, raw_monochrome) \
+      dt_omp_sharedconst(raw_monochrome) \
+      shared(tmpbuf, d, modifier) \
       schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
