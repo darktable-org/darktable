@@ -367,11 +367,6 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
   return mod;
 }
 
-static inline gboolean monochrome_img(const dt_image_t *img)
-{
-  return (dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ? TRUE : FALSE;
-}
-
 /* Why do we care about being a monochrome image or not?
  The lensfun library does not have an algorithm for distortion or tca correction specialized for monochrome images,
    the builtin correction works with subtle differences for the color channels leading to some colorizing of the images.
@@ -401,7 +396,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     return;
   }
 
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
+  const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
@@ -607,7 +602,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
+  const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
   cl_mem dev_tmpbuf = NULL;
@@ -890,8 +885,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
   int modflags;
 
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
-  const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
+  const int used_lf_mask = (dt_image_is_monochrome(&self->dev->image_storage)) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
   const lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, used_lf_mask, TRUE);
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
@@ -922,8 +916,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
-  const int used_lf_mask = (raw_monochrome) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
+  const int used_lf_mask = (dt_image_is_monochrome(&self->dev->image_storage)) ? LF_MODIFY_ALL & ~LF_MODIFY_TCA : LF_MODIFY_ALL;
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
   int modflags;
@@ -1147,7 +1140,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   const lfCamera *camera = NULL;
   const lfCamera **cam = NULL;
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
   if(d->lens)
   {
     delete d->lens;
@@ -1209,7 +1201,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   lf_free(cam);
   d->modify_flags = p->modify_flags;
-  if(raw_monochrome) d->modify_flags &= ~LF_MODIFY_TCA;
+  if(dt_image_is_monochrome(&self->dev->image_storage)) d->modify_flags &= ~LF_MODIFY_TCA;
   d->inverse = p->inverse;
   d->scale = p->scale;
   d->focal = p->focal;
@@ -1340,7 +1332,7 @@ void reload_defaults(dt_iop_module_t *module)
   d->distance = img->exif_focus_distance == 0.0f ? 1000.0f : img->exif_focus_distance;
   d->target_geom = LF_RECTILINEAR;
 
-  if(monochrome_img(img))
+  if(dt_image_is_monochrome(img))
     d->modify_flags &= ~LF_MODIFY_TCA;
 
   // init crop from db:
@@ -2127,7 +2119,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
-  const gboolean raw_monochrome = monochrome_img(&self->dev->image_storage);
+  const gboolean raw_monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   gtk_widget_set_visible(g->tca_override, !raw_monochrome);
   // update gui to show/hide tca sliders if tca_override was changed
   if(!w || w == g->tca_override)
