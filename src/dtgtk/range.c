@@ -122,7 +122,7 @@ static double _graph_snap_position(GtkDarktableRangeSelect *range, const double 
     _range_marker *mark = bl->data;
     if(!mark->magnetic) continue;
     const int mpos = mark->band_value / range->band_factor - range->band_start;
-    if(abs(mpos - posx) < SNAP_SIZE) return mpos;
+    if(fabs(mpos - posx) < SNAP_SIZE) return mpos;
   }
   return ret;
 }
@@ -135,7 +135,7 @@ static double _graph_snap_value(GtkDarktableRangeSelect *range, const double pos
     _range_marker *mark = bl->data;
     if(!mark->magnetic) continue;
     const int mpos = mark->band_value / range->band_factor - range->band_start;
-    if(abs(mpos - posx) < SNAP_SIZE) return mark->value;
+    if(fabs(mpos - posx) < SNAP_SIZE) return mark->value;
   }
   return ret;
 }
@@ -283,7 +283,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   {
     // determine icon size
     const int size = bandh * 0.8;
-    const int posy = bandh * 0.1;
+    const int posy = margin_top + bandh * 0.1;
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
 
     for(const GList *bl = range->icons; bl; bl = g_list_next(bl))

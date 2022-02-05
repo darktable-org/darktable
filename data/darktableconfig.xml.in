@@ -463,7 +463,7 @@
     <shortdescription>number of collections to be stored</shortdescription>
     <longdescription>the number of recent collections to store and show in this list</longdescription>
   </dtconfig>
-  <dtconfig dialog="filtering">
+  <dtconfig>
     <name>plugins/lighttable/filtering/history_max</name>
     <type min="1" max="50">int</type>
     <default>10</default>
