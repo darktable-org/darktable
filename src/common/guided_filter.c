@@ -694,7 +694,7 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
   assert(w >= 1);
 
   const cl_ulong max_global_mem = dt_opencl_get_max_global_mem(devid);
-  const size_t reserved_memory = (size_t)(dt_conf_get_float("opencl_memory_headroom") * 1024 * 1024);
+  const size_t reserved_memory = (size_t)(dt_opencl_memory_headroom());
   // estimate required memory for OpenCL code path with a safety factor of 5/4
   const size_t required_memory
       = darktable.opencl->dev[devid].memory_in_use + (size_t)width * height * sizeof(float) * 18 * 5 / 4;

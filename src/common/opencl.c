@@ -2449,7 +2449,7 @@ int dt_opencl_image_fits_device(const int devid, const size_t width, const size_
   /* first time run */
   if(headroom < 0.0f)
   {
-    headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
+    headroom = dt_opencl_memory_headroom();
 
     /* don't let the user play games with us */
     headroom = fmin((float)darktable.opencl->dev[devid].max_global_mem, fmax(headroom, 0.0f));
