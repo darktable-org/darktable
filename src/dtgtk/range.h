@@ -29,6 +29,8 @@ G_BEGIN_DECLS
 #define DTGTK_IS_RANGE_SELECT_CLASS(klass) G_TYPE_CHECK_CLASS_TYPE(obj, dtgtk_range_select_get_type())
 
 typedef double (*DTGTKTranslateValueFunc)(const double value);
+typedef gchar *(*DTGTKPrintValueFunc)(const double value, const gboolean detailled);
+typedef double (*DTGTKDecodeValueFunc)(const gchar *text);
 
 typedef enum dt_range_bounds_t
 {
@@ -60,7 +62,6 @@ typedef struct _GtkDarktableRangeSelect
   GtkWidget *entry_min;
   GtkWidget *current;
   GtkWidget *entry_max;
-  gchar formater[8];
   GtkWidget *band;
 
   // fonction used to translate "real" value into band positions
@@ -71,8 +72,14 @@ typedef struct _GtkDarktableRangeSelect
   double band_start;  // band value of the start of the widget
   double band_factor; // factor for getting band value from widget position
 
+  // function used to print and decode values so they are human readable
+  // print function has detailled mode for extended infos
+  DTGTKPrintValueFunc print;
+  DTGTKDecodeValueFunc decode;
+
   GList *blocks;
   GList *icons;
+  GList *markers;
 } GtkDarktableRangeSelect;
 
 typedef struct _GtkDarktableRangeSelectClass
@@ -94,9 +101,13 @@ void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
 
 void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc band_value,
                                       DTGTKTranslateValueFunc value_band);
+void dtgtk_range_select_set_print_func(GtkDarktableRangeSelect *range, DTGTKPrintValueFunc print,
+                                       DTGTKDecodeValueFunc decode);
 
 void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, DTGTKCairoPaintIconFunc paint,
                                  gint flags, void *data);
 void dtgtk_range_select_reset_icons(GtkDarktableRangeSelect *range);
 
+void dtgtk_range_select_add_marker(GtkDarktableRangeSelect *range, const double value, const gboolean magnetic);
+void dtgtk_range_select_reset_markers(GtkDarktableRangeSelect *range);
 G_END_DECLS

@@ -526,6 +526,31 @@ static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
+static gchar *_rating_print_func(const double value, gboolean detailled)
+{
+  if(detailled)
+  {
+    switch((int)floor(value))
+    {
+      case -1:
+        return g_strdup(_("rejected"));
+      case 0:
+        return g_strdup(_("not rated"));
+      case 1:
+        return g_strdup("★");
+      case 2:
+        return g_strdup("★ ★");
+      case 3:
+        return g_strdup("★ ★ ★");
+      case 4:
+        return g_strdup("★ ★ ★ ★");
+      case 5:
+        return g_strdup("★ ★ ★ ★ ★");
+    }
+  }
+  return g_strdup_printf("%.0lf", floor(value));
+}
+
 static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                 const gchar *text, dt_lib_module_t *self)
 {
@@ -536,17 +561,17 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   _rating_decode(text, &smin, &smax, &sbounds);
 
   rate->range_select = dtgtk_range_select_new();
-  DTGTK_RANGE_SELECT(rate->range_select)->step = 1.0;
-  snprintf(DTGTK_RANGE_SELECT(rate->range_select)->formater,
-           sizeof(DTGTK_RANGE_SELECT(rate->range_select)->formater), "%%.0lf");
-  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 7, dtgtk_cairo_paint_reject, 0, NULL);
-  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 36, dtgtk_cairo_paint_star, 0, NULL);
-  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 50, dtgtk_cairo_paint_star, 0, NULL);
-  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 64, dtgtk_cairo_paint_star, 0, NULL);
-  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 78, dtgtk_cairo_paint_star, 0, NULL);
-  dtgtk_range_select_add_icon(DTGTK_RANGE_SELECT(rate->range_select), 93, dtgtk_cairo_paint_star, 0, NULL);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(rate->range_select);
+  range->step = 1.0;
+  dtgtk_range_select_add_icon(range, 7, dtgtk_cairo_paint_reject, 0, NULL);
+  dtgtk_range_select_add_icon(range, 36, dtgtk_cairo_paint_star, 0, NULL);
+  dtgtk_range_select_add_icon(range, 50, dtgtk_cairo_paint_star, 0, NULL);
+  dtgtk_range_select_add_icon(range, 64, dtgtk_cairo_paint_star, 0, NULL);
+  dtgtk_range_select_add_icon(range, 78, dtgtk_cairo_paint_star, 0, NULL);
+  dtgtk_range_select_add_icon(range, 93, dtgtk_cairo_paint_star, 0, NULL);
+  range->print = _rating_print_func;
 
-  dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(rate->range_select), sbounds, smin, smax, FALSE);
+  dtgtk_range_select_set_selection(range, sbounds, smin, smax, FALSE);
 
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
@@ -564,11 +589,11 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
       const double val = sqlite3_column_double(stmt, 0);
       const int count = sqlite3_column_int(stmt, 1);
 
-      dtgtk_range_select_add_block(DTGTK_RANGE_SELECT(rate->range_select), val, count);
+      dtgtk_range_select_add_block(range, val, count);
     }
     sqlite3_finalize(stmt);
-    DTGTK_RANGE_SELECT(rate->range_select)->min = -1;
-    DTGTK_RANGE_SELECT(rate->range_select)->max = 6;
+    range->min = -1;
+    range->max = 6;
   }
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), rate->range_select, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(rate->range_select), "value-changed", G_CALLBACK(_rating_changed), rule);
@@ -695,6 +720,21 @@ static double _ratio_band_value_func(const double value)
   return 1.0 / (2.0 - value);
 }
 
+static gchar *_ratio_print_func(const double value, gboolean detailled)
+{
+  gchar *txt = g_strdup_printf("%.2lf", value);
+  if(detailled)
+  {
+    if(value < 1.0)
+      return dt_util_dstrcat(txt, " %s", _("portrait"));
+    else if(value > 1.0)
+      return dt_util_dstrcat(txt, " %s", _("landscape"));
+    else if(value == 1.0)
+      return dt_util_dstrcat(txt, " %s", _("square"));
+  }
+  return txt;
+}
+
 static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                const gchar *text, dt_lib_module_t *self)
 {
@@ -705,9 +745,12 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   _ratio_decode(text, &smin, &smax, &sbounds);
 
   ratio->range_select = dtgtk_range_select_new();
-  dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(ratio->range_select), sbounds, smin, smax, FALSE);
-  dtgtk_range_select_set_band_func(DTGTK_RANGE_SELECT(ratio->range_select), _ratio_band_value_func,
-                                   _ratio_value_band_func);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(ratio->range_select);
+
+  dtgtk_range_select_set_selection(range, sbounds, smin, smax, FALSE);
+  dtgtk_range_select_set_band_func(range, _ratio_band_value_func, _ratio_value_band_func);
+  dtgtk_range_select_add_marker(range, 1.0, TRUE);
+  range->print = _ratio_print_func;
 
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
@@ -727,11 +770,11 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
       min = fmin(min, val);
       max = fmax(max, val);
 
-      dtgtk_range_select_add_block(DTGTK_RANGE_SELECT(ratio->range_select), val, count);
+      dtgtk_range_select_add_block(range, val, count);
     }
     sqlite3_finalize(stmt);
-    DTGTK_RANGE_SELECT(ratio->range_select)->min = min;
-    DTGTK_RANGE_SELECT(ratio->range_select)->max = max;
+    range->min = min;
+    range->max = max;
   }
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->range_select, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(ratio->range_select), "value-changed", G_CALLBACK(_ratio_changed), rule);
