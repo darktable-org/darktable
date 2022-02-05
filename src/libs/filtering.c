@@ -678,6 +678,8 @@ static void _ratio_changed(GtkWidget *widget, gpointer user_data)
   dt_range_bounds_t bounds = dtgtk_range_select_get_selection(DTGTK_RANGE_SELECT(ratio->range_select), &min, &max);
 
   char txt[128] = { 0 };
+  gchar *locale = strdup(setlocale(LC_ALL, NULL));
+  setlocale(LC_NUMERIC, "C");
   if((bounds & DT_RANGE_BOUND_MAX) && (bounds & DT_RANGE_BOUND_MIN))
     snprintf(txt, sizeof(txt), "%%");
   else if(bounds & DT_RANGE_BOUND_MAX)
@@ -688,6 +690,9 @@ static void _ratio_changed(GtkWidget *widget, gpointer user_data)
     snprintf(txt, sizeof(txt), "=%lf", min);
   else
     snprintf(txt, sizeof(txt), "[%lf;%lf]", min, max);
+
+  setlocale(LC_NUMERIC, locale);
+  g_free(locale);
 
   _rule_set_raw_text(rule, txt, TRUE);
 }
@@ -722,7 +727,12 @@ static double _ratio_band_value_func(const double value)
 
 static gchar *_ratio_print_func(const double value, gboolean detailled)
 {
+  gchar *locale = strdup(setlocale(LC_ALL, NULL));
+  setlocale(LC_NUMERIC, "C");
   gchar *txt = g_strdup_printf("%.2lf", value);
+  setlocale(LC_NUMERIC, locale);
+  g_free(locale);
+
   if(detailled)
   {
     if(value < 1.0)
