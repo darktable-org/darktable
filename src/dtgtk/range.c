@@ -19,6 +19,8 @@
 #include "gui/gtk.h"
 #include <string.h>
 
+#define SNAP_SIZE 5
+
 static void _range_select_class_init(GtkDarktableRangeSelectClass *klass);
 static void _range_select_init(GtkDarktableRangeSelect *button);
 
@@ -37,6 +39,14 @@ typedef struct _range_icon
   gint flags;
   void *data;
 } _range_icon;
+
+typedef struct _range_marker
+{
+  double value;
+  double band_value;
+
+  gboolean magnetic;
+} _range_marker;
 
 enum
 {
@@ -58,9 +68,17 @@ static void _range_select_init(GtkDarktableRangeSelect *button)
 {
 }
 
-static double _value_translater_default(const double value)
+static double _default_value_translator(const double value)
 {
   return value;
+}
+static gchar *_default_print_func(const double value, const gboolean detailled)
+{
+  return g_strdup_printf("%.0lf", floor(value));
+}
+static double _default_decode_func(const gchar *text)
+{
+  return atof(text);
 }
 
 static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
@@ -84,16 +102,42 @@ static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
   else if(range->entry_min == entry)
   {
     if(range->bounds & DT_RANGE_BOUND_MAX) range->bounds = DT_RANGE_BOUND_MAX;
-    range->select_min = atof(txt);
+    range->select_min = range->decode(txt);
   }
   else if(range->entry_max == entry)
   {
     if(range->bounds & DT_RANGE_BOUND_MIN) range->bounds = DT_RANGE_BOUND_MIN;
-    range->select_max = atof(txt);
+    range->select_max = range->decode(txt);
   }
   g_free(txt);
 
   dtgtk_range_select_set_selection(range, range->bounds, range->select_min, range->select_max, TRUE);
+}
+
+static double _graph_snap_position(GtkDarktableRangeSelect *range, const double posx)
+{
+  double ret = posx;
+  for(const GList *bl = range->markers; bl; bl = g_list_next(bl))
+  {
+    _range_marker *mark = bl->data;
+    if(!mark->magnetic) continue;
+    const int mpos = mark->band_value / range->band_factor - range->band_start;
+    if(abs(mpos - posx) < SNAP_SIZE) return mpos;
+  }
+  return ret;
+}
+static double _graph_snap_value(GtkDarktableRangeSelect *range, const double posx)
+{
+  double ret = posx * range->band_factor + range->band_start;
+  ret = range->band_value(ret);
+  for(const GList *bl = range->markers; bl; bl = g_list_next(bl))
+  {
+    _range_marker *mark = bl->data;
+    if(!mark->magnetic) continue;
+    const int mpos = mark->band_value / range->band_factor - range->band_start;
+    if(abs(mpos - posx) < SNAP_SIZE) return mark->value;
+  }
+  return ret;
 }
 
 static int _graph_get_height(const int val, const int max, const int height)
@@ -108,10 +152,14 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
-  // draw background
-  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_BG, 1.0);
-  cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
-  cairo_fill(cr);
+  // retrieve the margins
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  GtkBorder bord;
+  gtk_style_context_get_border(context, state, &bord);
+  const int margin_top = bord.top * allocation.height / 1000;
+  const int margin_bottom = bord.bottom * allocation.height / 1000;
+  const int bandh = allocation.height - margin_bottom - margin_top;
 
   // draw the graph (and create it if needed)
   if(!range->surface || range->surf_width != allocation.width)
@@ -153,11 +201,26 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     // create the surface
     range->surface = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
     cairo_t *scr = cairo_create(range->surface);
-    dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_GRAPH, 1.0);
+
+    // draw the markers
+    dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
+    for(const GList *bl = range->markers; bl; bl = g_list_next(bl))
+    {
+      _range_marker *mark = bl->data;
+      const int posx = mark->band_value / range->band_factor - range->band_start;
+      cairo_rectangle(scr, posx, 0, 2, allocation.height);
+      cairo_fill(scr);
+    }
+
+    // draw background
+    dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_BG, 1.0);
+    cairo_rectangle(scr, 0, margin_top, allocation.width, bandh);
+    cairo_fill(scr);
 
     // draw the rectangles on the surface
     // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
     // (see above)
+    dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_GRAPH, 1.0);
     bl_min = range->band_start;
     bl_count = 0;
     for(const GList *bl = range->blocks; bl; bl = g_list_next(bl))
@@ -172,8 +235,8 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
         if(bl_count > 0)
         {
           const int posx = (int)((bl_min - range->band_start) / step) * bl_width;
-          const int bh = _graph_get_height(bl_count, count_max, allocation.height);
-          cairo_rectangle(scr, posx, allocation.height - bh, bl_width, bh);
+          const int bh = _graph_get_height(bl_count, count_max, bandh);
+          cairo_rectangle(scr, posx, margin_top + bandh - bh, bl_width, bh);
           cairo_fill(scr);
         }
         bl_count = blo->nb;
@@ -184,8 +247,8 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     if(bl_count > 0)
     {
       const int posx = (int)((bl_min - range->band_start) / step) * bl_width;
-      const int bh = _graph_get_height(bl_count, count_max, allocation.height);
-      cairo_rectangle(scr, posx, allocation.height - bh, bl_width, bh);
+      const int bh = _graph_get_height(bl_count, count_max, bandh);
+      cairo_rectangle(scr, posx, margin_top + bandh - bh, bl_width, bh);
       cairo_fill(scr);
     }
 
@@ -203,7 +266,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     sel_start = (range->value_band(range->select_min) - range->band_start) / range->band_factor;
   int sel_end = allocation.width;
   if(range->set_selection)
-    sel_end = range->current_x;
+    sel_end = _graph_snap_position(range, range->current_x);
   else if(!(range->bounds & DT_RANGE_BOUND_MAX))
     sel_end = (range->value_band(range->select_max) - range->band_start) / range->band_factor;
   const int x1 = (sel_start < sel_end) ? sel_start : sel_end;
@@ -212,15 +275,15 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   if(!range->set_selection) x2 += range->step / range->band_factor;
   const int sel_width = MAX(2, x2 - x1);
   dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_SELECTION, 1.0);
-  cairo_rectangle(cr, x1, 0, sel_width, allocation.height);
+  cairo_rectangle(cr, x1, margin_top, sel_width, bandh);
   cairo_fill(cr);
 
   // draw the icons
   if(g_list_length(range->icons) > 0)
   {
     // determine icon size
-    const int size = allocation.height * 0.8;
-    const int posy = allocation.height * 0.1;
+    const int size = bandh * 0.8;
+    const int posy = bandh * 0.1;
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
 
     for(const GList *bl = range->icons; bl; bl = g_list_next(bl))
@@ -235,13 +298,13 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   if(range->mouse_inside && range->current_x > 0)
   {
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_CURSOR, 1.0);
-    cairo_move_to(cr, range->current_x, 0);
-    cairo_line_to(cr, range->current_x, allocation.height);
+    const int posx = _graph_snap_position(range, range->current_x);
+    cairo_move_to(cr, posx, margin_top);
+    cairo_line_to(cr, posx, bandh);
     cairo_stroke(cr);
-    char txt[16] = { 0 };
-    const double val = range->current_x * range->band_factor + range->band_start;
-    snprintf(txt, sizeof(txt), range->formater, range->band_value(val));
+    gchar *txt = range->print(_graph_snap_value(range, range->current_x), TRUE);
     gtk_label_set_text(GTK_LABEL(range->current), txt);
+    g_free(txt);
     gtk_widget_set_visible(range->current, TRUE);
   }
   else
@@ -284,8 +347,7 @@ static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer us
 static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  const double val = e->x * range->band_factor + range->band_start;
-  range->select_min = range->band_value(val);
+  range->select_min = _graph_snap_value(range, e->x);
   range->select_max = range->select_min;
   range->bounds = DT_RANGE_BOUND_RANGE;
   range->set_selection = TRUE;
@@ -296,8 +358,7 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
 static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  const double val = e->x * range->band_factor + range->band_start;
-  range->select_max = range->band_value(val);
+  range->select_max = _graph_snap_value(range, e->x);
   // we verify that the values are in the right order
   if(range->select_max < range->select_min)
   {
@@ -337,11 +398,12 @@ GtkWidget *dtgtk_range_select_new()
   range->bounds = DT_RANGE_BOUND_RANGE;
   range->mouse_inside = FALSE;
   range->current_x = 0.0;
-  snprintf(range->formater, sizeof(range->formater), "%%.2lf");
   range->surface = NULL;
   range->surf_width = 0;
-  range->band_value = _value_translater_default;
-  range->value_band = _value_translater_default;
+  range->band_value = _default_value_translator;
+  range->value_band = _default_value_translator;
+  range->print = _default_print_func;
+  range->decode = _default_decode_func;
 
   // the boxes widgets
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -435,18 +497,20 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
   range->bounds = bounds;
 
   // update the entries
-  char txt[16] = { 0 };
+  gchar *txt = NULL;
   if(range->bounds & DT_RANGE_BOUND_MIN)
-    snprintf(txt, sizeof(txt), "%s", _("min"));
+    txt = g_strdup(_("min"));
   else
-    snprintf(txt, sizeof(txt), range->formater, range->select_min);
+    txt = range->print(range->select_min, FALSE);
   gtk_entry_set_text(GTK_ENTRY(range->entry_min), txt);
+  g_free(txt);
 
   if(range->bounds & DT_RANGE_BOUND_MAX)
-    snprintf(txt, sizeof(txt), "%s", _("max"));
+    txt = g_strdup(_("max"));
   else
-    snprintf(txt, sizeof(txt), range->formater, range->select_max);
+    txt = range->print(range->select_max, FALSE);
   gtk_entry_set_text(GTK_ENTRY(range->entry_max), txt);
+  g_free(txt);
 
   // update the band selection
   gtk_widget_queue_draw(range->band);
@@ -485,12 +549,12 @@ void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTrans
   if(band_value)
     range->band_value = band_value;
   else
-    range->band_value = _value_translater_default;
+    range->band_value = _default_value_translator;
 
   if(value_band)
     range->value_band = value_band;
   else
-    range->value_band = _value_translater_default;
+    range->value_band = _default_value_translator;
 }
 
 void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, DTGTKCairoPaintIconFunc paint,
@@ -510,6 +574,23 @@ void dtgtk_range_select_reset_icons(GtkDarktableRangeSelect *range)
   if(!range->icons) return;
   g_list_free_full(range->icons, g_free);
   range->icons = NULL;
+}
+
+void dtgtk_range_select_add_marker(GtkDarktableRangeSelect *range, const double value, const gboolean magnetic)
+{
+  _range_marker *mark = (_range_marker *)g_malloc0(sizeof(_range_marker));
+  mark->value = value;
+  mark->magnetic = magnetic;
+  mark->band_value = range->value_band(value);
+
+  range->markers = g_list_append(range->markers, mark);
+}
+
+void dtgtk_range_select_reset_markers(GtkDarktableRangeSelect *range)
+{
+  if(!range->markers) return;
+  g_list_free_full(range->markers, g_free);
+  range->markers = NULL;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
