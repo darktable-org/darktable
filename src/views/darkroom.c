@@ -2026,6 +2026,7 @@ static gboolean _overlay_cycle_callback(GtkAccelGroup *accel_group, GObject *acc
   const int currentval = dt_conf_get_int("darkroom/ui/overlay_color");
   const int nextval = (currentval + 1) % 5; // colors can go from 0 to 5
   dt_conf_set_int("darkroom/ui/overlay_color", nextval);
+  dt_guides_set_overlay_colors(nextval);
   dt_control_queue_redraw_center();
   return TRUE;
 }
