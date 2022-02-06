@@ -1138,7 +1138,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   _init_widgets(gui);
 
   //init overlay colors
-  dt_guides_set_overlay_colors(dt_conf_get_int("darkroom/ui/overlay_color"));
+  dt_guides_set_overlay_colors();
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);

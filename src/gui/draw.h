@@ -50,6 +50,10 @@ typedef struct dt_draw_curve_t
 /** set color based on gui overlay preference */
 static inline void dt_draw_set_color_overlay(cairo_t *cr, double amt, double alpha)
 {
+  if(amt > 0.5)
+    amt = 0.5 + darktable.gui->overlay_contrast * 0.5;
+  else
+    amt = (1.0 - darktable.gui->overlay_contrast) * 0.5;
   cairo_set_source_rgba(cr, darktable.gui->overlay_red * amt, darktable.gui->overlay_green * amt, darktable.gui->overlay_blue * amt, alpha);
 }
 
