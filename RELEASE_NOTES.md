@@ -157,7 +157,7 @@ Since darktable 3.8.0:
 
 ## Notes
 
-- We now display a big red messages for cameras having missing
+- We now display a big red message for cameras having missing
   samples. The camera that were removed in 3.8.0 are back in darktable
   for a short period of time.
 
@@ -180,6 +180,8 @@ Since darktable 3.8.0:
 
 ### Noise Profiles
 
+- Canon EOS D60
+- Samsung NX1000
 
 ### Custom Color Matrices
 
