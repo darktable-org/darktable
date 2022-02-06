@@ -3563,19 +3563,21 @@ void reload_defaults(dt_iop_module_t *module)
   // adaptation set we default to RGB (none) in this instance.
   // try to register the CAT here
   declare_cat_on_pipe(module, is_modern);
+  const dt_image_t *img = &module->dev->image_storage;
+
   // check if we could register
   gboolean CAT_already_applied =
     (module->dev->proxy.chroma_adaptation != NULL)       // CAT exists
-    && (module->dev->proxy.chroma_adaptation != module); // and it is not us
+    && (module->dev->proxy.chroma_adaptation != module)
+    && (!dt_image_is_monochrome(img)); // and it is not us
 
   module->default_enabled = FALSE;
-
-  const dt_image_t *img = &module->dev->image_storage;
 
   dt_aligned_pixel_t custom_wb;
   if(!CAT_already_applied
      && is_modern
-     && !get_white_balance_coeff(module, custom_wb))
+     && !get_white_balance_coeff(module, custom_wb)
+     && !dt_image_is_monochrome(img))
   {
     // if workflow = modern and we find WB coeffs, take care of white balance here
     if(find_temperature_from_raw_coeffs(img, custom_wb, &(d->x), &(d->y)))
@@ -3608,7 +3610,7 @@ void reload_defaults(dt_iop_module_t *module)
       g->delta_E_label_text = NULL;
     }
 
-    if(dt_image_is_matrix_correction_supported(img))
+    if(dt_image_is_matrix_correction_supported(img) && !dt_image_is_monochrome(img))
     {
       if(dt_bauhaus_combobox_length(g->illuminant) < DT_ILLUMINANT_CAMERA + 1)
         dt_bauhaus_combobox_add_full(g->illuminant, _("as shot in camera"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
