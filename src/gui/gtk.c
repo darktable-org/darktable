@@ -25,6 +25,7 @@
 #include "common/file_location.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "gui/guides.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -1135,6 +1136,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // Initializing widgets
   _init_widgets(gui);
+
+  //init overlay colors
+  dt_guides_set_overlay_colors(dt_conf_get_int("darkroom/ui/overlay_color"));
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);

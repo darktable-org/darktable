@@ -651,9 +651,29 @@ static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
   dt_control_queue_redraw_center();
 }
 
+void dt_guides_set_overlay_colors(int overlay_color)
+{
+  darktable.gui->overlay_red = darktable.gui->overlay_green = darktable.gui->overlay_blue = 0.0f;
+
+  if(overlay_color == DT_DEV_OVERLAY_GRAY)
+    darktable.gui->overlay_red = darktable.gui->overlay_green = darktable.gui->overlay_blue = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_RED)
+    darktable.gui->overlay_red = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_GREEN)
+    darktable.gui->overlay_green = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_YELLOW)
+    darktable.gui->overlay_red = darktable.gui->overlay_green = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_CYAN)
+    darktable.gui->overlay_green = darktable.gui->overlay_blue = 1.0f;
+  else if(overlay_color == DT_DEV_OVERLAY_MAGENTA)
+    darktable.gui->overlay_red = darktable.gui->overlay_blue = 1.0f;
+}
+
 static void _settings_colors_changed(GtkWidget *combo, _guides_settings_t *gw)
 {
-  dt_conf_set_int("darkroom/ui/overlay_color", dt_bauhaus_combobox_get(combo));
+  const int overlay_color = dt_bauhaus_combobox_get(combo);
+  dt_conf_set_int("darkroom/ui/overlay_color", overlay_color);
+  dt_guides_set_overlay_colors(overlay_color);
   dt_control_queue_redraw_center();
 }
 

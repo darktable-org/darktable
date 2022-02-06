@@ -50,33 +50,7 @@ typedef struct dt_draw_curve_t
 /** set color based on gui overlay preference */
 static inline void dt_draw_set_color_overlay(cairo_t *cr, double amt, double alpha)
 {
-  const int overlay_color = dt_conf_get_int("darkroom/ui/overlay_color");
-
-  if(overlay_color == DT_DEV_OVERLAY_GRAY)
-  {
-    cairo_set_source_rgba(cr, 1.0 * amt, 1.0 * amt, 1.0 * amt, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_RED)
-  {
-    cairo_set_source_rgba(cr, 1.0 * amt, 0.0, 0.0, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_GREEN)
-  {
-    cairo_set_source_rgba(cr, 0.0, 1.0 * amt, 0.0, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_YELLOW)
-  {
-    cairo_set_source_rgba(cr, 1.0 * amt, 1.0 * amt, 0.0, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_CYAN)
-  {
-    cairo_set_source_rgba(cr, 0.0, 1.0 * amt, 1.0 * amt, alpha);
-  }
-  else if(overlay_color == DT_DEV_OVERLAY_MAGENTA)
-  {
-    cairo_set_source_rgba(cr, 1.0 * amt, 0.0, 1.0 * amt, alpha);
-  }
-
+  cairo_set_source_rgba(cr, darktable.gui->overlay_red * amt, darktable.gui->overlay_green * amt, darktable.gui->overlay_blue * amt, alpha);
 }
 
 /** draws a rating star
