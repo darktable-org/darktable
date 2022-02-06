@@ -159,7 +159,7 @@ typedef unsigned int u_int;
 // bump this number and make sure you have an updated logic in dt_configure_performance()
 #define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 3
 
-#define DT_CL_SAFEHEADROOM 800.0f
+#define DT_CL_SAFEHEADROOM 800
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -351,7 +351,7 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((for
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
 int dt_worker_threads();
-float dt_opencl_memory_headroom();
+size_t dt_opencl_memory_headroom();
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline void* dt_calloc_align(size_t alignment, size_t size)
 {

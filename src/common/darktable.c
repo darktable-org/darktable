@@ -1581,10 +1581,10 @@ int dt_worker_threads()
   return 1;
 }
 
-float dt_opencl_memory_headroom()
+size_t dt_opencl_memory_headroom()
 {
-  const float safe_headroom = fmaxf(DT_CL_SAFEHEADROOM, dt_conf_get_float("opencl_memory_headroom"));
-  return safe_headroom * 1024.0f * 1024.0f;
+  const size_t safe_headroom = MAX(DT_CL_SAFEHEADROOM, dt_conf_get_int("opencl_memory_headroom"));
+  return safe_headroom * 1024 * 1024;
 }
 
 void dt_configure_performance()

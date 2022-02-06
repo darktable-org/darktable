@@ -1238,7 +1238,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   /* shall we enforce tiling */
   const gboolean force_tile = (darktable.unmuted & DT_DEBUG_TILING);
   /* calculate optimal size of tiles */
-  float headroom = dt_opencl_memory_headroom();
+  float headroom = (float)dt_opencl_memory_headroom();
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   float available = darktable.opencl->dev[devid].max_global_mem - headroom;
   if(force_tile) available = fmin(available, DT_CL_SAFEHEADROOM * 1024.0f * 1024.0f);
@@ -1608,7 +1608,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   /* shall we enforce tiling */
   const gboolean force_tile = (darktable.unmuted & DT_DEBUG_TILING);
   /* calculate optimal size of tiles */
-  float headroom = dt_opencl_memory_headroom();
+  float headroom = (float)dt_opencl_memory_headroom();
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   float available = darktable.opencl->dev[devid].max_global_mem - headroom;
   if(force_tile) available = fmin(available, DT_CL_SAFEHEADROOM * 1024.0f * 1024.0f);

@@ -2439,25 +2439,35 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
 }
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
+gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead)
 {
-  static float headroom = -1.0f;
-
+  static size_t headroom = 0;
+  static gboolean headwarning = TRUE;
+ 
   if(!darktable.opencl->inited || devid < 0) return FALSE;
 
-  /* first time run */
-  if(headroom < 0.0f)
-  {
+  /* we check the headroom first time run */
+  if(headroom == 0)
     headroom = dt_opencl_memory_headroom();
 
-    /* don't let the user play games with us */
-    headroom = fmin((float)darktable.opencl->dev[devid].max_global_mem, fmax(headroom, 0.0f));
-    dt_conf_set_int("opencl_memory_headroom", headroom / 1024 / 1024);
+  const size_t dev_globalmem = darktable.opencl->dev[devid].max_global_mem;
+  /* As we might have more than one opencl device running or the computer might have got another
+     opencl capable card it is not a good idea to change the headroom value in the config file.
+     FIXME
+     We need headroom calculations at runtime and per device, for now we just report on console and
+     once give a warning feedback.
+  */
+  if(darktable.opencl->dev[devid].max_global_mem < headroom)
+  {
+    const char *devname = darktable.opencl->dev[devid].name;
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_image_fits_device] headroom %lu too large for device %s (%lu)\n", headroom, devname, dev_globalmem);
+    if(headwarning)
+      dt_control_log(_("headroom %imb too large for %s"), (int)(headroom / 1024 / 1024), devname);
+    headwarning = FALSE;
   }
-
-  float singlebuffer = (float)width * height * bpp;
-  float total = factor * singlebuffer + overhead;
+  const size_t singlebuffer = width * height * bpp;
+  const size_t total = factor * singlebuffer + overhead;
 
   if(darktable.opencl->dev[devid].max_image_width < width
      || darktable.opencl->dev[devid].max_image_height < height)
@@ -2465,7 +2475,7 @@ int dt_opencl_image_fits_device(const int devid, const size_t width, const size_
 
   if(darktable.opencl->dev[devid].max_mem_alloc < singlebuffer) return FALSE;
 
-  if(darktable.opencl->dev[devid].max_global_mem < total + headroom) return FALSE;
+  if(dev_globalmem < total + headroom) return FALSE;
 
   return TRUE;
 }

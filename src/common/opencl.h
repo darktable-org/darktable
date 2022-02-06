@@ -368,7 +368,7 @@ int dt_opencl_get_mem_context_id(cl_mem mem);
 void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action);
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
+gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead);
 
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
@@ -491,10 +491,10 @@ static inline int dt_opencl_update_settings(void)
 {
   return 0;
 }
-static inline int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
+static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
                                               const unsigned bpp, const float factor, const size_t overhead)
 {
-  return 0;
+  return FALSE;
 }
 static inline int dt_opencl_get_max_global_mem(const int devid)
 {
