@@ -26,6 +26,7 @@
 
 #include "common/atomic.h"
 #include "common/debug.h"
+#include "common/gamut_mapping.h"
 #include "common/history.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -131,6 +132,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->second_window.closeup = 0;
   dev->second_window.zoom_x = dev->second_window.zoom_y = 0;
   dev->second_window.zoom_scale = 1.0f;
+
+  dt_init_gamut_boundary_cache(&dev->gamut_boundary_cache);
 }
 
 void dt_dev_cleanup(dt_develop_t *dev)
@@ -196,6 +199,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
   dt_conf_set_float("darkroom/ui/overexposed/lower", dev->overexposed.lower);
   dt_conf_set_float("darkroom/ui/overexposed/upper", dev->overexposed.upper);
+
+  dt_cleanup_gamut_boundary_cache(&dev->gamut_boundary_cache);
 }
 
 float dt_dev_get_preview_downsampling()

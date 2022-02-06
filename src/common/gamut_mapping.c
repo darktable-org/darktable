@@ -16,10 +16,12 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <glib.h>
 
-#include "gamut_mapping.h"
 #include "chromatic_adaptation.h"
+#include "develop/develop.h"
 #include "develop/openmp_maths.h"
+#include "gamut_mapping.h"
 #include "iop/gaussian_elimination.h"
 
 
@@ -336,38 +338,39 @@ void dt_make_gamut_mapping_input_and_output_matrix(const dt_iop_order_iccprofile
 }
 
 
-void dt_free_gamut_boundary_data(dt_gamut_boundary_data_t *const data)
+static void allocate_gamut_boundary_data(void *alloc_data, dt_cache_entry_t *entry)
 {
+  dt_gamut_boundary_data_t *data = dt_alloc_align(64, sizeof(dt_gamut_boundary_data_t));
   if(!data) return;
-  dt_free_align(data->slices);
-  dt_free_align(data);
+
+  entry->data = data;
+  entry->cost = sizeof(*data);
+  data->cache_entry = NULL; // assign this to NULL for now to tell that the slot is uninitialized
 }
 
 
-dt_gamut_boundary_data_t *const
-dt_prepare_gamut_boundary_data(const dt_iop_order_iccprofile_info_t *const target_profile,
-                               const float target_white_luminance, const float target_black_luminance,
-                               const float blur_sigma_degrees, const char *const debug_filename)
+static void free_gamut_boundary_data(void *data, dt_cache_entry_t *entry)
+{
+  dt_free_align(entry->data);
+}
+
+
+static void prepare_gamut_boundary_data(dt_gamut_boundary_data_t *const data,
+                                        const dt_iop_order_iccprofile_info_t *const target_profile,
+                                        const float target_white_luminance, const float target_black_luminance,
+                                        const float blur_sigma_degrees, const char *const debug_filename)
 {
   const size_t hue_steps = DT_GAMUT_MAP_HUE_STEPS;
 
   dt_times_t start_time;
   dt_get_times(&start_time);
 
-  dt_gamut_boundary_data_t *const data = dt_alloc_align(64, sizeof(dt_gamut_boundary_data_t));
-  if(data == NULL) return NULL;
-
-  data->slices = dt_alloc_align(64, hue_steps * sizeof(dt_gamut_hue_slice_t));
-  if(data->slices == NULL) goto error_with_data;
-
-  data->hue_steps = hue_steps;
-
   dt_colormatrix_t target_output_matrix, target_input_matrix;
   dt_make_gamut_mapping_input_and_output_matrix(target_profile, target_input_matrix, target_output_matrix);
 
   if(!fit_boundary(target_input_matrix, target_output_matrix, target_white_luminance, target_black_luminance,
                    hue_steps, blur_sigma_degrees, data))
-    goto error_with_data;
+    return;
 
   FILE *const fcsv = debug_filename ? g_fopen(debug_filename, "w") : NULL;
   if(fcsv)
@@ -390,10 +393,83 @@ dt_prepare_gamut_boundary_data(const dt_iop_order_iccprofile_info_t *const targe
   }
 
   dt_show_times_f(&start_time, "[gamut_mapping]", "gamut map creation");
+}
 
+
+typedef struct
+{
+  float white_luminance;
+  float black_luminance;
+  float blur_sigma_degrees;
+  dt_colorspaces_color_profile_type_t profile_type;
+  char profile_filename[DT_IOP_COLOR_ICC_LEN];
+} gamut_boundary_cache_key_t;
+
+
+dt_gamut_boundary_data_t *dt_get_gamut_boundary_data(struct dt_develop_t *const dev,
+                                                     const dt_iop_order_iccprofile_info_t *const target_profile,
+                                                     const float target_white_luminance,
+                                                     const float target_black_luminance,
+                                                     const float blur_sigma_degrees,
+                                                     const char *const debug_filename)
+{
+  gamut_boundary_cache_key_t key_struct = {
+    .white_luminance = target_white_luminance,
+    .black_luminance = target_black_luminance,
+    .blur_sigma_degrees = blur_sigma_degrees,
+    .profile_type = target_profile->type,
+    .profile_filename = { '\0' },
+  };
+  g_strlcpy(key_struct.profile_filename, target_profile->filename, DT_IOP_COLOR_ICC_LEN);
+
+  GBytes *bytes = g_bytes_new(&key_struct, sizeof(key_struct));
+  if(!bytes) return NULL;
+
+  const uint32_t hash = g_bytes_hash(bytes);
+  g_bytes_unref(bytes);
+
+  dt_cache_entry_t *entry = dt_cache_testget(&dev->gamut_boundary_cache, hash, 'r');
+  if(entry)
+  {
+    dt_print(DT_DEBUG_CACHE, "[gamut_mapping] cache hit\n");
+    return entry->data;
+  }
+
+  // Cache miss - we need to get the slot with a write lock now and try to initialize it.
+  entry = dt_cache_get(&dev->gamut_boundary_cache, hash, 'w');
+
+  dt_gamut_boundary_data_t *const data = entry->data;
+
+  if(data->cache_entry)
+  {
+    // Someone asked for write access earlier and initialized the slot. Return the result.
+    return data;
+  }
+
+  // We have a freshly allocated slot and need to calculate the gamut boundary.
+  prepare_gamut_boundary_data(data, target_profile, target_white_luminance, target_black_luminance,
+                              blur_sigma_degrees, debug_filename);
+  // Assign the backlink now to indicate that the slot contains meaningful data.
+  data->cache_entry = entry;
   return data;
+}
 
-error_with_data:
-  dt_free_gamut_boundary_data(data);
-  return NULL;
+
+void dt_init_gamut_boundary_cache(dt_cache_t *cache)
+{
+  dt_cache_init(cache, sizeof(dt_gamut_boundary_data_t), 1024 * 1024 * DT_GAMUT_MAP_CACHE_MAX_MEMORY_MB);
+  dt_cache_set_allocate_callback(cache, allocate_gamut_boundary_data, NULL);
+  dt_cache_set_cleanup_callback(cache, free_gamut_boundary_data, NULL);
+}
+
+
+void dt_cleanup_gamut_boundary_cache(dt_cache_t *cache)
+{
+  dt_cache_cleanup(cache);
+}
+
+
+void dt_release_gamut_boundary_data(struct dt_develop_t *const dev, dt_gamut_boundary_data_t *const data)
+{
+  dt_cache_release(&dev->gamut_boundary_cache, data->cache_entry);
 }

@@ -198,6 +198,8 @@ typedef struct dt_develop_t
   // profiles info
   GList *allprofile_info;
 
+  dt_cache_t gamut_boundary_cache;
+
   // histogram for display.
   uint32_t *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_pre_tonecurve_max, histogram_pre_levels_max;

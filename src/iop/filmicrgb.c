@@ -323,8 +323,6 @@ typedef struct dt_iop_filmicrgb_data_t
   int high_quality_reconstruction;
   struct dt_iop_filmic_rgb_spline_t spline DT_ALIGNED_ARRAY;
   dt_noise_distribution_t noise_distribution;
-  dt_gamut_boundary_data_t *target_gamut_boundary_data;
-  dt_gamut_boundary_data_t *source_gamut_boundary_data;
 } dt_iop_filmicrgb_data_t;
 
 
@@ -1300,20 +1298,15 @@ error:
 
 static inline void final_gamut_mapping(const dt_colormatrix_t RGB_to_Oklab_lms,
                                        const dt_colormatrix_t Oklab_lms_to_RGB,
+                                       const dt_gamut_boundary_data_t *const target_boundary,
+                                       const dt_gamut_boundary_data_t *const source_boundary,
                                        const dt_iop_filmicrgb_data_t *const data, const dt_aligned_pixel_t in,
                                        dt_aligned_pixel_t out)
 {
-  if(!data->source_gamut_boundary_data || !data->target_gamut_boundary_data)
-  {
-    memcpy(out, in, sizeof(dt_aligned_pixel_t));
-    return;
-  }
-
   dt_aligned_pixel_t Oklab_lms, Oklab_lms_mapped;
 
   dt_apply_transposed_color_matrix(in, RGB_to_Oklab_lms, Oklab_lms);
-  dt_gamut_compress(Oklab_lms, Oklab_lms_mapped, data->target_gamut_boundary_data, data->source_gamut_boundary_data,
-                    GAMUT_COMPRESSION_KNEE);
+  dt_gamut_compress(Oklab_lms, Oklab_lms_mapped, target_boundary, source_boundary, GAMUT_COMPRESSION_KNEE);
   dt_apply_transposed_color_matrix(Oklab_lms_mapped, Oklab_lms_to_RGB, out);
 
   // Final clipping to output range to catch any excess values after gamut mapping.
@@ -1407,6 +1400,8 @@ static inline void filmic_split_v2_v3(const float *const restrict in, float *con
 
 static inline void filmic_split_v4(const float *const restrict in, float *const restrict out,
                                    const dt_iop_order_iccprofile_info_t *const work_profile,
+                                   dt_gamut_boundary_data_t *const target_boundary,
+                                   dt_gamut_boundary_data_t *const source_boundary,
                                    const dt_iop_filmicrgb_data_t *const data,
                                    const dt_iop_filmic_rgb_spline_t spline, const size_t width,
                                    const size_t height)
@@ -1416,8 +1411,9 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(width, height, data, in, out, spline, RGB_to_Oklab_lms, Oklab_lms_to_RGB) schedule(simd   \
-                                                                                                       : static)
+    dt_omp_firstprivate(width, height, data, in, out, spline, RGB_to_Oklab_lms, Oklab_lms_to_RGB,                 \
+                        target_boundary, source_boundary) schedule(simd                                           \
+                                                                   : static)
 #endif
   for(size_t k = 0; k < height * width * 4; k += 4)
   {
@@ -1437,7 +1433,7 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
                                               spline.latitude_min, spline.latitude_max, spline.type)),
                      data->output_power);
 
-    final_gamut_mapping(RGB_to_Oklab_lms, Oklab_lms_to_RGB, data, temp, pix_out);
+    final_gamut_mapping(RGB_to_Oklab_lms, Oklab_lms_to_RGB, target_boundary, source_boundary, data, temp, pix_out);
   }
 }
 
@@ -1573,6 +1569,8 @@ static inline void filmic_chroma_v2_v3(const float *const restrict in, float *co
 
 static inline void filmic_chroma_v4(const float *const restrict in, float *const restrict out,
                                     const dt_iop_order_iccprofile_info_t *const work_profile,
+                                    const dt_gamut_boundary_data_t *const target_boundary,
+                                    const dt_gamut_boundary_data_t *const source_boundary,
                                     const dt_iop_filmicrgb_data_t *const data,
                                     const dt_iop_filmic_rgb_spline_t spline, const int variant, const size_t width,
                                     const size_t height, const size_t ch)
@@ -1581,10 +1579,10 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
   dt_make_gamut_mapping_input_and_output_matrix(work_profile, RGB_to_Oklab_lms, Oklab_lms_to_RGB);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(width, height, ch, data, in, out, work_profile,        \
-                                                           variant, spline, RGB_to_Oklab_lms, Oklab_lms_to_RGB)       \
-    schedule(simd                                                                                                 \
-             : static)
+#pragma omp parallel for default(none)                                                                            \
+    dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, variant, spline, RGB_to_Oklab_lms,        \
+                        Oklab_lms_to_RGB, target_boundary, source_boundary) schedule(simd                         \
+                                                                                     : static)
 #endif
   for(size_t k = 0; k < height * width * ch; k += ch)
   {
@@ -1615,7 +1613,8 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
 
     for_each_channel(c, aligned(ratios)) ratios[c] = ratios[c] * norm;
 
-    final_gamut_mapping(RGB_to_Oklab_lms, Oklab_lms_to_RGB, data, ratios, pix_out);
+    final_gamut_mapping(RGB_to_Oklab_lms, Oklab_lms_to_RGB, target_boundary, source_boundary, data, ratios,
+                        pix_out);
   }
 }
 
@@ -1691,6 +1690,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 {
   const dt_iop_filmicrgb_data_t *const data = (dt_iop_filmicrgb_data_t *)piece->data;
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const output_profile = dt_ioppr_get_pipe_output_profile_info(piece->pipe);
+  dt_gamut_boundary_data_t *const target_boundary
+      = dt_get_gamut_boundary_data(self->dev, output_profile, data->white_target / 100.f,
+                                   data->black_target / 100.f, GAMUT_MAP_SMOOTHING, NULL);
+  dt_gamut_boundary_data_t *const source_boundary = dt_get_gamut_boundary_data(
+      self->dev, work_profile, data->white_target / 100.f, data->black_target / 100.f, GAMUT_MAP_SMOOTHING, NULL);
 
   if(piece->colors != 4)
   {
@@ -1786,7 +1791,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     else if(data->version == DT_FILMIC_COLORSCIENCE_V2 || data->version == DT_FILMIC_COLORSCIENCE_V3)
       filmic_split_v2_v3(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height);
     else
-      filmic_split_v4(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height);
+      filmic_split_v4(in, out, work_profile, target_boundary, source_boundary, data, data->spline, roi_out->width,
+                      roi_in->height);
   }
   else
   {
@@ -1798,14 +1804,17 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       filmic_chroma_v2_v3(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
                           roi_out->height, ch, data->version);
     else
-      filmic_chroma_v4(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
-                       roi_out->height, ch);
+      filmic_chroma_v4(in, out, work_profile, target_boundary, source_boundary, data, data->spline,
+                       data->preserve_color, roi_out->width, roi_out->height, ch);
   }
 
   if(reconstructed) dt_free_align(reconstructed);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+
+  dt_release_gamut_boundary_data(self->dev, target_boundary);
+  dt_release_gamut_boundary_data(self->dev, source_boundary);
 }
 
 #ifdef HAVE_OPENCL
@@ -2710,20 +2719,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   d->high_quality_reconstruction = p->high_quality_reconstruction;
   d->noise_level = p->noise_level;
   d->noise_distribution = (dt_noise_distribution_t)p->noise_distribution;
-
-  const dt_iop_order_iccprofile_info_t *const target_profile = dt_ioppr_get_pipe_output_profile_info(piece->pipe);
-  const dt_iop_order_iccprofile_info_t *const source_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  if((target_profile && source_profile)
-     && (!d->target_gamut_boundary_data || d->white_target != p->white_point_target
-         || d->black_target != p->black_point_target))
-  {
-    dt_free_gamut_boundary_data(d->target_gamut_boundary_data);
-    dt_free_gamut_boundary_data(d->source_gamut_boundary_data);
-    d->target_gamut_boundary_data = dt_prepare_gamut_boundary_data(
-        target_profile, p->white_point_target / 100.f, p->black_point_target / 100.f, GAMUT_MAP_SMOOTHING, NULL);
-    d->source_gamut_boundary_data = dt_prepare_gamut_boundary_data(
-        source_profile, p->white_point_target / 100.f, p->black_point_target / 100.f, GAMUT_MAP_SMOOTHING, NULL);
-  }
   d->white_target = p->white_point_target;
   d->black_target = p->black_point_target;
 
@@ -2766,13 +2761,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_filmicrgb_data_t *const data = (dt_iop_filmicrgb_data_t *const)piece->data;
-  if(data)
-  {
-    dt_free_gamut_boundary_data(data->target_gamut_boundary_data);
-    dt_free_gamut_boundary_data(data->source_gamut_boundary_data);
-  }
-  dt_free_align(data);
+  dt_free_align(piece->data);
   piece->data = NULL;
 }
 

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "cache.h"
 #include "colorspaces_inline_conversions.h"
 #include "iop_profile.h"
 #include "math.h"
@@ -33,11 +34,14 @@
 // numerically calculating intersections pretty easy.
 
 
-#define DT_GAMUT_MAP_HUE_STEPS 1080
+#define DT_GAMUT_MAP_HUE_STEPS 2160
 #define DT_GAMUT_MAP_UPPER_DEGREE 5
 #define DT_GAMUT_MAP_UPPER_SAMPLES 10
 #define DT_GAMUT_MAP_LOWER_DEGREE 5
 #define DT_GAMUT_MAP_LOWER_SAMPLES 10
+
+// Maximum amount of memory we may use for the gamut map cache
+#define DT_GAMUT_MAP_CACHE_MAX_MEMORY_MB 10
 
 
 typedef struct
@@ -52,19 +56,30 @@ typedef struct
 
 typedef DT_ALIGNED_ARRAY struct
 {
-  size_t hue_steps;
   float white_lightness;
   float black_lightness;
-  dt_gamut_hue_slice_t *slices;
+  dt_gamut_hue_slice_t slices[DT_GAMUT_MAP_HUE_STEPS];
+
+  gboolean ready;
+  dt_cache_entry_t *cache_entry;
 } dt_gamut_boundary_data_t;
 
 
-dt_gamut_boundary_data_t *const
-dt_prepare_gamut_boundary_data(const dt_iop_order_iccprofile_info_t *const target_profile,
-                               const float target_white_luminance, const float target_black_luminance,
-                               const float blur_sigma_degrees, const char *const debug_filename);
+struct dt_develop_t;
 
-void dt_free_gamut_boundary_data(dt_gamut_boundary_data_t *const data);
+
+dt_gamut_boundary_data_t *dt_get_gamut_boundary_data(struct dt_develop_t *const dev,
+                                                     const dt_iop_order_iccprofile_info_t *const target_profile,
+                                                     const float target_white_luminance,
+                                                     const float target_black_luminance,
+                                                     const float blur_sigma_degrees,
+                                                     const char *const debug_filename);
+
+void dt_release_gamut_boundary_data(struct dt_develop_t *const dev, dt_gamut_boundary_data_t *const data);
+
+void dt_init_gamut_boundary_cache(dt_cache_t *cache);
+
+void dt_cleanup_gamut_boundary_cache(dt_cache_t *cache);
 
 
 void dt_make_gamut_mapping_input_and_output_matrix(const dt_iop_order_iccprofile_info_t *const profile,
@@ -152,10 +167,10 @@ static inline float _get_hue_at_index(const size_t hue_steps, const size_t index
 static inline float _find_boundary_chroma(const dt_gamut_boundary_data_t *const data, const float hue,
                                           const float lightness)
 {
-  const size_t hue_index_1 = _get_hue_index(data->hue_steps, hue);
-  const float hue_at_index_1 = _get_hue_at_index(data->hue_steps, hue_index_1);
-  const size_t hue_index_2 = (hue_index_1 + 1) % data->hue_steps;
-  const float hue_at_index_2 = _get_hue_at_index(data->hue_steps, hue_index_2);
+  const size_t hue_index_1 = _get_hue_index(DT_GAMUT_MAP_HUE_STEPS, hue);
+  const float hue_at_index_1 = _get_hue_at_index(DT_GAMUT_MAP_HUE_STEPS, hue_index_1);
+  const size_t hue_index_2 = (hue_index_1 + 1) % DT_GAMUT_MAP_HUE_STEPS;
+  const float hue_at_index_2 = _get_hue_at_index(DT_GAMUT_MAP_HUE_STEPS, hue_index_2);
 
   // Linearly interpolate max chroma between two neighboring slices
   const float hue_1_coeff = (hue_at_index_2 - hue) / (hue_at_index_2 - hue_at_index_1);
