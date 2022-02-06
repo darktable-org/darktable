@@ -220,7 +220,7 @@ static void _pop_undo_execute(const int32_t imgid, const gboolean before, const 
 
 gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img)
 {
-  return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW )) && !dt_image_is_monochrome(img)) ? TRUE : FALSE;
+  return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW )) && !(img->flags & DT_IMAGE_MONOCHROME)) ? TRUE : FALSE;
 }
 
 gboolean dt_image_is_rawprepare_supported(const dt_image_t *img)
