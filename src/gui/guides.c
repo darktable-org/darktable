@@ -707,6 +707,8 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
 
   gtk_container_add(GTK_CONTAINER(pop), vbox);
 
+  gtk_widget_show_all(vbox);
+
   return pop;
 }
 

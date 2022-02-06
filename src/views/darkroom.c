@@ -2342,6 +2342,8 @@ void gui_init(dt_view_t *self)
         threshold, _("threshold of what shall be considered overexposed\n1.0 - white level\n0.0 - black level"));
     g_signal_connect(G_OBJECT(threshold), "value-changed", G_CALLBACK(rawoverexposed_threshold_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(threshold), TRUE, TRUE, 0);
+
+    gtk_widget_show_all(vbox);
   }
 
   /* create overexposed popup tool */
@@ -2409,6 +2411,8 @@ void gui_init(dt_view_t *self)
                                          "100% is peak medium luminance."));
     g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
+
+    gtk_widget_show_all(vbox);
   }
 
   /* create profile popup tool & buttons (softproof + gamut) */
@@ -2582,6 +2586,8 @@ void gui_init(dt_view_t *self)
                               G_CALLBACK(_display_profile_changed), (gpointer)display_profile);
     DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
+
+    gtk_widget_show_all(vbox);
   }
 
   /* create grid changer popup tool */
