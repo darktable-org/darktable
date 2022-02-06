@@ -1909,6 +1909,12 @@
     <shortdescription>expand the module when it is activated, and collapse it when disabled</shortdescription>
     <longdescription>this option allows to expand or collapse automatically the module when it is enabled or disabled.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/overlay_contrast</name>
+    <type>float</type>
+    <default>0.5</default>
+    <shortdescription>contrast to use in darkroom overlays</shortdescription>
+  </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/scroll_to_module</name>
     <type>bool</type>
