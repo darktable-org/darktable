@@ -423,6 +423,7 @@ static void _rating_decode(const gchar *txt, int *min, int *max, dt_range_bounds
 {
   gchar *n1 = NULL;
   gchar *n2 = NULL;
+  *bounds = DT_RANGE_BOUND_RANGE;
   // easy case : select all
   if(!strcmp(txt, "") || !strcmp(txt, "%"))
   {
@@ -551,6 +552,28 @@ static gchar *_rating_print_func(const double value, gboolean detailled)
   return g_strdup_printf("%.0lf", floor(value));
 }
 
+static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  // first, we set the color depending on the flags
+  void *my_data = data;
+  GdkRGBA bc = darktable.gui->colors[DT_GUI_COLOR_RANGE_ICONS];
+  GdkRGBA *shade_color = gdk_rgba_copy(&bc);
+  shade_color->alpha *= 0.6;
+
+  if(flags & CPF_PRELIGHT)
+  {
+    // we want less visible borders and filled icon
+    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 0.6);
+    my_data = shade_color;
+  }
+  else if(flags & CPF_ACTIVE)
+  {
+    // we want filled icon
+    my_data = shade_color;
+  }
+  // then we draw the regular icon
+  dtgtk_cairo_paint_star(cr, x, y, w, h, flags, my_data);
+}
 static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                 const gchar *text, dt_lib_module_t *self)
 {
@@ -560,20 +583,20 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   dt_range_bounds_t sbounds;
   _rating_decode(text, &smin, &smax, &sbounds);
 
-  rate->range_select = dtgtk_range_select_new();
+  rate->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop));
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(rate->range_select);
   range->step = 1.0;
-  dtgtk_range_select_add_icon(range, 7, dtgtk_cairo_paint_reject, 0, NULL);
-  dtgtk_range_select_add_icon(range, 36, dtgtk_cairo_paint_star, 0, NULL);
-  dtgtk_range_select_add_icon(range, 50, dtgtk_cairo_paint_star, 0, NULL);
-  dtgtk_range_select_add_icon(range, 64, dtgtk_cairo_paint_star, 0, NULL);
-  dtgtk_range_select_add_icon(range, 78, dtgtk_cairo_paint_star, 0, NULL);
-  dtgtk_range_select_add_icon(range, 93, dtgtk_cairo_paint_star, 0, NULL);
+  dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
+  dtgtk_range_select_add_icon(range, 36, 1, _rating_paint_icon, 0, NULL);
+  dtgtk_range_select_add_icon(range, 50, 2, _rating_paint_icon, 0, NULL);
+  dtgtk_range_select_add_icon(range, 64, 3, _rating_paint_icon, 0, NULL);
+  dtgtk_range_select_add_icon(range, 78, 4, _rating_paint_icon, 0, NULL);
+  dtgtk_range_select_add_icon(range, 93, 5, _rating_paint_icon, 0, NULL);
   range->print = _rating_print_func;
 
   dtgtk_range_select_set_selection(range, sbounds, smin, smax, FALSE);
 
-  char query[1024] = { 0 };
+  /*char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
              "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
              " COUNT(*) AS count"
@@ -594,7 +617,9 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
     sqlite3_finalize(stmt);
     range->min = -1;
     range->max = 6;
-  }
+  }*/
+  range->min = -1;
+  range->max = 6;
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), rate->range_select, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(rate->range_select), "value-changed", G_CALLBACK(_rating_changed), rule);
 
@@ -605,6 +630,7 @@ static void _ratio_decode(const gchar *txt, double *min, double *max, dt_range_b
 {
   gchar *n1 = NULL;
   gchar *n2 = NULL;
+  *bounds = DT_RANGE_BOUND_RANGE;
   // easy case : select all
   if(!strcmp(txt, "") || !strcmp(txt, "%"))
   {
@@ -754,7 +780,7 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   dt_range_bounds_t sbounds;
   _ratio_decode(text, &smin, &smax, &sbounds);
 
-  ratio->range_select = dtgtk_range_select_new();
+  ratio->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop));
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(ratio->range_select);
 
   dtgtk_range_select_set_selection(range, sbounds, smin, smax, FALSE);

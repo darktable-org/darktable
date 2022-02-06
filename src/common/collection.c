@@ -867,36 +867,61 @@ const char *dt_collection_sort_name(dt_collection_sort_t sort)
   }
 };
 
-const char *dt_collection_name(dt_collection_properties_t prop)
+const char *dt_collection_name_untranslated(dt_collection_properties_t prop)
 {
   char *col_name = NULL;
   switch(prop)
   {
-    case DT_COLLECTION_PROP_FILMROLL:         return _("film roll");
-    case DT_COLLECTION_PROP_FOLDERS:          return _("folder");
-    case DT_COLLECTION_PROP_CAMERA:           return _("camera");
-    case DT_COLLECTION_PROP_TAG:              return _("tag");
-    case DT_COLLECTION_PROP_DAY:              return _("date taken");
-    case DT_COLLECTION_PROP_TIME:             return _("date-time taken");
-    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: return _("import timestamp");
-    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: return _("change timestamp");
-    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: return _("export timestamp");
-    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:  return _("print timestamp");
-    case DT_COLLECTION_PROP_HISTORY:          return _("history");
-    case DT_COLLECTION_PROP_COLORLABEL:       return _("color label");
-    case DT_COLLECTION_PROP_LENS:             return _("lens");
-    case DT_COLLECTION_PROP_FOCAL_LENGTH:     return _("focal length");
-    case DT_COLLECTION_PROP_ISO:              return _("ISO");
-    case DT_COLLECTION_PROP_APERTURE:         return _("aperture");
-    case DT_COLLECTION_PROP_EXPOSURE:         return _("exposure");
-    case DT_COLLECTION_PROP_ASPECT_RATIO:     return _("aspect ratio");
-    case DT_COLLECTION_PROP_FILENAME:         return _("filename");
-    case DT_COLLECTION_PROP_GEOTAGGING:       return _("geotagging");
-    case DT_COLLECTION_PROP_GROUPING:         return _("grouping");
-    case DT_COLLECTION_PROP_LOCAL_COPY:       return _("local copy");
-    case DT_COLLECTION_PROP_MODULE:           return _("module");
-    case DT_COLLECTION_PROP_ORDER:            return _("module order");
-    case DT_COLLECTION_PROP_RATING:           return _("rating");
+    case DT_COLLECTION_PROP_FILMROLL:
+      return "film roll";
+    case DT_COLLECTION_PROP_FOLDERS:
+      return "folder";
+    case DT_COLLECTION_PROP_CAMERA:
+      return "camera";
+    case DT_COLLECTION_PROP_TAG:
+      return "tag";
+    case DT_COLLECTION_PROP_DAY:
+      return "date taken";
+    case DT_COLLECTION_PROP_TIME:
+      return "date-time taken";
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
+      return "import timestamp";
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
+      return "change timestamp";
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
+      return "export timestamp";
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
+      return "print timestamp";
+    case DT_COLLECTION_PROP_HISTORY:
+      return "history";
+    case DT_COLLECTION_PROP_COLORLABEL:
+      return "color label";
+    case DT_COLLECTION_PROP_LENS:
+      return "lens";
+    case DT_COLLECTION_PROP_FOCAL_LENGTH:
+      return "focal length";
+    case DT_COLLECTION_PROP_ISO:
+      return "ISO";
+    case DT_COLLECTION_PROP_APERTURE:
+      return "aperture";
+    case DT_COLLECTION_PROP_EXPOSURE:
+      return "exposure";
+    case DT_COLLECTION_PROP_ASPECT_RATIO:
+      return "aspect ratio";
+    case DT_COLLECTION_PROP_FILENAME:
+      return "filename";
+    case DT_COLLECTION_PROP_GEOTAGGING:
+      return "geotagging";
+    case DT_COLLECTION_PROP_GROUPING:
+      return "grouping";
+    case DT_COLLECTION_PROP_LOCAL_COPY:
+      return "local copy";
+    case DT_COLLECTION_PROP_MODULE:
+      return "module";
+    case DT_COLLECTION_PROP_ORDER:
+      return "module order";
+    case DT_COLLECTION_PROP_RATING:
+      return "rating";
     case DT_COLLECTION_PROP_LAST:             return NULL;
     default:
     {
@@ -907,17 +932,22 @@ const char *dt_collection_name(dt_collection_properties_t prop)
         const int type = dt_metadata_get_type_by_display_order(i);
         if(type != DT_METADATA_TYPE_INTERNAL)
         {
-          const char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
+          char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
           char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
           const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
           free(setting);
-          if(!hidden) col_name = _(name);
+          if(!hidden) col_name = name;
         }
       }
     }
   }
   return col_name;
 }
+
+const char *dt_collection_name(dt_collection_properties_t prop)
+{
+  return _(dt_collection_name_untranslated(prop));
+};
 
 gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 {

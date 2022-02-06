@@ -35,6 +35,7 @@ typedef struct _range_block
 typedef struct _range_icon
 {
   int posx; // position of the icon in percent of the band width
+  double value; // associated value for hover and selected flags (used for drawing icons)
   DTGTKCairoPaintIconFunc paint;
   gint flags;
   void *data;
@@ -269,14 +270,32 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     sel_end = _graph_snap_position(range, range->current_x);
   else if(!(range->bounds & DT_RANGE_BOUND_MAX))
     sel_end = (range->value_band(range->select_max) - range->band_start) / range->band_factor;
-  const int x1 = (sel_start < sel_end) ? sel_start : sel_end;
+  int x1 = (sel_start < sel_end) ? sel_start : sel_end;
   int x2 = (sel_start < sel_end) ? sel_end : sel_start;
-  // we need to add the step in order to show tha t the value is included in the selection
-  if(!range->set_selection) x2 += range->step / range->band_factor;
+  // we need to add the step in order to show that the value is included in the selection
+  x2 += range->step / range->band_factor;
+  // if we are currently setting the selection, we need to round the value toward steps
+  double x1_value = 0.0;
+  double x2_value = 0.0;
+  if(range->set_selection)
+  {
+    x1_value = _graph_snap_value(range, x1);
+    x2_value = _graph_snap_value(range, x2);
+    if(range->step > 0.0)
+    {
+      x1_value = floor(x1_value / range->step) * range->step;
+      x2_value = floor(x2_value / range->step) * range->step;
+    }
+    x1 = (range->value_band(x1_value) - range->band_start) / range->band_factor;
+    x2 = (range->value_band(x2_value) - range->band_start) / range->band_factor;
+  }
   const int sel_width = MAX(2, x2 - x1);
   dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_SELECTION, 1.0);
   cairo_rectangle(cr, x1, margin_top, sel_width, bandh);
   cairo_fill(cr);
+
+  double current_value = _graph_snap_value(range, range->current_x);
+  if((range->step > 0.0)) current_value = floor(current_value / range->step) * range->step;
 
   // draw the icons
   if(g_list_length(range->icons) > 0)
@@ -290,7 +309,22 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     {
       _range_icon *icon = bl->data;
       const int posx = allocation.width * icon->posx / 100 - size / 2;
-      icon->paint(cr, posx, posy, size, size, icon->flags, icon->data);
+      // we set prelight flag if the mouse value correspond
+      gint f = icon->flags;
+      if(range->mouse_inside && range->current_x > 0 && icon->value == current_value)
+        f |= CPF_PRELIGHT;
+      else
+        f &= ~CPF_PRELIGHT;
+
+      // we set the active flag if the icon value is inside the selection
+      if(!range->set_selection && icon->value >= range->select_min && icon->value <= range->select_max)
+        f |= CPF_ACTIVE;
+      else if(range->set_selection && icon->value >= x1_value && icon->value < x2_value)
+        f |= CPF_ACTIVE;
+      else
+        f &= ~CPF_ACTIVE;
+      // and we draw the icon
+      icon->paint(cr, posx, posy, size, size, f, icon->data);
     }
   }
 
@@ -302,7 +336,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     cairo_move_to(cr, posx, margin_top);
     cairo_line_to(cr, posx, bandh);
     cairo_stroke(cr);
-    gchar *txt = range->print(_graph_snap_value(range, range->current_x), TRUE);
+    gchar *txt = range->print(current_value, TRUE);
     gtk_label_set_text(GTK_LABEL(range->current), txt);
     g_free(txt);
     gtk_widget_set_visible(range->current, TRUE);
@@ -315,12 +349,33 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   return TRUE;
 }
 
+static void _graph_resize(GtkDarktableRangeSelect *range)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  int mh = 30;
+  int mw = -1;
+  gtk_style_context_get(context, state, "min-height", &mh, "min-width", &mw, NULL);
+  if(mw <= 0)
+  {
+    mw = -1;
+    gtk_widget_set_halign(range->band, GTK_ALIGN_FILL);
+  }
+  else
+  {
+    gtk_widget_set_halign(range->band, GTK_ALIGN_CENTER);
+  }
+  gtk_widget_set_size_request(range->band, mw, mh);
+}
+
 static void _dt_pref_changed(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   // invalidate the surface
   range->surf_width = 0;
+  // resize the widget if needed
+  _graph_resize(range);
   // redraw the band
   gtk_widget_queue_draw(range->band);
 }
@@ -383,11 +438,14 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
 }
 
 // Public functions
-GtkWidget *dtgtk_range_select_new()
+GtkWidget *dtgtk_range_select_new(const gchar *property)
 {
   GtkDarktableRangeSelect *range = g_object_new(dtgtk_range_select_get_type(), NULL);
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range));
   gtk_style_context_add_class(context, "dt_range_select");
+  gchar *cl = g_strdup_printf("dt_range_%s", property);
+  gtk_style_context_add_class(context, cl);
+  g_free(cl);
 
   // initialize values
   range->min = 0.0;
@@ -441,12 +499,9 @@ GtkWidget *dtgtk_range_select_new()
   g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
   g_signal_connect(G_OBJECT(range->band), "motion-notify-event", G_CALLBACK(_event_band_motion), range);
   g_signal_connect(G_OBJECT(range->band), "leave-notify-event", G_CALLBACK(_event_band_leave), range);
+  g_signal_connect(G_OBJECT(range->band), "style-updated", G_CALLBACK(_dt_pref_changed), range);
   gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
-  context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
-  int mh = 30;
-  gtk_style_context_get(context, state, "min-height", &mh, NULL);
-  gtk_widget_set_size_request(range->band, -1, mh);
+  _graph_resize(range);
   gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
 
   gtk_container_add(GTK_CONTAINER(range), vbox);
@@ -557,11 +612,12 @@ void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTrans
     range->value_band = _default_value_translator;
 }
 
-void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, DTGTKCairoPaintIconFunc paint,
-                                 gint flags, void *data)
+void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, const double value,
+                                 DTGTKCairoPaintIconFunc paint, gint flags, void *data)
 {
   _range_icon *icon = (_range_icon *)g_malloc0(sizeof(_range_icon));
   icon->posx = posx;
+  icon->value = value;
   icon->paint = paint;
   icon->flags = flags;
   icon->data = data;

@@ -181,6 +181,7 @@ typedef struct dt_collection_t
 
 /* returns the name for the given collection property */
 const char *dt_collection_name(dt_collection_properties_t prop);
+const char *dt_collection_name_untranslated(dt_collection_properties_t prop);
 /* returns the name for the given collection comparator property */
 const char *dt_collection_comparator_name(dt_collection_rating_comperator_t comp);
 /* returns the name for the given collection sort property */

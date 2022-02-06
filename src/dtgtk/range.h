@@ -90,7 +90,7 @@ typedef struct _GtkDarktableRangeSelectClass
 GType dtgtk_range_select_get_type(void);
 
 /** instantiate a new range selection widget */
-GtkWidget *dtgtk_range_select_new();
+GtkWidget *dtgtk_range_select_new(const gchar *property);
 
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
                                       const double min, const double max, gboolean signal);
@@ -104,8 +104,8 @@ void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTrans
 void dtgtk_range_select_set_print_func(GtkDarktableRangeSelect *range, DTGTKPrintValueFunc print,
                                        DTGTKDecodeValueFunc decode);
 
-void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, DTGTKCairoPaintIconFunc paint,
-                                 gint flags, void *data);
+void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, const double value,
+                                 DTGTKCairoPaintIconFunc paint, gint flags, void *data);
 void dtgtk_range_select_reset_icons(GtkDarktableRangeSelect *range);
 
 void dtgtk_range_select_add_marker(GtkDarktableRangeSelect *range, const double value, const gboolean magnetic);
