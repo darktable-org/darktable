@@ -239,17 +239,18 @@ No samples on raw.pixls.us
 
 ## Translations
 
-- German
+- Brazilian Portuguese
+- Chinese - China
+- Dutch
 - Esperanto
 - European Spanish
 - Finnish
 - French
+- German
 - Hebrew
 - Hungarian
 - Italian
 - Japanese
 - Polish
-- Brazilian Portuguese
 - Slovenian
 - Ukrainian
-- Chinese - China
