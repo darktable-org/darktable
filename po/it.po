@@ -4,13 +4,13 @@
 #: ../build/bin/conf_gen.h:850 ../build/bin/conf_gen.h:856
 #: ../build/bin/conf_gen.h:862 ../build/bin/conf_gen.h:868
 #: ../build/bin/conf_gen.h:874
-# Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>, 2021.
+# Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>, 2021, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-05 14:14+0100\n"
+"PO-Revision-Date: 2022-02-07 22:38+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -3622,7 +3622,7 @@ msgstr "Esposizione nero relativo"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:418
 #: ../src/iop/filmic.c:1605
 msgid "white relative exposure"
-msgstr "Esposizione bianco relativo"
+msgstr "Esposizione relativa del bianco"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:229
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:426
@@ -12983,7 +12983,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1574
 msgid "global grading"
-msgstr "Valutazione globale"
+msgstr "Gradiente globale"
 
 #: ../src/iop/colorbalancergb.c:1580
 msgid "rotate all hues by an angle, at the same luminance"
@@ -13020,7 +13020,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1625
 msgid "perceptual saturation grading"
-msgstr "Gradiente di saturazioen percettivo"
+msgstr "Gradiente percettivo di saturazione"
 
 #: ../src/iop/colorbalancergb.c:1632
 msgid "add or remove saturation by an absolute amount"
