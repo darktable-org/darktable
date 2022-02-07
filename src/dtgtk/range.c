@@ -344,12 +344,15 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     cairo_move_to(cr, posx, margin_top);
     cairo_line_to(cr, posx, bandh);
     cairo_stroke(cr);
-    gchar *txt = range->print(current_value, TRUE);
-    gtk_label_set_text(GTK_LABEL(range->current), txt);
-    g_free(txt);
-    gtk_widget_set_visible(range->current, TRUE);
+    if(range->show_entries)
+    {
+      gchar *txt = range->print(current_value, TRUE);
+      gtk_label_set_text(GTK_LABEL(range->current), txt);
+      g_free(txt);
+      gtk_widget_set_visible(range->current, TRUE);
+    }
   }
-  else
+  else if(range->show_entries)
   {
     gtk_widget_set_visible(range->current, FALSE);
   }
@@ -425,7 +428,7 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
 }
 
 // Public functions
-GtkWidget *dtgtk_range_select_new(const gchar *property)
+GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
 {
   GtkDarktableRangeSelect *range = g_object_new(dtgtk_range_select_get_type(), NULL);
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range));
@@ -449,6 +452,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property)
   range->value_band = _default_value_translator;
   range->print = _default_print_func;
   range->decode = _default_decode_func;
+  range->show_entries = show_entries;
 
   // the boxes widgets
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -472,29 +476,32 @@ GtkWidget *dtgtk_range_select_new(const gchar *property)
   gtk_widget_set_size_request(range->band, -1, mh);
   gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+  if(range->show_entries)
+  {
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
-  // the entries
-  range->entry_min = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 5);
-  g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
-  gtk_box_pack_start(GTK_BOX(hbox), range->entry_min, FALSE, TRUE, 0);
+    // the entries
+    range->entry_min = gtk_entry_new();
+    gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 5);
+    g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
+    gtk_box_pack_start(GTK_BOX(hbox), range->entry_min, FALSE, TRUE, 0);
 
-  GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  range->current = gtk_label_new("test");
-  gtk_widget_set_name(range->current, "dt-range-current");
-  gtk_widget_set_halign(range->current, GTK_ALIGN_CENTER);
-  gtk_widget_set_valign(range->current, GTK_ALIGN_CENTER);
-  gtk_widget_set_no_show_all(range->current, TRUE);
-  gtk_box_pack_start(GTK_BOX(hb), range->current, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), hb, TRUE, TRUE, 0);
+    GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    range->current = gtk_label_new("test");
+    gtk_widget_set_name(range->current, "dt-range-current");
+    gtk_widget_set_halign(range->current, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(range->current, GTK_ALIGN_CENTER);
+    gtk_widget_set_no_show_all(range->current, TRUE);
+    gtk_box_pack_start(GTK_BOX(hb), range->current, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), hb, TRUE, TRUE, 0);
 
-  range->entry_max = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 5);
-  gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
-  g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
-  gtk_box_pack_end(GTK_BOX(hbox), range->entry_max, FALSE, TRUE, 0);
+    range->entry_max = gtk_entry_new();
+    gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 5);
+    gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
+    g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
+    gtk_box_pack_end(GTK_BOX(hbox), range->entry_max, FALSE, TRUE, 0);
+  }
 
   gtk_container_add(GTK_CONTAINER(range), vbox);
   gtk_widget_set_name(GTK_WIDGET(range), "range_select");
@@ -544,20 +551,23 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
   range->bounds = bounds;
 
   // update the entries
-  gchar *txt = NULL;
-  if(range->bounds & DT_RANGE_BOUND_MIN)
-    txt = g_strdup(_("min"));
-  else
-    txt = range->print(range->select_min, FALSE);
-  gtk_entry_set_text(GTK_ENTRY(range->entry_min), txt);
-  g_free(txt);
+  if(range->show_entries)
+  {
+    gchar *txt = NULL;
+    if(range->bounds & DT_RANGE_BOUND_MIN)
+      txt = g_strdup(_("min"));
+    else
+      txt = range->print(range->select_min, FALSE);
+    gtk_entry_set_text(GTK_ENTRY(range->entry_min), txt);
+    g_free(txt);
 
-  if(range->bounds & DT_RANGE_BOUND_MAX)
-    txt = g_strdup(_("max"));
-  else
-    txt = range->print(range->select_max, FALSE);
-  gtk_entry_set_text(GTK_ENTRY(range->entry_max), txt);
-  g_free(txt);
+    if(range->bounds & DT_RANGE_BOUND_MAX)
+      txt = g_strdup(_("max"));
+    else
+      txt = range->print(range->select_max, FALSE);
+    gtk_entry_set_text(GTK_ENTRY(range->entry_max), txt);
+    g_free(txt);
+  }
 
   // update the band selection
   gtk_widget_queue_draw(range->band);

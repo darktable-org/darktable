@@ -583,7 +583,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   dt_range_bounds_t sbounds;
   _rating_decode(text, &smin, &smax, &sbounds);
 
-  rate->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop));
+  rate->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(rate->range_select);
   range->step = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
@@ -780,7 +780,7 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   dt_range_bounds_t sbounds;
   _ratio_decode(text, &smin, &smax, &sbounds);
 
-  ratio->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop));
+  ratio->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(ratio->range_select);
 
   dtgtk_range_select_set_selection(range, sbounds, smin, smax, FALSE);

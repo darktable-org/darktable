@@ -44,6 +44,7 @@ typedef struct _GtkDarktableRangeSelect
 {
   GtkBin widget;
 
+  gboolean show_entries; // do we show the line with the entry boxes ?
   double min; // minimal value shown
   double max; // maximal value shown
   double step;
@@ -93,7 +94,7 @@ typedef struct _GtkDarktableRangeSelectClass
 GType dtgtk_range_select_get_type(void);
 
 /** instantiate a new range selection widget */
-GtkWidget *dtgtk_range_select_new(const gchar *property);
+GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries);
 
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
                                       const double min, const double max, gboolean signal);
