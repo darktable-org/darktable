@@ -212,7 +212,7 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "STARS", N_("$(STARS) - star rating as number (-1 for rejected)") },
           { "RATING_ICONS", N_("$(RATING_ICONS) - star/reject rating in icon form") },
           { "LABELS", N_("$(LABELS) - color labels as text") },
-          { "LABELS_ICONS", N_("$(LABELS) - color labels as icons") },
+          { "LABELS_ICONS", N_("$(LABELS_ICONS) - color labels as icons") },
           { "MAKER", N_("$(MAKER) - camera maker") },
           { "MODEL", N_("$(MODEL) - camera model") },
           { "LENS", N_("$(LENS) - lens") },
