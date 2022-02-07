@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-24 15:36+0100\n"
-"PO-Revision-Date: 2022-01-26 18:48+0900\n"
+"POT-Creation-Date: 2022-02-07 08:06+0100\n"
+"PO-Revision-Date: 2022-02-07 20:08+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -69,8 +69,8 @@ msgstr ""
 msgid "this setting has been modified"
 msgstr "この設定は変更されています"
 
-#: ../build/bin/preferences_gen.h:3724 ../src/libs/tools/lighttable.c:68
-#: ../src/views/lighttable.c:88
+#: ../build/bin/preferences_gen.h:3724 ../src/gui/preferences.c:556
+#: ../src/libs/tools/lighttable.c:68 ../src/views/lighttable.c:88
 msgid "lighttable"
 msgstr "ライトテーブル"
 
@@ -358,7 +358,8 @@ msgstr "使用出来るタグの全てについては、マニュアルを参照
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "サムネイル上のツールチップのひな型（空欄で無効）"
 
-#: ../build/bin/preferences_gen.h:4293 ../src/views/darkroom.c:108
+#: ../build/bin/preferences_gen.h:4293 ../src/gui/preferences.c:556
+#: ../src/views/darkroom.c:108
 msgid "darkroom"
 msgstr "ダークルーム"
 
@@ -2216,7 +2217,7 @@ msgstr "アスペクト比調整"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:172
 #: ../build/lib/darktable/plugins/introspection_ashift.c:307
-#: ../src/iop/lens.cc:2301
+#: ../src/iop/lens.cc:2338
 msgid "lens model"
 msgstr "レンズモデル"
 
@@ -2242,7 +2243,7 @@ msgstr "特定"
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2988 ../src/develop/develop.c:2238
 #: ../src/gui/accelerators.c:123 ../src/gui/accelerators.c:132
-#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:811
+#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:828
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:666
 #: ../src/libs/live_view.c:427
 msgid "off"
@@ -2294,7 +2295,7 @@ msgstr "色の保持"
 #: ../src/gui/guides.c:683 ../src/iop/basecurve.c:2100
 #: ../src/iop/channelmixerrgb.c:3978 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2129 ../src/iop/clipping.c:2145
-#: ../src/iop/lens.cc:2239 ../src/iop/retouch.c:422 ../src/libs/collect.c:1863
+#: ../src/iop/lens.cc:2276 ../src/iop/retouch.c:422 ../src/libs/collect.c:1863
 #: ../src/libs/colorpicker.c:50 ../src/libs/export.c:1036
 #: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2481
 msgid "none"
@@ -2417,7 +2418,7 @@ msgstr "線形性"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:5723
+#: ../src/iop/ashift.c:5762
 msgid "rotation"
 msgstr "回転"
 
@@ -2566,7 +2567,7 @@ msgstr "非常に大きな色収差"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../src/common/collection.c:1501 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
-#: ../src/gui/gtk.c:3016 ../src/gui/guides.c:701 ../src/iop/bilateral.cc:317
+#: ../src/gui/gtk.c:3010 ../src/gui/guides.c:701 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:3933 ../src/iop/colorzones.c:2316
 #: ../src/iop/temperature.c:1834 ../src/iop/temperature.c:1983
@@ -2577,7 +2578,7 @@ msgstr "赤"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
 #: ../src/common/collection.c:1505 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:3017 ../src/gui/guides.c:702 ../src/iop/bilateral.cc:322
+#: ../src/gui/gtk.c:3011 ../src/gui/guides.c:702 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:3934 ../src/iop/colorzones.c:2319
 #: ../src/iop/temperature.c:1818 ../src/iop/temperature.c:1836
@@ -2588,7 +2589,7 @@ msgstr "緑"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
 #: ../src/common/collection.c:1507 ../src/develop/blend_gui.c:2012
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
-#: ../src/gui/gtk.c:3018 ../src/iop/bilateral.cc:327
+#: ../src/gui/gtk.c:3012 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:3935 ../src/iop/colorzones.c:2321
 #: ../src/iop/temperature.c:1838 ../src/iop/temperature.c:1985
@@ -3417,7 +3418,7 @@ msgstr "プロファイルによる変換をアップグレード"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:786 ../src/libs/colorpicker.c:585
+#: ../src/imageio/format/avif.c:803 ../src/libs/colorpicker.c:585
 msgid "color mode"
 msgstr "カラーモード"
 
@@ -3857,7 +3858,7 @@ msgstr "モード"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:142
 #: ../build/lib/darktable/plugins/introspection_lens.cc:261
-#: ../src/iop/lens.cc:2348
+#: ../src/iop/lens.cc:2385
 msgid "geometry"
 msgstr "ジオメトリ"
 
@@ -5131,7 +5132,7 @@ msgstr "darktable起動エラー"
 
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2904
 #: ../src/libs/export_metadata.c:281 ../src/libs/import.c:1743
-#: ../src/libs/metadata.c:452 ../src/libs/metadata_view.c:1239
+#: ../src/libs/metadata.c:462 ../src/libs/metadata_view.c:1239
 #: ../src/libs/modulegroups.c:3504 ../src/libs/recentcollect.c:319
 #: ../src/libs/styles.c:444 ../src/libs/styles.c:627 ../src/libs/tagging.c:1499
 #: ../src/libs/tagging.c:1587 ../src/libs/tagging.c:1668
@@ -5350,12 +5351,12 @@ msgstr "darktable - スキーマメンテナンス"
 msgid "later"
 msgstr "後で"
 
-#: ../src/common/exif.cc:4177
+#: ../src/common/exif.cc:4226
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "xmpファイル'%s': '%s'を読み取れません"
 
-#: ../src/common/exif.cc:4229
+#: ../src/common/exif.cc:4278
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "xmpファイル'%s': '%s'を書き込むことが出来ません"
@@ -5556,7 +5557,7 @@ msgstr ""
 "インポートセッションの設定を確認してください"
 
 # 要求されたセッションパスは利用できません。 デバイスはマウントされていますか？
-#: ../src/common/import_session.c:365
+#: ../src/common/import_session.c:364
 msgid "requested session path not available. device not mounted?"
 msgstr ""
 "要求されたセッションパスは使用することが出来ません。 デバイスはマウントされて"
@@ -5648,7 +5649,7 @@ msgstr ""
 msgid "opencl scheduling profile set to default"
 msgstr "OpenCLスケジューリングプロファイルはデフォルトに設定されています"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1888
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1924
 #: ../src/libs/print_settings.c:2179
 msgid "mm"
 msgstr "mm"
@@ -6746,7 +6747,7 @@ msgid "reverse"
 msgstr "逆転"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:357
-#: ../src/libs/metadata.c:451 ../src/libs/metadata_view.c:1238
+#: ../src/libs/metadata.c:461 ../src/libs/metadata_view.c:1238
 msgid "default"
 msgstr "デフォルト"
 
@@ -6820,18 +6821,18 @@ msgstr "入力 ぼかし後"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2238
 #: ../src/gui/accelerators.c:122 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:809
+#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:826
 #: ../src/libs/live_view.c:428
 msgid "on"
 msgstr "オン"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3094
+#: ../src/develop/imageop.c:3083
 msgid "input"
 msgstr "入力"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3096
+#: ../src/develop/imageop.c:3085
 msgid "output"
 msgstr "出力"
 
@@ -7403,26 +7404,26 @@ msgstr "新しいインスタンス"
 msgid "duplicate instance"
 msgstr "インスタンスを複製する"
 
-#: ../src/develop/imageop.c:941 ../src/develop/imageop.c:3245
+#: ../src/develop/imageop.c:941 ../src/develop/imageop.c:3234
 #: ../src/libs/masks.c:1105
 msgid "move up"
 msgstr "上へ移動"
 
-#: ../src/develop/imageop.c:947 ../src/develop/imageop.c:3246
+#: ../src/develop/imageop.c:947 ../src/develop/imageop.c:3235
 #: ../src/libs/masks.c:1108
 msgid "move down"
 msgstr "下へ移動"
 
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
-#: ../src/develop/imageop.c:953 ../src/develop/imageop.c:3248
+#: ../src/develop/imageop.c:953 ../src/develop/imageop.c:3237
 #: ../src/gui/accelerators.c:145 ../src/gui/presets.c:467
 #: ../src/libs/image.c:185 ../src/libs/masks.c:1062 ../src/libs/tagging.c:1499
 #: ../src/libs/tagging.c:1587
 msgid "delete"
 msgstr "削除"
 
-#: ../src/develop/imageop.c:960 ../src/develop/imageop.c:3249
+#: ../src/develop/imageop.c:960 ../src/develop/imageop.c:3238
 #: ../src/libs/modulegroups.c:3504 ../src/libs/modulegroups.c:3860
 msgid "rename"
 msgstr "名前の変更"
@@ -7476,7 +7477,7 @@ msgstr ""
 "Ctrl+クリックすると、自動プリセットを再適用します"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2458 ../src/develop/imageop.c:3259
+#: ../src/develop/imageop.c:2458 ../src/develop/imageop.c:3248
 #: ../src/gui/preferences.c:791 ../src/libs/lib.c:1265
 msgid "presets"
 msgstr "プリセット"
@@ -7489,23 +7490,23 @@ msgstr ""
 "プリセット\n"
 "右クリックすると、新しいインスタンスに適用します"
 
-#: ../src/develop/imageop.c:2713 ../src/develop/imageop.c:2735
+#: ../src/develop/imageop.c:2702 ../src/develop/imageop.c:2724
 msgid "ERROR"
 msgstr "エラー"
 
-#: ../src/develop/imageop.c:3093
+#: ../src/develop/imageop.c:3082
 msgid "purpose"
 msgstr "目的"
 
-#: ../src/develop/imageop.c:3095
+#: ../src/develop/imageop.c:3084
 msgid "process"
 msgstr "処理"
 
-#: ../src/develop/imageop.c:3165
+#: ../src/develop/imageop.c:3154
 msgid "unsupported input"
 msgstr "サポートされていないインプット"
 
-#: ../src/develop/imageop.c:3166
+#: ../src/develop/imageop.c:3155
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -7515,45 +7516,45 @@ msgstr ""
 "データ形式が要件に一致しないパイプライン内の位置にこのモジュールを移動しまし"
 "た"
 
-#: ../src/develop/imageop.c:3244 ../src/develop/imageop.c:3254
+#: ../src/develop/imageop.c:3233 ../src/develop/imageop.c:3243
 #: ../src/gui/accelerators.c:141 ../src/libs/lib.c:1263
 msgid "show"
 msgstr "表示"
 
-#: ../src/develop/imageop.c:3247 ../src/libs/modulegroups.c:3354
+#: ../src/develop/imageop.c:3236 ../src/libs/modulegroups.c:3354
 #: ../src/libs/modulegroups.c:3478 ../src/libs/modulegroups.c:3863
 #: ../src/libs/tagging.c:3303
 msgid "new"
 msgstr "新規作成"
 
-#: ../src/develop/imageop.c:3250 ../src/libs/duplicate.c:546
+#: ../src/develop/imageop.c:3239 ../src/libs/duplicate.c:546
 #: ../src/libs/image.c:510 ../src/libs/modulegroups.c:3857
 msgid "duplicate"
 msgstr "複製"
 
-#: ../src/develop/imageop.c:3255
+#: ../src/develop/imageop.c:3244
 msgid "enable"
 msgstr "有効"
 
-#: ../src/develop/imageop.c:3256
+#: ../src/develop/imageop.c:3245
 msgid "focus"
 msgstr "フォーカス"
 
-#: ../src/develop/imageop.c:3257 ../src/gui/accelerators.c:2076
+#: ../src/develop/imageop.c:3246 ../src/gui/accelerators.c:2076
 msgid "instance"
 msgstr "インスタンス"
 
-#: ../src/develop/imageop.c:3258 ../src/gui/accelerators.c:107
+#: ../src/develop/imageop.c:3247 ../src/gui/accelerators.c:107
 #: ../src/gui/accelerators.c:116 ../src/iop/atrous.c:1583
 #: ../src/libs/lib.c:1264 ../src/libs/modulegroups.c:3932
 msgid "reset"
 msgstr "リセット"
 
-#: ../src/develop/imageop.c:3271
+#: ../src/develop/imageop.c:3260
 msgid "processing module"
 msgstr "処理モジュール"
 
-#: ../src/develop/imageop_gui.c:399
+#: ../src/develop/imageop_gui.c:398
 #, c-format
 msgid ""
 "%s\n"
@@ -7885,13 +7886,13 @@ msgstr ""
 "<b>線分を移動する</b>：ドラッグ\n"
 "<b>ノードを追加する</b>：Ctrl+クリック"
 
-#: ../src/develop/pixelpipe_hb.c:396
+#: ../src/develop/pixelpipe_hb.c:394
 msgid "enabled as required"
 msgstr "必要なので無効化しました"
 
 # モジュールが履歴によって無効にされましたが、このタイプの画像では必ず有効にする必要があります。
 # プリセット、スタイル、あるいは履歴のコピー＆貼り付けを適用したことが原因であると考えられます
-#: ../src/develop/pixelpipe_hb.c:396
+#: ../src/develop/pixelpipe_hb.c:394
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -7901,13 +7902,13 @@ msgstr ""
 "プリセット、スタイル、あるいは履歴のコピー＆貼り付けを適用したことが原因であ"
 "ると考えられます"
 
-#: ../src/develop/pixelpipe_hb.c:398
+#: ../src/develop/pixelpipe_hb.c:396
 msgid "disabled as not appropriate"
 msgstr "不適切なので無効化しました"
 
 # モジュールが履歴によって有効にされましたが、このタイプの画像では使用することが出来ません。
 # プリセット、スタイル、あるいは履歴のコピー＆貼り付けを適用したことが原因であると考えられます
-#: ../src/develop/pixelpipe_hb.c:398
+#: ../src/develop/pixelpipe_hb.c:396
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -7917,7 +7918,7 @@ msgstr ""
 "プリセット、スタイル、あるいは履歴のコピー＆貼り付けを適用したことが原因であ"
 "ると考えられます"
 
-#: ../src/develop/pixelpipe_hb.c:2256
+#: ../src/develop/pixelpipe_hb.c:2254
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -7975,8 +7976,8 @@ msgid "grouped images"
 msgstr "グループ化した画像"
 
 #: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1435
-#: ../src/iop/ashift.c:5816 ../src/iop/ashift.c:5883 ../src/iop/ashift.c:5884
-#: ../src/iop/ashift.c:5885
+#: ../src/iop/ashift.c:5855 ../src/iop/ashift.c:5922 ../src/iop/ashift.c:5923
+#: ../src/iop/ashift.c:5924
 msgid "fit"
 msgstr "適合"
 
@@ -8329,17 +8330,17 @@ msgstr "スクロール"
 msgid "pan"
 msgstr "パン"
 
-#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5431
-#: ../src/iop/ashift.c:5432 ../src/iop/ashift.c:5534 ../src/iop/ashift.c:5535
-#: ../src/iop/ashift.c:5884 ../src/iop/clipping.c:1920
+#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5470
+#: ../src/iop/ashift.c:5471 ../src/iop/ashift.c:5573 ../src/iop/ashift.c:5574
+#: ../src/iop/ashift.c:5923 ../src/iop/clipping.c:1920
 #: ../src/iop/clipping.c:2130 ../src/iop/clipping.c:2147
 #: ../src/views/darkroom.c:2620 ../src/views/lighttable.c:1332
 msgid "horizontal"
 msgstr "水平"
 
-#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5431
-#: ../src/iop/ashift.c:5432 ../src/iop/ashift.c:5534 ../src/iop/ashift.c:5535
-#: ../src/iop/ashift.c:5883 ../src/iop/clipping.c:1919
+#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5470
+#: ../src/iop/ashift.c:5471 ../src/iop/ashift.c:5573 ../src/iop/ashift.c:5574
+#: ../src/iop/ashift.c:5922 ../src/iop/clipping.c:1919
 #: ../src/iop/clipping.c:2131 ../src/iop/clipping.c:2146
 #: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:1336
 msgid "vertical"
@@ -8407,12 +8408,12 @@ msgid "popup"
 msgstr "ポップアップ"
 
 #: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:143
-#: ../src/gui/gtk.c:2961 ../src/views/lighttable.c:753
+#: ../src/gui/gtk.c:2955 ../src/views/lighttable.c:753
 msgid "next"
 msgstr "次"
 
 #: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:142
-#: ../src/gui/gtk.c:2962 ../src/views/lighttable.c:754
+#: ../src/gui/gtk.c:2956 ../src/views/lighttable.c:754
 msgid "previous"
 msgstr "以前"
 
@@ -8446,7 +8447,7 @@ msgstr "右 - 切り替え"
 msgid "right-on"
 msgstr "右 - オン"
 
-#: ../src/gui/accelerators.c:136 ../src/gui/gtk.c:2960
+#: ../src/gui/accelerators.c:136 ../src/gui/gtk.c:2954
 msgid "activate"
 msgstr "有効化"
 
@@ -8472,7 +8473,7 @@ msgstr "設定"
 
 #. apply button
 #: ../src/gui/accelerators.c:151 ../src/iop/colortransfer.c:670
-#: ../src/libs/metadata.c:783 ../src/libs/styles.c:888
+#: ../src/libs/metadata.c:793 ../src/libs/styles.c:888
 msgid "apply"
 msgstr "適用"
 
@@ -8749,8 +8750,8 @@ msgstr ""
 "または、選択されたデバイス用のショートカットのみをエクスポートします\n"
 
 #: ../src/gui/accelerators.c:1826 ../src/gui/accelerators.c:1905
-#: ../src/gui/gtk.c:3015 ../src/imageio/format/pdf.c:662
-#: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2245
+#: ../src/gui/gtk.c:3009 ../src/imageio/format/pdf.c:662
+#: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2282
 #: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:186
 msgid "all"
 msgstr "全て"
@@ -9085,7 +9086,7 @@ msgstr "%.1f"
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3022 ../src/gui/gtk.c:3027 ../src/gui/gtk.c:3032
+#: ../src/gui/gtk.c:3016 ../src/gui/gtk.c:3021 ../src/gui/gtk.c:3026
 msgid "tabs"
 msgstr "タブ"
 
@@ -9122,198 +9123,218 @@ msgid "$(VERSION_NAME) - version name from metadata"
 msgstr "$(DESCRIPTION) - メタデータから取得したバージョン名"
 
 #: ../src/gui/gtkentry.c:179
+msgid "$(JOBCODE) - job code for import"
+msgstr "$(JOBCODE) - インポートのジョブコード"
+
+#: ../src/gui/gtkentry.c:180
 msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - シーケンス番号"
 
-#: ../src/gui/gtkentry.c:180
+#: ../src/gui/gtkentry.c:181
 msgid "$(MAX_WIDTH) - maximum image export width"
 msgstr "$(MAX_WIDTH) - 画像エクスポートの幅の最大値"
 
-#: ../src/gui/gtkentry.c:181
+#: ../src/gui/gtkentry.c:182
 msgid "$(MAX_HEIGHT) - maximum image export height"
 msgstr "$(MAX_HEIGHT) - 画像エクスポートの高さの最大値"
 
-#: ../src/gui/gtkentry.c:182
+#: ../src/gui/gtkentry.c:183
 msgid "$(SENSOR_WIDTH) - image sensor width"
 msgstr "$(MAX_WIDTH) - イメージセンサーの幅"
 
-#: ../src/gui/gtkentry.c:183
+#: ../src/gui/gtkentry.c:184
 msgid "$(SENSOR_HEIGHT) - image sensor height"
 msgstr "$(MAX_HEIGHT) - イメージセンサーの高さ"
 
-#: ../src/gui/gtkentry.c:184
+#: ../src/gui/gtkentry.c:185
 msgid "$(RAW_WIDTH) - RAW image width"
 msgstr "$(MAX_WIDTH) - RAW画像の幅"
 
-#: ../src/gui/gtkentry.c:185
+#: ../src/gui/gtkentry.c:186
 msgid "$(RAW_HEIGHT) - RAW image height"
 msgstr "$(MAX_HEIGHT) - RAW画像の高さ"
 
-#: ../src/gui/gtkentry.c:186
+#: ../src/gui/gtkentry.c:187
 msgid "$(CROP_WIDTH) - image width after crop"
 msgstr "$(MAX_HEIGHT) - トリミング後の画像の幅"
 
-#: ../src/gui/gtkentry.c:187
+#: ../src/gui/gtkentry.c:188
 msgid "$(CROP_HEIGHT) - image height after crop"
 msgstr "$(MAX_HEIGHT) - トリミング後の画像の高さ"
 
-#: ../src/gui/gtkentry.c:188
+#: ../src/gui/gtkentry.c:189
 msgid "$(EXPORT_WIDTH) - exported image width"
 msgstr "$(MAX_WIDTH) - エクスポートされた画像の幅"
 
-#: ../src/gui/gtkentry.c:189
+#: ../src/gui/gtkentry.c:190
 msgid "$(EXPORT_HEIGHT) - exported image height"
 msgstr "$(MAX_HEIGHT) - エクスポートされた画像の高さ"
 
-#: ../src/gui/gtkentry.c:190
+#: ../src/gui/gtkentry.c:191
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - 年"
 
-#: ../src/gui/gtkentry.c:191
+#: ../src/gui/gtkentry.c:192
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - 月"
 
-#: ../src/gui/gtkentry.c:192
+#: ../src/gui/gtkentry.c:193
 msgid "$(DAY) - day"
 msgstr "$(DAY) - 日"
 
-#: ../src/gui/gtkentry.c:193
+#: ../src/gui/gtkentry.c:194
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - 時"
 
-#: ../src/gui/gtkentry.c:194
+#: ../src/gui/gtkentry.c:195
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - 分"
 
-#: ../src/gui/gtkentry.c:195
+#: ../src/gui/gtkentry.c:196
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - 秒"
 
-#: ../src/gui/gtkentry.c:196
+#: ../src/gui/gtkentry.c:197
 msgid "$(EXIF_YEAR) - EXIF year"
 msgstr "$(EXIF_YEAR) - EXIF 年"
 
-#: ../src/gui/gtkentry.c:197
+#: ../src/gui/gtkentry.c:198
 msgid "$(EXIF_MONTH) - EXIF month"
 msgstr "$(EXIF_MONTH) - EXIF 月"
 
-#: ../src/gui/gtkentry.c:198
+#: ../src/gui/gtkentry.c:199
 msgid "$(EXIF_DAY) - EXIF day"
 msgstr "$(EXIF_DAY) - EXIF 日"
 
-#: ../src/gui/gtkentry.c:199
+#: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_HOUR) - EXIF hour"
 msgstr "$(EXIF_HOUR) - EXIF 時"
 
-#: ../src/gui/gtkentry.c:200
+#: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_MINUTE) - EXIF minute"
 msgstr "$(EXIF_MINUTE) - EXIF 分"
 
-#: ../src/gui/gtkentry.c:201
+#: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_SECOND) - EXIF second"
 msgstr "$(EXIF_SECOND) - EXIF 秒"
 
-#: ../src/gui/gtkentry.c:202
+#: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) - ISO値"
 
-#: ../src/gui/gtkentry.c:203
+#: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_EXPOSURE) - EXIF exposure"
 msgstr "$(EXIF_HOUR) - EXIF 露出"
 
-#: ../src/gui/gtkentry.c:204
+#: ../src/gui/gtkentry.c:205
 msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
 msgstr "$(EXIF_EXPOSURE_BIAS) - EXIF 露出補正"
 
-#: ../src/gui/gtkentry.c:205
+#: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_APERTURE) - EXIF aperture"
 msgstr "$(EXIF_APERTURE) - EXIF 絞り"
 
-#: ../src/gui/gtkentry.c:206
+#: ../src/gui/gtkentry.c:207
 msgid "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
 msgstr "$(EXIF_FOCAL_LENGTH) - EXIF レンズ焦点距離"
 
-#: ../src/gui/gtkentry.c:207
+#: ../src/gui/gtkentry.c:208
 msgid "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
 msgstr "$(EXIF_MINUTE) - EXIF 被写体までの距離"
 
-#: ../src/gui/gtkentry.c:208
+#: ../src/gui/gtkentry.c:209
 msgid "$(LONGITUDE) - longitude"
 msgstr "$(LONGITUDE) - 経度"
 
-#: ../src/gui/gtkentry.c:209
+#: ../src/gui/gtkentry.c:210
 msgid "$(LATITUDE) - latitude"
 msgstr "$(LATITUDE) - 緯度"
 
-#: ../src/gui/gtkentry.c:210
+#: ../src/gui/gtkentry.c:211
 msgid "$(ELEVATION) - elevation"
 msgstr "$(ELEVATION) - 高度"
 
-#: ../src/gui/gtkentry.c:211
-msgid "$(STARS) - star rating"
-msgstr "$(STARS) - 評価"
-
 #: ../src/gui/gtkentry.c:212
-msgid "$(LABELS) - colorlabels"
-msgstr "$(LABELS) - 色ラベル"
+msgid "$(STARS) - star rating as number (-1 for rejected)"
+msgstr "$(STARS) - 評価を数字で表示（除外された画像は-1）"
 
 #: ../src/gui/gtkentry.c:213
+msgid "$(RATING_ICONS) - star/reject rating in icon form"
+msgstr "$(RATING_ICONS) - 評価（星の数または除外）をアイコンで表示"
+
+#: ../src/gui/gtkentry.c:214
+msgid "$(LABELS) - color labels as text"
+msgstr "$(LABELS) - 色ラベルをテクストで表示"
+
+#: ../src/gui/gtkentry.c:215
+msgid "$(LABELS_ICONS) - color labels as icons"
+msgstr "$(LABELS) - 色ラベルをアイコンで表示"
+
+#: ../src/gui/gtkentry.c:216
 msgid "$(MAKER) - camera maker"
 msgstr "$(MAKER) - カメラメーカー"
 
-#: ../src/gui/gtkentry.c:214
+#: ../src/gui/gtkentry.c:217
 msgid "$(MODEL) - camera model"
 msgstr "$(MODEL) - カメラ機種"
 
-#: ../src/gui/gtkentry.c:215
+#: ../src/gui/gtkentry.c:218
 msgid "$(LENS) - lens"
 msgstr "$(LENS) - レンズ"
 
-#: ../src/gui/gtkentry.c:216
+#: ../src/gui/gtkentry.c:219
+msgid "$(ID) - image ID"
+msgstr "$(ID) - 画像ID"
+
+#: ../src/gui/gtkentry.c:220
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - メタデータから取得したタイトル"
 
-#: ../src/gui/gtkentry.c:217
+#: ../src/gui/gtkentry.c:221
 msgid "$(DESCRIPTION) - description from metadata"
 msgstr "$(DESCRIPTION) - メタデータから取得した説明"
 
-#: ../src/gui/gtkentry.c:218
+#: ../src/gui/gtkentry.c:222
 msgid "$(CREATOR) - creator from metadata"
 msgstr "$(CREATOR) - メタデータから取得した作成者"
 
-#: ../src/gui/gtkentry.c:219
+#: ../src/gui/gtkentry.c:223
 msgid "$(PUBLISHER) - publisher from metadata"
 msgstr "$(PUBLISHER) -メタデータから取得した発行者"
 
-#: ../src/gui/gtkentry.c:220
+#: ../src/gui/gtkentry.c:224
 msgid "$(RIGHTS) - rights from metadata"
 msgstr "$(RIGHTS) - メタデータから取得した権利"
 
-#: ../src/gui/gtkentry.c:221
+#: ../src/gui/gtkentry.c:225
+msgid "$(USERNAME) - login name"
+msgstr "$(USERNAME) - ログイン名"
+
+#: ../src/gui/gtkentry.c:226
 msgid "$(PICTURES_FOLDER) - pictures folder"
 msgstr "$(PICTURES_FOLDER) - ピクチャーフォルダ"
 
-#: ../src/gui/gtkentry.c:222
+#: ../src/gui/gtkentry.c:227
 msgid "$(HOME) - home folder"
 msgstr "$(HOME) - ホームフォルダ"
 
-#: ../src/gui/gtkentry.c:223
+#: ../src/gui/gtkentry.c:228
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - デスクトップフォルダ"
 
-#: ../src/gui/gtkentry.c:224
+#: ../src/gui/gtkentry.c:229
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL_ACTIVATED) - OpenCLが有効になっているか"
 
-#: ../src/gui/gtkentry.c:225
+#: ../src/gui/gtkentry.c:230
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
 msgstr "$(CATEGORY0(category)) - 階層タグのレベル 0 のサブタグ"
 
-#: ../src/gui/gtkentry.c:226
+#: ../src/gui/gtkentry.c:231
 msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) - メタデータで設定されたタグ"
 
-#: ../src/gui/gtkentry.c:227
+#: ../src/gui/gtkentry.c:232
 msgid "$(DARKTABLE_VERSION) - current darktable version"
 msgstr "$(VERSION) - 現在のdarktableのバージョン"
 
@@ -9329,7 +9350,7 @@ msgstr "三分割法"
 msgid "metering"
 msgstr "メーター"
 
-#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5735
+#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5774
 msgid "perspective"
 msgstr "パースペクティブ"
 
@@ -9406,7 +9427,7 @@ msgstr "水平に"
 msgid "vertically"
 msgstr "垂直に"
 
-#: ../src/gui/guides.c:686 ../src/iop/ashift.c:5885 ../src/iop/clipping.c:2132
+#: ../src/gui/guides.c:686 ../src/iop/ashift.c:5924 ../src/iop/clipping.c:2132
 #: ../src/iop/colorbalance.c:1891
 msgid "both"
 msgstr "両方"
@@ -9631,7 +9652,7 @@ msgstr "カメラ機種"
 msgid "maker"
 msgstr "メーカー"
 
-#: ../src/gui/preferences.c:842 ../src/iop/ashift.c:5888
+#: ../src/gui/preferences.c:842 ../src/iop/ashift.c:5927
 #: ../src/iop/basicadj.c:633 ../src/iop/borders.c:1050 ../src/iop/levels.c:640
 #: ../src/iop/rgblevels.c:1066
 msgid "auto"
@@ -9953,53 +9974,53 @@ msgstr "新しいスタイルの説明を入力してください。この説明
 msgid "can't create style out of unaltered image"
 msgstr "変更されていない画像からスタイルを作成することは出来ません"
 
-#: ../src/imageio/format/avif.c:88 ../src/imageio/format/pdf.c:79
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:79
 #: ../src/imageio/format/png.c:526 ../src/imageio/format/tiff.c:808
 msgid "8 bit"
 msgstr "8ビット"
 
-#: ../src/imageio/format/avif.c:92
+#: ../src/imageio/format/avif.c:93
 msgid "10 bit"
 msgstr "10ビット"
 
-#: ../src/imageio/format/avif.c:96
+#: ../src/imageio/format/avif.c:97
 msgid "12 bit"
 msgstr "12ビット"
 
-#: ../src/imageio/format/avif.c:449
+#: ../src/imageio/format/avif.c:450
 msgid "invalid AVIF bit depth!"
 msgstr "無効なAVIFビット深度です！"
 
-#: ../src/imageio/format/avif.c:690
+#: ../src/imageio/format/avif.c:700
 msgid "AVIF (8/10/12-bit)"
 msgstr "AVIF （8／10／12ビット）"
 
-#: ../src/imageio/format/avif.c:763 ../src/imageio/format/pdf.c:685
+#: ../src/imageio/format/avif.c:780 ../src/imageio/format/pdf.c:685
 #: ../src/imageio/format/png.c:525 ../src/imageio/format/tiff.c:807
 msgid "bit depth"
 msgstr "ビット深度"
 
-#: ../src/imageio/format/avif.c:776
+#: ../src/imageio/format/avif.c:793
 msgid "color information stored in an image, higher is better"
 msgstr "画像に保存される色情報。値が大きいほど良質です"
 
-#: ../src/imageio/format/avif.c:788
+#: ../src/imageio/format/avif.c:805
 msgid "rgb colors"
 msgstr "RGBカラー"
 
-#: ../src/imageio/format/avif.c:790
+#: ../src/imageio/format/avif.c:807
 msgid "grayscale"
 msgstr "グレースケール"
 
-#: ../src/imageio/format/avif.c:794
+#: ../src/imageio/format/avif.c:811
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr "グレースケールとして保存すると白黒画像のサイズが減少します"
 
-#: ../src/imageio/format/avif.c:807
+#: ../src/imageio/format/avif.c:824
 msgid "tiling"
 msgstr "タイリング"
 
-#: ../src/imageio/format/avif.c:815
+#: ../src/imageio/format/avif.c:832
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -10011,11 +10032,11 @@ msgstr ""
 "エンコードの速度が上がります。クオリティの低下は無視できる程度ですが、ファイ"
 "ルサイズが大きくなります"
 
-#: ../src/imageio/format/avif.c:832 ../src/imageio/format/webp.c:325
+#: ../src/imageio/format/avif.c:849 ../src/imageio/format/webp.c:325
 msgid "compression type"
 msgstr "圧縮タイプ"
 
-#: ../src/imageio/format/avif.c:840
+#: ../src/imageio/format/avif.c:857
 msgid "the compression for the image"
 msgstr "画像の圧縮"
 
@@ -10024,13 +10045,13 @@ msgstr "画像の圧縮"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:857 ../src/imageio/format/j2k.c:658
+#: ../src/imageio/format/avif.c:874 ../src/imageio/format/j2k.c:658
 #: ../src/imageio/format/jpeg.c:578 ../src/imageio/format/webp.c:337
 #: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:583
 msgid "quality"
 msgstr "クオリティ"
 
-#: ../src/imageio/format/avif.c:862
+#: ../src/imageio/format/avif.c:879
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -10708,27 +10729,27 @@ msgstr "自動補正に失敗しました。手動で補正してください"
 
 #. if count > MAX_SAVED_LINES we alert that the next lines won't be saved in params
 #. but they still may be used for the current section (that's why we still allow them)
-#: ../src/iop/ashift.c:4710
+#: ../src/iop/ashift.c:4749
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "パラメータに保存することが出来る線は%d本のみです"
 
-#: ../src/iop/ashift.c:5431 ../src/iop/ashift.c:5432 ../src/iop/ashift.c:5534
-#: ../src/iop/ashift.c:5535
+#: ../src/iop/ashift.c:5470 ../src/iop/ashift.c:5471 ../src/iop/ashift.c:5573
+#: ../src/iop/ashift.c:5574
 #, c-format
 msgid "lens shift (%s)"
 msgstr "レンズシフト（%s）"
 
-#: ../src/iop/ashift.c:5795
+#: ../src/iop/ashift.c:5834
 msgid "perspective helpers"
 msgstr "パースペクティブ補正補助"
 
-#: ../src/iop/ashift.c:5802 ../src/iop/ashift.c:5886 ../src/iop/ashift.c:5887
-#: ../src/iop/ashift.c:5888
+#: ../src/iop/ashift.c:5841 ../src/iop/ashift.c:5925 ../src/iop/ashift.c:5926
+#: ../src/iop/ashift.c:5927
 msgid "structure"
 msgstr "構造"
 
-#: ../src/iop/ashift.c:5835
+#: ../src/iop/ashift.c:5874
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -10737,31 +10758,31 @@ msgstr ""
 "画像を回転します\n"
 "右クリックとドラッグで、画像に線を引き水平線と垂直線を定義します"
 
-#: ../src/iop/ashift.c:5836 ../src/iop/ashift.c:5837
+#: ../src/iop/ashift.c:5875 ../src/iop/ashift.c:5876
 msgid "apply lens shift correction in one direction"
 msgstr "一方向にレンズシフト補正を適用します"
 
-#: ../src/iop/ashift.c:5838
+#: ../src/iop/ashift.c:5877
 msgid "shear the image along one diagonal"
 msgstr "対角線に沿って画像をせん断変形します"
 
-#: ../src/iop/ashift.c:5839 ../src/iop/clipping.c:2154
+#: ../src/iop/ashift.c:5878 ../src/iop/clipping.c:2154
 msgid "automatically crop to avoid black edges"
 msgstr "自動的にトリミングして、周辺に黒い縁が出来ないようにします"
 
-#: ../src/iop/ashift.c:5840
+#: ../src/iop/ashift.c:5879
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
 msgstr "パースペクティブ補正をするレンズのモデル：汎用または焦点距離別"
 
-#: ../src/iop/ashift.c:5842
+#: ../src/iop/ashift.c:5881
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "レンズの焦点距離\n"
 "exifデータに記録されている値をデフォルトで設定します"
 
-#: ../src/iop/ashift.c:5844
+#: ../src/iop/ashift.c:5883
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -10770,7 +10791,7 @@ msgstr ""
 "exifデータに記録されている値をデフォルトで設定します\n"
 "多くの場合、手動で設定する必要があります"
 
-#: ../src/iop/ashift.c:5847
+#: ../src/iop/ashift.c:5886
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -10779,11 +10800,11 @@ msgstr ""
 "最大値に設定すると完全にレンズに依存します\n"
 "汎用的なケースでは0に設定します"
 
-#: ../src/iop/ashift.c:5849
+#: ../src/iop/ashift.c:5888
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr "画像を水平／垂直方向に拡大縮小してアスペクト比を調整します"
 
-#: ../src/iop/ashift.c:5850
+#: ../src/iop/ashift.c:5889
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10793,7 +10814,7 @@ msgstr ""
 "Ctrl+クリックすると、回転のみ補正します\n"
 "Shift+クリックすると、レンズシフトのみ補正します"
 
-#: ../src/iop/ashift.c:5853
+#: ../src/iop/ashift.c:5892
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10803,7 +10824,7 @@ msgstr ""
 "Ctrl+クリックすると、回転のみ補正します\n"
 "Shift+クリックすると、レンズシフトのみ補正します"
 
-#: ../src/iop/ashift.c:5856
+#: ../src/iop/ashift.c:5895
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -10817,7 +10838,7 @@ msgstr ""
 "Shift+クリックすると、レンズシフトのみ補正します\n"
 "Ctrl+Shift +クリックすると、回転とレンズシフトのみ補正します"
 
-#: ../src/iop/ashift.c:5862
+#: ../src/iop/ashift.c:5901
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -10829,43 +10850,43 @@ msgstr ""
 "Shift+クリックすると、ディテール強化をさらに強めます\n"
 "Ctrl+Shift +クリックすると、両方の方法を組み合わせて用います"
 
-#: ../src/iop/ashift.c:5866
+#: ../src/iop/ashift.c:5905
 msgid "manually define perspective rectangle"
 msgstr "パースペクティブの矩形を手動で定義"
 
-#: ../src/iop/ashift.c:5867
+#: ../src/iop/ashift.c:5906
 msgid "manually draw structure lines"
 msgstr "構造線を手描き"
 
-#: ../src/iop/ashift.c:5886
+#: ../src/iop/ashift.c:5925
 msgid "rectangle"
 msgstr "矩形"
 
-#: ../src/iop/ashift.c:5887
+#: ../src/iop/ashift.c:5926
 msgid "lines"
 msgstr "線"
 
-#: ../src/iop/ashift.c:5911 ../src/iop/clipping.c:3392
+#: ../src/iop/ashift.c:5950 ../src/iop/clipping.c:3392
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "【%s】水平線を定義する／回転する"
 
-#: ../src/iop/ashift.c:5912
+#: ../src/iop/ashift.c:5951
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "【線分の上で%s】線分を選択する"
 
-#: ../src/iop/ashift.c:5914
+#: ../src/iop/ashift.c:5953
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "【線分の上で%s】線分の選択を解除する"
 
-#: ../src/iop/ashift.c:5916
+#: ../src/iop/ashift.c:5955
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "【%s】ゾーンの全ての線分を選択します"
 
-#: ../src/iop/ashift.c:5918
+#: ../src/iop/ashift.c:5957
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "【%s】ゾーンの全ての線分の選択を解除します"
@@ -13675,7 +13696,7 @@ msgctxt "accel"
 msgid "acquire"
 msgstr "取り込む"
 
-#: ../src/iop/colortransfer.c:130 ../src/libs/metadata.c:593
+#: ../src/iop/colortransfer.c:130 ../src/libs/metadata.c:603
 #: ../src/libs/styles.c:78
 msgctxt "accel"
 msgid "apply"
@@ -15696,7 +15717,7 @@ msgstr "レンズの光学的欠陥を補正します"
 msgid "geometric and reconstruction, RGB"
 msgstr "幾何学的および再構成、RGB"
 
-#: ../src/iop/lens.cc:1559
+#: ../src/iop/lens.cc:1595
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -15709,11 +15730,11 @@ msgstr ""
 "マウント：\t\t%s\n"
 "クロップファクター：\t%.1f"
 
-#: ../src/iop/lens.cc:1740
+#: ../src/iop/lens.cc:1776
 msgid "camera/lens not found"
 msgstr "カメラとレンズの組み合わせが見つかりません"
 
-#: ../src/iop/lens.cc:1741
+#: ../src/iop/lens.cc:1777
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your lensfun database is up-to-date\n"
@@ -15723,7 +15744,7 @@ msgstr ""
 "lensfun_update_dataを実行して、lensfunのデータベースが最新のものであるか"
 "チェックするとよいかもしれません"
 
-#: ../src/iop/lens.cc:1843
+#: ../src/iop/lens.cc:1879
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -15742,142 +15763,142 @@ msgstr ""
 "タイプ：\t\t%s\n"
 "マウント：\t%s"
 
-#: ../src/iop/lens.cc:1889
+#: ../src/iop/lens.cc:1925
 msgid "focal length (mm)"
 msgstr "焦点距離 （mm）"
 
-#: ../src/iop/lens.cc:1913
+#: ../src/iop/lens.cc:1949
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:1914
+#: ../src/iop/lens.cc:1950
 msgid "f-number (aperture)"
 msgstr "f-値（絞り）"
 
-#: ../src/iop/lens.cc:1928
+#: ../src/iop/lens.cc:1964
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.cc:1929
+#: ../src/iop/lens.cc:1965
 msgid "distance to subject"
 msgstr "被写体までの距離"
 
-#: ../src/iop/lens.cc:2251
+#: ../src/iop/lens.cc:2288
 msgid "distortion & TCA"
 msgstr "歪曲＆倍率色収差"
 
-#: ../src/iop/lens.cc:2257
+#: ../src/iop/lens.cc:2294
 msgid "distortion & vignetting"
 msgstr "歪曲＆周辺減光"
 
-#: ../src/iop/lens.cc:2263
+#: ../src/iop/lens.cc:2300
 msgid "TCA & vignetting"
 msgstr "倍率色収差＆周辺減光"
 
-#: ../src/iop/lens.cc:2269
+#: ../src/iop/lens.cc:2306
 msgid "only distortion"
 msgstr "歪曲のみ"
 
-#: ../src/iop/lens.cc:2275
+#: ../src/iop/lens.cc:2312
 msgid "only TCA"
 msgstr "倍率色収差のみ"
 
-#: ../src/iop/lens.cc:2281
+#: ../src/iop/lens.cc:2318
 msgid "only vignetting"
 msgstr "周辺減光のみ"
 
-#: ../src/iop/lens.cc:2290
+#: ../src/iop/lens.cc:2327
 msgid "camera model"
 msgstr "カメラの機種"
 
-#: ../src/iop/lens.cc:2293
+#: ../src/iop/lens.cc:2330
 msgid "find camera"
 msgstr "カメラを探してください"
 
-#: ../src/iop/lens.cc:2304
+#: ../src/iop/lens.cc:2341
 msgid "find lens"
 msgstr "レンズを探してください"
 
 #. Page CORRECTIONS
-#: ../src/iop/lens.cc:2333 ../src/iop/negadoctor.c:876
+#: ../src/iop/lens.cc:2370 ../src/iop/negadoctor.c:876
 msgid "corrections"
 msgstr "補正"
 
-#: ../src/iop/lens.cc:2335
+#: ../src/iop/lens.cc:2372
 msgid "which corrections to apply"
 msgstr "適用する補正の種類"
 
-#: ../src/iop/lens.cc:2350
+#: ../src/iop/lens.cc:2387
 msgid "target geometry"
 msgstr "ターゲットのジオメトリ"
 
-#: ../src/iop/lens.cc:2351
+#: ../src/iop/lens.cc:2388
 msgid "rectilinear"
 msgstr "心射方位"
 
-#: ../src/iop/lens.cc:2352
+#: ../src/iop/lens.cc:2389
 msgid "fish-eye"
 msgstr "魚眼"
 
-#: ../src/iop/lens.cc:2353
+#: ../src/iop/lens.cc:2390
 msgid "panoramic"
 msgstr "パノラマ"
 
-#: ../src/iop/lens.cc:2354
+#: ../src/iop/lens.cc:2391
 msgid "equirectangular"
 msgstr "正距円筒"
 
-#: ../src/iop/lens.cc:2356
+#: ../src/iop/lens.cc:2393
 msgid "orthographic"
 msgstr "正射"
 
-#: ../src/iop/lens.cc:2357
+#: ../src/iop/lens.cc:2394
 msgid "stereographic"
 msgstr "平射"
 
-#: ../src/iop/lens.cc:2358
+#: ../src/iop/lens.cc:2395
 msgid "equisolid angle"
 msgstr "等立体角"
 
-#: ../src/iop/lens.cc:2359
+#: ../src/iop/lens.cc:2396
 msgid "thoby fish-eye"
 msgstr "トビー魚眼"
 
 #. scale
-#: ../src/iop/lens.cc:2365 ../src/iop/vignette.c:988
+#: ../src/iop/lens.cc:2402 ../src/iop/vignette.c:988
 #: ../src/iop/watermark.c:1302
 msgid "scale"
 msgstr "スケール"
 
-#: ../src/iop/lens.cc:2370
+#: ../src/iop/lens.cc:2407
 msgid "auto scale"
 msgstr "スケールの自動設定"
 
-#: ../src/iop/lens.cc:2374 ../src/libs/modulegroups.c:2405
+#: ../src/iop/lens.cc:2411 ../src/libs/modulegroups.c:2405
 msgid "correct"
 msgstr "補正"
 
-#: ../src/iop/lens.cc:2375
+#: ../src/iop/lens.cc:2412
 msgid "distort"
 msgstr "歪曲"
 
-#: ../src/iop/lens.cc:2376
+#: ../src/iop/lens.cc:2413
 msgid "correct distortions or apply them"
 msgstr "歪曲を補正または適用します"
 
-#: ../src/iop/lens.cc:2383
+#: ../src/iop/lens.cc:2420
 msgid "Transversal Chromatic Aberration red"
 msgstr "倍率色収差 赤"
 
-#: ../src/iop/lens.cc:2387
+#: ../src/iop/lens.cc:2424
 msgid "Transversal Chromatic Aberration blue"
 msgstr "倍率色収差 青"
 
-#: ../src/iop/lens.cc:2392
+#: ../src/iop/lens.cc:2429
 msgid "corrections done: "
 msgstr "実行した補正："
 
-#: ../src/iop/lens.cc:2394
+#: ../src/iop/lens.cc:2431
 msgid "which corrections have actually been done"
 msgstr "どの補正が実際に行われたか"
 
@@ -18504,8 +18525,8 @@ msgid "files"
 msgstr "ファイル"
 
 #: ../src/libs/collect.c:2853 ../src/libs/export_metadata.c:301
-#: ../src/libs/image.c:479 ../src/libs/image.c:584 ../src/libs/metadata.c:492
-#: ../src/libs/metadata.c:663 ../src/libs/metadata_view.c:1270
+#: ../src/libs/image.c:479 ../src/libs/image.c:584 ../src/libs/metadata.c:502
+#: ../src/libs/metadata.c:673 ../src/libs/metadata_view.c:1270
 msgid "metadata"
 msgstr "メタデータ"
 
@@ -18526,14 +18547,14 @@ msgid "collections settings"
 msgstr "コレクション設定"
 
 #: ../src/libs/collect.c:2905 ../src/libs/export_metadata.c:281
-#: ../src/libs/metadata.c:452 ../src/libs/metadata_view.c:1239
+#: ../src/libs/metadata.c:462 ../src/libs/metadata_view.c:1239
 #: ../src/libs/recentcollect.c:320 ../src/libs/tagging.c:1668
 #: ../src/libs/tagging.c:1798 ../src/libs/tagging.c:2073
 msgid "save"
 msgstr "保存"
 
 #: ../src/libs/collect.c:2919 ../src/libs/export.c:1059
-#: ../src/libs/metadata.c:586 ../src/libs/metadata_view.c:1350
+#: ../src/libs/metadata.c:596 ../src/libs/metadata_view.c:1350
 #: ../src/libs/recentcollect.c:382
 msgid "preferences..."
 msgstr "設定"
@@ -20418,15 +20439,15 @@ msgstr "メタデータエディタ"
 msgid "<leave unchanged>"
 msgstr "<変更しない>"
 
-#: ../src/libs/metadata.c:450 ../src/libs/metadata_view.c:1237
+#: ../src/libs/metadata.c:460 ../src/libs/metadata_view.c:1237
 msgid "metadata settings"
 msgstr "メタデータ設定"
 
-#: ../src/libs/metadata.c:498 ../src/libs/metadata_view.c:1281
+#: ../src/libs/metadata.c:508 ../src/libs/metadata_view.c:1281
 msgid "visible"
 msgstr "表示"
 
-#: ../src/libs/metadata.c:503
+#: ../src/libs/metadata.c:513
 msgid ""
 "tick if the corresponding metadata is of interest for you\n"
 "it will be visible from metadata editor, collection and import module\n"
@@ -20436,23 +20457,23 @@ msgstr ""
 "メタデータエディタ、コレクション、インポートモジュールで表示されます\n"
 "エクスポートもされます"
 
-#: ../src/libs/metadata.c:508 ../src/libs/tagging.c:1698
+#: ../src/libs/metadata.c:518 ../src/libs/tagging.c:1698
 #: ../src/libs/tagging.c:1842
 msgid "private"
 msgstr "プライベート"
 
-#: ../src/libs/metadata.c:513
+#: ../src/libs/metadata.c:523
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 "この情報を非公開にしたい場合はチェックしてください（画像とともにエクスポート"
 "されません）"
 
-#: ../src/libs/metadata.c:625
+#: ../src/libs/metadata.c:635
 msgid "metadata list"
 msgstr "メタデータのリスト"
 
-#: ../src/libs/metadata.c:737
+#: ../src/libs/metadata.c:747
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -20469,60 +20490,60 @@ msgstr ""
 "その場合、右クリックすると、そのうちの1つを選択出来ます\n"
 "Escキーでポップアップウィンドウから出ます"
 
-#: ../src/libs/metadata.c:783
+#: ../src/libs/metadata.c:793
 msgid "write metadata for selected images"
 msgstr "選択画像にメタデータを書き込みます"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:835
+#: ../src/libs/metadata.c:845
 msgid "CC BY"
 msgstr "CC BY クリエイティブ・コモンズ 表示"
 
-#: ../src/libs/metadata.c:835
+#: ../src/libs/metadata.c:845
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC BY)"
 
-#: ../src/libs/metadata.c:836
+#: ../src/libs/metadata.c:846
 msgid "CC BY-SA"
 msgstr "CC BY-SA クリエイティブ・コモンズ 表示−継承"
 
-#: ../src/libs/metadata.c:836
+#: ../src/libs/metadata.c:846
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 
-#: ../src/libs/metadata.c:837
+#: ../src/libs/metadata.c:847
 msgid "CC BY-ND"
 msgstr "CC BY-ND クリエイティブ・コモンズ 表示-改変禁止"
 
-#: ../src/libs/metadata.c:837
+#: ../src/libs/metadata.c:847
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 
-#: ../src/libs/metadata.c:838
+#: ../src/libs/metadata.c:848
 msgid "CC BY-NC"
 msgstr "CC BY-NC クリエイティブ・コモンズ 表示-非営利"
 
-#: ../src/libs/metadata.c:838
+#: ../src/libs/metadata.c:848
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 
-#: ../src/libs/metadata.c:839
+#: ../src/libs/metadata.c:849
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA クリエイティブ・コモンズ 表示-非営利-継承"
 
-#: ../src/libs/metadata.c:840
+#: ../src/libs/metadata.c:850
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:841
+#: ../src/libs/metadata.c:851
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND クリエイティブ・コモンズ 表示-非営利-改変禁止"
 
-#: ../src/libs/metadata.c:842
+#: ../src/libs/metadata.c:852
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:843
+#: ../src/libs/metadata.c:853
 msgid "all rights reserved"
 msgstr "all rights reserved"
 
