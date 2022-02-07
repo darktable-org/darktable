@@ -165,14 +165,22 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   // draw the graph (and create it if needed)
   if(!range->surface || range->surf_width != allocation.width)
   {
+    int mw = -1;
+    gtk_style_context_get(context, state, "min-width", &mw, NULL);
     range->surf_width = allocation.width;
+    if(mw > 0)
+      range->band_real_width = MIN(allocation.width, mw);
+    else
+      range->band_real_width = allocation.width;
+    range->band_margin_side = (allocation.width - range->band_real_width) / 2;
+
     // if the surface already exist, destroy it
     if(range->surface) cairo_surface_destroy(range->surface);
 
     // determine the steps of blocks and extrema values
     range->band_start = range->value_band(range->min);
     const double wv = range->value_band(range->max) - range->band_start;
-    range->band_factor = wv / allocation.width;
+    range->band_factor = wv / range->band_real_width;
     const double step
         = fmax(range->step, range->band_factor * 2.0); // we want at least blocks with width of 2 pixels
     const int bl_width = step / range->band_factor;
@@ -209,13 +217,13 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     {
       _range_marker *mark = bl->data;
       const int posx = mark->band_value / range->band_factor - range->band_start;
-      cairo_rectangle(scr, posx, 0, 2, allocation.height);
+      cairo_rectangle(scr, posx + range->band_margin_side, 0, 2, allocation.height);
       cairo_fill(scr);
     }
 
     // draw background
     dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_BG, 1.0);
-    cairo_rectangle(scr, 0, margin_top, allocation.width, bandh);
+    cairo_rectangle(scr, range->band_margin_side, margin_top, range->band_real_width, bandh);
     cairo_fill(scr);
 
     // draw the rectangles on the surface
@@ -237,7 +245,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
         {
           const int posx = (int)((bl_min - range->band_start) / step) * bl_width;
           const int bh = _graph_get_height(bl_count, count_max, bandh);
-          cairo_rectangle(scr, posx, margin_top + bandh - bh, bl_width, bh);
+          cairo_rectangle(scr, posx + range->band_margin_side, margin_top + bandh - bh, bl_width, bh);
           cairo_fill(scr);
         }
         bl_count = blo->nb;
@@ -249,7 +257,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     {
       const int posx = (int)((bl_min - range->band_start) / step) * bl_width;
       const int bh = _graph_get_height(bl_count, count_max, bandh);
-      cairo_rectangle(scr, posx, margin_top + bandh - bh, bl_width, bh);
+      cairo_rectangle(scr, posx + range->band_margin_side, margin_top + bandh - bh, bl_width, bh);
       cairo_fill(scr);
     }
 
@@ -265,7 +273,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   int sel_start = 0;
   if(!(range->bounds & DT_RANGE_BOUND_MIN))
     sel_start = (range->value_band(range->select_min) - range->band_start) / range->band_factor;
-  int sel_end = allocation.width;
+  int sel_end = range->band_real_width;
   if(range->set_selection)
     sel_end = _graph_snap_position(range, range->current_x);
   else if(!(range->bounds & DT_RANGE_BOUND_MAX))
@@ -291,7 +299,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   }
   const int sel_width = MAX(2, x2 - x1);
   dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_SELECTION, 1.0);
-  cairo_rectangle(cr, x1, margin_top, sel_width, bandh);
+  cairo_rectangle(cr, x1 + range->band_margin_side, margin_top, sel_width, bandh);
   cairo_fill(cr);
 
   double current_value = _graph_snap_value(range, range->current_x);
@@ -301,14 +309,14 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   if(g_list_length(range->icons) > 0)
   {
     // determine icon size
-    const int size = bandh * 0.8;
-    const int posy = margin_top + bandh * 0.1;
+    const int size = bandh * 0.6;
+    const int posy = margin_top + bandh * 0.2;
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
 
     for(const GList *bl = range->icons; bl; bl = g_list_next(bl))
     {
       _range_icon *icon = bl->data;
-      const int posx = allocation.width * icon->posx / 100 - size / 2;
+      const int posx = range->band_real_width * icon->posx / 100 - size / 2;
       // we set prelight flag if the mouse value correspond
       gint f = icon->flags;
       if(range->mouse_inside && range->current_x > 0 && icon->value == current_value)
@@ -324,7 +332,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
       else
         f &= ~CPF_ACTIVE;
       // and we draw the icon
-      icon->paint(cr, posx, posy, size, size, f, icon->data);
+      icon->paint(cr, posx + range->band_margin_side, posy, size, size, f, icon->data);
     }
   }
 
@@ -332,7 +340,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   if(range->mouse_inside && range->current_x > 0)
   {
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_CURSOR, 1.0);
-    const int posx = _graph_snap_position(range, range->current_x);
+    const int posx = _graph_snap_position(range, range->current_x) + range->band_margin_side;
     cairo_move_to(cr, posx, margin_top);
     cairo_line_to(cr, posx, bandh);
     cairo_stroke(cr);
@@ -349,33 +357,12 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   return TRUE;
 }
 
-static void _graph_resize(GtkDarktableRangeSelect *range)
-{
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
-  int mh = 30;
-  int mw = -1;
-  gtk_style_context_get(context, state, "min-height", &mh, "min-width", &mw, NULL);
-  if(mw <= 0)
-  {
-    mw = -1;
-    gtk_widget_set_halign(range->band, GTK_ALIGN_FILL);
-  }
-  else
-  {
-    gtk_widget_set_halign(range->band, GTK_ALIGN_CENTER);
-  }
-  gtk_widget_set_size_request(range->band, mw, mh);
-}
-
 static void _dt_pref_changed(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   // invalidate the surface
   range->surf_width = 0;
-  // resize the widget if needed
-  _graph_resize(range);
   // redraw the band
   gtk_widget_queue_draw(range->band);
 }
@@ -384,7 +371,7 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   range->mouse_inside = TRUE;
-  range->current_x = event->x;
+  range->current_x = event->x - range->band_margin_side;
 
   gtk_widget_queue_draw(range->band);
   return TRUE;
@@ -402,7 +389,7 @@ static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer us
 static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  range->select_min = _graph_snap_value(range, e->x);
+  range->select_min = _graph_snap_value(range, e->x - range->band_margin_side);
   range->select_max = range->select_min;
   range->bounds = DT_RANGE_BOUND_RANGE;
   range->set_selection = TRUE;
@@ -413,7 +400,7 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
 static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  range->select_max = _graph_snap_value(range, e->x);
+  range->select_max = _graph_snap_value(range, e->x - range->band_margin_side);
   // we verify that the values are in the right order
   if(range->select_max < range->select_min)
   {
@@ -465,6 +452,26 @@ GtkWidget *dtgtk_range_select_new(const gchar *property)
 
   // the boxes widgets
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  // the graph band
+  range->band = gtk_drawing_area_new();
+  gtk_widget_set_events(range->band, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
+                                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                                         | GDK_POINTER_MOTION_MASK);
+  g_signal_connect(G_OBJECT(range->band), "draw", G_CALLBACK(_event_band_draw), range);
+  g_signal_connect(G_OBJECT(range->band), "button-press-event", G_CALLBACK(_event_band_press), range);
+  g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
+  g_signal_connect(G_OBJECT(range->band), "motion-notify-event", G_CALLBACK(_event_band_motion), range);
+  g_signal_connect(G_OBJECT(range->band), "leave-notify-event", G_CALLBACK(_event_band_leave), range);
+  g_signal_connect(G_OBJECT(range->band), "style-updated", G_CALLBACK(_dt_pref_changed), range);
+  gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
+  context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  int mh = -1;
+  gtk_style_context_get(context, state, "min-height", &mh, NULL);
+  gtk_widget_set_size_request(range->band, -1, mh);
+  gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
+
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
@@ -488,21 +495,6 @@ GtkWidget *dtgtk_range_select_new(const gchar *property)
   gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
   g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
   gtk_box_pack_end(GTK_BOX(hbox), range->entry_max, FALSE, TRUE, 0);
-
-  // the bottom band
-  range->band = gtk_drawing_area_new();
-  gtk_widget_set_events(range->band, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                         | GDK_POINTER_MOTION_MASK);
-  g_signal_connect(G_OBJECT(range->band), "draw", G_CALLBACK(_event_band_draw), range);
-  g_signal_connect(G_OBJECT(range->band), "button-press-event", G_CALLBACK(_event_band_press), range);
-  g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
-  g_signal_connect(G_OBJECT(range->band), "motion-notify-event", G_CALLBACK(_event_band_motion), range);
-  g_signal_connect(G_OBJECT(range->band), "leave-notify-event", G_CALLBACK(_event_band_leave), range);
-  g_signal_connect(G_OBJECT(range->band), "style-updated", G_CALLBACK(_dt_pref_changed), range);
-  gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
-  _graph_resize(range);
-  gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
 
   gtk_container_add(GTK_CONTAINER(range), vbox);
   gtk_widget_set_name(GTK_WIDGET(range), "range_select");

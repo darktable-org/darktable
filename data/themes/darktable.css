@@ -1579,7 +1579,7 @@ filechooser row:hover .sidebar-icon
 }
 .dt_range_rating #dt-range-band
 {
-  min-width: 20em;
+  min-width: 16em;
 }
 #dt-range-current
 {

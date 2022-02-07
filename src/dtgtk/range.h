@@ -80,6 +80,9 @@ typedef struct _GtkDarktableRangeSelect
   GList *blocks;
   GList *icons;
   GList *markers;
+
+  int band_margin_side;
+  int band_real_width;
 } GtkDarktableRangeSelect;
 
 typedef struct _GtkDarktableRangeSelectClass
