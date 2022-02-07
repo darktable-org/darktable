@@ -1570,6 +1570,36 @@ void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   FINISH
 }
 
+void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  cairo_push_group(cr);
+
+  // we create the path
+  dt_draw_star(cr, 1 / 2., 1. / 2., 1. / 2., 1. / 5.);
+
+  // we create the cross line
+  cairo_move_to(cr, 0.05, 0.95);
+  cairo_line_to(cr, 0.85, 0.0);
+  cairo_stroke(cr);
+
+  // then erase some parts around cross line
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_set_line_width(cr, 0.05);
+  cairo_move_to(cr, 0.0, 0.88);
+  cairo_line_to(cr, 0.78, 0.0);
+  cairo_move_to(cr, 0.10, 1.0);
+  cairo_line_to(cr, 0.92, 0.0);
+  cairo_set_source_rgba(cr, 0, 1.0, 0, 1.0);
+  cairo_stroke(cr);
+
+  cairo_pop_group_to_source(cr);
+  cairo_paint(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
