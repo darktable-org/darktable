@@ -1,15 +1,15 @@
 # Ukrainian Translation of darktable.
 # Copyright (C) 2021 darktable's copyright holder
 # This file is distributed under the same license as the darktable package.
-# Victor Forsiuk <vvforce@gmail.com>, 2021.
+# Victor Forsiuk <vvforce@gmail.com>, 2021-2022.
 # Nazarii Vitak <nazarii.vitak@gmail.com>, 2013-2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-24 15:36+0100\n"
-"PO-Revision-Date: 2022-01-25 14:53+0200\n"
+"POT-Creation-Date: 2022-02-07 08:06+0100\n"
+"PO-Revision-Date: 2022-02-07 21:49+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -71,8 +71,8 @@ msgstr ""
 msgid "this setting has been modified"
 msgstr "цей параметр було змінено"
 
-#: ../build/bin/preferences_gen.h:3724 ../src/libs/tools/lighttable.c:68
-#: ../src/views/lighttable.c:88
+#: ../build/bin/preferences_gen.h:3724 ../src/gui/preferences.c:556
+#: ../src/libs/tools/lighttable.c:68 ../src/views/lighttable.c:88
 msgid "lighttable"
 msgstr "світлий стіл"
 
@@ -357,7 +357,8 @@ msgstr ""
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "шаблон для спливних підказок мініатюр (порожній для вимкнення)"
 
-#: ../build/bin/preferences_gen.h:4293 ../src/views/darkroom.c:108
+#: ../build/bin/preferences_gen.h:4293 ../src/gui/preferences.c:556
+#: ../src/views/darkroom.c:108
 msgid "darkroom"
 msgstr "темна кімната"
 
@@ -2229,7 +2230,7 @@ msgstr "регулювання співвідношення сторін"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:172
 #: ../build/lib/darktable/plugins/introspection_ashift.c:307
-#: ../src/iop/lens.cc:2301
+#: ../src/iop/lens.cc:2338
 msgid "lens model"
 msgstr "модель об'єктива"
 
@@ -2255,7 +2256,7 @@ msgstr "уточнена"
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2988 ../src/develop/develop.c:2238
 #: ../src/gui/accelerators.c:123 ../src/gui/accelerators.c:132
-#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:811
+#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:828
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:666
 #: ../src/libs/live_view.c:427
 msgid "off"
@@ -2307,7 +2308,7 @@ msgstr "метод збереження кольорів"
 #: ../src/gui/guides.c:683 ../src/iop/basecurve.c:2100
 #: ../src/iop/channelmixerrgb.c:3978 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2129 ../src/iop/clipping.c:2145
-#: ../src/iop/lens.cc:2239 ../src/iop/retouch.c:422 ../src/libs/collect.c:1863
+#: ../src/iop/lens.cc:2276 ../src/iop/retouch.c:422 ../src/libs/collect.c:1863
 #: ../src/libs/colorpicker.c:50 ../src/libs/export.c:1036
 #: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2481
 msgid "none"
@@ -2430,7 +2431,7 @@ msgstr "лінійність"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:5723
+#: ../src/iop/ashift.c:5762
 msgid "rotation"
 msgstr "обертання"
 
@@ -2579,7 +2580,7 @@ msgstr "дуже велика хроматична аберація"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../src/common/collection.c:1501 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
-#: ../src/gui/gtk.c:3016 ../src/gui/guides.c:701 ../src/iop/bilateral.cc:317
+#: ../src/gui/gtk.c:3010 ../src/gui/guides.c:701 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:3933 ../src/iop/colorzones.c:2316
 #: ../src/iop/temperature.c:1834 ../src/iop/temperature.c:1983
@@ -2590,7 +2591,7 @@ msgstr "червоний"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
 #: ../src/common/collection.c:1505 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:3017 ../src/gui/guides.c:702 ../src/iop/bilateral.cc:322
+#: ../src/gui/gtk.c:3011 ../src/gui/guides.c:702 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:3934 ../src/iop/colorzones.c:2319
 #: ../src/iop/temperature.c:1818 ../src/iop/temperature.c:1836
@@ -2601,7 +2602,7 @@ msgstr "зелений"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
 #: ../src/common/collection.c:1507 ../src/develop/blend_gui.c:2012
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
-#: ../src/gui/gtk.c:3018 ../src/iop/bilateral.cc:327
+#: ../src/gui/gtk.c:3012 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:3935 ../src/iop/colorzones.c:2321
 #: ../src/iop/temperature.c:1838 ../src/iop/temperature.c:1985
@@ -3429,7 +3430,7 @@ msgstr "оновити профільоване перетворення"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:786 ../src/libs/colorpicker.c:585
+#: ../src/imageio/format/avif.c:803 ../src/libs/colorpicker.c:585
 msgid "color mode"
 msgstr "колірний режим"
 
@@ -3869,7 +3870,7 @@ msgstr "режим"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:142
 #: ../build/lib/darktable/plugins/introspection_lens.cc:261
-#: ../src/iop/lens.cc:2348
+#: ../src/iop/lens.cc:2385
 msgid "geometry"
 msgstr "геометрія"
 
@@ -5136,7 +5137,7 @@ msgstr "помилка запуску darktable"
 
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2904
 #: ../src/libs/export_metadata.c:281 ../src/libs/import.c:1743
-#: ../src/libs/metadata.c:452 ../src/libs/metadata_view.c:1239
+#: ../src/libs/metadata.c:462 ../src/libs/metadata_view.c:1239
 #: ../src/libs/modulegroups.c:3504 ../src/libs/recentcollect.c:319
 #: ../src/libs/styles.c:444 ../src/libs/styles.c:627 ../src/libs/tagging.c:1499
 #: ../src/libs/tagging.c:1587 ../src/libs/tagging.c:1668
@@ -5354,12 +5355,12 @@ msgstr "darktable - технічне обслуговування схеми"
 msgid "later"
 msgstr "пізніше"
 
-#: ../src/common/exif.cc:4177
+#: ../src/common/exif.cc:4226
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "не вдається прочитати файл xmp '%s': '%s'"
 
-#: ../src/common/exif.cc:4229
+#: ../src/common/exif.cc:4278
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "не вдається записати в файл xmp '%s': '%s'"
@@ -5554,7 +5555,7 @@ msgstr ""
 "не вдалося розгорнути до унікального імені файлу для сесії, перевірте "
 "налаштування сеансу імпорту."
 
-#: ../src/common/import_session.c:365
+#: ../src/common/import_session.c:364
 msgid "requested session path not available. device not mounted?"
 msgstr "запитаний шлях сеансу недоступний. пристрій не змонтовано?"
 
@@ -5641,7 +5642,7 @@ msgstr ""
 msgid "opencl scheduling profile set to default"
 msgstr "профіль планування opencl встановлено за замовчуванням"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1888
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1924
 #: ../src/libs/print_settings.c:2179
 msgid "mm"
 msgstr "мм"
@@ -6775,7 +6776,7 @@ msgid "reverse"
 msgstr "зворотна"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:357
-#: ../src/libs/metadata.c:451 ../src/libs/metadata_view.c:1238
+#: ../src/libs/metadata.c:461 ../src/libs/metadata_view.c:1238
 msgid "default"
 msgstr "замовчування"
 
@@ -6849,18 +6850,18 @@ msgstr "вхід після розмиття"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2238
 #: ../src/gui/accelerators.c:122 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:809
+#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:826
 #: ../src/libs/live_view.c:428
 msgid "on"
 msgstr "увімкнено"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3094
+#: ../src/develop/imageop.c:3083
 msgid "input"
 msgstr "на вході"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3096
+#: ../src/develop/imageop.c:3085
 msgid "output"
 msgstr "на виході"
 
@@ -7426,26 +7427,26 @@ msgstr "новий екземпляр"
 msgid "duplicate instance"
 msgstr "зробити дублікат екземпляра"
 
-#: ../src/develop/imageop.c:941 ../src/develop/imageop.c:3245
+#: ../src/develop/imageop.c:941 ../src/develop/imageop.c:3234
 #: ../src/libs/masks.c:1105
 msgid "move up"
 msgstr "підняти"
 
-#: ../src/develop/imageop.c:947 ../src/develop/imageop.c:3246
+#: ../src/develop/imageop.c:947 ../src/develop/imageop.c:3235
 #: ../src/libs/masks.c:1108
 msgid "move down"
 msgstr "опустити"
 
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
-#: ../src/develop/imageop.c:953 ../src/develop/imageop.c:3248
+#: ../src/develop/imageop.c:953 ../src/develop/imageop.c:3237
 #: ../src/gui/accelerators.c:145 ../src/gui/presets.c:467
 #: ../src/libs/image.c:185 ../src/libs/masks.c:1062 ../src/libs/tagging.c:1499
 #: ../src/libs/tagging.c:1587
 msgid "delete"
 msgstr "видалити"
 
-#: ../src/develop/imageop.c:960 ../src/develop/imageop.c:3249
+#: ../src/develop/imageop.c:960 ../src/develop/imageop.c:3238
 #: ../src/libs/modulegroups.c:3504 ../src/libs/modulegroups.c:3860
 msgid "rename"
 msgstr "перейменувати"
@@ -7499,7 +7500,7 @@ msgstr ""
 "ctrl+клік - повторно застосувати будь-які автоматичні пресети"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2458 ../src/develop/imageop.c:3259
+#: ../src/develop/imageop.c:2458 ../src/develop/imageop.c:3248
 #: ../src/gui/preferences.c:791 ../src/libs/lib.c:1265
 msgid "presets"
 msgstr "пресети"
@@ -7512,23 +7513,23 @@ msgstr ""
 "пресети\n"
 "права кнопка миші - застосувати в новому екземплярі"
 
-#: ../src/develop/imageop.c:2713 ../src/develop/imageop.c:2735
+#: ../src/develop/imageop.c:2702 ../src/develop/imageop.c:2724
 msgid "ERROR"
 msgstr "ПОМИЛКА"
 
-#: ../src/develop/imageop.c:3093
+#: ../src/develop/imageop.c:3082
 msgid "purpose"
 msgstr "призначення"
 
-#: ../src/develop/imageop.c:3095
+#: ../src/develop/imageop.c:3084
 msgid "process"
 msgstr "обробка"
 
-#: ../src/develop/imageop.c:3165
+#: ../src/develop/imageop.c:3154
 msgid "unsupported input"
 msgstr "непідтримуваний вхід"
 
-#: ../src/develop/imageop.c:3166
+#: ../src/develop/imageop.c:3155
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -7540,45 +7541,45 @@ msgstr ""
 "формат даних не відповідає\n"
 "вимогам модуля."
 
-#: ../src/develop/imageop.c:3244 ../src/develop/imageop.c:3254
+#: ../src/develop/imageop.c:3233 ../src/develop/imageop.c:3243
 #: ../src/gui/accelerators.c:141 ../src/libs/lib.c:1263
 msgid "show"
 msgstr "показати"
 
-#: ../src/develop/imageop.c:3247 ../src/libs/modulegroups.c:3354
+#: ../src/develop/imageop.c:3236 ../src/libs/modulegroups.c:3354
 #: ../src/libs/modulegroups.c:3478 ../src/libs/modulegroups.c:3863
 #: ../src/libs/tagging.c:3303
 msgid "new"
 msgstr "новий"
 
-#: ../src/develop/imageop.c:3250 ../src/libs/duplicate.c:546
+#: ../src/develop/imageop.c:3239 ../src/libs/duplicate.c:546
 #: ../src/libs/image.c:510 ../src/libs/modulegroups.c:3857
 msgid "duplicate"
 msgstr "зняти копію"
 
-#: ../src/develop/imageop.c:3255
+#: ../src/develop/imageop.c:3244
 msgid "enable"
 msgstr "вмикаючий елемент"
 
-#: ../src/develop/imageop.c:3256
+#: ../src/develop/imageop.c:3245
 msgid "focus"
 msgstr "фокус"
 
-#: ../src/develop/imageop.c:3257 ../src/gui/accelerators.c:2076
+#: ../src/develop/imageop.c:3246 ../src/gui/accelerators.c:2076
 msgid "instance"
 msgstr "екземпляр"
 
-#: ../src/develop/imageop.c:3258 ../src/gui/accelerators.c:107
+#: ../src/develop/imageop.c:3247 ../src/gui/accelerators.c:107
 #: ../src/gui/accelerators.c:116 ../src/iop/atrous.c:1583
 #: ../src/libs/lib.c:1264 ../src/libs/modulegroups.c:3932
 msgid "reset"
 msgstr "скинути"
 
-#: ../src/develop/imageop.c:3271
+#: ../src/develop/imageop.c:3260
 msgid "processing module"
 msgstr "модуль обробки"
 
-#: ../src/develop/imageop_gui.c:399
+#: ../src/develop/imageop_gui.c:398
 #, c-format
 msgid ""
 "%s\n"
@@ -7910,11 +7911,11 @@ msgstr ""
 "<b>перемістити сегмент</b>: перетягнути\n"
 "<b>додати вузол</b>: ctrl+клік"
 
-#: ../src/develop/pixelpipe_hb.c:396
+#: ../src/develop/pixelpipe_hb.c:394
 msgid "enabled as required"
 msgstr "увімкнено за необхідності"
 
-#: ../src/develop/pixelpipe_hb.c:396
+#: ../src/develop/pixelpipe_hb.c:394
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -7922,11 +7923,11 @@ msgstr ""
 "в історії був вимкнений модуль, але він потрібен для цього типу зображень.\n"
 "ймовірно, причиною є застосування пресету, стилю, або копіювання історії"
 
-#: ../src/develop/pixelpipe_hb.c:398
+#: ../src/develop/pixelpipe_hb.c:396
 msgid "disabled as not appropriate"
 msgstr "вимкнено як непідходящий"
 
-#: ../src/develop/pixelpipe_hb.c:398
+#: ../src/develop/pixelpipe_hb.c:396
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
@@ -7935,7 +7936,7 @@ msgstr ""
 "зображень.\n"
 "ймовірно, причиною є застосування пресету, стилю, або копіювання історії"
 
-#: ../src/develop/pixelpipe_hb.c:2256
+#: ../src/develop/pixelpipe_hb.c:2254
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -7991,8 +7992,8 @@ msgid "grouped images"
 msgstr "згруповані зображення"
 
 #: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1435
-#: ../src/iop/ashift.c:5816 ../src/iop/ashift.c:5883 ../src/iop/ashift.c:5884
-#: ../src/iop/ashift.c:5885
+#: ../src/iop/ashift.c:5855 ../src/iop/ashift.c:5922 ../src/iop/ashift.c:5923
+#: ../src/iop/ashift.c:5924
 msgid "fit"
 msgstr "підгонка"
 
@@ -8348,17 +8349,17 @@ msgstr "прокрутка"
 msgid "pan"
 msgstr "панорамування"
 
-#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5431
-#: ../src/iop/ashift.c:5432 ../src/iop/ashift.c:5534 ../src/iop/ashift.c:5535
-#: ../src/iop/ashift.c:5884 ../src/iop/clipping.c:1920
+#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5470
+#: ../src/iop/ashift.c:5471 ../src/iop/ashift.c:5573 ../src/iop/ashift.c:5574
+#: ../src/iop/ashift.c:5923 ../src/iop/clipping.c:1920
 #: ../src/iop/clipping.c:2130 ../src/iop/clipping.c:2147
 #: ../src/views/darkroom.c:2620 ../src/views/lighttable.c:1332
 msgid "horizontal"
 msgstr "горизонтально"
 
-#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5431
-#: ../src/iop/ashift.c:5432 ../src/iop/ashift.c:5534 ../src/iop/ashift.c:5535
-#: ../src/iop/ashift.c:5883 ../src/iop/clipping.c:1919
+#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5470
+#: ../src/iop/ashift.c:5471 ../src/iop/ashift.c:5573 ../src/iop/ashift.c:5574
+#: ../src/iop/ashift.c:5922 ../src/iop/clipping.c:1919
 #: ../src/iop/clipping.c:2131 ../src/iop/clipping.c:2146
 #: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:1336
 msgid "vertical"
@@ -8426,12 +8427,12 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:143
-#: ../src/gui/gtk.c:2961 ../src/views/lighttable.c:753
+#: ../src/gui/gtk.c:2955 ../src/views/lighttable.c:753
 msgid "next"
 msgstr "вперед"
 
 #: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:142
-#: ../src/gui/gtk.c:2962 ../src/views/lighttable.c:754
+#: ../src/gui/gtk.c:2956 ../src/views/lighttable.c:754
 msgid "previous"
 msgstr "назад"
 
@@ -8465,7 +8466,7 @@ msgstr "права-перемикання"
 msgid "right-on"
 msgstr "права-вмикання"
 
-#: ../src/gui/accelerators.c:136 ../src/gui/gtk.c:2960
+#: ../src/gui/accelerators.c:136 ../src/gui/gtk.c:2954
 msgid "activate"
 msgstr "активація"
 
@@ -8491,7 +8492,7 @@ msgstr "уподобання"
 
 #. apply button
 #: ../src/gui/accelerators.c:151 ../src/iop/colortransfer.c:670
-#: ../src/libs/metadata.c:783 ../src/libs/styles.c:888
+#: ../src/libs/metadata.c:793 ../src/libs/styles.c:888
 msgid "apply"
 msgstr "застосувати"
 
@@ -8765,8 +8766,8 @@ msgstr ""
 "або лише для одного вибраного пристрою\n"
 
 #: ../src/gui/accelerators.c:1826 ../src/gui/accelerators.c:1905
-#: ../src/gui/gtk.c:3015 ../src/imageio/format/pdf.c:662
-#: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2245
+#: ../src/gui/gtk.c:3009 ../src/imageio/format/pdf.c:662
+#: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2282
 #: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:186
 msgid "all"
 msgstr "всі"
@@ -9102,7 +9103,7 @@ msgstr "%.1f"
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3022 ../src/gui/gtk.c:3027 ../src/gui/gtk.c:3032
+#: ../src/gui/gtk.c:3016 ../src/gui/gtk.c:3021 ../src/gui/gtk.c:3026
 msgid "tabs"
 msgstr "вкладки"
 
@@ -9139,198 +9140,219 @@ msgid "$(VERSION_NAME) - version name from metadata"
 msgstr "$(VERSION_NAME) - ім'я версії з метаданих"
 
 #: ../src/gui/gtkentry.c:179
+msgid "$(JOBCODE) - job code for import"
+msgstr "$(JOBCODE) - код завдання імпорту"
+
+#: ../src/gui/gtkentry.c:180
 msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - порядковий номер"
 
-#: ../src/gui/gtkentry.c:180
+#: ../src/gui/gtkentry.c:181
 msgid "$(MAX_WIDTH) - maximum image export width"
 msgstr "$(MAX_WIDTH) - максимальна ширина зображення при експорті"
 
-#: ../src/gui/gtkentry.c:181
+#: ../src/gui/gtkentry.c:182
 msgid "$(MAX_HEIGHT) - maximum image export height"
 msgstr "$(MAX_HEIGHT) - максимальна висота зображення при експорті"
 
-#: ../src/gui/gtkentry.c:182
+#: ../src/gui/gtkentry.c:183
 msgid "$(SENSOR_WIDTH) - image sensor width"
 msgstr "$(SENSOR_WIDTH) - ширина сенсора зображення"
 
-#: ../src/gui/gtkentry.c:183
+#: ../src/gui/gtkentry.c:184
 msgid "$(SENSOR_HEIGHT) - image sensor height"
 msgstr "$(SENSOR_HEIGHT) - висота сенсора зображення"
 
-#: ../src/gui/gtkentry.c:184
+#: ../src/gui/gtkentry.c:185
 msgid "$(RAW_WIDTH) - RAW image width"
 msgstr "$(RAW_WIDTH) - ширина зображення raw"
 
-#: ../src/gui/gtkentry.c:185
+#: ../src/gui/gtkentry.c:186
 msgid "$(RAW_HEIGHT) - RAW image height"
 msgstr "$(RAW_HEIGHT) - висота зображення raw"
 
-#: ../src/gui/gtkentry.c:186
+#: ../src/gui/gtkentry.c:187
 msgid "$(CROP_WIDTH) - image width after crop"
 msgstr "$(CROP_WIDTH) - ширина зображення після обрізання"
 
-#: ../src/gui/gtkentry.c:187
+#: ../src/gui/gtkentry.c:188
 msgid "$(CROP_HEIGHT) - image height after crop"
 msgstr "$(CROP_HEIGHT) - висота зображення після обрізання"
 
-#: ../src/gui/gtkentry.c:188
+#: ../src/gui/gtkentry.c:189
 msgid "$(EXPORT_WIDTH) - exported image width"
 msgstr "$(EXPORT_WIDTH) - ширина експортованого зображення"
 
-#: ../src/gui/gtkentry.c:189
+#: ../src/gui/gtkentry.c:190
 msgid "$(EXPORT_HEIGHT) - exported image height"
 msgstr "$(EXPORT_HEIGHT) - висота експортованого зображення"
 
-#: ../src/gui/gtkentry.c:190
+#: ../src/gui/gtkentry.c:191
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - рік"
 
-#: ../src/gui/gtkentry.c:191
+#: ../src/gui/gtkentry.c:192
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - місяць"
 
-#: ../src/gui/gtkentry.c:192
+#: ../src/gui/gtkentry.c:193
 msgid "$(DAY) - day"
 msgstr "$(DAY) - день"
 
-#: ../src/gui/gtkentry.c:193
+#: ../src/gui/gtkentry.c:194
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - година"
 
-#: ../src/gui/gtkentry.c:194
+#: ../src/gui/gtkentry.c:195
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - хвилина"
 
-#: ../src/gui/gtkentry.c:195
+#: ../src/gui/gtkentry.c:196
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - секунда"
 
-#: ../src/gui/gtkentry.c:196
+#: ../src/gui/gtkentry.c:197
 msgid "$(EXIF_YEAR) - EXIF year"
 msgstr "$(EXIF_YEAR) - рік з EXIF"
 
-#: ../src/gui/gtkentry.c:197
+#: ../src/gui/gtkentry.c:198
 msgid "$(EXIF_MONTH) - EXIF month"
 msgstr "$(EXIF_MONTH) - місяць з EXIF"
 
-#: ../src/gui/gtkentry.c:198
+#: ../src/gui/gtkentry.c:199
 msgid "$(EXIF_DAY) - EXIF day"
 msgstr "$(EXIF_DAY) - день з EXIF"
 
-#: ../src/gui/gtkentry.c:199
+#: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_HOUR) - EXIF hour"
 msgstr "$(EXIF_HOUR) - година з EXIF"
 
-#: ../src/gui/gtkentry.c:200
+#: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_MINUTE) - EXIF minute"
 msgstr "$(EXIF_MINUTE) - хвилина з EXIF"
 
-#: ../src/gui/gtkentry.c:201
+#: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_SECOND) - EXIF second"
 msgstr "$(EXIF_SECOND) - секунда з EXIF"
 
-#: ../src/gui/gtkentry.c:202
+#: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) - значення ISO"
 
-#: ../src/gui/gtkentry.c:203
+#: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_EXPOSURE) - EXIF exposure"
 msgstr "$(EXIF_EXPOSURE) - експозиція з EXIF"
 
-#: ../src/gui/gtkentry.c:204
+#: ../src/gui/gtkentry.c:205
 msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
 msgstr "$(EXIF_EXPOSURE_BIAS) - компенсація експозиції з EXIF"
 
-#: ../src/gui/gtkentry.c:205
+#: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_APERTURE) - EXIF aperture"
 msgstr "$(EXIF_APERTURE) - діафрагма з EXIF"
 
-#: ../src/gui/gtkentry.c:206
+#: ../src/gui/gtkentry.c:207
 msgid "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
 msgstr "$(EXIF_FOCAL_LENGTH) - фокусна відстань з EXIF"
 
-#: ../src/gui/gtkentry.c:207
+#: ../src/gui/gtkentry.c:208
 msgid "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
 msgstr "$(EXIF_FOCUS_DISTANCE) - дистанція фокусування з EXIF"
 
-#: ../src/gui/gtkentry.c:208
+#: ../src/gui/gtkentry.c:209
 msgid "$(LONGITUDE) - longitude"
 msgstr "$(LONGITUDE) - довгота"
 
-#: ../src/gui/gtkentry.c:209
+#: ../src/gui/gtkentry.c:210
 msgid "$(LATITUDE) - latitude"
 msgstr "$(LATITUDE) - широта"
 
-#: ../src/gui/gtkentry.c:210
+#: ../src/gui/gtkentry.c:211
 msgid "$(ELEVATION) - elevation"
 msgstr "$(ELEVATION) - висота"
 
-#: ../src/gui/gtkentry.c:211
-msgid "$(STARS) - star rating"
-msgstr "$(STARS) - рейтинг в зірках"
-
 #: ../src/gui/gtkentry.c:212
-msgid "$(LABELS) - colorlabels"
-msgstr "$(LABELS) - кольорові позначки"
+msgid "$(STARS) - star rating as number (-1 for rejected)"
+msgstr "$(STARS) - рейтинг в зірках як число (-1 означає відхилення)"
 
 #: ../src/gui/gtkentry.c:213
+msgid "$(RATING_ICONS) - star/reject rating in icon form"
+msgstr ""
+"$(RATING_ICONS) - рейтинг в зірках чи статус відхилення у вигляді значка"
+
+#: ../src/gui/gtkentry.c:214
+msgid "$(LABELS) - color labels as text"
+msgstr "$(LABELS) - кольорові позначки як текст"
+
+#: ../src/gui/gtkentry.c:215
+msgid "$(LABELS_ICONS) - color labels as icons"
+msgstr "$(LABELS_ICONS) - кольорові позначки як значки"
+
+#: ../src/gui/gtkentry.c:216
 msgid "$(MAKER) - camera maker"
 msgstr "$(MAKER) - виробник камери"
 
-#: ../src/gui/gtkentry.c:214
+#: ../src/gui/gtkentry.c:217
 msgid "$(MODEL) - camera model"
 msgstr "$(MODEL) - модель камери"
 
-#: ../src/gui/gtkentry.c:215
+#: ../src/gui/gtkentry.c:218
 msgid "$(LENS) - lens"
 msgstr "$(LENS) - об'єктив"
 
-#: ../src/gui/gtkentry.c:216
+#: ../src/gui/gtkentry.c:219
+msgid "$(ID) - image ID"
+msgstr "$(ID) - ID зображення"
+
+#: ../src/gui/gtkentry.c:220
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - заголовок з метаданих"
 
-#: ../src/gui/gtkentry.c:217
+#: ../src/gui/gtkentry.c:221
 msgid "$(DESCRIPTION) - description from metadata"
 msgstr "$(DESCRIPTION) - опис із метаданих"
 
-#: ../src/gui/gtkentry.c:218
+#: ../src/gui/gtkentry.c:222
 msgid "$(CREATOR) - creator from metadata"
 msgstr "$(CREATOR) - автор з метаданих"
 
-#: ../src/gui/gtkentry.c:219
+#: ../src/gui/gtkentry.c:223
 msgid "$(PUBLISHER) - publisher from metadata"
 msgstr "$(PUBLISHER) - видавець з метаданих"
 
-#: ../src/gui/gtkentry.c:220
+#: ../src/gui/gtkentry.c:224
 msgid "$(RIGHTS) - rights from metadata"
 msgstr "$(RIGHTS) - права з метаданих"
 
-#: ../src/gui/gtkentry.c:221
+#: ../src/gui/gtkentry.c:225
+msgid "$(USERNAME) - login name"
+msgstr "$(USERNAME) - ім'я облікового запису"
+
+#: ../src/gui/gtkentry.c:226
 msgid "$(PICTURES_FOLDER) - pictures folder"
 msgstr "$(PICTURES_FOLDER) - каталог із зображеннями"
 
-#: ../src/gui/gtkentry.c:222
+#: ../src/gui/gtkentry.c:227
 msgid "$(HOME) - home folder"
 msgstr "$(HOME) - домашній каталог"
 
-#: ../src/gui/gtkentry.c:223
+#: ../src/gui/gtkentry.c:228
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - каталог робочого стола"
 
-#: ../src/gui/gtkentry.c:224
+#: ../src/gui/gtkentry.c:229
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL_ACTIVATED) - чи активовано OpenCL"
 
-#: ../src/gui/gtkentry.c:225
+#: ../src/gui/gtkentry.c:230
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
 msgstr "$(CATEGORY0(category)) - нульовий рівень в ієрархічних тегах"
 
-#: ../src/gui/gtkentry.c:226
+#: ../src/gui/gtkentry.c:231
 msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) - теги"
 
-#: ../src/gui/gtkentry.c:227
+#: ../src/gui/gtkentry.c:232
 msgid "$(DARKTABLE_VERSION) - current darktable version"
 msgstr "$(DARKTABLE_VERSION) - поточна версія darktable"
 
@@ -9346,7 +9368,7 @@ msgstr "правило третин"
 msgid "metering"
 msgstr "мірні лінії"
 
-#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5735
+#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5774
 msgid "perspective"
 msgstr "перспектива"
 
@@ -9423,7 +9445,7 @@ msgstr "горизонтально"
 msgid "vertically"
 msgstr "вертикально"
 
-#: ../src/gui/guides.c:686 ../src/iop/ashift.c:5885 ../src/iop/clipping.c:2132
+#: ../src/gui/guides.c:686 ../src/iop/ashift.c:5924 ../src/iop/clipping.c:2132
 #: ../src/iop/colorbalance.c:1891
 msgid "both"
 msgstr "обидва"
@@ -9654,7 +9676,7 @@ msgstr "модель"
 msgid "maker"
 msgstr "виробник"
 
-#: ../src/gui/preferences.c:842 ../src/iop/ashift.c:5888
+#: ../src/gui/preferences.c:842 ../src/iop/ashift.c:5927
 #: ../src/iop/basicadj.c:633 ../src/iop/borders.c:1050 ../src/iop/levels.c:640
 #: ../src/iop/rgblevels.c:1066
 msgid "auto"
@@ -9977,53 +9999,53 @@ msgstr "вкажіть опис для нового стилю, цей опис 
 msgid "can't create style out of unaltered image"
 msgstr "неможливо створити стиль із незміненого зображення"
 
-#: ../src/imageio/format/avif.c:88 ../src/imageio/format/pdf.c:79
+#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:79
 #: ../src/imageio/format/png.c:526 ../src/imageio/format/tiff.c:808
 msgid "8 bit"
 msgstr "8 біт"
 
-#: ../src/imageio/format/avif.c:92
+#: ../src/imageio/format/avif.c:93
 msgid "10 bit"
 msgstr "10 біт"
 
-#: ../src/imageio/format/avif.c:96
+#: ../src/imageio/format/avif.c:97
 msgid "12 bit"
 msgstr "12 біт"
 
-#: ../src/imageio/format/avif.c:449
+#: ../src/imageio/format/avif.c:450
 msgid "invalid AVIF bit depth!"
 msgstr "недійсна бітова глибина AVIF!"
 
-#: ../src/imageio/format/avif.c:690
+#: ../src/imageio/format/avif.c:700
 msgid "AVIF (8/10/12-bit)"
 msgstr "AVIF (8/10/12 біт)"
 
-#: ../src/imageio/format/avif.c:763 ../src/imageio/format/pdf.c:685
+#: ../src/imageio/format/avif.c:780 ../src/imageio/format/pdf.c:685
 #: ../src/imageio/format/png.c:525 ../src/imageio/format/tiff.c:807
 msgid "bit depth"
 msgstr "бітова глибина"
 
-#: ../src/imageio/format/avif.c:776
+#: ../src/imageio/format/avif.c:793
 msgid "color information stored in an image, higher is better"
 msgstr "інформація про колір, яка зберігається в зображенні, вище - краще"
 
-#: ../src/imageio/format/avif.c:788
+#: ../src/imageio/format/avif.c:805
 msgid "rgb colors"
 msgstr "кольори rgb"
 
-#: ../src/imageio/format/avif.c:790
+#: ../src/imageio/format/avif.c:807
 msgid "grayscale"
 msgstr "відтінки сірого"
 
-#: ../src/imageio/format/avif.c:794
+#: ../src/imageio/format/avif.c:811
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr "збереження у відтінках сірого зменшить розмір чорно-білих зображень"
 
-#: ../src/imageio/format/avif.c:807
+#: ../src/imageio/format/avif.c:824
 msgid "tiling"
 msgstr "тайлінг"
 
-#: ../src/imageio/format/avif.c:815
+#: ../src/imageio/format/avif.c:832
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -10035,11 +10057,11 @@ msgstr ""
 "робить кодування швидшим. вплив на зниження якості незначний, але збільшує "
 "розмір файлу."
 
-#: ../src/imageio/format/avif.c:832 ../src/imageio/format/webp.c:325
+#: ../src/imageio/format/avif.c:849 ../src/imageio/format/webp.c:325
 msgid "compression type"
 msgstr "тип стиснення"
 
-#: ../src/imageio/format/avif.c:840
+#: ../src/imageio/format/avif.c:857
 msgid "the compression for the image"
 msgstr "тип стиснення для зображення"
 
@@ -10048,13 +10070,13 @@ msgstr "тип стиснення для зображення"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:857 ../src/imageio/format/j2k.c:658
+#: ../src/imageio/format/avif.c:874 ../src/imageio/format/j2k.c:658
 #: ../src/imageio/format/jpeg.c:578 ../src/imageio/format/webp.c:337
 #: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:583
 msgid "quality"
 msgstr "якість"
 
-#: ../src/imageio/format/avif.c:862
+#: ../src/imageio/format/avif.c:879
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -10731,27 +10753,27 @@ msgstr "не вдалося виконати автоматичне виправ
 
 #. if count > MAX_SAVED_LINES we alert that the next lines won't be saved in params
 #. but they still may be used for the current section (that's why we still allow them)
-#: ../src/iop/ashift.c:4710
+#: ../src/iop/ashift.c:4749
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "максимальна кількість ліній, яку можна зберегти в параметрах: %d"
 
-#: ../src/iop/ashift.c:5431 ../src/iop/ashift.c:5432 ../src/iop/ashift.c:5534
-#: ../src/iop/ashift.c:5535
+#: ../src/iop/ashift.c:5470 ../src/iop/ashift.c:5471 ../src/iop/ashift.c:5573
+#: ../src/iop/ashift.c:5574
 #, c-format
 msgid "lens shift (%s)"
 msgstr "зміщення об'єктива (%s)"
 
-#: ../src/iop/ashift.c:5795
+#: ../src/iop/ashift.c:5834
 msgid "perspective helpers"
 msgstr "помічники перспективи"
 
-#: ../src/iop/ashift.c:5802 ../src/iop/ashift.c:5886 ../src/iop/ashift.c:5887
-#: ../src/iop/ashift.c:5888
+#: ../src/iop/ashift.c:5841 ../src/iop/ashift.c:5925 ../src/iop/ashift.c:5926
+#: ../src/iop/ashift.c:5927
 msgid "structure"
 msgstr "структура"
 
-#: ../src/iop/ashift.c:5835
+#: ../src/iop/ashift.c:5874
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -10761,19 +10783,19 @@ msgstr ""
 "клікніть правою кнопкою миші та перетягніть, щоб визначити горизонтальну або "
 "вертикальну лінію шляхом малювання на зображенні"
 
-#: ../src/iop/ashift.c:5836 ../src/iop/ashift.c:5837
+#: ../src/iop/ashift.c:5875 ../src/iop/ashift.c:5876
 msgid "apply lens shift correction in one direction"
 msgstr "застосувати корекцію зміщення об'єктива в одному напрямку"
 
-#: ../src/iop/ashift.c:5838
+#: ../src/iop/ashift.c:5877
 msgid "shear the image along one diagonal"
 msgstr "корекція зображення вздовж однієї з діагоналей"
 
-#: ../src/iop/ashift.c:5839 ../src/iop/clipping.c:2154
+#: ../src/iop/ashift.c:5878 ../src/iop/clipping.c:2154
 msgid "automatically crop to avoid black edges"
 msgstr "автоматично обрізати, щоб уникнути чорних країв"
 
-#: ../src/iop/ashift.c:5840
+#: ../src/iop/ashift.c:5879
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -10781,13 +10803,13 @@ msgstr ""
 "модель об'єктива для корекції перспективи: загальна або залежна від фокусної "
 "відстані"
 
-#: ../src/iop/ashift.c:5842
+#: ../src/iop/ashift.c:5881
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "фокусна відстань об'єктива, значення за замовчуванням встановлюється з даних "
 "exif, якщо доступно"
 
-#: ../src/iop/ashift.c:5844
+#: ../src/iop/ashift.c:5883
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -10795,7 +10817,7 @@ msgstr ""
 "кроп-фактор сенсора камери, значення за замовчуванням установлюється з даних "
 "exif, якщо такі є, часто потрібне ручне налаштування"
 
-#: ../src/iop/ashift.c:5847
+#: ../src/iop/ashift.c:5886
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -10803,13 +10825,13 @@ msgstr ""
 "рівень залежності корекції від об'єктива, встановлюйте на максимум для "
 "повної залежності від об'єктива, встановлюйте на нуль для загального випадку"
 
-#: ../src/iop/ashift.c:5849
+#: ../src/iop/ashift.c:5888
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "регулювати співвідношення сторін зображення за допомогою горизонтального та "
 "вертикального масштабування"
 
-#: ../src/iop/ashift.c:5850
+#: ../src/iop/ashift.c:5889
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10819,7 +10841,7 @@ msgstr ""
 "ctrl+клік - лише обертання\n"
 "shift+клік - лише зміщення об'єктива"
 
-#: ../src/iop/ashift.c:5853
+#: ../src/iop/ashift.c:5892
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10829,7 +10851,7 @@ msgstr ""
 "ctrl+клік - лише обертання\n"
 "shift+клік - лише зміщення об'єктива"
 
-#: ../src/iop/ashift.c:5856
+#: ../src/iop/ashift.c:5895
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -10843,7 +10865,7 @@ msgstr ""
 "shift+клік - лише зміщення об'єктива\n"
 "ctrl+shift+клік - лише обертання та зміщення об'єктива"
 
-#: ../src/iop/ashift.c:5862
+#: ../src/iop/ashift.c:5901
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -10855,43 +10877,43 @@ msgstr ""
 "shift+клік для додаткового покращення деталей\n"
 "ctrl+shift+клік для поєднання обох методів"
 
-#: ../src/iop/ashift.c:5866
+#: ../src/iop/ashift.c:5905
 msgid "manually define perspective rectangle"
 msgstr "вручну визначити прямокутник перспективи"
 
-#: ../src/iop/ashift.c:5867
+#: ../src/iop/ashift.c:5906
 msgid "manually draw structure lines"
 msgstr "вручну намалювати лінії структури"
 
-#: ../src/iop/ashift.c:5886
+#: ../src/iop/ashift.c:5925
 msgid "rectangle"
 msgstr "прямокутник"
 
-#: ../src/iop/ashift.c:5887
+#: ../src/iop/ashift.c:5926
 msgid "lines"
 msgstr "лінії"
 
-#: ../src/iop/ashift.c:5911 ../src/iop/clipping.c:3392
+#: ../src/iop/ashift.c:5950 ../src/iop/clipping.c:3392
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] визначити/повернути горизонт"
 
-#: ../src/iop/ashift.c:5912
+#: ../src/iop/ashift.c:5951
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s на сегменті] вибрати сегмент"
 
-#: ../src/iop/ashift.c:5914
+#: ../src/iop/ashift.c:5953
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s на сегменті] скасувати вибір сегмента"
 
-#: ../src/iop/ashift.c:5916
+#: ../src/iop/ashift.c:5955
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] вибрати усі сегменти із зони"
 
-#: ../src/iop/ashift.c:5918
+#: ../src/iop/ashift.c:5957
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] скасувати вибір усіх сегментів із зони"
@@ -13702,7 +13724,7 @@ msgctxt "accel"
 msgid "acquire"
 msgstr "отримати"
 
-#: ../src/iop/colortransfer.c:130 ../src/libs/metadata.c:593
+#: ../src/iop/colortransfer.c:130 ../src/libs/metadata.c:603
 #: ../src/libs/styles.c:78
 msgctxt "accel"
 msgid "apply"
@@ -15706,7 +15728,7 @@ msgstr "виправити оптичні недоліки лінз"
 msgid "geometric and reconstruction, RGB"
 msgstr "геометрична і відновлювальна, RGB"
 
-#: ../src/iop/lens.cc:1559
+#: ../src/iop/lens.cc:1595
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -15719,11 +15741,11 @@ msgstr ""
 "байонет:\t\t%s\n"
 "кроп-фактор:\t%.1f"
 
-#: ../src/iop/lens.cc:1740
+#: ../src/iop/lens.cc:1776
 msgid "camera/lens not found"
 msgstr "камеру/об'єктив не знайдено"
 
-#: ../src/iop/lens.cc:1741
+#: ../src/iop/lens.cc:1777
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your lensfun database is up-to-date\n"
@@ -15733,7 +15755,7 @@ msgstr ""
 "ви також можете перевірити, чи ваша база даних lensfun оновлена\n"
 "за допомогою lensfun_update_data"
 
-#: ../src/iop/lens.cc:1843
+#: ../src/iop/lens.cc:1879
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -15752,142 +15774,142 @@ msgstr ""
 "тип:\t\t%s\n"
 "байонети:\t%s"
 
-#: ../src/iop/lens.cc:1889
+#: ../src/iop/lens.cc:1925
 msgid "focal length (mm)"
 msgstr "фокусна відстань (мм)"
 
-#: ../src/iop/lens.cc:1913
+#: ../src/iop/lens.cc:1949
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:1914
+#: ../src/iop/lens.cc:1950
 msgid "f-number (aperture)"
 msgstr "f-номер (діафрагма)"
 
-#: ../src/iop/lens.cc:1928
+#: ../src/iop/lens.cc:1964
 msgid "d"
 msgstr "відстань"
 
-#: ../src/iop/lens.cc:1929
+#: ../src/iop/lens.cc:1965
 msgid "distance to subject"
 msgstr "відстань до об'єкта"
 
-#: ../src/iop/lens.cc:2251
+#: ../src/iop/lens.cc:2288
 msgid "distortion & TCA"
 msgstr "дисторсія і поперечні ХА"
 
-#: ../src/iop/lens.cc:2257
+#: ../src/iop/lens.cc:2294
 msgid "distortion & vignetting"
 msgstr "дисторсія і віньєтування"
 
-#: ../src/iop/lens.cc:2263
+#: ../src/iop/lens.cc:2300
 msgid "TCA & vignetting"
 msgstr "поперечні ХА і віньєтування"
 
-#: ../src/iop/lens.cc:2269
+#: ../src/iop/lens.cc:2306
 msgid "only distortion"
 msgstr "лише дисторсія"
 
-#: ../src/iop/lens.cc:2275
+#: ../src/iop/lens.cc:2312
 msgid "only TCA"
 msgstr "лише поперечні ХА"
 
-#: ../src/iop/lens.cc:2281
+#: ../src/iop/lens.cc:2318
 msgid "only vignetting"
 msgstr "лише віньєтування"
 
-#: ../src/iop/lens.cc:2290
+#: ../src/iop/lens.cc:2327
 msgid "camera model"
 msgstr "модель камери"
 
-#: ../src/iop/lens.cc:2293
+#: ../src/iop/lens.cc:2330
 msgid "find camera"
 msgstr "знайти камеру"
 
-#: ../src/iop/lens.cc:2304
+#: ../src/iop/lens.cc:2341
 msgid "find lens"
 msgstr "знайти об'єктив"
 
 #. Page CORRECTIONS
-#: ../src/iop/lens.cc:2333 ../src/iop/negadoctor.c:876
+#: ../src/iop/lens.cc:2370 ../src/iop/negadoctor.c:876
 msgid "corrections"
 msgstr "корекції"
 
-#: ../src/iop/lens.cc:2335
+#: ../src/iop/lens.cc:2372
 msgid "which corrections to apply"
 msgstr "які коригування застосовувати"
 
-#: ../src/iop/lens.cc:2350
+#: ../src/iop/lens.cc:2387
 msgid "target geometry"
 msgstr "цільова геометрія"
 
-#: ../src/iop/lens.cc:2351
+#: ../src/iop/lens.cc:2388
 msgid "rectilinear"
 msgstr "прямолінійна"
 
-#: ../src/iop/lens.cc:2352
+#: ../src/iop/lens.cc:2389
 msgid "fish-eye"
 msgstr "риб'яче око (fish-eye)"
 
-#: ../src/iop/lens.cc:2353
+#: ../src/iop/lens.cc:2390
 msgid "panoramic"
 msgstr "панорамна"
 
-#: ../src/iop/lens.cc:2354
+#: ../src/iop/lens.cc:2391
 msgid "equirectangular"
 msgstr "еквідистантна"
 
-#: ../src/iop/lens.cc:2356
+#: ../src/iop/lens.cc:2393
 msgid "orthographic"
 msgstr "ортографічна"
 
-#: ../src/iop/lens.cc:2357
+#: ../src/iop/lens.cc:2394
 msgid "stereographic"
 msgstr "стереографічна"
 
-#: ../src/iop/lens.cc:2358
+#: ../src/iop/lens.cc:2395
 msgid "equisolid angle"
 msgstr "еквітілесний кут"
 
-#: ../src/iop/lens.cc:2359
+#: ../src/iop/lens.cc:2396
 msgid "thoby fish-eye"
 msgstr "thoby fish-eye"
 
 #. scale
-#: ../src/iop/lens.cc:2365 ../src/iop/vignette.c:988
+#: ../src/iop/lens.cc:2402 ../src/iop/vignette.c:988
 #: ../src/iop/watermark.c:1302
 msgid "scale"
 msgstr "масштаб"
 
-#: ../src/iop/lens.cc:2370
+#: ../src/iop/lens.cc:2407
 msgid "auto scale"
 msgstr "автоматичне масштабування"
 
-#: ../src/iop/lens.cc:2374 ../src/libs/modulegroups.c:2405
+#: ../src/iop/lens.cc:2411 ../src/libs/modulegroups.c:2405
 msgid "correct"
 msgstr "коригувати"
 
-#: ../src/iop/lens.cc:2375
+#: ../src/iop/lens.cc:2412
 msgid "distort"
 msgstr "деформувати"
 
-#: ../src/iop/lens.cc:2376
+#: ../src/iop/lens.cc:2413
 msgid "correct distortions or apply them"
 msgstr "коригувати деформації об'єктива чи застосувати їх"
 
-#: ../src/iop/lens.cc:2383
+#: ../src/iop/lens.cc:2420
 msgid "Transversal Chromatic Aberration red"
 msgstr "поперечні ХА - червоний"
 
-#: ../src/iop/lens.cc:2387
+#: ../src/iop/lens.cc:2424
 msgid "Transversal Chromatic Aberration blue"
 msgstr "поперечні ХА - синій"
 
-#: ../src/iop/lens.cc:2392
+#: ../src/iop/lens.cc:2429
 msgid "corrections done: "
 msgstr "скориговано: "
 
-#: ../src/iop/lens.cc:2394
+#: ../src/iop/lens.cc:2431
 msgid "which corrections have actually been done"
 msgstr "які коригування було застосовано"
 
@@ -18507,8 +18529,8 @@ msgid "files"
 msgstr "файли"
 
 #: ../src/libs/collect.c:2853 ../src/libs/export_metadata.c:301
-#: ../src/libs/image.c:479 ../src/libs/image.c:584 ../src/libs/metadata.c:492
-#: ../src/libs/metadata.c:663 ../src/libs/metadata_view.c:1270
+#: ../src/libs/image.c:479 ../src/libs/image.c:584 ../src/libs/metadata.c:502
+#: ../src/libs/metadata.c:673 ../src/libs/metadata_view.c:1270
 msgid "metadata"
 msgstr "метадані"
 
@@ -18529,14 +18551,14 @@ msgid "collections settings"
 msgstr "налаштування колекцій зображень"
 
 #: ../src/libs/collect.c:2905 ../src/libs/export_metadata.c:281
-#: ../src/libs/metadata.c:452 ../src/libs/metadata_view.c:1239
+#: ../src/libs/metadata.c:462 ../src/libs/metadata_view.c:1239
 #: ../src/libs/recentcollect.c:320 ../src/libs/tagging.c:1668
 #: ../src/libs/tagging.c:1798 ../src/libs/tagging.c:2073
 msgid "save"
 msgstr "зберегти"
 
 #: ../src/libs/collect.c:2919 ../src/libs/export.c:1059
-#: ../src/libs/metadata.c:586 ../src/libs/metadata_view.c:1350
+#: ../src/libs/metadata.c:596 ../src/libs/metadata_view.c:1350
 #: ../src/libs/recentcollect.c:382
 msgid "preferences..."
 msgstr "уподобання..."
@@ -20440,15 +20462,15 @@ msgstr "редактор метаданих"
 msgid "<leave unchanged>"
 msgstr "<залишити незмінним>"
 
-#: ../src/libs/metadata.c:450 ../src/libs/metadata_view.c:1237
+#: ../src/libs/metadata.c:460 ../src/libs/metadata_view.c:1237
 msgid "metadata settings"
 msgstr "налаштування метаданих"
 
-#: ../src/libs/metadata.c:498 ../src/libs/metadata_view.c:1281
+#: ../src/libs/metadata.c:508 ../src/libs/metadata_view.c:1281
 msgid "visible"
 msgstr "видимі"
 
-#: ../src/libs/metadata.c:503
+#: ../src/libs/metadata.c:513
 msgid ""
 "tick if the corresponding metadata is of interest for you\n"
 "it will be visible from metadata editor, collection and import module\n"
@@ -20458,23 +20480,23 @@ msgstr ""
 "вони будуть видимі з редактора метаданих, колекцій і модуля імпорту\n"
 "вони також будуть експортуватися"
 
-#: ../src/libs/metadata.c:508 ../src/libs/tagging.c:1698
+#: ../src/libs/metadata.c:518 ../src/libs/tagging.c:1698
 #: ../src/libs/tagging.c:1842
 msgid "private"
 msgstr "приватно"
 
-#: ../src/libs/metadata.c:513
+#: ../src/libs/metadata.c:523
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 "поставте галочку, якщо хочете залишити цю інформацію приватною (не "
 "експортувати із зображеннями)"
 
-#: ../src/libs/metadata.c:625
+#: ../src/libs/metadata.c:635
 msgid "metadata list"
 msgstr "список метаданих"
 
-#: ../src/libs/metadata.c:737
+#: ../src/libs/metadata.c:747
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -20490,60 +20512,60 @@ msgstr ""
 "у такому випадку клік правою кнопкою дає можливість вибрати щось із них.\n"
 "натисніть клавішу escape, щоб вийти зі спливного вікна"
 
-#: ../src/libs/metadata.c:783
+#: ../src/libs/metadata.c:793
 msgid "write metadata for selected images"
 msgstr "записати метадані для вибраних зображень"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:835
+#: ../src/libs/metadata.c:845
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:835
+#: ../src/libs/metadata.c:845
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC BY)"
 
-#: ../src/libs/metadata.c:836
+#: ../src/libs/metadata.c:846
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:836
+#: ../src/libs/metadata.c:846
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 
-#: ../src/libs/metadata.c:837
+#: ../src/libs/metadata.c:847
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:837
+#: ../src/libs/metadata.c:847
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 
-#: ../src/libs/metadata.c:838
+#: ../src/libs/metadata.c:848
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:838
+#: ../src/libs/metadata.c:848
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 
-#: ../src/libs/metadata.c:839
+#: ../src/libs/metadata.c:849
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:840
+#: ../src/libs/metadata.c:850
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:841
+#: ../src/libs/metadata.c:851
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:842
+#: ../src/libs/metadata.c:852
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:843
+#: ../src/libs/metadata.c:853
 msgid "all rights reserved"
 msgstr "всі права зберігаються"
 
