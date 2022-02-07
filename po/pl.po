@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-01-24 15:36+0100\n"
-"PO-Revision-Date: 2022-02-02 21:58+0100\n"
-"Last-Translator: Tomasz Golinski <tomaszg@math.uwb.edu.pl>\n"
+"PO-Revision-Date: 2022-02-06 12:12+0100\n"
+"Last-Translator: Wiktor Nowak <kontakt.bajdero@gmail.com>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
 "MIME-Version: 1.0\n"
@@ -2881,7 +2881,7 @@ msgstr "luminancja uniesienia"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:225
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:452
 msgid "lift chroma"
-msgstr "chrominancja uniesienia"
+msgstr "chroma uniesienia"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:231
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:456
@@ -2896,7 +2896,7 @@ msgstr "potęga luminancji"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:243
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:464
 msgid "power chroma"
-msgstr "wykładnik kanału barwy (chroma)"
+msgstr "potęga chromy"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:249
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:468
@@ -2911,7 +2911,7 @@ msgstr "wzmocnienie luminancji"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:261
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
 msgid "gain chroma"
-msgstr "chrominancja gammy"
+msgstr "chroma gammy"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:267
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:480
@@ -2961,7 +2961,7 @@ msgstr "barwa świateł"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:321
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:516
 msgid "chroma global"
-msgstr "chrominancja globalna"
+msgstr "chroma globalna"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:327
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:520
@@ -6635,7 +6635,7 @@ msgstr "jasność"
 #: ../src/develop/blend_gui.c:63
 msgctxt "blendmode"
 msgid "chromaticity"
-msgstr "chrominancja"
+msgstr "chromatyczność"
 
 #: ../src/develop/blend_gui.c:64
 msgctxt "blendmode"
@@ -12928,7 +12928,7 @@ msgstr "dokonaj obrotu barw (hue) o zadany kąt, z zachowaniem jasności"
 
 #: ../src/iop/colorbalancergb.c:1587
 msgid "increase colorfulness mostly on low-chroma colors"
-msgstr "zwiększ nasycenie głównie obszarów o niskim nasyceniu"
+msgstr "zwiększ chromę, głównie obszarów o niskiej chromie"
 
 #: ../src/iop/colorbalancergb.c:1594
 msgid "increase the contrast at constant chromaticity"
@@ -13010,7 +13010,7 @@ msgstr "barwa (hue) globalnego przesunięcia koloru"
 
 #: ../src/iop/colorbalancergb.c:1709
 msgid "chroma of the global color offset"
-msgstr "barwa (chroma) globalnego przesunięcia koloru"
+msgstr "chroma globalnego przesunięcia koloru"
 
 #: ../src/iop/colorbalancergb.c:1711
 msgid "shadows lift"
@@ -13026,7 +13026,7 @@ msgstr "barwa (hue) wzmocnienia koloru w cieniach"
 
 #: ../src/iop/colorbalancergb.c:1733
 msgid "chroma of the color gain in shadows"
-msgstr "barwa (chroma) wzmocnienia koloru w cieniach"
+msgstr "chroma wzmocnienia koloru w cieniach"
 
 #: ../src/iop/colorbalancergb.c:1735
 msgid "highlights gain"
@@ -13042,7 +13042,7 @@ msgstr "barwa (hue) wzmocnienia koloru w światłach"
 
 #: ../src/iop/colorbalancergb.c:1757
 msgid "chroma of the color gain in highlights"
-msgstr "barwa (chroma) wzmocnienia koloru w światłach"
+msgstr "chroma wzmocnienia koloru w światłach"
 
 #: ../src/iop/colorbalancergb.c:1759 ../src/iop/colorbalancergb.c:1876
 #: ../src/iop/colorbalancergb.c:1880 ../src/iop/colorbalancergb.c:1884
@@ -13089,12 +13089,13 @@ msgstr "waga świateł w całym zakresie tonalnym"
 #: ../src/iop/colorbalancergb.c:1839
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
-"szczytowa wartość luminancji bieli używana do normalizacji funkcji mocy"
+"szczytowa wartość luminancji bieli używana do normalizacji funkcji potęgowej"
 
 #: ../src/iop/colorbalancergb.c:1847
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
-"szczytowa wartość luminancji szarości używana do normalizacji funkcji mocy"
+"szczytowa wartość luminancji szarości używana do normalizacji funkcji "
+"potęgowej"
 
 #: ../src/iop/colorbalancergb.c:1849
 msgid "mask preview settings"
@@ -21495,7 +21496,6 @@ msgid "toggle sort"
 msgstr "przełącz sortowanie"
 
 #: ../src/libs/tagging.c:138
-#, fuzzy
 msgctxt "accel"
 msgid "toggle hide"
 msgstr "przełącz ukrywanie"
@@ -21728,7 +21728,6 @@ msgstr "przerzuć do głównego folderu"
 
 # focus to entry?
 #: ../src/libs/tagging.c:3145
-#, fuzzy
 msgid ""
 "attached tags,\n"
 "press Delete or double-click to detach\n"
@@ -21787,7 +21786,6 @@ msgid "clear entry"
 msgstr "wyczyść tekst"
 
 #: ../src/libs/tagging.c:3266
-#, fuzzy
 msgid ""
 "tag dictionary,\n"
 "press Enter or double-click to attach selected tag on selected images,\n"
