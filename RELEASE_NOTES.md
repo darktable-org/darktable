@@ -152,6 +152,11 @@ Since darktable 3.8.0:
 
 - Improve the unknown DNG illuminant handling.
 
+- Fix high quality export when the export size is specified "by scale".
+
+- Fix some shortcuts being ignored when applied to a widget in a popover
+  dialog which was not activated nor having focus.
+
 ## Lua
 
 
