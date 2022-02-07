@@ -792,7 +792,7 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   g_snprintf(query, sizeof(query),
              "SELECT ROUND(aspect_ratio,3), COUNT(*) AS count"
              " FROM main.images AS mi"
-             " GROUP BY ROUND(aspect_ratio,1)");
+             " GROUP BY ROUND(aspect_ratio,3)");
   if(strlen(query) > 0)
   {
     sqlite3_stmt *stmt;
@@ -1379,6 +1379,8 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_widget_set_name(rule->w_prop, "collect-property");
     gtk_widget_set_tooltip_text(rule->w_prop, _("rule property"));
     g_object_set_data(G_OBJECT(rule->w_prop), "rule", rule);
+    GtkWidget *lb = gtk_bin_get_child(GTK_BIN(rule->w_prop));
+    gtk_label_set_ellipsize(GTK_LABEL(lb), PANGO_ELLIPSIZE_END);
     g_signal_connect(G_OBJECT(rule->w_prop), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
     gtk_box_pack_start(GTK_BOX(hbox), rule->w_prop, TRUE, TRUE, 0);
   }
