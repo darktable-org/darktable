@@ -42,15 +42,15 @@ Since darktable 3.8.0:
 ## Bug Fixes
 
 - Fix control and feather points for path and brush shapes when editing
-  using zoom > 200%. The editing is now smooth and no longer jumps as the 
-  mouse is moved. 
+  using zoom > 200%. The editing is now smooth and no longer jumps as the
+  mouse is moved.
 
-- On the lighttable view, fix Shift-click when selecting a range - at least one 
+- On the lighttable view, fix Shift-click when selecting a range - at least one
   image must first be selected.
 
 - Fix expansion of some variables on Windows.
 
-- Fix SVG rendering by computing proper dimension in the watermark module with 
+- Fix SVG rendering by computing proper dimension in the watermark module with
   libsvg 2.52.
 
 - Fix printing when the export module is set to scale mode. This was caused by
@@ -83,7 +83,7 @@ Since darktable 3.8.0:
   for new images. We now flush it to ensure the images are assigned to
   their corresponding album.
 
-- Fix handling of circle/ellipse sources in the retouch module. Shapes can now be 
+- Fix handling of circle/ellipse sources in the retouch module. Shapes can now be
   moved immediately after placing them via drag+drop.
 
 - Fix a bug in rotate and perspective that was preventing removal of
@@ -103,7 +103,7 @@ Since darktable 3.8.0:
 - Rework the history items on thumbnail tooltips.
 
 - Rework the GUI for the copy / paste of history items. The on/off
-  status icon has been removed from the labels and replaced with a specific 
+  status icon has been removed from the labels and replaced with a specific
   "on/off" column.
 
 - Fix some demosaicer issues specific to AMD OpenCL drivers.
@@ -166,8 +166,12 @@ Since darktable 3.8.0:
   to darktable for a short period of time.
 
   If you see such a message this means that your camera is missing samples. If
-  you do nothing, support will be removed for good in the next major darktable 
+  you do nothing, support will be removed for good in the next major darktable
   release.
+
+  Read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) for more information.
+
+  The samples must be uploaded here https://raw.pixls.us/.
 
 ## Changed Dependencies
 
