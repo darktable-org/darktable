@@ -1582,75 +1582,68 @@ static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, d
 #define CIE_Y_1931_to_CIE_Y_2006(x) 0.945302269001f * x
 
 
-static inline void gamut_check_RGB(dt_aligned_pixel_t RGB_in, dt_aligned_pixel_t Ych_in,
-                                   const dt_colormatrix_t matrix_in, const dt_colormatrix_t matrix_out,
-                                   const float display_black, const float display_white)
+static inline float clip_chroma_one_channel(const float coeffs[3], const float target_rgb, const float Y,
+                                            const float cos_h, const float sin_h)
 {
-  const int max_iter = 8;
+  // Get chroma that brings one component of target RGB to the given target_rgb value.
+  // coeffs are the transformation coeffs to get one components (R, G or B) from input LMS.
+  // i.e. it is a row of the LMS -> RGB transformation matrix.
+  // See tools/derive_filmic_v6_gamut_mapping.py for derivation of these equations.
+  const float denominator = Y
+                                * (coeffs[0] * (0.979381443298969f * cos_h + 0.391752577319588f * sin_h)
+                                   + coeffs[1] * (0.0206185567010309f * cos_h + 0.608247422680412f * sin_h)
+                                   - coeffs[2] * (cos_h + sin_h))
+                            - target_rgb * (0.68285981628866f * cos_h + 0.482137060515464f * sin_h);
 
-  int iter = 0;
-  float max_pix = fmaxf(fmaxf(RGB_in[0], RGB_in[1]), RGB_in[2]);
-  while(max_pix > display_white && iter < max_iter)
-  {
-    // Perform exposure correction to fit back in gamut
-    // This gives us the closest in-gamut pixel at same saturation.
-    dt_aligned_pixel_t RGB_darkened = { 0.f };
-    for_each_channel(c, aligned(RGB_darkened)) RGB_darkened[c] = RGB_in[c] / max_pix;
-    dt_aligned_pixel_t Ych_darkened = { 0.f };
-    pipe_RGB_to_Ych(RGB_darkened, matrix_in, Ych_darkened);
+  // this channel won't limit chroma
+  if(denominator == 0.f) return FLT_MAX;
 
-    // Remapping goal:
-    // 1. at constant hue and luminance, march toward the chroma of the closest same-saturation in-gamut color.
-    //    Since same-saturation is darker, its chroma should be much lower than the current.
-    // 2. iterate until convergence.
-    Ych_in[1] = Ych_darkened[1] * Ych_darkened[0] / Ych_in[0];
-    Ych_to_pipe_RGB(Ych_in, matrix_out, RGB_in);
-    max_pix = fmaxf(fmaxf(RGB_in[0], RGB_in[1]), RGB_in[2]);
-    iter++;
-  }
+  const float numerator = -0.428551981030928f
+                          * (Y * (coeffs[0] + 0.856074759328069f * coeffs[1] + 0.549532683137927f * coeffs[2])
+                             - 0.988092298150448f * target_rgb);
 
-  // Finally, look for negatives.
-  float min_pix = fminf(fminf(RGB_in[0], RGB_in[1]), RGB_in[2]);
-  iter = 0;
-  while(min_pix < display_black && iter < max_iter)
-  {
-    // Perform a black offset to fit back in gamut
-    // This gives us a whitest version of the current color.
-    // It's not saturation-invariant.
-    dt_aligned_pixel_t RGB_brightened = { 0.f };
-    for_each_channel(c, aligned(RGB_brightened))
-      RGB_brightened[c] = RGB_in[c] + fabsf(min_pix);
-    dt_aligned_pixel_t Ych_brightened = { 0.f };
-    pipe_RGB_to_Ych(RGB_brightened, matrix_in, Ych_brightened);
+  const float max_chroma = numerator / denominator;
+  // If the chroma is negative, that would mean crossing the neutral point and that would be invalid
+  // because it would become the opponent color. It also means that this component won't limit the
+  // max chroma.
+  if(max_chroma < 0.f) return FLT_MAX;
 
-    // Get the locus of the clamped pixel.
-    // NB: that's where we land if we do nothing.
-    // This gives us the closest in-gamut pixel with no color property preserved.
-    dt_aligned_pixel_t RGB_clamped = { 0.f };
-    for_each_channel(c, aligned(RGB_clamped))
-      RGB_clamped[c] = CLAMP(RGB_in[c], display_black, display_white);
-    dt_aligned_pixel_t Ych_clamped = { 0.f };
-    pipe_RGB_to_Ych(RGB_clamped, matrix_in, Ych_clamped);
+  return max_chroma;
+}
 
-    // Same logic as above, except we need to scale down the chroma
-    // from the brightnened projection
-    if(Ych_brightened[0] > CIE_Y_1931_to_CIE_Y_2006(display_black))
-    {
-      Ych_in[0] = fmax((Ych_in[0] + Ych_clamped[0]) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_black));
-      Ych_in[1] = (Ych_in[1] * Ych_in[0] / Ych_brightened[0] + Ych_clamped[1]) / 2.f;
-    }
-    else
-    {
-      Ych_in[0] = CIE_Y_1931_to_CIE_Y_2006(display_black);
-      Ych_in[1] = 0.f;
-    }
 
-    Ych_to_pipe_RGB(Ych_in, matrix_out, RGB_in);
-    min_pix = fminf(fminf(RGB_in[0], RGB_in[1]), RGB_in[2]);
-    iter++;
-  }
+static inline float clip_chroma(const dt_colormatrix_t matrix_out, const float target_rgb, const float Y,
+                                const float cos_h, const float sin_h)
+{
+  const float chroma_R = clip_chroma_one_channel(matrix_out[0], target_rgb, Y, cos_h, sin_h);
+  const float chroma_G = clip_chroma_one_channel(matrix_out[1], target_rgb, Y, cos_h, sin_h);
+  const float chroma_B = clip_chroma_one_channel(matrix_out[2], target_rgb, Y, cos_h, sin_h);
+  return MIN(MIN(chroma_R, chroma_G), chroma_B);
+}
 
-  for_each_channel(c, aligned(RGB_in)) RGB_in[c] = CLAMP(RGB_in[c], display_black, display_white);
+
+static inline void gamut_check_RGB(const dt_colormatrix_t matrix_out, const float display_black,
+                                   const float display_white, const dt_aligned_pixel_t Ych_in,
+                                   dt_aligned_pixel_t RGB_out)
+{
+  const float Y = Ych_in[0];
+  // Precompute sin and cos of hue for reuse
+  const float cos_h = cosf(Ych_in[2]);
+  const float sin_h = sinf(Ych_in[2]);
+
+  // First calculate the maximum chroma where RGB components still stay below white point
+  const float chroma_clipped_to_white = clip_chroma(matrix_out, display_white, Y, cos_h, sin_h);
+  // Calculate the maximum chroma where RGB components still stay above black point
+  const float chroma_clipped_to_black = clip_chroma(matrix_out, display_black, Y, cos_h, sin_h);
+  // Take the smallest of current chroma, white limit chroma and black limit chroma.
+  const float new_chroma = MIN(MIN(Ych_in[1], chroma_clipped_to_white), chroma_clipped_to_black);
+
+  // Go to RGB, using existing luminance and hue and the new chroma
+  const dt_aligned_pixel_t Ych = { Y, new_chroma, Ych_in[2], 0.f };
+  Ych_to_pipe_RGB(Ych, matrix_out, RGB_out);
+
+  // Clamp in target RGB as a final catch-all
+  for_each_channel(c, aligned(RGB_out)) RGB_out[c] = CLAMP(RGB_out[c], display_black, display_white);
 }
 
 
@@ -1678,21 +1671,15 @@ static inline void gamut_mapping(dt_aligned_pixel_t Ych_final, dt_aligned_pixel_
 
   if(!use_output_profile)
   {
-    // Gamut-map against pipeline RGB
-    Ych_to_pipe_RGB(Ych_final, output_matrix, pix_out);
-
     // Now, it is still possible that one channel > display white because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    gamut_check_RGB(pix_out, Ych_final, input_matrix, output_matrix, display_black, display_white);
+    gamut_check_RGB(output_matrix, display_black, display_white, Ych_final, pix_out);
   }
   else
   {
-    // Gamut-map against output RGB
-    Ych_to_pipe_RGB(Ych_final, export_output_matrix, pix_out);
-
     // Now, it is still possible that one channel > display white because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    gamut_check_RGB(pix_out, Ych_final, export_input_matrix, export_output_matrix, display_black, display_white);
+    gamut_check_RGB(export_output_matrix, display_black, display_white, Ych_final, pix_out);
 
     // Go from export RGB to CIE LMS 2006 D65
     dt_aligned_pixel_t LMS = { 0.f };
