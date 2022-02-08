@@ -161,6 +161,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].options = NULL;
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
+  cl->dev[dev].headroom = MAX(DT_CL_SAFEHEADROOM, dt_conf_get_int("opencl_memory_headroom")) * 1024 * 1024;
+
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -2438,44 +2440,54 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
                                       (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
 }
 
+/** get global memory of device */
+cl_ulong dt_opencl_get_max_global_mem(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return darktable.opencl->dev[devid].max_global_mem;
+}
+
+cl_ulong dt_opencl_get_device_headroom(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return (darktable.unmuted & DT_DEBUG_TILING) ? darktable.opencl->dev[devid].max_global_mem - 1024ul * 1024ul * 1024ul
+                                               : darktable.opencl->dev[devid].headroom;
+}
+
+cl_ulong dt_opencl_get_device_available(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return MAX(0, darktable.opencl->dev[devid].max_global_mem - dt_opencl_get_device_headroom(devid));
+}
+
+cl_ulong dt_opencl_get_device_memalloc(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return (darktable.unmuted & DT_DEBUG_TILING) ? 128lu * 1024ul * 1024ul : darktable.opencl->dev[devid].max_mem_alloc;
+}
+
 /** check if image size fit into limits given by OpenCL runtime */
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead)
 {
-  static size_t headroom = 0;
-  static gboolean headwarning = TRUE;
- 
   if(!darktable.opencl->inited || devid < 0) return FALSE;
 
-  /* we check the headroom first time run */
-  if(headroom == 0)
-    headroom = dt_opencl_memory_headroom();
+  const size_t available = dt_opencl_get_device_available(devid);
+  const size_t required  = width * height * bpp;
+  const size_t total = factor * required + overhead;
+  const size_t buffsize = dt_opencl_get_device_memalloc(devid);
 
-  const size_t dev_globalmem = darktable.opencl->dev[devid].max_global_mem;
-  /* As we might have more than one opencl device running or the computer might have got another
-     opencl capable card it is not a good idea to change the headroom value in the config file.
-     FIXME
-     We need headroom calculations at runtime and per device, for now we just report on console and
-     once give a warning feedback.
-  */
-  if(darktable.opencl->dev[devid].max_global_mem < headroom)
-  {
-    const char *devname = darktable.opencl->dev[devid].name;
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_image_fits_device] headroom %lu too large for device %s (%lu)\n", headroom, devname, dev_globalmem);
-    if(headwarning)
-      dt_control_log(_("headroom %imb too large for %s"), (int)(headroom / 1024 / 1024), devname);
-    headwarning = FALSE;
-  }
-  const size_t singlebuffer = width * height * bpp;
-  const size_t total = factor * singlebuffer + overhead;
-
+/*
+  dt_print(DT_DEBUG_OPENCL, "[dt_opencl_image_fits_device] required: %lu, available %lu, headroom %lu, buffsize %lu\n",
+             required / 1024lu / 1024lu, available / 1024lu / 1024lu,
+             dt_opencl_get_device_headroom(devid) / 1024lu / 1024lu, buffsize / 1024lu / 1024lu);
+*/
   if(darktable.opencl->dev[devid].max_image_width < width
      || darktable.opencl->dev[devid].max_image_height < height)
     return FALSE;
 
-  if(darktable.opencl->dev[devid].max_mem_alloc < singlebuffer) return FALSE;
-
-  if(dev_globalmem < total + headroom) return FALSE;
+  if(buffsize < required) return FALSE;
+  if(available < total) return FALSE;
 
   return TRUE;
 }
@@ -2625,13 +2637,6 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
       break;
   }
   dt_pthread_mutex_unlock(&darktable.opencl->lock);
-}
-
-/** get global memory of device */
-cl_ulong dt_opencl_get_max_global_mem(const int devid)
-{
-  if(!darktable.opencl->inited || devid < 0) return 0;
-  return darktable.opencl->dev[devid].max_global_mem;
 }
 
 

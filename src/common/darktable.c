@@ -1581,12 +1581,6 @@ int dt_worker_threads()
   return 1;
 }
 
-size_t dt_opencl_memory_headroom()
-{
-  const size_t safe_headroom = MAX(DT_CL_SAFEHEADROOM, dt_conf_get_int("opencl_memory_headroom"));
-  return safe_headroom * 1024 * 1024;
-}
-
 void dt_configure_performance()
 {
   const int atom_cores = _get_num_atom_cores();

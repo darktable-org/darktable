@@ -95,6 +95,7 @@ typedef struct dt_opencl_device_t
   cl_command_queue cmd_queue;
   size_t max_image_width;
   size_t max_image_height;
+  size_t headroom;
   cl_ulong max_mem_alloc;
   cl_ulong max_global_mem;
   cl_ulong used_global_mem;
@@ -371,6 +372,15 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead);
 
+/** get headroom for the device */
+cl_ulong dt_opencl_get_device_headroom(const int devid);
+
+/** get available memory for the device */
+cl_ulong dt_opencl_get_device_available(const int devid);
+
+/** get size of allocatable single buffer */
+cl_ulong dt_opencl_get_device_memalloc(const int devid);
+
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
 int dt_opencl_roundup(int size);
 
@@ -496,6 +506,19 @@ static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t
 {
   return FALSE;
 }
+static inline cl_ulong dt_opencl_get_device_headroom(const int devid)
+{
+  return 0;
+}
+static inline cl_ulong dt_opencl_get_device_available(const int devid)
+{
+  return 0;
+}
+static inline cl_ulong dt_opencl_get_device_memalloc(const int devid)
+{
+  return 0;
+}
+
 static inline int dt_opencl_get_max_global_mem(const int devid)
 {
   return 0;
