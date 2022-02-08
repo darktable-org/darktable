@@ -64,7 +64,7 @@ set_sed_cmd() {
 	esac
 }
 
-# Helper function to checkif a given command is available.
+# Helper function to check if a given command is available.
 #
 # Below this function, higher-level helpers which check for sets of
 # commands. They are responsible for displaying a message if a tool is
@@ -129,18 +129,9 @@ re-run this script."; then
 	fi
 
 	if ! tool_installed convert "
-ImageMagick is required to check input images correctness. Please
-install this package and re-run this script."; then
-		missing_tool=1
-	fi
-
-	if ! convert --version >/dev/null 2>&1; then
-		cat 1>&2 <<EOF
-ImageMagick is required to check input images correctness. Please
-install this package and re-run this script.
-
-NOTE: You may have to remove GraphicsMagick-related packages before.
-EOF
+ImageMagick or GrahpicsMagick is required to check whether the input images
+are suitable for noise calibration.
+Please install either packages and re-run this script."; then
 		missing_tool=1
 	fi
 
@@ -481,21 +472,30 @@ check_exposure() {
 
 	ret=0
 
-	# See: http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=19805
-	# and https://www.imagemagick.org/script/architecture.php#tera-pixel for the temporary-path thing
-	convert_flags="-define registry:temporary-path=${inputdir}/tmp -channel RGB -threshold 99% -separate -append"
+	# This is a discussion about how to check which percentile of pixels falls within 
+	# a certain luminosity histogram range with GrahpicsImage:
+	# https://sourceforge.net/p/graphicsmagick/discussion/250738/thread/f64160afbd
+	pixel_percentile=80 # range: [0; 65536] in Image/GraphicsMagick
+	convert_flags_im="-process analyze= -format %[mean] info:-"
+	convert_flags_gm="-process analyze= -format %[BrightnessMean] info:-"
 
-	over=$(convert "$input" $convert_flags -format "%[mean]" info: | cut -f1 -d.)
-	if [ "$over" -a "$over" -lt 80 ]; then
-		# Image not over-exposed.
-		echo "${color_error}\"$orig\" not over-exposed ($over)${color_reset}"
+	if convert -version | grep ImageMagick &>/dev/null; then
+		over=$(convert -threshold 99% "$input" $convert_flags_im)
+		under=$(convert -negate -threshold 99% "$input" $convert_flags_im)
+	else
+		over=$(convert -threshold 99% "$input" $convert_flags_gm)
+		under=$(convert -negate -threshold 99% "$input" $convert_flags_gm)
+	fi
+
+	if [ "$over" ] && [ "$over" -lt $pixel_percentile ]; then
+		# Image does not contain sufficient over-exposed pixels.
+		echo "${color_error}\"$orig\" not sufficiently over-exposed ($over / $pixel_percentile) ${color_reset}"
 		ret=1
 	fi
 
-	under=$(convert "$input" -negate $convert_flags -format "%[mean]" info: | cut -f1 -d.)
-	if [ "$under" -a "$under" -lt 80 ]; then
-		# Image not under-exposed.
-		echo "${color_error}\"$orig\" not under-exposed ($under)${color_reset}"
+	if [ "$under" ] && [ "$under" -lt $pixel_percentile ]; then
+		# Image does not contain sufficient under-exposed pixels.
+		echo "${color_error}\"$orig\" not sufficiently under-exposed ($under / $pixel_percentile) ${color_reset}"
 		ret=1
 	fi
 
