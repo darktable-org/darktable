@@ -70,7 +70,7 @@ static void _do_select_new(dt_lib_module_t* self);
 static void _update_places_list(dt_lib_module_t* self);
 static void _update_folders_list(dt_lib_module_t* self);
 static void _lib_import_select_folder(GtkWidget *widget, dt_lib_module_t *self);
-static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t* self);
+static void _remove_place(gchar *folder, GtkTreeIter iter, dt_lib_module_t* self);
 static GList* _get_custom_places();
 
 typedef enum dt_import_cols_t
@@ -1323,7 +1323,6 @@ static void _update_places_list(dt_lib_module_t* self)
     gchar *homedir = dt_loc_get_home_dir(NULL);
     if(homedir)
     {
-      g_free(current_place);
       current_place = homedir;
       gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, _("home"), DT_PLACES_PATH,
                                         current_place, DT_PLACES_TYPE, DT_TYPE_HOME, -1);
@@ -1345,7 +1344,7 @@ static void _update_places_list(dt_lib_module_t* self)
   }
 
   // set home/pictures as default
-  if(last_place[0] == '\0')
+  if(last_place[0] == '\0' && current_place)
   {
     dt_conf_set_string("ui_last/import_last_place", current_place);
     gtk_tree_selection_select_iter(d->placesSelection, &current_iter);
@@ -1405,8 +1404,7 @@ static void _update_places_list(dt_lib_module_t* self)
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, basename,
                                       DT_PLACES_PATH, (char *)places_iter->data, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
     g_free(basename);
-
-    if(!g_strcmp0(places->data, last_place))
+    if(!g_strcmp0(places_iter->data, last_place))
       gtk_tree_selection_select_iter(d->placesSelection, &iter);
   }
   g_free(last_place);
@@ -1425,7 +1423,7 @@ static void _update_folders_list(dt_lib_module_t* self)
   gtk_tree_view_set_model(d->from.folderview, NULL);
   gtk_tree_store_clear(GTK_TREE_STORE(model));
   const char *last_place = dt_conf_get_string_const("ui_last/import_last_place");
-  char *folder = dt_conf_get_string("ui_last/import_last_directory");
+  const char *folder = dt_conf_get_string_const("ui_last/import_last_directory");
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
                                        GTK_SORT_ASCENDING);
@@ -1440,47 +1438,76 @@ static void _update_folders_list(dt_lib_module_t* self)
     _expand_folder(folder, TRUE, self);
   else
     _expand_folder(last_place, FALSE, self);
-  g_free(folder);
 }
 
-static void _add_custom_place(const gchar *folder, dt_lib_module_t* self)
+static void _escape_place_name_comma(char *name)
+{
+  for(int i = 0; name && i < strlen(name); i++)
+    if(name[i] == ',') name[i] = '\1';
+}
+
+static void _restore_place_name_comma(char *name)
+{
+  for(int i = 0; name && i < strlen(name); i++)
+    if(name[i] == '\1') name[i] = ',';
+}
+
+static gboolean _find_iter_place(GtkTreeModel *model, GtkTreeIter *iter,
+                                  const char *place)
+{
+  gboolean found = FALSE;
+  if(!place) return found;
+  char *path;
+  do
+  {
+    gtk_tree_model_get(model, iter, DT_PLACES_PATH, &path, -1);
+    found = !g_strcmp0(place, path);
+    g_free(path);
+    if(found) return found;
+  } while(gtk_tree_model_iter_next(model, iter));
+  return found;
+}
+
+static void _add_custom_place(gchar *place, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  const char *current_folders = dt_conf_get_string_const("ui_last/import_custom_places");
+
   GtkTreeIter iter;
+  gtk_tree_model_get_iter_first(GTK_TREE_MODEL(d->placesModel), &iter);
+  const gboolean found = _find_iter_place(GTK_TREE_MODEL(d->placesModel), &iter, place);
 
-  if(!g_strrstr(current_folders, folder))
+  if(!found)
   {
-    gchar *place = g_strdup_printf("%s%s,", current_folders, folder);
-    dt_conf_set_string("ui_last/import_custom_places", place);
-    g_free(place);
+    const char *current_places = dt_conf_get_string_const("ui_last/import_custom_places");
+    _escape_place_name_comma(place);
+    gchar *places = g_strdup_printf("%s%s,", current_places, place);
+    dt_conf_set_string("ui_last/import_custom_places", places);
+    g_free(places);
 
-    gchar *basename = g_path_get_basename(folder);
-
+    _restore_place_name_comma(place);
+    gchar *basename = g_path_get_basename(place);
 #ifdef WIN32
     // special case: root folder shall keep the drive letter in the basename
     if(G_IS_DIR_SEPARATOR(basename[0]) && !basename[1])
     {
       g_free(basename);
-      basename = g_strdup(folder);
+      basename = g_strdup(place);
     }
 #endif
-
     gtk_list_store_insert_with_values(d->placesModel, &iter, -1, DT_PLACES_NAME, basename,
-                                      DT_PLACES_PATH, (char *)folder, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
+                                      DT_PLACES_PATH, (char *)place, DT_PLACES_TYPE, DT_TYPE_CUSTOM, -1);
     g_free(basename);
   }
 
-  dt_conf_set_string("ui_last/import_last_place", folder);
-
+  dt_conf_set_string("ui_last/import_last_place", place);
   gtk_tree_selection_select_iter(d->placesSelection, &iter);
-
 }
 
-static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t* self)
+static void _remove_place(gchar *place, GtkTreeIter iter, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  const char *current_folders = dt_conf_get_string_const("ui_last/import_custom_places");
+  _escape_place_name_comma(place);
+  const char *current_places = dt_conf_get_string_const("ui_last/import_custom_places");
   int type = 0;
   gtk_tree_model_get(GTK_TREE_MODEL(d->placesModel), &iter, DT_PLACES_TYPE, &type, -1);
 
@@ -1492,11 +1519,11 @@ static void _remove_place(const gchar *folder, GtkTreeIter iter, dt_lib_module_t
     dt_conf_set_bool("ui_last/import_dialog_show_mounted", FALSE);
   if(type == DT_TYPE_CUSTOM)
   {
-    gchar *pattern = g_strdup_printf("%s,", folder);
-    gchar *place = dt_util_str_replace(current_folders, pattern, "");
-    dt_conf_set_string("ui_last/import_custom_places", place);
+    gchar *pattern = g_strdup_printf("%s,", place);
+    gchar *places = dt_util_str_replace(current_places, pattern, "");
+    dt_conf_set_string("ui_last/import_custom_places", places);
     g_free(pattern);
-    g_free(place);
+    g_free(places);
   }
 
   _update_places_list(self);
@@ -1507,21 +1534,21 @@ static GList* _get_custom_places()
   GList *places = NULL;
   gchar *saved = dt_conf_get_string("ui_last/import_custom_places");
   const int nb_saved = saved[0] ? dt_util_str_occurence(saved, ",") + 1 : 0;
-  gchar *folders = g_strdup(saved);
 
   for(int i = 0; i < nb_saved; i++)
   {
-    char *next = g_strstr_len(folders, strlen(folders), ",");
+    char *next = g_strstr_len(saved, strlen(saved), ",");
     if(next)
       next[0] = '\0';
-    if(folders[0])
+    if(saved[0])
     {
-      places = g_list_append(places, folders);
+      places = g_list_append(places, saved);
+      _restore_place_name_comma(saved);
       if(next)
-        folders = next + 1;
+        saved = next + 1;
     }
   }
-  g_free(saved);
+
   return places;
 }
 
