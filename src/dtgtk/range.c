@@ -426,9 +426,11 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
         f &= ~CPF_PRELIGHT;
 
       // we set the active flag if the icon value is inside the selection
-      if(!range->set_selection && icon->value >= range->select_min && icon->value <= range->select_max)
+      if(!range->set_selection && (icon->value >= range->select_min || (range->bounds & DT_RANGE_BOUND_MIN))
+         && (icon->value <= range->select_max || (range->bounds & DT_RANGE_BOUND_MAX)))
         f |= CPF_ACTIVE;
-      else if(range->set_selection && icon->value >= x1_value && icon->value < x2_value)
+      else if(range->set_selection && (icon->value >= x1_value || (range->bounds & DT_RANGE_BOUND_MIN))
+              && (icon->value < x2_value || (range->bounds & DT_RANGE_BOUND_MAX)))
         f |= CPF_ACTIVE;
       else
         f &= ~CPF_ACTIVE;
@@ -493,7 +495,11 @@ static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer us
 static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  if(e->button == 1)
+  if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  {
+    dtgtk_range_select_set_selection(range, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, range->min, range->max, TRUE);
+  }
+  else if(e->button == 1)
   {
     if(!range->mouse_inside) return TRUE;
     range->select_min = _graph_snap_value(range, e->x - range->band_margin_side);
