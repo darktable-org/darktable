@@ -101,6 +101,8 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
 dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *range, double *min, double *max);
 
 void dtgtk_range_select_add_block(GtkDarktableRangeSelect *range, const double value, const int count);
+void dtgtk_range_select_add_range_block(GtkDarktableRangeSelect *range, const double min, const double max,
+                                        const dt_range_bounds_t bounds, gchar *txt, const int count);
 void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
 
 void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc band_value,
