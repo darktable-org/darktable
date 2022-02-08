@@ -506,15 +506,15 @@ static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t
 {
   return FALSE;
 }
-static inline cl_ulong dt_opencl_get_device_headroom(const int devid)
+static inline size_t dt_opencl_get_device_headroom(const int devid)
 {
   return 0;
 }
-static inline cl_ulong dt_opencl_get_device_available(const int devid)
+static inline size_t dt_opencl_get_device_available(const int devid)
 {
   return 0;
 }
-static inline cl_ulong dt_opencl_get_device_memalloc(const int devid)
+static inline size_t dt_opencl_get_device_memalloc(const int devid)
 {
   return 0;
 }
