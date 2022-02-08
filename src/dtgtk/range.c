@@ -20,6 +20,7 @@
 #include <string.h>
 
 #define SNAP_SIZE 5
+#define BAR_WIDTH 4
 
 static void _range_select_class_init(GtkDarktableRangeSelectClass *klass);
 static void _range_select_init(GtkDarktableRangeSelect *button);
@@ -278,7 +279,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     const double wv = range->value_band(range->max) - range->band_start;
     range->band_factor = wv / range->band_real_width;
     const double step
-        = fmax(range->step, range->band_factor * 2.0); // we want at least blocks with width of 2 pixels
+        = fmax(range->step, range->band_factor * BAR_WIDTH); // we want at least blocks with width of 2 pixels
     const int bl_width = step / range->band_factor;
 
     // get the maximum height of blocks
