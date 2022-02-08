@@ -596,28 +596,37 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   dtgtk_range_select_set_selection(range, sbounds, smin, smax, FALSE);
 
-  /*char query[1024] = { 0 };
+  char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
              "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
              " COUNT(*) AS count"
              " FROM main.images AS mi"
              " GROUP BY rating"
              " ORDER BY rating");
-  if(strlen(query) > 0)
+  int nb[7] = { 0 };
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const double val = sqlite3_column_double(stmt, 0);
-      const int count = sqlite3_column_int(stmt, 1);
+    const int val = sqlite3_column_int(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
 
-      dtgtk_range_select_add_block(range, val, count);
-    }
-    sqlite3_finalize(stmt);
-    range->min = -1;
-    range->max = 6;
-  }*/
+    if(val < 6 && val >= -1) nb[val + 1] += count;
+  }
+  sqlite3_finalize(stmt);
+
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
+                                     nb[0] + nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
+  dtgtk_range_select_add_range_block(range, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
+                                     nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
+  dtgtk_range_select_add_range_block(range, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
+  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("unstared only"), nb[1]);
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_FIXED, "★", nb[2]);
+  dtgtk_range_select_add_range_block(range, 2.0, 2.0, DT_RANGE_BOUND_FIXED, "★ ★", nb[3]);
+  dtgtk_range_select_add_range_block(range, 3.0, 3.0, DT_RANGE_BOUND_FIXED, "★ ★ ★", nb[4]);
+  dtgtk_range_select_add_range_block(range, 4.0, 4.0, DT_RANGE_BOUND_FIXED, "★ ★ ★ ★", nb[5]);
+  dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_FIXED, "★ ★ ★ ★ ★", nb[6]);
+
   range->min = -1;
   range->max = 6;
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), rate->range_select, TRUE, TRUE, 0);
@@ -793,25 +802,39 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
              "SELECT ROUND(aspect_ratio,3), COUNT(*) AS count"
              " FROM main.images AS mi"
              " GROUP BY ROUND(aspect_ratio,3)");
-  if(strlen(query) > 0)
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  double min = 9999999.0;
+  double max = 0.0;
+  int nb_portrait = 0;
+  int nb_square = 0;
+  int nb_landscape = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    double min = 9999999.0;
-    double max = 0.0;
-    while(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      const double val = sqlite3_column_double(stmt, 0);
-      const int count = sqlite3_column_int(stmt, 1);
-      min = fmin(min, val);
-      max = fmax(max, val);
+    const double val = sqlite3_column_double(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+    min = fmin(min, val);
+    max = fmax(max, val);
+    if(val < 1.0)
+      nb_portrait += count;
+    else if(val > 1.0)
+      nb_landscape += count;
+    else
+      nb_square += count;
 
-      dtgtk_range_select_add_block(range, val, count);
-    }
-    sqlite3_finalize(stmt);
-    range->min = min;
-    range->max = max;
+    dtgtk_range_select_add_block(range, val, count);
   }
+  sqlite3_finalize(stmt);
+  range->min = min;
+  range->max = max;
+
+  // predefined selections
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
+                                     nb_portrait + nb_square + nb_landscape);
+  dtgtk_range_select_add_range_block(range, 0.5, 0.99, DT_RANGE_BOUND_MIN, _("portrait images"), nb_portrait);
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_FIXED, _("square images"), nb_square);
+  dtgtk_range_select_add_range_block(range, 1.01, 2.0, DT_RANGE_BOUND_MAX, _("landsacpe images"), nb_landscape);
+
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->range_select, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(ratio->range_select), "value-changed", G_CALLBACK(_ratio_changed), rule);
 
