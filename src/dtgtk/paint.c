@@ -1498,6 +1498,8 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 {
   PREAMBLE(1, 1, 0, 0)
 
+  cairo_push_group(cr);
+
   double r = 0.4;
 
   /* fill base color */
@@ -1518,8 +1520,21 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
     cairo_move_to(cr, 0.15, 0.85);
     cairo_line_to(cr, 0.85, 0.15);
     cairo_stroke(cr);
+
+    // then erase some parts around cross line
+    cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+    cairo_set_line_width(cr, 0.05);
+    cairo_move_to(cr, 0.1, 0.78);
+    cairo_line_to(cr, 0.78, 0.15);
+    cairo_move_to(cr, 0.20, 0.9);
+    cairo_line_to(cr, 0.92, 0.15);
+    cairo_set_source_rgba(cr, 0, 1.0, 0, 1.0);
+    cairo_stroke(cr);
   }
   cairo_fill(cr);
+
+  cairo_pop_group_to_source(cr);
+  cairo_paint(cr);
 
   FINISH
 }
