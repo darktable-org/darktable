@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-07 15:31+0100\n"
+"POT-Creation-Date: 2022-01-17 06:34+1100\n"
 "PO-Revision-Date: 2022-01-17 06:33+1100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -72,8 +72,8 @@ msgstr ""
 msgid "this setting has been modified"
 msgstr "ĉi tiu agordo estas ŝanĝita"
 
-#: ../build/bin/preferences_gen.h:3726 ../src/gui/preferences.c:556
-#: ../src/libs/tools/lighttable.c:68 ../src/views/lighttable.c:88
+#: ../build/bin/preferences_gen.h:3726 ../src/libs/tools/lighttable.c:68
+#: ../src/views/lighttable.c:88
 msgid "lighttable"
 msgstr "lumtablo"
 
@@ -356,8 +356,7 @@ msgstr "vidu manlibron por scii ĉiujn etikedojn, kiujn vi povas uzi."
 msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "ŝablono por la bildeto konsileto (malplena por malebligi)"
 
-#: ../build/bin/preferences_gen.h:4295 ../src/gui/preferences.c:556
-#: ../src/views/darkroom.c:108
+#: ../build/bin/preferences_gen.h:4295 ../src/views/darkroom.c:108
 msgid "darkroom"
 msgstr "senluma ĉambro"
 
@@ -541,9 +540,9 @@ msgid ""
 msgstr ""
 "interpolo kiam oni ne vidas 1:1 en senluma ĉambro: dulineara estas plej "
 "rapida, sed ne tiel akra. meztereno uzas PPG + interpolajn reĝimojn "
-"specifitajn per la opcio 'piksela interpolilo' (prilabora langeto), "
-"\"plena\" uzos ĝuste la agordojn por plenmezura eksportado. X-Trans-sensiloj "
-"uzas VNG anstataŭ RCD kiel mezterenon."
+"specifitajn per la opcio 'piksela interpolilo' (prilabora langeto), \"plena"
+"\" uzos ĝuste la agordojn por plenmezura eksportado. X-Trans-sensiloj uzas "
+"VNG anstataŭ RCD kiel mezterenon."
 
 #: ../build/bin/preferences_gen.h:4762
 msgid "reduce resolution of preview image"
@@ -983,8 +982,8 @@ msgid ""
 "one if there is one available (needs a restart).\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
-"to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
-"defaults\" should be set to \"none\""
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
+"\" should be set to \"none\""
 msgstr ""
 "uzu la po-fotilan bazkurbon defaŭlte anstataŭ la generan fabrikanton se "
 "ekzistas unu disponebla (bezonas rekomencon).\n"
@@ -2214,7 +2213,7 @@ msgstr "ĝustigo de aspekta proporcio"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:172
 #: ../build/lib/darktable/plugins/introspection_ashift.c:307
-#: ../src/iop/lens.cc:2338
+#: ../src/iop/lens.cc:2301
 msgid "lens model"
 msgstr "lensomodelo"
 
@@ -2240,7 +2239,7 @@ msgstr "specifa"
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2988 ../src/develop/develop.c:2238
 #: ../src/gui/accelerators.c:123 ../src/gui/accelerators.c:132
-#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:828
+#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:811
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:666
 #: ../src/libs/live_view.c:427
 msgid "off"
@@ -2289,10 +2288,10 @@ msgstr "konservi kolorojn"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
-#: ../src/gui/guides.c:683 ../src/iop/basecurve.c:2100
-#: ../src/iop/channelmixerrgb.c:3978 ../src/iop/clipping.c:1918
+#: ../src/gui/guides.c:682 ../src/iop/basecurve.c:2100
+#: ../src/iop/channelmixerrgb.c:3977 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2129 ../src/iop/clipping.c:2145
-#: ../src/iop/lens.cc:2276 ../src/iop/retouch.c:422 ../src/libs/collect.c:1863
+#: ../src/iop/lens.cc:2239 ../src/iop/retouch.c:422 ../src/libs/collect.c:1863
 #: ../src/libs/colorpicker.c:50 ../src/libs/export.c:1036
 #: ../src/libs/live_view.c:377 ../src/libs/print_settings.c:2481
 msgid "none"
@@ -2415,7 +2414,7 @@ msgstr "lineareco"
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:144
 #: ../build/lib/darktable/plugins/introspection_watermark.c:118
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
-#: ../src/iop/ashift.c:5761
+#: ../src/iop/ashift.c:5711
 msgid "rotation"
 msgstr "rotacio"
 
@@ -2564,9 +2563,9 @@ msgstr "tre granda kromata aberacio"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../src/common/collection.c:1501 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
-#: ../src/gui/gtk.c:3016 ../src/gui/guides.c:701 ../src/iop/bilateral.cc:317
+#: ../src/gui/gtk.c:3016 ../src/gui/guides.c:700 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
-#: ../src/iop/channelmixerrgb.c:3933 ../src/iop/colorzones.c:2316
+#: ../src/iop/channelmixerrgb.c:3932 ../src/iop/colorzones.c:2316
 #: ../src/iop/temperature.c:1834 ../src/iop/temperature.c:1983
 #: ../src/libs/collect.c:1764
 msgid "red"
@@ -2575,9 +2574,9 @@ msgstr "ruĝa"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
 #: ../src/common/collection.c:1505 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:3017 ../src/gui/guides.c:702 ../src/iop/bilateral.cc:322
+#: ../src/gui/gtk.c:3017 ../src/gui/guides.c:701 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
-#: ../src/iop/channelmixerrgb.c:3934 ../src/iop/colorzones.c:2319
+#: ../src/iop/channelmixerrgb.c:3933 ../src/iop/colorzones.c:2319
 #: ../src/iop/temperature.c:1818 ../src/iop/temperature.c:1836
 #: ../src/iop/temperature.c:1984 ../src/libs/collect.c:1764
 msgid "green"
@@ -2588,7 +2587,7 @@ msgstr "verda"
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
 #: ../src/gui/gtk.c:3018 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
-#: ../src/iop/channelmixerrgb.c:3935 ../src/iop/colorzones.c:2321
+#: ../src/iop/channelmixerrgb.c:3934 ../src/iop/colorzones.c:2321
 #: ../src/iop/temperature.c:1838 ../src/iop/temperature.c:1985
 #: ../src/libs/collect.c:1764
 msgid "blue"
@@ -3126,7 +3125,7 @@ msgid "range extent"
 msgstr "gamo amplekso"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:3980
+#: ../src/iop/channelmixerrgb.c:3979
 msgid "saturated colors"
 msgstr "saturitaj koloroj"
 
@@ -3140,7 +3139,7 @@ msgstr "saturitaj koloroj"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1997 ../src/develop/blend_gui.c:2016
 #: ../src/develop/blend_gui.c:2051 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:3885 ../src/iop/colorbalance.c:2024
+#: ../src/iop/channelmixerrgb.c:3884 ../src/iop/colorbalance.c:2024
 #: ../src/iop/colorbalancergb.c:1875 ../src/iop/colorbalancergb.c:1876
 #: ../src/iop/colorbalancergb.c:1877 ../src/iop/colorbalancergb.c:1878
 #: ../src/iop/colorize.c:349 ../src/iop/colorreconstruction.c:1290
@@ -3418,7 +3417,7 @@ msgstr "ĝisdatigi profilitan transformon"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:803 ../src/libs/colorpicker.c:585
+#: ../src/imageio/format/avif.c:786 ../src/libs/colorpicker.c:585
 msgid "color mode"
 msgstr "kolora reĝimo"
 
@@ -3630,7 +3629,7 @@ msgstr "malmoleco"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:295
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:470
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4208
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4207
 msgid "extreme luminance saturation"
 msgstr "ekstrema lumeca saturiĝo"
 
@@ -3858,7 +3857,7 @@ msgstr "reĝimo"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:142
 #: ../build/lib/darktable/plugins/introspection_lens.cc:261
-#: ../src/iop/lens.cc:2385
+#: ../src/iop/lens.cc:2348
 msgid "geometry"
 msgstr "geometrio"
 
@@ -3883,11 +3882,11 @@ msgstr "nuligita"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2210 ../src/views/darkroom.c:2626
-#: ../src/views/darkroom.c:2629 ../src/views/lighttable.c:758
-#: ../src/views/lighttable.c:767 ../src/views/lighttable.c:1328
-#: ../src/views/lighttable.c:1332 ../src/views/lighttable.c:1336
-#: ../src/views/lighttable.c:1340
+#: ../src/views/darkroom.c:2210 ../src/views/darkroom.c:2620
+#: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:821
+#: ../src/views/lighttable.c:830 ../src/views/lighttable.c:1395
+#: ../src/views/lighttable.c:1399 ../src/views/lighttable.c:1403
+#: ../src/views/lighttable.c:1407
 msgid "move"
 msgstr "movi"
 
@@ -4086,7 +4085,7 @@ msgstr "pleniga reĝimo"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:279
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
-#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3938
+#: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3937
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:591 ../src/iop/soften.c:414
 #: ../src/iop/vignette.c:990 ../src/libs/history.c:882
 msgid "brightness"
@@ -4513,7 +4512,7 @@ msgstr "falmenuo"
 #: ../src/libs/collect.c:468 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:935 ../src/libs/import.c:1534
 #: ../src/libs/import.c:1651 ../src/libs/styles.c:398 ../src/libs/styles.c:533
-#: ../src/libs/tagging.c:2505 ../src/libs/tagging.c:2541
+#: ../src/libs/tagging.c:2292 ../src/libs/tagging.c:2328
 msgid "_cancel"
 msgstr "_nuligi"
 
@@ -4809,7 +4808,7 @@ msgid "rating"
 msgstr "takso"
 
 #: ../src/common/collection.c:1503 ../src/develop/lightroom.c:832
-#: ../src/gui/guides.c:703 ../src/iop/colorzones.c:2318
+#: ../src/gui/guides.c:702 ../src/iop/colorzones.c:2318
 #: ../src/iop/temperature.c:1824 ../src/libs/collect.c:1764
 msgid "yellow"
 msgstr "flava"
@@ -4879,7 +4878,7 @@ msgid "export profile"
 msgstr "eksporta profilo"
 
 #: ../src/common/colorspaces.c:1404 ../src/common/colorspaces.c:1684
-#: ../src/views/darkroom.c:2488
+#: ../src/views/darkroom.c:2484
 msgid "softproof profile"
 msgstr "molpruvada profilo"
 
@@ -5127,11 +5126,11 @@ msgstr "eraro lanĉante darktable"
 
 #: ../src/common/database.c:2536 ../src/libs/collect.c:2904
 #: ../src/libs/export_metadata.c:281 ../src/libs/import.c:1743
-#: ../src/libs/metadata.c:462 ../src/libs/metadata_view.c:1239
+#: ../src/libs/metadata.c:452 ../src/libs/metadata_view.c:1239
 #: ../src/libs/modulegroups.c:3504 ../src/libs/recentcollect.c:319
-#: ../src/libs/styles.c:444 ../src/libs/styles.c:627 ../src/libs/tagging.c:1499
-#: ../src/libs/tagging.c:1587 ../src/libs/tagging.c:1668
-#: ../src/libs/tagging.c:1798 ../src/libs/tagging.c:2073
+#: ../src/libs/styles.c:444 ../src/libs/styles.c:627 ../src/libs/tagging.c:1349
+#: ../src/libs/tagging.c:1437 ../src/libs/tagging.c:1518
+#: ../src/libs/tagging.c:1648 ../src/libs/tagging.c:1923
 msgid "cancel"
 msgstr "nuligi"
 
@@ -5343,12 +5342,12 @@ msgstr "darktable - skema prizorgado"
 msgid "later"
 msgstr "poste"
 
-#: ../src/common/exif.cc:4226
+#: ../src/common/exif.cc:4163
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "ne povas legi xmp-dosieron '%s': '%s'"
 
-#: ../src/common/exif.cc:4278
+#: ../src/common/exif.cc:4215
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "ne povas skribi xmp-dosieron '%s': '%s'"
@@ -5541,7 +5540,7 @@ msgstr ""
 "ne povis ekspansiiĝi al unika dosiernomo por sesio, bonvolu kontroli viajn "
 "importajn sesiajn agordojn."
 
-#: ../src/common/import_session.c:364
+#: ../src/common/import_session.c:365
 msgid "requested session path not available. device not mounted?"
 msgstr "petita sesia vojo ne disponeblas. aparato ne muntita?"
 
@@ -5574,7 +5573,7 @@ msgstr "eldonisto"
 #. title
 #: ../src/common/metadata.c:48 ../src/imageio/format/pdf.c:576
 #: ../src/imageio/storage/gallery.c:181 ../src/imageio/storage/latex.c:181
-#: ../src/imageio/storage/piwigo.c:891 ../src/libs/tools/filter.c:101
+#: ../src/imageio/storage/piwigo.c:866 ../src/libs/tools/filter.c:101
 msgid "title"
 msgstr "titolo"
 
@@ -5624,7 +5623,7 @@ msgstr "tre rapida GPU detektita - opencl planada profilo estas difinita laŭe"
 msgid "opencl scheduling profile set to default"
 msgstr "opencl planada profilo estas difinita al aprioro"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1924
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1888
 #: ../src/libs/print_settings.c:2179
 msgid "mm"
 msgstr "mm"
@@ -5699,7 +5698,7 @@ msgid "unknown"
 msgstr "nekonata"
 
 #: ../src/common/ratings.c:284 ../src/libs/select.c:39
-#: ../src/views/lighttable.c:759
+#: ../src/views/lighttable.c:822
 msgid "select"
 msgstr "elekti"
 
@@ -5747,7 +5746,7 @@ msgstr "stilo kun nomo '%s' jam ekzistas"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:409 ../src/common/styles.c:500
 #: ../src/common/styles.c:583 ../src/common/styles.c:1001
-#: ../src/common/styles.c:1574 ../src/common/styles.c:1595
+#: ../src/common/styles.c:1571 ../src/common/styles.c:1592
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -5793,23 +5792,23 @@ msgstr[1] "stiloj sukcese aplikitaj!"
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "versio de modulo `%s' ne kongruas: %d != %d"
 
-#: ../src/common/styles.c:1209
+#: ../src/common/styles.c:1206
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "malsukcesis anstataŭigi stilan dosieron por %s"
 
-#: ../src/common/styles.c:1215
+#: ../src/common/styles.c:1212
 #, c-format
 msgid "style file for %s exists"
 msgstr "stildosiero por %s ekzistas"
 
-#: ../src/common/styles.c:1463
+#: ../src/common/styles.c:1460
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "stilo %s estis sukcese importita"
 
 #. Failed to open file, clean up.
-#: ../src/common/styles.c:1507
+#: ../src/common/styles.c:1504
 #, c-format
 msgid "could not read file `%s'"
 msgstr "ne povis legi dosieron `%s'"
@@ -6717,7 +6716,7 @@ msgid "reverse"
 msgstr "inversa"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:357
-#: ../src/libs/metadata.c:461 ../src/libs/metadata_view.c:1238
+#: ../src/libs/metadata.c:451 ../src/libs/metadata_view.c:1238
 msgid "default"
 msgstr "apriora"
 
@@ -6791,18 +6790,18 @@ msgstr "enigi post ol malklarigi"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2238
 #: ../src/gui/accelerators.c:122 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:826
+#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:809
 #: ../src/libs/live_view.c:428
 msgid "on"
 msgstr "sur"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3083
+#: ../src/develop/imageop.c:3094
 msgid "input"
 msgstr "enigo"
 
 #: ../src/develop/blend_gui.c:854 ../src/develop/blend_gui.c:2205
-#: ../src/develop/imageop.c:3085
+#: ../src/develop/imageop.c:3096
 msgid "output"
 msgstr "eligo"
 
@@ -6884,13 +6883,13 @@ msgid "sliders for gray value"
 msgstr "ĝustigiloj por griza valoro"
 
 #: ../src/develop/blend_gui.c:2003 ../src/develop/blend_gui.c:2030
-#: ../src/gui/guides.c:700 ../src/iop/channelmixerrgb.c:3939
+#: ../src/gui/guides.c:699 ../src/iop/channelmixerrgb.c:3938
 #: ../src/iop/levels.c:671
 msgid "gray"
 msgstr "griza"
 
 #: ../src/develop/blend_gui.c:2004 ../src/develop/blend_gui.c:2031
-#: ../src/iop/channelmixerrgb.c:3933 ../src/iop/denoiseprofile.c:3598
+#: ../src/iop/channelmixerrgb.c:3932 ../src/iop/denoiseprofile.c:3598
 #: ../src/iop/rawdenoise.c:908 ../src/iop/rgbcurve.c:1383
 #: ../src/iop/rgblevels.c:1013
 msgid "R"
@@ -6901,7 +6900,7 @@ msgid "sliders for red channel"
 msgstr "ĝustugiloj por ruĝa kanelo"
 
 #: ../src/develop/blend_gui.c:2007 ../src/develop/blend_gui.c:2034
-#: ../src/iop/channelmixerrgb.c:3934 ../src/iop/denoiseprofile.c:3599
+#: ../src/iop/channelmixerrgb.c:3933 ../src/iop/denoiseprofile.c:3599
 #: ../src/iop/rawdenoise.c:909 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:1014
 msgid "G"
@@ -6912,7 +6911,7 @@ msgid "sliders for green channel"
 msgstr "ĝustigiloj por verda kanelo"
 
 #: ../src/develop/blend_gui.c:2010 ../src/develop/blend_gui.c:2037
-#: ../src/iop/channelmixerrgb.c:3935 ../src/iop/denoiseprofile.c:3600
+#: ../src/iop/channelmixerrgb.c:3934 ../src/iop/denoiseprofile.c:3600
 #: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1385
 #: ../src/iop/rgblevels.c:1015
 msgid "B"
@@ -6939,7 +6938,7 @@ msgid "sliders for chroma channel (of HSL)"
 msgstr "ĝustigiloj por kromata kanelo (de HSL)"
 
 #: ../src/develop/blend_gui.c:2020 ../src/develop/blend_gui.c:2047
-#: ../src/iop/atrous.c:1739 ../src/iop/channelmixerrgb.c:3891
+#: ../src/iop/atrous.c:1739 ../src/iop/channelmixerrgb.c:3890
 #: ../src/iop/colorbalancergb.c:1879 ../src/iop/colorbalancergb.c:1880
 #: ../src/iop/colorbalancergb.c:1881 ../src/iop/colorbalancergb.c:1882
 #: ../src/iop/colorbalancergb.c:1889 ../src/iop/colorbalancergb.c:1890
@@ -7367,26 +7366,26 @@ msgstr "nova okazaĵo"
 msgid "duplicate instance"
 msgstr "duplikata okazaĵo"
 
-#: ../src/develop/imageop.c:941 ../src/develop/imageop.c:3234
+#: ../src/develop/imageop.c:941 ../src/develop/imageop.c:3245
 #: ../src/libs/masks.c:1105
 msgid "move up"
 msgstr "movi supren"
 
-#: ../src/develop/imageop.c:947 ../src/develop/imageop.c:3235
+#: ../src/develop/imageop.c:947 ../src/develop/imageop.c:3246
 #: ../src/libs/masks.c:1108
 msgid "move down"
 msgstr "movi malsupren"
 
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
-#: ../src/develop/imageop.c:953 ../src/develop/imageop.c:3237
+#: ../src/develop/imageop.c:953 ../src/develop/imageop.c:3248
 #: ../src/gui/accelerators.c:145 ../src/gui/presets.c:467
-#: ../src/libs/image.c:185 ../src/libs/masks.c:1062 ../src/libs/tagging.c:1499
-#: ../src/libs/tagging.c:1587
+#: ../src/libs/image.c:185 ../src/libs/masks.c:1062 ../src/libs/tagging.c:1349
+#: ../src/libs/tagging.c:1437
 msgid "delete"
 msgstr "forigi"
 
-#: ../src/develop/imageop.c:960 ../src/develop/imageop.c:3238
+#: ../src/develop/imageop.c:960 ../src/develop/imageop.c:3249
 #: ../src/libs/modulegroups.c:3504 ../src/libs/modulegroups.c:3860
 msgid "rename"
 msgstr "renomi"
@@ -7440,8 +7439,8 @@ msgstr ""
 "stirklavo+klako por reapliki iujn aŭtomatajn zapagordarojn"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2458 ../src/develop/imageop.c:3248
-#: ../src/gui/preferences.c:791 ../src/libs/lib.c:1258
+#: ../src/develop/imageop.c:2458 ../src/develop/imageop.c:3259
+#: ../src/gui/preferences.c:791 ../src/libs/lib.c:1265
 msgid "presets"
 msgstr "zapagordaroj"
 
@@ -7453,23 +7452,23 @@ msgstr ""
 "zapagordaroj\n"
 "dekstre klaki por apliki al nova okazaĵo"
 
-#: ../src/develop/imageop.c:2702 ../src/develop/imageop.c:2724
+#: ../src/develop/imageop.c:2713 ../src/develop/imageop.c:2735
 msgid "ERROR"
 msgstr "ERARO"
 
-#: ../src/develop/imageop.c:3082
+#: ../src/develop/imageop.c:3093
 msgid "purpose"
 msgstr "tialo"
 
-#: ../src/develop/imageop.c:3084
+#: ../src/develop/imageop.c:3095
 msgid "process"
 msgstr "prilabori"
 
-#: ../src/develop/imageop.c:3154
+#: ../src/develop/imageop.c:3165
 msgid "unsupported input"
 msgstr "nesubtenata eniro"
 
-#: ../src/develop/imageop.c:3155
+#: ../src/develop/imageop.c:3166
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -7481,45 +7480,45 @@ msgstr ""
 "la datuma formato ne kongruas\n"
 "siaj postuloj."
 
-#: ../src/develop/imageop.c:3233 ../src/develop/imageop.c:3243
-#: ../src/gui/accelerators.c:141 ../src/libs/lib.c:1256
+#: ../src/develop/imageop.c:3244 ../src/develop/imageop.c:3254
+#: ../src/gui/accelerators.c:141 ../src/libs/lib.c:1263
 msgid "show"
 msgstr "montri"
 
-#: ../src/develop/imageop.c:3236 ../src/libs/modulegroups.c:3354
+#: ../src/develop/imageop.c:3247 ../src/libs/modulegroups.c:3354
 #: ../src/libs/modulegroups.c:3478 ../src/libs/modulegroups.c:3863
-#: ../src/libs/tagging.c:3303
+#: ../src/libs/tagging.c:3068
 msgid "new"
 msgstr "nova"
 
-#: ../src/develop/imageop.c:3239 ../src/libs/duplicate.c:546
+#: ../src/develop/imageop.c:3250 ../src/libs/duplicate.c:546
 #: ../src/libs/image.c:510 ../src/libs/modulegroups.c:3857
 msgid "duplicate"
 msgstr "duplikati"
 
-#: ../src/develop/imageop.c:3244
+#: ../src/develop/imageop.c:3255
 msgid "enable"
 msgstr "ebligi"
 
-#: ../src/develop/imageop.c:3245
+#: ../src/develop/imageop.c:3256
 msgid "focus"
 msgstr "fokusi"
 
-#: ../src/develop/imageop.c:3246 ../src/gui/accelerators.c:2076
+#: ../src/develop/imageop.c:3257 ../src/gui/accelerators.c:2076
 msgid "instance"
 msgstr "okazo"
 
-#: ../src/develop/imageop.c:3247 ../src/gui/accelerators.c:107
+#: ../src/develop/imageop.c:3258 ../src/gui/accelerators.c:107
 #: ../src/gui/accelerators.c:116 ../src/iop/atrous.c:1583
-#: ../src/libs/lib.c:1257 ../src/libs/modulegroups.c:3932
+#: ../src/libs/lib.c:1264 ../src/libs/modulegroups.c:3932
 msgid "reset"
 msgstr "reagordi"
 
-#: ../src/develop/imageop.c:3260
+#: ../src/develop/imageop.c:3271
 msgid "processing module"
 msgstr "prilabora modulo"
 
-#: ../src/develop/imageop_gui.c:398
+#: ../src/develop/imageop_gui.c:399
 #, c-format
 msgid ""
 "%s\n"
@@ -7599,24 +7598,24 @@ msgstr "<b>grandeco</b>: rulumi"
 msgid "feather size: %3.2f%%"
 msgstr "pluma grandeco: %3.2f%%"
 
-#: ../src/develop/masks/circle.c:1330
+#: ../src/develop/masks/circle.c:1323
 msgid "[CIRCLE] change size"
 msgstr "[RONDO] ŝanĝi grandecon"
 
-#: ../src/develop/masks/circle.c:1331
+#: ../src/develop/masks/circle.c:1324
 msgid "[CIRCLE] change opacity"
 msgstr "[RONDO] ŝanĝi maldiafanecon"
 
-#: ../src/develop/masks/circle.c:1332
+#: ../src/develop/masks/circle.c:1325
 msgid "[CIRCLE] change feather size"
 msgstr "[RONDO] ŝanĝi plumadan grandecon"
 
-#: ../src/develop/masks/circle.c:1352
+#: ../src/develop/masks/circle.c:1345
 #, c-format
 msgid "circle #%d"
 msgstr "rondo #%d"
 
-#: ../src/develop/masks/circle.c:1360 ../src/develop/masks/path.c:3141
+#: ../src/develop/masks/circle.c:1353 ../src/develop/masks/path.c:3147
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -7630,47 +7629,47 @@ msgstr ""
 msgid "rotation: %3.f°"
 msgstr "rotacio: %3.f°"
 
-#: ../src/develop/masks/ellipse.c:2148
+#: ../src/develop/masks/ellipse.c:2141
 msgid "[ELLIPSE] change size"
 msgstr "[ELIPSO] ŝanĝi grandecon"
 
-#: ../src/develop/masks/ellipse.c:2149
+#: ../src/develop/masks/ellipse.c:2142
 msgid "[ELLIPSE] change opacity"
 msgstr "[ELIPSO] ŝanĝi maldiafanecon"
 
-#: ../src/develop/masks/ellipse.c:2150
+#: ../src/develop/masks/ellipse.c:2143
 msgid "[ELLIPSE] switch feathering mode"
 msgstr "[ELIPSO] ŝanĝi plumadan reĝimon"
 
-#: ../src/develop/masks/ellipse.c:2151
+#: ../src/develop/masks/ellipse.c:2144
 msgid "[ELLIPSE] rotate shape"
 msgstr "[ELIPSO] turni formon"
 
-#: ../src/develop/masks/ellipse.c:2157
+#: ../src/develop/masks/ellipse.c:2150
 #, c-format
 msgid "ellipse #%d"
 msgstr "elipso #%d"
 
-#: ../src/develop/masks/ellipse.c:2186
+#: ../src/develop/masks/ellipse.c:2179
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>grandeco</b>: rulumi, <b>pluma grandeco</b>: majusklo+rulumi\n"
-"<b>rotacio</b>: stirklavo+majusklo+rulumi, <b>maldiafaneco</b>: "
-"stirklavo+rulumi (%d%%)"
+"<b>rotacio</b>: stirklavo+majusklo+rulumi, <b>maldiafaneco</b>: stirklavo"
+"+rulumi (%d%%)"
 
-#: ../src/develop/masks/ellipse.c:2189
+#: ../src/develop/masks/ellipse.c:2182
 msgid "<b>rotate</b>: ctrl+drag"
 msgstr "<b>turni</b>: stirklavo+treni"
 
-#: ../src/develop/masks/ellipse.c:2192
+#: ../src/develop/masks/ellipse.c:2185
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
-"ctrl+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
+"+scroll (%d%%)"
 msgstr ""
 "<b>pluma reĝimo</b>: majusklo+klaki, <b>turni</b>: stirklavo+treni\n"
 "<b>grandeco</b>: rulumi, <b>pluma grandeco</b>: majusklo+rulumi, "
@@ -7764,52 +7763,52 @@ msgstr "uzi saman formon kiel"
 msgid "masks can not contain themselves"
 msgstr "maskoj ne povas sin enhavi"
 
-#: ../src/develop/masks/path.c:3098
+#: ../src/develop/masks/path.c:3104
 msgid "[PATH creation] add a smooth node"
 msgstr "[VOJA kreado] aldonu glatan nodon"
 
-#: ../src/develop/masks/path.c:3100
+#: ../src/develop/masks/path.c:3106
 msgid "[PATH creation] add a sharp node"
 msgstr "[VOJA kreado] aldonu akran nodon"
 
-#: ../src/develop/masks/path.c:3101
+#: ../src/develop/masks/path.c:3107
 msgid "[PATH creation] terminate path creation"
 msgstr "[VOJA kreado] ĉesigu kreadan vojon"
 
-#: ../src/develop/masks/path.c:3103
+#: ../src/develop/masks/path.c:3109
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[VOJO sur nodo] ŝanĝas inter glata/akra nodo"
 
-#: ../src/develop/masks/path.c:3104
+#: ../src/develop/masks/path.c:3110
 msgid "[PATH on node] remove the node"
 msgstr "[VOJO sur nodo] foriginodon"
 
-#: ../src/develop/masks/path.c:3105
+#: ../src/develop/masks/path.c:3111
 msgid "[PATH on feather] reset curvature"
 msgstr "[VOJO sur plumado] reagordi kurgiĝon"
 
-#: ../src/develop/masks/path.c:3107
+#: ../src/develop/masks/path.c:3113
 msgid "[PATH on segment] add node"
 msgstr "[VOJO sur segmento] aldoni nodon"
 
-#: ../src/develop/masks/path.c:3108
+#: ../src/develop/masks/path.c:3114
 msgid "[PATH] change size"
 msgstr "[VOJO] ŝanĝi grandecon"
 
-#: ../src/develop/masks/path.c:3109
+#: ../src/develop/masks/path.c:3115
 msgid "[PATH] change opacity"
 msgstr "[VOJO] ŝanĝi maldiafanecon"
 
-#: ../src/develop/masks/path.c:3110
+#: ../src/develop/masks/path.c:3116
 msgid "[PATH] change feather size"
 msgstr "[VOJO] ŝanĝi plumadan grandecon"
 
-#: ../src/develop/masks/path.c:3121
+#: ../src/develop/masks/path.c:3127
 #, c-format
 msgid "path #%d"
 msgstr "vojo #%d"
 
-#: ../src/develop/masks/path.c:3128
+#: ../src/develop/masks/path.c:3134
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
@@ -7817,7 +7816,7 @@ msgstr ""
 "<b>aldoni nodon</b>: klaki, <b>aldoni akran nodon</b>:stirklavo+klaki\n"
 "<b>nuligi</b>: dekstre klaki"
 
-#: ../src/develop/masks/path.c:3131
+#: ../src/develop/masks/path.c:3137
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
@@ -7825,7 +7824,7 @@ msgstr ""
 "<b>aldoni nodon</b>: klaki, <b>aldoni akran nodon</b>:stirklavo+klaki\n"
 "<b>fini vojon</b>: dekstre klaki"
 
-#: ../src/develop/masks/path.c:3134
+#: ../src/develop/masks/path.c:3140
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
@@ -7833,7 +7832,7 @@ msgstr ""
 "<b>movi nodon</b>: treni, <b>forigi nodon</b>: dekstre klaki\n"
 "<b>ŝanĝi glatan/akran reĝimon</b>: stirklavo+klaki"
 
-#: ../src/develop/masks/path.c:3137
+#: ../src/develop/masks/path.c:3143
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
@@ -7841,7 +7840,7 @@ msgstr ""
 "<b>noda kurbigo</b>: treni\n"
 "<b>reagordi krbiĝon</b>: dekstre klaki"
 
-#: ../src/develop/masks/path.c:3139
+#: ../src/develop/masks/path.c:3145
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
@@ -7885,7 +7884,7 @@ msgstr ""
 "darktable malkovris problemojn kun via OpenCL-aranĝo; malŝalti OpenCL por ĉi "
 "tiu sesio!"
 
-#: ../src/develop/tiling.c:822 ../src/develop/tiling.c:1165
+#: ../src/develop/tiling.c:824 ../src/develop/tiling.c:1167
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "kahelaro malsukcesis por modulo '%s'. eligo povus esti misprezentita."
@@ -7932,38 +7931,18 @@ msgstr "estro"
 msgid "grouped images"
 msgstr "grupigitaj bildoj"
 
-#: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1435
-#: ../src/iop/ashift.c:5854 ../src/iop/ashift.c:5921 ../src/iop/ashift.c:5922
-#: ../src/iop/ashift.c:5923
+#: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1414
+#: ../src/iop/ashift.c:5804 ../src/iop/ashift.c:5871 ../src/iop/ashift.c:5872
+#: ../src/iop/ashift.c:5873
 msgid "fit"
 msgstr "kongruigi"
 
-#: ../src/dtgtk/thumbtable.c:980 ../src/views/slideshow.c:376
-msgid "there are no images in this collection"
-msgstr "estas neniuj bildoj en ĉi tiu kolekto"
-
-#: ../src/dtgtk/thumbtable.c:987
-msgid "if you have not imported any images yet"
-msgstr "se vi ankoraŭ ne importis iujn bildojn"
-
-#: ../src/dtgtk/thumbtable.c:991
-msgid "you can do so in the import module"
-msgstr "vi povas fari tion en la importa modulo"
-
-#: ../src/dtgtk/thumbtable.c:999
-msgid "try to relax the filter settings in the top panel"
-msgstr "provu malstreĉi la filtrilajn agordojn en la supra panelo"
-
-#: ../src/dtgtk/thumbtable.c:1008
-msgid "or add images in the collections module in the left panel"
-msgstr "aŭ aldoni bildojn en la kolekta modulo en la maldekstra panelo"
-
-#: ../src/dtgtk/thumbtable.c:1249
+#: ../src/dtgtk/thumbtable.c:1176
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr "vi ŝanĝis la agordojn rilate al la metodo de generi bildetojn.\n"
 
-#: ../src/dtgtk/thumbtable.c:1251
+#: ../src/dtgtk/thumbtable.c:1178
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -7971,7 +7950,7 @@ msgstr ""
 "ĉiuj kaŝmemoraj bildetoj devas esti malvalidigitaj.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1253
+#: ../src/dtgtk/thumbtable.c:1180
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -7980,7 +7959,7 @@ msgstr ""
 "kaŝmemoraj bildetoj ekde nivelo %d devas esti nuligitaj.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1256
+#: ../src/dtgtk/thumbtable.c:1183
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -7989,7 +7968,7 @@ msgstr ""
 "kaŝmemoraj bildetoj sub nivelo %d devas esti nuligitaj.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1258
+#: ../src/dtgtk/thumbtable.c:1185
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -7998,89 +7977,89 @@ msgstr ""
 "kaŝmemoraj bildetoj inter nivelo %d kaj %d devas esti nuligitaj.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1261
+#: ../src/dtgtk/thumbtable.c:1188
 msgid "do you want to do that now?"
 msgstr "ĉu vi volas fari tion nun?"
 
-#: ../src/dtgtk/thumbtable.c:1269
+#: ../src/dtgtk/thumbtable.c:1196
 msgid "cached thumbnails invalidation"
 msgstr "nuligado de memoraj bildetoj"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2370 ../src/dtgtk/thumbtable.c:2371
-#: ../src/dtgtk/thumbtable.c:2372 ../src/dtgtk/thumbtable.c:2373
-#: ../src/dtgtk/thumbtable.c:2374 ../src/dtgtk/thumbtable.c:2375
-#: ../src/dtgtk/thumbtable.c:2376
+#: ../src/dtgtk/thumbtable.c:2297 ../src/dtgtk/thumbtable.c:2298
+#: ../src/dtgtk/thumbtable.c:2299 ../src/dtgtk/thumbtable.c:2300
+#: ../src/dtgtk/thumbtable.c:2301 ../src/dtgtk/thumbtable.c:2302
+#: ../src/dtgtk/thumbtable.c:2303
 msgctxt "accel"
 msgid "rating"
 msgstr "takso"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2379
+#: ../src/dtgtk/thumbtable.c:2306
 msgctxt "accel"
 msgid "copy history"
 msgstr "kopii historion"
 
-#: ../src/dtgtk/thumbtable.c:2380
+#: ../src/dtgtk/thumbtable.c:2307
 msgctxt "accel"
 msgid "copy history parts"
 msgstr "kopii historiajn partojn"
 
-#: ../src/dtgtk/thumbtable.c:2382
+#: ../src/dtgtk/thumbtable.c:2309
 msgctxt "accel"
 msgid "paste history"
 msgstr "alglui historion"
 
-#: ../src/dtgtk/thumbtable.c:2383
+#: ../src/dtgtk/thumbtable.c:2310
 msgctxt "accel"
 msgid "paste history parts"
 msgstr "alglui historiajn partojn"
 
-#: ../src/dtgtk/thumbtable.c:2385
+#: ../src/dtgtk/thumbtable.c:2312
 msgctxt "accel"
 msgid "discard history"
 msgstr "forĵeti historion"
 
-#: ../src/dtgtk/thumbtable.c:2387
+#: ../src/dtgtk/thumbtable.c:2314
 msgctxt "accel"
 msgid "duplicate image"
 msgstr "duplikati bildon"
 
-#: ../src/dtgtk/thumbtable.c:2388
+#: ../src/dtgtk/thumbtable.c:2315
 msgctxt "accel"
 msgid "duplicate image virgin"
 msgstr "duplikati virgan bildon"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2392 ../src/dtgtk/thumbtable.c:2393
-#: ../src/dtgtk/thumbtable.c:2394 ../src/dtgtk/thumbtable.c:2395
-#: ../src/dtgtk/thumbtable.c:2396
+#: ../src/dtgtk/thumbtable.c:2319 ../src/dtgtk/thumbtable.c:2320
+#: ../src/dtgtk/thumbtable.c:2321 ../src/dtgtk/thumbtable.c:2322
+#: ../src/dtgtk/thumbtable.c:2323
 msgctxt "accel"
 msgid "color label"
 msgstr "etikedo de koloro"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2399 ../src/libs/select.c:377
+#: ../src/dtgtk/thumbtable.c:2326 ../src/libs/select.c:377
 msgctxt "accel"
 msgid "select all"
 msgstr "elekti ĉiujn"
 
-#: ../src/dtgtk/thumbtable.c:2400 ../src/libs/select.c:378
+#: ../src/dtgtk/thumbtable.c:2327 ../src/libs/select.c:378
 msgctxt "accel"
 msgid "select none"
 msgstr "elekti neniujn"
 
-#: ../src/dtgtk/thumbtable.c:2402 ../src/libs/select.c:379
+#: ../src/dtgtk/thumbtable.c:2329 ../src/libs/select.c:379
 msgctxt "accel"
 msgid "invert selection"
 msgstr "inversigi elekton"
 
-#: ../src/dtgtk/thumbtable.c:2403 ../src/libs/select.c:380
+#: ../src/dtgtk/thumbtable.c:2330 ../src/libs/select.c:380
 msgctxt "accel"
 msgid "select film roll"
 msgstr "elekti filmrulon"
 
-#: ../src/dtgtk/thumbtable.c:2404 ../src/libs/select.c:381
+#: ../src/dtgtk/thumbtable.c:2331 ../src/libs/select.c:381
 msgctxt "accel"
 msgid "select untouched"
 msgstr "elekti netuŝitajn"
@@ -8197,7 +8176,7 @@ msgstr "vespera suno"
 msgid "underwater"
 msgstr "subakva"
 
-#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2383
+#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2381
 msgid "black & white"
 msgstr "nigrablanka"
 
@@ -8289,19 +8268,19 @@ msgstr "rumuli"
 msgid "pan"
 msgstr "panorami"
 
-#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5469
-#: ../src/iop/ashift.c:5470 ../src/iop/ashift.c:5572 ../src/iop/ashift.c:5573
-#: ../src/iop/ashift.c:5922 ../src/iop/clipping.c:1920
+#: ../src/gui/accelerators.c:79 ../src/iop/ashift.c:5419
+#: ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522 ../src/iop/ashift.c:5523
+#: ../src/iop/ashift.c:5872 ../src/iop/clipping.c:1920
 #: ../src/iop/clipping.c:2130 ../src/iop/clipping.c:2147
-#: ../src/views/darkroom.c:2626 ../src/views/lighttable.c:1332
+#: ../src/views/darkroom.c:2620 ../src/views/lighttable.c:1399
 msgid "horizontal"
 msgstr "horizontala"
 
-#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5469
-#: ../src/iop/ashift.c:5470 ../src/iop/ashift.c:5572 ../src/iop/ashift.c:5573
-#: ../src/iop/ashift.c:5921 ../src/iop/clipping.c:1919
+#: ../src/gui/accelerators.c:80 ../src/iop/ashift.c:5419
+#: ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522 ../src/iop/ashift.c:5523
+#: ../src/iop/ashift.c:5871 ../src/iop/clipping.c:1919
 #: ../src/iop/clipping.c:2131 ../src/iop/clipping.c:2146
-#: ../src/views/darkroom.c:2629 ../src/views/lighttable.c:1336
+#: ../src/views/darkroom.c:2623 ../src/views/lighttable.c:1403
 msgid "vertical"
 msgstr "vertikala"
 
@@ -8346,7 +8325,7 @@ msgid "altgr"
 msgstr "altgr"
 
 #: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:146
-#: ../src/libs/tagging.c:1797
+#: ../src/libs/tagging.c:1647
 msgid "edit"
 msgstr "redakti"
 
@@ -8367,12 +8346,12 @@ msgid "popup"
 msgstr "ŝprucfenestro"
 
 #: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:143
-#: ../src/gui/gtk.c:2961 ../src/views/lighttable.c:753
+#: ../src/gui/gtk.c:2961 ../src/views/lighttable.c:816
 msgid "next"
 msgstr "sekva"
 
 #: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:142
-#: ../src/gui/gtk.c:2962 ../src/views/lighttable.c:754
+#: ../src/gui/gtk.c:2962 ../src/views/lighttable.c:817
 msgid "previous"
 msgstr "antaŭa"
 
@@ -8386,7 +8365,7 @@ msgstr "unua"
 
 #: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:133
 #: ../src/gui/accelerators.c:241 ../src/views/darkroom.c:2296
-#: ../src/views/darkroom.c:2354
+#: ../src/views/darkroom.c:2352
 msgid "toggle"
 msgstr "ŝanĝi"
 
@@ -8432,7 +8411,7 @@ msgstr "preferencoj"
 
 #. apply button
 #: ../src/gui/accelerators.c:151 ../src/iop/colortransfer.c:670
-#: ../src/libs/metadata.c:793 ../src/libs/styles.c:888
+#: ../src/libs/metadata.c:783 ../src/libs/styles.c:888
 msgid "apply"
 msgstr "apliki"
 
@@ -8706,7 +8685,7 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:1826 ../src/gui/accelerators.c:1905
 #: ../src/gui/gtk.c:3015 ../src/imageio/format/pdf.c:662
-#: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2282
+#: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2245
 #: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:186
 msgid "all"
 msgstr "ĉiuj"
@@ -8723,7 +8702,7 @@ msgstr "identigilo de aparato"
 msgid "select file to export"
 msgstr "elekti eksportendan dosieron"
 
-#: ../src/gui/accelerators.c:1866 ../src/libs/tagging.c:2541
+#: ../src/gui/accelerators.c:1866 ../src/libs/tagging.c:2328
 msgid "_export"
 msgstr "_eksporti"
 
@@ -8755,7 +8734,7 @@ msgstr "unue forviŝi aparaton"
 msgid "select file to import"
 msgstr "elekti importendan dosieron"
 
-#: ../src/gui/accelerators.c:1953 ../src/libs/tagging.c:2505
+#: ../src/gui/accelerators.c:1953 ../src/libs/tagging.c:2292
 msgid "_import"
 msgstr "_importi"
 
@@ -8801,7 +8780,7 @@ msgstr ""
 "pliige serĉi la liston de ŝparvojoj\n"
 "premu supren aŭ malsupren klavojn por cirkuli tra matĉoj"
 
-#: ../src/gui/accelerators.c:2138 ../src/gui/guides.c:690
+#: ../src/gui/accelerators.c:2138 ../src/gui/guides.c:689
 #: ../src/libs/export_metadata.c:191
 msgid "type"
 msgstr "speco"
@@ -8861,7 +8840,7 @@ msgstr "%s ne asignita"
 msgid "%s assigned to %s"
 msgstr "%s asignita al %s"
 
-#: ../src/gui/gtk.c:158 ../src/views/darkroom.c:4670
+#: ../src/gui/gtk.c:158 ../src/views/darkroom.c:4664
 msgid "darktable - darkroom preview"
 msgstr "darktable - senluma ĉambra antaŭvido"
 
@@ -9078,223 +9057,199 @@ msgid "$(VERSION_NAME) - version name from metadata"
 msgstr "$(VERSION_NAME) - versia nomo el metadatenoj"
 
 #: ../src/gui/gtkentry.c:179
-msgid "$(JOBCODE) - job code for import"
-msgstr ""
-
-#: ../src/gui/gtkentry.c:180
 msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - sekvenca numero"
 
-#: ../src/gui/gtkentry.c:181
+#: ../src/gui/gtkentry.c:180
 msgid "$(MAX_WIDTH) - maximum image export width"
 msgstr "$(MAX_WIDTH) - maksimuma larĝeco de eksporta bildo"
 
-#: ../src/gui/gtkentry.c:182
+#: ../src/gui/gtkentry.c:181
 msgid "$(MAX_HEIGHT) - maximum image export height"
 msgstr "$(MAX_HEIGHT) - maksimuma alteco de eksporta bildo"
 
-#: ../src/gui/gtkentry.c:183
+#: ../src/gui/gtkentry.c:182
 msgid "$(SENSOR_WIDTH) - image sensor width"
 msgstr "$(SENSOR_WIDTH) - larĝeco de bilda sensilo"
 
-#: ../src/gui/gtkentry.c:184
+#: ../src/gui/gtkentry.c:183
 msgid "$(SENSOR_HEIGHT) - image sensor height"
 msgstr "$(SENSOR_HEIGHT) - alteco de bilda sensilo"
 
-#: ../src/gui/gtkentry.c:185
+#: ../src/gui/gtkentry.c:184
 msgid "$(RAW_WIDTH) - RAW image width"
 msgstr "$(RAW_WIDTH) - larĝeco de kruda bildo"
 
-#: ../src/gui/gtkentry.c:186
+#: ../src/gui/gtkentry.c:185
 msgid "$(RAW_HEIGHT) - RAW image height"
 msgstr "$(RAW_HEIGHT) - alteco de kruda bildo"
 
-#: ../src/gui/gtkentry.c:187
+#: ../src/gui/gtkentry.c:186
 msgid "$(CROP_WIDTH) - image width after crop"
 msgstr "$(CROP_WIDTH) - larĝo de bildo post tranĉo"
 
-#: ../src/gui/gtkentry.c:188
+#: ../src/gui/gtkentry.c:187
 msgid "$(CROP_HEIGHT) - image height after crop"
 msgstr "$(CROP_HEIGHT) - alteco de bildo post ol tondi"
 
-#: ../src/gui/gtkentry.c:189
+#: ../src/gui/gtkentry.c:188
 msgid "$(EXPORT_WIDTH) - exported image width"
 msgstr "$(EXPORT_WIDTH) - larĝeco de eksportota bildo"
 
-#: ../src/gui/gtkentry.c:190
+#: ../src/gui/gtkentry.c:189
 msgid "$(EXPORT_HEIGHT) - exported image height"
 msgstr "$(EXPORT_HEIGHT) - alteco de eksportota bildo"
 
-#: ../src/gui/gtkentry.c:191
+#: ../src/gui/gtkentry.c:190
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) - jaro"
 
-#: ../src/gui/gtkentry.c:192
+#: ../src/gui/gtkentry.c:191
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) - monato"
 
-#: ../src/gui/gtkentry.c:193
+#: ../src/gui/gtkentry.c:192
 msgid "$(DAY) - day"
 msgstr "$(DAY) - tago"
 
-#: ../src/gui/gtkentry.c:194
+#: ../src/gui/gtkentry.c:193
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) - horo"
 
-#: ../src/gui/gtkentry.c:195
+#: ../src/gui/gtkentry.c:194
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) - minuto"
 
-#: ../src/gui/gtkentry.c:196
+#: ../src/gui/gtkentry.c:195
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) - second"
 
-#: ../src/gui/gtkentry.c:197
+#: ../src/gui/gtkentry.c:196
 msgid "$(EXIF_YEAR) - EXIF year"
 msgstr "$(EXIF_YEAR) - EXIF jaro"
 
-#: ../src/gui/gtkentry.c:198
+#: ../src/gui/gtkentry.c:197
 msgid "$(EXIF_MONTH) - EXIF month"
 msgstr "$(EXIF_MONTH) - EXIF monato"
 
-#: ../src/gui/gtkentry.c:199
+#: ../src/gui/gtkentry.c:198
 msgid "$(EXIF_DAY) - EXIF day"
 msgstr "$(EXIF_DAY) - EXIF tago"
 
-#: ../src/gui/gtkentry.c:200
+#: ../src/gui/gtkentry.c:199
 msgid "$(EXIF_HOUR) - EXIF hour"
 msgstr "$(EXIF_HOUR) - EXIF horo"
 
-#: ../src/gui/gtkentry.c:201
+#: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_MINUTE) - EXIF minute"
 msgstr "$(EXIF_MINUTE) - EXIF minuto"
 
-#: ../src/gui/gtkentry.c:202
+#: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_SECOND) - EXIF second"
 msgstr "$(EXIF_SECOND) - EXIF second"
 
-#: ../src/gui/gtkentry.c:203
+#: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) - ISO valoro"
 
-#: ../src/gui/gtkentry.c:204
+#: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_EXPOSURE) - EXIF exposure"
 msgstr "$(EXIF_EXPOSURE) - EXIF ekspozicio"
 
-#: ../src/gui/gtkentry.c:205
+#: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
 msgstr "$(EXIF_EXPOSURE_BIAS) - EXIF ekspozicia antaŭjuĝo"
 
-#: ../src/gui/gtkentry.c:206
+#: ../src/gui/gtkentry.c:205
 msgid "$(EXIF_APERTURE) - EXIF aperture"
 msgstr "$(EXIF_APERTURE) - EXIF aperturo"
 
-#: ../src/gui/gtkentry.c:207
+#: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
 msgstr "$(EXIF_FOCAL_LENGTH) - EXIF fokusa longeco"
 
-#: ../src/gui/gtkentry.c:208
+#: ../src/gui/gtkentry.c:207
 msgid "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
 msgstr "$(EXIF_FOCUS_DISTANCE) - EXIF fokusa distanco"
 
-#: ../src/gui/gtkentry.c:209
+#: ../src/gui/gtkentry.c:208
 msgid "$(LONGITUDE) - longitude"
 msgstr "$(LONGITUDE) - longitudo"
 
-#: ../src/gui/gtkentry.c:210
+#: ../src/gui/gtkentry.c:209
 msgid "$(LATITUDE) - latitude"
 msgstr "$(LATITUDE) - latitudo"
 
-#: ../src/gui/gtkentry.c:211
+#: ../src/gui/gtkentry.c:210
 msgid "$(ELEVATION) - elevation"
 msgstr "$(ELEVATION) - alto"
 
-#: ../src/gui/gtkentry.c:212
-#, fuzzy
-msgid "$(STARS) - star rating as number (-1 for rejected)"
+#: ../src/gui/gtkentry.c:211
+msgid "$(STARS) - star rating"
 msgstr "$(STARS) - stela takso"
 
+#: ../src/gui/gtkentry.c:212
+msgid "$(LABELS) - colorlabels"
+msgstr "$(LABELS) - koloretikedoj"
+
 #: ../src/gui/gtkentry.c:213
-msgid "$(RATING_ICONS) - star/reject rating in icon form"
-msgstr ""
-
-#: ../src/gui/gtkentry.c:214
-#, fuzzy
-msgid "$(LABELS) - color labels as text"
-msgstr "$(LABELS) - koloretikedoj"
-
-#: ../src/gui/gtkentry.c:215
-#, fuzzy
-msgid "$(LABELS_ICONS) - color labels as icons"
-msgstr "$(LABELS) - koloretikedoj"
-
-#: ../src/gui/gtkentry.c:216
 msgid "$(MAKER) - camera maker"
 msgstr "$(MAKER) - produktanto de fotilo"
 
-#: ../src/gui/gtkentry.c:217
+#: ../src/gui/gtkentry.c:214
 msgid "$(MODEL) - camera model"
 msgstr "$(MODEL) - modelo de fotilo"
 
-#: ../src/gui/gtkentry.c:218
+#: ../src/gui/gtkentry.c:215
 msgid "$(LENS) - lens"
 msgstr "$(LENS) - lenso"
 
-#: ../src/gui/gtkentry.c:219
-#, fuzzy
-msgid "$(ID) - image ID"
-msgstr "$(RAW_WIDTH) - larĝeco de kruda bildo"
-
-#: ../src/gui/gtkentry.c:220
+#: ../src/gui/gtkentry.c:216
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - titolo el la metadatenoj"
 
-#: ../src/gui/gtkentry.c:221
+#: ../src/gui/gtkentry.c:217
 msgid "$(DESCRIPTION) - description from metadata"
 msgstr "$(DESCRIPTION) - priskribo el la  metadatenoj"
 
-#: ../src/gui/gtkentry.c:222
+#: ../src/gui/gtkentry.c:218
 msgid "$(CREATOR) - creator from metadata"
 msgstr "$(CREATOR) - kreinto el la metadatenoj"
 
-#: ../src/gui/gtkentry.c:223
+#: ../src/gui/gtkentry.c:219
 msgid "$(PUBLISHER) - publisher from metadata"
 msgstr "$(PUBLISHER) - eldonanto el la metadatenoj"
 
-#: ../src/gui/gtkentry.c:224
+#: ../src/gui/gtkentry.c:220
 msgid "$(RIGHTS) - rights from metadata"
 msgstr "$(RIGHTS) - rajtoj el la metadatenoj"
 
-#: ../src/gui/gtkentry.c:225
-msgid "$(USERNAME) - login name"
-msgstr ""
-
-#: ../src/gui/gtkentry.c:226
+#: ../src/gui/gtkentry.c:221
 msgid "$(PICTURES_FOLDER) - pictures folder"
 msgstr "$(PICTURES_FOLDER) - dosierujo por la bildoj"
 
-#: ../src/gui/gtkentry.c:227
+#: ../src/gui/gtkentry.c:222
 msgid "$(HOME) - home folder"
 msgstr "$(HOME) - hejma dosierujo"
 
-#: ../src/gui/gtkentry.c:228
+#: ../src/gui/gtkentry.c:223
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - surtabla dosierujo"
 
-#: ../src/gui/gtkentry.c:229
+#: ../src/gui/gtkentry.c:224
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
 msgstr "$(OPENCL_ACTIVATED) - ĉu OpenCL estas aktivita"
 
-#: ../src/gui/gtkentry.c:230
+#: ../src/gui/gtkentry.c:225
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
 msgstr ""
 "$(CATEGORY0(kategorio)) - subetikedo de nivelo 0 en hierarkiaj etikedoj"
 
-#: ../src/gui/gtkentry.c:231
+#: ../src/gui/gtkentry.c:226
 msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) - etikedoj kiel metite en la metadatenaj agordoj"
 
-#: ../src/gui/gtkentry.c:232
+#: ../src/gui/gtkentry.c:227
 msgid "$(DARKTABLE_VERSION) - current darktable version"
 msgstr "$(DARKTABLE_VERSION) - nuna versio de darktable"
 
@@ -9310,7 +9265,7 @@ msgstr "reguloj de trionoj"
 msgid "metering"
 msgstr "mezurado"
 
-#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5773
+#: ../src/gui/guides.c:33 ../src/iop/ashift.c:5723
 msgid "perspective"
 msgstr "perspektivo"
 
@@ -9367,61 +9322,61 @@ msgstr "nombro de subsekcioj per krada rektangulo"
 msgid "global guide overlay settings"
 msgstr "agordoj de surmetaĵo de tutmonda gvido"
 
-#: ../src/gui/guides.c:681 ../src/gui/guides.c:690 ../src/gui/guides.c:698
+#: ../src/gui/guides.c:680 ../src/gui/guides.c:689 ../src/gui/guides.c:697
 msgid "guide lines"
 msgstr "gvidlinioj"
 
-#: ../src/gui/guides.c:681 ../src/iop/clipping.c:2128
+#: ../src/gui/guides.c:680 ../src/iop/clipping.c:2128
 msgid "flip"
 msgstr "renversi"
 
-#: ../src/gui/guides.c:681
+#: ../src/gui/guides.c:680
 msgid "flip guides"
 msgstr "renversi gvidilojn"
 
-#: ../src/gui/guides.c:684
+#: ../src/gui/guides.c:683
 msgid "horizontally"
 msgstr "horizontale"
 
-#: ../src/gui/guides.c:685
+#: ../src/gui/guides.c:684
 msgid "vertically"
 msgstr "vertikale"
 
-#: ../src/gui/guides.c:686 ../src/iop/ashift.c:5923 ../src/iop/clipping.c:2132
+#: ../src/gui/guides.c:685 ../src/iop/ashift.c:5873 ../src/iop/clipping.c:2132
 #: ../src/iop/colorbalance.c:1891
 msgid "both"
 msgstr "ambaŭ"
 
-#: ../src/gui/guides.c:691
+#: ../src/gui/guides.c:690
 msgid "setup guide lines"
 msgstr "agordi gvidliniojn"
 
-#: ../src/gui/guides.c:698
+#: ../src/gui/guides.c:697
 msgid "overlay color"
 msgstr "surmeta koloro"
 
-#: ../src/gui/guides.c:698
+#: ../src/gui/guides.c:697
 msgid "set overlay color"
 msgstr "agordi surmetan koloron"
 
-#: ../src/gui/guides.c:704 ../src/iop/temperature.c:1822
+#: ../src/gui/guides.c:703 ../src/iop/temperature.c:1822
 msgid "cyan"
 msgstr "cejano"
 
-#: ../src/gui/guides.c:705 ../src/iop/colorzones.c:2323
+#: ../src/gui/guides.c:704 ../src/iop/colorzones.c:2323
 #: ../src/iop/temperature.c:1820
 msgid "magenta"
 msgstr "magento"
 
-#: ../src/gui/guides.c:809 ../src/gui/guides.c:855
+#: ../src/gui/guides.c:806 ../src/gui/guides.c:852
 msgid "show guides"
 msgstr "montri gvidojn"
 
-#: ../src/gui/guides.c:864
+#: ../src/gui/guides.c:861
 msgid "show guide overlay when this module has focus"
 msgstr "montri gvidan supermetaĵon kiam ĉi tiu modulo havas fokuson"
 
-#: ../src/gui/guides.c:866
+#: ../src/gui/guides.c:863
 msgid ""
 "change global guide settings\n"
 "note that these settings are applied globally and will impact any module "
@@ -9616,7 +9571,7 @@ msgstr "modelo"
 msgid "maker"
 msgstr "produktinto"
 
-#: ../src/gui/preferences.c:842 ../src/iop/ashift.c:5926
+#: ../src/gui/preferences.c:842 ../src/iop/ashift.c:5876
 #: ../src/iop/basicadj.c:633 ../src/iop/borders.c:1050 ../src/iop/levels.c:640
 #: ../src/iop/rgblevels.c:1066
 msgid "auto"
@@ -9936,54 +9891,54 @@ msgstr "enigu priskribon por la nova stilo, ĉi tiu priskribo estas serĉebla"
 msgid "can't create style out of unaltered image"
 msgstr "ne povas krei stilon el senŝanĝa bildo"
 
-#: ../src/imageio/format/avif.c:89 ../src/imageio/format/pdf.c:79
+#: ../src/imageio/format/avif.c:88 ../src/imageio/format/pdf.c:79
 #: ../src/imageio/format/png.c:526 ../src/imageio/format/tiff.c:808
 msgid "8 bit"
 msgstr "8 bitoj"
 
-#: ../src/imageio/format/avif.c:93
+#: ../src/imageio/format/avif.c:92
 msgid "10 bit"
 msgstr "10 bitoj"
 
-#: ../src/imageio/format/avif.c:97
+#: ../src/imageio/format/avif.c:96
 msgid "12 bit"
 msgstr "12 bitoj"
 
-#: ../src/imageio/format/avif.c:450
+#: ../src/imageio/format/avif.c:449
 msgid "invalid AVIF bit depth!"
 msgstr "nevalida AVIF-bita profundo!"
 
-#: ../src/imageio/format/avif.c:700
+#: ../src/imageio/format/avif.c:690
 msgid "AVIF (8/10/12-bit)"
 msgstr "AVIF (8/10/12-bit)"
 
-#: ../src/imageio/format/avif.c:780 ../src/imageio/format/pdf.c:685
+#: ../src/imageio/format/avif.c:763 ../src/imageio/format/pdf.c:685
 #: ../src/imageio/format/png.c:525 ../src/imageio/format/tiff.c:807
 msgid "bit depth"
 msgstr "bita profundo"
 
-#: ../src/imageio/format/avif.c:793
+#: ../src/imageio/format/avif.c:776
 msgid "color information stored in an image, higher is better"
 msgstr "koloraj informoj konservitaj en bildo, pli alte estas pli bone"
 
-#: ../src/imageio/format/avif.c:805
+#: ../src/imageio/format/avif.c:788
 msgid "rgb colors"
 msgstr "rvb koloroj"
 
-#: ../src/imageio/format/avif.c:807
+#: ../src/imageio/format/avif.c:790
 msgid "grayscale"
 msgstr "grizskalo"
 
-#: ../src/imageio/format/avif.c:811
+#: ../src/imageio/format/avif.c:794
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
 "konservi kiel grizskalo reduktos la grandecon por nigraj kaj blankaj bildoj"
 
-#: ../src/imageio/format/avif.c:824
+#: ../src/imageio/format/avif.c:807
 msgid "tiling"
 msgstr "kahelizado"
 
-#: ../src/imageio/format/avif.c:832
+#: ../src/imageio/format/avif.c:815
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -9995,11 +9950,11 @@ msgstr ""
 "rapidigas kodadon. la efiko al redukto de kvalito estas nekonsiderinda, sed "
 "pliigas la grandecon de dosiero."
 
-#: ../src/imageio/format/avif.c:849 ../src/imageio/format/webp.c:325
+#: ../src/imageio/format/avif.c:832 ../src/imageio/format/webp.c:325
 msgid "compression type"
 msgstr "speco de kunpremo"
 
-#: ../src/imageio/format/avif.c:857
+#: ../src/imageio/format/avif.c:840
 msgid "the compression for the image"
 msgstr "kunpremo por la bildo"
 
@@ -10008,13 +9963,13 @@ msgstr "kunpremo por la bildo"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:874 ../src/imageio/format/j2k.c:658
+#: ../src/imageio/format/avif.c:857 ../src/imageio/format/j2k.c:658
 #: ../src/imageio/format/jpeg.c:578 ../src/imageio/format/webp.c:337
 #: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:583
 msgid "quality"
 msgstr "kvalito"
 
-#: ../src/imageio/format/avif.c:879
+#: ../src/imageio/format/avif.c:862
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -10136,7 +10091,7 @@ msgstr "nevalida bordograndeco, uzante 0"
 
 #: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:332
 #: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:349
-#: ../src/imageio/storage/gallery.c:388 ../src/imageio/storage/piwigo.c:1017
+#: ../src/imageio/storage/gallery.c:388 ../src/imageio/storage/piwigo.c:976
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "ne povis eksporti al dosiero `%s'!"
@@ -10486,40 +10441,40 @@ msgstr "LaTeX-libra ŝablono"
 msgid "enter the title of the book"
 msgstr "enigu la titolon de la libro"
 
-#: ../src/imageio/storage/piwigo.c:477
+#: ../src/imageio/storage/piwigo.c:457
 msgid "authenticated"
 msgstr "aŭtentikigita"
 
-#: ../src/imageio/storage/piwigo.c:485 ../src/imageio/storage/piwigo.c:500
-#: ../src/imageio/storage/piwigo.c:512
+#: ../src/imageio/storage/piwigo.c:465 ../src/imageio/storage/piwigo.c:480
+#: ../src/imageio/storage/piwigo.c:492
 msgid "not authenticated"
 msgstr "ne aŭtentikigita"
 
-#: ../src/imageio/storage/piwigo.c:491
+#: ../src/imageio/storage/piwigo.c:471
 msgid "not authenticated, cannot reach server"
 msgstr "ne aŭtentikigita, ne povas atingi servilon"
 
-#: ../src/imageio/storage/piwigo.c:540 ../src/imageio/storage/piwigo.c:622
+#: ../src/imageio/storage/piwigo.c:517 ../src/imageio/storage/piwigo.c:599
 msgid "create new album"
 msgstr "krei novan albumon"
 
-#: ../src/imageio/storage/piwigo.c:623
+#: ../src/imageio/storage/piwigo.c:600
 msgid "---"
 msgstr "---"
 
-#: ../src/imageio/storage/piwigo.c:664
+#: ../src/imageio/storage/piwigo.c:641
 msgid "cannot refresh albums"
 msgstr "ne povas refreŝigi albumojn"
 
-#: ../src/imageio/storage/piwigo.c:767
+#: ../src/imageio/storage/piwigo.c:742
 msgid "piwigo"
 msgstr "piwigo"
 
-#: ../src/imageio/storage/piwigo.c:792
+#: ../src/imageio/storage/piwigo.c:767
 msgid "accounts"
 msgstr "kontoj"
 
-#: ../src/imageio/storage/piwigo.c:809
+#: ../src/imageio/storage/piwigo.c:784
 msgid ""
 "the server name\n"
 "default protocol is https\n"
@@ -10529,104 +10484,104 @@ msgstr ""
 "apriora protokolo estas https\n"
 "specifu http:// se ne sekura servilo"
 
-#: ../src/imageio/storage/piwigo.c:814
+#: ../src/imageio/storage/piwigo.c:789
 msgid "server"
 msgstr "servilo"
 
-#: ../src/imageio/storage/piwigo.c:826
+#: ../src/imageio/storage/piwigo.c:801
 msgid "user"
 msgstr "uzanto"
 
-#: ../src/imageio/storage/piwigo.c:838
+#: ../src/imageio/storage/piwigo.c:813
 msgid "password"
 msgstr "pasvorto"
 
 #. login button
-#: ../src/imageio/storage/piwigo.c:843
+#: ../src/imageio/storage/piwigo.c:818
 msgid "login"
 msgstr "ensaluti"
 
-#: ../src/imageio/storage/piwigo.c:844
+#: ../src/imageio/storage/piwigo.c:819
 msgid "piwigo login"
 msgstr "piwigo ensaluto"
 
-#: ../src/imageio/storage/piwigo.c:859
+#: ../src/imageio/storage/piwigo.c:834
 msgid "visible to"
 msgstr "videble al"
 
-#: ../src/imageio/storage/piwigo.c:860
+#: ../src/imageio/storage/piwigo.c:835
 msgid "everyone"
 msgstr "ĉiuj"
 
-#: ../src/imageio/storage/piwigo.c:861
+#: ../src/imageio/storage/piwigo.c:836
 msgid "contacts"
 msgstr "kontaktoj"
 
-#: ../src/imageio/storage/piwigo.c:862
+#: ../src/imageio/storage/piwigo.c:837
 msgid "friends"
 msgstr "amikoj"
 
-#: ../src/imageio/storage/piwigo.c:863
+#: ../src/imageio/storage/piwigo.c:838
 msgid "family"
 msgstr "familio"
 
-#: ../src/imageio/storage/piwigo.c:864
+#: ../src/imageio/storage/piwigo.c:839
 msgid "you"
 msgstr "vi"
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:872
+#: ../src/imageio/storage/piwigo.c:847
 msgid "album"
 msgstr "albumo"
 
-#: ../src/imageio/storage/piwigo.c:878
+#: ../src/imageio/storage/piwigo.c:853
 msgid "refresh album list"
 msgstr "refreŝigi albumliston"
 
 #. Album title
-#: ../src/imageio/storage/piwigo.c:896
+#: ../src/imageio/storage/piwigo.c:871
 msgid "new album"
 msgstr "nova albumo"
 
 #. parent album list
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:904
+#: ../src/imageio/storage/piwigo.c:879
 msgid "parent album"
 msgstr "gepatra albumo"
 
-#: ../src/imageio/storage/piwigo.c:908
+#: ../src/imageio/storage/piwigo.c:883
 msgid "click login button to start"
 msgstr "alklaku ensalutan butonon por komenci"
 
-#: ../src/imageio/storage/piwigo.c:1036
+#: ../src/imageio/storage/piwigo.c:995
 msgid "cannot create a new piwigo album!"
 msgstr "ne povas krei novan albumon de piwigo!"
 
-#: ../src/imageio/storage/piwigo.c:1045
+#: ../src/imageio/storage/piwigo.c:1004
 msgid "could not upload to piwigo!"
 msgstr "ne povis alŝuti al piwigo!"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/piwigo.c:1074
+#: ../src/imageio/storage/piwigo.c:1033
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
 msgstr[0] "%d/%d eksportita al piwigo-retalbumo"
 msgstr[1] "%d/%d eksportitaj al piwigo-retalbumo"
 
-#: ../src/iop/ashift.c:121
+#: ../src/iop/ashift.c:120
 msgid "rotate and perspective"
 msgstr "rotacio kaj perspektivo"
 
-#: ../src/iop/ashift.c:126
+#: ../src/iop/ashift.c:125
 msgid "rotation|keystone|distortion|crop|reframe"
 msgstr "rotacio|finŝtono|distordo|tondo|rekadrigi"
 
-#: ../src/iop/ashift.c:131
+#: ../src/iop/ashift.c:130
 msgid "rotate or distort perspective"
 msgstr "rotacii aŭ distordi perspektivon"
 
-#: ../src/iop/ashift.c:132 ../src/iop/channelmixer.c:139
+#: ../src/iop/ashift.c:131 ../src/iop/channelmixer.c:139
 #: ../src/iop/channelmixerrgb.c:208 ../src/iop/clipping.c:320
 #: ../src/iop/colorbalance.c:159 ../src/iop/colorbalancergb.c:171
 #: ../src/iop/colorchecker.c:126 ../src/iop/colorcorrection.c:77
@@ -10634,7 +10589,7 @@ msgstr "rotacii aŭ distordi perspektivon"
 msgid "corrective or creative"
 msgstr "korekta kaj kreiva"
 
-#: ../src/iop/ashift.c:133 ../src/iop/ashift.c:135 ../src/iop/basicadj.c:147
+#: ../src/iop/ashift.c:132 ../src/iop/ashift.c:134 ../src/iop/basicadj.c:147
 #: ../src/iop/bilateral.cc:100 ../src/iop/bilateral.cc:102
 #: ../src/iop/blurs.c:93 ../src/iop/blurs.c:94 ../src/iop/channelmixerrgb.c:209
 #: ../src/iop/channelmixerrgb.c:211 ../src/iop/clipping.c:321
@@ -10652,28 +10607,28 @@ msgstr "korekta kaj kreiva"
 msgid "linear, RGB, scene-referred"
 msgstr "lineara, RVB, scen-referita"
 
-#: ../src/iop/ashift.c:134 ../src/iop/borders.c:189 ../src/iop/clipping.c:322
+#: ../src/iop/ashift.c:133 ../src/iop/borders.c:189 ../src/iop/clipping.c:322
 #: ../src/iop/crop.c:141 ../src/iop/flip.c:106 ../src/iop/liquify.c:298
 msgid "geometric, RGB"
 msgstr "geometria, RVB"
 
-#: ../src/iop/ashift.c:2673
+#: ../src/iop/ashift.c:2672
 msgid "automatic cropping failed"
 msgstr "aŭtomata tondado malsukcesis"
 
-#: ../src/iop/ashift.c:3040 ../src/iop/ashift.c:3090 ../src/iop/ashift.c:3137
+#: ../src/iop/ashift.c:3032 ../src/iop/ashift.c:3082 ../src/iop/ashift.c:3129
 msgid "data pending - please repeat"
 msgstr "datumoj pritraktataj - bonvolu ripeti"
 
-#: ../src/iop/ashift.c:3049
+#: ../src/iop/ashift.c:3041
 msgid "could not detect structural data in image"
 msgstr "ne povis detekti strukturajn datumojn en bildo"
 
-#: ../src/iop/ashift.c:3060
+#: ../src/iop/ashift.c:3052
 msgid "could not run outlier removal"
 msgstr "ne povis efektivigi eksterordinaran forigon"
 
-#: ../src/iop/ashift.c:3220
+#: ../src/iop/ashift.c:3212
 #, c-format
 msgid ""
 "not enough structure for automatic correction\n"
@@ -10682,33 +10637,33 @@ msgstr ""
 "ne sufiĉas strukturo por aŭtomata korekto\n"
 "minimume %d linioj en ĉiu koncerna direkto"
 
-#: ../src/iop/ashift.c:3226
+#: ../src/iop/ashift.c:3218
 msgid "automatic correction failed, please correct manually"
 msgstr "aŭtomata korekto malsukcesis, bonvolu korekti permane"
 
 #. if count > MAX_SAVED_LINES we alert that the next lines won't be saved in params
 #. but they still may be used for the current section (that's why we still allow them)
-#: ../src/iop/ashift.c:4748
+#: ../src/iop/ashift.c:4698
 #, c-format
 msgid "only %d lines can be saved in parameters"
 msgstr "nur %d linioj povas esti konservitaj en parametroj"
 
-#: ../src/iop/ashift.c:5469 ../src/iop/ashift.c:5470 ../src/iop/ashift.c:5572
-#: ../src/iop/ashift.c:5573
+#: ../src/iop/ashift.c:5419 ../src/iop/ashift.c:5420 ../src/iop/ashift.c:5522
+#: ../src/iop/ashift.c:5523
 #, c-format
 msgid "lens shift (%s)"
 msgstr "lensa ŝanĝo (%s)"
 
-#: ../src/iop/ashift.c:5833
+#: ../src/iop/ashift.c:5783
 msgid "perspective helpers"
 msgstr "perspektivaj helpiloj"
 
-#: ../src/iop/ashift.c:5840 ../src/iop/ashift.c:5924 ../src/iop/ashift.c:5925
-#: ../src/iop/ashift.c:5926
+#: ../src/iop/ashift.c:5790 ../src/iop/ashift.c:5874 ../src/iop/ashift.c:5875
+#: ../src/iop/ashift.c:5876
 msgid "structure"
 msgstr "strukturo"
 
-#: ../src/iop/ashift.c:5873
+#: ../src/iop/ashift.c:5823
 msgid ""
 "rotate image\n"
 "right-click and drag to define a horizontal or vertical line by drawing on "
@@ -10718,32 +10673,32 @@ msgstr ""
 "dekstre alklaku kaj trenu por difini horizontalan aŭ vertikalan linion "
 "desegnante sur la bildo"
 
-#: ../src/iop/ashift.c:5874 ../src/iop/ashift.c:5875
+#: ../src/iop/ashift.c:5824 ../src/iop/ashift.c:5825
 msgid "apply lens shift correction in one direction"
 msgstr "apliki lensan ŝanĝan korekton en unu direkto"
 
-#: ../src/iop/ashift.c:5876
+#: ../src/iop/ashift.c:5826
 msgid "shear the image along one diagonal"
 msgstr "tondu la bildon laŭ unu diagonalo"
 
-#: ../src/iop/ashift.c:5877 ../src/iop/clipping.c:2154
+#: ../src/iop/ashift.c:5827 ../src/iop/clipping.c:2154
 msgid "automatically crop to avoid black edges"
 msgstr "aŭtomate tondadi por eviti nigrajn randojn"
 
-#: ../src/iop/ashift.c:5878
+#: ../src/iop/ashift.c:5828
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
 msgstr ""
 "lensomodelo de la perspektiva korekto: ĝenerala aŭ laŭ la fokusa distanco"
 
-#: ../src/iop/ashift.c:5880
+#: ../src/iop/ashift.c:5830
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
 "fokusa distanco de la lenso, apriora valoro fiksita de exif-datumoj se "
 "havebla"
 
-#: ../src/iop/ashift.c:5882
+#: ../src/iop/ashift.c:5832
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -10751,7 +10706,7 @@ msgstr ""
 "tondada faktoro de la fotila sensilo, defaŭlta valoro metita de ekzifaj "
 "datumoj se havebla, mana agordo ofte necesas"
 
-#: ../src/iop/ashift.c:5885
+#: ../src/iop/ashift.c:5835
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
@@ -10759,11 +10714,11 @@ msgstr ""
 "la nivelo de lenso dependa korekto, agordita al maksimumo por plena "
 "lensdependeco, agordita al nulo por la ĝenerala kazo"
 
-#: ../src/iop/ashift.c:5887
+#: ../src/iop/ashift.c:5837
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr "ĝustigu aspektproporcion de bildo per horizontala kaj vertikala skalo"
 
-#: ../src/iop/ashift.c:5888
+#: ../src/iop/ashift.c:5838
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10773,7 +10728,7 @@ msgstr ""
 "stirklavo+klako por ĝustigi nur rotacion\n"
 "majusklo+klako por kongrui nur kun lensoŝanĝo"
 
-#: ../src/iop/ashift.c:5891
+#: ../src/iop/ashift.c:5841
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl+click to only fit rotation\n"
@@ -10783,7 +10738,7 @@ msgstr ""
 "stirklavo+klako por ĝustigi nur rotacion\n"
 "majusklo+klako por kongrui nur kun lensoŝanĝo"
 
-#: ../src/iop/ashift.c:5894
+#: ../src/iop/ashift.c:5844
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -10797,7 +10752,7 @@ msgstr ""
 "majusklo+klako por kongrui nur kun lensoŝanĝo\n"
 "stirklavo+majusklo+klako por kongrui nur kun rotacio kaj lenso ŝanĝo"
 
-#: ../src/iop/ashift.c:5900
+#: ../src/iop/ashift.c:5850
 msgid ""
 "automatically analyse line structure in image\n"
 "ctrl+click for an additional edge enhancement\n"
@@ -10809,43 +10764,43 @@ msgstr ""
 "maj+klaki por plia detala plibonigo\n"
 "stir+maj+klaki por kombino de ambaŭ metodoj"
 
-#: ../src/iop/ashift.c:5904
+#: ../src/iop/ashift.c:5854
 msgid "manually define perspective rectangle"
 msgstr "permane difini perspektivan rektangulon"
 
-#: ../src/iop/ashift.c:5905
+#: ../src/iop/ashift.c:5855
 msgid "manually draw structure lines"
 msgstr "permane desegni strukturajn liniojn"
 
-#: ../src/iop/ashift.c:5924
+#: ../src/iop/ashift.c:5874
 msgid "rectangle"
 msgstr "kvadrato"
 
-#: ../src/iop/ashift.c:5925
+#: ../src/iop/ashift.c:5875
 msgid "lines"
 msgstr "linioj"
 
-#: ../src/iop/ashift.c:5949 ../src/iop/clipping.c:3392
+#: ../src/iop/ashift.c:5899 ../src/iop/clipping.c:3387
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] difinas/turnas horizonton"
 
-#: ../src/iop/ashift.c:5950
+#: ../src/iop/ashift.c:5900
 #, c-format
 msgid "[%s on segment] select segment"
 msgstr "[%s sur segmento] elektu segmenton"
 
-#: ../src/iop/ashift.c:5952
+#: ../src/iop/ashift.c:5902
 #, c-format
 msgid "[%s on segment] unselect segment"
 msgstr "[%s sur segmento] malelektu segmenton"
 
-#: ../src/iop/ashift.c:5954
+#: ../src/iop/ashift.c:5904
 #, c-format
 msgid "[%s] select all segments from zone"
 msgstr "[%s] elektu ĉiujn segmentojn el zono"
 
-#: ../src/iop/ashift.c:5956
+#: ../src/iop/ashift.c:5906
 #, c-format
 msgid "[%s] unselect all segments from zone"
 msgstr "[%s] malelektu ĉiujn segmentojn de zono"
@@ -11037,7 +10992,7 @@ msgstr ""
 #: ../src/iop/atrous.c:1757 ../src/iop/colorbalancergb.c:1793
 #: ../src/iop/colorzones.c:2520 ../src/iop/filmicrgb.c:3887
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:935
-#: ../src/iop/toneequal.c:3200
+#: ../src/iop/toneequal.c:3197
 msgid "graph"
 msgstr "grafeo"
 
@@ -11488,7 +11443,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2168 ../src/iop/crop.c:1111
+#: ../src/iop/borders.c:973 ../src/iop/clipping.c:2168 ../src/iop/crop.c:1106
 msgid "golden cut"
 msgstr "ora tranĉo"
 
@@ -11508,7 +11463,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2158 ../src/iop/crop.c:1101
+#: ../src/iop/borders.c:978 ../src/iop/clipping.c:2158 ../src/iop/crop.c:1096
 #: ../src/libs/collect.c:271
 msgid "square"
 msgstr "kvadrata"
@@ -11545,7 +11500,7 @@ msgstr "2/3"
 msgid "size of the border in percent of the full image"
 msgstr "grandeco de la rando en procento de la kompleta bildo"
 
-#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2255 ../src/iop/crop.c:1197
+#: ../src/iop/borders.c:1041 ../src/iop/clipping.c:2255 ../src/iop/crop.c:1192
 msgid "aspect"
 msgstr "bildformato"
 
@@ -12205,7 +12160,7 @@ msgstr ""
 #: ../src/iop/colorbalancergb.c:1571 ../src/iop/filmicrgb.c:3902
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3139
 #: ../src/libs/image.c:475 ../src/libs/print_settings.c:2158
-#: ../src/views/lighttable.c:1340
+#: ../src/views/lighttable.c:1407
 msgid "page"
 msgstr "paĝo"
 
@@ -12251,108 +12206,103 @@ msgstr ""
 "ĉi tiu estas la koloro de la lumigilo antaŭ kromata adapto\n"
 "ĉi tiu koloro fariĝos pura blankulo per la adapto."
 
-#: ../src/iop/channelmixerrgb.c:3867
-#, fuzzy
-msgid "picker"
-msgstr "kolora elektilo"
-
-#: ../src/iop/channelmixerrgb.c:3868 ../src/iop/temperature.c:2013
+#: ../src/iop/channelmixerrgb.c:3867 ../src/iop/temperature.c:2013
 msgid "set white balance to detected from area"
 msgstr "agordi blankan ekvilibrigon al detektita de areo"
 
-#: ../src/iop/channelmixerrgb.c:3872
+#: ../src/iop/channelmixerrgb.c:3871
 msgid "illuminant"
 msgstr "lumigilo"
 
-#: ../src/iop/channelmixerrgb.c:3878 ../src/iop/temperature.c:1948
+#: ../src/iop/channelmixerrgb.c:3877 ../src/iop/temperature.c:1948
 msgid "temperature"
 msgstr "temperaturo"
 
-#: ../src/iop/channelmixerrgb.c:3911
+#: ../src/iop/channelmixerrgb.c:3910
 msgid "input R"
 msgstr "eniga R"
 
-#: ../src/iop/channelmixerrgb.c:3918
+#: ../src/iop/channelmixerrgb.c:3917
 msgid "input G"
 msgstr "eniga V"
 
-#: ../src/iop/channelmixerrgb.c:3925
+#: ../src/iop/channelmixerrgb.c:3924
 msgid "input B"
 msgstr "eniga B"
 
-#: ../src/iop/channelmixerrgb.c:3933
+#: ../src/iop/channelmixerrgb.c:3932
 msgid "output R"
 msgstr "eliga R"
 
-#: ../src/iop/channelmixerrgb.c:3934
+#: ../src/iop/channelmixerrgb.c:3933
 msgid "output G"
 msgstr "eliga V"
 
-#: ../src/iop/channelmixerrgb.c:3935
+#: ../src/iop/channelmixerrgb.c:3934
 msgid "output B"
 msgstr "eliga B"
 
-#: ../src/iop/channelmixerrgb.c:3936
+#: ../src/iop/channelmixerrgb.c:3935
 msgid "colorfulness"
 msgstr "koloreco"
 
-#: ../src/iop/channelmixerrgb.c:3936
+#: ../src/iop/channelmixerrgb.c:3935
 msgid "output colorfulness"
 msgstr "eliga koloreco"
 
-#: ../src/iop/channelmixerrgb.c:3938
+#: ../src/iop/channelmixerrgb.c:3937
 msgid "output brightness"
 msgstr "eliga brileco"
 
-#: ../src/iop/channelmixerrgb.c:3939
+#: ../src/iop/channelmixerrgb.c:3938
 msgid "output gray"
 msgstr "eliga griza"
 
-#: ../src/iop/channelmixerrgb.c:3951
+#: ../src/iop/channelmixerrgb.c:3950
 msgid "calibrate with a color checker"
 msgstr "kalibri per kolora kontrolilo"
 
-#: ../src/iop/channelmixerrgb.c:3954
+#: ../src/iop/channelmixerrgb.c:3953
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "uzu cel-kontrolilon por aŭtomate agordi CAT kaj kanalojn"
 
-#: ../src/iop/channelmixerrgb.c:3960
+#: ../src/iop/channelmixerrgb.c:3959
 msgid "chart"
 msgstr "diagramo"
 
-#: ../src/iop/channelmixerrgb.c:3961
+#: ../src/iop/channelmixerrgb.c:3960
 msgid "choose the vendor and the type of your chart"
 msgstr "elektu la vendiston kaj la tipon de via diagramo"
 
-#: ../src/iop/channelmixerrgb.c:3963
+#: ../src/iop/channelmixerrgb.c:3962
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 antaŭ 2014"
 
-#: ../src/iop/channelmixerrgb.c:3964
+#: ../src/iop/channelmixerrgb.c:3963
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 post 2014"
 
-#: ../src/iop/channelmixerrgb.c:3965
+#: ../src/iop/channelmixerrgb.c:3964
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderChecker 24 antaŭ 2018"
 
-#: ../src/iop/channelmixerrgb.c:3966
+#: ../src/iop/channelmixerrgb.c:3965
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderChecker 24 post 2018"
 
-#: ../src/iop/channelmixerrgb.c:3967
+#: ../src/iop/channelmixerrgb.c:3966
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderChecker 48 antaŭ 2018"
 
-#: ../src/iop/channelmixerrgb.c:3968
+#: ../src/iop/channelmixerrgb.c:3967
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderChecker 48 post 2018"
 
-#: ../src/iop/channelmixerrgb.c:3971
+#: ../src/iop/channelmixerrgb.c:3970
 msgid "optimize for"
 msgstr "optimumigi por"
 
-#: ../src/iop/channelmixerrgb.c:3972
+#: ../src/iop/channelmixerrgb.c:3971
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -12369,35 +12319,35 @@ msgstr ""
 "neniu estas interŝanĝo inter ambaŭ\n"
 "la aliaj estas specialaj kondutoj por protekti iujn nuancojn"
 
-#: ../src/iop/channelmixerrgb.c:3979
+#: ../src/iop/channelmixerrgb.c:3978
 msgid "neutral colors"
 msgstr "neŭtralaj koloroj"
 
-#: ../src/iop/channelmixerrgb.c:3981
+#: ../src/iop/channelmixerrgb.c:3980
 msgid "skin and soil colors"
 msgstr "haŭta kaj grunda koloroj"
 
-#: ../src/iop/channelmixerrgb.c:3982
+#: ../src/iop/channelmixerrgb.c:3981
 msgid "foliage colors"
 msgstr "foliaj koloroj"
 
-#: ../src/iop/channelmixerrgb.c:3983
+#: ../src/iop/channelmixerrgb.c:3982
 msgid "sky and water colors"
 msgstr "ĉielo kaj akvokoloroj"
 
-#: ../src/iop/channelmixerrgb.c:3984
+#: ../src/iop/channelmixerrgb.c:3983
 msgid "average delta E"
 msgstr "averaĝa delto E"
 
-#: ../src/iop/channelmixerrgb.c:3985
+#: ../src/iop/channelmixerrgb.c:3984
 msgid "maximum delta E"
 msgstr "maksimuma delto E"
 
-#: ../src/iop/channelmixerrgb.c:3989
+#: ../src/iop/channelmixerrgb.c:3988
 msgid "patch scale"
 msgstr "flika skalo"
 
-#: ../src/iop/channelmixerrgb.c:3990
+#: ../src/iop/channelmixerrgb.c:3989
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -12407,19 +12357,19 @@ msgstr ""
 "utila kiam la perspektiva korekto estas malrapida aŭ\n"
 "la flikaĵoj enkadrigas ombrojn sur la randoj de la flikaĵo."
 
-#: ../src/iop/channelmixerrgb.c:3998
+#: ../src/iop/channelmixerrgb.c:3997
 msgid "the delta E is using the CIE 2000 formula."
 msgstr "la delta E uzas la formulon CIE 2000."
 
-#: ../src/iop/channelmixerrgb.c:4004
+#: ../src/iop/channelmixerrgb.c:4003
 msgid "accept the computed profile and set it in the module"
 msgstr "akceptu la komputitan profilon kaj starigu ĝin en la modulo"
 
-#: ../src/iop/channelmixerrgb.c:4009
+#: ../src/iop/channelmixerrgb.c:4008
 msgid "recompute the profile"
 msgstr "rekomputi la profilon"
 
-#: ../src/iop/channelmixerrgb.c:4014
+#: ../src/iop/channelmixerrgb.c:4013
 msgid "check the output delta E"
 msgstr "kontrolu la eliran deltan E"
 
@@ -12468,16 +12418,16 @@ msgstr "reenkadrigi|perspektivo|finŝtono|distordo"
 msgid "change the framing and correct the perspective"
 msgstr "ŝanĝi la enkadrigon kaj korekti la perspektivon"
 
-#: ../src/iop/clipping.c:1412 ../src/iop/clipping.c:2157 ../src/iop/crop.c:455
-#: ../src/iop/crop.c:1100
+#: ../src/iop/clipping.c:1412 ../src/iop/clipping.c:2157 ../src/iop/crop.c:450
+#: ../src/iop/crop.c:1095
 msgid "original image"
 msgstr "originala bildo"
 
-#: ../src/iop/clipping.c:1716 ../src/iop/crop.c:759
+#: ../src/iop/clipping.c:1716 ../src/iop/crop.c:754
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "malvalida proporcia formato. ĝi estu \"numero:numero\""
 
-#: ../src/iop/clipping.c:1732 ../src/iop/crop.c:775
+#: ../src/iop/clipping.c:1732 ../src/iop/crop.c:770
 msgid "invalid ratio format. it should be a positive number"
 msgstr "malvalida proporcia formato. ĝi estu pozitiva nombro"
 
@@ -12517,81 +12467,81 @@ msgstr "finŝtono"
 msgid "set perspective correction for your image"
 msgstr "starigu perspektivan korekton por via bildo"
 
-#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1099
+#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1094
 msgid "freehand"
 msgstr "libermane"
 
-#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1102
+#: ../src/iop/clipping.c:2159 ../src/iop/crop.c:1097
 msgid "10:8 in print"
 msgstr "10:8 presita"
 
-#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1103
+#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1098
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1104
+#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1099
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1105
+#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1100
 msgid "8.5x11, letter"
 msgstr "8.5x11, letera"
 
-#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1106
+#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1101
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1107
+#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1102
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1108
+#: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1103
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1109
+#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1104
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2167 ../src/iop/crop.c:1110
+#: ../src/iop/clipping.c:2167 ../src/iop/crop.c:1105
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2169 ../src/iop/crop.c:1112
+#: ../src/iop/clipping.c:2169 ../src/iop/crop.c:1107
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2170 ../src/iop/crop.c:1113
+#: ../src/iop/clipping.c:2170 ../src/iop/crop.c:1108
 msgid "widescreen"
 msgstr "larĝa ekrano"
 
-#: ../src/iop/clipping.c:2171 ../src/iop/crop.c:1114
+#: ../src/iop/clipping.c:2171 ../src/iop/crop.c:1109
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2172 ../src/iop/crop.c:1115
+#: ../src/iop/clipping.c:2172 ../src/iop/crop.c:1110
 msgid "cinemascope"
 msgstr "cinemaskopo"
 
-#: ../src/iop/clipping.c:2173 ../src/iop/crop.c:1116
+#: ../src/iop/clipping.c:2173 ../src/iop/crop.c:1111
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2174 ../src/iop/crop.c:1117
+#: ../src/iop/clipping.c:2174 ../src/iop/crop.c:1112
 msgid "anamorphic"
 msgstr "anamorfa"
 
-#: ../src/iop/clipping.c:2175 ../src/iop/crop.c:1118
+#: ../src/iop/clipping.c:2175 ../src/iop/crop.c:1113
 msgid "3:1, panorama"
 msgstr "3:1, panoramo"
 
-#: ../src/iop/clipping.c:2207 ../src/iop/clipping.c:2219 ../src/iop/crop.c:1150
-#: ../src/iop/crop.c:1162
+#: ../src/iop/clipping.c:2207 ../src/iop/clipping.c:2219 ../src/iop/crop.c:1145
+#: ../src/iop/crop.c:1157
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "malvalida proporcia formato por `%s'. ĝi estu \"numero:numero\""
 
-#: ../src/iop/clipping.c:2266 ../src/iop/crop.c:1208
+#: ../src/iop/clipping.c:2266 ../src/iop/crop.c:1203
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -12603,23 +12553,23 @@ msgstr ""
 "por eniri laŭmendan aspektan proporcion, malfermi la combokeston kaj entajpi "
 "proporcion laŭ x:y aŭ dekuma formato"
 
-#: ../src/iop/clipping.c:2273 ../src/iop/crop.c:1218
+#: ../src/iop/clipping.c:2273 ../src/iop/crop.c:1213
 msgid "margins"
 msgstr "randoj"
 
-#: ../src/iop/clipping.c:2279 ../src/iop/crop.c:1246
+#: ../src/iop/clipping.c:2279 ../src/iop/crop.c:1241
 msgid "the left margin cannot overlap with the right margin"
 msgstr "la maldekstra rando ne povas interkovri kun la dekstra rando"
 
-#: ../src/iop/clipping.c:2286 ../src/iop/crop.c:1253
+#: ../src/iop/clipping.c:2286 ../src/iop/crop.c:1248
 msgid "the right margin cannot overlap with the left margin"
 msgstr "la dekstra rando ne povas interkovri kun la maldekstra rando"
 
-#: ../src/iop/clipping.c:2292 ../src/iop/crop.c:1259
+#: ../src/iop/clipping.c:2292 ../src/iop/crop.c:1254
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "la supra rando ne povas interkovri kun la malsupra rando"
 
-#: ../src/iop/clipping.c:2299 ../src/iop/crop.c:1266
+#: ../src/iop/clipping.c:2299 ../src/iop/crop.c:1261
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "la malsupra rando ne povas interkovri kun la supra rando"
 
@@ -12662,16 +12612,16 @@ msgstr ""
 "b>: stir+treni\n"
 "<b>rektigi</b>: dekstre treni, <b>efektivigi</b>: duoble klaki"
 
-#: ../src/iop/clipping.c:3378 ../src/iop/crop.c:1670
+#: ../src/iop/clipping.c:3373 ../src/iop/crop.c:1665
 msgid "commit"
 msgstr "kompromiti"
 
-#: ../src/iop/clipping.c:3389 ../src/iop/crop.c:1681
+#: ../src/iop/clipping.c:3384 ../src/iop/crop.c:1676
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s sur randoj] tondado"
 
-#: ../src/iop/clipping.c:3391 ../src/iop/crop.c:1683
+#: ../src/iop/clipping.c:3386 ../src/iop/crop.c:1678
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s sur randoj] tondada konservadproporcio"
@@ -13530,30 +13480,30 @@ msgstr "eliga intenco"
 
 #: ../src/iop/colorout.c:867 ../src/libs/export.c:1265
 #: ../src/libs/print_settings.c:2132 ../src/libs/print_settings.c:2466
-#: ../src/views/darkroom.c:2461 ../src/views/darkroom.c:2468
-#: ../src/views/lighttable.c:1252 ../src/views/lighttable.c:1259
+#: ../src/views/darkroom.c:2457 ../src/views/darkroom.c:2464
+#: ../src/views/lighttable.c:1319 ../src/views/lighttable.c:1326
 msgid "perceptual"
 msgstr "percepta"
 
 #: ../src/iop/colorout.c:868 ../src/libs/export.c:1266
 #: ../src/libs/print_settings.c:2133 ../src/libs/print_settings.c:2467
-#: ../src/views/darkroom.c:2462 ../src/views/darkroom.c:2469
-#: ../src/views/lighttable.c:1253 ../src/views/lighttable.c:1260
+#: ../src/views/darkroom.c:2458 ../src/views/darkroom.c:2465
+#: ../src/views/lighttable.c:1320 ../src/views/lighttable.c:1327
 msgid "relative colorimetric"
 msgstr "relativa kolorimetria"
 
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:1267
 #: ../src/libs/print_settings.c:2134 ../src/libs/print_settings.c:2468
-#: ../src/views/darkroom.c:2463 ../src/views/darkroom.c:2470
-#: ../src/views/lighttable.c:1254 ../src/views/lighttable.c:1261
+#: ../src/views/darkroom.c:2459 ../src/views/darkroom.c:2466
+#: ../src/views/lighttable.c:1321 ../src/views/lighttable.c:1328
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturiĝo"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:1268
 #: ../src/libs/print_settings.c:2135 ../src/libs/print_settings.c:2469
-#: ../src/views/darkroom.c:2464 ../src/views/darkroom.c:2471
-#: ../src/views/lighttable.c:1255 ../src/views/lighttable.c:1262
+#: ../src/views/darkroom.c:2460 ../src/views/darkroom.c:2467
+#: ../src/views/lighttable.c:1322 ../src/views/lighttable.c:1329
 msgid "absolute colorimetric"
 msgstr "aboluta kolorimetria"
 
@@ -13626,7 +13576,7 @@ msgctxt "accel"
 msgid "acquire"
 msgstr "akiri"
 
-#: ../src/iop/colortransfer.c:130 ../src/libs/metadata.c:603
+#: ../src/iop/colortransfer.c:130 ../src/libs/metadata.c:593
 #: ../src/libs/styles.c:78
 msgctxt "accel"
 msgid "apply"
@@ -13777,15 +13727,15 @@ msgstr "rekadri|distordo"
 msgid "change the framing"
 msgstr "ŝanĝi la kadradon"
 
-#: ../src/iop/crop.c:1093
+#: ../src/iop/crop.c:1088
 msgid "crop settings"
 msgstr "tondadaj agordoj"
 
-#: ../src/iop/crop.c:1592
+#: ../src/iop/crop.c:1587
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr "<b>regrandigi</b>: treni, <b>konservi bildformaton</b>: maj+treni"
 
-#: ../src/iop/crop.c:1599
+#: ../src/iop/crop.c:1594
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -14255,17 +14205,17 @@ msgstr "rapida akreco"
 msgid "fast local contrast"
 msgstr "rapida loka konstrasto"
 
-#: ../src/iop/diffuse.c:1128 ../src/iop/diffuse.c:1366
+#: ../src/iop/diffuse.c:1130 ../src/iop/diffuse.c:1372
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
 "disvastigo/akrigo malsukcesis asigni memoron, kontrolu viajn memorajn "
 "agordojn"
 
-#: ../src/iop/diffuse.c:1494
+#: ../src/iop/diffuse.c:1500
 msgid "diffusion properties"
 msgstr "disvastigaj propraĵoj"
 
-#: ../src/iop/diffuse.c:1499
+#: ../src/iop/diffuse.c:1505
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -14275,7 +14225,7 @@ msgstr ""
 "tio similas al doni pli da tempo por la disvastreago.\n"
 "se vi planas akrigi aŭ enpentri, pli da ripetoj helpas rekonstruadon."
 
-#: ../src/iop/diffuse.c:1507
+#: ../src/iop/diffuse.c:1513
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -14289,7 +14239,7 @@ msgstr ""
 "por malklarigado kaj senbruado, agordu al nulo.\n"
 "pliigi por agi sur loka kontrasto anstataŭe."
 
-#: ../src/iop/diffuse.c:1517
+#: ../src/iop/diffuse.c:1523
 msgid ""
 "width of the diffusion around the center radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -14303,11 +14253,11 @@ msgstr ""
 "se vi planas senmalklarigi, la radiuso estu ĉirkaŭ la larĝeco de via lensa "
 "malklariĝo."
 
-#: ../src/iop/diffuse.c:1522
+#: ../src/iop/diffuse.c:1528
 msgid "diffusion speed"
 msgstr "rapideco de disvastigo"
 
-#: ../src/iop/diffuse.c:1528
+#: ../src/iop/diffuse.c:1534
 msgid ""
 "smoothing or sharpening of smooth details (gradients).\n"
 "positive values diffuse and blur.\n"
@@ -14319,7 +14269,7 @@ msgstr ""
 "negativaj valoroj akriĝas.\n"
 "nulo faras nenion."
 
-#: ../src/iop/diffuse.c:1537 ../src/iop/diffuse.c:1546
+#: ../src/iop/diffuse.c:1543 ../src/iop/diffuse.c:1552
 msgid ""
 "smoothing or sharpening of sharp details.\n"
 "positive values diffuse and blur.\n"
@@ -14331,7 +14281,7 @@ msgstr ""
 "negativaj valoroj akriĝas.\n"
 "nulo faras nenion."
 
-#: ../src/iop/diffuse.c:1555
+#: ../src/iop/diffuse.c:1561
 msgid ""
 "smoothing or sharpening of sharp details (gradients).\n"
 "positive values diffuse and blur.\n"
@@ -14343,12 +14293,12 @@ msgstr ""
 "negativaj valoroj akriĝas.\n"
 "nulo faras nenion."
 
-#: ../src/iop/diffuse.c:1560
+#: ../src/iop/diffuse.c:1566
 msgid "diffusion directionality"
 msgstr "disvastiga direkteco"
 
-#: ../src/iop/diffuse.c:1567 ../src/iop/diffuse.c:1577
-#: ../src/iop/diffuse.c:1587 ../src/iop/diffuse.c:1597
+#: ../src/iop/diffuse.c:1573 ../src/iop/diffuse.c:1583
+#: ../src/iop/diffuse.c:1593 ../src/iop/diffuse.c:1603
 msgid ""
 "anisotropy of the diffusion.\n"
 "zero makes the diffusion isotrope (same in all directions)\n"
@@ -14360,15 +14310,15 @@ msgstr ""
 "pozitivoj igas la disvastigon sekvi izofotojn pli proksime\n"
 "negativoj igas la disvastigon sekvi gradientojn pli proksime"
 
-#: ../src/iop/diffuse.c:1602
+#: ../src/iop/diffuse.c:1608
 msgid "edges management"
 msgstr "administri randojn"
 
-#: ../src/iop/diffuse.c:1608
+#: ../src/iop/diffuse.c:1614
 msgid "increase or decrease the sharpness of the highest frequencies"
 msgstr "rapido de disvastigo"
 
-#: ../src/iop/diffuse.c:1612
+#: ../src/iop/diffuse.c:1618
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -14378,7 +14328,7 @@ msgstr ""
 "pliigi por ekskludi pli da randoj de disvastigo,\n"
 "se aperas franĝoj aŭ aŭreoloj."
 
-#: ../src/iop/diffuse.c:1618
+#: ../src/iop/diffuse.c:1624
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -14390,11 +14340,11 @@ msgstr ""
 "pliigu se vi vidas bruon aperi sur glataj surfacoj aŭ\n"
 "se malhelaj areoj ŝajnas tro akrigitaj kompare kun helaj areoj."
 
-#: ../src/iop/diffuse.c:1624
+#: ../src/iop/diffuse.c:1630
 msgid "diffusion spatiality"
 msgstr "disvastiga spaceco"
 
-#: ../src/iop/diffuse.c:1630
+#: ../src/iop/diffuse.c:1636
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -14723,8 +14673,8 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1701 ../src/libs/export.c:1263
 #: ../src/libs/print_settings.c:2131 ../src/libs/print_settings.c:2463
-#: ../src/views/darkroom.c:2460 ../src/views/lighttable.c:1251
-#: ../src/views/lighttable.c:1258
+#: ../src/views/darkroom.c:2456 ../src/views/lighttable.c:1318
+#: ../src/views/lighttable.c:1325
 msgid "intent"
 msgstr "intenco"
 
@@ -14943,7 +14893,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3163 ../src/iop/toneequal.c:3167
 #: ../src/iop/toneequal.c:3171 ../src/iop/toneequal.c:3175
 #: ../src/iop/toneequal.c:3179 ../src/libs/metadata_view.c:768
-#: ../src/views/darkroom.c:2390
+#: ../src/views/darkroom.c:2388
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -15094,7 +15044,7 @@ msgstr ""
 "malpliigi alikaze. neniom malsaturiĝo okazas en la latituda gamo.\n"
 "ĉi tio ne efikas meztonojn."
 
-#: ../src/iop/filmicrgb.c:4063 ../src/iop/filmicrgb.c:4209
+#: ../src/iop/filmicrgb.c:4063
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -15205,20 +15155,9 @@ msgstr ""
 "elektu la statistikan distribuadon de bruo.\n"
 "ĉi tio utilas por kongrui kun natura sensora brua ŝablono.\n"
 
-#: ../src/iop/filmicrgb.c:4215
+#: ../src/iop/filmicrgb.c:4209
 msgid "mid-tones saturation"
 msgstr "meztona saturiĝo"
-
-#: ../src/iop/filmicrgb.c:4216
-#, fuzzy
-msgid ""
-"desaturates the output of the module\n"
-"specifically at medium luminances.\n"
-"increase if midtones are under-saturated."
-msgstr ""
-"malsaturigas la eliron de la modulo\n"
-"specife ĉe ekstremaj lumoj.\n"
-"pliiĝu se ombroj kaj / aŭ brilaĵoj estas nesufiĉe saturitaj."
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
@@ -15608,7 +15547,7 @@ msgstr "korekti lensajn optikajn difektojn"
 msgid "geometric and reconstruction, RGB"
 msgstr "geometria kaj rekonstruada, RVB"
 
-#: ../src/iop/lens.cc:1595
+#: ../src/iop/lens.cc:1559
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -15621,11 +15560,11 @@ msgstr ""
 "monto:\t\t%s\n"
 "tondada faktoro:\t%.1f"
 
-#: ../src/iop/lens.cc:1776
+#: ../src/iop/lens.cc:1740
 msgid "camera/lens not found"
 msgstr "fotilo/lenso ne trovite"
 
-#: ../src/iop/lens.cc:1777
+#: ../src/iop/lens.cc:1741
 msgid ""
 "please select your lens manually\n"
 "you might also want to check if your lensfun database is up-to-date\n"
@@ -15635,7 +15574,7 @@ msgstr ""
 "vi eble ankaŭ volas kontroli ĉu via datumbazo de lensfun estas ĝisdatigita\n"
 "per lanĉi lensfun_update_data"
 
-#: ../src/iop/lens.cc:1879
+#: ../src/iop/lens.cc:1843
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -15654,142 +15593,142 @@ msgstr ""
 "speco:\t\t%s\n"
 "montoj:\t%s"
 
-#: ../src/iop/lens.cc:1925
+#: ../src/iop/lens.cc:1889
 msgid "focal length (mm)"
 msgstr "fokusa distanco (mm)"
 
-#: ../src/iop/lens.cc:1949
+#: ../src/iop/lens.cc:1913
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:1950
+#: ../src/iop/lens.cc:1914
 msgid "f-number (aperture)"
 msgstr "f-nombro (aperturo)"
 
-#: ../src/iop/lens.cc:1964
+#: ../src/iop/lens.cc:1928
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.cc:1965
+#: ../src/iop/lens.cc:1929
 msgid "distance to subject"
 msgstr "distanco al subjekto"
 
-#: ../src/iop/lens.cc:2288
+#: ../src/iop/lens.cc:2251
 msgid "distortion & TCA"
 msgstr "distordo kaj TKA"
 
-#: ../src/iop/lens.cc:2294
+#: ../src/iop/lens.cc:2257
 msgid "distortion & vignetting"
 msgstr "distordo kaj vignetado"
 
-#: ../src/iop/lens.cc:2300
+#: ../src/iop/lens.cc:2263
 msgid "TCA & vignetting"
 msgstr "TKA kaj vignetado"
 
-#: ../src/iop/lens.cc:2306
+#: ../src/iop/lens.cc:2269
 msgid "only distortion"
 msgstr "nur distondo"
 
-#: ../src/iop/lens.cc:2312
+#: ../src/iop/lens.cc:2275
 msgid "only TCA"
 msgstr "nur TKA"
 
-#: ../src/iop/lens.cc:2318
+#: ../src/iop/lens.cc:2281
 msgid "only vignetting"
 msgstr "nur vignetado"
 
-#: ../src/iop/lens.cc:2327
+#: ../src/iop/lens.cc:2290
 msgid "camera model"
 msgstr "fotila modelo"
 
-#: ../src/iop/lens.cc:2330
+#: ../src/iop/lens.cc:2293
 msgid "find camera"
 msgstr "trovi fotilon"
 
-#: ../src/iop/lens.cc:2341
+#: ../src/iop/lens.cc:2304
 msgid "find lens"
 msgstr "trovi lenson"
 
 #. Page CORRECTIONS
-#: ../src/iop/lens.cc:2370 ../src/iop/negadoctor.c:876
+#: ../src/iop/lens.cc:2333 ../src/iop/negadoctor.c:876
 msgid "corrections"
 msgstr "korektoj"
 
-#: ../src/iop/lens.cc:2372
+#: ../src/iop/lens.cc:2335
 msgid "which corrections to apply"
 msgstr "tiuj korektoj aplikendaj"
 
-#: ../src/iop/lens.cc:2387
+#: ../src/iop/lens.cc:2350
 msgid "target geometry"
 msgstr "cela geometrio"
 
-#: ../src/iop/lens.cc:2388
+#: ../src/iop/lens.cc:2351
 msgid "rectilinear"
 msgstr "rektlineara"
 
-#: ../src/iop/lens.cc:2389
+#: ../src/iop/lens.cc:2352
 msgid "fish-eye"
 msgstr "fiŝokulo"
 
-#: ../src/iop/lens.cc:2390
+#: ../src/iop/lens.cc:2353
 msgid "panoramic"
 msgstr "panorama"
 
-#: ../src/iop/lens.cc:2391
+#: ../src/iop/lens.cc:2354
 msgid "equirectangular"
 msgstr "egirektangula"
 
-#: ../src/iop/lens.cc:2393
+#: ../src/iop/lens.cc:2356
 msgid "orthographic"
 msgstr "ortografia"
 
-#: ../src/iop/lens.cc:2394
+#: ../src/iop/lens.cc:2357
 msgid "stereographic"
 msgstr "stereografia"
 
-#: ../src/iop/lens.cc:2395
+#: ../src/iop/lens.cc:2358
 msgid "equisolid angle"
 msgstr "egala solida angulo"
 
-#: ../src/iop/lens.cc:2396
+#: ../src/iop/lens.cc:2359
 msgid "thoby fish-eye"
 msgstr "thoby fiŝokulo"
 
 #. scale
-#: ../src/iop/lens.cc:2402 ../src/iop/vignette.c:988
+#: ../src/iop/lens.cc:2365 ../src/iop/vignette.c:988
 #: ../src/iop/watermark.c:1302
 msgid "scale"
 msgstr "skalo"
 
-#: ../src/iop/lens.cc:2407
+#: ../src/iop/lens.cc:2370
 msgid "auto scale"
 msgstr "aŭtomate skali"
 
-#: ../src/iop/lens.cc:2411 ../src/libs/modulegroups.c:2405
+#: ../src/iop/lens.cc:2374 ../src/libs/modulegroups.c:2405
 msgid "correct"
 msgstr "korekti"
 
-#: ../src/iop/lens.cc:2412
+#: ../src/iop/lens.cc:2375
 msgid "distort"
 msgstr "distordi"
 
-#: ../src/iop/lens.cc:2413
+#: ../src/iop/lens.cc:2376
 msgid "correct distortions or apply them"
 msgstr "korekti distordojn aŭ apliki ilin"
 
-#: ../src/iop/lens.cc:2420
+#: ../src/iop/lens.cc:2383
 msgid "Transversal Chromatic Aberration red"
 msgstr "Transversa Kromata Aberacio ruĝa"
 
-#: ../src/iop/lens.cc:2424
+#: ../src/iop/lens.cc:2387
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Transversa Kromata Aberacio blua"
 
-#: ../src/iop/lens.cc:2429
+#: ../src/iop/lens.cc:2392
 msgid "corrections done: "
 msgstr "korektoj faritaj: "
 
-#: ../src/iop/lens.cc:2431
+#: ../src/iop/lens.cc:2394
 msgid "which corrections have actually been done"
 msgstr "kiuj korektoj efektive estis faritaj"
 
@@ -15860,8 +15799,8 @@ msgid ""
 "change direction"
 msgstr ""
 "alklaki kaj treni por aldoni punkton\n"
-"rulumi por ŝanĝi grandecon - majusklo+rulumi por ŝanĝi forton - "
-"stirklavo+rulumi por ŝanĝi direkton"
+"rulumi por ŝanĝi grandecon - majusklo+rulumi por ŝanĝi forton - stirklavo"
+"+rulumi por ŝanĝi direkton"
 
 #: ../src/iop/liquify.c:3602
 msgid ""
@@ -15870,8 +15809,8 @@ msgid ""
 "change direction"
 msgstr ""
 "alklaki por aldoni linion\n"
-"rulumi por ŝanĝi grandecon - majusklo+rulumi por ŝanĝi forton - "
-"stirklavo+rulumi por ŝanĝi direkton"
+"rulumi por ŝanĝi grandecon - majusklo+rulumi por ŝanĝi forton - stirklavo"
+"+rulumi por ŝanĝi direkton"
 
 #: ../src/iop/liquify.c:3606
 msgid ""
@@ -15880,8 +15819,8 @@ msgid ""
 "change direction"
 msgstr ""
 "alklaki por aldoni kurbon\n"
-"rulumi por ŝanĝi grandecon - majusklo+rulumi por ŝanĝi forton - "
-"stirklavo+rulumi por ŝanĝi direkton"
+"rulumi por ŝanĝi grandecon - majusklo+rulumi por ŝanĝi forton - stirklavo"
+"+rulumi por ŝanĝi direkton"
 
 #: ../src/iop/liquify.c:3609
 msgid "click to edit nodes"
@@ -16528,9 +16467,9 @@ msgstr "kiom por glatigi kolorojn"
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:72 ../src/views/darkroom.c:2354
-#: ../src/views/darkroom.c:2372 ../src/views/darkroom.c:2380
-#: ../src/views/darkroom.c:2391 ../src/views/darkroom.c:2408
+#: ../src/iop/overexposed.c:72 ../src/views/darkroom.c:2352
+#: ../src/views/darkroom.c:2370 ../src/views/darkroom.c:2378
+#: ../src/views/darkroom.c:2389 ../src/views/darkroom.c:2406
 msgid "overexposed"
 msgstr "troekspoziciita"
 
@@ -17689,15 +17628,15 @@ msgstr "+0 EV"
 msgid "advanced"
 msgstr "progresinta"
 
-#: ../src/iop/toneequal.c:3212
+#: ../src/iop/toneequal.c:3209
 msgid "double-click to reset the curve"
 msgstr "duoble-klaki por reagordi la kurbon"
 
-#: ../src/iop/toneequal.c:3216
+#: ../src/iop/toneequal.c:3213
 msgid "curve smoothing"
 msgstr "kurba glatigo"
 
-#: ../src/iop/toneequal.c:3217
+#: ../src/iop/toneequal.c:3214
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -17710,11 +17649,11 @@ msgstr ""
 "sed povas produkti brutalajn tonajn transirojn kaj damaĝi lokan kontraston."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3226
+#: ../src/iop/toneequal.c:3223
 msgid "masking"
 msgstr "maskado"
 
-#: ../src/iop/toneequal.c:3230
+#: ../src/iop/toneequal.c:3227
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -17722,15 +17661,15 @@ msgstr ""
 "antaŭrigardi la maskon kaj elektis la taksilon, kiu donas al vi la\n"
 "pli alta kontrasto inter areoj por eviti kaj areojn por bruligi"
 
-#: ../src/iop/toneequal.c:3233
+#: ../src/iop/toneequal.c:3230
 msgid "details"
 msgstr "detaloj"
 
-#: ../src/iop/toneequal.c:3234
+#: ../src/iop/toneequal.c:3231
 msgid "preserve details"
 msgstr "konservi detalojn"
 
-#: ../src/iop/toneequal.c:3235
+#: ../src/iop/toneequal.c:3232
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -17755,7 +17694,7 @@ msgstr ""
 "'averaged esgf' estas geometria meznombro de metodoj 'neniu' kaj 'ekspozicia "
 "sendependa gvidata filtrilo'"
 
-#: ../src/iop/toneequal.c:3243
+#: ../src/iop/toneequal.c:3240
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -17763,7 +17702,7 @@ msgstr ""
 "nombro de enirpermesiloj de gvidita filtrilo por apliki\n"
 "helpas disvastigi la randojn de la filtrilo koste de rapideco"
 
-#: ../src/iop/toneequal.c:3249
+#: ../src/iop/toneequal.c:3246
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -17773,7 +17712,7 @@ msgstr ""
 "averto: grandaj valoroj de ĉi tiu parametro povas fari la malluman ĉambron\n"
 "antaŭrigardi multe pli malrapide se oni uzas denoise-profilon."
 
-#: ../src/iop/toneequal.c:3256
+#: ../src/iop/toneequal.c:3253
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -17787,11 +17726,11 @@ msgstr ""
 "pli malaltaj valoroj donas pli glatajn gradientojn kaj pli bonan glatigon\n"
 "sed povas konduki al malprecizaj randoj frapantaj kaj aŭreoloj"
 
-#: ../src/iop/toneequal.c:3262
+#: ../src/iop/toneequal.c:3259
 msgid "mask post-processing"
 msgstr "maska post-prilaborado"
 
-#: ../src/iop/toneequal.c:3269
+#: ../src/iop/toneequal.c:3266
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -17801,7 +17740,7 @@ msgstr ""
 "la centra linio montras la mezumon. oranĝaj stangoj aperas ĉe ekstremaĵoj se "
 "tondado okazas."
 
-#: ../src/iop/toneequal.c:3276
+#: ../src/iop/toneequal.c:3273
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -17811,7 +17750,7 @@ msgstr ""
 "pli altaj valoroj afiŝas la luman maskon por helpi la gvidadon\n"
 "produkti popece glatajn areojn uzante altajn plumajn valorojn"
 
-#: ../src/iop/toneequal.c:3283
+#: ../src/iop/toneequal.c:3280
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -17821,7 +17760,7 @@ msgstr ""
 "por pli bona kontrolo de la ekspozicia korekto kun la disponeblaj nodoj.\n"
 "la magia vergo aŭtomate adaptos la averaĝan ekspozicion"
 
-#: ../src/iop/toneequal.c:3293
+#: ../src/iop/toneequal.c:3290
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -17835,7 +17774,7 @@ msgstr ""
 "por pli bona kontrolo de la ekspona korekto\n"
 "la magia vergo aŭtomate agordos la kontraston"
 
-#: ../src/iop/toneequal.c:3313 ../src/iop/toneequal.c:3317
+#: ../src/iop/toneequal.c:3310 ../src/iop/toneequal.c:3314
 msgid "display exposure mask"
 msgstr "montri ekspozician maskon"
 
@@ -18379,8 +18318,8 @@ msgid "files"
 msgstr "dosieroj"
 
 #: ../src/libs/collect.c:2853 ../src/libs/export_metadata.c:301
-#: ../src/libs/image.c:479 ../src/libs/image.c:584 ../src/libs/metadata.c:502
-#: ../src/libs/metadata.c:673 ../src/libs/metadata_view.c:1270
+#: ../src/libs/image.c:479 ../src/libs/image.c:584 ../src/libs/metadata.c:492
+#: ../src/libs/metadata.c:663 ../src/libs/metadata_view.c:1270
 msgid "metadata"
 msgstr "metadatenoj"
 
@@ -18401,14 +18340,14 @@ msgid "collections settings"
 msgstr "agordoj de kolektado"
 
 #: ../src/libs/collect.c:2905 ../src/libs/export_metadata.c:281
-#: ../src/libs/metadata.c:462 ../src/libs/metadata_view.c:1239
-#: ../src/libs/recentcollect.c:320 ../src/libs/tagging.c:1668
-#: ../src/libs/tagging.c:1798 ../src/libs/tagging.c:2073
+#: ../src/libs/metadata.c:452 ../src/libs/metadata_view.c:1239
+#: ../src/libs/recentcollect.c:320 ../src/libs/tagging.c:1518
+#: ../src/libs/tagging.c:1648 ../src/libs/tagging.c:1923
 msgid "save"
 msgstr "konservi"
 
 #: ../src/libs/collect.c:2919 ../src/libs/export.c:1059
-#: ../src/libs/metadata.c:596 ../src/libs/metadata_view.c:1350
+#: ../src/libs/metadata.c:586 ../src/libs/metadata_view.c:1350
 #: ../src/libs/recentcollect.c:382
 msgid "preferences..."
 msgstr "preferencoj..."
@@ -19097,7 +19036,7 @@ msgid "open GPX file"
 msgstr "malfermi GPX dosieron"
 
 #: ../src/libs/geotagging.c:934 ../src/views/darkroom.c:2163
-#: ../src/views/lighttable.c:653
+#: ../src/views/lighttable.c:716
 msgid "preview"
 msgstr "antaŭvido"
 
@@ -19926,11 +19865,11 @@ msgstr "administri zapagordarojn..."
 msgid "nothing to save"
 msgstr "nenio konservenda"
 
-#: ../src/libs/lib.c:992
+#: ../src/libs/lib.c:999
 msgid "show module"
 msgstr "montri modulon"
 
-#: ../src/libs/lib.c:1268
+#: ../src/libs/lib.c:1275
 msgid "utility module"
 msgstr "utileca modulo"
 
@@ -20297,15 +20236,15 @@ msgstr "metadatena redaktilo"
 msgid "<leave unchanged>"
 msgstr "<lasi senŝanĝe>"
 
-#: ../src/libs/metadata.c:460 ../src/libs/metadata_view.c:1237
+#: ../src/libs/metadata.c:450 ../src/libs/metadata_view.c:1237
 msgid "metadata settings"
 msgstr "metadatenaj agordoj"
 
-#: ../src/libs/metadata.c:508 ../src/libs/metadata_view.c:1281
+#: ../src/libs/metadata.c:498 ../src/libs/metadata_view.c:1281
 msgid "visible"
 msgstr "videble"
 
-#: ../src/libs/metadata.c:513
+#: ../src/libs/metadata.c:503
 msgid ""
 "tick if the corresponding metadata is of interest for you\n"
 "it will be visible from metadata editor, collection and import module\n"
@@ -20315,22 +20254,22 @@ msgstr ""
 "ĝi estos videbla de metadatuma redaktilo, kolekto kaj importa modulo\n"
 "ĝi ankaŭ estos eksportata"
 
-#: ../src/libs/metadata.c:518 ../src/libs/tagging.c:1698
-#: ../src/libs/tagging.c:1842
+#: ../src/libs/metadata.c:508 ../src/libs/tagging.c:1548
+#: ../src/libs/tagging.c:1692
 msgid "private"
 msgstr "private"
 
-#: ../src/libs/metadata.c:523
+#: ../src/libs/metadata.c:513
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 "marku se vi volas teni ĉi tiun informon privata (ne eksportota kun bildoj)"
 
-#: ../src/libs/metadata.c:635
+#: ../src/libs/metadata.c:625
 msgid "metadata list"
 msgstr "metadatena listo"
 
-#: ../src/libs/metadata.c:747
+#: ../src/libs/metadata.c:737
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -20346,60 +20285,60 @@ msgstr ""
 "en tiu kazo, dekstra klako donas la eblon elekti unu el ili.\n"
 "premu eskapi por forigi la ŝprucfenestron"
 
-#: ../src/libs/metadata.c:793
+#: ../src/libs/metadata.c:783
 msgid "write metadata for selected images"
 msgstr "skribi metadatenojn por elektitaj bildoj"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:845
+#: ../src/libs/metadata.c:835
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:845
+#: ../src/libs/metadata.c:835
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Krea Komunaĵo Atribuo (CC BY)"
 
-#: ../src/libs/metadata.c:846
+#: ../src/libs/metadata.c:836
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:846
+#: ../src/libs/metadata.c:836
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Krea Komunaĵo Atribuite-Samkondiĉe (CC BY-SA)"
 
-#: ../src/libs/metadata.c:847
+#: ../src/libs/metadata.c:837
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:847
+#: ../src/libs/metadata.c:837
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Krea Komunaĵo Atribuite-SenDerive (CC BY-ND)"
 
-#: ../src/libs/metadata.c:848
+#: ../src/libs/metadata.c:838
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:848
+#: ../src/libs/metadata.c:838
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Krea Komunaĵo Atribuite-SenKomerce (CC BY-NC)"
 
-#: ../src/libs/metadata.c:849
+#: ../src/libs/metadata.c:839
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:850
+#: ../src/libs/metadata.c:840
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Krea Komunaĵo Atribuite-SenKomerce-SamKondiĉe (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:851
+#: ../src/libs/metadata.c:841
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:852
+#: ../src/libs/metadata.c:842
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Krea Komunaĵo Atribuite-SenKomerce-SenDerive (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:853
+#: ../src/libs/metadata.c:843
 msgid "all rights reserved"
 msgstr "ĉiuj rajtoj reservitaj"
 
@@ -21179,7 +21118,7 @@ msgstr "presi"
 msgid "print with current settings"
 msgstr "presi kun aktualaj agordoj"
 
-#: ../src/libs/print_settings.c:3069
+#: ../src/libs/print_settings.c:3065
 msgctxt "accel"
 msgid "print"
 msgstr "presi"
@@ -21387,7 +21326,7 @@ msgid "create styles from history stack of selected images"
 msgstr "krei stilojn de kistoria stako de elektitaj bildoj"
 
 #. edit
-#: ../src/libs/styles.c:868 ../src/libs/tagging.c:2268
+#: ../src/libs/styles.c:868 ../src/libs/tagging.c:2118
 msgid "edit..."
 msgstr "redakti..."
 
@@ -21400,7 +21339,7 @@ msgid "removes the selected styles in list above"
 msgstr "forigi la elektitajn stilojn en la supra listo"
 
 #. import button
-#: ../src/libs/styles.c:878 ../src/libs/tagging.c:3307
+#: ../src/libs/styles.c:878 ../src/libs/tagging.c:3072
 msgctxt "verb"
 msgid "import..."
 msgstr "importi..."
@@ -21417,100 +21356,64 @@ msgstr "eksporti la elektitajn stilojn al stila dosiero"
 msgid "apply the selected styles in list above to selected images"
 msgstr "apliki la elektitajn stilojn en la supra listo al elektitaj bildoj"
 
-#: ../src/libs/tagging.c:104
+#: ../src/libs/tagging.c:103
 msgid "tagging"
 msgstr "etikedado"
 
-#: ../src/libs/tagging.c:129
+#: ../src/libs/tagging.c:128
 msgctxt "accel"
 msgid "attach"
 msgstr "alligi"
 
-#: ../src/libs/tagging.c:130
+#: ../src/libs/tagging.c:129
 msgctxt "accel"
 msgid "detach"
 msgstr "malligi"
 
-#: ../src/libs/tagging.c:131
+#: ../src/libs/tagging.c:130
 msgctxt "accel"
 msgid "new"
 msgstr "nova"
 
-#: ../src/libs/tagging.c:132
+#: ../src/libs/tagging.c:131
 msgctxt "accel"
 msgid "import..."
 msgstr "importi..."
 
-#: ../src/libs/tagging.c:133
+#: ../src/libs/tagging.c:132
 msgctxt "accel"
 msgid "export..."
 msgstr "eksporti..."
 
-#: ../src/libs/tagging.c:134
-#, fuzzy
-msgctxt "accel"
-msgid "clear entry"
-msgstr "forviŝi eniron"
-
-#: ../src/libs/tagging.c:135
-#, fuzzy
-msgctxt "accel"
-msgid "toggle tree"
-msgstr "ŝalti kaplinion"
-
-#: ../src/libs/tagging.c:136
-#, fuzzy
-msgctxt "accel"
-msgid "toggle suggestion"
-msgstr "ŝalti liston kun / sen propono"
-
-#: ../src/libs/tagging.c:137
-#, fuzzy
-msgctxt "accel"
-msgid "toggle sort"
-msgstr "ŝanĝi"
-
-#: ../src/libs/tagging.c:138
-#, fuzzy
-msgctxt "accel"
-msgid "toggle hide"
-msgstr "ŝalti kaplinion"
-
-#: ../src/libs/tagging.c:139
-#, fuzzy
-msgctxt "accel"
-msgid "toggle dttags"
-msgstr "geo-etikedoj"
-
-#: ../src/libs/tagging.c:140
+#: ../src/libs/tagging.c:133
 msgctxt "accel"
 msgid "tag"
 msgstr "etikedi"
 
-#: ../src/libs/tagging.c:141
+#: ../src/libs/tagging.c:134
 msgctxt "accel"
 msgid "redo last tag"
 msgstr "refari lastan etikedon"
 
-#: ../src/libs/tagging.c:1280
+#: ../src/libs/tagging.c:1196
 msgid "attach tag to all"
 msgstr "alligi etikedon al ĉiuj"
 
-#: ../src/libs/tagging.c:1288 ../src/libs/tagging.c:2241
+#: ../src/libs/tagging.c:1204 ../src/libs/tagging.c:2091
 msgid "detach tag"
 msgstr "malligi etikedon"
 
-#: ../src/libs/tagging.c:1498
+#: ../src/libs/tagging.c:1348
 msgid "delete tag?"
 msgstr "forviŝi etikedon?"
 
-#: ../src/libs/tagging.c:1505 ../src/libs/tagging.c:1593
-#: ../src/libs/tagging.c:1804 ../src/libs/tagging.c:2079
+#: ../src/libs/tagging.c:1355 ../src/libs/tagging.c:1443
+#: ../src/libs/tagging.c:1654 ../src/libs/tagging.c:1929
 #, c-format
 msgid "selected: %s"
 msgstr "elektita: %s"
 
-#: ../src/libs/tagging.c:1512
+#: ../src/libs/tagging.c:1362
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -21525,73 +21428,73 @@ msgstr[1] ""
 "ĉu vi vere volas forviŝi la etikedon `%s'?\n"
 "%d bildoj ricevis ĉi tiun etikedon!"
 
-#: ../src/libs/tagging.c:1546
+#: ../src/libs/tagging.c:1396
 #, c-format
 msgid "tag %s removed"
 msgstr "etikedo %s forigita"
 
-#: ../src/libs/tagging.c:1586
+#: ../src/libs/tagging.c:1436
 msgid "delete node?"
 msgstr "forviŝi nodon?"
 
-#: ../src/libs/tagging.c:1600
+#: ../src/libs/tagging.c:1450
 #, c-format
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
 msgstr[0] "<u>%d</u> etikedo estos forviŝita"
 msgstr[1] "<u>%d</u> etikedoj estos forviŝitaj"
 
-#: ../src/libs/tagging.c:1605 ../src/libs/tagging.c:1816
-#: ../src/libs/tagging.c:2091
+#: ../src/libs/tagging.c:1455 ../src/libs/tagging.c:1666
+#: ../src/libs/tagging.c:1941
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
 msgstr[0] "<u>%d</u> bildo estos ĝisdatigita"
 msgstr[1] "<u>%d</u> bildoj estos ĝisdatigitaj"
 
-#: ../src/libs/tagging.c:1631
+#: ../src/libs/tagging.c:1481
 #, c-format
 msgid "%d tags removed"
 msgstr "%d etikedoj forigitaj"
 
-#: ../src/libs/tagging.c:1667
+#: ../src/libs/tagging.c:1517
 msgid "create tag"
 msgstr "krei etikedon"
 
-#: ../src/libs/tagging.c:1677 ../src/libs/tagging.c:1824
+#: ../src/libs/tagging.c:1527 ../src/libs/tagging.c:1674
 msgid "name: "
 msgstr "nomo: "
 
-#: ../src/libs/tagging.c:1689
+#: ../src/libs/tagging.c:1539
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "aldoni al: \"%s\" "
 
-#: ../src/libs/tagging.c:1695 ../src/libs/tagging.c:1839
+#: ../src/libs/tagging.c:1545 ../src/libs/tagging.c:1689
 msgid "category"
 msgstr "kategorio"
 
-#: ../src/libs/tagging.c:1704 ../src/libs/tagging.c:1848
+#: ../src/libs/tagging.c:1554 ../src/libs/tagging.c:1698
 msgid "synonyms: "
 msgstr "sinonimoj: "
 
-#: ../src/libs/tagging.c:1721 ../src/libs/tagging.c:1870
-#: ../src/libs/tagging.c:2113
+#: ../src/libs/tagging.c:1571 ../src/libs/tagging.c:1720
+#: ../src/libs/tagging.c:1963
 msgid "empty tag is not allowed, aborting"
 msgstr "malplena etikedo estas malpermesata, abortante"
 
-#: ../src/libs/tagging.c:1732
+#: ../src/libs/tagging.c:1582
 msgid "tag name already exists. aborting."
 msgstr "nomo de etikedo jam ekzistas. abortante."
 
-#: ../src/libs/tagging.c:1811 ../src/libs/tagging.c:2086
+#: ../src/libs/tagging.c:1661 ../src/libs/tagging.c:1936
 #, c-format
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
 msgstr[0] "<u>%d</u> etikedo estos ĝisdatiga"
 msgstr[1] "<u>%d</u> etikedoj estos ĝisdatigaj"
 
-#: ../src/libs/tagging.c:1872
+#: ../src/libs/tagging.c:1722
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
@@ -21599,111 +21502,109 @@ msgstr ""
 "'|' signo estas malpermesata por renomado de etikedo.\n"
 "por modifi la hierarkion, anstataŭe renomu vojon. Abortanta."
 
-#: ../src/libs/tagging.c:1911
+#: ../src/libs/tagging.c:1761
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "almenaŭ unu nova etikednomo (%s) jam ekzistas, abortante"
 
-#: ../src/libs/tagging.c:2019
+#: ../src/libs/tagging.c:1869
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "almenaŭ unu nova etikednomo (%s) jam ekzistas, abortante."
 
-#: ../src/libs/tagging.c:2072
+#: ../src/libs/tagging.c:1922
 msgid "change path"
 msgstr "ŝanĝi vojon"
 
-#: ../src/libs/tagging.c:2115
+#: ../src/libs/tagging.c:1965
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' mislokigita, malplena etikedo ne estas permesata, abortante"
 
-#: ../src/libs/tagging.c:2211
+#: ../src/libs/tagging.c:2061
 #, c-format
 msgid "tag %s created"
 msgstr "etikedo %s estas kreiita"
 
-#: ../src/libs/tagging.c:2237
+#: ../src/libs/tagging.c:2087
 msgid "attach tag"
 msgstr "alligi etikedon"
 
-#: ../src/libs/tagging.c:2250
+#: ../src/libs/tagging.c:2100
 msgid "create tag..."
 msgstr "krei etikedon..."
 
-#: ../src/libs/tagging.c:2256
+#: ../src/libs/tagging.c:2106
 msgid "delete tag"
 msgstr "forviŝi etikedon"
 
-#: ../src/libs/tagging.c:2263
+#: ../src/libs/tagging.c:2113
 msgid "delete node"
 msgstr "forviŝi nodon"
 
-#: ../src/libs/tagging.c:2276
+#: ../src/libs/tagging.c:2126
 msgid "change path..."
 msgstr "ŝanĝi vojon..."
 
-#: ../src/libs/tagging.c:2286
+#: ../src/libs/tagging.c:2136
 msgid "set as a tag"
 msgstr "agordi kiel etikedo"
 
-#: ../src/libs/tagging.c:2297
+#: ../src/libs/tagging.c:2147
 msgid "copy to entry"
 msgstr "kopii al eniro"
 
-#: ../src/libs/tagging.c:2314
+#: ../src/libs/tagging.c:2164
 msgid "go to tag collection"
 msgstr "iru al etikedaro"
 
-#: ../src/libs/tagging.c:2320
+#: ../src/libs/tagging.c:2170
 msgid "go back to work"
 msgstr "reeklabori"
 
-#: ../src/libs/tagging.c:2477
+#: ../src/libs/tagging.c:2264
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2478
+#: ../src/libs/tagging.c:2265
 msgid "(private)"
 msgstr "(privata)"
 
-#: ../src/libs/tagging.c:2504
+#: ../src/libs/tagging.c:2291
 msgid "select a keyword file"
 msgstr "elekti ŝlosilvortan dosieron"
 
-#: ../src/libs/tagging.c:2517
+#: ../src/libs/tagging.c:2304
 msgid "error importing tags"
 msgstr "eraro importante etikedojn"
 
-#: ../src/libs/tagging.c:2519
+#: ../src/libs/tagging.c:2306
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd etikedoj importitaj"
 
-#: ../src/libs/tagging.c:2540
+#: ../src/libs/tagging.c:2327
 msgid "select file to export to"
 msgstr "elekti celan dosieron por eksporto"
 
-#: ../src/libs/tagging.c:2554
+#: ../src/libs/tagging.c:2341
 msgid "error exporting tags"
 msgstr "eraro eksportante etikedojn"
 
-#: ../src/libs/tagging.c:2556
+#: ../src/libs/tagging.c:2343
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd etikedoj eksportitaj"
 
-#: ../src/libs/tagging.c:3005
+#: ../src/libs/tagging.c:2792
 msgid "drop to root"
 msgstr "fali al radiko"
 
-#: ../src/libs/tagging.c:3145
-#, fuzzy
+#: ../src/libs/tagging.c:2924
 msgid ""
 "attached tags,\n"
-"press Delete or double-click to detach\n"
+"double-click to detach\n"
 "right-click for other actions on attached tag,\n"
-"press Tab to give the focus to entry,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
 "alligitaj etikedoj,\n"
@@ -21711,58 +21612,55 @@ msgstr ""
 "dekstre alklaki por aliaj agoj pri alligita etikedo,\n"
 "stirklavo-rulumi por regrandigi la fenestron"
 
-#: ../src/libs/tagging.c:3158
+#: ../src/libs/tagging.c:2934
 msgid "attach"
 msgstr "alligi"
 
-#: ../src/libs/tagging.c:3158
+#: ../src/libs/tagging.c:2934
 msgid "attach tag to all selected images"
 msgstr "alligi etikedon al ĉiuj elektitaj bildoj"
 
-#: ../src/libs/tagging.c:3162
+#: ../src/libs/tagging.c:2938
 msgid "detach"
 msgstr "malligi"
 
-#: ../src/libs/tagging.c:3162
+#: ../src/libs/tagging.c:2938
 msgid "detach tag from all selected images"
 msgstr "malligi etikedon de ĉiuj elektitaj bildoj"
 
-#: ../src/libs/tagging.c:3168
+#: ../src/libs/tagging.c:2944
 msgid "toggle list with / without hierarchy"
 msgstr "ŝalti liston kun / sen hierarkio"
 
-#: ../src/libs/tagging.c:3176
+#: ../src/libs/tagging.c:2952
 msgid "toggle sort by name or by count"
 msgstr "ŝalti ordigado laŭ nomo aŭ laŭ kalkulo"
 
-#: ../src/libs/tagging.c:3186
+#: ../src/libs/tagging.c:2962
 msgid "toggle show or not darktable tags"
 msgstr "ŝalti ĉu montri aŭ ne darktable etikedojn"
 
-#: ../src/libs/tagging.c:3204
-msgid ""
-"enter tag name\n"
-"press Enter to create a new tag and attach it on selected images\n"
-"press Tab or Down key to go to the first matching tag\n"
-"press shift+Tab to select the first attached user tag"
-msgstr ""
+#: ../src/libs/tagging.c:2980
+msgid "enter tag name"
+msgstr "eniru etikedan nomon"
 
-#: ../src/libs/tagging.c:3215
+#: ../src/libs/tagging.c:2988
 msgid "clear entry"
 msgstr "forviŝi eniron"
 
-#: ../src/libs/tagging.c:3266
+#: ../src/libs/tagging.c:3037
 msgid ""
 "tag dictionary,\n"
-"press Enter or double-click to attach selected tag on selected images,\n"
-"idem for shift+Enter plus gives the focus to entry,\n"
-"shift+click to fully expand the selected tag,\n"
+"double-click to attach,\n"
 "right-click for other actions on selected tag,\n"
-"press shift+Tab to give the focus to entry,\n"
-"ctrl-scroll to resize the window"
+"ctrl-wheel scroll to resize the window"
 msgstr ""
+"etikedvortaro,\n"
+"duoble alklaku por alligi,\n"
+"dekstre alklaku por aliaj agoj sur elektita etikedo,\n"
+"stirklavo-rulumi por regrandigi la fenestron"
 
-#: ../src/libs/tagging.c:3303
+#: ../src/libs/tagging.c:3068
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -21770,28 +21668,28 @@ msgstr ""
 "krei novan etikedon per la\n"
 "nomo, kiun vi enigis"
 
-#: ../src/libs/tagging.c:3307
+#: ../src/libs/tagging.c:3072
 msgid "import tags from a Lightroom keyword file"
 msgstr "importi etikedojn el ŝlosilvorta dosiero de Lightroom"
 
-#: ../src/libs/tagging.c:3311
+#: ../src/libs/tagging.c:3076
 msgctxt "verb"
 msgid "export..."
 msgstr "eksporti..."
 
-#: ../src/libs/tagging.c:3311
+#: ../src/libs/tagging.c:3076
 msgid "export all tags to a Lightroom keyword file"
 msgstr "eksporti ĉiujn etikedojn al ŝlosilvorta dosireo de Lightroom"
 
-#: ../src/libs/tagging.c:3317
+#: ../src/libs/tagging.c:3082
 msgid "toggle list / tree view"
 msgstr "ŝalti listan / arban vidon"
 
-#: ../src/libs/tagging.c:3325
+#: ../src/libs/tagging.c:3090
 msgid "toggle list with / without suggestion"
 msgstr "ŝalti liston kun / sen propono"
 
-#: ../src/libs/tagging.c:3450
+#: ../src/libs/tagging.c:3215
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
@@ -22305,7 +22203,7 @@ msgstr "marki per solida koloro"
 msgid "false color"
 msgstr "falsa koloro"
 
-#: ../src/views/darkroom.c:2324 ../src/views/darkroom.c:2380
+#: ../src/views/darkroom.c:2324 ../src/views/darkroom.c:2378
 msgid "color scheme"
 msgstr "kolorskemo"
 
@@ -22347,7 +22245,7 @@ msgstr ""
 "1,0 - blanka nivelo\n"
 "0,0 - nigra nivelo"
 
-#: ../src/views/darkroom.c:2356
+#: ../src/views/darkroom.c:2354
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -22355,11 +22253,11 @@ msgstr ""
 "ŝalti tondindikon\n"
 "dekstre klaki por opcioj"
 
-#: ../src/views/darkroom.c:2372
+#: ../src/views/darkroom.c:2370
 msgid "clipping preview mode"
 msgstr "detonda antaŭvida reĝimo"
 
-#: ../src/views/darkroom.c:2373
+#: ../src/views/darkroom.c:2371
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -22367,39 +22265,39 @@ msgstr ""
 "elekti la metrikon, kiun vi volas antaŭvidi\n"
 "plena gamo estas la kombino de ĉiuj aliaj reĝimoj"
 
-#: ../src/views/darkroom.c:2375
+#: ../src/views/darkroom.c:2373
 msgid "full gamut"
 msgstr "plena gamo"
 
-#: ../src/views/darkroom.c:2375
+#: ../src/views/darkroom.c:2373
 msgid "any RGB channel"
 msgstr "iu ajn RVB kanalo"
 
-#: ../src/views/darkroom.c:2375
+#: ../src/views/darkroom.c:2373
 msgid "luminance only"
 msgstr "nur lumeco"
 
-#: ../src/views/darkroom.c:2375
+#: ../src/views/darkroom.c:2373
 msgid "saturation only"
 msgstr "nur saturiĝo"
 
-#: ../src/views/darkroom.c:2381
+#: ../src/views/darkroom.c:2379
 msgid "select colors to indicate clipping"
 msgstr "elekti kolorojn kiuj indikos detondado"
 
-#: ../src/views/darkroom.c:2383
+#: ../src/views/darkroom.c:2381
 msgid "red & blue"
 msgstr "ruĝa kaj blua"
 
-#: ../src/views/darkroom.c:2383
+#: ../src/views/darkroom.c:2381
 msgid "purple & green"
 msgstr "purpura kaj verda"
 
-#: ../src/views/darkroom.c:2391
+#: ../src/views/darkroom.c:2389
 msgid "lower threshold"
 msgstr "malalta sojlo"
 
-#: ../src/views/darkroom.c:2392
+#: ../src/views/darkroom.c:2390
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -22419,11 +22317,11 @@ msgstr ""
 "tipaj koloraj brilaj presaĵoj produktas nigron ĉe -8,00 EV,\n"
 "tipaj brilaj brilvinaĵoj produktas nigron ĉe -9,00 EV."
 
-#: ../src/views/darkroom.c:2408
+#: ../src/views/darkroom.c:2406
 msgid "upper threshold"
 msgstr "alta sojlo"
 
-#: ../src/views/darkroom.c:2410
+#: ../src/views/darkroom.c:2408
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -22432,7 +22330,7 @@ msgstr ""
 "detonda sojlo por la blanka punkto.\n"
 "100% estas pinta lumeco de mediumo."
 
-#: ../src/views/darkroom.c:2425
+#: ../src/views/darkroom.c:2421
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -22440,7 +22338,7 @@ msgstr ""
 "ŝalti molpruvadon\n"
 "dekstre klaki por profilaj opcioj"
 
-#: ../src/views/darkroom.c:2436
+#: ../src/views/darkroom.c:2432
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -22448,49 +22346,49 @@ msgstr ""
 "ŝalti gaman kontroladon\n"
 "dekstre klaki por profilaj opcioj"
 
-#: ../src/views/darkroom.c:2460 ../src/views/darkroom.c:2467
-#: ../src/views/darkroom.c:2486 ../src/views/darkroom.c:2487
-#: ../src/views/darkroom.c:2488 ../src/views/darkroom.c:2489
+#: ../src/views/darkroom.c:2456 ../src/views/darkroom.c:2463
+#: ../src/views/darkroom.c:2482 ../src/views/darkroom.c:2483
+#: ../src/views/darkroom.c:2484 ../src/views/darkroom.c:2485
 msgid "profiles"
 msgstr "profiloj"
 
-#: ../src/views/darkroom.c:2467
+#: ../src/views/darkroom.c:2463
 msgid "preview intent"
 msgstr "antaŭvidi intencon"
 
-#: ../src/views/darkroom.c:2486 ../src/views/lighttable.c:1265
+#: ../src/views/darkroom.c:2482 ../src/views/lighttable.c:1332
 msgid "display profile"
 msgstr "ekrana profilo"
 
-#: ../src/views/darkroom.c:2487 ../src/views/lighttable.c:1268
+#: ../src/views/darkroom.c:2483 ../src/views/lighttable.c:1335
 msgid "preview display profile"
 msgstr "ekrana antaŭvida profilo"
 
-#: ../src/views/darkroom.c:2489
+#: ../src/views/darkroom.c:2485
 msgid "histogram profile"
 msgstr "histograma profilo"
 
-#: ../src/views/darkroom.c:2553 ../src/views/lighttable.c:1304
+#: ../src/views/darkroom.c:2549 ../src/views/lighttable.c:1371
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "ekranaj IKK profiloj en %s aŭ %s"
 
-#: ../src/views/darkroom.c:2556 ../src/views/lighttable.c:1307
+#: ../src/views/darkroom.c:2552 ../src/views/lighttable.c:1374
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "ekranaj antaŭvidaj IKK profiloj en %s aŭ %s"
 
-#: ../src/views/darkroom.c:2559
+#: ../src/views/darkroom.c:2555
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "molpruvadaj IKK profiloj en %s aŭ %s"
 
-#: ../src/views/darkroom.c:2562
+#: ../src/views/darkroom.c:2558
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "histogramaj kaj kolorelektilaj IKK profiloj en %s aŭ %s"
 
-#: ../src/views/darkroom.c:2599
+#: ../src/views/darkroom.c:2593
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -22499,201 +22397,201 @@ msgstr ""
 "dekstre klaki por opcioj de gvidoj"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2618
+#: ../src/views/darkroom.c:2612
 msgctxt "accel"
 msgid "full preview"
 msgstr "plena antaŭvido"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2622
+#: ../src/views/darkroom.c:2616
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permesi panorami kaj zomi redaktante maskojn"
 
-#: ../src/views/darkroom.c:3827
+#: ../src/views/darkroom.c:3821
 msgid "keyboard shortcut slider precision: fine"
 msgstr "klavara ŝparvoja ĝustigila precizeco: fajne"
 
-#: ../src/views/darkroom.c:3829
+#: ../src/views/darkroom.c:3823
 msgid "keyboard shortcut slider precision: normal"
 msgstr "klavara ŝparvoja ĝustigila precizeco: normale"
 
-#: ../src/views/darkroom.c:3831
+#: ../src/views/darkroom.c:3825
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "klavara ŝparvoja ĝustigila precizeco: krude"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3868
+#: ../src/views/darkroom.c:3862
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zomi proksime"
 
-#: ../src/views/darkroom.c:3869
+#: ../src/views/darkroom.c:3863
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zomi plenumi"
 
-#: ../src/views/darkroom.c:3870
+#: ../src/views/darkroom.c:3864
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zomi persvade"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3873 ../src/views/lighttable.c:827
+#: ../src/views/darkroom.c:3867 ../src/views/lighttable.c:890
 msgctxt "accel"
 msgid "zoom in"
 msgstr "zomi enen"
 
-#: ../src/views/darkroom.c:3874 ../src/views/lighttable.c:829
+#: ../src/views/darkroom.c:3868 ../src/views/lighttable.c:892
 msgctxt "accel"
 msgid "zoom out"
 msgstr "zomi eksteren"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3877
+#: ../src/views/darkroom.c:3871
 msgctxt "accel"
 msgid "image forward"
 msgstr "sekva bildo"
 
-#: ../src/views/darkroom.c:3878
+#: ../src/views/darkroom.c:3872
 msgctxt "accel"
 msgid "image back"
 msgstr "antaŭa bildo"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3881
+#: ../src/views/darkroom.c:3875
 msgctxt "accel"
 msgid "color assessment"
 msgstr "kolora takso"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3884
+#: ../src/views/darkroom.c:3878
 msgctxt "accel"
 msgid "raw overexposed/toggle"
 msgstr "kruda troekspozicio/ŝanĝi"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3887
+#: ../src/views/darkroom.c:3881
 msgctxt "accel"
 msgid "overexposed/toggle"
 msgstr "troekspozicio/ŝanĝi"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3890
+#: ../src/views/darkroom.c:3884
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "cikli surmetajn kolorojn"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3893
+#: ../src/views/darkroom.c:3887
 msgctxt "accel"
 msgid "softproof"
 msgstr "molpruvi"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3896
+#: ../src/views/darkroom.c:3890
 msgctxt "accel"
 msgid "gamut check"
 msgstr "kontroli gamon"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:3899
+#: ../src/views/darkroom.c:3893
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "montri desegnitajn maskojn"
 
 #. toggle visibility of guide lines
-#: ../src/views/darkroom.c:3902
+#: ../src/views/darkroom.c:3896
 msgctxt "accel"
 msgid "guide lines/toggle"
 msgstr "gvidlinioj/ŝanĝi"
 
 #. toggle visibility of second window
-#: ../src/views/darkroom.c:3905
+#: ../src/views/darkroom.c:3899
 msgctxt "accel"
 msgid "second window"
 msgstr "dua fenestro"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3908
+#: ../src/views/darkroom.c:3902
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "pligrandigi peniko"
 
-#: ../src/views/darkroom.c:3909
+#: ../src/views/darkroom.c:3903
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "plimalgrandigi penikon"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3912
+#: ../src/views/darkroom.c:3906
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "plimalmoligi penikon"
 
-#: ../src/views/darkroom.c:3913
+#: ../src/views/darkroom.c:3907
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "plimoligi penikon"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3916
+#: ../src/views/darkroom.c:3910
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "pliigi penikan maldiafanecon"
 
-#: ../src/views/darkroom.c:3917
+#: ../src/views/darkroom.c:3911
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "malpliigi penikan maldiafanecon"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3920 ../src/views/lighttable.c:819
+#: ../src/views/darkroom.c:3914 ../src/views/lighttable.c:882
 #: ../src/views/map.c:2087
 msgctxt "accel"
 msgid "undo"
 msgstr "malfari"
 
-#: ../src/views/darkroom.c:3921 ../src/views/lighttable.c:820
+#: ../src/views/darkroom.c:3915 ../src/views/lighttable.c:883
 #: ../src/views/map.c:2088
 msgctxt "accel"
 msgid "redo"
 msgstr "refari"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3924
+#: ../src/views/darkroom.c:3918
 msgctxt "accel"
 msgid "search modules"
 msgstr "serĉi modulojn"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:3927
+#: ../src/views/darkroom.c:3921
 msgctxt "accel"
 msgid "change keyboard shortcut slider precision"
 msgstr "ŝanĝi klavaran ŝparvojan ĝustigilan precizecon"
 
-#: ../src/views/darkroom.c:4017
+#: ../src/views/darkroom.c:4011
 msgid "switch to lighttable"
 msgstr "ŝalti al lumtablo"
 
-#: ../src/views/darkroom.c:4018 ../src/views/lighttable.c:967
+#: ../src/views/darkroom.c:4012 ../src/views/lighttable.c:1030
 msgid "zoom in the image"
 msgstr "zomi en la bildo"
 
-#: ../src/views/darkroom.c:4019
+#: ../src/views/darkroom.c:4013
 msgid "unbounded zoom in the image"
 msgstr "senlimigita zomadi en la bildo"
 
-#: ../src/views/darkroom.c:4020
+#: ../src/views/darkroom.c:4014
 msgid "zoom to 100% 200% and back"
 msgstr "zomi al 100% 200% kaj reen"
 
-#: ../src/views/darkroom.c:4022
+#: ../src/views/darkroom.c:4016
 msgid "[modules] expand module without closing others"
 msgstr "[moduloj] vastigi modulon sen fermi aliajn"
 
-#: ../src/views/darkroom.c:4024
+#: ../src/views/darkroom.c:4018
 msgid "[modules] change module position in pipe"
 msgstr "[moduloj] ŝanĝas modulan pozicion en pikselpipo"
 
@@ -22701,115 +22599,135 @@ msgstr "[moduloj] ŝanĝas modulan pozicion en pikselpipo"
 msgid "good knight"
 msgstr "bonan kavaliron"
 
-#: ../src/views/lighttable.c:752
+#: ../src/views/lighttable.c:402 ../src/views/slideshow.c:376
+msgid "there are no images in this collection"
+msgstr "estas neniuj bildoj en ĉi tiu kolekto"
+
+#: ../src/views/lighttable.c:406
+msgid "if you have not imported any images yet"
+msgstr "se vi ankoraŭ ne importis iujn bildojn"
+
+#: ../src/views/lighttable.c:410
+msgid "you can do so in the import module"
+msgstr "vi povas fari tion en la importa modulo"
+
+#: ../src/views/lighttable.c:418
+msgid "try to relax the filter settings in the top panel"
+msgstr "provu malstreĉi la filtrilajn agordojn en la supra panelo"
+
+#: ../src/views/lighttable.c:427
+msgid "or add images in the collections module in the left panel"
+msgstr "aŭ aldoni bildojn en la kolekta modulo en la maldekstra panelo"
+
+#: ../src/views/lighttable.c:815
 msgid "middle"
 msgstr "meze"
 
-#: ../src/views/lighttable.c:813
+#: ../src/views/lighttable.c:876
 msgctxt "accel"
 msgid "align images to grid"
 msgstr "vicigi bildojn al krado"
 
-#: ../src/views/lighttable.c:814
+#: ../src/views/lighttable.c:877
 msgctxt "accel"
 msgid "reset first image offset"
 msgstr "reagordi unuan bildan ofseton"
 
-#: ../src/views/lighttable.c:815
+#: ../src/views/lighttable.c:878
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "elekti ŝaltan bildon"
 
-#: ../src/views/lighttable.c:816
+#: ../src/views/lighttable.c:879
 msgctxt "accel"
 msgid "select single image"
 msgstr "elekti unuopan bildon"
 
 #. zoom for full culling & preview
-#: ../src/views/lighttable.c:823
+#: ../src/views/lighttable.c:886
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "zomi antaŭvidon je 100%"
 
-#: ../src/views/lighttable.c:824
+#: ../src/views/lighttable.c:887
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zomi antaŭvidon persvade"
 
-#: ../src/views/lighttable.c:828
+#: ../src/views/lighttable.c:891
 msgctxt "accel"
 msgid "zoom max"
 msgstr "zomi maksimume"
 
-#: ../src/views/lighttable.c:830
+#: ../src/views/lighttable.c:893
 msgctxt "accel"
 msgid "zoom min"
 msgstr "zomi minimume"
 
-#: ../src/views/lighttable.c:962
+#: ../src/views/lighttable.c:1025
 msgid "open image in darkroom"
 msgstr "malfermi bildon en senluma ĉambro"
 
-#: ../src/views/lighttable.c:966
+#: ../src/views/lighttable.c:1029
 msgid "switch to next/previous image"
 msgstr "ŝalti al sekva/antaŭa bildo"
 
-#: ../src/views/lighttable.c:969 ../src/views/lighttable.c:992
+#: ../src/views/lighttable.c:1032 ../src/views/lighttable.c:1055
 #, no-c-format
 msgid "zoom to 100% and back"
 msgstr "zomi al 100% kaj reen"
 
-#: ../src/views/lighttable.c:973 ../src/views/lighttable.c:985
+#: ../src/views/lighttable.c:1036 ../src/views/lighttable.c:1048
 msgid "scroll the collection"
 msgstr "rulumi la kolekton"
 
-#: ../src/views/lighttable.c:975
+#: ../src/views/lighttable.c:1038
 msgid "change number of images per row"
 msgstr "ŝanĝi nombron da bildoj po vico"
 
-#: ../src/views/lighttable.c:979
+#: ../src/views/lighttable.c:1042
 msgid "change image order"
 msgstr "ŝanĝi bildordon"
 
-#: ../src/views/lighttable.c:986
+#: ../src/views/lighttable.c:1049
 msgid "zoom all the images"
 msgstr "zomi ĉiujn bildojn"
 
-#: ../src/views/lighttable.c:987
+#: ../src/views/lighttable.c:1050
 msgid "pan inside all the images"
 msgstr "panorami en ĉiuj bildoj"
 
-#: ../src/views/lighttable.c:989
+#: ../src/views/lighttable.c:1052
 msgid "zoom current image"
 msgstr "zomi aktualan bildon"
 
-#: ../src/views/lighttable.c:990
+#: ../src/views/lighttable.c:1053
 msgid "pan inside current image"
 msgstr "panorami en aktuala bildo"
 
-#: ../src/views/lighttable.c:995
+#: ../src/views/lighttable.c:1058
 #, no-c-format
 msgid "zoom current image to 100% and back"
 msgstr "zomi aktualan bildon al 100% kaj reen"
 
-#: ../src/views/lighttable.c:999
+#: ../src/views/lighttable.c:1062
 msgid "zoom the main view"
 msgstr "zomi la ĉefan vidon"
 
-#: ../src/views/lighttable.c:1000
+#: ../src/views/lighttable.c:1063
 msgid "pan inside the main view"
 msgstr "panorami en la ĉefa vido"
 
-#: ../src/views/lighttable.c:1230
+#: ../src/views/lighttable.c:1297
 msgid "set display profile"
 msgstr "agordi ekranan profilon"
 
-#: ../src/views/lighttable.c:1328
+#: ../src/views/lighttable.c:1395
 msgid "whole"
 msgstr "tuta"
 
 #. Preview key
-#: ../src/views/lighttable.c:1345 ../src/views/lighttable.c:1346
+#: ../src/views/lighttable.c:1412 ../src/views/lighttable.c:1413
 msgctxt "accel"
 msgid "preview"
 msgstr "antaŭvidi"
@@ -22961,20 +22879,6 @@ msgstr "ŝalti al klasika fenestro, kiu restos malferma post malpremo de klavo"
 msgid "mouse actions"
 msgstr "musaj agoj"
 
-#~ msgid "enter tag name"
-#~ msgstr "eniru etikedan nomon"
-
-#~ msgid ""
-#~ "tag dictionary,\n"
-#~ "double-click to attach,\n"
-#~ "right-click for other actions on selected tag,\n"
-#~ "ctrl-wheel scroll to resize the window"
-#~ msgstr ""
-#~ "etikedvortaro,\n"
-#~ "duoble alklaku por alligi,\n"
-#~ "dekstre alklaku por aliaj agoj sur elektita etikedo,\n"
-#~ "stirklavo-rulumi por regrandigi la fenestron"
-
 #~ msgid "<b>commit</b>: double click"
 #~ msgstr "<b>engaĝi</b>: duoble klaki"
 
@@ -23072,6 +22976,10 @@ msgstr "musaj agoj"
 #~ msgctxt "accel"
 #~ msgid "toggle bottom panel"
 #~ msgstr "ŝalti malsupran panelon"
+
+#~ msgctxt "accel"
+#~ msgid "toggle header"
+#~ msgstr "ŝalti kaplinion"
 
 #~ msgctxt "accel"
 #~ msgid "toggle all top panels"
@@ -23758,8 +23666,8 @@ msgstr "musaj agoj"
 #~ "\n"
 #~ " 1 - Serĉu en via medio, ĉu alia okazo de darktable aperas aktiva. Se "
 #~ "jes, uzu ĝin aŭ fermu ĝin.\n"
-#~ "     La seruro indikas, ke la proceznumero de ĉi tiu okazo estas: "
-#~ "<i><b>%d</b></i>\n"
+#~ "     La seruro indikas, ke la proceznumero de ĉi tiu okazo estas: <i><b>"
+#~ "%d</b></i>\n"
 #~ "\n"
 #~ " 2 - Se vi ne povas trovi ĉi tiun alian okazaĵon, provu fermi vian "
 #~ "kunsidon kaj remalfermi ĝin aŭ fermi vian komputilon.\n"
