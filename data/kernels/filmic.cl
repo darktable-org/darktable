@@ -419,11 +419,24 @@ static inline float clip_chroma(constant const float *const matrix_out, const fl
 }
 
 
-static inline float4 gamut_check_RGB(constant const float *const matrix_out,
+static inline float4 gamut_check_RGB(constant const float *const matrix_in, constant const float *const matrix_out,
                                      const float display_black, const float display_white,
                                      const float4 Ych_in)
 {
-  const float Y = Ych_in.x;
+  // Heuristic: if there are negatives, calculate the amount (luminance) of white light that
+  // would need to be mixed in to bring the pixel back in gamut.
+  float4 RGB_brightened = Ych_to_pipe_RGB(Ych_in, matrix_out);
+  const float min_pix = fmin(fmin(RGB_brightened.x, RGB_brightened.y), RGB_brightened.z);
+  const float black_offset = fmax(display_black - min_pix, 0.f);
+  RGB_brightened += black_offset;
+  const float4 Ych_brightened = pipe_RGB_to_Ych(RGB_brightened, matrix_in);
+
+  // Increase the input luminance a little by the value we calculated above.
+  // Note, however, that this doesn't actually desaturate the color like mixing
+  // white would do. We will next find the chroma change needed to bring the pixel
+  // into gamut.
+  const float Y = fmin((Ych_in.x + Ych_brightened.x) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_white));
+
   // Precompute sin and cos of hue for reuse
   const float cos_h = native_cos(Ych_in.z);
   const float sin_h = native_sin(Ych_in.z);
@@ -468,13 +481,13 @@ static inline float4 gamut_mapping(float4 Ych_final, float4 Ych_original, float4
   {
     // Now, it is still possible that one channel > display white or < display black because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    pix_out = gamut_check_RGB(output_matrix, display_black, display_white, Ych_final);
+    pix_out = gamut_check_RGB(input_matrix, output_matrix, display_black, display_white, Ych_final);
   }
   else
   {
     // Now, it is still possible that one channel > display white or < display black because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    pix_out = gamut_check_RGB(export_output_matrix, display_black, display_white, Ych_final);
+    pix_out = gamut_check_RGB(export_input_matrix, export_output_matrix, display_black, display_white, Ych_final);
 
     // Go from export RGB to CIE LMS 2006 D65
     const float4 LMS = matrix_product_float4(pix_out, export_input_matrix);
