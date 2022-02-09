@@ -1622,11 +1622,25 @@ static inline float clip_chroma(const dt_colormatrix_t matrix_out, const float t
 }
 
 
-static inline void gamut_check_RGB(const dt_colormatrix_t matrix_out, const float display_black,
-                                   const float display_white, const dt_aligned_pixel_t Ych_in,
-                                   dt_aligned_pixel_t RGB_out)
+static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_colormatrix_t matrix_out,
+                                   const float display_black, const float display_white,
+                                   const dt_aligned_pixel_t Ych_in, dt_aligned_pixel_t RGB_out)
 {
-  const float Y = Ych_in[0];
+  // Heuristic: if there are negatives, calculate the amount (luminance) of white light that
+  // would need to be mixed in to bring the pixel back in gamut.
+  dt_aligned_pixel_t RGB_brightened = { 0.f };
+  Ych_to_pipe_RGB(Ych_in, matrix_out, RGB_brightened);
+  const float min_pix = MIN(MIN(RGB_brightened[0], RGB_brightened[1]), RGB_brightened[2]);
+  const float black_offset = MAX(display_black - min_pix, 0.f);
+  for_each_channel(c) RGB_brightened[c] += black_offset;
+  dt_aligned_pixel_t Ych_brightened = { 0.f };
+  pipe_RGB_to_Ych(RGB_brightened, matrix_in, Ych_brightened);
+
+  // Increase the input luminance a little by the value we calculated above.
+  // Note, however, that this doesn't actually desaturate the color like mixing
+  // white would do. We will next find the chroma change needed to bring the pixel
+  // into gamut.
+  const float Y = MIN((Ych_in[0] + Ych_brightened[0]) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_white));
   // Precompute sin and cos of hue for reuse
   const float cos_h = cosf(Ych_in[2]);
   const float sin_h = sinf(Ych_in[2]);
@@ -1673,13 +1687,13 @@ static inline void gamut_mapping(dt_aligned_pixel_t Ych_final, dt_aligned_pixel_
   {
     // Now, it is still possible that one channel > display white because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    gamut_check_RGB(output_matrix, display_black, display_white, Ych_final, pix_out);
+    gamut_check_RGB(input_matrix, output_matrix, display_black, display_white, Ych_final, pix_out);
   }
   else
   {
     // Now, it is still possible that one channel > display white because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    gamut_check_RGB(export_output_matrix, display_black, display_white, Ych_final, pix_out);
+    gamut_check_RGB(export_input_matrix, export_output_matrix, display_black, display_white, Ych_final, pix_out);
 
     // Go from export RGB to CIE LMS 2006 D65
     dt_aligned_pixel_t LMS = { 0.f };
