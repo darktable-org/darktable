@@ -1,7 +1,7 @@
 * developers:
 Pascal Obry
-Aurélien PIERRE
 Aldric Renaudin
+Aurélien PIERRE
 parafin
 Roman Lebedev
 
@@ -12,46 +12,46 @@ Martin Straeten
 EdgarLux
 Marcus Gama
 Matt Maguire
+Victor Forsiuk
 篠崎亮　Ryo Shinozaki
 Philippe Weyland
-Victor Forsiuk
 vertama
 Matjaž Jeran
 Aurélien PIERRE
 Matteo Mardegan
-Miloš Komarčević
 Michel Leblond
 Nicolas Auffray
 Tianhao Chai
 Bogusław Ciastek
 Báthory Péter
-PeterWem
+Jan Friedrich
 Tomasz Golinski
 Wiktor Nowak
+cotacot
 sbraitbart
 
 * contributors (at least 4 commits):
-ralfbrown
 Diederik ter Rahe
+ralfbrown
 Dan Torop
 Hubert Kowalski
 Philippe Weyland
+Hanno Schwalm
 Miloš Komarčević
 Bill Ferguson
 Jeronimo Pellegrini
-hanno@schwalm-bremen.de
 Marco Carrarini
 Martin Straeten
 Daniel Vogelbacher
+Chris Elston
+rawfiner
 Mark-64
 EdgarLux
-rawfiner
+Victor Forsiuk
 Nicolas Auffray
-Chris Elston
 Chris.Elston
 Marcus Gama
 Sakari Kapanen
-Victor Forsiuk
 Arnaud TANGUY
 wpferguson
 Matt Maguire
@@ -71,9 +71,8 @@ Jordan Neumeyer
 Miloš Komarčević
 Andreas Schneider
 Marko Toplak
-hanno@schwalm-bremen.de
+Hanno Schwalm
 helloqiu
-luz paz
 
 * Sub-module integration contributors (at least 1 commit):
 Pascal Obry
