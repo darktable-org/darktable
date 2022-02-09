@@ -121,6 +121,7 @@ typedef struct dt_opencl_device_t
   float benchmark;
   size_t memory_in_use;
   size_t peak_memory;
+  gboolean mem_error;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -372,6 +373,9 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead);
 
+/** tune headroom according to recorded cl allocation errors */
+void dt_opencl_device_tune_headroom(const int devid);
+
 /** get headroom for the device */
 cl_ulong dt_opencl_get_device_headroom(const int devid);
 
@@ -505,6 +509,9 @@ static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t
                                               const unsigned bpp, const float factor, const size_t overhead)
 {
   return FALSE;
+}
+static inline void dt_opencl_device_tune_headroom(const int devid)
+{
 }
 static inline size_t dt_opencl_get_device_headroom(const int devid)
 {

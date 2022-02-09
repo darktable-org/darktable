@@ -130,6 +130,11 @@ error:
   return err;
 }
 
+static size_t dt_opencl_default_headroom()
+{
+  return 1024lu * 1024lu * (size_t)MAX(DT_CL_SAFEHEADROOM, dt_conf_get_int("opencl_memory_headroom"));
+}
+
 // returns 0 if all ok
 // returns 1 if we failed hard, and need to skip opencl initialization
 // returns -1 if we failed to init this device
@@ -161,8 +166,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].options = NULL;
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
-  cl->dev[dev].headroom = MAX(DT_CL_SAFEHEADROOM, dt_conf_get_int("opencl_memory_headroom")) * 1024 * 1024;
-
+  cl->dev[dev].headroom = dt_opencl_default_headroom();
+  cl->dev[dev].mem_error = FALSE;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -2174,9 +2179,11 @@ void *dt_opencl_copy_host_to_device_constant(const int devid, const size_t size,
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(
       darktable.opencl->dev[devid].context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size, host, &err);
   if(err != CL_SUCCESS)
+  {
+    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device_constant] could not alloc buffer on device %d: %d\n", devid, err);
-
+  }
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2209,9 +2216,11 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const 
       darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &fmt, width, height,
       rowpitch, host, &err);
   if(err != CL_SUCCESS)
+  {
+    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device] could not alloc/copy img buffer on device %d: %d\n", devid, err);
-
+  }
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2240,7 +2249,11 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Map Buffer]");
   ptr = (darktable.opencl->dlocl->symbols->dt_clEnqueueMapBuffer)(
       darktable.opencl->dev[devid].cmd_queue, buffer, blocking, flags, offset, size, 0, NULL, eventp, &err);
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer: %d\n", err);
+  if(err != CL_SUCCESS)
+  {
+    darktable.opencl->dev[devid].mem_error = TRUE;
+    dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer: %d\n", err);
+  }
   return ptr;
 }
 
@@ -2276,9 +2289,11 @@ void *dt_opencl_alloc_device(const int devid, const int width, const int height,
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D)(
       darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, width, height, 0, NULL, &err);
   if(err != CL_SUCCESS)
+  {
+    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid,
              err);
-
+  }
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2306,10 +2321,12 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
       CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR), &fmt, width, height,
       rowpitch, host, &err);
   if(err != CL_SUCCESS)
+  {
+    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %d\n", devid,
              err);
-
+  }
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2324,9 +2341,11 @@ void *dt_opencl_alloc_device_buffer(const int devid, const size_t size)
   cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
                                                                      CL_MEM_READ_WRITE, size, NULL, &err);
   if(err != CL_SUCCESS)
+  {
+    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid,
              err);
-
+  }
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
 
   return buf;
@@ -2340,9 +2359,11 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t siz
   cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
                                                                      flags, size, NULL, &err);
   if(err != CL_SUCCESS)
+  {
+    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid,
              err);
-
+  }
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
 
   return buf;
@@ -2492,6 +2513,31 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
   return TRUE;
 }
 
+/*
+  In all cl mem allocating functions we record an allocating problem.
+  If there was an error we increase headroom for the next run,
+  if not we slowly decrease headroom down to config settings
+*/
+void dt_opencl_device_tune_headroom(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return;
+
+  const size_t min_headroom = dt_opencl_default_headroom();
+  const size_t old_headroom = darktable.opencl->dev[devid].headroom;
+  const size_t max_headroom = dt_opencl_get_max_global_mem(devid) - 512lu * 1024lu * 1024lu;
+
+  if(darktable.opencl->dev[devid].mem_error)
+    darktable.opencl->dev[devid].headroom = MIN(old_headroom + 200lu * 1024lu * 1024lu, max_headroom);
+  else
+    darktable.opencl->dev[devid].headroom = MAX(min_headroom, old_headroom - 1024lu * 1024lu);
+
+  if(darktable.opencl->dev[devid].headroom != old_headroom)
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_tune_headroom] new headroom for dev %i: %iMB [%i]\n", devid,
+      (int)(darktable.opencl->dev[devid].headroom / 1024lu / 1024lu),
+      (int)(dt_opencl_get_max_global_mem(devid) / 1024lu / 1024lu));
+
+  darktable.opencl->dev[devid].mem_error = FALSE;
+}
 
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
 int dt_opencl_roundup(int size)
