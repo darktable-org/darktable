@@ -149,7 +149,7 @@ Building
 ### Dependencies
 
 Compatible compilers:
-* Clang: 8, 9, 10
+* Clang: 8, 9, 10, 13
 * GCC: 8, 9, 10
 * Mingw64: 6, 7
 
