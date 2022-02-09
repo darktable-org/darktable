@@ -290,13 +290,13 @@ static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmi
   float *dborder_ptr = dborder ? dt_masks_dynbuf_reserve_n(dborder, 2*(l-1)) : NULL;
   // and fill them in: the same center pos for each point in dpoints, and the corresponding border point at
   //  successive angular positions for dborder
-  if (dpoints_ptr)
+  if(dpoints_ptr)
   {
     for(int i = 1; i < l; i++)
     {
       *dpoints_ptr++ = cmax[0];
       *dpoints_ptr++ = cmax[1];
-      if (dborder_ptr)
+      if(dborder_ptr)
       {
         *dborder_ptr++ = cmax[0] + rr * cosf(aa);
         *dborder_ptr++ = cmax[1] + rr * sinf(aa);
@@ -522,7 +522,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
 /** this take care of gaps and self-intersection and iop distortions */
 static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const double iop_order, const int transf_direction,
                                    dt_dev_pixelpipe_t *pipe, float **points, int *points_count,
-                                   float **border, int *border_count, int source)
+                                   float **border, int *border_count, gboolean source)
 {
   double start2 = 0.0;
 
@@ -572,7 +572,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   {
     const dt_masks_point_path_t *const pt = (dt_masks_point_path_t *)l->data;
     float *const buf = dt_masks_dynbuf_reserve_n(dpoints, 6);
-    if (buf)
+    if(buf)
     {
       buf[0] = pt->ctrl1[0] * wd - dx;
       buf[1] = pt->ctrl1[1] * ht - dy;
@@ -603,7 +603,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   const GList *form_points = form->points;
   for(int k = 0; k < nb; k++)
   {
-    int pb = dborder ? dt_masks_dynbuf_position(dborder) : 0;
+    const int pb = dborder ? dt_masks_dynbuf_position(dborder) : 0;
     border_init[k * 6 + 2] = -pb;
     const GList *pt2 = g_list_next_wraparound(form_points, form->points); // next, wrapping around if on last element
     const GList *pt3 = g_list_next_wraparound(pt2, form->points);
@@ -632,8 +632,8 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
     _path_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, dpoints, dborder, border && (nb >= 3));
 
     // we check gaps in the border (sharp edges)
-    if(dborder && (fabs(dt_masks_dynbuf_get(dborder, -2) - rb[0]) > 1.0f ||
-                   fabs(dt_masks_dynbuf_get(dborder, -1) - rb[1]) > 1.0f))
+    if(dborder && (fabs(dt_masks_dynbuf_get(dborder, -2) - rb[0]) > 1.0f
+                   || fabs(dt_masks_dynbuf_get(dborder, -1) - rb[1]) > 1.0f))
     {
       bmin[0] = dt_masks_dynbuf_get(dborder, -2);
       bmin[1] = dt_masks_dynbuf_get(dborder, -1);
@@ -923,7 +923,7 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
           *near = current_seg - 1;
       }
 
-      if (((y<=yy && y>last) || (y>=yy && y<last)) && (gpt->points[i * 2] > x)) nb++;
+      if(((y<=yy && y>last) || (y>=yy && y<last)) && (gpt->points[i * 2] > x)) nb++;
 
       last = yy;
     }
@@ -1181,7 +1181,9 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
         // and we switch in edit mode to show all the forms
         // spots and retouch have their own handling of creation_continuous
-        if(gui->creation_continuous && ( strcmp(crea_module->so->op, "spots") == 0 || strcmp(crea_module->so->op, "retouch") == 0))
+        if(gui->creation_continuous
+           && (strcmp(crea_module->so->op, "spots") == 0
+               || strcmp(crea_module->so->op, "retouch") == 0))
           dt_masks_set_edit_mode_single_form(crea_module, form->formid, DT_MASKS_EDIT_FULL);
         else if(!gui->creation_continuous)
           dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
@@ -2277,12 +2279,14 @@ static void _path_bounding_box(const float *const points, const float *border, c
 }
 
 static int _get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
-                     dt_masks_form_t *const form, int *width, int *height, int *posx, int *posy, int get_source)
+                     dt_masks_form_t *const form, int *width, int *height, int *posx, int *posy, gboolean get_source)
 {
   if(!module) return 0;
+
   // we get buffers for all points
   float *points = NULL, *border = NULL;
   int points_count = 0, border_count = 0;
+
   if(!_path_get_pts_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
                            &border, &border_count, get_source))
   {
@@ -2302,14 +2306,14 @@ static int _get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe
 static int _path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                  dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
-  return _get_area(module, piece, form, width, height, posx, posy, 1);
+  return _get_area(module, piece, form, width, height, posx, posy, TRUE);
 }
 
 static int _path_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
                           dt_masks_form_t *const form,
                           int *width, int *height, int *posx, int *posy)
 {
-  return _get_area(module, piece, form,width, height, posx, posy, 0);
+  return _get_area(module, piece, form, width, height, posx, posy, FALSE);
 }
 
 /** we write a falloff segment */
@@ -2350,7 +2354,7 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
   float *points = NULL, *border = NULL;
   int points_count, border_count;
   if(!_path_get_pts_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
-                           &border, &border_count, 0))
+                           &border, &border_count, FALSE))
   {
     dt_free_align(points);
     dt_free_align(border);
@@ -2768,7 +2772,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
   float *points = NULL, *border = NULL;
   int points_count = 0, border_count = 0;
   if(!_path_get_pts_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
-                           &border, &border_count, 0) || (points_count <= 2))
+                           &border, &border_count, FALSE) || (points_count <= 2))
   {
     dt_free_align(points);
     dt_free_align(border);
