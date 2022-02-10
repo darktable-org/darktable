@@ -359,7 +359,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // if buf is NULL, we quit the fct here
     if(!mbuf)
     {
-      img->buf_dsc.cst = iop_cs_RAW;
+      img->buf_dsc.cst = IOP_CS_RAW;
       img->loader = LOADER_RAWSPEED;
       return DT_IMAGEIO_OK;
     }
@@ -409,7 +409,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  img->buf_dsc.cst = iop_cs_RAW;
+  img->buf_dsc.cst = IOP_CS_RAW;
   img->loader = LOADER_RAWSPEED;
 
   return DT_IMAGEIO_OK;
@@ -437,7 +437,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   // if buf is NULL, we quit the fct here
   if(!mbuf)
   {
-    img->buf_dsc.cst = iop_cs_RAW;
+    img->buf_dsc.cst = IOP_CS_RAW;
     img->loader = LOADER_RAWSPEED;
     return DT_IMAGEIO_OK;
   }
@@ -540,7 +540,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
     }
   }
 
-  img->buf_dsc.cst = iop_cs_RAW;
+  img->buf_dsc.cst = IOP_CS_RAW;
   img->loader = LOADER_RAWSPEED;
 
   //  Check if the camera is missing samples

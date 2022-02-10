@@ -44,9 +44,9 @@ typedef struct dt_iop_color_picker_t
   dt_iop_module_t *module;
   dt_iop_color_picker_kind_t kind;
   /** requested colorspace for the color picker, valid options are:
-   * iop_cs_NONE: module colorspace
-   * iop_cs_LCh: for Lab modules
-   * iop_cs_HSL: for RGB modules
+   * IOP_CS_NONE: module colorspace
+   * IOP_CS_LCH: for Lab modules
+   * IOP_CS_HSL: for RGB modules
    */
   dt_iop_colorspace_type_t picker_cst;
   /** used to avoid recursion when a parameter is modified in the apply() */

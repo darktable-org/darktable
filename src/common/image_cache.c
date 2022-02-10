@@ -125,7 +125,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     {
       img->buf_dsc.channels = 4;
       img->buf_dsc.datatype = TYPE_FLOAT;
-      img->buf_dsc.cst = iop_cs_rgb;
+      img->buf_dsc.cst = IOP_CS_RGB;
     }
     else if(img->flags & DT_IMAGE_HDR)
     {
@@ -133,13 +133,13 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       {
         img->buf_dsc.channels = 1;
         img->buf_dsc.datatype = TYPE_FLOAT;
-        img->buf_dsc.cst = iop_cs_RAW;
+        img->buf_dsc.cst = IOP_CS_RAW;
       }
       else
       {
         img->buf_dsc.channels = 4;
         img->buf_dsc.datatype = TYPE_FLOAT;
-        img->buf_dsc.cst = iop_cs_rgb;
+        img->buf_dsc.cst = IOP_CS_RGB;
       }
     }
     else
@@ -147,7 +147,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       // raw
       img->buf_dsc.channels = 1;
       img->buf_dsc.datatype = TYPE_UINT16;
-      img->buf_dsc.cst = iop_cs_RAW;
+      img->buf_dsc.cst = IOP_CS_RAW;
     }
   }
   else

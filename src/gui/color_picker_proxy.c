@@ -138,7 +138,7 @@ static void _init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *module,
   // module is NULL if primary colorpicker
   picker->module     = module;
   picker->kind       = kind;
-  picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL) : iop_cs_NONE;
+  picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL) : IOP_CS_NONE;
   picker->colorpick  = button;
   picker->changed    = FALSE;
 
@@ -259,7 +259,7 @@ dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *mod
   if(picker && picker->module == module)
     return picker->picker_cst;
   else
-    return iop_cs_NONE;
+    return IOP_CS_NONE;
 }
 
 static void _iop_color_picker_pickerdata_ready_callback(gpointer instance, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
@@ -362,7 +362,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker
 
 GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w)
 {
-  return _color_picker_new(module, kind, w, FALSE, iop_cs_NONE);
+  return _color_picker_new(module, kind, w, FALSE, IOP_CS_NONE);
 }
 
 GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w,

@@ -177,7 +177,7 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
                                              const dt_histogram_roi_t *const roi)
 {
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
-  const dt_iop_colorspace_type_t cst = iop_cs_rgb;
+  const dt_iop_colorspace_type_t cst = IOP_CS_RGB;
   dt_dev_histogram_stats_t histogram_stats = { .bins_count = HISTOGRAM_BINS, .ch = 4, .pixels = 0 };
   uint32_t histogram_max[4] = { 0 };
 
@@ -190,8 +190,8 @@ static void _lib_histogram_process_histogram(dt_lib_histogram_t *const d, const 
 
   // FIXME: for point sample, calculate whole graph and the point sample values, draw these on top of the graph
   // FIXME: set up "custom" histogram worker which can do colorspace conversion on fly -- in cases that we need to do that -- may need to add from colorspace to dt_dev_histogram_collection_params_t
-  dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, input, &d->histogram, FALSE, NULL);
-  dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &d->histogram, histogram_max);
+  dt_histogram_helper(&histogram_params, &histogram_stats, cst, IOP_CS_NONE, input, &d->histogram, FALSE, NULL);
+  dt_histogram_max_helper(&histogram_stats, cst, IOP_CS_NONE, &d->histogram, histogram_max);
   d->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
 }
 

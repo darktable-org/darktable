@@ -291,7 +291,7 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   img->buf_dsc.channels = 1;
 
   img->buf_dsc.datatype = TYPE_UINT16;
-  img->buf_dsc.cst = iop_cs_RAW;
+  img->buf_dsc.cst = IOP_CS_RAW;
 
   // Allocate and copy image from libraw buffer to dt
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
