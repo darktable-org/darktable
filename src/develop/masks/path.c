@@ -735,7 +735,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
 #endif
       for(int i = 0; i < *points_count; i++)
       {
-        (*points)[i * 2] += dx;
+        (*points)[i * 2]     += dx;
         (*points)[i * 2 + 1] += dy;
       }
 
@@ -1140,7 +1140,8 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
     masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/path/border"), 0.5f);
 
   if(gui->creation && which == 1 && form->points == NULL
-     && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK) || dt_modifier_is(state, GDK_SHIFT_MASK)))
+     && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)
+         || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
@@ -1773,16 +1774,17 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     // we move all points
     point->corner[0] += dx;
     point->corner[1] += dy;
-    point->ctrl1[0] += dx;
-    point->ctrl1[1] += dy;
-    point->ctrl2[0] += dx;
-    point->ctrl2[1] += dy;
+    point->ctrl1[0]  += dx;
+    point->ctrl1[1]  += dy;
+    point->ctrl2[0]  += dx;
+    point->ctrl2[1]  += dy;
+
     point2->corner[0] += dx;
     point2->corner[1] += dy;
-    point2->ctrl1[0] += dx;
-    point2->ctrl1[1] += dy;
-    point2->ctrl2[0] += dx;
-    point2->ctrl2[1] += dy;
+    point2->ctrl1[0]  += dx;
+    point2->ctrl1[1]  += dy;
+    point2->ctrl2[0]  += dx;
+    point2->ctrl2[1]  += dy;
 
     _path_init_ctrl_points(form);
 
@@ -2215,7 +2217,8 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
       cairo_set_line_width(cr, 1.5 / zoom_scale);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_move_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
-    for(int i = nb * 3; i < gpt->source_count; i++) cairo_line_to(cr, gpt->source[i * 2], gpt->source[i * 2 + 1]);
+    for(int i = nb * 3; i < gpt->source_count; i++)
+      cairo_line_to(cr, gpt->source[i * 2], gpt->source[i * 2 + 1]);
     cairo_line_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
     cairo_stroke_preserve(cr);
     if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
@@ -2353,7 +2356,8 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
   // we get buffers for all points
   float *points = NULL, *border = NULL;
   int points_count, border_count;
-  if(!_path_get_pts_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
+  if(!_path_get_pts_border(module->dev, form, module->iop_order,
+                           DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
                            &border, &border_count, FALSE))
   {
     dt_free_align(points);
@@ -2530,7 +2534,8 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
   int next = 0;
   for(int i = nb_corner * 3; i < border_count; i++)
   {
-    p0[0] = points[i * 2], p0[1] = points[i * 2 + 1];
+    p0[0] = points[i * 2];
+    p0[1] = points[i * 2 + 1];
     if(next > 0)
       p1[0] = pf1[0] = border[next * 2], p1[1] = pf1[1] = border[next * 2 + 1];
     else
@@ -2544,15 +2549,18 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
         next = i - 1;
       else
         next = p1[1];
-      p1[0] = pf1[0] = border[next * 2], p1[1] = pf1[1] = border[next * 2 + 1];
+      p1[0] = pf1[0] = border[next * 2];
+      p1[1] = pf1[1] = border[next * 2 + 1];
     }
 
     // and we draw the falloff
     if(last0[0] != p0[0] || last0[1] != p0[1] || last1[0] != p1[0] || last1[1] != p1[1])
     {
       _path_falloff(bufptr, p0, p1, *posx, *posy, *width);
-      last0[0] = p0[0], last0[1] = p0[1];
-      last1[0] = p1[0], last1[1] = p1[1];
+      last0[0] = p0[0];
+      last0[1] = p0[1];
+      last1[0] = p1[0];
+      last1[1] = p1[1];
     }
   }
 
