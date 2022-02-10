@@ -351,7 +351,7 @@ static inline float4 filmic_desaturate_v4(const float4 Ych_original, float4 Ych_
   // where `(yc - y1)` is user-defined as `saturation * (y2 - y1)`
   // so `chroma = c1 + saturation * (c2 - c1)`
   // when saturation = 0, we stay at the saturation-invariant final chroma
-  // when saturation > 1, we go back towards the initial chroma before tone-mapping
+  // when saturation > 0, we go back towards the initial chroma before tone-mapping
   // when saturation < 0, we amplify the initial -> final chroma change
   const float delta_chroma = saturation * (chroma_original - chroma_final);
 
@@ -444,7 +444,7 @@ static inline float4 gamut_check_RGB(constant const float *const matrix_in, cons
   // First calculate the maximum chroma where RGB components still stay below white point
   const float chroma_clipped_to_white = clip_chroma(matrix_out, display_white, Y, cos_h, sin_h);
   // Calculate the maximum chroma where RGB components still stay above black point
-  const float chroma_clipped_to_black = clip_chroma(matrix_out, display_black, Y, cos_h, sin_h);
+  const float chroma_clipped_to_black = clip_chroma(matrix_out, 0.f, Y, cos_h, sin_h);
   // Take the smallest of current chroma, white limit chroma and black limit chroma.
   const float new_chroma = fmin(fmin(Ych_in.y, chroma_clipped_to_white), chroma_clipped_to_black);
 
@@ -453,7 +453,7 @@ static inline float4 gamut_check_RGB(constant const float *const matrix_in, cons
   const float4 RGB_out = Ych_to_pipe_RGB(Ych, matrix_out);
 
   // Clamp in target RGB as a final catch-all
-  return clamp(RGB_out, display_black, display_white);
+  return clamp(RGB_out, 0.f, display_white);
 }
 
 static inline float4 gamut_mapping(float4 Ych_final, float4 Ych_original, float4 pix_out,

@@ -1557,7 +1557,7 @@ static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, d
   // where `(yc - y1)` is user-defined as `saturation * (y2 - y1)`
   // so `chroma = c1 + saturation * (c2 - c1)`
   // when saturation = 0, we stay at the saturation-invariant final chroma
-  // when saturation > 1, we go back towards the initial chroma before tone-mapping
+  // when saturation > 0, we go back towards the initial chroma before tone-mapping
   // when saturation < 0, we amplify the initial -> final chroma change
   const float delta_chroma = saturation * (chroma_original - chroma_final);
 
@@ -1648,7 +1648,7 @@ static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_co
   // First calculate the maximum chroma where RGB components still stay below white point
   const float chroma_clipped_to_white = clip_chroma(matrix_out, display_white, Y, cos_h, sin_h);
   // Calculate the maximum chroma where RGB components still stay above black point
-  const float chroma_clipped_to_black = clip_chroma(matrix_out, display_black, Y, cos_h, sin_h);
+  const float chroma_clipped_to_black = clip_chroma(matrix_out, 0.f, Y, cos_h, sin_h);
   // Take the smallest of current chroma, white limit chroma and black limit chroma.
   const float new_chroma = MIN(MIN(Ych_in[1], chroma_clipped_to_white), chroma_clipped_to_black);
 
@@ -1657,7 +1657,7 @@ static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_co
   Ych_to_pipe_RGB(Ych, matrix_out, RGB_out);
 
   // Clamp in target RGB as a final catch-all
-  for_each_channel(c, aligned(RGB_out)) RGB_out[c] = CLAMP(RGB_out[c], display_black, display_white);
+  for_each_channel(c, aligned(RGB_out)) RGB_out[c] = CLAMP(RGB_out[c], 0.f, display_white);
 }
 
 
@@ -3712,7 +3712,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_move_to(cr, -2. * g->inset - g->zero_width - g->ink.x,
                     -g->line_height - g->inset - 0.5 * g->ink.height - g->ink.y);
       pango_cairo_show_layout(cr, layout);
-      cairo_stroke(cr);  dt_bauhaus_slider_set_soft_max(g->saturation, 50.0);
+      cairo_stroke(cr);
 
 
       // mark the x axis legend
