@@ -33,6 +33,7 @@
 #define DT_OPENCL_VENDOR_AMD 4098
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_INTEL 0x8086u
+#define DT_OPENCL_LOWMEM_BUF 32
 
 #include "common/darktable.h"
 
@@ -122,6 +123,7 @@ typedef struct dt_opencl_device_t
   size_t memory_in_use;
   size_t peak_memory;
   gboolean mem_error;
+  cl_mem lowmem_buff[DT_OPENCL_LOWMEM_BUF];  
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -213,6 +215,9 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
 
 /** inits the opencl subsystem. */
 void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics);
+
+/** preallocate buffers for --enforce-lowmem */
+void dt_opencl_preallocate_lowmem();
 
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
@@ -429,6 +434,9 @@ static inline void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl
   cl->error_count = 0;
   dt_conf_set_bool("opencl", FALSE);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] this version of darktable was built without opencl support\n");
+}
+static inline void dt_opencl_preallocate_lowmem()
+{
 }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl)
 {

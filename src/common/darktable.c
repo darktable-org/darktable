@@ -1049,6 +1049,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
 #ifdef HAVE_OPENCL
   dt_opencl_init(darktable.opencl, exclude_opencl, print_statistics);
+  dt_opencl_preallocate_lowmem();
 #endif
 
   darktable.points = (dt_points_t *)calloc(1, sizeof(dt_points_t));

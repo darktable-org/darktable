@@ -170,6 +170,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].mem_error = FALSE;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
+  for(int i = 0; i < DT_OPENCL_LOWMEM_BUF; i++) cl->dev[dev].lowmem_buff[i] = NULL;
+
   char *infostr = NULL;
   size_t infostr_size;
 
@@ -884,6 +886,30 @@ finally:
   return;
 }
 
+void dt_opencl_preallocate_lowmem()
+{
+  dt_opencl_t *cl = darktable.opencl;
+  for(int devid = 0; cl->dev && devid < cl->num_devs; devid++)
+  {
+    const size_t buffsize = MIN(500lu * 1024lu * 1024lu, dt_opencl_get_device_memalloc(devid));
+    const size_t allmem = cl->dev[devid].max_global_mem;
+    const int buffers = MIN(DT_OPENCL_LOWMEM_BUF, (allmem / buffsize) - 2);
+    /* We pre-allocate a number of 500MB buffers on the device memory so we have slightly more than 1GB
+       left free.
+       As the buffer allocation might not make use of the memory (this is certainly true for nvidia)
+       immediately we have to do an access to the buffer
+    */  
+    for(int i = 0; i < buffers; i++)
+    {
+      cl_mem buf = dt_opencl_alloc_device_buffer(devid, buffsize);
+      cl->dev[devid].lowmem_buff[i] = buf;
+      if(i > 0)
+        dt_opencl_enqueue_copy_buffer_to_buffer(devid, cl->dev[devid].lowmem_buff[0], buf, 0, 0, 1024);       
+    }    
+    dt_print(DT_DEBUG_LOWMEM, "[opencl_init] preallocate %i 500MB buffers\n", buffers);    
+  }
+}
+
 void dt_opencl_cleanup(dt_opencl_t *cl)
 {
   if(cl->inited)
@@ -899,6 +925,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 
     for(int i = 0; i < cl->num_devs; i++)
     {
+      for(int k = 0; k < DT_OPENCL_LOWMEM_BUF; k++)
+        dt_opencl_release_mem_object(cl->dev[i].lowmem_buff[k]);
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
       for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
         if(cl->dev[i].kernel_used[k]) (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[i].kernel[k]);
