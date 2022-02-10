@@ -888,6 +888,8 @@ finally:
 
 void dt_opencl_preallocate_lowmem()
 {
+  if(!dt_opencl_is_enabled() || ((darktable.unmuted & DT_DEBUG_LOWMEM) == 0))
+    return;
   dt_opencl_t *cl = darktable.opencl;
   for(int devid = 0; cl->dev && devid < cl->num_devs; devid++)
   {
