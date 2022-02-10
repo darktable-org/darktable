@@ -878,7 +878,7 @@ static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *
   // and we check if it's inside form
   if(gpt->points_count > 2 + corner_count * 3)
   {
-    float as2 = as * as;
+    const float as2 = as * as;
     //float as2 = 1600.0 * as1;
     float last = gpt->points[gpt->points_count * 2 - 1];
     int nb = 0;
@@ -2529,7 +2529,7 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
     int state = 0;
     for(int xx = 0; xx < wb; xx++)
     {
-      float v = bufptr[yy * wb + xx];
+      const float v = bufptr[yy * wb + xx];
       if(v == 1.0f) state = !state;
       if(state) bufptr[yy * wb + xx] = 1.0f;
     }
@@ -2625,7 +2625,7 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
   // find the crossing points with xmin and replace segment by nodes on border
   for(int k = 0; k < point_count; k++)
   {
-    int kk = (k + point_start) % point_count;
+    const int kk = (k + point_start) % point_count;
 
     if(l < 0 && path[2 * kk] < xmin) l = k;       // where we leave roi
     if(l >= 0 && path[2 * kk] >= xmin) r = k - 1; // where we re-enter roi
@@ -2633,15 +2633,15 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
     // replace that segment
     if(l >= 0 && r >= 0)
     {
-      int count = r - l + 1;
-      int ll = (l - 1 + point_start) % point_count;
-      int rr = (r + 1 + point_start) % point_count;
-      float delta_y = (count == 1) ? 0 : (path[2 * rr + 1] - path[2 * ll + 1]) / (count - 1);
-      float start_y = path[2 * ll + 1];
+      const int count = r - l + 1;
+      const int ll = (l - 1 + point_start) % point_count;
+      const int rr = (r + 1 + point_start) % point_count;
+      const float delta_y = (count == 1) ? 0 : (path[2 * rr + 1] - path[2 * ll + 1]) / (count - 1);
+      const float start_y = path[2 * ll + 1];
 
       for(int n = 0; n < count; n++)
       {
-        int nn = (n + l + point_start) % point_count;
+        const int nn = (n + l + point_start) % point_count;
         path[2 * nn] = xmin;
         path[2 * nn + 1] = start_y + n * delta_y;
       }
@@ -2653,7 +2653,7 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
   // find the crossing points with xmax and replace segment by nodes on border
   for(int k = 0; k < point_count; k++)
   {
-    int kk = (k + point_start) % point_count;
+    const int kk = (k + point_start) % point_count;
 
     if(l < 0 && path[2 * kk] > xmax) l = k;       // where we leave roi
     if(l >= 0 && path[2 * kk] <= xmax) r = k - 1; // where we re-enter roi
@@ -2661,15 +2661,15 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
     // replace that segment
     if(l >= 0 && r >= 0)
     {
-      int count = r - l + 1;
-      int ll = (l - 1 + point_start) % point_count;
-      int rr = (r + 1 + point_start) % point_count;
-      float delta_y = (count == 1) ? 0 : (path[2 * rr + 1] - path[2 * ll + 1]) / (count - 1);
-      float start_y = path[2 * ll + 1];
+      const int count = r - l + 1;
+      const int ll = (l - 1 + point_start) % point_count;
+      const int rr = (r + 1 + point_start) % point_count;
+      const float delta_y = (count == 1) ? 0 : (path[2 * rr + 1] - path[2 * ll + 1]) / (count - 1);
+      const float start_y = path[2 * ll + 1];
 
       for(int n = 0; n < count; n++)
       {
-        int nn = (n + l + point_start) % point_count;
+        const int nn = (n + l + point_start) % point_count;
         path[2 * nn] = xmax;
         path[2 * nn + 1] = start_y + n * delta_y;
       }
@@ -2681,7 +2681,7 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
   // find the crossing points with ymin and replace segment by nodes on border
   for(int k = 0; k < point_count; k++)
   {
-    int kk = (k + point_start) % point_count;
+    const int kk = (k + point_start) % point_count;
 
     if(l < 0 && path[2 * kk + 1] < ymin) l = k;       // where we leave roi
     if(l >= 0 && path[2 * kk + 1] >= ymin) r = k - 1; // where we re-enter roi
@@ -2689,15 +2689,15 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
     // replace that segment
     if(l >= 0 && r >= 0)
     {
-      int count = r - l + 1;
-      int ll = (l - 1 + point_start) % point_count;
-      int rr = (r + 1 + point_start) % point_count;
-      float delta_x = (count == 1) ? 0 : (path[2 * rr] - path[2 * ll]) / (count - 1);
-      float start_x = path[2 * ll];
+      const int count = r - l + 1;
+      const int ll = (l - 1 + point_start) % point_count;
+      const int rr = (r + 1 + point_start) % point_count;
+      const float delta_x = (count == 1) ? 0 : (path[2 * rr] - path[2 * ll]) / (count - 1);
+      const float start_x = path[2 * ll];
 
       for(int n = 0; n < count; n++)
       {
-        int nn = (n + l + point_start) % point_count;
+        const int nn = (n + l + point_start) % point_count;
         path[2 * nn] = start_x + n * delta_x;
         path[2 * nn + 1] = ymin;
       }
@@ -2709,7 +2709,7 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
   // find the crossing points with ymax and replace segment by nodes on border
   for(int k = 0; k < point_count; k++)
   {
-    int kk = (k + point_start) % point_count;
+    const int kk = (k + point_start) % point_count;
 
     if(l < 0 && path[2 * kk + 1] > ymax) l = k;       // where we leave roi
     if(l >= 0 && path[2 * kk + 1] <= ymax) r = k - 1; // where we re-enter roi
@@ -2717,15 +2717,15 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
     // replace that segment
     if(l >= 0 && r >= 0)
     {
-      int count = r - l + 1;
-      int ll = (l - 1 + point_start) % point_count;
-      int rr = (r + 1 + point_start) % point_count;
-      float delta_x = (count == 1) ? 0 : (path[2 * rr] - path[2 * ll]) / (count - 1);
-      float start_x = path[2 * ll];
+      const int count = r - l + 1;
+      const int ll = (l - 1 + point_start) % point_count;
+      const int rr = (r + 1 + point_start) % point_count;
+      const float delta_x = (count == 1) ? 0 : (path[2 * rr] - path[2 * ll]) / (count - 1);
+      const float start_x = path[2 * ll];
 
       for(int n = 0; n < count; n++)
       {
-        int nn = (n + l + point_start) % point_count;
+        const int nn = (n + l + point_start) % point_count;
         path[2 * nn] = start_x + n * delta_x;
         path[2 * nn + 1] = ymax;
       }
@@ -2813,8 +2813,8 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
   // we shift and scale down path and border
   for(int i = nb_corner * 3; i < border_count; i++)
   {
-    float xx = border[2 * i];
-    float yy = border[2 * i + 1];
+    const float xx = border[2 * i];
+    const float yy = border[2 * i + 1];
     if(isnan(xx))
     {
       if(isnan(yy)) break; // that means we have to skip the end of the border path
@@ -2826,8 +2826,8 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
   }
   for(int i = nb_corner * 3; i < points_count; i++)
   {
-    float xx = points[2 * i];
-    float yy = points[2 * i + 1];
+    const float xx = points[2 * i];
+    const float yy = points[2 * i + 1];
     points[2 * i] = xx * scale - px;
     points[2 * i + 1] = yy * scale - py;
   }
@@ -2835,8 +2835,8 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
   // now check if path is at least partially within roi
   for(int i = nb_corner * 3; i < points_count; i++)
   {
-    int xx = points[i * 2];
-    int yy = points[i * 2 + 1];
+    const int xx = points[i * 2];
+    const int yy = points[i * 2 + 1];
 
     if(xx > 1 && yy > 1 && xx < width - 2 && yy < height - 2)
     {
@@ -2850,12 +2850,12 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
   {
     int nb = 0;
     int last = -9999;
-    int x = width / 2;
-    int y = height / 2;
+    const int x = width / 2;
+    const int y = height / 2;
 
     for(int i = nb_corner * 3; i < points_count; i++)
     {
-      int yy = (int)points[2 * i + 1];
+      const int yy = (int)points[2 * i + 1];
       if(yy != last && yy == y)
       {
         if(points[2 * i] > x) nb++;
@@ -2873,8 +2873,8 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
   // now check if feather is at least partially within roi
   for(int i = nb_corner * 3; i < border_count; i++)
   {
-    float xx = border[i * 2];
-    float yy = border[i * 2 + 1];
+    const float xx = border[i * 2];
+    const float yy = border[i * 2 + 1];
     if(isnan(xx))
     {
       if(isnan(yy)) break; // that means we have to skip the end of the border path
@@ -2930,8 +2930,9 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
     // now we clip cpoints to roi -> catch special case when roi lies completely within path.
     // dirty trick: we allow path to extend one pixel beyond height-1. this avoids need of special handling
     // of the last roi line in the following edge-flag polygon fill algorithm.
-    int crop_success = _path_crop_to_roi(cpoints + 2 * (nb_corner * 3), points_count - nb_corner * 3, 0,
-                                         width - 1, 0, height);
+    const int crop_success = _path_crop_to_roi(cpoints + 2 * (nb_corner * 3),
+                                               points_count - nb_corner * 3, 0,
+                                               width - 1, 0, height);
     path_encircles_roi = path_encircles_roi || !crop_success;
 
     if(darktable.unmuted & DT_DEBUG_PERF)
