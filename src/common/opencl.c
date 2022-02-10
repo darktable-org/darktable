@@ -1992,7 +1992,6 @@ int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t
                                                            kernelworkgroupsize, NULL);
 }
 
-
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size,
                              const void *arg)
 {
@@ -2007,6 +2006,11 @@ int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *s
   return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
 }
 
+void dt_opencl_keep_memerror(const int devid, const int errorcode)
+{
+  if(errorcode == CL_MEM_OBJECT_ALLOCATION_FAILURE)
+    darktable.opencl->dev[devid].mem_error = TRUE;   
+}
 
 int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
                                            const size_t *local)
@@ -2023,7 +2027,7 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
   cl_event *eventp = dt_opencl_events_get_slot(dev, buf);
   err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel],
                                                         2, NULL, sizes, local, 0, NULL, eventp);
-  // if (err == CL_SUCCESS) err = dt_opencl_finish(dev);
+  dt_opencl_keep_memerror(dev, err);
   return err;
 }
 
@@ -2134,6 +2138,7 @@ int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(
       darktable.opencl->dev[devid].cmd_queue, src, dst, orig_src, orig_dst, region, 0, NULL, eventp);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image] could not copy image: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2147,6 +2152,7 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl
       darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer, origin, region, offset, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl copy_image_to_buffer] could not copy image: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2160,6 +2166,7 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
       darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset, origin, region, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2174,6 +2181,7 @@ int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid, cl_mem src_buffer, 
                                                                    dstoffset, size, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_buffer] could not copy buffer: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2207,11 +2215,9 @@ void *dt_opencl_copy_host_to_device_constant(const int devid, const size_t size,
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(
       darktable.opencl->dev[devid].context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size, host, &err);
   if(err != CL_SUCCESS)
-  {
-    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device_constant] could not alloc buffer on device %d: %d\n", devid, err);
-  }
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2244,13 +2250,11 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const 
       darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, &fmt, width, height,
       rowpitch, host, &err);
   if(err != CL_SUCCESS)
-  {
-    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device] could not alloc/copy img buffer on device %d: %d\n", devid, err);
-  }
-  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
+  dt_opencl_keep_memerror(devid, err);
+  dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
   return dev;
 }
 
@@ -2278,10 +2282,8 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
   ptr = (darktable.opencl->dlocl->symbols->dt_clEnqueueMapBuffer)(
       darktable.opencl->dev[devid].cmd_queue, buffer, blocking, flags, offset, size, 0, NULL, eventp, &err);
   if(err != CL_SUCCESS)
-  {
-    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer: %d\n", err);
-  }
+  dt_opencl_keep_memerror(devid, err);
   return ptr;
 }
 
@@ -2294,6 +2296,7 @@ int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_
       darktable.opencl->dev[devid].cmd_queue, mem_object, mapped_ptr, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl unmap mem object] could not unmap mem object: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2317,11 +2320,9 @@ void *dt_opencl_alloc_device(const int devid, const int width, const int height,
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D)(
       darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, width, height, 0, NULL, &err);
   if(err != CL_SUCCESS)
-  {
-    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid,
              err);
-  }
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2349,12 +2350,10 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
       CL_MEM_READ_WRITE | ((host == NULL) ? CL_MEM_ALLOC_HOST_PTR : CL_MEM_USE_HOST_PTR), &fmt, width, height,
       rowpitch, host, &err);
   if(err != CL_SUCCESS)
-  {
-    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %d\n", devid,
              err);
-  }
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2369,11 +2368,9 @@ void *dt_opencl_alloc_device_buffer(const int devid, const size_t size)
   cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
                                                                      CL_MEM_READ_WRITE, size, NULL, &err);
   if(err != CL_SUCCESS)
-  {
-    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid,
              err);
-  }
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
 
   return buf;
@@ -2387,11 +2384,9 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t siz
   cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
                                                                      flags, size, NULL, &err);
   if(err != CL_SUCCESS)
-  {
-    darktable.opencl->dev[devid].mem_error = TRUE;
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid,
              err);
-  }
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
 
   return buf;

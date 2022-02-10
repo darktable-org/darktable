@@ -272,6 +272,9 @@ int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *s
 int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
                                            const size_t *local);
 
+/** check an allocation problem in err and report to the flags in cl device struct */
+void dt_opencl_keep_memerror(const int devid, const int cl_errorcode);
+
 /** check if opencl is inited */
 int dt_opencl_is_inited(void);
 
@@ -556,6 +559,9 @@ static inline int dt_opencl_events_flush(const int devid, const int reset)
   return 0;
 }
 static inline void dt_opencl_events_profiling(const int devid, const int aggregated)
+{
+}
+void inline void dt_opencl_keep_memerror(const int devid, const int cl_errorcode)
 {
 }
 #endif
