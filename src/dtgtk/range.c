@@ -518,7 +518,7 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
 static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  if(!range->mouse_inside || !range->set_selection) return TRUE;
+  if(!range->set_selection) return TRUE;
   range->select_max = _graph_snap_value(range, e->x - range->band_margin_side);
   // we verify that the values are in the right order
   if(range->select_max < range->select_min)
