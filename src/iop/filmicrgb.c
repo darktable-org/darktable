@@ -1568,7 +1568,7 @@ static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, d
   const int user_desat = (saturation < 0.f);
 
   chroma_final = (filmic_brightens && filmic_resat)
-                      ? chroma_original // force original lower sat if brightening
+                      ? (chroma_original + chroma_final) / 2.f // force original lower sat if brightening
                   : ((user_resat && filmic_desat) || user_desat)
                       ? chroma_final + delta_chroma // allow resaturation only if filmic desaturated, allow desat anytime
                       : chroma_final;
@@ -4448,7 +4448,7 @@ void gui_init(dt_iop_module_t *self)
                                             "at one extremity of the histogram."));
 
   g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
-  dt_bauhaus_slider_set_soft_max(g->saturation, 50.0);
+  dt_bauhaus_slider_set_soft_range(g->saturation, -50.0, 50.0);
   dt_bauhaus_slider_set_format(g->saturation, "%");
   gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
                                                "specifically at extreme luminances.\n"
