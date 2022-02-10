@@ -176,9 +176,6 @@ void cleanup_global(dt_iop_module_so_t *self)
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
-  dt_iop_hazeremoval_params_t *p = (dt_iop_hazeremoval_params_t *)self->params;
-  dt_bauhaus_slider_set(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->distance, p->distance);
 
   dt_iop_gui_enter_critical_section(self);
   g->distance_max = NAN;

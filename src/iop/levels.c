@@ -550,9 +550,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
   dt_bauhaus_combobox_set(g->mode, p->mode);
-  dt_bauhaus_slider_set(g->percentile_black, p->black);
-  dt_bauhaus_slider_set(g->percentile_grey, p->gray);
-  dt_bauhaus_slider_set(g->percentile_white, p->white);
 
   gui_changed(self, g->mode, 0);
 

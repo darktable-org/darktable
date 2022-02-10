@@ -959,15 +959,6 @@ void gui_update(struct dt_iop_module_t *self)
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
-
-  if(!monochrome)
-  {
-    dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-    dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-
-    dt_bauhaus_slider_set(g->clip, p->clip);
-    dt_bauhaus_combobox_set(g->mode, p->mode);
-  }
 }
 
 void reload_defaults(dt_iop_module_t *module)

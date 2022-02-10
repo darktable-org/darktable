@@ -840,16 +840,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
-  dt_bauhaus_slider_set(g->clusters, p->n);
-  dt_bauhaus_slider_set(g->dominance, p->dominance);
-  dt_bauhaus_slider_set(g->equalization, p->equalization);
-  dt_control_queue_redraw_widget(self->widget);
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf

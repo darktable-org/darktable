@@ -568,10 +568,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-  dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
   dt_iop_cancel_history_update(self);
-  dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
   gtk_widget_queue_draw(self->widget);
 }
 

@@ -5725,15 +5725,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
   gui_changed(self, NULL, NULL);
-
-  dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
-  dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
-  dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
-  dt_bauhaus_combobox_set(g->lmmse_refine, p->lmmse_refine);
-  dt_bauhaus_slider_set(g->dual_thrs, p->dual_thrs);
 
   g->show_mask = FALSE;
   dt_bauhaus_widget_set_quad_active(g->dual_mask, g->show_mask);

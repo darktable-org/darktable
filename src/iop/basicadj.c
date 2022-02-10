@@ -545,18 +545,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  dt_bauhaus_slider_set(g->sl_black_point, p->black_point);
-  dt_bauhaus_slider_set(g->sl_exposure, p->exposure);
-  dt_bauhaus_slider_set(g->sl_hlcompr, p->hlcompr);
-  dt_bauhaus_slider_set(g->sl_contrast, p->contrast);
-  dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
-  dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
-  dt_bauhaus_slider_set(g->sl_brightness, p->brightness);
-  dt_bauhaus_slider_set(g->sl_saturation, p->saturation);
-  dt_bauhaus_slider_set(g->sl_vibrance, p->vibrance);
-  dt_bauhaus_slider_set(g->sl_clip, p->clip);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_select_region), g->draw_selected_region);
 }

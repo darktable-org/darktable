@@ -1941,12 +1941,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
-  /* update ui elements */
-  dt_bauhaus_slider_set(g->angle, p->angle);
-  dt_bauhaus_slider_set(g->cx, p->cx);
-  dt_bauhaus_slider_set(g->cy, p->cy);
-  dt_bauhaus_slider_set(g->cw, p->cw);
-  dt_bauhaus_slider_set(g->ch, p->ch);
   int hvflip = 0;
   if(p->cw < 0)
   {
@@ -2024,8 +2018,6 @@ void gui_update(struct dt_iop_module_t *self)
   g->clip_y = CLAMPF(p->cy, 0.0f, 0.9f);
   g->clip_w = CLAMPF(fabsf(p->cw) - p->cx, 0.1f, 1.0f - g->clip_x);
   g->clip_h = CLAMPF(fabsf(p->ch) - p->cy, 0.1f, 1.0f - g->clip_y);
-
-  dt_bauhaus_combobox_set(g->crop_auto, p->crop_auto);
 }
 
 static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)

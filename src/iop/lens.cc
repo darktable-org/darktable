@@ -2476,9 +2476,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   dt_bauhaus_combobox_set(g->reverse, p->inverse);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tca_override), p->tca_override);
-  dt_bauhaus_slider_set(g->tca_r, p->tca_r);
-  dt_bauhaus_slider_set(g->tca_b, p->tca_b);
-  dt_bauhaus_slider_set(g->scale, p->scale);
   const lfCamera **cam = NULL;
   g->camera = NULL;
   if(p->camera[0])

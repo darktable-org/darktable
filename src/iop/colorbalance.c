@@ -1531,31 +1531,6 @@ void set_visible_widgets(dt_iop_colorbalance_gui_data_t *g)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
-
-  dt_bauhaus_combobox_set(g->mode, p->mode);
-
-  dt_bauhaus_slider_set_soft(g->grey, p->grey);
-  dt_bauhaus_slider_set_soft(g->saturation, p->saturation);
-  dt_bauhaus_slider_set_soft(g->saturation_out, p->saturation_out);
-  dt_bauhaus_slider_set_soft(g->contrast, p->contrast);
-
-  dt_bauhaus_slider_set_soft(g->lift_factor, (p->lift[CHANNEL_FACTOR]));
-  dt_bauhaus_slider_set_soft(g->lift_r, p->lift[CHANNEL_RED]);
-  dt_bauhaus_slider_set_soft(g->lift_g, p->lift[CHANNEL_GREEN]);
-  dt_bauhaus_slider_set_soft(g->lift_b, p->lift[CHANNEL_BLUE]);
-
-  dt_bauhaus_slider_set_soft(g->gamma_factor, p->gamma[CHANNEL_FACTOR]);
-  dt_bauhaus_slider_set_soft(g->gamma_r, p->gamma[CHANNEL_RED]);
-  dt_bauhaus_slider_set_soft(g->gamma_g, p->gamma[CHANNEL_GREEN]);
-  dt_bauhaus_slider_set_soft(g->gamma_b, p->gamma[CHANNEL_BLUE]);
-
-  dt_bauhaus_slider_set_soft(g->gain_factor, p->gain[CHANNEL_FACTOR]);
-  dt_bauhaus_slider_set_soft(g->gain_r, p->gain[CHANNEL_RED]);
-  dt_bauhaus_slider_set_soft(g->gain_g, p->gain[CHANNEL_GREEN]);
-  dt_bauhaus_slider_set_soft(g->gain_b, p->gain[CHANNEL_BLUE]);
-
   dt_iop_color_picker_reset(self, TRUE);
   _check_tuner_picker_labels(self);
 

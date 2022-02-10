@@ -1042,34 +1042,8 @@ void gui_update(dt_iop_module_t *const self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_bauhaus_combobox_set(g->film_stock, p->film_stock);
 
-  // Dmin
-  dt_bauhaus_slider_set(g->Dmin_R, p->Dmin[0]);
-  dt_bauhaus_slider_set(g->Dmin_G, p->Dmin[1]);
-  dt_bauhaus_slider_set(g->Dmin_B, p->Dmin[2]);
-
-  // Dmax
-  dt_bauhaus_slider_set(g->D_max, p->D_max);
-
-  // Scanner exposure offset
-  dt_bauhaus_slider_set(g->offset, p->offset);
-
-  // WB_high
-  dt_bauhaus_slider_set(g->wb_high_R, p->wb_high[0]);
-  dt_bauhaus_slider_set(g->wb_high_G, p->wb_high[1]);
-  dt_bauhaus_slider_set(g->wb_high_B, p->wb_high[2]);
-
-  // WB_low
-  dt_bauhaus_slider_set(g->wb_low_R, p->wb_low[0]);
-  dt_bauhaus_slider_set(g->wb_low_G, p->wb_low[1]);
-  dt_bauhaus_slider_set(g->wb_low_B, p->wb_low[2]);
-
-  // Print
   dt_bauhaus_slider_set(g->exposure, log2f(p->exposure));     // warning: GUI is in EV
-  dt_bauhaus_slider_set(g->black, p->black);
-  dt_bauhaus_slider_set(g->gamma, p->gamma);
-  dt_bauhaus_slider_set(g->soft_clip, p->soft_clip);
 
   // Update custom stuff
   gui_changed(self, NULL, NULL);

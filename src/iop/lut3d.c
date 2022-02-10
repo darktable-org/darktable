@@ -1644,8 +1644,6 @@ void gui_update(dt_iop_module_t *self)
     update_filepath_combobox(g, p->filepath, lutfolder);
   }
   g_free(lutfolder);
-  dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
-  dt_bauhaus_combobox_set(g->interpolation, p->interpolation);
 
   _show_hide_colorspace(self);
 

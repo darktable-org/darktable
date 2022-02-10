@@ -569,17 +569,12 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_bauhaus_combobox_set(g->mode, p->mode);
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);
   /* xgettext:no-c-format */
   gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"), _get_exposure_bias(self));
   gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), label);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_exposure_bias))), PANGO_ELLIPSIZE_MIDDLE);
   g_free(label);
-
-  dt_bauhaus_slider_set_soft(g->black, p->black);
-  dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
   g->spot_RGB[0] = 0.f;
   g->spot_RGB[1] = 0.f;
@@ -595,9 +590,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->lightness_spot, lightness);
 
   dt_iop_gui_leave_critical_section(self);
-
-  dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
-  dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
 
   free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;

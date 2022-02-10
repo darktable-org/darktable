@@ -383,15 +383,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
-  dt_bauhaus_slider_set(g->size, p->size);
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
-  dt_bauhaus_slider_set(g->strength, p->strength);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_bloom_gui_data_t *g = IOP_GUI_ALLOC(bloom);
