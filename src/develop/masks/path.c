@@ -1647,6 +1647,8 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     point->ctrl2[0] += dx;
     point->ctrl2[1] += dy;
 
+    _path_init_ctrl_points(form);
+
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -1679,6 +1681,8 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     point->ctrl2[1] = p2y / darktable.develop->preview_pipe->iheight;
 
     point->state = DT_MASKS_POINT_STATE_USER;
+
+    _path_init_ctrl_points(form);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
@@ -1757,7 +1761,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     bzpt->corner[0] = pzx;
     bzpt->corner[1] = pzy;
 
-    if(gui->creation) _path_init_ctrl_points(form);
+    _path_init_ctrl_points(form);
+
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
@@ -1802,6 +1807,8 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     point2->ctrl1[1]  += dy;
     point2->ctrl2[0]  += dx;
     point2->ctrl2[1]  += dy;
+
+    _path_init_ctrl_points(form);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
