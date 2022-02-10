@@ -64,12 +64,6 @@ typedef struct dt_device_key_t
   dt_action_element_t hold_element;
 } dt_device_key_t;
 
-typedef struct dt_action_target_t
-{
-  dt_action_t *action;
-  void *target;
-} dt_action_target_t;
-
 #define DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE 0
 
 const char *move_string[]

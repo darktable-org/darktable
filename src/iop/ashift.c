@@ -5604,7 +5604,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-static float log10_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
+static float log10_curve(float inval, dt_bauhaus_curve_t dir)
 {
   float outval;
   if(dir == DT_BAUHAUS_SET)
@@ -5618,7 +5618,7 @@ static float log10_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
   return outval;
 }
 
-static float log2_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
+static float log2_curve(float inval, dt_bauhaus_curve_t dir)
 {
   float outval;
   if(dir == DT_BAUHAUS_SET)
