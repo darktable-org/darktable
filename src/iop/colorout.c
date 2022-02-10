@@ -108,28 +108,28 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
 int input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                      dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
 int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                       dt_dev_pixelpipe_iop_t *piece)
 {
-  int cst = iop_cs_rgb;
+  int cst = IOP_CS_RGB;
   if(piece)
   {
     const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-    if(d->type == DT_COLORSPACE_LAB) cst = iop_cs_Lab;
+    if(d->type == DT_COLORSPACE_LAB) cst = IOP_CS_LAB;
   }
   else
   {
     dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
-    if(p->type == DT_COLORSPACE_LAB) cst = iop_cs_Lab;
+    if(p->type == DT_COLORSPACE_LAB) cst = IOP_CS_LAB;
   }
   return cst;
 }
