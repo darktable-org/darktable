@@ -34,13 +34,6 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
                              GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
                              DTGTKCairoPaintIconFunc paint, gint paintflags, GtkWidget *box);
 
-void dt_iop_slider_float_callback(GtkWidget *slider, float *field);
-void dt_iop_slider_int_callback(GtkWidget *slider, int *field);
-void dt_iop_slider_ushort_callback(GtkWidget *slider, unsigned short *field);
-void dt_iop_combobox_enum_callback(GtkWidget *combobox, int *field);
-void dt_iop_combobox_int_callback(GtkWidget *combobox, int *field);
-void dt_iop_combobox_bool_callback(GtkWidget *combobox, gboolean *field);
-
 /* returns up or !up depending on the masks_updown preference */
 gboolean dt_mask_scroll_increases(int up);
 

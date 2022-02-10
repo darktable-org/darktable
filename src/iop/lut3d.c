@@ -1489,7 +1489,7 @@ gboolean check_extension(char *filename)
   return res;
 }
 
-static gint list_str_cmp(gconstpointer a, gconstpointer b)
+static gint array_str_cmp(gconstpointer a, gconstpointer b)
 {
   return g_strcmp0(((dt_bauhaus_combobox_entry_t *)a)->label, ((dt_bauhaus_combobox_entry_t *)b)->label);
 }
@@ -1524,7 +1524,7 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
       }
       dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g->filepath);
       dt_bauhaus_combobox_data_t *combo_data = &w->data.combobox;
-      combo_data->entries = g_list_sort(combo_data->entries, list_str_cmp);
+      g_ptr_array_sort(combo_data->entries, array_str_cmp);
       closedir(d);
     }
     if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))

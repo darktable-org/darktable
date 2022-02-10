@@ -150,8 +150,6 @@ typedef enum dt_iop_colorspace_type_t
 } dt_iop_colorspace_type_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
-struct dt_iop_module_so_t;
-struct dt_iop_module_t;
 typedef struct dt_iop_module_so_t
 {
   dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
@@ -272,7 +270,10 @@ typedef struct dt_iop_module_t
   /** fusion slider */
   GtkWidget *fusion_slider;
 
+  /* list of instance widgets and associated actions. Bauhaus with field pointer at end, starting from widget_list_bh */
   GSList *widget_list;
+  GSList *widget_list_bh;
+
   /** show/hide guide button and combobox */
   GtkWidget *guides_toggle;
   GtkWidget *guides_combo;
@@ -301,6 +302,12 @@ typedef struct dt_iop_module_t
   // introspection related data
   gboolean have_introspection;
 } dt_iop_module_t;
+
+typedef struct dt_action_target_t
+{
+  dt_action_t *action;
+  void *target;
+} dt_action_target_t;
 
 /** loads and inits the modules in the plugins/ directory. */
 void dt_iop_load_modules_so(void);
@@ -499,6 +506,8 @@ gboolean dt_iop_have_required_input_format(const int required_ch, struct dt_iop_
 
 /* bring up module rename dialog */
 void dt_iop_gui_rename_module(dt_iop_module_t *module);
+
+void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

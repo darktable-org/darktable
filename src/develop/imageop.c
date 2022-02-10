@@ -1782,6 +1782,8 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   {
     if(module->gui_data)
     {
+      dt_bauhaus_update_module(module);
+
       if(module->params && module->gui_update)
       {
         if(module->widget && dt_conf_get_bool("plugins/darkroom/show_warnings"))
@@ -3150,6 +3152,18 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
     }
     return FALSE;
   }
+}
+
+void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
+{
+  if(!action || action->type != DT_ACTION_TYPE_IOP_INSTANCE) return;
+  dt_iop_module_t *module = (dt_iop_module_t *)action;
+
+  if(module->gui_changed) module->gui_changed(module, widget, data);
+
+  dt_iop_color_picker_reset(module, TRUE);
+
+  dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
 
 enum
