@@ -561,7 +561,7 @@ static inline int dt_opencl_events_flush(const int devid, const int reset)
 static inline void dt_opencl_events_profiling(const int devid, const int aggregated)
 {
 }
-void inline void dt_opencl_keep_memerror(const int devid, const int cl_errorcode)
+static inline void dt_opencl_keep_memerror(const int devid, const int cl_errorcode)
 {
 }
 #endif
