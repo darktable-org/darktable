@@ -587,17 +587,8 @@ void gui_reset(dt_iop_module_t *self)
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
-
-  dt_bauhaus_combobox_set(g->mode, p->mode);
-  dt_bauhaus_slider_set_soft(g->linear, p->linear);
-  dt_bauhaus_slider_set_soft(g->gamma, p->gamma);
-  dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
-  dt_bauhaus_slider_set_soft(g->grey_point, p->grey_point);
-  dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
-  dt_bauhaus_slider_set_soft(g->security_factor, p->security_factor);
 
   gui_changed(self, g->mode, 0);
 }

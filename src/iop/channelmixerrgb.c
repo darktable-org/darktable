@@ -3628,36 +3628,10 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_gui_leave_critical_section(self);
 
-  dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
-  dt_bauhaus_combobox_set(g->illum_fluo, p->illum_fluo);
-  dt_bauhaus_combobox_set(g->illum_led, p->illum_led);
-  dt_bauhaus_slider_set_soft(g->temperature, p->temperature);
-  dt_bauhaus_slider_set_soft(g->gamut, p->gamut);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->clip), p->clip);
-
-  dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
-
-  dt_bauhaus_slider_set_soft(g->scale_red_R, p->red[0]);
-  dt_bauhaus_slider_set_soft(g->scale_red_G, p->red[1]);
-  dt_bauhaus_slider_set_soft(g->scale_red_B, p->red[2]);
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_R), p->normalize_R);
-
-  dt_bauhaus_slider_set_soft(g->scale_green_R, p->green[0]);
-  dt_bauhaus_slider_set_soft(g->scale_green_G, p->green[1]);
-  dt_bauhaus_slider_set_soft(g->scale_green_B, p->green[2]);
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_G), p->normalize_G);
-
-  dt_bauhaus_slider_set_soft(g->scale_blue_R, p->blue[0]);
-  dt_bauhaus_slider_set_soft(g->scale_blue_G, p->blue[1]);
-  dt_bauhaus_slider_set_soft(g->scale_blue_B, p->blue[2]);
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_B), p->normalize_B);
-
-  dt_bauhaus_slider_set_soft(g->scale_saturation_R, p->saturation[0]);
-  dt_bauhaus_slider_set_soft(g->scale_saturation_G, p->saturation[1]);
-  dt_bauhaus_slider_set_soft(g->scale_saturation_B, p->saturation[2]);
 
   if(p->version != CHANNELMIXERRGB_V_3)
     dt_bauhaus_combobox_set(g->saturation_version, p->version);
@@ -3665,17 +3639,7 @@ void gui_update(struct dt_iop_module_t *self)
     gtk_widget_hide(GTK_WIDGET(g->saturation_version));
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_sat), p->normalize_sat);
-
-  dt_bauhaus_slider_set_soft(g->scale_lightness_R, p->lightness[0]);
-  dt_bauhaus_slider_set_soft(g->scale_lightness_G, p->lightness[1]);
-  dt_bauhaus_slider_set_soft(g->scale_lightness_B, p->lightness[2]);
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_light), p->normalize_light);
-
-  dt_bauhaus_slider_set_soft(g->scale_grey_R, p->grey[0]);
-  dt_bauhaus_slider_set_soft(g->scale_grey_G, p->grey[1]);
-  dt_bauhaus_slider_set_soft(g->scale_grey_B, p->grey[2]);
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_grey), p->normalize_grey);
 
   dt_iop_gui_enter_critical_section(self);

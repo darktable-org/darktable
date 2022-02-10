@@ -1086,12 +1086,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_bauhaus_slider_set(g->density, p->density);
-  dt_bauhaus_slider_set(g->hardness, p->hardness);
-  dt_bauhaus_slider_set(g->rotation, p->rotation);
-  dt_bauhaus_slider_set(g->hue, p->hue);
-  dt_bauhaus_slider_set(g->saturation, p->saturation);
-
   g->define = 0;
   update_saturation_slider_end_color(g->saturation, p->hue);
 }

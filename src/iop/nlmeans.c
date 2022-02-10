@@ -504,17 +504,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(dt_iop_module_t *self)
-{
-  // let gui slider match current parameters:
-  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set_soft(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->luma, p->luma);
-  dt_bauhaus_slider_set(g->chroma, p->chroma);
-}
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_nlmeans_gui_data_t *g = IOP_GUI_ALLOC(nlmeans);

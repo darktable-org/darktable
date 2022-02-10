@@ -1651,6 +1651,7 @@ void show_guiding_controls(struct dt_iop_module_t *self)
 
 void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g, dt_iop_toneequalizer_params_t *p)
 {
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set_soft(g->noise, p->noise);
   dt_bauhaus_slider_set_soft(g->ultra_deep_blacks, p->ultra_deep_blacks);
   dt_bauhaus_slider_set_soft(g->deep_blacks, p->deep_blacks);
@@ -1660,6 +1661,7 @@ void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g, dt_iop_toneequa
   dt_bauhaus_slider_set_soft(g->highlights, p->highlights);
   dt_bauhaus_slider_set_soft(g->whites, p->whites);
   dt_bauhaus_slider_set_soft(g->speculars, p->speculars);
+  --darktable.gui->reset;
 }
 
 
@@ -1668,17 +1670,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
-  update_exposure_sliders(g, p);
-
-  dt_bauhaus_combobox_set(g->method, p->method);
-  dt_bauhaus_combobox_set(g->details, p->details);
-  dt_bauhaus_slider_set_soft(g->blending, p->blending);
-  dt_bauhaus_slider_set_soft(g->feathering, p->feathering);
   dt_bauhaus_slider_set_soft(g->smoothing, logf(p->smoothing) / logf(sqrtf(2.0f)) - 1.0f);
-  dt_bauhaus_slider_set_soft(g->iterations, p->iterations);
-  dt_bauhaus_slider_set_soft(g->quantization, p->quantization);
-  dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
-  dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
 
   show_guiding_controls(self);
   invalidate_luminance_cache(self);
@@ -2173,9 +2165,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   if(commit)
   {
     // Update GUI with new params
-    ++darktable.gui->reset;
     update_exposure_sliders(g, p);
-    --darktable.gui->reset;
 
     dt_dev_add_history_item(darktable.develop, self, FALSE);
   }
@@ -2882,9 +2872,7 @@ static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gp
   if(g->area_dragging)
   {
     // cursor left area : force commit to avoid glitches
-    ++darktable.gui->reset;
     update_exposure_sliders(g, p);
-    --darktable.gui->reset;
 
     dt_dev_add_history_item(darktable.develop, self, FALSE);
   }
@@ -2927,9 +2915,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
     p->speculars = d->speculars;
 
     // update UI sliders
-    ++darktable.gui->reset;
     update_exposure_sliders(g, p);
-    --darktable.gui->reset;
 
     // Redraw graph
     gtk_widget_queue_draw(self->widget);
@@ -3023,9 +3009,7 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
     if(g->area_dragging)
     {
       // Update GUI with new params
-      ++darktable.gui->reset;
       update_exposure_sliders(g, p);
-      --darktable.gui->reset;
 
       dt_dev_add_history_item(darktable.develop, self, FALSE);
 

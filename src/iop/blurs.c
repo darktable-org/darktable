@@ -784,21 +784,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_blurs_gui_data_t *g = (dt_iop_blurs_gui_data_t *)self->gui_data;
-  dt_iop_blurs_params_t *p = (dt_iop_blurs_params_t *)self->params;
-
-  dt_bauhaus_combobox_set_from_value(g->type, p->type);
-  dt_bauhaus_slider_set(g->radius, p->radius);
-
-  dt_bauhaus_slider_set(g->blades, p->blades);
-  dt_bauhaus_slider_set(g->concavity, p->concavity);
-  dt_bauhaus_slider_set(g->linearity, p->linearity);
-  dt_bauhaus_slider_set(g->rotation, p->rotation);
-
-  dt_bauhaus_slider_set(g->angle, p->angle);
-  dt_bauhaus_slider_set(g->curvature, p->curvature);
-  dt_bauhaus_slider_set(g->offset, p->offset);
-
+// FIXME check why needed
   gui_changed(self, NULL, NULL);
 }
 

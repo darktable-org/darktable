@@ -1474,29 +1474,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 #endif
 
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_diffuse_gui_data_t *g = (dt_iop_diffuse_gui_data_t *)self->gui_data;
-  dt_iop_diffuse_params_t *p = (dt_iop_diffuse_params_t *)self->params;
-  dt_bauhaus_slider_set_soft(g->iterations, p->iterations);
-  dt_bauhaus_slider_set_soft(g->fourth, p->fourth);
-  dt_bauhaus_slider_set_soft(g->third, p->third);
-  dt_bauhaus_slider_set_soft(g->second, p->second);
-  dt_bauhaus_slider_set_soft(g->first, p->first);
-
-  dt_bauhaus_slider_set_soft(g->variance_threshold, p->variance_threshold);
-  dt_bauhaus_slider_set_soft(g->regularization, p->regularization);
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set_soft(g->radius_center, p->radius_center);
-  dt_bauhaus_slider_set_soft(g->sharpness, p->sharpness);
-  dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
-
-  dt_bauhaus_slider_set_soft(g->anisotropy_first, p->anisotropy_first);
-  dt_bauhaus_slider_set_soft(g->anisotropy_second, p->anisotropy_second);
-  dt_bauhaus_slider_set_soft(g->anisotropy_third, p->anisotropy_third);
-  dt_bauhaus_slider_set_soft(g->anisotropy_fourth, p->anisotropy_fourth);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_diffuse_gui_data_t *g = IOP_GUI_ALLOC(diffuse);

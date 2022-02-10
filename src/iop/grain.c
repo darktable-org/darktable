@@ -551,16 +551,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
-  dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-
-  dt_bauhaus_slider_set(g->scale, p->scale);
-  dt_bauhaus_slider_set(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->midtones_bias, p->midtones_bias);
-}
-
 void init_global(struct dt_iop_module_so_t *self)
 {
   _simplex_noise_init();

@@ -1239,12 +1239,6 @@ void gui_update(struct dt_iop_module_t *self)
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "monochrome");
 
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
-  dt_bauhaus_slider_set(g->spatial, p->spatial);
-  dt_bauhaus_slider_set(g->range, p->range);
-  dt_bauhaus_combobox_set(g->precedence, p->precedence);
-  dt_bauhaus_slider_set(g->hue, p->hue);
-
   gtk_widget_set_visible(g->hue, p->precedence == COLORRECONSTRUCT_PRECEDENCE_HUE);
 
   dt_iop_gui_enter_critical_section(self);

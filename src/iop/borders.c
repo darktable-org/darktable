@@ -897,8 +897,8 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  dt_bauhaus_slider_set(g->size, p->size);
 
+// FIXME by hand
   // ----- Aspect
   int k = 0;
   for(; k < DT_IOP_BORDERS_ASPECT_COUNT; k++)
@@ -913,9 +913,6 @@ void gui_update(struct dt_iop_module_t *self)
   {
       dt_bauhaus_combobox_set(g->aspect, k);
   }
-
-  // ----- aspect orientation
-  dt_bauhaus_combobox_set(g->aspect_orient, p->aspect_orient);
 
   // ----- Position H
   for(k = 0; k < DT_IOP_BORDERS_POSITION_H_COUNT; k++)
@@ -944,11 +941,6 @@ void gui_update(struct dt_iop_module_t *self)
   {
     dt_bauhaus_combobox_set(g->pos_v, k);
   }
-  dt_bauhaus_slider_set(g->aspect_slider, p->aspect);
-  dt_bauhaus_slider_set(g->pos_h_slider, p->pos_h);
-  dt_bauhaus_slider_set(g->pos_v_slider, p->pos_v);
-  dt_bauhaus_slider_set(g->frame_size, p->frame_size);
-  dt_bauhaus_slider_set(g->frame_offset, p->frame_offset);
 
   // ----- Border Color
   GdkRGBA c = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };

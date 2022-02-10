@@ -601,25 +601,10 @@ void gui_update(dt_iop_module_t *self)
     for(int i = 0; i < 4; i++)
       dt_bauhaus_slider_set_soft(g->black_level_separate[i], av / 4);
   }
-  else
-  {
-    for(int i = 0; i < 4; i++)
-      dt_bauhaus_slider_set_soft(g->black_level_separate[i], p->raw_black_level_separate[i]);
-  }
 
   // don't show upper three black levels for monochromes
   for(int i = 1; i < 4; i++)
     gtk_widget_set_visible(g->black_level_separate[i], !is_monochrome);
-
-  dt_bauhaus_slider_set_soft(g->white_point, p->raw_white_point);
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    dt_bauhaus_slider_set_soft(g->x, p->x);
-    dt_bauhaus_slider_set_soft(g->y, p->y);
-    dt_bauhaus_slider_set_soft(g->width, p->width);
-    dt_bauhaus_slider_set_soft(g->height, p->height);
-  }
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
