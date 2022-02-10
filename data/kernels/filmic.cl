@@ -427,7 +427,7 @@ static inline float4 gamut_check_RGB(constant const float *const matrix_in, cons
   // would need to be mixed in to bring the pixel back in gamut.
   float4 RGB_brightened = Ych_to_pipe_RGB(Ych_in, matrix_out);
   const float min_pix = fmin(fmin(RGB_brightened.x, RGB_brightened.y), RGB_brightened.z);
-  const float black_offset = fmax(display_black - min_pix, 0.f);
+  const float black_offset = fmax(-min_pix, 0.f);
   RGB_brightened += black_offset;
   const float4 Ych_brightened = pipe_RGB_to_Ych(RGB_brightened, matrix_in);
 
@@ -435,7 +435,7 @@ static inline float4 gamut_check_RGB(constant const float *const matrix_in, cons
   // Note, however, that this doesn't actually desaturate the color like mixing
   // white would do. We will next find the chroma change needed to bring the pixel
   // into gamut.
-  const float Y = fmin((Ych_in.x + Ych_brightened.x) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_white));
+  const float Y = clamp((Ych_in.x + Ych_brightened.x) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_black), CIE_Y_1931_to_CIE_Y_2006(display_white));
 
   // Precompute sin and cos of hue for reuse
   const float cos_h = native_cos(Ych_in.z);

@@ -1631,7 +1631,7 @@ static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_co
   dt_aligned_pixel_t RGB_brightened = { 0.f };
   Ych_to_pipe_RGB(Ych_in, matrix_out, RGB_brightened);
   const float min_pix = MIN(MIN(RGB_brightened[0], RGB_brightened[1]), RGB_brightened[2]);
-  const float black_offset = MAX(display_black - min_pix, 0.f);
+  const float black_offset = MAX(-min_pix, 0.f);
   for_each_channel(c) RGB_brightened[c] += black_offset;
   dt_aligned_pixel_t Ych_brightened = { 0.f };
   pipe_RGB_to_Ych(RGB_brightened, matrix_in, Ych_brightened);
@@ -1640,7 +1640,7 @@ static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_co
   // Note, however, that this doesn't actually desaturate the color like mixing
   // white would do. We will next find the chroma change needed to bring the pixel
   // into gamut.
-  const float Y = MIN((Ych_in[0] + Ych_brightened[0]) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_white));
+  const float Y = CLAMP((Ych_in[0] + Ych_brightened[0]) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_black), CIE_Y_1931_to_CIE_Y_2006(display_white));
   // Precompute sin and cos of hue for reuse
   const float cos_h = cosf(Ych_in[2]);
   const float sin_h = sinf(Ych_in[2]);
