@@ -621,11 +621,11 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                      nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
   dtgtk_range_select_add_range_block(range, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
   dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("unstared only"), nb[1]);
-  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_FIXED, "★", nb[2]);
-  dtgtk_range_select_add_range_block(range, 2.0, 2.0, DT_RANGE_BOUND_FIXED, "★ ★", nb[3]);
-  dtgtk_range_select_add_range_block(range, 3.0, 3.0, DT_RANGE_BOUND_FIXED, "★ ★ ★", nb[4]);
-  dtgtk_range_select_add_range_block(range, 4.0, 4.0, DT_RANGE_BOUND_FIXED, "★ ★ ★ ★", nb[5]);
-  dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_FIXED, "★ ★ ★ ★ ★", nb[6]);
+  dtgtk_range_select_add_range_block(range, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
+  dtgtk_range_select_add_range_block(range, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
+  dtgtk_range_select_add_range_block(range, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
+  dtgtk_range_select_add_range_block(range, 4.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★", nb[5]);
+  dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
 
   range->min = -1;
   range->max = 6;
@@ -1431,7 +1431,8 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_overlay_add_overlay(GTK_OVERLAY(overlay), hbox2);
 
     // on-off button
-    rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT, NULL);
+    rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+    gtk_widget_set_name(rule->w_off, "module-enable-button");
     gtk_widget_set_tooltip_text(rule->w_off, _("disable this collect rule"));
     g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_changed), rule);
     gtk_box_pack_end(GTK_BOX(hbox2), rule->w_off, FALSE, FALSE, 0);
