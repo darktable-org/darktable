@@ -726,8 +726,9 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
       float pts[2] = { form->source[0] * wd, form->source[1] * ht };
       if(!dt_dev_distort_transform_plus(dev, pipe, iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, 1)) goto fail;
 
-      dx = pts[0] - (*points)[0];
-      dy = pts[1] - (*points)[1];
+      dx = pts[0] - (*points)[2];
+      dy = pts[1] - (*points)[3];
+
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
     dt_omp_firstprivate(points_count, points, dx, dy) \
@@ -1318,8 +1319,8 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       if(!gpt) return 0;
       // we start the form dragging
       gui->source_dragging = TRUE;
-      gui->dx = gpt->source[0] - gui->posx;
-      gui->dy = gpt->source[1] - gui->posy;
+      gui->dx = gpt->source[2] - gui->posx;
+      gui->dy = gpt->source[3] - gui->posy;
       return 1;
     }
     else if(gui->form_selected && gui->edit_mode == DT_MASKS_EDIT_FULL)
