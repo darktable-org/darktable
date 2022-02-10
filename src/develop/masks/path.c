@@ -1646,8 +1646,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     point->ctrl2[0] += dx;
     point->ctrl2[1] += dy;
 
-    _path_init_ctrl_points(form);
-
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
     // we recreate the form points
@@ -1680,8 +1678,6 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     point->ctrl2[1] = p2y / darktable.develop->preview_pipe->iheight;
 
     point->state = DT_MASKS_POINT_STATE_USER;
-
-    _path_init_ctrl_points(form);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
@@ -1744,13 +1740,23 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->point_dragging);
     pzx = pts[0] / darktable.develop->preview_pipe->iwidth;
     pzy = pts[1] / darktable.develop->preview_pipe->iheight;
+
+    // if first point, adjust the source accordingly
+    if((form->type & DT_MASKS_CLONE)
+       && gui->point_dragging == 0)
+    {
+      form->source[0] += (pzx - bzpt->corner[0]);
+      form->source[1] += (pzy - bzpt->corner[1]);
+    }
+
     bzpt->ctrl1[0] += pzx - bzpt->corner[0];
     bzpt->ctrl2[0] += pzx - bzpt->corner[0];
     bzpt->ctrl1[1] += pzy - bzpt->corner[1];
     bzpt->ctrl2[1] += pzy - bzpt->corner[1];
     bzpt->corner[0] = pzx;
     bzpt->corner[1] = pzy;
-    _path_init_ctrl_points(form);
+
+    if(gui->creation) _path_init_ctrl_points(form);
     // we recreate the form points
     dt_masks_gui_form_remove(form, gui, index);
     dt_masks_gui_form_create(form, gui, index, module);
@@ -1771,6 +1777,16 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     const float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
     const float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
 
+    // if first or last segment, adjust the source accordingly as the source point
+    // is at the end of the first segment and at the start of the last one.
+    if((form->type & DT_MASKS_CLONE)
+       && (gui->seg_dragging == 0
+           || gui->seg_dragging == (g_list_length(form->points) - 1)))
+    {
+      form->source[0] += dx;
+      form->source[1] += dy;
+    }
+
     // we move all points
     point->corner[0] += dx;
     point->corner[1] += dy;
@@ -1785,8 +1801,6 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     point2->ctrl1[1]  += dy;
     point2->ctrl2[0]  += dx;
     point2->ctrl2[1]  += dy;
-
-    _path_init_ctrl_points(form);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
 
