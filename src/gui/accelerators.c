@@ -325,16 +325,16 @@ static gint _shortcut_compare_func(gconstpointer shortcut_a, gconstpointer short
     return a->key - b->key;
   if(a->press != b->press)
     return a->press - b->press;
+  if(a->button != b->button)
+    return a->button - b->button;
+  if(a->click != b->click)
+    return a->click - b->click;
   if(a->move_device != b->move_device)
     return a->move_device - b->move_device;
   if(a->move != b->move)
     return a->move - b->move;
   if(a->mods != b->mods)
     return a->mods - b->mods;
-  if(a->button != b->button)
-    return a->button - b->button;
-  if(a->click != b->click)
-    return a->click - b->click;
   if((a->direction | b->direction) == (DT_SHORTCUT_UP | DT_SHORTCUT_DOWN))
     return a->direction - b->direction;
 
@@ -2606,7 +2606,10 @@ void dt_shortcuts_select_view(dt_view_type_flags_t view)
 
 static GSList *_pressed_keys = NULL, *_hold_keys = NULL; // lists of currently pressed and held keys
 static guint _pressed_button = 0;
-static guint _last_time = 0, _last_mapping_time = 0;
+static guint _last_time = 0; // time of key or button press
+                             // used to determine if release should trigger action
+                             // set to 0 by any intermediate move (so no action on release)
+static guint  _last_mapping_time = 0;
 static guint _timeout_source = 0;
 static guint _focus_loss_key = 0;
 static guint _focus_loss_press = 0;
@@ -2950,11 +2953,13 @@ static float _process_shortcut(float move_size)
 {
   float return_value = NAN;
 
+  dt_print(DT_DEBUG_INPUT,
+           "  [_process_shortcut] processing shortcut: %s\n",
+           _shortcut_description(&_sc));
+
   dt_shortcut_t fsc = _sc;
   fsc.action = NULL;
   fsc.element  = 0;
-
-  static int consecutive_unmatched = 0;
 
   gchar *fb_log = darktable.control->mapping_widget && !isnan(move_size)
                 ? g_strdup_printf("[ %s ]", _shortcut_description(&fsc))
@@ -2962,8 +2967,6 @@ static float _process_shortcut(float move_size)
 
   if(_shortcut_match(&fsc, &fb_log))
   {
-    consecutive_unmatched = 0;
-
     move_size *= fsc.speed;
 
     if(fsc.effect == DT_ACTION_EFFECT_DEFAULT_MOVE)
@@ -2982,12 +2985,6 @@ static float _process_shortcut(float move_size)
   else if(!isnan(move_size) && !fsc.action)
   {
     dt_toast_log(_("%s not assigned"), _shortcut_description(&_sc));
-
-    if(++consecutive_unmatched >= 3)
-    {
-      _ungrab_at_focus_loss();
-      consecutive_unmatched = 0;
-    }
   }
 
   if(fb_log)
@@ -3060,12 +3057,15 @@ static gint _cmp_key(const gconstpointer a, const gconstpointer b)
   return key_a->key_device != key_b->key_device || key_a->key != key_b->key;
 }
 
-static inline void _cancel_delayed_release(void)
+static inline void _interrupt_delayed_release(gboolean trigger)
 {
   if(_timeout_source)
   {
     g_source_remove(_timeout_source);
     _timeout_source = 0;
+
+    if(trigger)
+      dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
 
     _sc.button = _pressed_button;
     _sc.click = 0;
@@ -3082,6 +3082,9 @@ static guint _key_modifiers_clean(guint mods)
 
 float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size)
 {
+  if(!isnan(size))
+    _interrupt_delayed_release(TRUE); // reenters dt_shortcut_move
+
   _sc.move_device = id;
   _sc.move = move;
   _sc.speed = 1.0;
@@ -3095,18 +3098,22 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
   else
     _sc.effect = DT_ACTION_EFFECT_DEFAULT_KEY;
 
-  if(id) _sc.mods = _key_modifiers_clean(dt_key_modifier_state());
+  if(id != DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE)
+    _sc.mods = _key_modifiers_clean(dt_key_modifier_state());
 
   float return_value = 0;
   if(isnan(size))
     return_value = _process_shortcut(size);
   else
   {
-    _cancel_delayed_release();
-    _last_time = 0;
+    gboolean key_or_button_released = (id == DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE
+                                      && move == DT_SHORTCUT_MOVE_NONE);
     _previous_move = move;
 
-    if(_grab_widget)
+    if(!key_or_button_released)
+      _last_time = 0;
+
+    if(_grab_widget) // in mapping mode end grab immediately after first shortcut
       _ungrab_grab_widget();
 
     dt_print(DT_DEBUG_INPUT,
@@ -3144,7 +3151,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
     }
     else
     {
-      if(!_pressed_keys)
+      if(!_pressed_keys || (key_or_button_released && !_sc.button))
         return_value = _process_shortcut(size);
       else
       {
@@ -3171,22 +3178,22 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
 static gboolean _key_release_delayed(gpointer timed_out)
 {
   _timeout_source = 0;
-  _last_time = 0;
 
-  _ungrab_grab_widget();
+  if(!_pressed_keys)
+    _ungrab_grab_widget();
 
   if(!timed_out)
     dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
 
-  _sc = (dt_shortcut_t) { 0 };
+  if(!_pressed_keys)
+    _sc = (dt_shortcut_t) { 0 };
 
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
 
 static gboolean _button_release_delayed(gpointer timed_out)
 {
   _timeout_source = 0;
-  _last_time = 0;
 
   if(!timed_out)
     dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
@@ -3194,8 +3201,10 @@ static gboolean _button_release_delayed(gpointer timed_out)
   _sc.button = _pressed_button;
   _sc.click = 0;
 
-  return FALSE;
+  return G_SOURCE_REMOVE;
 }
+
+gboolean break_stuck = FALSE;
 
 void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
 {
@@ -3264,34 +3273,29 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
       }
     }
 
-    _cancel_delayed_release();
-
     int delay = 0;
     g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
 
+    if((id || key)
+        && id == _sc.key_device
+        && key == _sc.key
+        && time < _last_time + delay
+        && !(_sc.press & DT_SHORTCUT_TRIPLE))
+    {
+      _interrupt_delayed_release(FALSE);
+      _sc.press += DT_SHORTCUT_DOUBLE;
+    }
+    else
+      _interrupt_delayed_release(TRUE);
+
     if(!_pressed_keys)
     {
-      if((id || key)
-         && id == _sc.key_device
-         && key == _sc.key
-         && time < _last_time + delay
-         && !(_sc.press & DT_SHORTCUT_TRIPLE))
-      {
-        _sc.press += DT_SHORTCUT_DOUBLE;
-      }
-      else
-      {
-        _sc.press = 0;
-
-        _lookup_mapping_widget();
-      }
+      _lookup_mapping_widget();
 
       gdk_seat_grab(gdk_display_get_default_seat(gdk_display_get_default()),
                     gtk_widget_get_window(_grab_window ? _grab_window
                                                        : dt_ui_main_window(darktable.gui->ui)),
                     GDK_SEAT_CAPABILITY_ALL, FALSE, NULL, NULL, NULL, NULL);
-
-      _last_time = time;
     }
     else
     {
@@ -3303,6 +3307,13 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
         return;
       }
     }
+
+    // short press after 2 seconds will clear all keys
+    break_stuck = _pressed_keys && time > _last_time + 2000;
+
+    // allow extra time when pressing multiple keys "at same time"
+    if(!_pressed_keys || time < _last_time + delay || break_stuck)
+      _last_time = time;
 
     _sc.key_device = id;
     _sc.key = key;
@@ -3325,6 +3336,59 @@ void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key)
   }
 }
 
+static void _delay_for_double_triple(guint time, guint is_key)
+{
+  int delay = 0;
+  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
+
+  guint passed_time = time - _last_time;
+
+  if(passed_time > delay)
+  {
+    _sc.press |= DT_SHORTCUT_LONG & is_key;
+    _sc.click |= DT_SHORTCUT_LONG & ~is_key;
+  }
+  else if(break_stuck && !_sc.button)
+  {
+    _ungrab_grab_widget();
+    dt_control_log("short key press resets stuck keys");
+    return;
+  }
+  else if((is_key ? _sc.press : _sc.click) & DT_SHORTCUT_TRIPLE)
+    passed_time += delay;
+  else if(!_sc.action) // in mapping mode always wait for double/triple
+  {
+    // detect if any double or triple press shortcuts exist for this key; otherwise skip delay
+    _sc.press += DT_SHORTCUT_DOUBLE & is_key;
+    _sc.click += DT_SHORTCUT_DOUBLE & ~is_key;
+
+    _sc.views = darktable.view_manager->current_view->view(darktable.view_manager->current_view);
+    GSequenceIter *multi = g_sequence_search(darktable.control->shortcuts, &_sc, _shortcut_compare_func,
+                                             GINT_TO_POINTER(_sc.views));
+
+    for(int checks = 2; multi; multi = --checks ? g_sequence_iter_prev(multi) : NULL)
+    {
+      dt_shortcut_t *m = g_sequence_get(multi);
+      if(m && m->key_device == _sc.key_device && m->key == _sc.key &&
+         (is_key ? m->press >= _sc.press :
+                   m->press == _sc.press && m->button == _sc.button && m->click >= _sc.click))
+        break;
+    }
+    if(!multi) passed_time += delay;
+
+    _sc.press -= DT_SHORTCUT_DOUBLE & is_key;
+    _sc.click -= DT_SHORTCUT_DOUBLE & ~is_key;
+  }
+
+  GSourceFunc delay_func = is_key ? _key_release_delayed
+                                  : _button_release_delayed;
+
+  if(passed_time < delay)
+    _timeout_source = g_timeout_add(delay - passed_time, delay_func, NULL);
+  else
+    delay_func(GINT_TO_POINTER(passed_time > 2 * delay)); // call immediately
+}
+
 void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
 {
   dt_device_key_t this_key = { id, key };
@@ -3342,57 +3406,18 @@ void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key)
   GSList *stored_key = g_slist_find_custom(_pressed_keys, &this_key, _cmp_key);
   if(stored_key)
   {
-    _cancel_delayed_release();
+    _interrupt_delayed_release(TRUE);
 
     g_free(stored_key->data);
     _pressed_keys = g_slist_delete_link(_pressed_keys, stored_key);
 
-    if(!_pressed_keys)
-    {
-      // is this sequence of same key, without mouse buttons
-      if(_sc.key_device == id
-         && _sc.key == key
-         && !_sc.button)
-      {
-        int delay = 0;
-        g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
+    if(_sc.key_device != id || _sc.key != key)
+      break_stuck = FALSE;
 
-        guint passed_time = time - _last_time;
+    _sc.key_device = id;
+    _sc.key = key;
 
-        if(passed_time > delay) _sc.press |= DT_SHORTCUT_LONG;
-
-        if(!_sc.press && !_sc.action)
-        {
-          // detect if any double or triple press shortcuts exist for this key; otherwise skip delay
-          dt_shortcut_t key_23press =
-            { .key_device = id,
-              .key   = key,
-              .press = DT_SHORTCUT_DOUBLE,
-              .views = darktable.view_manager->current_view->view(darktable.view_manager->current_view) };
-          GSequenceIter *double_press = g_sequence_search(darktable.control->shortcuts, &key_23press, _shortcut_compare_func,
-                                                          GINT_TO_POINTER(key_23press.views));
-          if(double_press)
-          {
-            dt_shortcut_t *dp = g_sequence_get(double_press);
-            if(!dp || dp->key_device != id || dp->key != key || dp->press <= DT_SHORTCUT_LONG)
-            {
-              dp = g_sequence_get(g_sequence_iter_prev(double_press));
-              if(!dp || dp->key_device != id || dp->key != key || dp->press <= DT_SHORTCUT_LONG)
-                passed_time = delay;
-            }
-          }
-        }
-
-        if(passed_time < delay && !(_sc.press & DT_SHORTCUT_TRIPLE))
-          _timeout_source = g_timeout_add(delay - passed_time, _key_release_delayed, NULL);
-        else
-          _key_release_delayed(GINT_TO_POINTER(passed_time > 2 * delay)); // call immediately
-      }
-      else
-      {
-        _key_release_delayed(GINT_TO_POINTER(TRUE)); // not sequence of same key
-      }
-    }
+    _delay_for_double_triple(time, -1);
   }
 }
 
@@ -3469,9 +3494,6 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     }
   }
 
-  int delay = 0;
-  g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
-
   switch(event->type)
   {
   case GDK_KEY_PRESS:
@@ -3493,11 +3515,9 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
   case GDK_KEY_RELEASE:
     if(event->key.is_modifier || event->key.keyval == GDK_KEY_ISO_Level3_Shift)
     {
-      if(_sc.action)
+      // are we defining shortcuts for fallbacks? just modifiers can be used.
+      if(_sc.action && _sc.action->type == DT_ACTION_TYPE_FALLBACK)
       {
-        // we may interrupt a delayed release, so do the ungrab here if needed
-        if(!_pressed_keys) _ungrab_grab_widget();
-
         _sc.mods = _key_modifiers_clean(event->key.state);
         dt_shortcut_move(DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE, 0, DT_SHORTCUT_MOVE_NONE, 1);
       }
@@ -3533,8 +3553,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     }
     break;
   case GDK_MOTION_NOTIFY:
-    _sc.mods = _key_modifiers_clean(event->motion.state);
-
+    ;
     static gdouble move_start_x = 0, move_start_y = 0, last_distance = 0;
 
     const gdouble x_move = event->motion.x - move_start_x;
@@ -3553,7 +3572,12 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 
     // might just be an accidental move during a key press or button click
     // possibly different time sources from midi or other devices
+    int delay = 0;
+    g_object_get(gtk_settings_get_default(), "gtk-double-click-time", &delay, NULL);
+
     if(event->motion.time > _last_time && event->motion.time < _last_time + delay) break;
+
+    _sc.mods = _key_modifiers_clean(event->motion.state);
 
     const gdouble step_size = 10;
 
@@ -3594,8 +3618,8 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
   case GDK_BUTTON_PRESS:
     _sc.mods = _key_modifiers_clean(event->button.state);
 
-    _cancel_delayed_release();
     _pressed_button |= 1 << (event->button.button - 1);
+    _interrupt_delayed_release(_sc.button != _pressed_button);
     _sc.button = _pressed_button;
     _sc.click = 0;
     _last_time = event->button.time;
@@ -3607,24 +3631,14 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
     _sc.click |= DT_SHORTCUT_TRIPLE;
     break;
   case GDK_BUTTON_RELEASE:
-    // FIXME; check if there's a shortcut defined for double/triple (could be fallback?); if not -> no delay
-    // maybe even action on PRESS rather than RELEASE
-    // FIXME be careful!!; we seem to be receiving presses and releases twice!?!
     _pressed_button &= ~(1 << (event->button.button - 1));
 
-    const guint passed_time = event->button.time - _last_time;
-    if(passed_time < delay
-       && !(_sc.click & DT_SHORTCUT_TRIPLE))
-    {
-      if(!_timeout_source)
-        _timeout_source = g_timeout_add(delay - passed_time, _button_release_delayed, NULL);
-    }
-    else
-    {
-      if(passed_time > delay)
-        _sc.click |= DT_SHORTCUT_LONG;
-      _button_release_delayed(GINT_TO_POINTER(passed_time > 2 * delay)); // call immediately
-    }
+    _interrupt_delayed_release(FALSE);
+
+    _delay_for_double_triple(event->button.time, 0);
+
+    _last_time = 0; // important; otherwise releasing two buttons will trigger two actions
+                    // also, we seem to be receiving presses and releases twice!?! FIXME
     break;
   default:
     return FALSE;
