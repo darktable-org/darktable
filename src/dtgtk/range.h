@@ -16,6 +16,18 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* Precision about all the value reference used here
+  We have in fact 3 different reference
+  - the "real" value (for example ratio 0.67)
+    suffix = "_r"
+  - the "band" value : this is the value corrected in order to be shown on the graph.
+    this differ from value because for some property, we need non linear repartition of values
+    example : portrait ratio should be inverted
+    suffix = "_bd"
+  - the "pixels" value : this is the value in pixels as shown on the graph
+    this value changed each time the widget size change
+    suffix = "_px"
+*/
 #pragma once
 
 #include "paint.h"
@@ -45,20 +57,20 @@ typedef struct _GtkDarktableRangeSelect
   GtkBin widget;
 
   gboolean show_entries; // do we show the line with the entry boxes ?
-  double min; // minimal value shown
-  double max; // maximal value shown
-  double step;
+  double min_r;          // minimal value shown
+  double max_r;          // maximal value shown
+  double step_r;
 
-  double select_min;        // low bound of the selection
-  double select_max;        // hight bound of the selection
+  double select_min_r;      // low bound of the selection
+  double select_max_r;      // hight bound of the selection
   dt_range_bounds_t bounds; // type of selection bounds
 
-  double current_x;
+  double current_x_px;
   gboolean mouse_inside;
   gboolean set_selection;
 
   cairo_surface_t *surface;
-  int surf_width;
+  int surf_width_px;
 
   GtkWidget *entry_min;
   GtkWidget *current;
@@ -68,9 +80,9 @@ typedef struct _GtkDarktableRangeSelect
   // fonction used to translate "real" value into band positions
   // this allow to have special value repartitions on the band
   // if NULL, band values == real values
-  DTGTKTranslateValueFunc band_value;
-  DTGTKTranslateValueFunc value_band;
-  double band_start;  // band value of the start of the widget
+  DTGTKTranslateValueFunc value_to_band;
+  DTGTKTranslateValueFunc value_from_band;
+  double band_start_bd; // band value of the start of the widget
   double band_factor; // factor for getting band value from widget position
 
   // function used to print and decode values so they are human readable
@@ -82,8 +94,8 @@ typedef struct _GtkDarktableRangeSelect
   GList *icons;
   GList *markers;
 
-  int band_margin_side;
-  int band_real_width;
+  int band_margin_side_px;
+  int band_real_width_px;
 } GtkDarktableRangeSelect;
 
 typedef struct _GtkDarktableRangeSelectClass
@@ -97,23 +109,23 @@ GType dtgtk_range_select_get_type(void);
 GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries);
 
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
-                                      const double min, const double max, gboolean signal);
-dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *range, double *min, double *max);
+                                      const double min_r, const double max_r, gboolean signal);
+dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *range, double *min_r, double *max_r);
 
-void dtgtk_range_select_add_block(GtkDarktableRangeSelect *range, const double value, const int count);
-void dtgtk_range_select_add_range_block(GtkDarktableRangeSelect *range, const double min, const double max,
+void dtgtk_range_select_add_block(GtkDarktableRangeSelect *range, const double value_r, const int count);
+void dtgtk_range_select_add_range_block(GtkDarktableRangeSelect *range, const double min_r, const double max_r,
                                         const dt_range_bounds_t bounds, gchar *txt, const int count);
 void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
 
-void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc band_value,
-                                      DTGTKTranslateValueFunc value_band);
+void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc value_from_band,
+                                      DTGTKTranslateValueFunc value_to_band);
 void dtgtk_range_select_set_print_func(GtkDarktableRangeSelect *range, DTGTKPrintValueFunc print,
                                        DTGTKDecodeValueFunc decode);
 
-void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, const double value,
+void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, const double value_r,
                                  DTGTKCairoPaintIconFunc paint, gint flags, void *data);
 void dtgtk_range_select_reset_icons(GtkDarktableRangeSelect *range);
 
-void dtgtk_range_select_add_marker(GtkDarktableRangeSelect *range, const double value, const gboolean magnetic);
+void dtgtk_range_select_add_marker(GtkDarktableRangeSelect *range, const double value_r, const gboolean magnetic);
 void dtgtk_range_select_reset_markers(GtkDarktableRangeSelect *range);
 G_END_DECLS
