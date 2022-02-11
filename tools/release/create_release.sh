@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DT_SRC_DIR=$(dirname "$0")
-DT_SRC_DIR=$(cd "$DT_SRC_DIR/../" && pwd -P)
+DT_SRC_DIR=$(cd "$DT_SRC_DIR/../../" && pwd -P)
 
 cd "$DT_SRC_DIR" || exit
 
@@ -55,7 +55,7 @@ echo "* removing src/tests/integration"
 rm -rf darktable-"$dt_decoration"/src/tests/integration
 
 # drop all git-related stuff
-find darktable-"$dt_decoration"/ -iname '.git*' -delete
+find darktable-"$dt_decoration"/ -iname '.git*' -exec rm -fr {} \;
 
 # ... and also remove RELEASE_NOTES. that file is just for internal use
 #echo "* removing RELEASE_NOTES"
