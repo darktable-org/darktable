@@ -1900,7 +1900,7 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = color_profile;
   else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
     d->type = DT_COLORSPACE_LIN_REC2020;
-  else if (img->flags & DT_IMAGE_MONOCHROME)
+  else if(dt_image_is_monochrome(img))
     d->type = DT_COLORSPACE_LIN_REC709;
   else if(img->colorspace == DT_IMAGE_COLORSPACE_SRGB)
     d->type = DT_COLORSPACE_SRGB;

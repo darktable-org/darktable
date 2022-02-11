@@ -954,21 +954,39 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  dt_bauhaus_slider_set(g->clip, p->clip);
-  dt_bauhaus_combobox_set(g->mode, p->mode);
+  const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
+  // enable this per default if raw or sraw if not real monochrome
+  self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
+  self->hide_enable_button = monochrome;
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
+
+  if(!monochrome)
+  {
+    dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+    dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
+
+    dt_bauhaus_slider_set(g->clip, p->clip);
+    dt_bauhaus_combobox_set(g->mode, p->mode);
+  }
 }
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // enable this per default if raw or sraw,
-  module->default_enabled = dt_image_is_rawprepare_supported(&(module->dev->image_storage));
+  // we might be called from presets update infrastructure => there is no image
+  if(!module->dev || module->dev->image_storage.id == -1) return;
+
+  const gboolean monochrome = dt_image_is_monochrome(&module->dev->image_storage);
+  // enable this per default if raw or sraw if not real monochrome
+  module->default_enabled = dt_image_is_rawprepare_supported(&module->dev->image_storage) && !monochrome;
+  module->hide_enable_button = monochrome;
+  if(module->widget)
+    gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->default_enabled ? "default" : "monochrome");
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_highlights_gui_data_t *g = IOP_GUI_ALLOC(highlights);
+  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("highlight reconstruction method"));
@@ -977,6 +995,16 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->clip, 3);
   gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold against "
                                          "magenta highlights (you shouldn't ever need to touch this)"));
+
+  GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
+  gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
+
+  // start building top level widget
+  self->widget = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
+  gtk_stack_add_named(GTK_STACK(self->widget), monochromes, "monochrome");
+  gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "default");
+
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
