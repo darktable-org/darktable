@@ -132,11 +132,32 @@ typedef enum dt_colorlabels_actions_t
 
 
 
-static void _colorlabels_execute(const GList *imgs, const int labels, GList **undo, const gboolean undo_on, const int action)
+static void _colorlabels_execute(const GList *imgs, const int labels, GList **undo, const gboolean undo_on, int action)
 {
-  for(const GList *images = imgs; images; images = g_list_next((GList *)images))
+  if(action == DT_CA_TOGGLE)
   {
-    const int image_id = GPOINTER_TO_INT(images->data);
+    // if we are supposed to toggle color labels, first check if all images have that label
+    for(const GList *image = imgs; image; image = g_list_next((GList *)image))
+    {
+      const int image_id = GPOINTER_TO_INT(image->data);
+      const uint8_t before = dt_colorlabels_get_labels(image_id);
+
+      // as long as a single image does not have the label we do not toggle the label for all images
+      // but add the label to all unlabeled images first
+      if(!(before & labels))
+      {
+        action = DT_CA_ADD;
+        break;
+      }
+    }
+  }
+
+
+
+
+  for(const GList *image = imgs; image; image = g_list_next((GList *)image))
+  {
+    const int image_id = GPOINTER_TO_INT(image->data);
     const uint8_t before = dt_colorlabels_get_labels(image_id);
     uint8_t after = 0;
     switch(action)
