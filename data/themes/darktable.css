@@ -69,11 +69,11 @@
 
 /* General */
 @define-color selected_bg_color @grey_35; /* legacy stuff */
-@define-color border_color @grey_10; /* border, when used */
-@define-color bg_color @grey_15; /* general background */
-@define-color fg_color @grey_70; /* general text */
-@define-color base_color @fg_color; /* legacy stuff */
-@define-color text_color @grey_05; /* same */
+@define-color border_color @grey_10;      /* border, when used */
+@define-color bg_color @grey_15;          /* general background */
+@define-color fg_color @grey_70;          /* general text */
+@define-color base_color @fg_color;       /* legacy stuff */
+@define-color text_color @grey_05;        /* same */
 @define-color disabled_fg_color @grey_40; /* disabled controls */
 
 /* Scroll bars (sliders) */
@@ -2725,28 +2725,36 @@ Details :
 
 /* Collapsible sections on lib & iop modules */
 
-#collapse-block,
-#collapsible #bauhaus-slider
+#collapse-block
 {
-  background-color: @collapsible_bg_color;
-}
-
-/* for the import parameters to be more aligned with the imports buttons */
-#lib-plugin-ui #collapse-block
-{
-  margin: 1px;
+  border: 0.1em solid shade(@collapsible_bg_color, 0.9);
 }
 
 #collapsible,
 #collapse-block #section_label
 {
-  padding: 0px 2px 2px 10px;
+  padding: 0 0.14em 0.14em 0.7em;
   margin: 0;
   border: none;
+}
+
+#collapsible,
+#collapsible #bauhaus-slider
+{
+  border-top: 0.035em solid  shade(@section_label, 0.7);
   background-color: @collapsible_bg_color;
 }
 
+/* for the import parameters to be more aligned with the imports buttons */
+
+#lib-plugin-ui #collapse-block
+{
+  margin: 0.42em 0.07em;
+}
+
+#collapse-block #section_label,
 #collapse-block .section-expander
 {
   margin: 0.1em;
+  background-color: shade(@collapsible_bg_color, 0.95);
 }
