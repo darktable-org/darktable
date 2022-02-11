@@ -145,7 +145,8 @@ gboolean _cache_update(const gboolean only_visible, const gboolean force, const 
   if(mouseover > 0)
   {
     // column 1,2,3
-    if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
+    if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside ||
+       dt_ui_thumbtable(darktable.gui->ui)->key_inside)
     {
       // column 1,2
       sqlite3_stmt *stmt;

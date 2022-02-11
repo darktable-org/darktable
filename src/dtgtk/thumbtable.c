@@ -1015,7 +1015,7 @@ static int _lighttable_expose_empty(cairo_t *cr, int32_t width, int32_t height, 
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_LIGHTTABLE_FONT, at);
     cairo_stroke(cr);
   }
-  
+
   pango_font_description_free(desc);
   g_object_unref(layout);
   return 0;
@@ -1133,6 +1133,7 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   table->mouse_inside = TRUE;
+  table->key_inside = FALSE;
 
   gboolean ret = FALSE;
   if(table->dragging && table->mode == DT_THUMBTABLE_MODE_ZOOM)
@@ -2623,6 +2624,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   if(sqlite3_step(stmt) == SQLITE_ROW) maxrowid = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
+  dt_ui_thumbtable(darktable.gui->ui)->key_inside = TRUE;
   // classic keys
   if(move == DT_THUMBTABLE_MOVE_LEFT && baserowid > 1)
     newrowid = baserowid - 1;
@@ -2648,6 +2650,11 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
     newrowid = 1;
   else if(move == DT_THUMBTABLE_MOVE_END)
     newrowid = maxrowid;
+  else if(move == DT_THUMBTABLE_MOVE_LEAVE)
+  {
+    newrowid = -1;
+    dt_ui_thumbtable(darktable.gui->ui)->key_inside = FALSE;
+  }
 
   if(newrowid == baserowid) return FALSE;
 
@@ -2657,7 +2664,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   dt_control_set_mouse_over_id(imgid);
 
   // ensure the image is visible by moving the view if needed
-  _filemanager_ensure_rowid_visibility(table, newrowid);
+  if(newrowid != -1) _filemanager_ensure_rowid_visibility(table, newrowid);
 
   // if needed, we set the selection
   if(select && imgid > 0) dt_selection_select_range(darktable.selection, imgid);
