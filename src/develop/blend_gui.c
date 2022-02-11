@@ -2239,10 +2239,10 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(sl->box), TRUE, FALSE, 0);
     }
 
-    bd->channel_boost_factor_slider = dt_bauhaus_slider_new_with_range(module, 0.0f, 3.0f, .02f, 0.0f, 3);
+    bd->channel_boost_factor_slider = dt_bauhaus_slider_new_with_range(module, 0.0f, 18.0f, .02f, 0.0f, 3);
     dt_bauhaus_slider_set_format(bd->channel_boost_factor_slider, _("%.2f EV"));
     dt_bauhaus_widget_set_label(bd->channel_boost_factor_slider, N_("blend"), N_("boost factor"));
-    dt_bauhaus_slider_enable_soft_boundaries(bd->channel_boost_factor_slider, 0.0, 18.0);
+    dt_bauhaus_slider_set_soft_range(bd->channel_boost_factor_slider, 0.0, 3.0);
     gtk_widget_set_tooltip_text(bd->channel_boost_factor_slider, _("adjust the boost factor of the channel mask"));
     gtk_widget_set_sensitive(bd->channel_boost_factor_slider, FALSE);
 
@@ -2957,6 +2957,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
   /* create and add blend mode if module supports it */
   if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
   {
+    ++darktable.gui->reset;
     --darktable.bauhaus->skip_accel;
 
     module->blend_data = g_malloc0(sizeof(dt_iop_gui_blend_data_t));
@@ -3064,11 +3065,11 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                                                                "\nby default the output will be blended on top of the input,"
                                                                "\norder can be reversed by clicking on the icon (input on top of output)"));
 
-    bd->blend_mode_parameter_slider = dt_bauhaus_slider_new_with_range(module, -3.0f, 3.0f, .02f, 0.0f, 3);
+    bd->blend_mode_parameter_slider = dt_bauhaus_slider_new_with_range(module, -18.0f, 18.0f, .02f, 0.0f, 3);
     dt_bauhaus_widget_set_field(bd->blend_mode_parameter_slider, &module->blend_params->blend_parameter, DT_INTROSPECTION_TYPE_FLOAT);
     dt_bauhaus_widget_set_label(bd->blend_mode_parameter_slider, N_("blend"), N_("blend fulcrum"));
     dt_bauhaus_slider_set_format(bd->blend_mode_parameter_slider, _("%.2f EV"));
-    dt_bauhaus_slider_enable_soft_boundaries(bd->blend_mode_parameter_slider, -18.0, 18.0);
+    dt_bauhaus_slider_set_soft_range(bd->blend_mode_parameter_slider, -3.0, 3.0);
     gtk_widget_set_tooltip_text(bd->blend_mode_parameter_slider, _("adjust the fulcrum used by some blending"
                                                                    " operations"));
     gtk_widget_set_visible(bd->blend_mode_parameter_slider, FALSE);
@@ -3196,6 +3197,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->blend_inited = 1;
 
     ++darktable.bauhaus->skip_accel;
+    --darktable.gui->reset;
   }
 }
 
