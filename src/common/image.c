@@ -158,9 +158,9 @@ int dt_image_is_raw(const dt_image_t *img)
   return (img->flags & DT_IMAGE_RAW);
 }
 
-int dt_image_is_monochrome(const dt_image_t *img)
+gboolean dt_image_is_monochrome(const dt_image_t *img)
 {
-  return (img->flags & DT_IMAGE_MONOCHROME);
+  return (img->flags & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)) ? TRUE : FALSE;
 }
 
 static void _image_set_monochrome_flag(const int32_t imgid, gboolean monochrome, gboolean undo_on)
@@ -218,14 +218,14 @@ static void _pop_undo_execute(const int32_t imgid, const gboolean before, const 
   _image_set_monochrome_flag(imgid, after, FALSE);
 }
 
-int dt_image_is_matrix_correction_supported(const dt_image_t *img)
+gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img)
 {
-  return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW )) && !(img->flags & DT_IMAGE_MONOCHROME) );
+  return ((img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW )) && !(img->flags & DT_IMAGE_MONOCHROME)) ? TRUE : FALSE;
 }
 
-int dt_image_is_rawprepare_supported(const dt_image_t *img)
+gboolean dt_image_is_rawprepare_supported(const dt_image_t *img)
 {
-  return (img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW));
+  return (img->flags & (DT_IMAGE_RAW | DT_IMAGE_S_RAW)) ? TRUE : FALSE;
 }
 
 gboolean dt_image_use_monochrome_workflow(const dt_image_t *img)
