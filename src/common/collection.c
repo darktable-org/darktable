@@ -2265,16 +2265,7 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   const int c = dt_collection_get_count_no_group(collection);
   const int cs = dt_collection_get_selected_count(collection);
 
-  // no selection
-  if(cs == 0)
-  {
-    if(c == 1)
-      message = g_strdup_printf(_("%d image in current collection"), c);
-    else
-      message = g_strdup_printf(_("%d images in current collection"), c);
-  }
-  // exactly 1 image selected
-  else if(cs == 1)
+  if(cs == 1)
   {
     /* determine offset of the single selected image */
     GList *selected_imgids = dt_collection_get_selected(collection, 1);
@@ -2287,15 +2278,14 @@ void dt_collection_hint_message(const dt_collection_t *collection)
       selected++;
     }
     g_list_free(selected_imgids);
-    message = g_strdup_printf(_("selected %d image of %d (#%d) in current collection"), cs, c, selected);
+    message = g_strdup_printf(_("%d image of %d (#%d) in current collection is selected"), cs, c, selected);
   }
-  // more images selected
   else
   {
     message = g_strdup_printf(
       ngettext(
-        "selected %d image of %d in current collection",
-        "selected %d images of %d in current collection",
+        "%d image of %d in current collection is selected",
+        "%d images of %d in current collection are selected",
         cs),
       cs, c);
   }
