@@ -844,7 +844,7 @@ static void _gradient_draw_lines(gboolean borders, cairo_t *cr, double *dashed, 
       else
         cairo_set_line_width(cr, 3.0 / zoom_scale);
     }
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
 
     cairo_move_to(cr, x, y);
 
@@ -860,7 +860,7 @@ static void _gradient_draw_lines(gboolean borders, cairo_t *cr, double *dashed, 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_stroke(cr);
   }
 }
@@ -881,7 +881,7 @@ static void _gradient_draw_arrow(cairo_t *cr, double *dashed, const float len, c
   {
     cairo_set_dash(cr, dashed, 0, 0);
     const float anchor_size = (selected) ? 7.0f / zoom_scale : 5.0f / zoom_scale;
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_rectangle(cr, anchor_x - (anchor_size * 0.5), anchor_y - (anchor_size * 0.5), anchor_size, anchor_size);
     cairo_fill_preserve(cr);
 
@@ -889,7 +889,7 @@ static void _gradient_draw_arrow(cairo_t *cr, double *dashed, const float len, c
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
     cairo_stroke(cr);
   }
 
@@ -901,16 +901,16 @@ static void _gradient_draw_arrow(cairo_t *cr, double *dashed, const float len, c
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
 
     // from start to end
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_move_to(cr, pivot_start_x, pivot_start_y);
     cairo_line_to(cr, pivot_end_x, pivot_end_y);
     cairo_stroke(cr);
 
     // start side of the gradient
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
     cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
     cairo_stroke(cr);
@@ -918,7 +918,7 @@ static void _gradient_draw_arrow(cairo_t *cr, double *dashed, const float len, c
     // end side of the gradient
     cairo_arc(cr, pivot_end_x, pivot_end_y, 1.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
     cairo_stroke(cr);
 
     // draw arrow on the end of the gradient to clearly display the direction
@@ -936,7 +936,7 @@ static void _gradient_draw_arrow(cairo_t *cr, double *dashed, const float len, c
     const float arrow_y1 = pivot_end_y + (arrow_length * sinf(angle + arrow_angle));
     const float arrow_y2 = pivot_end_y + (arrow_length * sinf(angle - arrow_angle));
 
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_move_to(cr, pivot_end_x, pivot_end_y);
     cairo_line_to(cr, arrow_x1, arrow_y1);
     cairo_line_to(cr, arrow_x2, arrow_y2);
