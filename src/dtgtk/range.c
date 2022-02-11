@@ -422,7 +422,6 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     // determine icon size
     const int size = bandh * 0.6;
     const int posy = margin_top + bandh * 0.2;
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
 
     for(const GList *bl = range->icons; bl; bl = g_list_next(bl))
     {
@@ -431,9 +430,15 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
       // we set prelight flag if the mouse value correspond
       gint f = icon->flags;
       if(range->mouse_inside && range->current_x_px > 0 && icon->value_r == current_value_r)
+      {
         f |= CPF_PRELIGHT;
+        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 0.6);
+      }
       else
+      {
         f &= ~CPF_PRELIGHT;
+        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
+      }
 
       // we set the active flag if the icon value is inside the selection
       if(!range->set_selection && (icon->value_r >= range->select_min_r || (range->bounds & DT_RANGE_BOUND_MIN))

@@ -556,21 +556,16 @@ static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint
 {
   // first, we set the color depending on the flags
   void *my_data = data;
-  GdkRGBA bc = darktable.gui->colors[DT_GUI_COLOR_RANGE_ICONS];
-  GdkRGBA *shade_color = gdk_rgba_copy(&bc);
-  shade_color->alpha *= 0.6;
 
-  if(flags & CPF_PRELIGHT)
+  if((flags & CPF_PRELIGHT) || (flags & CPF_ACTIVE))
   {
-    // we want less visible borders and filled icon
-    dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 0.6);
+    // we want a filled icon
+    GdkRGBA bc = darktable.gui->colors[DT_GUI_COLOR_RANGE_ICONS];
+    GdkRGBA *shade_color = gdk_rgba_copy(&bc);
+    shade_color->alpha *= 0.6;
     my_data = shade_color;
   }
-  else if(flags & CPF_ACTIVE)
-  {
-    // we want filled icon
-    my_data = shade_color;
-  }
+
   // then we draw the regular icon
   dtgtk_cairo_paint_star(cr, x, y, w, h, flags, my_data);
 }
@@ -587,6 +582,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(rate->range_select);
   range->step_r = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
+  dtgtk_range_select_add_icon(range, 22, 0, dtgtk_cairo_paint_unratestar, 0, NULL);
   dtgtk_range_select_add_icon(range, 36, 1, _rating_paint_icon, 0, NULL);
   dtgtk_range_select_add_icon(range, 50, 2, _rating_paint_icon, 0, NULL);
   dtgtk_range_select_add_icon(range, 64, 3, _rating_paint_icon, 0, NULL);
