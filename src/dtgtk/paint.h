@@ -55,6 +55,8 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
 void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a solid arrow left/right/up/down */
 void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
+/** Paint a sort by icon */
+void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data);
 /** Paint a store icon */
 void dtgtk_cairo_paint_store(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a reset icon */
@@ -121,6 +123,8 @@ void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, g
 void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a rating icon on thumbs */
 void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint an icon for unrating star on thumbs */
+void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an altered icon on thumbs */
 void dtgtk_cairo_paint_altered(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an audio icon on thumbs */
