@@ -745,7 +745,7 @@ static void rt_masks_point_denormalize(dt_dev_pixelpipe_iop_t *piece, const dt_i
 }
 
 static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi,
-                                     const float *target, const float *source, int *dx, int *dy,
+                                     const float *target, const float *source, float *dx, float *dy,
                                      const int distort_mode)
 {
   // if distort_mode==1 we don't scale at the right place, hence false positions if there's distortion before this
@@ -783,7 +783,7 @@ static int rt_masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
 /* returns (dx dy) to get from the source to the destination */
 static int rt_masks_get_delta_to_destination(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                             const dt_iop_roi_t *roi, dt_masks_form_t *form, int *dx, int *dy,
+                                             const dt_iop_roi_t *roi, dt_masks_form_t *form, float *dx, float *dy,
                                              const int distort_mode)
 {
   int res = 0;
@@ -2504,7 +2504,7 @@ static void rt_compute_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelp
           if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_HEAL
              || p->rt_forms[index].algorithm == DT_IOP_RETOUCH_CLONE)
           {
-            int dx = 0, dy = 0;
+            float dx = 0.f, dy = 0.f;
             if(rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy,
                                                  p->rt_forms[index].distort_mode))
             {
@@ -2577,7 +2577,7 @@ static void rt_extend_roi_in_from_source_clones(struct dt_iop_module_t *self, st
 
           // get the destination area
           int fl_dest, ft_dest;
-          int dx = 0, dy = 0;
+          float dx = 0.f, dy = 0.f;
           if(!rt_masks_get_delta_to_destination(self, piece, roi_in, form, &dx, &dy,
                                                 p->rt_forms[index].distort_mode))
           {
@@ -3324,7 +3324,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
 
         // search the delta with the source
         const dt_iop_retouch_algo_type_t algo = p->rt_forms[index].algorithm;
-        int dx = 0, dy = 0;
+        float dx = 0.f, dy = 0.f;
 
         if(algo != DT_IOP_RETOUCH_BLUR && algo != DT_IOP_RETOUCH_FILL)
         {
@@ -4122,7 +4122,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
           continue;
         }
 
-        int dx = 0, dy = 0;
+        float dx = 0.f, dy = 0.f;
 
         // search the delta with the source
         const dt_iop_retouch_algo_type_t algo = p->rt_forms[index].algorithm;
