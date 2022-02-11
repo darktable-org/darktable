@@ -9,6 +9,7 @@ jobs:
   dtslave:
     if: github.repository == 'darktable-org/darktable'
     runs-on: ubuntu-latest
+    concurrency: irc_bot
     steps:
       - uses: actions/checkout@v2
         with:
