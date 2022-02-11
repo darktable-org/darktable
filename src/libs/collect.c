@@ -1372,7 +1372,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 " GROUP BY date", where_ext);
         break;
       case DT_COLLECTION_PROP_TIME:
-        query = g_strdup_printf("SELECT datetime_taken AS date, 1, COUNT(*) AS count"
+        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 19) AS date, 1, COUNT(*) AS count"
                                 " FROM main.images AS mi"
                                 " WHERE datetime_taken IS NOT NULL AND %s"
                                 " GROUP BY date", where_ext);
@@ -2111,7 +2111,7 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   {
     gtk_widget_set_tooltip_text(d->text,
                                 _("use <, <=, >, >=, <>, =, [;] as operators\n"
-                                  "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
+                                  "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"));
   }
   else if(property == DT_COLLECTION_PROP_FILENAME)
   {

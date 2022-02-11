@@ -70,6 +70,7 @@ extern "C" {
 #include "common/variables.h"
 #include "common/utility.h"
 #include "common/history.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -600,7 +601,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     {
       char *datetime = strdup(pos->toString().c_str());
       _sanitize_datetime(datetime);
-      g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
+      dt_datetime_exif_to_img(img, datetime);
       free(datetime);
     }
 
@@ -747,10 +748,17 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
                                  char *exif_datetime_taken)
 {
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal") || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-     && pos->size() == DT_DATETIME_LENGTH)
+     && pos->size() == DT_DATETIME_EXIF_LENGTH)
   {
-    dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_LENGTH, pos, exifData);
+    dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     _sanitize_datetime(exif_datetime_taken);
+    if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
+       && pos->size() > 1)
+    {
+      char msec[4];
+      dt_strlcpy_to_utf8(msec, sizeof(msec), pos, exifData);
+      dt_datetime_add_subsec_to_exif(exif_datetime_taken, DT_DATETIME_LENGTH, msec);
+    }
   }
   else
   {
@@ -1106,7 +1114,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 #endif
 
-    _find_datetime_taken(exifData, pos, img->exif_datetime_taken);
+    char datetime[DT_DATETIME_LENGTH];
+    _find_datetime_taken(exifData, pos, datetime);
+    dt_datetime_exif_to_img(img, datetime);
 
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
@@ -1556,9 +1566,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
 
   if(!stat(path, &statbuf))
   {
-    struct tm result;
-    strftime(img->exif_datetime_taken, DT_DATETIME_LENGTH, "%Y:%m:%d %H:%M:%S",
-             localtime_r(&statbuf.st_mtime, &result));
+    dt_datetime_unix_lt_to_img(img, &statbuf.st_mtime);
   }
 
   try
@@ -1969,11 +1977,15 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       // DateTimeOriginal is to be kept.
       // For us "keeping" it means to write out what we have in DB to support people adding a time offset in
       // the geotagging module.
-      gchar new_datetime[DT_DATETIME_LENGTH];
-      dt_gettime(new_datetime, sizeof(new_datetime));
+      gchar new_datetime[DT_DATETIME_EXIF_LENGTH];
+      dt_datetime_now_to_exif(new_datetime);
       exifData["Exif.Image.DateTime"] = new_datetime;
-      exifData["Exif.Image.DateTimeOriginal"] = cimg->exif_datetime_taken;
-      exifData["Exif.Photo.DateTimeOriginal"] = cimg->exif_datetime_taken;
+      gchar datetime[DT_DATETIME_LENGTH];
+      dt_datetime_img_to_exif(datetime, cimg);
+      datetime[DT_DATETIME_EXIF_LENGTH - 1] = '\0';
+      exifData["Exif.Image.DateTimeOriginal"] = datetime;
+      exifData["Exif.Photo.DateTimeOriginal"] = datetime;
+      exifData["Exif.Photo.SubSecTimeOriginal"] = &datetime[DT_DATETIME_EXIF_LENGTH];
 
       dt_image_cache_read_release(darktable.image_cache, cimg);
     }
@@ -3635,7 +3647,9 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   g_list_free_full(iop_list, free);
 
   // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-  xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
+  gchar exif_datetime[DT_DATETIME_LENGTH];
+  g_strlcpy(exif_datetime, datetime_taken, sizeof(exif_datetime));
+  xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
 
   // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
@@ -3762,8 +3776,11 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
   {
     // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
     if (!(metadata->flags & DT_META_EXIF))
-      xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
-
+    {
+      gchar exif_datetime[DT_DATETIME_LENGTH];
+      g_strlcpy(exif_datetime, datetime_taken, sizeof(exif_datetime));
+      xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
+    }
     // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
     Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
     if(pos != xmpData.end()) xmpData.erase(pos);
@@ -4333,7 +4350,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   }
 }
 
-gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *datetime_taken)
+void dt_exif_get_datetime_taken(const uint8_t *data, size_t size, char *datetime_taken)
 {
   try
   {
@@ -4342,35 +4359,12 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
-    char exif_datetime_taken[DT_DATETIME_LENGTH];
-    _find_datetime_taken(exifData, pos, exif_datetime_taken);
-
-    if(*exif_datetime_taken)
-    {
-      struct tm exif_tm= {0};
-      if(sscanf(exif_datetime_taken,"%d:%d:%d %d:%d:%d",
-        &exif_tm.tm_year,
-        &exif_tm.tm_mon,
-        &exif_tm.tm_mday,
-        &exif_tm.tm_hour,
-        &exif_tm.tm_min,
-        &exif_tm.tm_sec) == 6)
-      {
-        exif_tm.tm_year -= 1900;
-        exif_tm.tm_mon--;
-        exif_tm.tm_isdst = -1;    // no daylight saving time
-        *datetime_taken = mktime(&exif_tm);
-        return TRUE;
-      }
-    }
-
-    return FALSE;
+    _find_datetime_taken(exifData, pos, datetime_taken);
   }
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
     std::cerr << "[exiv2 dt_exif_get_datetime_taken] " << s << std::endl;
-    return FALSE;
   }
 }
 

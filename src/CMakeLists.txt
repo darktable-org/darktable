@@ -28,6 +28,7 @@ FILE(GLOB SOURCE_FILES
   "common/cpuid.c"
   "common/darktable.c"
   "common/database.c"
+  "common/datetime.c"
   "common/dbus.c"
   "common/dtpthread.c"
   "common/eaw.c"
