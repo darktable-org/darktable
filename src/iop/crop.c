@@ -1585,7 +1585,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
     else if(grab == GRAB_NONE)
     {
-      dt_control_hinter_message(darktable.control, "");
+      dt_control_hinter_message(darktable.control, _(""));
       dt_control_change_cursor(GDK_LEFT_PTR);
     }
     if(grab != GRAB_NONE)

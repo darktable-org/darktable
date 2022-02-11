@@ -650,7 +650,7 @@ static int register_pref_sub(lua_State *L)
 
 
       g_object_ref_sink(G_OBJECT(built_elt->widget));
-      built_elt->tooltip_reset = g_strdup_printf(  _("double click to reset to `%s'"),
+      built_elt->tooltip_reset = g_strdup_printf(  _("double-click to reset to `%s'"),
           built_elt->type_data.enum_data.default_value);
       built_elt->update_widget = update_widget_enum;
       break;
@@ -665,7 +665,7 @@ static int register_pref_sub(lua_State *L)
       built_elt->widget = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
       gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(built_elt->widget), 20);
       g_object_ref_sink(G_OBJECT(built_elt->widget));
-      built_elt->tooltip_reset = g_strdup_printf( _("double click to reset to `%s'"), built_elt->type_data.dir_data.default_value);
+      built_elt->tooltip_reset = g_strdup_printf( _("double-click to reset to `%s'"), built_elt->type_data.dir_data.default_value);
       built_elt->update_widget = update_widget_dir;
       break;
     case pref_file:
@@ -689,7 +689,7 @@ static int register_pref_sub(lua_State *L)
         dt_conf_set_string(pref_name, built_elt->type_data.string_data.default_value);
 
       built_elt->widget = gtk_entry_new();
-      built_elt->tooltip_reset= g_strdup_printf( _("double click to reset to `%s'"),
+      built_elt->tooltip_reset= g_strdup_printf( _("double-click to reset to `%s'"),
           built_elt->type_data.string_data.default_value);
       g_object_ref_sink(G_OBJECT(built_elt->widget));
       built_elt->update_widget = update_widget_string;
@@ -728,7 +728,7 @@ static int register_pref_sub(lua_State *L)
         built_elt->widget = gtk_spin_button_new_with_range(min, max, 1);
         gtk_spin_button_set_digits(GTK_SPIN_BUTTON(built_elt->widget), 0);
         g_object_ref_sink(G_OBJECT(built_elt->widget));
-        built_elt->tooltip_reset = g_strdup_printf( _("double click to reset to `%d'"),
+        built_elt->tooltip_reset = g_strdup_printf( _("double-click to reset to `%d'"),
             built_elt->type_data.int_data.default_value);
         built_elt->update_widget = update_widget_int;
         break;
@@ -769,7 +769,7 @@ static int register_pref_sub(lua_State *L)
         if(!dt_conf_key_exists(pref_name))
           dt_conf_set_string(pref_name, built_elt->type_data.lua_data.default_value);
 
-        built_elt->tooltip_reset= g_strdup_printf( _("double click to reset to `%s'"),
+        built_elt->tooltip_reset= g_strdup_printf( _("double-click to reset to `%s'"),
             built_elt->type_data.lua_data.default_value);
 
         lua_widget widget;
