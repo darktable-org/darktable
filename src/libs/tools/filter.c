@@ -155,8 +155,11 @@ int position()
 
 static void _text_entry_activated(GtkEntry *entry, dt_lib_module_t *self)
 {
+  const int pos = gtk_editable_get_position(GTK_EDITABLE(entry));
+  char *text = pos ? g_strconcat("%", gtk_entry_get_text(entry), "%", NULL)
+                   : g_strdup(gtk_entry_get_text(entry));
   g_free(dt_collection_get_text_filter(darktable.collection));
-  dt_collection_set_text_filter(darktable.collection, g_strdup(gtk_entry_get_text(entry)));
+  dt_collection_set_text_filter(darktable.collection, text);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
 }
 
