@@ -718,13 +718,13 @@ static void _ratio_changed(GtkWidget *widget, gpointer user_data)
   if((bounds & DT_RANGE_BOUND_MAX) && (bounds & DT_RANGE_BOUND_MIN))
     snprintf(txt, sizeof(txt), "%%");
   else if(bounds & DT_RANGE_BOUND_MAX)
-    snprintf(txt, sizeof(txt), ">=%lf", min);
+    snprintf(txt, sizeof(txt), ">=%.2lf", min);
   else if(bounds & DT_RANGE_BOUND_MIN)
-    snprintf(txt, sizeof(txt), "<=%lf", max);
+    snprintf(txt, sizeof(txt), "<=%.2lf", max);
   else if(bounds & DT_RANGE_BOUND_FIXED)
-    snprintf(txt, sizeof(txt), "=%lf", min);
+    snprintf(txt, sizeof(txt), "=%.2lf", min);
   else
-    snprintf(txt, sizeof(txt), "[%lf;%lf]", min, max);
+    snprintf(txt, sizeof(txt), "[%.2lf;%.2lf]", min, max);
 
   setlocale(LC_NUMERIC, locale);
   g_free(locale);
