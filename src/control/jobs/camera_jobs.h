@@ -30,7 +30,7 @@ dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint
 
 /** Camera import job */
 dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
-                                      time_t time_override);
+                                      const char *time_override);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -23,6 +23,7 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/map_locations.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
 
@@ -179,6 +180,8 @@ void dt_collection_memory_update()
   g_free(ins_query);
 }
 
+#define DATETIME "(CASE WHEN LENGTH(datetime_taken) = 19 THEN datetime_taken || '.000' ELSE datetime_taken END) AS datetime_taken"
+
 static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, char **selq_pre)
 {
   const uint32_t tagid = collection->tagid;
@@ -187,12 +190,12 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, 
 
   *selq_pre = dt_util_dstrcat(*selq_pre,
                               "SELECT DISTINCT mi.id FROM (SELECT"
-                              "  id, group_id, film_id, filename, datetime_taken, "
+                              "  id, group_id, film_id, filename, %s, "
                               "  flags, version, %s position, aspect_ratio,"
                               "  maker, model, lens, aperture, exposure, focal_length,"
                               "  iso, import_timestamp, change_timestamp,"
                               "  export_timestamp, print_timestamp"
-                              "  FROM main.images AS mi %s%s WHERE ",
+                              "  FROM main.images AS mi %s%s WHERE ", DATETIME,
                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                               tagid ? " LEFT JOIN main.tagged_images AS ti"
                                       " ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -409,12 +412,12 @@ int dt_collection_update(const dt_collection_t *collection)
     snprintf(tag, sizeof(tag), "%d", tagid);
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
-                               "  id, group_id, film_id, filename, datetime_taken, "
+                               "  id, group_id, film_id, filename, %s, "
                                "  flags, version, %s position, aspect_ratio,"
                                "  maker, model, lens, aperture, exposure, focal_length,"
                                "  iso, import_timestamp, change_timestamp,"
                                "  export_timestamp, print_timestamp"
-                               "  FROM main.images AS mi %s%s ) AS mi ",
+                               "  FROM main.images AS mi %s%s ) AS mi ", DATETIME,
                                tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                                tagid ? " LEFT JOIN main.tagged_images AS ti"
                                        " ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -427,12 +430,12 @@ int dt_collection_update(const dt_collection_t *collection)
     snprintf(tag, sizeof(tag), "%d", tagid);
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
-                               "  id, group_id, film_id, filename, datetime_taken, "
+                               "  id, group_id, film_id, filename, %s, "
                                "  flags, version, %s position, aspect_ratio,"
                                "  maker, model, lens, aperture, exposure, focal_length,"
                                "  iso, import_timestamp, change_timestamp,"
                                "  export_timestamp, print_timestamp"
-                               "  FROM main.images AS mi %s%s ) AS mi WHERE ",
+                               "  FROM main.images AS mi %s%s ) AS mi WHERE ", DATETIME,
                                tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                                tagid ? " LEFT JOIN main.tagged_images AS ti"
                                        " ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -480,6 +483,7 @@ int dt_collection_update(const dt_collection_t *collection)
 
   return result;
 }
+#undef DATETIME
 
 void dt_collection_reset(const dt_collection_t *collection)
 {
@@ -1185,67 +1189,22 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 
 static char *_dt_collection_compute_datetime(const char *operator, const char *input)
 {
-  const int len = strlen(input);
-  if(len < 4) return NULL;
+  if(strlen(input) < 4) return NULL;
 
-  struct tm tm1 = { 0 };
-
-  // we initialise all the values of tm, depending of the operator
-  // we allow unreal values like "2014:02:31" as it's just text comparison at the end
+  char bound[DT_DATETIME_LENGTH];
+  gboolean res;
   if(strcmp(operator, ">") == 0 || strcmp(operator, "<=") == 0)
-  {
-    // we set all values to their maximum
-    tm1.tm_mon = 11;
-    tm1.tm_mday = 31;
-    tm1.tm_hour = 23;
-    tm1.tm_min = 59;
-    tm1.tm_sec = 59;
-  }
-  if(strcmp(operator, "<") == 0 || strcmp(operator, ">=") == 0)
-  {
-    // we set all values to their minimum
-    tm1.tm_mon = 0;
-    tm1.tm_mday = 1;
-    tm1.tm_hour = 0;
-    tm1.tm_min = 0;
-    tm1.tm_sec = 0;
-  }
-
-  // we read the input date, depending of his length
-  if(len < 7)
-  {
-    if(!strptime(input, "%Y", &tm1)) return NULL;
-  }
-  else if(len < 10)
-  {
-    if(!strptime(input, "%Y:%m", &tm1)) return NULL;
-  }
-  else if(len < 13)
-  {
-    if(!strptime(input, "%Y:%m:%d", &tm1)) return NULL;
-  }
-  else if(len < 16)
-  {
-    if(!strptime(input, "%Y:%m:%d %H", &tm1)) return NULL;
-  }
-  else if(len < 19)
-  {
-    if(!strptime(input, "%Y:%m:%d %H:%M", &tm1)) return NULL;
-  }
+    res = dt_datetime_entry_to_exif_upper_bound(bound, sizeof(bound), input);
   else
-  {
-    if(!strptime(input, "%Y:%m:%d %H:%M:%S", &tm1)) return NULL;
-  }
-
-  // we return the created date
-  char *ret = (char *)g_malloc0_n(20, sizeof(char));
-  strftime(ret, 20, "%Y:%m:%d %H:%M:%S", &tm1);
-  return ret;
+    res = dt_datetime_entry_to_exif(bound, sizeof(bound), input);
+  if(res)
+    return g_strdup(bound);
+  else return NULL;
 }
 /* splits an input string into a date-time part and an optional operator part.
    operator can be any of "=", "<", ">", "<=", ">=" and "<>".
    range notation [x;y] can also be used
-   datetime values should follow the pattern YYYY:mm:dd HH:MM:SS
+   datetime values should follow the pattern YYYY:MM:DD hh:mm:ss.sss
    but only year part is mandatory
 
    datetime and operator are returned as pointers to null terminated strings in g_mallocated
@@ -1260,7 +1219,7 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
 
   // we test the range expression first
   // 2 elements : date-time1 and  date-time2
-  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}[:\\d\\s]*)\\s*;\\s*(\\d{4}[:\\d\\s]*)\\s*\\]\\s*$", 0, 0, NULL);
+  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}[:.\\d\\s]*)\\s*;\\s*(\\d{4}[:.\\d\\s]*)\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   int match_count = g_match_info_get_match_count(match_info);
 
@@ -1285,7 +1244,7 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
 
   // and we test the classic comparison operators
   // 2 elements : operator and date-time
-  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(\\d{4}[:\\d\\s]*)?\\s*%?\\s*$", 0, 0, NULL);
+  regex = g_regex_new("^\\s*(=|<|>|<=|>=|<>)?\\s*(\\d{4}[:.\\d\\s]*)?\\s*%?\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   match_count = g_match_info_get_match_count(match_info);
 

@@ -22,6 +22,7 @@
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/tags.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -299,35 +300,8 @@ static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_mo
 static void _metadata_update_timestamp(const int i, const time_t *value, dt_lib_module_t *self)
 {
   char datetime[200];
-  struct tm tm_val;
-  // just %c is too long and includes a time zone that we don't know from exif
-  const size_t datetime_len = strftime(datetime, sizeof(datetime), "%a %x %X", localtime_r(value, &tm_val));
-  if(datetime_len > 0)
-  {
-    const gboolean valid_utf = g_utf8_validate(datetime, datetime_len, NULL);
-    if(valid_utf)
-    {
-      _metadata_update_value(i, datetime, self);
-    }
-    else
-    {
-      GError *error = NULL;
-      gchar *local_datetime = g_locale_to_utf8(datetime,datetime_len,NULL,NULL, &error);
-      if(local_datetime)
-      {
-        _metadata_update_value(i, local_datetime, self);
-        g_free(local_datetime);
-      }
-      else
-      {
-        _metadata_update_value(i, NODATA_STRING, self);
-        fprintf(stderr, "[metadata timestamp] could not convert '%s' to UTF-8: %s\n", datetime, error->message);
-        g_error_free(error);
-      }
-    }
-  }
-  else
-    _metadata_update_value(i, NODATA_STRING, self);
+  const gboolean valid = dt_datetime_unix_lt_to_local(datetime, sizeof(datetime), value);
+  _metadata_update_value(i, valid ? datetime : NODATA_STRING, self);
 }
 
 static gint _lib_metadata_sort_order(gconstpointer a, gconstpointer b)
@@ -791,18 +765,10 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       case md_exif_datetime:
       {
-        struct tm tt_exif = { 0 };
-        if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &tt_exif.tm_year, &tt_exif.tm_mon,
-                  &tt_exif.tm_mday, &tt_exif.tm_hour, &tt_exif.tm_min, &tt_exif.tm_sec) == 6)
-        {
-          tt_exif.tm_year -= 1900;
-          tt_exif.tm_mon--;
-          tt_exif.tm_isdst = -1;
-          const time_t exif_timestamp = mktime(&tt_exif);
-          _metadata_update_timestamp(md_exif_datetime, &exif_timestamp, self);
-        }
-        else
-          _metadata_update_value(md_exif_datetime, img->exif_datetime_taken, self);
+        char datetime[200];
+        const gboolean milliseconds = dt_conf_get_bool("lighttable/ui/milliseconds");
+        const gboolean valid = dt_datetime_img_to_local(datetime, sizeof(datetime), img, milliseconds);
+        _metadata_update_value(md_exif_datetime, valid ? datetime : NODATA_STRING, self);
       }
       break;
 

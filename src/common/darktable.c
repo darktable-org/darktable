@@ -982,6 +982,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // init darktable tags table
   dt_set_darktable_tags();
 
+  // init utc timezone
+  darktable.utc_tz =  g_time_zone_new_utc();
+
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
@@ -1354,18 +1357,6 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
     va_end(ap);
     fflush(stdout);
   }
-}
-
-void dt_gettime_t(char *datetime, size_t datetime_len, time_t t)
-{
-  struct tm tt;
-  (void)localtime_r(&t, &tt);
-  strftime(datetime, datetime_len, "%Y:%m:%d %H:%M:%S", &tt);
-}
-
-void dt_gettime(char *datetime, size_t datetime_len)
-{
-  dt_gettime_t(datetime, datetime_len, time(NULL));
 }
 
 void *dt_alloc_align(size_t alignment, size_t size)

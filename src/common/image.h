@@ -189,7 +189,7 @@ typedef struct dt_image_geoloc_t
 
 struct dt_cache_entry_t;
 
-#define DT_DATETIME_LENGTH 20
+#define DT_DATETIME_LENGTH 24
 
 // TODO: add color labels and such as cacheable
 // __attribute__ ((aligned (128)))

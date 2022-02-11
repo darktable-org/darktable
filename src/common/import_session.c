@@ -203,14 +203,14 @@ void dt_import_session_set_name(struct dt_import_session_t *self, const char *na
 }
 
 
-void dt_import_session_set_time(struct dt_import_session_t *self, time_t time)
+void dt_import_session_set_time(struct dt_import_session_t *self, const char *time)
 {
   dt_variables_set_time(self->vp, time);
 }
 
 
 void
-dt_import_session_set_exif_time(struct dt_import_session_t *self, time_t exif_time)
+dt_import_session_set_exif_time(struct dt_import_session_t *self, const char *exif_time)
 {
   dt_variables_set_exif_time(self->vp, exif_time);
 }

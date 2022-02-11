@@ -35,6 +35,7 @@
 #include "common/grouping.h"
 #include "common/import_session.h"
 #include "common/utility.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
 
@@ -64,7 +65,7 @@
 
 typedef struct dt_control_datetime_t
 {
-  long int offset;
+  GTimeSpan offset;
   char datetime[DT_DATETIME_LENGTH];
 } dt_control_datetime_t;
 
@@ -1136,14 +1137,12 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 
   GTimeZone *tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
   if(!tz_camera) goto bail_out;
-  GTimeZone *tz_utc = g_time_zone_new_utc();
 
   GList *imgs = NULL;
   GArray *gloc = g_array_new(FALSE, FALSE, sizeof(dt_image_geoloc_t));
   /* go thru each selected image and lookup location in gpx */
   do
   {
-    GDateTime *exif_time, *utc_time;
     dt_image_geoloc_t geoloc;
     int imgid = GPOINTER_TO_INT(t->data);
 
@@ -1151,31 +1150,12 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
     if(!cimg) continue;
 
-    /* convert exif datetime
-       TODO: exiv2 dates should be iso8601 and we are probably doing some ugly
-       conversion before inserting into database.
-     */
-    gint year;
-    gint month;
-    gint day;
-    gint hour;
-    gint minute;
-    gint seconds;
-
-    if(sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
-              (int *)&hour, (int *)&minute, (int *)&seconds) != 6)
-    {
-      fprintf(stderr, "broken exif time in db, '%s'\n", cimg->exif_datetime_taken);
-      dt_image_cache_read_release(darktable.image_cache, cimg);
-      continue;
-    }
+    GDateTime *exif_time = dt_datetime_img_to_gdatetime(cimg, tz_camera);
 
     /* release the lock */
     dt_image_cache_read_release(darktable.image_cache, cimg);
-
-    exif_time = g_date_time_new(tz_camera, year, month, day, hour, minute, seconds);
     if(!exif_time) continue;
-    utc_time = g_date_time_to_timezone(exif_time, tz_utc);
+    GDateTime *utc_time = g_date_time_to_timezone(exif_time, darktable.utc_tz);
     g_date_time_unref(exif_time);
     if(!utc_time) continue;
 
@@ -1202,7 +1182,6 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
                           "applied matched GPX location onto %d images", cntr), cntr);
 
   g_time_zone_unref(tz_camera);
-  g_time_zone_unref(tz_utc);
   dt_gpx_destroy(gpx);
   g_array_unref(gloc);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
@@ -1284,6 +1263,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->index;
+  GList *imgs = g_list_copy(t);
   const guint total = g_list_length(t);
   double fraction = 0.0f;
   char message[512] = { 0 };
@@ -1322,6 +1302,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF,
                              g_list_copy(params->index));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -1904,38 +1885,22 @@ static void _add_datetime_offset(const uint32_t imgid, const char *odt,
                                  const long int offset, char *ndt)
 {
   // get the datetime_taken and calculate the new time
-  gint year;
-  gint month;
-  gint day;
-  gint hour;
-  gint minute;
-  gint seconds;
-
-  if(sscanf(odt, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
-            (int *)&hour, (int *)&minute, (int *)&seconds) != 6)
-  {
-    fprintf(stderr, "broken exif time in db, '%s', imgid %d\n", odt, imgid);
-    return;
-  }
-
-  GTimeZone *tz = g_time_zone_new_utc();
-  GDateTime *datetime_original = g_date_time_new(tz, year, month, day, hour, minute, seconds);
-  g_time_zone_unref(tz);
+  GDateTime *datetime_original = dt_datetime_exif_to_gdatetime(odt, darktable.utc_tz);
   if(!datetime_original)
     return;
 
   // let's add our offset
-  GDateTime *datetime_new = g_date_time_add_seconds(datetime_original, offset);
+  GDateTime *datetime_new = g_date_time_add(datetime_original, offset);
   g_date_time_unref(datetime_original);
 
   if(!datetime_new)
     return;
-
-  gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S");
+  gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S,%f");
+  datetime[DT_DATETIME_LENGTH - 1] = '\0';  // limit to milliseconds
   g_date_time_unref(datetime_new);
 
   if(datetime)
-    memcpy(ndt, datetime, DT_DATETIME_LENGTH);
+    g_strlcpy(ndt, datetime, DT_DATETIME_LENGTH);
   g_free(datetime);
 }
 
@@ -1944,7 +1909,7 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   uint32_t cntr = 0;
   GList *t = params->index;
-  const long int offset = ((dt_control_datetime_t *)params->data)->offset;
+  const GTimeSpan offset = ((dt_control_datetime_t *)params->data)->offset;
   const char *datetime = ((dt_control_datetime_t *)params->data)->datetime;
   char message[512] = { 0 };
 
@@ -2030,7 +1995,7 @@ static void dt_control_datetime_job_cleanup(void *p)
   dt_control_image_enumerator_cleanup(params);
 }
 
-static dt_job_t *dt_control_datetime_job_create(const long int offset, const char *datetime, GList *imgs)
+static dt_job_t *dt_control_datetime_job_create(const GTimeSpan offset, const char *datetime, GList *imgs)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_datetime_job_run, "time offset");
   if(!job) return NULL;
@@ -2058,7 +2023,7 @@ static dt_job_t *dt_control_datetime_job_create(const long int offset, const cha
   return job;
 }
 
-void dt_control_datetime(const long int offset, const char *datetime, GList *imgs)
+void dt_control_datetime(const GTimeSpan offset, const char *datetime, GList *imgs)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_datetime_job_create(offset, datetime, imgs));
@@ -2078,7 +2043,7 @@ static int _control_import_image_copy(const char *filename,
 {
   char *data = NULL;
   gsize size = 0;
-  time_t exif_time;
+  char exif_time[DT_DATETIME_LENGTH];
   gboolean res = TRUE;
   if(!g_file_get_contents(filename, &data, &size, NULL))
   {
@@ -2094,9 +2059,9 @@ static int _control_import_image_copy(const char *filename,
   else
   {
     char *basename = g_path_get_basename(filename);
-    const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
+    dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
 
-    if(have_exif_time)
+    if(exif_time[0])
       dt_import_session_set_exif_time(session, exif_time);
     dt_import_session_set_filename(session, basename);
     const char *output_path = dt_import_session_path(session, FALSE);
@@ -2317,7 +2282,7 @@ static void *_control_import_alloc()
   return params;
 }
 
-static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_override,
+static dt_job_t *_control_import_job_create(GList *imgs, const char *datetime_override,
                                             const gboolean inplace, gboolean *wait)
 {
   dt_job_t *job = dt_control_job_create(&_control_import_job_run, "import");
@@ -2349,7 +2314,7 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
   return job;
 }
 
-void dt_control_import(GList *imgs, const time_t datetime_override, const gboolean inplace)
+void dt_control_import(GList *imgs, const char *datetime_override, const gboolean inplace)
 {
   gboolean wait = !imgs->next && inplace;
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
