@@ -1133,7 +1133,6 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
   table->mouse_inside = TRUE;
-  table->key_inside = FALSE;
 
   gboolean ret = FALSE;
   if(table->dragging && table->mode == DT_THUMBTABLE_MODE_ZOOM)
@@ -2600,63 +2599,77 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
 {
   // base point
   int baseid = dt_control_get_mouse_over_id();
+  gboolean first_move = (baseid <= 0);
+  int newrowid = -1;
   // let's be sure that the current image is selected
   if(baseid > 0 && select) dt_selection_select(darktable.selection, baseid);
 
   int baserowid = 1;
-  if(baseid <= 0)
+
+  // only initialize starting position but do not move yet, if moving for first time...
+  if(first_move)
   {
-    baserowid = table->offset;
+    newrowid = table->offset;
     baseid = table->offset_imgid;
   }
-  else
+  // ... except for PAGEUP/PAGEDOWN or skipping to the start/end of collection
+  if(!first_move ||
+     move == DT_THUMBTABLE_MOVE_PAGEUP ||
+     move == DT_THUMBTABLE_MOVE_PAGEDOWN ||
+     move == DT_THUMBTABLE_MOVE_START ||
+     move == DT_THUMBTABLE_MOVE_END
+     )
   {
     baserowid = _thumb_get_rowid(baseid);
-  }
+    newrowid = baserowid;
+    // last rowid of the current collection
+    int maxrowid = 1;
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT MAX(rowid) FROM memory.collected_images", -1,
+                                &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW) maxrowid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
 
-  int newrowid = baserowid;
-  // last rowid of the current collection
-  int maxrowid = 1;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT MAX(rowid) FROM memory.collected_images", -1,
-                              &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW) maxrowid = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
+    switch(move)
+    {
+      // classic keys
+      case DT_THUMBTABLE_MOVE_LEFT:
+        newrowid = MAX(baserowid - 1, 1);
+        break;
+      case DT_THUMBTABLE_MOVE_RIGHT:
+        newrowid = MIN(baserowid + 1, maxrowid);
+        break;
+      case DT_THUMBTABLE_MOVE_UP:
+        newrowid = MAX(baserowid - table->thumbs_per_row, 1);
+        break;
+      case DT_THUMBTABLE_MOVE_DOWN:
+        newrowid = MIN(baserowid + table->thumbs_per_row, maxrowid);
+        break;
 
-  dt_ui_thumbtable(darktable.gui->ui)->key_inside = TRUE;
-  // classic keys
-  if(move == DT_THUMBTABLE_MOVE_LEFT && baserowid > 1)
-    newrowid = baserowid - 1;
-  else if(move == DT_THUMBTABLE_MOVE_RIGHT && baserowid < maxrowid)
-    newrowid = baserowid + 1;
-  else if(move == DT_THUMBTABLE_MOVE_UP && baserowid - table->thumbs_per_row >= 1)
-    newrowid = baserowid - table->thumbs_per_row;
-  else if(move == DT_THUMBTABLE_MOVE_DOWN && baserowid + table->thumbs_per_row <= maxrowid)
-    newrowid = baserowid + table->thumbs_per_row;
-  // page key
-  else if(move == DT_THUMBTABLE_MOVE_PAGEUP)
-  {
-    newrowid = baserowid - table->thumbs_per_row * (table->rows - 1);
-    while(newrowid < 2 - table->thumbs_per_row) newrowid += table->thumbs_per_row;
-  }
-  else if(move == DT_THUMBTABLE_MOVE_PAGEDOWN)
-  {
-    newrowid = baserowid + table->thumbs_per_row * (table->rows - 1);
-    while(newrowid > maxrowid) newrowid -= table->thumbs_per_row;
-  }
-  // direct start/end
-  else if(move == DT_THUMBTABLE_MOVE_START)
-    newrowid = 1;
-  else if(move == DT_THUMBTABLE_MOVE_END)
-    newrowid = maxrowid;
-  else if(move == DT_THUMBTABLE_MOVE_LEAVE)
-  {
-    newrowid = -1;
-    dt_ui_thumbtable(darktable.gui->ui)->key_inside = FALSE;
-  }
+      // page keys
+      case DT_THUMBTABLE_MOVE_PAGEUP:
+        newrowid = baserowid - table->thumbs_per_row * (table->rows - 1);
+        while(newrowid < 1) newrowid += table->thumbs_per_row;
+        if(newrowid == baserowid) newrowid=1;
+        break;
+      case DT_THUMBTABLE_MOVE_PAGEDOWN:
+        newrowid = baserowid + table->thumbs_per_row * (table->rows - 1);
+        while(newrowid > maxrowid) newrowid -= table->thumbs_per_row;
+        if(newrowid == baserowid) newrowid = maxrowid;
+        break;
 
-  if(newrowid == baserowid) return FALSE;
+      // direct start/end
+      case DT_THUMBTABLE_MOVE_START:
+        newrowid = 1;
+        break;
+      case DT_THUMBTABLE_MOVE_END:
+        newrowid = maxrowid;
+        break;
+      default:
+        break;
+    }
+  }
 
   // change image_over
   const int imgid = _thumb_get_imgid(newrowid);
