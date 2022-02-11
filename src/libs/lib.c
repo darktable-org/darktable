@@ -948,12 +948,12 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
       dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
     else
       dt_lib_gui_set_expanded(module, TRUE);
-    }
-    else
-    {
-      /* else just toggle */
-      dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
-    }
+  }
+  else
+  {
+    /* else just toggle */
+    dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
+  }
   return TRUE;
 }
 
@@ -1256,7 +1256,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
     }
   }
 
-  return 0;
+  return element == DT_ACTION_ELEMENT_SHOW && dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander));
 }
 
 static const dt_action_element_def_t _action_elements[]
