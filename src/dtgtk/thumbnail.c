@@ -89,13 +89,13 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
 
   // the group leader
   if(thumb->imgid == thumb->groupid)
-    tt = g_strdup_printf("\n<b>%s (%s)</b>", _("current"), _("leader"));
+    tt = g_strdup_printf("\n\u2022 <b>%s (%s)</b>", _("current"), _("leader"));
   else
   {
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->groupid, 'r');
     if(img)
     {
-      tt = g_strdup_printf("\n<b>%s (%s)</b>", img->filename, _("leader"));
+      tt = g_strdup_printf("%s\n\u2022 <b>%s (%s)</b>", _("\nclick here to set this image as group leader\n"), img->filename, _("leader"));
       dt_image_cache_read_release(darktable.image_cache, img);
     }
   }
@@ -115,10 +115,10 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
     if(id != thumb->groupid)
     {
       if(id == thumb->imgid)
-        tt = dt_util_dstrcat(tt, "\n%s", _("current"));
+        tt = dt_util_dstrcat(tt, "\n\u2022 %s", _("current"));
       else
       {
-        tt = dt_util_dstrcat(tt, "\n%s", sqlite3_column_text(stmt, 2));
+        tt = dt_util_dstrcat(tt, "\n\u2022 %s", sqlite3_column_text(stmt, 2));
         if(v > 0) tt = dt_util_dstrcat(tt, " v%d", v);
       }
     }

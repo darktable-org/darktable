@@ -1,16 +1,16 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 3.6\n"
+"Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-07 08:06+0100\n"
-"PO-Revision-Date: 2022-02-07 08:08+0100\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"POT-Creation-Date: 2022-02-10 22:14+0100\n"
+"PO-Revision-Date: 2022-02-10 22:21+0100\n"
+"Last-Translator: Nicolas Auffray <nicolas.auffray@zaclys.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.0.1\n"
 
 #: ../build/bin/preferences_gen.h:81 ../build/bin/preferences_gen.h:3744
@@ -5371,12 +5371,12 @@ msgstr "darktable - maintenance"
 msgid "later"
 msgstr "plus tard"
 
-#: ../src/common/exif.cc:4226
+#: ../src/common/exif.cc:4226 ../src/common/exif.cc:4228
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "impossible de lire le fichier xmp « %s » : « %s »"
 
-#: ../src/common/exif.cc:4278
+#: ../src/common/exif.cc:4278 ../src/common/exif.cc:4280
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "impossible d'écrire le fichier xmp « %s » : « %s »"
@@ -7978,6 +7978,14 @@ msgstr "actuelle"
 msgid "leader"
 msgstr "tête de groupe"
 
+#: ../src/dtgtk/thumbnail.c:98
+msgid ""
+"\n"
+"click here to set this image as group leader\n"
+msgstr ""
+"\n"
+"cliquer ici pour définir cette image comme tête de groupe\n"
+
 #. and the number of grouped images
 #: ../src/dtgtk/thumbnail.c:129
 msgid "grouped images"
@@ -8766,7 +8774,8 @@ msgstr ""
 #: ../src/gui/accelerators.c:1826 ../src/gui/accelerators.c:1905
 #: ../src/gui/gtk.c:3009 ../src/imageio/format/pdf.c:662
 #: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2282
-#: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:186
+#: ../src/iop/lens.cc:2245 ../src/iop/rawdenoise.c:907
+#: ../src/libs/tools/filter.c:186
 msgid "all"
 msgstr "tout"
 
@@ -22178,11 +22187,11 @@ msgstr "rejetées"
 msgid "all except rejected"
 msgstr "tout sauf rejetées"
 
-#: ../src/libs/tools/filter.c:201
+#: ../src/libs/tools/filter.c:202
 msgid "sort by"
 msgstr "trier par"
 
-#: ../src/libs/tools/filter.c:202
+#: ../src/libs/tools/filter.c:203
 msgid "determine the sort order of shown images"
 msgstr "spécifie l'ordre de tri des images affichées"
 

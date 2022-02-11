@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2012-2021 darktable developers.
+    Copyright (C) 2012-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1515,8 +1515,8 @@ static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
     switch(w->type)
     {
       case DT_BAUHAUS_COMBOBOX:
-        cairo_translate(cr, width - darktable.bauhaus->quad_width * .5f, height * .33f);
-        draw_equilateral_triangle(cr, darktable.bauhaus->quad_width * .25f);
+        cairo_translate(cr, width - darktable.bauhaus->quad_width * .5f, height * .4f);
+        draw_equilateral_triangle(cr, darktable.bauhaus->quad_width * .3f);
         cairo_fill_preserve(cr);
         cairo_set_line_width(cr, 0.5);
         set_color(cr, darktable.bauhaus->color_border);

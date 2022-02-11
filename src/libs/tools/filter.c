@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -195,6 +195,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(overlay), d->filter);
 
   gtk_box_pack_start(GTK_BOX(dropdowns), overlay, TRUE, TRUE, 0);
+  gtk_widget_set_margin_end (overlay, 20);
 
   /* sort combobox */
   const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
@@ -202,13 +203,13 @@ void gui_init(dt_lib_module_t *self)
                                          _("determine the sort order of shown images"),
                                          _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
                                          _sort_names);
-  gtk_box_pack_start(GTK_BOX(dropdowns), d->sort, TRUE, TRUE, 4);
+  gtk_box_pack_start(GTK_BOX(dropdowns), d->sort, TRUE, TRUE, 2);
 
   /* reverse order checkbutton */
-  d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_UP, NULL);
-  gtk_widget_set_name(GTK_WIDGET(d->reverse), "control-button");
+  d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
+  gtk_widget_set_name(GTK_WIDGET(d->reverse), "filter-button");
   if(darktable.collection->params.descending)
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(d->reverse), dtgtk_cairo_paint_solid_arrow,
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(d->reverse), dtgtk_cairo_paint_sortby,
                                  CPF_DIRECTION_DOWN, NULL);
   gtk_widget_set_halign(d->reverse, GTK_ALIGN_START);
 
@@ -323,9 +324,9 @@ static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget,
   const gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(reverse)
-    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
+    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_sortby, CPF_DIRECTION_DOWN, NULL);
   else
-    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_UP, NULL);
+    dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
   gtk_widget_queue_draw(GTK_WIDGET(widget));
 
   /* update last settings */
