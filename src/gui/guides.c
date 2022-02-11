@@ -163,21 +163,21 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
   cairo_set_line_width(cr, 1.0 / zoom_scale);
 
   cairo_set_dash(cr, &dashes, 1, 0);
-  dt_draw_set_color_overlay(cr, 0.2, 0.3);
+  dt_draw_set_color_overlay(cr, FALSE, 0.3);
   dt_draw_horizontal_lines(cr, (1 + nbh) * (1 + subdiv), x, y, right, bottom);
   dt_draw_vertical_lines(cr, (1 + nbv) * (1 + subdiv), x, y, right, bottom);
   cairo_set_dash(cr, &dashes, 1, dashes);
-  dt_draw_set_color_overlay(cr, 0.8, 0.3);
+  dt_draw_set_color_overlay(cr, TRUE, 0.3);
   dt_draw_horizontal_lines(cr, (1 + nbh) * (1 + subdiv), x, y, right, bottom);
   dt_draw_vertical_lines(cr, (1 + nbv) * (1 + subdiv), x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, 0);
-  dt_draw_set_color_overlay(cr, 0.2, 0.5);
+  dt_draw_set_color_overlay(cr, FALSE, 0.5);
   dt_draw_horizontal_lines(cr, 1 + nbh, x, y, right, bottom);
   dt_draw_vertical_lines(cr, 1 + nbv, x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, dashes);
-  dt_draw_set_color_overlay(cr, 0.8, 0.5);
+  dt_draw_set_color_overlay(cr, TRUE, 0.5);
   dt_draw_horizontal_lines(cr, 1 + nbh, x, y, right, bottom);
   dt_draw_vertical_lines(cr, 1 + nbv, x, y, right, bottom);
 }
@@ -807,7 +807,7 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
   cairo_rectangle(cr, left, top, width, height);
   cairo_clip(cr);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.3, 1.0);
+  dt_draw_set_color_overlay(cr, FALSE, 0.8);
   cairo_set_dash(cr, &dashes, 0, 0);
 
   // Move coordinates to local center selection.
@@ -823,7 +823,7 @@ void dt_guides_draw(cairo_t *cr, const float left, const float top, const float 
 
   cairo_stroke_preserve(cr);
   cairo_set_dash(cr, &dashes, 1, 0);
-  dt_draw_set_color_overlay(cr, 0.8, 1.0);
+  dt_draw_set_color_overlay(cr, TRUE, 1.0);
   cairo_stroke(cr);
 
   cairo_restore(cr);
