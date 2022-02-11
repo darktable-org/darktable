@@ -687,6 +687,10 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
 
   GFileInfo *info = NULL;
   guint nb = n;
+  /* get filmroll id for current directory. if not present, checking the db whether
+    the image has alread been imported can be skipped */
+  int32_t filmroll_id = dt_film_get_id(folder);
+
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
   const gboolean include_jpegs = !dt_conf_get_bool("ui_last/import_ignore_jpegs");
   while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
@@ -713,7 +717,13 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
       if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
                                && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
       {
-        const gboolean already_imported = dt_images_already_imported(fullname);
+        /* check if image is already imported, using previously fetched filroll id */
+        gboolean already_imported = FALSE;
+        if(filmroll_id != -1)
+        {
+          already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
+        }
+
         GtkTreeIter iter;
         gtk_list_store_append(d->from.store, &iter);
         gtk_list_store_set(d->from.store, &iter,
