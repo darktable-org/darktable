@@ -635,7 +635,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       {
         char tooltip_filmroll[300] = {0};
         dt_image_film_roll(img, text, sizeof(text));
-        snprintf(tooltip_filmroll, sizeof(tooltip_filmroll), _("double click to jump to film roll\n%s"), text);
+        snprintf(tooltip_filmroll, sizeof(tooltip_filmroll), _("double-click to jump to film roll\n%s"), text);
         _metadata_update_tooltip(md_internal_filmroll, tooltip_filmroll, self);
         _metadata_update_value(md_internal_filmroll, text, self);
       }
