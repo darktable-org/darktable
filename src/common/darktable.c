@@ -1582,24 +1582,24 @@ void dt_configure_performance()
 
   fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %zu cores (%d atom based)\n",
           bits, mem, threads, atom_cores);
-  if(mem >= (16lu << 20) && threads > 6 && atom_cores == 0)
+  if(mem >= (16lu << 20) && threads > 4)
   {
-    // CONFIG 0: at least 16GB RAM, and more than 6 CPU cores, no atom
+    // CONFIG 0: at least 16GB RAM, and more than 6 CPU threads
     // But respect if user has set higher values manually earlier
-    fprintf(stderr, "[defaults] setting ultra high quality defaults\n");
+    fprintf(stderr, "[defaults] setting very high quality defaults\n");
     // if machine has at least 16GB RAM, use all of the total memory size leaving 4GB "breathing room"
     dt_conf_set_int("host_memory_limit", MAX((mem - (4lu << 20)) >> 11, dt_conf_get_int("host_memory_limit")));
-    dt_conf_set_int("singlebuffer_limit", MAX(64, dt_conf_get_int("singlebuffer_limit")));
+    dt_conf_set_int("singlebuffer_limit", MAX(128, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
        || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
   }
-  else if(mem >= (8lu << 20) && threads > 4 && atom_cores == 0)
+  else if(mem >= (8lu << 20) && threads >= 4)
   {
-    // CONFIG 1: at least 8GB RAM, and more than 4 CPU cores, no atom
+    // CONFIG 1: at least 8GB RAM, and at least 4 CPU threads
     // But respect if user has set higher values manually earlier
-    fprintf(stderr, "[defaults] setting very high quality defaults\n");
+    fprintf(stderr, "[defaults] setting high quality defaults\n");
 
     // if machine has at least 8GB RAM, use half of the total memory size
     dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
@@ -1609,11 +1609,10 @@ void dt_configure_performance()
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
   }
-  else if(mem > (2lu << 20) && threads >= 4 && atom_cores == 0)
+  else if(mem >= (4lu << 20) && threads >= 2)
   {
-    // CONFIG 2: at least 2GB RAM, and at least 4 CPU cores, no atom
-    // But respect if user has set higher values manually earlier
-    fprintf(stderr, "[defaults] setting high quality defaults\n");
+    // CONFIG 2: at least 4GB RAM, and at least 2 CPU threads
+    fprintf(stderr, "[defaults] setting standard defaults\n");
 
     dt_conf_set_int("host_memory_limit", MAX(1500, dt_conf_get_int("host_memory_limit")));
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
@@ -1622,25 +1621,15 @@ void dt_configure_performance()
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
   }
-  else if(mem < (1lu << 20) || threads <= 2 || atom_cores > 0)
+  else
   {
-    // CONFIG 3: For less than 1GB RAM or 2 or less cores, or for atom processors
+    // CONFIG 3: for small and slow systems
     // use very low/conservative settings
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("host_memory_limit", 500);
-    dt_conf_set_int("singlebuffer_limit", 8);
+    dt_conf_set_int("singlebuffer_limit", 16);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
     dt_conf_set_bool("ui/performance", TRUE);
-  }
-  else
-  {
-    // CONFIG 4: for everything else use explicit defaults
-    fprintf(stderr, "[defaults] setting normal defaults\n");
-
-    dt_conf_set_int("host_memory_limit", 1500);
-    dt_conf_set_int("singlebuffer_limit", 16);
-    dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
-    dt_conf_set_bool("ui/performance", FALSE);
   }
 
   g_free(demosaic_quality);
