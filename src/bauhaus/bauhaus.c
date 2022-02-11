@@ -512,6 +512,9 @@ static void dt_bh_init(DtBauhausWidget *class)
   // TODO: the common code from bauhaus_widget_init() could go here.
 }
 
+static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf);
+static void dt_bauhaus_get_preferred_width(GtkWidget *widget, gint *minimum_size, gint *natural_size);
+
 static void dt_bh_class_init(DtBauhausWidgetClass *class)
 {
   darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL]
@@ -521,10 +524,9 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
       = g_signal_new("quad-pressed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
                      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
-  // TODO: could init callbacks once per class for more efficiency:
-  // GtkWidgetClass *widget_class;
-  // widget_class = GTK_WIDGET_CLASS (class);
-  // widget_class->draw = dt_bauhaus_draw;
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
+  widget_class->draw = dt_bauhaus_draw;
+  widget_class->get_preferred_width = dt_bauhaus_get_preferred_width;
 }
 
 void dt_bauhaus_load_theme()
@@ -701,8 +703,6 @@ static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMot
 
 // static gboolean
 // dt_bauhaus_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
-
 
 // end static init/cleanup
 // =================================================
@@ -743,8 +743,6 @@ static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self
                                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                        | GDK_FOCUS_CHANGE_MASK
                                        | darktable.gui->scroll_mask);
-
-  g_signal_connect(G_OBJECT(w), "draw", G_CALLBACK(dt_bauhaus_draw), NULL);
 
   // for combobox, where mouse-release triggers a selection, we need to catch this
   // event where the mouse-press occurred, which will be this widget. we just pass
@@ -1959,7 +1957,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   return TRUE;
 }
 
-static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf)
 {
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -2092,6 +2090,35 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
   gdk_rgba_free(bg_color);
 
   return TRUE;
+}
+
+static void dt_bauhaus_get_preferred_width(GtkWidget *widget, gint *minimum_size, gint *natural_size)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type == DT_BAUHAUS_COMBOBOX)
+  {
+    dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+
+    PangoLayout *layout = gtk_widget_create_pango_layout(widget, NULL);
+    pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
+    int pango_width;
+
+    for(GList *i = d->entries; i; i = i->next)
+    {
+      const dt_bauhaus_combobox_entry_t *entry = i->data;
+      pango_layout_set_text(layout, entry->label, -1);
+      pango_layout_get_size(layout, &pango_width, NULL);
+
+      if(pango_width / PANGO_SCALE > *natural_size)
+        *natural_size = pango_width / PANGO_SCALE;
+    }
+
+    pango_layout_set_text(layout, w->label, -1);
+    pango_layout_get_size(layout, &pango_width, NULL);
+    *natural_size += pango_width / PANGO_SCALE + darktable.bauhaus->quad_width + 3 * INNER_PADDING;
+
+    g_object_unref(layout);
+  }
 }
 
 void dt_bauhaus_hide_popup()

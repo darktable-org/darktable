@@ -153,9 +153,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *dropdowns = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(dropdowns, "filter-box");
-  gtk_box_set_homogeneous(GTK_BOX(dropdowns), TRUE);
+  gtk_widget_set_name(self->widget, "filter-box");
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
 
   GtkWidget *overlay = gtk_overlay_new();
@@ -194,7 +192,7 @@ void gui_init(dt_lib_module_t *self)
                                N_("all except rejected"));
   gtk_container_add(GTK_CONTAINER(overlay), d->filter);
 
-  gtk_box_pack_start(GTK_BOX(dropdowns), overlay, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), overlay, TRUE, TRUE, 0);
   gtk_widget_set_margin_end (overlay, 20);
 
   /* sort combobox */
@@ -203,7 +201,7 @@ void gui_init(dt_lib_module_t *self)
                                          _("determine the sort order of shown images"),
                                          _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
                                          _sort_names);
-  gtk_box_pack_start(GTK_BOX(dropdowns), d->sort, TRUE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->sort, TRUE, TRUE, 2);
 
   /* reverse order checkbutton */
   d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
@@ -211,9 +209,7 @@ void gui_init(dt_lib_module_t *self)
   if(darktable.collection->params.descending)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(d->reverse), dtgtk_cairo_paint_sortby,
                                  CPF_DIRECTION_DOWN, NULL);
-  gtk_widget_set_halign(d->reverse, GTK_ALIGN_START);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dropdowns, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->reverse, FALSE, FALSE, 0);
 
   /* select the last value and connect callback */
