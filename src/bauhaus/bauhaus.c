@@ -879,14 +879,6 @@ float dt_bauhaus_slider_get_default(GtkWidget *widget)
   return d->defpos;
 }
 
-void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max)
-{
-  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  dt_bauhaus_slider_data_t *d = &w->data.slider;
-  d->hard_min = hard_min;
-  d->hard_max = hard_max;
-}
-
 extern const dt_action_def_t dt_action_def_slider;
 extern const dt_action_def_t dt_action_def_combo;
 

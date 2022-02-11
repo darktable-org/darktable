@@ -3195,8 +3195,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve"));
 
-  g->smoothing = dt_bauhaus_slider_new_with_range(self, -1.0f, +1.0f, 0.1, 0.0f, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->smoothing, -2.33f, 1.67f);
+  g->smoothing = dt_bauhaus_slider_new_with_range(self, -2.33f, +1.67f, 0.1, 0.0f, 2);
+  dt_bauhaus_slider_set_soft_range(g->smoothing, -1.0f, 1.0f);
   dt_bauhaus_widget_set_label(g->smoothing, NULL, N_("curve smoothing"));
   gtk_widget_set_tooltip_text(g->smoothing, _("positive values will produce more progressive tone transitions\n"
                                               "but the curve might become oscillatory in some settings.\n"

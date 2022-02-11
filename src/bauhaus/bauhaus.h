@@ -295,6 +295,7 @@ void dt_bauhaus_slider_set_soft_min(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_soft_min(GtkWidget* w);
 void dt_bauhaus_slider_set_soft_max(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_soft_max(GtkWidget* w);
+void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float soft_max);
 
 void dt_bauhaus_slider_set_hard_min(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_hard_min(GtkWidget* w);
@@ -316,9 +317,7 @@ void dt_bauhaus_slider_set_offset(GtkWidget *w, float offset);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
 void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
-void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float soft_max);
 float dt_bauhaus_slider_get_default(GtkWidget *widget);
-void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max);
 void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(float value, dt_bauhaus_curve_t dir));
 
 // combobox:
