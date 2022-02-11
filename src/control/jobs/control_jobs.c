@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "control/jobs/control_jobs.h"
 #include "common/collection.h"
 #include "common/darktable.h"
@@ -731,7 +732,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
   GList *t = params->index;
   char *imgs = _get_image_list(t);
-  guint total = g_list_length(t);
+  const guint total = g_list_length(t);
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("removing %d image", "removing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
@@ -846,7 +847,7 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
   dt_osx_disallow_fullscreen(dialog);
 #endif
 
-  if (modal_dialog->send_to_trash)
+  if(modal_dialog->send_to_trash)
   {
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete all files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
@@ -907,7 +908,7 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
   {
     gboolean delete_success = FALSE;
     GError *gerror = NULL;
-    if (send_to_trash)
+    if(send_to_trash)
     {
 #ifdef __APPLE__
       delete_success = dt_osx_file_trash(filename, &gerror);
@@ -923,12 +924,12 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
     }
 
     // Delete is a success or the file does not exists: OK to remove from darktable
-    if (delete_success
+    if(delete_success
         || g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
     {
       delete_status = _DT_DELETE_STATUS_OK_TO_REMOVE;
     }
-    else if (send_to_trash && *delete_on_trash_error)
+    else if(send_to_trash && *delete_on_trash_error)
     {
       // Loop again, this time delete instead of trashing
       delete_status = _DT_DELETE_STATUS_UNKNOWN;
@@ -943,7 +944,7 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
           G_FILE_QUERY_INFO_NONE,
           NULL /*cancellable*/,
           NULL /*error*/);
-      if (gfileinfo != NULL)
+      if(gfileinfo != NULL)
         filename_display = g_file_info_get_attribute_string(
             gfileinfo,
             G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME);
@@ -953,24 +954,24 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
           filename_display == NULL ? filename : filename_display,
           gerror == NULL ? NULL : gerror->message);
       g_object_unref(gfileinfo);
-      if (send_to_trash && res == _DT_DELETE_DIALOG_CHOICE_DELETE)
+      if(send_to_trash && res == _DT_DELETE_DIALOG_CHOICE_DELETE)
       {
         // Loop again, this time delete instead of trashing
         delete_status = _DT_DELETE_STATUS_UNKNOWN;
         send_to_trash = FALSE;
       }
-      else if (send_to_trash && res == _DT_DELETE_DIALOG_CHOICE_DELETE_ALL)
+      else if(send_to_trash && res == _DT_DELETE_DIALOG_CHOICE_DELETE_ALL)
       {
         // Loop again, this time delete instead of trashing
         delete_status = _DT_DELETE_STATUS_UNKNOWN;
         send_to_trash = FALSE;
         *delete_on_trash_error = TRUE;
       }
-      else if (res == _DT_DELETE_DIALOG_CHOICE_REMOVE)
+      else if(res == _DT_DELETE_DIALOG_CHOICE_REMOVE)
       {
         delete_status = _DT_DELETE_STATUS_OK_TO_REMOVE;
       }
-      else if (res == _DT_DELETE_DIALOG_CHOICE_CONTINUE)
+      else if(res == _DT_DELETE_DIALOG_CHOICE_CONTINUE)
       {
         delete_status = _DT_DELETE_STATUS_SKIP_FILE;
       }
@@ -979,11 +980,11 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename, gboole
         delete_status = _DT_DELETE_STATUS_STOP_PROCESSING;
       }
     }
-    if (gerror != NULL)
+    if(gerror != NULL)
       g_error_free(gerror);
   }
 
-  if (gfile != NULL)
+  if(gfile != NULL)
     g_object_unref(gfile);
 
   return delete_status;
@@ -996,11 +997,11 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   GList *t = params->index;
   char *imgs = _get_image_list(t);
   char imgidstr[25] = { 0 };
-  guint total = g_list_length(t);
+  const guint total = g_list_length(t);
   double fraction = 0.0f;
   char message[512] = { 0 };
   gboolean delete_on_trash_error = FALSE;
-  if (dt_conf_get_bool("send_to_trash"))
+  if(dt_conf_get_bool("send_to_trash"))
     snprintf(message, sizeof(message), ngettext("trashing %d image", "trashing %d images", total), total);
   else
     snprintf(message, sizeof(message), ngettext("deleting %d image", "deleting %d images", total), total);
@@ -1041,7 +1042,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
     if(duplicates == 1)
     {
       // first check for local copies, never delete a file whose original file is not accessible
-      if (dt_image_local_copy_reset(imgid))
+      if(dt_image_local_copy_reset(imgid))
         goto delete_next_file;
 
       snprintf(imgidstr, sizeof(imgidstr), "%d", imgid);
@@ -1050,7 +1051,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
       // there are no further duplicates so we can remove the source data file
       delete_status = delete_file_from_disk(filename, &delete_on_trash_error);
-      if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
+      if(delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
         goto delete_next_file;
 
       // all sidecar files - including left-overs - can be deleted;
@@ -1062,7 +1063,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       for(GList *file_iter = files; file_iter; file_iter = g_list_next(file_iter))
       {
         delete_status = delete_file_from_disk(file_iter->data, &delete_on_trash_error);
-        if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
+        if(delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
           break;
       }
 
@@ -1092,7 +1093,7 @@ delete_next_file:
     t = g_list_next(t);
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
-    if (delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
+    if(delete_status == _DT_DELETE_STATUS_STOP_PROCESSING)
       break;
   }
 
@@ -1283,7 +1284,7 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   GList *t = params->index;
-  guint total = g_list_length(t);
+  const guint total = g_list_length(t);
   double fraction = 0.0f;
   char message[512] = { 0 };
   snprintf(message, sizeof(message), ngettext("refreshing info for %d image", "refreshing info for %d images", total), total);
@@ -1370,7 +1371,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     h = sh < fh ? sh : fh;
 
   const guint total = g_list_length(t);
-  if (total)
+  if(total > 0)
     dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
   else
     dt_control_log(_("no image to export"));
@@ -1391,7 +1392,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   dt_export_metadata_t metadata;
   metadata.flags = 0;
   metadata.list = dt_util_str_to_glist("\1", settings->metadata_export);
-  if (metadata.list)
+  if(metadata.list)
   {
     metadata.flags = strtol(metadata.list->data, NULL, 16);
     metadata.list = g_list_remove(metadata.list, metadata.list->data);
@@ -2135,14 +2136,14 @@ static int _control_import_image_copy(const char *filename,
 
 static void _collection_update(double *last_update, double *update_interval)
 {
-  double currtime = dt_get_wtime();
-  if (currtime - *last_update > *update_interval)
+  const double currtime = dt_get_wtime();
+  if(currtime - *last_update > *update_interval)
   {
     *last_update = currtime;
     // We want frequent updates at the beginning to make the import feel responsive, but large imports
     // should use infrequent updates to get the fastest import.  So we gradually increase the interval
     // between updates until it hits the pre-set maximum
-    if (*update_interval < MAX_UPDATE_INTERVAL)
+    if(*update_interval < MAX_UPDATE_INTERVAL)
       *update_interval += 0.1;
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
     dt_control_queue_redraw_center();
@@ -2268,8 +2269,8 @@ static int32_t _control_import_job_run(dt_job_t *job)
     if(filmid != -1)
       cntr++;
     fraction += 1.0 / total;
-    double currtime  = dt_get_wtime();
-    if (currtime - last_prog_update > PROGRESS_UPDATE_INTERVAL)
+    const double currtime  = dt_get_wtime();
+    if(currtime - last_prog_update > PROGRESS_UPDATE_INTERVAL)
     {
       last_prog_update = currtime;
       snprintf(message, sizeof(message), ngettext("importing %d/%d image", "importing %d/%d images", cntr), cntr, total);
