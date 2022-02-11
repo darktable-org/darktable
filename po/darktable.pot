@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-11 18:47+0100\n"
+"POT-Creation-Date: 2022-02-11 19:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -6675,8 +6675,10 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2226
 msgid ""
-"double-click to reset. press 'a' to toggle available slider modes.\n"
-"press 'c' to toggle view of channel data. press 'm' to toggle mask view."
+"double-click to reset.\n"
+"press 'a' to toggle available slider modes.\n"
+"press 'c' to toggle view of channel data.\n"
+"press 'm' to toggle mask view."
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2243 ../src/develop/blend_gui.c:3068
