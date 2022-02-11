@@ -3567,9 +3567,9 @@ void reload_defaults(dt_iop_module_t *module)
 
   // check if we could register
   gboolean CAT_already_applied =
-    (module->dev->proxy.chroma_adaptation != NULL)       // CAT exists
-    && (module->dev->proxy.chroma_adaptation != module)
-    && (!dt_image_is_monochrome(img)); // and it is not us
+    (module->dev->proxy.chroma_adaptation != NULL)      // CAT exists
+    && (module->dev->proxy.chroma_adaptation != module) // and it is not us
+    && (!dt_image_is_monochrome(img));
 
   module->default_enabled = FALSE;
 
