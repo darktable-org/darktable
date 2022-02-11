@@ -2008,14 +2008,14 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
           cairo_set_line_width(cr, 5.0 / zoom_scale);
         else
           cairo_set_line_width(cr, 3.0 / zoom_scale);
-        dt_draw_set_color_overlay(cr, 0.3, 0.8);
+        dt_draw_set_color_overlay(cr, FALSE, 0.8);
         cairo_stroke_preserve(cr);
         if((gui->group_selected == index)
            && (gui->form_selected || gui->form_dragging || gui->seg_selected == seg2))
           cairo_set_line_width(cr, 2.0 / zoom_scale);
         else
           cairo_set_line_width(cr, 1.0 / zoom_scale);
-        dt_draw_set_color_overlay(cr, 0.8, 0.8);
+        dt_draw_set_color_overlay(cr, TRUE, 0.8);
         cairo_stroke(cr);
         // and we update the segment number
         seg = (seg + 1) % nb;
@@ -2039,7 +2039,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
       {
         anchor_size = 5.0f / zoom_scale;
       }
-      dt_draw_set_color_overlay(cr, 0.8, 0.8);
+      dt_draw_set_color_overlay(cr, TRUE, 0.8);
       cairo_rectangle(cr, gpt->points[k * 6 + 2] - (anchor_size * 0.5),
                       gpt->points[k * 6 + 3] - (anchor_size * 0.5), anchor_size, anchor_size);
       cairo_fill_preserve(cr);
@@ -2051,7 +2051,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.3, 0.8);
+      dt_draw_set_color_overlay(cr, FALSE, 0.8);
       cairo_stroke(cr);
     }
   }
@@ -2073,21 +2073,21 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
     cairo_move_to(cr, gpt->points[k * 6 + 2], gpt->points[k * 6 + 3]);
     cairo_line_to(cr, ffx, ffy);
     cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
     cairo_stroke_preserve(cr);
     cairo_set_line_width(cr, 0.75 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_stroke(cr);
 
     if((gui->group_selected == index) && (k == gui->feather_dragging || k == gui->feather_selected))
       cairo_arc(cr, ffx, ffy, 3.0f / zoom_scale, 0, 2.0 * M_PI);
     else
       cairo_arc(cr, ffx, ffy, 1.5f / zoom_scale, 0, 2.0 * M_PI);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_fill_preserve(cr);
 
     cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
     cairo_stroke(cr);
   }
 
@@ -2116,14 +2116,14 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
     cairo_set_dash(cr, dashed, len, 0);
     cairo_stroke_preserve(cr);
     if(gui->border_selected)
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_set_dash(cr, dashed, len, 4);
     cairo_stroke(cr);
 
@@ -2139,7 +2139,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
       {
         anchor_size = 5.0f / zoom_scale;
       }
-      dt_draw_set_color_overlay(cr, 0.8, 0.8);
+      dt_draw_set_color_overlay(cr, TRUE, 0.8);
       cairo_rectangle(cr, gpt->border[k * 6] - (anchor_size * 0.5), gpt->border[k * 6 + 1] - (anchor_size * 0.5),
                       anchor_size, anchor_size);
       cairo_fill_preserve(cr);
@@ -2148,7 +2148,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.3, 0.8);
+      dt_draw_set_color_overlay(cr, FALSE, 0.8);
       cairo_set_dash(cr, dashed, 0, 0);
       cairo_stroke(cr);
     }
@@ -2198,13 +2198,13 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
       cairo_set_line_width(cr, 2.5 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
     cairo_stroke_preserve(cr);
     if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
       cairo_set_line_width(cr, 1.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 0.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_stroke(cr);
 
     // we draw the source
@@ -2213,7 +2213,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
       cairo_set_line_width(cr, 2.5 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 0.8);
+    dt_draw_set_color_overlay(cr, FALSE, 0.8);
     cairo_move_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
     for(int i = nb * 3; i < gpt->source_count; i++) cairo_line_to(cr, gpt->source[i * 2], gpt->source[i * 2 + 1]);
     cairo_line_to(cr, gpt->source[nb * 6], gpt->source[nb * 6 + 1]);
@@ -2222,7 +2222,7 @@ static void _path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_for
       cairo_set_line_width(cr, 1.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 0.5 / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.8, 0.8);
+    dt_draw_set_color_overlay(cr, TRUE, 0.8);
     cairo_stroke(cr);
   }
 }
