@@ -2348,7 +2348,7 @@ static void gui_draw_sym(cairo_t *cr, float x, float y, float scale, gboolean ac
   pango_layout_set_font_description(layout, desc);
   pango_layout_set_text(layout, "ꝏ", -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
-  dt_draw_set_color_overlay(cr, 0.5, 0.7);
+  dt_draw_set_color_overlay(cr, TRUE, 0.5);
   dt_gui_draw_rounded_rectangle(
       cr, ink.width + DT_PIXEL_APPLY_DPI(4) * scale, ink.height + DT_PIXEL_APPLY_DPI(8) * scale,
       x - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(2) * scale, y - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(4) * scale);
@@ -2409,7 +2409,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   {
     cairo_set_line_width(cr, dashes / 2.0);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
-    dt_draw_set_color_overlay(cr, 0.7, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
     cairo_stroke(cr);
   }
 
@@ -2458,7 +2458,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_guides_draw(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht, zoom_scale);
 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.3, 1.0);
+  dt_draw_set_color_overlay(cr, FALSE, 1.0);
   const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
   if(g->straightening)
   {
@@ -2722,7 +2722,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                                     c[0] - ink.width / 2.0f - DT_PIXEL_APPLY_DPI(4) * pr_d,
                                     c[1] - ink.height / 2.0f - DT_PIXEL_APPLY_DPI(6) * pr_d);
       cairo_move_to(cr, c[0] - ink.width / 2.0, c[1] - 3.0 * ink.height / 4.0);
-      dt_draw_set_color_overlay(cr, 0.2, 0.9);
+      dt_draw_set_color_overlay(cr, FALSE, 0.9);
       pango_cairo_show_layout(cr, layout);
       pango_font_description_free(desc);
       g_object_unref(layout);

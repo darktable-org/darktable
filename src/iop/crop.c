@@ -1348,7 +1348,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   {
     cairo_set_line_width(cr, dashes / 2.0);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
-    dt_draw_set_color_overlay(cr, 0.7, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
     cairo_stroke(cr);
   }
 
@@ -1397,7 +1397,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_guides_draw(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht, zoom_scale);
 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.3, 1.0);
+  dt_draw_set_color_overlay(cr, FALSE, 1.0);
   const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
 
   const _grab_region_t grab = g->cropping ? g->cropping : _gui_get_grab(pzx, pzy, g, border, wd, ht);

@@ -3947,7 +3947,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_fill(cr);
 
     // draw white outline around clipping area
-    dt_draw_set_color_overlay(cr, 0.7, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
     cairo_set_line_width(cr, 2.0 / zoom_scale);
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
@@ -3980,13 +3980,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       const double size_arrow = base_size / 25.0f;
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.7, 1.0);
+      dt_draw_set_color_overlay(cr, TRUE, 1.0);
       cairo_arc (cr, xpos, ypos, size_circle, 0, 2.0 * M_PI);
       cairo_stroke(cr);
       cairo_fill(cr);
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.7, 1.0);
+      dt_draw_set_color_overlay(cr, TRUE, 1.0);
 
       // horizontal line
       cairo_move_to(cr, xpos - size_line, ypos);
@@ -4030,7 +4030,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 1.0);
+    dt_draw_set_color_overlay(cr, FALSE, 1.0);
 
     float pzx, pzy;
     dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
@@ -4193,7 +4193,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if((g->current_structure_method == ASHIFT_METHOD_QUAD || g->current_structure_method == ASHIFT_METHOD_LINES)
      && g->draw_points)
   {
-    dt_draw_set_color_overlay(cr, 0.3, 1.0);
+    dt_draw_set_color_overlay(cr, FALSE, 1.0);
     const int nb = (g->current_structure_method == ASHIFT_METHOD_LINES) ? g->lines_count * 2 : 4;
     for(int i = 0; i < nb; i++)
     {
