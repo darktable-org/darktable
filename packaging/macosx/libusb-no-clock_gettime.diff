@@ -1,24 +1,31 @@
---- configure.ac.orig	2021-01-02 19:30:48.000000000 +0300
-+++ configure.ac	2021-01-02 19:32:23.000000000 +0300
-@@ -198,21 +198,6 @@
- dnl headers not available on all platforms but required on others
- AC_CHECK_HEADERS([sys/time.h])
+--- libusb/os/darwin_usb.c
++++ libusb/os/darwin_usb.c
+@@ -1753,6 +1753,7 @@ static int darwin_reenumerate_device (struct libusb_device_handle *dev_handle, b
+   IOUSBConfigurationDescriptor *cached_configurations;
+   IOReturn kresult;
+   UInt8 i;
++  UInt32 time;
  
--if test "x$platform" = xposix; then
--	dnl the clock_gettime() function needs certain clock IDs defined
--	AC_CHECK_FUNCS([clock_gettime], [have_clock_gettime=yes], [have_clock_gettime=])
--	if test "x$have_clock_gettime" = xyes; then
--		AC_CHECK_DECL([CLOCK_MONOTONIC], [], [AC_MSG_ERROR([C library headers missing definition for CLOCK_MONOTONIC])], [[#include <time.h>]])
--		dnl use the monotonic clock for condition variable timed waits if possible
--		AC_CHECK_FUNCS([pthread_condattr_setclock], [need_clock_realtime=], [need_clock_realtime=yes])
--		if test "x$need_clock_realtime" = xyes; then
--			AC_CHECK_DECL([CLOCK_REALTIME], [], [AC_MSG_ERROR([C library headers missing definition for CLOCK_REALTIME])], [[#include <time.h>]])
--		fi
--	elif test "x$backend" != xdarwin; then
--		AC_MSG_ERROR([clock_gettime() is required on this platform])
--	fi
--fi
+   struct libusb_context *ctx = HANDLE_CTX (dev_handle);
+ 
+@@ -1800,18 +1801,11 @@ static int darwin_reenumerate_device (struct libusb_device_handle *dev_handle, b
+ 
+   usbi_dbg (ctx, "darwin/reenumerate_device: waiting for re-enumeration to complete...");
+ 
++  time = 0;
+-  struct timespec start;
+-  clock_gettime(CLOCK_MONOTONIC, &start);
 -
- dnl eventfd support
- if test "x$backend" = xlinux || test "x$backend" = xsunos; then
- 	AC_ARG_ENABLE([eventfd],
+   while (dpriv->in_reenumerate) {
+     struct timespec delay = {.tv_sec = 0, .tv_nsec = 1000};
+     nanosleep (&delay, NULL);
++    if (time++ >= DARWIN_REENUMERATE_TIMEOUT_US) {
+-
+-    struct timespec now;
+-    clock_gettime(CLOCK_MONOTONIC, &now);
+-    UInt32 elapsed = (now.tv_sec - start.tv_sec) * 1000000 + (now.tv_nsec - start.tv_nsec) / 1000;
+-
+-    if (elapsed >= DARWIN_REENUMERATE_TIMEOUT_US) {
+       usbi_err (ctx, "darwin/reenumerate_device: timeout waiting for reenumerate");
+       dpriv->in_reenumerate = false;
+       return LIBUSB_ERROR_TIMEOUT;
