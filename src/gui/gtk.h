@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -143,6 +143,15 @@ typedef struct dt_gui_gtk_t
 
   dt_pthread_mutex_t mutex;
 } dt_gui_gtk_t;
+
+typedef struct _gui_collapsible_section_t
+{
+  GtkBox *parent;       // the parent widget
+  gchar *confname;      // configuration name for the toggle status
+  GtkWidget *toggle;    // toggle button
+  GtkWidget *expander;  // the expanded
+  GtkBox *container;    // the container for all widgets into the section
+} dt_gui_collapsible_section_t;
 
 static inline cairo_surface_t *dt_cairo_image_surface_create(cairo_format_t format, int width, int height) {
   cairo_surface_t *cst = cairo_image_surface_create(format, width * darktable.gui->ppd, height * darktable.gui->ppd);
@@ -446,6 +455,16 @@ gboolean dt_gui_search_start(GtkWidget *widget, GdkEventKey *event, GtkSearchEnt
 
 // event handler for "stop-search" of GtkSearchEntry
 void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget);
+
+// create a collapsible section, insert in parent, return the container
+void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
+                                    const char *confname, const char *label,
+                                    GtkBox *parent);
+// routine to be called from gui_update
+void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
+
+// routine to hide the collapsible section
+void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
