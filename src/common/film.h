@@ -53,6 +53,8 @@ int dt_film_open_recent(const int32_t num);
 int dt_film_import(const char *dirname);
 /** constructs the lighttable/query setting for this film, respecting stars and filters. */
 void dt_film_set_query(const int32_t id);
+/** get id associated with filmroll */
+int32_t dt_film_get_id(const char *folder);
 /** removes this film and all its images from db. */
 void dt_film_remove(const int id);
 /** checks if film is empty */
