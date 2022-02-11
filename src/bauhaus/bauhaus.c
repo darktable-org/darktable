@@ -1694,6 +1694,8 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
     }
     case DT_BAUHAUS_SLIDER:
     {
+      if(darktable.bauhaus->end_mouse_y < get_line_height()) break;
+
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       const float mouse_off = get_slider_line_offset(
           d->oldpos, d->scale, darktable.bauhaus->end_mouse_x / width,
@@ -2767,11 +2769,26 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     }
     else
     {
-      const float l = 0.0f;
-      const float r = slider_right_pos((float)allocation.width);
-      dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
-      dt_bauhaus_slider_data_t *d = &w->data.slider;
-      d->is_dragging = 1;
+      if(event->y > get_line_height())
+      {
+        const float l = 0.0f;
+        const float r = slider_right_pos((float)allocation.width);
+        dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
+        dt_bauhaus_slider_data_t *d = &w->data.slider;
+        d->is_dragging = 1;
+      }
+      else
+      {
+        int value_width;
+        char *text = dt_bauhaus_slider_get_text(GTK_WIDGET(w));
+        PangoLayout *layout = gtk_widget_create_pango_layout(widget, text);
+        pango_layout_get_size(layout, &value_width, NULL);
+        g_object_unref(layout);
+        g_free(text);
+
+        if(event->x > allocation.width - value_width/PANGO_SCALE - darktable.bauhaus->quad_width - INNER_PADDING)
+          dt_bauhaus_show_popup(w);
+      }
     }
     return TRUE;
   }
@@ -2809,7 +2826,7 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(d->is_dragging || event->x <= allocation.width - darktable.bauhaus->quad_width)
+  if(d->is_dragging || (event->x <= allocation.width - darktable.bauhaus->quad_width && event->y > get_line_height()))
   {
     // remember mouse position for motion effects in draw
     if(event->state & GDK_BUTTON1_MASK && event->type != GDK_2BUTTON_PRESS)
