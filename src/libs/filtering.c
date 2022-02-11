@@ -585,7 +585,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   rate->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(rate->range_select);
-  range->step = 1.0;
+  range->step_r = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
   dtgtk_range_select_add_icon(range, 36, 1, _rating_paint_icon, 0, NULL);
   dtgtk_range_select_add_icon(range, 50, 2, _rating_paint_icon, 0, NULL);
@@ -627,8 +627,8 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   dtgtk_range_select_add_range_block(range, 4.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★", nb[5]);
   dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
 
-  range->min = -1;
-  range->max = 6;
+  range->min_r = -1;
+  range->max_r = 6;
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), rate->range_select, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(rate->range_select), "value-changed", G_CALLBACK(_rating_changed), rule);
 
@@ -746,14 +746,14 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static double _ratio_value_band_func(const double value)
+static double _ratio_value_to_band_func(const double value)
 {
   if(value >= 1.0) return value;
   // for value < 1 (portrait), we want the inverse of the value
   return 2.0 - 1.0 / value;
 }
 
-static double _ratio_band_value_func(const double value)
+static double _ratio_value_from_band_func(const double value)
 {
   if(value >= 1.0) return value;
   // for value < 1 (portrait), we want the inverse of the value
@@ -793,7 +793,7 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(ratio->range_select);
 
   dtgtk_range_select_set_selection(range, sbounds, smin, smax, FALSE);
-  dtgtk_range_select_set_band_func(range, _ratio_band_value_func, _ratio_value_band_func);
+  dtgtk_range_select_set_band_func(range, _ratio_value_from_band_func, _ratio_value_to_band_func);
   dtgtk_range_select_add_marker(range, 1.0, TRUE);
   range->print = _ratio_print_func;
 
@@ -825,8 +825,8 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
     dtgtk_range_select_add_block(range, val, count);
   }
   sqlite3_finalize(stmt);
-  range->min = min;
-  range->max = max;
+  range->min_r = min;
+  range->max_r = max;
 
   // predefined selections
   dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
