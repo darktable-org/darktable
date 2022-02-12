@@ -209,7 +209,7 @@ void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   cairo_move_to(cr, 0.1, 0.95);
   cairo_line_to(cr, 0.2, 0.80);
   cairo_stroke(cr);
-  
+
   if(flags & CPF_DIRECTION_UP)
   {
     cairo_move_to(cr, 0.35, 0.05);
@@ -1601,7 +1601,7 @@ void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, g
 
   // then erase some parts around cross line
   cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-  cairo_set_line_width(cr, 0.05);
+  cairo_set_line_width(cr, cairo_get_line_width(cr) * 0.7);
   cairo_move_to(cr, 0.0, 0.88);
   cairo_line_to(cr, 0.78, 0.0);
   cairo_move_to(cr, 0.10, 1.0);
