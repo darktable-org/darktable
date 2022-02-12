@@ -241,7 +241,9 @@ def run_benchmark(program,image,xmp,args):
       arglist = arglist + ["-t",args.threads]
    if args.cpuonly:
       arglist = arglist + ["--disable-opencl"]
-   trace = subprocess.check_output([program]+arglist,stdin=None,stderr=subprocess.PIPE)
+   os.environ['LANG'] = 'C'
+   os.environ['LC_ALL'] = 'C'
+   trace = subprocess.check_output([program]+arglist,stdin=None,stderr=subprocess.PIPE,env=os.environ)
    if trace:
       trace = trace.decode('utf-8').split('\n')
    loadtime = 0.0
