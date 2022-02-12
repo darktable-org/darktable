@@ -3232,10 +3232,10 @@ static void do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_as
   do_crop(module, p);
 
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-  dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-  dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-  dt_bauhaus_slider_set_soft(g->shear, p->shear);
+  dt_bauhaus_slider_set(g->rotation, p->rotation);
+  dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+  dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+  dt_bauhaus_slider_set(g->shear, p->shear);
   --darktable.gui->reset;
 }
 
@@ -4831,7 +4831,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(a > 180.0) a -= 360.0;
 
     a -= dt_bauhaus_slider_get(g->rotation);
-    dt_bauhaus_slider_set_soft(g->rotation, -a);
+    dt_bauhaus_slider_set(g->rotation, -a);
     return TRUE;
   }
 

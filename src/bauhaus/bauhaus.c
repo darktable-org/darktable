@@ -785,11 +785,11 @@ void dt_bauhaus_slider_set_hard_min(GtkWidget* widget, float val)
   if(val > d->hard_max) dt_bauhaus_slider_set_hard_max(widget,val);
   if(pos < val)
   {
-    dt_bauhaus_slider_set_soft(widget,val);
+    dt_bauhaus_slider_set(widget,val);
   }
   else
   {
-    dt_bauhaus_slider_set_soft(widget,pos);
+    dt_bauhaus_slider_set(widget,pos);
   }
 }
 
@@ -812,11 +812,11 @@ void dt_bauhaus_slider_set_hard_max(GtkWidget* widget, float val)
   if(val < d->hard_min) dt_bauhaus_slider_set_hard_min(widget,val);
   if(pos > val)
   {
-    dt_bauhaus_slider_set_soft(widget,val);
+    dt_bauhaus_slider_set(widget,val);
   }
   else
   {
-    dt_bauhaus_slider_set_soft(widget,pos);
+    dt_bauhaus_slider_set(widget,pos);
   }
 }
 
@@ -833,7 +833,7 @@ void dt_bauhaus_slider_set_soft_min(GtkWidget* widget, float val)
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   float oldval = dt_bauhaus_slider_get(widget);
   d->min = d->soft_min = CLAMP(val,d->hard_min,d->hard_max);
-  dt_bauhaus_slider_set_soft(widget,oldval);
+  dt_bauhaus_slider_set(widget,oldval);
 }
 
 float dt_bauhaus_slider_get_soft_min(GtkWidget* widget)
@@ -849,7 +849,7 @@ void dt_bauhaus_slider_set_soft_max(GtkWidget* widget, float val)
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   float oldval = dt_bauhaus_slider_get(widget);
   d->max = d->soft_max = CLAMP(val,d->hard_min,d->hard_max);
-  dt_bauhaus_slider_set_soft(widget,oldval);
+  dt_bauhaus_slider_set(widget,oldval);
 }
 
 float dt_bauhaus_slider_get_soft_max(GtkWidget* widget)
@@ -964,13 +964,13 @@ void dt_bauhaus_update_module(dt_iop_module_t *self)
         switch(bhw->field_type)
         {
           case DT_INTROSPECTION_TYPE_FLOAT:
-            dt_bauhaus_slider_set_soft(widget, *(float *)bhw->field);
+            dt_bauhaus_slider_set(widget, *(float *)bhw->field);
             break;
           case DT_INTROSPECTION_TYPE_INT:
-            dt_bauhaus_slider_set_soft(widget, *(int *)bhw->field);
+            dt_bauhaus_slider_set(widget, *(int *)bhw->field);
             break;
           case DT_INTROSPECTION_TYPE_USHORT:
-            dt_bauhaus_slider_set_soft(widget, *(unsigned short *)bhw->field);
+            dt_bauhaus_slider_set(widget, *(unsigned short *)bhw->field);
             break;
           default:
             fprintf(stderr, "[dt_bauhaus_update_module] unsupported slider data type\n");
@@ -2555,15 +2555,19 @@ void dt_bauhaus_slider_set(GtkWidget *widget, float pos)
   // this is the public interface function, translate by bounds and call set_normalized
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
-  const dt_bauhaus_slider_data_t *d = &w->data.slider;
-  const float rawval = (pos - d->min) / (d->max - d->min);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  const float rpos = CLAMP(pos, d->hard_min, d->hard_max);
+  d->min = MIN(d->min, rpos);
+  d->max = MAX(d->max, rpos);
+  d->scale = 5.0f * d->step / (d->max - d->min);
+  const float rawval = (rpos - d->min) / (d->max - d->min);
   dt_bauhaus_slider_set_normalized(w, d->curve(rawval, DT_BAUHAUS_SET));
 }
 
 void dt_bauhaus_slider_set_val(GtkWidget *widget, float val)
 {
   const dt_bauhaus_slider_data_t *d = &DT_BAUHAUS_WIDGET(widget)->data.slider;
-  dt_bauhaus_slider_set_soft(widget, (val - d->offset) / d->factor);
+  dt_bauhaus_slider_set(widget, (val - d->offset) / d->factor);
 }
 
 void dt_bauhaus_slider_set_digits(GtkWidget *widget, int val)
@@ -2647,7 +2651,7 @@ void dt_bauhaus_slider_reset(GtkWidget *widget)
   d->max = d->soft_max;
   d->scale = 5.0f * d->step / (d->max - d->min);
 
-  dt_bauhaus_slider_set_soft(widget, d->defpos);
+  dt_bauhaus_slider_set(widget, d->defpos);
 
   return;
 }
@@ -2687,18 +2691,6 @@ void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(float value, 
   d->pos = curve(d->curve(d->pos, DT_BAUHAUS_GET), DT_BAUHAUS_SET);
 
   d->curve = curve;
-}
-
-void dt_bauhaus_slider_set_soft(GtkWidget *widget, float pos)
-{
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
-  if(w->type != DT_BAUHAUS_SLIDER) return;
-  dt_bauhaus_slider_data_t *d = &w->data.slider;
-  const float rpos = CLAMP(pos, d->hard_min, d->hard_max);
-  d->min = MIN(d->min, rpos);
-  d->max = MAX(d->max, rpos);
-  d->scale = 5.0f * d->step / (d->max - d->min);
-  dt_bauhaus_slider_set(widget, rpos);
 }
 
 static gboolean dt_bauhaus_slider_postponed_value_change(gpointer data)
@@ -3065,7 +3057,7 @@ void dt_bauhaus_vimkey_exec(const char *input)
       old_value = dt_bauhaus_slider_get(w);
       new_value = dt_calculator_solve(old_value, input);
       fprintf(stderr, " = %f\n", new_value);
-      if(isfinite(new_value)) dt_bauhaus_slider_set_soft(w, new_value);
+      if(isfinite(new_value)) dt_bauhaus_slider_set(w, new_value);
       break;
     case DT_BAUHAUS_COMBOBOX:
       // TODO: what about text as entry?
@@ -3163,23 +3155,23 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         {
           if(d->pos < 0.0001) d->min = d->soft_min;
           if(d->pos > 0.9999) d->max = d->soft_max;
-          dt_bauhaus_slider_set_soft(widget, value + move_size * step * multiplier);
+          dt_bauhaus_slider_set(widget, value + move_size * step * multiplier);
         }
         else
-          dt_bauhaus_slider_set(widget, value + move_size * step * multiplier);
+          dt_bauhaus_slider_set(widget, CLAMP(value + move_size * step * multiplier, d->min, d->max));
         d->is_dragging = 0;
         break;
       case DT_ACTION_EFFECT_RESET:
         dt_bauhaus_slider_reset(widget);
         break;
       case DT_ACTION_EFFECT_TOP:
-        dt_bauhaus_slider_set_soft(widget, element == DT_ACTION_ELEMENT_FORCE ? d->hard_max: d->max);
+        dt_bauhaus_slider_set(widget, element == DT_ACTION_ELEMENT_FORCE ? d->hard_max: d->max);
         break;
       case DT_ACTION_EFFECT_BOTTOM:
-        dt_bauhaus_slider_set_soft(widget, element == DT_ACTION_ELEMENT_FORCE ? d->hard_min: d->min);
+        dt_bauhaus_slider_set(widget, element == DT_ACTION_ELEMENT_FORCE ? d->hard_min: d->min);
         break;
       case DT_ACTION_EFFECT_SET:
-        dt_bauhaus_slider_set_soft(widget, move_size);
+        dt_bauhaus_slider_set(widget, move_size);
         break;
       default:
         fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
@@ -3231,7 +3223,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
         break;
       }
-      dt_bauhaus_slider_set_soft(widget, value); // restore value (and move min/max again if needed)
+      dt_bauhaus_slider_set(widget, value); // restore value (and move min/max again if needed)
 
       gtk_widget_queue_draw(GTK_WIDGET(widget));
       dt_toast_log(("[%f , %f]"), d->min, d->max);

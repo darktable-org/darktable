@@ -637,7 +637,7 @@ static void _blendop_blend_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
     else
     {
       bp->blend_parameter = 0.0f;
-      dt_bauhaus_slider_set_soft(data->blend_mode_parameter_slider, bp->blend_parameter);
+      dt_bauhaus_slider_set(data->blend_mode_parameter_slider, bp->blend_parameter);
       gtk_widget_set_sensitive(data->blend_mode_parameter_slider, FALSE);
     }
     dt_dev_add_history_item(darktable.develop, data->module, TRUE);
@@ -1059,7 +1059,7 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab)
     boost_factor = bp->blendif_boost_factors[channel->param_channels[0]] - channel->boost_factor_offset;
   }
   gtk_widget_set_sensitive(GTK_WIDGET(data->channel_boost_factor_slider), boost_factor_enabled);
-  dt_bauhaus_slider_set_soft(GTK_WIDGET(data->channel_boost_factor_slider), boost_factor);
+  dt_bauhaus_slider_set(GTK_WIDGET(data->channel_boost_factor_slider), boost_factor);
 
   --darktable.gui->reset;
 }
@@ -2747,7 +2747,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   gboolean blend_mode_reversed = (module->blend_params->blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->blend_modes_blend_order), blend_mode_reversed);
 
-  dt_bauhaus_slider_set_soft(bd->blend_mode_parameter_slider, module->blend_params->blend_parameter);
+  dt_bauhaus_slider_set(bd->blend_mode_parameter_slider, module->blend_params->blend_parameter);
   gtk_widget_set_sensitive(bd->blend_mode_parameter_slider,
                            _blendif_blend_parameter_enabled(bd->blend_modes_csp, module->blend_params->blend_mode));
   gtk_widget_set_visible(bd->blend_mode_parameter_slider, bd->blend_modes_csp == DEVELOP_BLEND_CS_RGB_SCENE);

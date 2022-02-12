@@ -1126,39 +1126,39 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   {
     p->global_H = hue;
     p->global_C = Ych[1] * Ych[0];
-    dt_bauhaus_slider_set_soft(g->global_H, p->global_H);
-    dt_bauhaus_slider_set_soft(g->global_C, p->global_C);
+    dt_bauhaus_slider_set(g->global_H, p->global_H);
+    dt_bauhaus_slider_set(g->global_C, p->global_C);
   }
   else if(picker == g->shadows_H)
   {
     p->shadows_H = hue;
     p->shadows_C = Ych[1] * Ych[0];
-    dt_bauhaus_slider_set_soft(g->shadows_H, p->shadows_H);
-    dt_bauhaus_slider_set_soft(g->shadows_C, p->shadows_C);
+    dt_bauhaus_slider_set(g->shadows_H, p->shadows_H);
+    dt_bauhaus_slider_set(g->shadows_C, p->shadows_C);
   }
   else if(picker == g->midtones_H)
   {
     p->midtones_H = hue;
     p->midtones_C = Ych[1] * Ych[0];
-    dt_bauhaus_slider_set_soft(g->midtones_H, p->midtones_H);
-    dt_bauhaus_slider_set_soft(g->midtones_C, p->midtones_C);
+    dt_bauhaus_slider_set(g->midtones_H, p->midtones_H);
+    dt_bauhaus_slider_set(g->midtones_C, p->midtones_C);
   }
   else if(picker == g->highlights_H)
   {
     p->highlights_H = hue;
     p->highlights_C = Ych[1] * Ych[0];
-    dt_bauhaus_slider_set_soft(g->highlights_H, p->highlights_H);
-    dt_bauhaus_slider_set_soft(g->highlights_C, p->highlights_C);
+    dt_bauhaus_slider_set(g->highlights_H, p->highlights_H);
+    dt_bauhaus_slider_set(g->highlights_C, p->highlights_C);
   }
   else if(picker == g->white_fulcrum)
   {
     p->white_fulcrum = log2f(max_Ych[0]);
-    dt_bauhaus_slider_set_soft(g->white_fulcrum, p->white_fulcrum);
+    dt_bauhaus_slider_set(g->white_fulcrum, p->white_fulcrum);
   }
   else if(picker == g->grey_fulcrum)
   {
     p->grey_fulcrum = Ych[0];
-    dt_bauhaus_slider_set_soft(g->grey_fulcrum, p->grey_fulcrum);
+    dt_bauhaus_slider_set(g->grey_fulcrum, p->grey_fulcrum);
   }
   else
     fprintf(stderr, "[colorbalancergb] unknown color picker\n");
@@ -1486,7 +1486,7 @@ void gui_update(dt_iop_module_t *self)
 
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->checker_color_2_picker), &color);
 
-  dt_bauhaus_slider_set_soft(g->checker_size, dt_conf_get_int("plugins/darkroom/colorbalancergb/checker/size"));
+  dt_bauhaus_slider_set(g->checker_size, dt_conf_get_int("plugins/darkroom/colorbalancergb/checker/size"));
 }
 
 

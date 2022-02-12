@@ -2093,10 +2093,10 @@ static void apply_auto_grey(dt_iop_module_t *self)
                     / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
-  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
-  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
-  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
+  dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
+  dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
+  dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
   gtk_widget_queue_draw(self->widget);
@@ -2122,8 +2122,8 @@ static void apply_auto_black(dt_iop_module_t *self)
                     / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
-  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
+  dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
+  dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
   gtk_widget_queue_draw(self->widget);
@@ -2150,8 +2150,8 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
                     / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
-  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
+  dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
   gtk_widget_queue_draw(self->widget);
@@ -2188,10 +2188,10 @@ static void apply_autotune(dt_iop_module_t *self)
                     / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
-  dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
-  dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
-  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
+  dt_bauhaus_slider_set(g->grey_point_source, p->grey_point_source);
+  dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
+  dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set(g->output_power, p->output_power);
   --darktable.gui->reset;
 
   gtk_widget_queue_draw(self->widget);
@@ -4159,8 +4159,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
         p->white_point_source = p->white_point_source + grey_var;
       }
 
-      dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
-      dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
+      dt_bauhaus_slider_set(g->white_point_source, p->white_point_source);
+      dt_bauhaus_slider_set(g->black_point_source, p->black_point_source);
     }
 
     if(p->auto_hardness)
@@ -4168,7 +4168,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
                         / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
     gtk_widget_set_visible(GTK_WIDGET(g->output_power), !p->auto_hardness);
-    dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
+    dt_bauhaus_slider_set(g->output_power, p->output_power);
 
     --darktable.gui->reset;
   }

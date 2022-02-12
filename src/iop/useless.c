@@ -414,7 +414,7 @@ static void extra_callback(GtkWidget *w, dt_iop_module_t *self)
   // Setting a widget value will trigger a callback that will update params.
   // If this is not desirable (because it might result in a cycle) then use
   // ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->factor, p->factor + extra);
+  dt_bauhaus_slider_set(g->factor, p->factor + extra);
   // and reverse with --darktable.gui->reset;
 
   // If any params updated directly, not via a callback, then

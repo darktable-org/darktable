@@ -1652,15 +1652,15 @@ void show_guiding_controls(struct dt_iop_module_t *self)
 void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g, dt_iop_toneequalizer_params_t *p)
 {
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->noise, p->noise);
-  dt_bauhaus_slider_set_soft(g->ultra_deep_blacks, p->ultra_deep_blacks);
-  dt_bauhaus_slider_set_soft(g->deep_blacks, p->deep_blacks);
-  dt_bauhaus_slider_set_soft(g->blacks, p->blacks);
-  dt_bauhaus_slider_set_soft(g->shadows, p->shadows);
-  dt_bauhaus_slider_set_soft(g->midtones, p->midtones);
-  dt_bauhaus_slider_set_soft(g->highlights, p->highlights);
-  dt_bauhaus_slider_set_soft(g->whites, p->whites);
-  dt_bauhaus_slider_set_soft(g->speculars, p->speculars);
+  dt_bauhaus_slider_set(g->noise, p->noise);
+  dt_bauhaus_slider_set(g->ultra_deep_blacks, p->ultra_deep_blacks);
+  dt_bauhaus_slider_set(g->deep_blacks, p->deep_blacks);
+  dt_bauhaus_slider_set(g->blacks, p->blacks);
+  dt_bauhaus_slider_set(g->shadows, p->shadows);
+  dt_bauhaus_slider_set(g->midtones, p->midtones);
+  dt_bauhaus_slider_set(g->highlights, p->highlights);
+  dt_bauhaus_slider_set(g->whites, p->whites);
+  dt_bauhaus_slider_set(g->speculars, p->speculars);
   --darktable.gui->reset;
 }
 
@@ -1670,7 +1670,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
-  dt_bauhaus_slider_set_soft(g->smoothing, logf(p->smoothing) / logf(sqrtf(2.0f)) - 1.0f);
+  dt_bauhaus_slider_set(g->smoothing, logf(p->smoothing) / logf(sqrtf(2.0f)) - 1.0f);
 
   show_guiding_controls(self);
   invalidate_luminance_cache(self);
@@ -1740,7 +1740,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   {
     // activate module and do nothing
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
+    dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
@@ -1783,7 +1783,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
   // Update the GUI stuff
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
+  dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
   --darktable.gui->reset;
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1807,7 +1807,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   {
     // activate module and do nothing
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
+    dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
@@ -1861,7 +1861,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   // Update the GUI stuff
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
+  dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
   --darktable.gui->reset;
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
