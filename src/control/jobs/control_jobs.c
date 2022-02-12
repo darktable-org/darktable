@@ -1370,10 +1370,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     h = sh < fh ? sh : fh;
 
   const guint total = g_list_length(t);
-  if (total)
-    dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
-  else
-    dt_control_log(_("no image to export"));
+  dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
 
   double fraction = 0;
 
