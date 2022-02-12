@@ -136,7 +136,7 @@ static void _draw_sym(cairo_t *cr, float x, float y, gboolean vertical, gboolean
   else
     cairo_move_to(cr, x - (ink.width / 2.0), y + (-inv * (ink.height * 1.2f) - DT_PIXEL_APPLY_DPI(2)));
 
-  dt_draw_set_color_overlay(cr, 0.3, 0.9);
+  dt_draw_set_color_overlay(cr, FALSE, 0.9);
   pango_cairo_show_layout(cr, layout);
   pango_font_description_free(desc);
   g_object_unref(layout);
@@ -183,7 +183,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_fill(cri);
 
     // draw the split line using the selected overlay color
-    dt_draw_set_color_overlay(cri, 0.8, 0.7);
+    dt_draw_set_color_overlay(cri, TRUE, 0.7);
 
     cairo_set_line_width(cri, 1.);
 
@@ -247,7 +247,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       const gint ry = (d->vertical ? height * 0.5 : height * d->vp_ypointer) - (s * 0.5);
 
       const gboolean display_rotation = (abs(pointerx - rx) < 40) && (abs(pointery - ry) < 40);
-      dt_draw_set_color_overlay(cri, 0.8, display_rotation ? 1.0 : 0.3);
+      dt_draw_set_color_overlay(cri, TRUE, display_rotation ? 1.0 : 0.3);
 
       cairo_set_line_width(cri, 0.5);
       dtgtk_cairo_paint_refresh(cri, rx, ry, s, s, 0, NULL);

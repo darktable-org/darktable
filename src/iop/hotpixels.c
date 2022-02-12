@@ -89,7 +89,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_RAW;
+  return IOP_CS_RAW;
 }
 
 /* Detect hot sensor pixels based on the 4 surrounding sites. Pixels
@@ -301,8 +301,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void reload_defaults(dt_iop_module_t *module)
 {
+  const dt_image_t *img = &module->dev->image_storage;
+  const gboolean enabled = dt_image_is_raw(img) && !dt_image_is_monochrome(img);
   // can't be switched on for non-raw images:
-  module->hide_enable_button = !dt_image_is_raw(&module->dev->image_storage);
+  module->hide_enable_button = !enabled;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -316,7 +318,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->permissive = p->permissive;
   d->markfixed = p->markfixed && ((pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT)
     && ((pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) != DT_DEV_PIXELPIPE_THUMBNAIL);
-  if(!(dt_image_is_raw(&pipe->image)) || p->strength == 0.0) piece->enabled = 0;
+
+  const dt_image_t *img = &pipe->image;
+  const gboolean enabled = dt_image_is_raw(img) && !dt_image_is_monochrome(img);
+
+  if(!enabled || p->strength == 0.0) piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -341,6 +347,11 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(g->permissive, p->permissive);
   g->pixels_fixed = -1;
   gtk_label_set_text(g->message, "");
+
+  const dt_image_t *img = &self->dev->image_storage;
+  const gboolean enabled = dt_image_is_raw(img) && !dt_image_is_monochrome(img);
+  // can't be switched on for non-raw images:
+  self->hide_enable_button = !enabled;
 
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "non_raw" : "raw");
 }

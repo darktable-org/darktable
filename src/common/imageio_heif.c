@@ -118,7 +118,7 @@ dt_imageio_retval_t dt_imageio_open_heif(dt_image_t *img,
 
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
-  img->buf_dsc.cst = iop_cs_rgb;
+  img->buf_dsc.cst = IOP_CS_RGB;
 
   float *mipbuf = (float *)dt_mipmap_cache_alloc(mbuf, img);
   if(mipbuf == NULL)
@@ -275,7 +275,7 @@ int dt_imageio_heif_read_profile(const char *filename,
     case heif_color_profile_type_rICC:
     case heif_color_profile_type_prof:
       icc_size = heif_image_handle_get_raw_color_profile_size(handle);
-      if(icc_size <= 0)
+      if(icc_size == 0)
       {
         // image has no embedded ICC profile
         goto out;

@@ -8,6 +8,13 @@
     <shortdescription>modify theme with user tweaks</shortdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="accel">
+    <name>accel/prefer_focused</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>prefer focused instance</shortdescription>
+    <longdescription>if an instance of the module has focus, apply shortcut to that instance\nnote: blending shortcuts always apply to the focused instance</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="accel">
     <name>accel/prefer_expanded</name>
     <type>bool</type>
     <default>false</default>
@@ -928,7 +935,7 @@
     <type>string</type>
     <default/>
     <shortdescription>override today's date</shortdescription>
-    <longdescription>enter a valid date/time (YYYY-MM-DD[Thh:mm:ss] format) if you want to override the current date/time used when expanding variables:\n$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\nlet the field empty otherwise</longdescription>
+    <longdescription>type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override the current date/time used when expanding variables:\n$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\nlet the field empty otherwise</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
     <name>ui_last/import_keep_open</name>
@@ -1909,6 +1916,12 @@
     <shortdescription>expand the module when it is activated, and collapse it when disabled</shortdescription>
     <longdescription>this option allows to expand or collapse automatically the module when it is enabled or disabled.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/overlay_contrast</name>
+    <type>float</type>
+    <default>0.5</default>
+    <shortdescription>contrast to use in darkroom overlays</shortdescription>
+  </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/scroll_to_module</name>
     <type>bool</type>
@@ -2084,6 +2097,13 @@
     <shortdescription>show scrollbars for central view</shortdescription>
     <longdescription>defines whether scrollbars should be displayed</longdescription>
   </dtconfig>
+  <dtconfig prefs="lighttable" section="general">
+     <name>lighttable/ui/milliseconds</name>
+     <type>bool</type>
+     <default>false</default>
+     <shortdescription>show image time with milliseconds</shortdescription>
+     <longdescription>defines whether time should be displayed with milliseconds</longdescription>
+   </dtconfig>
   <dtconfig>
     <name>darkroom/ui/rawoverexposed/mode</name>
     <type>int</type>
@@ -2343,6 +2363,25 @@
     <name>plugins/imageio/format/pdf/compression</name>
     <type>int</type>
     <default>1</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/exr/bpp</name>
+    <type>
+      <enum>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
+    <default>32</default>
+    <shortdescription>EXR float bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/exr/compression</name>
+    <type>int</type>
+    <default>4</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

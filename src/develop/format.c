@@ -46,7 +46,7 @@ void default_input_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dsc->datatype = TYPE_FLOAT;
   dsc->cst = self->input_colorspace(self, pipe, piece);
 
-  if(dsc->cst != iop_cs_RAW) return;
+  if(dsc->cst != IOP_CS_RAW) return;
 
   if(dt_image_is_raw(&pipe->image)) dsc->channels = 1;
 
@@ -64,7 +64,7 @@ void default_output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
   dsc->datatype = TYPE_FLOAT;
   dsc->cst = self->output_colorspace(self, pipe, piece);
 
-  if(dsc->cst != iop_cs_RAW) return;
+  if(dsc->cst != IOP_CS_RAW) return;
 
   if(dt_image_is_raw(&pipe->image)) dsc->channels = 1;
 

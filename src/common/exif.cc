@@ -36,6 +36,7 @@ extern "C" {
 }
 
 #include <cassert>
+#include <cstdlib>
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -69,6 +70,7 @@ extern "C" {
 #include "common/variables.h"
 #include "common/utility.h"
 #include "common/history.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -599,7 +601,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     {
       char *datetime = strdup(pos->toString().c_str());
       _sanitize_datetime(datetime);
-      g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
+      dt_datetime_exif_to_img(img, datetime);
       free(datetime);
     }
 
@@ -746,10 +748,17 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
                                  char *exif_datetime_taken)
 {
   if((FIND_EXIF_TAG("Exif.Image.DateTimeOriginal") || FIND_EXIF_TAG("Exif.Photo.DateTimeOriginal"))
-     && pos->size() == DT_DATETIME_LENGTH)
+     && pos->size() == DT_DATETIME_EXIF_LENGTH)
   {
-    dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_LENGTH, pos, exifData);
+    dt_strlcpy_to_utf8(exif_datetime_taken, DT_DATETIME_EXIF_LENGTH, pos, exifData);
     _sanitize_datetime(exif_datetime_taken);
+    if(FIND_EXIF_TAG("Exif.Photo.SubSecTimeOriginal")
+       && pos->size() > 1)
+    {
+      char msec[4];
+      dt_strlcpy_to_utf8(msec, sizeof(msec), pos, exifData);
+      dt_datetime_add_subsec_to_exif(exif_datetime_taken, DT_DATETIME_LENGTH, msec);
+    }
   }
   else
   {
@@ -1105,7 +1114,9 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 #endif
 
-    _find_datetime_taken(exifData, pos, img->exif_datetime_taken);
+    char datetime[DT_DATETIME_LENGTH];
+    _find_datetime_taken(exifData, pos, datetime);
+    dt_datetime_exif_to_img(img, datetime);
 
     if(FIND_EXIF_TAG("Exif.Image.Artist"))
     {
@@ -1160,7 +1171,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // The correction matrices are taken from
       // http://www.brucelindbloom.com - chromatic Adaption.
       // using Bradford method: found Illuminant -> D65
-      const float correctmat[8][9] = {
+      const float correctmat[13][9] = {
         { 0.9555766, -0.0230393, 0.0631636, -0.0282895, 1.0099416, 0.0210077, 0.0122982, -0.0204830,
           1.3299098 }, // D50
         { 0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372,
@@ -1175,59 +1186,85 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           0.9181569 }, //  Standard light C
         { 0.9212269, -0.0449128, 0.1211620, -0.0553723, 1.0277243, 0.0403563, 0.0235086, -0.0391019,
           1.6390644 }, // Fluorescent (F2)
-        // Calculated using the Bradford method above for 3200K (xy coord via DNG SDK as reference) -> D65
-        { 0.8662704, -0.0913307, 0.2772741, -0.1090739, 1.0747007, 0.0914149, 0.0551057, -0.0924980,
-          2.5124774 }  // ISO Studio Tungsten
+        // The following are calculated using the same Bradford method,
+        // with xy coord from DNG SDK as reference -> XYZ -> D65
+        { 0.8663030, -0.0913083, 0.2771784, -0.1090504, 1.0746895, 0.0913841, 0.0550856, -0.0924636,
+          2.5119387 }, // ISO Studio Tungsten (3200K first converted to xy as DNG SDK does)
+        { 1.0096114, 0.0061501, 0.0068113, 0.0102539, 0.9888663, 0.0015575, 0.0023119, -0.0044823,
+          1.0525915 }, // DaylightFluorescent (F1)
+        { 0.9554129, -0.0231280, 0.0637169, -0.0283629, 1.0099053, 0.0211824, 0.0124188, -0.0206922,
+          1.3330592 }, // DayWhiteFluorescent (F8)
+        { 0.9147843, -0.0492842, 0.1202810, -0.0622085, 1.034984, 0.0404480, 0.0228014, -0.0375807,
+          1.6259804 }, // CoolWhiteFluorescent (F9)
+        { 0.8805388, -0.0774890, 0.2293784, -0.0932136, 1.0589267, 0.0757827, 0.0453660, -0.0760107,
+          2.2417979 }, // WhiteFluorescent (F3)
+        { 0.8488316, -0.1107439, 0.3471428, -0.1310107, 1.0986874, 0.1141548, 0.0694025, -0.1167541,
+          2.9109462 }  // WarmWhiteFluorescent (F4)
       };
 
-      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1")) illu[0] = (dt_dng_illuminant_t) pos->toLong();
       Exiv2::ExifData::const_iterator cm1_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix1"));
-      if((illu[0] != DT_LS_Unknown) && (cm1_pos != exifData.end()) && (cm1_pos->count() == 9))
+      if((cm1_pos != exifData.end()) && (cm1_pos->count() == 9))
       {
         for(int i = 0; i < 9; i++) colmatrix[0][i] = cm1_pos->toFloat(i);
-      }
-      else
-        illu[0] = DT_LS_Unknown;
 
-      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2")) illu[1] = (dt_dng_illuminant_t) pos->toLong();
+        if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1")) illu[0] = (dt_dng_illuminant_t) pos->toLong();
+      }
+
       Exiv2::ExifData::const_iterator cm2_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix2"));
-      if((illu[1] != DT_LS_Unknown) && (cm2_pos != exifData.end()) && (cm2_pos->count() == 9))
+      if((cm2_pos != exifData.end()) && (cm2_pos->count() == 9))
       {
         for(int i = 0; i < 9; i++) colmatrix[1][i] = cm2_pos->toFloat(i);
+
+        if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2")) illu[1] = (dt_dng_illuminant_t) pos->toLong();
       }
-      else
-        illu[1] = DT_LS_Unknown;
+
       // So far the Exif.Image.CalibrationIlluminant3 tag and friends have not been implemented and there are no images to test
 #if EXIV2_TEST_VERSION(0,27,4)
-      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3")) illu[2] = (dt_dng_illuminant_t) pos->toLong();
       Exiv2::ExifData::const_iterator cm3_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix3"));
-      if((illu[2] != DT_LS_Unknown) && (cm3_pos != exifData.end()) && (cm3_pos->count() == 9))
+      if((cm3_pos != exifData.end()) && (cm3_pos->count() == 9))
       {
         for(int i = 0; i < 9; i++) colmatrix[2][i] = cm3_pos->toFloat(i);
+
+        if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant3")) illu[2] = (dt_dng_illuminant_t) pos->toLong();
       }
-      else
-        illu[2] = DT_LS_Unknown;
 #endif
+
       int sel_illu = -1;
       int sel_temp = 0;
       const int D65temp = _illu_to_temp(DT_LS_D65);
+      int delta_min = D65temp;
       // Which illuminant will be used for the color matrix?
-      // if there is none defined we just leave the matrix marked as undefined
-      // otherwise we take the one closest >= D65
-      for(int i = 0; i < 3; i++)
+      // We first try to find D65 or take the next higher
+      for(int i = 0; i < 3; ++i)
       {
-        if((illu[i] != DT_LS_Unknown) && (_illu_to_temp(illu[i]) > sel_temp) && (sel_temp < D65temp))
+        int temp_cur = _illu_to_temp(illu[i]);
+        int delta_cur = abs(temp_cur - D65temp);
+        if((temp_cur > sel_temp) && (delta_cur <= delta_min))
         {
           sel_illu = i;
-          sel_temp = _illu_to_temp(illu[i]);
+          sel_temp = temp_cur;
+          delta_min = delta_cur;
         }
       }
+      // If there is none defined we'll use the first valid color matrix
+      // without correction, i.e. assume D65 (keep dt < 3.8 behaviour)
+      // TODO: "Other" illuminant is currently unsupported
+      if(sel_illu == -1)
+        for(int i = 0; i < 3; ++i)
+        {
+          if((illu[i] == DT_LS_Unknown) && !std::isnan(colmatrix[i][0]))
+          {
+            sel_illu = i;
+            sel_temp = D65temp;
+            break;
+          }
+        }
 
       if((sel_illu > -1) && (darktable.unmuted & DT_DEBUG_IMAGEIO))
       {
-        fprintf(stderr, "[exif] `%s` dng illuminant %i (%i°) selected from ", img->filename, illu[sel_illu], _illu_to_temp(illu[sel_illu]));
+        fprintf(stderr, "[exif] `%s` dng illuminant %i (%iK) selected from ", img->filename, illu[sel_illu], sel_temp);
         for(int i = 0; i < 3; i++)
-          if(illu[i] != DT_LS_Unknown) fprintf(stderr," -- [%i] %i (%i°)", i + 1, illu[i], _illu_to_temp(illu[i]));
+          fprintf(stderr," -- [%i] %i (%iK)", i + 1, illu[i], _illu_to_temp(illu[i]));
         fprintf(stderr, "\n");
       }
 
@@ -1235,7 +1272,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // D65: just copy. Otherwise multiply by the specific correction matrix.
       if(sel_illu > -1)
       {
-       // If no supported Illuminant is found it's better NOT to use the found matrix.
+       // If no supported Illuminant is found/assumed it's better NOT to use any matrix.
        // The colorin module will write an error message and use a fallback matrix
        // instead of showing wrong colors.
         switch(illu[sel_illu])
@@ -1269,8 +1306,24 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           case DT_LS_ISOStudioTungsten:
             mat3mul(img->d65_color_matrix, correctmat[7], colmatrix[sel_illu]);
             break;
+          case DT_LS_DaylightFluorescent:
+            mat3mul(img->d65_color_matrix, correctmat[8], colmatrix[sel_illu]);
+            break;
+          case DT_LS_DayWhiteFluorescent:
+            mat3mul(img->d65_color_matrix, correctmat[9], colmatrix[sel_illu]);
+            break;
+          case DT_LS_CoolWhiteFluorescent:
+            mat3mul(img->d65_color_matrix, correctmat[10], colmatrix[sel_illu]);
+            break;
+          case DT_LS_WhiteFluorescent:
+            mat3mul(img->d65_color_matrix, correctmat[11], colmatrix[sel_illu]);
+            break;
+          case DT_LS_WarmWhiteFluorescent:
+            mat3mul(img->d65_color_matrix, correctmat[12], colmatrix[sel_illu]);
+            break;
           case DT_LS_D65:
           case DT_LS_CloudyWeather:
+          case DT_LS_Unknown: // exceptional fallback to keep dt < 3.8 behaviour
             for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[sel_illu][i];
             break;
 
@@ -1513,9 +1566,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
 
   if(!stat(path, &statbuf))
   {
-    struct tm result;
-    strftime(img->exif_datetime_taken, DT_DATETIME_LENGTH, "%Y:%m:%d %H:%M:%S",
-             localtime_r(&statbuf.st_mtime, &result));
+    dt_datetime_unix_lt_to_img(img, &statbuf.st_mtime);
   }
 
   try
@@ -1674,7 +1725,13 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         "Exif.Image.StripOffsets",
         "Exif.Image.RowsPerStrip",
         "Exif.Image.StripByteCounts",
+        "Exif.Image.TileWidth",
+        "Exif.Image.TileLength",
+        "Exif.Image.TileOffsets",
+        "Exif.Image.TileByteCounts",
         "Exif.Image.PlanarConfiguration",
+        "Exif.Image.InterColorProfile",
+        "Exif.Image.TIFFEPStandardID",
         "Exif.Image.DNGVersion",
         "Exif.Image.DNGBackwardVersion"
       };
@@ -1920,11 +1977,15 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       // DateTimeOriginal is to be kept.
       // For us "keeping" it means to write out what we have in DB to support people adding a time offset in
       // the geotagging module.
-      gchar new_datetime[DT_DATETIME_LENGTH];
-      dt_gettime(new_datetime, sizeof(new_datetime));
+      gchar new_datetime[DT_DATETIME_EXIF_LENGTH];
+      dt_datetime_now_to_exif(new_datetime);
       exifData["Exif.Image.DateTime"] = new_datetime;
-      exifData["Exif.Image.DateTimeOriginal"] = cimg->exif_datetime_taken;
-      exifData["Exif.Photo.DateTimeOriginal"] = cimg->exif_datetime_taken;
+      gchar datetime[DT_DATETIME_LENGTH];
+      dt_datetime_img_to_exif(datetime, cimg);
+      datetime[DT_DATETIME_EXIF_LENGTH - 1] = '\0';
+      exifData["Exif.Image.DateTimeOriginal"] = datetime;
+      exifData["Exif.Photo.DateTimeOriginal"] = datetime;
+      exifData["Exif.Photo.SubSecTimeOriginal"] = &datetime[DT_DATETIME_EXIF_LENGTH];
 
       dt_image_cache_read_release(darktable.image_cache, cimg);
     }
@@ -3586,7 +3647,9 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   g_list_free_full(iop_list, free);
 
   // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-  xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
+  gchar exif_datetime[DT_DATETIME_LENGTH];
+  g_strlcpy(exif_datetime, datetime_taken, sizeof(exif_datetime));
+  xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
 
   // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
@@ -3713,8 +3776,11 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
   {
     // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
     if (!(metadata->flags & DT_META_EXIF))
-      xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
-
+    {
+      gchar exif_datetime[DT_DATETIME_LENGTH];
+      g_strlcpy(exif_datetime, datetime_taken, sizeof(exif_datetime));
+      xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
+    }
     // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
     Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
     if(pos != xmpData.end()) xmpData.erase(pos);
@@ -4284,7 +4350,7 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
   }
 }
 
-gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *datetime_taken)
+void dt_exif_get_datetime_taken(const uint8_t *data, size_t size, char *datetime_taken)
 {
   try
   {
@@ -4293,35 +4359,12 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
-    char exif_datetime_taken[DT_DATETIME_LENGTH];
-    _find_datetime_taken(exifData, pos, exif_datetime_taken);
-
-    if(*exif_datetime_taken)
-    {
-      struct tm exif_tm= {0};
-      if(sscanf(exif_datetime_taken,"%d:%d:%d %d:%d:%d",
-        &exif_tm.tm_year,
-        &exif_tm.tm_mon,
-        &exif_tm.tm_mday,
-        &exif_tm.tm_hour,
-        &exif_tm.tm_min,
-        &exif_tm.tm_sec) == 6)
-      {
-        exif_tm.tm_year -= 1900;
-        exif_tm.tm_mon--;
-        exif_tm.tm_isdst = -1;    // no daylight saving time
-        *datetime_taken = mktime(&exif_tm);
-        return TRUE;
-      }
-    }
-
-    return FALSE;
+    _find_datetime_taken(exifData, pos, datetime_taken);
   }
   catch(Exiv2::AnyError &e)
   {
     std::string s(e.what());
     std::cerr << "[exiv2 dt_exif_get_datetime_taken] " << s << std::endl;
-    return FALSE;
   }
 }
 

@@ -1372,7 +1372,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 " GROUP BY date", where_ext);
         break;
       case DT_COLLECTION_PROP_TIME:
-        query = g_strdup_printf("SELECT datetime_taken AS date, 1, COUNT(*) AS count"
+        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 19) AS date, 1, COUNT(*) AS count"
                                 " FROM main.images AS mi"
                                 " WHERE datetime_taken IS NOT NULL AND %s"
                                 " GROUP BY date", where_ext);
@@ -2111,7 +2111,7 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   {
     gtk_widget_set_tooltip_text(d->text,
                                 _("use <, <=, >, >=, <>, =, [;] as operators\n"
-                                  "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
+                                  "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"));
   }
   else if(property == DT_COLLECTION_PROP_FILENAME)
   {
@@ -2902,8 +2902,9 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("collections settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                  _("cancel"), GTK_RESPONSE_NONE,
-                                                 _("save"), GTK_RESPONSE_YES, NULL);
+                                                 _("save"), GTK_RESPONSE_ACCEPT, NULL);
   dt_prefs_init_dialog_collect(dialog);
+  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);

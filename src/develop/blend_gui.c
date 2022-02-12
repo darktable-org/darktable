@@ -265,20 +265,20 @@ static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab);
 static inline dt_iop_colorspace_type_t _blendif_colorpicker_cst(dt_iop_gui_blend_data_t *data)
 {
   dt_iop_colorspace_type_t cst = dt_iop_color_picker_get_active_cst(data->module);
-  if(cst == iop_cs_NONE)
+  if(cst == IOP_CS_NONE)
   {
     switch(data->channel_tabs_csp)
     {
       case DEVELOP_BLEND_CS_LAB:
-        cst = iop_cs_Lab;
+        cst = IOP_CS_LAB;
         break;
       case DEVELOP_BLEND_CS_RGB_DISPLAY:
       case DEVELOP_BLEND_CS_RGB_SCENE:
-        cst = iop_cs_rgb;
+        cst = IOP_CS_RGB;
         break;
       case DEVELOP_BLEND_CS_RAW:
       case DEVELOP_BLEND_CS_NONE:
-        cst = iop_cs_NONE;
+        cst = IOP_CS_NONE;
         break;
     }
   }
@@ -320,12 +320,12 @@ static void _blendif_scale(dt_iop_gui_blend_data_t *data, dt_iop_colorspace_type
 
   switch(cst)
   {
-    case iop_cs_Lab:
+    case IOP_CS_LAB:
       out[CHANNEL_INDEX_L] = (in[0] / _get_boost_factor(data, 0, in_out)) / 100.0f;
       out[CHANNEL_INDEX_a] = ((in[1] / _get_boost_factor(data, 1, in_out)) + 128.0f) / 256.0f;
       out[CHANNEL_INDEX_b] = ((in[2] / _get_boost_factor(data, 2, in_out)) + 128.0f) / 256.0f;
       break;
-    case iop_cs_rgb:
+    case IOP_CS_RGB:
       if(work_profile == NULL)
         out[CHANNEL_INDEX_g] = 0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2];
       else
@@ -339,16 +339,16 @@ static void _blendif_scale(dt_iop_gui_blend_data_t *data, dt_iop_colorspace_type
       out[CHANNEL_INDEX_G] = in[1] / _get_boost_factor(data, 2, in_out);
       out[CHANNEL_INDEX_B] = in[2] / _get_boost_factor(data, 3, in_out);
       break;
-    case iop_cs_LCh:
+    case IOP_CS_LCH:
       out[CHANNEL_INDEX_C] = (in[1] / _get_boost_factor(data, 3, in_out)) / (128.0f * sqrtf(2.0f));
       out[CHANNEL_INDEX_h] = in[2] / _get_boost_factor(data, 4, in_out);
       break;
-    case iop_cs_HSL:
+    case IOP_CS_HSL:
       out[CHANNEL_INDEX_H] = in[0] / _get_boost_factor(data, 4, in_out);
       out[CHANNEL_INDEX_S] = in[1] / _get_boost_factor(data, 5, in_out);
       out[CHANNEL_INDEX_l] = in[2] / _get_boost_factor(data, 6, in_out);
       break;
-    case iop_cs_JzCzhz:
+    case IOP_CS_JZCZHZ:
       out[CHANNEL_INDEX_Jz] = in[0] / _get_boost_factor(data, 4, in_out);
       out[CHANNEL_INDEX_Cz] = in[1] / _get_boost_factor(data, 5, in_out);
       out[CHANNEL_INDEX_hz] = in[2] / _get_boost_factor(data, 6, in_out);
@@ -365,12 +365,12 @@ static void _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *
 
   switch(cst)
   {
-    case iop_cs_Lab:
+    case IOP_CS_LAB:
       out[CHANNEL_INDEX_L] = in[0];
       out[CHANNEL_INDEX_a] = in[1];
       out[CHANNEL_INDEX_b] = in[2];
       break;
-    case iop_cs_rgb:
+    case IOP_CS_RGB:
       if(work_profile == NULL)
         out[CHANNEL_INDEX_g] = (0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2]) * 100.0f;
       else
@@ -383,16 +383,16 @@ static void _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *
       out[CHANNEL_INDEX_G] = in[1] * 100.0f;
       out[CHANNEL_INDEX_B] = in[2] * 100.0f;
       break;
-    case iop_cs_LCh:
+    case IOP_CS_LCH:
       out[CHANNEL_INDEX_C] = in[1] / (128.0f * sqrtf(2.0f)) * 100.0f;
       out[CHANNEL_INDEX_h] = in[2] * 360.0f;
       break;
-    case iop_cs_HSL:
+    case IOP_CS_HSL:
       out[CHANNEL_INDEX_H] = in[0] * 360.0f;
       out[CHANNEL_INDEX_S] = in[1] * 100.0f;
       out[CHANNEL_INDEX_l] = in[2] * 100.0f;
       break;
-    case iop_cs_JzCzhz:
+    case IOP_CS_JZCZHZ:
       out[CHANNEL_INDEX_Jz] = in[0] * 100.0f;
       out[CHANNEL_INDEX_Cz] = in[1] * 100.0f;
       out[CHANNEL_INDEX_hz] = in[2] * 360.0f;
@@ -534,7 +534,7 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
      *
      * TODO: revisit if/once there semi-raw iops (e.g temperature) with blending
      */
-    if(data->module->blend_colorspace(data->module, NULL, NULL) == iop_cs_RAW)
+    if(data->module->blend_colorspace(data->module, NULL, NULL) == IOP_CS_RAW)
     {
       data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), FALSE);
@@ -878,28 +878,28 @@ static void _blendop_blendif_disp_alternative_reset(GtkWidget *widget, dt_iop_mo
 
 static dt_iop_colorspace_type_t _blendop_blendif_get_picker_colorspace(dt_iop_gui_blend_data_t *bd)
 {
-  dt_iop_colorspace_type_t picker_cst = iop_cs_NONE;
+  dt_iop_colorspace_type_t picker_cst = IOP_CS_NONE;
 
   if(bd->channel_tabs_csp == DEVELOP_BLEND_CS_RGB_DISPLAY)
   {
     if(bd->tab < 4)
-      picker_cst = iop_cs_rgb;
+      picker_cst = IOP_CS_RGB;
     else
-      picker_cst = iop_cs_HSL;
+      picker_cst = IOP_CS_HSL;
   }
   else if(bd->channel_tabs_csp == DEVELOP_BLEND_CS_RGB_SCENE)
   {
     if(bd->tab < 4)
-      picker_cst = iop_cs_rgb;
+      picker_cst = IOP_CS_RGB;
     else
-      picker_cst = iop_cs_JzCzhz;
+      picker_cst = IOP_CS_JZCZHZ;
   }
   else if(bd->channel_tabs_csp == DEVELOP_BLEND_CS_LAB)
   {
     if(bd->tab < 3)
-      picker_cst = iop_cs_Lab;
+      picker_cst = IOP_CS_LAB;
     else
-      picker_cst = iop_cs_LCh;
+      picker_cst = IOP_CS_LCH;
   }
 
   return picker_cst;
@@ -1510,7 +1510,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
         : dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
 
     gboolean reverse_hues = FALSE;
-    if(cst == iop_cs_HSL && tab == CHANNEL_INDEX_H)
+    if(cst == IOP_CS_HSL && tab == CHANNEL_INDEX_H)
     {
       if((raw_max[3] - raw_min[3]) < (raw_max[0] - raw_min[0]) && raw_min[3] < 0.5f && raw_max[3] > 0.5f)
       {
@@ -1519,7 +1519,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
         reverse_hues = TRUE;
       }
     }
-    else if((cst == iop_cs_LCh && tab == CHANNEL_INDEX_h) || (cst == iop_cs_JzCzhz && tab == CHANNEL_INDEX_hz))
+    else if((cst == IOP_CS_LCH && tab == CHANNEL_INDEX_h) || (cst == IOP_CS_JZCZHZ && tab == CHANNEL_INDEX_hz))
     {
       if((raw_max[3] - raw_min[3]) < (raw_max[2] - raw_min[2]) && raw_min[3] < 0.5f && raw_max[3] > 0.5f)
       {
@@ -2223,7 +2223,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
         gtk_overlay_add_overlay(GTK_OVERLAY(overlay), GTK_WIDGET(sl->label[k]));
       }
 
-      gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(sl->slider), _("double-click to reset.\npress 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data.\npress 'm' to toggle mask view."));
       gtk_widget_set_tooltip_text(GTK_WIDGET(sl->head), _(slider_tooltip[in_out]));
 
       g_signal_connect(G_OBJECT(sl->slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
@@ -2813,7 +2813,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
      *
      * TODO: revisit if/once there semi-raw iops (e.g temperature) with blending
      */
-    if(module->blend_colorspace(module, NULL, NULL) == iop_cs_RAW)
+    if(module->blend_colorspace(module, NULL, NULL) == IOP_CS_RAW)
     {
       module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), FALSE);
@@ -2969,7 +2969,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->channel_tabs_csp = DEVELOP_BLEND_CS_NONE;
     bd->output_channels_shown = FALSE;
     dt_iop_colorspace_type_t cst = module->blend_colorspace(module, NULL, NULL);
-    bd->blendif_support = (cst == iop_cs_Lab || cst == iop_cs_rgb);
+    bd->blendif_support = (cst == IOP_CS_LAB || cst == IOP_CS_RGB);
     bd->masks_support = !(module->flags() & IOP_FLAGS_NO_MASKS);
 
     bd->masks_modes = NULL;

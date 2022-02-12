@@ -676,6 +676,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 	types.dt_imageio_module_format_data_tiff.bpp:set_text([[The bpp parameter to use when exporting.]])
 	types.dt_imageio_module_format_data_exr:set_text([[Type object describing parameters to export to exr.]])
 	types.dt_imageio_module_format_data_exr.compression:set_text([[The compression parameter to use when exporting.]])
+	types.dt_imageio_module_format_data_exr.pixel_type:set_text([[The pixel type parameter to use when exporting.]])
 	types.dt_imageio_module_format_data_copy:set_text([[Type object describing parameters to export to copy.]])
 	types.dt_imageio_module_format_data_pfm:set_text([[Type object describing parameters to export to pfm.]])
 	types.dt_imageio_module_format_data_jpeg:set_text([[Type object describing parameters to export to jpeg.]])
@@ -799,6 +800,7 @@ darktable.debug.type:set_text([[Similar to the system function type() but it wil
 
 
   types.dt_imageio_exr_compression_t:set_text("The type of compression to use for the EXR image")
+  types.dt_imageio_exr_pixeltype_t:set_text("The pixel type to use for the EXR image")
 
   types.dt_lib_collect_params_rule_t:set_text("A single rule for filtering a collection");
   types.dt_lib_collect_params_rule_t.mode:set_text("How this rule is applied after the previous one. Unused for the first rule");

@@ -154,14 +154,13 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   gboolean checker_ready;       // notify that a checker bounding box is ready to be used
   dt_colormatrix_t mix;
 
-  GtkWidget *start_profiling;
   gboolean is_profiling_started;
-  GtkWidget *collapsible;
   GtkWidget *checkers_list, *optimize, *safety, *label_delta_E, *button_profile, *button_validate, *button_commit;
 
   float *delta_E_in;
 
   gchar *delta_E_label_text;
+  dt_gui_collapsible_section_t cs;
 } dt_iop_channelmixer_rgb_gui_data_t;
 
 typedef struct dt_iop_channelmixer_rbg_data_t
@@ -223,7 +222,7 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
@@ -2601,13 +2600,7 @@ static void start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *s
   if(wd == 0.f || ht == 0.f) return;
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-  g->is_profiling_started = !g->is_profiling_started;
-  gtk_widget_set_visible(g->collapsible, g->is_profiling_started);
-
-  if(g->is_profiling_started)
-    dt_bauhaus_widget_set_quad_paint(g->start_profiling, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
-  else
-    dt_bauhaus_widget_set_quad_paint(g->start_profiling, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  g->is_profiling_started = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->cs.toggle));
 
   // init bounding box
   dt_iop_gui_enter_critical_section(self);
@@ -3537,9 +3530,11 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_gui_leave_critical_section(self);
 
+  // always disable profiling mode by default
   g->is_profiling_started = FALSE;
-  gtk_widget_hide(g->collapsible);
-  dt_bauhaus_widget_set_quad_paint(g->start_profiling, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+
+  dt_gui_hide_collapsible_section(&g->cs);
+
   gui_changed(self, NULL, NULL);
 }
 
@@ -3568,19 +3563,21 @@ void reload_defaults(dt_iop_module_t *module)
   // adaptation set we default to RGB (none) in this instance.
   // try to register the CAT here
   declare_cat_on_pipe(module, is_modern);
+  const dt_image_t *img = &module->dev->image_storage;
+
   // check if we could register
   gboolean CAT_already_applied =
-    (module->dev->proxy.chroma_adaptation != NULL)       // CAT exists
-    && (module->dev->proxy.chroma_adaptation != module); // and it is not us
+    (module->dev->proxy.chroma_adaptation != NULL)      // CAT exists
+    && (module->dev->proxy.chroma_adaptation != module) // and it is not us
+    && (!dt_image_is_monochrome(img));
 
   module->default_enabled = FALSE;
-
-  const dt_image_t *img = &module->dev->image_storage;
 
   dt_aligned_pixel_t custom_wb;
   if(!CAT_already_applied
      && is_modern
-     && !get_white_balance_coeff(module, custom_wb))
+     && !get_white_balance_coeff(module, custom_wb)
+     && !dt_image_is_monochrome(img))
   {
     // if workflow = modern and we find WB coeffs, take care of white balance here
     if(find_temperature_from_raw_coeffs(img, custom_wb, &(d->x), &(d->y)))
@@ -3613,7 +3610,7 @@ void reload_defaults(dt_iop_module_t *module)
       g->delta_E_label_text = NULL;
     }
 
-    if(dt_image_is_matrix_correction_supported(img))
+    if(dt_image_is_matrix_correction_supported(img) && !dt_image_is_monochrome(img))
     {
       if(dt_bauhaus_combobox_length(g->illuminant) < DT_ILLUMINANT_CAMERA + 1)
         dt_bauhaus_combobox_add_full(g->illuminant, _("as shot in camera"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
@@ -3947,15 +3944,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_notebook_set_current_page(g->notebook, active_page);
 
   // Add the color checker collapsible panel
-  g->start_profiling = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->start_profiling, NULL, N_("calibrate with a color checker"));
-  dt_bauhaus_widget_set_quad_paint(g->start_profiling, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->start_profiling, TRUE);
-  gtk_widget_set_tooltip_text(g->start_profiling, _("use a color checker target to autoset CAT and channels"));
-  g_signal_connect(G_OBJECT(g->start_profiling), "quad-pressed", G_CALLBACK(start_profiling_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->start_profiling), TRUE, TRUE, 0);
 
-  g->collapsible = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/ashift/expand_values",
+     N_("calibrate with a color checker"),
+     GTK_BOX(self->widget));
+
+  gtk_widget_set_tooltip_text(g->cs.toggle,
+                              _("use a color checker target to autoset CAT and channels"));
+  g_signal_connect(G_OBJECT(g->cs.toggle), "toggled", G_CALLBACK(start_profiling_callback), self);
+
+  GtkWidget *collapsible = GTK_WIDGET(g->cs.container);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->checkers_list, self, NULL, N_("chart"),
                                 _("choose the vendor and the type of your chart"),
@@ -3966,7 +3966,7 @@ void gui_init(struct dt_iop_module_t *self)
                                 N_("Datacolor SpyderCheckr 24 post-2018"),
                                 N_("Datacolor SpyderCheckr 48 pre-2018"),
                                 N_("Datacolor SpyderCheckr 48 post-2018"));
-  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->optimize, self, NULL, N_("optimize for"),
                                 _("choose the colors that will be optimized with higher priority.\n"
@@ -3983,7 +3983,7 @@ void gui_init(struct dt_iop_module_t *self)
                                 N_("sky and water colors"),
                                 N_("average delta E"),
                                 N_("maximum delta E"));
-  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->optimize), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->optimize), TRUE, TRUE, 0);
 
   g->safety = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 1., 0.1, 0.5, 3, TRUE);
   dt_bauhaus_widget_set_label(g->safety, NULL, _("patch scale"));
@@ -3991,10 +3991,10 @@ void gui_init(struct dt_iop_module_t *self)
                                            "useful when the perspective correction is sloppy or\n"
                                            "the patches frame cast a shadows on the edges of the patch." ));
   g_signal_connect(G_OBJECT(g->safety), "value-changed", G_CALLBACK(safety_changed_callback), self);
-  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->safety), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->safety), TRUE, TRUE, 0);
 
   g->label_delta_E = dt_ui_label_new("");
-  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->label_delta_E), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->label_delta_E), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->label_delta_E, _("the delta E is using the CIE 2000 formula."));
 
   GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
@@ -4014,9 +4014,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->button_validate, _("check the output delta E"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_validate), FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(toolbar), FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->collapsible), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(toolbar), FALSE, FALSE, 0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

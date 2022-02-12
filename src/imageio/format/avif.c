@@ -29,6 +29,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "control/conf.h"
@@ -159,7 +160,7 @@ void init(dt_imageio_module_format_t *self)
             enum avif_color_mode_e);
   luaA_enum_value(darktable.lua_state.state,
                   enum avif_color_mode_e,
-                  AVIF_COLOR_MODE_GRAYSCALE);
+                  AVIF_COLOR_MODE_RGB);
   luaA_enum_value(darktable.lua_state.state,
                   enum avif_color_mode_e,
                   AVIF_COLOR_MODE_GRAYSCALE);
@@ -453,8 +454,17 @@ int write_image(struct dt_imageio_module_data_t *data,
 
   avifImageRGBToYUV(image, &rgb);
 
+  if(exif && exif_len > 0)
+    avifImageSetMetadataExif(image, exif, exif_len);
 
-  avifImageSetMetadataExif(image, exif, exif_len);
+  /* TODO: workaround; remove when exiv2 implements AVIF write support and update flags() */
+  char *xmp_string = dt_exif_xmp_read_string(imgid);
+  size_t xmp_len;
+  if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+  {
+    avifImageSetMetadataXMP(image, (const uint8_t *)xmp_string, xmp_len);
+    g_free(xmp_string);
+  }
 
   encoder = avifEncoderCreate();
   if(encoder == NULL)
@@ -611,12 +621,9 @@ void *get_params(dt_imageio_module_format_t *self)
     return NULL;
   }
 
-  const char *bpp = dt_conf_get_string_const("plugins/imageio/format/avif/bpp");
-  d->bit_depth = atoi(bpp);
-  if(d->bit_depth < 8 || d->bit_depth > 12)
-  {
-      d->bit_depth = 8;
-  }
+  d->bit_depth = dt_conf_get_int("plugins/imageio/format/avif/bpp");
+  if(d->bit_depth != 10 && d->bit_depth != 12)
+    d->bit_depth = 8;
 
   d->color_mode = dt_conf_get_int("plugins/imageio/format/avif/color_mode");
   d->compression_type = dt_conf_get_int("plugins/imageio/format/avif/compression_type");
@@ -692,7 +699,14 @@ const char *name()
 
 int flags(struct dt_imageio_module_data_t *data)
 {
-  return FORMAT_FLAGS_SUPPORT_XMP;
+  /*
+   * As of exiv2 0.27.5 there is no write support for the AVIF format, so
+   * we do not return the XMP supported flag currently.
+   * Once exiv2 write support is there, the flag can be returned, and the
+   * direct XMP embedding workaround using avifImageSetMetadataXMP() above
+   * can be removed.
+   */
+  return 0; /* FORMAT_FLAGS_SUPPORT_XMP; */
 }
 
 static void bit_depth_changed(GtkWidget *widget, gpointer user_data)

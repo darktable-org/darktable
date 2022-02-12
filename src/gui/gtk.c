@@ -1,7 +1,7 @@
 
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,10 +25,12 @@
 #include "common/file_location.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "gui/guides.h"
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
+#include "dtgtk/expander.h"
 #include "dtgtk/sidepanel.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
@@ -1136,6 +1138,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Initializing widgets
   _init_widgets(gui);
 
+  //init overlay colors
+  dt_guides_set_overlay_colors();
+
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
@@ -1202,6 +1207,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   widget = dt_ui_main_window(darktable.gui->ui);
   g_signal_connect(G_OBJECT(widget), "configure-event", G_CALLBACK(_window_configure), NULL);
   g_signal_connect(G_OBJECT(widget), "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
+  g_signal_override_class_handler("query-tooltip", gtk_widget_get_type(), G_CALLBACK(dt_shortcut_tooltip_callback));
 
   // register keys for view switching
   dt_accel_register_global(NC_("accel", "switch views/tethering"), GDK_KEY_t, 0);
@@ -2723,10 +2729,12 @@ void dt_gui_load_theme(const char *theme)
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
   {
     // dt dir theme
+    g_free(path);
     path = g_build_filename(datadir, "themes", theme_css, NULL);
     if(!g_file_test(path, G_FILE_TEST_EXISTS))
     {
       // fallback to default theme
+      g_free(path);
       path = g_build_filename(datadir, "themes", "darktable.css", NULL);
       dt_conf_set_string("ui_last/theme", "darktable");
     }
@@ -2879,13 +2887,7 @@ static void _notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocat
   gtk_widget_get_allocation(sizes[0].data, &first);
   gtk_widget_get_allocation(sizes[n - 1].data, &last);
 
-  GtkBorder padding = { 3, 3, 3, 3 };
-/*gtk_style_context_get_padding(gtk_style_context_get_parent(gtk_widget_get_style_context(sizes[0].data)),
-                                gtk_widget_get_state_flags(sizes[0].data),
-                                &padding); // try to get tab (not label) padding*/
-
-  const gint total_space = last.x + last.width - first.x
-                           - (n - 1) * (padding.left + padding.right);
+  const gint total_space = last.x + last.width - first.x; // ignore tab padding; CSS sets padding for label
 
   if(total_space > 0)
   {
@@ -2989,7 +2991,9 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const ch
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   if(strlen(text) > 2)
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  if(tooltip) gtk_widget_set_tooltip_text(label, tooltip);
+  gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
+  gtk_widget_set_has_tooltip(GTK_WIDGET(notebook), FALSE);
+
   gint page_num = gtk_notebook_append_page(notebook, page, label);
   gtk_container_child_set(GTK_CONTAINER(notebook), page, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
   if(page_num == 1 &&
@@ -3292,6 +3296,87 @@ void dt_gui_search_stop(GtkSearchEntry *entry, GtkWidget *widget)
     gtk_tree_selection_select_path(gtk_tree_view_get_selection(GTK_TREE_VIEW(widget)), path);
     gtk_tree_path_free(path);
   }
+}
+
+static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+{
+  dt_gui_collapsible_section_t *cs = (dt_gui_collapsible_section_t *)user_data;
+
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cs->toggle));
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), active);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(cs->toggle),
+                               dtgtk_cairo_paint_solid_arrow,
+                               CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+  dt_conf_set_bool(cs->confname, active);
+}
+
+static void _coeffs_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
+{
+  if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return;
+
+  dt_gui_collapsible_section_t *cs = (dt_gui_collapsible_section_t *)user_data;
+
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cs->toggle));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), !active);
+}
+
+void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs)
+{
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cs->toggle));
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(cs->toggle), dtgtk_cairo_paint_solid_arrow,
+                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), active);
+
+  if(active)
+    gtk_widget_show(GTK_WIDGET(cs->container));
+  else
+    gtk_widget_hide(GTK_WIDGET(cs->container));
+}
+
+void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs)
+{
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), FALSE);
+  gtk_widget_hide(GTK_WIDGET(cs->container));
+}
+
+void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
+                                    const char *confname, const char *label, GtkBox *parent)
+{
+  const gboolean expanded = dt_conf_get_bool(confname);
+
+  cs->confname = g_strdup(confname);
+  cs->parent = parent;
+
+  // collapsible section header
+  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+  GtkWidget *header_evb = gtk_event_box_new();
+  GtkWidget *destdisp = dt_ui_section_label_new(label);
+  GtkStyleContext *context = gtk_widget_get_style_context(destdisp_head);
+  gtk_style_context_add_class(context, "section-expander");
+  gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
+
+  cs->toggle = dtgtk_togglebutton_new
+    (dtgtk_cairo_paint_solid_arrow,
+     CPF_STYLE_BOX | (expanded?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), expanded);
+  gtk_widget_set_name(cs->toggle, "control-button");
+
+  cs->container = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+  gtk_widget_set_name(GTK_WIDGET(cs->container), "collapsible");
+  gtk_box_pack_start(GTK_BOX(destdisp_head), header_evb, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), cs->toggle, FALSE, FALSE, 0);
+
+  cs->expander = dtgtk_expander_new(destdisp_head, GTK_WIDGET(cs->container));
+  gtk_box_pack_end(cs->parent, cs->expander, FALSE, FALSE, 0);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), expanded);
+  gtk_widget_set_name(cs->expander, "collapse-block");
+
+  g_signal_connect(G_OBJECT(cs->toggle), "toggled",
+                   G_CALLBACK(_coeffs_button_changed),  (gpointer)cs);
+
+  g_signal_connect(G_OBJECT(header_evb), "button-release-event",
+                   G_CALLBACK(_coeffs_expander_click),
+                   (gpointer)cs);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

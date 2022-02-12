@@ -1425,7 +1425,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
         if(module->default_enabled
            && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK)
-           && !dt_history_check_module_exists(imgid, module->op))
+           && !dt_history_check_module_exists(imgid, module->op, FALSE))
         {
           fprintf(stderr,
                   "[_dev_auto_apply_presets] missing mandatory module %s for image %d\n",
@@ -1483,7 +1483,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
       if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
           || (auto_apply_sharpen && strcmp(module->op, "sharpen") == 0)
           || (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
-         && !dt_history_check_module_exists(imgid, module->op)
+         && !dt_history_check_module_exists(imgid, module->op, FALSE)
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
       {
         _dev_insert_module(dev, module, imgid);
@@ -1620,7 +1620,7 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-    if(!dt_history_check_module_exists(imgid, module->op)
+    if(!dt_history_check_module_exists(imgid, module->op, FALSE)
        && module->default_enabled
        && module->hide_enable_button
        && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
@@ -1633,7 +1633,7 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-    if(!dt_history_check_module_exists(imgid, module->op)
+    if(!dt_history_check_module_exists(imgid, module->op, FALSE)
        && module->default_enabled
        && !module->hide_enable_button
        && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))

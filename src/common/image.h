@@ -189,7 +189,7 @@ typedef struct dt_image_geoloc_t
 
 struct dt_cache_entry_t;
 
-#define DT_DATETIME_LENGTH 20
+#define DT_DATETIME_LENGTH 24
 
 // TODO: add color labels and such as cacheable
 // __attribute__ ((aligned (128)))
@@ -278,11 +278,11 @@ int dt_image_is_hdr(const dt_image_t *img);
 /** set the monochrome flags if monochrome is TRUE and clear it otherwise */
 void dt_image_set_monochrome_flag(const int32_t imgid, gboolean monochrome);
 /** returns non-zero if this image was taken using a monochrome camera */
-int dt_image_is_monochrome(const dt_image_t *img);
+gboolean dt_image_is_monochrome(const dt_image_t *img);
 /** returns non-zero if the image supports a color correction matrix */
-int dt_image_is_matrix_correction_supported(const dt_image_t *img);
+gboolean dt_image_is_matrix_correction_supported(const dt_image_t *img);
 /** returns non-zero if the image supports the rawprepare module */
-int dt_image_is_rawprepare_supported(const dt_image_t *img);
+gboolean dt_image_is_rawprepare_supported(const dt_image_t *img);
 /** returns the bitmask containing info about monochrome images */
 int dt_image_monochrome_flags(const dt_image_t *img);
 /** returns true if the image has been tested to be monochrome and the image wants monochrome workflow */
@@ -309,8 +309,10 @@ int dt_image_get_xmp_rating(const dt_image_t *img);
 int dt_image_get_xmp_rating_from_flags(const int flags);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
-/** check if an image with the given filename is already imported */
-gboolean dt_images_already_imported(const gchar *filename);
+/** get image id by filename */
+int32_t dt_image_get_id_full_path(const gchar *filename);
+/** get image id by film_id and filename */
+int32_t dt_image_get_id(uint32_t film_id, const gchar *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
 uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
                          gboolean raise_signals);

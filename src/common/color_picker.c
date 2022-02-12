@@ -150,7 +150,7 @@ static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *const dsc, co
   const float w = 1.0f / (float)size;
 
   // code path for small region, especially for color picker point mode
-  if(cst_to == iop_cs_LCh)
+  if(cst_to == IOP_CS_LCH)
   {
     for(size_t j = box[1]; j < box[3]; j++)
     {
@@ -158,7 +158,7 @@ static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *const dsc, co
       _color_picker_lch(picked_color, picked_color_min, picked_color_max, pixel + offset, w, stride);
     }
   }
-  else if(cst_to == iop_cs_HSL)
+  else if(cst_to == IOP_CS_HSL)
   {
     for(size_t j = box[1]; j < box[3]; j++)
     {
@@ -166,7 +166,7 @@ static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *const dsc, co
       _color_picker_hsl(picked_color, picked_color_min, picked_color_max, pixel + offset, w, stride);
     }
   }
-  else if(cst_to == iop_cs_JzCzhz)
+  else if(cst_to == IOP_CS_JZCZHZ)
   {
     for(size_t j = box[1]; j < box[3]; j++)
     {
@@ -213,7 +213,7 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
     mmax[n] = -INFINITY;
   }
 
-  if(cst_to == iop_cs_LCh)
+  if(cst_to == IOP_CS_LCH)
   {
 #ifdef _OPENMP
 #pragma omp parallel default(none) \
@@ -234,7 +234,7 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
       }
     }
   }
-  else if(cst_to == iop_cs_HSL)
+  else if(cst_to == IOP_CS_HSL)
   {
 #ifdef _OPENMP
 #pragma omp parallel default(none) \
@@ -255,7 +255,7 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
       }
     }
   }
-  else if(cst_to == iop_cs_JzCzhz)
+  else if(cst_to == IOP_CS_JZCZHZ)
   {
 #ifdef _OPENMP
 #pragma omp parallel default(none) \
@@ -594,11 +594,11 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
                             const dt_iop_colorspace_type_t picker_cst,
                             const dt_iop_order_iccprofile_info_t *const profile)
 {
-  if((dsc->channels == 4u) && ((image_cst == picker_cst) || (picker_cst == iop_cs_NONE)))
+  if((dsc->channels == 4u) && ((image_cst == picker_cst) || (picker_cst == IOP_CS_NONE)))
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
-  else if(dsc->channels == 4u && image_cst == iop_cs_Lab && picker_cst == iop_cs_LCh)
+  else if(dsc->channels == 4u && image_cst == IOP_CS_LAB && picker_cst == IOP_CS_LCH)
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
-  else if(dsc->channels == 4u && image_cst == iop_cs_rgb && (picker_cst == iop_cs_HSL || picker_cst == iop_cs_JzCzhz))
+  else if(dsc->channels == 4u && image_cst == IOP_CS_RGB && (picker_cst == IOP_CS_HSL || picker_cst == IOP_CS_JZCZHZ))
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
   else if(dsc->channels == 4u) // This is a fallback, better than crashing as happens with monochromes
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);

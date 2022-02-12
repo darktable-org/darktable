@@ -41,7 +41,7 @@ static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
   dt_thumbnail_t *th = (dt_thumbnail_t *)a;
   const int imgid = GPOINTER_TO_INT(b);
-  if(th->imgid < 0 || b < 0) return 1;
+  if(th->imgid < 0 || imgid < 0) return 1;
   return (th->imgid != imgid);
 }
 static void _list_remove_thumb(gpointer user_data)
@@ -885,7 +885,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 
 // initialize offset, ... values
 // to be used when reentering culling
-void dt_culling_init(dt_culling_t *table, int offset)
+void dt_culling_init(dt_culling_t *table, int fallback_offset)
 {
   /** HOW it works :
    *
@@ -926,12 +926,15 @@ void dt_culling_init(dt_culling_t *table, int offset)
   gchar *query = NULL;
   int first_id = -1;
 
-  if(offset > 0)
-    first_id = _thumb_get_imgid(offset);
-  else
-    first_id = dt_control_get_mouse_over_id();
+  // prioritize mouseover if available
+  first_id = dt_control_get_mouse_over_id();
 
-  if(first_id < 1 || culling_dynamic)
+  // try active images
+  if(first_id < 1 && darktable.view_manager->active_images)
+     first_id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+
+  // overwrite with selection no active images
+  if(first_id < 1)
   {
     // search the first selected image
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -944,14 +947,20 @@ void dt_culling_init(dt_culling_t *table, int offset)
     if(sqlite3_step(stmt) == SQLITE_ROW) first_id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
   }
+
+  // if no new offset is available until now, we continue with the fallback one
+  if(first_id == -1)
+    first_id = _thumb_get_imgid(fallback_offset);
+
+  // if this also fails we start at the beginning of the collection
   if(first_id < 1)
   {
-    // search the first image shown in view (this is the offset of thumbtable)
     first_id = _thumb_get_imgid(1);
   }
+
   if(first_id < 1)
   {
-    // Arrrghh
+    // Collection probably empty?
     return;
   }
 

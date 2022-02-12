@@ -162,7 +162,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance");
+  return _("offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|saturation");
 }
 
 const char *description(struct dt_iop_module_t *self)
@@ -186,7 +186,7 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,

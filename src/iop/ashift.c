@@ -159,7 +159,7 @@ int operation_tags_filter()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 typedef enum dt_iop_ashift_method_t
@@ -429,10 +429,6 @@ typedef struct dt_iop_ashift_gui_data_t
   GtkWidget *structure_auto;
   GtkWidget *structure_quad;
   GtkWidget *structure_lines;
-  GtkWidget *values_expander;
-  GtkWidget *values_box;
-  GtkWidget *values_toggle;
-  gboolean values_expanded;
   gboolean straightening;
   float straighten_x;
   float straighten_y;
@@ -491,6 +487,7 @@ typedef struct dt_iop_ashift_gui_data_t
   float draw_pointmove_x;
   float draw_pointmove_y;
   float *draw_points;
+  dt_gui_collapsible_section_t cs;
 } dt_iop_ashift_gui_data_t;
 
 typedef struct dt_iop_ashift_data_t
@@ -3252,7 +3249,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch_width = ch * roi_in->width;
 
   // only for preview pipe: collect input buffer data and do some other evaluations
-  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && self->dev->gui_attached
+     && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     // we want to find out if the final output image is flipped in relation to this iop
     // so we can adjust the gui labels accordingly
@@ -3279,7 +3277,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
-    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
+    const int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
     // did modules prior to this one in pixelpipe have changed? -> check via hash value
     uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL);
@@ -3399,21 +3397,21 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     // origin of image and opposite corner as reference points
     dt_boundingbox_t points = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
-    float ivec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
+    const float ivec[2] = { points[2] - points[0], points[3] - points[1] };
+    const float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
-    float ovec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
+    const float ovec[2] = { points[2] - points[0], points[3] - points[1] };
+    const float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
 
     // angle between input vector and output vector
-    float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
+    const float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
 
     // we are interested if |alpha| is in the range of 90° +/- 45° -> we assume the image is flipped
-    int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
+    const int isflipped = fabs(fmod(alpha + M_PI, M_PI) - M_PI / 2.0f) < M_PI / 4.0f ? 1 : 0;
 
     // do modules coming before this one in pixelpipe have changed? -> check via hash value
     uint64_t hash = dt_dev_hash_plus(self->dev, self->dev->preview_pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL);
@@ -3777,8 +3775,8 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   {
     float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
 
-    size_t offset = my_points_idx[n].offset;
-    int length = my_points_idx[n].length;
+    const size_t offset = my_points_idx[n].offset;
+    const int length = my_points_idx[n].length;
 
     for(int l = 0; l < length; l++)
     {
@@ -3861,7 +3859,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // we draw the cropping area; we need x_off/y_off/width/height which is only available
   // after g->buf has been processed
-  if(g->buf && (p->cropmode != ASHIFT_CROP_OFF) && self->enabled)
+  if(g->buf && self->enabled)
   {
     // roi data of the preview pipe input buffer
 
@@ -3908,7 +3906,26 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     double dashes = DT_PIXEL_APPLY_DPI(5.0) / zoom_scale;
     cairo_set_dash(cr, &dashes, 0, 0);
 
-    cairo_rectangle(cr, 0, 0, width, height);
+    float cl_x = 0.0f, cl_y = 0.0f, cl_width = 0.0f, cl_height = 0.0f;
+
+    if(wd / (float)width > ht / (float)height)
+    {
+      // more spaces top/bottom
+      cl_x      = self->dev->border_size;
+      cl_y      = ((float)height - (ht * zoom_scale)) / 2.0f;
+      cl_width  = width - 2.0f * self->dev->border_size;
+      cl_height = ht * zoom_scale;
+    }
+    else
+    {
+      // more spaces left/right
+      cl_y      = self->dev->border_size;
+      cl_x      = ((float)width - (wd * zoom_scale)) / 2.0f;
+      cl_height = height - (2.0f * self->dev->border_size);
+      cl_width  = wd * zoom_scale;
+    }
+
+    cairo_rectangle(cr, cl_x, cl_y, cl_width, cl_height);
     cairo_clip(cr);
 
     // mask parts of image outside of clipping area in dark grey
@@ -3918,6 +3935,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_translate(cr, width / 2.0, height / 2.0);
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
     cairo_line_to(cr, C[2][0], C[2][1]);
@@ -3926,7 +3944,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_fill(cr);
 
     // draw white outline around clipping area
-    dt_draw_set_color_overlay(cr, 0.7, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
     cairo_set_line_width(cr, 2.0 / zoom_scale);
     cairo_move_to(cr, C[0][0], C[0][1]);
     cairo_line_to(cr, C[1][0], C[1][1]);
@@ -3936,7 +3954,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_stroke(cr);
 
     // we draw the guides correctly scaled here instead of using the darkroom expose callback
-    dt_guides_draw(cr, C[0][0], C[0][1], C[2][0] - C[0][0], C[1][1] - C[0][1], zoom_scale);
+
+    const float cx = fminf(C[0][0], fminf(C[1][0], fminf(C[2][0], C[3][0])));
+    const float cy = fminf(C[0][1], fminf(C[1][1], fminf(C[2][1], C[3][1])));
+    const float cw = fmaxf(C[0][0], fmaxf(C[1][0], fmaxf(C[2][0], C[3][0]))) - cx;
+    const float ch = fmaxf(C[0][1], fmaxf(C[1][1], fmaxf(C[2][1], C[3][1]))) - cy;
+    dt_guides_draw(cr, cx, cy, cw, ch, zoom_scale);
 
     // if adjusting crop, draw indicator
     if(g->adjust_crop && p->cropmode == ASHIFT_CROP_ASPECT)
@@ -3954,13 +3977,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       const double size_arrow = base_size / 25.0f;
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.7, 1.0);
+      dt_draw_set_color_overlay(cr, TRUE, 1.0);
       cairo_arc (cr, xpos, ypos, size_circle, 0, 2.0 * M_PI);
       cairo_stroke(cr);
       cairo_fill(cr);
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
-      dt_draw_set_color_overlay(cr, 0.7, 1.0);
+      dt_draw_set_color_overlay(cr, TRUE, 1.0);
 
       // horizontal line
       cairo_move_to(cr, xpos - size_line, ypos);
@@ -4004,7 +4027,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_scale(cr, zoom_scale, zoom_scale);
     cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
-    dt_draw_set_color_overlay(cr, 0.3, 1.0);
+    dt_draw_set_color_overlay(cr, FALSE, 1.0);
 
     float pzx, pzy;
     dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
@@ -4066,13 +4089,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(g->lines == NULL || !gui_has_focus(self)) return;
 
   // get hash value that changes if distortions from here to the end of the pixelpipe changed
-  uint64_t hash = dt_dev_hash_distort(dev);
+  const uint64_t hash = dt_dev_hash_distort(dev);
   // get hash value that changes if coordinates of lines have changed
-  uint64_t lines_hash = _get_lines_hash(g->lines, g->lines_count);
+  const uint64_t lines_hash = _get_lines_hash(g->lines, g->lines_count);
 
   // points data are missing or outdated, or distortion has changed?
-  if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash ||
-    (g->lines_version > g->points_version && g->lines_hash != lines_hash))
+  if(g->points == NULL || g->points_idx == NULL || hash != g->grid_hash
+     || (g->lines_version > g->points_version
+         && g->lines_hash != lines_hash))
   {
     // we need to reprocess points
     free(g->points);
@@ -4166,7 +4190,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if((g->current_structure_method == ASHIFT_METHOD_QUAD || g->current_structure_method == ASHIFT_METHOD_LINES)
      && g->draw_points)
   {
-    dt_draw_set_color_overlay(cr, 0.3, 1.0);
+    dt_draw_set_color_overlay(cr, FALSE, 1.0);
     const int nb = (g->current_structure_method == ASHIFT_METHOD_LINES) ? g->lines_count * 2 : 4;
     for(int i = 0; i < nb; i++)
     {
@@ -4195,7 +4219,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     double dashed[] = { 4.0, 4.0 };
     dashed[0] /= zoom_scale;
     dashed[1] /= zoom_scale;
-    int len = sizeof(dashed) / sizeof(dashed[0]);
+    const int len = sizeof(dashed) / sizeof(dashed[0]);
 
     cairo_rectangle(cr, g->lastx * wd, g->lasty * ht, (pzx - g->lastx) * wd,
                    (pzy - g->lasty) * ht);
@@ -4219,7 +4243,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     double dashed[] = { 4.0, 4.0 };
     dashed[0] /= zoom_scale;
     dashed[1] /= zoom_scale;
-    int len = sizeof(dashed) / sizeof(dashed[0]);
+    const int len = sizeof(dashed) / sizeof(dashed[0]);
 
     cairo_arc(cr, pzx * wd, pzy * ht, g->near_delta, 0, 2.0 * M_PI);
 
@@ -4287,7 +4311,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     return TRUE;
   }
 
-  int handled = 0;
+  gboolean handled = FALSE;
 
   const float wd = self->dev->preview_pipe->backbuf_width;
   const float ht = self->dev->preview_pipe->backbuf_height;
@@ -4306,6 +4330,11 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     dt_boundingbox_t pts = { pzx, pzy, 1.0f, 1.0f };
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+    pts[0] *= pr_d;
+    pts[1] *= pr_d;
+    pts[2] *= pr_d;
+    pts[3] *= pr_d;
 
     const float newx = g->crop_cx + (pts[0] - pts[2]) - g->lastx;
     const float newy = g->crop_cy + (pts[1] - pts[3]) - g->lasty;
@@ -4493,12 +4522,12 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       if(g->isdeselecting)
       {
         g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-        handled = 1;
+        handled = TRUE;
       }
       else if(g->isselecting && g->current_structure_method != ASHIFT_METHOD_LINES)
       {
         g->lines[n].type |= ASHIFT_LINE_SELECTED;
-        handled = 1;
+        handled = TRUE;
       }
     }
   }
@@ -4553,12 +4582,18 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     if(p->cropmode == ASHIFT_CROP_ASPECT)
     {
+      const float pr_d = self->dev->preview_downsampling;
       dt_control_change_cursor(GDK_HAND1);
       g->adjust_crop = TRUE;
 
       dt_boundingbox_t pts = { pzx, pzy, 1.0f, 1.0f };
       dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                         DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+      pts[0] *= pr_d;
+      pts[1] *= pr_d;
+      pts[2] *= pr_d;
+      pts[3] *= pr_d;
 
       g->lastx = pts[0] - pts[2];
       g->lasty = pts[1] - pts[3];
@@ -4571,7 +4606,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   }
 
   // grab a draw corner
-  if((g->current_structure_method == ASHIFT_METHOD_QUAD || g->current_structure_method == ASHIFT_METHOD_LINES)
+  if((g->current_structure_method == ASHIFT_METHOD_QUAD
+      || g->current_structure_method == ASHIFT_METHOD_LINES)
      && g->draw_near_point >= 0)
   {
     g->draw_point_move = TRUE;
@@ -4851,7 +4887,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   // if user has released the shift button in-between -> do nothing
   if(g->isbounding != ASHIFT_BOUNDING_OFF && dt_modifier_is(state, GDK_SHIFT_MASK))
   {
-    int handled = 0;
+    gboolean handled = FALSE;
 
     // we compute the rectangle selection
     float pzx = 0.0f, pzy = 0.0f;
@@ -4874,12 +4910,12 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
         if(g->isbounding == ASHIFT_BOUNDING_DESELECT)
         {
           g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-          handled = 1;
+          handled = TRUE;
         }
         else if(g->current_structure_method != ASHIFT_METHOD_LINES)
         {
           g->lines[n].type |= ASHIFT_LINE_SELECTED;
-          handled = 1;
+          handled = TRUE;
         }
       }
 
@@ -4920,7 +4956,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
 
   if(g->near_delta > 0 && (g->isdeselecting || g->isselecting))
   {
-    int handled = 0;
+    gboolean handled = FALSE;
 
     float pzx = 0.0f, pzy = 0.0f;
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
@@ -4959,15 +4995,15 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
       if(g->isdeselecting)
       {
         g->lines[n].type &= ~ASHIFT_LINE_SELECTED;
-        handled = 1;
+        handled = TRUE;
       }
       else if(g->isselecting && g->current_structure_method != ASHIFT_METHOD_LINES)
       {
         g->lines[n].type |= ASHIFT_LINE_SELECTED;
-        handled = 1;
+        handled = TRUE;
       }
 
-      handled = 1;
+      handled = TRUE;
     }
 
     if(handled)
@@ -5382,11 +5418,7 @@ void gui_update(struct dt_iop_module_t *self)
   // copy crop box into shadow variables
   _shadow_crop_box(p,g);
 
-  // update values expander
-  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle));
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->values_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->values_expander), active);
+  dt_gui_update_collapsible_section(&g->cs);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -5600,29 +5632,6 @@ static float log2_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
   return outval;
 }
 
-static void _event_values_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle));
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->values_expander), active);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->values_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
-  g->values_expanded = active;
-  dt_conf_set_bool("plugins/darkroom/ashift/expand_values", active);
-}
-
-static void _event_values_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
-{
-  if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return;
-
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->values_toggle),
-                               !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->values_toggle)));
-}
-
 static int _event_structure_quad_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -5728,33 +5737,15 @@ void gui_init(struct dt_iop_module_t *self)
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
   g_signal_connect(G_OBJECT(g->cropmode), "value-changed", G_CALLBACK(cropmode_callback), self);
 
-  // we put the detailed values under an expander
-  g->values_expanded = dt_conf_get_bool("plugins/darkroom/ashift/expand_values");
-  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  GtkWidget *header_evb = gtk_event_box_new();
-  GtkWidget *destdisp = dt_ui_section_label_new(_("perspective"));
-  GtkStyleContext *context = gtk_widget_get_style_context(destdisp_head);
-  gtk_style_context_add_class(context, "section-expander");
-  gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
-
-  g->values_toggle
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->values_toggle), g->values_expanded);
-  gtk_widget_set_name(GTK_WIDGET(g->values_toggle), "control-button");
-
   GtkWidget *main_box = self->widget;
-  g->values_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), header_evb, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), g->values_toggle, FALSE, FALSE, 0);
 
-  g->values_expander = dtgtk_expander_new(destdisp_head, g->values_box);
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->values_expander), TRUE);
-  gtk_box_pack_end(GTK_BOX(main_box), g->values_expander, FALSE, FALSE, 0);
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/ashift/expand_values",
+     _("manual perspective"),
+     GTK_BOX(main_box));
 
-  g_signal_connect(G_OBJECT(g->values_toggle), "toggled", G_CALLBACK(_event_values_button_changed), (gpointer)self);
-
-  g_signal_connect(G_OBJECT(header_evb), "button-release-event", G_CALLBACK(_event_values_expander_click),
-                   (gpointer)self);
+  self->widget = GTK_WIDGET(g->cs.container);
 
   g->lensshift_v = dt_bauhaus_slider_from_params(self, "lensshift_v");
   dt_bauhaus_slider_set_soft_range(g->lensshift_v, -LENSSHIFT_RANGE, LENSSHIFT_RANGE);
@@ -5790,10 +5781,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect = dt_bauhaus_slider_from_params(self, "aspect");
   dt_bauhaus_slider_set_curve(g->aspect, log2_curve);
 
-  gtk_box_pack_start(GTK_BOX(g->values_box), g->specifics, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->cs.container), g->specifics, TRUE, TRUE, 0);
 
-  GtkWidget *helpers = dt_ui_section_label_new(_("perspective helpers"));
-  gtk_box_pack_start(GTK_BOX(g->values_box), helpers, TRUE, TRUE, 0);
+  self->widget = main_box;
+
+  GtkWidget *helpers = dt_ui_section_label_new(_("perspective"));
+  gtk_box_pack_start(GTK_BOX(self->widget), helpers, TRUE, TRUE, 0);
 
   GtkGrid *auto_grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(auto_grid, 2 * DT_BAUHAUS_SPACE);
@@ -5828,7 +5821,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(auto_grid, g->fit_both, 3, 1, 1, 1);
 
   gtk_widget_show_all(GTK_WIDGET(auto_grid));
-  gtk_box_pack_start(GTK_BOX(g->values_box), GTK_WIDGET(auto_grid), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(auto_grid), TRUE, TRUE, 0);
 
   self->widget = main_box;
 

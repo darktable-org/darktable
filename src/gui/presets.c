@@ -1154,8 +1154,7 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
         const gboolean inlist = (config && strstr(config, txt));
         g_free(txt);
         gtk_tree_store_append(treestore, &child, &toplevel);
-        gtk_tree_store_set(treestore, &child, 0, presetname, 1, inlist, 2, TRUE, 3, g_strdup(iop->op), 4, g_strdup(name),
-                           -1);
+        gtk_tree_store_set(treestore, &child, 0, presetname, 1, inlist, 2, TRUE, 3, iop->op, 4, name, -1);
         g_free(presetname);
       }
 

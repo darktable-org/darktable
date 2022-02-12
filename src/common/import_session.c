@@ -203,14 +203,14 @@ void dt_import_session_set_name(struct dt_import_session_t *self, const char *na
 }
 
 
-void dt_import_session_set_time(struct dt_import_session_t *self, time_t time)
+void dt_import_session_set_time(struct dt_import_session_t *self, const char *time)
 {
   dt_variables_set_time(self->vp, time);
 }
 
 
 void
-dt_import_session_set_exif_time(struct dt_import_session_t *self, time_t exif_time)
+dt_import_session_set_exif_time(struct dt_import_session_t *self, const char *exif_time)
 {
   dt_variables_set_exif_time(self->vp, exif_time);
 }
@@ -302,7 +302,6 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
 static const char *_import_session_path(struct dt_import_session_t *self, gboolean current)
 {
   const gboolean currentok = dt_util_test_writable_dir(self->current_path);
-  fprintf(stderr, " _import_session_path testing `%s' %i", self->current_path, currentok);
 
   if(current && self->current_path != NULL)
   {
@@ -331,7 +330,7 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
       new_path[0] = first;                                 // drive letter in uppercase looks nicer
   g_free(s1);
   }
-#else 
+#else
   gchar *new_path = dt_variables_expand(self->vp, pattern, FALSE);
 #endif
 

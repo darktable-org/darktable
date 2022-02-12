@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DT_SRC_DIR=$(dirname "$0")
-DT_SRC_DIR=$(cd "$DT_SRC_DIR/../" && pwd -P)
+DT_SRC_DIR=$(cd "$DT_SRC_DIR/../../" && pwd -P)
 
 cd "$DT_SRC_DIR" || exit
 
@@ -42,10 +42,6 @@ tar xf "$DT_SRC_DIR/darktable-$dt_decoration.tar"
 echo "* creating version header"
 "$DT_SRC_DIR/tools/create_version_c.sh" "darktable-$dt_decoration/src/version_gen.c" "$dt_decoration"
 
-# remove usermanual, that's > 80 MB and released separately
-echo "* removing usermanual"
-rm -rf darktable-"$dt_decoration"/doc/usermanual
-
 # drop regression_tests. for internal use, and need git anyway
 echo "* removing tools/regression_tests"
 rm -rf darktable-"$dt_decoration"/tools/regression_tests
@@ -55,7 +51,7 @@ echo "* removing src/tests/integration"
 rm -rf darktable-"$dt_decoration"/src/tests/integration
 
 # drop all git-related stuff
-find darktable-"$dt_decoration"/ -iname '.git*' -delete
+find darktable-"$dt_decoration"/ -iname '.git*' -exec rm -fr {} \;
 
 # ... and also remove RELEASE_NOTES. that file is just for internal use
 #echo "* removing RELEASE_NOTES"

@@ -552,11 +552,11 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
     gchar *p = v + strlen(v) - 1;
     if(*p == ')')
     {
-      while(*p && *p != '(') p--;
+      while(p != v && *p != '(') p--;
       if(*p == '(')
       {
         p--;
-        *p = '\0';
+        if(p >= v) *p = '\0';
       }
     }
     dt_conf_set_string("storage/piwigo/last_album", v);

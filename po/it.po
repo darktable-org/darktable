@@ -4,13 +4,13 @@
 #: ../build/bin/conf_gen.h:850 ../build/bin/conf_gen.h:856
 #: ../build/bin/conf_gen.h:862 ../build/bin/conf_gen.h:868
 #: ../build/bin/conf_gen.h:874
-# Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>, 2021.
+# Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>, 2021, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-28 16:23+0100\n"
-"PO-Revision-Date: 2021-12-05 14:14+0100\n"
+"PO-Revision-Date: 2022-02-09 21:58+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -84,7 +84,7 @@ msgstr "Generale"
 
 #: ../build/bin/preferences_gen.h:3749
 msgid "hide built-in presets for utility modules"
-msgstr "Nascondi le preimpostazioni incorporate per i moduli di utilità"
+msgstr "Nascondi le pre-impostazioni incorporate per i moduli di utilità"
 
 #: ../build/bin/preferences_gen.h:3760 ../build/bin/preferences_gen.h:3796
 #: ../build/bin/preferences_gen.h:3832 ../build/bin/preferences_gen.h:3868
@@ -230,7 +230,7 @@ msgstr "VERO"
 
 #: ../build/bin/preferences_gen.h:3943 ../build/bin/preferences_gen.h:4675
 msgid "defines whether scrollbars should be displayed"
-msgstr "Stabilisci dove dovrebbero essere mostrate le barre di scorrimento"
+msgstr "Stabilisci dove devono essere mostrate le barre di scorrimento"
 
 #: ../build/bin/preferences_gen.h:3953
 msgid "thumbnails"
@@ -2945,7 +2945,7 @@ msgstr "Alza la luminanza"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:225
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:452
 msgid "lift chroma"
-msgstr "Alza crominanza"
+msgstr "Alza la cromaticità"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:231
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:456
@@ -2960,7 +2960,7 @@ msgstr "Potenzia la luminanza"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:243
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:464
 msgid "power chroma"
-msgstr "Rinforza crominanza"
+msgstr "Rinforza cromaticità"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:249
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:468
@@ -2975,7 +2975,7 @@ msgstr "Guadagno di luminanza"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:261
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:476
 msgid "gain chroma"
-msgstr "Guadagna crominanza"
+msgstr "Guadagno cromaticità"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:267
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:480
@@ -3015,22 +3015,22 @@ msgstr "Caduta delle alteluci"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:309
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:508
 msgid "chroma shadows"
-msgstr "Crominanza ombre"
+msgstr "Cromaticità ombre"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:315
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:512
 msgid "chroma highlights"
-msgstr "Crominanza alteluci"
+msgstr "Cromaticità alteluci"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:321
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:516
 msgid "chroma global"
-msgstr "Crominanza globale"
+msgstr "Cromaticità globale"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:327
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:520
 msgid "chroma mid-tones"
-msgstr "Crominanza toni medi"
+msgstr "Cromaticità toni medi"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:333
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:524
@@ -3622,7 +3622,7 @@ msgstr "Esposizione nero relativo"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:418
 #: ../src/iop/filmic.c:1605
 msgid "white relative exposure"
-msgstr "Esposizione bianco relativo"
+msgstr "Esposizione relativa del bianco"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:229
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:426
@@ -6928,7 +6928,7 @@ msgstr "C"
 
 #: ../src/develop/blend_gui.c:1990
 msgid "sliders for chroma channel (of LCh)"
-msgstr "Selettore scorrevole per il canale crominanza (di LCh)"
+msgstr "Selettore scorrevole per il canale cromaticità (di LCh)"
 
 #: ../src/develop/blend_gui.c:1994
 msgid "h"
@@ -6999,7 +6999,7 @@ msgstr "S"
 
 #: ../src/develop/blend_gui.c:2017
 msgid "sliders for chroma channel (of HSL)"
-msgstr "Selettore scorrevole per il canale crominanza (di HSL)"
+msgstr "Selettore scorrevole per il canale cromaticità (di HSL)"
 
 #: ../src/develop/blend_gui.c:2020 ../src/develop/blend_gui.c:2047
 #: ../src/iop/atrous.c:1739 ../src/iop/channelmixerrgb.c:3790
@@ -7009,7 +7009,7 @@ msgstr "Selettore scorrevole per il canale crominanza (di HSL)"
 #: ../src/iop/colorbalancergb.c:1891 ../src/iop/equalizer.c:391
 #: ../src/iop/nlmeans.c:536
 msgid "chroma"
-msgstr "Crominanza"
+msgstr "Cromaticità"
 
 #: ../src/develop/blend_gui.c:2021
 msgid "sliders for value channel (of HSL)"
@@ -7029,7 +7029,7 @@ msgstr "Cz"
 
 #: ../src/develop/blend_gui.c:2044
 msgid "sliders for chroma channel (of JzCzhz)"
-msgstr "Selettore scorrevole per il canale crominanza (di JzCzhz)"
+msgstr "Selettore scorrevole per il canale cromaticità (di JzCzhz)"
 
 #: ../src/develop/blend_gui.c:2048
 msgid "hz"
@@ -10938,7 +10938,7 @@ msgstr "Nitidezza"
 
 #: ../src/iop/atrous.c:823
 msgid "denoise chroma"
-msgstr "Riduzione rumore crominanza"
+msgstr "Riduzione rumore cromaticità"
 
 #: ../src/iop/atrous.c:838 ../src/iop/equalizer.c:332
 msgid "denoise"
@@ -11074,7 +11074,7 @@ msgid ""
 "only changes results of luma and chroma tabs"
 msgstr ""
 "Cambia aloni del margine ad ogni dimensione\n"
-"Cambia soltanto i risultati per le schede luminanza e crominanza"
+"Cambia soltanto i risultati per le schede luminanza e cromaticità"
 
 #: ../src/iop/atrous.c:1757 ../src/iop/colorbalancergb.c:1793
 #: ../src/iop/colorzones.c:2520 ../src/iop/filmicrgb.c:3889
@@ -12962,7 +12962,7 @@ msgstr "bilanciamento colore RGB"
 msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance"
 msgstr ""
-"Sposta la forza di calo|cdl|gradiente colore|contrasto|crominanza delle alte"
+"Sposta la forza di calo|cdl|gradiente colore|contrasto|cromaticità delle alte"
 " luci "
 "|tonalità|vibranza"
 
@@ -12983,7 +12983,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1574
 msgid "global grading"
-msgstr "Valutazione globale"
+msgstr "Gradiente globale"
 
 #: ../src/iop/colorbalancergb.c:1580
 msgid "rotate all hues by an angle, at the same luminance"
@@ -12991,7 +12991,7 @@ msgstr "Ruota tutte le tonalità con un angolo, a parità di luminanza"
 
 #: ../src/iop/colorbalancergb.c:1587
 msgid "increase colorfulness mostly on low-chroma colors"
-msgstr "Aumenta la colorazione soprattutto sui colori a bassa crominanza"
+msgstr "Aumenta la colorazione soprattutto sui colori a bassa cromaticità"
 
 #: ../src/iop/colorbalancergb.c:1594
 msgid "increase the contrast at constant chromaticity"
@@ -13020,7 +13020,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1625
 msgid "perceptual saturation grading"
-msgstr "Gradiente di saturazioen percettivo"
+msgstr "Gradiente percettivo di saturazione"
 
 #: ../src/iop/colorbalancergb.c:1632
 msgid "add or remove saturation by an absolute amount"
@@ -13075,7 +13075,7 @@ msgstr "Tonalità dello spostamento del colore globale"
 
 #: ../src/iop/colorbalancergb.c:1709
 msgid "chroma of the global color offset"
-msgstr "Crominanza dello spostamento colore globale"
+msgstr "Cromaticità dello spostamento colore globale"
 
 #: ../src/iop/colorbalancergb.c:1711
 msgid "shadows lift"
@@ -13091,7 +13091,7 @@ msgstr "Tonalità del guadagno colore nelle ombre"
 
 #: ../src/iop/colorbalancergb.c:1733
 msgid "chroma of the color gain in shadows"
-msgstr "Crominanza del guadagno colore nelle ombre"
+msgstr "Cromaticità del guadagno colore nelle ombre"
 
 #: ../src/iop/colorbalancergb.c:1735
 msgid "highlights gain"
@@ -13107,7 +13107,7 @@ msgstr "Tonalità del guadagno colore nelle alte luci"
 
 #: ../src/iop/colorbalancergb.c:1757
 msgid "chroma of the color gain in highlights"
-msgstr "Crominanza del guadagno colore nelle alte luci"
+msgstr "Cromaticità del guadagno colore nelle alte luci"
 
 #: ../src/iop/colorbalancergb.c:1759 ../src/iop/colorbalancergb.c:1876
 #: ../src/iop/colorbalancergb.c:1880 ../src/iop/colorbalancergb.c:1884
@@ -13124,7 +13124,7 @@ msgstr "Tonalità dell'esponente colore nei toni medi"
 
 #: ../src/iop/colorbalancergb.c:1781
 msgid "chroma of the color exponent in mid-tones"
-msgstr "Crominanza dell'esponente del colore nei toni medi"
+msgstr "Cromaticità dell'esponente del colore nei toni medi"
 
 #. Page masks
 #: ../src/iop/colorbalancergb.c:1786
@@ -13195,7 +13195,7 @@ msgstr "Gain"
 
 #: ../src/iop/colorbalancergb.c:1888
 msgid "global chroma"
-msgstr "Crominanza globale"
+msgstr "Cromaticità globale"
 
 #: ../src/iop/colorbalancergb.c:1892 ../src/iop/filmic.c:1677
 msgid "global saturation"
@@ -14173,7 +14173,7 @@ msgstr ""
 "Rappresentazione colore utilizzata dall'algoritmo.\n"
 "RGB tiene separati i canali RGB,\n"
 "mentre Y0U0V0 combina i canali per ridurre separatamente\n"
-"il rumore di luminanza e quello di crominanza."
+"il rumore di luminanza e quello di cromaticità."
 
 #: ../src/iop/denoiseprofile.c:3735
 msgid ""
@@ -14235,7 +14235,7 @@ msgid ""
 msgstr ""
 "Controlla come vengono auto-regolati i parametri.\n"
 "Aumenta se le ombre non vengono sufficientemente ripulite dal rumore\n"
-"oppure se rimane del rumore di crominanza.\n"
+"oppure se rimane del rumore di cromaticità.\n"
 "Questo può accadere anche se l'immagine è sottoesposta."
 
 #: ../src/iop/denoiseprofile.c:3753
@@ -14814,7 +14814,7 @@ msgid ""
 msgstr ""
 "Desatura globalmente l'ingresso del modulo.\n"
 "Questo valore deve essere inferiore a 100%\n"
-"se avete abilitato 'preserva crominanza'"
+"se abilitato 'preserva crominanza'"
 
 #: ../src/iop/filmic.c:1691
 msgid ""
@@ -14860,7 +14860,7 @@ msgstr ""
 #. Preserve color
 #: ../src/iop/filmic.c:1711
 msgid "preserve the chrominance"
-msgstr "Preserva crominanza"
+msgstr "Preserva la crominanza"
 
 #: ../src/iop/filmic.c:1713
 msgid ""
@@ -15241,7 +15241,7 @@ msgid ""
 "so ensure they are properly corrected elsewhere.\n"
 msgstr ""
 "Si assicura che i colori originali vengano preservati.\n"
-"Può aumentare le aberrazioni cromatiche e il rumore di crominanza,\n"
+"Può aumentare le aberrazioni cromatiche e il rumore di cromaticità,\n"
 "pertanto assicurati che questi difetti vengano successivamente corretti in "
 "altro modo.\n"
 

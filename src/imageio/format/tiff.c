@@ -319,7 +319,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     TIFFClose(tif);
     tif = NULL;
   }
-  if(!rc && exif)
+  if(exif)
   {
     rc = dt_exif_write_blob(exif, exif_len, filename, d->compress > 0);
     // Until we get symbolic error status codes, if rc is 1, return 0
@@ -631,13 +631,8 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
-  const char *bpp = dt_conf_get_string_const("plugins/imageio/format/tiff/bpp");
-  d->bpp = atoi(bpp);
-  if(d->bpp == 16)
-    d->bpp = 16;
-  else if(d->bpp == 32)
-    d->bpp = 32;
-  else
+  d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+  if(d->bpp != 16 && d->bpp != 32)
     d->bpp = 8;
 
   // Drop redundant float case from existing config

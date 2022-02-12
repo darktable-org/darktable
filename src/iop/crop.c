@@ -89,9 +89,6 @@ typedef enum _grab_region_t
 
 typedef struct dt_iop_crop_gui_data_t
 {
-  GtkWidget *margins_toggle, *margins_expander, *margins_widgets;
-  gboolean expand_margins;
-
   GtkWidget *cx, *cy, *cw, *ch;
   GList *aspect_list;
   GtkWidget *aspect_presets;
@@ -111,6 +108,7 @@ typedef struct dt_iop_crop_gui_data_t
   gboolean shift_hold;
   gboolean ctrl_hold;
   gboolean preview_ready;
+  dt_gui_collapsible_section_t cs;
 } dt_iop_crop_gui_data_t;
 
 typedef struct dt_iop_crop_data_t
@@ -166,7 +164,7 @@ int operation_tags_filter()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 static int _gui_has_focus(struct dt_iop_module_t *self)
@@ -983,11 +981,7 @@ void gui_update(struct dt_iop_module_t *self)
   g->clip_y = p->cy;
   g->clip_h = p->ch - p->cy;
 
-  // update margins expander
-  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->margins_toggle));
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->margins_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->margins_expander), active);
+  dt_gui_update_collapsible_section(&g->cs);
 }
 
 static void _event_key_swap(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1048,29 +1042,6 @@ static gchar *_aspect_format(gchar *original, int adim, int bdim)
   return g_strdup_printf("%s  %4.2f", original, (float)adim / (float)bdim);
 }
 
-static void _event_margins_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->margins_toggle));
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->margins_expander), active);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->margins_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
-  g->expand_margins = active;
-  dt_conf_set_bool("plugins/darkroom/crop/expand_margins", active);
-}
-
-static void _event_margins_expander_click(GtkWidget *widget, GdkEventButton *e, gpointer user_data)
-{
-  if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return;
-
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->margins_toggle),
-                               !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->margins_toggle)));
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_crop_gui_data_t *g = IOP_GUI_ALLOC(crop);
@@ -1085,8 +1056,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
   g->preview_ready = FALSE;
-
-  g->expand_margins = dt_conf_get_bool("plugins/darkroom/crop/expand_margins");
 
   GtkWidget *box_enabled = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1213,31 +1182,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box_enabled), g->aspect_presets, TRUE, TRUE, 0);
 
   // we put margins values under an expander
-  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  GtkWidget *header_evb = gtk_event_box_new();
-  GtkWidget *destdisp = dt_ui_section_label_new(_("margins"));
-  context = gtk_widget_get_style_context(destdisp_head);
-  gtk_style_context_add_class(context, "section-expander");
-  gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/crop/expand_margins",
+     _("margins"),
+     GTK_BOX(box_enabled));
 
-  g->margins_toggle
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->margins_toggle), g->expand_margins);
-  gtk_widget_set_name(GTK_WIDGET(g->margins_toggle), "control-button");
-
-  g->margins_widgets = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), header_evb, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), g->margins_toggle, FALSE, FALSE, 0);
-
-  g->margins_expander = dtgtk_expander_new(destdisp_head, g->margins_widgets);
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->margins_expander), TRUE);
-  gtk_box_pack_end(GTK_BOX(box_enabled), g->margins_expander, FALSE, FALSE, 0);
-
-  g_signal_connect(G_OBJECT(g->margins_toggle), "toggled", G_CALLBACK(_event_margins_button_changed),
-                   (gpointer)self);
-
-  g_signal_connect(G_OBJECT(header_evb), "button-release-event", G_CALLBACK(_event_margins_expander_click),
-                   (gpointer)self);
+  self->widget = GTK_WIDGET(g->cs.container);
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
   dt_bauhaus_slider_set_digits(g->cx, 4);
@@ -1321,7 +1272,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float zoom_x = dt_control_get_dev_zoom_x();
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
-  const float pr_d = dev->preview_downsampling;
   const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 1);
 
   cairo_translate(cr, width / 2.0, height / 2.0);
@@ -1339,16 +1289,17 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   {
     cairo_set_source_rgba(cr, .2, .2, .2, .8);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-    cairo_rectangle(cr, g->clip_max_x * wd - pr_d, g->clip_max_y * ht - pr_d, g->clip_max_w * wd + 2.0 * pr_d,
-                    g->clip_max_h * ht + 2.0 * pr_d);
-    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
+    cairo_rectangle(cr, g->clip_max_x * wd, g->clip_max_y * ht,
+                        g->clip_max_w * wd, g->clip_max_h * ht);
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht,
+                        g->clip_w * wd, g->clip_h * ht);
     cairo_fill(cr);
   }
   if(g->clip_x > .0f || g->clip_y > .0f || g->clip_w < 1.0f || g->clip_h < 1.0f)
   {
     cairo_set_line_width(cr, dashes / 2.0);
     cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht);
-    dt_draw_set_color_overlay(cr, 0.7, 1.0);
+    dt_draw_set_color_overlay(cr, TRUE, 1.0);
     cairo_stroke(cr);
   }
 
@@ -1397,7 +1348,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_guides_draw(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, g->clip_h * ht, zoom_scale);
 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0) / zoom_scale);
-  dt_draw_set_color_overlay(cr, 0.3, 1.0);
+  dt_draw_set_color_overlay(cr, FALSE, 1.0);
   const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
 
   const _grab_region_t grab = g->cropping ? g->cropping : _gui_get_grab(pzx, pzy, g, border, wd, ht);
@@ -1585,7 +1536,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       dt_control_change_cursor(GDK_BOTTOM_LEFT_CORNER);
     else if(grab == GRAB_NONE)
     {
-      dt_control_hinter_message(darktable.control, "");
+      dt_control_hinter_message(darktable.control, _(""));
       dt_control_change_cursor(GDK_LEFT_PTR);
     }
     if(grab != GRAB_NONE)
