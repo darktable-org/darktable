@@ -167,7 +167,7 @@ static int usage(const char *argv0)
 }
 
 gboolean dt_is_dev_version()
-{
+
   // a dev version as an odd number after the first dot
   char *p = (char *)darktable_package_string;
   while(*p && (*p != '.')) p++;
@@ -1597,7 +1597,7 @@ void dt_configure_performance()
     // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting very high quality defaults\n");
     // if machine has at least 16GB RAM, use all of the total memory size leaving 4GB "breathing room"
-    dt_conf_set_int("host_memory_limit", MAX((mem - (4lu << 20)) >> 11, dt_conf_get_int("host_memory_limit")));
+    dt_conf_set_int("host_memory_limit", MAX((mem - (4lu << 20)) >> 10, dt_conf_get_int("host_memory_limit")));
     dt_conf_set_int("singlebuffer_limit", MAX(128, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
        || !strcmp(demosaic_quality, "always bilinear (fast)"))
