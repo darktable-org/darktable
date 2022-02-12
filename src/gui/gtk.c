@@ -3126,19 +3126,17 @@ static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_s
 
 static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event, const char *config_str)
 {
-  if(dt_gui_ignore_scroll(event)) return FALSE;
-
   GtkWidget *w = gtk_bin_get_child(GTK_BIN(sw));
   if(GTK_IS_VIEWPORT(w)) w = gtk_bin_get_child(GTK_BIN(w));
 
   const gint increment = _get_container_row_heigth(w);
 
+  int delta_y = 0;
+
+  dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
+
   if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
-    int delta_y=0;
-
-    dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
-
     const gint new_size = dt_conf_get_int(config_str) + increment*delta_y;
 
     dt_toast_log("%d", 1 + new_size / increment);
@@ -3152,12 +3150,12 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
     GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(sw);
 
     const gint before = gtk_adjustment_get_value(adj);
-    gint value = before + increment*event->delta_y;
+    gint value = before + increment*delta_y;
     value -= value % increment;
     gtk_adjustment_set_value(adj, value);
     const gint after = gtk_adjustment_get_value(adj);
-
-    if(after == before) return FALSE;
+    if(delta_y && after == before)
+      gtk_propagate_event(gtk_widget_get_parent(GTK_WIDGET(sw)), (GdkEvent*)event);
   }
 
   return TRUE;
