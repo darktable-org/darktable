@@ -478,14 +478,19 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   return TRUE;
 }
 
-static void _dt_pref_changed(gpointer instance, gpointer user_data)
+void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
 {
-  if(!user_data) return;
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   // invalidate the surface
   range->surf_width_px = 0;
   // redraw the band
   gtk_widget_queue_draw(range->band);
+}
+
+static void _dt_pref_changed(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+  dtgtk_range_select_redraw(range);
 }
 
 static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)

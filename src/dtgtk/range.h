@@ -128,4 +128,6 @@ void dtgtk_range_select_reset_icons(GtkDarktableRangeSelect *range);
 
 void dtgtk_range_select_add_marker(GtkDarktableRangeSelect *range, const double value_r, const gboolean magnetic);
 void dtgtk_range_select_reset_markers(GtkDarktableRangeSelect *range);
+
+void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range);
 G_END_DECLS
