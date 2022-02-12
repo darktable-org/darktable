@@ -1358,7 +1358,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       int valid_input_on_gpu_only = (cl_mem_input != NULL);
 
       /* pre-check if there is enough space on device for non-tiled processing */
-      const int fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
+      const gboolean fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
                                                              MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                                              tiling.factor_cl, tiling.overhead);
 
@@ -2164,6 +2164,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
       }
     }
   }
+  dt_opencl_device_tune_headroom(pipe->devid);  
 #endif
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
   return ret;

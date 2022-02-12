@@ -130,6 +130,11 @@ error:
   return err;
 }
 
+static size_t dt_opencl_default_headroom()
+{
+  return 1024lu * 1024lu * (size_t)MAX(DT_CL_SAFEHEADROOM, dt_conf_get_int("opencl_memory_headroom"));
+}
+
 // returns 0 if all ok
 // returns 1 if we failed hard, and need to skip opencl initialization
 // returns -1 if we failed to init this device
@@ -161,7 +166,11 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].options = NULL;
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
+  cl->dev[dev].headroom = dt_opencl_default_headroom();
+  cl->dev[dev].mem_error = FALSE;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
+
+  for(int i = 0; i < DT_OPENCL_LOWMEM_BUF; i++) cl->dev[dev].lowmem_buff[i] = NULL;
 
   char *infostr = NULL;
   size_t infostr_size;
@@ -877,6 +886,32 @@ finally:
   return;
 }
 
+void dt_opencl_preallocate_lowmem()
+{
+  if(!dt_opencl_is_enabled() || ((darktable.unmuted & DT_DEBUG_LOWMEM) == 0))
+    return;
+  dt_opencl_t *cl = darktable.opencl;
+  for(int devid = 0; cl->dev && devid < cl->num_devs; devid++)
+  {
+    const size_t buffsize = MIN(500lu * 1024lu * 1024lu, dt_opencl_get_device_memalloc(devid));
+    const size_t allmem = cl->dev[devid].max_global_mem;
+    const int buffers = MIN(DT_OPENCL_LOWMEM_BUF, (allmem / buffsize) - 2);
+    /* We pre-allocate a number of 500MB buffers on the device memory so we have slightly more than 1GB
+       left free.
+       As the buffer allocation might not make use of the memory (this is certainly true for nvidia)
+       immediately we have to do an access to the buffer
+    */  
+    for(int i = 0; i < buffers; i++)
+    {
+      cl_mem buf = dt_opencl_alloc_device_buffer(devid, buffsize);
+      cl->dev[devid].lowmem_buff[i] = buf;
+      if(i > 0)
+        dt_opencl_enqueue_copy_buffer_to_buffer(devid, cl->dev[devid].lowmem_buff[0], buf, 0, 0, 64);       
+    }    
+    dt_print(DT_DEBUG_LOWMEM, "[opencl_init] preallocate %i 500MB buffers\n", buffers);    
+  }
+}
+
 void dt_opencl_cleanup(dt_opencl_t *cl)
 {
   if(cl->inited)
@@ -892,6 +927,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
 
     for(int i = 0; i < cl->num_devs; i++)
     {
+      for(int k = 0; k < DT_OPENCL_LOWMEM_BUF; k++)
+        dt_opencl_release_mem_object(cl->dev[i].lowmem_buff[k]);
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
       for(int k = 0; k < DT_OPENCL_MAX_KERNELS; k++)
         if(cl->dev[i].kernel_used[k]) (cl->dlocl->symbols->dt_clReleaseKernel)(cl->dev[i].kernel[k]);
@@ -1957,7 +1994,6 @@ int dt_opencl_get_kernel_work_group_size(const int dev, const int kernel, size_t
                                                            kernelworkgroupsize, NULL);
 }
 
-
 int dt_opencl_set_kernel_arg(const int dev, const int kernel, const int num, const size_t size,
                              const void *arg)
 {
@@ -1972,6 +2008,11 @@ int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *s
   return dt_opencl_enqueue_kernel_2d_with_local(dev, kernel, sizes, NULL);
 }
 
+void dt_opencl_keep_memerror(const int devid, const int errorcode)
+{
+  if(errorcode == CL_MEM_OBJECT_ALLOCATION_FAILURE)
+    darktable.opencl->dev[devid].mem_error = TRUE;   
+}
 
 int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
                                            const size_t *local)
@@ -1988,7 +2029,7 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
   cl_event *eventp = dt_opencl_events_get_slot(dev, buf);
   err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel],
                                                         2, NULL, sizes, local, 0, NULL, eventp);
-  // if (err == CL_SUCCESS) err = dt_opencl_finish(dev);
+  dt_opencl_keep_memerror(dev, err);
   return err;
 }
 
@@ -2099,6 +2140,7 @@ int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(
       darktable.opencl->dev[devid].cmd_queue, src, dst, orig_src, orig_dst, region, 0, NULL, eventp);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image] could not copy image: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2112,6 +2154,7 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl
       darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer, origin, region, offset, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl copy_image_to_buffer] could not copy image: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2125,6 +2168,7 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
       darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset, origin, region, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2139,6 +2183,7 @@ int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid, cl_mem src_buffer, 
                                                                    dstoffset, size, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_buffer] could not copy buffer: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2174,7 +2219,7 @@ void *dt_opencl_copy_host_to_device_constant(const int devid, const size_t size,
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device_constant] could not alloc buffer on device %d: %d\n", devid, err);
-
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2210,8 +2255,8 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const 
     dt_print(DT_DEBUG_OPENCL,
              "[opencl copy_host_to_device] could not alloc/copy img buffer on device %d: %d\n", devid, err);
 
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
-
   return dev;
 }
 
@@ -2238,7 +2283,9 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Map Buffer]");
   ptr = (darktable.opencl->dlocl->symbols->dt_clEnqueueMapBuffer)(
       darktable.opencl->dev[devid].cmd_queue, buffer, blocking, flags, offset, size, 0, NULL, eventp, &err);
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer: %d\n", err);
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return ptr;
 }
 
@@ -2251,6 +2298,7 @@ int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_
       darktable.opencl->dev[devid].cmd_queue, mem_object, mapped_ptr, 0, NULL, eventp);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl unmap mem object] could not unmap mem object: %d\n", err);
+  dt_opencl_keep_memerror(devid, err);
   return err;
 }
 
@@ -2276,7 +2324,7 @@ void *dt_opencl_alloc_device(const int devid, const int width, const int height,
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid,
              err);
-
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2307,7 +2355,7 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
     dt_print(DT_DEBUG_OPENCL,
              "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %d\n", devid,
              err);
-
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
   return dev;
@@ -2324,7 +2372,7 @@ void *dt_opencl_alloc_device_buffer(const int devid, const size_t size)
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid,
              err);
-
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
 
   return buf;
@@ -2340,7 +2388,7 @@ void *dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t siz
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid,
              err);
-
+  dt_opencl_keep_memerror(devid, err);
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
 
   return buf;
@@ -2438,38 +2486,117 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
                                       (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
 }
 
-/** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
-                                const float factor, const size_t overhead)
+/** get global memory of device */
+static inline cl_ulong _opencl_get_max_global_mem(const int devid)
 {
-  static float headroom = -1.0f;
-
-  if(!darktable.opencl->inited || devid < 0) return FALSE;
-
-  /* first time run */
-  if(headroom < 0.0f)
-  {
-    headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
-
-    /* don't let the user play games with us */
-    headroom = fmin((float)darktable.opencl->dev[devid].max_global_mem, fmax(headroom, 0.0f));
-    dt_conf_set_int("opencl_memory_headroom", headroom / 1024 / 1024);
-  }
-
-  float singlebuffer = (float)width * height * bpp;
-  float total = factor * singlebuffer + overhead;
-
-  if(darktable.opencl->dev[devid].max_image_width < width
-     || darktable.opencl->dev[devid].max_image_height < height)
-    return FALSE;
-
-  if(darktable.opencl->dev[devid].max_mem_alloc < singlebuffer) return FALSE;
-
-  if(darktable.opencl->dev[devid].max_global_mem < total + headroom) return FALSE;
-
-  return TRUE;
+  return darktable.opencl->dev[devid].max_global_mem;
 }
 
+static inline cl_ulong _opencl_get_device_headroom(const int devid)
+{
+  return darktable.opencl->dev[devid].headroom;
+}
+
+cl_ulong dt_opencl_get_device_available(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return MAX(0, _opencl_get_max_global_mem(devid) - _opencl_get_device_headroom(devid));
+}
+
+cl_ulong dt_opencl_get_device_memalloc(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return MIN(darktable.opencl->dev[devid].max_mem_alloc, _opencl_get_max_global_mem(devid) - _opencl_get_device_headroom(devid));
+}
+
+/** check if image size fit into limits given by OpenCL runtime */
+gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
+                                const float factor, const size_t overhead)
+{
+  if(!darktable.opencl->inited || devid < 0) return FALSE;
+  const gboolean verbose = (darktable.unmuted & DT_DEBUG_MEMORY) && (darktable.unmuted & DT_DEBUG_OPENCL);
+  const size_t available = dt_opencl_get_device_available(devid);
+  const size_t buffsize = dt_opencl_get_device_memalloc(devid);
+  const size_t required  = width * height * bpp;
+  const size_t total = factor * required + overhead;
+
+  if(buffsize < required)  
+  {
+    if(verbose) fprintf(stderr, "[dt_opencl_image_fits_device] image buffer %luMB doesn't fit in cl buffer %luMB on device %i\n",
+                   required / 1024lu / 1024lu, buffsize / 1024lu / 1024lu, devid);
+    return FALSE;
+  }
+
+  if(darktable.opencl->dev[devid].max_image_width < width || darktable.opencl->dev[devid].max_image_height < height)
+  {
+    if(verbose) fprintf(stderr, "[dt_opencl_image_fits_device] image dimensions %lux%lu too large for device %i\n",
+                  width, height, devid);
+    return FALSE;
+  }
+
+  if(available < total)
+  {
+    if(verbose) fprintf(stderr, "[dt_opencl_image_fits_device] overall requirement %luMB doesn't fit in available %luMB on device %i\n",
+                   total / 1024lu / 1024lu, available / 1024lu / 1024lu, devid);
+    return FALSE;
+  }
+
+  /* At last we test if we can allocate a clbuffer of total and are able to access it as before calculation using total mem
+     and current headroom might be wrong. 
+     Unfortunately the problem results from OpenCL missing a protable way to calculate unused memory on the device and
+     using the code by allocating a buffer is not sufficient (at least not for nvidia) 
+  */ 
+  cl_int err = -1;
+  cl_mem tbuf = NULL;
+  cl_mem sbuf = NULL;
+
+  tbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                                                                     CL_MEM_READ_WRITE, total, NULL, &err);
+  if(err == CL_SUCCESS)
+    sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                                                                     CL_MEM_READ_WRITE, 64, NULL, &err);
+  if((err == CL_SUCCESS) && (tbuf != NULL) && (sbuf != NULL))
+  {
+    cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Buffer to Buffer (on device)]");
+    err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
+                                                                   sbuf, tbuf, 0, 0, 64, 0, NULL, eventp);
+  }
+  dt_opencl_release_mem_object(tbuf);
+  dt_opencl_release_mem_object(sbuf);
+
+  if((err != CL_SUCCESS) && verbose)
+    fprintf(stderr, "[dt_opencl_image_fits_device] can't allocate %luMB on device %i\n",
+                   total / 1024lu / 1024lu, devid);
+  return (err == CL_SUCCESS);
+}
+
+/*
+  In all cl mem allocating functions we record an allocating problem.
+  If there was an error we increase headroom for the next run,
+  if not we slowly decrease headroom down to config settings.
+  Please note this does not work on all platforms as allocating a cl buffer per se might not
+  set an error condition and thus might only get noticed later while processing a cl kernel. 
+*/
+void dt_opencl_device_tune_headroom(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return;
+
+  const size_t min_headroom = dt_opencl_default_headroom();
+  const size_t old_headroom = darktable.opencl->dev[devid].headroom;
+  const size_t max_headroom = _opencl_get_max_global_mem(devid) - 512lu * 1024lu * 1024lu;
+
+  if(darktable.opencl->dev[devid].mem_error)
+    darktable.opencl->dev[devid].headroom = MIN(old_headroom + 200lu * 1024lu * 1024lu, max_headroom);
+  else
+    darktable.opencl->dev[devid].headroom = MAX(min_headroom, old_headroom - 1024lu * 1024lu);
+
+  if(darktable.opencl->dev[devid].headroom != old_headroom)
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_tune_headroom] new headroom for dev %i: %iMB [%i]\n", devid,
+      (int)(darktable.opencl->dev[devid].headroom / 1024lu / 1024lu),
+      (int)(_opencl_get_max_global_mem(devid) / 1024lu / 1024lu));
+
+  darktable.opencl->dev[devid].mem_error = FALSE;
+}
 
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
 int dt_opencl_roundup(int size)
@@ -2615,13 +2742,6 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
       break;
   }
   dt_pthread_mutex_unlock(&darktable.opencl->lock);
-}
-
-/** get global memory of device */
-cl_ulong dt_opencl_get_max_global_mem(const int devid)
-{
-  if(!darktable.opencl->inited || devid < 0) return 0;
-  return darktable.opencl->dev[devid].max_global_mem;
 }
 
 

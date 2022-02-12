@@ -33,6 +33,7 @@
 #define DT_OPENCL_VENDOR_AMD 4098
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_INTEL 0x8086u
+#define DT_OPENCL_LOWMEM_BUF 32
 
 #include "common/darktable.h"
 
@@ -95,6 +96,7 @@ typedef struct dt_opencl_device_t
   cl_command_queue cmd_queue;
   size_t max_image_width;
   size_t max_image_height;
+  size_t headroom;
   cl_ulong max_mem_alloc;
   cl_ulong max_global_mem;
   cl_ulong used_global_mem;
@@ -120,6 +122,8 @@ typedef struct dt_opencl_device_t
   float benchmark;
   size_t memory_in_use;
   size_t peak_memory;
+  gboolean mem_error;
+  cl_mem lowmem_buff[DT_OPENCL_LOWMEM_BUF];  
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -212,6 +216,9 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
 /** inits the opencl subsystem. */
 void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboolean print_statistics);
 
+/** preallocate buffers for --enforce-lowmem */
+void dt_opencl_preallocate_lowmem();
+
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
 
@@ -264,6 +271,9 @@ int dt_opencl_enqueue_kernel_2d(const int dev, const int kernel, const size_t *s
 /** launch kernel with defined local size! */
 int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, const size_t *sizes,
                                            const size_t *local);
+
+/** check an allocation problem in err and report to the flags in cl device struct */
+void dt_opencl_keep_memerror(const int devid, const int cl_errorcode);
 
 /** check if opencl is inited */
 int dt_opencl_is_inited(void);
@@ -368,14 +378,20 @@ int dt_opencl_get_mem_context_id(cl_mem mem);
 void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action);
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
+gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead);
+
+/** tune headroom according to recorded cl allocation errors */
+void dt_opencl_device_tune_headroom(const int devid);
+
+/** get available memory for the device */
+cl_ulong dt_opencl_get_device_available(const int devid);
+
+/** get size of allocatable single buffer */
+cl_ulong dt_opencl_get_device_memalloc(const int devid);
 
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
 int dt_opencl_roundup(int size);
-
-/** get global memory of device */
-cl_ulong dt_opencl_get_max_global_mem(const int devid);
 
 /** get next free slot in eventlist and manage size of eventlist */
 cl_event *dt_opencl_events_get_slot(const int devid, const char *tag);
@@ -415,6 +431,9 @@ static inline void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl
   cl->error_count = 0;
   dt_conf_set_bool("opencl", FALSE);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] this version of darktable was built without opencl support\n");
+}
+static inline void dt_opencl_preallocate_lowmem()
+{
 }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl)
 {
@@ -491,12 +510,19 @@ static inline int dt_opencl_update_settings(void)
 {
   return 0;
 }
-static inline int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
+static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
                                               const unsigned bpp, const float factor, const size_t overhead)
+{
+  return FALSE;
+}
+static inline void dt_opencl_device_tune_headroom(const int devid)
+{
+}
+static inline size_t dt_opencl_get_device_available(const int devid)
 {
   return 0;
 }
-static inline int dt_opencl_get_max_global_mem(const int devid)
+static inline size_t dt_opencl_get_device_memalloc(const int devid)
 {
   return 0;
 }
@@ -518,6 +544,9 @@ static inline int dt_opencl_events_flush(const int devid, const int reset)
   return 0;
 }
 static inline void dt_opencl_events_profiling(const int devid, const int aggregated)
+{
+}
+static inline void dt_opencl_keep_memerror(const int devid, const int cl_errorcode)
 {
 }
 #endif
