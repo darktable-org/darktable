@@ -1033,7 +1033,7 @@ static void reset_mix(dt_iop_module_t *self)
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   c->drag_params = *p;
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(c->mix, p->mix);
+  dt_bauhaus_slider_set(c->mix, p->mix);
   --darktable.gui->reset;
 }
 

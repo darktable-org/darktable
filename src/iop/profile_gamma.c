@@ -462,8 +462,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     p->shadows_range = EVmin;
 
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
-    dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
+    dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
+    dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
     --darktable.gui->reset;
   }
 }

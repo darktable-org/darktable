@@ -599,7 +599,7 @@ void gui_update(dt_iop_module_t *self)
       av += p->raw_black_level_separate[i];
 
     for(int i = 0; i < 4; i++)
-      dt_bauhaus_slider_set_soft(g->black_level_separate[i], av / 4);
+      dt_bauhaus_slider_set(g->black_level_separate[i], av / 4);
   }
 
   // don't show upper three black levels for monochromes
@@ -619,7 +619,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     {
       const int val = p->raw_black_level_separate[0];
       for(int i = 1; i < 4; i++)
-        dt_bauhaus_slider_set_soft(g->black_level_separate[i], val);
+        dt_bauhaus_slider_set(g->black_level_separate[i], val);
     }
   }
 }
