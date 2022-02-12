@@ -162,7 +162,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance");
+  return _("offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|saturation");
 }
 
 const char *description(struct dt_iop_module_t *self)
