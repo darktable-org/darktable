@@ -2510,6 +2510,28 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid)
 }
 
 /** check if image size fit into limits given by OpenCL runtime */
+gboolean _buffer_fits_device(const int devid, const size_t required)
+{
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem tbuf = NULL;
+  cl_mem sbuf = NULL;
+
+  tbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                                                                     CL_MEM_READ_WRITE, required, NULL, &err);
+  if(err == CL_SUCCESS)
+    sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                                                                     CL_MEM_READ_WRITE, 64, NULL, &err);
+  if((err == CL_SUCCESS) && (tbuf != NULL) && (sbuf != NULL))
+  {
+    cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Buffer to Buffer (on device)]");
+    err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
+                                                                   sbuf, tbuf, 0, 0, 64, 0, NULL, eventp);
+  }
+  dt_opencl_release_mem_object(tbuf);
+  dt_opencl_release_mem_object(sbuf);
+  return (err == CL_SUCCESS);
+}
+
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead)
 {
@@ -2546,28 +2568,45 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
      Unfortunately the problem results from OpenCL missing a protable way to calculate unused memory on the device and
      using the code by allocating a buffer is not sufficient (at least not for nvidia) 
   */ 
-  cl_int err = -1;
-  cl_mem tbuf = NULL;
-  cl_mem sbuf = NULL;
-
-  tbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
-                                                                     CL_MEM_READ_WRITE, total, NULL, &err);
-  if(err == CL_SUCCESS)
-    sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
-                                                                     CL_MEM_READ_WRITE, 64, NULL, &err);
-  if((err == CL_SUCCESS) && (tbuf != NULL) && (sbuf != NULL))
-  {
-    cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Buffer to Buffer (on device)]");
-    err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
-                                                                   sbuf, tbuf, 0, 0, 64, 0, NULL, eventp);
-  }
-  dt_opencl_release_mem_object(tbuf);
-  dt_opencl_release_mem_object(sbuf);
-
-  if((err != CL_SUCCESS) && verbose)
+  const gboolean fits = _buffer_fits_device(devid, total);
+  if(!fits && verbose)
     fprintf(stderr, "[dt_opencl_image_fits_device] can't allocate %luMB on device %i\n",
                    total / 1024lu / 1024lu, devid);
-  return (err == CL_SUCCESS);
+  return fits;
+}
+
+/** check if buffer fits into limits given by OpenCL runtime */
+gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
+{
+  if(!darktable.opencl->inited || devid < 0) return FALSE;
+  const gboolean verbose = (darktable.unmuted & DT_DEBUG_MEMORY) && (darktable.unmuted & DT_DEBUG_OPENCL);
+  const size_t available = dt_opencl_get_device_available(devid);
+  const size_t buffsize = dt_opencl_get_device_memalloc(devid);
+
+  if(buffsize < required)  
+  {
+    if(verbose) fprintf(stderr, "[dt_opencl_buffer_fits_device] buffer %luMB doesn't fit in cl buffer %luMB on device %i\n",
+                   required / 1024lu / 1024lu, buffsize / 1024lu / 1024lu, devid);
+    return FALSE;
+  }
+
+  if(available < required)
+  {
+    if(verbose) fprintf(stderr, "[dt_opencl_buffer_fits_device] required %luMB doesn't fit in available %luMB on device %i\n",
+                   required / 1024lu / 1024lu, available / 1024lu / 1024lu, devid);
+    return FALSE;
+  }
+
+  /* At last we test if we can allocate a clbuffer of required and are able to access it as before calculation using total mem
+     and current headroom might be wrong. 
+     Unfortunately the problem results from OpenCL missing a protable way to calculate unused memory on the device and
+     using the code by allocating a buffer is not sufficient (at least not for nvidia) 
+  */ 
+  const gboolean fits = _buffer_fits_device(devid, required);
+  if(!fits && verbose)
+    fprintf(stderr, "[dt_opencl_buffer_fits_device] can't allocate %luMB on device %i\n",
+                   required / 1024lu / 1024lu, devid);
+  return fits;
 }
 
 /*
