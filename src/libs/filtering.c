@@ -114,6 +114,7 @@ typedef struct dt_lib_filtering_t
   gboolean singleclick;
   struct dt_lib_filtering_params_t *params;
 
+  gchar *last_where_ext;
 } dt_lib_filtering_t;
 
 typedef struct dt_lib_filtering_params_rule_t
@@ -379,8 +380,9 @@ static void _rule_set_raw_text(dt_lib_filtering_rule_t *rule, const gchar *text,
   if(signal) _event_rule_changed(NULL, rule);
 }
 
-static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_lib_filtering_rule_t *rule)
+static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
+  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   if(rule->manual_widget_set) return TRUE;
 
   // decrease the nb of active rules
@@ -415,6 +417,7 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
     }
   }
 
+  _filters_gui_update(self);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
   return TRUE;
 }
@@ -736,9 +739,51 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
   _ratio_decode(rule->raw_text, &min, &max, &bounds);
 
   rule->manual_widget_set++;
+  dt_lib_filtering_t *d = get_collect(rule);
   _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
-  dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(ratio->range_select), bounds, min, max, FALSE);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(ratio->range_select);
+
+  // first, we update the graph
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT ROUND(aspect_ratio,3), COUNT(*) AS count"
+             " FROM main.images AS mi"
+             " WHERE %s"
+             " GROUP BY ROUND(aspect_ratio,3)",
+             d->last_where_ext);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  int nb_portrait = 0;
+  int nb_square = 0;
+  int nb_landscape = 0;
+  dtgtk_range_select_reset_blocks(range);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const double val = sqlite3_column_double(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+    if(val < 1.0)
+      nb_portrait += count;
+    else if(val > 1.0)
+      nb_landscape += count;
+    else
+      nb_square += count;
+
+    dtgtk_range_select_add_block(range, val, count);
+  }
+  sqlite3_finalize(stmt);
+
+  // predefined selections
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
+                                     nb_portrait + nb_square + nb_landscape);
+  dtgtk_range_select_add_range_block(range, 0.5, 0.99, DT_RANGE_BOUND_MIN, _("portrait images"), nb_portrait);
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_FIXED, _("square images"), nb_square);
+  dtgtk_range_select_add_range_block(range, 1.01, 2.0, DT_RANGE_BOUND_MAX, _("landsacpe images"), nb_landscape);
+
+  // and setup the selection
+  dtgtk_range_select_set_selection(range, bounds, min, max, FALSE);
   rule->manual_widget_set--;
+
+  dtgtk_range_select_redraw(range);
   return TRUE;
 }
 
@@ -795,41 +840,20 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
 
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
-             "SELECT ROUND(aspect_ratio,3), COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " GROUP BY ROUND(aspect_ratio,3)");
+             "SELECT MIN(aspect_ratio), MAX(aspect_ratio)"
+             " FROM main.images");
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  double min = 9999999.0;
-  double max = 0.0;
-  int nb_portrait = 0;
-  int nb_square = 0;
-  int nb_landscape = 0;
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  double min = 0.0;
+  double max = 4.0;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const double val = sqlite3_column_double(stmt, 0);
-    const int count = sqlite3_column_int(stmt, 1);
-    min = fmin(min, val);
-    max = fmax(max, val);
-    if(val < 1.0)
-      nb_portrait += count;
-    else if(val > 1.0)
-      nb_landscape += count;
-    else
-      nb_square += count;
-
-    dtgtk_range_select_add_block(range, val, count);
+    min = sqlite3_column_double(stmt, 0);
+    max = sqlite3_column_double(stmt, 1);
   }
   sqlite3_finalize(stmt);
   range->min_r = min;
   range->max_r = max;
-
-  // predefined selections
-  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
-                                     nb_portrait + nb_square + nb_landscape);
-  dtgtk_range_select_add_range_block(range, 0.5, 0.99, DT_RANGE_BOUND_MIN, _("portrait images"), nb_portrait);
-  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_FIXED, _("square images"), nb_square);
-  dtgtk_range_select_add_range_block(range, 1.01, 2.0, DT_RANGE_BOUND_MAX, _("landsacpe images"), nb_landscape);
 
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->range_select, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(ratio->range_select), "value-changed", G_CALLBACK(_ratio_changed), rule);
@@ -1117,6 +1141,7 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/nb_use_%d", mode);
     dt_conf_set_int(confname, dt_conf_get_int(confname) + 1);
 
+    _filters_gui_update(self);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
                                NULL);
   }
@@ -1168,6 +1193,7 @@ static void _preset_load(GtkWidget *widget, dt_lib_module_t *self)
       }
       dt_conf_set_int("plugins/lighttable/filtering/num_rules", d->nb_rules);
 
+      _filters_gui_update(self);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
                                  NULL);
     }
@@ -1436,8 +1462,9 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     // remove button
     rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_name(GTK_WIDGET(rule->w_close), "basics-link");
+    g_object_set_data(G_OBJECT(rule->w_close), "rule", rule);
     gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
-    g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), rule);
+    g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), self);
     gtk_box_pack_end(GTK_BOX(hbox2), rule->w_close, FALSE, FALSE, 0);
   }
 
@@ -1520,28 +1547,16 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)dm->data;
 
-  // update tree
-  // d->view_rule = -1;
-  // d->rule[d->active_rule].typing = FALSE;
-
-  // determine if we want to refresh the tree or not
-  gboolean refresh = TRUE;
-  if(query_change == DT_COLLECTION_CHANGE_RELOAD && changed_property != DT_COLLECTION_PROP_UNDEF)
+  gchar *where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
+  if(g_strcmp0(where_ext, d->last_where_ext))
   {
-    // if we only reload the collection, that means that we don't change the query itself
-    // so we only rebuild the treeview if a used property has changed
-    refresh = FALSE;
+    g_free(d->last_where_ext);
+    d->last_where_ext = g_strdup(where_ext);
     for(int i = 0; i <= d->nb_rules; i++)
     {
-      if(d->rule[i].prop == changed_property)
-      {
-        refresh = TRUE;
-        break;
-      }
+      _widget_update(&d->rule[i]);
     }
   }
-
-  if(refresh) _filters_gui_update(self);
 }
 
 
@@ -1765,7 +1780,11 @@ static void _event_history_apply(GtkWidget *widget, dt_lib_module_t *self)
   char confname[200];
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", hid);
   const char *line = dt_conf_get_string_const(confname);
-  if(line && line[0] != '\0') dt_collection_deserialize(line, TRUE);
+  if(line && line[0] != '\0')
+  {
+    dt_collection_deserialize(line, TRUE);
+    _filters_gui_update(self);
+  }
 }
 
 static gboolean _event_history_show(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -1995,6 +2014,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.module_filtering.update = _filters_gui_update;
   darktable.view_manager->proxy.module_filtering.set_sort = _proxy_set_sort;
 
+  d->last_where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
   _filters_gui_update(self);
 
   if(d->rule[0].prop == DT_COLLECTION_PROP_TAG)

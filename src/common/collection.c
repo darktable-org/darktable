@@ -676,14 +676,13 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int e
     char confname[200];
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", exclude);
     const int mode = dt_conf_get_int(confname);
-    if (mode != 1) // don't limit the collection for OR
+    // we only want collect rules, not filtering ones
+    const int nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
+    for(int i = 0; (i < nb_rules && collection->where_ext[i] != NULL); i++)
     {
-      for(int i = 0; collection->where_ext[i] != NULL; i++)
-      {
-        // exclude the one rule from extended where
-        if (i != exclude)
-          complete_string = dt_util_dstrcat(complete_string, "%s", collection->where_ext[i]);
-      }
+      // exclude the one rule from extended where
+      if(i != exclude || mode == 1)
+        complete_string = dt_util_dstrcat(complete_string, "%s", collection->where_ext[i]);
     }
   }
   else
