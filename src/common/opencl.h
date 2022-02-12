@@ -517,7 +517,7 @@ static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t
 {
   return FALSE;
 }
-gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
+static inline gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
 {
   return FALSE;
 }
