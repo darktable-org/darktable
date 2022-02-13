@@ -22,6 +22,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "dtgtk/button.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -386,18 +387,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), color_box, FALSE, FALSE, 4);
 
   // filter text
-  GtkWidget *text_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  d->text = gtk_entry_new();
-  gtk_entry_set_width_chars(GTK_ENTRY(d->text), 10);
-  gtk_box_pack_start(GTK_BOX(text_box), d->text, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(d->text, _("filter the text across metadata, tags and complete filename"
-                                         "\nuse `%' as wildcard"));
+  d->text = gtk_search_entry_new();
+  GtkStyleContext *context = gtk_widget_get_style_context(d->text);
+  gtk_style_context_add_class(context, "dt_button_background");
+  gtk_entry_set_placeholder_text(GTK_ENTRY(d->text), _("search text"));
+  g_signal_connect(G_OBJECT(d->text), "search-changed", G_CALLBACK(_text_entry_changed), self);
   g_signal_connect(G_OBJECT(d->text), "activate", G_CALLBACK(_text_entry_activated), self);
-  g_signal_connect(G_OBJECT(d->text), "changed", G_CALLBACK(_text_entry_changed), self);
-  GtkWidget *reset_button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(text_box), reset_button, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(reset_button), "clicked", G_CALLBACK(_reset_text_entry), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), text_box, FALSE, FALSE, 4);
+  g_signal_connect(G_OBJECT(d->text), "stop-search", G_CALLBACK(_reset_text_entry), self);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->text), 14);
+  gtk_widget_set_tooltip_text(d->text, _("filter the text accross metadata, tags and complete filename"
+                                         "\nhit Home then Enter to serach without default start and end wildcards"
+                                         "\nuse `%' as wildcard"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->text, FALSE, FALSE, 4);
 
   /* sort combobox */
   const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
