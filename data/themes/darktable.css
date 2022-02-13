@@ -396,6 +396,11 @@ spinbutton>button
   margin: 0.14em 0.07em;
 }
 
+.dt_opacity_06
+{
+  opacity: 0.6;
+}
+
 /*------------------------
   - Main header settings -
   ------------------------*/
