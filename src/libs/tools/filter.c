@@ -38,6 +38,7 @@ typedef struct dt_lib_tool_filter_t
   GtkWidget *text;
   GtkWidget *colors[6];
   GtkWidget *colors_op;
+  int time_out;
 } dt_lib_tool_filter_t;
 
 #ifdef USE_LUA
@@ -153,14 +154,58 @@ int position()
   return 2001;
 }
 
+static gboolean _text_entry_changed_wait(gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  if(d->time_out)
+  {
+    d->time_out--;
+    if(d->time_out == 1)
+    { // tell we are busy
+      GtkStyleContext *context = gtk_widget_get_style_context(d->text);
+      gtk_style_context_add_class(context, "dt_opacity_06");
+      gtk_widget_queue_draw(GTK_WIDGET(d->text));
+    }
+    else if(!d->time_out)
+    {
+      const int pos = gtk_editable_get_position(GTK_EDITABLE(d->text));
+      char *text = pos ? g_strconcat("%", gtk_entry_get_text(GTK_ENTRY(d->text)), "%", NULL)
+                       : g_strdup(gtk_entry_get_text(GTK_ENTRY(d->text)));
+      g_free(dt_collection_get_text_filter(darktable.collection));
+      dt_collection_set_text_filter(darktable.collection, text);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+      GtkStyleContext *context = gtk_widget_get_style_context(d->text);
+      gtk_style_context_remove_class(context, "dt_opacity_06");
+      gtk_widget_queue_draw(GTK_WIDGET(d->text));
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+static void _launch_text_query(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  if(!d->time_out)
+  {
+    d->time_out = 4;
+    g_timeout_add(100, _text_entry_changed_wait, self);
+  }
+  else d->time_out = 4;
+}
+
+static void _text_entry_changed(GtkEntry *entry, dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  char *text = g_strdup(gtk_entry_get_text(GTK_ENTRY(d->text)));
+  if(strlen(text) == 0 || strlen(text) > 3)
+    _launch_text_query(self);
+}
+
 static void _text_entry_activated(GtkEntry *entry, dt_lib_module_t *self)
 {
-  const int pos = gtk_editable_get_position(GTK_EDITABLE(entry));
-  char *text = pos ? g_strconcat("%", gtk_entry_get_text(entry), "%", NULL)
-                   : g_strdup(gtk_entry_get_text(entry));
-  g_free(dt_collection_get_text_filter(darktable.collection));
-  dt_collection_set_text_filter(darktable.collection, text);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+  _launch_text_query(self);
 }
 
 static void _reset_text_filter(dt_lib_module_t *self)
@@ -348,6 +393,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->text, _("filter the text across metadata, tags and complete filename"
                                          "\nuse `%' as wildcard"));
   g_signal_connect(G_OBJECT(d->text), "activate", G_CALLBACK(_text_entry_activated), self);
+  g_signal_connect(G_OBJECT(d->text), "changed", G_CALLBACK(_text_entry_changed), self);
   GtkWidget *reset_button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(text_box), reset_button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(reset_button), "clicked", G_CALLBACK(_reset_text_entry), self);
