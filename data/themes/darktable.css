@@ -401,6 +401,11 @@ spinbutton>button
   opacity: 0.6;
 }
 
+.dt_button_background
+{
+  background-color: @button_bg;
+}
+
 /*------------------------
   - Main header settings -
   ------------------------*/
