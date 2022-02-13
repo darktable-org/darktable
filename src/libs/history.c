@@ -709,7 +709,11 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
   case DT_INTROSPECTION_TYPE_ARRAY:
     if(field->Array.type == DT_INTROSPECTION_TYPE_CHAR)
     {
-      if(strncmp((char*)o, (char*)p, field->Array.count))
+      const gboolean is_valid =
+        g_utf8_validate((char *)o, -1, NULL)
+        && g_utf8_validate((char *)p, -1, NULL);
+
+      if(is_valid && strncmp((char*)o, (char*)p, field->Array.count))
         return g_strdup_printf("%s\t\"%s\"\t\u2192\t\"%s\"", d, (char*)o, (char*)p);
     }
     else
