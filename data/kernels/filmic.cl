@@ -374,8 +374,11 @@ static inline float4 filmic_desaturate_v4(const float4 Ych_original, float4 Ych_
 
 // Pipeline and ICC luminance is CIE Y 1931
 // Kirk Ych/Yrg uses CIE Y 2006
-// 1 CIE Y 1931 = 0.945302269001 CIE Y 2006, so we need to adjust that
-#define CIE_Y_1931_to_CIE_Y_2006(x) 0.945302269001f * x
+// 1 CIE Y 1931 = 1.0578615402627207 CIE Y 2006, so we need to adjust that
+// Warning: only applies to achromatic XYZ i.e. those aligned with
+// D50 white point. CAT16 chromatic adaptation from D50 to D65 white point
+// has been taken in account in the calculation.
+#define CIE_Y_1931_to_CIE_Y_2006(x) 1.0578615402627207f * x
 
 
 static inline float clip_chroma_one_channel(constant const float *const coeffs, const float target_rgb,
