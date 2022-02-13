@@ -2500,7 +2500,8 @@ static inline cl_ulong _opencl_get_device_headroom(const int devid)
 cl_ulong dt_opencl_get_device_available(const int devid)
 {
   if(!darktable.opencl->inited || devid < 0) return 0;
-  return MAX(0, _opencl_get_max_global_mem(devid) - _opencl_get_device_headroom(devid));
+  const gboolean lowmem = (darktable.unmuted & DT_DEBUG_LOWMEM);
+  return MAX(0, (lowmem) ? 512lu * 1024lu * 1024lu : _opencl_get_max_global_mem(devid) - _opencl_get_device_headroom(devid));
 }
 
 cl_ulong dt_opencl_get_device_memalloc(const int devid)
