@@ -124,9 +124,15 @@ MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
 #
 if(APPLE)
 	message("-- Mac OS X build detected, setting default features")
-
-	# prefer macports and/or user-installed libraries over system ones
-	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
+  if(DEFINED ENV{HOMEBREW_PREFIX})
+    message("-- Homebrew detected, setting CMAKE_PREFIX_PATH to $ENV{HOMEBREW_PREFIX}")
+    LIST(APPEND CMAKE_PREFIX_PATH $ENV{HOMEBREW_PREFIX})
+    # Explicitly add llvm, icu4c and libsoup@2 to prefix path
+    LIST(APPEND CMAKE_PREFIX_PATH $ENV{HOMEBREW_PREFIX}/opt/libsoup@2 $ENV{HOMEBREW_PREFIX}/opt/icu4c $ENV{HOMEBREW_PREFIX}/opt/llvm)
+  else()  
+    message("-- Setting CMAKE_PREFIX_PATH to prefer MacPorts and/or user-installed libraries over system ones")
+    LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
+  endif()
 	set(CMAKE_FIND_FRAMEWORK "LAST")
 	# except libstdc++ (only one linked via -l flag, not full path)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib")
