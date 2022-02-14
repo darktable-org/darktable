@@ -59,7 +59,7 @@ typedef struct _GtkDarktableRangeSelect
   gboolean show_entries; // do we show the line with the entry boxes ?
   double min_r;          // minimal value shown
   double max_r;          // maximal value shown
-  double step_r;
+  double step_bd;        // minimal step value in band reference
 
   double select_min_r;      // low bound of the selection
   double select_max_r;      // hight bound of the selection
