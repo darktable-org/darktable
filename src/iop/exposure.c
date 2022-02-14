@@ -962,8 +962,8 @@ static void _paint_hue(dt_iop_module_t *self)
   // update the fill background color of LCh sliders
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  const float lightness_min = DT_BAUHAUS_WIDGET(g->lightness_spot)->data.slider.min;
-  const float lightness_max = DT_BAUHAUS_WIDGET(g->lightness_spot)->data.slider.max;
+  const float lightness_min = dt_bauhaus_slider_get_hard_min(g->lightness_spot);
+  const float lightness_max = dt_bauhaus_slider_get_hard_max(g->lightness_spot);
 
   const float lightness_range = lightness_max - lightness_min;
 

@@ -1171,8 +1171,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
 static void paint_chroma_slider(GtkWidget *w, const float hue)
 {
-  const float x_min = DT_BAUHAUS_WIDGET(w)->data.slider.soft_min;
-  const float x_max = DT_BAUHAUS_WIDGET(w)->data.slider.soft_max;
+  const float x_min = 0;
+  const float x_max = 1;
   const float x_range = x_max - x_min;
 
   // Varies x in range around current y param
