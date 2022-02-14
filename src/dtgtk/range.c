@@ -59,8 +59,29 @@ enum
 };
 static guint _signals[LAST_SIGNAL] = { 0 };
 
+// cleanup everything when the widget is destroyed
+static void _range_select_destroy(GtkWidget *widget)
+{
+  g_return_if_fail(DTGTK_IS_RANGE_SELECT(widget));
+
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(widget);
+
+  if(range->markers) g_list_free_full(range->markers, g_free);
+  range->markers = NULL;
+  if(range->blocks) g_list_free_full(range->blocks, g_free);
+  range->blocks = NULL;
+  if(range->icons) g_list_free_full(range->icons, g_free);
+  range->icons = NULL;
+
+  if(range->surface) cairo_surface_destroy(range->surface);
+  range->surface = NULL;
+}
+
 static void _range_select_class_init(GtkDarktableRangeSelectClass *klass)
 {
+  GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
+  widget_class->destroy = _range_select_destroy;
+
   _signals[VALUE_CHANGED] = g_signal_new("value-changed", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0, NULL,
                                          NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
   _signals[VALUE_RESET] = g_signal_new("value-reset", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
@@ -801,6 +822,107 @@ void dtgtk_range_select_reset_markers(GtkDarktableRangeSelect *range)
   if(!range->markers) return;
   g_list_free_full(range->markers, g_free);
   range->markers = NULL;
+}
+
+gchar *dtgtk_range_select_get_raw_text(GtkDarktableRangeSelect *range)
+{
+  double min, max;
+  dt_range_bounds_t bounds = dtgtk_range_select_get_selection(range, &min, &max);
+
+  if((bounds & DT_RANGE_BOUND_MAX) && (bounds & DT_RANGE_BOUND_MIN)) return g_strdup("%");
+
+  gchar *txt_min = range->print(min, FALSE);
+  gchar *txt_max = range->print(max, FALSE);
+  gchar *ret = NULL;
+
+  if(bounds & DT_RANGE_BOUND_MAX)
+    ret = g_strdup_printf(">=%s", txt_min);
+  else if(bounds & DT_RANGE_BOUND_MIN)
+    ret = g_strdup_printf("<=%s", txt_max);
+  else if(bounds & DT_RANGE_BOUND_FIXED)
+    ret = g_strdup_printf("=%s", txt_min);
+  else
+    ret = g_strdup_printf("[%s;%s]", txt_min, txt_max);
+
+  g_free(txt_min);
+  g_free(txt_max);
+  return ret;
+}
+
+void dtgtk_range_select_decode_raw_text(GtkDarktableRangeSelect *range, const gchar *txt, double *min, double *max,
+                                        dt_range_bounds_t *bounds)
+{
+  gchar *n1 = NULL;
+  gchar *n2 = NULL;
+  *bounds = DT_RANGE_BOUND_RANGE;
+  // easy case : select all
+  if(!strcmp(txt, "") || !strcmp(txt, "%"))
+  {
+    *bounds = DT_RANGE_BOUND_MAX | DT_RANGE_BOUND_MIN;
+    return;
+  }
+  else if(g_str_has_prefix(txt, "<="))
+  {
+    *bounds = DT_RANGE_BOUND_MIN;
+    n1 = g_strdup(txt + 2);
+    n2 = g_strdup(txt + 2);
+  }
+  else if(g_str_has_prefix(txt, "="))
+  {
+    *bounds = DT_RANGE_BOUND_FIXED;
+    n1 = g_strdup(txt + 1);
+    n2 = g_strdup(txt + 1);
+  }
+  else if(g_str_has_prefix(txt, ">="))
+  {
+    *bounds = DT_RANGE_BOUND_MAX;
+    n1 = g_strdup(txt + 2);
+    n2 = g_strdup(txt + 2);
+  }
+  else
+  {
+    GRegex *regex;
+    GMatchInfo *match_info;
+
+    // we test the range expression first
+    regex = g_regex_new("^\\s*\\[\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*;\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0,
+                        NULL);
+    g_regex_match_full(regex, txt, -1, 0, 0, &match_info, NULL);
+    int match_count = g_match_info_get_match_count(match_info);
+
+    if(match_count == 3)
+    {
+      n1 = g_match_info_fetch(match_info, 1);
+      n2 = g_match_info_fetch(match_info, 2);
+    }
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+  }
+
+  // if we still don't have values, let's try simple value
+  if(!n1 || !n2)
+  {
+    *bounds = DT_RANGE_BOUND_FIXED;
+    n1 = g_strdup(txt);
+    n2 = g_strdup(txt);
+  }
+
+  // now we transform the text values into double
+  const double v1 = atof(n1);
+  const double v2 = atof(n2);
+  *min = fmin(v1, v2);
+  *max = fmax(v1, v2);
+  g_free(n1);
+  g_free(n2);
+}
+
+void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *range, const gchar *txt,
+                                                    gboolean signal)
+{
+  double smin, smax;
+  dt_range_bounds_t sbounds;
+  dtgtk_range_select_decode_raw_text(range, txt, &smin, &smax, &sbounds);
+  dtgtk_range_select_set_selection(range, sbounds, smin, smax, signal);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
