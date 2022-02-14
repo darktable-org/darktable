@@ -534,7 +534,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
 
   range->min_r = -1;
-  range->max_r = 6;
+  range->max_r = 5.999;
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
 

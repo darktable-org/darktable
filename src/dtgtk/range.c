@@ -569,13 +569,27 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
     range->select_min_r = range->select_max_r;
     range->select_max_r = tmp;
   }
+  // we round the values toward step if needed
+  if(range->step_r > 0.0)
+  {
+    range->select_min_r = floor(range->select_min_r / range->step_r) * range->step_r;
+    range->select_max_r = floor(range->select_max_r / range->step_r) * range->step_r;
+  }
+
   // we also set the bounds
   if(range->select_max_r - range->select_min_r < 0.001)
     range->bounds = DT_RANGE_BOUND_FIXED;
   else
   {
-    if(range->select_min_r <= range->min_r) range->bounds |= DT_RANGE_BOUND_MIN;
-    if(range->select_max_r >= range->max_r) range->bounds |= DT_RANGE_BOUND_MAX;
+    double min_r = range->min_r;
+    double max_r = range->max_r;
+    if(range->step_r > 0.0)
+    {
+      min_r = floor(min_r / range->step_r) * range->step_r;
+      max_r = floor(max_r / range->step_r) * range->step_r;
+    }
+    if(range->select_min_r <= min_r) range->bounds |= DT_RANGE_BOUND_MIN;
+    if(range->select_max_r >= max_r) range->bounds |= DT_RANGE_BOUND_MAX;
   }
 
   range->set_selection = FALSE;
