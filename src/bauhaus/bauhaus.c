@@ -1671,10 +1671,12 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr, float 
   if(d->grad_cnt > 0)
   {
     // gradient line as used in some modules
+    const double zoom = (d->max - d->min) / (d->hard_max - d->hard_min);
+    const double offset = (d->min - d->hard_min) / (d->hard_max - d->hard_min);
     gradient = cairo_pattern_create_linear(0, 0, slider_width, htM);
     for(int k = 0; k < d->grad_cnt; k++)
-      cairo_pattern_add_color_stop_rgba(gradient, d->grad_pos[k], d->grad_col[k][0], d->grad_col[k][1],
-                                        d->grad_col[k][2], 0.4f);
+      cairo_pattern_add_color_stop_rgba(gradient, (d->grad_pos[k] - offset) / zoom,
+                                        d->grad_col[k][0], d->grad_col[k][1], d->grad_col[k][2], 0.4f);
     cairo_set_source(cr, gradient);
   }
   else
@@ -3195,23 +3197,22 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
       case DT_ACTION_EFFECT_DOWN:
         move_size *= -1;
       case DT_ACTION_EFFECT_UP:
-        if(d->soft_min != d->hard_min || d->soft_max != d->hard_max)
+        ; // make sure current value still in zoomed range
+        const float multiplier = powf(2.0f, move_size/2);
+        const float new_min = value - multiplier * (value - d->min);
+        const float new_max = value + multiplier * (d->max - value);
+        if(new_min >= d->hard_min
+            && new_max <= d->hard_max
+            && new_max - new_min >= min_visible * 10)
         {
-          const float multiplier = powf(2.0f, move_size/2);
-          const float new_min = value - multiplier * (value - d->min);
-          const float new_max = value + multiplier * (d->max - value);
-          if(new_min >= d->hard_min
-             && new_max <= d->hard_max
-             && new_max - new_min >= min_visible * 10)
-          {
-            d->min = new_min;
-            d->max = new_max;
-          }
+          d->min = new_min;
+          d->max = new_max;
         }
         break;
       case DT_ACTION_EFFECT_RESET:
         d->min = d->soft_min;
         d->max = d->soft_max;
+        dt_bauhaus_slider_set(widget, value); // restore value (and move min/max again if needed)
         break;
       case DT_ACTION_EFFECT_TOP:
         d->max = d->hard_max;
@@ -3223,7 +3224,6 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
         break;
       }
-      dt_bauhaus_slider_set(widget, value); // restore value (and move min/max again if needed)
 
       gtk_widget_queue_draw(GTK_WIDGET(widget));
       dt_toast_log(("[%f , %f]"), d->min, d->max);
