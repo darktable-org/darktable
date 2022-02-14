@@ -490,7 +490,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  range->step_r = 1.0;
+  range->step_bd = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
   dtgtk_range_select_add_icon(range, 22, 0, dtgtk_cairo_paint_unratestar, 0, NULL);
   dtgtk_range_select_add_icon(range, 36, 1, _rating_paint_icon, 0, NULL);
@@ -664,6 +664,274 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   rule->w_specific = special;
 }
 
+static gboolean _focal_update(dt_lib_filtering_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+
+  dt_lib_filtering_t *d = get_collect(rule);
+  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+
+  rule->manual_widget_set++;
+  // first, we update the graph
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT ROUND(focal_length,0), COUNT(*) AS count"
+             " FROM main.images AS mi"
+             " WHERE %s"
+             " GROUP BY ROUND(focal_length,0)",
+             d->last_where_ext);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  dtgtk_range_select_reset_blocks(range);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const double val = sqlite3_column_double(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+    dtgtk_range_select_add_block(range, val, count);
+  }
+  sqlite3_finalize(stmt);
+
+  // and setup the selection
+  dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  rule->manual_widget_set--;
+
+  dtgtk_range_select_redraw(range);
+  return TRUE;
+}
+
+static gchar *_focal_print_func(const double value, gboolean detailled)
+{
+  gchar *txt = g_strdup_printf("%.0lf", value);
+
+  if(detailled)
+  {
+    dt_util_dstrcat(txt, " %s", _("mm."));
+  }
+  return txt;
+}
+
+static void _focal_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+                               const gchar *text, dt_lib_module_t *self)
+{
+  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+
+  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  range->step_bd = 1.0;
+  dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
+  range->print = _focal_print_func;
+
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT MIN(focal_length), MAX(focal_length)"
+             " FROM main.images");
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  double min = 0.0;
+  double max = 400.0;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    min = sqlite3_column_double(stmt, 0);
+    max = sqlite3_column_double(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+  range->min_r = floor(min);
+  range->max_r = floor(max) + 1.0;
+
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+
+  rule->w_specific = special;
+}
+
+static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+
+  dt_lib_filtering_t *d = get_collect(rule);
+  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+
+  rule->manual_widget_set++;
+  // first, we update the graph
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT ROUND(aperture,1), COUNT(*) AS count"
+             " FROM main.images AS mi"
+             " WHERE %s"
+             " GROUP BY ROUND(aperture,1)",
+             d->last_where_ext);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  dtgtk_range_select_reset_blocks(range);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const double val = sqlite3_column_double(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+    dtgtk_range_select_add_block(range, val, count);
+  }
+  sqlite3_finalize(stmt);
+
+  // and setup the selection
+  dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  rule->manual_widget_set--;
+
+  dtgtk_range_select_redraw(range);
+  return TRUE;
+}
+
+static gchar *_aperture_print_func(const double value, gboolean detailled)
+{
+  gchar *locale = strdup(setlocale(LC_ALL, NULL));
+  setlocale(LC_NUMERIC, "C");
+  gchar *txt = g_strdup_printf("%s%.1lf", detailled ? "f/" : "", value);
+  setlocale(LC_NUMERIC, locale);
+  g_free(locale);
+
+  return txt;
+}
+
+static void _aperture_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+                                  const gchar *text, dt_lib_module_t *self)
+{
+  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+
+  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  range->step_bd = 1.0;
+  dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
+  range->print = _aperture_print_func;
+
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT MIN(aperture), MAX(aperture)"
+             " FROM main.images");
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  double min = 0.0;
+  double max = 22.0;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    min = sqlite3_column_double(stmt, 0);
+    max = sqlite3_column_double(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+  range->min_r = floor(min * 10.0) / 10.0;
+  range->max_r = (floor(max * 10.0) + 1.0) / 10.0;
+
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+
+  rule->w_specific = special;
+}
+
+static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+
+  dt_lib_filtering_t *d = get_collect(rule);
+  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+
+  rule->manual_widget_set++;
+  // first, we update the graph
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT ROUND(iso,0), COUNT(*) AS count"
+             " FROM main.images AS mi"
+             " WHERE %s"
+             " GROUP BY ROUND(iso, 0)",
+             d->last_where_ext);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  dtgtk_range_select_reset_blocks(range);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const double val = sqlite3_column_double(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+
+    dtgtk_range_select_add_block(range, val, count);
+  }
+  sqlite3_finalize(stmt);
+
+  // and setup the selection
+  dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  rule->manual_widget_set--;
+
+  dtgtk_range_select_redraw(range);
+  return TRUE;
+}
+
+static double _iso_value_to_band_func(const double value)
+{
+  if(value <= 1) return 0; // this shouldn't happen
+  return log2(value / 100.0);
+}
+
+static double _iso_value_from_band_func(const double value)
+{
+  return 100 * pow(2.0, value);
+}
+
+static gchar *_iso_print_func(const double value, gboolean detailled)
+{
+  if(detailled)
+  {
+    // we round the value
+    double v = value;
+    if(value < 200)
+      v = round(v / 25) * 25;
+    else
+      v = round(v / 50) * 50;
+    return g_strdup_printf("%.0lf ISO", v);
+  }
+  else
+  {
+    gchar *locale = strdup(setlocale(LC_ALL, NULL));
+    setlocale(LC_NUMERIC, "C");
+    gchar *txt = g_strdup_printf("%.0lf", value);
+    setlocale(LC_NUMERIC, locale);
+    g_free(locale);
+    return txt;
+  }
+}
+
+static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+                             const gchar *text, dt_lib_module_t *self)
+{
+  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+
+  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+
+  dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
+  dtgtk_range_select_set_band_func(range, _iso_value_from_band_func, _iso_value_to_band_func);
+  range->print = _iso_print_func;
+
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT MIN(iso), MAX(iso)"
+             " FROM main.images");
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  double min = 50;
+  double max = 12800;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    min = sqlite3_column_double(stmt, 0);
+    max = sqlite3_column_double(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+  range->min_r = floor(min);
+  range->max_r = floor(max) + 1;
+
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+
+  rule->w_specific = special;
+}
+
 static void _folders_decode(const gchar *txt, gchar *path, gchar *dir, gboolean *sub)
 {
   if(!txt || strlen(txt) == 0) return;
@@ -796,6 +1064,12 @@ static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
       return _range_update(rule);
     case DT_COLLECTION_PROP_ASPECT_RATIO:
       return _ratio_update(rule);
+    case DT_COLLECTION_PROP_FOCAL_LENGTH:
+      return _focal_update(rule);
+    case DT_COLLECTION_PROP_APERTURE:
+      return _aperture_update(rule);
+    case DT_COLLECTION_PROP_ISO:
+      return _iso_update(rule);
     case DT_COLLECTION_PROP_FOLDERS:
       return _folders_update(rule);
     default:
@@ -828,6 +1102,15 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
       break;
     case DT_COLLECTION_PROP_ASPECT_RATIO:
       _ratio_widget_init(rule, rule->prop, text, self);
+      break;
+    case DT_COLLECTION_PROP_FOCAL_LENGTH:
+      _focal_widget_init(rule, rule->prop, text, self);
+      break;
+    case DT_COLLECTION_PROP_APERTURE:
+      _aperture_widget_init(rule, rule->prop, text, self);
+      break;
+    case DT_COLLECTION_PROP_ISO:
+      _iso_widget_init(rule, rule->prop, text, self);
       break;
     case DT_COLLECTION_PROP_FOLDERS:
       _folders_widget_init(rule, rule->prop, text, self);

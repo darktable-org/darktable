@@ -243,13 +243,18 @@ static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
   dtgtk_range_select_set_selection(range, range->bounds, range->select_min_r, range->select_max_r, TRUE);
 }
 
-static int _graph_value_to_pos(GtkDarktableRangeSelect *range, const double value)
+static double _graph_value_to_pos(GtkDarktableRangeSelect *range, const double value)
 {
   return (range->value_to_band(value) - range->band_start_bd) / range->band_factor;
 }
 static double _graph_value_from_pos(GtkDarktableRangeSelect *range, const double posx, gboolean snap)
 {
   double ret = posx * range->band_factor + range->band_start_bd;
+  // if needed we round the value toward step
+  if(range->step_bd > 0.0)
+  {
+    ret = floor(ret / range->step_bd) * range->step_bd;
+  }
   ret = range->value_from_band(ret);
   if(snap)
   {
@@ -318,8 +323,8 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     const double width_bd = range->value_to_band(range->max_r) - range->band_start_bd;
     range->band_factor = width_bd / range->band_real_width_px;
     // we want at least blocks with width of BAR_WIDTH pixels
-    const double step_r = fmax(range->step_r, range->band_factor * BAR_WIDTH);
-    const int bl_width_px = step_r / range->band_factor;
+    const double step_bd = fmax(range->step_bd, range->band_factor * BAR_WIDTH);
+    const int bl_width_px = step_bd / range->band_factor;
 
     // get the maximum height of blocks
     // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
@@ -420,20 +425,15 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   int x1_px = (sel_start_px < sel_end_px) ? sel_start_px : sel_end_px;
   int x2_px = (sel_start_px < sel_end_px) ? sel_end_px : sel_start_px;
   // we need to add the step in order to show that the value is included in the selection
-  x2_px += range->step_r / range->band_factor;
+  x2_px += range->step_bd / range->band_factor;
   // if we are currently setting the selection, we need to round the value toward steps
   double x1_value_r = 0.0;
   double x2_value_r = 0.0;
   if(range->set_selection)
   {
+    // this seems to be equivalent, but in fact, we round the values toward step and snap
     x1_value_r = _graph_value_from_pos(range, x1_px, TRUE);
     x2_value_r = _graph_value_from_pos(range, x2_px, TRUE);
-    if(range->step_r > 0.0)
-    {
-      x1_value_r = floor(x1_value_r / range->step_r) * range->step_r;
-      x2_value_r = floor(x2_value_r / range->step_r) * range->step_r;
-    }
-    x1_px = _graph_value_to_pos(range, x1_value_r);
     x2_px = _graph_value_to_pos(range, x2_value_r);
   }
   x1_px = MAX(x1_px, 0);
@@ -444,7 +444,6 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   cairo_fill(cr);
 
   double current_value_r = _graph_value_from_pos(range, range->current_x_px, TRUE);
-  if((range->step_r > 0.0)) current_value_r = floor(current_value_r / range->step_r) * range->step_r;
 
   // draw the icons
   if(g_list_length(range->icons) > 0)
@@ -538,9 +537,9 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   }
 
   const double smin_r = (range->bounds & DT_RANGE_BOUND_MIN) ? range->min_r : range->select_min_r;
-  const double smax_r = (range->bounds & DT_RANGE_BOUND_MAX) ? range->max_r : range->select_max_r + range->step_r;
+  const double smax_r = (range->bounds & DT_RANGE_BOUND_MAX) ? range->max_r : range->select_max_r;
   const int smin_px = _graph_value_to_pos(range, smin_r);
-  const int smax_px = _graph_value_to_pos(range, smax_r);
+  const int smax_px = _graph_value_to_pos(range, smax_r) + range->step_bd / range->band_factor;
 
   // change the cursor if we are close to an extrema
   if(!range->set_selection && abs(range->current_x_px - smin_px) <= SNAP_SIZE)
@@ -586,13 +585,13 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
     if(range->mouse_inside == HOVER_MAX)
     {
       range->bounds &= ~DT_RANGE_BOUND_MAX;
-      range->select_min_r += range->step_r * 0.5;
+      range->select_min_r += 0.0001;
       range->select_max_r = pos_r;
     }
     else if(range->mouse_inside == HOVER_MIN)
     {
       range->bounds &= ~DT_RANGE_BOUND_MIN;
-      range->select_min_r = range->select_max_r + range->step_r * 0.5;
+      range->select_min_r = range->select_max_r + 0.0001;
       range->select_max_r = pos_r;
     }
     else
@@ -616,18 +615,19 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   if(!range->set_selection) return TRUE;
   range->select_max_r = _graph_value_from_pos(range, e->x - range->band_margin_side_px, TRUE);
+
+  // for the min value, we just round it toward step
+  if(range->step_bd > 0.0)
+  {
+    range->select_min_r = _graph_value_to_pos(range, range->select_min_r);
+    range->select_min_r = _graph_value_from_pos(range, range->select_min_r, FALSE);
+  }
   // we verify that the values are in the right order
   if(range->select_max_r < range->select_min_r)
   {
     const double tmp = range->select_min_r;
     range->select_min_r = range->select_max_r;
     range->select_max_r = tmp;
-  }
-  // we round the values toward step if needed
-  if(range->step_r > 0.0)
-  {
-    range->select_min_r = floor(range->select_min_r / range->step_r) * range->step_r;
-    range->select_max_r = floor(range->select_max_r / range->step_r) * range->step_r;
   }
 
   // we also set the bounds
@@ -637,10 +637,12 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
   {
     double min_r = range->min_r;
     double max_r = range->max_r;
-    if(range->step_r > 0.0)
+    if(range->step_bd > 0.0)
     {
-      min_r = floor(min_r / range->step_r) * range->step_r;
-      max_r = floor(max_r / range->step_r) * range->step_r;
+      min_r = _graph_value_to_pos(range, min_r);
+      min_r = _graph_value_from_pos(range, min_r, FALSE);
+      max_r = _graph_value_to_pos(range, max_r);
+      max_r = _graph_value_from_pos(range, max_r, FALSE);
     }
     if(range->select_min_r <= min_r) range->bounds |= DT_RANGE_BOUND_MIN;
     if(range->select_max_r >= max_r) range->bounds |= DT_RANGE_BOUND_MAX;
@@ -666,7 +668,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
   // initialize values
   range->min_r = 0.0;
   range->max_r = 1.0;
-  range->step_r = 0.0;
+  range->step_bd = 0.0;
   range->select_min_r = 0.1;
   range->select_max_r = 0.9;
   range->bounds = DT_RANGE_BOUND_RANGE;
@@ -766,10 +768,12 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
                                       const double min_r, const double max_r, gboolean signal)
 {
   // round the value to respect step if set
-  if(range->step_r > 0.0)
+  if(range->step_bd > 0.0)
   {
-    range->select_min_r = floor(min_r / range->step_r) * range->step_r;
-    range->select_max_r = floor(max_r / range->step_r) * range->step_r;
+    range->select_min_r = _graph_value_to_pos(range, min_r);
+    range->select_min_r = _graph_value_from_pos(range, range->select_min_r, FALSE);
+    range->select_max_r = _graph_value_to_pos(range, max_r);
+    range->select_max_r = _graph_value_from_pos(range, range->select_max_r, FALSE);
   }
   else
   {
