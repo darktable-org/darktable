@@ -33,6 +33,7 @@
 #define DT_OPENCL_VENDOR_AMD 4098
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_INTEL 0x8086u
+#define DT_OPENCL_AVAILABLE_INTERVAL 10.0
 
 #include "common/darktable.h"
 
@@ -120,6 +121,8 @@ typedef struct dt_opencl_device_t
   float benchmark;
   size_t memory_in_use;
   size_t peak_memory;
+  size_t available_mem;
+  double available_timer;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -214,6 +217,9 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
+
+/** recalculate available memory for device */
+void dt_opencl_recalculate_available_mem(const int devid);
 
 /** cleans up command queue. */
 int dt_opencl_finish(const int devid);
@@ -368,14 +374,19 @@ int dt_opencl_get_mem_context_id(cl_mem mem);
 void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action);
 
 /** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
+gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead);
+/** check if buffer fits into limits given by OpenCL runtime */
+gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required);
+
+/** get available memory for the device */
+cl_ulong dt_opencl_get_device_available(const int devid);
+
+/** get size of allocatable single buffer */
+cl_ulong dt_opencl_get_device_memalloc(const int devid);
 
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
 int dt_opencl_roundup(int size);
-
-/** get global memory of device */
-cl_ulong dt_opencl_get_max_global_mem(const int devid);
 
 /** get next free slot in eventlist and manage size of eventlist */
 cl_event *dt_opencl_events_get_slot(const int devid, const char *tag);
@@ -419,6 +430,9 @@ static inline void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl
 static inline void dt_opencl_cleanup(dt_opencl_t *cl)
 {
 }
+static inline void dt_opencl_recalculate_available_mem(const int devid)
+{
+} 
 static inline int dt_opencl_finish(const int devid)
 {
   return -1;
@@ -491,12 +505,20 @@ static inline int dt_opencl_update_settings(void)
 {
   return 0;
 }
-static inline int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
+static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
                                               const unsigned bpp, const float factor, const size_t overhead)
+{
+  return FALSE;
+}
+static inline gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
+{
+  return FALSE;
+}
+static inline size_t dt_opencl_get_device_available(const int devid)
 {
   return 0;
 }
-static inline int dt_opencl_get_max_global_mem(const int devid)
+static inline size_t dt_opencl_get_device_memalloc(const int devid)
 {
   return 0;
 }

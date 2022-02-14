@@ -161,6 +161,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].options = NULL;
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
+  cl->dev[dev].available_timer = dt_get_wtime() - DT_OPENCL_AVAILABLE_INTERVAL;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -308,6 +309,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     res = -1;
     goto end;
   }
+  
+  // preset available memory to something safe
+  cl->dev[dev].available_mem = cl->dev[dev].max_global_mem - 600lu * 1024lu * 1024lu;
 
   cl->dev[dev].vendor = strdup(dt_opencl_get_vendor_by_id(vendor_id));
   cl->dev[dev].name = strdup(infostr);
@@ -1988,7 +1992,6 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
   cl_event *eventp = dt_opencl_events_get_slot(dev, buf);
   err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel],
                                                         2, NULL, sizes, local, 0, NULL, eventp);
-  // if (err == CL_SUCCESS) err = dt_opencl_finish(dev);
   return err;
 }
 
@@ -2438,38 +2441,96 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
                                       (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
 }
 
-/** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
-                                const float factor, const size_t overhead)
+cl_ulong dt_opencl_get_device_available(const int devid)
 {
-  static float headroom = -1.0f;
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  const size_t calculated = darktable.opencl->dev[devid].available_mem;
+  return (darktable.unmuted & DT_DEBUG_LOWMEM) ? MIN(calculated, 512lu * 1024lu * 1024lu) : calculated ;
+}
 
-  if(!darktable.opencl->inited || devid < 0) return FALSE;
+cl_ulong dt_opencl_get_device_memalloc(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return darktable.opencl->dev[devid].max_mem_alloc;
+}
 
-  /* first time run */
-  if(headroom < 0.0f)
+/* As there is no portable way to get the unused memory of a cl device we check this by allocating
+   buffers until there is no room left.
+   clCreateBuffer does not necessarily tell an error condition if there is no memory available (this
+   is according to standard and certainly tru for nvidia), to make sure the buffer is really allocated
+   in graphics mem we force a small memory access.
+*/
+void dt_opencl_recalculate_available_mem(const int devid)
+{
+  #define DT_TEST_AVAILABLE_BUFS 128 // as we check in 256MB steps this allows up tp 32GB available per device
+  if(!darktable.opencl->inited || devid < 0) return;
+
+  const double start_time = dt_get_wtime();
+  if((start_time - darktable.opencl->dev[devid].available_timer) < DT_OPENCL_AVAILABLE_INTERVAL)
+    return;
+
+  const size_t buffstep = (darktable.opencl->dev[devid].available_timer < 0.0) ? 512 : 256;
+  darktable.opencl->dev[devid].available_timer = start_time;  
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                 CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, 16, NULL, &err);
+  if(!sbuf) return;
+
+  cl_mem tbuf[DT_TEST_AVAILABLE_BUFS];
+  const size_t tbuffsize = MIN(buffstep * 1024lu * 1024lu, darktable.opencl->dev[devid].max_mem_alloc);
+  int checked = 0;
+
+  while((checked < DT_TEST_AVAILABLE_BUFS) && (err == CL_SUCCESS))
   {
-    headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
-
-    /* don't let the user play games with us */
-    headroom = fmin((float)darktable.opencl->dev[devid].max_global_mem, fmax(headroom, 0.0f));
-    dt_conf_set_int("opencl_memory_headroom", headroom / 1024 / 1024);
+    tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                     CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, tbuffsize, NULL, &err);
+    if(err == CL_SUCCESS)
+    {
+      err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
+                                                                   sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
+      checked++;
+    }
   }
 
-  float singlebuffer = (float)width * height * bpp;
-  float total = factor * singlebuffer + overhead;
+  (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(sbuf);
+  for(int i = 0; i < checked; i++)
+    if(tbuf[i]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
 
-  if(darktable.opencl->dev[devid].max_image_width < width
-     || darktable.opencl->dev[devid].max_image_height < height)
+  darktable.opencl->dev[devid].available_mem = MAX(0, tbuffsize * (checked - 1) - 128lu * 1024lu * 1024lu);
+
+  dt_print(DT_DEBUG_OPENCL, "[dt_opencl_recalculate_available_mem] found %luMB free on device %i taking %.3fsecs\n",
+        darktable.opencl->dev[devid].available_mem / 1024lu / 1024lu, devid, dt_get_wtime() - start_time); 
+}
+
+gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
+                                const float factor, const size_t overhead)
+{
+  if(!darktable.opencl->inited || devid < 0) return FALSE;
+
+  const size_t available = dt_opencl_get_device_available(devid);
+  const size_t buffsize = dt_opencl_get_device_memalloc(devid);
+  const size_t required  = width * height * bpp;
+  const size_t total = factor * required + overhead;
+
+  if((buffsize < required) || (available < total)) return FALSE;  
+  if(darktable.opencl->dev[devid].max_image_width < width || darktable.opencl->dev[devid].max_image_height < height)
     return FALSE;
-
-  if(darktable.opencl->dev[devid].max_mem_alloc < singlebuffer) return FALSE;
-
-  if(darktable.opencl->dev[devid].max_global_mem < total + headroom) return FALSE;
-
   return TRUE;
 }
 
+/** check if buffer fits into limits given by OpenCL runtime */
+gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
+{
+  if(!darktable.opencl->inited || devid < 0) return FALSE;
+
+  const size_t available = dt_opencl_get_device_available(devid);
+  const size_t buffsize = dt_opencl_get_device_memalloc(devid);
+
+  if((buffsize < required) || (available < required))
+    return FALSE; 
+  return TRUE;
+}
 
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
 int dt_opencl_roundup(int size)
@@ -2615,13 +2676,6 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
       break;
   }
   dt_pthread_mutex_unlock(&darktable.opencl->lock);
-}
-
-/** get global memory of device */
-cl_ulong dt_opencl_get_max_global_mem(const int devid)
-{
-  if(!darktable.opencl->inited || devid < 0) return 0;
-  return darktable.opencl->dev[devid].max_global_mem;
 }
 
 

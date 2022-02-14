@@ -158,6 +158,9 @@ typedef unsigned int u_int;
 // bump this number and make sure you have an updated logic in dt_configure_performance()
 #define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 3
 
+// A good suggestion but maybe on the lower side as we can increase automatically
+#define DT_CL_SAFEHEADROOM 600
+
 // every module has to define this:
 #ifdef _DEBUG
 #define DT_MODULE(MODVER)                                                                                    \
@@ -269,7 +272,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_PARAMS         = 1 << 21,
   DT_DEBUG_DEMOSAIC       = 1 << 22,
   DT_DEBUG_TILING         = 1 << 23,
-  DT_DEBUG_ACT_ON         = 1 << 24
+  DT_DEBUG_ACT_ON         = 1 << 24,
+  DT_DEBUG_LOWMEM         = 1 << 25
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
