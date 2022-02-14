@@ -65,12 +65,12 @@ typedef struct _GtkDarktableRangeSelect
   double select_max_r;      // hight bound of the selection
   dt_range_bounds_t bounds; // type of selection bounds
 
-  double current_x_px;
-  gboolean mouse_inside;
-  gboolean set_selection;
+  double current_x_px;    // current position of the pointer
+  gboolean mouse_inside;  // is the mouse inside the graph widget
+  gboolean set_selection; // are we setting the selection
 
-  cairo_surface_t *surface;
-  int surf_width_px;
+  cairo_surface_t *surface; // cached graph drawing
+  int surf_width_px;        // width of the cached drawing
 
   GtkWidget *entry_min;
   GtkWidget *current;
@@ -94,8 +94,8 @@ typedef struct _GtkDarktableRangeSelect
   GList *icons;
   GList *markers;
 
-  int band_margin_side_px;
-  int band_real_width_px;
+  int band_margin_side_px; // if the band has a max width, this is the empty left-right space
+  int band_real_width_px;  // if the band has a max width, this is the real width of the band
 } GtkDarktableRangeSelect;
 
 typedef struct _GtkDarktableRangeSelectClass
@@ -105,29 +105,55 @@ typedef struct _GtkDarktableRangeSelectClass
 
 GType dtgtk_range_select_get_type(void);
 
-/** instantiate a new range selection widget */
+// instantiate a new range selection widget
 GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries);
 
+// set selection range
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
                                       const double min_r, const double max_r, gboolean signal);
+// directly decode raw_text and apply it to selection
+void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *range, const gchar *txt,
+                                                    gboolean signal);
+// get selction range
 dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *range, double *min_r, double *max_r);
 
+// get the text used for collection queries
+// result needs to be freed after use
+gchar *dtgtk_range_select_get_raw_text(GtkDarktableRangeSelect *range);
+// get the selection values from the collection query text
+void dtgtk_range_select_decode_raw_text(GtkDarktableRangeSelect *range, const gchar *txt, double *min, double *max,
+                                        dt_range_bounds_t *bounds);
+
+// add a block for drawing bar on the graph
+// the block will also be shown in context-menu
 void dtgtk_range_select_add_block(GtkDarktableRangeSelect *range, const double value_r, const int count);
+// add a predetermined range which will be shown in context-menu
 void dtgtk_range_select_add_range_block(GtkDarktableRangeSelect *range, const double min_r, const double max_r,
                                         const dt_range_bounds_t bounds, gchar *txt, const int count);
+// reset all the blocks
 void dtgtk_range_select_reset_blocks(GtkDarktableRangeSelect *range);
 
+// set the function to switch from real value to band value
+// this is usefull to have non-linear value repartitions
 void dtgtk_range_select_set_band_func(GtkDarktableRangeSelect *range, DTGTKTranslateValueFunc value_from_band,
                                       DTGTKTranslateValueFunc value_to_band);
+// set functions to switch between real values and text representation
 void dtgtk_range_select_set_print_func(GtkDarktableRangeSelect *range, DTGTKPrintValueFunc print,
                                        DTGTKDecodeValueFunc decode);
 
+// add an icon to draw on top of graph bar
+// posx is percentage of the graph width
 void dtgtk_range_select_add_icon(GtkDarktableRangeSelect *range, const int posx, const double value_r,
                                  DTGTKCairoPaintIconFunc paint, gint flags, void *data);
+// remove all icons
 void dtgtk_range_select_reset_icons(GtkDarktableRangeSelect *range);
 
+// add a marker to emphase special values
+// marker can be magnetic so the pointer "snap" to the value
 void dtgtk_range_select_add_marker(GtkDarktableRangeSelect *range, const double value_r, const gboolean magnetic);
+// remove all the markers
 void dtgtk_range_select_reset_markers(GtkDarktableRangeSelect *range);
 
+// force the graph redraw
 void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range);
 G_END_DECLS

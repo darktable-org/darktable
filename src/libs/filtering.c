@@ -58,15 +58,10 @@ typedef struct _widgets_sort_t
   GtkWidget *direction;
 } _widgets_sort_t;
 
-typedef struct _widgets_rating_t
+typedef struct _widgets_range_t
 {
   GtkWidget *range_select;
-} _widgets_rating_t;
-
-typedef struct _widgets_aspect_ratio_t
-{
-  GtkWidget *range_select;
-} _widgets_aspect_ratio_t;
+} _widgets_range_t;
 
 typedef struct _widgets_folders_t
 {
@@ -422,110 +417,26 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
   return TRUE;
 }
 
-static void _rating_decode(const gchar *txt, int *min, int *max, dt_range_bounds_t *bounds)
-{
-  gchar *n1 = NULL;
-  gchar *n2 = NULL;
-  *bounds = DT_RANGE_BOUND_RANGE;
-  // easy case : select all
-  if(!strcmp(txt, "") || !strcmp(txt, "%"))
-  {
-    *bounds = DT_RANGE_BOUND_MAX | DT_RANGE_BOUND_MIN;
-    return;
-  }
-  else if(g_str_has_prefix(txt, "<="))
-  {
-    *bounds = DT_RANGE_BOUND_MIN;
-    n1 = g_strdup(txt + 2);
-    n2 = g_strdup(txt + 2);
-  }
-  else if(g_str_has_prefix(txt, "="))
-  {
-    *bounds = DT_RANGE_BOUND_FIXED;
-    n1 = g_strdup(txt + 1);
-    n2 = g_strdup(txt + 1);
-  }
-  else if(g_str_has_prefix(txt, ">="))
-  {
-    *bounds = DT_RANGE_BOUND_MAX;
-    n1 = g_strdup(txt + 2);
-    n2 = g_strdup(txt + 2);
-  }
-  else
-  {
-    GRegex *regex;
-    GMatchInfo *match_info;
-
-    // we test the range expression first
-    regex = g_regex_new("^\\s*\\[\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*;\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0,
-                        NULL);
-    g_regex_match_full(regex, txt, -1, 0, 0, &match_info, NULL);
-    int match_count = g_match_info_get_match_count(match_info);
-
-    if(match_count == 3)
-    {
-      n1 = g_match_info_fetch(match_info, 1);
-      n2 = g_match_info_fetch(match_info, 2);
-    }
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
-  }
-
-  // if we still don't have values, let's try simple value
-  if(!n1 || !n2)
-  {
-    *bounds = DT_RANGE_BOUND_FIXED;
-    n1 = g_strdup(txt);
-    n2 = g_strdup(txt);
-  }
-
-  // now we transform the text values into double
-  const int v1 = atoi(n1);
-  const int v2 = atoi(n2);
-  *min = MIN(v1, v2);
-  *max = MAX(v1, v2);
-  g_free(n1);
-  g_free(n2);
-}
-
-static void _rating_changed(GtkWidget *widget, gpointer user_data)
+static void _range_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
   if(rule->manual_widget_set) return;
   if(!rule->w_specific) return;
-  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
+  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
 
   // we recreate the right raw text and put it in the raw entry
-  double min, max;
-  dt_range_bounds_t bounds = dtgtk_range_select_get_selection(DTGTK_RANGE_SELECT(ratio->range_select), &min, &max);
-  const int mini = min;
-  const int maxi = max;
-
-  char txt[128] = { 0 };
-  if((bounds & DT_RANGE_BOUND_MAX) && (bounds & DT_RANGE_BOUND_MIN))
-    snprintf(txt, sizeof(txt), "%%");
-  else if(bounds & DT_RANGE_BOUND_MAX)
-    snprintf(txt, sizeof(txt), ">=%d", mini);
-  else if(bounds & DT_RANGE_BOUND_MIN)
-    snprintf(txt, sizeof(txt), "<=%d", maxi);
-  else if(bounds & DT_RANGE_BOUND_FIXED)
-    snprintf(txt, sizeof(txt), "=%d", mini);
-  else
-    snprintf(txt, sizeof(txt), "[%d;%d]", mini, maxi);
-
+  gchar *txt = dtgtk_range_select_get_raw_text(DTGTK_RANGE_SELECT(special->range_select));
   _rule_set_raw_text(rule, txt, TRUE);
+  g_free(txt);
 }
 
-static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
+static gboolean _range_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
-  int min, max;
-  dt_range_bounds_t bounds;
-  _rating_decode(rule->raw_text, &min, &max, &bounds);
+  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
 
   rule->manual_widget_set++;
-  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
-  dtgtk_range_select_set_selection(DTGTK_RANGE_SELECT(ratio->range_select), bounds, min, max, FALSE);
+  dtgtk_range_select_set_selection_from_raw_text(DTGTK_RANGE_SELECT(special->range_select), rule->raw_text, FALSE);
   rule->manual_widget_set--;
   return TRUE;
 }
@@ -575,14 +486,10 @@ static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint
 static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                 const gchar *text, dt_lib_module_t *self)
 {
-  _widgets_rating_t *rate = (_widgets_rating_t *)g_malloc0(sizeof(_widgets_rating_t));
+  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  int smin, smax;
-  dt_range_bounds_t sbounds;
-  _rating_decode(text, &smin, &smax, &sbounds);
-
-  rate->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE);
-  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(rate->range_select);
+  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
   range->step_r = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
   dtgtk_range_select_add_icon(range, 22, 0, dtgtk_cairo_paint_unratestar, 0, NULL);
@@ -593,7 +500,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   dtgtk_range_select_add_icon(range, 93, 5, _rating_paint_icon, 0, NULL);
   range->print = _rating_print_func;
 
-  dtgtk_range_select_set_selection(range, sbounds, smin, smax, FALSE);
+  dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
 
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
@@ -628,121 +535,21 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   range->min_r = -1;
   range->max_r = 6;
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), rate->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(rate->range_select), "value-changed", G_CALLBACK(_rating_changed), rule);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
 
-  rule->w_specific = rate;
-}
-
-static void _ratio_decode(const gchar *txt, double *min, double *max, dt_range_bounds_t *bounds)
-{
-  gchar *n1 = NULL;
-  gchar *n2 = NULL;
-  *bounds = DT_RANGE_BOUND_RANGE;
-  // easy case : select all
-  if(!strcmp(txt, "") || !strcmp(txt, "%"))
-  {
-    *bounds = DT_RANGE_BOUND_MAX | DT_RANGE_BOUND_MIN;
-    return;
-  }
-  else if(g_str_has_prefix(txt, "<="))
-  {
-    *bounds = DT_RANGE_BOUND_MIN;
-    n1 = g_strdup(txt + 2);
-    n2 = g_strdup(txt + 2);
-  }
-  else if(g_str_has_prefix(txt, "="))
-  {
-    *bounds = DT_RANGE_BOUND_FIXED;
-    n1 = g_strdup(txt + 1);
-    n2 = g_strdup(txt + 1);
-  }
-  else if(g_str_has_prefix(txt, ">="))
-  {
-    *bounds = DT_RANGE_BOUND_MAX;
-    n1 = g_strdup(txt + 2);
-    n2 = g_strdup(txt + 2);
-  }
-  else
-  {
-    GRegex *regex;
-    GMatchInfo *match_info;
-
-    // we test the range expression first
-    regex = g_regex_new("^\\s*\\[\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*;\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0,
-                        NULL);
-    g_regex_match_full(regex, txt, -1, 0, 0, &match_info, NULL);
-    int match_count = g_match_info_get_match_count(match_info);
-
-    if(match_count == 3)
-    {
-      n1 = g_match_info_fetch(match_info, 1);
-      n2 = g_match_info_fetch(match_info, 2);
-    }
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
-  }
-
-  // if we still don't have values, let's try simple value
-  if(!n1 || !n2)
-  {
-    *bounds = DT_RANGE_BOUND_FIXED;
-    n1 = g_strdup(txt);
-    n2 = g_strdup(txt);
-  }
-
-  // now we transform the text values into double
-  const double v1 = atof(n1);
-  const double v2 = atof(n2);
-  *min = fmin(v1, v2);
-  *max = fmax(v1, v2);
-  g_free(n1);
-  g_free(n2);
-}
-
-static void _ratio_changed(GtkWidget *widget, gpointer user_data)
-{
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
-  if(rule->manual_widget_set) return;
-  if(!rule->w_specific) return;
-  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
-
-  // we recreate the right raw text and put it in the raw entry
-  double min, max;
-  dt_range_bounds_t bounds = dtgtk_range_select_get_selection(DTGTK_RANGE_SELECT(ratio->range_select), &min, &max);
-
-  char txt[128] = { 0 };
-  gchar *locale = strdup(setlocale(LC_ALL, NULL));
-  setlocale(LC_NUMERIC, "C");
-  if((bounds & DT_RANGE_BOUND_MAX) && (bounds & DT_RANGE_BOUND_MIN))
-    snprintf(txt, sizeof(txt), "%%");
-  else if(bounds & DT_RANGE_BOUND_MAX)
-    snprintf(txt, sizeof(txt), ">=%.2lf", min);
-  else if(bounds & DT_RANGE_BOUND_MIN)
-    snprintf(txt, sizeof(txt), "<=%.2lf", max);
-  else if(bounds & DT_RANGE_BOUND_FIXED)
-    snprintf(txt, sizeof(txt), "=%.2lf", min);
-  else
-    snprintf(txt, sizeof(txt), "[%.2lf;%.2lf]", min, max);
-
-  setlocale(LC_NUMERIC, locale);
-  g_free(locale);
-
-  _rule_set_raw_text(rule, txt, TRUE);
+  rule->w_specific = special;
 }
 
 static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
-  double min, max;
-  dt_range_bounds_t bounds;
-  _ratio_decode(rule->raw_text, &min, &max, &bounds);
+
+  dt_lib_filtering_t *d = get_collect(rule);
+  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
   rule->manual_widget_set++;
-  dt_lib_filtering_t *d = get_collect(rule);
-  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)rule->w_specific;
-  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(ratio->range_select);
-
   // first, we update the graph
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
@@ -780,7 +587,7 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
   dtgtk_range_select_add_range_block(range, 1.01, 2.0, DT_RANGE_BOUND_MAX, _("landsacpe images"), nb_landscape);
 
   // and setup the selection
-  dtgtk_range_select_set_selection(range, bounds, min, max, FALSE);
+  dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
   rule->manual_widget_set--;
 
   dtgtk_range_select_redraw(range);
@@ -824,16 +631,12 @@ static gchar *_ratio_print_func(const double value, gboolean detailled)
 static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                const gchar *text, dt_lib_module_t *self)
 {
-  _widgets_aspect_ratio_t *ratio = (_widgets_aspect_ratio_t *)g_malloc0(sizeof(_widgets_aspect_ratio_t));
+  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  double smin, smax;
-  dt_range_bounds_t sbounds;
-  _ratio_decode(text, &smin, &smax, &sbounds);
+  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
-  ratio->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
-  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(ratio->range_select);
-
-  dtgtk_range_select_set_selection(range, sbounds, smin, smax, FALSE);
+  dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
   dtgtk_range_select_set_band_func(range, _ratio_value_from_band_func, _ratio_value_to_band_func);
   dtgtk_range_select_add_marker(range, 1.0, TRUE);
   range->print = _ratio_print_func;
@@ -855,10 +658,10 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   range->min_r = min;
   range->max_r = max;
 
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), ratio->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(ratio->range_select), "value-changed", G_CALLBACK(_ratio_changed), rule);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
 
-  rule->w_specific = ratio;
+  rule->w_specific = special;
 }
 
 static void _folders_decode(const gchar *txt, gchar *path, gchar *dir, gboolean *sub)
@@ -990,7 +793,7 @@ static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
   switch(rule->prop)
   {
     case DT_COLLECTION_PROP_RATING:
-      return _rating_update(rule);
+      return _range_update(rule);
     case DT_COLLECTION_PROP_ASPECT_RATIO:
       return _ratio_update(rule);
     case DT_COLLECTION_PROP_FOLDERS:
