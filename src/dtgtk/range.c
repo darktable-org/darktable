@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "range.h"
+#include "control/control.h"
 #include "gui/gtk.h"
 #include <string.h>
 
@@ -51,12 +52,20 @@ typedef struct _range_marker
   gboolean magnetic;
 } _range_marker;
 
-enum
+typedef enum _range_hover
+{
+  HOVER_OUTSIDE,
+  HOVER_INSIDE,
+  HOVER_MIN,
+  HOVER_MAX
+} _range_hover;
+
+typedef enum _range_signal
 {
   VALUE_CHANGED,
   VALUE_RESET,
   LAST_SIGNAL
-};
+} _range_signal;
 static guint _signals[LAST_SIGNAL] = { 0 };
 
 // cleanup everything when the widget is destroyed
@@ -518,8 +527,37 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   range->current_x_px = event->x - range->band_margin_side_px;
-  range->mouse_inside = (range->current_x_px >= 0 && range->current_x_px <= range->band_real_width_px);
 
+  // if we are outside the graph, don't go further
+  const gboolean inside = (range->current_x_px >= 0 && range->current_x_px <= range->band_real_width_px);
+  if(!inside)
+  {
+    range->mouse_inside = HOVER_OUTSIDE;
+    dt_control_change_cursor(GDK_LEFT_PTR);
+    return TRUE;
+  }
+
+  const double smin_r = (range->bounds & DT_RANGE_BOUND_MIN) ? range->min_r : range->select_min_r;
+  const double smax_r = (range->bounds & DT_RANGE_BOUND_MAX) ? range->max_r : range->select_max_r + range->step_r;
+  const int smin_px = _graph_value_to_pos(range, smin_r);
+  const int smax_px = _graph_value_to_pos(range, smax_r);
+
+  // change the cursor if we are close to an extrema
+  if(!range->set_selection && abs(range->current_x_px - smin_px) <= SNAP_SIZE)
+  {
+    range->mouse_inside = HOVER_MIN;
+    dt_control_change_cursor(GDK_LEFT_SIDE);
+  }
+  else if(!range->set_selection && abs(range->current_x_px - smax_px) <= SNAP_SIZE)
+  {
+    range->mouse_inside = HOVER_MAX;
+    dt_control_change_cursor(GDK_RIGHT_SIDE);
+  }
+  else
+  {
+    range->mouse_inside = HOVER_INSIDE;
+    dt_control_change_cursor(GDK_LEFT_PTR);
+  }
   gtk_widget_queue_draw(range->band);
   return TRUE;
 }
@@ -527,7 +565,7 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
 static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  range->mouse_inside = FALSE;
+  range->mouse_inside = HOVER_OUTSIDE;
 
   gtk_widget_queue_draw(range->band);
   return TRUE;
@@ -544,9 +582,25 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
   else if(e->button == 1)
   {
     if(!range->mouse_inside) return TRUE;
-    range->select_min_r = _graph_value_from_pos(range, e->x - range->band_margin_side_px, TRUE);
-    range->select_max_r = range->select_min_r;
-    range->bounds = DT_RANGE_BOUND_RANGE;
+    const double pos_r = _graph_value_from_pos(range, e->x - range->band_margin_side_px, TRUE);
+    if(range->mouse_inside == HOVER_MAX)
+    {
+      range->bounds &= ~DT_RANGE_BOUND_MAX;
+      range->select_min_r += range->step_r * 0.5;
+      range->select_max_r = pos_r;
+    }
+    else if(range->mouse_inside == HOVER_MIN)
+    {
+      range->bounds &= ~DT_RANGE_BOUND_MIN;
+      range->select_min_r = range->select_max_r + range->step_r * 0.5;
+      range->select_max_r = pos_r;
+    }
+    else
+    {
+      range->select_min_r = pos_r;
+      range->select_max_r = range->select_min_r;
+      range->bounds = DT_RANGE_BOUND_RANGE;
+    }
     range->set_selection = TRUE;
 
     gtk_widget_queue_draw(range->band);
@@ -616,7 +670,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
   range->select_min_r = 0.1;
   range->select_max_r = 0.9;
   range->bounds = DT_RANGE_BOUND_RANGE;
-  range->mouse_inside = FALSE;
+  range->mouse_inside = HOVER_OUTSIDE;
   range->current_x_px = 0.0;
   range->surface = NULL;
   range->surf_width_px = 0;
