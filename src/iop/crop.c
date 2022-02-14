@@ -1392,7 +1392,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   {
     // draw a light gray frame, to show it's not stored yet:
     // first mouse button, adjust cropping frame, but what do we do?
-    const float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
+    const float bzx = g->button_down_zoom_x + .5f;
+    const float bzy = g->button_down_zoom_y + .5f;
+
     if(g->cropping == GRAB_CENTER)
     {
       g->cropping = grab;
@@ -1467,7 +1469,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         }
         else
         {
-
           if(grab & GRAB_LEFT)
           {
             const float old_clip_x = g->clip_x;
