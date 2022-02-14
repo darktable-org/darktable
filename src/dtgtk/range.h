@@ -66,7 +66,7 @@ typedef struct _GtkDarktableRangeSelect
   dt_range_bounds_t bounds; // type of selection bounds
 
   double current_x_px;    // current position of the pointer
-  gboolean mouse_inside;  // is the mouse inside the graph widget
+  int mouse_inside;       // is the mouse inside the graph widget and does it hover min/max positions
   gboolean set_selection; // are we setting the selection
 
   cairo_surface_t *surface; // cached graph drawing
