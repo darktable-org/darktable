@@ -5351,6 +5351,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->xalign = 2;
     tiling->yalign = 2;
     tiling->overlap = 10;
+    tiling->factor_cl = tiling->factor + 3.0f;
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_LMMSE)
   {
