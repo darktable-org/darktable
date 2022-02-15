@@ -168,9 +168,10 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   gchar *delta_E_label_text;
 
   dt_gui_collapsible_section_t cs;
+  dt_gui_collapsible_section_t csspot;
 
   GtkWidget *spot_settings, *spot_mode;
-  GtkWidget *collapsible_spot, *hue_spot, *chroma_spot, *lightness_spot;
+  GtkWidget *hue_spot, *chroma_spot, *lightness_spot;
   GtkWidget *origin_spot, *target_spot;
   GtkWidget *Lch_origin, *Lch_target;
   GtkWidget *use_mixing;
@@ -2681,26 +2682,6 @@ static void commit_profile_callback(GtkWidget *widget, GdkEventButton *event, gp
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void set_spot_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_request_focus(self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
-
-  // stupid toggle on/off
-  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-  const gboolean state = !gtk_widget_get_visible(g->collapsible_spot);
-  gtk_widget_set_visible(g->collapsible_spot, state);
-
-  if(state)
-    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
-  else
-    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-
-  // Remember the state
-  dt_conf_set_bool("darkroom/modules/channelmixerrgb/expand_picker_mapping", state);
-}
-
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -3643,17 +3624,7 @@ void gui_update(struct dt_iop_module_t *self)
     chroma = dt_conf_get_float("darkroom/modules/channelmixerrgb/chroma");
   dt_bauhaus_slider_set(g->chroma_spot, chroma);
 
-  gboolean show_collapsible = FALSE;
-  if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/expand_picker_mapping"))
-    show_collapsible = dt_conf_get_bool("darkroom/modules/channelmixerrgb/expand_picker_mapping");
-  gtk_widget_set_visible(g->collapsible_spot, show_collapsible);
-
   dt_iop_gui_leave_critical_section(self);
-
-  if(show_collapsible)
-    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
-  else
-    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
 
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
   dt_bauhaus_combobox_set(g->illum_fluo, p->illum_fluo);
@@ -3726,6 +3697,7 @@ void gui_update(struct dt_iop_module_t *self)
   g->is_profiling_started = FALSE;
 
   dt_gui_hide_collapsible_section(&g->cs);
+  dt_gui_hide_collapsible_section(&g->csspot);
 
   g->spot_RGB[0] = 0.f;
   g->spot_RGB[1] = 0.f;
@@ -3821,7 +3793,7 @@ void reload_defaults(dt_iop_module_t *module)
 }
 
 
-static void spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *self)
+static void _spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
@@ -4332,15 +4304,15 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->clip = dt_bauhaus_toggle_from_params(self, "clip");
 
-  g->spot_settings = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->spot_settings, NULL, N_("spot color mapping"));
-  dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->spot_settings, TRUE);
-  gtk_widget_set_tooltip_text(g->spot_settings, _("use a color checker target to autoset CAT and channels"));
-  g_signal_connect(G_OBJECT(g->spot_settings), "quad-pressed", G_CALLBACK(set_spot_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->spot_settings), TRUE, TRUE, 0);
+  // Add the color mapping collapsible panel
 
-  g->collapsible_spot = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_new_collapsible_section
+    (&g->csspot,
+     "plugins/darkroom/channelmixerrgb/expand_picker_mapping",
+     N_("spot color mapping"),
+     GTK_BOX(self->widget));
+
+  gtk_widget_set_tooltip_text(g->csspot.expander, _("use a color checker target to autoset CAT and channels"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
                                 _("\"correction\" automatically adjust the illuminant\n"
@@ -4350,15 +4322,15 @@ void gui_init(struct dt_iop_module_t *self)
                                 0, NULL, self,
                                 N_("correction"),
                                 N_("measure"));
-  gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
+  gtk_box_pack_start(GTK_BOX(g->csspot.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->use_mixing = gtk_check_button_new_with_label(_("take channel mixing into account"));
   gtk_widget_set_tooltip_text(g->use_mixing,
                               _("compute the target by taking the channel mixing into account.\n"
                                 "if disabled, only the CAT is considered."));
-  gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(g->use_mixing), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->use_mixing), "toggled", G_CALLBACK(spot_settings_changed_callback), self);
+  gtk_box_pack_start(GTK_BOX(g->csspot.container), GTK_WIDGET(g->use_mixing), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->use_mixing), "toggled", G_CALLBACK(_spot_settings_changed_callback), self);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -4399,26 +4371,24 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->lightness_spot, "%.1f %%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
+  g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->hue_spot = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 360., 0.5, 0, 1, 0);
   dt_bauhaus_widget_set_label(g->hue_spot, NULL, _("hue"));
   dt_bauhaus_slider_set_format(g->hue_spot, "%.1f °");
   dt_bauhaus_slider_set_default(g->hue_spot, 0.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->hue_spot), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->hue_spot), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
+  g_signal_connect(G_OBJECT(g->hue_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->chroma_spot = dt_bauhaus_slider_new_with_range(self, 0., 128., 0.5, 0, 1);
   dt_bauhaus_widget_set_label(g->chroma_spot, NULL, _("chroma"));
   dt_bauhaus_slider_set_default(g->chroma_spot, 0.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->chroma_spot), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->chroma_spot), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
+  g_signal_connect(G_OBJECT(g->chroma_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), TRUE, TRUE, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->collapsible_spot), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->csspot.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
   GtkWidget *first, *second, *third;
 #define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap)              \
