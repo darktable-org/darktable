@@ -3447,8 +3447,6 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 {
 //  dt_print(DT_DEBUG_INPUT, "  [shortcut_dispatcher] %d\n", event->type);
 
-  if(!darktable.control->key_accelerators_on) return FALSE; // FIXME should eventually no longer be needed
-
   if(_pressed_keys == NULL)
   {
     if(_grab_widget && event->type == GDK_BUTTON_PRESS)
@@ -3492,7 +3490,7 @@ gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_dat
 
     _sc.mods = _key_modifiers_clean(event->key.state);
 
-    // FIXME: eventually clean up per-view and global key_pressed handlers
+    // FIXME: for vimkeys and game. Needs generalising for non-bauhaus/non-darkroom
     if(!_grab_widget && !darktable.control->mapping_widget &&
        dt_control_key_pressed_override(event->key.keyval, dt_gui_translated_key_state(&event->key))) return TRUE;
 
