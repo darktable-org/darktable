@@ -615,12 +615,11 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   if(!range->set_selection) return TRUE;
   range->select_max_r = _graph_value_from_pos(range, e->x - range->band_margin_side_px, TRUE);
-
+  const double min_pos_px = _graph_value_to_pos(range, range->select_min_r);
   // for the min value, we just round it toward step
   if(range->step_bd > 0.0)
   {
-    range->select_min_r = _graph_value_to_pos(range, range->select_min_r);
-    range->select_min_r = _graph_value_from_pos(range, range->select_min_r, FALSE);
+    range->select_min_r = _graph_value_from_pos(range, min_pos_px, FALSE);
   }
   // we verify that the values are in the right order
   if(range->select_max_r < range->select_min_r)
@@ -631,7 +630,7 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
   }
 
   // we also set the bounds
-  if(range->select_max_r - range->select_min_r < 0.001)
+  if(abs(e->x - range->band_margin_side_px - min_pos_px) < 2)
     range->bounds = DT_RANGE_BOUND_FIXED;
   else
   {
@@ -912,7 +911,7 @@ gchar *dtgtk_range_select_get_raw_text(GtkDarktableRangeSelect *range)
   else if(bounds & DT_RANGE_BOUND_MIN)
     ret = g_strdup_printf("<=%s", txt_max);
   else if(bounds & DT_RANGE_BOUND_FIXED)
-    ret = g_strdup_printf("=%s", txt_min);
+    ret = g_strdup_printf("%s", txt_min);
   else
     ret = g_strdup_printf("[%s;%s]", txt_min, txt_max);
 

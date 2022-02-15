@@ -932,6 +932,108 @@ static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   rule->w_specific = special;
 }
 
+static gboolean _exposure_update(dt_lib_filtering_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+
+  dt_lib_filtering_t *d = get_collect(rule);
+  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+
+  rule->manual_widget_set++;
+  // first, we update the graph
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT exposure, COUNT(*) AS count"
+             " FROM main.images AS mi"
+             " WHERE %s"
+             " GROUP BY exposure",
+             d->last_where_ext);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  dtgtk_range_select_reset_blocks(range);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const double val = sqlite3_column_double(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+
+    dtgtk_range_select_add_block(range, val, count);
+  }
+  sqlite3_finalize(stmt);
+
+  // and setup the selection
+  dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  rule->manual_widget_set--;
+
+  dtgtk_range_select_redraw(range);
+  return TRUE;
+}
+
+static double _exposure_value_to_band_func(const double value)
+{
+  return pow(value, 0.25);
+}
+
+static double _exposure_value_from_band_func(const double value)
+{
+  return pow(value, 4);
+}
+
+static gchar *_exposure_print_func(const double value, gboolean detailled)
+{
+  if(detailled)
+  {
+    return dt_util_format_exposure(value);
+  }
+  else
+  {
+    gchar *locale = strdup(setlocale(LC_ALL, NULL));
+    setlocale(LC_NUMERIC, "C");
+    gchar *txt = g_strdup_printf("%.6lf", value);
+    setlocale(LC_NUMERIC, locale);
+    g_free(locale);
+    return txt;
+  }
+}
+
+static void _exposure_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+                                  const gchar *text, dt_lib_module_t *self)
+{
+  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+
+  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+
+  gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 10);
+  gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 10);
+  dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
+  dtgtk_range_select_set_band_func(range, _exposure_value_from_band_func, _exposure_value_to_band_func);
+  dtgtk_range_select_add_marker(range, 1.0, TRUE);
+  range->print = _exposure_print_func;
+
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT MIN(exposure), MAX(exposure)"
+             " FROM main.images");
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  double min = 0.0;
+  double max = 2.0;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    min = sqlite3_column_double(stmt, 0);
+    max = sqlite3_column_double(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+  range->min_r = min;
+  range->max_r = max;
+
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+
+  rule->w_specific = special;
+}
+
 static void _folders_decode(const gchar *txt, gchar *path, gchar *dir, gboolean *sub)
 {
   if(!txt || strlen(txt) == 0) return;
@@ -1070,6 +1172,8 @@ static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
       return _aperture_update(rule);
     case DT_COLLECTION_PROP_ISO:
       return _iso_update(rule);
+    case DT_COLLECTION_PROP_EXPOSURE:
+      return _exposure_update(rule);
     case DT_COLLECTION_PROP_FOLDERS:
       return _folders_update(rule);
     default:
@@ -1111,6 +1215,9 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
       break;
     case DT_COLLECTION_PROP_ISO:
       _iso_widget_init(rule, rule->prop, text, self);
+      break;
+    case DT_COLLECTION_PROP_EXPOSURE:
+      _exposure_widget_init(rule, rule->prop, text, self);
       break;
     case DT_COLLECTION_PROP_FOLDERS:
       _folders_widget_init(rule, rule->prop, text, self);
