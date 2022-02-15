@@ -148,11 +148,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RGB;
 }
 
-static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const float exposure);
-static float dt_iop_exposure_get_exposure(struct dt_iop_module_t *self);
-static void dt_iop_exposure_set_black(struct dt_iop_module_t *self, const float black);
-static float dt_iop_exposure_get_black(struct dt_iop_module_t *self);
-static void paint_hue(dt_iop_module_t *self);
+static void _exposure_proxy_set_exposure(struct dt_iop_module_t *self, const float exposure);
+static float _exposure_proxy_get_exposure(struct dt_iop_module_t *self);
+static void _exposure_proxy_set_black(struct dt_iop_module_t *self, const float black);
+static float _exposure_proxy_get_black(struct dt_iop_module_t *self);
+static void _paint_hue(dt_iop_module_t *self);
+static void _exposure_set_black(struct dt_iop_module_t *self, const float black);
 
 void connect_key_accels(dt_iop_module_t *self)
 {
@@ -161,10 +162,10 @@ void connect_key_accels(dt_iop_module_t *self)
   */
   dt_dev_proxy_exposure_t *instance = &darktable.develop->proxy.exposure;
   instance->module = self;
-  instance->set_exposure = dt_iop_exposure_set_exposure;
-  instance->get_exposure = dt_iop_exposure_get_exposure;
-  instance->set_black = dt_iop_exposure_set_black;
-  instance->get_black = dt_iop_exposure_get_black;
+  instance->set_exposure = _exposure_proxy_set_exposure;
+  instance->get_exposure = _exposure_proxy_get_exposure;
+  instance->set_black = _exposure_proxy_set_black;
+  instance->get_black = _exposure_proxy_get_black;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -299,8 +300,8 @@ void init_presets (dt_iop_module_so_t *self)
                             self->version(), FOR_RAW);
 }
 
-static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
-                                        dt_dev_histogram_stats_t *histogram_stats)
+static void _deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,
+                                         dt_dev_histogram_stats_t *histogram_stats)
 {
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'r');
   dt_image_t image = *img;
@@ -341,7 +342,7 @@ static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histog
 
 /* input: 0 - 65535 (valid range: from black level to white level) */
 /* output: -16 ... 0 */
-static double raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level)
+static double _raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level)
 {
   const uint32_t raw_max = white_level - black_level;
 
@@ -354,9 +355,9 @@ static double raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level
   return raw_ev;
 }
 
-static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                               const uint32_t *const histogram,
-                               const dt_dev_histogram_stats_t *const histogram_stats, float *correction)
+static void _compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                                const uint32_t *const histogram,
+                                const dt_dev_histogram_stats_t *const histogram_stats, float *correction)
 {
   const dt_iop_exposure_params_t *const p = (const dt_iop_exposure_params_t *const)p1;
 
@@ -384,12 +385,12 @@ static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_de
   }
 
   const double ev
-      = raw_to_ev(raw, (uint32_t)pipe->dsc.rawprepare.raw_black_level, pipe->dsc.rawprepare.raw_white_point);
+      = _raw_to_ev(raw, (uint32_t)pipe->dsc.rawprepare.raw_black_level, pipe->dsc.rawprepare.raw_white_point);
 
   *correction = p->deflicker_target_level - ev;
 }
 
-static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+static void _process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t*)self->gui_data;
   dt_iop_exposure_data_t *d = piece->data;
@@ -402,15 +403,15 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     if(g)
     {
       // histogram is precomputed and cached
-      compute_correction(self, &d->params, piece->pipe, g->deflicker_histogram, &g->deflicker_histogram_stats,
+      _compute_correction(self, &d->params, piece->pipe, g->deflicker_histogram, &g->deflicker_histogram_stats,
                          &exposure);
     }
     else
     {
       uint32_t *histogram = NULL;
       dt_dev_histogram_stats_t histogram_stats;
-      deflicker_prepare_histogram(self, &histogram, &histogram_stats);
-      compute_correction(self, &d->params, piece->pipe, histogram, &histogram_stats, &exposure);
+      _deflicker_prepare_histogram(self, &histogram, &histogram_stats);
+      _compute_correction(self, &d->params, piece->pipe, histogram, &histogram_stats, &exposure);
       free(histogram);
     }
 
@@ -434,7 +435,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->global_data;
 
-  process_common_setup(self, piece);
+  _process_common_setup(self, piece);
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
@@ -465,7 +466,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
 
-  process_common_setup(self, piece);
+  _process_common_setup(self, piece);
 
   const int ch = piece->colors;
 
@@ -490,7 +491,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 
-static float get_exposure_bias(const struct dt_iop_module_t *self)
+static float _get_exposure_bias(const struct dt_iop_module_t *self)
 {
   float bias = 0.0f;
 
@@ -519,12 +520,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // If exposure bias compensation has been required, add it on top of user exposure correction
   if(p->compensate_exposure_bias)
-    d->params.exposure -= get_exposure_bias(self);
+    d->params.exposure -= _get_exposure_bias(self);
 
   d->deflicker = 0;
 
-  if(p->mode == EXPOSURE_MODE_DEFLICKER && dt_image_is_raw(&self->dev->image_storage)
-     && self->dev->image_storage.buf_dsc.channels == 1 && self->dev->image_storage.buf_dsc.datatype == TYPE_UINT16)
+  if(p->mode == EXPOSURE_MODE_DEFLICKER
+     && dt_image_is_raw(&self->dev->image_storage)
+     && self->dev->image_storage.buf_dsc.channels == 1
+     && self->dev->image_storage.buf_dsc.datatype == TYPE_UINT16)
   {
     d->deflicker = 1;
   }
@@ -541,7 +544,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static void autoexp_disable(dt_iop_module_t *self)
+static void _autoexp_disable(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
 }
@@ -551,7 +554,8 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
+  if(!dt_image_is_raw(&self->dev->image_storage)
+     || self->dev->image_storage.buf_dsc.channels != 1
      || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
   {
     gtk_widget_set_sensitive(GTK_WIDGET(g->mode), FALSE);
@@ -569,7 +573,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);
   /* xgettext:no-c-format */
-  gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"), get_exposure_bias(self));
+  gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"), _get_exposure_bias(self));
   gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), label);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_exposure_bias))), PANGO_ELLIPSIZE_MIDDLE);
   g_free(label);
@@ -608,9 +612,9 @@ void gui_update(struct dt_iop_module_t *self)
   switch(p->mode)
   {
     case EXPOSURE_MODE_DEFLICKER:
-      autoexp_disable(self);
+      _autoexp_disable(self);
       gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "deflicker");
-      deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
+      _deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
       break;
     case EXPOSURE_MODE_MANUAL:
     default:
@@ -636,9 +640,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void exposure_set_black(struct dt_iop_module_t *self, const float black);
-
-static void exposure_set_white(struct dt_iop_module_t *self, const float white)
+static void _exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
@@ -646,7 +648,7 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
   if(p->exposure == exposure) return;
 
   p->exposure = exposure;
-  if(p->black >= white) exposure_set_black(self, white - 0.01);
+  if(p->black >= white) _exposure_set_black(self, white - 0.01);
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
@@ -656,7 +658,7 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const float exposure)
+static void _exposure_proxy_set_exposure(struct dt_iop_module_t *self, const float exposure)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
@@ -675,12 +677,12 @@ static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const flo
   else
   {
     const float white = exposure2white(exposure);
-    exposure_set_white(self, white);
-    autoexp_disable(self);
+    _exposure_set_white(self, white);
+    _autoexp_disable(self);
   }
 }
 
-static float dt_iop_exposure_get_exposure(struct dt_iop_module_t *self)
+static float _exposure_proxy_get_exposure(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
@@ -694,7 +696,7 @@ static float dt_iop_exposure_get_exposure(struct dt_iop_module_t *self)
   }
 }
 
-static void exposure_set_black(struct dt_iop_module_t *self, const float black)
+static void _exposure_set_black(struct dt_iop_module_t *self, const float black)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
@@ -703,7 +705,7 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
   p->black = black;
   if(p->black >= exposure2white(p->exposure))
   {
-    exposure_set_white(self, p->black + 0.01);
+    _exposure_set_white(self, p->black + 0.01);
   }
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
@@ -713,19 +715,19 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void dt_iop_exposure_set_black(struct dt_iop_module_t *self, const float black)
+static void _exposure_proxy_set_black(struct dt_iop_module_t *self, const float black)
 {
-  autoexp_disable(self);
-  exposure_set_black(self, black);
+  _autoexp_disable(self);
+  _exposure_set_black(self, black);
 }
 
-static float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
+static float _exposure_proxy_get_black(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
   return p->black;
 }
 
-void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
+static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
@@ -765,7 +767,7 @@ void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     float expo = p->exposure;
 
     // If the exposure bias compensation is on, we need to add it to the user param
-    if(p->compensate_exposure_bias) expo -= get_exposure_bias(self);
+    if(p->compensate_exposure_bias) expo -= _get_exposure_bias(self);
 
     float white = exposure2white(-expo);
 
@@ -781,7 +783,7 @@ void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     // Return the values in sliders
     ++darktable.gui->reset;
     dt_bauhaus_slider_set_soft(g->lightness_spot, Lab_out[0]);
-    paint_hue(self);
+    _paint_hue(self);
     --darktable.gui->reset;
 
     dt_conf_set_float("darkroom/modules/exposure/lightness", Lab_out[0]);
@@ -805,10 +807,10 @@ void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
     float expo = -white2exposure(white);
 
     // If the exposure bias compensation is on, we need to subtract it from the user param
-    if(p->compensate_exposure_bias) expo -= get_exposure_bias(self);
+    if(p->compensate_exposure_bias) expo -= _get_exposure_bias(self);
 
     white = exposure2white(-expo);
-    exposure_set_white(self, white);
+    _exposure_set_white(self, white);
   }
 }
 
@@ -833,7 +835,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     switch(p->mode)
     {
       case EXPOSURE_MODE_DEFLICKER:
-        autoexp_disable(self);
+        _autoexp_disable(self);
         if(!dt_image_is_raw(&self->dev->image_storage) || self->dev->image_storage.buf_dsc.channels != 1
           || self->dev->image_storage.buf_dsc.datatype != TYPE_UINT16)
         {
@@ -843,7 +845,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
           break;
         }
         gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "deflicker");
-        deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
+        _deflicker_prepare_histogram(self, &g->deflicker_histogram, &g->deflicker_histogram_stats);
         break;
       case EXPOSURE_MODE_MANUAL:
       default:
@@ -855,18 +857,18 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     const float white = exposure2white(p->exposure);
     if(p->black >= white)
-      exposure_set_black(self, white - 0.01);
+      _exposure_set_black(self, white - 0.01);
   }
   else if(w == g->black)
   {
     const float white = exposure2white(p->exposure);
     if(p->black >= white)
-      exposure_set_white(self, p->black + 0.01);
+      _exposure_set_white(self, p->black + 0.01);
   }
 }
 
 
-static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+static gboolean _draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
 
@@ -888,7 +890,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 }
 
 
-static gboolean target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
@@ -932,7 +934,7 @@ static gboolean target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user
 }
 
 
-static gboolean origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+static gboolean _origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
@@ -963,7 +965,7 @@ static gboolean origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user
   return TRUE;
 }
 
-static void paint_hue(dt_iop_module_t *self)
+static void _paint_hue(dt_iop_module_t *self)
 {
   // update the fill background color of LCh sliders
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
@@ -994,7 +996,7 @@ static void paint_hue(dt_iop_module_t *self)
 }
 
 
-static void spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *self)
+static void _spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
@@ -1010,7 +1012,7 @@ static void spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *s
   dt_conf_set_float("darkroom/modules/exposure/lightness", Lch_target[0]);
 
   ++darktable.gui->reset;
-  paint_hue(self);
+  _paint_hue(self);
   --darktable.gui->reset;
 
   // Re-run auto compute if color picker active and mode is correct
@@ -1108,7 +1110,7 @@ void gui_init(struct dt_iop_module_t *self)
                                 N_("correction"),
                                 N_("measure"));
   gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
+  g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
   GtkWidget *vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -1121,7 +1123,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->origin_spot),
                               _("this is the input color that should be mapped to the target."));
 
-  g_signal_connect(G_OBJECT(g->origin_spot), "draw", G_CALLBACK(origin_color_draw), self);
+  g_signal_connect(G_OBJECT(g->origin_spot), "draw", G_CALLBACK(_origin_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->origin_spot, TRUE, TRUE, 0);
 
   g->Lch_origin = gtk_label_new(_("L : \tN/A"));
@@ -1133,7 +1135,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   vvbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("target")), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vvbox), dt_ui_section_label_new(_("target")), FALSE, TRUE, 0);
 
   g->target_spot = GTK_WIDGET(gtk_drawing_area_new());
   gtk_widget_set_size_request(g->target_spot, 2 * DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width),
@@ -1141,7 +1143,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->target_spot),
                               _("this is the desired target color after mapping."));
 
-  g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(target_color_draw), self);
+  g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(_target_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.5, 0, 1);
@@ -1149,13 +1151,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->lightness_spot, "%.1f %%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
+  g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), TRUE, TRUE, DT_BAUHAUS_SPACE);
 
   gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_draw), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
