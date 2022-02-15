@@ -119,9 +119,9 @@ static gpointer _camera_get_job(const dt_camctl_t *c, const dt_camera_t *camera)
 static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera, gpointer job);
 
 /** Dispatch functions for listener interfaces */
-static const char *_dispatch_request_image_path(const dt_camctl_t *c, time_t *exif_time, const dt_camera_t *camera);
+static const char *_dispatch_request_image_path(const dt_camctl_t *c, char *exif_time, const dt_camera_t *camera);
 static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *filename,
-                                                    time_t *exif_time, const dt_camera_t *camera);
+                                                    const char *exif_time, const dt_camera_t *camera);
 static void _dispatch_camera_image_downloaded(const dt_camctl_t *c, const dt_camera_t *camera, const char *filename);
 static void _dispatch_camera_connected(const dt_camctl_t *c, const dt_camera_t *camera);
 static void _dispatch_camera_disconnected(const dt_camctl_t *c, const dt_camera_t *camera);
@@ -142,25 +142,12 @@ static void _gphoto_log25(GPLogLevel level, const char *domain, const char *log,
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] %s %s\n", domain, log);
 }
 
-#ifndef HAVE_GPHOTO_25_OR_NEWER
-static void _gphoto_log(GPLogLevel level, const char *domain, const char *format, va_list args, void *data)
-{
-  char log[4096] = { 0 };
-  vsnprintf(log, sizeof(log), format, args);
-  _gphoto_log25(level, domain, log, data);
-}
-#endif
-
 static void _enable_debug() __attribute__((unused));
 static void _disable_debug() __attribute__((unused));
 
 static void _enable_debug()
 {
-#ifdef HAVE_GPHOTO_25_OR_NEWER
   logid = gp_log_add_func(GP_LOG_DATA, (GPLogFunc)_gphoto_log25, NULL);
-#else
-  logid = gp_log_add_func(GP_LOG_DATA, (GPLogFunc)_gphoto_log, NULL);
-#endif
 }
 
 static void _disable_debug()
@@ -203,31 +190,6 @@ static void _message_func_dispatch25(GPContext *context, const char *text, void 
 {
   dt_print(DT_DEBUG_CAMCTL, "[camera_control] gphoto2 message: %s\n", text);
 }
-
-#ifndef HAVE_GPHOTO_25_OR_NEWER
-static void _status_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
-{
-  char buffer[4096];
-  vsnprintf(buffer, sizeof(buffer), format, args);
-
-  _status_func_dispatch25(context, buffer, data);
-}
-
-static void _error_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
-{
-  char buffer[4096];
-  vsnprintf(buffer, sizeof(buffer), format, args);
-
-  _error_func_dispatch25(context, buffer, data);
-}
-
-static void _message_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
-{
-  char buffer[4096];
-  vsnprintf(buffer, sizeof(buffer), format, args);
-  _message_func_dispatch25(context, buffer, data);
-}
-#endif
 
 static gboolean _camera_timeout_job(gpointer data)
 {
@@ -657,15 +619,9 @@ dt_camctl_t *dt_camctl_new()
   camctl->ticker = 1;
   camctl->tickmask = 0x0F;
 
-#ifdef HAVE_GPHOTO_25_OR_NEWER
   gp_context_set_status_func(camctl->gpcontext, (GPContextStatusFunc)_status_func_dispatch25, camctl);
   gp_context_set_error_func(camctl->gpcontext, (GPContextErrorFunc)_error_func_dispatch25, camctl);
   gp_context_set_message_func(camctl->gpcontext, (GPContextMessageFunc)_message_func_dispatch25, camctl);
-#else
-  gp_context_set_status_func(camctl->gpcontext, (GPContextStatusFunc)_status_func_dispatch, camctl);
-  gp_context_set_error_func(camctl->gpcontext, (GPContextErrorFunc)_error_func_dispatch, camctl);
-  gp_context_set_message_func(camctl->gpcontext, (GPContextMessageFunc)_message_func_dispatch, camctl);
-#endif
 
   // Load all camera drivers we know...
   gp_abilities_list_new(&camctl->gpcams);
@@ -1155,7 +1111,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     int res = GP_OK;
     char *data = NULL;
     gsize size = 0;
-    time_t exif_time;
+    char exif_time[DT_DATETIME_LENGTH];
 
     gp_file_new(&camfile);
     if((res = gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, camfile, NULL)) < GP_OK)
@@ -1187,10 +1143,10 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     }
     else
     {
-      const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
+      dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
 
-      const char *output_path = _dispatch_request_image_path(c, have_exif_time ? &exif_time : NULL, cam);
-      const char *fname = _dispatch_request_image_filename(c, filename, have_exif_time ? &exif_time : NULL, cam);
+      const char *output_path = _dispatch_request_image_path(c, exif_time, cam);
+      const char *fname = _dispatch_request_image_filename(c, filename, exif_time[0] ? exif_time : NULL, cam);
       if(!fname)
       {
         gp_file_free(camfile);
@@ -1954,7 +1910,7 @@ static void _camera_configuration_update(const dt_camctl_t *c, const dt_camera_t
 }
 
 static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const char *filename,
-                                                    time_t *exif_time, const dt_camera_t *camera)
+                                                    const char *exif_time, const dt_camera_t *camera)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
 
@@ -1973,7 +1929,7 @@ static const char *_dispatch_request_image_filename(const dt_camctl_t *c, const 
   return path;
 }
 
-static const char *_dispatch_request_image_path(const dt_camctl_t *c, time_t *exif_time, const dt_camera_t *camera)
+static const char *_dispatch_request_image_path(const dt_camctl_t *c, char *exif_time, const dt_camera_t *camera)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
   const char *path = NULL;

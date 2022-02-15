@@ -86,8 +86,6 @@ static char *_pipe_type_to_str(int pipe_type)
         r = "preview2";
       break;
     case DT_DEV_PIXELPIPE_FULL:
-      if(fast)
-      r = "full";
       r = "full";
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
@@ -326,7 +324,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     piece->histogram_stats.bins_count = 0;
     piece->histogram_stats.pixels = 0;
     piece->colors
-        = ((module->default_colorspace(module, pipe, NULL) == iop_cs_RAW) && (dt_image_is_raw(&pipe->image)))
+        = ((module->default_colorspace(module, pipe, NULL) == IOP_CS_RAW) && (dt_image_is_raw(&pipe->image)))
               ? 1
               : 4;
     piece->iscale = pipe->iscale;
@@ -812,7 +810,7 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
     // padding, e.g. is equivalent to float[x*4], and that on failure
     // it's OK not to touch output
     int converted_cst;
-    dt_ioppr_transform_image_colorspace(module, picked_rgb[0], sample->lab[0], 3, 1, iop_cs_rgb, iop_cs_Lab,
+    dt_ioppr_transform_image_colorspace(module, picked_rgb[0], sample->lab[0], 3, 1, IOP_CS_RGB, IOP_CS_LAB,
                                         &converted_cst, display_profile);
     if(display_profile && histogram_profile)
       dt_ioppr_transform_image_colorspace_rgb(picked_rgb[0], sample->scope[0], 3, 1,
@@ -825,7 +823,7 @@ static void _pixelpipe_pick_from_image(dt_iop_module_t *module,
     int converted_cst;
     // mean = min = max == pixel sample, so only need to do colorspace work on a single point
     memcpy(sample->display[0], pixel + 4 * (roi_in->width * y + x), sizeof(dt_aligned_pixel_t));
-    dt_ioppr_transform_image_colorspace(module, sample->display[0], sample->lab[0], 1, 1, iop_cs_rgb, iop_cs_Lab,
+    dt_ioppr_transform_image_colorspace(module, sample->display[0], sample->lab[0], 1, 1, IOP_CS_RGB, IOP_CS_LAB,
                                         &converted_cst, display_profile);
     if(display_profile && histogram_profile)
       dt_ioppr_transform_image_colorspace_rgb(sample->display[0], sample->scope[0], 1, 1,
@@ -883,17 +881,17 @@ static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self, con
 
   switch(picker_cst)
   {
-    case iop_cs_RAW:
-      return iop_cs_RAW;
-    case iop_cs_Lab:
-    case iop_cs_LCh:
-      return iop_cs_Lab;
-    case iop_cs_rgb:
-    case iop_cs_HSL:
-    case iop_cs_JzCzhz:
-      return iop_cs_rgb;
-    case iop_cs_NONE:
-      // iop_cs_NONE is used by temperature.c as it may work in RAW or RGB
+    case IOP_CS_RAW:
+      return IOP_CS_RAW;
+    case IOP_CS_LAB:
+    case IOP_CS_LCH:
+      return IOP_CS_LAB;
+    case IOP_CS_RGB:
+    case IOP_CS_HSL:
+    case IOP_CS_JZCZHZ:
+      return IOP_CS_RGB;
+    case IOP_CS_NONE:
+      // IOP_CS_NONE is used by temperature.c as it may work in RAW or RGB
       // return the pipe color space to avoid any additional conversions
       return cst;
     default:
@@ -958,7 +956,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   // if input is RAW, we can't color convert because RAW is not in a color space
   // so we send NULL to by-pass
   const dt_iop_order_iccprofile_info_t *const work_profile
-      = (input_format->cst != iop_cs_RAW) ? dt_ioppr_get_pipe_work_profile_info(pipe) : NULL;
+      = (input_format->cst != IOP_CS_RAW) ? dt_ioppr_get_pipe_work_profile_info(pipe) : NULL;
 
   // transform to module input colorspace
   dt_ioppr_transform_image_colorspace(module, input, input, roi_in->width, roi_in->height, input_format->cst,
@@ -1348,7 +1346,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     // if input is RAW, we can't color convert because RAW is not in a color space
     // so we send NULL to by-pass
     const dt_iop_order_iccprofile_info_t *const work_profile
-        = (input_format->cst != iop_cs_RAW) ? dt_ioppr_get_pipe_work_profile_info(pipe) : NULL;
+        = (input_format->cst != IOP_CS_RAW) ? dt_ioppr_get_pipe_work_profile_info(pipe) : NULL;
 
     /* do we have opencl at all? did user tell us to use it? did we get a resource? */
     if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0)

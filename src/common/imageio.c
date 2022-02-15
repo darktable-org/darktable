@@ -393,7 +393,7 @@ dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, d
   // needed to alloc correct buffer size:
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
-  img->buf_dsc.cst = iop_cs_rgb;
+  img->buf_dsc.cst = IOP_CS_RGB;
   dt_imageio_retval_t ret;
   dt_image_loader_t loader;
 #ifdef HAVE_OPENEXR
@@ -567,7 +567,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_jpeg(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb; // jpeg is always RGB
+    img->buf_dsc.cst = IOP_CS_RGB; // jpeg is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_S_RAW;
@@ -592,7 +592,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_png(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb; // png is always RGB
+    img->buf_dsc.cst = IOP_CS_RGB; // png is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_S_RAW;
@@ -606,7 +606,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_j2k(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb; // j2k is always RGB
+    img->buf_dsc.cst = IOP_CS_RGB; // j2k is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -620,7 +620,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_pnm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb; // pnm is always RGB
+    img->buf_dsc.cst = IOP_CS_RGB; // pnm is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_S_RAW;
@@ -812,10 +812,12 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     sRGB = 0;
   }
 
+  // if is_scaling is used don't override high_quality
   // get only once at the beginning, in case the user changes it on the way:
   const gboolean high_quality_processing
       = ((format_params->max_width == 0 || format_params->max_width >= pipe.processed_width)
-         && (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height))
+         && (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)
+         && !is_scaling)
             ? FALSE
             : high_quality;
 
@@ -920,16 +922,16 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
       }
     }
 
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] imgid %d, pipe %ix%i, range %ix%i --> exact %i, upscale %i, corrected %i, scale %.7f, corr %.6f, size %ix%i\n",
+    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] imgid %d, pipe %ix%i, range %ix%i --> exact %i, upscale %i, hq %i, corrected %i, scale %.7f, corr %.6f, size %ix%i\n",
              imgid, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
-             exact_size, upscale, corrected, scale, corrscale, processed_width, processed_height);
+             exact_size, upscale, high_quality_processing, corrected, scale, corrscale, processed_width, processed_height);
   }
   else
   {
     processed_width = floor(scale * pipe.processed_width);
     processed_height = floor(scale * pipe.processed_height);
-    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] (direct) imgid %d, pipe %ix%i, range %ix%i --> size %ix%i / %ix%i\n",
-             imgid, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
+    dt_print(DT_DEBUG_IMAGEIO,"[dt_imageio_export] (direct) imgid %d, hq %i, pipe %ix%i, range %ix%i --> size %ix%i / %ix%i\n",
+             imgid, high_quality_processing, pipe.processed_width, pipe.processed_height, format_params->max_width, format_params->max_height,
              processed_width, processed_height, width, height);
   }
 
@@ -1146,7 +1148,7 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
   dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = IOP_CS_RGB;
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_S_RAW;

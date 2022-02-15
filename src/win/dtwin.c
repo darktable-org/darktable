@@ -368,14 +368,13 @@ boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error
   if(success && op.fAnyOperationsAborted)
   {
     if(cancellable && !g_cancellable_is_cancelled(cancellable)) g_cancellable_cancel(cancellable);
-    g_set_error(error, G_IO_ERROR, g_io_error_from_errno(ECANCELED),
-                g_strdup_printf("Unable to trash file %s: %s", file, ECANCELED), g_file_get_parse_name(file),
-                g_strerror(ECANCELED));
+    g_set_error(error, G_IO_ERROR, g_io_error_from_errno(ECANCELED), "Unable to trash file %s: %s",
+                g_file_get_parse_name(file), g_strerror(ECANCELED));
     success = FALSE;
   }
   else if(!success)
-    g_set_error(error, G_IO_ERROR, g_io_error_from_errno(0), g_strdup_printf("Unable to trash file %s", file),
-                g_file_get_parse_name(file), g_strerror(0));
+    g_set_error(error, G_IO_ERROR, g_io_error_from_errno(0), "Unable to trash file %s",
+                g_file_get_parse_name(file));
 
   g_free(wfilename);
   return success;

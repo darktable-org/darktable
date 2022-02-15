@@ -2026,6 +2026,7 @@ static gboolean _overlay_cycle_callback(GtkAccelGroup *accel_group, GObject *acc
   const int currentval = dt_conf_get_int("darkroom/ui/overlay_color");
   const int nextval = (currentval + 1) % 5; // colors can go from 0 to 5
   dt_conf_set_int("darkroom/ui/overlay_color", nextval);
+  dt_guides_set_overlay_colors();
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -2274,9 +2275,6 @@ void gui_init(dt_view_t *self)
   gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
-  const int dialog_width       = 350;
-  const int large_dialog_width = 550; // for dialog with profile names
-
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
@@ -2304,7 +2302,6 @@ void gui_init(dt_view_t *self)
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
     connect_button_press_release(dev->rawoverexposed.button, dev->rawoverexposed.floating_window);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), dialog_width, -1);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->rawoverexposed.floating_window), vbox);
@@ -2342,6 +2339,8 @@ void gui_init(dt_view_t *self)
         threshold, _("threshold of what shall be considered overexposed\n1.0 - white level\n0.0 - black level"));
     g_signal_connect(G_OBJECT(threshold), "value-changed", G_CALLBACK(rawoverexposed_threshold_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(threshold), TRUE, TRUE, 0);
+
+    gtk_widget_show_all(vbox);
   }
 
   /* create overexposed popup tool */
@@ -2360,7 +2359,6 @@ void gui_init(dt_view_t *self)
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
     connect_button_press_release(dev->overexposed.button, dev->overexposed.floating_window);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), dialog_width, -1);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), vbox);
@@ -2409,6 +2407,8 @@ void gui_init(dt_view_t *self)
                                          "100% is peak medium luminance."));
     g_signal_connect(G_OBJECT(upper), "value-changed", G_CALLBACK(upper_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(upper), TRUE, TRUE, 0);
+
+    gtk_widget_show_all(vbox);
   }
 
   /* create profile popup tool & buttons (softproof + gamut) */
@@ -2440,7 +2440,6 @@ void gui_init(dt_view_t *self)
     connect_button_press_release(dev->second_window.button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.softproof_button, dev->profile.floating_window);
     connect_button_press_release(dev->profile.gamut_button, dev->profile.floating_window);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), large_dialog_width, -1);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
@@ -2582,6 +2581,8 @@ void gui_init(dt_view_t *self)
                               G_CALLBACK(_display_profile_changed), (gpointer)display_profile);
     DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                               G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
+
+    gtk_widget_show_all(vbox);
   }
 
   /* create grid changer popup tool */

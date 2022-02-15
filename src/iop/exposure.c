@@ -129,7 +129,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 static void dt_iop_exposure_set_exposure(struct dt_iop_module_t *self, const float exposure);

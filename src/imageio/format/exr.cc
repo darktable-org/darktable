@@ -27,7 +27,7 @@
 #include <OpenEXR/ImfFrameBuffer.h>
 #include <OpenEXR/ImfStandardAttributes.h>
 #include <OpenEXR/ImfThreading.h>
-#include <OpenEXR/ImfTiledOutputFile.h>
+#include <OpenEXR/ImfOutputFile.h>
 
 extern "C" {
 #include "bauhaus/bauhaus.h"
@@ -46,7 +46,7 @@ extern "C" {
 extern "C" {
 #endif
 
-DT_MODULE(4)
+DT_MODULE(5)
 
 enum dt_imageio_exr_compression_t
 {
@@ -60,17 +60,31 @@ enum dt_imageio_exr_compression_t
                           // fixed compression rate
   B44A_COMPRESSION = 7,   // lossy 4-by-4 pixel block compression,
                           // flat fields are compressed more
+  DWAA_COMPRESSION = 8,   // lossy DCT based compression, in blocks
+                          // of 32 scanlines
+  DWAB_COMPRESSION = 9,   // lossy DCT based compression, in blocks
+                          // of 256 scanlines
   NUM_COMPRESSION_METHODS // number of different compression methods
 };                        // copy of Imf::Compression
+
+enum dt_imageio_exr_pixeltype_t
+{
+  EXR_PT_UINT = 0,  // unsigned int (32 bit)
+  EXR_PT_HALF = 1,  // half (16 bit floating point)
+  EXR_PT_FLOAT = 2, // float (32 bit floating point)
+  NUM_PIXELTYPES    // number of different pixel types
+};                  // copy of Imf::PixelType
 
 typedef struct dt_imageio_exr_t
 {
   dt_imageio_module_data_t global;
   dt_imageio_exr_compression_t compression;
+  dt_imageio_exr_pixeltype_t pixel_type;
 } dt_imageio_exr_t;
 
 typedef struct dt_imageio_exr_gui_t
 {
+  GtkWidget *bpp;
   GtkWidget *compression;
 } dt_imageio_exr_gui_t;
 
@@ -86,9 +100,18 @@ void init(dt_imageio_module_format_t *self)
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, PXR24_COMPRESSION, "pxr24");
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, B44_COMPRESSION, "b44");
   luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, B44A_COMPRESSION, "b44a");
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, DWAA_COMPRESSION, "dwaa");
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_compression_t, DWAB_COMPRESSION, "dwab");
 
   dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_exr_t, compression,
                                 dt_imageio_exr_compression_t);
+
+  luaA_enum(darktable.lua_state.state, dt_imageio_exr_pixeltype_t);
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_pixeltype_t, EXR_PT_HALF, "half");
+  luaA_enum_value_name(darktable.lua_state.state, dt_imageio_exr_pixeltype_t, EXR_PT_FLOAT, "float");
+
+  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_exr_t, pixel_type,
+                                dt_imageio_exr_pixeltype_t);
 #endif
   Imf::BlobAttribute::registerAttributeType();
 }
@@ -106,8 +129,6 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
   Imf::setGlobalThreadCount(dt_get_num_threads());
 
-  Imf::Blob exif_blob(exif_len, (uint8_t *)exif);
-
   Imf::Header header(exr->global.width, exr->global.height, 1, Imath::V2f(0, 0), 1, Imf::INCREASING_Y,
                      (Imf::Compression)exr->compression);
 
@@ -116,10 +137,14 @@ int write_image(dt_imageio_module_data_t *tmp, const char *filename, const void 
 
   header.insert("comment", Imf::StringAttribute(comment));
 
-  header.insert("exif", Imf::BlobAttribute(exif_blob));
+  if(exif && exif_len > 0)
+  {
+    Imf::Blob exif_blob(exif_len, (uint8_t *)exif);
+    header.insert("exif", Imf::BlobAttribute(exif_blob));
+  }
 
   char *xmp_string = dt_exif_xmp_read_string(imgid);
-  if(xmp_string)
+  if(xmp_string && strlen(xmp_string) > 0)
   {
     header.insert("xmp", Imf::StringAttribute(xmp_string));
     g_free(xmp_string);
@@ -191,30 +216,76 @@ icc_error:
   }
 icc_end:
 
+  Imf::PixelType pixel_type = (Imf::PixelType)exr->pixel_type;
 
-  header.channels().insert("R", Imf::Channel(Imf::PixelType::FLOAT));
-  header.channels().insert("G", Imf::Channel(Imf::PixelType::FLOAT));
-  header.channels().insert("B", Imf::Channel(Imf::PixelType::FLOAT));
+  header.channels().insert("R", Imf::Channel(pixel_type));
+  header.channels().insert("G", Imf::Channel(pixel_type));
+  header.channels().insert("B", Imf::Channel(pixel_type));
 
-  header.setTileDescription(Imf::TileDescription(100, 100, Imf::ONE_LEVEL));
-
-  Imf::TiledOutputFile file(filename, header);
+  Imf::OutputFile file(filename, header);
 
   Imf::FrameBuffer data;
+  size_t stride;
 
-  const float *in = (const float *)in_tmp;
+  if(pixel_type == Imf::PixelType::FLOAT)
+  {
+    stride = 4 * sizeof(float);
+    const float *in = (const float *)in_tmp;
 
-  data.insert("R", Imf::Slice(Imf::PixelType::FLOAT, (char *)(in + 0), 4 * sizeof(float),
-                              4 * sizeof(float) * exr->global.width));
+    data.insert("R", Imf::Slice(pixel_type, (char *)(in + 0), stride,
+                                stride * exr->global.width));
 
-  data.insert("G", Imf::Slice(Imf::PixelType::FLOAT, (char *)(in + 1), 4 * sizeof(float),
-                              4 * sizeof(float) * exr->global.width));
+    data.insert("G", Imf::Slice(pixel_type, (char *)(in + 1), stride,
+                                stride * exr->global.width));
 
-  data.insert("B", Imf::Slice(Imf::PixelType::FLOAT, (char *)(in + 2), 4 * sizeof(float),
-                              4 * sizeof(float) * exr->global.width));
+    data.insert("B", Imf::Slice(pixel_type, (char *)(in + 2), stride,
+                                stride * exr->global.width));
 
-  file.setFrameBuffer(data);
-  file.writeTiles(0, file.numXTiles() - 1, 0, file.numYTiles() - 1);
+    file.setFrameBuffer(data);
+    file.writePixels(exr->global.height);
+  }
+  else
+  {
+    const size_t width = exr->global.width;
+    const size_t height = exr->global.height;
+    stride = 3 * sizeof(unsigned short);
+    unsigned short *out = (unsigned short *)malloc(stride * width * height);
+    if(out == NULL)
+      return 1;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in_tmp, out, width, height) \
+  schedule(simd:static) \
+  collapse(2)
+#endif
+    for(size_t y = 0; y < height; y++)
+    {
+      for(size_t x = 0; x < width; x++)
+      {
+        const float *in_pixel = (const float *)in_tmp + 4 * ((y * width) + x);
+        unsigned short *out_pixel = out + 3 * ((y * width) + x);
+
+        out_pixel[0] = half(in_pixel[0]).bits();
+        out_pixel[1] = half(in_pixel[1]).bits();
+        out_pixel[2] = half(in_pixel[2]).bits();
+      }
+    }
+
+    data.insert("R", Imf::Slice(pixel_type, (char *)(out + 0), stride,
+                                stride * exr->global.width));
+
+    data.insert("G", Imf::Slice(pixel_type, (char *)(out + 1), stride,
+                                stride * exr->global.width));
+
+    data.insert("B", Imf::Slice(pixel_type, (char *)(out + 2), stride,
+                                stride * exr->global.width));
+
+    file.setFrameBuffer(data);
+    file.writePixels(exr->global.height);
+
+    free(out);
+  }
 
   return 0;
 }
@@ -228,7 +299,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
                     const size_t old_params_size, const int old_version, const int new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     struct dt_imageio_exr_v1_t
     {
@@ -246,20 +317,13 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     n->global.height = o->height;
     g_strlcpy(n->global.style, o->style, sizeof(o->style));
     n->global.style_append = FALSE;
-    n->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
+    n->compression = PIZ_COMPRESSION;
+    n->pixel_type = EXR_PT_FLOAT;
     *new_size = self->params_size(self);
     return n;
   }
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2 && new_version == 5)
   {
-    enum dt_imageio_exr_pixeltype_t
-    {
-      EXR_PT_UINT = 0,  // unsigned int (32 bit)
-      EXR_PT_HALF = 1,  // half (16 bit floating point)
-      EXR_PT_FLOAT = 2, // float (32 bit floating point)
-      NUM_PIXELTYPES    // number of different pixel types
-    };                  // copy of Imf::PixelType
-
     struct dt_imageio_exr_v2_t
     {
       int max_width, max_height;
@@ -280,10 +344,11 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     g_strlcpy(n->global.style, o->style, sizeof(o->style));
     n->global.style_append = FALSE;
     n->compression = o->compression;
+    n->pixel_type = o->pixel_type >= EXR_PT_HALF ? o->pixel_type : EXR_PT_FLOAT;
     *new_size = self->params_size(self);
     return n;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3 && new_version == 5)
   {
     struct dt_imageio_exr_v3_t
     {
@@ -303,6 +368,29 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     g_strlcpy(n->global.style, o->style, sizeof(o->style));
     n->global.style_append = FALSE;
     n->compression = o->compression;
+    n->pixel_type = EXR_PT_FLOAT;
+    *new_size = self->params_size(self);
+    return n;
+  }
+  if(old_version == 4 && new_version == 5)
+  {
+    struct dt_imageio_exr_v4_t
+    {
+      dt_imageio_module_data_t global;
+      dt_imageio_exr_compression_t compression;
+    };
+
+    const dt_imageio_exr_v4_t *o = (dt_imageio_exr_v4_t *)old_params;
+    dt_imageio_exr_t *n = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+
+    n->global.max_width = o->global.max_width;
+    n->global.max_height = o->global.max_height;
+    n->global.width = o->global.width;
+    n->global.height = o->global.height;
+    g_strlcpy(n->global.style, o->global.style, sizeof(o->global.style));
+    n->global.style_append = o->global.style_append;
+    n->compression = o->compression;
+    n->pixel_type = EXR_PT_FLOAT;
     *new_size = self->params_size(self);
     return n;
   }
@@ -313,6 +401,8 @@ void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_exr_t *d = (dt_imageio_exr_t *)calloc(1, sizeof(dt_imageio_exr_t));
   d->compression = (dt_imageio_exr_compression_t)dt_conf_get_int("plugins/imageio/format/exr/compression");
+  const int bpp = dt_conf_get_int("plugins/imageio/format/exr/bpp");
+  d->pixel_type = (dt_imageio_exr_pixeltype_t)(bpp >> 4);
   return d;
 }
 
@@ -326,13 +416,14 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   if(size != (int)self->params_size(self)) return 1;
   dt_imageio_exr_t *d = (dt_imageio_exr_t *)params;
   dt_imageio_exr_gui_t *g = (dt_imageio_exr_gui_t *)self->gui_data;
+  dt_bauhaus_combobox_set(g->bpp, d->pixel_type - EXR_PT_HALF);
   dt_bauhaus_combobox_set(g->compression, d->compression);
   return 0;
 }
 
 int bpp(dt_imageio_module_data_t *p)
 {
-  return 32;
+  return 32;  // always request float, any conversion is done internally
 }
 
 int levels(dt_imageio_module_data_t *p)
@@ -342,7 +433,7 @@ int levels(dt_imageio_module_data_t *p)
 
 const char *mime(dt_imageio_module_data_t *data)
 {
-  return "image/openexr";
+  return "image/x-exr";
 }
 
 const char *extension(dt_imageio_module_data_t *data)
@@ -352,10 +443,16 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("OpenEXR (float)");
+  return _("OpenEXR (16/32-bit float)");
 }
 
-static void combobox_changed(GtkWidget *widget, gpointer user_data)
+static void bpp_combobox_changed(GtkWidget *widget, gpointer user_data)
+{
+  const int pixel_type = dt_bauhaus_combobox_get(widget) + EXR_PT_HALF;
+  dt_conf_set_int("plugins/imageio/format/exr/bpp", pixel_type << 4);
+}
+
+static void compression_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
   const int compression = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/exr/compression", compression);
@@ -368,22 +465,37 @@ void gui_init(dt_imageio_module_format_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
+  // Bit depth combo box
+  const int bpp_last = dt_conf_get_int("plugins/imageio/format/exr/bpp");
+
+  gui->bpp = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->bpp, NULL, N_("bit depth"));
+
+  dt_bauhaus_combobox_add(gui->bpp, _("16 bit"));
+  dt_bauhaus_combobox_add(gui->bpp, _("32 bit"));
+  dt_bauhaus_combobox_set(gui->bpp, (bpp_last >> 4) - EXR_PT_HALF);
+  gtk_box_pack_start(GTK_BOX(self->widget), gui->bpp, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(gui->bpp), "value-changed", G_CALLBACK(bpp_combobox_changed), NULL);
+
+  // Compression combo box
   const int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
   gui->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression mode"));
+  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression"));
 
-  dt_bauhaus_combobox_add(gui->compression, _("off"));
+  dt_bauhaus_combobox_add(gui->compression, _("uncompressed"));
   dt_bauhaus_combobox_add(gui->compression, _("RLE"));
   dt_bauhaus_combobox_add(gui->compression, _("ZIPS"));
   dt_bauhaus_combobox_add(gui->compression, _("ZIP"));
-  dt_bauhaus_combobox_add(gui->compression, _("PIZ (default)"));
-  dt_bauhaus_combobox_add(gui->compression, _("PXR24 (lossy)"));
-  dt_bauhaus_combobox_add(gui->compression, _("B44 (lossy)"));
-  dt_bauhaus_combobox_add(gui->compression, _("B44A (lossy)"));
+  dt_bauhaus_combobox_add(gui->compression, _("PIZ"));
+  dt_bauhaus_combobox_add(gui->compression, _("PXR24"));
+  dt_bauhaus_combobox_add(gui->compression, _("B44"));
+  dt_bauhaus_combobox_add(gui->compression, _("B44A"));
+  dt_bauhaus_combobox_add(gui->compression, _("DWAA"));
+  dt_bauhaus_combobox_add(gui->compression, _("DWAB"));
   dt_bauhaus_combobox_set(gui->compression, compression_last);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(combobox_changed), NULL);
+  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_combobox_changed), NULL);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
@@ -394,7 +506,8 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_exr_gui_t *gui = (dt_imageio_exr_gui_t *)self->gui_data;
-
+  const int bpp = dt_confgen_get_int("plugins/imageio/format/exr/bpp", DT_DEFAULT);
+  dt_bauhaus_combobox_set(gui->bpp, (bpp >> 4) - EXR_PT_HALF);
   dt_bauhaus_combobox_set(gui->compression, dt_confgen_get_int("plugins/imageio/format/exr/compression", DT_DEFAULT));
 }
 

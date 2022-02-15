@@ -67,16 +67,16 @@ static inline dt_develop_blend_colorspace_t _blend_default_module_blend_colorspa
   {
     switch(module->blend_colorspace(module, NULL, NULL))
     {
-      case iop_cs_RAW:
+      case IOP_CS_RAW:
         return DEVELOP_BLEND_CS_RAW;
-      case iop_cs_Lab:
-      case iop_cs_LCh:
+      case IOP_CS_LAB:
+      case IOP_CS_LCH:
         return DEVELOP_BLEND_CS_LAB;
-      case iop_cs_rgb:
+      case IOP_CS_RGB:
         return is_scene_referred ? DEVELOP_BLEND_CS_RGB_SCENE : DEVELOP_BLEND_CS_RGB_DISPLAY;
-      case iop_cs_HSL:
+      case IOP_CS_HSL:
         return DEVELOP_BLEND_CS_RGB_DISPLAY;
-      case iop_cs_JzCzhz:
+      case IOP_CS_JZCZHZ:
         return DEVELOP_BLEND_CS_RGB_SCENE;
       default:
         return DEVELOP_BLEND_CS_NONE;
@@ -139,12 +139,12 @@ dt_iop_colorspace_type_t dt_develop_blend_colorspace(const dt_dev_pixelpipe_iop_
   switch(bp->blend_cst)
   {
     case DEVELOP_BLEND_CS_RAW:
-      return iop_cs_RAW;
+      return IOP_CS_RAW;
     case DEVELOP_BLEND_CS_LAB:
-      return iop_cs_Lab;
+      return IOP_CS_LAB;
     case DEVELOP_BLEND_CS_RGB_DISPLAY:
     case DEVELOP_BLEND_CS_RGB_SCENE:
-      return iop_cs_rgb;
+      return IOP_CS_RGB;
     default:
       return cst;
   }
@@ -471,7 +471,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
   // get channel max values depending on colorspace
   const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
-  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, iop_cs_NONE);
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
 
   // check if mask should be suppressed temporarily (i.e. just set to global opacity value)
   const gboolean suppress_mask = self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module)
@@ -590,7 +590,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       _develop_mask_post_processing operation = post_operations[index];
       if(operation == DEVELOP_MASK_POST_FEATHER_IN)
       {
-        const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
+        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
         float *restrict guide = (float *restrict)ivoid;
         if(!rois_equal)
           guide = _develop_blend_process_copy_region(guide, ch * iwidth, ch * xoffs, ch * yoffs,
@@ -603,7 +603,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       }
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
-        const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
+        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
         _develop_blend_process_feather((const float *const restrict)ovoid, mask, owidth, oheight, ch,
                                        guide_weight, d->feathering_radius, roi_out->scale / piece->iscale);
       }
@@ -862,7 +862,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   // get channel max values depending on colorspace
   const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
-  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, iop_cs_NONE);
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, IOP_CS_NONE);
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
@@ -1087,7 +1087,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
         if (w < 1) w = 1;
         const float sqrt_eps = 1.0f;
-        const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
+        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
         cl_mem guide = dev_in;
         if(!rois_equal)
@@ -1114,7 +1114,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
         int w = (int)(2 * d->feathering_radius * roi_out->scale / piece->iscale + 0.5f);
         if (w < 1) w = 1;
         const float sqrt_eps = 1.0f;
-        const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
+        const float guide_weight = cst == IOP_CS_RGB ? 100.0f : 1.0f;
 
         guided_filter_cl(devid, dev_out, dev_mask_1, dev_mask_2, owidth, oheight, ch, w, sqrt_eps, guide_weight,
                          0.0f, 1.0f);

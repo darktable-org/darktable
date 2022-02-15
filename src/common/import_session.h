@@ -40,10 +40,10 @@ void dt_import_session_set_name(struct dt_import_session_t *self, const char *na
 /** \brief override the time for specific import session
     \remark This will override NOW timestamp with a specified one used when expanding ${YEAR} and alike.
 */
-void dt_import_session_set_time(struct dt_import_session_t *self, time_t time);
+void dt_import_session_set_time(struct dt_import_session_t *self, const char *time);
 
 /** \brief set the timestamp for EXIF variables */
-void dt_import_session_set_exif_time(struct dt_import_session_t *self, time_t exif_time);
+void dt_import_session_set_exif_time(struct dt_import_session_t *self, const char *exif_time);
 
 /** \brief set the original filename
     \remark This is used to expand $(FILE_X) variables. */

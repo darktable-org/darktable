@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -198,6 +198,45 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
   FINISH
 }
 
+void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(0.8, 0.8, 0, 0)
+
+  cairo_move_to(cr, 0.1, 0.05);
+  cairo_line_to(cr, 0.1, 0.95);
+  cairo_move_to(cr, 0.0, 0.80);
+  cairo_line_to(cr, 0.1, 0.95);
+  cairo_move_to(cr, 0.1, 0.95);
+  cairo_line_to(cr, 0.2, 0.80);
+  cairo_stroke(cr);
+
+  if(flags & CPF_DIRECTION_UP)
+  {
+    cairo_move_to(cr, 0.35, 0.05);
+    cairo_line_to(cr, 0.45, 0.05);
+    cairo_move_to(cr, 0.35, 0.35);
+    cairo_line_to(cr, 0.65, 0.35);
+    cairo_move_to(cr, 0.35, 0.65);
+    cairo_line_to(cr, 0.85, 0.65);
+    cairo_move_to(cr, 0.35, 0.95);
+    cairo_line_to(cr, 1.00, 0.95);
+  }
+  else
+  {
+    cairo_move_to(cr, 0.35, 0.05);
+    cairo_line_to(cr, 1.00, 0.05);
+    cairo_move_to(cr, 0.35, 0.35);
+    cairo_line_to(cr, 0.85, 0.35);
+    cairo_move_to(cr, 0.35, 0.65);
+    cairo_line_to(cr, 0.65, 0.65);
+    cairo_move_to(cr, 0.35, 0.95);
+    cairo_line_to(cr, 0.45, 0.95);
+  }
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
@@ -352,7 +391,7 @@ void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   PREAMBLE(1, 1, 0, 0)
 
   cairo_arc(cr, 0.5, 0.5, 0.45, 0, 2 * M_PI);
-  cairo_stroke(cr);
+  cairo_fill(cr);
 
   if((flags & CPF_ACTIVE))
   {
@@ -1459,14 +1498,12 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 {
   PREAMBLE(1, 1, 0, 0)
 
-  gboolean def = FALSE;
+  cairo_push_group(cr);
+
   double r = 0.4;
 
   /* fill base color */
   cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
-  float alpha = 1.0;
-
-  if((flags & 8) && !(flags & CPF_PRELIGHT)) alpha = 0.6;
 
   const dt_colorlabels_enum color = (flags & 7);
 
@@ -1476,54 +1513,49 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
     set_color(cr, colorlabels[color]);
   }
-  else if(color == 7)
-  {
-    // don't fill
-    cairo_set_source_rgba(cr, 0, 0, 0, 0);
-  }
   else
   {
-    cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, alpha);
-    def = TRUE;
+    cairo_set_line_width(cr, 0.1);
+    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+    cairo_move_to(cr, 0.15, 0.85);
+    cairo_line_to(cr, 0.85, 0.15);
+    cairo_stroke(cr);
+
+    // then erase some parts around cross line
+    cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+    cairo_set_line_width(cr, 0.05);
+    cairo_move_to(cr, 0.1, 0.78);
+    cairo_line_to(cr, 0.78, 0.15);
+    cairo_move_to(cr, 0.20, 0.9);
+    cairo_line_to(cr, 0.92, 0.15);
+    cairo_set_source_rgba(cr, 0, 1.0, 0, 1.0);
+    cairo_stroke(cr);
   }
   cairo_fill(cr);
 
-  /* draw cross overlay if highlighted */
-  if(def == TRUE && (flags & CPF_PRELIGHT))
-  {
-    cairo_set_source_rgba(cr, 0.5, 0.0, 0.0, 0.8);
-    cairo_move_to(cr, 0.0, 0.0);
-    cairo_line_to(cr, 1.0, 1.0);
-    cairo_move_to(cr, 0.9, 0.1);
-    cairo_line_to(cr, 0.1, 0.9);
-    cairo_stroke(cr);
-  }
+  cairo_pop_group_to_source(cr);
+  cairo_paint(cr);
 
   FINISH
 }
 
 void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 1, 0, 0)
+  PREAMBLE(0.9, 1, 0, 0)
 
-  // circle around (mouse over effect)
-  if(flags & CPF_PRELIGHT)
-  {
-    cairo_arc(cr, 0.5, 0.5, 0.5, 0.0, 2.0 * M_PI);
-  }
+  // the reject icon
+  cairo_arc(cr, 0.5, 0.5, 0.5, 0.0, 2.0 * M_PI);
+  cairo_move_to(cr, 0.7, 0.3);
+  cairo_line_to(cr, 0.3, 0.7);
+  cairo_move_to(cr, 0.3, 0.3);
+  cairo_line_to(cr, 0.7, 0.7);
+  cairo_stroke(cr);
 
   if(flags & CPF_DIRECTION_RIGHT)
   {
     // that means the image is rejected, so we draw the cross in red bold
     cairo_set_source_rgb(cr, 1.0, 0, 0);
   }
-
-  // the cross
-  cairo_move_to(cr, 0.2, 0.2);
-  cairo_line_to(cr, 0.8, 0.8);
-  cairo_move_to(cr, 0.8, 0.2);
-  cairo_line_to(cr, 0.2, 0.8);
-  cairo_stroke(cr);
 
   FINISH
 }
@@ -1549,6 +1581,36 @@ void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
   }
 
   cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_unratestar(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  cairo_push_group(cr);
+
+  // we create the path
+  dt_draw_star(cr, 1 / 2., 1. / 2., 1. / 2., 1. / 5.);
+
+  // we create the cross line
+  cairo_move_to(cr, 0.05, 0.95);
+  cairo_line_to(cr, 0.85, 0.0);
+  cairo_stroke(cr);
+
+  // then erase some parts around cross line
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_set_line_width(cr, cairo_get_line_width(cr) * 0.7);
+  cairo_move_to(cr, 0.0, 0.88);
+  cairo_line_to(cr, 0.78, 0.0);
+  cairo_move_to(cr, 0.10, 1.0);
+  cairo_line_to(cr, 0.92, 0.0);
+  cairo_set_source_rgba(cr, 0, 1.0, 0, 1.0);
+  cairo_stroke(cr);
+
+  cairo_pop_group_to_source(cr);
+  cairo_paint(cr);
 
   FINISH
 }
@@ -1791,22 +1853,27 @@ void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 
 void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.5 * 0.95, 1, 0.5, 0.5)
+  PREAMBLE(1, 1, 0, 0)
 
-  cairo_arc(cr, 0.0, 0.0, 1., 0., 2.0f * M_PI);
+  cairo_move_to(cr, 0.30, 0.15);
+  cairo_line_to(cr, 0.95, 0.15);
+  cairo_move_to(cr, 0.95, 0.15);
+  cairo_line_to(cr, 0.95, 0.65);
+  cairo_move_to(cr, 0.20, 0.25);
+  cairo_line_to(cr, 0.85, 0.25);
+  cairo_move_to(cr, 0.85, 0.25);
+  cairo_line_to(cr, 0.85, 0.75);
   cairo_stroke(cr);
-  cairo_arc(cr, -0.35, -0.33, 0.25, 0., 2.0f * M_PI);
-  cairo_fill(cr);
-  cairo_stroke(cr);
-  cairo_arc(cr, -0.35, 0.35, 0.25, 0., 2.0f * M_PI);
-  cairo_fill(cr);
-  cairo_stroke(cr);
-  cairo_arc(cr, 0.35, -0.35, 0.25, 0., 2.0f * M_PI);
-  cairo_fill(cr);
-  cairo_stroke(cr);
-  cairo_arc(cr, 0.35, 0.35, 0.25, 0., 2.0f * M_PI);
-  cairo_fill(cr);
-  cairo_stroke(cr);
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_rectangle(cr, 0.05, 0.35, 0.7, 0.5);
+    cairo_fill(cr);
+  }
+  else
+  {
+    cairo_rectangle(cr, 0.05, 0.35, 0.7, 0.5);
+    cairo_stroke(cr);
+  }
 
   FINISH
 }

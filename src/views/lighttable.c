@@ -212,7 +212,7 @@ static void _lighttable_check_layout(dt_view_t *self)
       dt_culling_init(lib->culling, id);
     }
     else
-      dt_culling_init(lib->culling, -1);
+      dt_culling_init(lib->culling, lib->thumbtable_offset);
 
 
     // ensure that thumbtable is not visible in the main view
@@ -479,7 +479,7 @@ void enter(dt_view_t *self)
   dt_ui_restore_panels(darktable.gui->ui);
 }
 
-static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int32_t mouse_over_id)
+static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
@@ -492,7 +492,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   lib->preview_sticky = sticky;
   lib->preview->focus = focus;
   lib->preview_state = TRUE;
-  dt_culling_init(lib->preview, -1);
+  dt_culling_init(lib->preview, lib->thumbtable_offset);
   gtk_widget_show(lib->preview->widget);
 
   dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->preview->navigate_inside_selection;
@@ -520,7 +520,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
 static void _preview_set_state(dt_view_t *self, gboolean state, gboolean focus)
 {
   if(state)
-    _preview_enter(self, TRUE, focus, dt_control_get_mouse_over_id());
+    _preview_enter(self, TRUE, focus);
   else
     _preview_quit(self);
 }
@@ -630,12 +630,11 @@ static float _action_process_preview(gpointer target, dt_action_element_t elemen
     {
       if(effect != DT_ACTION_EFFECT_OFF)
       {
-        const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-        if(mouse_over_id != -1)
+        if(dt_control_get_mouse_over_id() != -1)
         {
           gboolean focus = element == DT_ACTION_ELEMENT_FOCUS_DETECT;
 
-          _preview_enter(self, FALSE, focus, mouse_over_id);
+          _preview_enter(self, FALSE, focus);
         }
       }
     }
@@ -667,6 +666,7 @@ enum
   _ACTION_TABLE_MOVE_LEFTRIGHT = 1,
   _ACTION_TABLE_MOVE_UPDOWN = 2,
   _ACTION_TABLE_MOVE_PAGE = 3,
+  _ACTION_TABLE_MOVE_LEAVE = 4,
 };
 
 static float _action_process_move(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -701,6 +701,8 @@ static float _action_process_move(gpointer target, dt_action_element_t element, 
       move = DT_THUMBTABLE_MOVE_START;
     else if(action == _ACTION_TABLE_MOVE_STARTEND && effect == DT_ACTION_EFFECT_NEXT)
       move = DT_THUMBTABLE_MOVE_END;
+    else if(action == _ACTION_TABLE_MOVE_LEAVE && effect == DT_ACTION_EFFECT_NEXT)
+      move = DT_THUMBTABLE_MOVE_LEAVE;
     else
     {
       // MIDDLE
@@ -1233,7 +1235,6 @@ void gui_init(dt_view_t *self)
   // and the popup window
   lib->profile_floating_window = gtk_popover_new(profile_button);
 
-  gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), 550, -1);
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
   g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
@@ -1340,6 +1341,9 @@ void gui_init(dt_view_t *self)
   ac = dt_action_define(sa, N_("move"), N_("page"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_PAGE), &_action_def_move);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_PREVIOUS, GDK_KEY_Page_Down, 0);
   dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Page_Up, 0);
+
+  ac = dt_action_define(sa, N_("move"), N_("leave"), GINT_TO_POINTER(_ACTION_TABLE_MOVE_LEAVE), &_action_def_move);
+  dt_accel_register_shortcut(ac, NULL, DT_ACTION_ELEMENT_MOVE, DT_ACTION_EFFECT_NEXT    , GDK_KEY_Escape, GDK_MOD1_MASK);
 
   // Preview key
   dt_accel_register_shortcut(sa, NC_("accel", "preview"), DT_ACTION_ELEMENT_DEFAULT, DT_ACTION_EFFECT_HOLD, GDK_KEY_w, 0);

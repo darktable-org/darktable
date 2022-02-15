@@ -20,6 +20,7 @@
 #include "common/imagebuf.h"
 #include "common/tags.h"
 #include "common/variables.h"
+#include "common/datetime.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -316,7 +317,7 @@ int operation_tags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 // sets text / color / font widgets sensitive based on watermark file type
@@ -381,12 +382,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
   // EXIF datetime
   struct tm tt_exif = { 0 };
-  if(sscanf(image->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &tt_exif.tm_year, &tt_exif.tm_mon,
-            &tt_exif.tm_mday, &tt_exif.tm_hour, &tt_exif.tm_min, &tt_exif.tm_sec) == 6)
-  {
-    tt_exif.tm_year -= 1900;
-    tt_exif.tm_mon--;
-  }
+  dt_datetime_img_to_tm_lt(&tt_exif, image);
 
   // Current datetime
   struct tm tt_cur = { 0 };
@@ -454,7 +450,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
     // Image exif
     // EXIF date
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE)", image->exif_datetime_taken);
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE)", datetime);
     // $(EXIF.DATE.SECOND) -- 00..60
     strftime(datetime, sizeof(datetime), "%S", &tt_exif);
     svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SECOND)", datetime);
@@ -488,7 +484,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 
     // Current date
     // $(DATE) -- YYYY:
-    dt_gettime_t(datetime, sizeof(datetime), t);
+    dt_datetime_unix_lt_to_exif(datetime, sizeof(datetime), &t);
     svgdata = _string_substitute(svgdata, "$(DATE)", datetime);
     // $(DATE.SECOND) -- 00..60
     strftime(datetime, sizeof(datetime), "%S", &tt_cur);

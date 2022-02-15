@@ -110,7 +110,7 @@ typedef enum dt_view_surface_value_t
 
 typedef struct dt_mouse_action_t
 {
-  GtkAccelKey key;
+  GdkModifierType mods;
   dt_mouse_action_type_t action;
   gchar name[256];
 } dt_mouse_action_t;
@@ -229,7 +229,7 @@ typedef struct dt_view_manager_t
   } audio;
 
   // toggle button for guides (in the module toolbox)
-  GtkWidget *guides_toggle, *guides, *guides_colors, *guides_popover;
+  GtkWidget *guides_toggle, *guides, *guides_colors, *guides_contrast, *guides_popover;
 
   /*
    * Proxy

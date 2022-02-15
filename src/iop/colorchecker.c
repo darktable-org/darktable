@@ -142,7 +142,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
 int legacy_params(
@@ -1208,7 +1208,7 @@ static gboolean checker_motion_notify(GtkWidget *widget, GdkEventMotion *event,
       _("(%2.2f %2.2f %2.2f)\n"
         "altered patches are marked with an outline\n"
         "click to select\n"
-        "double click to reset\n"
+        "double-click to reset\n"
         "right click to delete patch\n"
         "shift+click while color picking to replace patch"),
       p->source_L[patch], p->source_a[patch], p->source_b[patch]);

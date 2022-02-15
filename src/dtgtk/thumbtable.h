@@ -42,7 +42,8 @@ typedef enum dt_thumbtable_move_t
   DT_THUMBTABLE_MOVE_START,
   DT_THUMBTABLE_MOVE_END,
   DT_THUMBTABLE_MOVE_ALIGN,
-  DT_THUMBTABLE_MOVE_RESET_FIRST
+  DT_THUMBTABLE_MOVE_RESET_FIRST,
+  DT_THUMBTABLE_MOVE_LEAVE
 } dt_thumbtable_move_t;
 
 typedef struct dt_thumbtable_t
@@ -83,7 +84,8 @@ typedef struct dt_thumbtable_t
   // in that case, we count the number of "scroll-top" try and reallign after 2 try
   int realign_top_try;
 
-  gboolean mouse_inside; // is the mouse pointer inside thumbatable widget ?
+  gboolean mouse_inside; // is the mouse pointer inside thumbtable widget ?
+  gboolean key_inside;   // is the key move pointer inside thumbtable widget ?
 
   GSList *accel_closures; // list of associated accels
 

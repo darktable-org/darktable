@@ -948,12 +948,12 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
       dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
     else
       dt_lib_gui_set_expanded(module, TRUE);
-    }
-    else
-    {
-      /* else just toggle */
-      dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
-    }
+  }
+  else
+  {
+    /* else just toggle */
+    dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
+  }
   return TRUE;
 }
 
@@ -1256,7 +1256,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
     }
   }
 
-  return 0;
+  return element == DT_ACTION_ELEMENT_SHOW && dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander));
 }
 
 static const dt_action_element_def_t _action_elements[]
@@ -1276,6 +1276,16 @@ const dt_action_def_t dt_action_def_lib
       _action_process,
       _action_elements,
       _action_fallbacks };
+
+gboolean dt_handle_dialog_enter(GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+  if(event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
+  {
+    gtk_dialog_response(GTK_DIALOG(widget), GTK_RESPONSE_ACCEPT);
+    return TRUE;
+  }
+  return FALSE;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -152,7 +152,7 @@ int default_group()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return IOP_CS_LAB;
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -1232,8 +1232,12 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
+  const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
   dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
+
+  self->hide_enable_button = monochrome;
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "monochrome");
 
   dt_bauhaus_slider_set(g->threshold, p->threshold);
   dt_bauhaus_slider_set(g->spatial, p->spatial);
@@ -1281,6 +1285,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->can = NULL;
   g->hash = 0;
 
+  GtkWidget *box_enabled = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
   dt_bauhaus_slider_set_step(g->threshold, 0.1f);
   g->spatial = dt_bauhaus_slider_from_params(self, N_("spatial"));
@@ -1307,6 +1313,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->range, _("how far to look for replacement colors in the luminance dimension"));
   gtk_widget_set_tooltip_text(g->precedence, _("if and how to give precedence to specific replacement colors"));
   gtk_widget_set_tooltip_text(g->hue, _("the hue tone which should be given precedence over other hue tones"));
+
+  GtkWidget *monochromes = dt_ui_label_new(_("not applicable"));
+  gtk_widget_set_tooltip_text(monochromes, _("no highlights reconstruction for monochrome images"));
+
+  self->widget = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
+  gtk_stack_add_named(GTK_STACK(self->widget), monochromes, "monochrome");
+  gtk_stack_add_named(GTK_STACK(self->widget), box_enabled, "default");
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

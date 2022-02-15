@@ -29,7 +29,7 @@ jobs:
       INSTALL_PREFIX: ${{ github.workspace }}/install
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: 'MSYS Makefiles'
+      GENERATOR: Ninja
       TARGET: ${{ matrix.target }}
     steps:
       - uses: msys2/setup-msys2@v2
@@ -38,6 +38,7 @@ jobs:
           install: >-
             base-devel
             git
+            intltool
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
@@ -77,8 +78,13 @@ jobs:
           update: true
       - uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           submodules: true
           path: src
+      - name: Update lensfun data
+        if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
+        run: |
+          lensfun-update-data
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}"
@@ -100,7 +106,6 @@ jobs:
       - name: Package
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
         run: |
-          lensfun-update-data
           cd "${BUILD_DIR}"
           cmake --build "${BUILD_DIR}" --target package
       - name: Package upload

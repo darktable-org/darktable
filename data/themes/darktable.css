@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2021 Nicolas Auffray.
+    copyright (c) 2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -69,11 +69,11 @@
 
 /* General */
 @define-color selected_bg_color @grey_35; /* legacy stuff */
-@define-color border_color @grey_10; /* border, when used */
-@define-color bg_color @grey_15; /* general background */
-@define-color fg_color @grey_70; /* general text */
-@define-color base_color @fg_color; /* legacy stuff */
-@define-color text_color @grey_05; /* same */
+@define-color border_color @grey_10;      /* border, when used */
+@define-color bg_color @grey_15;          /* general background */
+@define-color fg_color @grey_70;          /* general text */
+@define-color base_color @fg_color;       /* legacy stuff */
+@define-color text_color @grey_05;        /* same */
 @define-color disabled_fg_color @grey_40; /* disabled controls */
 
 /* Scroll bars (sliders) */
@@ -86,6 +86,7 @@
 @define-color plugin_fg_color @fg_color;
 @define-color section_label shade(@plugin_fg_color, 0.95);
 @define-color plugin_label_color @grey_60;
+@define-color collapsible_bg_color shade(@plugin_fg_color, 0.5);
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg @bg_color;
@@ -345,7 +346,9 @@ checkbutton check:checked
 
 /* Button to open/close the dropdown section, especially header ones */
 #control-button,
-#control-button:checked
+#control-button:checked,
+#filter-button,
+#filter-button:checked
 {
   background-color: transparent;
   margin-left: 0.14em;
@@ -429,12 +432,14 @@ spinbutton>button
 #header-toolbar #dt-toggle-button,
 #header-toolbar #dt-button,
 #footer-toolbar #dt-toggle-button,
-#footer-toolbar #dt-button
+#footer-toolbar #dt-button,
+#filter-button,
+#filter-button:checked
 {
   padding: 0.07em;
-  min-height: 2.56em; /* align toolbox button height on comboboxe's one */
-  min-width: 2.56em;
-  font-size: .7em;
+  min-height: 2.4em; /* align toolbox button height on comboboxe's one */
+  min-width: 2.4em;
+  font-size: .75em;
   border: 0;
 }
 
@@ -490,7 +495,7 @@ spinbutton>button
 #iop-plugin-ui-main,
 #lib-plugin-ui-main
 {
-  padding: 0.42em 0.84em;
+  padding: 0.35em 0.7em;
 }
 
 /* Frame around blending boxes */
@@ -713,8 +718,7 @@ l
 
 #filter-box
 {
-  min-width: 40em;
-  padding-top: 0.14em;
+  padding-top: 0.28em;
 }
 
 /*-------------------
@@ -1865,6 +1869,7 @@ menuitem:hover > *:not(check),
 combobox window *:hover,
 radiobutton:hover label,
 #control-button:hover,
+#filter-button:hover,
 #history-button:hover,
 #history-button-enabled:hover,
 #history-button-always-enabled:hover,
@@ -1887,6 +1892,7 @@ button:hover,
 button:hover cellview,
 button:hover image,
 button:hover label,
+#blending-box button:hover, /* needed for hover effect for some blending mask box buttons */
 button:checked cellview,
 button:checked image,
 button:checked label,
@@ -1895,6 +1901,7 @@ menuitem:hover cellview,
 menuitem:hover > *,
 notebook tab:hover label,
 #control-button:hover,
+#filter-button:hover,
 #history-button:hover *,
 #history-button-enabled:hover *,
 #history-button-always-enabled:hover *,
@@ -2271,12 +2278,12 @@ Details :
 
 #thumb_image
 {
-  margin: 25px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
+  margin: 1.8em 1.2em; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
 }
 
 .dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
 {
-  margin: 1.4em;
+  margin: 1em 0.75em;
 }
 
 /* Set top margin on active image in filmstrip */
@@ -2300,22 +2307,25 @@ Details :
 .dt_group_left #thumb_back,
 #thumb_main.dt_group_left:selected #thumb_back
 {
-  border-left: 2px solid rgb(255, 187, 0);
+  border-left: 0.07em solid rgb(255, 187, 0);
 }
+
 .dt_group_top #thumb_back,
 #thumb_main.dt_group_top:selected #thumb_back
 {
-  border-top: 2px solid rgb(255, 187, 0);
+  border-top: 0.07em solid rgb(255, 187, 0);
 }
+
 .dt_group_right #thumb_back,
 #thumb_main.dt_group_right:selected #thumb_back
 {
-  border-right: 2px solid rgb(255, 187, 0);
+  border-right: 0.07em solid rgb(255, 187, 0);
 }
+
 .dt_group_bottom #thumb_back,
 #thumb_main.dt_group_bottom:selected #thumb_back
 {
-  border-bottom: 2px solid rgb(255, 187, 0);
+  border-bottom: 0.07em solid rgb(255, 187, 0);
 }
 
 .dt_thumbtable_reorder #thumb_main:hover #thumb_back
@@ -2468,17 +2478,26 @@ Details :
 
 /* Set red reject icon when visible */
 .dt_overlays_hover #thumb_main:hover #thumb_reject:active,
+.dt_overlays_hover #thumb_main:hover #thumb_reject:hover,
 .dt_overlays_hover_extended #thumb_main:hover #thumb_reject:active,
+.dt_overlays_hover_extended #thumb_main:hover #thumb_reject:hover,
 .dt_overlays_always #thumb_reject:active,
 .dt_overlays_always #thumb_main:hover #thumb_reject:active,
 .dt_overlays_always #thumb_main:selected #thumb_reject:active,
+.dt_overlays_always #thumb_reject:hover,
+.dt_overlays_always #thumb_main:hover #thumb_reject:hover,
 .dt_overlays_always_extended #thumb_reject:active,
 .dt_overlays_always_extended #thumb_main:hover #thumb_reject:active,
 .dt_overlays_always_extended #thumb_main:selected #thumb_reject:active,
+.dt_overlays_always_extended #thumb_reject:hover,
+.dt_overlays_always_extended #thumb_main:hover #thumb_reject:hover,
 .dt_overlays_mixed #thumb_reject:active,
 .dt_overlays_mixed #thumb_main:hover #thumb_reject:active,
 .dt_overlays_mixed #thumb_main:selected #thumb_reject:active,
-.dt_overlays_hover_block #thumb_image:hover #thumb_reject:active
+.dt_overlays_mixed #thumb_reject:hover,
+.dt_overlays_mixed #thumb_main:hover #thumb_reject:hover,
+.dt_overlays_hover_block #thumb_main:hover #thumb_reject:active,
+.dt_overlays_hover_block #thumb_main:hover #thumb_reject:hover
 {
   color: red;
 }
@@ -2720,4 +2739,40 @@ Details :
 #lighttable_layouts_box #dt-toggle-button
 {
   margin: 0 0.4em;
+}
+
+/* Collapsible sections on lib & iop modules */
+
+#collapse-block
+{
+  border: 0.1em solid shade(@collapsible_bg_color, 0.9);
+}
+
+#collapsible,
+#collapse-block #section_label
+{
+  padding: 0 0.14em 0.14em 0.7em;
+  margin: 0;
+  border: none;
+}
+
+#collapsible,
+#collapsible #bauhaus-slider
+{
+  border-top: 0.035em solid  shade(@section_label, 0.7);
+  background-color: @collapsible_bg_color;
+}
+
+/* for the import parameters to be more aligned with the imports buttons */
+
+#lib-plugin-ui #collapse-block
+{
+  margin: 0.42em 0.07em;
+}
+
+#collapse-block #section_label,
+#collapse-block .section-expander
+{
+  margin: 0.1em;
+  background-color: shade(@collapsible_bg_color, 0.95);
 }

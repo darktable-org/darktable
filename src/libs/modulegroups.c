@@ -907,6 +907,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                                  != NULL) ||
                                  (g_strstr_len(g_utf8_casefold(dt_iop_get_localized_aliases(module->op), -1), -1,
                                                g_utf8_casefold(text_entered, -1))
+                                 != NULL) ||
+                                 (g_strstr_len(g_utf8_casefold(module->multi_name, -1), -1,
+                                               g_utf8_casefold(text_entered, -1))
                                  != NULL);
 
 
@@ -1347,9 +1350,9 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
       const int op_len = strlen(op);
       dt_iop_module_state_t state = p[pos + op_len + 1];
 
-      if(state == dt_iop_state_ACTIVE)
+      if(state == IOP_STATE_ACTIVE)
         list = dt_util_dstrcat(list, "|%s", op);
-      else if(state == dt_iop_state_FAVORITE)
+      else if(state == IOP_STATE_FAVORITE)
       {
         fav = dt_util_dstrcat(fav, "|%s", op);
         list = dt_util_dstrcat(list, "|%s", op);

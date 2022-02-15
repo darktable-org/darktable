@@ -89,13 +89,13 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
 
   // the group leader
   if(thumb->imgid == thumb->groupid)
-    tt = g_strdup_printf("\n<b>%s (%s)</b>", _("current"), _("leader"));
+    tt = g_strdup_printf("\n\u2022 <b>%s (%s)</b>", _("current"), _("leader"));
   else
   {
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->groupid, 'r');
     if(img)
     {
-      tt = g_strdup_printf("\n<b>%s (%s)</b>", img->filename, _("leader"));
+      tt = g_strdup_printf("%s\n\u2022 <b>%s (%s)</b>", _("\nclick here to set this image as group leader\n"), img->filename, _("leader"));
       dt_image_cache_read_release(darktable.image_cache, img);
     }
   }
@@ -115,10 +115,10 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
     if(id != thumb->groupid)
     {
       if(id == thumb->imgid)
-        tt = dt_util_dstrcat(tt, "\n%s", _("current"));
+        tt = dt_util_dstrcat(tt, "\n\u2022 %s", _("current"));
       else
       {
-        tt = dt_util_dstrcat(tt, "\n%s", sqlite3_column_text(stmt, 2));
+        tt = dt_util_dstrcat(tt, "\n\u2022 %s", sqlite3_column_text(stmt, 2));
         if(v > 0) tt = dt_util_dstrcat(tt, " v%d", v);
       }
     }
@@ -1032,7 +1032,6 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb) return;
 
   gboolean active = FALSE;
   for(GSList *l = darktable.view_manager->active_images; l; l = g_slist_next(l))
@@ -1061,7 +1060,6 @@ static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb) return;
   if(!gtk_widget_is_visible(thumb->w_main)) return;
 
   const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
@@ -1078,7 +1076,7 @@ static void _dt_mipmaps_updated_callback(gpointer instance, int imgid, gpointer 
 {
   if(!user_data) return;
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
-  if(!thumb || (imgid > 0 && thumb->imgid != imgid)) return;
+  if(imgid > 0 && thumb->imgid != imgid) return;
 
   // we recompte the history tooltip if needed
   thumb->is_altered = dt_image_altered(thumb->imgid);
