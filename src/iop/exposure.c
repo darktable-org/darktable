@@ -93,10 +93,12 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkWidget *compensate_exposure_bias;
   float deflicker_computed_exposure;
 
-  GtkWidget *spot_settings, *spot_mode;
-  GtkWidget *collapsible_spot, *lightness_spot;
+  GtkWidget *spot_mode;
+  GtkWidget *lightness_spot;
   GtkWidget *origin_spot, *target_spot;
   GtkWidget *Lch_origin;
+
+  dt_gui_collapsible_section_t cs;
 
   dt_aligned_pixel_t spot_RGB;
 
@@ -588,18 +590,9 @@ void gui_update(struct dt_iop_module_t *self)
     lightness = dt_conf_get_float("darkroom/modules/exposure/lightness");
   dt_bauhaus_slider_set(g->lightness_spot, lightness);
 
-  gboolean show_collapsible = FALSE;
-  if(dt_conf_key_exists("darkroom/modules/exposure/expand_picker_mapping"))
-    show_collapsible = dt_conf_get_bool("darkroom/modules/exposure/expand_picker_mapping");
-  gtk_widget_set_visible(g->collapsible_spot, show_collapsible);
-
   dt_iop_gui_leave_critical_section(self);
 
-  if(show_collapsible)
-    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
-  else
-    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-
+  dt_gui_update_collapsible_section(&g->cs);
 
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
   dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
@@ -970,28 +963,6 @@ static gboolean origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user
   return TRUE;
 }
 
-
-
-static void set_spot_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_request_focus(self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
-
-  // stupid toggle on/off
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  const gboolean state = !gtk_widget_get_visible(g->collapsible_spot);
-  gtk_widget_set_visible(g->collapsible_spot, state);
-
-  if(state)
-    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
-  else
-    dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-
-  // Remember the state
-  dt_conf_set_bool("darkroom/modules/exposure/expand_picker_mapping", state);
-}
-
 static void paint_hue(dt_iop_module_t *self)
 {
   // update the fill background color of LCh sliders
@@ -1122,15 +1093,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->black, 4);
   dt_bauhaus_slider_set_soft_range(g->black, -0.1, 0.1);
 
-  g->spot_settings = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->spot_settings, NULL, N_("spot exposure mapping"));
-  dt_bauhaus_widget_set_quad_paint(g->spot_settings, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->spot_settings, TRUE);
-  gtk_widget_set_tooltip_text(g->spot_settings, _("use a color checker target to autoset CAT and channels"));
-  g_signal_connect(G_OBJECT(g->spot_settings), "quad-pressed", G_CALLBACK(set_spot_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->spot_settings), TRUE, TRUE, 0);
-
-  g->collapsible_spot = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/exposure/mapping",
+     _("spot exposure mapping"),
+     GTK_BOX(self->widget));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(g->spot_mode, self, NULL, N_("spot mode"),
                                 _("\"correction\" automatically adjust exposure\n"
@@ -1140,7 +1107,7 @@ void gui_init(struct dt_iop_module_t *self)
                                 0, NULL, self,
                                 N_("correction"),
                                 N_("measure"));
-  gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(spot_settings_changed_callback), self);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(darktable.bauhaus->quad_width));
@@ -1186,9 +1153,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(hhbox), GTK_WIDGET(vvbox), TRUE, TRUE, DT_BAUHAUS_SPACE);
 
-  gtk_box_pack_start(GTK_BOX(g->collapsible_spot), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->collapsible_spot), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 }
