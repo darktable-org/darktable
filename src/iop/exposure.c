@@ -596,8 +596,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_gui_leave_critical_section(self);
 
-  dt_gui_update_collapsible_section(&g->cs);
-
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
   dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
 
@@ -621,6 +619,8 @@ void gui_update(struct dt_iop_module_t *self)
       gtk_stack_set_visible_child_name(GTK_STACK(g->mode_stack), "manual");
       break;
   }
+
+  dt_gui_hide_collapsible_section(&g->cs);
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1021,7 +1021,6 @@ static void _spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *
     _auto_set_exposure(self, darktable.develop->pipe);
   // else : just record new values and do nothing
 }
-
 
 void gui_reset(struct dt_iop_module_t *self)
 {
