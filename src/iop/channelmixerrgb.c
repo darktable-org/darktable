@@ -4473,7 +4473,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_gui_new_collapsible_section
     (&g->cs,
-     "plugins/darkroom/ashift/expand_values",
+     "plugins/darkroom/channelmixerrgb/expand_values",
      N_("calibrate with a color checker"),
      GTK_BOX(self->widget));
 
