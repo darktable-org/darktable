@@ -2884,9 +2884,9 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
     case DT_DEV_PIXELPIPE_PREVIEW2:
       {
         const int qual = get_quality();
-        if (qual > 0) flags |= DEMOSAIC_FULL_SCALE;
-        if (qual > 1) flags |= DEMOSAIC_XTRANS_FULL;
-        if ((qual < 2) && (roi_out->scale <= .99999f))
+        if(qual > 0) flags |= DEMOSAIC_FULL_SCALE;
+        if(qual > 1) flags |= DEMOSAIC_XTRANS_FULL;
+        if((qual < 2) && (roi_out->scale <= .99999f))
           flags |= DEMOSAIC_MEDIUM_QUAL;
       }
       break;
@@ -2895,7 +2895,7 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
       // we check if we need ultra-high quality thumbnail for this size
-      if (get_thumb_quality(roi_out->width, roi_out->height))
+      if(get_thumb_quality(roi_out->width, roi_out->height))
       {
         flags |= DEMOSAIC_FULL_SCALE | DEMOSAIC_XTRANS_FULL;
       }
@@ -2909,22 +2909,22 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
   // possible to skip the full demosaic and perform a quick downscale.
   // Note even though the X-Trans CFA is 6x6, for this purposes we can
   // see each 6x6 tile as four fairly similar 3x3 tiles
-  if (roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f))
+  if(roi_out->scale > (piece->pipe->dsc.filters == 9u ? 0.333f : 0.5f))
   {
     flags |= DEMOSAIC_FULL_SCALE;
   }
   // half_size_f doesn't support 4bayer images
-  if (img->flags & DT_IMAGE_4BAYER) flags |= DEMOSAIC_FULL_SCALE;
+  if(img->flags & DT_IMAGE_4BAYER) flags |= DEMOSAIC_FULL_SCALE;
   // we use full Markesteijn demosaicing on xtrans sensors if maximum
   // quality is required
-  if (roi_out->scale > 0.667f)
+  if(roi_out->scale > 0.667f)
   {
     flags |= DEMOSAIC_XTRANS_FULL;
   }
 
   // we check if we can stop at the linear interpolation step in VNG
   // instead of going the full way
-  if ((flags & DEMOSAIC_FULL_SCALE) &&
+  if((flags & DEMOSAIC_FULL_SCALE) &&
       (roi_out->scale < (piece->pipe->dsc.filters == 9u ? 0.5f : 0.667f)))
   {
     flags |= DEMOSAIC_ONLY_VNG_LINEAR;
@@ -3047,7 +3047,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
       {
         vng_interpolate(tmp, in, &roo, &roi, piece->pipe->dsc.filters, xtrans, qual_flags & DEMOSAIC_ONLY_VNG_LINEAR);
-        if (img->flags & DT_IMAGE_4BAYER)
+        if(img->flags & DT_IMAGE_4BAYER)
         {
           dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, data->CAM_to_RGB);
           dt_colorspaces_cygm_to_rgb(piece->pipe->dsc.processed_maximum, 1, data->CAM_to_RGB);
@@ -5352,7 +5352,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->yalign = 2;
     tiling->overlap = 10;
     tiling->factor_cl = tiling->factor + 3.0f;
-   }
+  }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_LMMSE)
   {
     tiling->factor = 1.0f + ioratio;
@@ -5615,21 +5615,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   // green-equilibrate over full image excludes tiling
   // The details mask is written inside process, this does not allow tiling.
-  if((d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH) ||
-     ((use_method & DEMOSAIC_DUAL) && (d->dual_thrs > 0.0f)) ||
-     (piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_DEMOSAIC)))
+  if((d->green_eq == DT_IOP_GREEN_EQ_FULL
+      || d->green_eq == DT_IOP_GREEN_EQ_BOTH)
+     || ((use_method & DEMOSAIC_DUAL) && (d->dual_thrs > 0.0f))
+     || (piece->pipe->want_detail_mask == (DT_DEV_DETAIL_MASK_REQUIRED | DT_DEV_DETAIL_MASK_DEMOSAIC)))
   {
     piece->process_tiling_ready = 0;
   }
 
-  if (self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+  if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
   {
     // 4Bayer images not implemented in OpenCL yet
     piece->process_cl_ready = 0;
 
     // Get and store the matrix to go from camera to RGB for 4Bayer images
     char *camera = self->dev->image_storage.camera_makermodel;
-    if (!dt_colorspaces_conversion_matrices_rgb(camera, NULL, d->CAM_to_RGB, self->dev->image_storage.d65_color_matrix, NULL))
+    if(!dt_colorspaces_conversion_matrices_rgb(camera, NULL, d->CAM_to_RGB, self->dev->image_storage.d65_color_matrix, NULL))
     {
       fprintf(stderr, "[colorspaces] `%s' color matrix not found for 4bayer image!\n", camera);
       dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
