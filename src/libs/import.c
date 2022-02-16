@@ -687,58 +687,58 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
 
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
   const gboolean include_jpegs = !dt_conf_get_bool("ui_last/import_ignore_jpegs");
-  while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
-  {
-    const char *uifilename = g_file_info_get_display_name(info);
-    const char *filename = g_file_info_get_name(info);
-    if(!filename)
-      continue;
-    const guint64 datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-    GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
-    gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
-    const GFileType filetype = g_file_info_get_file_type(info);
-    gchar *uifullname = g_build_filename(folder, uifilename, NULL);
-    gchar *fullname = g_build_filename(folder, filename, NULL);
-
-    if(recursive && filetype == G_FILE_TYPE_DIRECTORY)
-    {
-      nb = _import_set_file_list(fullname, folder_lgth, nb, self);
-    }
-    // supported image format to import
-    else if(filetype != G_FILE_TYPE_DIRECTORY && dt_supported_image(filename))
-    {
-      const char *ext = g_strrstr(filename, ".");
-      if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
-                               && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
-      {
-        /* check if image is already imported, using previously fetched filroll id */
-        gboolean already_imported = FALSE;
-        if(filmroll_id != -1)
-        {
-          already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
-        }
-
-        GtkTreeIter iter;
-        gtk_list_store_append(d->from.store, &iter);
-        gtk_list_store_set(d->from.store, &iter,
-                           DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
-                           DT_IMPORT_UI_FILENAME, &uifullname[offset],
-                           DT_IMPORT_FILENAME, &fullname[offset],
-                           DT_IMPORT_UI_DATETIME, dt_txt,
-                           DT_IMPORT_DATETIME, datetime,
-                           DT_IMPORT_THUMB, d->from.eye, -1);
-        nb++;
-      }
-    }
-
-    g_free(dt_txt);
-    g_free(fullname);
-    g_free(uifullname);
-    g_date_time_unref(dt_datetime);
-    g_object_unref(info);
-  }
   if(dir_files)
   {
+    while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
+    {
+      const char *uifilename = g_file_info_get_display_name(info);
+      const char *filename = g_file_info_get_name(info);
+      if(!filename)
+        continue;
+      const guint64 datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
+      gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
+      const GFileType filetype = g_file_info_get_file_type(info);
+      gchar *uifullname = g_build_filename(folder, uifilename, NULL);
+      gchar *fullname = g_build_filename(folder, filename, NULL);
+
+      if(recursive && filetype == G_FILE_TYPE_DIRECTORY)
+      {
+        nb = _import_set_file_list(fullname, folder_lgth, nb, self);
+      }
+      // supported image format to import
+      else if(filetype != G_FILE_TYPE_DIRECTORY && dt_supported_image(filename))
+      {
+        const char *ext = g_strrstr(filename, ".");
+        if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
+                                 && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
+        {
+          /* check if image is already imported, using previously fetched filroll id */
+          gboolean already_imported = FALSE;
+          if(filmroll_id != -1)
+          {
+            already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
+          }
+
+          GtkTreeIter iter;
+          gtk_list_store_append(d->from.store, &iter);
+          gtk_list_store_set(d->from.store, &iter,
+                             DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
+                             DT_IMPORT_UI_FILENAME, &uifullname[offset],
+                             DT_IMPORT_FILENAME, &fullname[offset],
+                             DT_IMPORT_UI_DATETIME, dt_txt,
+                             DT_IMPORT_DATETIME, datetime,
+                             DT_IMPORT_THUMB, d->from.eye, -1);
+          nb++;
+        }
+      }
+
+      g_free(dt_txt);
+      g_free(fullname);
+      g_free(uifullname);
+      g_date_time_unref(dt_datetime);
+      g_object_unref(info);
+    }
     g_file_enumerator_close(dir_files, NULL, NULL);
     g_object_unref(dir_files);
   }
@@ -934,64 +934,64 @@ static void _get_folders_list(GtkTreeStore *store, GtkTreeIter *parent,
   }
   GFileInfo *info = NULL;
   gint i = 0;
-  while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
+  if(dir_files)
   {
-    const char *filename = g_file_info_get_name(info);
-    if(!filename)
-      continue;
-    const gboolean ishidden = g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN);
-    const gboolean canread = g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_ACCESS_CAN_READ);
-    const GFileType filetype = g_file_info_get_file_type(info);
-    if(filetype == G_FILE_TYPE_DIRECTORY && !ishidden && canread)
+    while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
     {
-      gchar *fullname = g_build_filename(folder, filename, NULL);
-      if(!expanded)
+      const char *filename = g_file_info_get_name(info);
+      if(!filename)
+        continue;
+      const gboolean ishidden = g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_STANDARD_IS_HIDDEN);
+      const gboolean canread = g_file_info_get_attribute_boolean(info, G_FILE_ATTRIBUTE_ACCESS_CAN_READ);
+      const GFileType filetype = g_file_info_get_file_type(info);
+      if(filetype == G_FILE_TYPE_DIRECTORY && !ishidden && canread)
       {
-        GtkTreeIter child;
-        const char *uifilename = g_file_info_get_display_name(info);
-        gchar *uifullname = g_build_filename(folder, uifilename, NULL);
-        gchar *basename = g_path_get_basename(uifullname);
-        if(!i)
-          gtk_tree_model_iter_children(GTK_TREE_MODEL(store), &iter, &parent2);
-        else
-          gtk_tree_store_append(store, &iter, &parent2);
-        gtk_tree_store_set(store, &iter, DT_FOLDER_NAME, basename,
-                                         DT_FOLDER_PATH, fullname,
-                                         DT_FOLDER_EXPANDED, FALSE, -1);
-        // fake child
-        gtk_tree_store_append(store, &child, &iter);
-        gtk_tree_store_set(store, &iter, DT_FOLDER_EXPANDED, FALSE, -1);
-        g_free(uifullname);
-        g_free(basename);
-      }
-      else
-      {
-        iter = parent2;
-        if(!_find_iter_folder(GTK_TREE_MODEL(store), &iter, fullname))
+        gchar *fullname = g_build_filename(folder, filename, NULL);
+        if(!expanded)
         {
-          g_free(fullname);
-          g_object_unref(info);
-          break;
+          GtkTreeIter child;
+          const char *uifilename = g_file_info_get_display_name(info);
+          gchar *uifullname = g_build_filename(folder, uifilename, NULL);
+          gchar *basename = g_path_get_basename(uifullname);
+          if(!i)
+            gtk_tree_model_iter_children(GTK_TREE_MODEL(store), &iter, &parent2);
+          else
+            gtk_tree_store_append(store, &iter, &parent2);
+          gtk_tree_store_set(store, &iter, DT_FOLDER_NAME, basename,
+                                           DT_FOLDER_PATH, fullname,
+                                           DT_FOLDER_EXPANDED, FALSE, -1);
+          // fake child
+          gtk_tree_store_append(store, &child, &iter);
+          gtk_tree_store_set(store, &iter, DT_FOLDER_EXPANDED, FALSE, -1);
+          g_free(uifullname);
+          g_free(basename);
         }
+        else
+        {
+          iter = parent2;
+          if(!_find_iter_folder(GTK_TREE_MODEL(store), &iter, fullname))
+          {
+            g_free(fullname);
+            g_object_unref(info);
+            break;
+          }
+        }
+        if(selected[0] && g_str_has_prefix(selected, fullname))
+          _get_folders_list(store, &iter, fullname, selected);
+        g_free(fullname);
+        i++;
       }
-      if(selected[0] && g_str_has_prefix(selected, fullname))
-        _get_folders_list(store, &iter, fullname, selected);
-      g_free(fullname);
-      i++;
+      gtk_tree_store_set(store, &parent2, DT_FOLDER_EXPANDED, TRUE, -1);
+      g_object_unref(info);
     }
-    gtk_tree_store_set(store, &parent2, DT_FOLDER_EXPANDED, TRUE, -1);
-    g_object_unref(info);
+    g_file_enumerator_close(dir_files, NULL, NULL);
+    g_object_unref(dir_files);
   }
   if(!i)
   {
     // remove the fake child as there is no child
     gtk_tree_model_iter_children(GTK_TREE_MODEL(store), &iter, &parent2);
     gtk_tree_store_remove(store, &iter);
-  }
-  if(dir_files)
-  {
-    g_file_enumerator_close(dir_files, NULL, NULL);
-    g_object_unref(dir_files);
   }
 }
 
