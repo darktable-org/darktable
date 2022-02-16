@@ -1601,6 +1601,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, id);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
   // printf("[image_import] importing `%s' to img id %d\n", imgfname, id);
 
@@ -1648,8 +1649,6 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   //synch database entries to xmp
   if(xmp_mode == DT_WRITE_XMP_ALWAYS)
     dt_image_synch_all_xmp(normalized_filename);
-
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
   g_free(imgfname);
   g_free(basename);
