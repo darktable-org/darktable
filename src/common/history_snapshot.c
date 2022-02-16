@@ -56,7 +56,7 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
     *snap_id = sqlite3_column_int(stmt, 0) + 1;
   sqlite3_finalize(stmt);
 
-  sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
 
   if(*history_end == 0)
   {
@@ -114,10 +114,10 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
   sqlite3_finalize(stmt);
 
   if(all_ok)
-    sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   else
   {
-    sqlite3_exec(dt_database_get(darktable.db), "ROLLBACK_TRANSACTION", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "ROLLBACK_TRANSACTION", NULL, NULL, NULL);
     fprintf(stderr, "[dt_history_snapshot_undo_create] fails to create a snapshot for %d\n", imgid);
   }
 
@@ -132,7 +132,7 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
 
   dt_lock_image(imgid);
 
-  sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
 
   dt_history_delete_on_image_ext(imgid, FALSE);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
@@ -194,10 +194,10 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
   sqlite3_finalize(stmt);
 
   if(all_ok)
-    sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   else
   {
-    sqlite3_exec(dt_database_get(darktable.db), "ROLLBACK_TRANSACTION", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "ROLLBACK_TRANSACTION", NULL, NULL, NULL);
     fprintf(stderr, "[_history_snapshot_undo_restore] fails to restore a snapshot for %d\n", imgid);
   }
   dt_unlock_image(imgid);
