@@ -109,9 +109,11 @@ static gchar *_default_print_func(const double value, const gboolean detailled)
 {
   return g_strdup_printf("%.0lf", floor(value));
 }
-static double _default_decode_func(const gchar *text)
+static gboolean _default_decode_func(const gchar *text, double *value)
 {
-  return atof(text);
+  // TODO : verify the value is numeric
+  *value = atof(text);
+  return TRUE;
 }
 
 static void _popup_item_activate(GtkWidget *w, gpointer user_data)
@@ -124,17 +126,17 @@ static void _popup_item_activate(GtkWidget *w, gpointer user_data)
   // if source is the band, apply the value directly
   if(source == range->band)
   {
-    dtgtk_range_select_set_selection(range, blo->bounds, blo->value_r, blo->value2_r, TRUE);
+    dtgtk_range_select_set_selection(range, blo->bounds, blo->value_r, blo->value2_r, TRUE, FALSE);
   }
   else if(source == range->entry_min)
   {
     if(range->bounds & DT_RANGE_BOUND_MIN) range->bounds &= ~DT_RANGE_BOUND_MIN;
-    dtgtk_range_select_set_selection(range, range->bounds, blo->value_r, range->select_max_r, TRUE);
+    dtgtk_range_select_set_selection(range, range->bounds, blo->value_r, range->select_max_r, TRUE, FALSE);
   }
   else if(source == range->entry_max)
   {
     if(range->bounds & DT_RANGE_BOUND_MAX) range->bounds &= ~DT_RANGE_BOUND_MAX;
-    dtgtk_range_select_set_selection(range, range->bounds, range->select_min_r, blo->value_r, TRUE);
+    dtgtk_range_select_set_selection(range, range->bounds, range->select_min_r, blo->value_r, TRUE, FALSE);
   }
 }
 
@@ -206,8 +208,9 @@ static gboolean _event_entry_press(GtkWidget *w, GdkEventButton *e, gpointer use
   if(e->button == 3)
   {
     _popup_show(range, w);
+    return TRUE;
   }
-  return TRUE;
+  return FALSE;
 }
 
 static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
@@ -228,19 +231,26 @@ static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
     else
       range->bounds |= DT_RANGE_BOUND_MAX;
   }
-  else if(range->entry_min == entry)
+  else
   {
-    if(range->bounds & DT_RANGE_BOUND_MAX) range->bounds = DT_RANGE_BOUND_MAX;
-    range->select_min_r = range->decode(txt);
-  }
-  else if(range->entry_max == entry)
-  {
-    if(range->bounds & DT_RANGE_BOUND_MIN) range->bounds = DT_RANGE_BOUND_MIN;
-    range->select_max_r = range->decode(txt);
+    double val = 0.0;
+    if(range->decode(txt, &val))
+    {
+      if(range->entry_min == entry)
+      {
+        if(range->bounds & DT_RANGE_BOUND_MAX) range->bounds = DT_RANGE_BOUND_MAX;
+        range->select_min_r = val;
+      }
+      else if(range->entry_max == entry)
+      {
+        if(range->bounds & DT_RANGE_BOUND_MIN) range->bounds = DT_RANGE_BOUND_MIN;
+        range->select_max_r = val;
+      }
+    }
   }
   g_free(txt);
 
-  dtgtk_range_select_set_selection(range, range->bounds, range->select_min_r, range->select_max_r, TRUE);
+  dtgtk_range_select_set_selection(range, range->bounds, range->select_min_r, range->select_max_r, TRUE, FALSE);
 }
 
 static double _graph_value_to_pos(GtkDarktableRangeSelect *range, const double value)
@@ -576,7 +586,7 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
   if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
   {
     dtgtk_range_select_set_selection(range, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, range->min_r, range->max_r,
-                                     TRUE);
+                                     TRUE, TRUE);
   }
   else if(e->button == 1)
   {
@@ -649,7 +659,7 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
 
   range->set_selection = FALSE;
 
-  dtgtk_range_select_set_selection(range, range->bounds, range->select_min_r, range->select_max_r, TRUE);
+  dtgtk_range_select_set_selection(range, range->bounds, range->select_min_r, range->select_max_r, TRUE, TRUE);
 
   return TRUE;
 }
@@ -671,6 +681,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
   range->select_min_r = 0.1;
   range->select_max_r = 0.9;
   range->bounds = DT_RANGE_BOUND_RANGE;
+  range->band_factor = 1.0;
   range->mouse_inside = HOVER_OUTSIDE;
   range->current_x_px = 0.0;
   range->surface = NULL;
@@ -710,26 +721,26 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
 
     // the entries
     range->entry_min = gtk_entry_new();
-    gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 5);
+    gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 0);
     g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_min), "button-press-event", G_CALLBACK(_event_entry_press), range);
-    gtk_box_pack_start(GTK_BOX(hbox), range->entry_min, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), range->entry_min, TRUE, TRUE, 0);
 
     GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    range->current = gtk_label_new("test");
-    gtk_widget_set_name(range->current, "dt-range-current");
+    range->current = gtk_label_new("");
+    gtk_widget_set_name(hb, "dt-range-current");
     gtk_widget_set_halign(range->current, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(range->current, GTK_ALIGN_CENTER);
     gtk_widget_set_no_show_all(range->current, TRUE);
-    gtk_box_pack_start(GTK_BOX(hb), range->current, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), hb, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hb), range->current, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), hb, FALSE, TRUE, 0);
 
     range->entry_max = gtk_entry_new();
-    gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 5);
+    gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 0);
     gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
     g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_max), "button-press-event", G_CALLBACK(_event_entry_press), range);
-    gtk_box_pack_end(GTK_BOX(hbox), range->entry_max, FALSE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(hbox), range->entry_max, TRUE, TRUE, 0);
   }
 
   gtk_container_add(GTK_CONTAINER(range), vbox);
@@ -764,10 +775,11 @@ GType dtgtk_range_select_get_type()
 }
 
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
-                                      const double min_r, const double max_r, gboolean signal)
+                                      const double min_r, const double max_r, gboolean signal,
+                                      gboolean round_values)
 {
   // round the value to respect step if set
-  if(range->step_bd > 0.0)
+  if(round_values && range->step_bd > 0.0)
   {
     range->select_min_r = _graph_value_to_pos(range, min_r);
     range->select_min_r = _graph_value_from_pos(range, range->select_min_r, FALSE);
@@ -956,8 +968,9 @@ void dtgtk_range_select_decode_raw_text(GtkDarktableRangeSelect *range, const gc
     GMatchInfo *match_info;
 
     // we test the range expression first
-    regex = g_regex_new("^\\s*\\[\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*;\\s*([-+]?[0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0,
-                        NULL);
+    // we use a relaxed regex to include float and datetime
+    regex = g_regex_new("^\\s*\\[\\s*([-+]?[0-9\\.\\s:]*[0-9]+)\\s*;\\s*([-+]?[0-9\\.\\s:]*[0-9]+)\\s*\\]\\s*$", 0,
+                        0, NULL);
     g_regex_match_full(regex, txt, -1, 0, 0, &match_info, NULL);
     int match_count = g_match_info_get_match_count(match_info);
 
@@ -979,10 +992,13 @@ void dtgtk_range_select_decode_raw_text(GtkDarktableRangeSelect *range, const gc
   }
 
   // now we transform the text values into double
-  const double v1 = atof(n1);
-  const double v2 = atof(n2);
-  *min = fmin(v1, v2);
-  *max = fmax(v1, v2);
+  double v1 = 0;
+  double v2 = 0;
+  if(range->decode(n1, &v1) && range->decode(n2, &v2))
+  {
+    *min = fmin(v1, v2);
+    *max = fmax(v1, v2);
+  }
   g_free(n1);
   g_free(n2);
 }
@@ -993,7 +1009,7 @@ void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *ran
   double smin, smax;
   dt_range_bounds_t sbounds;
   dtgtk_range_select_decode_raw_text(range, txt, &smin, &smax, &sbounds);
-  dtgtk_range_select_set_selection(range, sbounds, smin, smax, signal);
+  dtgtk_range_select_set_selection(range, sbounds, smin, smax, signal, FALSE);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

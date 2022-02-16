@@ -42,7 +42,7 @@ G_BEGIN_DECLS
 
 typedef double (*DTGTKTranslateValueFunc)(const double value);
 typedef gchar *(*DTGTKPrintValueFunc)(const double value, const gboolean detailled);
-typedef double (*DTGTKDecodeValueFunc)(const gchar *text);
+typedef gboolean (*DTGTKDecodeValueFunc)(const gchar *text, double *value);
 
 typedef enum dt_range_bounds_t
 {
@@ -110,7 +110,8 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries);
 
 // set selection range
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
-                                      const double min_r, const double max_r, gboolean signal);
+                                      const double min_r, const double max_r, gboolean signal,
+                                      gboolean round_values);
 // directly decode raw_text and apply it to selection
 void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *range, const gchar *txt,
                                                     gboolean signal);
