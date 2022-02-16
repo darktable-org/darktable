@@ -21,6 +21,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "libs/lib.h"
@@ -31,7 +32,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_tool_filter_t
 {
-  GtkWidget *filter;
+  GtkWidget *stars;
   GtkWidget *comparator;
   GtkWidget *sort;
   GtkWidget *reverse;
@@ -250,6 +251,23 @@ static void _update_colors_operation(dt_lib_module_t *self)
   dt_collection_set_colors_filter(darktable.collection, mask);
 }
 
+static void _reset_colors_filter(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  for(int i = 0; i < DT_COLORLABELS_LAST; i++)
+  {
+    g_object_set_data(G_OBJECT(d->colors[i]), "sel_value", GINT_TO_POINTER(0));
+    dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
+                          (i | CPF_BG_TRANSPARENT), NULL);
+    gtk_widget_queue_draw(d->colors[i]);
+  }
+  g_object_set_data(G_OBJECT(d->colors_op), "sel_value", GINT_TO_POINTER(1));
+  dtgtk_button_set_paint(DTGTK_BUTTON(d->colors_op), dtgtk_cairo_paint_and,
+                         CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_sensitive(d->colors_op, FALSE);
+  dt_collection_set_colors_filter(darktable.collection, 0x80000000);
+}
+
 static gboolean _colorlabel_clicked(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_lib_module_t *self = g_object_get_data(G_OBJECT(w), "colors_self");
@@ -310,7 +328,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   gtk_widget_set_valign(self->widget, GTK_ALIGN_CENTER);
 
-  GtkWidget *label = gtk_label_new(_("view:"));
+  GtkWidget *label = gtk_label_new(_("view"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -332,7 +350,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), d->comparator, TRUE);
 
   /* create the filter combobox */
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->filter, self, NULL, NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->stars, self, NULL, NULL,
                                _("which images should be shown"),
                                dt_collection_get_rating(darktable.collection),
                                _lib_filter_combobox_changed, self,
@@ -345,7 +363,7 @@ void gui_init(dt_lib_module_t *self)
                                "★ ★ ★ ★ ★",
                                N_("rejected only"),
                                N_("all except rejected"));
-  gtk_container_add(GTK_CONTAINER(overlay), d->filter);
+  gtk_container_add(GTK_CONTAINER(overlay), d->stars);
   gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
   GtkStyleContext *context = gtk_widget_get_style_context(hbox);
   gtk_style_context_add_class(context, "quick_filter_box");
@@ -355,7 +373,6 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
     d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, (k | CPF_BG_TRANSPARENT), NULL);
-    g_object_set_data(G_OBJECT(d->colors[k]), "sel_value", GINT_TO_POINTER(0));
     g_object_set_data(G_OBJECT(d->colors[k]), "colors_self", self);
     gtk_box_pack_start(GTK_BOX(hbox), d->colors[k], FALSE, FALSE, 0);
     gtk_widget_set_tooltip_text(d->colors[k], _("toggle color label selection, ctrl_click to exclude"
@@ -364,8 +381,7 @@ void gui_init(dt_lib_module_t *self)
                      GINT_TO_POINTER(k));
   }
   d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_sensitive(d->colors_op, FALSE);
-  g_object_set_data(G_OBJECT(d->colors_op), "sel_value", GINT_TO_POINTER(1));
+  _reset_colors_filter(self);
   gtk_box_pack_start(GTK_BOX(hbox), d->colors_op, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(d->colors_op, _("intersection (∩): images having all selections"
                                               "\nunion (∪): images with at least one selection"));
@@ -394,7 +410,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_style_context_add_class(context, "quick_filter_box");
 
   /* sort combobox */
-  label = gtk_label_new(_("sort by:"));
+  label = gtk_label_new(_("sort by"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -447,7 +463,7 @@ void gui_cleanup(dt_lib_module_t *self)
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  const int filter = dt_bauhaus_combobox_get(d->filter);
+  const int filter = dt_bauhaus_combobox_get(d->stars);
 
   // 0 all
   // 1 unstarred only
@@ -570,9 +586,9 @@ static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_proper
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, changed_property, NULL);
 }
 
-static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
+static void _reset_stars_filter(dt_lib_module_t *self, gboolean smart_filter)
 {
-  dt_lib_tool_filter_t *dropdowns = (dt_lib_tool_filter_t *)self->data;
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
 
   if(smart_filter == TRUE)
   {
@@ -580,7 +596,7 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
     const int initial_rating = dt_conf_get_int("ui_last/import_initial_rating");
 
     /* current selection in filter dropdown */
-    const int current_filter = dt_bauhaus_combobox_get(dropdowns->filter);
+    const int current_filter = dt_bauhaus_combobox_get(d->stars);
 
     /* convert filter dropdown to rating: 2-6 is 1-5 stars, for anything else, assume 0 stars */
     const int current_filter_rating = (current_filter >= 2 && current_filter <= 6) ? current_filter - 1 : 0;
@@ -593,14 +609,38 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
                                                                               : new_filter_rating;
 
     /* Reset to new filter dropdown item */
-    dt_bauhaus_combobox_set(dropdowns->filter, new_filter);
+    dt_bauhaus_combobox_set(d->stars, new_filter);
   }
   else
   {
     /* Reset to topmost item, 'all' */
-    dt_bauhaus_combobox_set(dropdowns->filter, 0);
+    dt_bauhaus_combobox_set(d->stars, 0);
   }
+}
+
+static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
+{
+  _reset_stars_filter(self, smart_filter);
   _reset_text_filter(self);
+  _reset_colors_filter(self);
+}
+
+static gboolean _reset_filters(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                               GdkModifierType modifier, dt_lib_module_t *self)
+{
+  _lib_filter_reset(self, FALSE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+  return TRUE;
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "reset filters"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_connect_lib(self, "reset filters", g_cclosure_new(G_CALLBACK(_reset_filters), self, NULL));
 }
 
 #ifdef USE_LUA
@@ -654,7 +694,7 @@ static int rating_cb(lua_State *L)
     dt_collection_filter_t value;
     luaA_to(L,dt_collection_filter_t,&value,1);
     dt_collection_set_rating(darktable.collection, (uint32_t)value);
-    dt_bauhaus_combobox_set(d->filter, dt_collection_get_rating(darktable.collection));
+    dt_bauhaus_combobox_set(d->stars, dt_collection_get_rating(darktable.collection));
     _lib_filter_update_query(self, DT_COLLECTION_PROP_RATING);
   }
   luaA_push(L, dt_collection_filter_t, &tmp);
