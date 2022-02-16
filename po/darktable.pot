@@ -5,13 +5,13 @@
 #
 #: ../build/bin/conf_gen.h:856 ../build/bin/conf_gen.h:862
 #: ../build/bin/conf_gen.h:868 ../build/bin/conf_gen.h:874
-#: ../build/bin/conf_gen.h:880 ../src/iop/crop.c:1539
+#: ../build/bin/conf_gen.h:880
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-12 10:25+0100\n"
+"POT-Creation-Date: 2022-02-16 11:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3871,7 +3871,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
 #: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3935
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:591 ../src/iop/soften.c:414
-#: ../src/iop/vignette.c:990 ../src/libs/history.c:882
+#: ../src/iop/vignette.c:990 ../src/libs/history.c:886
 msgid "brightness"
 msgstr ""
 
@@ -5113,73 +5113,73 @@ msgstr ""
 msgid "date/time re-applied to %d images"
 msgstr ""
 
-#: ../src/common/image.c:1945
+#: ../src/common/image.c:1948
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr ""
 
-#: ../src/common/image.c:1952
+#: ../src/common/image.c:1955
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr ""
 
-#: ../src/common/image.c:1959
+#: ../src/common/image.c:1962
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr ""
 
-#: ../src/common/image.c:1975
+#: ../src/common/image.c:1978
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr ""
 
-#: ../src/common/image.c:1985
+#: ../src/common/image.c:1988
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr ""
 
-#: ../src/common/image.c:1989
+#: ../src/common/image.c:1992
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr ""
 
-#: ../src/common/image.c:2287
+#: ../src/common/image.c:2290
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 
-#: ../src/common/image.c:2301
+#: ../src/common/image.c:2304
 msgid "cannot create local copy."
 msgstr ""
 
-#: ../src/common/image.c:2373 ../src/control/jobs/control_jobs.c:762
+#: ../src/common/image.c:2376 ../src/control/jobs/control_jobs.c:762
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 
-#: ../src/common/image.c:2538
+#: ../src/common/image.c:2541
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/common/image.c:2727
+#: ../src/common/image.c:2730
 msgid "<b>WARNING</b> : camera is missing samples!"
 msgstr ""
 
-#: ../src/common/image.c:2728
+#: ../src/common/image.c:2731
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
 msgstr ""
 
-#: ../src/common/image.c:2729
+#: ../src/common/image.c:2732
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
 "in as many format/compression/bit depths as possible"
 msgstr ""
 
-#: ../src/common/image.c:2732
+#: ../src/common/image.c:2735
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr ""
 
@@ -5367,7 +5367,7 @@ msgstr ""
 msgid "image rated to %s"
 msgstr ""
 
-#: ../src/common/ratings.c:262 ../src/libs/history.c:777
+#: ../src/common/ratings.c:262 ../src/libs/history.c:781
 #: ../src/libs/snapshots.c:467
 msgid "unknown"
 msgstr ""
@@ -6696,7 +6696,7 @@ msgstr ""
 #: ../src/iop/basicadj.c:600 ../src/iop/exposure.c:785
 #: ../src/iop/exposure.c:836 ../src/iop/exposure.c:858
 #: ../src/iop/graduatednd.c:1104 ../src/iop/relight.c:269
-#: ../src/iop/soften.c:415 ../src/libs/history.c:875
+#: ../src/iop/soften.c:415 ../src/libs/history.c:879
 #, c-format
 msgid "%.2f EV"
 msgstr ""
@@ -6835,7 +6835,7 @@ msgstr ""
 msgid "blending options"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3052 ../src/libs/history.c:873
+#: ../src/develop/blend_gui.c:3052 ../src/libs/history.c:877
 msgid "blend mode"
 msgstr ""
 
@@ -6854,7 +6854,7 @@ msgid ""
 "order can be reversed by clicking on the icon (input on top of output)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3069 ../src/libs/history.c:875
+#: ../src/develop/blend_gui.c:3069 ../src/libs/history.c:879
 msgid "blend fulcrum"
 msgstr ""
 
@@ -6871,7 +6871,7 @@ msgstr ""
 msgid "set the opacity of the blending"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3084 ../src/libs/history.c:877
+#: ../src/develop/blend_gui.c:3084 ../src/libs/history.c:881
 msgid "combine masks"
 msgstr ""
 
@@ -6881,7 +6881,7 @@ msgid ""
 "mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3089 ../src/libs/history.c:885
+#: ../src/develop/blend_gui.c:3089 ../src/libs/history.c:889
 msgid "invert mask"
 msgstr ""
 
@@ -6900,7 +6900,7 @@ msgid ""
 "negative values select flat areas"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3102 ../src/libs/history.c:879
+#: ../src/develop/blend_gui.c:3102 ../src/libs/history.c:883
 msgid "feathering guide"
 msgstr ""
 
@@ -6910,7 +6910,7 @@ msgid ""
 "choose to apply feathering before or after mask blur"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3109 ../src/libs/history.c:878
+#: ../src/develop/blend_gui.c:3109 ../src/libs/history.c:882
 msgid "feathering radius"
 msgstr ""
 
@@ -6927,7 +6927,7 @@ msgid "radius for gaussian blur of blend mask"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:3123 ../src/iop/retouch.c:2357
-#: ../src/libs/history.c:876
+#: ../src/libs/history.c:880
 msgid "mask opacity"
 msgstr ""
 
@@ -6937,7 +6937,7 @@ msgid ""
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3133 ../src/libs/history.c:881
+#: ../src/develop/blend_gui.c:3133 ../src/libs/history.c:885
 msgid "mask contrast"
 msgstr ""
 
@@ -7545,121 +7545,121 @@ msgstr ""
 msgid "or add images in the collections module in the left panel"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1250
+#: ../src/dtgtk/thumbtable.c:1249
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1252
+#: ../src/dtgtk/thumbtable.c:1251
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1254
+#: ../src/dtgtk/thumbtable.c:1253
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1257
+#: ../src/dtgtk/thumbtable.c:1256
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1259
+#: ../src/dtgtk/thumbtable.c:1258
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1262
+#: ../src/dtgtk/thumbtable.c:1261
 msgid "do you want to do that now?"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:1270
+#: ../src/dtgtk/thumbtable.c:1269
 msgid "cached thumbnails invalidation"
 msgstr ""
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2371 ../src/dtgtk/thumbtable.c:2372
-#: ../src/dtgtk/thumbtable.c:2373 ../src/dtgtk/thumbtable.c:2374
-#: ../src/dtgtk/thumbtable.c:2375 ../src/dtgtk/thumbtable.c:2376
-#: ../src/dtgtk/thumbtable.c:2377
+#: ../src/dtgtk/thumbtable.c:2370 ../src/dtgtk/thumbtable.c:2371
+#: ../src/dtgtk/thumbtable.c:2372 ../src/dtgtk/thumbtable.c:2373
+#: ../src/dtgtk/thumbtable.c:2374 ../src/dtgtk/thumbtable.c:2375
+#: ../src/dtgtk/thumbtable.c:2376
 msgctxt "accel"
 msgid "rating"
 msgstr ""
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2380
+#: ../src/dtgtk/thumbtable.c:2379
 msgctxt "accel"
 msgid "copy history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2381
+#: ../src/dtgtk/thumbtable.c:2380
 msgctxt "accel"
 msgid "copy history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2383
+#: ../src/dtgtk/thumbtable.c:2382
 msgctxt "accel"
 msgid "paste history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2384
+#: ../src/dtgtk/thumbtable.c:2383
 msgctxt "accel"
 msgid "paste history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2386
+#: ../src/dtgtk/thumbtable.c:2385
 msgctxt "accel"
 msgid "discard history"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2388
+#: ../src/dtgtk/thumbtable.c:2387
 msgctxt "accel"
 msgid "duplicate image"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2389
+#: ../src/dtgtk/thumbtable.c:2388
 msgctxt "accel"
 msgid "duplicate image virgin"
 msgstr ""
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2393 ../src/dtgtk/thumbtable.c:2394
-#: ../src/dtgtk/thumbtable.c:2395 ../src/dtgtk/thumbtable.c:2396
-#: ../src/dtgtk/thumbtable.c:2397
+#: ../src/dtgtk/thumbtable.c:2392 ../src/dtgtk/thumbtable.c:2393
+#: ../src/dtgtk/thumbtable.c:2394 ../src/dtgtk/thumbtable.c:2395
+#: ../src/dtgtk/thumbtable.c:2396
 msgctxt "accel"
 msgid "color label"
 msgstr ""
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2400 ../src/libs/select.c:377
+#: ../src/dtgtk/thumbtable.c:2399 ../src/libs/select.c:377
 msgctxt "accel"
 msgid "select all"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2401 ../src/libs/select.c:378
+#: ../src/dtgtk/thumbtable.c:2400 ../src/libs/select.c:378
 msgctxt "accel"
 msgid "select none"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2403 ../src/libs/select.c:379
+#: ../src/dtgtk/thumbtable.c:2402 ../src/libs/select.c:379
 msgctxt "accel"
 msgid "invert selection"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2404 ../src/libs/select.c:380
+#: ../src/dtgtk/thumbtable.c:2403 ../src/libs/select.c:380
 msgctxt "accel"
 msgid "select film roll"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2405 ../src/libs/select.c:381
+#: ../src/dtgtk/thumbtable.c:2404 ../src/libs/select.c:381
 msgctxt "accel"
 msgid "select untouched"
 msgstr ""
@@ -9038,7 +9038,7 @@ msgid "interface language"
 msgstr ""
 
 #: ../src/gui/preferences.c:296
-msgid "double_click to reset to the system language"
+msgid "double-click to reset to the system language"
 msgstr ""
 
 #: ../src/gui/preferences.c:298
@@ -11953,16 +11953,16 @@ msgid ""
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
 
-#: ../src/iop/clipping.c:3378 ../src/iop/crop.c:1621
+#: ../src/iop/clipping.c:3378 ../src/iop/crop.c:1622
 msgid "commit"
 msgstr ""
 
-#: ../src/iop/clipping.c:3389 ../src/iop/crop.c:1632
+#: ../src/iop/clipping.c:3389 ../src/iop/crop.c:1633
 #, c-format
 msgid "[%s on borders] crop"
 msgstr ""
 
-#: ../src/iop/clipping.c:3391 ../src/iop/crop.c:1634
+#: ../src/iop/clipping.c:3391 ../src/iop/crop.c:1635
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr ""
@@ -12198,7 +12198,8 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:165
 msgid ""
-"offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance"
+"offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
+"saturation"
 msgstr ""
 
 #: ../src/iop/colorbalancergb.c:368
@@ -13023,11 +13024,11 @@ msgstr ""
 msgid "crop settings"
 msgstr ""
 
-#: ../src/iop/crop.c:1543
+#: ../src/iop/crop.c:1544
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 
-#: ../src/iop/crop.c:1550
+#: ../src/iop/crop.c:1551
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -17364,7 +17365,7 @@ msgstr ""
 msgid "preview is only possible for zoom lower than 200%%"
 msgstr ""
 
-#: ../src/libs/duplicate.c:543 ../src/libs/history.c:1011
+#: ../src/libs/duplicate.c:543 ../src/libs/history.c:1015
 #: ../src/libs/snapshots.c:459
 msgid "original"
 msgstr ""
@@ -18014,62 +18015,62 @@ msgstr ""
 msgid "deprecated module"
 msgstr ""
 
-#: ../src/libs/history.c:871
+#: ../src/libs/history.c:875
 msgid "colorspace"
 msgstr ""
 
-#: ../src/libs/history.c:872
+#: ../src/libs/history.c:876
 msgid "mask mode"
 msgstr ""
 
-#: ../src/libs/history.c:874
+#: ../src/libs/history.c:878
 msgid "blend operation"
 msgstr ""
 
-#: ../src/libs/history.c:880
+#: ../src/libs/history.c:884
 msgid "mask blur"
 msgstr ""
 
-#: ../src/libs/history.c:883
+#: ../src/libs/history.c:887
 msgid "raster mask instance"
 msgstr ""
 
-#: ../src/libs/history.c:884
+#: ../src/libs/history.c:888
 msgid "raster mask id"
 msgstr ""
 
-#: ../src/libs/history.c:887
+#: ../src/libs/history.c:891
 msgid "drawn mask polarity"
 msgstr ""
 
-#: ../src/libs/history.c:891
+#: ../src/libs/history.c:895
 #, c-format
 msgid "a drawn mask was added"
 msgstr ""
 
-#: ../src/libs/history.c:893
+#: ../src/libs/history.c:897
 #, c-format
 msgid "the drawn mask was removed"
 msgstr ""
 
-#: ../src/libs/history.c:894
+#: ../src/libs/history.c:898
 #, c-format
 msgid "the drawn mask was changed"
 msgstr ""
 
-#: ../src/libs/history.c:924
+#: ../src/libs/history.c:928
 msgid "parametric output mask:"
 msgstr ""
 
-#: ../src/libs/history.c:924
+#: ../src/libs/history.c:928
 msgid "parametric input mask:"
 msgstr ""
 
-#: ../src/libs/history.c:1220
+#: ../src/libs/history.c:1224
 msgid "do you really want to clear history of current image?"
 msgstr ""
 
-#: ../src/libs/history.c:1225
+#: ../src/libs/history.c:1229
 msgid "delete image's history?"
 msgstr ""
 
