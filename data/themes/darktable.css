@@ -1583,6 +1583,10 @@ filechooser row:hover .sidebar-icon
 }
 #dt-range-current
 {
+  margin: 0 0.2em;
+}
+#dt-range-current label
+{
   color: @timeline_bg_color;
   background-color: @timeline_fg_color;
   padding: 0 0.2em;

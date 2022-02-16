@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
+#include "common/datetime.h"
 #include "common/debug.h"
 #include "common/film.h"
 #include "common/history.h"
@@ -1034,6 +1035,123 @@ static void _exposure_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   rule->w_specific = special;
 }
 
+static gboolean _date_update(dt_lib_filtering_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+
+  dt_lib_filtering_t *d = get_collect(rule);
+  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+
+  rule->manual_widget_set++;
+  // first, we update the graph
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT SUBSTR(datetime_taken, 1, 19) AS date, COUNT(*) AS count"
+             " FROM main.images AS mi"
+             " WHERE datetime_taken IS NOT NULL AND LENGTH(datetime_taken)>=19 AND %s"
+             " GROUP BY date",
+             d->last_where_ext);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  dtgtk_range_select_reset_blocks(range);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int count = sqlite3_column_int(stmt, 1);
+
+    GDateTime *dt = dt_datetime_exif_to_gdatetime((const char *)sqlite3_column_text(stmt, 0), darktable.utc_tz);
+    if(dt)
+    {
+      dtgtk_range_select_add_block(range, g_date_time_to_unix(dt), count);
+      g_date_time_unref(dt);
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  // and setup the selection
+  dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  rule->manual_widget_set--;
+
+  dtgtk_range_select_redraw(range);
+  return TRUE;
+}
+
+static gchar *_date_print_func(const double value, gboolean detailled)
+{
+  GDateTime *dt = g_date_time_new_from_unix_utc(value);
+  if(dt)
+  {
+    gchar *txt = g_date_time_format(dt, "%Y:%m:%d %H:%M:%S");
+    g_date_time_unref(dt);
+    return txt;
+  }
+  else
+    return g_strdup(_("invalid"));
+}
+static gboolean _date_decode_func(const gchar *txt, double *value)
+{
+  GDateTime *dt = dt_datetime_exif_to_gdatetime(txt, darktable.utc_tz);
+  if(dt)
+  {
+    *value = g_date_time_to_unix(dt);
+    g_date_time_unref(dt);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+                              const gchar *text, dt_lib_module_t *self)
+{
+  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+
+  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+
+  range->step_bd = 86400; // step of 1 day (in seconds)
+  range->print = _date_print_func;
+  range->decode = _date_decode_func;
+  dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
+
+  char query[1024] = { 0 };
+  g_snprintf(query, sizeof(query),
+             "SELECT SUBSTR(MIN(datetime_taken),1,19), SUBSTR(MAX(datetime_taken),1,19)"
+             " FROM main.images"
+             " WHERE datetime_taken IS NOT NULL AND LENGTH(datetime_taken)>=19");
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  gchar *min = NULL;
+  gchar *max = NULL;
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    min = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    max = g_strdup((const char *)sqlite3_column_text(stmt, 1));
+  }
+  sqlite3_finalize(stmt);
+  if(min && max)
+  {
+    GDateTime *dtmin = dt_datetime_exif_to_gdatetime(min, darktable.utc_tz);
+    if(dtmin)
+    {
+      range->min_r = g_date_time_to_unix(dtmin);
+      g_date_time_unref(dtmin);
+    }
+    g_free(min);
+    GDateTime *dtmax = dt_datetime_exif_to_gdatetime(max, darktable.utc_tz);
+    if(dtmax)
+    {
+      range->max_r = g_date_time_to_unix(dtmax);
+      g_date_time_unref(dtmax);
+    }
+    g_free(max);
+  }
+
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+
+  rule->w_specific = special;
+}
+
 static void _folders_decode(const gchar *txt, gchar *path, gchar *dir, gboolean *sub)
 {
   if(!txt || strlen(txt) == 0) return;
@@ -1174,6 +1292,8 @@ static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
       return _iso_update(rule);
     case DT_COLLECTION_PROP_EXPOSURE:
       return _exposure_update(rule);
+    case DT_COLLECTION_PROP_TIME:
+      return _date_update(rule);
     case DT_COLLECTION_PROP_FOLDERS:
       return _folders_update(rule);
     default:
@@ -1218,6 +1338,9 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
       break;
     case DT_COLLECTION_PROP_EXPOSURE:
       _exposure_widget_init(rule, rule->prop, text, self);
+      break;
+    case DT_COLLECTION_PROP_TIME:
+      _date_widget_init(rule, rule->prop, text, self);
       break;
     case DT_COLLECTION_PROP_FOLDERS:
       _folders_widget_init(rule, rule->prop, text, self);
