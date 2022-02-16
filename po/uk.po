@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-12 10:25+0100\n"
-"PO-Revision-Date: 2022-02-13 11:50+0200\n"
+"POT-Creation-Date: 2022-02-16 11:01+0100\n"
+"PO-Revision-Date: 2022-02-16 14:18+0200\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -4120,7 +4120,7 @@ msgstr "режим заповнення"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
 #: ../src/iop/basicadj.c:621 ../src/iop/channelmixerrgb.c:3935
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:591 ../src/iop/soften.c:414
-#: ../src/iop/vignette.c:990 ../src/libs/history.c:882
+#: ../src/iop/vignette.c:990 ../src/libs/history.c:886
 msgid "brightness"
 msgstr "яскравість"
 
@@ -5471,49 +5471,49 @@ msgstr "дату/час скасовано. зображень: %d"
 msgid "date/time re-applied to %d images"
 msgstr "дату/час повторно застосовано. зображень: %d"
 
-#: ../src/common/image.c:1945
+#: ../src/common/image.c:1948
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "не вдається отримати доступ до локальної копії `%s'"
 
-#: ../src/common/image.c:1952
+#: ../src/common/image.c:1955
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "не вдається записати локальну копію `%s'"
 
-#: ../src/common/image.c:1959
+#: ../src/common/image.c:1962
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "помилка переміщення локальної копії `%s' -> `%s'"
 
-#: ../src/common/image.c:1975
+#: ../src/common/image.c:1978
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "помилка переміщення `%s': файл не знайдено"
 
-#: ../src/common/image.c:1985
+#: ../src/common/image.c:1988
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "помилка переміщення `%s' -> `%s': файл існує"
 
-#: ../src/common/image.c:1989
+#: ../src/common/image.c:1992
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "помилка переміщення `%s' -> `%s'"
 
-#: ../src/common/image.c:2287
+#: ../src/common/image.c:2290
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "неможливо створити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2301
+#: ../src/common/image.c:2304
 msgid "cannot create local copy."
 msgstr "неможливо створити локальну копію."
 
-#: ../src/common/image.c:2373 ../src/control/jobs/control_jobs.c:762
+#: ../src/common/image.c:2376 ../src/control/jobs/control_jobs.c:762
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "неможливо видалити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2538
+#: ../src/common/image.c:2541
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -5521,11 +5521,11 @@ msgstr[0] "%d локальну копію синхронізовано"
 msgstr[1] "%d локальні копії синхронізовано"
 msgstr[2] "%d локальних копій синхронізовано"
 
-#: ../src/common/image.c:2727
+#: ../src/common/image.c:2730
 msgid "<b>WARNING</b> : camera is missing samples!"
 msgstr "<b>ПОПЕРЕДЖЕННЯ</b> : відсутні зразки зображень з цієї моделі камери!"
 
-#: ../src/common/image.c:2728
+#: ../src/common/image.c:2731
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -5533,7 +5533,7 @@ msgstr ""
 "Вам слід надати такі зразки, завантаживши їх на сайт <a href='https://raw."
 "pixls.us/'>https://raw.pixls.us/</a>"
 
-#: ../src/common/image.c:2729
+#: ../src/common/image.c:2732
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -5542,7 +5542,7 @@ msgstr ""
 "для `%s' `%s'\n"
 "у якомога більшій кількості форматів/варіантів стиснення/глибин кольору"
 
-#: ../src/common/image.c:2732
+#: ../src/common/image.c:2735
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "інакше <b>RAW не буде читатися</b> у наступній версії darktable."
 
@@ -5743,7 +5743,7 @@ msgstr "рейтинг зображення: 0 зірок"
 msgid "image rated to %s"
 msgstr "рейтинг зображення: %s"
 
-#: ../src/common/ratings.c:262 ../src/libs/history.c:777
+#: ../src/common/ratings.c:262 ../src/libs/history.c:781
 #: ../src/libs/snapshots.c:467
 msgid "unknown"
 msgstr "невідомо"
@@ -7146,7 +7146,7 @@ msgstr ""
 #: ../src/iop/basicadj.c:600 ../src/iop/exposure.c:785
 #: ../src/iop/exposure.c:836 ../src/iop/exposure.c:858
 #: ../src/iop/graduatednd.c:1104 ../src/iop/relight.c:269
-#: ../src/iop/soften.c:415 ../src/libs/history.c:875
+#: ../src/iop/soften.c:415 ../src/libs/history.c:879
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f EV"
@@ -7286,7 +7286,7 @@ msgstr "застарілі режими"
 msgid "blending options"
 msgstr "опції змішування"
 
-#: ../src/develop/blend_gui.c:3052 ../src/libs/history.c:873
+#: ../src/develop/blend_gui.c:3052 ../src/libs/history.c:877
 msgid "blend mode"
 msgstr "режим змішування"
 
@@ -7308,7 +7308,7 @@ msgstr ""
 "за замовчуванням вихід буде змішаний поверх входу,\n"
 "порядок можна змінити, натиснувши на піктограму (вхід поверх виходу)"
 
-#: ../src/develop/blend_gui.c:3069 ../src/libs/history.c:875
+#: ../src/develop/blend_gui.c:3069 ../src/libs/history.c:879
 msgid "blend fulcrum"
 msgstr "опорна точка змішування"
 
@@ -7325,7 +7325,7 @@ msgstr "непрозорість"
 msgid "set the opacity of the blending"
 msgstr "встановити непрозорість змішування"
 
-#: ../src/develop/blend_gui.c:3084 ../src/libs/history.c:877
+#: ../src/develop/blend_gui.c:3084 ../src/libs/history.c:881
 msgid "combine masks"
 msgstr "поєднувати маски"
 
@@ -7336,7 +7336,7 @@ msgid ""
 msgstr ""
 "як поєднувати окрему намальовану маску та різні канали параметричної маски"
 
-#: ../src/develop/blend_gui.c:3089 ../src/libs/history.c:885
+#: ../src/develop/blend_gui.c:3089 ../src/libs/history.c:889
 msgid "invert mask"
 msgstr "інвертувати маску"
 
@@ -7358,7 +7358,7 @@ msgstr ""
 "позитивні значення вибирають області з чіткими деталями,\n"
 "негативні значення вибирають гладкі ділянки"
 
-#: ../src/develop/blend_gui.c:3102 ../src/libs/history.c:879
+#: ../src/develop/blend_gui.c:3102 ../src/libs/history.c:883
 msgid "feathering guide"
 msgstr "веде розтушовку"
 
@@ -7370,7 +7370,7 @@ msgstr ""
 "вибрати наведення маски за вхідним або вихідним зображенням і\n"
 "вибрати застосування розтушовки до або після розмиття маски"
 
-#: ../src/develop/blend_gui.c:3109 ../src/libs/history.c:878
+#: ../src/develop/blend_gui.c:3109 ../src/libs/history.c:882
 msgid "feathering radius"
 msgstr "радіус розтушовки"
 
@@ -7387,7 +7387,7 @@ msgid "radius for gaussian blur of blend mask"
 msgstr "радіус гауссівського розмиття маски змішування"
 
 #: ../src/develop/blend_gui.c:3123 ../src/iop/retouch.c:2357
-#: ../src/libs/history.c:876
+#: ../src/libs/history.c:880
 msgid "mask opacity"
 msgstr "непрозорість маски"
 
@@ -7399,7 +7399,7 @@ msgstr ""
 "зміщує і нахиляє криву тону маски змішування для регулювання її яскравості, "
 "не впливаючи на повністю прозорі / повністю непрозорі області"
 
-#: ../src/develop/blend_gui.c:3133 ../src/libs/history.c:881
+#: ../src/develop/blend_gui.c:3133 ../src/libs/history.c:885
 msgid "mask contrast"
 msgstr "контраст маски"
 
@@ -8059,12 +8059,12 @@ msgstr "спробуйте послабити налаштування філь�
 msgid "or add images in the collections module in the left panel"
 msgstr "або додати зображення в модулі колекції на лівій панелі"
 
-#: ../src/dtgtk/thumbtable.c:1250
+#: ../src/dtgtk/thumbtable.c:1249
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr "ви змінили налаштування, пов’язані з тим, як генеруються мініатюри.\n"
 
-#: ../src/dtgtk/thumbtable.c:1252
+#: ../src/dtgtk/thumbtable.c:1251
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
@@ -8072,7 +8072,7 @@ msgstr ""
 "усі кешовані мініатюри потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1254
+#: ../src/dtgtk/thumbtable.c:1253
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
@@ -8081,7 +8081,7 @@ msgstr ""
 "кешовані мініатюри, починаючи з рівня %d, потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1257
+#: ../src/dtgtk/thumbtable.c:1256
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
@@ -8090,7 +8090,7 @@ msgstr ""
 "кешовані мініатюри нижче рівня %d потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1259
+#: ../src/dtgtk/thumbtable.c:1258
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
@@ -8099,89 +8099,89 @@ msgstr ""
 "кешовані мініатюри між рівнями %d і %d потрібно визнати недійсними.\n"
 "\n"
 
-#: ../src/dtgtk/thumbtable.c:1262
+#: ../src/dtgtk/thumbtable.c:1261
 msgid "do you want to do that now?"
 msgstr "хочете зробити це зараз?"
 
-#: ../src/dtgtk/thumbtable.c:1270
+#: ../src/dtgtk/thumbtable.c:1269
 msgid "cached thumbnails invalidation"
 msgstr "анулювання кешованих мініатюр"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2371 ../src/dtgtk/thumbtable.c:2372
-#: ../src/dtgtk/thumbtable.c:2373 ../src/dtgtk/thumbtable.c:2374
-#: ../src/dtgtk/thumbtable.c:2375 ../src/dtgtk/thumbtable.c:2376
-#: ../src/dtgtk/thumbtable.c:2377
+#: ../src/dtgtk/thumbtable.c:2370 ../src/dtgtk/thumbtable.c:2371
+#: ../src/dtgtk/thumbtable.c:2372 ../src/dtgtk/thumbtable.c:2373
+#: ../src/dtgtk/thumbtable.c:2374 ../src/dtgtk/thumbtable.c:2375
+#: ../src/dtgtk/thumbtable.c:2376
 msgctxt "accel"
 msgid "rating"
 msgstr "рейтинг"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2380
+#: ../src/dtgtk/thumbtable.c:2379
 msgctxt "accel"
 msgid "copy history"
 msgstr "копіювати історію"
 
-#: ../src/dtgtk/thumbtable.c:2381
+#: ../src/dtgtk/thumbtable.c:2380
 msgctxt "accel"
 msgid "copy history parts"
 msgstr "копіювати частини історії"
 
-#: ../src/dtgtk/thumbtable.c:2383
+#: ../src/dtgtk/thumbtable.c:2382
 msgctxt "accel"
 msgid "paste history"
 msgstr "вставити історію"
 
-#: ../src/dtgtk/thumbtable.c:2384
+#: ../src/dtgtk/thumbtable.c:2383
 msgctxt "accel"
 msgid "paste history parts"
 msgstr "вставити частини історії"
 
-#: ../src/dtgtk/thumbtable.c:2386
+#: ../src/dtgtk/thumbtable.c:2385
 msgctxt "accel"
 msgid "discard history"
 msgstr "видалити історію"
 
-#: ../src/dtgtk/thumbtable.c:2388
+#: ../src/dtgtk/thumbtable.c:2387
 msgctxt "accel"
 msgid "duplicate image"
 msgstr "створити дублікат зображення"
 
-#: ../src/dtgtk/thumbtable.c:2389
+#: ../src/dtgtk/thumbtable.c:2388
 msgctxt "accel"
 msgid "duplicate image virgin"
 msgstr "створити дублікат нередагованого зображення"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2393 ../src/dtgtk/thumbtable.c:2394
-#: ../src/dtgtk/thumbtable.c:2395 ../src/dtgtk/thumbtable.c:2396
-#: ../src/dtgtk/thumbtable.c:2397
+#: ../src/dtgtk/thumbtable.c:2392 ../src/dtgtk/thumbtable.c:2393
+#: ../src/dtgtk/thumbtable.c:2394 ../src/dtgtk/thumbtable.c:2395
+#: ../src/dtgtk/thumbtable.c:2396
 msgctxt "accel"
 msgid "color label"
 msgstr "кольорова позначка"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2400 ../src/libs/select.c:377
+#: ../src/dtgtk/thumbtable.c:2399 ../src/libs/select.c:377
 msgctxt "accel"
 msgid "select all"
 msgstr "вибрати все"
 
-#: ../src/dtgtk/thumbtable.c:2401 ../src/libs/select.c:378
+#: ../src/dtgtk/thumbtable.c:2400 ../src/libs/select.c:378
 msgctxt "accel"
 msgid "select none"
 msgstr "скасувати вибір"
 
-#: ../src/dtgtk/thumbtable.c:2403 ../src/libs/select.c:379
+#: ../src/dtgtk/thumbtable.c:2402 ../src/libs/select.c:379
 msgctxt "accel"
 msgid "invert selection"
 msgstr "інвертувати вибір"
 
-#: ../src/dtgtk/thumbtable.c:2404 ../src/libs/select.c:380
+#: ../src/dtgtk/thumbtable.c:2403 ../src/libs/select.c:380
 msgctxt "accel"
 msgid "select film roll"
 msgstr "вибрати плівку"
 
-#: ../src/dtgtk/thumbtable.c:2405 ../src/libs/select.c:381
+#: ../src/dtgtk/thumbtable.c:2404 ../src/libs/select.c:381
 msgctxt "accel"
 msgid "select untouched"
 msgstr "вибрати необроблені"
@@ -9623,7 +9623,7 @@ msgid "interface language"
 msgstr "мова інтерфейсу"
 
 #: ../src/gui/preferences.c:296
-msgid "double_click to reset to the system language"
+msgid "double-click to reset to the system language"
 msgstr ""
 "подвійний клік скидає налаштування до системної мови операційної системи"
 
@@ -12814,16 +12814,16 @@ msgstr ""
 "<b>випрямлення</b>: перетягування правою кнопкою, <b>фіксація змін</b>: "
 "подвійний клік"
 
-#: ../src/iop/clipping.c:3378 ../src/iop/crop.c:1621
+#: ../src/iop/clipping.c:3378 ../src/iop/crop.c:1622
 msgid "commit"
 msgstr "застосувати"
 
-#: ../src/iop/clipping.c:3389 ../src/iop/crop.c:1632
+#: ../src/iop/clipping.c:3389 ../src/iop/crop.c:1633
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s на краях] обрізати"
 
-#: ../src/iop/clipping.c:3391 ../src/iop/crop.c:1634
+#: ../src/iop/clipping.c:3391 ../src/iop/crop.c:1635
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s на краях] обрізати зі збереженням співвідношення сторін"
@@ -13059,9 +13059,11 @@ msgstr "колірний баланс rgb"
 
 #: ../src/iop/colorbalancergb.c:165
 msgid ""
-"offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance"
+"offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
+"saturation"
 msgstr ""
-"offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance"
+"offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
+"saturation"
 
 #: ../src/iop/colorbalancergb.c:368
 msgid "add basic colorfulness"
@@ -13958,13 +13960,13 @@ msgstr "змінити кадрування"
 msgid "crop settings"
 msgstr "налаштування кадрування"
 
-#: ../src/iop/crop.c:1543
+#: ../src/iop/crop.c:1544
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "<b>зміна розміру</b>: перетягування, <b>зберегти співвідношення сторін</b>: "
 "shift+перетягування"
 
-#: ../src/iop/crop.c:1550
+#: ../src/iop/crop.c:1551
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -18906,7 +18908,7 @@ msgstr "менеджер дублікатів"
 msgid "preview is only possible for zoom lower than 200%%"
 msgstr "попередній перегляд можливий лише для масштабу нижче 200%%"
 
-#: ../src/libs/duplicate.c:543 ../src/libs/history.c:1011
+#: ../src/libs/duplicate.c:543 ../src/libs/history.c:1015
 #: ../src/libs/snapshots.c:459
 msgid "original"
 msgstr "оригінал"
@@ -19623,62 +19625,62 @@ msgstr "включений за замовчуванням модуль"
 msgid "deprecated module"
 msgstr "застарілий модуль"
 
-#: ../src/libs/history.c:871
+#: ../src/libs/history.c:875
 msgid "colorspace"
 msgstr "колірний простір"
 
-#: ../src/libs/history.c:872
+#: ../src/libs/history.c:876
 msgid "mask mode"
 msgstr "режим маски"
 
-#: ../src/libs/history.c:874
+#: ../src/libs/history.c:878
 msgid "blend operation"
 msgstr "операція змішування"
 
-#: ../src/libs/history.c:880
+#: ../src/libs/history.c:884
 msgid "mask blur"
 msgstr "розмиття маски"
 
-#: ../src/libs/history.c:883
+#: ../src/libs/history.c:887
 msgid "raster mask instance"
 msgstr "екземпляр растрової маски"
 
-#: ../src/libs/history.c:884
+#: ../src/libs/history.c:888
 msgid "raster mask id"
 msgstr "id растрової маски"
 
-#: ../src/libs/history.c:887
+#: ../src/libs/history.c:891
 msgid "drawn mask polarity"
 msgstr "полярність намальованої маски"
 
-#: ../src/libs/history.c:891
+#: ../src/libs/history.c:895
 #, c-format
 msgid "a drawn mask was added"
 msgstr "намальовану маску додано"
 
-#: ../src/libs/history.c:893
+#: ../src/libs/history.c:897
 #, c-format
 msgid "the drawn mask was removed"
 msgstr "намальовану маску було видалено"
 
-#: ../src/libs/history.c:894
+#: ../src/libs/history.c:898
 #, c-format
 msgid "the drawn mask was changed"
 msgstr "намальовану маску було змінено"
 
-#: ../src/libs/history.c:924
+#: ../src/libs/history.c:928
 msgid "parametric output mask:"
 msgstr "параметрична маска виходу:"
 
-#: ../src/libs/history.c:924
+#: ../src/libs/history.c:928
 msgid "parametric input mask:"
 msgstr "параметрична маска входу:"
 
-#: ../src/libs/history.c:1220
+#: ../src/libs/history.c:1224
 msgid "do you really want to clear history of current image?"
 msgstr "ви дійсно хочете очистити історію поточного зображення?"
 
-#: ../src/libs/history.c:1225
+#: ../src/libs/history.c:1229
 msgid "delete image's history?"
 msgstr "видалили історію зображення?"
 
