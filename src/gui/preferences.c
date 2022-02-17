@@ -148,7 +148,6 @@ static void resources_callback(GtkWidget *widget, gpointer user_data)
 {
   const int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   dt_conf_set_int("resourcelevel", selected);
-  darktable.dtresources.level = selected;
 }
 
 static void usercss_callback(GtkWidget *widget, gpointer user_data)
@@ -352,12 +351,12 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("minimal"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("small"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("default"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("large"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("medium"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("default/large"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("maximum"));
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), darktable.dtresources.level);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("resourcelevel"));
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(resources_callback), 0);
-  gtk_widget_set_tooltip_text(widget, _("set darktable resource taking"));
+  gtk_widget_set_tooltip_text(widget, _("set darktable resource taking\nUse larger setting to gain some perormance, this might take away resources from other applications."));
 
   GtkWidget *useperfmode = gtk_check_button_new();
   label = gtk_label_new(_("prefer performance over quality"));
