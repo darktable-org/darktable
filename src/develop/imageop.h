@@ -404,7 +404,7 @@ dt_iop_module_t *dt_iop_get_colorout_module(void);
 dt_iop_module_t *dt_iop_get_module_from_list(GList *iop_list, const char *op);
 dt_iop_module_t *dt_iop_get_module(const char *op);
 /** returns module with op + multi_priority or NULL if not found on the list,
-    if multi_priority == -1 do not checl for it */
+    if multi_priority == -1 do not check for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
 /** returns module with op + multi_name or NULL if not found on the list,
     if multi_name == NULL do not check for it */
