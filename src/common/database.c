@@ -50,6 +50,8 @@
 #define CURRENT_DATABASE_VERSION_LIBRARY 34
 #define CURRENT_DATABASE_VERSION_DATA     9
 
+#define MAX_NESTED_TRANSACTIONS 5
+
 typedef struct dt_database_t
 {
   gboolean lock_acquired;
@@ -4389,6 +4391,55 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   g_free(last_snap_name);
 
   return ret;
+}
+
+// nested transactions support
+
+static int trxid = 0;
+
+void dt_database_start_transaction(const struct dt_database_t *db)
+{
+  trxid++;
+  char SQLTRX[128] = { 0 };
+
+  // if top level a simple unamed transaction is used BEGIN / COMMIT / ROLLBACK
+  // otherwise we use a savepoint (named transaction).
+
+  if(trxid == 1)
+    g_strlcat(SQLTRX, "BEGIN TRANSACTION", sizeof(SQLTRX));
+  else
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "SAVEPOINT trx%d", trxid);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+
+  if(trxid > MAX_NESTED_TRANSACTIONS)
+    fprintf(stderr, "[dt_database_start_transaction] more than %d nested transaction\n", MAX_NESTED_TRANSACTIONS);
+}
+
+void dt_database_release_transaction(const struct dt_database_t *db)
+{
+  char SQLTRX[128] = { 0 };
+
+  if(trxid == 1)
+    g_strlcat(SQLTRX, "COMMIT", sizeof(SQLTRX));
+  else
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "RELEASE SAVEPOINT trx%d", trxid);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  trxid--;
+}
+
+void dt_database_rollback_transaction(const struct dt_database_t *db)
+{
+  char SQLTRX[128] = { 0 };
+
+  if(trxid == 1)
+    g_strlcat(SQLTRX, "ROLLBACK TRANSACTION", sizeof(SQLTRX));
+  else
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "ROLLBACK TRANSACTION TO SAVEPOINT trx%d", trxid);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  trxid--;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
