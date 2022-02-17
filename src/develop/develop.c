@@ -1685,7 +1685,8 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
                                   -1, &stmt, NULL);
 
       // let's wrap this into a transaction, it might make it a little faster.
-      sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+      dt_database_start_transaction(darktable.db);
+
       for(GList *r = rowids; r; r = g_list_next(r))
       {
         DT_DEBUG_SQLITE3_CLEAR_BINDINGS(stmt);
@@ -1698,7 +1699,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
         v++;
       }
 
-      sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+      dt_database_release_transaction(darktable.db);
 
       g_list_free(rowids);
 

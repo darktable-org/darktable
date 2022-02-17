@@ -73,7 +73,7 @@ GList *dt_control_crawler_run()
                      &inner_stmt, NULL);
 
   // let's wrap this into a transaction, it might make it a little faster.
-  sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -202,7 +202,7 @@ GList *dt_control_crawler_run()
     free(extra_path);
   }
 
-  sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 
   sqlite3_finalize(stmt);
   sqlite3_finalize(inner_stmt);
