@@ -623,6 +623,8 @@ broken_bbox:
           place->type = LOCATION_TYPE_CITY;
         else if(strcmp(*avalue, "administrative") == 0)
           place->type = LOCATION_TYPE_ADMINISTRATIVE;
+        else if(strcmp(*avalue, "residental") == 0) // for backward compatibility
+          place->type = LOCATION_TYPE_RESIDENTIAL;
         else if(strcmp(*avalue, "residential") == 0)
           place->type = LOCATION_TYPE_RESIDENTIAL;
       }
