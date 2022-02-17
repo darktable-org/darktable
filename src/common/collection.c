@@ -2380,7 +2380,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     dt_collection_shift_image_positions(selected_images_length, target_image_pos, tagid);
 
     sqlite3_stmt *stmt = NULL;
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+    dt_database_start_transaction(darktable.db);
 
     // move images to their intended positions
     int64_t new_image_pos = target_image_pos;
@@ -2411,7 +2411,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
       new_image_pos++;
     }
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+    dt_database_release_transaction(darktable.db);
   }
   else
   {
@@ -2438,7 +2438,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     sqlite3_finalize(stmt);
     sqlite3_stmt *update_stmt = NULL;
 
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+    dt_database_start_transaction(darktable.db);
 
     // move images to last position in custom image order table
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -2467,7 +2467,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     }
 
     sqlite3_finalize(update_stmt);
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+    dt_database_release_transaction(darktable.db);
   }
 }
 
