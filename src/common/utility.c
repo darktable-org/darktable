@@ -98,12 +98,12 @@ guint dt_util_str_occurence(const gchar *haystack, const gchar *needle)
 
 gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gchar *substitute)
 {
-  const gint occurences = dt_util_str_occurence(string, pattern);
+  const gint occurrences = dt_util_str_occurence(string, pattern);
   gchar *nstring = NULL;
 
-  if(occurences)
+  if(occurrences)
   {
-    nstring = g_malloc_n(strlen(string) + (occurences * strlen(substitute)) + 1, sizeof(gchar));
+    nstring = g_malloc_n(strlen(string) + (occurrences * strlen(substitute)) + 1, sizeof(gchar));
     const gchar *pend = string + strlen(string);
     const gchar *s = string, *p = string;
     gchar *np = nstring;

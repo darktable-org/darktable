@@ -682,7 +682,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
   GFileInfo *info = NULL;
   guint nb = n;
   /* get filmroll id for current directory. if not present, checking the db whether
-    the image has alread been imported can be skipped */
+    the image has already been imported can be skipped */
   int32_t filmroll_id = dt_film_get_id(folder);
 
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");

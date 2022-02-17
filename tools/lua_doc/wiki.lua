@@ -1,7 +1,7 @@
 local page_name="/redmine/projects/darktable/wiki/LuaAPI"
 
 local function get_node_with_link(node,name)
-	if node:get_attribute("skiped") then return name end
+	if node:get_attribute("skipped") then return name end
 	return "\""..name.."\":"..page_name.."#"..node:get_name(true)
 end
 
@@ -133,7 +133,7 @@ local function print_content(node)
 		result = result.."\n"
 	end
 
-	for k,v in doc.unskiped_children(node) do
+	for k,v in doc.unskipped_children(node) do
 		result = result .. parse_doc_node(v,node,k).."\n";
 	end
 	return result;

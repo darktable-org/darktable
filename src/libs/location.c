@@ -37,7 +37,7 @@ typedef enum _lib_location_type_t
   LOCATION_TYPE_HAMLET,
   LOCATION_TYPE_CITY,
   LOCATION_TYPE_ADMINISTRATIVE,
-  LOCATION_TYPE_RESIDENTAL,
+  LOCATION_TYPE_RESIDENTIAL,
   LOCATION_TYPE_UNKNOWN
 } _lib_location_type_t;
 
@@ -238,7 +238,7 @@ static int32_t _lib_location_place_get_zoom(_lib_location_result_t *place)
 {
   switch(place->type)
   {
-    case LOCATION_TYPE_RESIDENTAL:
+    case LOCATION_TYPE_RESIDENTIAL:
       return 18;
 
     case LOCATION_TYPE_ADMINISTRATIVE:
@@ -616,15 +616,15 @@ broken_bbox:
       {
 
         if(strcmp(*avalue, "village") == 0)
-          place->type = LOCATION_TYPE_RESIDENTAL;
+          place->type = LOCATION_TYPE_RESIDENTIAL;
         else if(strcmp(*avalue, "hamlet") == 0)
           place->type = LOCATION_TYPE_HAMLET;
         else if(strcmp(*avalue, "city") == 0)
           place->type = LOCATION_TYPE_CITY;
         else if(strcmp(*avalue, "administrative") == 0)
           place->type = LOCATION_TYPE_ADMINISTRATIVE;
-        else if(strcmp(*avalue, "residental") == 0)
-          place->type = LOCATION_TYPE_RESIDENTAL;
+        else if(strcmp(*avalue, "residential") == 0)
+          place->type = LOCATION_TYPE_RESIDENTIAL;
       }
 
       aname++;

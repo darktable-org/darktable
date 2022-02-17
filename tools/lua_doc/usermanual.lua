@@ -1,5 +1,5 @@
 local function get_node_with_link(node,name)
-  if node:get_attribute("skiped") then return name end
+  if node:get_attribute("skipped") then return name end
   return '<link linkend="'..node:get_name(true):gsub("%.","_"):gsub("#","_hash_")..'">'..name..'</link>'
 end
 
@@ -164,7 +164,7 @@ local function print_content(node)
     result = result.."</variablelist>\n"
   end
 
-  for k,v in doc.unskiped_children(node) do
+  for k,v in doc.unskipped_children(node) do
     result = result .. parse_doc_node(v,node,k).."\n";
   end
   return result;
@@ -176,7 +176,7 @@ local function depth(node)
 end
 
 parse_doc_node = function(node,parent,prev_name)
-  if node:get_attribute("skiped") == true then return "" end
+  if node:get_attribute("skipped") == true then return "" end
   local node_name
   local parent_name = doc.get_name(parent)
   local result = ""
