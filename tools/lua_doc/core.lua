@@ -468,14 +468,14 @@ function M.all_children(node)
 		end,node,nil
 	end
 
-	function M.unskiped_children(node)
+	function M.unskipped_children(node)
 		local my_all_children = M.all_children(node)
 		return function(table,key)
 			local nk,nv = key,nil
 			while(true) do
 				nk,nv = my_all_children(table,nk)
 				if not nk then return nil, nil end
-				if not M.get_attribute(nv,"skiped") then return nk,nv end 
+				if not M.get_attribute(nv,"skipped") then return nk,nv end 
 			end
 		end,node,nil
 	end
@@ -629,8 +629,8 @@ function M.all_children(node)
 		return subnode
 	end
 
-	function M.set_skiped(node)
-		set_attribute(node,"skiped",true)
+	function M.set_skipped(node)
+		set_attribute(node,"skipped",true)
 	end
 
 	function M.get_reported_type(node)
@@ -651,7 +651,7 @@ function M.all_children(node)
 	meta_node.__index.add_return = M.add_return
 	meta_node.__index.set_real_name = M.set_real_name
 	meta_node.__index.all_children = M.all_children
-	meta_node.__index.unskiped_children = M.unskiped_children
+	meta_node.__index.unskipped_children = M.unskipped_children
 	meta_node.__index.set_attribute = set_attribute
 	meta_node.__index.get_attribute = M.get_attribute
 	meta_node.__index.set_alias = M.set_alias
@@ -659,7 +659,7 @@ function M.all_children(node)
 	meta_node.__index.set_main_parent = M.set_main_parent
 	meta_node.__index.remove_parent = M.remove_parent
 	meta_node.__index.debug_print = M.debug_print
-	meta_node.__index.set_skiped = M.set_skiped
+	meta_node.__index.set_skipped = M.set_skipped
 	meta_node.__index.get_name = M.get_name
 	meta_node.__index.get_reported_type = M.get_reported_type
 	meta_node.__index.set_reported_type = M.set_reported_type
