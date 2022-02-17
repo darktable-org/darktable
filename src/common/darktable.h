@@ -279,6 +279,12 @@ typedef struct dt_codepath_t
   unsigned int OPENMP_SIMD : 1; // always stays the last one
 } dt_codepath_t;
 
+typedef struct dt_sys_resources_t
+{
+  size_t total_memory;
+  int level;
+} dt_sys_resources_t;
+
 typedef struct darktable_t
 {
   dt_codepath_t codepath;
@@ -333,6 +339,7 @@ typedef struct darktable_t
   int32_t unmuted_signal_dbg_acts;
   gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
   GTimeZone *utc_tz;
+  struct dt_sys_resources_t dtresources;
 } darktable_t;
 
 typedef struct

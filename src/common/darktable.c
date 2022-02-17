@@ -340,6 +340,52 @@ static void dt_codepaths_init()
 #endif
 }
 
+static inline size_t _get_total_memory()
+{
+#if defined(__linux__)
+  FILE *f = g_fopen("/proc/meminfo", "rb");
+  if(!f) return 0;
+  size_t mem = 0;
+  char *line = NULL;
+  size_t len = 0;
+  int first = 1, found = 0;
+  // return "MemTotal" or the value from the first line
+  while(!found && getline(&line, &len, f) != -1)
+  {
+    char *colon = strchr(line, ':');
+    if(!colon) continue;
+    found = !strncmp(line, "MemTotal:", 9);
+    if(found || first) mem = atol(colon + 1);
+    first = 0;
+  }
+  fclose(f);
+  if(len > 0) free(line);
+  return mem;
+#elif defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__)            \
+    || defined(__OpenBSD__)
+#if defined(__APPLE__)
+  int mib[2] = { CTL_HW, HW_MEMSIZE };
+#elif defined(HW_PHYSMEM64)
+  int mib[2] = { CTL_HW, HW_PHYSMEM64 };
+#else
+  int mib[2] = { CTL_HW, HW_PHYSMEM };
+#endif
+  uint64_t physical_memory;
+  size_t length = sizeof(uint64_t);
+  sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
+  return physical_memory / 1024;
+#elif defined _WIN32
+  MEMORYSTATUSEX memInfo;
+  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+  GlobalMemoryStatusEx(&memInfo);
+  return memInfo.ullTotalPhys / (uint64_t)1024;
+#else
+  // assume 2GB until we have a better solution.
+  fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
+  return 2097152;
+#endif
+}
+
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
   double start_wtime = dt_get_wtime();
@@ -1149,6 +1195,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_image_local_copy_synch();
 
+  // initialize resources stuff here
+  if(!dt_conf_key_exists("resourcelevel"))
+    dt_conf_set_int("resourcelevel", 2);
+
+  darktable.dtresources.total_memory = _get_total_memory();
+  darktable.dtresources.level = dt_conf_get_int("resourcelevel");
+
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   dt_lua_init(darktable.lua_state.state, lua_command);
@@ -1520,52 +1573,6 @@ static inline int _get_num_atom_cores()
   return hw_ncpu;
 #else
   return 0;
-#endif
-}
-
-static inline size_t _get_total_memory()
-{
-#if defined(__linux__)
-  FILE *f = g_fopen("/proc/meminfo", "rb");
-  if(!f) return 0;
-  size_t mem = 0;
-  char *line = NULL;
-  size_t len = 0;
-  int first = 1, found = 0;
-  // return "MemTotal" or the value from the first line
-  while(!found && getline(&line, &len, f) != -1)
-  {
-    char *colon = strchr(line, ':');
-    if(!colon) continue;
-    found = !strncmp(line, "MemTotal:", 9);
-    if(found || first) mem = atol(colon + 1);
-    first = 0;
-  }
-  fclose(f);
-  if(len > 0) free(line);
-  return mem;
-#elif defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__)            \
-    || defined(__OpenBSD__)
-#if defined(__APPLE__)
-  int mib[2] = { CTL_HW, HW_MEMSIZE };
-#elif defined(HW_PHYSMEM64)
-  int mib[2] = { CTL_HW, HW_PHYSMEM64 };
-#else
-  int mib[2] = { CTL_HW, HW_PHYSMEM };
-#endif
-  uint64_t physical_memory;
-  size_t length = sizeof(uint64_t);
-  sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
-  return physical_memory / 1024;
-#elif defined _WIN32
-  MEMORYSTATUSEX memInfo;
-  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-  GlobalMemoryStatusEx(&memInfo);
-  return memInfo.ullTotalPhys / (uint64_t)1024;
-#else
-  // assume 2GB until we have a better solution.
-  fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
-  return 2097152;
 #endif
 }
 
