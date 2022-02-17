@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 
+#include "common/atomic.h"
 #include "common/database.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -51,6 +52,8 @@
 #define CURRENT_DATABASE_VERSION_DATA     9
 
 #define MAX_NESTED_TRANSACTIONS 5
+/* transaction id */
+static dt_atomic_int _trxid;
 
 typedef struct dt_database_t
 {
@@ -2893,6 +2896,8 @@ start:
   db->dbfilename_data = g_strdup(dbfilename_data);
   db->dbfilename_library = g_strdup(dbfilename_library);
 
+  dt_atomic_set_int(&_trxid, 0);
+
   /* make sure the folder exists. this might not be the case for new databases */
   /* also check if a database backup is needed */
   if(g_strcmp0(dbfilename_data, ":memory:"))
@@ -4395,17 +4400,15 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
 
 // nested transactions support
 
-static int trxid = 0;
-
 void dt_database_start_transaction(const struct dt_database_t *db)
 {
-  trxid++;
+  const int trxid = dt_atomic_add_int(&_trxid, 1);
   char SQLTRX[128] = { 0 };
 
   // if top level a simple unamed transaction is used BEGIN / COMMIT / ROLLBACK
   // otherwise we use a savepoint (named transaction).
 
-  if(trxid == 1)
+  if(trxid == 0)
     g_strlcat(SQLTRX, "BEGIN TRANSACTION", sizeof(SQLTRX));
   else
     g_snprintf(SQLTRX, sizeof(SQLTRX), "SAVEPOINT trx%d", trxid);
@@ -4420,26 +4423,28 @@ void dt_database_release_transaction(const struct dt_database_t *db)
 {
   char SQLTRX[128] = { 0 };
 
+  const int trxid = dt_atomic_sub_int(&_trxid, 1);
+
   if(trxid == 1)
     g_strlcat(SQLTRX, "COMMIT", sizeof(SQLTRX));
   else
-    g_snprintf(SQLTRX, sizeof(SQLTRX), "RELEASE SAVEPOINT trx%d", trxid);
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "RELEASE SAVEPOINT trx%d", trxid - 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
-  trxid--;
 }
 
 void dt_database_rollback_transaction(const struct dt_database_t *db)
 {
   char SQLTRX[128] = { 0 };
 
+  const int trxid = dt_atomic_sub_int(&_trxid, 1);
+
   if(trxid == 1)
     g_strlcat(SQLTRX, "ROLLBACK TRANSACTION", sizeof(SQLTRX));
   else
-    g_snprintf(SQLTRX, sizeof(SQLTRX), "ROLLBACK TRANSACTION TO SAVEPOINT trx%d", trxid);
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "ROLLBACK TRANSACTION TO SAVEPOINT trx%d", trxid - 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
-  trxid--;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
