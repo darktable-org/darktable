@@ -1197,10 +1197,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // initialize resources stuff here
   if(!dt_conf_key_exists("resourcelevel"))
-    dt_conf_set_int("resourcelevel", 2);
+    dt_conf_set_int("resourcelevel", 3);
 
   darktable.dtresources.total_memory = _get_total_memory();
-  darktable.dtresources.level = dt_conf_get_int("resourcelevel");
 
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
