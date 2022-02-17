@@ -144,6 +144,13 @@ static void theme_callback(GtkWidget *widget, gpointer user_data)
   dt_bauhaus_load_theme();
 }
 
+static void resources_callback(GtkWidget *widget, gpointer user_data)
+{
+  const int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  dt_conf_set_int("resourcelevel", selected);
+  darktable.dtresources.level = selected;
+}
+
 static void usercss_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_conf_set_bool("themes/usercss", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
@@ -333,6 +340,24 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
 
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
+
+  // selecting darktables system resources
+  label = gtk_label_new(_("darktable resources"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  widget = gtk_combo_box_text_new();
+  labelev = gtk_event_box_new();
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("minimal"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("small"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("default"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("large"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("maximum"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), darktable.dtresources.level);
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(resources_callback), 0);
+  gtk_widget_set_tooltip_text(widget, _("set darktable resource taking"));
 
   GtkWidget *useperfmode = gtk_check_button_new();
   label = gtk_label_new(_("prefer performance over quality"));
