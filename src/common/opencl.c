@@ -131,7 +131,6 @@ error:
 }
 
 // returns 0 if all ok
-// returns 1 if we failed hard, and need to skip opencl initialization
 // returns -1 if we failed to init this device
 static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *devices, const int k,
                                  const int opencl_memory_requirement)
