@@ -4399,8 +4399,18 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   return ret;
 }
 
-// nested transactions support
-
+// Nested transactions support
+//
+// NOTE: the nested support is actually not activated (see || TRUE below). This current
+//       implementation is just a refactoring of the previous code using:
+//          - dt_database_start_transaction()
+//          - dt_database_release_transaction()
+//          - dt_database_rollback_transaction()
+//
+//       With this refactoring we can count and check for nested transaction and unmatched
+//       transaction routines. And it has been done to help further implementation for
+//       proper threading and nested transaction support.
+//
 void dt_database_start_transaction(const struct dt_database_t *db)
 {
   const int trxid = dt_atomic_add_int(&_trxid, 1);
@@ -4408,8 +4418,10 @@ void dt_database_start_transaction(const struct dt_database_t *db)
   // if top level a simple unamed transaction is used BEGIN / COMMIT / ROLLBACK
   // otherwise we use a savepoint (named transaction).
 
-  if(trxid == 0)
+  if(trxid == 0 || TRUE)
   {
+    // In theads application it may be safer to use an IMMEDIATE transaction:
+    // "BEGIN IMMEDIATE TRANSACTION"
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "BEGIN TRANSACTION", NULL, NULL, NULL);
   }
 #ifdef USE_NESTED_TRANSACTIONS
@@ -4432,7 +4444,7 @@ void dt_database_release_transaction(const struct dt_database_t *db)
   if(trxid <= 0)
     fprintf(stderr, "[dt_database_release_transaction] COMMIT outside a transaction\n");
 
-  if(trxid == 1)
+  if(trxid == 1 || TRUE)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "COMMIT TRANSACTION", NULL, NULL, NULL);
   }
@@ -4453,7 +4465,7 @@ void dt_database_rollback_transaction(const struct dt_database_t *db)
   if(trxid <= 0)
     fprintf(stderr, "[dt_database_rollback_transaction] ROLLBACK outside a transaction\n");
 
-  if(trxid == 1)
+  if(trxid == 1 || TRUE)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   }
