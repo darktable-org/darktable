@@ -4400,6 +4400,14 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
 }
 
 // nested transactions support
+// NOTE: the nested support is actually not activated. This current implementation
+//       is just a refactoring of the previous code using:
+//       - dt_database_start_transaction()
+//       - dt_database_release_transaction()
+//       - dt_database_rollback_transaction()
+//
+//       With this refactoring we can count and check for nested transaction and unmatched
+//       transaction routines.
 
 void dt_database_start_transaction(const struct dt_database_t *db)
 {
@@ -4408,7 +4416,7 @@ void dt_database_start_transaction(const struct dt_database_t *db)
   // if top level a simple unamed transaction is used BEGIN / COMMIT / ROLLBACK
   // otherwise we use a savepoint (named transaction).
 
-  if(trxid == 0)
+  if(trxid == 0 || TRUE)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "BEGIN IMMEDIATE TRANSACTION", NULL, NULL, NULL);
   }
@@ -4432,7 +4440,7 @@ void dt_database_release_transaction(const struct dt_database_t *db)
   if(trxid <= 0)
     fprintf(stderr, "[dt_database_start_transaction] COMMIT outside a transaction\n");
 
-  if(trxid == 1)
+  if(trxid == 1 || TRUE)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "COMMIT TRANSACTION", NULL, NULL, NULL);
   }
@@ -4453,7 +4461,7 @@ void dt_database_rollback_transaction(const struct dt_database_t *db)
   if(trxid <= 0)
     fprintf(stderr, "[dt_database_start_transaction] ROLLBACK outside a transaction\n");
 
-  if(trxid == 1)
+  if(trxid == 1 || TRUE)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   }
