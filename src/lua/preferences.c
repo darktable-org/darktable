@@ -636,6 +636,8 @@ static int register_pref_sub(lua_State *L)
 
       int value = 0;
       built_elt->type_data.enum_data.default_value = strdup(luaL_checkstring(L, cur_param));
+      cur_param++;
+      
       while(!lua_isnoneornil(L, cur_param))
       {
         luaA_enum_value_type(L, enum_type, &value, luaL_checkstring(L, cur_param));
