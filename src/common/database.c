@@ -4410,7 +4410,7 @@ void dt_database_start_transaction(const struct dt_database_t *db)
 
   if(trxid == 0)
   {
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "BEGIN IMMEDIATE TRANSACTION", NULL, NULL, NULL);
   }
 #ifdef USE_NESTED_TRANSACTIONS
   else
