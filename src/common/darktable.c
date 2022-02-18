@@ -1587,6 +1587,20 @@ int dt_worker_threads()
   return 1;
 }
 
+size_t dt_get_available_mem()
+{
+  const size_t total_mem = darktable.dtresources.total_memory;
+  const int level = darktable.dtresources.level;  
+
+  const size_t available = total_mem / 6 * level;
+  return MAX(512lu * 1024lu * 1024lu, available);
+}
+
+size_t dt_get_singlebuffer_mem()
+{
+  return MAX(2lu * 1024lu * 1024lu, dt_get_available_mem() / 16);
+}
+
 void dt_configure_performance()
 {
   const int atom_cores = _get_num_atom_cores();

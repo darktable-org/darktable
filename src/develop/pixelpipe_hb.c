@@ -982,7 +982,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
                                           tiling->factor, tiling->overhead));
 
   /* process module on cpu. use tiling if needed and possible. */
-  if(needs_tiling || (darktable.unmuted & DT_DEBUG_TILING))
+  if(needs_tiling)
   {
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
