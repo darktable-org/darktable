@@ -51,6 +51,7 @@
 #define CURRENT_DATABASE_VERSION_LIBRARY 34
 #define CURRENT_DATABASE_VERSION_DATA     9
 
+// #define USE_NESTED_TRANSACTIONS
 #define MAX_NESTED_TRANSACTIONS 5
 /* transaction id */
 static dt_atomic_int _trxid;
@@ -4403,17 +4404,22 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
 void dt_database_start_transaction(const struct dt_database_t *db)
 {
   const int trxid = dt_atomic_add_int(&_trxid, 1);
-  char SQLTRX[128] = { 0 };
 
   // if top level a simple unamed transaction is used BEGIN / COMMIT / ROLLBACK
   // otherwise we use a savepoint (named transaction).
 
   if(trxid == 0)
-    g_strlcat(SQLTRX, "BEGIN TRANSACTION", sizeof(SQLTRX));
+  {
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  }
+#ifdef USE_NESTED_TRANSACTIONS
   else
+  {
+    char SQLTRX[128] = { 0 };
     g_snprintf(SQLTRX, sizeof(SQLTRX), "SAVEPOINT trx%d", trxid);
-
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#endif
 
   if(trxid > MAX_NESTED_TRANSACTIONS)
     fprintf(stderr, "[dt_database_start_transaction] more than %d nested transaction\n", MAX_NESTED_TRANSACTIONS);
@@ -4421,30 +4427,44 @@ void dt_database_start_transaction(const struct dt_database_t *db)
 
 void dt_database_release_transaction(const struct dt_database_t *db)
 {
-  char SQLTRX[128] = { 0 };
-
   const int trxid = dt_atomic_sub_int(&_trxid, 1);
 
-  if(trxid == 1)
-    g_strlcat(SQLTRX, "COMMIT", sizeof(SQLTRX));
-  else
-    g_snprintf(SQLTRX, sizeof(SQLTRX), "RELEASE SAVEPOINT trx%d", trxid - 1);
+  if(trxid <= 0)
+    fprintf(stderr, "[dt_database_start_transaction] COMMIT outside a transaction\n");
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  if(trxid == 1)
+  {
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+  }
+#ifdef USE_NESTED_TRANSACTIONS
+  else
+  {
+    char SQLTRX[128] = { 0 };
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "RELEASE SAVEPOINT trx%d", trxid - 1);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#endif
 }
 
 void dt_database_rollback_transaction(const struct dt_database_t *db)
 {
-  char SQLTRX[128] = { 0 };
-
   const int trxid = dt_atomic_sub_int(&_trxid, 1);
 
-  if(trxid == 1)
-    g_strlcat(SQLTRX, "ROLLBACK TRANSACTION", sizeof(SQLTRX));
-  else
-    g_snprintf(SQLTRX, sizeof(SQLTRX), "ROLLBACK TRANSACTION TO SAVEPOINT trx%d", trxid - 1);
+  if(trxid <= 0)
+    fprintf(stderr, "[dt_database_start_transaction] ROLLBACK outside a transaction\n");
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  if(trxid == 1)
+  {
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+  }
+#ifdef USE_NESTED_TRANSACTIONS
+  else
+  {
+    char SQLTRX[128] = { 0 };
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "ROLLBACK TRANSACTION TO SAVEPOINT trx%d", trxid - 1);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#endif
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
