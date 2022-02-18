@@ -254,12 +254,11 @@ static inline void preserve_hue_interpolated(const float pix_in[4], float pix_ou
 }
 */
 
-/*
+
 void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_sigmoid_data_t *module_data = (dt_iop_sigmoid_data_t *)piece->data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
@@ -270,12 +269,10 @@ void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *
   const float film_fog = module_data->film_fog;
   const float contrast_power = module_data->film_power;
   const float skew_power = module_data->paper_power;
-  const float saturation_factor = module_data->crosstalk_amount;
-  const dt_iop_sigmoid_negative_values_type_t negative_values_method = module_data->negative_values_method;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, work_profile, saturation_factor, negative_values_method, white_target, paper_exp, film_fog, contrast_power, skew_power) \
+  dt_omp_firstprivate(npixels, white_target, paper_exp, film_fog, contrast_power, skew_power) \
   dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
@@ -286,21 +283,17 @@ void process_loglogistic_per_channel(dt_dev_pixelpipe_iop_t *piece, const void *
     float DT_ALIGNED_ARRAY pix_in_strict_positive[4];
 
     // Force negative values to zero
-    negative_values(pix_in, pix_in_strict_positive, negative_values_method);
+    negative_values(pix_in, pix_in_strict_positive);
 
-    // Desature a bit to get proper roll off to white in highlights
-    // This is taken from the ACES RRT implementation
-    const float luma = rgb_luma(pix_in_strict_positive, work_profile);
     for(size_t c = 0; c < 3; c++)
     {
-      const float desaturated_value = luma + saturation_factor * (pix_in_strict_positive[c] - luma);
-      pix_out[c] = generalized_loglogistic_sigmoid(desaturated_value, white_target, paper_exp, film_fog, contrast_power, skew_power);
+      pix_out[c] = generalized_loglogistic_sigmoid(pix_in_strict_positive[c], white_target, paper_exp, film_fog, contrast_power, skew_power);
     }
+
     // Copy over the alpha channel
     pix_out[3] = pix_in[3];
   }
 }
-*/
 
 void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -461,33 +454,30 @@ static inline void preserve_hue_and_energy(const float pix_in[4], const float pe
   const float full_hue_correction = per_channel[order.min] + ((per_channel[order.max] - per_channel[order.min]) * (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]));
   const float naive_hue_mid = (1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
 
-  const float per_channel_energy = per_channel[order.mid] + per_channel[order.min];
-  const float naive_hue_energy = naive_hue_mid + per_channel[order.min];
+  const float per_channel_energy = per_channel[order.min] + per_channel[order.mid] + per_channel[order.max];
+  const float naive_hue_energy = per_channel[order.min] + naive_hue_mid + per_channel[order.max];
   const float blend_factor = 2.0 * pix_in[order.min] / (pix_in[order.min] + pix_in[order.mid]);
-  const float energy_target = blend_factor * per_channel_energy + (1.0 - blend_factor) * naive_hue_energy;
-
-  // Preserve hue constrained to the energy target
   const float midscale = (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]);
-  const float corrected_mid = ((1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * (midscale * per_channel[order.max] + (1.0 - midscale) * energy_target))
-                              / (1.0 + hue_preservation * (1.0 - midscale));
-  const float corrected_min = energy_target - corrected_mid;
 
-  pix_out[order.mid] = corrected_mid;
-  pix_out[order.min] = corrected_min;
-  pix_out[order.max] = per_channel[order.max];
-
-  /*
-  // Chroma interpolation the minimum channel
-  out[order.min] = (1.0 - chroma_preservation) * channel_wise[order.min] + chroma_preservation * rgb_ratio[order.min];
-
-  // Chroma interpolation the maximum channel
-  out[order.max] = (1.0 - chroma_preservation) * channel_wise[order.max] + chroma_preservation * rgb_ratio[order.max];
-
-  // Hue correction of the middle channel
-  const float full_hue_correction = out[order.min] + ((out[order.max] - out[order.min]) * (rgb_ratio[order.mid] - rgb_ratio[order.min]) / (rgb_ratio[order.max] - rgb_ratio[order.min]));
-  const float no_hue_correction = out[order.min] + ((out[order.max] - out[order.min]) * (channel_wise[order.mid] - channel_wise[order.min]) / (channel_wise[order.max] - channel_wise[order.min]));
-  out[order.mid] = (1.0 - hue_preservation) * no_hue_correction + hue_preservation * full_hue_correction;
-  */
+  // Preserve hue constrained to maintain the same energy as the per channel result
+  if (naive_hue_mid <= per_channel[order.mid])
+  {
+    const float energy_target = blend_factor * per_channel_energy + (1.0 - blend_factor) * naive_hue_energy;
+    const float corrected_mid = ((1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * (midscale * per_channel[order.max] + (1.0 - midscale) * (energy_target - per_channel[order.max])))
+                                / (1.0 + hue_preservation * (1.0 - midscale));
+    pix_out[order.min] = energy_target - per_channel[order.max] - corrected_mid;
+    pix_out[order.mid] = corrected_mid;
+    pix_out[order.max] = per_channel[order.max];
+  }
+  else
+  {
+    const float energy_target = blend_factor * per_channel_energy + (1.0 - blend_factor) * naive_hue_energy;
+    const float corrected_mid = ((1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * (per_channel[order.min] * (1.0f - midscale) + midscale * (energy_target - per_channel[order.min])))
+                                / (1.0 + hue_preservation * midscale);
+    pix_out[order.min] = per_channel[order.min];
+    pix_out[order.mid] = corrected_mid;
+    pix_out[order.max] = energy_target - per_channel[order.min] - corrected_mid;
+  }
 }
 
 void process_loglogistic_per_channel_interpolated(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -564,7 +554,6 @@ void process_loglogistic_per_channel_interpolated(dt_dev_pixelpipe_iop_t *piece,
         pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 1, .mid = 2, .min = 0};
       }
     }
-
     preserve_hue_and_energy(pix_in_strict_positive, per_channel, pix_out, pixel_value_order, hue_preservation);
 
     // Copy over the alpha channel
@@ -583,7 +572,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if (module_data->color_processing == DT_SIGMOID_METHOD_PER_CHANNEL)
   {
-    process_loglogistic_per_channel_interpolated(piece, ivoid, ovoid, roi_in, roi_out);
+    if (module_data->hue_preservation >= 0.001f)
+    {
+      process_loglogistic_per_channel_interpolated(piece, ivoid, ovoid, roi_in, roi_out);
+    }
+    else
+    {
+      process_loglogistic_per_channel(piece, ivoid, ovoid, roi_in, roi_out);
+    }
   }
   else
   {
