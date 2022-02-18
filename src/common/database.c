@@ -52,7 +52,7 @@
 #define CURRENT_DATABASE_VERSION_DATA     9
 
 // #define USE_NESTED_TRANSACTIONS
-#define MAX_NESTED_TRANSACTIONS 5
+#define MAX_NESTED_TRANSACTIONS 0
 /* transaction id */
 static dt_atomic_int _trxid;
 
