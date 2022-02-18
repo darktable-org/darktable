@@ -354,6 +354,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 int dt_worker_threads();
+size_t dt_get_available_mem();
+size_t dt_get_singlebuffer_mem();
+
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline void* dt_calloc_align(size_t alignment, size_t size)
 {
