@@ -2445,8 +2445,12 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
 cl_ulong dt_opencl_get_device_available(const int devid)
 {
   if(!darktable.opencl->inited || devid < 0) return 0;
+  const size_t maxmem = darktable.opencl->dev[devid].max_global_mem;
+  const int level = darktable.dtresources.level;
+  if(level == DT_RESOURCE_LEVEL_UNRESTRICTED) return maxmem - 200ul * 1024ul * 1024ul;
+  if(level == DT_RESOURCE_LEVEL_TESTING)      return 1024lu  * 1024ul * 1024ul;
   const size_t disposable = (size_t)darktable.opencl->dev[devid].max_global_mem - 400ul * 1024ul * 1024ul;
-  const size_t available = MAX(256ul * 1024ul * 1024ul, disposable / 4ul * (size_t)darktable.dtresources.level); 
+  const size_t available = MAX(256ul * 1024ul * 1024ul, disposable / 4ul * (size_t)level); 
   return available;
 }
 

@@ -1197,7 +1197,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // initialize resources stuff here
   if(!dt_conf_key_exists("resourcelevel"))
-    dt_conf_set_int("resourcelevel", 3);
+    dt_conf_set_int("resourcelevel", DT_RESOURCE_LEVEL_DEFAULT);
 
   darktable.dtresources.total_memory = _get_total_memory();
 
@@ -1307,6 +1307,10 @@ void dt_cleanup()
     free(darktable.imageio);
     free(darktable.gui);
   }
+
+  if(dt_conf_get_int("resourcelevel") == DT_RESOURCE_LEVEL_TESTING)
+    dt_conf_set_int("resourcelevel", DT_RESOURCE_LEVEL_DEFAULT);
+
   dt_image_cache_cleanup(darktable.image_cache);
   free(darktable.image_cache);
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);
@@ -1589,9 +1593,10 @@ int dt_worker_threads()
 
 size_t dt_get_available_mem()
 {
-  const size_t total_mem = darktable.dtresources.total_memory;
   const int level = darktable.dtresources.level;  
-
+  const size_t total_mem = darktable.dtresources.total_memory;
+  if(level == DT_RESOURCE_LEVEL_UNRESTRICTED) return total_mem;
+  if(level == DT_RESOURCE_LEVEL_TESTING)      return 8192lu * 1024lu * 1024lu;
   const size_t available = total_mem / 6 * level;
   return MAX(512lu * 1024lu * 1024lu, available);
 }

@@ -341,6 +341,9 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
 
   // selecting darktables system resources
+  dt_sys_resources_levels_t oldlevel = dt_conf_get_int("resourcelevel");
+  if((oldlevel < DT_RESOURCE_LEVEL_MINIMUM) || (oldlevel > DT_RESOURCE_LEVEL_UNRESTRICTED))
+    oldlevel = DT_RESOURCE_LEVEL_DEFAULT;
   label = gtk_label_new(_("darktable resources"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   widget = gtk_combo_box_text_new();
@@ -349,12 +352,14 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_container_add(GTK_CONTAINER(labelev), label);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("minimal"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("minimum"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("small"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("medium"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("default/large"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("maximum"));
-  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_conf_get_int("resourcelevel"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("default"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("large"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("unrestricted"));
+  
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), oldlevel);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(resources_callback), 0);
   gtk_widget_set_tooltip_text(widget, _("set darktable resource taking\nUse larger setting to gain some perormance, this might take away resources from other applications."));
 

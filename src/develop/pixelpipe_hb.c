@@ -2134,7 +2134,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
                                                      int pos)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
-  darktable.dtresources.level = dt_conf_get_int("resourcelevel");
+  darktable.dtresources.level = MIN(DT_RESOURCE_LEVEL_TESTING, MAX(0, dt_conf_get_int("resourcelevel")));
   int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #ifdef HAVE_OPENCL
   // copy back final opencl buffer (if any) to CPU
