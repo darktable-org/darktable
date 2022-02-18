@@ -174,6 +174,22 @@
     <default>true</default>
     <shortdescription>do not show april 1st game</shortdescription>
   </dtconfig>
+  <dtconfig prefs="processing" section="cpugpu">
+    <name>resourcelevel</name>
+    <type>
+      <enum>
+        <option>minimum</option>
+        <option>small</option>
+        <option>medium</option>
+        <option>default</option>
+        <option>large</option>
+        <option>unrestricted</option>
+      </enum>
+    </type>
+    <default>default</default>
+    <shortdescription>darktable resources</shortdescription>
+    <longdescription>defines how much darktable may take from your system resources. Can be changed at runtime. unrestricted will take almost all and might lead to swapping.</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" restart="true">
     <name>cache_memory</name>
     <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>
@@ -201,27 +217,6 @@
     <default>true</default>
     <shortdescription>color manage cached thumbnails</shortdescription>
     <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="processing" section="cpugpu">
-    <name>host_memory_limit</name>
-    <type>int</type>
-    <default>1500</default>
-    <shortdescription>host memory limit (in MB) for tiling</shortdescription>
-    <longdescription>this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="processing" section="cpugpu">
-    <name>singlebuffer_limit</name>
-    <type min="2" max="128">int</type>
-    <default>16</default>
-    <shortdescription>minimum amount of memory (in MB) for a single buffer in tiling</shortdescription>
-    <longdescription>minimum amount of memory (in MB) that tiling should take for a single image buffer.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>opencl_memory_headroom</name>
-    <type>int</type>
-    <default>400</default>
-    <shortdescription>amount of OpenCL memory (in MB) which we assume as being reserved for the driver</shortdescription>
-    <longdescription>this amount of memory (in MB) will be subtracted from total GPU memory in order to calculate the available OpenCL memory. too low values will lead to out-of-memory situations in OpenCL processing. too high values will lead to unnecessary tiling (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_avoid_atomics</name>
