@@ -1616,54 +1616,24 @@ void dt_configure_performance()
 
   fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %zu cores (%d atom based)\n",
           bits, mem, threads, atom_cores);
-  if(mem >= (16lu << 20) && threads > 4)
+  if(mem >= (4lu << 20) && threads >= 2)
   {
-    // CONFIG 0: at least 16GB RAM, and more than 6 CPU threads
-    // But respect if user has set higher values manually earlier
-    fprintf(stderr, "[defaults] setting very high quality defaults\n");
-    // if machine has at least 16GB RAM, use all of the total memory size leaving 4GB "breathing room"
-    dt_conf_set_int("host_memory_limit", MAX((mem - (4lu << 20)) >> 11, dt_conf_get_int("host_memory_limit")));
-    dt_conf_set_int("singlebuffer_limit", MAX(128, dt_conf_get_int("singlebuffer_limit")));
-    if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
-       || !strcmp(demosaic_quality, "always bilinear (fast)"))
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
-    dt_conf_set_bool("ui/performance", FALSE);
-  }
-  else if(mem >= (8lu << 20) && threads >= 4)
-  {
-    // CONFIG 1: at least 8GB RAM, and at least 4 CPU threads
-    // But respect if user has set higher values manually earlier
-    fprintf(stderr, "[defaults] setting high quality defaults\n");
-
-    // if machine has at least 8GB RAM, use half of the total memory size
-    dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
-    dt_conf_set_int("singlebuffer_limit", MAX(32, dt_conf_get_int("singlebuffer_limit")));
-    if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
-       || !strcmp(demosaic_quality, "always bilinear (fast)"))
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
-    dt_conf_set_bool("ui/performance", FALSE);
-  }
-  else if(mem >= (4lu << 20) && threads >= 2)
-  {
-    // CONFIG 2: at least 4GB RAM, and at least 2 CPU threads
+    // suggested minimum: at least 4GB RAM, and at least 2 CPU threads
     fprintf(stderr, "[defaults] setting standard defaults\n");
-
-    dt_conf_set_int("host_memory_limit", MAX(1500, dt_conf_get_int("host_memory_limit")));
-    dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
        || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
+    dt_conf_set_int("resourcelevel", DT_RESOURCE_LEVEL_MINIMUM);
   }
   else
   {
-    // CONFIG 3: for small and slow systems
+    // for small and slow systems
     // use very low/conservative settings
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
-    dt_conf_set_int("host_memory_limit", 500);
-    dt_conf_set_int("singlebuffer_limit", 16);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
     dt_conf_set_bool("ui/performance", TRUE);
+    dt_conf_set_int("resourcelevel", DT_RESOURCE_LEVEL_DEFAULT);
   }
 
   g_free(demosaic_quality);
@@ -1681,6 +1651,7 @@ void dt_configure_performance()
   // set cache_memory to half of freediskspace - 4gb (eg 1gb cache_mem in case of 6gb free space)
   if(freecache > (6lu << 20))
     dt_conf_set_int64("cache_memory", (freecache - (4lu << 20))/2);
+
 
   // enable cache_disk_backend_full when user has over 8gb free diskspace
   dt_conf_set_bool("cache_disk_backend_full", freecache > (8lu << 20));
