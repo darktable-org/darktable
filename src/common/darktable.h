@@ -279,10 +279,21 @@ typedef struct dt_codepath_t
   unsigned int OPENMP_SIMD : 1; // always stays the last one
 } dt_codepath_t;
 
+typedef enum dt_sys_resources_levels_t
+{
+  DT_RESOURCE_LEVEL_MINIMUM = 0,
+  DT_RESOURCE_LEVEL_SMALL = 1,
+  DT_RESOURCE_LEVEL_MEDIUM = 2,
+  DT_RESOURCE_LEVEL_DEFAULT = 3,
+  DT_RESOURCE_LEVEL_MAXIMUM = 4,
+  DT_RESOURCE_LEVEL_UNRESTRICTED = 5,
+  DT_RESOURCE_LEVEL_TESTING = 6,
+} dt_sys_resources_levels_t;
+
 typedef struct dt_sys_resources_t
 {
   size_t total_memory;
-  int level;
+  dt_sys_resources_levels_t level;
 } dt_sys_resources_t;
 
 typedef struct darktable_t
