@@ -52,9 +52,17 @@ typedef enum dt_range_bounds_t
   DT_RANGE_BOUND_FIXED = 1 << 2
 } dt_range_bounds_t;
 
+typedef enum dt_range_type_t
+{
+  DT_RANGE_TYPE_NUMERIC = 0,
+  DT_RANGE_TYPE_DATETIME
+} dt_range_type_t;
+
 typedef struct _GtkDarktableRangeSelect
 {
   GtkBin widget;
+
+  dt_range_type_t type;
 
   gboolean show_entries; // do we show the line with the entry boxes ?
   double min_r;          // minimal value shown
@@ -96,6 +104,8 @@ typedef struct _GtkDarktableRangeSelect
 
   int band_margin_side_px; // if the band has a max width, this is the empty left-right space
   int band_real_width_px;  // if the band has a max width, this is the real width of the band
+
+  struct _range_date_popup *date_popup;
 } GtkDarktableRangeSelect;
 
 typedef struct _GtkDarktableRangeSelectClass
@@ -106,7 +116,7 @@ typedef struct _GtkDarktableRangeSelectClass
 GType dtgtk_range_select_get_type(void);
 
 // instantiate a new range selection widget
-GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries);
+GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries, const dt_range_type_t type);
 
 // set selection range
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
