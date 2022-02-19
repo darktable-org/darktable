@@ -279,22 +279,18 @@ typedef struct dt_codepath_t
   unsigned int OPENMP_SIMD : 1; // always stays the last one
 } dt_codepath_t;
 
-typedef enum dt_sys_resources_levels_t
-{
-  DT_RESOURCE_LEVEL_MINIMUM = 0,
-  DT_RESOURCE_LEVEL_SMALL = 1,
-  DT_RESOURCE_LEVEL_MEDIUM = 2,
-  DT_RESOURCE_LEVEL_DEFAULT = 3,
-  DT_RESOURCE_LEVEL_MAXIMUM = 4,
-  DT_RESOURCE_LEVEL_UNRESTRICTED = 5,
-  DT_RESOURCE_LEVEL_TESTING = 6,
-} dt_sys_resources_levels_t;
-
+/* These are hard-wired and must correspond with darktableconfig.xml.in */ 
+#define DT_RESOURCE_LEVELS_NUM 6
 typedef struct dt_sys_resources_t
 {
   size_t total_memory;
   size_t mipmap_memory;
-  dt_sys_resources_levels_t level;
+  int level;
+  /* fractions are calculated as res=input / 1024  * fraction */
+  int fract_available[DT_RESOURCE_LEVELS_NUM];
+  int fract_singlebuf[DT_RESOURCE_LEVELS_NUM];
+  int fract_mipmap[DT_RESOURCE_LEVELS_NUM];
+  int fract_cl_available[DT_RESOURCE_LEVELS_NUM];
 } dt_sys_resources_t;
 
 typedef struct darktable_t

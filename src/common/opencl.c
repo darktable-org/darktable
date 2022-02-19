@@ -2437,20 +2437,18 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
                                       (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
 }
 
-/* amount of graphics memory declared as available depend on max_global_mem and resourcelevel.
-   - we garantee a headroom of 400MB in all cases
-   - the returned available is the level/4 fraction
-   - we garantee a minimum of 256MB to simulate a minimum system
+/* amount of graphics memory declared as available depends on max_global_mem and "resourcelevel". We garantee
+   - a headroom of 400MB in all cases
+   - 256MB to simulate a minimum system
+   - 2GB to simalate a reference system 
 */
 cl_ulong dt_opencl_get_device_available(const int devid)
 {
   if(!darktable.opencl->inited || devid < 0) return 0;
-  const size_t maxmem = darktable.opencl->dev[devid].max_global_mem;
   const int level = darktable.dtresources.level;
-  if(level == DT_RESOURCE_LEVEL_UNRESTRICTED) return maxmem - 200ul * 1024ul * 1024ul;
-  if(level == DT_RESOURCE_LEVEL_TESTING)      return 1024lu  * 1024ul * 1024ul;
+  if(level < 0) return 2048lu  * 1024ul * 1024ul;
   const size_t disposable = (size_t)darktable.opencl->dev[devid].max_global_mem - 400ul * 1024ul * 1024ul;
-  const size_t available = MAX(256ul * 1024ul * 1024ul, disposable / 4ul * (size_t)level); 
+  const size_t available = MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * darktable.dtresources.fract_cl_available[level]); 
   return available;
 }
 

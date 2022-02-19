@@ -388,7 +388,9 @@ static inline size_t _get_total_memory()
 
 static size_t _get_mipmap_size()
 {
-  return darktable.dtresources.total_memory / 8;
+  const int level = darktable.dtresources.level;  
+  if(level < 0) return 4096lu * 1024lu * 1024lu;
+  return darktable.dtresources.total_memory / 1024lu * darktable.dtresources.fract_mipmap[level];
 }
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
@@ -1069,6 +1071,21 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_film_set_folder_status();
   }
 
+  // setup resource fractions now                           def  min small  med large  unrestricted
+  const int default_available[DT_RESOURCE_LEVELS_NUM]    = { 512,  0,  128, 400,  700, 10000 };
+  const int default_singlebuf[DT_RESOURCE_LEVELS_NUM]    = { 128,  0,   16,  32,   64,  1024 };
+  const int default_mipmap[DT_RESOURCE_LEVELS_NUM]       = { 128, 16,   64, 128,  128,   128 };
+  const int default_cl_available[DT_RESOURCE_LEVELS_NUM] = { 600,  0,  256, 512,  750,   900 }; 
+  for(int i = 0; i < DT_RESOURCE_LEVELS_NUM; i++)
+  {
+    darktable.dtresources.fract_available[i] = default_available[i];
+    darktable.dtresources.fract_cl_available[i] = default_cl_available[i];
+    darktable.dtresources.fract_singlebuf[i] = default_singlebuf[i];
+    darktable.dtresources.fract_mipmap[i] = default_mipmap[i];
+  }
+  darktable.dtresources.total_memory = _get_total_memory();
+  darktable.dtresources.mipmap_memory = _get_mipmap_size();
+
   // initialize collection query
   darktable.collection = dt_collection_new(NULL);
 
@@ -1200,12 +1217,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_image_local_copy_synch();
 
-  // initialize resources stuff here
-  if(!dt_conf_key_exists("resourcelevel"))
-    dt_conf_set_int("resourcelevel", DT_RESOURCE_LEVEL_DEFAULT);
-
-  darktable.dtresources.total_memory = _get_total_memory();
-  darktable.dtresources.mipmap_memory = _get_mipmap_size();
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   dt_lua_init(darktable.lua_state.state, lua_command);
@@ -1312,9 +1323,6 @@ void dt_cleanup()
     free(darktable.imageio);
     free(darktable.gui);
   }
-
-  if(dt_conf_get_int("resourcelevel") == DT_RESOURCE_LEVEL_TESTING)
-    dt_conf_set_int("resourcelevel", DT_RESOURCE_LEVEL_DEFAULT);
 
   dt_image_cache_cleanup(darktable.image_cache);
   free(darktable.image_cache);
@@ -1600,15 +1608,17 @@ size_t dt_get_available_mem()
 {
   const int level = darktable.dtresources.level;  
   const size_t total_mem = darktable.dtresources.total_memory;
-  if(level == DT_RESOURCE_LEVEL_UNRESTRICTED) return total_mem;
-  if(level == DT_RESOURCE_LEVEL_TESTING)      return 8192lu * 1024lu * 1024lu;
-  const size_t available = total_mem / 6 * level;
-  return MAX(512lu * 1024lu * 1024lu, available);
+  if(level < 0) return 8192lu * 1024lu * 1024lu;
+
+  return MAX(512lu * 1024lu * 1024lu, total_mem / 1024lu * darktable.dtresources.fract_available[level]);
 }
 
 size_t dt_get_singlebuffer_mem()
 {
-  return MAX(2lu * 1024lu * 1024lu, dt_get_available_mem() / 16);
+  const int level = darktable.dtresources.level;  
+  const size_t total_mem = darktable.dtresources.total_memory;
+  if(level < 0) return 64lu * 1024lu * 1024lu;
+  return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * darktable.dtresources.fract_singlebuf[level]);
 }
 
 void dt_configure_performance()
@@ -1629,7 +1639,7 @@ void dt_configure_performance()
        || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
     dt_conf_set_bool("ui/performance", FALSE);
-    dt_conf_set_int("resourcelevel", DT_RESOURCE_LEVEL_MINIMUM);
+    dt_conf_set_string("resourcelevel", "default");
   }
   else
   {
@@ -1638,7 +1648,7 @@ void dt_configure_performance()
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
     dt_conf_set_bool("ui/performance", TRUE);
-    dt_conf_set_int("resourcelevel", DT_RESOURCE_LEVEL_DEFAULT);
+    dt_conf_set_string("resourcelevel", "mini (debug)");
   }
 
   g_free(demosaic_quality);

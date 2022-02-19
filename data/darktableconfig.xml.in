@@ -178,17 +178,18 @@
     <name>resourcelevel</name>
     <type>
       <enum>
-        <option>minimum</option>
+        <option>default</option>
+        <option>mini (debug)</option>
+        <option>reference (debug)</option>
         <option>small</option>
         <option>medium</option>
-        <option>default</option>
         <option>large</option>
         <option>unrestricted</option>
       </enum>
     </type>
     <default>default</default>
     <shortdescription>darktable resources</shortdescription>
-    <longdescription>defines how much darktable may take from your system resources. Can be changed at runtime. unrestricted will take almost all and might lead to swapping.</longdescription>
+    <longdescription>defines how much darktable may take from your system resources. can be changed at runtime\n   mini: 0.5 GB free ram and 0.25GB free video ram.\n   reference: 8GB free ram and 2GB free video ram\n   unrestricted: will take almost all and might lead to swapping.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>cache_disk_backend</name>
