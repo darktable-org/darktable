@@ -396,13 +396,13 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
 void init_presets(dt_iop_module_so_t *self)
 {
   // sql begin
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   set_presets(self, basecurve_presets, basecurve_presets_cnt, FALSE);
   set_presets(self, basecurve_camera_presets, basecurve_camera_presets_cnt, TRUE);
 
   // sql commit
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 }
 
 static float exposure_increment(float stops, int e, float fusion, float bias)

@@ -1490,8 +1490,6 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     g_free(extra_file);
   }
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "SAVEPOINT impimg", NULL, NULL, NULL);
-
   //insert a v0 record (which may be updated later if no v0 xmp exists)
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
@@ -1649,8 +1647,6 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   //synch database entries to xmp
   if(xmp_mode == DT_WRITE_XMP_ALWAYS)
     dt_image_synch_all_xmp(normalized_filename);
-
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "RELEASE SAVEPOINT impimg", NULL, NULL, NULL);
 
   g_free(imgfname);
   g_free(basename);

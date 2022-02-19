@@ -2982,7 +2982,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
     // now add all masks that are not used for cloning. keeping them might be useful.
     // TODO: make this configurable? or remove it altogether?
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "SAVEPOINT exifmask", NULL, NULL, NULL);
+    dt_database_start_transaction(darktable.db);
+
     if(version < 3)
     {
       g_hash_table_foreach(mask_entries, add_non_clone_mask_entries_to_db, &img->id);
@@ -2996,7 +2997,8 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         add_mask_entry_to_db(img->id, mask_entry);
       }
     }
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "RELEASE SAVEPOINT exifmask", NULL, NULL, NULL);
+
+    dt_database_release_transaction(darktable.db);
 
     // history
     int num = 0;
@@ -3019,7 +3021,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       return 1;
     }
 
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "SAVEPOINT exif", NULL, NULL, NULL);
+    dt_database_start_transaction(darktable.db);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                                 &stmt, NULL);
@@ -3272,7 +3274,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
     if(all_ok)
     {
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "RELEASE SAVEPOINT exif", NULL, NULL, NULL);
+      dt_database_release_transaction(darktable.db);
 
       // history_hash
       dt_history_hash_values_t hash = {NULL, 0, NULL, 0, NULL, 0};
@@ -3308,7 +3310,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     else
     {
       std::cerr << "[exif] error reading history from '" << filename << "'" << std::endl;
-      DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "ROLLBACK TRANSACTION TO SAVEPOINT exif", NULL, NULL, NULL);
+      dt_database_rollback_transaction(darktable.db);
       return 1;
     }
 
