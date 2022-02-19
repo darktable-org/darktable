@@ -1234,6 +1234,9 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
   dt_develop_t *dev = darktable.develop;
   int zoom, closeup;
   float zoom_x, zoom_y;
+  
+  const gboolean low_ppd = (darktable.gui->ppd == 1);
+
   switch(GPOINTER_TO_INT(data))
   {
     case 1:
@@ -1261,6 +1264,21 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
       dt_control_set_dev_zoom_x(0);
       dt_control_set_dev_zoom_y(0);
       dt_control_set_dev_closeup(0);
+      break;
+    case 4:   // zoom to 100% (1:1)
+      zoom_x = dt_control_get_dev_zoom_x();
+      zoom_y = dt_control_get_dev_zoom_y();
+      closeup = 0;
+
+      if(low_ppd)  zoom = DT_ZOOM_1; 
+      else         zoom = DT_ZOOM_FREE; 
+      
+      dt_control_set_dev_zoom_scale( 1.0f / darktable.gui->ppd);
+      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+      dt_control_set_dev_zoom(zoom);
+      dt_control_set_dev_zoom_x(zoom_x);
+      dt_control_set_dev_zoom_y(zoom_y);
+      dt_control_set_dev_closeup(closeup);  
       break;
     default:
       break;
@@ -3863,6 +3881,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "zoom close-up"), GDK_KEY_1, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fill"), GDK_KEY_2, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fit"), GDK_KEY_3, GDK_MOD1_MASK);
+  dt_accel_register_view(self, NC_("accel", "zoom 100% (1:1 pixel display)"), GDK_KEY_9, GDK_MOD1_MASK);
 
   // zoom in/out
   dt_accel_register_view(self, NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
@@ -3949,6 +3968,9 @@ void connect_key_accels(dt_view_t *self)
 
   closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(3), NULL);
   dt_accel_connect_view(self, "zoom fit", closure);
+
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(4), NULL);
+  dt_accel_connect_view(self, "zoom 100% (1:1 pixel display)", closure);
 
   // zoom in/out
   closure = g_cclosure_new(G_CALLBACK(zoom_in_callback), (gpointer)self, NULL);

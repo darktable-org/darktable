@@ -22918,6 +22918,12 @@ msgctxt "accel"
 msgid "zoom fit"
 msgstr "Ansicht einpassen"
 
+#: ../src/views/darkroom.c:3865
+#, no-c-format
+msgctxt "accel"
+msgid "zoom 100% (1:1 pixel display)"
+msgstr "Zoom 100% (1:1 Ansicht)"
+
 #. zoom in/out
 #. zoom in/out/min/max
 #: ../src/views/darkroom.c:3868 ../src/views/lighttable.c:829
