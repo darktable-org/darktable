@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "range.h"
+#include "common/datetime.h"
 #include "control/control.h"
 #include "gui/gtk.h"
 #include <string.h>
@@ -25,6 +26,23 @@
 
 static void _range_select_class_init(GtkDarktableRangeSelectClass *klass);
 static void _range_select_init(GtkDarktableRangeSelect *button);
+
+typedef struct _range_date_popup
+{
+  GtkWidget *popup;
+
+  GtkWidget *calendar;
+  GtkWidget *hours;
+  GtkWidget *minutes;
+  GtkWidget *seconds;
+
+  GtkWidget *treeview;
+
+  GtkWidget *selection;
+  GtkWidget *ok_btn;
+
+  int internal_change;
+} _range_date_popup;
 
 typedef struct _range_block
 {
@@ -59,6 +77,17 @@ typedef enum _range_hover
   HOVER_MIN,
   HOVER_MAX
 } _range_hover;
+
+typedef enum _range_datetime_cols_t
+{
+  DATETIME_COL_TEXT = 0,
+  DATETIME_COL_ID,
+  DATETIME_COL_TOOLTIP,
+  DATETIME_COL_PATH,
+  DATETIME_COL_COUNT,
+  DATETIME_COL_INDEX,
+  DATETIME_NUM_COLS
+} _range_datetime_cols_t;
 
 typedef enum _range_signal
 {
@@ -116,6 +145,458 @@ static gboolean _default_decode_func(const gchar *text, double *value)
   return TRUE;
 }
 
+static void _date_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
+                                  GtkTreeIter *iter, gpointer data)
+{
+  gchar *name;
+  guint count;
+
+  gtk_tree_model_get(model, iter, DATETIME_COL_TEXT, &name, DATETIME_COL_COUNT, &count, -1);
+  if(!count)
+  {
+    g_object_set(renderer, "text", name, NULL);
+  }
+  else
+  {
+    gchar *coltext = g_strdup_printf("%s (%d)", name, count);
+    g_object_set(renderer, "text", coltext, NULL);
+    g_free(coltext);
+  }
+
+  g_free(name);
+}
+
+static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
+{
+  _range_date_popup *pop = range->date_popup;
+  gchar *name = NULL;
+  gchar *tooltip = NULL;
+  gchar *path = NULL;
+  GtkTreeIter iter;
+
+  gtk_popover_set_default_widget(GTK_POPOVER(pop->popup), w);
+
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(pop->treeview));
+  gtk_tree_view_set_model(GTK_TREE_VIEW(pop->treeview), NULL);
+  gtk_tree_store_clear(GTK_TREE_STORE(model));
+
+  GtkTreeIter last_parent = { 0 };
+  GDateTime *last_dt = NULL;
+  int index = 0;
+  int nb_predefined = 0;
+
+  for(const GList *bl = range->blocks; bl; bl = g_list_next(bl))
+  {
+    _range_block *blo = bl->data;
+    GDateTime *dt = g_date_time_new_from_unix_utc(blo->value_r);
+    if(!dt) continue;
+
+    // find the number of common parts at the beginning of tokens and last_tokens
+    GtkTreeIter parent = last_parent;
+    int common_length = 0;
+    if(last_dt && !blo->txt)
+    {
+      if(g_date_time_get_year(dt) == g_date_time_get_year(last_dt))
+      {
+        common_length++;
+        if(g_date_time_get_month(dt) == g_date_time_get_month(last_dt))
+        {
+          common_length++;
+          if(g_date_time_get_day_of_month(dt) == g_date_time_get_day_of_month(last_dt))
+          {
+            common_length++;
+            // we stop here as we show time as last nodes
+          }
+        }
+      }
+
+      // point parent iter to where the entries should be added
+      for(int i = common_length; i < 4; i++)
+      {
+        gtk_tree_model_iter_parent(model, &parent, &last_parent);
+        last_parent = parent;
+      }
+    }
+
+    if(blo->txt)
+    {
+      // this is a predefined entry, to be shown as root node on top
+      tooltip = g_date_time_format(dt, "%x %X");
+      path = g_date_time_format(dt, "%Y:%m:%d %H:%M:%S");
+      gtk_tree_store_insert_with_values(GTK_TREE_STORE(model), &iter, NULL, nb_predefined, DATETIME_COL_TEXT,
+                                        blo->txt, DATETIME_COL_TOOLTIP, tooltip, DATETIME_COL_PATH, path,
+                                        DATETIME_COL_COUNT, 0, DATETIME_COL_INDEX, index, -1);
+      index++;
+      nb_predefined++;
+      g_free(tooltip);
+      g_free(path);
+    }
+    else
+    {
+      // insert year entry as root if needed
+      if(common_length == 0)
+      {
+        name = g_date_time_format(dt, "%Y");
+        tooltip = g_strdup_printf(_("year %s"), name);
+        gtk_tree_store_insert_with_values(GTK_TREE_STORE(model), &iter, NULL, nb_predefined, DATETIME_COL_TEXT,
+                                          name, DATETIME_COL_TOOLTIP, tooltip, DATETIME_COL_PATH, name,
+                                          DATETIME_COL_COUNT, 0, DATETIME_COL_INDEX, index, -1);
+        index++;
+        common_length++;
+        parent = iter;
+        g_free(name);
+        g_free(tooltip);
+      }
+      // insert month entry if needed
+      if(common_length == 1)
+      {
+        name = g_date_time_format(dt, "%m");
+        tooltip = g_date_time_format(dt, "%B %Y");
+        path = g_date_time_format(dt, "%Y:%m");
+        gtk_tree_store_insert_with_values(GTK_TREE_STORE(model), &iter, &parent, nb_predefined, DATETIME_COL_TEXT,
+                                          name, DATETIME_COL_TOOLTIP, tooltip, DATETIME_COL_PATH, path,
+                                          DATETIME_COL_COUNT, 0, DATETIME_COL_INDEX, index, -1);
+        index++;
+        common_length++;
+        parent = iter;
+        g_free(name);
+        g_free(tooltip);
+        g_free(path);
+      }
+      // insert day entry if needed
+      if(common_length == 2)
+      {
+        name = g_date_time_format(dt, "%d");
+        tooltip = g_date_time_format(dt, "%x");
+        path = g_date_time_format(dt, "%Y:%m:%d");
+        gtk_tree_store_insert_with_values(GTK_TREE_STORE(model), &iter, &parent, nb_predefined, DATETIME_COL_TEXT,
+                                          name, DATETIME_COL_TOOLTIP, tooltip, DATETIME_COL_PATH, path,
+                                          DATETIME_COL_COUNT, 0, DATETIME_COL_INDEX, index, -1);
+        index++;
+        common_length++;
+        parent = iter;
+        g_free(name);
+        g_free(tooltip);
+        g_free(path);
+      }
+      // in all cases, we need to add the time entry as last node
+      name = g_date_time_format(dt, "%H:%M:%S");
+      tooltip = g_date_time_format(dt, "%x %X");
+      path = g_date_time_format(dt, "%Y:%m:%d %H:%M:%S");
+      gtk_tree_store_insert_with_values(GTK_TREE_STORE(model), &iter, &parent, nb_predefined, DATETIME_COL_TEXT,
+                                        name, DATETIME_COL_TOOLTIP, tooltip, DATETIME_COL_PATH, path,
+                                        DATETIME_COL_COUNT, 0, DATETIME_COL_INDEX, index, -1);
+      index++;
+      last_parent = iter;
+      g_free(name);
+      g_free(tooltip);
+      g_free(path);
+
+      // all we return all the way back to increment counting
+      while(gtk_tree_model_iter_parent(model, &parent, &iter))
+      {
+        int parentcount = 0;
+        gtk_tree_model_get(model, &parent, DATETIME_COL_COUNT, &parentcount, -1);
+        gtk_tree_store_set(GTK_TREE_STORE(model), &parent, DATETIME_COL_COUNT, blo->nb + parentcount, -1);
+        iter = parent;
+      }
+
+      last_dt = dt;
+    }
+  }
+
+  // now that the treemodel is OK, we update the treeview, based on this
+  gtk_tree_view_set_model(GTK_TREE_VIEW(pop->treeview), model);
+
+  // we also update the calendar part
+  double val = 0.0;
+  if(w == range->entry_max)
+    val = range->select_max_r;
+  else
+    val = range->select_min_r;
+  GDateTime *dt = g_date_time_new_from_unix_utc(val);
+  if(!dt) dt = g_date_time_new_now_utc();
+
+  pop->internal_change++;
+  gtk_calendar_select_month(GTK_CALENDAR(pop->calendar), g_date_time_get_month(dt) - 1, g_date_time_get_year(dt));
+  gtk_calendar_select_day(GTK_CALENDAR(pop->calendar), g_date_time_get_day_of_month(dt));
+  gtk_calendar_clear_marks(GTK_CALENDAR(pop->calendar));
+  gtk_calendar_mark_day(GTK_CALENDAR(pop->calendar), g_date_time_get_day_of_month(dt));
+
+  gchar *txt = g_date_time_format(dt, "%H");
+  gtk_entry_set_text(GTK_ENTRY(pop->hours), txt);
+  g_free(txt);
+  txt = g_date_time_format(dt, "%M");
+  gtk_entry_set_text(GTK_ENTRY(pop->minutes), txt);
+  g_free(txt);
+  txt = g_date_time_format(dt, "%S");
+  gtk_entry_set_text(GTK_ENTRY(pop->seconds), txt);
+  g_free(txt);
+
+  txt = g_date_time_format(dt, "%y:%m:%d %H:%M:%S");
+  gtk_entry_set_text(GTK_ENTRY(pop->selection), txt);
+  g_free(txt);
+  pop->internal_change--;
+}
+
+static void _popup_date_ok_clicked(GtkWidget *w, GtkDarktableRangeSelect *range)
+{
+  if(!range->date_popup || range->date_popup->internal_change) return;
+  _range_date_popup *pop = range->date_popup;
+
+  // decode the value
+  const gchar *txt = gtk_entry_get_text(GTK_ENTRY(pop->selection));
+  GDateTime *dt = dt_datetime_exif_to_gdatetime(txt, darktable.utc_tz);
+  if(!dt) return;
+  const int value = g_date_time_to_unix(dt);
+  g_date_time_unref(dt);
+
+  // apply the value to the right field
+  if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->band)
+  {
+    dtgtk_range_select_set_selection(range, DT_RANGE_BOUND_FIXED, value, value, TRUE, FALSE);
+  }
+  else if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_min)
+  {
+    if(range->bounds & DT_RANGE_BOUND_MIN) range->bounds &= ~DT_RANGE_BOUND_MIN;
+    dtgtk_range_select_set_selection(range, range->bounds, value, range->select_max_r, TRUE, FALSE);
+  }
+  else if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_max)
+  {
+    if(range->bounds & DT_RANGE_BOUND_MAX) range->bounds &= ~DT_RANGE_BOUND_MAX;
+    dtgtk_range_select_set_selection(range, range->bounds, range->select_min_r, value, TRUE, FALSE);
+  }
+
+  // and hide the popup
+  gtk_widget_hide(pop->popup);
+}
+
+static void _popup_date_tree_row_activated(GtkTreeView *self, GtkTreePath *path, GtkTreeViewColumn *column,
+                                           GtkDarktableRangeSelect *range)
+{
+  if(!range->date_popup || range->date_popup->internal_change) return;
+  _range_date_popup *pop = range->date_popup;
+
+  // we retrieve the row path
+  GtkTreeIter iter;
+  gchar *text = NULL;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(pop->treeview));
+  gtk_tree_model_get_iter(model, &iter, path);
+  gtk_tree_model_get(model, &iter, DATETIME_COL_PATH, &text, -1);
+
+  // we decode the path
+  int y, m, d, h, min, s;
+  y = m = d = h = min = s = 0;
+  if(g_str_has_prefix(text, "b"))
+  {
+    // that means this is a predefined block, so we just need to read its value
+  }
+  else
+  {
+    // intialize value depending of the source widget
+    if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_max)
+    {
+      m = 12;
+      d = 31;
+      h = 23;
+      min = 59;
+      s = 59;
+    }
+
+    GMatchInfo *match_info;
+    // we capture each date componenent
+    GRegex *regex = g_regex_new(
+        "^\\s*(\\d{4})?(?::(\\d{2}))?(?::(\\d{2}))?(?: (\\d{2}))?(?::(\\d{2}))?(?::(\\d{2}))?\\s*$", 0, 0, NULL);
+    g_regex_match_full(regex, text, -1, 0, 0, &match_info, NULL);
+    int match_count = g_match_info_get_match_count(match_info);
+
+    if(match_count <= 1)
+    {
+      // invalid path
+      g_match_info_free(match_info);
+      g_regex_unref(regex);
+      return;
+    }
+    if(match_count > 1)
+    {
+      gchar *nb = g_match_info_fetch(match_info, 1);
+      y = MAX(0, atoi(nb));
+      g_free(nb);
+    }
+    if(match_count > 2)
+    {
+      gchar *nb = g_match_info_fetch(match_info, 2);
+      m = CLAMP(atoi(nb), 1, 12);
+      g_free(nb);
+    }
+    if(match_count > 3)
+    {
+      gchar *nb = g_match_info_fetch(match_info, 3);
+      d = CLAMP(atoi(nb), 0, 31);
+      g_free(nb);
+    }
+    if(match_count > 4)
+    {
+      gchar *nb = g_match_info_fetch(match_info, 4);
+      h = CLAMP(atoi(nb), 0, 23);
+      g_free(nb);
+    }
+    if(match_count > 5)
+    {
+      gchar *nb = g_match_info_fetch(match_info, 5);
+      min = CLAMP(atoi(nb), 0, 59);
+      g_free(nb);
+    }
+    if(match_count > 6)
+    {
+      gchar *nb = g_match_info_fetch(match_info, 6);
+      s = CLAMP(atoi(nb), 0, 59);
+      g_free(nb);
+    }
+
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+  }
+
+  // we set the final entry
+  gchar *txt = g_strdup_printf("%04d:%02d:%02d %02d:%02d:%02d", y, m, d, h, min, s);
+  gtk_entry_set_text(GTK_ENTRY(pop->selection), txt);
+  g_free(txt);
+
+  // we validate the ok button
+  gtk_widget_activate(pop->ok_btn);
+}
+
+static void _popup_date_changed(GtkWidget *w, GtkDarktableRangeSelect *range)
+{
+  if(!range->date_popup || range->date_popup->internal_change) return;
+  // we just update the final entry text
+  _range_date_popup *pop = range->date_popup;
+
+  guint y, m, d;
+  gtk_calendar_get_date(GTK_CALENDAR(pop->calendar), &y, &m, &d);
+  int h = CLAMP(atoi(gtk_entry_get_text(GTK_ENTRY(pop->hours))), 0, 23);
+  int min = CLAMP(atoi(gtk_entry_get_text(GTK_ENTRY(pop->minutes))), 0, 59);
+  int s = CLAMP(atoi(gtk_entry_get_text(GTK_ENTRY(pop->seconds))), 0, 59);
+
+  // if we select via calendar, we try to set time to what user expect
+  if(w == pop->calendar)
+  {
+    // if we set the max value, and we have null time, we want to set time to the end of the day
+    if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_max && h == 0 && min == 0 && s == 0)
+    {
+      h = 23;
+      min = 59;
+      s = 59;
+      pop->internal_change++;
+      gtk_entry_set_text(GTK_ENTRY(pop->hours), "23");
+      gtk_entry_set_text(GTK_ENTRY(pop->minutes), "59");
+      gtk_entry_set_text(GTK_ENTRY(pop->seconds), "59");
+      pop->internal_change--;
+    }
+    // same for min value (but less common)
+    else if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_min && h == 23 && min == 59
+            && s == 59)
+    {
+      h = min = s = 0;
+      pop->internal_change++;
+      gtk_entry_set_text(GTK_ENTRY(pop->hours), "00");
+      gtk_entry_set_text(GTK_ENTRY(pop->minutes), "00");
+      gtk_entry_set_text(GTK_ENTRY(pop->seconds), "00");
+      pop->internal_change--;
+    }
+  }
+
+  gchar *txt = g_strdup_printf("%04d:%02d:%02d %02d:%02d:%02d", y, m + 1, d, h, min, s);
+  gtk_entry_set_text(GTK_ENTRY(pop->selection), txt);
+  g_free(txt);
+}
+static void _popup_date_day_selected_2click(GtkWidget *w, GtkDarktableRangeSelect *range)
+{
+  if(!range->date_popup || range->date_popup->internal_change) return;
+  // we validate the ok button
+  gtk_widget_activate(range->date_popup->ok_btn);
+}
+
+static void _popup_date_init(GtkDarktableRangeSelect *range)
+{
+  _range_date_popup *pop = (_range_date_popup *)g_malloc0(sizeof(_range_date_popup));
+  range->date_popup = pop;
+  pop->popup = gtk_popover_new(range->band);
+  GtkWidget *vbox0 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_set_homogeneous(GTK_BOX(hbox), TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox0), hbox, FALSE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(pop->popup), vbox0);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), vbox, FALSE, TRUE, 0);
+
+  // the date section
+  GtkWidget *lb = gtk_label_new(_("date"));
+  gtk_widget_set_name(lb, "section_label");
+  gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
+
+  // the calendar
+  pop->calendar = gtk_calendar_new();
+  g_signal_connect(G_OBJECT(pop->calendar), "day_selected", G_CALLBACK(_popup_date_changed), range);
+  g_signal_connect(G_OBJECT(pop->calendar), "day_selected-double-click",
+                   G_CALLBACK(_popup_date_day_selected_2click), range);
+  gtk_box_pack_start(GTK_BOX(vbox), pop->calendar, FALSE, TRUE, 0);
+
+  // the time section
+  lb = gtk_label_new(_("time"));
+  gtk_widget_set_name(lb, "section_label");
+  gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
+
+  GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_halign(hbox2, GTK_ALIGN_CENTER);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, FALSE, 0);
+  pop->hours = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(pop->hours), 2);
+  g_signal_connect(G_OBJECT(pop->hours), "changed", G_CALLBACK(_popup_date_changed), range);
+  gtk_box_pack_start(GTK_BOX(hbox2), pop->hours, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(" : "), FALSE, TRUE, 0);
+  pop->minutes = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(pop->minutes), 2);
+  g_signal_connect(G_OBJECT(pop->minutes), "changed", G_CALLBACK(_popup_date_changed), range);
+  gtk_box_pack_start(GTK_BOX(hbox2), pop->minutes, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(" : "), FALSE, TRUE, 0);
+  pop->seconds = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(pop->seconds), 2);
+  g_signal_connect(G_OBJECT(pop->seconds), "changed", G_CALLBACK(_popup_date_changed), range);
+  gtk_box_pack_start(GTK_BOX(hbox2), pop->seconds, FALSE, TRUE, 0);
+
+  // the treeview
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  GtkTreeModel *model = GTK_TREE_MODEL(gtk_tree_store_new(DATETIME_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT,
+                                                          G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT));
+  pop->treeview = gtk_tree_view_new_with_model(model);
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(pop->treeview), FALSE);
+  g_signal_connect(G_OBJECT(pop->treeview), "row-activated", G_CALLBACK(_popup_date_tree_row_activated), range);
+
+  GtkTreeViewColumn *col = gtk_tree_view_column_new();
+  gtk_tree_view_append_column(GTK_TREE_VIEW(pop->treeview), col);
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_set_cell_data_func(col, renderer, _date_tree_count_func, NULL, NULL);
+
+  gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(pop->treeview), DATETIME_COL_TOOLTIP);
+
+  gtk_container_add(GTK_CONTAINER(sw), pop->treeview);
+  gtk_box_pack_start(GTK_BOX(hbox), sw, FALSE, TRUE, 0);
+
+  // the select line
+  hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(vbox0), hbox2, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new("current date : "), FALSE, TRUE, 0);
+  pop->selection = gtk_entry_new();
+  gtk_entry_set_alignment(GTK_ENTRY(pop->selection), 0.5);
+  gtk_box_pack_start(GTK_BOX(hbox2), pop->selection, TRUE, TRUE, 0);
+  pop->ok_btn = gtk_button_new_with_label(_("apply"));
+  g_signal_connect(G_OBJECT(pop->ok_btn), "clicked", G_CALLBACK(_popup_date_ok_clicked), range);
+  gtk_box_pack_start(GTK_BOX(hbox2), pop->ok_btn, FALSE, TRUE, 0);
+}
+
 static void _popup_item_activate(GtkWidget *w, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
@@ -140,7 +621,7 @@ static void _popup_item_activate(GtkWidget *w, gpointer user_data)
   }
 }
 
-static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
+static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWidget *w)
 {
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_name(GTK_WIDGET(pop), "range-popup");
@@ -199,7 +680,37 @@ static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
     gtk_menu_shell_append(pop, smt);
   }
 
-  dt_gui_menu_popup(GTK_MENU(pop), NULL, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  return GTK_WIDGET(pop);
+}
+
+static void _popup_show(GtkDarktableRangeSelect *range, GtkWidget *w)
+{
+  if(range->type == DT_RANGE_TYPE_NUMERIC)
+  {
+    GtkWidget *pop = _popup_get_numeric_menu(range, w);
+    dt_gui_menu_popup(GTK_MENU(pop), NULL, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+  }
+  else if(range->type == DT_RANGE_TYPE_DATETIME)
+  {
+    _popup_date_update(range, w);
+
+    // show the popup
+    GdkDevice *pointer = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+
+    int x, y;
+    GdkWindow *pointer_window = gdk_device_get_window_at_position(pointer, &x, &y);
+    gpointer pointer_widget = NULL;
+    if(pointer_window) gdk_window_get_user_data(pointer_window, &pointer_widget);
+
+    GdkRectangle rect = { gtk_widget_get_allocated_width(w) / 2, gtk_widget_get_allocated_height(w), 1, 1 };
+
+    if(pointer_widget && w != pointer_widget)
+      gtk_widget_translate_coordinates(pointer_widget, w, x, y, &rect.x, &rect.y);
+
+    gtk_popover_set_pointing_to(GTK_POPOVER(range->date_popup->popup), &rect);
+
+    gtk_widget_show_all(range->date_popup->popup);
+  }
 }
 
 static gboolean _event_entry_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
@@ -665,7 +1176,7 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
 }
 
 // Public functions
-GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
+GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_entries, const dt_range_type_t type)
 {
   GtkDarktableRangeSelect *range = g_object_new(dtgtk_range_select_get_type(), NULL);
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range));
@@ -691,6 +1202,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
   range->print = _default_print_func;
   range->decode = _default_decode_func;
   range->show_entries = show_entries;
+  range->type = type;
 
   // the boxes widgets
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -707,6 +1219,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
   g_signal_connect(G_OBJECT(range->band), "leave-notify-event", G_CALLBACK(_event_band_leave), range);
   g_signal_connect(G_OBJECT(range->band), "style-updated", G_CALLBACK(_dt_pref_changed), range);
   gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
+  gtk_widget_set_can_default(range->band, TRUE);
   context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
   GtkStateFlags state = gtk_widget_get_state_flags(range->band);
   int mh = -1;
@@ -721,6 +1234,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
 
     // the entries
     range->entry_min = gtk_entry_new();
+    gtk_widget_set_can_default(range->entry_min, TRUE);
     gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 0);
     g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
     g_signal_connect(G_OBJECT(range->entry_min), "button-press-event", G_CALLBACK(_event_entry_press), range);
@@ -736,6 +1250,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
     gtk_box_pack_start(GTK_BOX(hbox), hb, FALSE, TRUE, 0);
 
     range->entry_max = gtk_entry_new();
+    gtk_widget_set_can_default(range->entry_max, TRUE);
     gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 0);
     gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
     g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
@@ -745,6 +1260,8 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, gboolean show_entries)
 
   gtk_container_add(GTK_CONTAINER(range), vbox);
   gtk_widget_set_name(GTK_WIDGET(range), "range_select");
+
+  if(type == DT_RANGE_TYPE_DATETIME) _popup_date_init(range);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(_dt_pref_changed),
                                   range);

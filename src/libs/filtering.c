@@ -489,7 +489,8 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE);
+  special->range_select
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE, DT_RANGE_TYPE_NUMERIC);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
   range->step_bd = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
@@ -634,7 +635,8 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  special->range_select
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
@@ -717,7 +719,8 @@ static void _focal_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  special->range_select
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
   range->step_bd = 1.0;
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
@@ -798,7 +801,8 @@ static void _aperture_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  special->range_select
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
   range->step_bd = 1.0;
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
@@ -903,7 +907,8 @@ static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  special->range_select
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
@@ -1002,7 +1007,8 @@ static void _exposure_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  special->range_select
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
   gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 10);
@@ -1105,9 +1111,11 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
-  special->range_select = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE);
+  special->range_select
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_DATETIME);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
+  range->type = DT_RANGE_TYPE_DATETIME;
   range->step_bd = 86400; // step of 1 day (in seconds)
   range->print = _date_print_func;
   range->decode = _date_decode_func;
