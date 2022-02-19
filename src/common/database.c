@@ -2381,7 +2381,8 @@ static void _create_memory_schema(dt_database_t *db)
       NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.taglist "
-                           "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, count INTEGER)",
+                           "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, "
+                           "count INTEGER DEFAULT 0, count2 INTEGER DEFAULT 0)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.darktable_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);

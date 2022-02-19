@@ -3506,13 +3506,21 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   return TRUE;
 }
 
+static int _get_recent_tags_list_length()
+{
+  const int length = dt_conf_get_int("plugins/lighttable/tagging/nb_recent_tags");
+  if(length == -1) return length;
+  else if(length >= 10/2) return length * 2;
+  else return 10;
+}
+
 static void _size_recent_tags_list()
 {
   const char *list = dt_conf_get_string_const("plugins/lighttable/tagging/recent_tags");
   if(!list[0])
     return;
-  const int length = dt_conf_get_int("plugins/lighttable/tagging/nb_recent_tags");
-  if(!length)
+  const int length = _get_recent_tags_list_length();
+  if(length == -1)
   {
     dt_conf_set_string("plugins/lighttable/tagging/recent_tags", "");
     return;
@@ -3577,9 +3585,9 @@ static void _save_last_tag_used(const char *tagnames, dt_lib_tagging_t *d)
   g_free(d->last_tag);
   d->last_tag = g_strdup(tagnames);
 
-  const int nb_recent = dt_conf_get_int("plugins/lighttable/tagging/nb_recent_tags");
+  const int nb_recent = _get_recent_tags_list_length();
 
-  if(nb_recent)
+  if(nb_recent != -1)
   {
     GList *ntags = dt_util_str_to_glist(",", tagnames);
     if(ntags)

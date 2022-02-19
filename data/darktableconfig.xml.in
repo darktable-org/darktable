@@ -1744,10 +1744,10 @@
   </dtconfig>
   <dtconfig dialog="tagging">
     <name>plugins/lighttable/tagging/nb_recent_tags</name>
-    <type min="0" max="1000">int</type>
+    <type min="-1" max="1000">int</type>
     <default>20</default>
     <shortdescription>number of recently attached tags</shortdescription>
-    <longdescription>number of recently attached tags which are included in the suggestions list</longdescription>
+    <longdescription>number of recently attached tags which are included in the suggestions list. The value `-1' clears the memory</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/tagging/recent_tags</name>
