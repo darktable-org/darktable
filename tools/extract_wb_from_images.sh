@@ -1,8 +1,7 @@
 #!/bin/bash
 
 #
-# Usage: extract_wb_from_images [-p]
-#        -p  do the purge, otherwise only display unused tags
+# Usage: extract_wb_from_images
 #
 
 commandline="$0 $*"
