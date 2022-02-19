@@ -1071,6 +1071,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_film_set_folder_status();
   }
 
+  // this is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed 
   // setup resource fractions now                           def  min small  med large  unrestricted
   const int default_available[DT_RESOURCE_LEVELS_NUM]    = { 512,  0,  128, 400,  700, 10000 };
   const int default_singlebuf[DT_RESOURCE_LEVELS_NUM]    = { 128,  0,   16,  32,   64,  1024 };
