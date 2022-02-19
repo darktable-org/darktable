@@ -386,6 +386,11 @@ static inline size_t _get_total_memory()
 #endif
 }
 
+static size_t _get_mipmap_size()
+{
+  return darktable.dtresources.total_memory / 8;
+}
+
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
   double start_wtime = dt_get_wtime();
@@ -1200,7 +1205,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_conf_set_int("resourcelevel", DT_RESOURCE_LEVEL_DEFAULT);
 
   darktable.dtresources.total_memory = _get_total_memory();
-
+  darktable.dtresources.mipmap_memory = _get_mipmap_size();
 /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   dt_lua_init(darktable.lua_state.state, lua_command);
@@ -1647,11 +1652,6 @@ void dt_configure_performance()
     freecache = g_file_info_get_attribute_uint64(gfileinfo, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
   g_object_unref(gfile);
   g_object_unref(gfileinfo);
-
-  // set cache_memory to half of freediskspace - 4gb (eg 1gb cache_mem in case of 6gb free space)
-  if(freecache > (6lu << 20))
-    dt_conf_set_int64("cache_memory", (freecache - (4lu << 20))/2);
-
 
   // enable cache_disk_backend_full when user has over 8gb free diskspace
   dt_conf_set_bool("cache_disk_backend_full", freecache > (8lu << 20));
