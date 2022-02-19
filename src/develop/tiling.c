@@ -2053,7 +2053,6 @@ int dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, co
 {
   const size_t available = dt_get_available_mem();
   const size_t total = factor * width * height * bpp + overhead;
-  // do we want unrestricted memory as for host_memory_limit == 0 ?
 
   if(total <= available)
     return TRUE;
