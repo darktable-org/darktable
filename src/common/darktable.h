@@ -293,6 +293,7 @@ typedef enum dt_sys_resources_levels_t
 typedef struct dt_sys_resources_t
 {
   size_t total_memory;
+  size_t mipmap_memory;
   dt_sys_resources_levels_t level;
 } dt_sys_resources_t;
 
