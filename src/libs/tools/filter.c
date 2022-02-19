@@ -40,6 +40,7 @@ typedef struct dt_lib_tool_filter_t
   GtkWidget *colors[6];
   GtkWidget *colors_op;
   int time_out;
+  double last_key_time;
 } dt_lib_tool_filter_t;
 
 #ifdef USE_LUA
@@ -155,6 +156,14 @@ int position()
   return 2001;
 }
 
+static void _set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  if(dimmed) gtk_style_context_add_class(context, "dt_dimmed");
+  else gtk_style_context_remove_class(context, "dt_dimmed");
+  gtk_widget_queue_draw(GTK_WIDGET(widget));
+}
+
 static gboolean _text_entry_changed_wait(gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -162,23 +171,45 @@ static gboolean _text_entry_changed_wait(gpointer user_data)
   if(d->time_out)
   {
     d->time_out--;
+    double clock = dt_get_wtime();
+    if(clock - d->last_key_time >= 0.4)
+    {
+      d->time_out = 1; // force the query execution
+      d->last_key_time = clock;
+    }
+
     if(d->time_out == 1)
     { // tell we are busy
-      GtkStyleContext *context = gtk_widget_get_style_context(d->text);
-      gtk_style_context_add_class(context, "dt_dimmed");
-      gtk_widget_queue_draw(GTK_WIDGET(d->text));
+      _set_widget_dimmed(d->text, TRUE);
     }
     else if(!d->time_out)
     {
-      const int pos = gtk_editable_get_position(GTK_EDITABLE(d->text));
-      char *text = pos ? g_strconcat("%", gtk_entry_get_text(GTK_ENTRY(d->text)), "%", NULL)
-                       : g_strdup(gtk_entry_get_text(GTK_ENTRY(d->text)));
-      g_free(dt_collection_get_text_filter(darktable.collection));
-      dt_collection_set_text_filter(darktable.collection, text);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
-      GtkStyleContext *context = gtk_widget_get_style_context(d->text);
-      gtk_style_context_remove_class(context, "dt_dimmed");
-      gtk_widget_queue_draw(GTK_WIDGET(d->text));
+      // by default adds start and end wildcard
+      // ' or " removes the corresponding wildcard
+      char start[2] = {0};
+      char *text;
+      const char *entry = gtk_entry_get_text(GTK_ENTRY(d->text));
+      char *p = (char *)entry;
+      if(entry[0] == '"')
+        p++;
+      else
+        start[0] = '%';
+      if(entry[strlen(entry) - 1] == '"')
+      {
+        text = g_strconcat(start, (char *)p, NULL);
+        text[strlen(text) - 1] = '\0';
+      }
+      else
+        text = g_strconcat(start, (char *)p, "%", NULL);
+
+      // avoids activating twice the same query
+      if(g_strcmp0(dt_collection_get_text_filter(darktable.collection), text))
+      {
+        dt_collection_set_text_filter(darktable.collection, text);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+      }
+      else g_free(text);
+      _set_widget_dimmed(d->text, FALSE);
       return FALSE;
     }
   }
@@ -187,32 +218,24 @@ static gboolean _text_entry_changed_wait(gpointer user_data)
 
 static void _launch_text_query(dt_lib_module_t *self)
 {
+  // two timeouts 1) 0.4 sec after the last key, 2) 1.5 sec of successive keys
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  d->last_key_time = dt_get_wtime();
   if(!d->time_out)
   {
-    d->time_out = 4;
+    d->time_out = 15;
     g_timeout_add(100, _text_entry_changed_wait, self);
   }
-  else d->time_out = 4;
 }
 
 static void _text_entry_changed(GtkEntry *entry, dt_lib_module_t *self)
 {
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  char *text = g_strdup(gtk_entry_get_text(GTK_ENTRY(d->text)));
-  if(strlen(text) == 0 || strlen(text) > 3)
     _launch_text_query(self);
-}
-
-static void _text_entry_activated(GtkEntry *entry, dt_lib_module_t *self)
-{
-  _launch_text_query(self);
 }
 
 static void _reset_text_filter(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  g_free(dt_collection_get_text_filter(darktable.collection));
   dt_collection_set_text_filter(darktable.collection, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->text), "");
 }
@@ -328,7 +351,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   gtk_widget_set_valign(self->widget, GTK_ALIGN_CENTER);
 
-  GtkWidget *label = gtk_label_new(_("view"));
+  GtkWidget *label = gtk_label_new(_("filter"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -336,7 +359,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *overlay = gtk_overlay_new();
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->comparator, self, NULL, NULL,
-                               _("which images should be shown"),
+                               _("filter by images rating"),
                                dt_collection_get_rating_comparator(darktable.collection),
                                _lib_filter_comparator_changed, self,
                                "<", // DT_COLLECTION_RATING_COMP_LT = 0,
@@ -351,7 +374,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the filter combobox */
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->stars, self, NULL, NULL,
-                               _("which images should be shown"),
+                               _("filter by images rating"),
                                dt_collection_get_rating(darktable.collection),
                                _lib_filter_combobox_changed, self,
                                N_("all"),
@@ -375,34 +398,37 @@ void gui_init(dt_lib_module_t *self)
     d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, (k | CPF_BG_TRANSPARENT), NULL);
     g_object_set_data(G_OBJECT(d->colors[k]), "colors_self", self);
     gtk_box_pack_start(GTK_BOX(hbox), d->colors[k], FALSE, FALSE, 0);
-    gtk_widget_set_tooltip_text(d->colors[k], _("toggle color label selection, ctrl_click to exclude"
-                                                "\ngrey button toggles all color labels"));
+    gtk_widget_set_tooltip_text(d->colors[k], _("filter by images color label"
+                                                "\nclick to toggle the color label selection"
+                                                "\nctrl+click to exclude the color label"
+                                                "\nthe grey button affects all color labels"));
     g_signal_connect(G_OBJECT(d->colors[k]), "button-press-event", G_CALLBACK(_colorlabel_clicked),
                      GINT_TO_POINTER(k));
   }
   d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
   _reset_colors_filter(self);
   gtk_box_pack_start(GTK_BOX(hbox), d->colors_op, FALSE, FALSE, 2);
-  gtk_widget_set_tooltip_text(d->colors_op, _("intersection (∩): images having all selections"
-                                              "\nunion (∪): images with at least one selection"));
+  gtk_widget_set_tooltip_text(d->colors_op, _("filter by images color label"
+                                              "\nand (∩): images having all selected color labels"
+                                              "\nor (∪): images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(d->colors_op), "clicked", G_CALLBACK(_colors_operation_clicked), self);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 2);
   context = gtk_widget_get_style_context(hbox);
   gtk_style_context_add_class(context, "quick_filter_box");
   gtk_style_context_add_class(context, "dt_font_resize_07");
 
-  // filter text
+  // text filter
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
   d->text = gtk_search_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(d->text), _("search text"));
   g_signal_connect(G_OBJECT(d->text), "search-changed", G_CALLBACK(_text_entry_changed), self);
-  g_signal_connect(G_OBJECT(d->text), "activate", G_CALLBACK(_text_entry_activated), self);
   g_signal_connect(G_OBJECT(d->text), "stop-search", G_CALLBACK(_reset_text_entry), self);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text), 14);
-  gtk_widget_set_tooltip_text(d->text, _("filter the text accross metadata, tags and complete filename"
-                                         "\nhit Home then Enter to serach without default start and end wildcards"
-                                         "\nuse `%' as wildcard"));
+  gtk_widget_set_tooltip_text(d->text, _("filter by text from images metadata, tags, file path and name"
+                                         "\n`%' is the wildcard character"
+                                         "\nby default start and end wildcards are auto-applied"
+                                         "\nstarting or ending with a double quote disables the corresponding wildcard"
+                                         "\nis dimmed during the search execution"));
   context = gtk_widget_get_style_context(d->text);
   gtk_style_context_add_class(context, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(hbox), d->text, FALSE, FALSE, 0);
@@ -453,7 +479,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  g_free(dt_collection_get_text_filter(darktable.collection));
   dt_collection_set_text_filter(darktable.collection, NULL);
   g_free(self->data);
   self->data = NULL;

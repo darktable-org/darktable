@@ -595,6 +595,7 @@ char *dt_collection_get_text_filter(const dt_collection_t *collection)
 void dt_collection_set_text_filter(const dt_collection_t *collection, char *text_filter)
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
+  g_free(params->text_filter);
   params->text_filter = text_filter;
 }
 
