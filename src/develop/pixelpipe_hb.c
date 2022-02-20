@@ -2134,23 +2134,8 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
                                                      int pos)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
-  darktable.dtresources.level = 0;
-  const char *config = dt_conf_get_string_const("resourcelevel");
-  /** These levels must correspond with preferences in xml.in **and** fractions
-      Please note: As there are absolute values for "reference (debug)"
-  */
-  if(config)
-  {
-         if(!strcmp(config, "default"))           darktable.dtresources.level = 0; 
-    else if(!strcmp(config, "mini (debug)"))      darktable.dtresources.level = 1;
-    else if(!strcmp(config, "small"))             darktable.dtresources.level = 2;
-    else if(!strcmp(config, "medium"))            darktable.dtresources.level = 3;
-    else if(!strcmp(config, "large"))             darktable.dtresources.level = 4;
-    else if(!strcmp(config, "unrestricted"))      darktable.dtresources.level = 5;
-    else if(!strcmp(config, "reference (debug)")) darktable.dtresources.level = -1;
-  }
-  dt_print(DT_DEBUG_MEMORY, "[dt_dev_pixelpipe_process_rec_and_backcopy] level `%s' as %i\n", config, darktable.dtresources.level);
-
+  darktable.dtresources.group = 4 * darktable.dtresources.level; 
+  
   int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #ifdef HAVE_OPENCL
   // copy back final opencl buffer (if any) to CPU

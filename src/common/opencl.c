@@ -2448,7 +2448,8 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   const int level = darktable.dtresources.level;
   if(level < 0) return 2048lu  * 1024ul * 1024ul;
   const size_t disposable = (size_t)darktable.opencl->dev[devid].max_global_mem - 400ul * 1024ul * 1024ul;
-  const size_t available = MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * darktable.dtresources.fract_cl_available[level]); 
+  const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 3];
+  const size_t available = MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction); 
   return available;
 }
 
