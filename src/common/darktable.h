@@ -279,18 +279,13 @@ typedef struct dt_codepath_t
   unsigned int OPENMP_SIMD : 1; // always stays the last one
 } dt_codepath_t;
 
-/* These are hard-wired and must correspond with darktableconfig.xml.in */ 
-#define DT_RESOURCE_LEVELS_NUM 6
 typedef struct dt_sys_resources_t
 {
   size_t total_memory;
   size_t mipmap_memory;
+  int *fractions; // fractions are calculated as res=input / 1024  * fraction
+  int group;
   int level;
-  /* fractions are calculated as res=input / 1024  * fraction */
-  int fract_available[DT_RESOURCE_LEVELS_NUM];
-  int fract_singlebuf[DT_RESOURCE_LEVELS_NUM];
-  int fract_mipmap[DT_RESOURCE_LEVELS_NUM];
-  int fract_cl_available[DT_RESOURCE_LEVELS_NUM];
 } dt_sys_resources_t;
 
 typedef struct darktable_t
@@ -359,6 +354,7 @@ typedef struct
 extern darktable_t darktable;
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L);
+void dt_get_sysresource_level();
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 int dt_worker_threads();

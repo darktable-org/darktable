@@ -390,7 +390,8 @@ static size_t _get_mipmap_size()
 {
   const int level = darktable.dtresources.level;  
   if(level < 0) return 4096lu * 1024lu * 1024lu;
-  return darktable.dtresources.total_memory / 1024lu * darktable.dtresources.fract_mipmap[level];
+  const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 2];
+  return darktable.dtresources.total_memory / 1024lu * fraction;
 }
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
@@ -1071,22 +1072,25 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_film_set_folder_status();
   }
 
-  // this is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed 
-  // setup resource fractions now                           def  min small  med large  unrestricted
-  const int default_available[DT_RESOURCE_LEVELS_NUM]    = { 512,  0,  128, 400,  700, 10000 };
-  const int default_singlebuf[DT_RESOURCE_LEVELS_NUM]    = { 128,  0,   16,  32,   64,  1024 };
-  const int default_mipmap[DT_RESOURCE_LEVELS_NUM]       = { 128, 16,   64, 128,  128,   128 };
-  const int default_cl_available[DT_RESOURCE_LEVELS_NUM] = { 600,  0,  256, 512,  750,   900 }; 
-  for(int i = 0; i < DT_RESOURCE_LEVELS_NUM; i++)
-  {
-    darktable.dtresources.fract_available[i] = default_available[i];
-    darktable.dtresources.fract_cl_available[i] = default_cl_available[i];
-    darktable.dtresources.fract_singlebuf[i] = default_singlebuf[i];
-    darktable.dtresources.fract_mipmap[i] = default_mipmap[i];
-  }
+  // this is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed. 
+  // for every resourcelevel we need 4 defined fractions
+  //  0 cpu available
+  //  1 cpu singlebuffer
+  //  2 mipmap size
+  //  3 opencl available
+  static int fractions[24] = {
+      512,   28, 128, 600,  // default
+        0,    0,  16,   0,  // mini
+      128,   16,  64, 256,  // small
+      400,   32, 128, 512,  // medium
+      700,   64, 128, 750,  // large
+    16384, 1024, 128, 900   // unrestricted
+  };
+
+  darktable.dtresources.fractions = fractions;
   darktable.dtresources.total_memory = _get_total_memory();
   darktable.dtresources.mipmap_memory = _get_mipmap_size();
-
+  dt_get_sysresource_level();
   // initialize collection query
   darktable.collection = dt_collection_new(NULL);
 
@@ -1274,6 +1278,29 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_print(DT_DEBUG_CONTROL, "[init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
 
   return 0;
+}
+
+void dt_get_sysresource_level()
+{
+  darktable.dtresources.level = 0;
+  const char *config = dt_conf_get_string_const("resourcelevel");
+  /** These levels must correspond with preferences in xml.in **and** fractions
+      Please note: absolute values for "reference (debug)"
+  */
+  if(config)
+  {
+         if(!strcmp(config, "default"))           darktable.dtresources.level = 0; 
+    else if(!strcmp(config, "mini (debug)"))      darktable.dtresources.level = 1;
+    else if(!strcmp(config, "small"))             darktable.dtresources.level = 2;
+    else if(!strcmp(config, "medium"))            darktable.dtresources.level = 3;
+    else if(!strcmp(config, "large"))             darktable.dtresources.level = 4;
+    else if(!strcmp(config, "unrestricted"))      darktable.dtresources.level = 5;
+    else if(!strcmp(config, "reference (debug)")) darktable.dtresources.level = -1;
+
+    dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to %i as `%s'\n", darktable.dtresources.level, config);
+  }
+  else
+    dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to default as missing `resorcelevel' conf\n");
 }
 
 void dt_cleanup()
@@ -1610,8 +1637,8 @@ size_t dt_get_available_mem()
   const int level = darktable.dtresources.level;  
   const size_t total_mem = darktable.dtresources.total_memory;
   if(level < 0) return 8192lu * 1024lu * 1024lu;
-
-  return MAX(512lu * 1024lu * 1024lu, total_mem / 1024lu * darktable.dtresources.fract_available[level]);
+  const int fraction = darktable.dtresources.fractions[darktable.dtresources.group];
+  return MAX(512lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
 }
 
 size_t dt_get_singlebuffer_mem()
@@ -1619,7 +1646,8 @@ size_t dt_get_singlebuffer_mem()
   const int level = darktable.dtresources.level;  
   const size_t total_mem = darktable.dtresources.total_memory;
   if(level < 0) return 64lu * 1024lu * 1024lu;
-  return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * darktable.dtresources.fract_singlebuf[level]);
+  const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 1];
+  return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
 }
 
 void dt_configure_performance()
