@@ -134,7 +134,6 @@ static int usage(const char *argv0)
 #endif
   printf(">\n");
   printf("  --datadir <data directory>\n");
-  printf("  --enforce-tiling\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
@@ -621,7 +620,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
         if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted = 0xffffffff & ~DT_DEBUG_TILING; // enable all debug information except the enforce-tiling flag
+          darktable.unmuted = 0xffffffff; // enable all debug information
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k + 1], "control"))
@@ -803,11 +802,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef HAVE_OPENCL
         exclude_opencl = TRUE;
 #endif
-        argv[k] = NULL;
-      }
-      else if(!strcmp(argv[k], "--enforce-tiling"))
-      {
-        darktable.unmuted |= DT_DEBUG_TILING;
         argv[k] = NULL;
       }
       else if(!strcmp(argv[k], "--"))
