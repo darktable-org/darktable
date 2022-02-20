@@ -193,6 +193,13 @@
     <longdescription>defines how much darktable may take from your system resources. can be changed at runtime\n   mini: 0.5 GB free ram and 0.25GB free video ram.\n   reference: 8GB free ram and 2GB free video ram\n   unrestricted: will take almost all and might lead to swapping.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
+    <name>ui/performance</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>prefer performance over quality</shortdescription>
+    <longdescription>if switched on, thumbnails and previews are rendered at lower quality but 4 times faster</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing" section="cpugpu">
     <name>cache_disk_backend</name>
     <type>bool</type>
     <default>true</default>
@@ -3130,12 +3137,6 @@
     <default>-1.0</default>
     <shortdescription>overwrite the screen's dpi setting</shortdescription>
     <longdescription>if this value is &gt; 0.0 then it is used as the screen's dpi setting which is used to scale the gui</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>ui/performance</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>performance mode for thumbs and previews</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/preview/max_in_memory_images</name>
