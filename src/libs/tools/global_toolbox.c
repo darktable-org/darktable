@@ -895,8 +895,10 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
     if(GTK_IS_ENTRY(event_widget))
       break;
 
-    if(event->button.button != GDK_BUTTON_PRIMARY)
+    if(event->button.button == GDK_BUTTON_SECONDARY)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
+    else if(event->button.button == GDK_BUTTON_MIDDLE)
+      dt_shortcut_dispatcher(event_widget, event, data);
     else if(dt_modifier_is(event->button.state, GDK_CONTROL_MASK))
     {
       if(darktable.develop)

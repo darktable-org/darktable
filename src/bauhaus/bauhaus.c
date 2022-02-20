@@ -2391,6 +2391,10 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
 
   if(dt_gui_ignore_scroll(event)) return FALSE;
 
+  // handle speed adjustment in mapping mode in dispatcher
+  if(darktable.control->mapping_widget)
+    return dt_shortcut_dispatcher(widget, (GdkEvent*)event, user_data);
+
   gtk_widget_grab_focus(widget);
 
   int delta_y;
