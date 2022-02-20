@@ -273,6 +273,12 @@ static void _formula_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_t
     gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_FORMULA, new_text, -1);
 }
 
+static void _formula_editing_started(GtkCellRenderer *renderer, GtkCellEditable *editable,
+                                     char *path, dt_lib_export_metadata_t *d)
+{
+  dt_gtkentry_setup_completion(GTK_ENTRY(editable), dt_gtkentry_get_default_path_compl_list());
+}
+
 char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const gboolean ondisk)
 {
   dt_lib_export_metadata_t *d = calloc(1, sizeof(dt_lib_export_metadata_t));
@@ -363,7 +369,6 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
   d->view = view;
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(view));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("list of available tags"));
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("redefined tag"), renderer, "text", 0, NULL);
@@ -371,17 +376,17 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "editable", TRUE, NULL);
   g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(_formula_edited), (gpointer)d);
+  g_signal_connect(renderer, "editing-started" , G_CALLBACK(_formula_editing_started), (gpointer)d);
   col = gtk_tree_view_column_new_with_attributes(_("formula"), renderer, "text", 2, NULL);
   gtk_tree_view_append_column(view, col);
-  char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
-                        _("list of calculated metadata\n"
-                        "if formula is empty, the corresponding metadata is removed from exported file,\n"
-                        "if formula is \'=\', the exif metadata is exported even if exif data are disabled\n"
-                        "otherwise the corresponding metadata is calculated and added to exported file\n"
-                        "click on formula cell to edit. recognized variables:\n"),
-                        dt_gtkentry_get_default_path_compl_list());
-  gtk_widget_set_tooltip_text(GTK_WIDGET(view), tooltip_text);
-  g_free(tooltip_text);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(view),
+                _("list of calculated metadata\n"
+                "click on '+' button to select and add new metadata\n"
+                "if formula is empty, the corresponding metadata is removed from exported file,\n"
+                "if formula is \'=\', the exif metadata is exported even if exif data are disabled\n"
+                "otherwise the corresponding metadata is calculated and added to exported file\n"
+                "click on formula cell to edit\n"
+                "type '$(' to activate the completion of variables and see the list"));
   g_signal_connect(G_OBJECT(view), "key_press_event", G_CALLBACK(_key_press_on_list), (gpointer)d);
 
   GtkListStore *liststore = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
