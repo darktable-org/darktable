@@ -61,7 +61,6 @@ typedef struct dt_lib_tagging_t
   GList *floating_tag_imgs;
   gboolean tree_flag, suggestion_flag, sort_count_flag, hide_path_flag, dttags_flag;
   char *collection;
-  GtkEntryCompletion *completion;
   char *last_tag;
   struct
   {
@@ -352,6 +351,13 @@ static void _show_tag_on_view(GtkTreeView *view, const char *tagname,
     }
     g_free(lt);
   }
+}
+
+static void _show_keyword_on_view(GtkTreeView *view, const char *keyword, const gboolean select)
+{
+  gchar *needle = g_utf8_strdown(keyword, -1);
+  _show_tag_on_view(view, needle, TRUE, select);
+  g_free(needle);
 }
 
 static gboolean _select_previous_user_attached_tag(const int index, GtkTreeView *view)
@@ -1425,10 +1431,8 @@ static gboolean _enter_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_
     case GDK_KEY_Tab:
     {
       _unselect_all_in_view(d->attached_view);
-      const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
-      gchar *needle = g_utf8_strdown(text, -1);
-      _show_tag_on_view(d->dictionary_view, needle, TRUE, TRUE);
-      g_free(needle);
+      if(d->keyword[0])
+        _show_keyword_on_view(d->dictionary_view, d->keyword, TRUE);
       gtk_widget_grab_focus(GTK_WIDGET(d->dictionary_view));
       return TRUE;
     }
@@ -1470,7 +1474,7 @@ static void _tag_name_changed(GtkEntry *entry, dt_lib_module_t *self)
   if(d->tree_flag && d->keyword[0])
   {
     gtk_tree_model_foreach(store, (GtkTreeModelForeachFunc)_tree_reveal_func, NULL);
-    _show_tag_on_view(d->dictionary_view, d->keyword, TRUE, FALSE);
+    _show_keyword_on_view(d->dictionary_view, d->keyword, FALSE);
   }
 }
 
@@ -2598,7 +2602,6 @@ static void _update_layout(dt_lib_module_t *self)
       gtk_list_store_clear(GTK_LIST_STORE(store));
       gtk_tree_view_set_model(GTK_TREE_VIEW(d->dictionary_view), GTK_TREE_MODEL(d->dictionary_treefilter));
       g_object_unref(d->dictionary_treefilter);
-      if(d->completion) gtk_entry_set_completion(d->entry, NULL);
     }
     gtk_widget_set_sensitive(GTK_WIDGET(d->toggle_suggestion_button), FALSE);
   }
@@ -2612,7 +2615,6 @@ static void _update_layout(dt_lib_module_t *self)
       gtk_tree_store_clear(GTK_TREE_STORE(store));
       gtk_tree_view_set_model(GTK_TREE_VIEW(d->dictionary_view), GTK_TREE_MODEL(d->dictionary_listfilter));
       g_object_unref(d->dictionary_listfilter);
-      if(d->completion) gtk_entry_set_completion(d->entry, d->completion);
     }
     gtk_widget_set_sensitive(GTK_WIDGET(d->toggle_suggestion_button), TRUE);
   }
@@ -3210,6 +3212,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_tag_name_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(_enter_key_pressed), (gpointer)self);
   d->entry = GTK_ENTRY(w);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, CPF_STYLE_FLAT, NULL);
@@ -3330,22 +3333,6 @@ void gui_init(dt_lib_module_t *self)
                                             G_CALLBACK(_toggle_suggestion_button_callback), (gpointer)self);
 
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
-
-  if(!dt_conf_get_bool("plugins/lighttable/tagging/no_entry_completion"))
-  {
-    // add entry completion
-    GtkEntryCompletion *completion = gtk_entry_completion_new();
-    gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view)));
-    gtk_entry_completion_set_text_column(completion, DT_LIB_TAGGING_COL_PATH);
-    gtk_entry_completion_set_inline_completion(completion, TRUE);
-    gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
-    gtk_entry_set_completion(d->entry, completion);
-    d->completion = completion;
-  }
-  else d->completion = NULL;
-
-  // completion works better if this happens after completion connection
-  g_signal_connect(G_OBJECT(d->entry), "key-press-event", G_CALLBACK(_enter_key_pressed), (gpointer)self);
 
   /* connect to mouse over id */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
