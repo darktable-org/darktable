@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-21 17:42+0100\n"
+"POT-Creation-Date: 2022-02-21 17:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -826,9 +826,9 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:5831 ../src/control/jobs/control_jobs.c:1673
 #: ../src/control/jobs/control_jobs.c:1735 ../src/gui/preferences.c:1052
 #: ../src/gui/presets.c:365 ../src/imageio/storage/disk.c:121
-#: ../src/imageio/storage/disk.c:191 ../src/imageio/storage/gallery.c:108
-#: ../src/imageio/storage/gallery.c:175 ../src/imageio/storage/latex.c:107
-#: ../src/imageio/storage/latex.c:174 ../src/libs/import.c:1510
+#: ../src/imageio/storage/disk.c:188 ../src/imageio/storage/gallery.c:108
+#: ../src/imageio/storage/gallery.c:172 ../src/imageio/storage/latex.c:107
+#: ../src/imageio/storage/latex.c:171 ../src/libs/import.c:1510
 #: ../src/libs/import.c:1616 ../src/libs/import.c:1670 ../src/libs/styles.c:398
 #: ../src/lua/preferences.c:667
 msgid "select directory"
@@ -1418,7 +1418,7 @@ msgstr ""
 
 #. tags
 #: ../build/bin/preferences_gen.h:7713 ../src/develop/lightroom.c:1512
-#: ../src/gui/import_metadata.c:468 ../src/libs/export_metadata.c:325
+#: ../src/gui/import_metadata.c:468 ../src/libs/export_metadata.c:331
 #: ../src/libs/image.c:568 ../src/libs/metadata_view.c:162
 msgid "tags"
 msgstr ""
@@ -4880,7 +4880,7 @@ msgid "error starting darktable"
 msgstr ""
 
 #: ../src/common/database.c:2543 ../src/libs/collect.c:2904
-#: ../src/libs/export_metadata.c:282 ../src/libs/import.c:1708
+#: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1708
 #: ../src/libs/metadata.c:535 ../src/libs/metadata_view.c:1205
 #: ../src/libs/modulegroups.c:3507 ../src/libs/recentcollect.c:319
 #: ../src/libs/styles.c:445 ../src/libs/styles.c:628 ../src/libs/tagging.c:1499
@@ -5273,7 +5273,7 @@ msgstr ""
 
 #. title
 #: ../src/common/metadata.c:48 ../src/imageio/format/pdf.c:576
-#: ../src/imageio/storage/gallery.c:181 ../src/imageio/storage/latex.c:181
+#: ../src/imageio/storage/gallery.c:178 ../src/imageio/storage/latex.c:178
 #: ../src/imageio/storage/piwigo.c:893 ../src/libs/tools/filter.c:101
 msgid "title"
 msgstr ""
@@ -9670,9 +9670,9 @@ msgstr ""
 msgid "invalid border size, using 0"
 msgstr ""
 
-#: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:332
-#: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:349
-#: ../src/imageio/storage/gallery.c:389 ../src/imageio/storage/piwigo.c:1019
+#: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:327
+#: ../src/imageio/storage/email.c:137 ../src/imageio/storage/gallery.c:346
+#: ../src/imageio/storage/gallery.c:386 ../src/imageio/storage/piwigo.c:1019
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr ""
@@ -9898,60 +9898,60 @@ msgstr ""
 msgid "file on disk"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:180 ../src/imageio/storage/gallery.c:166
+#: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/gallery.c:166
 #: ../src/imageio/storage/latex.c:165
 msgid ""
 "enter the path where to put exported images\n"
 "variables support bash like string manipulation\n"
-"recognized variables:"
+"type '$(' to activate the completion and see the list of variables"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:196
+#: ../src/imageio/storage/disk.c:193
 msgid "on conflict"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:197
+#: ../src/imageio/storage/disk.c:194
 msgid "create unique filename"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:198 ../src/libs/copy_history.c:392
+#: ../src/imageio/storage/disk.c:195 ../src/libs/copy_history.c:392
 #: ../src/libs/image.c:608 ../src/libs/styles.c:447 ../src/libs/styles.c:630
 #: ../src/libs/styles.c:852
 msgid "overwrite"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:199 ../src/libs/styles.c:446
+#: ../src/imageio/storage/disk.c:196 ../src/libs/styles.c:446
 #: ../src/libs/styles.c:629
 msgid "skip"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:281 ../src/imageio/storage/gallery.c:271
-#: ../src/imageio/storage/latex.c:269
+#: ../src/imageio/storage/disk.c:276 ../src/imageio/storage/gallery.c:268
+#: ../src/imageio/storage/latex.c:266
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:288
+#: ../src/imageio/storage/disk.c:283
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:318
+#: ../src/imageio/storage/disk.c:313
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/imageio/storage/disk.c:337 ../src/imageio/storage/email.c:144
-#: ../src/imageio/storage/gallery.c:397 ../src/imageio/storage/latex.c:358
+#: ../src/imageio/storage/disk.c:332 ../src/imageio/storage/email.c:144
+#: ../src/imageio/storage/gallery.c:394 ../src/imageio/storage/latex.c:355
 #, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/imageio/storage/disk.c:396
+#: ../src/imageio/storage/disk.c:391
 msgid ""
 "you are going to export on overwrite mode, this will overwrite any existing "
 "images\n"
@@ -9975,7 +9975,7 @@ msgstr ""
 msgid "website gallery"
 msgstr ""
 
-#: ../src/imageio/storage/gallery.c:185
+#: ../src/imageio/storage/gallery.c:182
 msgid "enter the title of the website"
 msgstr ""
 
@@ -9984,7 +9984,7 @@ msgid "LaTeX book template"
 msgstr ""
 
 #. TODO: support title, author, subject, keywords (collect tags?)
-#: ../src/imageio/storage/latex.c:187
+#: ../src/imageio/storage/latex.c:184
 msgid "enter the title of the book"
 msgstr ""
 
@@ -17109,7 +17109,7 @@ msgstr ""
 msgid "files"
 msgstr ""
 
-#: ../src/libs/collect.c:2853 ../src/libs/export_metadata.c:304
+#: ../src/libs/collect.c:2853 ../src/libs/export_metadata.c:310
 #: ../src/libs/image.c:479 ../src/libs/image.c:584 ../src/libs/metadata.c:576
 #: ../src/libs/metadata.c:738 ../src/libs/metadata_view.c:1237
 msgid "metadata"
@@ -17131,7 +17131,7 @@ msgstr ""
 msgid "collections settings"
 msgstr ""
 
-#: ../src/libs/collect.c:2905 ../src/libs/export_metadata.c:282
+#: ../src/libs/collect.c:2905 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:535 ../src/libs/metadata_view.c:1205
 #: ../src/libs/recentcollect.c:320 ../src/libs/tagging.c:1668
 #: ../src/libs/tagging.c:1798 ../src/libs/tagging.c:2072
@@ -17595,31 +17595,31 @@ msgid ""
 "selected one"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:281
+#: ../src/libs/export_metadata.c:287
 msgid "edit metadata exportation"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:296
+#: ../src/libs/export_metadata.c:302
 msgid "general settings"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:301
+#: ../src/libs/export_metadata.c:307
 msgid "exif data"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:302
+#: ../src/libs/export_metadata.c:308
 msgid "export exif metadata"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:305
+#: ../src/libs/export_metadata.c:311
 msgid "export dt xmp metadata (from metadata editor module)"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:315
+#: ../src/libs/export_metadata.c:321
 msgid "only embedded"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:316
+#: ../src/libs/export_metadata.c:322
 msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
@@ -17628,95 +17628,93 @@ msgid ""
 "metadata instead"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:322 ../src/libs/image.c:576
+#: ../src/libs/export_metadata.c:328 ../src/libs/image.c:576
 msgid "geo tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:323
+#: ../src/libs/export_metadata.c:329
 msgid "export geo tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:326
+#: ../src/libs/export_metadata.c:332
 msgid "export tags (to Xmp.dc.Subject)"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:334
+#: ../src/libs/export_metadata.c:340
 msgid "private tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:335
+#: ../src/libs/export_metadata.c:341
 msgid "export private tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:337
+#: ../src/libs/export_metadata.c:343
 msgid "synonyms"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:338
+#: ../src/libs/export_metadata.c:344
 msgid "export tags synonyms"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:340
+#: ../src/libs/export_metadata.c:346
 msgid "omit hierarchy"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:341
+#: ../src/libs/export_metadata.c:347
 msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:344
+#: ../src/libs/export_metadata.c:350
 msgid "hierarchical tags"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:345
+#: ../src/libs/export_metadata.c:351
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:347
+#: ../src/libs/export_metadata.c:353
 msgid "develop history"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:348
+#: ../src/libs/export_metadata.c:354
 msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:355
+#: ../src/libs/export_metadata.c:361
 msgid "per metadata settings"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:366
-msgid "list of available tags"
-msgstr ""
-
-#: ../src/libs/export_metadata.c:369
+#: ../src/libs/export_metadata.c:374
 msgid "redefined tag"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:374
+#: ../src/libs/export_metadata.c:380
 msgid "formula"
 msgstr ""
 
-#: ../src/libs/export_metadata.c:377
+#: ../src/libs/export_metadata.c:383
 msgid ""
 "list of calculated metadata\n"
+"click on '+' button to select and add new metadata\n"
 "if formula is empty, the corresponding metadata is removed from exported "
 "file,\n"
 "if formula is '=', the exif metadata is exported even if exif data are "
 "disabled\n"
 "otherwise the corresponding metadata is calculated and added to exported "
 "file\n"
-"click on formula cell to edit. recognized variables:\n"
-msgstr ""
-
-#: ../src/libs/export_metadata.c:435
-msgid "add an output metadata tag"
+"click on formula cell to edit\n"
+"type '$(' to activate the completion and see the list of variables"
 msgstr ""
 
 #: ../src/libs/export_metadata.c:440
+msgid "add an output metadata tag"
+msgstr ""
+
+#: ../src/libs/export_metadata.c:445
 msgid "delete metadata tag"
 msgstr ""
 
