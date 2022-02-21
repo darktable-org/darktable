@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-21 17:29+0100\n"
+"POT-Creation-Date: 2022-02-21 17:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1684,7 +1684,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:8752
 msgid ""
 "number of recently attached tags which are included in the suggestions list. "
-"The value `-1' clears the memory"
+"the value `-1' disables the recent list"
 msgstr ""
 
 #: ../build/bin/conf_gen.h:449
