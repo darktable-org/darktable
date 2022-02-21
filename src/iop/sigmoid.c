@@ -230,6 +230,65 @@ static inline void negative_values(const float pix_in[4], float pix_out[4])
   }
 }
 
+typedef struct dt_iop_sigmoid_value_order_t
+{
+  size_t min;
+  size_t mid;
+  size_t max;
+} dt_iop_sigmoid_value_order_t;
+
+static void pixel_order(const float pix_in[4], dt_iop_sigmoid_value_order_t *pixel_value_order)
+{
+  if (pix_in[0] >= pix_in[1])
+  {
+    if (pix_in[1] > pix_in[2])
+    {  // Case 1: r >= g >  b
+      pixel_value_order->max = 0;
+      pixel_value_order->mid = 1;
+      pixel_value_order->min = 2;
+    }
+    else if (pix_in[2] > pix_in[0])
+    {  // Case 2: b >  r >= g
+      pixel_value_order->max = 2;
+      pixel_value_order->mid = 0;
+      pixel_value_order->min = 1;
+    }
+    else if (pix_in[2] > pix_in[1])
+    {  // Case 3: r >= b >  g
+      pixel_value_order->max = 0;
+      pixel_value_order->mid = 2;
+      pixel_value_order->min = 1;
+    } else
+    {  // Case 4: r == g == b
+      // No change of the middle value, just assign something.
+      pixel_value_order->max = 0;
+      pixel_value_order->mid = 1;
+      pixel_value_order->min = 2;
+    }
+  }
+  else
+  {
+    if (pix_in[0] >= pix_in[2])
+    {  // Case 5: g >  r >= b
+      pixel_value_order->max = 1;
+      pixel_value_order->mid = 0;
+      pixel_value_order->min = 2;
+    }
+    else if (pix_in[2] > pix_in[1])
+    {  // Case 6: b >  g >  r
+      pixel_value_order->max = 2;
+      pixel_value_order->mid = 1;
+      pixel_value_order->min = 0;
+    }
+    else
+    {  // Case 7: g >= b >  r
+      pixel_value_order->max = 1;
+      pixel_value_order->mid = 2;
+      pixel_value_order->min = 0;
+    }
+  }
+}
+
 /*
 // Return the middle value hue compensated such that the new color is only exposure and linear saturation change.
 static inline float preserve_hue(const float maxval, const float maxvalold,
@@ -328,31 +387,40 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
 
     // Preserve color ratios by applying the tone curve on a luma estimate and then scale the RGB tripplet uniformly
     const float luma = (pix_in_strict_positive[0] + pix_in_strict_positive[1] + pix_in_strict_positive[2]) / 3.0f;
-    const float mapped_luma = generalized_loglogistic_sigmoid(luma, white_target, paper_exp, film_fog, contrast_power, skew_power); 
+    const float mapped_luma = generalized_loglogistic_sigmoid(luma, white_target, paper_exp, film_fog, contrast_power, skew_power);
 
     const float scaling_factor = mapped_luma / luma;
     for(size_t c = 0; c < 3; c++)
     {
       pre_out[c] = scaling_factor * pix_in_strict_positive[c];
     }
-    
-    // ## REPLACE WITH HYPERBOLIC COMPRESSION
 
-    // Some pixels will get out of gamut values, scale these into gamut again using desaturation.
-    // Check for values larger then the white target
-    const float max_pre_out = fmaxf(fmaxf(pre_out[0], pre_out[1]), pre_out[2]);
-    const float sat_max = max_pre_out > white_target ? (white_target - mapped_luma) / (max_pre_out - mapped_luma) : 1.0f;
+    // RGB index order sorted by value;
+    dt_iop_sigmoid_value_order_t pixel_value_order;
+    pixel_order(pre_out, &pixel_value_order);
+    const float pixel_min = pre_out[pixel_value_order.min];
+    const float pixel_max = pre_out[pixel_value_order.max];
 
-    // Check for values smaller then the black target
-    const float min_pre_out = fminf(fminf(pre_out[0], pre_out[1]), pre_out[2]);
-    const float sat_min = min_pre_out < black_target ? (black_target - mapped_luma) / (min_pre_out - mapped_luma) : 1.0f;
+    // Chroma relative display gamut and scene "mapping" gamut.
+    const float epsilon = 1e-6;
+    const float display_border_vs_chroma_white = (white_target - mapped_luma) / (pixel_max - mapped_luma + epsilon); // "Distance" to max channel = white_target
+    const float display_border_vs_chroma_black = (black_target - mapped_luma) / (pixel_min - mapped_luma - epsilon); // "Distance" to min_channel = black_target
+    const float display_border_vs_chroma = fminf(display_border_vs_chroma_white, display_border_vs_chroma_black); 
+    const float chroma_vs_mapping_border = (mapped_luma - pixel_min) / mapped_luma; // "Distance" to min channel = 0.0
 
-    // Use the smallest saturation factor of the two to gurantee inside of gamut, and never add saturation
-    const float saturation_factor = fminf(fminf(sat_max, sat_min), 1.0f);
+    // Hyperbolic gamut compression
+    // Small chroma values, i.e., colors close to the acromatic axis are preserved while large chroma values are compressed.
+    float hyperbolic_chroma = 2.0f * chroma_vs_mapping_border / (1.0f - chroma_vs_mapping_border * chroma_vs_mapping_border + epsilon);
+
+    const float pixel_chroma_adjustment = 1.0f / (chroma_vs_mapping_border * display_border_vs_chroma + epsilon);
+    hyperbolic_chroma *= pixel_chroma_adjustment;
+
+    const float hyperbolic_z = sqrtf(hyperbolic_chroma * hyperbolic_chroma + 1.0f);
+    const float chroma_factor = hyperbolic_chroma / (1.0f + hyperbolic_z) * display_border_vs_chroma;
 
     for(size_t c = 0; c < 3; c++)
     {
-      pix_out[c] = mapped_luma + saturation_factor * (pre_out[c] - mapped_luma);
+      pix_out[c] = mapped_luma + chroma_factor * (pre_out[c] - mapped_luma);
     }
 
     // Copy over the alpha channel
@@ -438,13 +506,6 @@ void process_loglogistic_hue(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 }
 */
 
-typedef struct dt_iop_sigmoid_value_order_t
-{
-  size_t min;
-  size_t mid;
-  size_t max;
-} dt_iop_sigmoid_value_order_t;
-
 // Linear interpolation of hue that also preserve sum of channels
 // Assumes hue_preservation strictly in range [0, 1]
 static inline void preserve_hue_and_energy(const float pix_in[4], const float per_channel[4], float pix_out[4],
@@ -519,41 +580,7 @@ void process_loglogistic_per_channel_interpolated(dt_dev_pixelpipe_iop_t *piece,
 
     // Hue correction by scaling the middle value relative to the max and min values.
     dt_iop_sigmoid_value_order_t pixel_value_order;
-
-    if (pix_in[0] >= pix_in[1])
-    {
-      if (pix_in[1] > pix_in[2])
-      {  // Case 1: r >= g >  b
-        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 0, .mid = 1, .min = 2};
-      }
-      else if (pix_in[2] > pix_in[0])
-      {  // Case 2: b >  r >= g
-        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 2, .mid = 0, .min = 1};
-      }
-      else if (pix_in[2] > pix_in[1])
-      {  // Case 3: r >= b >  g
-        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 0, .mid = 2, .min = 1};
-      } else
-      {  // Case 4: r == g == b
-        // No change of the middle value, just assign something.
-        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 0, .mid = 1, .min = 2};
-      }
-    }
-    else
-    {
-      if (pix_in[0] >= pix_in[2])
-      {  // Case 5: g >  r >= b
-        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 1, .mid = 0, .min = 2};
-      }
-      else if (pix_in[2] > pix_in[1])
-      {  // Case 6: b >  g >  r
-        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 2, .mid = 1, .min = 0};
-      }
-      else
-      {  // Case 7: g >= b >  r
-        pixel_value_order = (dt_iop_sigmoid_value_order_t) {.max = 1, .mid = 2, .min = 0};
-      }
-    }
+    pixel_order(pix_in_strict_positive, &pixel_value_order);
     preserve_hue_and_energy(pix_in_strict_positive, per_channel, pix_out, pixel_value_order, hue_preservation);
 
     // Copy over the alpha channel
@@ -683,6 +710,7 @@ void gui_init(dt_iop_module_t *self)
   // Color handling
   g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
   g->hue_preservation_slider = dt_bauhaus_slider_from_params(self, "hue_preservation");
+  dt_bauhaus_slider_set_format(g->hue_preservation_slider, "%.1f %%");
 
   // Target display
   GtkWidget *label = dt_ui_section_label_new(_("display luminance"));
