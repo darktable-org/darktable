@@ -833,6 +833,13 @@
     <longdescription>only select images that have not already been imported</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
+    <name>ui_last/import_select_recognized_new</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>select only pictures recognized as new</shortdescription>
+    <longdescription>only select images that are not recognized as already imported.\nas based on filename and timestamp matching, the recognition can fail in certain circumstances</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>ui_last/import_ignore_jpegs</name>
     <type>bool</type>
     <default>false</default>
