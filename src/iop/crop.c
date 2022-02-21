@@ -1395,8 +1395,10 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
+
+  const _grab_region_t grab = _gui_get_grab(pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
+
   _set_max_clip(self);
-  _grab_region_t grab = _gui_get_grab(pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
@@ -1405,25 +1407,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     const float bzx = g->button_down_zoom_x + .5f;
     const float bzy = g->button_down_zoom_y + .5f;
 
-    if(g->cropping == GRAB_CENTER)
-    {
-      g->cropping = grab;
-      if(grab == GRAB_CENTER)
-      {
-        g->cropping = GRAB_ALL;
-        g->handle_x = g->clip_x;
-        g->handle_y = g->clip_y;
-      }
-      if(grab & GRAB_LEFT) g->handle_x = bzx - g->clip_x;
-      if(grab & GRAB_TOP) g->handle_y = bzy - g->clip_y;
-      if(grab & GRAB_RIGHT) g->handle_x = bzx - (g->clip_w + g->clip_x);
-      if(grab & GRAB_BOTTOM) g->handle_y = bzy - (g->clip_h + g->clip_y);
-    }
     if(darktable.control->button_down_which == 1)
     {
-      grab = g->cropping;
-
-      if(grab == GRAB_ALL)
+      if(g->cropping == GRAB_ALL)
       {
         /* moving the crop window */
         if(!g->shift_hold)
@@ -1481,21 +1467,21 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         }
         else
         {
-          if(grab & GRAB_LEFT)
+          if(g->cropping & GRAB_LEFT)
           {
             const float old_clip_x = g->clip_x;
             g->clip_x = fminf(fmaxf(g->clip_max_x, pzx - g->handle_x), g->clip_x + g->clip_w - 0.1f);
             g->clip_w = old_clip_x + g->clip_w - g->clip_x;
           }
-          if(grab & GRAB_TOP)
+          else if(g->cropping & GRAB_TOP)
           {
             const float old_clip_y = g->clip_y;
             g->clip_y = fminf(fmaxf(g->clip_max_y, pzy - g->handle_y), g->clip_y + g->clip_h - 0.1f);
             g->clip_h = old_clip_y + g->clip_h - g->clip_y;
           }
-          if(grab & GRAB_RIGHT)
+          else if(g->cropping & GRAB_RIGHT)
             g->clip_w = fmaxf(0.1f, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
-          if(grab & GRAB_BOTTOM)
+          else if(g->cropping & GRAB_BOTTOM)
             g->clip_h = fmaxf(0.1f, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
         }
 
@@ -1505,7 +1491,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
           g->clip_h = g->clip_max_h + g->clip_max_y - g->clip_y;
       }
 
-      _aspect_apply(self, grab);
+      _aspect_apply(self, g->cropping);
 
       // only update the sliders, not the dt_iop_cropping_params_t structure, so that the call to
       // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
@@ -1578,6 +1564,8 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   g->ctrl_hold = FALSE;
   g->cropping = GRAB_CENTER;
 
+  dt_control_change_cursor(GDK_LEFT_PTR);
+
   // we save the crop into the params now so params are kept in synch with gui settings
   _commit_box(self, g, p);
   return 1;
@@ -1588,6 +1576,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   // we don't do anything if the image is not ready
+
   if(!g->preview_ready) return 0;
 
   // avoid unexpected back to lt mode:
@@ -1596,12 +1585,23 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   if(which == 1)
   {
+    const float wd = self->dev->preview_pipe->backbuf_width;
+    const float ht = self->dev->preview_pipe->backbuf_height;
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1 << closeup, 1);
+
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+
     // switch module on already, other code depends in this:
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
     g->button_down_x = x;
     g->button_down_y = y;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
+
+    g->button_down_zoom_x = pzx;
+    g->button_down_zoom_y = pzy;
 
     /* update prev clip box with current */
     g->prev_clip_x = g->clip_x;
@@ -1612,6 +1612,27 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     /* if shift is pressed, then lock crop on center */
     if(dt_modifiers_include(state, GDK_SHIFT_MASK)) g->shift_hold = TRUE;
     if(dt_modifiers_include(state, GDK_CONTROL_MASK)) g->ctrl_hold = TRUE;
+
+    /* store grabbed area */
+
+    const float bzx = pzx + .5f;
+    const float bzy = pzy + .5f;
+
+    g->cropping = _gui_get_grab(bzx, bzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
+
+    if(g->cropping == GRAB_CENTER)
+    {
+      g->cropping = GRAB_ALL;
+      g->handle_x = g->clip_x;
+      g->handle_y = g->clip_y;
+    }
+    else
+    {
+      if(g->cropping & GRAB_LEFT)   g->handle_x = bzx - g->clip_x;
+      if(g->cropping & GRAB_TOP)    g->handle_y = bzy - g->clip_y;
+      if(g->cropping & GRAB_RIGHT)  g->handle_x = bzx - (g->clip_w + g->clip_x);
+      if(g->cropping & GRAB_BOTTOM) g->handle_y = bzy - (g->clip_h + g->clip_y);
+    }
 
     return 1;
   }
