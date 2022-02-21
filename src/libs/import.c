@@ -825,7 +825,8 @@ static gboolean _update_files_list(gpointer user_data)
   gtk_tree_view_set_model(d->from.treeview, model);
   g_object_unref(model);
 
-  if(dt_conf_get_bool("ui_last/import_select_new"))
+  if((d->import_case == DT_IMPORT_INPLACE && dt_conf_get_bool("ui_last/import_select_new")) ||
+     (d->import_case != DT_IMPORT_INPLACE && dt_conf_get_bool("ui_last/import_select_recognized_new")))
     _do_select_new(self);
   else
     _do_select_all(self);
@@ -1765,7 +1766,9 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
 
-  d->import_new = dt_gui_preferences_bool(grid, "ui_last/import_select_new", col++, line, TRUE);
+  d->import_new = dt_gui_preferences_bool(grid,
+            d->import_case == DT_IMPORT_INPLACE ? "ui_last/import_select_new" : "ui_last/import_select_recognized_new",
+            col++, line, TRUE);
   gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
   g_signal_connect(G_OBJECT(d->import_new), "toggled", G_CALLBACK(_import_new_toggled), self);
 
