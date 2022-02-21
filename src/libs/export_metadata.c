@@ -386,7 +386,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
                 "if formula is \'=\', the exif metadata is exported even if exif data are disabled\n"
                 "otherwise the corresponding metadata is calculated and added to exported file\n"
                 "click on formula cell to edit\n"
-                "type '$(' to activate the completion of variables and see the list"));
+                "type '$(' to activate the completion and see the list of variables"));
   g_signal_connect(G_OBJECT(view), "key_press_event", G_CALLBACK(_key_press_on_list), (gpointer)d);
 
   GtkListStore *liststore = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);

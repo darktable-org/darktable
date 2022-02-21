@@ -176,14 +176,11 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
-  char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
-      _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
-        "recognized variables:"),
-      dt_gtkentry_get_default_path_compl_list());
-
   d->entry = GTK_ENTRY(widget);
   gtk_entry_set_width_chars(GTK_ENTRY(widget), 0);
-  gtk_widget_set_tooltip_text(widget, tooltip_text);
+  gtk_widget_set_tooltip_text(widget,
+      _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
+        "type '$(' to activate the completion and see the list of variables"));
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
@@ -200,8 +197,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->onsave_action, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->onsave_action), "value-changed", G_CALLBACK(onsave_action_toggle_callback), self);
   dt_bauhaus_combobox_set(d->onsave_action, dt_conf_get_int("plugins/imageio/storage/disk/overwrite"));
-
-  g_free(tooltip_text);
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
