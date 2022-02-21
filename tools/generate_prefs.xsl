@@ -488,6 +488,14 @@ gboolean restart_required = FALSE;
   </xsl:for-each>
   <xsl:value-of select="$dialog_end" />
 
+  <!-- dialog: tagging -->
+
+  <xsl:text>&#xA;GtkWidget *dt_prefs_init_dialog_tagging</xsl:text><xsl:value-of select="$dialog_start"/>
+  <xsl:for-each select="./dtconfiglist/dtconfig[@dialog='tagging']">
+      <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+  <xsl:value-of select="$dialog_end" />
+
   <!-- closing credits -->
   <xsl:text>&#xA;#endif&#xA;</xsl:text>
 

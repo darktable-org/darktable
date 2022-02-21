@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
+#include "gui/preferences_dialogs.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/drag_and_drop.h"
@@ -98,6 +99,8 @@ typedef enum dt_tag_sort_id
   DT_TAG_SORT_NAME_ID,
   DT_TAG_SORT_COUNT_ID
 } dt_tag_sort_id;
+
+static void _save_last_tag_used(const char *tags, dt_lib_tagging_t *d);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -1094,8 +1097,7 @@ static void _attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   if(dt_tag_attach(tagid, -1, TRUE, TRUE))
   {
     /** record last tag used */
-    g_free(d->last_tag);
-    d->last_tag = g_strdup(dt_tag_get_name(tagid));
+    _save_last_tag_used(dt_tag_get_name(tagid), d);
 
     _init_treeview(self, 0);
     if(d->tree_flag || !d->suggestion_flag)
@@ -1223,8 +1225,7 @@ static void _pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_
   const gboolean res = dt_tag_attach(tagid, -1, TRUE, TRUE);
 
   /** record last tag used */
-  g_free(d->last_tag);
-  d->last_tag = g_strdup(dt_tag_get_name(tagid));
+  _save_last_tag_used(dt_tag_get_name(tagid), d);
 
   _init_treeview(self, 0);
 
@@ -1391,8 +1392,7 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   g_list_free(imgs);
 
   /** record last tag used */
-  g_free(d->last_tag);
-  d->last_tag = g_strdup(tag);
+  _save_last_tag_used(tag, d);
 
   /** clear input box */
   gtk_entry_set_text(d->entry, "");
@@ -2044,7 +2044,6 @@ static gboolean _apply_rename_path(GtkWidget *dialog, const char *tagname,
   return success;
 }
 
-
 // rename path allows the user to redefine a hierarchy
 static void _pop_menu_dictionary_change_path(GtkWidget *menuitem, dt_lib_module_t *self)
 {
@@ -2569,8 +2568,7 @@ static void _update_layout(dt_lib_module_t *self)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
 
   const gboolean active_s = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->toggle_suggestion_button));
-  d->suggestion_flag = (dt_conf_key_exists("plugins/lighttable/tagging/nosuggestion")
-                        && !dt_conf_get_bool("plugins/lighttable/tagging/nosuggestion"));
+  d->suggestion_flag = dt_conf_get_bool("plugins/lighttable/tagging/nosuggestion");
   if(active_s != d->suggestion_flag)
   {
     g_signal_handler_block (d->toggle_suggestion_button, d->suggestion_button_handler);
@@ -3402,8 +3400,7 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
       g_list_free(d->floating_tag_imgs);
 
       /** record last tag used */
-      g_free(d->last_tag);
-      d->last_tag = g_strdup(tag);
+      _save_last_tag_used(tag, d);
 
       _init_treeview(self, 0);
       _init_treeview(self, 1);
@@ -3507,6 +3504,120 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   gtk_window_present(GTK_WINDOW(d->floating_tag_window));
 
   return TRUE;
+}
+
+static int _get_recent_tags_list_length()
+{
+  const int length = dt_conf_get_int("plugins/lighttable/tagging/nb_recent_tags");
+  if(length == -1) return length;
+  else if(length >= 10/2) return length * 2;
+  else return 10;
+}
+
+static void _size_recent_tags_list()
+{
+  const char *list = dt_conf_get_string_const("plugins/lighttable/tagging/recent_tags");
+  if(!list[0])
+    return;
+  const int length = _get_recent_tags_list_length();
+  if(length == -1)
+  {
+    dt_conf_set_string("plugins/lighttable/tagging/recent_tags", "");
+    return;
+  }
+
+  char *p = (char *)list;
+  int nb = 1;
+  for(;*p != '\0'; p++)
+  {
+    if(*p == ',') nb++;
+  }
+
+  if(nb > length)
+  {
+    nb -= length;
+    char *list2 = g_strdup(list);
+    for(; nb > 0; nb--)
+    {
+      p = g_strrstr(list2, "','");
+      if(p) *p = '\0';
+    }
+    dt_conf_set_string("plugins/lighttable/tagging/recent_tags", list2);
+    g_free(list2);
+  }
+}
+
+void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
+{
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("tagging settings"), GTK_WINDOW(win),
+                                                  GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                 _("cancel"), GTK_RESPONSE_NONE,
+                                                 _("save"), GTK_RESPONSE_ACCEPT, NULL);
+  g_signal_connect(dialog, "key-press-event", G_CALLBACK(dt_handle_dialog_enter), NULL);
+  dt_prefs_init_dialog_tagging(dialog);
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+  gtk_widget_show_all(dialog);
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  _size_recent_tags_list();
+  if(!d->tree_flag && d->suggestion_flag)
+  {
+    _init_treeview(self, 1);
+    _update_atdetach_buttons(self);
+  }
+}
+
+void set_preferences(void *menu, dt_lib_module_t *self)
+{
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+}
+
+static void _save_last_tag_used(const char *tagnames, dt_lib_tagging_t *d)
+{
+  g_free(d->last_tag);
+  d->last_tag = g_strdup(tagnames);
+
+  const int nb_recent = _get_recent_tags_list_length();
+
+  if(nb_recent != -1)
+  {
+    GList *ntags = dt_util_str_to_glist(",", tagnames);
+    if(ntags)
+    {
+      const char *sl = dt_conf_get_string_const("plugins/lighttable/tagging/recent_tags");
+      // use "','" instead of "," to use the list as is in the query (dt_tag_get_suggestions)
+      GList *tags = dt_util_str_to_glist("','", sl);
+      for(GList *tag = ntags; tag; tag = g_list_next(tag))
+      {
+        char *escaped = sqlite3_mprintf("%q", (char *)tag->data);
+        GList *found = g_list_find_custom(tags, escaped, (GCompareFunc)g_strcmp0);
+        if(found)
+        {
+          tags = g_list_remove_link(tags, found);
+          g_free(found->data);
+          g_list_free(found);
+        }
+        tags = g_list_prepend(tags, g_strdup(escaped));
+        sqlite3_free(escaped);
+      }
+      g_list_free_full(ntags, g_free);
+
+      char *nsl = dt_util_glist_to_str("','", tags);
+      dt_conf_set_string("plugins/lighttable/tagging/recent_tags", nsl);
+      g_free(nsl);
+      if(g_list_length(tags) > nb_recent)
+        _size_recent_tags_list();
+      g_list_free_full(tags, g_free);
+    }
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
