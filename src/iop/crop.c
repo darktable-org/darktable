@@ -1052,7 +1052,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->clip_max_x = g->clip_max_y = 0.0;
   g->clip_max_w = g->clip_max_h = 1.0;
   g->clip_max_pipe_hash = 0;
-  g->cropping = 0;
+  g->cropping = GRAB_CENTER;
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
   g->preview_ready = FALSE;
@@ -1244,10 +1244,16 @@ static _grab_region_t _gui_get_grab(float pzx, float pzy, dt_iop_crop_gui_data_t
   {
     // we are inside the crop box
     grab = GRAB_CENTER;
-    if(pzx >= g->clip_x && pzx * wd < g->clip_x * wd + border) grab |= GRAB_LEFT; // left border
-    if(pzy >= g->clip_y && pzy * ht < g->clip_y * ht + border) grab |= GRAB_TOP;  // top border
+
+    if(pzx >= g->clip_x && pzx * wd < g->clip_x * wd + border)
+      grab |= GRAB_LEFT; // left border
+
+    if(pzy >= g->clip_y && pzy * ht < g->clip_y * ht + border)
+      grab |= GRAB_TOP;  // top border
+
     if(pzx <= g->clip_x + g->clip_w && pzx * wd > (g->clip_w + g->clip_x) * wd - border)
       grab |= GRAB_RIGHT; // right border
+
     if(pzy <= g->clip_y + g->clip_h && pzy * ht > (g->clip_h + g->clip_y) * ht - border)
       grab |= GRAB_BOTTOM; // bottom border
   }
@@ -1352,9 +1358,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
 
   const _grab_region_t grab = g->cropping ? g->cropping : _gui_get_grab(pzx, pzy, g, border, wd, ht);
-  if(grab == GRAB_LEFT) cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, g->clip_h * ht);
-  if(grab == GRAB_TOP) cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, border);
-  if(grab == GRAB_TOP_LEFT) cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, border);
+
+  if(grab == GRAB_LEFT)
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, g->clip_h * ht);
+  if(grab == GRAB_TOP)
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, border);
+  if(grab == GRAB_TOP_LEFT)
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, border);
   if(grab == GRAB_RIGHT)
     cairo_rectangle(cr, (g->clip_x + g->clip_w) * wd - border, g->clip_y * ht, border, g->clip_h * ht);
   if(grab == GRAB_BOTTOM)
@@ -1433,8 +1443,10 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
           float xx = 0.0f;
           float yy = 0.0f;
 
-          if(grab & GRAB_LEFT || grab & GRAB_RIGHT) xx = (grab & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
-          if(grab & GRAB_TOP || grab & GRAB_BOTTOM) yy = (grab & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
+          if(g->cropping & GRAB_LEFT || g->cropping & GRAB_RIGHT)
+            xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+          if(g->cropping & GRAB_TOP || g->cropping & GRAB_BOTTOM)
+            yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
 
           float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
                               (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
@@ -1547,7 +1559,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   else
   {
     dt_control_change_cursor(GDK_FLEUR);
-    g->cropping = 0;
+    g->cropping = GRAB_CENTER;
     dt_control_hinter_message(darktable.control, _("<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</b>: ctrl+drag"));
     dt_control_queue_redraw_center();
   }
@@ -1564,7 +1576,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   /* reset internal ui states*/
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
-  g->cropping = 0;
+  g->cropping = GRAB_CENTER;
 
   // we save the crop into the params now so params are kept in synch with gui settings
   _commit_box(self, g, p);
