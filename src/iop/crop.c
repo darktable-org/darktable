@@ -648,7 +648,7 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     // now fix outside boxes:
     if(clip_x < g->clip_max_x)
     {
-      double prev_clip_h = clip_h;
+      const double prev_clip_h = clip_h;
       clip_h *= (clip_w + clip_x - g->clip_max_x) / clip_w;
       clip_w = clip_w + clip_x - g->clip_max_x;
       clip_x = g->clip_max_x;
@@ -656,7 +656,7 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     }
     if(clip_y < g->clip_max_y)
     {
-      double prev_clip_w = clip_w;
+      const double prev_clip_w = clip_w;
       clip_w *= (clip_h + clip_y - g->clip_max_y) / clip_h;
       clip_h = clip_h + clip_y - g->clip_max_y;
       clip_y = g->clip_max_y;
@@ -664,14 +664,14 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     }
     if(clip_x + clip_w > g->clip_max_x + g->clip_max_w)
     {
-      double prev_clip_h = clip_h;
+      const double prev_clip_h = clip_h;
       clip_h *= (g->clip_max_x + g->clip_max_w - clip_x) / clip_w;
       clip_w = g->clip_max_x + g->clip_max_w - clip_x;
       if(grab & GRAB_TOP) clip_y += prev_clip_h - clip_h;
     }
     if(clip_y + clip_h > g->clip_max_y + g->clip_max_h)
     {
-      double prev_clip_w = clip_w;
+      const double prev_clip_w = clip_w;
       clip_w *= (g->clip_max_y + g->clip_max_h - clip_y) / clip_h;
       clip_h = g->clip_max_y + g->clip_max_h - clip_y;
       if(grab & GRAB_LEFT) clip_x += prev_clip_w - clip_w;
@@ -1412,11 +1412,13 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       /* moving the crop window */
       if(!g->shift_hold)
         g->clip_x
-          = fminf(g->clip_max_w + g->clip_max_x - g->clip_w, fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
+          = fminf(g->clip_max_w + g->clip_max_x - g->clip_w,
+                  fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
 
       if(!g->ctrl_hold)
         g->clip_y
-          = fminf(g->clip_max_h + g->clip_max_y - g->clip_h, fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
+          = fminf(g->clip_max_h + g->clip_max_y - g->clip_h,
+                  fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
     }
     else
     {
