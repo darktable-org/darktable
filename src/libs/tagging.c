@@ -321,19 +321,23 @@ static gboolean _find_tag_iter_tagname(GtkTreeModel *model, GtkTreeIter *iter,
   return found;
 }
 
-static void _show_iter_on_view(GtkTreeView *view, GtkTreeIter *iter)
+static void _show_iter_on_view(GtkTreeView *view, GtkTreeIter *iter, const gboolean select)
 {
   GtkTreeModel *model = gtk_tree_view_get_model(view);
   GtkTreePath *path = gtk_tree_model_get_path(model, iter);
   gtk_tree_view_expand_to_path(view, path);
   gtk_tree_view_scroll_to_cell(view, path, NULL, TRUE, 0.5, 0.5);
   gtk_tree_path_free(path);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
-  gtk_tree_selection_select_iter(selection, iter);
+  if(select)
+  {
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
+    gtk_tree_selection_select_iter(selection, iter);
+  }
 }
 
 // make the tag visible on view
-static void _show_tag_on_view(GtkTreeView *view, const char *tagname, const gboolean needle)
+static void _show_tag_on_view(GtkTreeView *view, const char *tagname,
+                              const gboolean needle, const gboolean select)
 {
   if(tagname)
   {
@@ -344,7 +348,7 @@ static void _show_tag_on_view(GtkTreeView *view, const char *tagname, const gboo
     if(gtk_tree_model_get_iter_first(model, &iter))
     {
       if(_find_tag_iter_tagname(model, &iter, t, needle))
-        _show_iter_on_view(view, &iter);
+        _show_iter_on_view(view, &iter, select);
     }
     g_free(lt);
   }
@@ -364,7 +368,7 @@ static gboolean _select_previous_user_attached_tag(const int index, GtkTreeView 
   {
     if(_is_user_tag(model, &iter))
     {
-      _show_iter_on_view(view, &iter);
+      _show_iter_on_view(view, &iter, TRUE);
       return TRUE;
     }
   }
@@ -383,7 +387,7 @@ static gboolean _select_next_user_attached_tag(const int index, GtkTreeView *vie
   {
     if(_is_user_tag(model, &iter))
     {
-      _show_iter_on_view(view, &iter);
+      _show_iter_on_view(view, &iter, TRUE);
       return TRUE;
     }
   }
@@ -511,7 +515,6 @@ static void _init_treeview(dt_lib_module_t *self, const int which)
       gtk_tree_model_foreach(store, (GtkTreeModelForeachFunc)_set_matching_tag_visibility, self);
       gtk_tree_model_foreach(store, (GtkTreeModelForeachFunc)_tree_reveal_func, NULL);
       gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
-      gtk_tree_view_expand_all(d->dictionary_view);
     }
     else gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
     g_object_unref(model);
@@ -1402,7 +1405,7 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   char *tagname = strrchr(d->last_tag, ',');
   if(res) _raise_signal_tag_changed(self);
   _show_tag_on_view(GTK_TREE_VIEW(d->dictionary_view),
-                    tagname ? tagname + 1 : d->last_tag, FALSE);
+                    tagname ? tagname + 1 : d->last_tag, FALSE, TRUE);
 }
 
 static gboolean _enter_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
@@ -1424,7 +1427,7 @@ static gboolean _enter_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_
       _unselect_all_in_view(d->attached_view);
       const char *text = gtk_entry_get_text(GTK_ENTRY(entry));
       gchar *needle = g_utf8_strdown(text, -1);
-      _show_tag_on_view(d->dictionary_view, needle, TRUE);
+      _show_tag_on_view(d->dictionary_view, needle, TRUE, TRUE);
       g_free(needle);
       gtk_widget_grab_focus(GTK_WIDGET(d->dictionary_view));
       return TRUE;
@@ -1467,7 +1470,7 @@ static void _tag_name_changed(GtkEntry *entry, dt_lib_module_t *self)
   if(d->tree_flag && d->keyword[0])
   {
     gtk_tree_model_foreach(store, (GtkTreeModelForeachFunc)_tree_reveal_func, NULL);
-    gtk_tree_view_expand_all(d->dictionary_view);
+    _show_tag_on_view(d->dictionary_view, d->keyword, TRUE, FALSE);
   }
 }
 
@@ -1754,7 +1757,7 @@ static void _pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t
         dt_tag_set_synonyms(new_tagid, new_synonyms_list);
       g_free(new_synonyms_list);
       _init_treeview(self, 1);
-      _show_tag_on_view(view, new_tagname, FALSE);
+      _show_tag_on_view(view, new_tagname, FALSE, TRUE);
     }
     g_free(new_tagname);
   }
@@ -2035,7 +2038,7 @@ static gboolean _apply_rename_path(GtkWidget *dialog, const char *tagname,
     _init_treeview(self, 1);
     dt_image_synch_xmps(tagged_images);
     _raise_signal_tag_changed(self);
-    _show_tag_on_view(d->dictionary_view, newtag, FALSE);
+    _show_tag_on_view(d->dictionary_view, newtag, FALSE, TRUE);
     success = TRUE;
   }
   dt_tag_free_result(&tag_family);
@@ -2210,7 +2213,7 @@ static void _pop_menu_dictionary_set_as_tag(GtkWidget *menuitem, dt_lib_module_t
   dt_control_log(_("tag %s created"), tagname);
 
   _init_treeview(self, 1);
-  _show_tag_on_view(d->dictionary_view, tagname, FALSE);
+  _show_tag_on_view(d->dictionary_view, tagname, FALSE, TRUE);
   g_free(tagname);
 
 }
