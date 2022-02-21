@@ -1908,11 +1908,11 @@ msgstr "nível de confiança para etiquetas sugeridas"
 #, c-format
 msgid ""
 "level of confidence to include the tag in the suggestions list, 0: all "
-"associated tags, 99: 99% matching associated tags, 100: no matching tag to "
+"associated tags, 99: 99%% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
 "nível de confiança usado para incluir a etiqueta na lista de sugestões, 0: "
-"todas as etiqueta sassociadas, 99: 99% das etiquetas associadas que "
+"todas as etiqueta sassociadas, 99: 99%% das etiquetas associadas que "
 "combinam, 100: nenhuma etiqueta combinando para mostrar somente as etiquetas "
 "recentes (mais rápido)"
 
