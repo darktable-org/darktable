@@ -1473,15 +1473,15 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
           g->clip_x = fminf(fmaxf(g->clip_max_x, pzx - g->handle_x), g->clip_x + g->clip_w - 0.1f);
           g->clip_w = old_clip_x + g->clip_w - g->clip_x;
         }
-        else if(g->cropping & GRAB_TOP)
+        if(g->cropping & GRAB_TOP)
         {
           const float old_clip_y = g->clip_y;
           g->clip_y = fminf(fmaxf(g->clip_max_y, pzy - g->handle_y), g->clip_y + g->clip_h - 0.1f);
           g->clip_h = old_clip_y + g->clip_h - g->clip_y;
         }
-        else if(g->cropping & GRAB_RIGHT)
+        if(g->cropping & GRAB_RIGHT)
           g->clip_w = fmaxf(0.1f, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
-        else if(g->cropping & GRAB_BOTTOM)
+        if(g->cropping & GRAB_BOTTOM)
           g->clip_h = fmaxf(0.1f, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
       }
 
