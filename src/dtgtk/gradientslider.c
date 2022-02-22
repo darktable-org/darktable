@@ -25,6 +25,7 @@
 #include "develop/develop.h"
 #include "gradientslider.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 
 #define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX 50
 #define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN 10
@@ -228,22 +229,7 @@ static gboolean _gradient_slider_add_delta_internal(GtkWidget *widget, gdouble d
 
   if(selected == -1) return TRUE;
 
-  float multiplier;
-
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-  }
-  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-  }
-  else
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-  }
-
-  delta *= multiplier;
+  delta *= dt_accel_get_speed_multiplier(widget, state);
 
   gslider->position[selected] = gslider->position[selected] + delta;
   _clamp_marker(gslider, selected);

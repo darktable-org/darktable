@@ -2646,6 +2646,9 @@ static guint _timeout_source = 0;
 static guint _focus_loss_key = 0;
 static guint _focus_loss_press = 0;
 
+static dt_action_t _value_action = { .type = DT_ACTION_TYPE_FALLBACK,
+                                     .target = GINT_TO_POINTER(DT_ACTION_TYPE_VALUE_FALLBACK) };
+
 static void _lookup_mapping_widget()
 {
   if(_sc.action) return;
@@ -2832,9 +2835,7 @@ static gboolean _shortcut_match(dt_shortcut_t *f, gchar **fb_log)
 
     if(!matched && def && def->elements[f->element].effects == dt_action_effect_value)
     {
-      static dt_action_t value_action = { .type = DT_ACTION_TYPE_FALLBACK,
-                                          .target = GINT_TO_POINTER(DT_ACTION_TYPE_VALUE_FALLBACK) };
-      f->action = &value_action;
+      f->action = &_value_action;
       existing = g_sequence_search(darktable.control->shortcuts, f, _shortcut_compare_func, v);
       while(_shortcut_closest_match(&existing, f, &matched, def, fb_log) && !matched) {};
     }
@@ -4269,20 +4270,33 @@ void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar 
   }
 }
 
-float dt_accel_get_slider_scale_multiplier()
+float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
 {
   const int slider_precision = dt_conf_get_int("accel/slider_precision");
+  float multiplier = dt_conf_get_float(slider_precision == DT_IOP_PRECISION_FINE   ? "darkroom/ui/scale_precise_step_multiplier" :
+                                       slider_precision == DT_IOP_PRECISION_COARSE ? "darkroom/ui/scale_rough_step_multiplier" :
+                                                                                     "darkroom/ui/scale_step_multiplier");
 
-  if(slider_precision == DT_IOP_PRECISION_COARSE)
+  if(state != GDK_MODIFIER_MASK)
   {
-    return dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-  }
-  else if(slider_precision == DT_IOP_PRECISION_FINE)
-  {
-    return dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
+    dt_shortcut_t s = { .action = &_value_action, .mods = _key_modifiers_clean(state) };
+    dt_action_t *wac = g_hash_table_lookup(darktable.control->widgets, widget);
+    while(s.action)
+    {
+      GSequenceIter *speed_adjustment = g_sequence_lookup(darktable.control->shortcuts, &s, _shortcut_compare_func, NULL);
+      if(speed_adjustment)
+      {
+        dt_shortcut_t *f = g_sequence_get(speed_adjustment);
+
+        multiplier *= f->speed;
+      }
+      s.action = wac;
+      s.mods = 0;
+      wac = NULL;
+    }
   }
 
-  return dt_conf_get_float("darkroom/ui/scale_step_multiplier");
+  return multiplier;
 }
 
 void dt_accel_connect_instance_iop(dt_iop_module_t *module)

@@ -1563,21 +1563,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, i
   int ch = c->channel;
   dt_iop_colorzones_node_t *curve = p->curve[ch];
 
-  float multiplier;
-
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-  }
-  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-  }
-  else
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-  }
-
+  float multiplier = dt_accel_get_speed_multiplier(widget, state);
   dx *= multiplier;
   dy *= multiplier;
   if(p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
@@ -2363,7 +2349,7 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
       if(!close_enough)
         node = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);
 
-      _move_point_internal(self, target, node, 0.f, move_size / 100, 0);
+      _move_point_internal(self, target, node, 0.f, move_size / 100, GDK_MODIFIER_MASK);
       return_value = curve[node].y;
       break;
     default:
