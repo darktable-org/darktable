@@ -2881,10 +2881,10 @@ dt_iop_module_t *dt_iop_get_module_preferred_instance(dt_iop_module_so_t *module
 
       if(mod->so == module && mod->iop_order != INT_MAX)
       {
-        int score = (mod->expanded ? prefer_expanded : 0)
-                  + (mod->enabled ? prefer_enabled : 0)
-                  + (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED ||
-                    mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED ? prefer_unmasked : 0);
+        const int score = (mod->expanded ? prefer_expanded : 0)
+                        + (mod->enabled ? prefer_enabled : 0)
+                        + (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED
+                           || mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED ? prefer_unmasked : 0);
 
         if(score + prefer_first > best_score)
         {
