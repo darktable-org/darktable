@@ -2913,7 +2913,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     }
     else
     {
-      if(event->y > get_line_height())
+      if(event->y > darktable.bauhaus->line_height)
       {
         const float l = 0.0f;
         const float r = slider_right_pos((float)allocation.width);
@@ -2970,16 +2970,16 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(d->is_dragging || (event->x <= allocation.width - darktable.bauhaus->quad_width && event->y > get_line_height()))
-  {
-    // remember mouse position for motion effects in draw
-    if(event->state & GDK_BUTTON1_MASK && event->type != GDK_2BUTTON_PRESS)
+  if(d->is_dragging && event->state & GDK_BUTTON1_MASK)
     {
       bauhaus_request_focus(w);
       const float l = 0.0f;
       const float r = slider_right_pos((float)allocation.width);
       dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
-    }
+  }
+
+  if(event->x <= allocation.width - darktable.bauhaus->quad_width)
+  {
     darktable.control->element = event->x > (0.1 * (allocation.width - darktable.bauhaus->quad_width)) &&
                                  event->x < (0.9 * (allocation.width - darktable.bauhaus->quad_width))
                                ? DT_ACTION_ELEMENT_VALUE
