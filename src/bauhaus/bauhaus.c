@@ -2356,20 +2356,7 @@ static gboolean dt_bauhaus_slider_add_delta_internal(GtkWidget *widget, float de
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   const dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-  float multiplier = 0.0f;
-
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-  }
-  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-  }
-  else
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-  }
+  float multiplier = dt_accel_get_speed_multiplier(widget, state);
 
   const float min_visible = powf(10.0f, -d->digits) / (d->max - d->min);
   if(fabsf(delta*multiplier) < min_visible)
@@ -3152,7 +3139,9 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
       case DT_ACTION_EFFECT_UP:
         d->is_dragging = 1;
         const float step = dt_bauhaus_slider_get_step(widget);
-        float multiplier = dt_accel_get_slider_scale_multiplier();
+
+        // get slider_precision
+        float multiplier = dt_accel_get_speed_multiplier(NULL, GDK_MODIFIER_MASK);
 
         if(move_size && fabsf(move_size * step * multiplier) < min_visible)
           multiplier = min_visible / fabsf(move_size * step);

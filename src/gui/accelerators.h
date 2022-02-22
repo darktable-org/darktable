@@ -192,8 +192,8 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_path);
 // UX miscellaneous functions
 void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *text);
 
-// Get the scale multiplier for adjusting sliders with shortcuts
-float dt_accel_get_slider_scale_multiplier();
+// Get the speed multiplier for adjusting sliders and other widgets
+float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
