@@ -603,7 +603,7 @@ static inline void rotation_matrix_isophote(const dt_aligned_pixel_t c2, const d
   {
     a[0][0][c] = cos_theta2[c] + c2[c] * sin_theta2[c];
     a[1][1][c] = c2[c] * cos_theta2[c] + sin_theta2[c];
-    a[0][1][c] = a[1][0][c] = (c2[c] - 1.0f) * cos_theta_sin_theta[c];
+    a[0][1][c] = a[1][0][c] = (1.0f - c2[c]) * cos_theta_sin_theta[c];
   }
 }
 
@@ -623,7 +623,7 @@ static inline void rotation_matrix_gradient(const dt_aligned_pixel_t c2, const d
   {
     a[0][0][c] = c2[c] * cos_theta2[c] + sin_theta2[c];
     a[1][1][c] = cos_theta2[c] + c2[c] * sin_theta2[c];
-    a[0][1][c] = a[1][0][c] = (1.0f - c2[c]) * cos_theta_sin_theta[c];
+    a[0][1][c] = a[1][0][c] = (c2[c] - 1.f) * cos_theta_sin_theta[c];
   }
 }
 
