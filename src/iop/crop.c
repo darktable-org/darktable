@@ -648,7 +648,7 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     // now fix outside boxes:
     if(clip_x < g->clip_max_x)
     {
-      double prev_clip_h = clip_h;
+      const double prev_clip_h = clip_h;
       clip_h *= (clip_w + clip_x - g->clip_max_x) / clip_w;
       clip_w = clip_w + clip_x - g->clip_max_x;
       clip_x = g->clip_max_x;
@@ -656,7 +656,7 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     }
     if(clip_y < g->clip_max_y)
     {
-      double prev_clip_w = clip_w;
+      const double prev_clip_w = clip_w;
       clip_w *= (clip_h + clip_y - g->clip_max_y) / clip_h;
       clip_h = clip_h + clip_y - g->clip_max_y;
       clip_y = g->clip_max_y;
@@ -664,14 +664,14 @@ static void _aspect_apply(dt_iop_module_t *self, _grab_region_t grab)
     }
     if(clip_x + clip_w > g->clip_max_x + g->clip_max_w)
     {
-      double prev_clip_h = clip_h;
+      const double prev_clip_h = clip_h;
       clip_h *= (g->clip_max_x + g->clip_max_w - clip_x) / clip_w;
       clip_w = g->clip_max_x + g->clip_max_w - clip_x;
       if(grab & GRAB_TOP) clip_y += prev_clip_h - clip_h;
     }
     if(clip_y + clip_h > g->clip_max_y + g->clip_max_h)
     {
-      double prev_clip_w = clip_w;
+      const double prev_clip_w = clip_w;
       clip_w *= (g->clip_max_y + g->clip_max_h - clip_y) / clip_h;
       clip_h = g->clip_max_y + g->clip_max_h - clip_y;
       if(grab & GRAB_LEFT) clip_x += prev_clip_w - clip_w;
@@ -1052,7 +1052,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->clip_max_x = g->clip_max_y = 0.0;
   g->clip_max_w = g->clip_max_h = 1.0;
   g->clip_max_pipe_hash = 0;
-  g->cropping = 0;
+  g->cropping = GRAB_CENTER;
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
   g->preview_ready = FALSE;
@@ -1244,10 +1244,16 @@ static _grab_region_t _gui_get_grab(float pzx, float pzy, dt_iop_crop_gui_data_t
   {
     // we are inside the crop box
     grab = GRAB_CENTER;
-    if(pzx >= g->clip_x && pzx * wd < g->clip_x * wd + border) grab |= GRAB_LEFT; // left border
-    if(pzy >= g->clip_y && pzy * ht < g->clip_y * ht + border) grab |= GRAB_TOP;  // top border
+
+    if(pzx >= g->clip_x && pzx * wd < g->clip_x * wd + border)
+      grab |= GRAB_LEFT; // left border
+
+    if(pzy >= g->clip_y && pzy * ht < g->clip_y * ht + border)
+      grab |= GRAB_TOP;  // top border
+
     if(pzx <= g->clip_x + g->clip_w && pzx * wd > (g->clip_w + g->clip_x) * wd - border)
       grab |= GRAB_RIGHT; // right border
+
     if(pzy <= g->clip_y + g->clip_h && pzy * ht > (g->clip_h + g->clip_y) * ht - border)
       grab |= GRAB_BOTTOM; // bottom border
   }
@@ -1352,9 +1358,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const int border = DT_PIXEL_APPLY_DPI(30.0) / zoom_scale;
 
   const _grab_region_t grab = g->cropping ? g->cropping : _gui_get_grab(pzx, pzy, g, border, wd, ht);
-  if(grab == GRAB_LEFT) cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, g->clip_h * ht);
-  if(grab == GRAB_TOP) cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, border);
-  if(grab == GRAB_TOP_LEFT) cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, border);
+
+  if(grab == GRAB_LEFT)
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, g->clip_h * ht);
+  if(grab == GRAB_TOP)
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, g->clip_w * wd, border);
+  if(grab == GRAB_TOP_LEFT)
+    cairo_rectangle(cr, g->clip_x * wd, g->clip_y * ht, border, border);
   if(grab == GRAB_RIGHT)
     cairo_rectangle(cr, (g->clip_x + g->clip_w) * wd - border, g->clip_y * ht, border, g->clip_h * ht);
   if(grab == GRAB_BOTTOM)
@@ -1385,8 +1395,10 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
+
+  const _grab_region_t grab = _gui_get_grab(pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
+
   _set_max_clip(self);
-  _grab_region_t grab = _gui_get_grab(pzx, pzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
@@ -1395,123 +1407,109 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     const float bzx = g->button_down_zoom_x + .5f;
     const float bzy = g->button_down_zoom_y + .5f;
 
-    if(g->cropping == GRAB_CENTER)
+    if(g->cropping == GRAB_ALL)
     {
-      g->cropping = grab;
-      if(grab == GRAB_CENTER)
-      {
-        g->cropping = GRAB_ALL;
-        g->handle_x = g->clip_x;
-        g->handle_y = g->clip_y;
-      }
-      if(grab & GRAB_LEFT) g->handle_x = bzx - g->clip_x;
-      if(grab & GRAB_TOP) g->handle_y = bzy - g->clip_y;
-      if(grab & GRAB_RIGHT) g->handle_x = bzx - (g->clip_w + g->clip_x);
-      if(grab & GRAB_BOTTOM) g->handle_y = bzy - (g->clip_h + g->clip_y);
+      /* moving the crop window */
+      if(!g->shift_hold)
+        g->clip_x
+          = fminf(g->clip_max_w + g->clip_max_x - g->clip_w,
+                  fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
+
+      if(!g->ctrl_hold)
+        g->clip_y
+          = fminf(g->clip_max_h + g->clip_max_y - g->clip_h,
+                  fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
     }
-    if(darktable.control->button_down_which == 1)
+    else
     {
-      grab = g->cropping;
-
-      if(grab == GRAB_ALL)
+      /* changing the crop window */
+      if(g->shift_hold)
       {
-        /* moving the crop window */
-        if(!g->shift_hold)
-          g->clip_x
-              = fminf(g->clip_max_w + g->clip_max_x - g->clip_w, fmaxf(g->clip_max_x, g->handle_x + pzx - bzx));
+        /* the center is locked, scale crop radial with locked ratio */
+        float xx = 0.0f;
+        float yy = 0.0f;
 
-        if(!g->ctrl_hold)
-          g->clip_y
-              = fminf(g->clip_max_h + g->clip_max_y - g->clip_h, fmaxf(g->clip_max_y, g->handle_y + pzy - bzy));
+        if(g->cropping & GRAB_LEFT || g->cropping & GRAB_RIGHT)
+          xx = (g->cropping & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
+        if(g->cropping & GRAB_TOP || g->cropping & GRAB_BOTTOM)
+          yy = (g->cropping & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
+
+        float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
+                            (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
+
+        // ensure we don't get too small crop size
+        if(g->prev_clip_w * ratio < 0.1f) ratio = 0.1f / g->prev_clip_w;
+        if(g->prev_clip_h * ratio < 0.1f) ratio = 0.1f / g->prev_clip_h;
+
+        // ensure we don't have too big crop size
+        if(g->prev_clip_w * ratio > g->clip_max_w) ratio = g->clip_max_w / g->prev_clip_w;
+        if(g->prev_clip_h * ratio > g->clip_max_h) ratio = g->clip_max_h / g->prev_clip_h;
+
+        // now that we are sure that the crop size is correct, we have to adjust top & left
+        float nx = g->prev_clip_x - (g->prev_clip_w * ratio - g->prev_clip_w) / 2.0f;
+        float ny = g->prev_clip_y - (g->prev_clip_h * ratio - g->prev_clip_h) / 2.0f;
+        float nw = g->prev_clip_w * ratio;
+        float nh = g->prev_clip_h * ratio;
+
+        // move crop area to the right if needed
+        nx = fmaxf(nx, g->clip_max_x);
+        // move crop area to the left if needed
+        nx = fminf(nx, g->clip_max_w + g->clip_max_x - nw);
+        // move crop area to the bottom if needed
+        ny = fmaxf(ny, g->clip_max_y);
+        // move crop area to the top if needed
+        ny = fminf(ny, g->clip_max_h + g->clip_max_y - nh);
+
+        g->clip_x = nx;
+        g->clip_y = ny;
+        g->clip_w = nw;
+        g->clip_h = nh;
       }
       else
       {
-        /* changing the crop window */
-        if(g->shift_hold)
+        if(g->cropping & GRAB_LEFT)
         {
-          /* the center is locked, scale crop radial with locked ratio */
-          float xx = 0.0f;
-          float yy = 0.0f;
-
-          if(grab & GRAB_LEFT || grab & GRAB_RIGHT) xx = (grab & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
-          if(grab & GRAB_TOP || grab & GRAB_BOTTOM) yy = (grab & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
-
-          float ratio = fmaxf((g->prev_clip_w - 2.0f * xx) / g->prev_clip_w,
-                              (g->prev_clip_h - 2.0f * yy) / g->prev_clip_h);
-
-          // ensure we don't get too small crop size
-          if(g->prev_clip_w * ratio < 0.1f) ratio = 0.1f / g->prev_clip_w;
-          if(g->prev_clip_h * ratio < 0.1f) ratio = 0.1f / g->prev_clip_h;
-
-          // ensure we don't have too big crop size
-          if(g->prev_clip_w * ratio > g->clip_max_w) ratio = g->clip_max_w / g->prev_clip_w;
-          if(g->prev_clip_h * ratio > g->clip_max_h) ratio = g->clip_max_h / g->prev_clip_h;
-
-          // now that we are sure that the crop size is correct, we have to adjust top & left
-          float nx = g->prev_clip_x - (g->prev_clip_w * ratio - g->prev_clip_w) / 2.0f;
-          float ny = g->prev_clip_y - (g->prev_clip_h * ratio - g->prev_clip_h) / 2.0f;
-          float nw = g->prev_clip_w * ratio;
-          float nh = g->prev_clip_h * ratio;
-
-          // move crop area to the right if needed
-          nx = fmaxf(nx, g->clip_max_x);
-          // move crop area to the left if needed
-          nx = fminf(nx, g->clip_max_w + g->clip_max_x - nw);
-          // move crop area to the bottom if needed
-          ny = fmaxf(ny, g->clip_max_y);
-          // move crop area to the top if needed
-          ny = fminf(ny, g->clip_max_h + g->clip_max_y - nh);
-
-          g->clip_x = nx;
-          g->clip_y = ny;
-          g->clip_w = nw;
-          g->clip_h = nh;
+          const float old_clip_x = g->clip_x;
+          g->clip_x = fminf(fmaxf(g->clip_max_x, pzx - g->handle_x), g->clip_x + g->clip_w - 0.1f);
+          g->clip_w = old_clip_x + g->clip_w - g->clip_x;
         }
-        else
+        if(g->cropping & GRAB_TOP)
         {
-          if(grab & GRAB_LEFT)
-          {
-            const float old_clip_x = g->clip_x;
-            g->clip_x = fminf(fmaxf(g->clip_max_x, pzx - g->handle_x), g->clip_x + g->clip_w - 0.1f);
-            g->clip_w = old_clip_x + g->clip_w - g->clip_x;
-          }
-          if(grab & GRAB_TOP)
-          {
-            const float old_clip_y = g->clip_y;
-            g->clip_y = fminf(fmaxf(g->clip_max_y, pzy - g->handle_y), g->clip_y + g->clip_h - 0.1f);
-            g->clip_h = old_clip_y + g->clip_h - g->clip_y;
-          }
-          if(grab & GRAB_RIGHT)
-            g->clip_w = fmaxf(0.1f, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
-          if(grab & GRAB_BOTTOM)
-            g->clip_h = fmaxf(0.1f, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
+          const float old_clip_y = g->clip_y;
+          g->clip_y = fminf(fmaxf(g->clip_max_y, pzy - g->handle_y), g->clip_y + g->clip_h - 0.1f);
+          g->clip_h = old_clip_y + g->clip_h - g->clip_y;
         }
-
-        if(g->clip_x + g->clip_w > g->clip_max_w + g->clip_max_x)
-          g->clip_w = g->clip_max_w + g->clip_max_x - g->clip_x;
-        if(g->clip_y + g->clip_h > g->clip_max_h + g->clip_max_y)
-          g->clip_h = g->clip_max_h + g->clip_max_y - g->clip_y;
+        if(g->cropping & GRAB_RIGHT)
+          g->clip_w = fmaxf(0.1f, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
+        if(g->cropping & GRAB_BOTTOM)
+          g->clip_h = fmaxf(0.1f, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
       }
 
-      _aspect_apply(self, grab);
-
-      // only update the sliders, not the dt_iop_cropping_params_t structure, so that the call to
-      // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
-      // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
-      // from the sliders when the iop loses focus, at which time the final selected crop is applied.
-      ++darktable.gui->reset;
-
-      dt_bauhaus_slider_set(g->cx, g->clip_x);
-      dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
-      dt_bauhaus_slider_set(g->cy, g->clip_y);
-      dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
-      dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
-      dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
-      dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
-      dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
-
-      --darktable.gui->reset;
+      if(g->clip_x + g->clip_w > g->clip_max_w + g->clip_max_x)
+        g->clip_w = g->clip_max_w + g->clip_max_x - g->clip_x;
+      if(g->clip_y + g->clip_h > g->clip_max_h + g->clip_max_y)
+        g->clip_h = g->clip_max_h + g->clip_max_y - g->clip_y;
     }
+
+    _aspect_apply(self, g->cropping);
+
+    // only update the sliders, not the dt_iop_cropping_params_t structure, so that the call to
+    // dt_control_queue_redraw_center below doesn't go rerun the pixelpipe because it thinks that
+    // the image has changed when it actually hasn't, yet.  The actual clipping parameters get set
+    // from the sliders when the iop loses focus, at which time the final selected crop is applied.
+    ++darktable.gui->reset;
+
+    dt_bauhaus_slider_set(g->cx, g->clip_x);
+    dt_bauhaus_slider_set_soft_min(g->cw, g->clip_x + 0.10);
+    dt_bauhaus_slider_set(g->cy, g->clip_y);
+    dt_bauhaus_slider_set_soft_min(g->ch, g->clip_y + 0.10);
+    dt_bauhaus_slider_set(g->cw, g->clip_x + g->clip_w);
+    dt_bauhaus_slider_set_soft_max(g->cx, g->clip_x + g->clip_w - 0.10);
+    dt_bauhaus_slider_set(g->ch, g->clip_y + g->clip_h);
+    dt_bauhaus_slider_set_soft_max(g->cy, g->clip_y + g->clip_h - 0.10);
+
+    --darktable.gui->reset;
+
     dt_control_queue_redraw_center();
     return 1;
   }
@@ -1547,7 +1545,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   else
   {
     dt_control_change_cursor(GDK_FLEUR);
-    g->cropping = 0;
+    g->cropping = GRAB_CENTER;
     dt_control_hinter_message(darktable.control, _("<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</b>: ctrl+drag"));
     dt_control_queue_redraw_center();
   }
@@ -1564,7 +1562,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   /* reset internal ui states*/
   g->shift_hold = FALSE;
   g->ctrl_hold = FALSE;
-  g->cropping = 0;
+  g->cropping = GRAB_CENTER;
+
+  dt_control_change_cursor(GDK_LEFT_PTR);
 
   // we save the crop into the params now so params are kept in synch with gui settings
   _commit_box(self, g, p);
@@ -1576,6 +1576,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 {
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   // we don't do anything if the image is not ready
+
   if(!g->preview_ready) return 0;
 
   // avoid unexpected back to lt mode:
@@ -1584,12 +1585,23 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   if(which == 1)
   {
+    const float wd = self->dev->preview_pipe->backbuf_width;
+    const float ht = self->dev->preview_pipe->backbuf_height;
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1 << closeup, 1);
+
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
+
     // switch module on already, other code depends in this:
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
     g->button_down_x = x;
     g->button_down_y = y;
-    dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
+
+    g->button_down_zoom_x = pzx;
+    g->button_down_zoom_y = pzy;
 
     /* update prev clip box with current */
     g->prev_clip_x = g->clip_x;
@@ -1600,6 +1612,27 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     /* if shift is pressed, then lock crop on center */
     if(dt_modifiers_include(state, GDK_SHIFT_MASK)) g->shift_hold = TRUE;
     if(dt_modifiers_include(state, GDK_CONTROL_MASK)) g->ctrl_hold = TRUE;
+
+    /* store grabbed area */
+
+    const float bzx = pzx + .5f;
+    const float bzy = pzy + .5f;
+
+    g->cropping = _gui_get_grab(bzx, bzy, g, DT_PIXEL_APPLY_DPI(30.0) / zoom_scale, wd, ht);
+
+    if(g->cropping == GRAB_CENTER)
+    {
+      g->cropping = GRAB_ALL;
+      g->handle_x = g->clip_x;
+      g->handle_y = g->clip_y;
+    }
+    else
+    {
+      if(g->cropping & GRAB_LEFT)   g->handle_x = bzx - g->clip_x;
+      if(g->cropping & GRAB_TOP)    g->handle_y = bzy - g->clip_y;
+      if(g->cropping & GRAB_RIGHT)  g->handle_x = bzx - (g->clip_w + g->clip_x);
+      if(g->cropping & GRAB_BOTTOM) g->handle_y = bzy - (g->clip_h + g->clip_y);
+    }
 
     return 1;
   }
