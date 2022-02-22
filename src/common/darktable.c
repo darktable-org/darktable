@@ -1072,11 +1072,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   //  1 cpu singlebuffer
   //  2 mipmap size
   //  3 opencl available
-  static int fractions[24] = {
-      512,   28, 128, 600,  // default
+  static int fractions[20] = {
+      512,   32, 128, 600,  // default
         0,    0,  16,   0,  // mini
       128,   16,  64, 256,  // small
-      400,   32, 128, 512,  // medium
       700,   64, 128, 750,  // large
     16384, 1024, 128, 900   // unrestricted
   };
@@ -1280,17 +1279,19 @@ void dt_get_sysresource_level()
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in **and** fractions
       Please note: absolute values for "reference (debug)"
+      If we want a new setting here, we must
+        - add a string->level conversion here
+        - add a line of fraction in int fractions[] above
+        - add a line in 
   */
   if(config)
   {
          if(!strcmp(config, "default"))           darktable.dtresources.level = 0; 
     else if(!strcmp(config, "mini (debug)"))      darktable.dtresources.level = 1;
     else if(!strcmp(config, "small"))             darktable.dtresources.level = 2;
-    else if(!strcmp(config, "medium"))            darktable.dtresources.level = 3;
-    else if(!strcmp(config, "large"))             darktable.dtresources.level = 4;
-    else if(!strcmp(config, "unrestricted"))      darktable.dtresources.level = 5;
+    else if(!strcmp(config, "large"))             darktable.dtresources.level = 3;
+    else if(!strcmp(config, "unrestricted"))      darktable.dtresources.level = 4;
     else if(!strcmp(config, "reference (debug)")) darktable.dtresources.level = -1;
-
     dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to %i as `%s'\n", darktable.dtresources.level, config);
   }
   else
