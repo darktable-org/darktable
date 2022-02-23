@@ -166,15 +166,13 @@ static void _date_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *rende
   g_free(name);
 }
 
-static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
+static void _popup_date_recreate_model(GtkDarktableRangeSelect *range)
 {
   _range_date_popup *pop = range->date_popup;
   gchar *name = NULL;
   gchar *tooltip = NULL;
   gchar *path = NULL;
   GtkTreeIter iter;
-
-  gtk_popover_set_default_widget(GTK_POPOVER(pop->popup), w);
 
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(pop->treeview));
   gtk_tree_view_set_model(GTK_TREE_VIEW(pop->treeview), NULL);
@@ -307,6 +305,13 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
 
   // now that the treemodel is OK, we update the treeview, based on this
   gtk_tree_view_set_model(GTK_TREE_VIEW(pop->treeview), model);
+}
+
+static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
+{
+  _range_date_popup *pop = range->date_popup;
+
+  gtk_popover_set_default_widget(GTK_POPOVER(pop->popup), w);
 
   // we also update the calendar part
   double val = 0.0;
@@ -1030,6 +1035,11 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
 
 void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
 {
+  // recreate the model for treeview (datetime)
+  if(range->type == DT_RANGE_TYPE_DATETIME)
+  {
+    _popup_date_recreate_model(range);
+  }
   // invalidate the surface
   range->surf_width_px = 0;
   // redraw the band
