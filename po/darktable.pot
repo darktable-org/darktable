@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-23 17:46+0100\n"
+"POT-Creation-Date: 2022-02-23 18:06+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -980,18 +980,19 @@ msgstr ""
 #, c-format
 msgid ""
 "defines how much darktable may take from your system resources. lower the "
-"setting if you are using applications taking large parts of your systems "
-"memory or opencl/gl applications like games or hugin. increase if you are a "
-"mainly using darktable on your machine.\n"
-" - default - takes ~50%% of your systems resources and gives darktable "
-"enough to be still performant.\n"
+"setting if you are using simultaneously applications taking large parts of "
+"your systems memory or opencl/gl applications like games or hugin. increase "
+"if you are using darktable alone on your machine.\n"
+" - default: takes ~50%% of your systems resources and gives darktable enough "
+"to be still performant.\n"
 "\n"
-"there are some special modes\n"
+"there are some special modes:\n"
 "\n"
-" - mini - dt takes 0.5 GB ram and 0.25GB video ram\n"
-" - reference: - dt takes 8GB ram and 2GB video ram\n"
-" - unrestricted - dt will take almost all of your systems resources and "
-"might lead to swapping and unexpected performance drops. use with caution!"
+" - mini: darktable takes 0.5 GB ram and 0.25GB video ram\n"
+" - reference: - darktable takes 8GB ram and 2GB video ram\n"
+" - unrestricted: darktable will take almost all of your systems resources "
+"and might lead to swapping and unexpected performance drops. use with "
+"caution!"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:6190
@@ -3953,7 +3954,8 @@ msgid "erase"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:442
-#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1255 ../src/libs/image.c:622
+#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1255
+#: ../src/libs/colorpicker.c:298 ../src/libs/image.c:622
 #: ../src/libs/modulegroups.c:2407
 msgid "color"
 msgstr ""
@@ -17193,10 +17195,6 @@ msgstr ""
 #: ../src/libs/colorpicker.c:98
 msgctxt "accel"
 msgid "add sample"
-msgstr ""
-
-#: ../src/libs/colorpicker.c:298
-msgid "Color"
 msgstr ""
 
 #: ../src/libs/colorpicker.c:469
