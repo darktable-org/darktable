@@ -635,15 +635,20 @@ static inline void build_matrix(const dt_aligned_pixel_t a[2][2], dt_aligned_pix
 {
   for_each_channel(c)
   {
-    const float b13 = a[0][1][c] / 2.0f;
-    const float b11 = -b13;
+    const float b11 = a[0][1][c] / 2.0f;
+    const float b13 = -b11;
     const float b22 = -2.0f * (a[0][0][c] + a[1][1][c]);
 
     // build the kernel of rotated anisotropic laplacian
     // from https://www.researchgate.net/publication/220663968 :
-    // [ [ -a12 / 2,  a22,           a12 / 2  ],
+    // [ [ a12 / 2,  a22,            -a12 / 2 ],
     //   [ a11,      -2 (a11 + a22), a11      ],
-    //   [ a12 / 2,   a22,          -a12 / 2  ] ]
+    //   [ -a12 / 2,   a22,          a12 / 2  ] ]
+    // N.B. we have flipped the signs of the a12 terms
+    // compared to the paper. There's probably a mismatch
+    // of coordinate convention between the paper and the
+    // original derivation of this convolution mask
+    // (Witkin 1991, https://doi.org/10.1145/127719.122750).
     kernel[0][c] = b11;
     kernel[1][c] = a[1][1][c];
     kernel[2][c] = b13;
