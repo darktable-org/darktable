@@ -518,6 +518,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       cairo_surface_destroy(thumb->img_surf);
     thumb->img_surf = NULL;
     thumb->img_surf_dirty = TRUE;
+    thumb->img_surf_preview = FALSE;
   }
 
   // if image surface has no more ref. let's samitize it's value to NULL
@@ -595,6 +596,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         cairo_destroy(cr2);
       }
       if(rgbbuf) g_free(rgbbuf);
+
+      thumb->img_surf_preview = TRUE;
     }
     else
     {
@@ -618,6 +621,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         if(tmp_surf && cairo_surface_get_reference_count(tmp_surf) > 0)
           cairo_surface_destroy(tmp_surf);
       }
+      thumb->img_surf_preview = FALSE;
     }
 
     if(thumb->img_surf)
@@ -1063,7 +1067,8 @@ static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
   if(!gtk_widget_is_visible(thumb->w_main)) return;
 
   const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-  if(v->view(v) == DT_VIEW_DARKROOM && darktable.develop->preview_pipe->output_imgid == thumb->imgid
+  if(v->view(v) == DT_VIEW_DARKROOM
+     && (thumb->img_surf_preview || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
      && darktable.develop->preview_pipe->output_backbuf)
   {
     // reset surface
