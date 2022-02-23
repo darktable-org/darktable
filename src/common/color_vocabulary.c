@@ -32,6 +32,11 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
 {
   // color must be Lch derivated from CIE Lab 1976 turned into polar coordinates
 
+  // First check if we have a grey (chromacity < epsilon)
+
+  if(color[1] < 2.0f)
+    return _("grey");
+
   // Start with special cases : skin tones
 
   dt_aligned_pixel_t Lab;
