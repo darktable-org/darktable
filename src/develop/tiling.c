@@ -599,13 +599,10 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   dt_develop_tiling_t tiling = { 0 };
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
-  /* shall we enforce tiling */
-  const gboolean force_tile = (darktable.unmuted & DT_DEBUG_TILING);
   /* tiling really does not make sense in these cases. standard process() is not better or worse than we are
    */
   if((tiling.factor < 2.2f)
-     && (tiling.overhead < 0.2f * roi_in->width * roi_in->height * max_bpp)
-     && !force_tile)
+     && (tiling.overhead < 0.2f * roi_in->width * roi_in->height * max_bpp))
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] no need to use tiling for module '%s' as no real "
                            "memory saving to be expected\n",
@@ -614,7 +611,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   }
 
   /* calculate optimal size of tiles */
-  float available = force_tile ? 500.0f * 1024.0f * 1024.0f : dt_conf_get_float("host_memory_limit") * 1024.0f * 1024.0f;
+  float available = dt_get_available_mem();
   assert(available >= 500.0f * 1024.0f * 1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
   available = fmax(available - ((float)roi_out->width * roi_out->height * out_bpp)
@@ -624,8 +621,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   /* we ignore the above value if singlebuffer_limit (is defined and) is higher than available/tiling.factor.
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
-  float singlebuffer = force_tile ? 2.0f * 1024.0f * 1024.0f : dt_conf_get_float("singlebuffer_limit") * 1024.0f * 1024.0f;
-  singlebuffer = fmax(singlebuffer, 2.0f * 1024.0f * 1024.0f);
+  float singlebuffer = dt_get_singlebuffer_mem();
   const float factor = fmax(tiling.factor, 1.0f);
   const float maxbuf = fmax(tiling.maxbuf, 1.0f);
   singlebuffer = fmax(available / factor, singlebuffer);
@@ -870,11 +866,9 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   dt_develop_tiling_t tiling = { 0 };
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
-  /* shall we enforce tiling */
-  const gboolean force_tile = (darktable.unmuted & DT_DEBUG_TILING);
   /* tiling really does not make sense in these cases. standard process() is not better or worse than we are
    */
-  if((tiling.factor < 2.2f && tiling.overhead < 0.2f * roi_in->width * roi_in->height * max_bpp) && !force_tile)
+  if((tiling.factor < 2.2f && tiling.overhead < 0.2f * roi_in->width * roi_in->height * max_bpp))
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] no need to use tiling for module '%s' as no real "
                            "memory saving to be expected\n",
@@ -883,7 +877,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   }
 
   /* calculate optimal size of tiles */
-  float available = force_tile ? 500.0f * 1024.0f * 1024.0f : dt_conf_get_float("host_memory_limit") * 1024.0f * 1024.0f;
+  float available = dt_get_available_mem();
   assert(available >= 500.0f * 1024.0f * 1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
   available = fmax(available - ((float)roi_out->width * roi_out->height * out_bpp)
@@ -893,8 +887,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   /* we ignore the above value if singlebuffer_limit (is defined and) is higher than available/tiling.factor.
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
-  float singlebuffer = force_tile ? 2.0f * 1024.0f * 1024.0f : dt_conf_get_float("singlebuffer_limit") * 1024.0f * 1024.0f;
-  singlebuffer = fmax(singlebuffer, 2.0f * 1024.0f * 1024.0f);
+  float singlebuffer = dt_get_singlebuffer_mem();
   const float factor = fmax(tiling.factor, 1.0f);
   const float maxbuf = fmax(tiling.maxbuf, 1.0f);
   singlebuffer = fmax(available / factor, singlebuffer);
@@ -1235,16 +1228,10 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
             ? 0.85f
             : 1.0f; // avoid problems when pinned buffer size gets too close to max_mem_alloc size
 
-  /* shall we enforce tiling */
-  const gboolean force_tile = (darktable.unmuted & DT_DEBUG_TILING);
-  /* calculate optimal size of tiles */
-  float headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
-  headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
-  float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  if(force_tile) available = fmin(available, 500.0f * 1024.0f * 1024.0f);
+  const float available = (float)dt_opencl_get_device_available(devid);
   const float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
   const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
-                                  pinned_buffer_slack * darktable.opencl->dev[devid].max_mem_alloc);
+                                  pinned_buffer_slack * (float)(dt_opencl_get_device_memalloc(devid)));
   const float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
   int width = _min(roi_in->width, darktable.opencl->dev[devid].max_image_width);
   int height = _min(roi_in->height, darktable.opencl->dev[devid].max_image_height);
@@ -1605,16 +1592,10 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
             ? 0.85f
             : 1.0f; // avoid problems when pinned buffer size gets too close to max_mem_alloc size
 
-  /* shall we enforce tiling */
-  const gboolean force_tile = (darktable.unmuted & DT_DEBUG_TILING);
-  /* calculate optimal size of tiles */
-  float headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
-  headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
-  float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  if(force_tile) available = fmin(available, 500.0f * 1024.0f * 1024.0f);
+  const float available = (float)dt_opencl_get_device_available(devid);
   const float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
   const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
-                                  pinned_buffer_slack * darktable.opencl->dev[devid].max_mem_alloc);
+                                  pinned_buffer_slack * (float)(dt_opencl_get_device_memalloc(devid)));
   const float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
 
   int width = _min(_max(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
@@ -2070,21 +2051,10 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 int dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, const unsigned bpp,
                                      const float factor, const size_t overhead)
 {
-  static int host_memory_limit = -1;
+  const size_t available = dt_get_available_mem();
+  const size_t total = factor * width * height * bpp + overhead;
 
-  /* first time run */
-  if(host_memory_limit < 0)
-  {
-    host_memory_limit = dt_conf_get_int("host_memory_limit");
-
-    /* don't let the user play games with us */
-    if(host_memory_limit != 0) host_memory_limit = CLAMPI(host_memory_limit, 500, 50000);
-    dt_conf_set_int("host_memory_limit", host_memory_limit);
-  }
-
-  const float requirement = factor * width * height * bpp + overhead;
-
-  if(host_memory_limit == 0 || requirement <= host_memory_limit * 1024.0f * 1024.0f)
+  if(total <= available)
     return TRUE;
   else
     return FALSE;

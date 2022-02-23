@@ -693,13 +693,14 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
   assert(ch >= 3);
   assert(w >= 1);
 
-  const cl_ulong max_global_mem = dt_opencl_get_max_global_mem(devid);
-  const size_t reserved_memory = (size_t)(dt_conf_get_float("opencl_memory_headroom") * 1024 * 1024);
   // estimate required memory for OpenCL code path with a safety factor of 5/4
-  const size_t required_memory
-      = darktable.opencl->dev[devid].memory_in_use + (size_t)width * height * sizeof(float) * 18 * 5 / 4;
+  // avoid checking for available memory by headroom and used memory as unsafe.
+  // instead use safer version
+  const size_t required = (size_t)width * height * sizeof(float) * 18 * 5 / 4;
+  const gboolean fits = dt_opencl_buffer_fits_device(devid, required);
+
   int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  if(max_global_mem - reserved_memory > required_memory)
+  if(fits)
     err = guided_filter_cl_impl(devid, guide, in, out, width, height, ch, w, sqrt_eps, guide_weight, min, max);
   if(err != CL_SUCCESS)
   {

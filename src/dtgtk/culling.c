@@ -712,6 +712,8 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
     const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
     dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
   }
+  dt_get_sysresource_level();
+  dt_configure_ppd_dpi(darktable.gui);
 }
 
 static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
