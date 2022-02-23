@@ -982,7 +982,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
                                           tiling->factor, tiling->overhead));
 
   /* process module on cpu. use tiling if needed and possible. */
-  if(needs_tiling || (darktable.unmuted & DT_DEBUG_TILING))
+  if(needs_tiling)
   {
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
@@ -1358,7 +1358,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       int valid_input_on_gpu_only = (cl_mem_input != NULL);
 
       /* pre-check if there is enough space on device for non-tiled processing */
-      const int fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
+      const gboolean fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
                                                              MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
                                                              tiling.factor_cl, tiling.overhead);
 
@@ -2134,6 +2134,8 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
                                                      int pos)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
+  darktable.dtresources.group = 4 * darktable.dtresources.level; 
+  
   int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #ifdef HAVE_OPENCL
   // copy back final opencl buffer (if any) to CPU

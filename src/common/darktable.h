@@ -156,7 +156,7 @@ typedef unsigned int u_int;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 3
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 4
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -268,8 +268,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_SIGNAL         = 1 << 20,
   DT_DEBUG_PARAMS         = 1 << 21,
   DT_DEBUG_DEMOSAIC       = 1 << 22,
-  DT_DEBUG_TILING         = 1 << 23,
-  DT_DEBUG_ACT_ON         = 1 << 24
+  DT_DEBUG_ACT_ON         = 1 << 23
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -278,6 +277,15 @@ typedef struct dt_codepath_t
   unsigned int _no_intrinsics : 1;
   unsigned int OPENMP_SIMD : 1; // always stays the last one
 } dt_codepath_t;
+
+typedef struct dt_sys_resources_t
+{
+  size_t total_memory;
+  size_t mipmap_memory;
+  int *fractions; // fractions are calculated as res=input / 1024  * fraction
+  int group;
+  int level;
+} dt_sys_resources_t;
 
 typedef struct darktable_t
 {
@@ -333,6 +341,7 @@ typedef struct darktable_t
   int32_t unmuted_signal_dbg_acts;
   gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
   GTimeZone *utc_tz;
+  struct dt_sys_resources_t dtresources;
 } darktable_t;
 
 typedef struct
@@ -344,9 +353,13 @@ typedef struct
 extern darktable_t darktable;
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L);
+void dt_get_sysresource_level();
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 int dt_worker_threads();
+size_t dt_get_available_mem();
+size_t dt_get_singlebuffer_mem();
+
 void *dt_alloc_align(size_t alignment, size_t size);
 static inline void* dt_calloc_align(size_t alignment, size_t size)
 {
