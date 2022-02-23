@@ -135,15 +135,20 @@ inline void rotation_matrix_gradient(const float4 c2,
 
 inline void build_matrix(const float4 a[2][2], float4 kern[9])
 {
-  const float4 b13 = a[0][1] / 2.0f;
-  const float4 b11 = -b13;
+  const float4 b11 = a[0][1] / 2.0f;
+  const float4 b13 = -b11;
   const float4 b22 = -2.0f * (a[0][0] + a[1][1]);
 
   // build the kernel of rotated anisotropic laplacian
   // from https://www.researchgate.net/publication/220663968 :
-  // [ [ -a12 / 2,  a22,           a12 / 2  ],
+  // [ [ a12 / 2,  a22,            -a12 / 2 ],
   //   [ a11,      -2 (a11 + a22), a11      ],
-  //   [ a12 / 2,   a22,          -a12 / 2  ] ]
+  //   [ -a12 / 2,   a22,          a12 / 2  ] ]
+  // N.B. we have flipped the signs of the a12 terms
+  // compared to the paper. There's probably a mismatch
+  // of coordinate convention between the paper and the
+  // original derivation of this convolution mask
+  // (Witkin 1991, https://doi.org/10.1145/127719.122750).
   kern[0] = b11;
   kern[1] = a[1][1];
   kern[2] = b13;
