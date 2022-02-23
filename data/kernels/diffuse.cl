@@ -114,7 +114,7 @@ inline void rotation_matrix_isophote(const float4 c2,
   // c dampens the gradient direction
   a[0][0] = cos_theta2 + c2 * sin_theta2;
   a[1][1] = c2 * cos_theta2 + sin_theta2;
-  a[0][1] = a[1][0] = (1.0f - c2) * cos_theta_sin_theta;
+  a[0][1] = a[1][0] = (c2 - 1.0f) * cos_theta_sin_theta;
 }
 
 inline void rotation_matrix_gradient(const float4 c2,
@@ -129,7 +129,7 @@ inline void rotation_matrix_gradient(const float4 c2,
   // c dampens the isophote direction
   a[0][0] = c2 * cos_theta2 + sin_theta2;
   a[1][1] = cos_theta2 + c2 * sin_theta2;
-  a[0][1] = a[1][0] = (c2 - 1.0f) * cos_theta_sin_theta;
+  a[0][1] = a[1][0] = (1.0f - c2) * cos_theta_sin_theta;
 }
 
 
