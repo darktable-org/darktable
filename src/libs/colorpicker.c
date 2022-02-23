@@ -295,7 +295,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
 
   dt_aligned_pixel_t color;
   dt_Lab_2_LCH(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MEAN], color);
-  sample_parts[11] = g_strdup_printf("\n<big><b>%14s</b></big>", _("Color"));
+  sample_parts[11] = g_strdup_printf("\n<big><b>%14s</b></big>", _("color"));
   sample_parts[12] = g_strdup_printf("%6s", Lch_to_color_name(color));
 
   gchar *tooltip_text = g_strjoinv("\n", sample_parts);
