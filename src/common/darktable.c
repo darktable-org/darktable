@@ -1102,7 +1102,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   check_resourcelevel("resource_unrestricted", fractions, 4);
 
   darktable.dtresources.fractions = fractions;
-  darktable.dtresources.total_memory = _get_total_memory();
+  darktable.dtresources.total_memory = _get_total_memory() * 1024lu;
   dt_get_sysresource_level();
   darktable.dtresources.mipmap_memory = _get_mipmap_size();
   // initialize collection query
