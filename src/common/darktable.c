@@ -393,6 +393,22 @@ static size_t _get_mipmap_size()
   return darktable.dtresources.total_memory / 1024lu * fraction;
 }
 
+void check_resourcelevel(const char *key, int *fractions, const int level)
+{
+  const int g = level * 4;
+  gchar out[128] = { 0 };
+  if(!dt_conf_key_exists(key))
+  {
+    g_snprintf(out, 126, "%i %i %i %i", fractions[g], fractions[g+1], fractions[g+2], fractions[g+3]);
+    dt_conf_set_string(key, out);
+  }
+  else
+  {
+    gchar *in = dt_conf_get_string(key);
+    sscanf(in, "%i %i %i %i", &fractions[g], &fractions[g+1], &fractions[g+2], &fractions[g+3]);
+  }
+}
+
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
 {
   double start_wtime = dt_get_wtime();
@@ -1073,17 +1089,22 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   //  2 mipmap size
   //  3 opencl available
   static int fractions[20] = {
-      512,   32, 128, 600,  // default
+      512,   32, 128, 700,  // default
         0,    0,  16,   0,  // mini
-      128,   16,  64, 256,  // small
-      700,   64, 128, 750,  // large
-    16384, 1024, 128, 900   // unrestricted
+      128,   16,  64, 400,  // small
+      700,   64, 128, 900,  // large
+    16384, 1024, 128, 1024  // unrestricted
   };
+  // Allow the settings for each performance level to be changed via darktablerc
+  check_resourcelevel("resource_default", fractions, 0);
+  check_resourcelevel("resource_small", fractions, 2);
+  check_resourcelevel("resource_large", fractions, 3);
+  check_resourcelevel("resource_unrestricted", fractions, 4);
 
   darktable.dtresources.fractions = fractions;
   darktable.dtresources.total_memory = _get_total_memory();
-  darktable.dtresources.mipmap_memory = _get_mipmap_size();
   dt_get_sysresource_level();
+  darktable.dtresources.mipmap_memory = _get_mipmap_size();
   // initialize collection query
   darktable.collection = dt_collection_new(NULL);
 
