@@ -22287,7 +22287,7 @@ msgstr "filtre"
 #: ../src/libs/tools/filter.c:354
 msgctxt "quickfilter"
 msgid "filter"
-msgstr "filtre"
+msgstr "filtrer"
 
 #: ../src/libs/tools/filter.c:362 ../src/libs/tools/filter.c:377
 msgid "filter by images rating"
