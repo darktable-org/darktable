@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2010-2021 darktable developers.
+  Copyright (C) 2010-2022 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -478,7 +478,9 @@ static int get_white_balance_coeff(struct dt_iop_module_t *self, dt_aligned_pixe
   // predicts the bogus D65 that temperature.c will compute for the camera input matrix
   double bwb[4];
 
-  if(dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.camera_makermodel, NULL, NULL, self->dev->image_storage.d65_color_matrix, bwb))
+  if(dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.adobe_XYZ_to_CAM,
+                                            NULL, NULL,
+                                            self->dev->image_storage.d65_color_matrix, bwb))
   {
     // normalize green:
     bwb[0] /= bwb[1];

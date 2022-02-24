@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
-#include "external/adobe_coeff.c"
 
 #include <strings.h>
 
@@ -2261,7 +2260,7 @@ static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int 
     }
 }
 
-int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4])
+int dt_colorspaces_conversion_matrices_xyz(const float adobe_XYZ_to_CAM[4][3], float in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4])
 {
   if(!isnan(in_XYZ_to_CAM[0]))
   {
@@ -2272,16 +2271,12 @@ int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM
   }
   else
   {
-    float adobe_XYZ_to_CAM[4][3];
-    adobe_XYZ_to_CAM[0][0] = NAN;
-
-    dt_dcraw_adobe_coeff(name, (float(*)[12])adobe_XYZ_to_CAM);
     if(isnan(adobe_XYZ_to_CAM[0][0]))
       return FALSE;
 
     for(int i = 0; i < 4; i++)
       for(int j = 0; j < 3; j++)
-        XYZ_to_CAM[i][j] = (double) adobe_XYZ_to_CAM[i][j];
+        XYZ_to_CAM[i][j] = (double)adobe_XYZ_to_CAM[i][j];
   }
 
   // Invert the matrix
@@ -2295,7 +2290,7 @@ int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM
 }
 
 // Converted from dcraw's cam_xyz_coeff()
-int dt_colorspaces_conversion_matrices_rgb(const char *name,
+int dt_colorspaces_conversion_matrices_rgb(const float adobe_XYZ_to_CAM[4][3],
                                            double out_RGB_to_CAM[4][3], double out_CAM_to_RGB[3][4],
                                            const float *embedded_matrix,
                                            double mul[4])
@@ -2307,7 +2302,9 @@ int dt_colorspaces_conversion_matrices_rgb(const char *name,
 
   if(embedded_matrix == NULL || isnan(embedded_matrix[0]))
   {
-    dt_dcraw_adobe_coeff(name, (float(*)[12])XYZ_to_CAM);
+    for(int k=0; k<4; k++)
+      for(int i=0; i<3; i++)
+        XYZ_to_CAM[k][i] = adobe_XYZ_to_CAM[k][i];
   }
   else
   {
@@ -2325,7 +2322,6 @@ int dt_colorspaces_conversion_matrices_rgb(const char *name,
     XYZ_to_CAM[2][1] = embedded_matrix[7];
     XYZ_to_CAM[2][2] = embedded_matrix[8];
   }
-
 
   if(isnan(XYZ_to_CAM[0][0]))
     return FALSE;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,13 +83,14 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     if(self->dev && self->dev->image_storage.flags & DT_IMAGE_4BAYER)
     {
-      const char *camera = self->dev->image_storage.camera_makermodel;
-
       double RGB_to_CAM[4][3];
 
       // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-      if(!dt_colorspaces_conversion_matrices_rgb(camera, RGB_to_CAM, NULL, self->dev->image_storage.d65_color_matrix, NULL))
+      if(!dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.adobe_XYZ_to_CAM,
+                                                 RGB_to_CAM, NULL,
+                                                 self->dev->image_storage.d65_color_matrix, NULL))
       {
+        const char *camera = self->dev->image_storage.camera_makermodel;
         fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
         dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
       }
@@ -528,11 +529,12 @@ void reload_defaults(dt_iop_module_t *self)
 
       if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
       {
-        const char *camera = self->dev->image_storage.camera_makermodel;
-
         // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-        if(!dt_colorspaces_conversion_matrices_rgb(camera, g->RGB_to_CAM, g->CAM_to_RGB, self->dev->image_storage.d65_color_matrix, NULL))
+        if(!dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.adobe_XYZ_to_CAM,
+                                                   g->RGB_to_CAM, g->CAM_to_RGB,
+                                                   self->dev->image_storage.d65_color_matrix, NULL))
         {
+          const char *camera = self->dev->image_storage.camera_makermodel;
           fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
           dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
         }
