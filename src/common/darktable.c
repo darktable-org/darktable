@@ -387,7 +387,7 @@ static inline size_t _get_total_memory()
 
 static size_t _get_mipmap_size()
 {
-  const int level = darktable.dtresources.level;  
+  const int level = darktable.dtresources.level;
   if(level < 0) return 4096lu * 1024lu * 1024lu;
   const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 2];
   return darktable.dtresources.total_memory / 1024lu * fraction;
@@ -1082,7 +1082,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_film_set_folder_status();
   }
 
-  // this is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed. 
+  // this is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed.
   // for every resourcelevel we need 4 defined fractions
   //  0 cpu available
   //  1 cpu singlebuffer
@@ -1303,11 +1303,11 @@ void dt_get_sysresource_level()
       If we want a new setting here, we must
         - add a string->level conversion here
         - add a line of fraction in int fractions[] above
-        - add a line in 
+        - add a line in
   */
   if(config)
   {
-         if(!strcmp(config, "default"))           darktable.dtresources.level = 0; 
+         if(!strcmp(config, "default"))           darktable.dtresources.level = 0;
     else if(!strcmp(config, "mini (debug)"))      darktable.dtresources.level = 1;
     else if(!strcmp(config, "small"))             darktable.dtresources.level = 2;
     else if(!strcmp(config, "large"))             darktable.dtresources.level = 3;
@@ -1650,7 +1650,7 @@ int dt_worker_threads()
 
 size_t dt_get_available_mem()
 {
-  const int level = darktable.dtresources.level;  
+  const int level = darktable.dtresources.level;
   const size_t total_mem = darktable.dtresources.total_memory;
   if(level < 0) return 8192lu * 1024lu * 1024lu;
   const int fraction = darktable.dtresources.fractions[darktable.dtresources.group];
@@ -1659,7 +1659,7 @@ size_t dt_get_available_mem()
 
 size_t dt_get_singlebuffer_mem()
 {
-  const int level = darktable.dtresources.level;  
+  const int level = darktable.dtresources.level;
   const size_t total_mem = darktable.dtresources.total_memory;
   if(level < 0) return 64lu * 1024lu * 1024lu;
   const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 1];
