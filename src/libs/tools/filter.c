@@ -424,11 +424,17 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->text), "search-changed", G_CALLBACK(_text_entry_changed), self);
   g_signal_connect(G_OBJECT(d->text), "stop-search", G_CALLBACK(_reset_text_entry), self);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text), 14);
-  gtk_widget_set_tooltip_text(d->text, _("filter by text from images metadata, tags, file path and name"
-                                         "\n`%' is the wildcard character"
-                                         "\nby default start and end wildcards are auto-applied"
-                                         "\nstarting or ending with a double quote disables the corresponding wildcard"
-                                         "\nis dimmed during the search execution"));
+  gtk_widget_set_tooltip_text(d->text,
+          /* xgettext:no-c-format */
+                              _("filter by text from images metadata, tags, file path and name"
+          /* xgettext:no-c-format */
+                                "\n`%' is the wildcard character"
+          /* xgettext:no-c-format */
+                                "\nby default start and end wildcards are auto-applied"
+          /* xgettext:no-c-format */
+                                "\nstarting or ending with a double quote disables the corresponding wildcard"
+          /* xgettext:no-c-format */
+                                "\nis dimmed during the search execution"));
   context = gtk_widget_get_style_context(d->text);
   gtk_style_context_add_class(context, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(hbox), d->text, FALSE, FALSE, 0);
