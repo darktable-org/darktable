@@ -148,6 +148,12 @@ typedef struct dt_collection_params_t
   /** flags for which filters to use, see COLLECTION_FILTER_x defines... */
   uint32_t filter_flags;
 
+  /** text filter */
+  char *text_filter;
+
+  /** colors filter */
+  int colors_filter;
+
   /** current film id */
   uint32_t film_id;
 
@@ -208,6 +214,16 @@ void dt_collection_set_filter_flags(const dt_collection_t *collection, uint32_t 
 uint32_t dt_collection_get_query_flags(const dt_collection_t *collection);
 /** set filter flags for collection */
 void dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t flags);
+
+/** get text filter for collection */
+char *dt_collection_get_text_filter(const dt_collection_t *collection);
+/** set text filter for collection */
+void dt_collection_set_text_filter(const dt_collection_t *collection, char *text_filter);
+
+/** get colors filter for collection */
+int dt_collection_get_colors_filter(const dt_collection_t *collection);
+/** set colors filter for collection */
+void dt_collection_set_colors_filter(const dt_collection_t *collection, int colors_filter);
 
 /** set the film_id of collection */
 void dt_collection_set_film_id(const dt_collection_t *collection, const int32_t film_id);
