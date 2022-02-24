@@ -22143,7 +22143,7 @@ msgstr ""
 "ou (u): imagens tendo ao menos uma das etiquetas de cor selecionadas"
 
 #: ../src/libs/tools/filter.c:427
-#, c-format
+#, no-c-format
 msgid ""
 "filter by text from images metadata, tags, file path and name\n"
 "`%' is the wildcard character\n"
