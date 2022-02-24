@@ -266,9 +266,12 @@ int dt_collection_update(const dt_collection_t *collection)
                                           "         (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
                                           " UNION SELECT id FROM main.images"
                                           "   WHERE id=mi.id AND filename LIKE '%s'"
+                                          " UNION SELECT id FROM main.images"
+                                          "   WHERE id=mi.id AND id LIKE '%s'"
                                           " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
                                           "   WHERE i.id=mi.id AND fr.id=i.film_id AND fr.folder LIKE '%s')",
                            and_operator(&and_term), collection->params.text_filter,
+                                                    collection->params.text_filter,
                                                     collection->params.text_filter,
                                                     collection->params.text_filter,
                                                     collection->params.text_filter,
