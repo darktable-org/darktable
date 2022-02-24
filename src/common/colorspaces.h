@@ -24,7 +24,7 @@
 
 // this was removed from lcms2 in 2.4
 #ifndef TYPE_XYZA_FLT
-  #define TYPE_XYZA_FLT         (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
+  #define TYPE_XYZA_FLT (FLOAT_SH(1)|COLORSPACE_SH(PT_XYZ)|EXTRA_SH(1)|CHANNELS_SH(3)|BYTES_SH(4))
 #endif
 
 // max iccprofile file name length
