@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-23 10:09-0300\n"
-"PO-Revision-Date: 2022-02-23 10:09-0300\n"
+"POT-Creation-Date: 2022-02-24 10:31-0300\n"
+"PO-Revision-Date: 2022-02-24 10:36-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1093,23 +1093,24 @@ msgstr "referência (debug)"
 #, c-format
 msgid ""
 "defines how much darktable may take from your system resources. lower the "
-"setting if you are using applications taking large parts of your systems "
-"memory or opencl/gl applications like games or hugin. increase if you are a "
-"mainly using darktable on your machine.\n"
-" - default - takes ~50%% of your systems resources and gives darktable enough "
+"setting if you are using simultaneously applications taking large parts of "
+"your systems memory or opencl/gl applications like games or hugin. increase "
+"if you are using darktable alone on your machine.\n"
+" - default: takes ~50%% of your systems resources and gives darktable enough "
 "to be still performant.\n"
 "\n"
-"there are some special modes\n"
+"there are some special modes:\n"
 "\n"
-" - mini - dt takes 0.5 GB ram and 0.25GB video ram\n"
-" - reference: - dt takes 8GB ram and 2GB video ram\n"
-" - unrestricted - dt will take almost all of your systems resources and "
-"might lead to swapping and unexpected performance drops. use with caution!"
+" - mini: darktable takes 0.5 GB ram and 0.25GB video ram\n"
+" - reference: - darktable takes 8GB ram and 2GB video ram\n"
+" - unrestricted: darktable will take almost all of your systems resources "
+"and might lead to swapping and unexpected performance drops. use with "
+"caution!"
 msgstr ""
 "define quanto o darktable pode tomar dos recursos do sistema. diminua a "
 "configuração se estiver usando aplicações que tomam grandes partes da "
 "memória do seu sistema ou aplicações opencl/gl como jogos ou hugin. aumente "
-"se você estiver usando principalmente o darktable na sua máquina.\n"
+"se você estiver usando somente o darktable na sua máquina.\n"
 " - default - toma ~50%% dos recursos do seu sistema e dá ao darktable o "
 "suficiente para ainda ter desempenho.\n"
 "\n"
@@ -2291,7 +2292,7 @@ msgstr "inclinação diagonal"
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:701 ../src/gui/preferences.c:818
+#: ../src/common/collection.c:779 ../src/gui/preferences.c:818
 #: ../src/gui/presets.c:590 ../src/libs/camera.c:569
 #: ../src/libs/metadata_view.c:143
 msgid "focal length"
@@ -2538,7 +2539,7 @@ msgid "offset"
 msgstr "deslocamento"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:700 ../src/gui/preferences.c:802
+#: ../src/common/collection.c:778 ../src/gui/preferences.c:802
 #: ../src/gui/presets.c:541 ../src/libs/metadata_view.c:139
 msgid "lens"
 msgstr "lente"
@@ -2557,7 +2558,7 @@ msgstr "gaussiano"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:110
 #: ../build/lib/darktable/plugins/introspection_borders.c:251
-#: ../src/common/collection.c:705 ../src/libs/tools/filter.c:103
+#: ../src/common/collection.c:783 ../src/libs/tools/filter.c:113
 msgid "aspect ratio"
 msgstr "proporção da imagem"
 
@@ -2661,7 +2662,7 @@ msgid "very large chromatic aberration"
 msgstr "aberração cromática muito grande"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1460 ../src/develop/blend_gui.c:2006
+#: ../src/common/collection.c:1531 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
 #: ../src/gui/gtk.c:3020 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
@@ -2672,7 +2673,7 @@ msgid "red"
 msgstr "vermelho"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1464 ../src/develop/blend_gui.c:2009
+#: ../src/common/collection.c:1535 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
 #: ../src/gui/gtk.c:3021 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
@@ -2683,7 +2684,7 @@ msgid "green"
 msgstr "verde"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1466 ../src/develop/blend_gui.c:2012
+#: ../src/common/collection.c:1537 ../src/develop/blend_gui.c:2012
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
 #: ../src/gui/gtk.c:3022 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
@@ -3438,7 +3439,7 @@ msgid "Markesteijn 3-pass + VNG"
 msgstr "Markesteijn 3-passos + VNG"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1482 ../src/common/collection.c:1490
+#: ../src/common/collection.c:1553 ../src/common/collection.c:1561
 #: ../src/libs/collect.c:1724
 msgid "basic"
 msgstr "básico"
@@ -3791,7 +3792,7 @@ msgstr "tratamento de spline"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:532
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/darktable.c:968 ../src/common/database.c:2550
+#: ../src/common/darktable.c:984 ../src/common/database.c:2550
 #: ../src/common/variables.c:510 ../src/develop/imageop_gui.c:302
 #: ../src/imageio/format/pdf.c:650 ../src/imageio/format/pdf.c:675
 #: ../src/libs/export.c:1214 ../src/libs/export.c:1220
@@ -4168,7 +4169,7 @@ msgstr "ponto de branco"
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:704 ../src/gui/preferences.c:810
+#: ../src/common/collection.c:782 ../src/gui/preferences.c:810
 #: ../src/gui/presets.c:560 ../src/iop/basicadj.c:597 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:832 ../src/libs/metadata_view.c:141
 msgid "exposure"
@@ -4219,7 +4220,8 @@ msgid "erase"
 msgstr "apagar"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:442
-#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1255 ../src/libs/image.c:622
+#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1255
+#: ../src/libs/colorpicker.c:298 ../src/libs/image.c:622
 #: ../src/libs/modulegroups.c:2407
 msgid "color"
 msgstr "cor"
@@ -4808,161 +4810,161 @@ msgstr ""
 "câmera `%s' na porta `%s' precisa ser remontada\n"
 "certifique-se de que sua câmera permite acesso e que não está montada"
 
-#: ../src/common/collection.c:649
+#: ../src/common/collection.c:727
 msgid "too much time to update aspect ratio for the collection"
 msgstr "tempo demais para ajustar o aspecto da coleção"
 
-#: ../src/common/collection.c:688
+#: ../src/common/collection.c:766
 msgid "film roll"
 msgstr "rolo de filme"
 
-#: ../src/common/collection.c:689
+#: ../src/common/collection.c:767
 msgid "folder"
 msgstr "pasta"
 
-#: ../src/common/collection.c:690
+#: ../src/common/collection.c:768
 msgid "camera"
 msgstr "câmera"
 
-#: ../src/common/collection.c:691 ../src/libs/export_metadata.c:189
+#: ../src/common/collection.c:769 ../src/libs/export_metadata.c:189
 msgid "tag"
 msgstr "etiqueta"
 
-#: ../src/common/collection.c:692
+#: ../src/common/collection.c:770
 msgid "date taken"
 msgstr "data da foto"
 
-#: ../src/common/collection.c:693
+#: ../src/common/collection.c:771
 msgid "date-time taken"
 msgstr "data/hora da foto"
 
-#: ../src/common/collection.c:694 ../src/libs/metadata_view.c:130
+#: ../src/common/collection.c:772 ../src/libs/metadata_view.c:130
 msgid "import timestamp"
 msgstr "tempo de importação"
 
-#: ../src/common/collection.c:695 ../src/libs/metadata_view.c:131
+#: ../src/common/collection.c:773 ../src/libs/metadata_view.c:131
 msgid "change timestamp"
 msgstr "tempo de modificação"
 
-#: ../src/common/collection.c:696 ../src/libs/metadata_view.c:132
+#: ../src/common/collection.c:774 ../src/libs/metadata_view.c:132
 msgid "export timestamp"
 msgstr "tempo de exportação"
 
-#: ../src/common/collection.c:697 ../src/libs/metadata_view.c:133
+#: ../src/common/collection.c:775 ../src/libs/metadata_view.c:133
 msgid "print timestamp"
 msgstr "tempo de impressão"
 
-#: ../src/common/collection.c:698 ../src/libs/history.c:85
+#: ../src/common/collection.c:776 ../src/libs/history.c:85
 msgid "history"
 msgstr "histórico"
 
-#: ../src/common/collection.c:699 ../src/develop/lightroom.c:1546
-#: ../src/libs/tools/filter.c:97
+#: ../src/common/collection.c:777 ../src/develop/lightroom.c:1546
+#: ../src/libs/tools/filter.c:107
 msgid "color label"
 msgstr "etiqueta de cor"
 
 #. iso
-#: ../src/common/collection.c:702 ../src/gui/preferences.c:806
+#: ../src/common/collection.c:780 ../src/gui/preferences.c:806
 #: ../src/gui/presets.c:547 ../src/libs/camera.c:577
 #: ../src/libs/metadata_view.c:145
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:703 ../src/gui/preferences.c:814
+#: ../src/common/collection.c:781 ../src/gui/preferences.c:814
 #: ../src/gui/presets.c:575 ../src/libs/camera.c:564 ../src/libs/camera.c:566
 #: ../src/libs/metadata_view.c:140
 msgid "aperture"
 msgstr "abertura"
 
-#: ../src/common/collection.c:706 ../src/libs/metadata_view.c:126
-#: ../src/libs/tools/filter.c:89
+#: ../src/common/collection.c:784 ../src/libs/metadata_view.c:126
+#: ../src/libs/tools/filter.c:99
 msgid "filename"
 msgstr "nome do arquivo"
 
-#: ../src/common/collection.c:707 ../src/develop/lightroom.c:1537
+#: ../src/common/collection.c:785 ../src/develop/lightroom.c:1537
 #: ../src/libs/geotagging.c:140
 msgid "geotagging"
 msgstr "geoetiquetas"
 
-#: ../src/common/collection.c:708
+#: ../src/common/collection.c:786
 msgid "grouping"
 msgstr "agrupamento"
 
-#: ../src/common/collection.c:709 ../src/libs/metadata_view.c:129
+#: ../src/common/collection.c:787 ../src/libs/metadata_view.c:129
 #: ../src/libs/metadata_view.c:338
 msgid "local copy"
 msgstr "cópia local"
 
-#: ../src/common/collection.c:710 ../src/gui/preferences.c:782
+#: ../src/common/collection.c:788 ../src/gui/preferences.c:782
 msgid "module"
 msgstr "módulo"
 
-#: ../src/common/collection.c:711 ../src/gui/hist_dialog.c:280
+#: ../src/common/collection.c:789 ../src/gui/hist_dialog.c:280
 #: ../src/gui/styles_dialog.c:566 ../src/gui/styles_dialog.c:610
 #: ../src/libs/ioporder.c:40
 msgid "module order"
 msgstr "ordem dos módulos"
 
-#: ../src/common/collection.c:712 ../src/common/ratings.c:300
-#: ../src/develop/lightroom.c:1521 ../src/libs/tools/filter.c:95
+#: ../src/common/collection.c:790 ../src/common/ratings.c:300
+#: ../src/develop/lightroom.c:1521 ../src/libs/tools/filter.c:105
 msgid "rating"
 msgstr "classificação"
 
-#: ../src/common/collection.c:1462 ../src/develop/lightroom.c:832
+#: ../src/common/collection.c:1533 ../src/develop/lightroom.c:832
 #: ../src/gui/guides.c:732 ../src/iop/colorzones.c:2318
 #: ../src/iop/temperature.c:1806 ../src/libs/collect.c:1764
 msgid "yellow"
 msgstr "amarelo"
 
-#: ../src/common/collection.c:1468 ../src/iop/colorzones.c:2322
+#: ../src/common/collection.c:1539 ../src/iop/colorzones.c:2322
 #: ../src/libs/collect.c:1764
 msgid "purple"
 msgstr "roxo"
 
-#: ../src/common/collection.c:1484 ../src/libs/collect.c:1724
+#: ../src/common/collection.c:1555 ../src/libs/collect.c:1724
 msgid "auto applied"
 msgstr "auto-aplicado"
 
-#: ../src/common/collection.c:1486 ../src/libs/collect.c:1724
+#: ../src/common/collection.c:1557 ../src/libs/collect.c:1724
 msgid "altered"
 msgstr "alterado"
 
-#: ../src/common/collection.c:1498 ../src/common/collection.c:1581
+#: ../src/common/collection.c:1569 ../src/common/collection.c:1652
 #: ../src/libs/collect.c:1211 ../src/libs/collect.c:1343
 #: ../src/libs/collect.c:1365 ../src/libs/collect.c:1470
 #: ../src/libs/collect.c:2398
 msgid "not tagged"
 msgstr "não etiquetado"
 
-#: ../src/common/collection.c:1499 ../src/libs/collect.c:1365
+#: ../src/common/collection.c:1570 ../src/libs/collect.c:1365
 #: ../src/libs/map_locations.c:768
 msgid "tagged"
 msgstr "etiquetado"
 
-#: ../src/common/collection.c:1500
+#: ../src/common/collection.c:1571
 msgid "tagged*"
 msgstr "etiquetado*"
 
-#: ../src/common/collection.c:1530 ../src/libs/collect.c:1736
+#: ../src/common/collection.c:1601 ../src/libs/collect.c:1736
 msgid "not copied locally"
 msgstr "não copiado localmente"
 
 #. grouping
-#: ../src/common/collection.c:1828 ../src/libs/collect.c:1838
+#: ../src/common/collection.c:1899 ../src/libs/collect.c:1838
 msgid "group leaders"
 msgstr "líderes de grupo"
 
-#: ../src/common/collection.c:1922 ../src/libs/collect.c:1911
+#: ../src/common/collection.c:1993 ../src/libs/collect.c:1911
 msgid "not defined"
 msgstr "não definido"
 
-#: ../src/common/collection.c:2204
+#: ../src/common/collection.c:2275
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "%d imagem de %d(#%d) na coleção atual está selecionada"
 
-#: ../src/common/collection.c:2210
+#: ../src/common/collection.c:2281
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -5138,11 +5140,11 @@ msgstr "arquivo `%s' é de formato desconhecido!"
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
 
-#: ../src/common/darktable.c:963
+#: ../src/common/darktable.c:979
 msgid "darktable - run performance configuration?"
 msgstr "darktable - executar configuração para maior performance?"
 
-#: ../src/common/darktable.c:964
+#: ../src/common/darktable.c:980
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -5156,7 +5158,7 @@ msgstr ""
 "especialmente caso as tenha modificado manualmente.\n"
 "gostaria de aplicar esta atualização de configuração de desempenho?\n"
 
-#: ../src/common/darktable.c:968 ../src/common/database.c:2550
+#: ../src/common/darktable.c:984 ../src/common/database.c:2550
 #: ../src/common/database.c:3610 ../src/common/variables.c:508
 #: ../src/develop/imageop_gui.c:303 ../src/imageio/format/pdf.c:651
 #: ../src/imageio/format/pdf.c:676 ../src/libs/export.c:1215
@@ -5687,12 +5689,12 @@ msgstr "editor"
 #. title
 #: ../src/common/metadata.c:48 ../src/imageio/format/pdf.c:576
 #: ../src/imageio/storage/gallery.c:178 ../src/imageio/storage/latex.c:178
-#: ../src/imageio/storage/piwigo.c:893 ../src/libs/tools/filter.c:101
+#: ../src/imageio/storage/piwigo.c:893 ../src/libs/tools/filter.c:111
 msgid "title"
 msgstr "título"
 
 #: ../src/common/metadata.c:49 ../src/gui/styles_dialog.c:451
-#: ../src/libs/tools/filter.c:102
+#: ../src/libs/tools/filter.c:112
 msgid "description"
 msgstr "descrição"
 
@@ -8068,7 +8070,7 @@ msgstr ""
 msgid "grouped images"
 msgstr "imagens agrupadas"
 
-#: ../src/dtgtk/thumbnail.c:705 ../src/dtgtk/thumbnail.c:1433
+#: ../src/dtgtk/thumbnail.c:709 ../src/dtgtk/thumbnail.c:1438
 #: ../src/iop/ashift.c:5809 ../src/iop/ashift.c:5876 ../src/iop/ashift.c:5877
 #: ../src/iop/ashift.c:5878
 msgid "fit"
@@ -8847,7 +8849,7 @@ msgstr ""
 #: ../src/gui/accelerators.c:1833 ../src/gui/accelerators.c:1912
 #: ../src/gui/gtk.c:3019 ../src/imageio/format/pdf.c:662
 #: ../src/iop/denoiseprofile.c:3597 ../src/iop/lens.cc:2274
-#: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:184
+#: ../src/iop/rawdenoise.c:907 ../src/libs/tools/filter.c:380
 msgid "all"
 msgstr "tudo"
 
@@ -14438,17 +14440,17 @@ msgstr "nitidez rápida"
 msgid "fast local contrast"
 msgstr "contraste local rápido"
 
-#: ../src/iop/diffuse.c:1130 ../src/iop/diffuse.c:1372
+#: ../src/iop/diffuse.c:1135 ../src/iop/diffuse.c:1377
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
 "difusão/nitidez não conseguiu alocar memória, verifique sua configuração de "
 "RAM"
 
-#: ../src/iop/diffuse.c:1500
+#: ../src/iop/diffuse.c:1505
 msgid "diffusion properties"
 msgstr "propriedades da difusão"
 
-#: ../src/iop/diffuse.c:1505
+#: ../src/iop/diffuse.c:1510
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -14459,7 +14461,7 @@ msgstr ""
 "se planeja aumentar nitidez ou reconstruir, mais iterações ajudam na "
 "reconstrução."
 
-#: ../src/iop/diffuse.c:1513
+#: ../src/iop/diffuse.c:1518
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -14473,7 +14475,7 @@ msgstr ""
 "para remoção de desfoque e de ruído, escolha zero.\n"
 "aumente para, ao invés disso, atuar no contraste local."
 
-#: ../src/iop/diffuse.c:1523
+#: ../src/iop/diffuse.c:1528
 msgid ""
 "width of the diffusion around the center radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -14487,11 +14489,11 @@ msgstr ""
 "se planeja reduzir ruído, o raio deve estar perto da largura do desfoque da "
 "sua lente."
 
-#: ../src/iop/diffuse.c:1528
+#: ../src/iop/diffuse.c:1533
 msgid "diffusion speed"
 msgstr "velocidade da difusão"
 
-#: ../src/iop/diffuse.c:1534
+#: ../src/iop/diffuse.c:1539
 msgid ""
 "smoothing or sharpening of smooth details (gradients).\n"
 "positive values diffuse and blur.\n"
@@ -14503,7 +14505,7 @@ msgstr ""
 "valores negativos aumentam nitidez.\n"
 "zero nada faz."
 
-#: ../src/iop/diffuse.c:1543 ../src/iop/diffuse.c:1552
+#: ../src/iop/diffuse.c:1548 ../src/iop/diffuse.c:1557
 msgid ""
 "smoothing or sharpening of sharp details.\n"
 "positive values diffuse and blur.\n"
@@ -14515,7 +14517,7 @@ msgstr ""
 "valores negativos aumentam nitidez.\n"
 "zero nada faz."
 
-#: ../src/iop/diffuse.c:1561
+#: ../src/iop/diffuse.c:1566
 msgid ""
 "smoothing or sharpening of sharp details (gradients).\n"
 "positive values diffuse and blur.\n"
@@ -14527,12 +14529,12 @@ msgstr ""
 "valores negativos aumentam nitidez.\n"
 "zero nada faz."
 
-#: ../src/iop/diffuse.c:1566
+#: ../src/iop/diffuse.c:1571
 msgid "diffusion directionality"
 msgstr "direcionalidade da difusão"
 
-#: ../src/iop/diffuse.c:1573 ../src/iop/diffuse.c:1583
-#: ../src/iop/diffuse.c:1593 ../src/iop/diffuse.c:1603
+#: ../src/iop/diffuse.c:1578 ../src/iop/diffuse.c:1588
+#: ../src/iop/diffuse.c:1598 ../src/iop/diffuse.c:1608
 msgid ""
 "anisotropy of the diffusion.\n"
 "zero makes the diffusion isotrope (same in all directions)\n"
@@ -14544,15 +14546,15 @@ msgstr ""
 "positivos fazem a difusão seguir isofotos mais de perto\n"
 "negativos fazem a difusão seguir gradientes mais de perto"
 
-#: ../src/iop/diffuse.c:1608
+#: ../src/iop/diffuse.c:1613
 msgid "edges management"
 msgstr "tratamento de bordas"
 
-#: ../src/iop/diffuse.c:1614
+#: ../src/iop/diffuse.c:1619
 msgid "increase or decrease the sharpness of the highest frequencies"
 msgstr "aumenta ou diminui a nitidez das frequências mais altas"
 
-#: ../src/iop/diffuse.c:1618
+#: ../src/iop/diffuse.c:1623
 msgid ""
 "define the sensitivity of the variance penalty for edges.\n"
 "increase to exclude more edges from diffusion,\n"
@@ -14562,7 +14564,7 @@ msgstr ""
 "aumente para excluir mais bordas da difusão,\n"
 "se franjas ou halos surgirem."
 
-#: ../src/iop/diffuse.c:1624
+#: ../src/iop/diffuse.c:1629
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -14575,11 +14577,11 @@ msgstr ""
 "se áreas escuras parecerem demasiado nítidas quando comparadas com áreas "
 "claras."
 
-#: ../src/iop/diffuse.c:1630
+#: ../src/iop/diffuse.c:1635
 msgid "diffusion spatiality"
 msgstr "espacialidade da difusão"
 
-#: ../src/iop/diffuse.c:1636
+#: ../src/iop/diffuse.c:1641
 msgid ""
 "luminance threshold for the mask.\n"
 "0. disables the luminance masking and applies the module on the whole "
@@ -18648,10 +18650,6 @@ msgctxt "accel"
 msgid "add sample"
 msgstr "adiciona amostra"
 
-#: ../src/libs/colorpicker.c:298
-msgid "Color"
-msgstr "Cor"
-
 #: ../src/libs/colorpicker.c:469
 msgid ""
 "hover to highlight sample on canvas,\n"
@@ -19744,7 +19742,7 @@ msgstr "atualizar cópia local"
 msgid "synchronize the image's XMP and remove the local copy"
 msgstr "sincroniza o XMP da imagem e remove a cópia local"
 
-#: ../src/libs/image.c:538 ../src/libs/tools/filter.c:98
+#: ../src/libs/image.c:538 ../src/libs/tools/filter.c:108
 msgid "group"
 msgstr "grupo"
 
@@ -20243,7 +20241,7 @@ msgstr "sobrepor"
 msgid "selected image"
 msgstr "imagem selecionada"
 
-#: ../src/libs/live_view.c:379 ../src/libs/tools/filter.c:96
+#: ../src/libs/live_view.c:379 ../src/libs/tools/filter.c:106
 msgid "id"
 msgstr "id"
 
@@ -20630,7 +20628,7 @@ msgstr "identificação de grupo"
 msgid "version"
 msgstr "versão"
 
-#: ../src/libs/metadata_view.c:128 ../src/libs/tools/filter.c:99
+#: ../src/libs/metadata_view.c:128 ../src/libs/tools/filter.c:109
 msgid "full path"
 msgstr "caminho completo"
 
@@ -22069,70 +22067,108 @@ msgstr ""
 msgid "filmstrip"
 msgstr "tira de filme"
 
-#: ../src/libs/tools/filter.c:90
+#: ../src/libs/tools/filter.c:100
 msgid "capture time"
 msgstr "tempo de captura"
 
-#: ../src/libs/tools/filter.c:91
+#: ../src/libs/tools/filter.c:101
 msgid "import time"
 msgstr "tempo de importação"
 
-#: ../src/libs/tools/filter.c:92
+#: ../src/libs/tools/filter.c:102
 msgid "last modification time"
 msgstr "tempo da última modificação"
 
-#: ../src/libs/tools/filter.c:93
+#: ../src/libs/tools/filter.c:103
 msgid "last export time"
 msgstr "tempo da última exportação"
 
-#: ../src/libs/tools/filter.c:94
+#: ../src/libs/tools/filter.c:104
 msgid "last print time"
 msgstr "tempo da última impressão"
 
-#: ../src/libs/tools/filter.c:100
+#: ../src/libs/tools/filter.c:110
 msgid "custom sort"
 msgstr "ordenação personalizada"
 
-#: ../src/libs/tools/filter.c:104
+#: ../src/libs/tools/filter.c:114
 msgid "shuffle"
 msgstr "embaralhar"
 
-#: ../src/libs/tools/filter.c:119
+#: ../src/libs/tools/filter.c:129
 msgid "filter"
 msgstr "filtro"
 
-#: ../src/libs/tools/filter.c:161
-msgid "comparator"
-msgstr "comparador"
+#: ../src/libs/tools/filter.c:354
+msgctxt "quickfilter"
+msgid "filter"
+msgstr "filtro"
 
-#: ../src/libs/tools/filter.c:162 ../src/libs/tools/filter.c:181
-msgid "which images should be shown"
-msgstr "que imagens devem ser mostradas"
+#: ../src/libs/tools/filter.c:362 ../src/libs/tools/filter.c:377
+msgid "filter by images rating"
+msgstr "filtrar por classificação das imagens"
 
-#. create the filter combobox
-#: ../src/libs/tools/filter.c:180
-msgid "view"
-msgstr "visualizar"
-
-#: ../src/libs/tools/filter.c:185
+#: ../src/libs/tools/filter.c:381
 msgid "unstarred only"
 msgstr "apenas sem estrela"
 
-#: ../src/libs/tools/filter.c:191
+#: ../src/libs/tools/filter.c:387
 msgid "rejected only"
 msgstr "apenas rejeitadas"
 
-#: ../src/libs/tools/filter.c:192
+#: ../src/libs/tools/filter.c:388
 msgid "all except rejected"
 msgstr "todas exceto rejeitadas"
 
-#: ../src/libs/tools/filter.c:200
+#: ../src/libs/tools/filter.c:401
+msgid ""
+"filter by images color label\n"
+"click to toggle the color label selection\n"
+"ctrl+click to exclude the color label\n"
+"the grey button affects all color labels"
+msgstr ""
+"filtrar por cor da etiqueta das imagens\n"
+"clique para alternar seleção da cor da etiqueta\n"
+"ctrl+clique para excluir a etiqueta de cor\n"
+"o botão cinza afeta todas as etiquetas de cor"
+
+#: ../src/libs/tools/filter.c:411
+msgid ""
+"filter by images color label\n"
+"and (∩): images having all selected color labels\n"
+"or (∪): images with at least one of the selected color labels"
+msgstr ""
+"filtrar por cor da etiqueta das imagens\n"
+"e (n): imagens tendo as mesmas etiquetas de cor\n"
+"ou (u): imagens tendo ao menos uma das etiquetas de cor selecionadas"
+
+#: ../src/libs/tools/filter.c:427
+#, c-format
+msgid ""
+"filter by text from images metadata, tags, file path and name\n"
+"`%' is the wildcard character\n"
+"by default start and end wildcards are auto-applied\n"
+"starting or ending with a double quote disables the corresponding wildcard\n"
+"is dimmed during the search execution"
+msgstr ""
+"filtar por metadados da imagem, etiquetas, caminho do arquivo e nome\n"
+"`%` é o caracter curinga\n"
+"por default curingas de início e fim são auto-aplicados\n"
+"começar ou terminar com aspa dupla desabilita o curinga correspondente"
+
+#. sort combobox
+#: ../src/libs/tools/filter.c:439
 msgid "sort by"
 msgstr "ordenar por"
 
-#: ../src/libs/tools/filter.c:201
+#: ../src/libs/tools/filter.c:446
 msgid "determine the sort order of shown images"
 msgstr "determine a ordem em que as imagens são mostradas"
+
+#: ../src/libs/tools/filter.c:663
+msgctxt "accel"
+msgid "reset filters"
+msgstr "redefinir filtros"
 
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:224
@@ -23213,6 +23249,18 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1333
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "comparator"
+#~ msgstr "comparador"
+
+#~ msgid "which images should be shown"
+#~ msgstr "que imagens devem ser mostradas"
+
+#~ msgid "view"
+#~ msgstr "visualizar"
+
+#~ msgid "Color"
+#~ msgstr "Cor"
 
 #~ msgid "memory in MB to use for thumbnail cache"
 #~ msgstr "memória em MB usada para o cache de miniaturas"
