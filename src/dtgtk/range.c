@@ -382,16 +382,28 @@ static void _popup_date_tree_row_activated(GtkTreeView *self, GtkTreePath *path,
   if(!range->date_popup || range->date_popup->internal_change) return;
   _range_date_popup *pop = range->date_popup;
 
+  // we validate the ok button
+  gtk_widget_activate(pop->ok_btn);
+}
+
+static void _popup_date_tree_selection_change(GtkTreeView *self, GtkDarktableRangeSelect *range)
+{
+  if(!range->date_popup || range->date_popup->internal_change) return;
+  _range_date_popup *pop = range->date_popup;
+
   // we retrieve the row path
   GtkTreeIter iter;
   gchar *text = NULL;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(pop->treeview));
-  gtk_tree_model_get_iter(model, &iter, path);
+  if(!gtk_tree_selection_get_selected(gtk_tree_view_get_selection(GTK_TREE_VIEW(pop->treeview)), NULL, &iter))
+    return;
+
   gtk_tree_model_get(model, &iter, DATETIME_COL_PATH, &text, -1);
 
   // we decode the path
   int y, m, d, h, min, s;
-  y = m = d = h = min = s = 0;
+  y = h = min = s = 0;
+  m = d = 1;
   if(g_str_has_prefix(text, "b"))
   {
     // that means this is a predefined block, so we just need to read its value
@@ -434,6 +446,9 @@ static void _popup_date_tree_row_activated(GtkTreeView *self, GtkTreePath *path,
       m = CLAMP(atoi(nb), 1, 12);
       g_free(nb);
     }
+    // we now need to determine the number of days of this month
+    int max_day = g_date_get_days_in_month(m, y);
+    d = MIN(d, max_day);
     if(match_count > 3)
     {
       gchar *nb = g_match_info_fetch(match_info, 3);
@@ -467,9 +482,6 @@ static void _popup_date_tree_row_activated(GtkTreeView *self, GtkTreePath *path,
   gchar *txt = g_strdup_printf("%04d:%02d:%02d %02d:%02d:%02d", y, m, d, h, min, s);
   gtk_entry_set_text(GTK_ENTRY(pop->selection), txt);
   g_free(txt);
-
-  // we validate the ok button
-  gtk_widget_activate(pop->ok_btn);
 }
 
 static void _popup_date_changed(GtkWidget *w, GtkDarktableRangeSelect *range)
@@ -578,6 +590,8 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   pop->treeview = gtk_tree_view_new_with_model(model);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(pop->treeview), FALSE);
   g_signal_connect(G_OBJECT(pop->treeview), "row-activated", G_CALLBACK(_popup_date_tree_row_activated), range);
+  g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(GTK_TREE_VIEW(pop->treeview))), "changed",
+                   G_CALLBACK(_popup_date_tree_selection_change), range);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(pop->treeview), col);
