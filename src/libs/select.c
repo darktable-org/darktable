@@ -226,7 +226,7 @@ static void lua_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static int lua_register_selection(lua_State *L)
 {
-  lua_settop(L, 3);
+  lua_settop(L, 4);
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
   lua_getiuservalue(L, -1, 1);
@@ -242,7 +242,7 @@ static int lua_register_selection(lua_State *L)
   lua_settable(L, -3);
 
   GtkWidget* button = gtk_button_new_with_label(key);
-  const char * tooltip = lua_tostring(L, 3);
+  const char * tooltip = lua_tostring(L, 4);
   if(tooltip)
     gtk_widget_set_tooltip_text(button, tooltip);
 
