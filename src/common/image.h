@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -257,6 +257,9 @@ typedef struct dt_image_t
 
   /* White balance coeffs from the raw */
   dt_aligned_pixel_t wb_coeffs;
+
+  /* Adobe coeffs from the raw */
+  float adobe_XYZ_to_CAM[4][3];
 
   /* DefaultUserCrop */
   dt_boundingbox_t usercrop;

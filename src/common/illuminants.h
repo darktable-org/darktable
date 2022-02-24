@@ -20,7 +20,6 @@
 
 #include "common/chromatic_adaptation.h"
 #include "common/image.h"
-#include "external/adobe_coeff.c"
 
 
 /* Standard CIE illuminants */
@@ -437,7 +436,9 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, const dt_alig
   }
   else
   {
-    dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])XYZ_to_CAM);
+    for(int k=0; k<4; k++)
+      for(int i=0; i<3; i++)
+        XYZ_to_CAM[k][i] = img->adobe_XYZ_to_CAM[k][i];
   }
 
   if(isnan(XYZ_to_CAM[0][0])) return FALSE;
