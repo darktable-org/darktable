@@ -1313,6 +1313,7 @@ void dt_get_sysresource_level()
     else if(!strcmp(config, "large"))             darktable.dtresources.level = 3;
     else if(!strcmp(config, "unrestricted"))      darktable.dtresources.level = 4;
     else if(!strcmp(config, "reference (debug)")) darktable.dtresources.level = -1;
+    else if(!strcmp(config, "reference"))         darktable.dtresources.level = -1;
     dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to %i as `%s'\n", darktable.dtresources.level, config);
   }
   else
