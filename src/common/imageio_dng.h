@@ -181,21 +181,19 @@ static inline void dt_imageio_dng_write_tiff_header(
   }
 
   for(int k = 0; k < 9; k++)
-   {
-     dt_imageio_dng_write_buf(buf, 480+k*8, m[k]);
-     dt_imageio_dng_write_buf(buf, 484+k*8, den);
-   }
+  {
+    dt_imageio_dng_write_buf(buf, 480+k*8, m[k]);
+    dt_imageio_dng_write_buf(buf, 484+k*8, den);
+  }
 
+  // TAG AsShotNeutral: for rawspeed Dngdecoder camera white balance
+  den = 1000000;
   for(int k = 0; k < 3; k++)
-   {
-     dt_aligned_pixel_t coeff;
-
-    // TAG AsShotNeutral: for rawspeed Dngdecoder camera white balance
-    coeff[k] = 1 / ( (wb_coeffs[k]/ wb_coeffs[1])) ;
-    coeff[k] *= 1000000;
-    dt_imageio_dng_write_buf(buf, 556+k*8,(int)coeff[k]);
-    dt_imageio_dng_write_buf(buf, 560+k*8, 1000000);
-   }
+  {
+    float coeff = roundf(den * wb_coeffs[1] / wb_coeffs[k]);
+    dt_imageio_dng_write_buf(buf, 556+k*8, (int)coeff);
+    dt_imageio_dng_write_buf(buf, 560+k*8, den);
+  }
 
   // dt_imageio_dng_write_buf(buf, offs2-buf, 584);
   const int written = fwrite(buf, 1, 584, fp);
