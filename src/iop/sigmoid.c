@@ -163,7 +163,7 @@ static inline float generalized_loglogistic_sigmoid(const float value, const flo
   // The following equation can be derived as a model for film + paper but it has a pole at 0
   // magnitude * powf(1.0 + paper_exp * powf(film_fog + value, -film_power), -paper_power);
   // Rewritten on a stable and with a check for negative values.
-  const float film = value > 0.0f ? pow(value, film_power) : 0.0f;
+  const float film = film_fog + value > 0.0f ? pow(film_fog + value, film_power) : 0.0f;
   return magnitude * pow(film / (paper_exp + film), paper_power);
 }
 
@@ -389,10 +389,20 @@ void process_loglogistic_rgb_ratio(dt_dev_pixelpipe_iop_t *piece, const void *co
     const float luma = (pix_in_strict_positive[0] + pix_in_strict_positive[1] + pix_in_strict_positive[2]) / 3.0f;
     const float mapped_luma = generalized_loglogistic_sigmoid(luma, white_target, paper_exp, film_fog, contrast_power, skew_power);
 
-    const float scaling_factor = mapped_luma / luma;
-    for(size_t c = 0; c < 3; c++)
+    if (luma > 1e-9)
     {
-      pre_out[c] = scaling_factor * pix_in_strict_positive[c];
+      const float scaling_factor = mapped_luma / luma;
+      for(size_t c = 0; c < 3; c++)
+      {
+        pre_out[c] = scaling_factor * pix_in_strict_positive[c];
+      }
+    }
+    else
+    {
+      for(size_t c = 0; c < 3; c++)
+      {
+        pre_out[c] = mapped_luma;
+      }
     }
 
     // RGB index order sorted by value;
@@ -511,6 +521,14 @@ void process_loglogistic_hue(dt_dev_pixelpipe_iop_t *piece, const void *const iv
 static inline void preserve_hue_and_energy(const float pix_in[4], const float per_channel[4], float pix_out[4],
     const dt_iop_sigmoid_value_order_t order, const float hue_preservation)
 {
+  if (per_channel[order.max] - per_channel[order.min] < 1e-9)
+  {
+    pix_out[order.min] = per_channel[order.min];
+    pix_out[order.mid] = per_channel[order.mid];
+    pix_out[order.max] = per_channel[order.max];
+    return;  // Nothing to fix
+  }
+
   // Naive Hue correction of the middle channel
   const float full_hue_correction = per_channel[order.min] + ((per_channel[order.max] - per_channel[order.min]) * (pix_in[order.mid] - pix_in[order.min]) / (pix_in[order.max] - pix_in[order.min]));
   const float naive_hue_mid = (1.0 - hue_preservation) * per_channel[order.mid] + hue_preservation * full_hue_correction;
