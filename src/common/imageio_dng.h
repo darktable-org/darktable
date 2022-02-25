@@ -85,7 +85,6 @@ static inline void dt_imageio_dng_write_tiff_header(
   // uint32_t exif_offs;
   uint8_t buf[1024];
   uint8_t cnt = 0;
-  dt_aligned_pixel_t coeff;
 
   // this matrix is generic for XYZ->sRGB / D65
   int m[9] = { 3240454, -1537138, -498531, -969266, 1876010, 41556, 55643, -204025, 1057225 };
@@ -189,6 +188,8 @@ static inline void dt_imageio_dng_write_tiff_header(
 
   for(int k = 0; k < 3; k++)
    {
+     dt_aligned_pixel_t coeff;
+
     // TAG AsShotNeutral: for rawspeed Dngdecoder camera white balance
     coeff[k] = 1 / ( (wb_coeffs[k]/ wb_coeffs[1])) ;
     coeff[k] *= 1000000;
@@ -197,7 +198,7 @@ static inline void dt_imageio_dng_write_tiff_header(
    }
 
   // dt_imageio_dng_write_buf(buf, offs2-buf, 584);
-  int written = fwrite(buf, 1, 584, fp);
+  const int written = fwrite(buf, 1, 584, fp);
   if(written != 584) fprintf(stderr, "[dng_write_header] failed to write image header!\n");
 }
 
