@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -284,6 +284,7 @@ typedef struct dt_control_merge_hdr_t
   float whitelevel;
   float epsw;
   dt_aligned_pixel_t wb_coeffs;
+  float adobe_XYZ_to_CAM[4][3];
   char camera_makermodel[128];
 
   // 0 - ok; 1 - errors, abort
@@ -364,8 +365,11 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->wd = datai->width;
     d->ht = datai->height;
     d->orientation = image.orientation;
-    for(int i = 0; i < 3; i++) d->wb_coeffs[i] = image.wb_coeffs[i];
-    g_strlcpy(d->camera_makermodel, image.camera_makermodel,sizeof(d->camera_makermodel));
+    for(int i = 0; i < 3; i++)
+      d->wb_coeffs[i] = image.wb_coeffs[i];
+    for(int k=0; k<4; k++)
+      for(int i=0; i<3; i++)
+        d->adobe_XYZ_to_CAM[k][i] = image.adobe_XYZ_to_CAM[k][i];
   }
 
   if(image.buf_dsc.filters == 0u || image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16)
@@ -540,7 +544,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
                        (const uint8_t (*)[6])d.first_xtrans,
                        1.0f,
                        (const float (*))d.wb_coeffs,
-                       (const char (*))d.camera_makermodel);
+                       d.adobe_XYZ_to_CAM);
   free(exif);
 
   dt_control_job_set_progress(job, 1.0);

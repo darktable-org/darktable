@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  Copyright (C) 2009-2021 darktable developers.
+  Copyright (C) 2009-2022 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1789,6 +1789,10 @@ void dt_image_init(dt_image_t *img)
   img->usercrop[0] = img->usercrop[1] = 0;
   img->usercrop[2] = img->usercrop[3] = 1;
   img->cache_entry = 0;
+
+  for(int k=0; k<4; k++)
+    for(int i=0; i<3; i++)
+      img->adobe_XYZ_to_CAM[k][i] = NAN;
 }
 
 void dt_image_refresh_makermodel(dt_image_t *img)

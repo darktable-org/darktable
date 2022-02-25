@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
 
 // writes buffers as digital negative (dng) raw images
 
-#include "common/darktable.h"
-#include "common/exif.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "external/adobe_coeff.c"
+
+#include "common/darktable.h"
+#include "common/exif.h"
 
 
 #define II 1
@@ -78,7 +78,7 @@ static inline void dt_imageio_dng_write_tiff_header(
     const uint8_t xtrans[6][6],
     const float whitelevel,
     const dt_aligned_pixel_t wb_coeffs,
-    const char camera_makermodel[128])
+    const float adobe_XYZ_to_CAM[4][3])
 {
   const uint32_t channels = 1;
   uint8_t *b /*, *offs1, *offs2*/;
@@ -86,7 +86,7 @@ static inline void dt_imageio_dng_write_tiff_header(
   uint8_t buf[1024];
   uint8_t cnt = 0;
   dt_aligned_pixel_t coeff;
-  float XYZ_CAM[12];
+
   // this matrix is generic for XYZ->sRGB / D65
   int m[9] = { 3240454, -1537138, -498531, -969266, 1876010, 41556, 55643, -204025, 1057225 };
   int den = 1000000;
@@ -173,12 +173,12 @@ static inline void dt_imageio_dng_write_tiff_header(
   memcpy(buf+400, xtrans, sizeof(uint8_t)*36);
 
   // ColorMatrix1 try to get camera matrix else m[k] like before
-  XYZ_CAM[0]= NAN;
-  dt_dcraw_adobe_coeff((const char (*))camera_makermodel, (float(*)[12])XYZ_CAM);
-  if(!isnan(XYZ_CAM[0]))
+  if(!isnan(adobe_XYZ_to_CAM[0][0]))
   {
-  for(int k= 0; k < 9; k++)  m[k] = round(XYZ_CAM[k] * 10000.0f);
-  den = 10000;
+    for(int k= 0; k < 3; k++)
+      for(int i= 0; i < 3; i++)
+        m[k*3+i] = roundf(adobe_XYZ_to_CAM[k][i] * ADOBE_COEFF_FACTOR);
+    den = ADOBE_COEFF_FACTOR;
   }
 
   for(int k = 0; k < 9; k++)
@@ -207,12 +207,13 @@ static inline void dt_imageio_write_dng(
     const uint8_t xtrans[6][6],
     const float whitelevel,
     const dt_aligned_pixel_t wb_coeffs,
-    const char camera_makermodel[128])
+    const float adobe_XYZ_to_CAM[4][3])
 {
   FILE *f = g_fopen(filename, "wb");
   if(f)
   {
-    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, xtrans, whitelevel, wb_coeffs, camera_makermodel);
+    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f,
+                                     filter, xtrans, whitelevel, wb_coeffs, adobe_XYZ_to_CAM);
     const int k = fwrite(pixel, sizeof(float), (size_t)wd * ht, f);
     if(k != wd * ht) fprintf(stderr, "[dng_write] Error writing image data to %s\n", filename);
     fclose(f);
