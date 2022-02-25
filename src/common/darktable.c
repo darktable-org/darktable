@@ -404,7 +404,7 @@ void check_resourcelevel(const char *key, int *fractions, const int level)
   }
   else
   {
-    gchar *in = dt_conf_get_string(key);
+    const gchar *in = dt_conf_get_string_const(key);
     sscanf(in, "%i %i %i %i", &fractions[g], &fractions[g+1], &fractions[g+2], &fractions[g+3]);
   }
 }
