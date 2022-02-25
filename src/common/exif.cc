@@ -1165,7 +1165,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_dng_illuminant_t illu[3] = { DT_LS_Unknown, DT_LS_Unknown, DT_LS_Unknown };
       img->d65_color_matrix[0] = NAN; // make sure for later testing
 
-      // Maybe there is a predefined camera matrix in adobe_coeff?
       // fallback later via `find_temperature_from_raw_coeffs` if there is no valid illuminant
 
       // The correction matrices are taken from

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@
 #include "develop/imageop_gui.h"
 #include "iop/iop_api.h"
 
-#include "external/adobe_coeff.c"
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
@@ -1536,17 +1535,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   if(type == DT_COLORSPACE_STANDARD_MATRIX)
   {
-    // color matrix
-    float cam_xyz[12];
-    cam_xyz[0] = NAN;
-
-    // Use the legacy name if it has been set to honor the partial matching matrices of low-end Canons
-    if (pipe->image.camera_legacy_makermodel[0])
-      dt_dcraw_adobe_coeff(pipe->image.camera_legacy_makermodel, (float(*)[12])cam_xyz);
-    else
-      dt_dcraw_adobe_coeff(pipe->image.camera_makermodel, (float(*)[12])cam_xyz);
-
-    if(isnan(cam_xyz[0]))
+    if(isnan(pipe->image.adobe_XYZ_to_CAM[0][0]))
     {
       if(dt_image_is_matrix_correction_supported(&pipe->image))
       {
@@ -1557,7 +1546,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     }
     else
     {
-      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])cam_xyz);
+      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])pipe->image.adobe_XYZ_to_CAM);
       d->clear_input = 1;
     }
   }
@@ -1957,17 +1946,9 @@ static void update_profile_list(dt_iop_module_t *self)
     g->image_profiles = g_list_append(g->image_profiles, prof);
     prof->in_pos = ++pos;
   }
-  // get color matrix from raw image:
-  float cam_xyz[12];
-  cam_xyz[0] = NAN;
 
-  // Use the legacy name if it has been set to honor the partial matching matrices of low-end Canons
-  if (self->dev->image_storage.camera_legacy_makermodel[0])
-    dt_dcraw_adobe_coeff(self->dev->image_storage.camera_legacy_makermodel, (float(*)[12])cam_xyz);
-  else
-    dt_dcraw_adobe_coeff(self->dev->image_storage.camera_makermodel, (float(*)[12])cam_xyz);
-
-  if(!isnan(cam_xyz[0]) && !(self->dev->image_storage.flags & DT_IMAGE_4BAYER))
+  if(!isnan(self->dev->image_storage.adobe_XYZ_to_CAM[0][0])
+     && !(self->dev->image_storage.flags & DT_IMAGE_4BAYER))
   {
     dt_colorspaces_color_profile_t *prof
         = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
