@@ -95,33 +95,14 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       const float max = f->Float.Max;
       offset = f->header.offset + param_index * sizeof(float);
       const float defval = *(float*)(d + offset);
-      int digits = 2;
-      float step = 0;
 
-      const float top = fminf(max-min, fmaxf(fabsf(min),fabsf(max)));
-      if (top>=100)
-      {
-        step = 1.f;
-      }
-      else
-      {
-        step = top / 100;
-        const float log10step = log10f(step);
-        const float fdigits = floorf(log10step+.1);
-        step = powf(10.f,fdigits);
-        if (log10step - fdigits > .5)
-          step *= 5;
-        if (fdigits < -2.f)
-          digits = -fdigits;
-      }
-
-      slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, step, defval, digits, 1);
+      slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 0, defval, 2, 1);
 
       const char *post = ""; // set " %%", " EV" etc
 
       if (min < 0 || (post && *post))
       {
-        str = g_strdup_printf("%%%s.0%df%s", (min < 0 ? "+" : ""), digits, post);
+        str = g_strdup_printf("%%%s.0%df%s", (min < 0 ? "+" : ""), 2, post);
 
         dt_bauhaus_slider_set_format(slider, str);
 

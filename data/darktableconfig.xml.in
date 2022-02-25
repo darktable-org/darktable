@@ -74,6 +74,13 @@
     <shortdescription>widget scale</shortdescription>
     <longdescription>scaling factor for bauhaus widgets, will affect font size</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>bauhaus/zoom_step</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>scale slider step with min/max</shortdescription>
+    <longdescription>vary bauhaus slider step size with min/max range</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>database</name>
     <type>string</type>
