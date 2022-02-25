@@ -260,7 +260,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // Grab the adobe coeff
     for(int k = 0; k < 4; k++)
       for(int i = 0; i < 3; i++)
-        img->adobe_XYZ_to_CAM[k][i] = r->metadata.colorMatrix[k*3+i] / ADOBE_COEFF_FACTOR;
+        img->adobe_XYZ_to_CAM[k][i] =
+          r->metadata.colorMatrix[k*3+i] / (float)ADOBE_COEFF_FACTOR;
 
     // FIXME: grab r->metadata.colorMatrix.
 

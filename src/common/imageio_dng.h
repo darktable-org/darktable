@@ -27,7 +27,6 @@
 
 #include "common/darktable.h"
 #include "common/exif.h"
-#include "common/imageio_rawspeed.h"
 
 
 #define II 1
@@ -179,7 +178,7 @@ static inline void dt_imageio_dng_write_tiff_header(
     for(int k= 0; k < 3; k++)
       for(int i= 0; i < 3; i++)
         m[k*3+i] = roundf(adobe_XYZ_to_CAM[k][i] * ADOBE_COEFF_FACTOR);
-    den = 10000;
+    den = ADOBE_COEFF_FACTOR;
   }
 
   for(int k = 0; k < 9; k++)

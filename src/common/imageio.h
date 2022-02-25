@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,9 @@
 
 // FIXME: kill this pls.
 #define FILTERS_ARE_4BAYER(filters) (FILTERS_ARE_CYGM(filters) || FILTERS_ARE_RGBE(filters))
+
+// for Adobe coefficients from LibRaw & RawSpeed
+#define ADOBE_COEFF_FACTOR 10000
 
 typedef enum dt_imageio_levels_t
 {

@@ -25,8 +25,6 @@ extern "C" {
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-#define ADOBE_COEFF_FACTOR 10000.0f
-
 gboolean dt_rawspeed_lookup_makermodel(const char *maker, const char *model,
                                        char *mk, int mk_len, char *md, int md_len,
                                        char *al, int al_len);
