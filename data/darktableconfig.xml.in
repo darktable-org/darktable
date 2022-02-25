@@ -182,6 +182,7 @@
         <option>small</option>
         <option>default</option>
         <option>large</option>
+        <option>tuned cl</option>
         <option>unrestricted</option>
         <option>mini (debug)</option>
         <option>reference (debug)</option>
@@ -189,7 +190,7 @@
     </type>
     <default>default</default>
     <shortdescription>darktable resources</shortdescription>
-    <longdescription>defines how much darktable may take from your system resources. lower the setting if you are using simultaneously applications taking large parts of your systems memory or opencl/gl applications like games or hugin. increase if you are using darktable alone on your machine.\n - default: takes ~50%% of your systems resources and gives darktable enough to be still performant.\n\nthere are some special modes:\n\n - mini: darktable takes 0.5 GB ram and 0.25GB video ram\n - reference: - darktable takes 8GB ram and 2GB video ram\n - unrestricted: darktable will take almost all of your systems resources and might lead to swapping and unexpected performance drops. use with caution!</longdescription>
+    <longdescription>defines how much darktable may take from your system resources. lower the setting if you are using simultaneously applications taking large parts of your systems memory or opencl/gl applications like games or hugin. increase if you are using darktable alone on your machine.\n - default: takes ~50%% of your systems resources and gives darktable enough to be still performant.\n - tuned cl: tunes your graphics card for best performance\n\nthere are some special modes:\n\n - mini: darktable takes 0.5 GB ram and 0.25GB video ram\n - reference: - darktable takes 8GB ram and 2GB video ram\n - unrestricted: darktable will take almost all of your systems resources and might lead to swapping and unexpected performance drops. use with caution!</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>ui/performance</name>

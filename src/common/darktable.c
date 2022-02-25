@@ -1088,18 +1088,20 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   //  1 cpu singlebuffer
   //  2 mipmap size
   //  3 opencl available
-  static int fractions[20] = {
+  static int fractions[24] = {
       512,   32, 128, 700,  // default
         0,    0,  16,   0,  // mini
       128,   16,  64, 400,  // small
       700,   64, 128, 900,  // large
-    16384, 1024, 128, 1024  // unrestricted
+    16384, 1024, 128, 1024, // unrestricted
+      700,   64, 128,   0,  // tunedcl
   };
   // Allow the settings for each performance level to be changed via darktablerc
   check_resourcelevel("resource_default", fractions, 0);
   check_resourcelevel("resource_small", fractions, 2);
   check_resourcelevel("resource_large", fractions, 3);
   check_resourcelevel("resource_unrestricted", fractions, 4);
+  check_resourcelevel("resource_tuned", fractions, 5);
 
   darktable.dtresources.fractions = fractions;
   darktable.dtresources.total_memory = _get_total_memory() * 1024lu;
@@ -1303,7 +1305,7 @@ void dt_get_sysresource_level()
       If we want a new setting here, we must
         - add a string->level conversion here
         - add a line of fraction in int fractions[] above
-        - add a line in
+        - add a line in darktableconfig.xml.in
   */
   if(config)
   {
@@ -1312,6 +1314,7 @@ void dt_get_sysresource_level()
     else if(!strcmp(config, "small"))             darktable.dtresources.level = 2;
     else if(!strcmp(config, "large"))             darktable.dtresources.level = 3;
     else if(!strcmp(config, "unrestricted"))      darktable.dtresources.level = 4;
+    else if(!strcmp(config, "tuned cl"))          darktable.dtresources.level = 5;
     else if(!strcmp(config, "reference (debug)")) darktable.dtresources.level = -1;
     else if(!strcmp(config, "reference"))         darktable.dtresources.level = -1;
     dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to %i as `%s'\n", darktable.dtresources.level, config);

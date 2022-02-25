@@ -160,6 +160,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].options = NULL;
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
+  cl->dev[dev].tuned_available = 0;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -2437,6 +2438,69 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
                                       (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
 }
 
+size_t _opencl_get_tuned_available(const int devid)
+{
+  if(darktable.opencl->dev[devid].tuned_available) return darktable.opencl->dev[devid].tuned_available;
+  size_t available = 0;
+  const size_t allmem = darktable.opencl->dev[devid].max_global_mem - 128ul * 1024ul * 1024ul;
+  const size_t l_buff = dt_opencl_get_device_memalloc(devid);
+  const size_t s_buff = 128lu * 1024lu * 1024lu;
+
+  int checked = 0;
+  cl_mem tbuf[128];
+
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                 CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, 16, NULL, &err);
+  if(!sbuf) return 0;
+
+  while((available < allmem) && (checked < 128) && (err == CL_SUCCESS))
+  {
+    tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                     CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, l_buff, NULL, &err);
+    if(err == CL_SUCCESS)
+    {
+      err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
+                                                                   sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
+      if(err == CL_SUCCESS)
+      {
+        checked++;
+        available += l_buff;
+      }
+      else
+      {
+        if(tbuf[checked]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
+      }
+    }
+  }
+
+  err = CL_SUCCESS;
+  while((available < allmem) && (checked < 128) && (err == CL_SUCCESS))
+  {
+    tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                     CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, s_buff, NULL, &err);
+    if(err == CL_SUCCESS)
+    {
+      err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
+                                                                   sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
+      if(err == CL_SUCCESS) available += s_buff;
+      checked++;
+    }
+  }
+
+  (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(sbuf);
+  for(int i = 0; i < checked; i++)
+    if(tbuf[i]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
+
+  available -= s_buff; // make sure to leave at least an additional 128MB
+
+  dt_print(DT_DEBUG_OPENCL, "[opencl_get_tuned_available] found %luMB (headroom %lu) on device %i\n",
+     available / 1024lu / 1024lu, (darktable.opencl->dev[devid].max_global_mem - available) / 1024lu / 1024lu, devid);
+
+  darktable.opencl->dev[devid].tuned_available = available;
+  return available;
+}
+
 /* amount of graphics memory declared as available depends on max_global_mem and "resourcelevel". We garantee
    - a headroom of 400MB in all cases
    - 256MB to simulate a minimum system
@@ -2446,11 +2510,12 @@ cl_ulong dt_opencl_get_device_available(const int devid)
 {
   if(!darktable.opencl->inited || devid < 0) return 0;
   const int level = darktable.dtresources.level;
-  if(level < 0) return 2048lu  * 1024ul * 1024ul;
+  if(level < 0)  return 2048lu  * 1024ul * 1024ul;
+  if(level == 5) return _opencl_get_tuned_available(devid);
+
   const size_t disposable = (size_t)darktable.opencl->dev[devid].max_global_mem - 400ul * 1024ul * 1024ul;
   const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 3];
-  const size_t available = MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction); 
-  return available;
+  return MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction); 
 }
 
 cl_ulong dt_opencl_get_device_memalloc(const int devid)

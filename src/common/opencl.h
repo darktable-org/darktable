@@ -120,6 +120,7 @@ typedef struct dt_opencl_device_t
   float benchmark;
   size_t memory_in_use;
   size_t peak_memory;
+  size_t tuned_available;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
