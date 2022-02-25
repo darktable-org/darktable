@@ -379,6 +379,7 @@ static gboolean dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event
       break;
     }
     case DT_BAUHAUS_SLIDER:
+      // FIXME use scroll to zoom
       _widget_scroll(GTK_WIDGET(darktable.bauhaus->current), event);
       gtk_widget_queue_draw(widget);
       break;
@@ -418,7 +419,9 @@ static gboolean dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion
     case DT_BAUHAUS_SLIDER:
     {
       const dt_bauhaus_slider_data_t *d = &w->data.slider;
-      const float mouse_off = get_slider_line_offset(d->oldpos, d->scale, ex / width, ey / height,
+      const float mouse_off = get_slider_line_offset(d->oldpos,
+                                                     5.0 * powf(10.0f, -dt_bauhaus_slider_get_digits(GTK_WIDGET(w)))/(d->max - d->min), // FIXME factor?
+                                                     ex / width, ey / height,
                                                      allocation_w.height / (float)height, allocation.width);
       if(!darktable.bauhaus->change_active)
       {
@@ -709,7 +712,7 @@ static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMot
 
 
 // common initialization
-static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self)
+static void _bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self)
 {
   w->module = DT_ACTION(self);
   w->field = NULL;
@@ -721,27 +724,13 @@ static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self
   w->quad_paint_data = NULL;
   w->quad_toggle = 0;
 
-  switch(w->type)
-  {
-    case DT_BAUHAUS_SLIDER:
-    {
-      gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-slider");
-      gtk_widget_set_size_request(GTK_WIDGET(w), -1, 2 * darktable.bauhaus->widget_space + INNER_PADDING + darktable.bauhaus->baseline_size + get_line_height() - darktable.bauhaus->border_width / 2.0f);
-      break;
-    }
-    case DT_BAUHAUS_COMBOBOX:
-    {
-      gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-combobox");
-      gtk_widget_set_size_request(GTK_WIDGET(w), -1, 2 * darktable.bauhaus->widget_space + get_line_height());
-      break;
-    }
-  }
-
   gtk_widget_add_events(GTK_WIDGET(w), GDK_POINTER_MOTION_MASK
                                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                        | GDK_FOCUS_CHANGE_MASK
                                        | darktable.gui->scroll_mask);
+
+  gtk_widget_set_can_focus(GTK_WIDGET(w), TRUE);
 
   // for combobox, where mouse-release triggers a selection, we need to catch this
   // event where the mouse-press occurred, which will be this widget. we just pass
@@ -1095,7 +1084,7 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
                                                          float step, float defval, int digits, int feedback)
 {
   w->type = DT_BAUHAUS_SLIDER;
-  dt_bauhaus_widget_init(w, self);
+  _bauhaus_widget_init(w, self);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   d->min = d->soft_min = d->hard_min = min;
   d->max = d->soft_max = d->hard_max = max;
@@ -1104,7 +1093,6 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->defpos = defval;
   d->pos = (defval - min) / (max - min);
   d->oldpos = d->pos;
-  d->scale = 5.0f * step / (max - min);
   d->digits = digits;
   snprintf(d->format, sizeof(d->format), "%%.0%df", digits);
   d->factor = 1.0f;
@@ -1121,8 +1109,10 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->timeout_handle = 0;
   d->curve = _default_linear_curve;
 
-  gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_PRESS_MASK);
-  gtk_widget_set_can_focus(GTK_WIDGET(w), TRUE);
+  dt_bauhaus_slider_get_step(GTK_WIDGET(w)); // initialise digits
+
+  gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-slider");
+  gtk_widget_set_size_request(GTK_WIDGET(w), -1, 2 * darktable.bauhaus->widget_space + INNER_PADDING + darktable.bauhaus->baseline_size + get_line_height() - darktable.bauhaus->border_width / 2.0f);
 
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(dt_bauhaus_slider_button_press), NULL);
   g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(dt_bauhaus_slider_button_release), NULL);
@@ -1171,7 +1161,7 @@ GtkWidget *dt_bauhaus_combobox_new_full(dt_action_t *action, const char *section
 void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *self)
 {
   w->type = DT_BAUHAUS_COMBOBOX;
-  dt_bauhaus_widget_init(w, self);
+  _bauhaus_widget_init(w, self);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->entries = g_ptr_array_new_full(4, free_combobox_entry);
   d->defpos = 0;
@@ -1184,8 +1174,8 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->populate = NULL;
   d->text = NULL;
 
-  gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_PRESS_MASK);
-  gtk_widget_set_can_focus(GTK_WIDGET(w), TRUE);
+  gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-combobox");
+  gtk_widget_set_size_request(GTK_WIDGET(w), -1, 2 * darktable.bauhaus->widget_space + get_line_height());
 
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(dt_bauhaus_combobox_button_press), NULL);
   g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(dt_bauhaus_popup_button_release), NULL);
@@ -1796,9 +1786,11 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       if(darktable.bauhaus->end_mouse_y < get_line_height()) break;
 
       dt_bauhaus_slider_data_t *d = &w->data.slider;
-      const float mouse_off = get_slider_line_offset(
-          d->oldpos, d->scale, darktable.bauhaus->end_mouse_x / width,
-          darktable.bauhaus->end_mouse_y / height, base_height / (float)height, base_width);
+      const float mouse_off = get_slider_line_offset(d->oldpos,
+                                                     5.0 * powf(10.0f, -dt_bauhaus_slider_get_digits(GTK_WIDGET(w)))/(d->max - d->min), // FIXME factor?
+                                                     darktable.bauhaus->end_mouse_x / width,
+                                                     darktable.bauhaus->end_mouse_y / height,
+                                                     base_height / (float)height, base_width);
       dt_bauhaus_slider_set_normalized(w, d->oldpos + mouse_off);
       d->oldpos = d->pos;
       break;
@@ -1881,18 +1873,19 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       cairo_save(cr);
       cairo_set_line_width(cr, 0.5);
-      const int num_scales = 1.f / d->scale;
+      float scale = 5.0 * powf(10.0f, -dt_bauhaus_slider_get_digits(GTK_WIDGET(w)))/(d->max - d->min); // FIXME factor?
+      const int num_scales = 1.f / scale;
 
       cairo_rectangle(cr, - INNER_PADDING, ht, width + INNER_PADDING, height);
       cairo_clip(cr);
 
       for(int k = 0; k < num_scales; k++)
       {
-        const float off = k * d->scale - d->oldpos;
+        const float off = k * scale - d->oldpos;
         GdkRGBA fg_copy = *fg_color;
-        fg_copy.alpha = d->scale / fabsf(off);
+        fg_copy.alpha = scale / fabsf(off);
         set_color(cr, fg_copy);
-        draw_slider_line(cr, d->oldpos, off, d->scale, width, height, ht);
+        draw_slider_line(cr, d->oldpos, off, scale, width, height, ht);
         cairo_stroke(cr);
       }
       cairo_restore(cr);
@@ -1903,10 +1896,10 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_set_line_width(cr, 2.);
       const float mouse_off
           = darktable.bauhaus->change_active
-                ? get_slider_line_offset(d->oldpos, d->scale, (darktable.bauhaus->mouse_x - INNER_PADDING)/ width,
+                ? get_slider_line_offset(d->oldpos, scale, (darktable.bauhaus->mouse_x - INNER_PADDING)/ width,
                                          darktable.bauhaus->mouse_y / height, ht / (float)height, width)
                 : 0.0f;
-      draw_slider_line(cr, d->oldpos, mouse_off, d->scale, width, height, ht);
+      draw_slider_line(cr, d->oldpos, mouse_off, scale, width, height, ht);
       cairo_stroke(cr);
       cairo_restore(cr);
 
@@ -2495,7 +2488,6 @@ void dt_bauhaus_slider_set(GtkWidget *widget, float pos)
   const float rpos = CLAMP(pos, d->hard_min, d->hard_max);
   d->min = MIN(d->min, rpos);
   d->max = MAX(d->max, rpos);
-  d->scale = 5.0f * d->step / (d->max - d->min);
   const float rawval = (rpos - d->min) / (d->max - d->min);
   dt_bauhaus_slider_set_normalized(w, d->curve(rawval, DT_BAUHAUS_SET));
 }
@@ -2538,7 +2530,6 @@ void dt_bauhaus_slider_set_step(GtkWidget *widget, float val)
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
   d->step = val;
-  d->scale = 5.0f * d->step / (d->max - d->min);
 }
 
 float dt_bauhaus_slider_get_step(GtkWidget *widget)
@@ -2549,7 +2540,32 @@ float dt_bauhaus_slider_get_step(GtkWidget *widget)
 
   const dt_bauhaus_slider_data_t *d = &w->data.slider;
 
-  return d->factor < 0 ? - d->step : d->step;
+  float step = d->step;
+
+  if(!step)
+  {
+    gboolean zoom = dt_conf_get_bool("bauhaus/zoom_step");
+    const float min = zoom ? d->min : d->soft_min;
+    const float max = zoom ? d->max : d->soft_max;
+
+    const float top = fminf(max-min, fmaxf(fabsf(min), fabsf(max)));
+    if(top >= 100)
+    {
+      step = 1.f;
+    }
+    else
+    {
+      step = top * fabsf(d->factor) / 100;
+      const float log10step = log10f(step);
+      const float fdigits = floorf(log10step+.1);
+      step = powf(10.f,fdigits);
+      if(log10step - fdigits > .5)
+        step *= 5;
+      step /= fabsf(d->factor);
+    }
+  }
+
+  return copysignf(step, d->factor);
 }
 
 void dt_bauhaus_slider_set_feedback(GtkWidget *widget, int feedback)
@@ -2585,7 +2601,6 @@ void dt_bauhaus_slider_reset(GtkWidget *widget)
 
   d->min = d->soft_min;
   d->max = d->soft_max;
-  d->scale = 5.0f * d->step / (d->max - d->min);
 
   dt_bauhaus_slider_set(widget, d->defpos);
 
