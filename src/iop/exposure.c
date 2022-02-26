@@ -1040,21 +1040,21 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
   dt_bauhaus_slider_set_step(g->exposure, 0.02);
   dt_bauhaus_slider_set_digits(g->exposure, 3);
-  dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
 
   GtkWidget *vbox_deflicker = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");
 
   g->deflicker_percentile = dt_bauhaus_slider_from_params(self, "deflicker_percentile");
-  dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
+  dt_bauhaus_slider_set_format(g->deflicker_percentile, "%");
   gtk_widget_set_tooltip_text(g->deflicker_percentile,
                               // xgettext:no-c-format
                               _("where in the histogram to meter for deflicking. E.g. 50% is median"));
 
   g->deflicker_target_level = dt_bauhaus_slider_from_params(self, "deflicker_target_level");
   dt_bauhaus_slider_set_step(g->deflicker_target_level, 0.1);
-  dt_bauhaus_slider_set_format(g->deflicker_target_level, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->deflicker_target_level, _(" EV"));
   gtk_widget_set_tooltip_text(g->deflicker_target_level,
                               _("where to place the exposure level for processed pics, EV below overexposure."));
 
@@ -1139,7 +1139,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.5, 0, 1);
   dt_bauhaus_widget_set_label(g->lightness_spot, NULL, _("lightness"));
-  dt_bauhaus_slider_set_format(g->lightness_spot, "%.1f %%");
+  dt_bauhaus_slider_set_format(g->lightness_spot, "%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);

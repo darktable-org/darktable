@@ -580,7 +580,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->factor, .1);
   dt_bauhaus_slider_set_digits(g->factor, 2);
   // Additional parameters determine how the value will be shown.
-  dt_bauhaus_slider_set_format(g->factor, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->factor, "%");
   // For a percentage, use factor 100.
   dt_bauhaus_slider_set_factor(g->factor, -100.0f);
   dt_bauhaus_slider_set_offset(g->factor, 100.0f);

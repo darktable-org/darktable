@@ -420,7 +420,7 @@ static gboolean dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion
     {
       const dt_bauhaus_slider_data_t *d = &w->data.slider;
       const float mouse_off = get_slider_line_offset(d->oldpos,
-                                                     5.0 * powf(10.0f, -dt_bauhaus_slider_get_digits(GTK_WIDGET(w)))/(d->max - d->min), // FIXME factor?
+                                                     5.0 * powf(10.0f, -d->digits)/(d->max - d->min) / d->factor,
                                                      ex / width, ey / height,
                                                      allocation_w.height / (float)height, allocation.width);
       if(!darktable.bauhaus->change_active)
@@ -1094,7 +1094,7 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->pos = (defval - min) / (max - min);
   d->oldpos = d->pos;
   d->digits = digits;
-  snprintf(d->format, sizeof(d->format), "%%.0%df", digits);
+  d->format = "";
   d->factor = 1.0f;
   d->offset = 0.0f;
 
@@ -1108,8 +1108,6 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->is_changed = 0;
   d->timeout_handle = 0;
   d->curve = _default_linear_curve;
-
-  dt_bauhaus_slider_get_step(GTK_WIDGET(w)); // initialise digits
 
   gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-slider");
   gtk_widget_set_size_request(GTK_WIDGET(w), -1, 2 * darktable.bauhaus->widget_space + INNER_PADDING + darktable.bauhaus->baseline_size + get_line_height() - darktable.bauhaus->border_width / 2.0f);
@@ -1787,7 +1785,7 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
 
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       const float mouse_off = get_slider_line_offset(d->oldpos,
-                                                     5.0 * powf(10.0f, -dt_bauhaus_slider_get_digits(GTK_WIDGET(w)))/(d->max - d->min), // FIXME factor?
+                                                     5.0 * powf(10.0f, -d->digits)/(d->max - d->min) / d->factor,
                                                      darktable.bauhaus->end_mouse_x / width,
                                                      darktable.bauhaus->end_mouse_y / height,
                                                      base_height / (float)height, base_width);
@@ -1873,7 +1871,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       cairo_save(cr);
       cairo_set_line_width(cr, 0.5);
-      float scale = 5.0 * powf(10.0f, -dt_bauhaus_slider_get_digits(GTK_WIDGET(w)))/(d->max - d->min); // FIXME factor?
+      float scale = 5.0 * powf(10.0f, -d->digits)/(d->max - d->min) / d->factor;
       const int num_scales = 1.f / scale;
 
       cairo_rectangle(cr, - INNER_PADDING, ht, width + INNER_PADDING, height);
@@ -2333,7 +2331,7 @@ static void _slider_add_step(GtkWidget *widget, float delta, guint state, gboole
 
   delta *= dt_bauhaus_slider_get_step(widget) * dt_accel_get_speed_multiplier(widget, state);
 
-  const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget)); // FIXME factor?
+  const float min_visible = powf(10.0f, -d->digits) / d->factor;
   if(delta && fabsf(delta) < min_visible)
     delta = copysignf(min_visible, delta);
 
@@ -2476,7 +2474,10 @@ float dt_bauhaus_slider_get_val(GtkWidget *widget)
 char *dt_bauhaus_slider_get_text(GtkWidget *w)
 {
   const dt_bauhaus_slider_data_t *d = &DT_BAUHAUS_WIDGET(w)->data.slider;
-  return g_strdup_printf(d->format, dt_bauhaus_slider_get_val(w));
+  if((d->hard_max * d->factor + d->offset)*(d->hard_min * d->factor + d->offset) < 0)
+    return g_strdup_printf("%+.*f%s", d->digits, dt_bauhaus_slider_get_val(w), d->format);
+  else
+    return g_strdup_printf( "%.*f%s", d->digits, dt_bauhaus_slider_get_val(w), d->format);
 }
 
 void dt_bauhaus_slider_set(GtkWidget *widget, float pos)
@@ -2507,7 +2508,6 @@ void dt_bauhaus_slider_set_digits(GtkWidget *widget, int val)
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
   d->digits = val;
-  snprintf(d->format, sizeof(d->format), "%%.0%df", val);
 }
 
 int dt_bauhaus_slider_get_digits(GtkWidget *widget)
@@ -2612,7 +2612,14 @@ void dt_bauhaus_slider_set_format(GtkWidget *widget, const char *format)
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  g_strlcpy(d->format, format, sizeof(d->format));
+
+  d->format = g_intern_string(format);
+
+  if(strstr(format,"%") && fabsf(d->hard_max) <= 10)
+  {
+    if(d->factor == 1.0f) d->factor = 100;
+    d->digits -= 2;
+  }
 }
 
 void dt_bauhaus_slider_set_factor(GtkWidget *widget, float factor)
@@ -2693,7 +2700,7 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   float rpos = CLAMP(pos, 0.0f, 1.0f);
   rpos = d->curve(rpos, DT_BAUHAUS_GET);
   rpos = d->min + (d->max - d->min) * rpos;
-  const float base = powf(10.0f, d->digits);
+  const float base = powf(10.0f, d->digits) * d->factor;
   rpos = roundf(base * rpos) / base;
 
   rpos = (rpos - d->min) / (d->max - d->min);
@@ -3134,7 +3141,7 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         move_size *= -1;
       case DT_ACTION_EFFECT_UP:
         ; // make sure current value still in zoomed range
-        const float min_visible = powf(10.0f, -dt_bauhaus_slider_get_digits(widget)); // FIXME factor?
+        const float min_visible = powf(10.0f, -d->digits) / d->factor;
         const float multiplier = powf(2.0f, move_size/2);
         const float new_min = value - multiplier * (value - d->min);
         const float new_max = value + multiplier * (d->max - value);

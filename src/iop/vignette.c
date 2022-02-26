@@ -993,8 +993,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->center_y, 3);
   dt_bauhaus_slider_set_digits(g->whratio, 3);
 
-  dt_bauhaus_slider_set_format(g->scale, "%.02f%%");
-  dt_bauhaus_slider_set_format(g->falloff_scale, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->scale, "%");
+  dt_bauhaus_slider_set_format(g->falloff_scale, "%");
 
   gtk_widget_set_tooltip_text(g->scale, _("the radii scale of vignette for start of fall-off"));
   gtk_widget_set_tooltip_text(g->falloff_scale, _("the radii scale of vignette for end of fall-off"));

@@ -229,7 +229,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
 
   g->Fsize = dt_bauhaus_slider_from_params(self, "Fsize");
-  dt_bauhaus_slider_set_format(g->Fsize, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->Fsize, "%");
 }
 }
 

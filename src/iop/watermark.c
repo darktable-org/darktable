@@ -1126,12 +1126,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Add opacity/scale sliders to table
   g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
-  dt_bauhaus_slider_set_format(g->opacity, "%.f%%");
+  dt_bauhaus_slider_set_format(g->opacity, "%");
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
   dt_bauhaus_slider_set_soft_max(g->scale, 100.0);
-  dt_bauhaus_slider_set_format(g->scale, "%.f%%");
+  dt_bauhaus_slider_set_format(g->scale, "%");
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
-  dt_bauhaus_slider_set_format(g->rotate, "%.02f°");
+  dt_bauhaus_slider_set_format(g->rotate, "°");
 
   g->sizeto = dt_bauhaus_combobox_from_params(self, "sizeto");
 //  dt_bauhaus_combobox_add(g->sizeto, C_("size", "image"));

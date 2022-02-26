@@ -1880,21 +1880,19 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->saturation, 0.5f, 1.5f);
   dt_bauhaus_slider_set_digits(g->saturation, 4);
   dt_bauhaus_slider_set_step(g->saturation, .005);
-  dt_bauhaus_slider_set_factor(g->saturation, 100.0f);
-  dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->saturation, "%");
   gtk_widget_set_tooltip_text(g->saturation, _("saturation correction before the color balance"));
 
   g->saturation_out = dt_bauhaus_slider_from_params(self, "saturation_out");
   dt_bauhaus_slider_set_soft_range(g->saturation_out, 0.5f, 1.5f);
   dt_bauhaus_slider_set_digits(g->saturation_out, 4);
   dt_bauhaus_slider_set_step(g->saturation_out, .005);
-  dt_bauhaus_slider_set_factor(g->saturation_out, 100.0f);
-  dt_bauhaus_slider_set_format(g->saturation_out, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->saturation_out, "%");
   gtk_widget_set_tooltip_text(g->saturation_out, _("saturation correction after the color balance"));
 
   g->grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
             dt_bauhaus_slider_from_params(self, "grey"));
-  dt_bauhaus_slider_set_format(g->grey, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->grey, "%");
   dt_bauhaus_slider_set_step(g->grey, .5);
   gtk_widget_set_tooltip_text(g->grey, _("adjust to match a neutral tone"));
 
@@ -1904,7 +1902,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->contrast, .005);
   dt_bauhaus_slider_set_factor(g->contrast, -100.0f);
   dt_bauhaus_slider_set_offset(g->contrast, 100.0f);
-  dt_bauhaus_slider_set_format(g->contrast, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->contrast, "%");
   gtk_widget_set_tooltip_text(g->contrast, _("contrast"));
 
 #ifdef SHOW_COLOR_WHEELS
@@ -1986,7 +1984,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->which##_factor, 4);                       \
   dt_bauhaus_slider_set_factor(g->which##_factor, 100.0);                   \
   dt_bauhaus_slider_set_offset(g->which##_factor, - 100.0);                 \
-  dt_bauhaus_slider_set_format(g->which##_factor, "%.2f %%");               \
+  dt_bauhaus_slider_set_format(g->which##_factor,"%");                      \
   dt_bauhaus_slider_set_feedback(g->which##_factor, 0);                     \
   dt_bauhaus_slider_set_stop(g->which##_factor, 0.0, 0.0, 0.0, 0.0);        \
   dt_bauhaus_slider_set_stop(g->which##_factor, 1.0, 1.0, 1.0, 1.0);        \
@@ -1997,7 +1995,7 @@ void gui_init(dt_iop_module_t *self)
                    dt_bauhaus_slider_new_with_range_and_feedback(self,      \
                    0.0f, 360.0f, 1.0f, 0.0f, 2, 0));                        \
   dt_bauhaus_widget_set_label(g->hue_##which, section, N_("hue"));          \
-  dt_bauhaus_slider_set_format(g->hue_##which, "%.2f °");                   \
+  dt_bauhaus_slider_set_format(g->hue_##which, "°");                        \
   dt_bauhaus_slider_set_stop(g->hue_##which, 0.0f,   1.0f, 0.0f, 0.0f);     \
   dt_bauhaus_slider_set_stop(g->hue_##which, 0.166f, 1.0f, 1.0f, 0.0f);     \
   dt_bauhaus_slider_set_stop(g->hue_##which, 0.322f, 0.0f, 1.0f, 0.0f);     \
@@ -2014,7 +2012,7 @@ void gui_init(dt_iop_module_t *self)
                    0.0f, 100.0f, 0.05f, 0.0f, 2, 0);                        \
   dt_bauhaus_slider_set_soft_max(g->sat_##which, satspan);                  \
   dt_bauhaus_widget_set_label(g->sat_##which, section, N_("saturation"));   \
-  dt_bauhaus_slider_set_format(g->sat_##which, "%.2f %%");                  \
+  dt_bauhaus_slider_set_format(g->sat_##which, "%");                        \
   dt_bauhaus_slider_set_stop(g->sat_##which, 0.0f, 0.2f, 0.2f, 0.2f);       \
   dt_bauhaus_slider_set_stop(g->sat_##which, 1.0f, 1.0f, 1.0f, 1.0f);       \
   gtk_widget_set_tooltip_text(g->sat_##which, _("select the saturation"));  \

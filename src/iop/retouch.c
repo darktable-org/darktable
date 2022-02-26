@@ -2336,8 +2336,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->sl_fill_brightness = dt_bauhaus_slider_from_params(self, "fill_brightness");
   dt_bauhaus_slider_set_digits(g->sl_fill_brightness, 4);
-  dt_bauhaus_slider_set_factor(g->sl_fill_brightness, 100.0f);
-  dt_bauhaus_slider_set_format(g->sl_fill_brightness, "%+.2f%%");
+  dt_bauhaus_slider_set_format(g->sl_fill_brightness, "%");
   gtk_widget_set_tooltip_text(g->sl_fill_brightness,
                               _("adjusts color brightness to fine-tune it. works with erase as well"));
 
@@ -2349,14 +2348,13 @@ void gui_init(dt_iop_module_t *self)
 
   g->sl_blur_radius = dt_bauhaus_slider_from_params(self, "blur_radius");
   dt_bauhaus_slider_set_step(g->sl_blur_radius, 0.1);
-  dt_bauhaus_slider_set_format(g->sl_blur_radius, "%.1f px");
+  dt_bauhaus_slider_set_format(g->sl_blur_radius, " px");
   gtk_widget_set_tooltip_text(g->sl_blur_radius, _("radius of the selected blur type"));
 
   // mask opacity
   g->sl_mask_opacity = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.05, 1., 3);
   dt_bauhaus_widget_set_label(g->sl_mask_opacity, NULL, N_("mask opacity"));
-  dt_bauhaus_slider_set_factor(g->sl_mask_opacity, 100.0f);
-  dt_bauhaus_slider_set_format(g->sl_mask_opacity, "%.2f%%");
+  dt_bauhaus_slider_set_format(g->sl_mask_opacity, "%");
   gtk_widget_set_tooltip_text(g->sl_mask_opacity, _("set the opacity on the selected shape"));
   g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed", G_CALLBACK(rt_mask_opacity_callback), self);
 

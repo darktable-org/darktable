@@ -824,7 +824,7 @@ void gui_init(dt_iop_module_t *self)
   g->Dmin_R = dt_bauhaus_slider_from_params(self, "Dmin[0]");
   dt_bauhaus_slider_set_digits(g->Dmin_R, 4);
   dt_bauhaus_slider_set_step(g->Dmin_R, 0.0025);
-  dt_bauhaus_slider_set_format(g->Dmin_R, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->Dmin_R, "%");
   dt_bauhaus_slider_set_factor(g->Dmin_R, 100);
   dt_bauhaus_widget_set_label(g->Dmin_R, NULL, N_("D min red component"));
   gtk_widget_set_tooltip_text(g->Dmin_R, _("adjust the color and shade of the film transparent base.\n"
@@ -835,7 +835,7 @@ void gui_init(dt_iop_module_t *self)
   g->Dmin_G = dt_bauhaus_slider_from_params(self, "Dmin[1]");
   dt_bauhaus_slider_set_digits(g->Dmin_G, 4);
   dt_bauhaus_slider_set_step(g->Dmin_G, 0.0025);
-  dt_bauhaus_slider_set_format(g->Dmin_G, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->Dmin_G, "%");
   dt_bauhaus_slider_set_factor(g->Dmin_G, 100);
   dt_bauhaus_widget_set_label(g->Dmin_G, NULL, N_("D min green component"));
   gtk_widget_set_tooltip_text(g->Dmin_G, _("adjust the color and shade of the film transparent base.\n"
@@ -846,7 +846,7 @@ void gui_init(dt_iop_module_t *self)
   g->Dmin_B = dt_bauhaus_slider_from_params(self, "Dmin[2]");
   dt_bauhaus_slider_set_digits(g->Dmin_B, 4);
   dt_bauhaus_slider_set_step(g->Dmin_B, 0.0025);
-  dt_bauhaus_slider_set_format(g->Dmin_B, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->Dmin_B, "%");
   dt_bauhaus_slider_set_factor(g->Dmin_B, 100);
   dt_bauhaus_widget_set_label(g->Dmin_B, NULL, N_("D min blue component"));
   gtk_widget_set_tooltip_text(g->Dmin_B, _("adjust the color and shade of the film transparent base.\n"
@@ -859,7 +859,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("dynamic range of the film")), FALSE, FALSE, 0);
 
   g->D_max = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "D_max"));
-  dt_bauhaus_slider_set_format(g->D_max, "%.2f dB");
+  dt_bauhaus_slider_set_format(g->D_max, " dB");
   gtk_widget_set_tooltip_text(g->D_max, _("maximum density of the film, corresponding to white after inversion.\n"
                                           "this value depends on the film specifications, the developing process,\n"
                                           "the dynamic range of the scene and the scanner exposure settings."));
@@ -867,7 +867,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(page1), dt_ui_section_label_new(_("scanner exposure settings")), FALSE, FALSE, 0);
 
   g->offset = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "offset"));
-  dt_bauhaus_slider_set_format(g->offset, "%+.2f dB");
+  dt_bauhaus_slider_set_format(g->offset, " dB");
   dt_color_picker_new(self, DT_COLOR_PICKER_AREA, g->offset);
   gtk_widget_set_tooltip_text(g->offset, _("correct the exposure of the scanner, for all RGB channels,\n"
                                            "before the inversion, so blacks are neither clipped or too pale."));
@@ -959,7 +959,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->black, 4);
   dt_bauhaus_slider_set_step(g->black, 0.0005);
   dt_bauhaus_slider_set_factor(g->black, 100);
-  dt_bauhaus_slider_set_format(g->black, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->black, "%");
   gtk_widget_set_tooltip_text(g->black, _("correct the density of black after the inversion,\n"
                                           "to adjust the global contrast while avoiding clipping shadows."));
 
@@ -972,7 +972,7 @@ void gui_init(dt_iop_module_t *self)
   g->soft_clip = dt_bauhaus_slider_from_params(self, "soft_clip");
   dt_bauhaus_slider_set_factor(g->soft_clip, 100);
   dt_bauhaus_slider_set_digits(g->soft_clip, 4);
-  dt_bauhaus_slider_set_format(g->soft_clip, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->soft_clip, "%");
   gtk_widget_set_tooltip_text(g->soft_clip, _("gradually compress specular highlights past this value\n"
                                               "to avoid clipping while pushing the exposure for mid-tones.\n"
                                               "this somewhat reproduces the behaviour of matte paper."));
@@ -984,7 +984,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_min(g->exposure, -1.0);
   dt_bauhaus_slider_set_hard_max(g->exposure, 1.0);
   dt_bauhaus_slider_set_default(g->exposure, 0.0);
-  dt_bauhaus_slider_set_format(g->exposure, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   gtk_widget_set_tooltip_text(g->exposure, _("correct the printing exposure after inversion to adjust\n"
                                              "the global contrast and avoid clipping highlights."));
 

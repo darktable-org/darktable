@@ -905,7 +905,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text(g->damping, _("damping level of random dither"));
   dt_bauhaus_slider_set_digits(g->damping, 3);
-  dt_bauhaus_slider_set_format(g->damping, "%.0fdB");
+  dt_bauhaus_slider_set_format(g->damping, " dB");
 
 #if 0
   gtk_box_pack_start(GTK_BOX(g->random), g->radius, TRUE, TRUE, 0);

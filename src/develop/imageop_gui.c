@@ -84,7 +84,6 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   const dt_introspection_field_t *f = self->so->get_f(param_name);
 
   GtkWidget *slider = NULL;
-  gchar *str = NULL;
   size_t offset = 0;
 
   if(f)
@@ -96,18 +95,10 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       offset = f->header.offset + param_index * sizeof(float);
       const float defval = *(float*)(d + offset);
 
-      slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 0, defval, 2, 1);
+      const float top = fminf(max-min, fmaxf(fabsf(min), fabsf(max)));
+      const int digits = MAX(2, -floorf(log10f(top/100)+.1));
 
-      const char *post = ""; // set " %%", " EV" etc
-
-      if (min < 0 || (post && *post))
-      {
-        str = g_strdup_printf("%%%s.0%df%s", (min < 0 ? "+" : ""), 2, post);
-
-        dt_bauhaus_slider_set_format(slider, str);
-
-        g_free(str);
-      }
+      slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 0, defval, digits, 1);
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_INT)
     {
@@ -144,7 +135,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       }
       else
       {
-        str = dt_util_str_replace(f->header.field_name, "_", " ");
+        gchar *str = dt_util_str_replace(f->header.field_name, "_", " ");
 
         dt_bauhaus_widget_set_label(slider,  NULL, str);
 
@@ -154,7 +145,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
   }
   else
   {
-    str = g_strdup_printf("'%s' is not a float/int/unsigned short/slider parameter", param_name);
+    gchar *str = g_strdup_printf("'%s' is not a float/int/unsigned short/slider parameter", param_name);
 
     slider = dt_bauhaus_slider_new(self);
     dt_bauhaus_widget_set_label(slider, NULL, str);

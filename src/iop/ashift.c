@@ -5688,7 +5688,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
   dt_bauhaus_slider_set_step(g->rotation, 0.25);
-  dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
+  dt_bauhaus_slider_set_format(g->rotation, "°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
@@ -5721,14 +5721,15 @@ void gui_init(struct dt_iop_module_t *self)
   g->f_length = dt_bauhaus_slider_from_params(self, "f_length");
   dt_bauhaus_slider_set_soft_range(g->f_length, 10.0f, 1000.0f);
   dt_bauhaus_slider_set_curve(g->f_length, log10_curve);
-  dt_bauhaus_slider_set_format(g->f_length, "%.0fmm");
+  dt_bauhaus_slider_set_digits(g->f_length, 0);
+  dt_bauhaus_slider_set_format(g->f_length, " mm");
   dt_bauhaus_slider_set_step(g->f_length, 1.0);
 
   g->crop_factor = dt_bauhaus_slider_from_params(self, "crop_factor");
   dt_bauhaus_slider_set_soft_range(g->crop_factor, 1.0f, 2.0f);
 
   g->orthocorr = dt_bauhaus_slider_from_params(self, "orthocorr");
-  dt_bauhaus_slider_set_format(g->orthocorr, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->orthocorr, "%");
   // this parameter could serve to finetune between generic model (0%) and specific model (100%).
   // however, users can more easily get the same effect with the aspect adjust parameter so we keep
   // this one hidden.

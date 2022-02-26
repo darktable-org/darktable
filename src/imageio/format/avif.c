@@ -870,7 +870,7 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   0); /* digits */
   dt_bauhaus_widget_set_label(gui->quality,  NULL, N_("quality"));
   dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT));
-  dt_bauhaus_slider_set_format(gui->quality, "%.2f%%");
+  dt_bauhaus_slider_set_format(gui->quality, "%");
 
   gtk_widget_set_tooltip_text(gui->quality,
           _("the quality of an image, less quality means fewer details.\n"

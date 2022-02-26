@@ -344,7 +344,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, N_("hue")));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);
-  dt_bauhaus_slider_set_format(g->hue, "%.2f°");
+  dt_bauhaus_slider_set_format(g->hue, "°");
   dt_bauhaus_slider_set_stop(g->hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
@@ -355,19 +355,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue, _("select the hue tone"));
 
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
-  dt_bauhaus_slider_set_factor(g->saturation, 100.0f);
-  dt_bauhaus_slider_set_format(g->saturation, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->saturation, "%");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(g->saturation, _("select the saturation shadow tone"));
 
   g->lightness = dt_bauhaus_slider_from_params(self, N_("lightness"));
-  dt_bauhaus_slider_set_format(g->lightness, "%.2f%%");
+  dt_bauhaus_slider_set_format(g->lightness, "%");
   dt_bauhaus_slider_set_step(g->lightness, 0.1);
   gtk_widget_set_tooltip_text(g->lightness, _("lightness of color"));
 
   g->source_mix = dt_bauhaus_slider_from_params(self, "source_lightness_mix");
-  dt_bauhaus_slider_set_format(g->source_mix, "%.2f%%");
+  dt_bauhaus_slider_set_format(g->source_mix, "%");
   dt_bauhaus_slider_set_step(g->source_mix, 0.1);
   gtk_widget_set_tooltip_text(g->source_mix, _("mix value of source lightness"));
 }

@@ -2495,7 +2495,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->strength = dt_bauhaus_slider_from_params(self, "strength");
   dt_bauhaus_slider_set_step(c->strength, 10.0f);
-  dt_bauhaus_slider_set_format(c->strength, "%.01f%%");
+  dt_bauhaus_slider_set_format(c->strength, "%");
   gtk_widget_set_tooltip_text(c->strength, _("make effect stronger or weaker"));
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
