@@ -190,7 +190,7 @@ static inline void dt_imageio_dng_write_tiff_header(
   den = 1000000;
   for(int k = 0; k < 3; k++)
   {
-    float coeff = roundf(den * wb_coeffs[1] / wb_coeffs[k]);
+    const float coeff = roundf(((float)den * wb_coeffs[1]) / wb_coeffs[k]);
     dt_imageio_dng_write_buf(buf, 556+k*8, (int)coeff);
     dt_imageio_dng_write_buf(buf, 560+k*8, den);
   }
