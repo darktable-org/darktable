@@ -616,12 +616,11 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   sqlite3_stmt *stmt;
-  const char *query = "SELECT SUBSTR(db.datetime_taken, 1, 19) AS dt "
+  const char *query0 = "SELECT MIN(db.datetime_taken), MAX(db.datetime_taken) "
                       "FROM main.images AS db, memory.collected_images AS col "
-                      "WHERE db.id=col.imgid AND LENGTH(dt) = 19 AND"
-                      " dt > '0001:01:01 00:00:00' "
-                      "COLLATE NOCASE ORDER BY dt ASC LIMIT 1";
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+                      "WHERE db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 AND"
+                      " db.datetime_taken > '0001:01:01 00:00:00' ";
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query0, -1, &stmt, NULL);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -633,21 +632,8 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
     strip->start_t.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
     strip->start_t.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
     strip->has_selection = TRUE;
-  }
-  else
-    strip->has_selection = FALSE;
-  sqlite3_finalize(stmt);
 
-  const char *query2 = "SELECT SUBSTR(db.datetime_taken, 1, 19) AS dt "
-                       "FROM main.images AS db, memory.collected_images AS col "
-                       "WHERE db.id=col.imgid AND LENGTH(dt) = 19 AND"
-                       " dt > '0001:01:01 00:00:00' "
-                       "COLLATE NOCASE ORDER BY dt DESC LIMIT 1";
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const char *tx = (const char *)sqlite3_column_text(stmt, 0);
+    tx = (const char *)sqlite3_column_text(stmt, 1);
     strip->stop_t.year = MAX(strtol(tx, NULL, 10), 0);
     strip->stop_t.month = CLAMP(strtol(tx + 5, NULL, 10), 1, 12);
     strip->stop_t.day
@@ -655,8 +641,9 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
     strip->stop_t.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
     strip->stop_t.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
   }
+  else
+    strip->has_selection = FALSE;
   sqlite3_finalize(stmt);
-
   return TRUE;
 }
 
