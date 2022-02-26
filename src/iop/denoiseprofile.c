@@ -3567,10 +3567,8 @@ void gui_init(dt_iop_module_t *self)
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_range(g->radius, 0.0, 8.0);
-  dt_bauhaus_slider_set_step(g->radius, 1.0);
   dt_bauhaus_slider_set_digits(g->radius, 0);
   g->nbhood = dt_bauhaus_slider_from_params(self, "nbhood");
-  dt_bauhaus_slider_set_step(g->nbhood, 1.0);
   dt_bauhaus_slider_set_digits(g->nbhood, 0);
   g->scattering = dt_bauhaus_slider_from_params(self, "scattering");
   dt_bauhaus_slider_set_soft_max(g->scattering, 1.0f);

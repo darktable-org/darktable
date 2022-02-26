@@ -1490,7 +1490,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->radius_center = dt_bauhaus_slider_from_params(self, "radius_center");
   dt_bauhaus_slider_set_soft_range(g->radius_center, 0., 512.);
-  dt_bauhaus_slider_set_format(g->radius_center, "%.0f px");
+  dt_bauhaus_slider_set_format(g->radius_center, " px");
   gtk_widget_set_tooltip_text(
       g->radius_center, _("main scale of the diffusion.\n"
                           "zero makes diffusion act on the finest details more heavily.\n"
@@ -1500,7 +1500,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_range(g->radius, 1., 512.);
-  dt_bauhaus_slider_set_format(g->radius, "%.0f px");
+  dt_bauhaus_slider_set_format(g->radius, " px");
   gtk_widget_set_tooltip_text(
       g->radius, _("width of the diffusion around the center radius.\n"
                    "high values diffuse on a large band of radii.\n"
@@ -1510,9 +1510,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion speed")), FALSE, FALSE, 0);
 
   g->first = dt_bauhaus_slider_from_params(self, "first");
-  dt_bauhaus_slider_set_factor(g->first, 100.0f);
   dt_bauhaus_slider_set_digits(g->first, 4);
-  dt_bauhaus_slider_set_format(g->first, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->first, "%");
   gtk_widget_set_tooltip_text(g->first, _("smoothing or sharpening of smooth details (gradients).\n"
                                           "positive values diffuse and blur.\n"
                                           "negative values sharpen.\n"
@@ -1520,8 +1519,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->second = dt_bauhaus_slider_from_params(self, "second");
   dt_bauhaus_slider_set_digits(g->second, 4);
-  dt_bauhaus_slider_set_factor(g->second, 100.0f);
-  dt_bauhaus_slider_set_format(g->second, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->second, "%");
   gtk_widget_set_tooltip_text(g->second, _("smoothing or sharpening of sharp details.\n"
                                           "positive values diffuse and blur.\n"
                                           "negative values sharpen.\n"
@@ -1529,8 +1527,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->third = dt_bauhaus_slider_from_params(self, "third");
   dt_bauhaus_slider_set_digits(g->third, 4);
-  dt_bauhaus_slider_set_factor(g->third, 100.0f);
-  dt_bauhaus_slider_set_format(g->third, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->third, "%");
   gtk_widget_set_tooltip_text(g->third, _("smoothing or sharpening of sharp details.\n"
                                           "positive values diffuse and blur.\n"
                                           "negative values sharpen.\n"
@@ -1538,8 +1535,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->fourth = dt_bauhaus_slider_from_params(self, "fourth");
   dt_bauhaus_slider_set_digits(g->fourth, 4);
-  dt_bauhaus_slider_set_factor(g->fourth, 100.0f);
-  dt_bauhaus_slider_set_format(g->fourth, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->fourth, "%");
   gtk_widget_set_tooltip_text(g->fourth, _("smoothing or sharpening of sharp details (gradients).\n"
                                            "positive values diffuse and blur.\n"
                                            "negative values sharpen.\n"
@@ -1549,8 +1545,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->anisotropy_first = dt_bauhaus_slider_from_params(self, "anisotropy_first");
   dt_bauhaus_slider_set_digits(g->anisotropy_first, 4);
-  dt_bauhaus_slider_set_factor(g->anisotropy_first, 100.0f);
-  dt_bauhaus_slider_set_format(g->anisotropy_first, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->anisotropy_first, "%");
   gtk_widget_set_tooltip_text(g->anisotropy_first,
                               _("anisotropy of the diffusion.\n"
                                 "zero makes the diffusion isotrope (same in all directions)\n"
@@ -1559,8 +1554,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->anisotropy_second = dt_bauhaus_slider_from_params(self, "anisotropy_second");
   dt_bauhaus_slider_set_digits(g->anisotropy_second, 4);
-  dt_bauhaus_slider_set_factor(g->anisotropy_second, 100.0f);
-  dt_bauhaus_slider_set_format(g->anisotropy_second, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->anisotropy_second, "%");
   gtk_widget_set_tooltip_text(g->anisotropy_second,
                               _("anisotropy of the diffusion.\n"
                                 "zero makes the diffusion isotrope (same in all directions)\n"
@@ -1569,8 +1563,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->anisotropy_third = dt_bauhaus_slider_from_params(self, "anisotropy_third");
   dt_bauhaus_slider_set_digits(g->anisotropy_third, 4);
-  dt_bauhaus_slider_set_factor(g->anisotropy_third, 100.0f);
-  dt_bauhaus_slider_set_format(g->anisotropy_third, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->anisotropy_third, "%");
   gtk_widget_set_tooltip_text(g->anisotropy_third,
                               _("anisotropy of the diffusion.\n"
                                 "zero makes the diffusion isotrope (same in all directions)\n"
@@ -1579,8 +1572,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->anisotropy_fourth = dt_bauhaus_slider_from_params(self, "anisotropy_fourth");
   dt_bauhaus_slider_set_digits(g->anisotropy_fourth, 4);
-  dt_bauhaus_slider_set_factor(g->anisotropy_fourth, 100.0f);
-  dt_bauhaus_slider_set_format(g->anisotropy_fourth, "%+.2f %%");
+  dt_bauhaus_slider_set_format(g->anisotropy_fourth, "%");
   gtk_widget_set_tooltip_text(g->anisotropy_fourth,
                               _("anisotropy of the diffusion.\n"
                                 "zero makes the diffusion isotrope (same in all directions)\n"
@@ -1590,8 +1582,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("edges management")), FALSE, FALSE, 0);
 
   g->sharpness = dt_bauhaus_slider_from_params(self, "sharpness");
-  dt_bauhaus_slider_set_factor(g->sharpness, 100.0f);
-  dt_bauhaus_slider_set_format(g->sharpness, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->sharpness, "%");
   gtk_widget_set_tooltip_text(g->sharpness,
                               _("increase or decrease the sharpness of the highest frequencies"));
 
@@ -1612,8 +1603,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("diffusion spatiality")), FALSE, FALSE, 0);
 
   g->threshold = dt_bauhaus_slider_from_params(self, "threshold");
-  dt_bauhaus_slider_set_factor(g->threshold, 100.0f);
-  dt_bauhaus_slider_set_format(g->threshold, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->threshold, "%");
   gtk_widget_set_tooltip_text(g->threshold,
                               _("luminance threshold for the mask.\n"
                                 "0. disables the luminance masking and applies the module on the whole image.\n"

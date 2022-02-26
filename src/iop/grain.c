@@ -563,17 +563,16 @@ void gui_init(struct dt_iop_module_t *self)
   /* courseness */
   g->scale = dt_bauhaus_slider_from_params(self, "scale");
   dt_bauhaus_slider_set_factor(g->scale, GRAIN_SCALE_FACTOR);
-  dt_bauhaus_slider_set_step(g->scale, 20.0/GRAIN_SCALE_FACTOR);
-  dt_bauhaus_slider_set_digits(g->scale, 5);
-  dt_bauhaus_slider_set_format(g->scale, _("%.0f ISO"));
+  dt_bauhaus_slider_set_digits(g->scale, 0);
+  dt_bauhaus_slider_set_format(g->scale, " ISO");
   gtk_widget_set_tooltip_text(g->scale, _("the grain size (~ISO of the film)"));
 
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
-  dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->strength, "%");
   gtk_widget_set_tooltip_text(g->strength, _("the strength of applied grain"));
 
   g->midtones_bias = dt_bauhaus_slider_from_params(self, "midtones_bias");
-  dt_bauhaus_slider_set_format(g->midtones_bias, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->midtones_bias, "%");
   gtk_widget_set_tooltip_text(g->midtones_bias, _("amount of mid-tones bias from the photographic paper response modeling. the greater the bias, the more pronounced the fall off of the grain in shadows and highlights"));
 }
 

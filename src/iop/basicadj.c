@@ -585,7 +585,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->sl_exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
   dt_bauhaus_slider_set_soft_range(g->sl_exposure, -4.0, 4.0);
   dt_bauhaus_slider_set_step(g->sl_exposure, .02);
-  dt_bauhaus_slider_set_format(g->sl_exposure, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->sl_exposure, _(" EV"));
   gtk_widget_set_tooltip_text(g->sl_exposure, _("adjust the exposure correction"));
 
   g->sl_hlcompr = dt_bauhaus_slider_from_params(self, "hlcompr");
@@ -602,7 +602,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->sl_middle_grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                       dt_bauhaus_slider_from_params(self, "middle_grey"));
   dt_bauhaus_slider_set_step(g->sl_middle_grey, .5);
-  dt_bauhaus_slider_set_format(g->sl_middle_grey, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->sl_middle_grey, "%");
   gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle gray adjustment"));
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 

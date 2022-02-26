@@ -80,9 +80,9 @@ typedef struct dt_bauhaus_slider_data_t
 
   int fill_feedback : 1; // fill the slider with brighter part up to the handle?
 
-  char format[24]; // numeric value is printed with this string
-  float factor;    // multiplication factor before printing
-  float offset;    // addition before printing
+  const char *format;   // numeric value is printed with this format
+  float factor;         // multiplication factor before printing
+  float offset;         // addition before printing
 
   int is_dragging : 1;  // indicates is mouse is dragging slider
   int is_changed : 1;   // indicates new data

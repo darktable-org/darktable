@@ -393,19 +393,19 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_soften_gui_data_t *g = IOP_GUI_ALLOC(soften);
 
   g->size = dt_bauhaus_slider_from_params(self, N_("size"));
-  dt_bauhaus_slider_set_format(g->size, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->size, "%");
   gtk_widget_set_tooltip_text(g->size, _("the size of blur"));
 
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
-  dt_bauhaus_slider_set_format(g->saturation, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->saturation, "%");
   gtk_widget_set_tooltip_text(g->saturation, _("the saturation of blur"));
 
   g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
-  dt_bauhaus_slider_set_format(g->brightness, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->brightness, _(" EV"));
   gtk_widget_set_tooltip_text(g->brightness, _("the brightness of blur"));
 
   g->amount = dt_bauhaus_slider_from_params(self, "amount");
-  dt_bauhaus_slider_set_format(g->amount, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->amount, "%");
   gtk_widget_set_tooltip_text(g->amount, _("the mix of effect"));
 }
 

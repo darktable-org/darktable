@@ -808,7 +808,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
-  dt_bauhaus_slider_set_format(g->radius, "%.f px");
+  dt_bauhaus_slider_set_format(g->radius, " px");
 
   g->type = dt_bauhaus_combobox_from_params(self, "type");
 
@@ -817,11 +817,11 @@ void gui_init(dt_iop_module_t *self)
   g->linearity = dt_bauhaus_slider_from_params(self, "linearity");
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
   dt_bauhaus_slider_set_factor(g->rotation, DEG_TO_RAD);
-  dt_bauhaus_slider_set_format(g->rotation, "%.f °");
+  dt_bauhaus_slider_set_format(g->rotation, "°");
 
   g->angle = dt_bauhaus_slider_from_params(self, "angle");
   dt_bauhaus_slider_set_factor(g->angle, DEG_TO_RAD);
-  dt_bauhaus_slider_set_format(g->angle, "%.f °");
+  dt_bauhaus_slider_set_format(g->angle, "°");
 
 
   g->curvature = dt_bauhaus_slider_from_params(self, "curvature");

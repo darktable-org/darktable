@@ -392,11 +392,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_highpass_gui_data_t *g = IOP_GUI_ALLOC(highpass);
 
   g->sharpness = dt_bauhaus_slider_from_params(self, N_("sharpness"));
-  dt_bauhaus_slider_set_format(g->sharpness, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->sharpness, "%");
   gtk_widget_set_tooltip_text(g->sharpness, _("the sharpness of highpass filter"));
 
   g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
-  dt_bauhaus_slider_set_format(g->contrast, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->contrast, "%");
   gtk_widget_set_tooltip_text(g->contrast, _("the contrast of highpass filter"));
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
