@@ -265,7 +265,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         const int idx = k*3 + i;
         if(idx < msize)
           img->adobe_XYZ_to_CAM[k][i] =
-            r->metadata.colorMatrix[idx] / (float)ADOBE_COEFF_FACTOR;
+            (float)r->metadata.colorMatrix[idx] / (float)ADOBE_COEFF_FACTOR;
+        else
+          img->adobe_XYZ_to_CAM[k][i] = NAN;
       }
 
     // FIXME: grab r->metadata.colorMatrix.
