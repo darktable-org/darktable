@@ -180,9 +180,9 @@
 @define-color timeline_text_fg_color alpha(white, .9);
 
 @define-color range_graph_color @button_bg;
-@define-color range_bg_color @text_color;
+@define-color range_bg_color shade(@timeline_bg_color, 1.0);
 @define-color range_cursor_color alpha(black, .8);
-@define-color range_sel_color alpha(@filmstrip_bg_color, 0.4);
+@define-color range_sel_color alpha(@timeline_fg_color, 0.5);
 @define-color range_icon_color @thumbnail_hover_fg_color;
 
 /* Brushes */
@@ -1533,7 +1533,7 @@ filechooser row:hover .sidebar-icon
 #collect-rule-special,
 #collect-rule-special *
 {
-  background-color: @button_bg;
+  background-color: transparent;
 }
 #collect-rule-special
 {
