@@ -1458,7 +1458,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 
 static char *_dt_collection_compute_datetime(const char *operator, const char *input)
 {
-  if(strlen(input) < 4) return NULL;
+  if(strlen(input) < 3) return NULL;
 
   char bound[DT_DATETIME_LENGTH];
   gboolean res;
@@ -1488,7 +1488,8 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
 
   // we test the range expression first
   // 2 elements : date-time1 and  date-time2
-  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}[:.\\d\\s]*)\\s*;\\s*(\\d{4}[:.\\d\\s]*)\\s*\\]\\s*$", 0, 0, NULL);
+  regex = g_regex_new("^\\s*\\[\\s*([+-]?\\d{4}[:.\\d\\s]*)\\s*;\\s*((?:now)|[+-]?\\d{4}[:.\\d\\s]*)\\s*\\]\\s*$",
+                      0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   int match_count = g_match_info_get_match_count(match_info);
 
@@ -1497,8 +1498,23 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
     gchar *txt = g_match_info_fetch(match_info, 1);
     gchar *txt2 = g_match_info_fetch(match_info, 2);
 
-    *number1 = _dt_collection_compute_datetime(">=", txt);
-    *number2 = _dt_collection_compute_datetime("<=", txt2);
+    if(!g_str_has_prefix(txt, "-")) *number1 = _dt_collection_compute_datetime(">=", txt);
+    if(!g_str_has_prefix(txt2, "+")) *number2 = _dt_collection_compute_datetime("<=", txt2);
+
+    // special handle of relative dates
+    if(g_str_has_prefix(txt, "-") && *number2)
+    {
+      dt_datetime_t relative;
+      dt_datetime_exif_to_numbers_raw(&relative, txt + 1);
+      dt_datetime_exif_add_numbers(*number2, relative, FALSE, &(*number1));
+    }
+    else if(g_str_has_prefix(txt2, "+") && *number1)
+    {
+      dt_datetime_t relative;
+      dt_datetime_exif_to_numbers_raw(&relative, txt2 + 1);
+      dt_datetime_exif_add_numbers(*number1, relative, TRUE, &(*number2));
+    }
+
     *operator= g_strdup("[]");
 
     g_free(txt);

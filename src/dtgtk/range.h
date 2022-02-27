@@ -30,6 +30,7 @@
 */
 #pragma once
 
+#include "common/datetime.h"
 #include "paint.h"
 #include <gtk/gtk.h>
 G_BEGIN_DECLS
@@ -49,7 +50,10 @@ typedef enum dt_range_bounds_t
   DT_RANGE_BOUND_RANGE = 0,
   DT_RANGE_BOUND_MIN = 1 << 0,
   DT_RANGE_BOUND_MAX = 1 << 1,
-  DT_RANGE_BOUND_FIXED = 1 << 2
+  DT_RANGE_BOUND_FIXED = 1 << 2,
+  DT_RANGE_BOUND_MAX_NOW = 1 << 3,
+  DT_RANGE_BOUND_MIN_RELATIVE = 1 << 4,
+  DT_RANGE_BOUND_MAX_RELATIVE = 1 << 5
 } dt_range_bounds_t;
 
 typedef enum dt_range_type_t
@@ -71,6 +75,7 @@ typedef struct _GtkDarktableRangeSelect
 
   double select_min_r;      // low bound of the selection
   double select_max_r;      // hight bound of the selection
+  dt_datetime_t select_relative_date_r; // relative date
   dt_range_bounds_t bounds; // type of selection bounds
 
   double current_x_px;    // current position of the pointer
@@ -131,9 +136,6 @@ dt_range_bounds_t dtgtk_range_select_get_selection(GtkDarktableRangeSelect *rang
 // get the text used for collection queries
 // result needs to be freed after use
 gchar *dtgtk_range_select_get_raw_text(GtkDarktableRangeSelect *range);
-// get the selection values from the collection query text
-void dtgtk_range_select_decode_raw_text(GtkDarktableRangeSelect *range, const gchar *txt, double *min, double *max,
-                                        dt_range_bounds_t *bounds);
 
 // add a block for drawing bar on the graph
 // the block will also be shown in context-menu

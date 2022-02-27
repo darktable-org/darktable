@@ -80,6 +80,34 @@ gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
   return FALSE;
 }
 
+gboolean dt_datetime_exif_to_numbers_raw(dt_datetime_t *dt, const char *exif)
+{
+  if(exif && *exif && dt)
+  {
+    GMatchInfo *match_info;
+    // we capture each date componenent
+    GRegex *regex = g_regex_new(
+        "^\\s*(\\d{4})?(?::(\\d{2}))?(?::(\\d{2}))?(?: (\\d{2}))?(?::(\\d{2}))?(?::(\\d{2}))?\\s*$", 0, 0, NULL);
+    g_regex_match_full(regex, exif, -1, 0, 0, &match_info, NULL);
+    int match_count = g_match_info_get_match_count(match_info);
+    if(match_count == 7)
+    {
+      dt->year = atoi(g_match_info_fetch(match_info, 1));
+      dt->month = atoi(g_match_info_fetch(match_info, 2));
+      dt->day = atoi(g_match_info_fetch(match_info, 3));
+      dt->hour = atoi(g_match_info_fetch(match_info, 4));
+      dt->minute = atoi(g_match_info_fetch(match_info, 5));
+      dt->second = atoi(g_match_info_fetch(match_info, 6));
+      g_match_info_free(match_info);
+      g_regex_unref(regex);
+      return TRUE;
+    }
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+  }
+  return FALSE;
+}
+
 gboolean dt_datetime_gdatetime_to_local(char *local, const size_t local_size,
                                         GDateTime *gdt, const gboolean msec, const gboolean tz)
 {
@@ -258,6 +286,15 @@ gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_size, const cha
 {
   if(!exif || !exif_size) return FALSE;
   exif[0] = '\0';
+
+  if(strcmp(entry, "now") == 0)
+  {
+    const time_t now = time(NULL);
+    dt_datetime_unix_lt_to_exif(exif, exif_len, &now);
+    printf("direct %s %s\n", entry, exif);
+    return TRUE;
+  }
+
   if(strlen(entry) > DT_DATETIME_LENGTH - 1)
     return FALSE;
   char idt[DT_DATETIME_LENGTH];
@@ -278,6 +315,15 @@ gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_siz
 {
   if(!exif || !exif_size) return FALSE;
   exif[0] = '\0';
+
+  if(strcmp(entry, "now") == 0)
+  {
+    const time_t now = time(NULL);
+    dt_datetime_unix_lt_to_exif(exif, exif_len, &now);
+    printf("bound %s %s\n", entry, exif);
+    return TRUE;
+  }
+
   const int len = strlen(entry);
   if(len > DT_DATETIME_LENGTH - 1)
     return FALSE;
@@ -385,6 +431,48 @@ GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt)
     return g_date_time_difference(gdt, darktable.origin_gdt);
   else
     return 0;
+}
+
+GDateTime *dt_datetime_gdatetime_add_numbers(GDateTime *dte, const dt_datetime_t numbers, const gboolean add)
+{
+  const int s = add ? 1 : -1;
+
+  GDateTime *dt2 = g_date_time_add_years(dte, s * numbers.year);
+  GDateTime *dt = g_date_time_add_months(dt2, s * numbers.month);
+  g_date_time_unref(dt2);
+  dt2 = g_date_time_add_days(dt, s * numbers.day);
+  g_date_time_unref(dt);
+  dt = g_date_time_add_hours(dt2, s * numbers.hour);
+  g_date_time_unref(dt2);
+  dt2 = g_date_time_add_minutes(dt, s * numbers.minute);
+  g_date_time_unref(dt);
+  dt = g_date_time_add_seconds(dt2, s * numbers.second);
+  g_date_time_unref(dt2);
+  return dt;
+}
+
+time_t dt_datetime_unix_add_numbers(const time_t dt, const dt_datetime_t numbers, const gboolean add)
+{
+  GDateTime *dte = g_date_time_new_from_unix_utc(dt);
+  GDateTime *dt2 = dt_datetime_gdatetime_add_numbers(dte, numbers, add);
+  double ret = g_date_time_to_unix(dt2);
+  g_date_time_unref(dte);
+  g_date_time_unref(dt2);
+  return ret;
+}
+
+gboolean dt_datetime_exif_add_numbers(const gchar *exif, const dt_datetime_t numbers, const gboolean add,
+                                      gchar **result)
+{
+  GDateTime *dte = dt_datetime_exif_to_gdatetime(exif, darktable.utc_tz);
+  if(!dte) return FALSE;
+  GDateTime *dt2 = dt_datetime_gdatetime_add_numbers(dte, numbers, add);
+  char txt[DT_DATETIME_EXIF_LENGTH];
+  dt_datetime_gdatetime_to_exif(txt, DT_DATETIME_EXIF_LENGTH, dt2);
+  g_date_time_unref(dte);
+  g_date_time_unref(dt2);
+  *result = g_strdup(txt);
+  return TRUE;
 }
 
 // clang-format off

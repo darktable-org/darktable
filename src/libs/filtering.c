@@ -1082,30 +1082,6 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static gchar *_date_print_func(const double value, gboolean detailled)
-{
-  GDateTime *dt = g_date_time_new_from_unix_utc(value);
-  if(dt)
-  {
-    gchar *txt = g_date_time_format(dt, "%Y:%m:%d %H:%M:%S");
-    g_date_time_unref(dt);
-    return txt;
-  }
-  else
-    return g_strdup(_("invalid"));
-}
-static gboolean _date_decode_func(const gchar *txt, double *value)
-{
-  GDateTime *dt = dt_datetime_exif_to_gdatetime(txt, darktable.utc_tz);
-  if(dt)
-  {
-    *value = g_date_time_to_unix(dt);
-    g_date_time_unref(dt);
-    return TRUE;
-  }
-  return FALSE;
-}
-
 static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                               const gchar *text, dt_lib_module_t *self)
 {
@@ -1117,8 +1093,6 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
 
   range->type = DT_RANGE_TYPE_DATETIME;
   range->step_bd = 86400; // step of 1 day (in seconds)
-  range->print = _date_print_func;
-  range->decode = _date_decode_func;
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
 
   char query[1024] = { 0 };

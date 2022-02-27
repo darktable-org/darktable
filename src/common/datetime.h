@@ -51,6 +51,10 @@ gboolean dt_datetime_gtimespan_to_local(char *local, const size_t local_size,
 // gdatetime to display local string. Returns TRUE if OK.
 gboolean dt_datetime_gdatetime_to_local(char *local, const size_t local_size,
                                         GDateTime *gdt, const gboolean msec, const gboolean tz);
+
+// exif datetime to numbers without any check about validity of fields. return TRUE of OK.
+gboolean dt_datetime_exif_to_numbers_raw(dt_datetime_t *dt, const char *exif);
+
 // img cache datetime to display local string. Returns TRUE if OK.
 gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
                                   const dt_image_t *img, const gboolean msec);
@@ -98,6 +102,16 @@ GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt);
 
 // gdatetime to gtimespan
 GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt);
+
+// add values (represented by dt_datetime_t) to gdatetime
+GDateTime *dt_datetime_gdatetime_add_numbers(GDateTime *dte, const dt_datetime_t numbers, const gboolean add);
+
+// add values (represented by dt_datetime_t) to unix datetime
+time_t dt_datetime_unix_add_numbers(const time_t dt, const dt_datetime_t numbers, const gboolean add);
+
+// add values (represented by dt_datetime_t) to exif datetime
+gboolean dt_datetime_exif_add_numbers(const gchar *exif, const dt_datetime_t numbers, const gboolean add,
+                                      gchar **result);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
