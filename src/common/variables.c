@@ -38,7 +38,7 @@
 typedef struct dt_variables_data_t
 {
   /** cached values that shouldn't change between variables in the same expansion process */
-  dt_datetime_t time;
+  GDateTime *time;
   char exif_time[DT_DATETIME_LENGTH];
   guint sequence;
 
@@ -76,7 +76,7 @@ typedef struct dt_variables_data_t
   char *exif_lens;
   int version;
   int stars;
-  dt_datetime_t datetime;
+  GDateTime *datetime;
 
   float exif_exposure;
   float exif_exposure_bias;
@@ -136,7 +136,8 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     const dt_image_t *img = params->img ? (dt_image_t *)params->img
                                         : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
 
-    if(dt_datetime_img_to_numbers(&params->data->datetime, img))
+    params->data->datetime = dt_datetime_img_to_gdatetime(img, darktable.utc_tz);
+    if(params->data->datetime)
       params->data->have_exif_dt = TRUE;
     params->data->exif_iso = img->exif_iso;
     params->data->camera_maker = g_strdup(img->camera_maker);
@@ -187,12 +188,16 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   }
   else if(params->data->exif_time[0])
   {
-    params->data->have_exif_dt = dt_datetime_exif_to_numbers(&params->data->datetime, params->data->exif_time);
+    params->data->datetime = dt_datetime_exif_to_gdatetime(params->data->exif_time, darktable.utc_tz);
+    if(params->data->datetime)
+      params->data->have_exif_dt = TRUE;
   }
 }
 
 static void _cleanup_expansion(dt_variables_params_t *params)
 {
+  g_date_time_unref(params->data->time);
+  g_date_time_unref(params->data->datetime);
   g_free(params->data->homedir);
   g_free(params->data->pictures_folder);
   g_free(params->data->camera_maker);
@@ -211,37 +216,43 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   char *result = NULL;
   gboolean escape = TRUE;
 
-  dt_datetime_t datetime = params->data->have_exif_dt ? params->data->datetime : params->data->time;
+  GDateTime *datetime = params->data->have_exif_dt ? params->data->datetime : params->data->time;
 
   if(_has_prefix(variable, "YEAR") || _has_prefix(variable, "DATE.LONG_YEAR"))
-    result = g_strdup_printf("%.4d", params->data->time.year);
+    result = g_date_time_format(params->data->time, "%Y");
   else if(_has_prefix(variable, "MONTH") || _has_prefix(variable, "DATE.MONTH"))
-    result = g_strdup_printf("%.2d", params->data->time.month);
+    result = g_date_time_format(params->data->time, "%m");
   else if(_has_prefix(variable, "DAY") || _has_prefix(variable, "DATE.DAY"))
-    result = g_strdup_printf("%.2d", params->data->time.day);
+    result = g_date_time_format(params->data->time, "%d");
   else if(_has_prefix(variable, "HOUR") || _has_prefix(variable, "DATE.HOUR"))
-    result = g_strdup_printf("%.2d", params->data->time.hour);
+    result = g_date_time_format(params->data->time, "%H");
   else if(_has_prefix(variable, "MINUTE") || _has_prefix(variable, "DATE.MINUTE"))
-    result = g_strdup_printf("%.2d", params->data->time.minute);
+    result = g_date_time_format(params->data->time, "%M");
   else if(_has_prefix(variable, "SECOND") || _has_prefix(variable, "DATE.SECOND"))
-    result = g_strdup_printf("%.2d", params->data->time.second);
+    result = g_date_time_format(params->data->time, "%S");
   else if(_has_prefix(variable, "MSEC"))
-    result = g_strdup_printf("%.3d", params->data->time.msec);
+  {
+    result = g_date_time_format(params->data->time, "%f");
+    result[3] = '\0';
+  }
 
   else if(_has_prefix(variable, "EXIF_YEAR") || _has_prefix(variable, "EXIF.DATE.LONG_YEAR"))
-    result = g_strdup_printf("%.4d", datetime.year);
+    result = g_date_time_format(datetime, "%Y");
   else if(_has_prefix(variable, "EXIF_MONTH") || _has_prefix(variable, "EXIF.DATE.MONTH"))
-    result = g_strdup_printf("%.2d", datetime.month);
+    result = g_date_time_format(datetime, "%m");
   else if(_has_prefix(variable, "EXIF_DAY") || _has_prefix(variable, "EXIF.DATE.DAY"))
-    result = g_strdup_printf("%.2d", datetime.day);
+    result = g_date_time_format(datetime, "%d");
   else if(_has_prefix(variable, "EXIF_HOUR") || _has_prefix(variable, "EXIF.DATE.HOUR"))
-    result = g_strdup_printf("%.2d", datetime.hour);
+    result = g_date_time_format(datetime, "%H");
   else if(_has_prefix(variable, "EXIF_MINUTE") || _has_prefix(variable, "EXIF.DATE.MINUTE"))
-    result = g_strdup_printf("%.2d", datetime.minute);
+    result = g_date_time_format(datetime, "%M");
   else if(_has_prefix(variable, "EXIF_SECOND") || _has_prefix(variable, "EXIF.DATE.SECOND"))
-    result = g_strdup_printf("%.2d", datetime.second);
+    result = g_date_time_format(datetime, "%S");
   else if(_has_prefix(variable, "EXIF_MSEC"))
-    result = g_strdup_printf("%.3d", datetime.msec);
+  {
+    result = g_date_time_format(datetime, "%f");
+    result[3] = '\0';
+  }
   else if(_has_prefix(variable, "EXIF_ISO"))
     result = g_strdup_printf("%d", params->data->exif_iso);
   else if(_has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
@@ -949,7 +960,7 @@ void dt_variables_params_init(dt_variables_params_t **params)
 {
   *params = g_malloc0(sizeof(dt_variables_params_t));
   (*params)->data = g_malloc0(sizeof(dt_variables_data_t));
-  dt_datetime_now_to_numbers(&(*params)->data->time);
+  (*params)->data->time = g_date_time_new_now_local();
   (*params)->data->exif_time[0] = 0;
   (*params)->sequence = -1;
   (*params)->img = NULL;
@@ -974,7 +985,7 @@ void dt_variables_set_upscale(dt_variables_params_t *params, gboolean upscale)
 
 void dt_variables_set_time(dt_variables_params_t *params, const char *time)
 {
-  dt_datetime_exif_to_numbers(&params->data->time, time);
+  params->data->time = dt_datetime_exif_to_gdatetime(time, darktable.utc_tz);
 }
 
 void dt_variables_set_exif_time(dt_variables_params_t *params, const char *exif_time)
