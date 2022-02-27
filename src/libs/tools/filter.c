@@ -21,7 +21,9 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "dtgtk/button.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "bauhaus/bauhaus.h"
@@ -30,10 +32,15 @@ DT_MODULE(1)
 
 typedef struct dt_lib_tool_filter_t
 {
-  GtkWidget *filter;
+  GtkWidget *stars;
   GtkWidget *comparator;
   GtkWidget *sort;
   GtkWidget *reverse;
+  GtkWidget *text;
+  GtkWidget *colors[6];
+  GtkWidget *colors_op;
+  int time_out;
+  double last_key_time;
 } dt_lib_tool_filter_t;
 
 #ifdef USE_LUA
@@ -43,6 +50,9 @@ typedef enum dt_collection_sort_order_t
   DT_COLLECTION_SORT_ORDER_DESCENDING
 } dt_collection_sort_order_t;
 #endif
+
+#define CPF_USER_DATA_INCLUDE CPF_USER_DATA
+#define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
 
 /* proxy function to intelligently reset filter */
 static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter);
@@ -146,6 +156,191 @@ int position()
   return 2001;
 }
 
+static void _set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  if(dimmed) gtk_style_context_add_class(context, "dt_dimmed");
+  else gtk_style_context_remove_class(context, "dt_dimmed");
+  gtk_widget_queue_draw(GTK_WIDGET(widget));
+}
+
+static gboolean _text_entry_changed_wait(gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  if(d->time_out)
+  {
+    d->time_out--;
+    double clock = dt_get_wtime();
+    if(clock - d->last_key_time >= 0.4)
+    {
+      d->time_out = 1; // force the query execution
+      d->last_key_time = clock;
+    }
+
+    if(d->time_out == 1)
+    { // tell we are busy
+      _set_widget_dimmed(d->text, TRUE);
+    }
+    else if(!d->time_out)
+    {
+      // by default adds start and end wildcard
+      // ' or " removes the corresponding wildcard
+      char start[2] = {0};
+      char *text;
+      const char *entry = gtk_entry_get_text(GTK_ENTRY(d->text));
+      char *p = (char *)entry;
+      if(entry[0] == '"')
+        p++;
+      else
+        start[0] = '%';
+      if(entry[strlen(entry) - 1] == '"')
+      {
+        text = g_strconcat(start, (char *)p, NULL);
+        text[strlen(text) - 1] = '\0';
+      }
+      else
+        text = g_strconcat(start, (char *)p, "%", NULL);
+
+      // avoids activating twice the same query
+      if(g_strcmp0(dt_collection_get_text_filter(darktable.collection), text))
+      {
+        dt_collection_set_text_filter(darktable.collection, text);
+        dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+      }
+      else g_free(text);
+      _set_widget_dimmed(d->text, FALSE);
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+static void _launch_text_query(dt_lib_module_t *self)
+{
+  // two timeouts 1) 0.4 sec after the last key, 2) 1.5 sec of successive keys
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  d->last_key_time = dt_get_wtime();
+  if(!d->time_out)
+  {
+    d->time_out = 15;
+    g_timeout_add(100, _text_entry_changed_wait, self);
+  }
+}
+
+static void _text_entry_changed(GtkEntry *entry, dt_lib_module_t *self)
+{
+    _launch_text_query(self);
+}
+
+static void _reset_text_filter(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  dt_collection_set_text_filter(darktable.collection, NULL);
+  gtk_entry_set_text(GTK_ENTRY(d->text), "");
+}
+
+static void _reset_text_entry(GtkButton *button, dt_lib_module_t *self)
+{
+  _reset_text_filter(self);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+}
+
+static void _update_colors_operation(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  int nb = 0;
+  int mask = 0;
+
+  for(int k = 0; k < DT_COLORLABELS_LAST; k++)
+  {
+    const int sel_value = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->colors[k]), "sel_value"));
+    if(sel_value)
+    {
+      nb++;
+      mask = sel_value == 1 ? (mask | 1 << k) : (mask | 1 << (8 + k));
+    }
+  }
+
+  const gboolean and_op = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->colors_op), "sel_value"));
+  dtgtk_button_set_paint(DTGTK_BUTTON(d->colors_op),
+                         and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
+                         CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_sensitive(d->colors_op, nb > 1);
+
+  if(and_op || nb == 1)
+    mask |= 0x80000000;
+
+  dt_collection_set_colors_filter(darktable.collection, mask);
+}
+
+static void _reset_colors_filter(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  for(int i = 0; i < DT_COLORLABELS_LAST; i++)
+  {
+    g_object_set_data(G_OBJECT(d->colors[i]), "sel_value", GINT_TO_POINTER(0));
+    dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
+                          (i | CPF_BG_TRANSPARENT), NULL);
+    gtk_widget_queue_draw(d->colors[i]);
+  }
+  g_object_set_data(G_OBJECT(d->colors_op), "sel_value", GINT_TO_POINTER(1));
+  dtgtk_button_set_paint(DTGTK_BUTTON(d->colors_op), dtgtk_cairo_paint_and,
+                         CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_sensitive(d->colors_op, FALSE);
+  dt_collection_set_colors_filter(darktable.collection, 0x80000000);
+}
+
+static gboolean _colorlabel_clicked(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+{
+  dt_lib_module_t *self = g_object_get_data(G_OBJECT(w), "colors_self");
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  const int k = GPOINTER_TO_INT(user_data);
+  int sel_value = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
+  if(sel_value)
+    sel_value = 0;
+  else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
+    sel_value = 2;
+  else if(dt_modifier_is(e->state, 0))
+    sel_value = 1;
+  const int mask = sel_value == 0 ? 0 : sel_value == 1 ? CPF_USER_DATA_INCLUDE : CPF_USER_DATA_EXCLUDE;
+
+  if(k == DT_COLORLABELS_LAST)
+  {
+    g_object_set_data(G_OBJECT(d->colors[DT_COLORLABELS_LAST]), "sel_value", GINT_TO_POINTER(sel_value));
+    for(int i = 0; i < DT_COLORLABELS_LAST; i++)
+    {
+      g_object_set_data(G_OBJECT(d->colors[i]), "sel_value", GINT_TO_POINTER(sel_value));
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
+                            (i | mask | CPF_BG_TRANSPARENT), NULL);
+      gtk_widget_queue_draw(d->colors[i]);
+    }
+  }
+  else
+  {
+    g_object_set_data(G_OBJECT(d->colors[DT_COLORLABELS_LAST]), "sel_value", GINT_TO_POINTER(0));
+    g_object_set_data(G_OBJECT(w), "sel_value", GINT_TO_POINTER(sel_value));
+    dtgtk_button_set_paint(DTGTK_BUTTON(w), dtgtk_cairo_paint_label_sel,
+                           (k | mask | CPF_BG_TRANSPARENT), NULL);
+    gtk_widget_queue_draw(w);
+  }
+
+  _update_colors_operation(self);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL, NULL);
+  return FALSE;
+}
+
+static void _colors_operation_clicked(GtkWidget *w, dt_lib_module_t *self)
+{
+  const gboolean and_op = !GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
+  g_object_set_data(G_OBJECT(w), "sel_value", GINT_TO_POINTER(and_op));
+  dtgtk_button_set_paint(DTGTK_BUTTON(w),
+                         and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
+                         CPF_STYLE_FLAT, NULL);
+  _update_colors_operation(self);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL, NULL);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -153,13 +348,18 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(self->widget, "filter-box");
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  gtk_widget_set_valign(self->widget, GTK_ALIGN_CENTER);
 
+  GtkWidget *label = gtk_label_new(C_("quickfilter", "filter"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
   GtkWidget *overlay = gtk_overlay_new();
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->comparator, self, NULL, N_("comparator"),
-                               _("which images should be shown"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->comparator, self, NULL, NULL,
+                               _("filter by images rating"),
                                dt_collection_get_rating_comparator(darktable.collection),
                                _lib_filter_comparator_changed, self,
                                "<", // DT_COLLECTION_RATING_COMP_LT = 0,
@@ -168,17 +368,13 @@ void gui_init(dt_lib_module_t *self)
                                "≥", // DT_COLLECTION_RATING_COMP_GEQ,
                                ">", // DT_COLLECTION_RATING_COMP_GT,
                                "≠");// DT_COLLECTION_RATING_COMP_NE,
-  dt_bauhaus_widget_set_label(d->comparator, NULL, NULL);
-  GtkWidget *spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_set_homogeneous(GTK_BOX(spacer), TRUE);
-  gtk_box_pack_start(GTK_BOX(spacer), d->comparator, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(spacer), gtk_grid_new(), FALSE, FALSE, 0);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), spacer);
-  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), spacer, TRUE);
+  gtk_widget_set_halign(d->comparator, GTK_ALIGN_START);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->comparator);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), d->comparator, TRUE);
 
   /* create the filter combobox */
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->filter, self, NULL, N_("view"),
-                               _("which images should be shown"),
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->stars, self, NULL, NULL,
+                               _("filter by images rating"),
                                dt_collection_get_rating(darktable.collection),
                                _lib_filter_combobox_changed, self,
                                N_("all"),
@@ -190,32 +386,89 @@ void gui_init(dt_lib_module_t *self)
                                "★ ★ ★ ★ ★",
                                N_("rejected only"),
                                N_("all except rejected"));
-  gtk_container_add(GTK_CONTAINER(overlay), d->filter);
+  gtk_container_add(GTK_CONTAINER(overlay), d->stars);
+  gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
+  GtkStyleContext *context = gtk_widget_get_style_context(hbox);
+  gtk_style_context_add_class(context, "quick_filter_box");
 
-  gtk_box_pack_start(GTK_BOX(self->widget), overlay, TRUE, TRUE, 0);
-  gtk_widget_set_margin_end (overlay, 20);
+  // colorlabels filter
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
+  {
+    d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, (k | CPF_BG_TRANSPARENT), NULL);
+    g_object_set_data(G_OBJECT(d->colors[k]), "colors_self", self);
+    gtk_box_pack_start(GTK_BOX(hbox), d->colors[k], FALSE, FALSE, 0);
+    gtk_widget_set_tooltip_text(d->colors[k], _("filter by images color label"
+                                                "\nclick to toggle the color label selection"
+                                                "\nctrl+click to exclude the color label"
+                                                "\nthe grey button affects all color labels"));
+    g_signal_connect(G_OBJECT(d->colors[k]), "button-press-event", G_CALLBACK(_colorlabel_clicked),
+                     GINT_TO_POINTER(k));
+  }
+  d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
+  _reset_colors_filter(self);
+  gtk_box_pack_start(GTK_BOX(hbox), d->colors_op, FALSE, FALSE, 2);
+  gtk_widget_set_tooltip_text(d->colors_op, _("filter by images color label"
+                                              "\nand (∩): images having all selected color labels"
+                                              "\nor (∪): images with at least one of the selected color labels"));
+  g_signal_connect(G_OBJECT(d->colors_op), "clicked", G_CALLBACK(_colors_operation_clicked), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 2);
+  context = gtk_widget_get_style_context(hbox);
+  gtk_style_context_add_class(context, "quick_filter_box");
+  gtk_style_context_add_class(context, "dt_font_resize_07");
+
+  // text filter
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
+  d->text = gtk_search_entry_new();
+  g_signal_connect(G_OBJECT(d->text), "search-changed", G_CALLBACK(_text_entry_changed), self);
+  g_signal_connect(G_OBJECT(d->text), "stop-search", G_CALLBACK(_reset_text_entry), self);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->text), 14);
+  gtk_widget_set_tooltip_text(d->text,
+          /* xgettext:no-c-format */
+                              _("filter by text from images metadata, tags, file path and name"
+          /* xgettext:no-c-format */
+                                "\n`%' is the wildcard character"
+          /* xgettext:no-c-format */
+                                "\nby default start and end wildcards are auto-applied"
+          /* xgettext:no-c-format */
+                                "\nstarting or ending with a double quote disables the corresponding wildcard"
+          /* xgettext:no-c-format */
+                                "\nis dimmed during the search execution"));
+  context = gtk_widget_get_style_context(d->text);
+  gtk_style_context_add_class(context, "dt_transparent_background");
+  gtk_box_pack_start(GTK_BOX(hbox), d->text, FALSE, FALSE, 0);
+  context = gtk_widget_get_style_context(hbox);
+  gtk_style_context_add_class(context, "quick_filter_box");
 
   /* sort combobox */
+  label = gtk_label_new(_("sort by"));
+  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
   const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
-  d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
+  d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, NULL,
                                          _("determine the sort order of shown images"),
                                          _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
                                          _sort_names);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->sort, TRUE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(hbox), d->sort, FALSE, FALSE, 0);
+  context = gtk_widget_get_style_context(hbox);
+  gtk_style_context_add_class(context, "quick_filter_box");
+  gtk_style_context_add_class(context, "dt_font_resize_07");
 
   /* reverse order checkbutton */
   d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
-  gtk_widget_set_name(GTK_WIDGET(d->reverse), "filter-button");
   if(darktable.collection->params.descending)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(d->reverse), dtgtk_cairo_paint_sortby,
                                  CPF_DIRECTION_DOWN, NULL);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), d->reverse, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), d->reverse, FALSE, FALSE, 0);
+  context = gtk_widget_get_style_context(d->reverse);
+  gtk_style_context_add_class(context, "dt_transparent_background");
 
   /* select the last value and connect callback */
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),
                                dt_collection_get_sort_descending(darktable.collection));
-
   g_signal_connect(G_OBJECT(d->reverse), "toggled", G_CALLBACK(_lib_filter_reverse_button_changed),
                    (gpointer)self);
 
@@ -232,6 +485,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_collection_set_text_filter(darktable.collection, NULL);
   g_free(self->data);
   self->data = NULL;
 }
@@ -240,7 +494,7 @@ void gui_cleanup(dt_lib_module_t *self)
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  const int filter = dt_bauhaus_combobox_get(d->filter);
+  const int filter = dt_bauhaus_combobox_get(d->stars);
 
   // 0 all
   // 1 unstarred only
@@ -363,9 +617,9 @@ static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_proper
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, changed_property, NULL);
 }
 
-static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
+static void _reset_stars_filter(dt_lib_module_t *self, gboolean smart_filter)
 {
-  dt_lib_tool_filter_t *dropdowns = (dt_lib_tool_filter_t *)self->data;
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
 
   if(smart_filter == TRUE)
   {
@@ -373,7 +627,7 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
     const int initial_rating = dt_conf_get_int("ui_last/import_initial_rating");
 
     /* current selection in filter dropdown */
-    const int current_filter = dt_bauhaus_combobox_get(dropdowns->filter);
+    const int current_filter = dt_bauhaus_combobox_get(d->stars);
 
     /* convert filter dropdown to rating: 2-6 is 1-5 stars, for anything else, assume 0 stars */
     const int current_filter_rating = (current_filter >= 2 && current_filter <= 6) ? current_filter - 1 : 0;
@@ -386,13 +640,38 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
                                                                               : new_filter_rating;
 
     /* Reset to new filter dropdown item */
-    dt_bauhaus_combobox_set(dropdowns->filter, new_filter);
+    dt_bauhaus_combobox_set(d->stars, new_filter);
   }
   else
   {
     /* Reset to topmost item, 'all' */
-    dt_bauhaus_combobox_set(dropdowns->filter, 0);
+    dt_bauhaus_combobox_set(d->stars, 0);
   }
+}
+
+static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
+{
+  _reset_stars_filter(self, smart_filter);
+  _reset_text_filter(self);
+  _reset_colors_filter(self);
+}
+
+static gboolean _reset_filters(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                               GdkModifierType modifier, dt_lib_module_t *self)
+{
+  _lib_filter_reset(self, FALSE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+  return TRUE;
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "reset filters"), 0, 0);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_connect_lib(self, "reset filters", g_cclosure_new(G_CALLBACK(_reset_filters), self, NULL));
 }
 
 #ifdef USE_LUA
@@ -446,7 +725,7 @@ static int rating_cb(lua_State *L)
     dt_collection_filter_t value;
     luaA_to(L,dt_collection_filter_t,&value,1);
     dt_collection_set_rating(darktable.collection, (uint32_t)value);
-    dt_bauhaus_combobox_set(d->filter, dt_collection_get_rating(darktable.collection));
+    dt_bauhaus_combobox_set(d->stars, dt_collection_get_rating(darktable.collection));
     _lib_filter_update_query(self, DT_COLLECTION_PROP_RATING);
   }
   luaA_push(L, dt_collection_filter_t, &tmp);

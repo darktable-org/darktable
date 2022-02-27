@@ -254,6 +254,11 @@ dt_imageio_retval_t dt_imageio_open_libraw(dt_image_t *img, const char *filename
   for(size_t c = 0; c < 4; ++c)
     img->wb_coeffs[c] = raw->rawdata.color.cam_mul[c];
 
+  // Grab the adobe coeff
+  for(int k = 0; k < 4; k++)
+    for(int i = 0; i < 3; i++)
+      img->adobe_XYZ_to_CAM[k][i] = raw->rawdata.color.cam_xyz[k][i];
+
   // Raw dimensions. This is the full sensor range.
   img->width = raw->rawdata.sizes.raw_width;
   img->height = raw->rawdata.sizes.raw_height;

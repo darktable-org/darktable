@@ -1033,41 +1033,82 @@ uint32_t dt_tag_get_suggestions(GList **result)
 {
   sqlite3_stmt *stmt;
 
-  /* list tags and count */
+  const uint32_t nb_selected = dt_selected_images_count();
+  const int nb_recent = dt_conf_get_int("plugins/lighttable/tagging/nb_recent_tags");
+  const uint32_t confidence = dt_conf_get_int("plugins/lighttable/tagging/confidence");
+  const char *slist = dt_conf_get_string_const("plugins/lighttable/tagging/recent_tags");
+
+  // get attached tags with how many times they are attached in db and on selected images
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO memory.taglist (id, count)"
-                              " SELECT S.tagid, COUNT(*)"
+                              "INSERT INTO memory.taglist (id, count, count2)"
+                              "  SELECT S.tagid, COUNT(imgid) AS count,"
+                              "    CASE WHEN count2 IS NULL THEN 0 ELSE count2 END AS count2"
                               "  FROM main.tagged_images AS S"
+                              "  LEFT JOIN ("
+                              "    SELECT tagid, COUNT(imgid) AS count2"
+                              "    FROM main.tagged_images"
+                              "    WHERE imgid IN main.selected_images"
+                              "    GROUP BY tagid) AS at"
+                              "  ON at.tagid = S.tagid"
                               "  WHERE S.tagid NOT IN memory.darktable_tags"
                               "  GROUP BY S.tagid",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  const uint32_t nb_selected = dt_selected_images_count();
-  /* Now put all the bits together */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT T.name, T.id, MT.count, CT.imgnb, T.flags, T.synonyms"
-                              "  FROM memory.taglist MT"
-                              "  JOIN data.tags T ON MT.id = T.id"
-                              "  LEFT JOIN (SELECT tagid, COUNT(DISTINCT imgid) AS imgnb"
-                              "             FROM main.tagged_images"
-                              "             WHERE imgid IN (SELECT imgid FROM main.selected_images)"
-                              "             GROUP BY tagid) AS CT"
-                              "    ON CT.tagid = MT.id"
-                              "  WHERE T.id NOT IN (SELECT DISTINCT tagid"
-                              "                     FROM (SELECT TI.tagid, COUNT(DISTINCT SI.imgid) AS imgnb"
-                              "                           FROM main.selected_images AS SI"
-                              "                           JOIN main.tagged_images AS TI ON TI.imgid = SI.imgid"
-                              "                           GROUP BY TI.tagid)"
-                              "                           WHERE imgnb = ?1)"
-                              "  AND (T.flags IS NULL OR (T.flags & 1) = 0)"
-                              "  ORDER BY MT.count DESC"
-                              "  LIMIT 500",
+  char *query = NULL;
+  if(confidence != 100)
+    query = g_strdup_printf("SELECT td.name, tagid2, t21.count, t21.count2,"
+                            " td.flags, td.synonyms FROM ("
+                            // get tags with required confidence
+                            "  SELECT DISTINCT tagid2 FROM ("
+                            "    SELECT tagid2 FROM ("
+                            // get how many times (tag1, tag2) are attached together (c12)
+                            "      SELECT tagid1, tagid2, count(*) AS c12"
+                            "      FROM ("
+                            "        SELECT DISTINCT tagid AS tagid1, imgid FROM main.tagged_images"
+                            "        JOIN memory.taglist AS t00"
+                            "        ON t00.id = tagid1 AND t00.count2 > 0) AS t1"
+                            "      JOIN ("
+                            "        SELECT DISTINCT tagid AS tagid2, imgid FROM main.tagged_images"
+                            "        WHERE tagid NOT IN memory.darktable_tags) AS t2"
+                            "      ON t2.imgid = t1.imgid AND tagid1 != tagid2"
+                            "      GROUP BY tagid1, tagid2)"
+                            "    JOIN memory.taglist AS t01"
+                            "    ON t01.id = tagid1"
+                            "    JOIN memory.taglist AS t02"
+                            "    ON t02.id = tagid2"
+                            // filter by confidence and reject tags attached on all selected images
+                            "    WHERE (t01.count-t01.count2) != 0"
+                            "      AND (100 * c12 / (t01.count-t01.count2) >= %d)"
+                            "      AND t02.count2 != %d) "
+                            "  UNION"
+                            // get recent list tags
+                            "  SELECT * FROM ("
+                            "    SELECT tn.id AS tagid2 FROM data.tags AS tn"
+                            "    JOIN memory.taglist AS t02"
+                            "    ON t02.id = tn.id"
+                            "    WHERE tn.name IN (\'%s\')"
+                            // reject tags attached on all selected images and keep the required number
+                            "      AND t02.count2 != %d LIMIT %d)) "
+                            "LEFT JOIN memory.taglist AS t21 "
+                            "ON t21.id = tagid2 "
+                            "LEFT JOIN data.tags as td ON td.id = tagid2 ",
+                            confidence, nb_selected, slist, nb_selected, nb_recent);
+  else
+    query = g_strdup_printf("SELECT tn.name, tn.id, count, count2,"
+                            "  tn.flags, tn.synonyms "
+                            // get recent list tags
+                            "FROM data.tags AS tn "
+                            "JOIN memory.taglist AS t02 "
+                            "ON t02.id = tn.id "
+                            "WHERE tn.name IN (\'%s\')"
+                            // reject tags attached on all selected images and keep the required number
+                            "  AND t02.count2 != %d LIMIT %d",
+                            slist, nb_selected, nb_recent);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query,
                               -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, nb_selected);
 
-  /* ... and create the result list to send upwards */
   uint32_t count = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1088,7 +1129,9 @@ uint32_t dt_tag_get_suggestions(GList **result)
   }
 
   sqlite3_finalize(stmt);
+
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.taglist", NULL, NULL, NULL);
+  g_free(query);
 
   return count;
 }

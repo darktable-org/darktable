@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2020 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -256,6 +256,19 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // Grab the WB
     for(int i = 0; i < 4; i++)
       img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
+
+    const int msize = r->metadata.colorMatrix.size();
+    // Grab the adobe coeff
+    for(int k = 0; k < 4; k++)
+      for(int i = 0; i < 3; i++)
+      {
+        const int idx = k*3 + i;
+        if(idx < msize)
+          img->adobe_XYZ_to_CAM[k][i] =
+            (float)r->metadata.colorMatrix[idx] / (float)ADOBE_COEFF_FACTOR;
+        else
+          img->adobe_XYZ_to_CAM[k][i] = NAN;
+      }
 
     // FIXME: grab r->metadata.colorMatrix.
 

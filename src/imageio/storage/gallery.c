@@ -162,13 +162,10 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   dt_gtkentry_setup_completion(GTK_ENTRY(widget), dt_gtkentry_get_default_path_compl_list());
 
-  char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
+  gtk_widget_set_tooltip_text(widget,
       _("enter the path where to put exported images\nvariables support bash like string manipulation\n"
-        "recognized variables:"),
-      dt_gtkentry_get_default_path_compl_list());
-  gtk_widget_set_tooltip_text(widget, tooltip_text);
+        "type '$(' to activate the completion and see the list of variables"));
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
-  g_free(tooltip_text);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
   gtk_widget_set_name(widget, "non-flat");

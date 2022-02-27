@@ -587,7 +587,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.mode = DT_IOP_COLORZONES_MODE_SMOOTH;
   p.splines_version = DT_IOP_COLORZONES_SPLINES_V2;
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   // red black white
   p.channel = DT_IOP_COLORZONES_h;
@@ -731,7 +731,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("HSL base setting"), self->op,
                              version, &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 }
 
 static void _reset_display_selection(dt_iop_module_t *self)

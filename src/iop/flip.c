@@ -415,7 +415,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_flip_params_t p = (dt_iop_flip_params_t){ ORIENTATION_NONE };
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   p.orientation = ORIENTATION_NULL;
   dt_gui_presets_add_generic(_("autodetect"), self->op,
@@ -446,7 +446,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("rotate by 180 degrees"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 }
 
 void reload_defaults(dt_iop_module_t *self)

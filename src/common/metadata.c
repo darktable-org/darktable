@@ -49,9 +49,21 @@ static const struct
   {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
   {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
   {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5},
-  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6}
+  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6},
+  {"Xmp.darktable.image_id", N_("image id"), DT_METADATA_TYPE_INTERNAL, 7}
   // clang-format on
 };
+
+unsigned int dt_metadata_get_nb_user_metadata()
+{
+  unsigned int nb = 0;
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    if(dt_metadata_def[i].type != DT_METADATA_TYPE_INTERNAL)
+      nb++;
+  }
+  return nb;
+}
 
 const char *dt_metadata_get_name_by_display_order(const uint32_t order)
 {
@@ -743,6 +755,31 @@ void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboo
       dt_undo_end_group(darktable.undo);
     }
   }
+}
+
+gboolean dt_metadata_already_imported(const char *filename, const char *datetime)
+{
+  if(!filename || !datetime)
+    return FALSE;
+  char *id = g_strconcat(filename, "-", datetime, NULL);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.meta_data WHERE value=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, id, -1, SQLITE_TRANSIENT);
+  gboolean res = FALSE;
+  if(sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_int(stmt, 0) != 0)
+    res = TRUE;
+  sqlite3_finalize(stmt);
+  g_free(id);
+  return res;
+}
+
+void dt_metadata_unix_time_to_text(char *exif, const size_t exif_len, const time_t *unix)
+{
+  struct tm tt;
+  (void)localtime_r(unix, &tt);
+  strftime(exif, exif_len, "%Y:%m:%d %H:%M:%S", &tt);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

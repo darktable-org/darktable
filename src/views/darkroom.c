@@ -899,7 +899,7 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
-    double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    const double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
     dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio, TRUE);
   }
   else
@@ -1888,6 +1888,8 @@ static void _preference_changed(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(display_intent, TRUE);
     gtk_widget_set_visible(display_intent, FALSE);
   }
+  dt_get_sysresource_level();
+  dt_configure_ppd_dpi(darktable.gui);
 }
 
 static void _preference_prev_downsample_change(gpointer instance, gpointer user_data)

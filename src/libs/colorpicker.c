@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "libs/colorpicker.h"
 #include "common/darktable.h"
+#include "common/color_vocabulary.h"
 #include "common/iop_profile.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -265,7 +266,7 @@ static void _set_sample_point(dt_lib_module_t *self, const float pos[2])
 static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
                                          GtkTooltip *tooltip, const dt_colorpicker_sample_t *sample)
 {
-  gchar **sample_parts = g_malloc0_n(12, sizeof(char*));
+  gchar **sample_parts = g_malloc0_n(14, sizeof(char*));
 
   sample_parts[3] = g_strdup_printf("%22s(0x%02X%02X%02X)\n<big><b>%14s</b></big>", " ",
                                     CLAMP(sample->label_rgb[0], 0, 255), CLAMP(sample->label_rgb[1], 0, 255),
@@ -291,6 +292,11 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
                                           sample->lab[i][0], sample->lab[i][1], sample->lab[i][2],
                                           _(dt_lib_colorpicker_statistic_names[i]));
   }
+
+  dt_aligned_pixel_t color;
+  dt_Lab_2_LCH(sample->lab[DT_LIB_COLORPICKER_STATISTIC_MEAN], color);
+  sample_parts[11] = g_strdup_printf("\n<big><b>%14s</b></big>", _("color"));
+  sample_parts[12] = g_strdup_printf("%6s", Lch_to_color_name(color));
 
   gchar *tooltip_text = g_strjoinv("\n", sample_parts);
   g_strfreev(sample_parts);

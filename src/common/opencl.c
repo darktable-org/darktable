@@ -131,7 +131,6 @@ error:
 }
 
 // returns 0 if all ok
-// returns 1 if we failed hard, and need to skip opencl initialization
 // returns -1 if we failed to init this device
 static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *devices, const int k,
                                  const int opencl_memory_requirement)
@@ -2438,38 +2437,95 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
                                       (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
 }
 
-/** check if image size fit into limits given by OpenCL runtime */
-int dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
-                                const float factor, const size_t overhead)
+/* amount of graphics memory declared as available depends on max_global_mem and "resourcelevel". We garantee
+   - a headroom of 400MB in all cases
+   - 256MB to simulate a minimum system
+   - 2GB to simalate a reference system 
+*/
+cl_ulong dt_opencl_get_device_available(const int devid)
 {
-  static float headroom = -1.0f;
-
-  if(!darktable.opencl->inited || devid < 0) return FALSE;
-
-  /* first time run */
-  if(headroom < 0.0f)
-  {
-    headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
-
-    /* don't let the user play games with us */
-    headroom = fmin((float)darktable.opencl->dev[devid].max_global_mem, fmax(headroom, 0.0f));
-    dt_conf_set_int("opencl_memory_headroom", headroom / 1024 / 1024);
-  }
-
-  float singlebuffer = (float)width * height * bpp;
-  float total = factor * singlebuffer + overhead;
-
-  if(darktable.opencl->dev[devid].max_image_width < width
-     || darktable.opencl->dev[devid].max_image_height < height)
-    return FALSE;
-
-  if(darktable.opencl->dev[devid].max_mem_alloc < singlebuffer) return FALSE;
-
-  if(darktable.opencl->dev[devid].max_global_mem < total + headroom) return FALSE;
-
-  return TRUE;
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  const int level = darktable.dtresources.level;
+  if(level < 0) return 2048lu  * 1024ul * 1024ul;
+  const size_t disposable = (size_t)darktable.opencl->dev[devid].max_global_mem - 400ul * 1024ul * 1024ul;
+  const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 3];
+  const size_t available = MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction); 
+  return available;
 }
 
+cl_ulong dt_opencl_get_device_memalloc(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return darktable.opencl->dev[devid].max_mem_alloc;
+}
+
+/* As there is no portable way to get the unused memory of a cl device we check for required
+   memory by testing.
+   clCreateBuffer does not tell an error condition if there is no memory available (this
+   is according to standard), to make sure the buffer is really allocated in graphics mem we
+   force a small memory access.
+*/
+static gboolean _cl_test_available(const int devid, const size_t required)
+{
+  #define DT_TEST_AVAILABLE_BUFS 8
+  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+  cl_mem sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                 CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, 16, NULL, &err);
+  if(!sbuf) return FALSE;
+
+  int checked = 0;
+  cl_mem tbuf[DT_TEST_AVAILABLE_BUFS];
+  size_t remaining = required;
+  while((remaining > 0) && (checked < DT_TEST_AVAILABLE_BUFS) && (err == CL_SUCCESS))
+  {
+    size_t now = MIN(darktable.opencl->dev[devid].max_mem_alloc, remaining);
+    remaining = remaining - now;  
+    tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                     CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, now, NULL, &err);
+    if(err == CL_SUCCESS)
+    {
+      err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
+                                                                   sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
+      checked++;
+    }
+  }
+  const gboolean success = (err == CL_SUCCESS);
+
+  (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(sbuf);
+  for(int i = 0; i < checked; i++)
+    if(tbuf[i]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
+
+  if(!success)
+    dt_print(DT_DEBUG_OPENCL, "[_buffer_fits_device] had no success for %luMB on device %i\n",
+      required / 1024lu / 1024lu, devid); 
+ 
+  return success;
+}
+
+
+gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
+                                const float factor, const size_t overhead)
+{
+  if(!darktable.opencl->inited || devid < 0) return FALSE;
+
+  const size_t required  = width * height * bpp;
+  const size_t total = factor * required + overhead;
+
+  if((dt_opencl_get_device_memalloc(devid) < required) || (dt_opencl_get_device_available(devid) < total))
+    return FALSE;  
+  if(darktable.opencl->dev[devid].max_image_width < width || darktable.opencl->dev[devid].max_image_height < height)
+    return FALSE;
+  return _cl_test_available(devid, total);
+}
+
+/** check if buffer fits into limits given by OpenCL runtime */
+gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
+{
+  if(!darktable.opencl->inited || devid < 0) return FALSE;
+
+  if((dt_opencl_get_device_memalloc(devid) < required) || (dt_opencl_get_device_available(devid) < required)) return FALSE; 
+  return _cl_test_available(devid, required);
+}
 
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
 int dt_opencl_roundup(int size)
@@ -2615,13 +2671,6 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
       break;
   }
   dt_pthread_mutex_unlock(&darktable.opencl->lock);
-}
-
-/** get global memory of device */
-cl_ulong dt_opencl_get_max_global_mem(const int devid)
-{
-  if(!darktable.opencl->inited || devid < 0) return 0;
-  return darktable.opencl->dev[devid].max_global_mem;
 }
 
 
