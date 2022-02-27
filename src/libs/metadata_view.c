@@ -151,7 +151,7 @@ static const char *_labels[] = {
 
   /* xmp */
   //FIXME: reserve DT_METADATA_NUMBER places
-  "","","","","","","",
+  "","","","","","","","",
 
   /* geotagging */
   N_("latitude"),
@@ -188,10 +188,10 @@ int position()
 
 static gboolean _is_metadata_ui(const int i)
 {
-  // internal metadata ar not to be shown on the ui
+  // internal metadata are not to be shown on the ui
   if(i >= md_xmp_metadata && i < md_xmp_metadata + DT_METADATA_NUMBER)
   {
-    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i - md_xmp_metadata);
     return !(dt_metadata_get_type(keyid) == DT_METADATA_TYPE_INTERNAL);
   }
   else return TRUE;
@@ -951,10 +951,10 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       g_strlcpy(text, NODATA_STRING, sizeof(text));
 
       const uint32_t keyid = dt_metadata_get_keyid_by_display_order((uint32_t)(md - md_xmp_metadata));
-      const gchar *const key = dt_metadata_get_key(keyid);
       const gboolean hidden = dt_metadata_get_type(keyid) == DT_METADATA_TYPE_INTERNAL;
       if(! hidden)
       {
+        const gchar *const key = dt_metadata_get_key(keyid);
         GList *res = dt_metadata_get(img->id, key, NULL);
         if(res)
         {
@@ -962,8 +962,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
           _filter_non_printable(text, sizeof(text));
           g_list_free_full(res, &g_free);
         }
+        _metadata_update_value(md, text, self);
       }
-      _metadata_update_value(md, text, self);
     }
   }
   dt_image_cache_read_release(darktable.image_cache, img);
@@ -1218,7 +1218,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 
   GtkTreeIter iter;
   d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
-  for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
+  for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
     dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
     if(!_is_metadata_ui(m->index))

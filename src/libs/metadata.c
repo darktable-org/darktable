@@ -199,6 +199,8 @@ static void _update(dt_lib_module_t *self)
       if(sqlite3_column_bytes(stmt, 1))
       {
         const uint32_t key = (uint32_t)sqlite3_column_int(stmt, 0);
+        if(key >= DT_METADATA_NUMBER)
+          continue;
         char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
         const uint32_t count = (uint32_t)sqlite3_column_int(stmt, 2);
         metadata_count[key] = (count == imgs_count) ? 2 : 1;  // if = all images have the same metadata
@@ -212,6 +214,8 @@ static void _update(dt_lib_module_t *self)
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    if(dt_metadata_get_type(keyid) == DT_METADATA_TYPE_INTERNAL)
+      continue;
     g_list_free_full(d->metadata_list[i], g_free);
     d->metadata_list[i] = metadata[keyid];
     _fill_text_view(i, metadata_count[keyid], self);
@@ -241,6 +245,8 @@ static void _append_kv(GList **l, const gchar *key, const gchar *value)
 static void _metadata_set_list(const int i, GList **key_value, dt_lib_metadata_t *d)
 {
   const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+  if(dt_metadata_get_type(i) == DT_METADATA_TYPE_INTERNAL)
+    return;
   gchar *metadata = _get_buffer_text(GTK_TEXT_VIEW(d->textview[i]));
   if(metadata && !_is_leave_unchanged(GTK_TEXT_VIEW(d->textview[i])))
     _append_kv(key_value, dt_metadata_get_key(keyid), metadata);
@@ -397,6 +403,8 @@ static void _update_layout(dt_lib_module_t *self)
   GtkWidget *first = NULL, *previous = NULL;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+      continue;
     const gchar *name = dt_metadata_get_name_by_display_order(i);
     const int type = dt_metadata_get_type_by_display_order(i);
     gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
@@ -590,7 +598,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
                          DT_METADATA_PREF_COL_VISIBLE, &new_visible,
                          DT_METADATA_PREF_COL_PRIVATE, &new_private,
                          -1);
-      if(i < DT_METADATA_NUMBER)
+      if(i < DT_METADATA_NUMBER && dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
       {
         gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name[i]);
         uint32_t flag = dt_conf_get_int(setting);
@@ -697,6 +705,8 @@ void gui_init(dt_lib_module_t *self)
 
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+      continue;
     GtkWidget *label = dt_ui_label_new(_(dt_metadata_get_name_by_display_order(i)));
     GtkWidget *labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
@@ -780,6 +790,8 @@ void gui_cleanup(dt_lib_module_t *self)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+      continue;
     g_signal_handlers_block_by_func(d->textview[i], _lost_focus, self);
     g_free(d->setting_name[i]);
   }
@@ -790,7 +802,7 @@ void gui_cleanup(dt_lib_module_t *self)
 static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 {
   // to be adjusted the nb of metadata items changes
-  const unsigned int metadata_nb = DT_METADATA_NUMBER;
+  const unsigned int metadata_nb = dt_metadata_get_nb_user_metadata();
   const unsigned int params_size = strlen(string) + metadata_nb;
 
   char *params = calloc(sizeof(char), params_size);
@@ -879,6 +891,8 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+      continue;
     const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer((GtkTextView *)d->textview[i]);
     GtkTextIter start, end;
@@ -895,6 +909,8 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+      continue;
     memcpy(params + pos, metadata[i], metadata_len[i]);
     pos += metadata_len[i];
     g_free(metadata[i]);
@@ -917,6 +933,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   uint32_t total_len = 0;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+      continue;
     metadata[i] = buf;
     if(!metadata[i]) return 1;
     metadata_len[i] = strlen(metadata[i]) + 1;
@@ -931,6 +949,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+      continue;
     if(metadata[i][0] != '\0') _append_kv(&key_value, dt_metadata_get_key(i), metadata[i]);
   }
 

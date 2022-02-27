@@ -384,12 +384,18 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
     if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
                              && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
     {
-      const guint64 datetime = file->timestamp;
+      const time_t datetime = file->timestamp;
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
+      gchar *basename = g_path_get_basename(file->filename);
+      char dtid[DT_DATETIME_LENGTH];
+      dt_metadata_unix_time_to_text(dtid, sizeof(dtid), &datetime);
+      const gboolean already_imported = dt_metadata_already_imported(basename, dtid);
+      g_free(basename);
       GtkTreeIter iter;
       gtk_list_store_append(d->from.store, &iter);
       gtk_list_store_set(d->from.store, &iter,
+                         DT_IMPORT_UI_EXISTS, already_imported ? "✔" : " ",
                          DT_IMPORT_UI_FILENAME, file->filename,
                          DT_IMPORT_FILENAME, file->filename,
                          DT_IMPORT_UI_DATETIME, dt_txt,
@@ -684,9 +690,9 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
   /* get filmroll id for current directory. if not present, checking the db whether
     the image has already been imported can be skipped */
   int32_t filmroll_id = dt_film_get_id(folder);
-
   const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
   const gboolean include_jpegs = !dt_conf_get_bool("ui_last/import_ignore_jpegs");
+
   if(dir_files)
   {
     while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
@@ -695,7 +701,7 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
       const char *filename = g_file_info_get_name(info);
       if(!filename)
         continue;
-      const guint64 datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      const time_t datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
       const GFileType filetype = g_file_info_get_file_type(info);
@@ -713,11 +719,20 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
         if(include_jpegs || (ext && g_ascii_strncasecmp(ext, ".jpg", sizeof(".jpg"))
                                  && g_ascii_strncasecmp(ext, ".jpeg", sizeof(".jpeg"))))
         {
-          /* check if image is already imported, using previously fetched filroll id */
           gboolean already_imported = FALSE;
-          if(filmroll_id != -1)
+          if(d->import_case == DT_IMPORT_INPLACE)
           {
-            already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
+            /* check if image is already imported, using previously fetched filroll id */
+            if(filmroll_id != -1)
+              already_imported = dt_image_get_id(filmroll_id, filename) != -1 ? TRUE : FALSE;
+          }
+          else
+          {
+            gchar *basename = g_path_get_basename(filename);
+            char dtid[DT_DATETIME_LENGTH];
+            dt_metadata_unix_time_to_text(dtid, sizeof(dtid), &datetime);
+            already_imported = dt_metadata_already_imported(basename, dtid);
+            g_free(basename);
           }
 
           GtkTreeIter iter;
@@ -1541,21 +1556,18 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   d->from.treeview = GTK_TREE_VIEW(gtk_tree_view_new());
   gtk_container_add(GTK_CONTAINER(d->from.w), GTK_WIDGET(d->from.treeview));
 
-  if(d->import_case == DT_IMPORT_INPLACE)
-  {
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("✔", renderer, "text",
-                                                      DT_IMPORT_UI_EXISTS, NULL);
-    g_object_set (renderer, "xalign", 0.5, NULL);
-    gtk_tree_view_append_column(d->from.treeview, column);
-    gtk_tree_view_column_set_alignment(column, 0.5);
-    gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(10));
-    GtkWidget *header = gtk_tree_view_column_get_button(column);
-    gtk_widget_set_tooltip_text(header, _("mark already imported pictures"));
-  }
-
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), renderer, "text",
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("✔", renderer, "text",
+                                                    DT_IMPORT_UI_EXISTS, NULL);
+  g_object_set(renderer, "xalign", 0.5, NULL);
+  gtk_tree_view_append_column(d->from.treeview, column);
+  gtk_tree_view_column_set_alignment(column, 0.5);
+  gtk_tree_view_column_set_min_width(column, DT_PIXEL_APPLY_DPI(25));
+  GtkWidget *header = gtk_tree_view_column_get_button(column);
+  gtk_widget_set_tooltip_text(header, _("mark already imported pictures"));
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes(_("name"), renderer, "text",
                                                     DT_IMPORT_UI_FILENAME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
 
@@ -1570,7 +1582,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
                                                     DT_IMPORT_UI_DATETIME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
   gtk_tree_view_column_set_sort_column_id(column, DT_IMPORT_DATETIME);
-  GtkWidget *header = gtk_tree_view_column_get_button(column);
+  header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header, _("file 'modified date/time', may be different from 'Exif date/time'"));
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(d->from.store),
                                        DT_IMPORT_DATETIME, GTK_SORT_ASCENDING);
@@ -1732,12 +1744,9 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_box_pack_start(GTK_BOX(box), select_none, FALSE, FALSE, 2);
   g_signal_connect(select_none, "clicked", G_CALLBACK(_do_select_none_clicked), self);
 
-  if(d->import_case == DT_IMPORT_INPLACE)
-  {
-    GtkWidget *select_new = gtk_button_new_with_label(_("select new"));
-    gtk_box_pack_start(GTK_BOX(box), select_new, FALSE, FALSE, 2);
-    g_signal_connect(select_new, "clicked", G_CALLBACK(_do_select_new_clicked), self);
-  }
+  GtkWidget *select_new = gtk_button_new_with_label(_("select new"));
+  gtk_box_pack_start(GTK_BOX(box), select_new, FALSE, FALSE, 2);
+  g_signal_connect(select_new, "clicked", G_CALLBACK(_do_select_new_clicked), self);
 
   d->from.img_nb = gtk_label_new("");
   gtk_widget_set_halign(d->from.img_nb, GTK_ALIGN_END);
@@ -1755,12 +1764,11 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   guint col = 0;
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  if(d->import_case == DT_IMPORT_INPLACE)
-  {
-    d->import_new = dt_gui_preferences_bool(grid, "ui_last/import_select_new", col++, line, TRUE);
-    gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
-    g_signal_connect(G_OBJECT(d->import_new), "toggled", G_CALLBACK(_import_new_toggled), self);
-  }
+
+  d->import_new = dt_gui_preferences_bool(grid, "ui_last/import_select_new", col++, line, TRUE);
+  gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
+  g_signal_connect(G_OBJECT(d->import_new), "toggled", G_CALLBACK(_import_new_toggled), self);
+
   if(d->import_case != DT_IMPORT_CAMERA)
   {
     d->recursive = dt_gui_preferences_bool(grid, "ui_last/import_recursive", col++, line, TRUE);
@@ -1861,7 +1869,7 @@ static void _do_select_new(dt_lib_module_t* self)
     {
       gchar *sel = NULL;
       gtk_tree_model_get(model, &iter, DT_IMPORT_UI_EXISTS, &sel, -1);
-      if((d->import_case != DT_IMPORT_INPLACE) || (sel && !strcmp(sel, " ")))
+      if(sel && !strcmp(sel, " "))
         gtk_tree_selection_select_iter(selection, &iter);
     }
     while(gtk_tree_model_iter_next(model, &iter));
