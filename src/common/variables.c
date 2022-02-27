@@ -93,10 +93,10 @@ typedef struct dt_variables_data_t
 
 } dt_variables_data_t;
 
-static char *expand(dt_variables_params_t *params, char **source, char extra_stop);
+static char *_expand(dt_variables_params_t *params, char **source, char extra_stop);
 
 // gather some data that might be used for variable expansion
-static void init_expansion(dt_variables_params_t *params, gboolean iterate)
+static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
 {
   if(iterate) params->data->sequence++;
 
@@ -191,7 +191,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   }
 }
 
-static void cleanup_expansion(dt_variables_params_t *params)
+static void _cleanup_expansion(dt_variables_params_t *params)
 {
   g_free(params->data->homedir);
   g_free(params->data->pictures_folder);
@@ -199,59 +199,59 @@ static void cleanup_expansion(dt_variables_params_t *params)
   g_free(params->data->camera_alias);
 }
 
-static inline gboolean has_prefix(char **str, const char *prefix)
+static inline gboolean _has_prefix(char **str, const char *prefix)
 {
   gboolean res = g_str_has_prefix(*str, prefix);
   if(res) *str += strlen(prefix);
   return res;
 }
 
-static char *get_base_value(dt_variables_params_t *params, char **variable)
+static char *_get_base_value(dt_variables_params_t *params, char **variable)
 {
   char *result = NULL;
   gboolean escape = TRUE;
 
   dt_datetime_t datetime = params->data->have_exif_dt ? params->data->datetime : params->data->time;
 
-  if(has_prefix(variable, "YEAR") || has_prefix(variable, "DATE.LONG_YEAR"))
+  if(_has_prefix(variable, "YEAR") || _has_prefix(variable, "DATE.LONG_YEAR"))
     result = g_strdup_printf("%.4d", params->data->time.year);
-  else if(has_prefix(variable, "MONTH") || has_prefix(variable, "DATE.MONTH"))
+  else if(_has_prefix(variable, "MONTH") || _has_prefix(variable, "DATE.MONTH"))
     result = g_strdup_printf("%.2d", params->data->time.month);
-  else if(has_prefix(variable, "DAY") || has_prefix(variable, "DATE.DAY"))
+  else if(_has_prefix(variable, "DAY") || _has_prefix(variable, "DATE.DAY"))
     result = g_strdup_printf("%.2d", params->data->time.day);
-  else if(has_prefix(variable, "HOUR") || has_prefix(variable, "DATE.HOUR"))
+  else if(_has_prefix(variable, "HOUR") || _has_prefix(variable, "DATE.HOUR"))
     result = g_strdup_printf("%.2d", params->data->time.hour);
-  else if(has_prefix(variable, "MINUTE") || has_prefix(variable, "DATE.MINUTE"))
+  else if(_has_prefix(variable, "MINUTE") || _has_prefix(variable, "DATE.MINUTE"))
     result = g_strdup_printf("%.2d", params->data->time.minute);
-  else if(has_prefix(variable, "SECOND") || has_prefix(variable, "DATE.SECOND"))
+  else if(_has_prefix(variable, "SECOND") || _has_prefix(variable, "DATE.SECOND"))
     result = g_strdup_printf("%.2d", params->data->time.second);
-  else if(has_prefix(variable, "MSEC"))
+  else if(_has_prefix(variable, "MSEC"))
     result = g_strdup_printf("%.3d", params->data->time.msec);
 
-  else if(has_prefix(variable, "EXIF_YEAR") || has_prefix(variable, "EXIF.DATE.LONG_YEAR"))
+  else if(_has_prefix(variable, "EXIF_YEAR") || _has_prefix(variable, "EXIF.DATE.LONG_YEAR"))
     result = g_strdup_printf("%.4d", datetime.year);
-  else if(has_prefix(variable, "EXIF_MONTH") || has_prefix(variable, "EXIF.DATE.MONTH"))
+  else if(_has_prefix(variable, "EXIF_MONTH") || _has_prefix(variable, "EXIF.DATE.MONTH"))
     result = g_strdup_printf("%.2d", datetime.month);
-  else if(has_prefix(variable, "EXIF_DAY") || has_prefix(variable, "EXIF.DATE.DAY"))
+  else if(_has_prefix(variable, "EXIF_DAY") || _has_prefix(variable, "EXIF.DATE.DAY"))
     result = g_strdup_printf("%.2d", datetime.day);
-  else if(has_prefix(variable, "EXIF_HOUR") || has_prefix(variable, "EXIF.DATE.HOUR"))
+  else if(_has_prefix(variable, "EXIF_HOUR") || _has_prefix(variable, "EXIF.DATE.HOUR"))
     result = g_strdup_printf("%.2d", datetime.hour);
-  else if(has_prefix(variable, "EXIF_MINUTE") || has_prefix(variable, "EXIF.DATE.MINUTE"))
+  else if(_has_prefix(variable, "EXIF_MINUTE") || _has_prefix(variable, "EXIF.DATE.MINUTE"))
     result = g_strdup_printf("%.2d", datetime.minute);
-  else if(has_prefix(variable, "EXIF_SECOND") || has_prefix(variable, "EEXIF.DATE.SECOND"))
+  else if(_has_prefix(variable, "EXIF_SECOND") || _has_prefix(variable, "EXIF.DATE.SECOND"))
     result = g_strdup_printf("%.2d", datetime.second);
-  else if(has_prefix(variable, "EXIF_MSEC"))
+  else if(_has_prefix(variable, "EXIF_MSEC"))
     result = g_strdup_printf("%.3d", datetime.msec);
-  else if(has_prefix(variable, "EXIF_ISO"))
+  else if(_has_prefix(variable, "EXIF_ISO"))
     result = g_strdup_printf("%d", params->data->exif_iso);
-  else if(has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
+  else if(_has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
     result = g_strdup_printf("\n");
-  else if(has_prefix(variable, "EXIF_EXPOSURE_BIAS"))
+  else if(_has_prefix(variable, "EXIF_EXPOSURE_BIAS"))
   {
     if(!isnan(params->data->exif_exposure_bias))
       result = g_strdup_printf("%+.2f", params->data->exif_exposure_bias);
   }
-  else if(has_prefix(variable, "EXIF_EXPOSURE"))
+  else if(_has_prefix(variable, "EXIF_EXPOSURE"))
   {
     result = dt_util_format_exposure(params->data->exif_exposure);
     // for job other than info (export) we strip the slash char
@@ -262,13 +262,13 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       result = res;
     }
   }
-  else if(has_prefix(variable, "EXIF_APERTURE"))
+  else if(_has_prefix(variable, "EXIF_APERTURE"))
     result = g_strdup_printf("%.1f", params->data->exif_aperture);
-  else if(has_prefix(variable, "EXIF_FOCAL_LENGTH"))
+  else if(_has_prefix(variable, "EXIF_FOCAL_LENGTH"))
     result = g_strdup_printf("%d", (int)params->data->exif_focal_length);
-  else if(has_prefix(variable, "EXIF_FOCUS_DISTANCE"))
+  else if(_has_prefix(variable, "EXIF_FOCUS_DISTANCE"))
     result = g_strdup_printf("%.2f", params->data->exif_focus_distance);
-  else if(has_prefix(variable, "LONGITUDE") || has_prefix(variable, "GPS.LONGITUDE"))
+  else if(_has_prefix(variable, "LONGITUDE") || _has_prefix(variable, "GPS.LONGITUDE"))
   {
     if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
        && g_strcmp0(params->jobcode, "infos") == 0)
@@ -281,7 +281,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       result = g_strdup_printf("%c%010.6f", NS, fabs(params->data->longitude));
     }
   }
-  else if(has_prefix(variable, "LATITUDE") || has_prefix(variable, "GPS.LATITUDE"))
+  else if(_has_prefix(variable, "LATITUDE") || _has_prefix(variable, "GPS.LATITUDE"))
   {
     if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
        && g_strcmp0(params->jobcode, "infos") == 0)
@@ -294,17 +294,17 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       result = g_strdup_printf("%c%09.6f", NS, fabs(params->data->latitude));
     }
   }
-  else if(has_prefix(variable, "ELEVATION") || has_prefix(variable, "GPS.ELEVATION"))
+  else if(_has_prefix(variable, "ELEVATION") || _has_prefix(variable, "GPS.ELEVATION"))
     result = g_strdup_printf("%.2f", params->data->elevation);
-  else if(has_prefix(variable, "MAKER") || has_prefix(variable, "EXIF.MAKER"))
+  else if(_has_prefix(variable, "MAKER") || _has_prefix(variable, "EXIF.MAKER"))
     result = g_strdup(params->data->camera_maker);
-  else if(has_prefix(variable, "MODEL") || has_prefix(variable, "EXIF.MODEL"))
+  else if(_has_prefix(variable, "MODEL") || _has_prefix(variable, "EXIF.MODEL"))
     result = g_strdup(params->data->camera_alias);
-  else if(has_prefix(variable, "LENS") || has_prefix(variable, "EXIF.LENS"))
+  else if(_has_prefix(variable, "LENS") || _has_prefix(variable, "EXIF.LENS"))
     result = g_strdup(params->data->exif_lens);
-  else if(has_prefix(variable, "ID") || has_prefix(variable, "IMAGE.ID"))
+  else if(_has_prefix(variable, "ID") || _has_prefix(variable, "IMAGE.ID"))
     result = g_strdup_printf("%d", params->imgid);
-  else if(has_prefix(variable, "VERSION_NAME"))
+  else if(_has_prefix(variable, "VERSION_NAME"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.version_name", NULL);
     if(res != NULL)
@@ -313,7 +313,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "VERSION_IF_MULTI"))
+  else if(_has_prefix(variable, "VERSION_IF_MULTI"))
   {
     sqlite3_stmt *stmt;
 
@@ -337,11 +337,11 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     sqlite3_finalize (stmt);
   }
-  else if(has_prefix(variable, "VERSION"))
+  else if(_has_prefix(variable, "VERSION"))
     result = g_strdup_printf("%d", params->data->version);
-  else if(has_prefix(variable, "JOBCODE"))
+  else if(_has_prefix(variable, "JOBCODE"))
     result = g_strdup(params->jobcode);
-  else if(has_prefix(variable, "ROLL_NAME"))
+  else if(_has_prefix(variable, "ROLL_NAME"))
   {
     if(params->filename)
     {
@@ -350,18 +350,18 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       g_free(dirname);
     }
   }
-  else if(has_prefix(variable, "FILE_DIRECTORY"))
+  else if(_has_prefix(variable, "FILE_DIRECTORY"))
   {
     // undocumented : backward compatibility
     if(params->filename)
       result = g_path_get_dirname(params->filename);
   }
-  else if(has_prefix(variable, "FILE_FOLDER"))
+  else if(_has_prefix(variable, "FILE_FOLDER"))
   {
     if(params->filename)
       result = g_path_get_dirname(params->filename);
   }
-  else if(has_prefix(variable, "FILE_NAME") || has_prefix(variable, "IMAGE.BASENAME"))
+  else if(_has_prefix(variable, "FILE_NAME") || _has_prefix(variable, "IMAGE.BASENAME"))
   {
     if(params->filename)
     {
@@ -370,9 +370,9 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       if(dot) *dot = '\0';
     }
   }
-  else if(has_prefix(variable, "FILE_EXTENSION"))
+  else if(_has_prefix(variable, "FILE_EXTENSION"))
     result = g_strdup(params->data->file_ext);
-  else if(has_prefix(variable, "SEQUENCE"))
+  else if(_has_prefix(variable, "SEQUENCE"))
   {
     uint8_t nb_digit = 4;
     if(g_ascii_isdigit(*variable[0]))
@@ -382,21 +382,21 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     result = g_strdup_printf("%.*d", nb_digit, params->sequence >= 0 ? params->sequence : params->data->sequence);
   }
-  else if(has_prefix(variable, "USERNAME"))
+  else if(_has_prefix(variable, "USERNAME"))
     result = g_strdup(g_get_user_name());
-  else if(has_prefix(variable, "HOME_FOLDER"))
+  else if(_has_prefix(variable, "HOME_FOLDER"))
     result = g_strdup(params->data->homedir); // undocumented : backward compatibility
-  else if(has_prefix(variable, "HOME"))
+  else if(_has_prefix(variable, "HOME"))
     result = g_strdup(params->data->homedir);
-  else if(has_prefix(variable, "PICTURES_FOLDER"))
+  else if(_has_prefix(variable, "PICTURES_FOLDER"))
     result = g_strdup(params->data->pictures_folder);
-  else if(has_prefix(variable, "DESKTOP_FOLDER"))
+  else if(_has_prefix(variable, "DESKTOP_FOLDER"))
     result = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP)); // undocumented : backward compatibility
-  else if(has_prefix(variable, "DESKTOP"))
+  else if(_has_prefix(variable, "DESKTOP"))
     result = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
-  else if(has_prefix(variable, "STARS"))
+  else if(_has_prefix(variable, "STARS"))
     result = g_strdup_printf("%d", params->data->stars);
-  else if(has_prefix(variable, "RATING_ICONS") || has_prefix(variable, "Xmp.xmp.Rating"))
+  else if(_has_prefix(variable, "RATING_ICONS") || _has_prefix(variable, "Xmp.xmp.Rating"))
   {
     switch(params->data->stars)
     {
@@ -423,8 +423,8 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
         break;
     }
   }
-  else if((has_prefix(variable, "LABELS_ICONS") ||
-           has_prefix(variable, "LABELS_COLORICONS"))
+  else if((_has_prefix(variable, "LABELS_ICONS") ||
+           _has_prefix(variable, "LABELS_COLORICONS"))
           && g_strcmp0(params->jobcode, "infos") == 0)
   {
     escape = FALSE;
@@ -439,7 +439,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free(res);
   }
-  else if(has_prefix(variable, "LABELS"))
+  else if(_has_prefix(variable, "LABELS"))
   {
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
     // only use the first/last label?
@@ -457,7 +457,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free(res);
   }
-  else if(has_prefix(variable, "TITLE") || has_prefix(variable, "Xmp.dc.title"))
+  else if(_has_prefix(variable, "TITLE") || _has_prefix(variable, "Xmp.dc.title"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL);
     if(res != NULL)
@@ -466,7 +466,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "DESCRIPTION") || has_prefix(variable, "vXmp.dc.description"))
+  else if(_has_prefix(variable, "DESCRIPTION") || _has_prefix(variable, "Xmp.dc.description"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.description", NULL);
     if(res != NULL)
@@ -475,7 +475,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "CREATOR") || has_prefix(variable, "Xmp.dc.creator"))
+  else if(_has_prefix(variable, "CREATOR") || _has_prefix(variable, "Xmp.dc.creator"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
     if(res != NULL)
@@ -484,7 +484,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "PUBLISHER") || has_prefix(variable, "Xmp.dc.publisher"))
+  else if(_has_prefix(variable, "PUBLISHER") || _has_prefix(variable, "Xmp.dc.publisher"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.publisher", NULL);
     if(res != NULL)
@@ -493,7 +493,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "RIGHTS") || has_prefix(variable, "Xmp.dc.rights"))
+  else if(_has_prefix(variable, "RIGHTS") || _has_prefix(variable, "Xmp.dc.rights"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
     if(res != NULL)
@@ -502,34 +502,34 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "OPENCL_ACTIVATED"))
+  else if(_has_prefix(variable, "OPENCL_ACTIVATED"))
   {
     if(dt_opencl_is_enabled())
       result = g_strdup(_("yes"));
     else
       result = g_strdup(_("no"));
   }
-  else if(has_prefix(variable, "MAX_WIDTH"))
+  else if(_has_prefix(variable, "MAX_WIDTH"))
     result = g_strdup_printf("%d", params->data->max_width);
-  else if(has_prefix(variable, "MAX_HEIGHT"))
+  else if(_has_prefix(variable, "MAX_HEIGHT"))
     result = g_strdup_printf("%d", params->data->max_height);
-  else if(has_prefix(variable, "SENSOR_WIDTH"))
+  else if(_has_prefix(variable, "SENSOR_WIDTH"))
     result = g_strdup_printf("%d", params->data->sensor_width);
-  else if(has_prefix(variable, "SENSOR_HEIGHT"))
+  else if(_has_prefix(variable, "SENSOR_HEIGHT"))
     result = g_strdup_printf("%d", params->data->sensor_height);
-  else if(has_prefix(variable, "RAW_WIDTH"))
+  else if(_has_prefix(variable, "RAW_WIDTH"))
     result = g_strdup_printf("%d", params->data->raw_width);
-  else if(has_prefix(variable, "RAW_HEIGHT"))
+  else if(_has_prefix(variable, "RAW_HEIGHT"))
     result = g_strdup_printf("%d", params->data->raw_height);
-  else if(has_prefix(variable, "CROP_WIDTH"))
+  else if(_has_prefix(variable, "CROP_WIDTH"))
     result = g_strdup_printf("%d", params->data->crop_width);
-  else if(has_prefix(variable, "CROP_HEIGHT"))
+  else if(_has_prefix(variable, "CROP_HEIGHT"))
     result = g_strdup_printf("%d", params->data->crop_height);
-  else if(has_prefix(variable, "EXPORT_WIDTH"))
+  else if(_has_prefix(variable, "EXPORT_WIDTH"))
     result = g_strdup_printf("%d", params->data->export_width);
-  else if(has_prefix(variable, "EXPORT_HEIGHT"))
+  else if(_has_prefix(variable, "EXPORT_HEIGHT"))
     result = g_strdup_printf("%d", params->data->export_height);
-  else if (has_prefix(variable, "CATEGORY"))
+  else if (_has_prefix(variable, "CATEGORY"))
   {
     // CATEGORY should be followed by n [0,9] and "(category)". category can contain 0 or more '|'
     if (g_ascii_isdigit(*variable[0]))
@@ -556,7 +556,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       }
     }
   }
-  else if(has_prefix(variable, "TAGS") || has_prefix(variable, "IMAGE.TAGS"))
+  else if(_has_prefix(variable, "TAGS") || _has_prefix(variable, "IMAGE.TAGS"))
   {
     GList *tags_list = dt_tag_get_list_export(params->imgid, params->data->tags_flags);
     char *tags = dt_util_glist_to_str(", ", tags_list);
@@ -564,7 +564,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(tags);
     g_free(tags);
   }
-  else if(has_prefix(variable, "SIDECAR_TXT") && g_strcmp0(params->jobcode, "infos") == 0
+  else if(_has_prefix(variable, "SIDECAR_TXT") && g_strcmp0(params->jobcode, "infos") == 0
           && (params->data->flags & DT_IMAGE_HAS_TXT))
   {
     char *path = dt_image_get_text_path(params->imgid);
@@ -579,9 +579,9 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       g_free(path);
     }
   }
-  else if(has_prefix(variable, "DARKTABLE_VERSION") || has_prefix(variable, "DARKTABLE.VERSION"))
+  else if(_has_prefix(variable, "DARKTABLE_VERSION") || _has_prefix(variable, "DARKTABLE.VERSION"))
     result = g_strdup(darktable_package_version);
-  else if(has_prefix(variable, "DARKTABLE_NAME") || has_prefix(variable, "DARKTABLE.NAME"))
+  else if(_has_prefix(variable, "DARKTABLE_NAME") || _has_prefix(variable, "DARKTABLE.NAME"))
     result = g_strdup(PACKAGE_NAME);
   else
   {
@@ -604,13 +604,13 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
 // http://www.tldp.org/LDP/abs/html/parameter-substitution.html
 // https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
 // the descriptions in the comments are referring to the bash behaviour, dt doesn't do it 100% like that!
-static char *variable_get_value(dt_variables_params_t *params, char **variable)
+static char *_variable_get_value(dt_variables_params_t *params, char **variable)
 {
   // invariant: the variable starts with "$(" which we can skip
   (*variable) += 2;
 
   // first get the value of the variable
-  char *base_value = get_base_value(params, variable); // this is never going to be NULL!
+  char *base_value = _get_base_value(params, variable); // this is never going to be NULL!
   const size_t base_value_length = strlen(base_value);
 
   // ... and now see if we have to change it
@@ -624,7 +624,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
           If parameter not set, use default.
       */
       {
-        char *replacement = expand(params, variable, ')');
+        char *replacement = _expand(params, variable, ')');
         if(*base_value == '\0')
         {
           g_free(base_value);
@@ -640,7 +640,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
           If parameter set, use alt_value, else use null string.
       */
       {
-        char *replacement = expand(params, variable, ')');
+        char *replacement = _expand(params, variable, ')');
         if(*base_value != '\0')
         {
           g_free(base_value);
@@ -698,7 +698,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
           Remove from $var the shortest part of $Pattern that matches the front end of $var.
       */
       {
-        char *pattern = expand(params, variable, ')');
+        char *pattern = _expand(params, variable, ')');
         const size_t pattern_length = strlen(pattern);
         if(!strncmp(base_value, pattern, pattern_length))
         {
@@ -715,7 +715,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
           Remove from $var the shortest part of $Pattern that matches the back end of $var.
       */
       {
-        char *pattern = expand(params, variable, ')');
+        char *pattern = _expand(params, variable, ')');
         const size_t pattern_length = strlen(pattern);
         if(!strncmp(base_value + base_value_length - pattern_length, pattern, pattern_length))
           base_value[base_value_length - pattern_length] = '\0';
@@ -744,10 +744,10 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
         const char mode = **variable;
 
         if(mode == '/' || mode == '#' || mode == '%') (*variable)++;
-        char *pattern = expand(params, variable, '/');
+        char *pattern = _expand(params, variable, '/');
         const size_t pattern_length = strlen(pattern);
         (*variable)++;
-        char *replacement = expand(params, variable, ')');
+        char *replacement = _expand(params, variable, ')');
         const size_t replacement_length = strlen(replacement);
 
         switch(mode)
@@ -866,7 +866,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
   return base_value;
 }
 
-static void grow_buffer(char **result, char **result_iter, size_t *result_length, size_t extra_space)
+static void _grow_buffer(char **result, char **result_iter, size_t *result_length, size_t extra_space)
 {
   const size_t used_length = *result_iter - *result;
   if(used_length + extra_space > *result_length)
@@ -877,7 +877,7 @@ static void grow_buffer(char **result, char **result_iter, size_t *result_length
   }
 }
 
-static char *expand(dt_variables_params_t *params, char **source, char extra_stop)
+static char *_expand(dt_variables_params_t *params, char **source, char extra_stop)
 {
   char *result = g_strdup("");
   if(!*source) return result;
@@ -898,7 +898,7 @@ static char *expand(dt_variables_params_t *params, char **source, char extra_sto
         break;
 
       if(result_iter - result >= result_length)
-        grow_buffer(&result, &result_iter, &result_length, source_length - (source_iter - *source));
+        _grow_buffer(&result, &result_iter, &result_length, source_length - (source_iter - *source));
       *result_iter = c;
       result_iter++;
       source_iter++;
@@ -909,11 +909,11 @@ static char *expand(dt_variables_params_t *params, char **source, char extra_sto
     if(*source_iter == '$')
     {
       char *old_source_iter = source_iter;
-      char *replacement = variable_get_value(params, &source_iter);
+      char *replacement = _variable_get_value(params, &source_iter);
       if(replacement)
       {
         const size_t replacement_length = strlen(replacement);
-        grow_buffer(&result, &result_iter, &result_length, replacement_length);
+        _grow_buffer(&result, &result_iter, &result_length, replacement_length);
         memcpy(result_iter, replacement, replacement_length);
         result_iter += replacement_length;
         g_free(replacement);
@@ -922,7 +922,7 @@ static char *expand(dt_variables_params_t *params, char **source, char extra_sto
       {
         // the error case of missing closing ')' -- try to recover
         source_iter = old_source_iter;
-        grow_buffer(&result, &result_iter, &result_length, source_length - (source_iter - *source));
+        _grow_buffer(&result, &result_iter, &result_length, source_length - (source_iter - *source));
         *result_iter++ = *source_iter++;
       }
     }
@@ -936,11 +936,11 @@ static char *expand(dt_variables_params_t *params, char **source, char extra_sto
 
 char *dt_variables_expand(dt_variables_params_t *params, gchar *source, gboolean iterate)
 {
-  init_expansion(params, iterate);
+  _init_expansion(params, iterate);
 
-  char *result = expand(params, &source, '\0');
+  char *result = _expand(params, &source, '\0');
 
-  cleanup_expansion(params);
+  _cleanup_expansion(params);
 
   return result;
 }
