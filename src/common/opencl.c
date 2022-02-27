@@ -2440,15 +2440,16 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
 
 size_t _opencl_get_tuned_available(const int devid)
 {
-  if(darktable.opencl->dev[devid].tuned_available) return darktable.opencl->dev[devid].tuned_available;
-  size_t available = 0;
-  const size_t allmem = darktable.opencl->dev[devid].max_global_mem - 128ul * 1024ul * 1024ul;
-  const size_t l_buff = dt_opencl_get_device_memalloc(devid);
-  const size_t s_buff = 128lu * 1024lu * 1024lu;
+  if(darktable.opencl->dev[devid].tuned_available)
+    return darktable.opencl->dev[devid].tuned_available;
 
+  size_t available = 0;
+  const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
+  const size_t l_buff = dt_opencl_get_device_memalloc(devid);
+  const size_t m_buff = MIN(l_buff / 4, 256lu * 1024lu * 1024lu);
+  const size_t s_buff = 64lu * 1024lu * 1024lu;
   int checked = 0;
   cl_mem tbuf[128];
-
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
                  CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, 16, NULL, &err);
@@ -2468,9 +2469,7 @@ size_t _opencl_get_tuned_available(const int devid)
         available += l_buff;
       }
       else
-      {
         if(tbuf[checked]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
-      }
     }
   }
 
@@ -2478,13 +2477,35 @@ size_t _opencl_get_tuned_available(const int devid)
   while((available < allmem) && (checked < 128) && (err == CL_SUCCESS))
   {
     tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
-                     CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, s_buff, NULL, &err);
+                     CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, m_buff, NULL, &err);
     if(err == CL_SUCCESS)
     {
       err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
                                                                    sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
-      if(err == CL_SUCCESS) available += s_buff;
-      checked++;
+      if(err == CL_SUCCESS)
+      {
+        checked++;
+        available += m_buff;
+      }
+      else
+        if(tbuf[checked]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
+    }
+  }
+
+  if(m_buff > s_buff)
+  {
+    err = CL_SUCCESS;
+    while((available < allmem) && (checked < 128) && (err == CL_SUCCESS))
+    {
+      tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
+                       CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, s_buff, NULL, &err);
+      if(err == CL_SUCCESS)
+      {
+        err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
+                                                                   sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
+        if(err == CL_SUCCESS) available += s_buff;
+        checked++;
+      }
     }
   }
 
@@ -2492,17 +2513,19 @@ size_t _opencl_get_tuned_available(const int devid)
   for(int i = 0; i < checked; i++)
     if(tbuf[i]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
 
-  available -= s_buff; // make sure to leave at least an additional 128MB
+  // don't use a constant value for safety but relative to what system uses already
+  const size_t usedmem = allmem - available;
+  available = MAX(0, allmem - (usedmem + MAX(usedmem / 2, 128lu * 1024lu * 1024lu)));
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_get_tuned_available] found %luMB (headroom %lu) on device %i\n",
-     available / 1024lu / 1024lu, (darktable.opencl->dev[devid].max_global_mem - available) / 1024lu / 1024lu, devid);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_get_tuned_available] %luMB available, %luMB already used of %luMB on device %i\n",
+     available / 1024lu / 1024lu, usedmem / 1024lu / 1024lu, allmem / 1024lu / 1024lu,devid);
 
   darktable.opencl->dev[devid].tuned_available = available;
   return available;
 }
 
 /* amount of graphics memory declared as available depends on max_global_mem and "resourcelevel". We garantee
-   - a headroom of 400MB in all cases
+   - a headroom of 400MB in all cases not using tuned cl
    - 256MB to simulate a minimum system
    - 2GB to simalate a reference system 
 */
@@ -2513,6 +2536,7 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   if(level < 0)  return 2048lu  * 1024ul * 1024ul;
   if(level == 5) return _opencl_get_tuned_available(devid);
 
+  // calculate data from fraction
   const size_t disposable = (size_t)darktable.opencl->dev[devid].max_global_mem - 400ul * 1024ul * 1024ul;
   const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 3];
   return MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction); 
