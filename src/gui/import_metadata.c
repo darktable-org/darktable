@@ -245,6 +245,8 @@ static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
     uint32_t total_len = 0;
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
     {
+      if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+        continue;
       metadata_param[i] = buf;
       metadata_len[i] = strlen(metadata_param[i]) + 1;
       buf += metadata_len[i];
@@ -258,6 +260,8 @@ static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
       gtk_list_store_set(metadata->m_model, &iter, 0, (char *)sqlite3_column_text(stmt, 0), -1);
       for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       {
+        if(dt_metadata_get_type_by_display_order(i) == DT_METADATA_TYPE_INTERNAL)
+          continue;
         gtk_list_store_set(metadata->m_model, &iter, i+1, metadata_param[i], -1);
       }
     }

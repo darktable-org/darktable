@@ -2087,6 +2087,22 @@ static int _control_import_image_copy(const char *filename,
     if(!imgid) dt_control_log(_("error loading file `%s'"), output);
     else
     {
+      GError *error = NULL;
+      GFile *gfile = g_file_new_for_path(filename);
+      GFileInfo *info = g_file_query_info(gfile,
+                                G_FILE_ATTRIBUTE_STANDARD_NAME ","
+                                G_FILE_ATTRIBUTE_TIME_MODIFIED,
+                                G_FILE_QUERY_INFO_NONE, NULL, &error);
+      const char *fn = g_file_info_get_name(info);
+      // FIXME set a routine common with import.c
+      const time_t datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      char dt_txt[DT_DATETIME_LENGTH];
+      dt_metadata_unix_time_to_text(dt_txt, sizeof(dt_txt), &datetime);
+      char *id = g_strconcat(fn, "-", dt_txt, NULL);
+      dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
+      g_free(id);
+      g_object_unref(info);
+      g_object_unref(gfile);
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
       if((imgid & 3) == 3)
       {
