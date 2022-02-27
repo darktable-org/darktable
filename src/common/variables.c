@@ -213,32 +213,32 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
 
   dt_datetime_t datetime = params->data->have_exif_dt ? params->data->datetime : params->data->time;
 
-  if(has_prefix(variable, "YEAR"))
+  if(has_prefix(variable, "YEAR") || has_prefix(variable, "DATE.LONG_YEAR"))
     result = g_strdup_printf("%.4d", params->data->time.year);
-  else if(has_prefix(variable, "MONTH"))
+  else if(has_prefix(variable, "MONTH") || has_prefix(variable, "DATE.MONTH"))
     result = g_strdup_printf("%.2d", params->data->time.month);
-  else if(has_prefix(variable, "DAY"))
+  else if(has_prefix(variable, "DAY") || has_prefix(variable, "DATE.DAY"))
     result = g_strdup_printf("%.2d", params->data->time.day);
-  else if(has_prefix(variable, "HOUR"))
+  else if(has_prefix(variable, "HOUR") || has_prefix(variable, "DATE.HOUR"))
     result = g_strdup_printf("%.2d", params->data->time.hour);
-  else if(has_prefix(variable, "MINUTE"))
+  else if(has_prefix(variable, "MINUTE") || has_prefix(variable, "DATE.MINUTE"))
     result = g_strdup_printf("%.2d", params->data->time.minute);
-  else if(has_prefix(variable, "SECOND"))
+  else if(has_prefix(variable, "SECOND") || has_prefix(variable, "DATE.SECOND"))
     result = g_strdup_printf("%.2d", params->data->time.second);
   else if(has_prefix(variable, "MSEC"))
     result = g_strdup_printf("%.3d", params->data->time.msec);
 
-  else if(has_prefix(variable, "EXIF_YEAR"))
+  else if(has_prefix(variable, "EXIF_YEAR") || has_prefix(variable, "EXIF.DATE.LONG_YEAR"))
     result = g_strdup_printf("%.4d", datetime.year);
-  else if(has_prefix(variable, "EXIF_MONTH"))
+  else if(has_prefix(variable, "EXIF_MONTH") || has_prefix(variable, "EXIF.DATE.MONTH"))
     result = g_strdup_printf("%.2d", datetime.month);
-  else if(has_prefix(variable, "EXIF_DAY"))
+  else if(has_prefix(variable, "EXIF_DAY") || has_prefix(variable, "EXIF.DATE.DAY"))
     result = g_strdup_printf("%.2d", datetime.day);
-  else if(has_prefix(variable, "EXIF_HOUR"))
+  else if(has_prefix(variable, "EXIF_HOUR") || has_prefix(variable, "EXIF.DATE.HOUR"))
     result = g_strdup_printf("%.2d", datetime.hour);
-  else if(has_prefix(variable, "EXIF_MINUTE"))
+  else if(has_prefix(variable, "EXIF_MINUTE") || has_prefix(variable, "EXIF.DATE.MINUTE"))
     result = g_strdup_printf("%.2d", datetime.minute);
-  else if(has_prefix(variable, "EXIF_SECOND"))
+  else if(has_prefix(variable, "EXIF_SECOND") || has_prefix(variable, "EEXIF.DATE.SECOND"))
     result = g_strdup_printf("%.2d", datetime.second);
   else if(has_prefix(variable, "EXIF_MSEC"))
     result = g_strdup_printf("%.3d", datetime.msec);
@@ -268,7 +268,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", (int)params->data->exif_focal_length);
   else if(has_prefix(variable, "EXIF_FOCUS_DISTANCE"))
     result = g_strdup_printf("%.2f", params->data->exif_focus_distance);
-  else if(has_prefix(variable, "LONGITUDE"))
+  else if(has_prefix(variable, "LONGITUDE") || has_prefix(variable, "GPS.LONGITUDE"))
   {
     if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
        && g_strcmp0(params->jobcode, "infos") == 0)
@@ -281,7 +281,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       result = g_strdup_printf("%c%010.6f", NS, fabs(params->data->longitude));
     }
   }
-  else if(has_prefix(variable, "LATITUDE"))
+  else if(has_prefix(variable, "LATITUDE") || has_prefix(variable, "GPS.LATITUDE"))
   {
     if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
        && g_strcmp0(params->jobcode, "infos") == 0)
@@ -294,15 +294,15 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       result = g_strdup_printf("%c%09.6f", NS, fabs(params->data->latitude));
     }
   }
-  else if(has_prefix(variable, "ELEVATION"))
+  else if(has_prefix(variable, "ELEVATION") || has_prefix(variable, "GPS.ELEVATION"))
     result = g_strdup_printf("%.2f", params->data->elevation);
-  else if(has_prefix(variable, "MAKER"))
+  else if(has_prefix(variable, "MAKER") || has_prefix(variable, "EXIF.MAKER"))
     result = g_strdup(params->data->camera_maker);
-  else if(has_prefix(variable, "MODEL"))
+  else if(has_prefix(variable, "MODEL") || has_prefix(variable, "EXIF.MODEL"))
     result = g_strdup(params->data->camera_alias);
-  else if(has_prefix(variable, "LENS"))
+  else if(has_prefix(variable, "LENS") || has_prefix(variable, "EXIF.LENS"))
     result = g_strdup(params->data->exif_lens);
-  else if(has_prefix(variable, "ID"))
+  else if(has_prefix(variable, "ID") || has_prefix(variable, "IMAGE.ID"))
     result = g_strdup_printf("%d", params->imgid);
   else if(has_prefix(variable, "VERSION_NAME"))
   {
@@ -361,7 +361,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     if(params->filename)
       result = g_path_get_dirname(params->filename);
   }
-  else if(has_prefix(variable, "FILE_NAME"))
+  else if(has_prefix(variable, "FILE_NAME") || has_prefix(variable, "IMAGE.BASENAME"))
   {
     if(params->filename)
     {
@@ -396,7 +396,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
   else if(has_prefix(variable, "STARS"))
     result = g_strdup_printf("%d", params->data->stars);
-  else if(has_prefix(variable, "RATING_ICONS"))
+  else if(has_prefix(variable, "RATING_ICONS") || has_prefix(variable, "Xmp.xmp.Rating"))
   {
     switch(params->data->stars)
     {
@@ -457,7 +457,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free(res);
   }
-  else if(has_prefix(variable, "TITLE"))
+  else if(has_prefix(variable, "TITLE") || has_prefix(variable, "Xmp.dc.title"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL);
     if(res != NULL)
@@ -466,7 +466,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "DESCRIPTION"))
+  else if(has_prefix(variable, "DESCRIPTION") || has_prefix(variable, "vXmp.dc.description"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.description", NULL);
     if(res != NULL)
@@ -475,7 +475,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "CREATOR"))
+  else if(has_prefix(variable, "CREATOR") || has_prefix(variable, "Xmp.dc.creator"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
     if(res != NULL)
@@ -484,7 +484,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "PUBLISHER"))
+  else if(has_prefix(variable, "PUBLISHER") || has_prefix(variable, "Xmp.dc.publisher"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.publisher", NULL);
     if(res != NULL)
@@ -493,7 +493,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
-  else if(has_prefix(variable, "RIGHTS"))
+  else if(has_prefix(variable, "RIGHTS") || has_prefix(variable, "Xmp.dc.rights"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
     if(res != NULL)
@@ -556,7 +556,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       }
     }
   }
-  else if (has_prefix(variable, "TAGS"))
+  else if(has_prefix(variable, "TAGS") || has_prefix(variable, "IMAGE.TAGS"))
   {
     GList *tags_list = dt_tag_get_list_export(params->imgid, params->data->tags_flags);
     char *tags = dt_util_glist_to_str(", ", tags_list);
@@ -579,8 +579,10 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       g_free(path);
     }
   }
-  else if(has_prefix(variable, "DARKTABLE_VERSION"))
+  else if(has_prefix(variable, "DARKTABLE_VERSION") || has_prefix(variable, "DARKTABLE.VERSION"))
     result = g_strdup(darktable_package_version);
+  else if(has_prefix(variable, "DARKTABLE_NAME") || has_prefix(variable, "DARKTABLE.NAME"))
+    result = g_strdup(PACKAGE_NAME);
   else
   {
     // go past what looks like an invalid variable. we only expect to see [a-zA-Z]* in a variable name.
