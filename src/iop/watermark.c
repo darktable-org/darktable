@@ -424,8 +424,6 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
     svgdata = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
 
-    svgdata = _string_substitute(svgdata, "$(IMAGE.FILENAME)", image->filename);
-
     // standard calculation on the remaining variables
     const int32_t flags = dt_lib_export_metadata_get_conf_flags();
     dt_variables_params_t *params;

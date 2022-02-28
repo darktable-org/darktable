@@ -427,7 +427,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     if(params->filename)
       result = g_path_get_dirname(params->filename);
   }
-  else if(_has_prefix(variable, "FULL_PATH") || _has_prefix(variable, "IMAGE.FILENAME"))
+  else if(_has_prefix(variable, "IMAGE.FILENAME"))
   {
     if(params->filename)
       result = g_strdup(params->filename);
