@@ -1591,6 +1591,10 @@ filechooser row:hover .sidebar-icon
   background-color: @timeline_fg_color;
   padding: 0 0.2em;
 }
+#dt-range-date-last-line
+{
+  margin-top: 0.8em;
+}
 
 /*--------------------------------
   - Tree view (lists and tables) -
