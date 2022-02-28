@@ -1392,12 +1392,12 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   const int smax_px = _graph_value_to_pos(range, smax_r) + range->step_bd / range->band_factor;
 
   // change the cursor if we are close to an extrema
-  if(!range->set_selection && abs(range->current_x_px - smin_px) <= SNAP_SIZE)
+  if(!range->set_selection && fabs(range->current_x_px - smin_px) <= SNAP_SIZE)
   {
     range->mouse_inside = HOVER_MIN;
     dt_control_change_cursor(GDK_LEFT_SIDE);
   }
-  else if(!range->set_selection && abs(range->current_x_px - smax_px) <= SNAP_SIZE)
+  else if(!range->set_selection && fabs(range->current_x_px - smax_px) <= SNAP_SIZE)
   {
     range->mouse_inside = HOVER_MAX;
     dt_control_change_cursor(GDK_RIGHT_SIDE);
@@ -1480,7 +1480,7 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
   }
 
   // we also set the bounds
-  if(abs(e->x - range->band_margin_side_px - min_pos_px) < 2)
+  if(fabs(e->x - range->band_margin_side_px - min_pos_px) < 2)
     range->bounds = DT_RANGE_BOUND_FIXED;
   else
   {
