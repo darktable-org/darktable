@@ -19,7 +19,7 @@
    Copyright 2004-2008 by Shawn Freeman, Udi Fuchs
 */
 
-#include "common/darktable.h"
+#include "darktable.h"
 #include "curve_tools.h"
 
 #include <float.h>
