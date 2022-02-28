@@ -1088,20 +1088,18 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   //  1 cpu singlebuffer
   //  2 mipmap size
   //  3 opencl available
-  static int fractions[24] = {
-      512,   32, 128, 700,  // default
-        0,    0,  16,   0,  // mini
-      128,   16,  64, 400,  // small
-      700,   64, 128, 900,  // large
+  static int fractions[20] = {
+        0,    0,  16,    0, // mini
+      128,   16,  64,  400, // small
+      512,   32, 128,  700, // default
+      700,   64, 128,  900, // large
     16384, 1024, 128, 1024, // unrestricted
-      700,   64, 128,   0,  // tunedcl
   };
   // Allow the settings for each performance level to be changed via darktablerc
-  check_resourcelevel("resource_default", fractions, 0);
-  check_resourcelevel("resource_small", fractions, 2);
+  check_resourcelevel("resource_default", fractions, 2);
+  check_resourcelevel("resource_small", fractions, 1);
   check_resourcelevel("resource_large", fractions, 3);
   check_resourcelevel("resource_unrestricted", fractions, 4);
-  check_resourcelevel("resource_tuned", fractions, 5);
 
   darktable.dtresources.fractions = fractions;
   darktable.dtresources.total_memory = _get_total_memory() * 1024lu;
@@ -1298,7 +1296,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
 void dt_get_sysresource_level()
 {
-  darktable.dtresources.level = 0;
+  darktable.dtresources.tunecl = dt_conf_get_bool("tuneopencl");
+  darktable.dtresources.level = 2;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in **and** fractions
       Please note: absolute values for "reference (debug)"
@@ -1309,18 +1308,18 @@ void dt_get_sysresource_level()
   */
   if(config)
   {
-         if(!strcmp(config, "default"))           darktable.dtresources.level = 0;
-    else if(!strcmp(config, "mini (debug)"))      darktable.dtresources.level = 1;
-    else if(!strcmp(config, "small"))             darktable.dtresources.level = 2;
+         if(!strcmp(config, "default"))           darktable.dtresources.level = 2;
+    else if(!strcmp(config, "small"))             darktable.dtresources.level = 1;
     else if(!strcmp(config, "large"))             darktable.dtresources.level = 3;
+    else if(!strcmp(config, "mini (debug)"))      darktable.dtresources.level = 0;
     else if(!strcmp(config, "unrestricted"))      darktable.dtresources.level = 4;
-    else if(!strcmp(config, "tuned cl"))          darktable.dtresources.level = 5;
     else if(!strcmp(config, "reference (debug)")) darktable.dtresources.level = -1;
     else if(!strcmp(config, "reference"))         darktable.dtresources.level = -1;
-    dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to %i as `%s'\n", darktable.dtresources.level, config);
+    dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to %i as `%s', OpenCL tuning=%s\n", darktable.dtresources.level, config, (darktable.dtresources.tunecl) ? "ON" : "OFF");
   }
   else
     dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to default as missing `resorcelevel' conf\n");
+
 }
 
 void dt_cleanup()
