@@ -32,10 +32,10 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
 {
   // color must be Lch derivated from CIE Lab 1976 turned into polar coordinates
 
-  // First check if we have a grey (chromacity < epsilon)
+  // First check if we have a gray (chromacity < epsilon)
 
   if(color[1] < 2.0f)
-    return _("grey");
+    return _("gray");
 
   // Start with special cases : skin tones
 
@@ -289,8 +289,8 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
   else if(step_h == 8)
   {
     // 192° - cyan
-    if(step_L == 0) return _("dark slate grey");
-    if(step_L == 1) return _("light slate grey");
+    if(step_L == 0) return _("dark slate gray");
+    if(step_L == 1) return _("light slate gray");
     if(step_L == 2) return _("dark cyan");
     if(step_L == 3) return _("aqua");
     if(step_L == 4) return _("cyan");
