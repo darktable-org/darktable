@@ -19,7 +19,6 @@
    Copyright 2004-2008 by Shawn Freeman, Udi Fuchs
 */
 
-#include "darktable.h"
 #include "curve_tools.h"
 
 #include <float.h>
@@ -727,10 +726,9 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
     else
     {
       // within range, we can sample the curve
-      const int val =
-        CLAMP(interpolate_val(n, x, i * res, y,
-                              ypp, curve->m_spline_type) * (sample->m_outputRes - 1) + 0.5,
-              minY, maxY);
+      int val = interpolate_val(n, x, i * res, y, ypp, curve->m_spline_type) * (sample->m_outputRes - 1) + 0.5;
+      if(val > maxY) val = maxY;
+      if(val < minY) val = minY;
       sample->m_Samples[i] = val;
     }
   }
