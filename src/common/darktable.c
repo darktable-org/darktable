@@ -1090,9 +1090,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   //  3 opencl available
   static int fractions[20] = {
         0,    0,  16,    0, // mini
-      128,   16,  64,  400, // small
-      512,   32, 128,  700, // default
-      700,   64, 128,  900, // large
+      128,    4,  64,  400, // small
+      512,    8, 128,  700, // default
+      700,   16, 128,  900, // large
     16384, 1024, 128, 1024, // unrestricted
   };
   // Allow the settings for each performance level to be changed via darktablerc
@@ -1296,6 +1296,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
 void dt_get_sysresource_level()
 {
+  static int oldlevel = -2;
   darktable.dtresources.tunecl = dt_conf_get_bool("tuneopencl");
   darktable.dtresources.level = 2;
   const char *config = dt_conf_get_string_const("resourcelevel");
@@ -1315,11 +1316,21 @@ void dt_get_sysresource_level()
     else if(!strcmp(config, "unrestricted"))      darktable.dtresources.level = 4;
     else if(!strcmp(config, "reference (debug)")) darktable.dtresources.level = -1;
     else if(!strcmp(config, "reference"))         darktable.dtresources.level = -1;
-    dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to %i as `%s', OpenCL tuning=%s\n", darktable.dtresources.level, config, (darktable.dtresources.tunecl) ? "ON" : "OFF");
   }
-  else
-    dt_print(DT_DEBUG_MEMORY, "[dt_get_sysresource_level] switched to default as missing `resorcelevel' conf\n");
 
+  const gboolean mod = (darktable.dtresources.level != oldlevel);
+  oldlevel = darktable.dtresources.level;
+  if(mod && (darktable.unmuted & DT_DEBUG_MEMORY))
+  {
+    const int oldgrp = darktable.dtresources.group;
+    darktable.dtresources.group = 4 * darktable.dtresources.level;
+    fprintf(stderr,"[dt_get_sysresource_level] switched to %i as `%s', OpenCL tuning=%s\n", darktable.dtresources.level, config, (darktable.dtresources.tunecl) ? "ON" : "OFF");
+    fprintf(stderr,"  total mem:     %luMB\n", darktable.dtresources.total_memory / 1024lu / 1024lu);
+    fprintf(stderr,"  mipmap cache:  %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
+    fprintf(stderr,"  available mem: %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
+    fprintf(stderr,"  singlebuff:    %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+    darktable.dtresources.group = oldgrp;
+  }
 }
 
 void dt_cleanup()
