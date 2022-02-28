@@ -2438,7 +2438,13 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
                                       (float)darktable.opencl->dev[devid].memory_in_use/(1024*1024));
 }
 
-size_t _opencl_get_tuned_available(const int devid)
+/* As there is no portable way to get the unused memory of a cl device we check for memory by testing.
+   clCreateBuffer does not tell an error condition if there is no memory available (this
+   is according to standard), to make sure the buffer is really allocated in graphics mem we
+   force a small memory access.
+   precision is 64MB as in s_buff so the algorithm may underestimate by max 64MB 
+*/
+size_t dt_opencl_get_unused_device_mem(const int devid)
 {
   if(darktable.opencl->dev[devid].tuned_available)
     return darktable.opencl->dev[devid].tuned_available;
@@ -2508,17 +2514,13 @@ size_t _opencl_get_tuned_available(const int devid)
       }
     }
   }
-
+ 
   (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(sbuf);
   for(int i = 0; i < checked; i++)
     if(tbuf[i]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
 
-  // don't use a constant value for safety but relative to what system uses already
-  const size_t usedmem = allmem - available;
-  available = MAX(0, allmem - (usedmem + MAX(usedmem / 2, 128lu * 1024lu * 1024lu)));
-
-  dt_print(DT_DEBUG_OPENCL, "[opencl_get_tuned_available] %luMB available, %luMB already used of %luMB on device %i\n",
-     available / 1024lu / 1024lu, usedmem / 1024lu / 1024lu, allmem / 1024lu / 1024lu,devid);
+  dt_print(DT_DEBUG_MEMORY, "[dt_opencl_get_unused_device_mem] %luMB available, %luMB of %luMB on device %i already used\n",
+     available / 1024lu / 1024lu, (allmem - available) / 1024lu / 1024lu, allmem / 1024lu / 1024lu, devid);
 
   darktable.opencl->dev[devid].tuned_available = available;
   return available;
@@ -2533,13 +2535,30 @@ cl_ulong dt_opencl_get_device_available(const int devid)
 {
   if(!darktable.opencl->inited || devid < 0) return 0;
   const int level = darktable.dtresources.level;
-  if(level < 0)  return 2048lu  * 1024ul * 1024ul;
-  if(level == 5) return _opencl_get_tuned_available(devid);
 
-  // calculate data from fraction
-  const size_t disposable = (size_t)darktable.opencl->dev[devid].max_global_mem - 400ul * 1024ul * 1024ul;
-  const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 3];
-  return MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction); 
+  if(level < 0) return 2048lu  * 1024ul * 1024ul;      // for reference system
+
+  const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
+  const gboolean tuned = darktable.dtresources.tunecl && (level > 0);
+  size_t available = 0;
+
+  if(tuned)
+  {
+    // we always leave a safety margin, 128MB for level large, 100MB + 1/16 of graphics memory for default.
+    const size_t unused = MAX(0, dt_opencl_get_unused_device_mem(devid) - 128lu * 1024lu * 1024lu);
+    available = unused * (16 - MAX(0, 3 - level)) / 16;
+  }
+  else
+  {
+    // calculate data from fraction
+    const size_t disposable = allmem - 400ul * 1024ul * 1024ul;
+    const int fraction = MIN(1024lu, MAX(0, darktable.dtresources.fractions[darktable.dtresources.group + 3]));
+    available = MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction);
+  }
+
+  dt_print(DT_DEBUG_OPENCL, "[dt_opencl_get_device_available] use %luMB (tune=%s) as available on device %i\n",
+     available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", devid);
+  return available;
 }
 
 cl_ulong dt_opencl_get_device_memalloc(const int devid)
@@ -2548,24 +2567,17 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid)
   return darktable.opencl->dev[devid].max_mem_alloc;
 }
 
-/* As there is no portable way to get the unused memory of a cl device we check for required
-   memory by testing.
-   clCreateBuffer does not tell an error condition if there is no memory available (this
-   is according to standard), to make sure the buffer is really allocated in graphics mem we
-   force a small memory access.
-*/
 static gboolean _cl_test_available(const int devid, const size_t required)
 {
-  #define DT_TEST_AVAILABLE_BUFS 8
   cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   cl_mem sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
                  CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, 16, NULL, &err);
   if(!sbuf) return FALSE;
 
   int checked = 0;
-  cl_mem tbuf[DT_TEST_AVAILABLE_BUFS];
+  cl_mem tbuf[32];
   size_t remaining = required;
-  while((remaining > 0) && (checked < DT_TEST_AVAILABLE_BUFS) && (err == CL_SUCCESS))
+  while((remaining > 0) && (checked < 32) && (err == CL_SUCCESS))
   {
     size_t now = MIN(darktable.opencl->dev[devid].max_mem_alloc, remaining);
     remaining = remaining - now;  
@@ -2590,7 +2602,6 @@ static gboolean _cl_test_available(const int devid, const size_t required)
  
   return success;
 }
-
 
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead)
