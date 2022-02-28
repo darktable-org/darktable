@@ -287,7 +287,7 @@ void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 void dt_bauhaus_slider_set_val(GtkWidget *w, float val);
 float dt_bauhaus_slider_get(GtkWidget *w);
 float dt_bauhaus_slider_get_val(GtkWidget *w);
-char *dt_bauhaus_slider_get_text(GtkWidget *w);
+char *dt_bauhaus_slider_get_text(GtkWidget *w, float val);
 
 void dt_bauhaus_slider_set_soft_min(GtkWidget* w, float val);
 float dt_bauhaus_slider_get_soft_min(GtkWidget* w);
