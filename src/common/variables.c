@@ -70,6 +70,7 @@ typedef struct dt_variables_data_t
   const char *file_ext;
 
   gboolean have_exif_dt;
+  gboolean show_msec;
   int exif_iso;
   char *camera_maker;
   char *camera_alias;
@@ -128,9 +129,10 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->exif_aperture = 0.0f;
   params->data->exif_focal_length = 0.0f;
   params->data->exif_focus_distance = 0.0f;
-  params->data->longitude = 0.0f;
-  params->data->latitude = 0.0f;
-  params->data->elevation = 0.0f;
+  params->data->longitude = NAN;
+  params->data->latitude = NAN;
+  params->data->elevation = NAN;
+  params->data->show_msec = dt_conf_get_bool("lighttable/ui/milliseconds");
   if(params->imgid)
   {
     const dt_image_t *img = params->img ? (dt_image_t *)params->img
@@ -153,9 +155,9 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->exif_focal_length = img->exif_focal_length;
     if(!isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
       params->data->exif_focus_distance = img->exif_focus_distance;
-    if(!isnan(img->geoloc.longitude)) params->data->longitude = img->geoloc.longitude;
-    if(!isnan(img->geoloc.latitude)) params->data->latitude = img->geoloc.latitude;
-    if(!isnan(img->geoloc.elevation)) params->data->elevation = img->geoloc.elevation;
+    params->data->longitude = img->geoloc.longitude;
+    params->data->latitude = img->geoloc.latitude;
+    params->data->elevation = img->geoloc.elevation;
 
     params->data->flags = img->flags;
 
@@ -196,8 +198,10 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
 
 static void _cleanup_expansion(dt_variables_params_t *params)
 {
-  g_date_time_unref(params->data->time);
-  g_date_time_unref(params->data->datetime);
+  if(params->data->time)
+    g_date_time_unref(params->data->time);
+  if(params->data->datetime)
+    g_date_time_unref(params->data->datetime);
   g_free(params->data->homedir);
   g_free(params->data->pictures_folder);
   g_free(params->data->camera_maker);
@@ -211,19 +215,60 @@ static inline gboolean _has_prefix(char **str, const char *prefix)
   return res;
 }
 
+static char *_variables_get_longitude(dt_variables_params_t *params)
+{
+  if(isnan(params->data->longitude))
+    return g_strdup("");
+  if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
+     && g_strcmp0(params->jobcode, "infos") == 0)
+  {
+    return dt_util_longitude_str(params->data->longitude);
+  }
+  else
+  {
+    gchar NS = params->data->longitude < 0 ? 'W' : 'E';
+    return g_strdup_printf("%c%010.6f", NS, fabs(params->data->longitude));
+  }
+}
+
+static char *_variables_get_latitude(dt_variables_params_t *params)
+{
+  if(isnan(params->data->latitude))
+    return g_strdup("");
+  if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
+     && g_strcmp0(params->jobcode, "infos") == 0)
+  {
+    return dt_util_latitude_str(params->data->latitude);
+  }
+  else
+  {
+    gchar NS = params->data->latitude < 0 ? 'S' : 'N';
+    return g_strdup_printf("%c%09.6f", NS, fabs(params->data->latitude));
+  }
+}
+
 static char *_get_base_value(dt_variables_params_t *params, char **variable)
 {
   char *result = NULL;
   gboolean escape = TRUE;
 
+  char exif_datetime[DT_DATETIME_LENGTH];
   GDateTime *datetime = params->data->have_exif_dt ? params->data->datetime : params->data->time;
 
   if(_has_prefix(variable, "YEAR") || _has_prefix(variable, "DATE.LONG_YEAR"))
     result = g_date_time_format(params->data->time, "%Y");
+  else if(_has_prefix(variable, "SHORT_YEAR") || _has_prefix(variable, "DATE.SHORT_YEAR"))
+    result = g_date_time_format(params->data->time, "%y");
   else if(_has_prefix(variable, "MONTH") || _has_prefix(variable, "DATE.MONTH"))
     result = g_date_time_format(params->data->time, "%m");
+  else if(_has_prefix(variable, "SHORT_MONTH") || _has_prefix(variable, "DATE.SHORT_MONTH"))
+    result = g_date_time_format(params->data->time, "%b");
+  else if(_has_prefix(variable, "LONG_MONTH") || _has_prefix(variable, "DATE.LONG_MONTH"))
+    result = g_date_time_format(params->data->time, "%B");
   else if(_has_prefix(variable, "DAY") || _has_prefix(variable, "DATE.DAY"))
     result = g_date_time_format(params->data->time, "%d");
+  else if(_has_prefix(variable, "HOUR_AMPM") || _has_prefix(variable, "DATE.HOUR_AMPM"))
+    result = g_date_time_format(params->data->time, "%I %p");
   else if(_has_prefix(variable, "HOUR") || _has_prefix(variable, "DATE.HOUR"))
     result = g_date_time_format(params->data->time, "%H");
   else if(_has_prefix(variable, "MINUTE") || _has_prefix(variable, "DATE.MINUTE"))
@@ -235,13 +280,27 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_date_time_format(params->data->time, "%f");
     result[3] = '\0';
   }
+  // for watermark backward compatibility
+  else if(_has_prefix(variable, "DATE"))
+  {
+    dt_datetime_gdatetime_to_exif(exif_datetime, params->data->show_msec ? DT_DATETIME_LENGTH : DT_DATETIME_EXIF_LENGTH, params->data->time);
+    result = g_strdup(exif_datetime);
+  }
 
   else if(_has_prefix(variable, "EXIF_YEAR") || _has_prefix(variable, "EXIF.DATE.LONG_YEAR"))
     result = g_date_time_format(datetime, "%Y");
+  else if(_has_prefix(variable, "EXIF_SHORT_YEAR") || _has_prefix(variable, "EXIF.DATE.SHORT_YEAR"))
+    result = g_date_time_format(datetime, "%y");
   else if(_has_prefix(variable, "EXIF_MONTH") || _has_prefix(variable, "EXIF.DATE.MONTH"))
     result = g_date_time_format(datetime, "%m");
+  else if(_has_prefix(variable, "EXIF_SHORT_MONTH") || _has_prefix(variable, "EXIF.DATE.SHORT_MONTH"))
+    result = g_date_time_format(datetime, "%b");
+  else if(_has_prefix(variable, "EXIF_LONG_MONTH") || _has_prefix(variable, "EXIF.DATE.LONG_MONTH"))
+    result = g_date_time_format(datetime, "%B");
   else if(_has_prefix(variable, "EXIF_DAY") || _has_prefix(variable, "EXIF.DATE.DAY"))
     result = g_date_time_format(datetime, "%d");
+  else if(_has_prefix(variable, "EXIF_HOUR_AMPM") || _has_prefix(variable, "EXIF.DATE.HOUR_AMPM"))
+    result = g_date_time_format(datetime, "%I %p");
   else if(_has_prefix(variable, "EXIF_HOUR") || _has_prefix(variable, "EXIF.DATE.HOUR"))
     result = g_date_time_format(datetime, "%H");
   else if(_has_prefix(variable, "EXIF_MINUTE") || _has_prefix(variable, "EXIF.DATE.MINUTE"))
@@ -252,6 +311,12 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   {
     result = g_date_time_format(datetime, "%f");
     result[3] = '\0';
+  }
+  // for watermark backward compatibility
+  else if(_has_prefix(variable, "EXIF.DATE"))
+  {
+    dt_datetime_gdatetime_to_exif(exif_datetime, params->data->show_msec ? DT_DATETIME_LENGTH : DT_DATETIME_EXIF_LENGTH, datetime);
+    result = g_strdup(exif_datetime);
   }
   else if(_has_prefix(variable, "EXIF_ISO"))
     result = g_strdup_printf("%d", params->data->exif_iso);
@@ -280,33 +345,23 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   else if(_has_prefix(variable, "EXIF_FOCUS_DISTANCE"))
     result = g_strdup_printf("%.2f", params->data->exif_focus_distance);
   else if(_has_prefix(variable, "LONGITUDE") || _has_prefix(variable, "GPS.LONGITUDE"))
-  {
-    if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
-       && g_strcmp0(params->jobcode, "infos") == 0)
-    {
-      result = dt_util_longitude_str(params->data->longitude);
-    }
-    else
-    {
-      gchar NS = params->data->longitude < 0 ? 'W' : 'E';
-      result = g_strdup_printf("%c%010.6f", NS, fabs(params->data->longitude));
-    }
-  }
+    result = _variables_get_longitude(params);
   else if(_has_prefix(variable, "LATITUDE") || _has_prefix(variable, "GPS.LATITUDE"))
-  {
-    if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
-       && g_strcmp0(params->jobcode, "infos") == 0)
-    {
-      result = dt_util_latitude_str(params->data->latitude);
-    }
-    else
-    {
-      gchar NS = params->data->latitude < 0 ? 'S' : 'N';
-      result = g_strdup_printf("%c%09.6f", NS, fabs(params->data->latitude));
-    }
-  }
+    result = _variables_get_latitude(params);
   else if(_has_prefix(variable, "ELEVATION") || _has_prefix(variable, "GPS.ELEVATION"))
     result = g_strdup_printf("%.2f", params->data->elevation);
+  // for watermark backward compatibility
+  else if(_has_prefix(variable, "GPS.LOCATION"))
+  {
+    gchar *parts[4] = { 0 };
+    int i = 0;
+    if(!isnan(params->data->latitude)) parts[i++] = _variables_get_latitude(params);
+    if(!isnan(params->data->longitude)) parts[i++] = _variables_get_longitude(params);
+    if(!isnan(params->data->elevation)) parts[i++] = g_strdup_printf("%.2f", params->data->elevation);
+    result = g_strjoinv(", ", parts);
+    for(int j = 0; j < i; j++)
+      g_free(parts[j]);
+  }
   else if(_has_prefix(variable, "MAKER") || _has_prefix(variable, "EXIF.MAKER"))
     result = g_strdup(params->data->camera_maker);
   else if(_has_prefix(variable, "MODEL") || _has_prefix(variable, "EXIF.MODEL"))
@@ -371,6 +426,11 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
   {
     if(params->filename)
       result = g_path_get_dirname(params->filename);
+  }
+  else if(_has_prefix(variable, "FULL_PATH") || _has_prefix(variable, "IMAGE.FILENAME"))
+  {
+    if(params->filename)
+      result = g_strdup(params->filename);
   }
   else if(_has_prefix(variable, "FILE_NAME") || _has_prefix(variable, "IMAGE.BASENAME"))
   {

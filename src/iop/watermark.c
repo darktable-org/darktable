@@ -378,17 +378,6 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
 static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data_t *data,
                                     const dt_image_t *image, const gchar *filename)
 {
-  char datetime[200];
-
-  // EXIF datetime
-  struct tm tt_exif = { 0 };
-  dt_datetime_img_to_tm_lt(&tt_exif, image);
-
-  // Current datetime
-  struct tm tt_cur = { 0 };
-  time_t t = time(NULL);
-  (void)localtime_r(&t, &tt_cur);
-
   gchar *svgdata = NULL;
   gsize length = 0;
   if(g_file_get_contents(filename, &svgdata, &length, NULL))
@@ -435,73 +424,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
     svgdata = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
 
-    // Current image
-    dt_image_print_exif(image, buffer, sizeof(buffer));
-    svgdata = _string_substitute(svgdata, "$(IMAGE.EXIF)", buffer);
-
-    // Image exif
-    // EXIF date
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE)", datetime);
-    // $(EXIF.DATE.HOUR_AMPM) -- 01..12
-    strftime(datetime, sizeof(datetime), "%I %p", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.HOUR_AMPM)", datetime);
-    // $(EXIF.DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
-    strftime(datetime, sizeof(datetime), "%b", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_MONTH)", datetime);
-    // $(EXIF.DATE.LONG_MONTH) -- January, February, .., December, localized
-    strftime(datetime, sizeof(datetime), "%B", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.LONG_MONTH)", datetime);
-    // $(EXIF.DATE.SHORT_YEAR) -- 12
-    strftime(datetime, sizeof(datetime), "%y", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_YEAR)", datetime);
-
-    // Current date
-    // $(DATE) -- YYYY:
-    dt_datetime_unix_lt_to_exif(datetime, sizeof(datetime), &t);
-    svgdata = _string_substitute(svgdata, "$(DATE)", datetime);
-    // $(DATE.HOUR_AMPM) -- 01..12
-    strftime(datetime, sizeof(datetime), "%I %p", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.HOUR_AMPM)", datetime);
-    // $(DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
-    strftime(datetime, sizeof(datetime), "%b", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_MONTH)", datetime);
-    // $(DATE.LONG_MONTH) -- January, February, .., December, localized
-    strftime(datetime, sizeof(datetime), "%B", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.LONG_MONTH)", datetime);
-    // $(DATE.SHORT_YEAR) -- 12
-    strftime(datetime, sizeof(datetime), "%y", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_YEAR)", datetime);
-
     svgdata = _string_substitute(svgdata, "$(IMAGE.FILENAME)", image->filename);
-
-
-    // geolocation
-    gchar *latitude = NULL, *longitude = NULL, *elevation = NULL;
-    if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
-    {
-      latitude = dt_util_latitude_str(image->geoloc.latitude);
-      longitude = dt_util_longitude_str(image->geoloc.longitude);
-      elevation = dt_util_elevation_str(image->geoloc.elevation);
-    }
-    else
-    {
-      const gchar NS = image->geoloc.latitude < 0 ? 'S' : 'N';
-      const gchar EW = image->geoloc.longitude < 0 ? 'W' : 'E';
-      if(image->geoloc.latitude) latitude = g_strdup_printf("%c %09.6f", NS, fabs(image->geoloc.latitude));
-      if(image->geoloc.longitude) longitude = g_strdup_printf("%c %010.6f", EW, fabs(image->geoloc.longitude));
-      if(image->geoloc.elevation) elevation = g_strdup_printf("%.2f %s", image->geoloc.elevation, _("m"));
-    }
-    gchar *parts[4] = { 0 };
-    int i = 0;
-    if(latitude) parts[i++] = latitude;
-    if(longitude) parts[i++] = longitude;
-    if(elevation) parts[i++] = elevation;
-    gchar *location = g_strjoinv(", ", parts);
-    svgdata = _string_substitute(svgdata, "$(GPS.LOCATION)", location);
-    g_free(latitude);
-    g_free(longitude);
-    g_free(elevation);
-    g_free(location);
 
     // standard calculation on the remaining variables
     const int32_t flags = dt_lib_export_metadata_get_conf_flags();
