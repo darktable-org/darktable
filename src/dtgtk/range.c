@@ -418,6 +418,7 @@ static void _popup_date_update_widget_visibility(GtkDarktableRangeSelect *range)
   gtk_widget_set_visible(pop->calendar, type == 0);
   gtk_widget_set_visible(pop->relative_label, type == 1);
   gtk_widget_set_visible(pop->relative_date_box, type == 1);
+  gtk_widget_set_visible(pop->now_btn, gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_max);
 }
 
 static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
@@ -934,12 +935,14 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 
   // the select line
   hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(hbox2, "dt-range-date-last-line");
   gtk_box_pack_start(GTK_BOX(vbox0), hbox2, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new("current date : "), FALSE, TRUE, 0);
   pop->selection = gtk_entry_new();
   gtk_entry_set_alignment(GTK_ENTRY(pop->selection), 0.5);
   gtk_box_pack_start(GTK_BOX(hbox2), pop->selection, TRUE, TRUE, 0);
   pop->now_btn = gtk_button_new_with_label(_("now"));
+  gtk_widget_set_no_show_all(pop->now_btn, TRUE);
   gtk_widget_set_tooltip_text(pop->now_btn, _("set the value to always match current datetime"));
   g_signal_connect(G_OBJECT(pop->now_btn), "clicked", G_CALLBACK(_popup_date_now_clicked), range);
   gtk_box_pack_start(GTK_BOX(hbox2), pop->now_btn, FALSE, TRUE, 0);
