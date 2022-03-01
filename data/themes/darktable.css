@@ -148,7 +148,6 @@
 @define-color timeline_fg_color @text_color;
 @define-color timeline_text_bg_color alpha(black, .8);
 @define-color timeline_text_fg_color alpha(white, .9);
-@define-color thumbnail_localcopy_color @grey_75;
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
@@ -2482,6 +2481,7 @@ Details :
 .dt_overlays_hover_block #thumb_image:hover .dt_thumb_btn:active,
 .dt_overlays_hover_block #thumb_image:hover #thumb_audio,
 .dt_overlays_hover_block #thumb_image:hover #thumb_altered,
+.dt_overlays_hover_block #thumb_image:hover #thumb_localcopy,
 .dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label
 {
   color: @thumbnail_font_color;
@@ -2597,16 +2597,6 @@ Details :
 .dt_group_top #thumb_localcopy
 {
   border-top: 0.14em solid rgb(255, 187, 0); /* to not overlay thumb borders */
-}
-
-#thumb_image:hover #thumb_localcopy,
-.dt_overlays_hover_block #thumb_image:hover #thumb_localcopy,
-.dt_overlays_always #thumb_localcopy,
-.dt_overlays_always_extended #thumb_localcopy,
-.dt_overlays_mixed #thumb_localcopy
-{
-  color: @thumbnail_localcopy_color;
-  background-color: @thumbnail_localcopy_color;
 }
 
 /*---------------------------------------------------------
