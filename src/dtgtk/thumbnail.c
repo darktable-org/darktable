@@ -38,15 +38,12 @@
 
 static void _thumb_resize_overlays(dt_thumbnail_t *thumb);
 
-static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean over)
+static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean activate)
 {
-  int flags = gtk_widget_get_state_flags(w);
-  if(over)
-    flags |= flag;
+  if(activate)
+    gtk_widget_set_state_flags(w, flag, FALSE);
   else
-    flags &= ~flag;
-
-  gtk_widget_set_state_flags(w, flags, TRUE);
+    gtk_widget_unset_state_flags(w, flag);
 }
 
 // create a new extended infos line from strach

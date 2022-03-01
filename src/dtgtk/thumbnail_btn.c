@@ -22,16 +22,15 @@
 static void _thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass);
 static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button);
 static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr);
-static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
-static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
+static gboolean _thumbnail_btn_enter_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event);
 
 static void _thumbnail_btn_class_init(GtkDarktableThumbnailBtnClass *klass)
 {
   GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
   widget_class->draw = _thumbnail_btn_draw;
-  widget_class->enter_notify_event = _thumbnail_btn_enter_notify_callback;
-  widget_class->leave_notify_event = _thumbnail_btn_leave_notify_callback;
+  widget_class->enter_notify_event = _thumbnail_btn_enter_leave_notify_callback;
+  widget_class->leave_notify_event = _thumbnail_btn_enter_leave_notify_callback;
 }
 
 static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button)
@@ -101,25 +100,15 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
   return TRUE;
 }
 
-static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
+static gboolean _thumbnail_btn_enter_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
 
-  int flags = gtk_widget_get_state_flags(widget);
-  flags |= GTK_STATE_FLAG_PRELIGHT;
+  if(event->type == GDK_ENTER_NOTIFY)
+    gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
+  else
+    gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
 
-  gtk_widget_set_state_flags(widget, flags, TRUE);
-  gtk_widget_queue_draw(widget);
-  return FALSE;
-}
-static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
-{
-  g_return_val_if_fail(widget != NULL, FALSE);
-
-  int flags = gtk_widget_get_state_flags(widget);
-  flags &= ~GTK_STATE_FLAG_PRELIGHT;
-
-  gtk_widget_set_state_flags(widget, flags, TRUE);
   gtk_widget_queue_draw(widget);
   return FALSE;
 }

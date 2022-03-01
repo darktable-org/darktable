@@ -68,7 +68,7 @@ static void bauhaus_request_focus(dt_bauhaus_widget_t *w)
 {
   if(w->module && w->module->type == DT_ACTION_TYPE_IOP_INSTANCE)
       dt_iop_request_focus((dt_iop_module_t *)w->module);
-  gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
+  gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, FALSE);
 }
 
 static void _combobox_next_sensitive(dt_bauhaus_widget_t *w, int delta, const gboolean mute)
@@ -127,11 +127,7 @@ static inline float inner_height(GtkAllocation allocation)
 static GdkRGBA * default_color_assign()
 {
   // helper to initialize a color pointer with red color as a default
-  GdkRGBA color;
-  color.red = 1.0f;
-  color.green = 0.0f;
-  color.blue = 0.0f;
-  color.alpha = 1.0f;
+  GdkRGBA color = {.red = 1.0f, .green = 0.0f, .blue = 0.0f, .alpha = 1.0f};
   return gdk_rgba_copy(&color);
 }
 
@@ -429,8 +425,6 @@ static gboolean dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
-  gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_PRELIGHT, TRUE);
-
   if(darktable.bauhaus->keys_cnt == 0) _stop_cursor();
 
   switch(w->type)
@@ -556,6 +550,18 @@ static void dt_bh_init(DtBauhausWidget *class)
   // TODO: the common code from bauhaus_widget_init() could go here.
 }
 
+static gboolean _enter_leave(GtkWidget *widget, GdkEventCrossing *event)
+{
+  if(event->type == GDK_ENTER_NOTIFY)
+    gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
+  else
+    gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
+
+  gtk_widget_queue_draw(widget);
+
+  return FALSE;
+}
+
 static void dt_bh_class_init(DtBauhausWidgetClass *class)
 {
   darktable.bauhaus->signals[DT_BAUHAUS_VALUE_CHANGED_SIGNAL]
@@ -570,6 +576,8 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
   widget_class->scroll_event = _widget_scroll;
   widget_class->key_press_event = _widget_key_press;
   widget_class->get_preferred_width = _get_preferred_width;
+  widget_class->enter_notify_event = _enter_leave;
+  widget_class->leave_notify_event = _enter_leave;
 }
 
 void dt_bauhaus_load_theme()

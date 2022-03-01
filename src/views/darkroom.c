@@ -2315,7 +2315,6 @@ void gui_init(dt_view_t *self)
                                  dev->rawoverexposed.mode, rawoverexposed_mode_callback, dev,
                                  N_("mark with CFA color"), N_("mark with solid color"), N_("false color"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
-    gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* color scheme */
     // FIXME can't use DT_BAUHAUS_COMBOBOX_NEW_FULL because of (unnecessary?) translation context
@@ -2331,7 +2330,6 @@ void gui_init(dt_view_t *self)
         _("select the solid color to indicate over exposure.\nwill only be used if mode = mark with solid color"));
     g_signal_connect(G_OBJECT(colorscheme), "value-changed", G_CALLBACK(rawoverexposed_colorscheme_callback), dev);
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
-    gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* threshold */
     GtkWidget *threshold = dt_bauhaus_slider_new_action(DT_ACTION(self), 0.0, 2.0, 0.01, 1.0, 3);
@@ -2372,7 +2370,6 @@ void gui_init(dt_view_t *self)
                                  dev->overexposed.mode, mode_callback, dev,
                                  N_("full gamut"), N_("any RGB channel"), N_("luminance only"), N_("saturation only"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(mode), TRUE, TRUE, 0);
-    gtk_widget_set_state_flags(mode, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* color scheme */
     DT_BAUHAUS_COMBOBOX_NEW_FULL(colorscheme, self, N_("overexposed"), N_("color scheme"),
@@ -2380,7 +2377,6 @@ void gui_init(dt_view_t *self)
                                  dev->overexposed.colorscheme, colorscheme_callback, dev,
                                  N_("black & white"), N_("red & blue"), N_("purple & green"));
     gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(colorscheme), TRUE, TRUE, 0);
-    gtk_widget_set_state_flags(colorscheme, GTK_STATE_FLAG_SELECTED, TRUE);
 
     /* lower */
     GtkWidget *lower = dt_bauhaus_slider_new_action(DT_ACTION(self), -32., -4., 1., -12.69, 2);
