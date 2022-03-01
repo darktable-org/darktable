@@ -153,20 +153,13 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean over)
-{
-  int flags = gtk_widget_get_state_flags(w);
-  if(over)
-    flags |= flag;
-  else
-    flags &= ~flag;
-
-  gtk_widget_set_state_flags(w, flags, TRUE);
-}
-
 static gboolean _event_box_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
-  _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
+  if(event->type == GDK_ENTER_NOTIFY)
+    gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_PRELIGHT, FALSE);
+  else
+    gtk_widget_unset_state_flags(widget, GTK_STATE_FLAG_PRELIGHT);
+
   return FALSE;
 }
 
