@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2019-2021 darktable developers.
+    Copyright (C) 2019-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -103,7 +103,9 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
   // and the other images
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id, version, filename FROM main.images WHERE group_id = ?1", -1, &stmt,
+                              "SELECT id, version, filename"
+                              " FROM main.images"
+                              " WHERE group_id = ?1", -1, &stmt,
                               NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -429,7 +431,8 @@ static void _thumb_set_image_area(dt_thumbnail_t *thumb, float zoom_ratio)
 
   int image_w, image_h;
   int posy = 0;
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
   {
     image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
     int w = 0;
@@ -511,7 +514,8 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   dt_develop_t *dev = darktable.develop;
   const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
   if(thumb->img_surf_preview
-     && (v->view(v) != DT_VIEW_DARKROOM || !dev->preview_pipe->output_backbuf
+     && (v->view(v) != DT_VIEW_DARKROOM
+         || !dev->preview_pipe->output_backbuf
          || dev->preview_pipe->output_imgid != thumb->imgid))
   {
     if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) > 0)
@@ -849,7 +853,8 @@ static gboolean _event_main_press(GtkWidget *widget, GdkEventButton *event, gpoi
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(event->button == 1
      && ((event->type == GDK_2BUTTON_PRESS && !thumb->single_click)
-         || (event->type == GDK_BUTTON_PRESS && dt_modifier_is(event->state, 0) && thumb->single_click)))
+         || (event->type == GDK_BUTTON_PRESS
+             && dt_modifier_is(event->state, 0) && thumb->single_click)))
   {
     dt_control_set_mouse_over_id(thumb->imgid); // to ensure we haven't lost imgid during double-click
   }
@@ -1068,7 +1073,8 @@ static void _dt_preview_updated_callback(gpointer instance, gpointer user_data)
 
   const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
   if(v->view(v) == DT_VIEW_DARKROOM
-     && (thumb->img_surf_preview || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
+     && (thumb->img_surf_preview
+         || darktable.develop->preview_pipe->output_imgid == thumb->imgid)
      && darktable.develop->preview_pipe->output_backbuf)
   {
     // reset surface
@@ -1324,8 +1330,10 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
     gtk_widget_show(thumb->w_bottom_eb);
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
+       || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+       || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED
+       || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     {
       gchar *lb = g_strdup(thumb->info_line);
       thumb->w_bottom = gtk_label_new(NULL);
@@ -1460,7 +1468,8 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int im
   thumb->rowid = rowid;
   thumb->over = over;
   thumb->container = container;
-  thumb->zoomable = (container == DT_THUMBNAIL_CONTAINER_CULLING || container == DT_THUMBNAIL_CONTAINER_PREVIEW);
+  thumb->zoomable = (container == DT_THUMBNAIL_CONTAINER_CULLING
+                     || container == DT_THUMBNAIL_CONTAINER_PREVIEW);
   thumb->zoom = 1.0f;
   thumb->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
   thumb->tooltip = tooltip;
@@ -1478,8 +1487,10 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int im
     }
     dt_image_cache_read_release(darktable.image_cache, img);
   }
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-     || over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+     || over == DT_THUMBNAIL_OVERLAYS_MIXED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     _thumb_update_extended_infos_line(thumb);
 
   // we read all other infos
@@ -1576,7 +1587,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // bottom background
     gtk_widget_set_margin_start(thumb->w_bottom, thumb->img_margin->left);
     gtk_widget_set_margin_end(thumb->w_bottom, thumb->img_margin->right);
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
+       || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
        || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
     {
       attrlist = pango_attr_list_new();
@@ -2013,8 +2025,10 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-     || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     _thumb_update_extended_infos_line(thumb);
 
   // we read all other infos
@@ -2028,8 +2042,10 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
 
   // extended overlay text
   gchar *lb = NULL;
-  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
-     || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED
+     || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     lb = g_strdup(thumb->info_line);
 
   // we set the text
