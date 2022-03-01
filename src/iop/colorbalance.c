@@ -1987,7 +1987,7 @@ void gui_init(dt_iop_module_t *self)
                                                                             \
   g->hue_##which = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,          \
                    dt_bauhaus_slider_new_with_range_and_feedback(self,      \
-                   0.0f, 360.0f, 1.0f, 0.0f, 2, 0));                        \
+                   0.0f, 360.0f, 0, 0.0f, 2, 0));                           \
   dt_bauhaus_widget_set_label(g->hue_##which, section, N_("hue"));          \
   dt_bauhaus_slider_set_format(g->hue_##which, "°");                        \
   dt_bauhaus_slider_set_stop(g->hue_##which, 0.0f,   1.0f, 0.0f, 0.0f);     \
@@ -2003,7 +2003,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->hue_##which, TRUE, TRUE, 0); \
                                                                             \
   g->sat_##which = dt_bauhaus_slider_new_with_range_and_feedback(self,      \
-                   0.0f, 100.0f, 0.05f, 0.0f, 2, 0);                        \
+                   0.0f, 100.0f, 0, 0.0f, 2, 0);                            \
   dt_bauhaus_slider_set_soft_max(g->sat_##which, satspan);                  \
   dt_bauhaus_widget_set_label(g->sat_##which, section, N_("saturation"));   \
   dt_bauhaus_slider_set_format(g->sat_##which, "%");                        \
