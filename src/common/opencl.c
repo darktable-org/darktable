@@ -2519,7 +2519,7 @@ size_t dt_opencl_get_unused_device_mem(const int devid)
   for(int i = 0; i < checked; i++)
     if(tbuf[i]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
 
-  dt_print(DT_DEBUG_MEMORY, "[dt_opencl_get_unused_device_mem] %luMB available, %luMB of %luMB on device %i already used\n",
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_unused_device_mem] %luMB available, %luMB of %luMB on device %i already used\n",
      available / 1024lu / 1024lu, (allmem - available) / 1024lu / 1024lu, allmem / 1024lu / 1024lu, devid);
 
   darktable.opencl->dev[devid].tuned_available = available;
@@ -2537,7 +2537,9 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   const int level = darktable.dtresources.level;
 
   if(level < 0) return 2048lu  * 1024ul * 1024ul;      // for reference system
-
+  static int oldlevel = -2;
+  const gboolean mod = (oldlevel != level);
+  oldlevel = level;
   const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
   const gboolean tuned = darktable.dtresources.tunecl && (level > 0);
   size_t available = 0;
@@ -2550,14 +2552,15 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   }
   else
   {
-    // calculate data from fraction
+    // calculate data from fractions
     const size_t disposable = allmem - 400ul * 1024ul * 1024ul;
     const int fraction = MIN(1024lu, MAX(0, darktable.dtresources.fractions[darktable.dtresources.group + 3]));
     available = MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction);
   }
 
-  dt_print(DT_DEBUG_OPENCL, "[dt_opencl_get_device_available] use %luMB (tune=%s) as available on device %i\n",
-     available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", devid);
+  if(mod)
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tune=%s) as available on device %i\n",
+       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", devid);
   return available;
 }
 
@@ -2597,7 +2600,7 @@ static gboolean _cl_test_available(const int devid, const size_t required)
     if(tbuf[i]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
 
   if(!success)
-    dt_print(DT_DEBUG_OPENCL, "[_buffer_fits_device] had no success for %luMB on device %i\n",
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[_buffer_fits_device] had no success for %luMB on device %i\n",
       required / 1024lu / 1024lu, devid); 
  
   return success;
