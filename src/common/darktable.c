@@ -978,6 +978,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // get the list of color profiles
   darktable.color_profiles = dt_colorspaces_init();
 
+  // init utc timezone
+  darktable.utc_tz =  g_time_zone_new_utc();
+
   // initialize the database
   darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
   if(darktable.db == NULL)
@@ -1026,9 +1029,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // init darktable tags table
   dt_set_darktable_tags();
-
-  // init utc timezone
-  darktable.utc_tz =  g_time_zone_new_utc();
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
