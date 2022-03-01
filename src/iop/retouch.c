@@ -2351,7 +2351,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->sl_blur_radius, _("radius of the selected blur type"));
 
   // mask opacity
-  g->sl_mask_opacity = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.05, 1., 3);
+  g->sl_mask_opacity = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0, 1., 3);
   dt_bauhaus_widget_set_label(g->sl_mask_opacity, NULL, N_("mask opacity"));
   dt_bauhaus_slider_set_format(g->sl_mask_opacity, "%");
   gtk_widget_set_tooltip_text(g->sl_mask_opacity, _("set the opacity on the selected shape"));

@@ -1779,7 +1779,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->checker_color_2_picker), "color-set", G_CALLBACK(checker_2_picker_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(row2), FALSE, FALSE, 0);
 
-  g->checker_size = dt_bauhaus_slider_new_with_range(self, 2., 32., 1., 8., 0);
+  g->checker_size = dt_bauhaus_slider_new_with_range(self, 2., 32., 0, 8., 0);
   dt_bauhaus_slider_set_format(g->checker_size, " px");
   dt_bauhaus_widget_set_label(g->checker_size,  NULL, _("checkerboard size"));
   g_signal_connect(G_OBJECT(g->checker_size), "value-changed", G_CALLBACK(checker_size_callback), self);

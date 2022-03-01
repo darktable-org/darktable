@@ -596,7 +596,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Any widgets that are _not_ directly linked to a field need to have a custom callback
   // function set up to respond to the "value-changed" signal.
-  g->extra = dt_bauhaus_slider_new_with_range(self, -0.5, 0.5, .01, 0, 2);
+  g->extra = dt_bauhaus_slider_new_with_range(self, -0.5, 0.5, 0, 0, 2);
   dt_bauhaus_widget_set_label(g->extra, NULL, N_("extra"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->extra), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->extra), "value-changed", G_CALLBACK(extra_callback), self);
