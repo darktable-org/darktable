@@ -378,27 +378,11 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
 static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data_t *data,
                                     const dt_image_t *image, const gchar *filename)
 {
-  char datetime[200];
-
-  // EXIF datetime
-  struct tm tt_exif = { 0 };
-  dt_datetime_img_to_tm_lt(&tt_exif, image);
-
-  // Current datetime
-  struct tm tt_cur = { 0 };
-  time_t t = time(NULL);
-  (void)localtime_r(&t, &tt_cur);
-
   gchar *svgdata = NULL;
   gsize length = 0;
   if(g_file_get_contents(filename, &svgdata, &length, NULL))
   {
     // File is loaded lets substitute strings if found...
-
-    // Darktable internal
-    svgdata = _string_substitute(svgdata, "$(DARKTABLE.NAME)", PACKAGE_NAME);
-    svgdata = _string_substitute(svgdata, "$(DARKTABLE.VERSION)", darktable_package_version);
-
     // Simple text from watermark module
     gchar buffer[1024];
 
@@ -440,160 +424,14 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
     svgdata = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
 
-    // Current image ID
-    g_snprintf(buffer, sizeof(buffer), "%d", image->id);
-    svgdata = _string_substitute(svgdata, "$(IMAGE.ID)", buffer);
-
-    // Current image
-    dt_image_print_exif(image, buffer, sizeof(buffer));
-    svgdata = _string_substitute(svgdata, "$(IMAGE.EXIF)", buffer);
-
-    // Image exif
-    // EXIF date
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE)", datetime);
-    // $(EXIF.DATE.SECOND) -- 00..60
-    strftime(datetime, sizeof(datetime), "%S", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SECOND)", datetime);
-    // $(EXIF.DATE.MINUTE) -- 00..59
-    strftime(datetime, sizeof(datetime), "%M", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.MINUTE)", datetime);
-    // $(EXIF.DATE.HOUR) -- 00..23
-    strftime(datetime, sizeof(datetime), "%H", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.HOUR)", datetime);
-    // $(EXIF.DATE.HOUR_AMPM) -- 01..12
-    strftime(datetime, sizeof(datetime), "%I %p", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.HOUR_AMPM)", datetime);
-    // $(EXIF.DATE.DAY) -- 01..31
-    strftime(datetime, sizeof(datetime), "%d", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.DAY)", datetime);
-    // $(EXIF.DATE.MONTH) -- 01..12
-    strftime(datetime, sizeof(datetime), "%m", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.MONTH)", datetime);
-    // $(EXIF.DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
-    strftime(datetime, sizeof(datetime), "%b", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_MONTH)", datetime);
-    // $(EXIF.DATE.LONG_MONTH) -- January, February, .., December, localized
-    strftime(datetime, sizeof(datetime), "%B", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.LONG_MONTH)", datetime);
-    // $(EXIF.DATE.SHORT_YEAR) -- 12
-    strftime(datetime, sizeof(datetime), "%y", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_YEAR)", datetime);
-    // $(EXIF.DATE.LONG_YEAR) -- 2012
-    strftime(datetime, sizeof(datetime), "%Y", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.LONG_YEAR)", datetime);
-
-    // Current date
-    // $(DATE) -- YYYY:
-    dt_datetime_unix_lt_to_exif(datetime, sizeof(datetime), &t);
-    svgdata = _string_substitute(svgdata, "$(DATE)", datetime);
-    // $(DATE.SECOND) -- 00..60
-    strftime(datetime, sizeof(datetime), "%S", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.SECOND)", datetime);
-    // $(DATE.MINUTE) -- 00..59
-    strftime(datetime, sizeof(datetime), "%M", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.MINUTE)", datetime);
-    // $(DATE.HOUR) -- 00..23
-    strftime(datetime, sizeof(datetime), "%H", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.HOUR)", datetime);
-    // $(DATE.HOUR_AMPM) -- 01..12
-    strftime(datetime, sizeof(datetime), "%I %p", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.HOUR_AMPM)", datetime);
-    // $(DATE.DAY) -- 01..31
-    strftime(datetime, sizeof(datetime), "%d", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.DAY)", datetime);
-    // $(DATE.MONTH) -- 01..12
-    strftime(datetime, sizeof(datetime), "%m", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.MONTH)", datetime);
-    // $(DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
-    strftime(datetime, sizeof(datetime), "%b", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_MONTH)", datetime);
-    // $(DATE.LONG_MONTH) -- January, February, .., December, localized
-    strftime(datetime, sizeof(datetime), "%B", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.LONG_MONTH)", datetime);
-    // $(DATE.SHORT_YEAR) -- 12
-    strftime(datetime, sizeof(datetime), "%y", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_YEAR)", datetime);
-    // $(DATE.LONG_YEAR) -- 2012
-    strftime(datetime, sizeof(datetime), "%Y", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.LONG_YEAR)", datetime);
-    svgdata = _string_substitute(svgdata, "$(EXIF.MAKER)", image->camera_maker);
-    svgdata = _string_substitute(svgdata, "$(EXIF.MODEL)", image->camera_model);
-    svgdata = _string_substitute(svgdata, "$(EXIF.LENS)", image->exif_lens);
-    svgdata = _string_substitute(svgdata, "$(IMAGE.FILENAME)", image->filename);
-
-    gchar *basename = g_path_get_basename(image->filename);
-    if(g_strrstr(basename, ".")) *(g_strrstr(basename, ".")) = '\0';
-    svgdata = _string_substitute(svgdata, "$(IMAGE.BASENAME)", basename);
-    g_free(basename);
-
-    // TODO: auto generate that code?
-    GList *res;
-    res = dt_metadata_get(image->id, "Xmp.dc.creator", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.creator)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_metadata_get(image->id, "Xmp.dc.publisher", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.publisher)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_metadata_get(image->id, "Xmp.dc.title", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.title)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_metadata_get(image->id, "Xmp.dc.description", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.description)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_metadata_get(image->id, "Xmp.dc.rights", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.rights)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_tag_get_list(image->id);
-    gchar *keywords = dt_util_glist_to_str(", ", res);
-    svgdata = _string_substitute(svgdata, "$(IMAGE.TAGS)", (keywords ? keywords : ""));
-    g_free(keywords);
-    g_list_free_full(res, &g_free);
-
-    const int stars = image->flags & 0x7;
-    const char *const rating_str[] = { "☆☆☆☆☆", "★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★", "❌", "" };
-    svgdata = _string_substitute(svgdata, "$(Xmp.xmp.Rating)", rating_str[stars]);
-
-    // geolocation
-    gchar *latitude = NULL, *longitude = NULL, *elevation = NULL;
-    if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
-    {
-      latitude = dt_util_latitude_str(image->geoloc.latitude);
-      longitude = dt_util_longitude_str(image->geoloc.longitude);
-      elevation = dt_util_elevation_str(image->geoloc.elevation);
-    }
-    else
-    {
-      const gchar NS = image->geoloc.latitude < 0 ? 'S' : 'N';
-      const gchar EW = image->geoloc.longitude < 0 ? 'W' : 'E';
-      if(image->geoloc.latitude) latitude = g_strdup_printf("%c %09.6f", NS, fabs(image->geoloc.latitude));
-      if(image->geoloc.longitude) longitude = g_strdup_printf("%c %010.6f", EW, fabs(image->geoloc.longitude));
-      if(image->geoloc.elevation) elevation = g_strdup_printf("%.2f %s", image->geoloc.elevation, _("m"));
-    }
-    gchar *parts[4] = { 0 };
-    int i = 0;
-    if(latitude) parts[i++] = latitude;
-    if(longitude) parts[i++] = longitude;
-    if(elevation) parts[i++] = elevation;
-    gchar *location = g_strjoinv(", ", parts);
-    svgdata = _string_substitute(svgdata, "$(GPS.LATITUDE)", (latitude ? latitude : "-"));
-    svgdata = _string_substitute(svgdata, "$(GPS.LONGITUDE)", (longitude ? longitude : "-"));
-    svgdata = _string_substitute(svgdata, "$(GPS.ELEVATION)", (elevation ? elevation : "-"));
-    svgdata = _string_substitute(svgdata, "$(GPS.LOCATION)", location);
-    g_free(latitude);
-    g_free(longitude);
-    g_free(elevation);
-    g_free(location);
-
     // standard calculation on the remaining variables
     const int32_t flags = dt_lib_export_metadata_get_conf_flags();
     dt_variables_params_t *params;
     dt_variables_params_init(&params);
-    params->filename = image->filename;
+    gboolean from_cache = FALSE;
+    char image_path[PATH_MAX] = { 0 };
+    dt_image_full_path(image->id, image_path, sizeof(image_path), &from_cache);
+    params->filename = image_path;
     params->jobcode = "infos";
     params->sequence = 0;
     params->imgid = image->id;
