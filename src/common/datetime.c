@@ -20,23 +20,6 @@
 #include "common/datetime.h"
 
 
-static gboolean _datetime_exif_to_tm(const char *exif,  struct tm *tt)
-{
-  if(*exif)
-  {
-    if(sscanf(exif,"%d:%d:%d %d:%d:%d",
-      &tt->tm_year, &tt->tm_mon, &tt->tm_mday,
-      &tt->tm_hour, &tt->tm_min, &tt->tm_sec) == 6)
-    {
-      tt->tm_year -= 1900;
-      tt->tm_mon--;
-      tt->tm_isdst = -1;    // no daylight saving time
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
 gboolean _datetime_gdatetime_to_numbers(dt_datetime_t *dt, GDateTime *gdt)
 {
   if(gdt)
@@ -107,8 +90,7 @@ gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
                                   const dt_image_t *img, const gboolean milliseconds)
 {
   gboolean res = FALSE;
-  GDateTime *gdt = dt_datetime_exif_to_gdatetime(img->exif_datetime_taken, darktable.utc_tz);
-
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
   if(gdt)
   {
     char *sdt = g_date_time_format(gdt, milliseconds ? "%a %x %X.%f" : "%a %x %X");
@@ -124,14 +106,7 @@ gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
       g_free(sdt);
       res = TRUE;
     }
-    else
-      res = FALSE;
     g_date_time_unref(gdt);
-  }
-  else
-  {
-    g_strlcpy(local, img->exif_datetime_taken, local_size);
-    res = TRUE;
   }
   return res;
 }
@@ -145,7 +120,13 @@ void dt_datetime_unix_lt_to_exif(char *exif, const size_t exif_len, const time_t
 
 void dt_datetime_unix_lt_to_img(dt_image_t *img, const time_t *unix)
 {
-  dt_datetime_unix_lt_to_exif(img->exif_datetime_taken, DT_DATETIME_LENGTH, unix);
+  GDateTime *gdt = g_date_time_new_from_unix_local(*unix);
+  if(gdt)
+  {
+    img->exif_datetime_taken = g_date_time_difference(gdt, darktable.origin_gdt);
+    g_date_time_unref(gdt);
+  }
+  else img->exif_datetime_taken = 0;
 }
 
 void dt_datetime_now_to_exif(char *exif)
@@ -156,12 +137,24 @@ void dt_datetime_now_to_exif(char *exif)
 
 void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
 {
-  g_strlcpy(img->exif_datetime_taken, exif, sizeof(img->exif_datetime_taken));
+  GDateTime *gdt = dt_datetime_exif_to_gdatetime(exif, darktable.utc_tz);
+  if(gdt)
+  {
+    img->exif_datetime_taken = g_date_time_difference(gdt, darktable.origin_gdt);
+    g_date_time_unref(gdt);
+  }
+  else img->exif_datetime_taken = 0;
 }
 
 void dt_datetime_img_to_exif(char *exif, const dt_image_t *img)
 {
-  g_strlcpy(exif, img->exif_datetime_taken, DT_DATETIME_LENGTH);
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
+  if(gdt)
+  {
+    dt_datetime_gdatetime_to_exif(exif, DT_DATETIME_LENGTH, gdt);
+    g_date_time_unref(gdt);
+  }
+  else exif[0] = '\0';
 }
 
 GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
@@ -194,17 +187,43 @@ void dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_len, GDateTime 
 
 GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz)
 {
-  return dt_datetime_exif_to_gdatetime(img->exif_datetime_taken, tz);
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
+  GDateTime *gdt_tz = g_date_time_to_timezone(gdt, (GTimeZone *)tz);
+  g_date_time_unref(gdt);
+  return gdt_tz;
 }
 
 gboolean dt_datetime_img_to_tm_lt(struct tm *tt, const dt_image_t *img)
 {
-  return _datetime_exif_to_tm(img->exif_datetime_taken, tt);
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
+  if(gdt)
+  {
+    char exif[DT_DATETIME_EXIF_LENGTH];
+    dt_datetime_gdatetime_to_exif(exif, sizeof(exif), gdt);
+    if(sscanf(exif,"%d:%d:%d %d:%d:%d",
+      &tt->tm_year, &tt->tm_mon, &tt->tm_mday,
+      &tt->tm_hour, &tt->tm_min, &tt->tm_sec) == 6)
+    {
+      tt->tm_year -= 1900;
+      tt->tm_mon--;
+      tt->tm_isdst = -1;    // no daylight saving time
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 gboolean dt_datetime_img_to_numbers(dt_datetime_t *dt, const dt_image_t *img)
 {
-  return dt_datetime_exif_to_numbers(dt, img->exif_datetime_taken);
+  gboolean res = FALSE;
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
+  if(gdt)
+  {
+    if(_datetime_gdatetime_to_numbers(dt, gdt))
+      res = TRUE;
+    g_date_time_unref(gdt);
+  }
+  return res;
 }
 
 void dt_datetime_now_to_numbers(dt_datetime_t *dt)

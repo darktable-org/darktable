@@ -31,6 +31,7 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/datetime.h"
 #include "common/exif.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/selection.h"
@@ -980,6 +981,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // init utc timezone
   darktable.utc_tz =  g_time_zone_new_utc();
+  darktable.origin_gdt = g_date_time_new_from_iso8601(DT_DATETIME_ORIGIN, darktable.utc_tz);
 
   // initialize the database
   darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
