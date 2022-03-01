@@ -1741,8 +1741,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // the local copy indicator
     gtk_widget_set_size_request(thumb->w_local_copy, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(thumb->w_altered, line3 + py);
-    gtk_widget_set_margin_start(thumb->w_altered, 10.0 * r1 + px);
+    gtk_widget_set_margin_top(thumb->w_local_copy, border_t + py);
+    gtk_widget_set_margin_start(thumb->w_local_copy, px + width - icon_size2 - border_l);
     // the altered icon
     gtk_widget_set_size_request(thumb->w_altered, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_START);
