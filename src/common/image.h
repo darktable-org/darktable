@@ -208,7 +208,7 @@ typedef struct dt_image_t
   char exif_maker[64];
   char exif_model[64];
   char exif_lens[128];
-  char exif_datetime_taken[DT_DATETIME_LENGTH];
+  GTimeSpan exif_datetime_taken;
 
   char camera_maker[64];
   char camera_model[64];

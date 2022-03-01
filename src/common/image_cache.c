@@ -71,9 +71,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     img->exif_aperture = sqlite3_column_double(stmt, 10);
     img->exif_iso = sqlite3_column_double(stmt, 11);
     img->exif_focal_length = sqlite3_column_double(stmt, 12);
-    str = (char *)sqlite3_column_text(stmt, 13);
-    if(str)
-      dt_datetime_exif_to_img(img, str);
+    img->exif_datetime_taken = sqlite3_column_int64(stmt, 13);
     img->flags = sqlite3_column_int(stmt, 14);
     img->loader = LOADER_UNKNOWN;
     img->exif_crop = sqlite3_column_double(stmt, 15);
@@ -273,9 +271,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 10, img->exif_focal_length);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11, img->exif_focus_distance);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 12, img->film_id);
-  char datetime[DT_DATETIME_LENGTH];
-  dt_datetime_img_to_exif(datetime, img);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 13, datetime, -1, SQLITE_STATIC);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 13, img->exif_datetime_taken);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 14, img->flags);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 15, img->exif_crop);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, img->orientation);

@@ -2008,7 +2008,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
         "FROM `images`",
         "[init] can't copy back from images\n");
 
-    GDateTime *gdatetime0 = g_date_time_new_from_iso8601(DT_DATETIME_ORIGIN, darktable.utc_tz);
     TRY_PREPARE(stmt, "SELECT id, datetime_taken FROM `images`",
                 "[init] can't get datetime from images\n");
     while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2018,21 +2017,20 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       GDateTime *gdatetime = dt_datetime_exif_to_gdatetime(datetime, darktable.utc_tz);
       if(gdatetime)
       {
-        GTimeSpan dt = g_date_time_difference(gdatetime, gdatetime0);
+        GTimeSpan dt = g_date_time_difference(gdatetime, darktable.origin_gdt);
         // insert the hash for that image
         sqlite3_stmt *stmt2;
         sqlite3_prepare_v2(db->handle,
-                           "UPDATE `images` SET datetime_taken = ?2 WHERE id = ?1",
+                           "UPDATE `images_new` SET datetime_taken = ?2 WHERE id = ?1",
                            -1, &stmt2, NULL);
         sqlite3_bind_int(stmt2, 1, imgid);
         sqlite3_bind_int64(stmt2, 2, dt);
-        TRY_STEP(stmt2, SQLITE_DONE, "[init] can't update datetime into images table\n");
+        TRY_STEP(stmt2, SQLITE_DONE, "[init] can't update datetime into images_new table\n");
         sqlite3_finalize(stmt2);
         g_date_time_unref(gdatetime);
       }
     }
     sqlite3_finalize(stmt);
-    g_date_time_unref(gdatetime0);
 
     TRY_EXEC("DROP TABLE `images`", "[init] can't drop images table\n");
     // that's the way to keep the other tables foreign keys references valid
