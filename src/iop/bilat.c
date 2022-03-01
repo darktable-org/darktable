@@ -428,7 +428,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
   g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));
-  dt_bauhaus_slider_set_step(g->detail, 0.01);
   dt_bauhaus_slider_set_offset(g->detail, 100);
   dt_bauhaus_slider_set_format(g->detail, "%");
   gtk_widget_set_tooltip_text(g->detail, _("changes the local contrast"));
@@ -452,13 +451,11 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->range, NULL, N_("contrast"));
   gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
-  dt_bauhaus_slider_set_step(g->highlights, 0.01);
   dt_bauhaus_widget_set_label(g->highlights, NULL, N_("highlights"));
   dt_bauhaus_slider_set_hard_max(g->highlights, 2.0);
   dt_bauhaus_slider_set_format(g->highlights, "%");
   gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
 
-  dt_bauhaus_slider_set_step(g->shadows, 0.01);
   dt_bauhaus_widget_set_label(g->shadows, NULL, N_("shadows"));
   dt_bauhaus_slider_set_hard_max(g->shadows, 2.0);
   dt_bauhaus_slider_set_format(g->shadows, "%");

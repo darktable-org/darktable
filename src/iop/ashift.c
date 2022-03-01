@@ -5687,7 +5687,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->draw_line_move = -1;
 
   g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
-  dt_bauhaus_slider_set_step(g->rotation, 0.25);
   dt_bauhaus_slider_set_format(g->rotation, "°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 
@@ -5723,7 +5722,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_curve(g->f_length, log10_curve);
   dt_bauhaus_slider_set_digits(g->f_length, 0);
   dt_bauhaus_slider_set_format(g->f_length, " mm");
-  dt_bauhaus_slider_set_step(g->f_length, 1.0);
 
   g->crop_factor = dt_bauhaus_slider_from_params(self, "crop_factor");
   dt_bauhaus_slider_set_soft_range(g->crop_factor, 1.0f, 2.0f);

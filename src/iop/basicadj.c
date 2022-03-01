@@ -575,7 +575,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->sl_black_point = dt_bauhaus_slider_from_params(self, "black_point");
   dt_bauhaus_slider_set_soft_range(g->sl_black_point, -0.1, 0.1);
-  dt_bauhaus_slider_set_step(g->sl_black_point, .001);
   dt_bauhaus_slider_set_digits(g->sl_black_point, 4);
   gtk_widget_set_tooltip_text(g->sl_black_point, _("adjust the black level to unclip negative RGB values.\n"
                                                     "you should never use it to add more density in blacks!\n"
@@ -584,7 +583,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->sl_exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
   dt_bauhaus_slider_set_soft_range(g->sl_exposure, -4.0, 4.0);
-  dt_bauhaus_slider_set_step(g->sl_exposure, .02);
   dt_bauhaus_slider_set_format(g->sl_exposure, _(" EV"));
   gtk_widget_set_tooltip_text(g->sl_exposure, _("adjust the exposure correction"));
 
@@ -601,7 +599,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->sl_middle_grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                       dt_bauhaus_slider_from_params(self, "middle_grey"));
-  dt_bauhaus_slider_set_step(g->sl_middle_grey, .5);
   dt_bauhaus_slider_set_format(g->sl_middle_grey, "%");
   gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle gray adjustment"));
   g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);

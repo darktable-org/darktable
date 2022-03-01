@@ -823,7 +823,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->Dmin_R = dt_bauhaus_slider_from_params(self, "Dmin[0]");
   dt_bauhaus_slider_set_digits(g->Dmin_R, 4);
-  dt_bauhaus_slider_set_step(g->Dmin_R, 0.0025);
   dt_bauhaus_slider_set_format(g->Dmin_R, "%");
   dt_bauhaus_slider_set_factor(g->Dmin_R, 100);
   dt_bauhaus_widget_set_label(g->Dmin_R, NULL, N_("D min red component"));
@@ -834,7 +833,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->Dmin_G = dt_bauhaus_slider_from_params(self, "Dmin[1]");
   dt_bauhaus_slider_set_digits(g->Dmin_G, 4);
-  dt_bauhaus_slider_set_step(g->Dmin_G, 0.0025);
   dt_bauhaus_slider_set_format(g->Dmin_G, "%");
   dt_bauhaus_slider_set_factor(g->Dmin_G, 100);
   dt_bauhaus_widget_set_label(g->Dmin_G, NULL, N_("D min green component"));
@@ -845,7 +843,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->Dmin_B = dt_bauhaus_slider_from_params(self, "Dmin[2]");
   dt_bauhaus_slider_set_digits(g->Dmin_B, 4);
-  dt_bauhaus_slider_set_step(g->Dmin_B, 0.0025);
   dt_bauhaus_slider_set_format(g->Dmin_B, "%");
   dt_bauhaus_slider_set_factor(g->Dmin_B, 100);
   dt_bauhaus_widget_set_label(g->Dmin_B, NULL, N_("D min blue component"));
@@ -957,7 +954,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->black = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "black"));
   dt_bauhaus_slider_set_digits(g->black, 4);
-  dt_bauhaus_slider_set_step(g->black, 0.0005);
   dt_bauhaus_slider_set_factor(g->black, 100);
   dt_bauhaus_slider_set_format(g->black, "%");
   gtk_widget_set_tooltip_text(g->black, _("correct the density of black after the inversion,\n"

@@ -1051,7 +1051,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->pos_h, _("select the horizontal position ratio relative to top "
                                           "or right click and type your own (y:h)"));
   g->pos_h_slider = dt_bauhaus_slider_from_params(self, "pos_h");
-  dt_bauhaus_slider_set_step(g->pos_h_slider, 0.1);
   gtk_widget_set_tooltip_text(g->pos_h_slider, _("custom horizontal position"));
 
   g->pos_v = dt_bauhaus_combobox_new(self);
@@ -1062,19 +1061,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->pos_v, _("select the vertical position ratio relative to left "
                                           "or right click and type your own (x:w)"));
   g->pos_v_slider = dt_bauhaus_slider_from_params(self, "pos_v");
-  dt_bauhaus_slider_set_step(g->pos_v_slider, 0.1);
   gtk_widget_set_tooltip_text(g->pos_v_slider, _("custom vertical position"));
 
   gui_init_positions(self);
 
   g->frame_size = dt_bauhaus_slider_from_params(self, "frame_size");
-  dt_bauhaus_slider_set_step(g->frame_size, 0.005);
   dt_bauhaus_slider_set_digits(g->frame_size, 4);
   dt_bauhaus_slider_set_format(g->frame_size, "%");
   gtk_widget_set_tooltip_text(g->frame_size, _("size of the frame line in percent of min border width"));
 
   g->frame_offset = dt_bauhaus_slider_from_params(self, "frame_offset");
-  dt_bauhaus_slider_set_step(g->frame_size, 0.005);
   dt_bauhaus_slider_set_digits(g->frame_offset, 4);
   dt_bauhaus_slider_set_format(g->frame_offset, "%");
   gtk_widget_set_tooltip_text(g->frame_offset, _("offset of the frame line beginning on picture side"));

@@ -1282,10 +1282,8 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box_enabled = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
-  dt_bauhaus_slider_set_step(g->threshold, 0.1f);
   g->spatial = dt_bauhaus_slider_from_params(self, N_("spatial"));
   g->range = dt_bauhaus_slider_from_params(self, N_("range"));
-  dt_bauhaus_slider_set_step(g->range, 0.1f);
   g->precedence = dt_bauhaus_combobox_from_params(self, N_("precedence"));
   g->hue = dt_bauhaus_slider_from_params(self, N_("hue"));
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);

@@ -282,7 +282,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sliderbox), TRUE, FALSE, 0);
 
   g->width = dt_bauhaus_slider_from_params(self, N_("width"));
-  dt_bauhaus_slider_set_step(g->width, 0.5);
   gtk_widget_set_tooltip_text(g->width, _("width of fill-light area defined in zones"));
 }
 

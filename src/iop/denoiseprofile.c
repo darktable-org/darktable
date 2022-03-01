@@ -3572,10 +3572,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->nbhood, 0);
   g->scattering = dt_bauhaus_slider_from_params(self, "scattering");
   dt_bauhaus_slider_set_soft_max(g->scattering, 1.0f);
-  dt_bauhaus_slider_set_step(g->scattering, 0.01f);
   g->central_pixel_weight = dt_bauhaus_slider_from_params(self, "central_pixel_weight");
   dt_bauhaus_slider_set_soft_max(g->central_pixel_weight, 1.0f);
-  dt_bauhaus_slider_set_step(g->central_pixel_weight, 0.01f);
 
   g->box_wavelets = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -3682,13 +3680,10 @@ void gui_init(dt_iop_module_t *self)
 
   g->overshooting = dt_bauhaus_slider_from_params(self, "overshooting");
   dt_bauhaus_slider_set_soft_max(g->overshooting, 4.0f);
-  dt_bauhaus_slider_set_step(g->overshooting, 0.05f);
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_soft_max(g->strength, 4.0f);
   dt_bauhaus_slider_set_digits(g->strength, 3);
-  dt_bauhaus_slider_set_step(g->strength, 0.05f);
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
-  dt_bauhaus_slider_set_step(g->shadows, 0.05f);
   g->bias = dt_bauhaus_slider_from_params(self, "bias");
   dt_bauhaus_slider_set_soft_range(g->bias, -10.0f, 10.0f);
 

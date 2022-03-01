@@ -3127,39 +3127,30 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("simple"), NULL);
 
   g->noise = dt_bauhaus_slider_from_params(self, "noise");
-  dt_bauhaus_slider_set_step(g->noise, .05);
   dt_bauhaus_slider_set_format(g->noise, _(" EV"));
 
   g->ultra_deep_blacks = dt_bauhaus_slider_from_params(self, "ultra_deep_blacks");
-  dt_bauhaus_slider_set_step(g->ultra_deep_blacks, .05);
   dt_bauhaus_slider_set_format(g->ultra_deep_blacks, _(" EV"));
 
   g->deep_blacks = dt_bauhaus_slider_from_params(self, "deep_blacks");
-  dt_bauhaus_slider_set_step(g->deep_blacks, .05);
   dt_bauhaus_slider_set_format(g->deep_blacks, _(" EV"));
 
   g->blacks = dt_bauhaus_slider_from_params(self, "blacks");
-  dt_bauhaus_slider_set_step(g->blacks, .05);
   dt_bauhaus_slider_set_format(g->blacks, _(" EV"));
 
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
-  dt_bauhaus_slider_set_step(g->shadows, .05);
   dt_bauhaus_slider_set_format(g->shadows, _(" EV"));
 
   g->midtones = dt_bauhaus_slider_from_params(self, "midtones");
-  dt_bauhaus_slider_set_step(g->midtones, .05);
   dt_bauhaus_slider_set_format(g->midtones, _(" EV"));
 
   g->highlights = dt_bauhaus_slider_from_params(self, "highlights");
-  dt_bauhaus_slider_set_step(g->highlights, .05);
   dt_bauhaus_slider_set_format(g->highlights, _(" EV"));
 
   g->whites = dt_bauhaus_slider_from_params(self, "whites");
-  dt_bauhaus_slider_set_step(g->whites, .05);
   dt_bauhaus_slider_set_format(g->whites, _(" EV"));
 
   g->speculars = dt_bauhaus_slider_from_params(self, "speculars");
-  dt_bauhaus_slider_set_step(g->speculars, .05);
   dt_bauhaus_slider_set_format(g->speculars, _(" EV"));
 
   dt_bauhaus_widget_set_label(g->noise, N_("simple"), N_("-8 EV"));
@@ -3236,7 +3227,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->feathering = dt_bauhaus_slider_from_params(self, "feathering");
   dt_bauhaus_slider_set_soft_range(g->feathering, 0.1, 50.0);
-  dt_bauhaus_slider_set_step(g->feathering, 0.2);
   gtk_widget_set_tooltip_text(g->feathering, _("precision of the feathering :\n"
                                                "higher values force the mask to follow edges more closely\n"
                                                "but may void the effect of the smoothing\n"
@@ -3255,7 +3245,6 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g->quantization = dt_bauhaus_slider_from_params(self, "quantization");
-  dt_bauhaus_slider_set_step(g->quantization, 0.25);
   dt_bauhaus_slider_set_format(g->quantization, _(" EV"));
   gtk_widget_set_tooltip_text(g->quantization, _("0 disables the quantization.\n"
                                                  "higher values posterize the luminance mask to help the guiding\n"

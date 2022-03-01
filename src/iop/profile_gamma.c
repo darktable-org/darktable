@@ -642,7 +642,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->grey_point
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_point"));
-  dt_bauhaus_slider_set_step(g->grey_point, 0.5);
   dt_bauhaus_slider_set_format(g->grey_point, "%");
   gtk_widget_set_tooltip_text(g->grey_point, _("adjust to match the average luma of the subject"));
 
@@ -661,7 +660,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 0);
 
   g->security_factor = dt_bauhaus_slider_from_params(self, "security_factor");
-  dt_bauhaus_slider_set_step(g->security_factor, 0.1);
   dt_bauhaus_slider_set_format(g->security_factor, "%");
   gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is useful when noise perturbates the measurements"));
 

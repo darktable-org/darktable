@@ -532,6 +532,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->balance_scale = dt_bauhaus_slider_from_params(self, N_("balance"));
   dt_bauhaus_slider_set_feedback(g->balance_scale, 0);
+  dt_bauhaus_slider_set_digits(g->balance_scale, 4);
   dt_bauhaus_slider_set_factor(g->balance_scale, -100.0);
   dt_bauhaus_slider_set_offset(g->balance_scale, +100.0);
   dt_bauhaus_slider_set_stop(g->balance_scale, 0.0f, 0.5f, 0.5f, 0.5f);

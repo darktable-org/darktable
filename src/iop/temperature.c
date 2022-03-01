@@ -1954,10 +1954,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->scale_g, 3);
   dt_bauhaus_slider_set_digits(g->scale_b, 3);
   dt_bauhaus_slider_set_digits(g->scale_g2, 3);
-  dt_bauhaus_slider_set_step(g->scale_r, 0.05);
-  dt_bauhaus_slider_set_step(g->scale_g, 0.05);
-  dt_bauhaus_slider_set_step(g->scale_b, 0.05);
-  dt_bauhaus_slider_set_step(g->scale_g2, 0.05);
 
   gtk_widget_set_no_show_all(g->scale_g2, TRUE);
 

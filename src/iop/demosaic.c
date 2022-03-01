@@ -5776,12 +5776,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("xtrans sensor demosaicing method, Markesteijn 3-pass and frequency domain chroma are slow.\ndual demosaicers double processing time."));
 
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
-  dt_bauhaus_slider_set_step(g->median_thrs, 0.001);
   dt_bauhaus_slider_set_digits(g->median_thrs, 3);
   gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off\n"
                                                 "set to 1.0 to ignore edges"));
   g->dual_thrs = dt_bauhaus_slider_from_params(self, "dual_thrs");
-  dt_bauhaus_slider_set_step(g->dual_thrs, 0.01);
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
   gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content\n"
                                                 "set to 1.0 for flat content"));
