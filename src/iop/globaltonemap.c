@@ -642,7 +642,6 @@ void gui_init(struct dt_iop_module_t *self)
                                                "the higher the more details in blacks"));
 
   g->drago.max_light = dt_bauhaus_slider_from_params(self, "drago.max_light");
-  dt_bauhaus_slider_set_step(g->drago.max_light, 10);
   gtk_widget_set_tooltip_text(g->drago.max_light, _("the target light for tonemapper specified as cd/m2"));
 
   g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));

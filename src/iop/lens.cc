@@ -372,7 +372,7 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
    the builtin correction works with subtle differences for the color channels leading to some colorizing of the images.
  How is this fixed here:
    Monochrome images (from pure monochrome cameras or cameras with the color filter removed from the sensor) have
-   all three rgb colors set to the same value by the demosaicer. 
+   all three rgb colors set to the same value by the demosaicer.
    Looking through lensfun code & docs the ApplySubpixelGeometryDistortion algorithm makes assumptions from given
    coeffs how far data are displaced for the different wavelengths of light.
    As green / Y channel is the most centric i took that as the canonical value instead of taking the mean.
@@ -2392,7 +2392,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   // scale
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
-  dt_bauhaus_slider_set_step(g->scale, 0.005);
   dt_bauhaus_slider_set_digits(g->scale, 3);
   dt_bauhaus_widget_set_quad_paint(g->scale, dtgtk_cairo_paint_refresh, 0, NULL);
   g_signal_connect(G_OBJECT(g->scale), "quad-pressed", G_CALLBACK(autoscale_pressed), self);

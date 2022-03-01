@@ -573,7 +573,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_lowpass_gui_data_t *g = IOP_GUI_ALLOC(lowpass);
 
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
-  dt_bauhaus_slider_set_step(g->radius, 0.1);
   g->lowpass_algo = dt_bauhaus_combobox_from_params(self, "lowpass_algo");
   g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
   g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));

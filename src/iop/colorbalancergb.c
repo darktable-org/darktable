@@ -1532,7 +1532,6 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("master"), _("global grading"));
 
   g->hue_angle = dt_bauhaus_slider_from_params(self, "hue_angle");
-  dt_bauhaus_slider_set_step(g->hue_angle, 1.);
   dt_bauhaus_slider_set_format(g->hue_angle, "°");
   gtk_widget_set_tooltip_text(g->hue_angle, _("rotate all hues by an angle, at the same luminance"));
 
@@ -1638,7 +1637,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->global_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "global_H"));
   dt_bauhaus_slider_set_feedback(g->global_H, 0);
-  dt_bauhaus_slider_set_step(g->global_H, 10.);
   dt_bauhaus_slider_set_format(g->global_H, "°");
   gtk_widget_set_tooltip_text(g->global_H, _("hue of the global color offset"));
 
@@ -1658,13 +1656,11 @@ void gui_init(dt_iop_module_t *self)
 
   g->shadows_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "shadows_H"));
   dt_bauhaus_slider_set_feedback(g->shadows_H, 0);
-  dt_bauhaus_slider_set_step(g->shadows_H, 10.);
   dt_bauhaus_slider_set_format(g->shadows_H, "°");
   gtk_widget_set_tooltip_text(g->shadows_H, _("hue of the color gain in shadows"));
 
   g->shadows_C = dt_bauhaus_slider_from_params(self, "shadows_C");
   dt_bauhaus_slider_set_soft_range(g->shadows_C, 0., 0.5);
-  dt_bauhaus_slider_set_step(g->shadows_C, 0.01);
   dt_bauhaus_slider_set_digits(g->shadows_C, 4);
   dt_bauhaus_slider_set_format(g->shadows_C, "%");
   gtk_widget_set_tooltip_text(g->shadows_C, _("chroma of the color gain in shadows"));
@@ -1679,13 +1675,11 @@ void gui_init(dt_iop_module_t *self)
 
   g->highlights_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "highlights_H"));
   dt_bauhaus_slider_set_feedback(g->highlights_H, 0);
-  dt_bauhaus_slider_set_step(g->highlights_H, 10.);
   dt_bauhaus_slider_set_format(g->highlights_H, "°");
   gtk_widget_set_tooltip_text(g->highlights_H, _("hue of the color gain in highlights"));
 
   g->highlights_C = dt_bauhaus_slider_from_params(self, "highlights_C");
   dt_bauhaus_slider_set_soft_range(g->highlights_C, 0., 0.2);
-  dt_bauhaus_slider_set_step(g->shadows_C, 0.01);
   dt_bauhaus_slider_set_digits(g->highlights_C, 4);
   dt_bauhaus_slider_set_format(g->highlights_C, "%");
   gtk_widget_set_tooltip_text(g->highlights_C, _("chroma of the color gain in highlights"));
@@ -1700,13 +1694,11 @@ void gui_init(dt_iop_module_t *self)
 
   g->midtones_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "midtones_H"));
   dt_bauhaus_slider_set_feedback(g->midtones_H, 0);
-  dt_bauhaus_slider_set_step(g->midtones_H, 10.);
   dt_bauhaus_slider_set_format(g->midtones_H, "°");
   gtk_widget_set_tooltip_text(g->midtones_H, _("hue of the color exponent in mid-tones"));
 
   g->midtones_C = dt_bauhaus_slider_from_params(self, "midtones_C");
   dt_bauhaus_slider_set_soft_range(g->midtones_C, 0., 0.1);
-  dt_bauhaus_slider_set_step(g->midtones_C, 0.005);
   dt_bauhaus_slider_set_digits(g->midtones_C, 4);
   dt_bauhaus_slider_set_format(g->midtones_C, "%");
   gtk_widget_set_tooltip_text(g->midtones_C, _("chroma of the color exponent in mid-tones"));
@@ -1729,7 +1721,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->shadows_weight = dt_bauhaus_slider_from_params(self, "shadows_weight");
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
-  dt_bauhaus_slider_set_step(g->shadows_weight, 0.1);
   dt_bauhaus_slider_set_format(g->shadows_weight, "%");
   gtk_widget_set_tooltip_text(g->shadows_weight, _("weight of the shadows over the whole tonal range"));
   dt_bauhaus_widget_set_quad_paint(g->shadows_weight, dtgtk_cairo_paint_showmask,
@@ -1739,7 +1730,6 @@ void gui_init(dt_iop_module_t *self)
 
   g->mask_grey_fulcrum = dt_bauhaus_slider_from_params(self, "mask_grey_fulcrum");
   dt_bauhaus_slider_set_digits(g->mask_grey_fulcrum, 4);
-  dt_bauhaus_slider_set_step(g->mask_grey_fulcrum, 0.01);
   dt_bauhaus_slider_set_format(g->mask_grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->mask_grey_fulcrum, _("position of the middle-gray reference for masking"));
   dt_bauhaus_widget_set_quad_paint(g->mask_grey_fulcrum, dtgtk_cairo_paint_showmask,
@@ -1748,7 +1738,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->mask_grey_fulcrum), "quad-pressed", G_CALLBACK(mask_callback), self);
 
   g->highlights_weight = dt_bauhaus_slider_from_params(self, "highlights_weight");
-  dt_bauhaus_slider_set_step(g->highlights_weight, 0.1);
   dt_bauhaus_slider_set_digits(g->highlights_weight, 4);
   dt_bauhaus_slider_set_format(g->highlights_weight, "%");
   gtk_widget_set_tooltip_text(g->highlights_weight, _("weights of highlights over the whole tonal range"));
@@ -1761,13 +1750,11 @@ void gui_init(dt_iop_module_t *self)
 
   g->white_fulcrum = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "white_fulcrum"));
   dt_bauhaus_slider_set_soft_range(g->white_fulcrum, -2., +2.);
-  dt_bauhaus_slider_set_step(g->white_fulcrum, 0.1);
   dt_bauhaus_slider_set_format(g->white_fulcrum, _(" EV"));
   gtk_widget_set_tooltip_text(g->white_fulcrum, _("peak white luminance value used to normalize the power function"));
 
   g->grey_fulcrum = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_fulcrum"));
   dt_bauhaus_slider_set_soft_range(g->grey_fulcrum, 0.1, 0.5);
-  dt_bauhaus_slider_set_step(g->grey_fulcrum, 0.01);
   dt_bauhaus_slider_set_digits(g->grey_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak gray luminance value used to normalize the power function"));

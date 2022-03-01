@@ -2127,7 +2127,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->hvflip, TRUE, TRUE, 0);
 
   g->angle = dt_bauhaus_slider_from_params(self, N_("angle"));
-  dt_bauhaus_slider_set_step(g->angle, 0.25);
   dt_bauhaus_slider_set_factor(g->angle, -1.0);
   dt_bauhaus_slider_set_format(g->angle, "°");
   gtk_widget_set_tooltip_text(g->angle, _("right-click and drag a line on the image to drag a straight line"));

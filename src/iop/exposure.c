@@ -1038,7 +1038,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                     dt_bauhaus_slider_from_params(self, N_("exposure")));
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
-  dt_bauhaus_slider_set_step(g->exposure, 0.02);
   dt_bauhaus_slider_set_digits(g->exposure, 3);
   dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
@@ -1053,7 +1052,6 @@ void gui_init(struct dt_iop_module_t *self)
                               _("where in the histogram to meter for deflicking. E.g. 50% is median"));
 
   g->deflicker_target_level = dt_bauhaus_slider_from_params(self, "deflicker_target_level");
-  dt_bauhaus_slider_set_step(g->deflicker_target_level, 0.1);
   dt_bauhaus_slider_set_format(g->deflicker_target_level, _(" EV"));
   gtk_widget_set_tooltip_text(g->deflicker_target_level,
                               _("where to place the exposure level for processed pics, EV below overexposure."));
@@ -1082,7 +1080,6 @@ void gui_init(struct dt_iop_module_t *self)
                                           "you should never use it to add more density in blacks!\n"
                                           "if poorly set, it will clip near-black colors out of gamut\n"
                                           "by pushing RGB values into negatives."));
-  dt_bauhaus_slider_set_step(g->black, 0.001);
   dt_bauhaus_slider_set_digits(g->black, 4);
   dt_bauhaus_slider_set_soft_range(g->black, -0.1, 0.1);
 

@@ -362,12 +362,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->lightness = dt_bauhaus_slider_from_params(self, N_("lightness"));
   dt_bauhaus_slider_set_format(g->lightness, "%");
-  dt_bauhaus_slider_set_step(g->lightness, 0.1);
   gtk_widget_set_tooltip_text(g->lightness, _("lightness of color"));
 
   g->source_mix = dt_bauhaus_slider_from_params(self, "source_lightness_mix");
   dt_bauhaus_slider_set_format(g->source_mix, "%");
-  dt_bauhaus_slider_set_step(g->source_mix, 0.1);
   gtk_widget_set_tooltip_text(g->source_mix, _("mix value of source lightness"));
 }
 

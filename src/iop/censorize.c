@@ -407,13 +407,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_censorize_gui_data_t *g = IOP_GUI_ALLOC(censorize);
 
   g->radius_1 = dt_bauhaus_slider_from_params(self, N_("radius_1"));
-  dt_bauhaus_slider_set_step(g->radius_1, 0.1);
 
   g->pixelate = dt_bauhaus_slider_from_params(self, N_("pixelate"));
-  dt_bauhaus_slider_set_step(g->pixelate, 0.1);
 
   g->radius_2 = dt_bauhaus_slider_from_params(self, N_("radius_2"));
-  dt_bauhaus_slider_set_step(g->radius_2, 0.1);
 
   g->noise = dt_bauhaus_slider_from_params(self, N_("noise"));
 

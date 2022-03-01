@@ -383,7 +383,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(box_raw), "draw", G_CALLBACK(draw), self);
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
-  dt_bauhaus_slider_set_step(g->threshold, 0.005);
   dt_bauhaus_slider_set_digits(g->threshold, 4);
   gtk_widget_set_tooltip_text(g->threshold, _("lower threshold for hot pixel"));
 

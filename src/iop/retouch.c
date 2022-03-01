@@ -2347,7 +2347,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->cmb_blur_type, _("type for the blur algorithm"));
 
   g->sl_blur_radius = dt_bauhaus_slider_from_params(self, "blur_radius");
-  dt_bauhaus_slider_set_step(g->sl_blur_radius, 0.1);
   dt_bauhaus_slider_set_format(g->sl_blur_radius, " px");
   gtk_widget_set_tooltip_text(g->sl_blur_radius, _("radius of the selected blur type"));
 

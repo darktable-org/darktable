@@ -301,7 +301,6 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the gaussian"));
   dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 30.0);
-  dt_bauhaus_slider_set_step(g->radius, 1.0);
 
   g->red = dt_bauhaus_slider_from_params(self, N_("red"));
   gtk_widget_set_tooltip_text(g->red, _("how much to blur red"));
