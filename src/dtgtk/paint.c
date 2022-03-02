@@ -1669,12 +1669,26 @@ void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 1, 0, 0)
 
-  /* fill base color */
-  cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, 1.0, 1.0);
-  cairo_line_to(cr, 1.0, 0);
-  cairo_close_path(cr);
-  cairo_fill(cr);
+  if(flags & CPF_ACTIVE)
+  {
+    cairo_move_to(cr, 0.45, 0);
+    cairo_line_to(cr, 0.85, 0);
+    cairo_line_to(cr, 0.85, 0.40);
+    cairo_close_path(cr);
+    cairo_fill_preserve(cr);
+    cairo_stroke(cr);
+    cairo_rectangle(cr, 0.15, 0, 0.7, 1.0);
+    cairo_stroke(cr);
+  }
+  else
+  {
+    /* fill base color */
+    cairo_move_to(cr, 0, 0);
+    cairo_line_to(cr, 1.0, 1.0);
+    cairo_line_to(cr, 1.0, 0);
+    cairo_close_path(cr);
+    cairo_fill(cr);
+  }
 
   FINISH
 }
