@@ -1387,6 +1387,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     // the local copy indicator
     thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_name(thumb->w_local_copy, "thumb_localcopy");
+    gtk_widget_set_tooltip_text(thumb->w_local_copy, _("local copy"));
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_local_copy, TRUE);
@@ -1628,6 +1629,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_color, pos);
 
     // the local copy indicator
+    _set_flag(thumb->w_local_copy, GTK_STATE_FLAG_ACTIVE, FALSE);
     gtk_widget_set_size_request(thumb->w_local_copy, 1.618 * r1, 1.618 * r1);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
 
@@ -1739,10 +1741,11 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_start(thumb->w_color,
                                 padding - icon_size / 8.0 + border_l + 2.0 * r1 + (MAX_STARS + 1) * 3.0 * r1 + px);
     // the local copy indicator
+    _set_flag(thumb->w_local_copy, GTK_STATE_FLAG_ACTIVE, TRUE);
     gtk_widget_set_size_request(thumb->w_local_copy, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(thumb->w_local_copy, border_t + py);
-    gtk_widget_set_margin_start(thumb->w_local_copy, px + width - icon_size2 - border_l);
+    gtk_widget_set_margin_top(thumb->w_local_copy, line3 + py);
+    gtk_widget_set_margin_start(thumb->w_local_copy, 10.0 * r1 + px);
     // the altered icon
     gtk_widget_set_size_request(thumb->w_altered, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_START);

@@ -2589,6 +2589,10 @@ Details :
   border-top : 0.07em solid @lighttable_bg_color;
   border-right : 0.07em solid @lighttable_bg_color;
 }
+#thumb_localcopy:active
+{
+  border: none;
+}
 
 .dt_group_right #thumb_localcopy
 {
