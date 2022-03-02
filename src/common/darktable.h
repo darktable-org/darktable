@@ -285,6 +285,7 @@ typedef struct dt_sys_resources_t
   int *fractions; // fractions are calculated as res=input / 1024  * fraction
   int group;
   int level;
+  int tunecl;
 } dt_sys_resources_t;
 
 typedef struct darktable_t
