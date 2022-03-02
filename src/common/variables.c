@@ -370,6 +370,15 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(params->data->exif_lens);
   else if(_has_prefix(variable, "ID") || _has_prefix(variable, "IMAGE.ID"))
     result = g_strdup_printf("%d", params->imgid);
+  else if(_has_prefix(variable, "IMAGE.EXIF"))
+  {
+    gchar buffer[1024];
+    const dt_image_t *img = params->img ? (dt_image_t *)params->img
+                                        : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+    dt_image_print_exif(img, buffer, sizeof(buffer));
+    if(params->img == NULL) dt_image_cache_read_release(darktable.image_cache, img);
+    result = g_strdup(buffer);
+  }
   else if(_has_prefix(variable, "VERSION.NAME") || _has_prefix(variable, "VERSION_NAME"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.version_name", NULL);
