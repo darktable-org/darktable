@@ -227,6 +227,7 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "LABELS", N_("$(LABELS) - color labels as text") },
           { "LABELS.ICONS", N_("$(LABELS.ICONS) - color labels as icons") },
           { "ID", N_("$(ID) - image ID") },
+          { "IMAGE.EXIF", N_("$(IMAGE.EXIF) - common image's EXIF") },
           { "TITLE", N_("$(TITLE) - title from metadata") },
           { "DESCRIPTION", N_("$(DESCRIPTION) - description from metadata") },
           { "CREATOR", N_("$(CREATOR) - creator from metadata") },
