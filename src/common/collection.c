@@ -2066,19 +2066,75 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_FILENAME: // filename
     {
-      GList *list = dt_util_str_to_glist(",", escaped_text);
-
-      for (GList *l = list; l; l = g_list_next(l))
+      gchar *subquery = NULL;
+      gchar **elems = g_strsplit(escaped_text, "/", -1);
+      if(g_strv_length(elems) > 0)
       {
-        char *name = (char*)l->data;	// remember the original content of this list node
-        l->data = g_strdup_printf("(filename LIKE '%%%s%%')", name);
-        g_free(name);			// free the original filename
+        // the main part
+        GList *list = dt_util_str_to_glist(",", elems[0]);
+
+        for(GList *l = list; l; l = g_list_next(l))
+        {
+          char *name = (char *)l->data; // remember the original content of this list node
+          l->data = g_strdup_printf("(filename LIKE '%%%s%%')", name);
+          g_free(name); // free the original filename
+        }
+
+        if(g_list_length(list) > 0) subquery = dt_util_glist_to_str(" OR ", list);
+        g_list_free_full(list, g_free); // free the SQL clauses as well as the list
+      }
+      if(g_strv_length(elems) > 1)
+      {
+        GList *list = dt_util_str_to_glist(",", elems[1]);
+
+        for(GList *l = list; l; l = g_list_next(l))
+        {
+          char *name = (char *)l->data; // remember the original content of this list node
+          // special case for keywords
+          if(!g_strcmp0("RAW", name))
+          {
+            l->data = g_strdup_printf("(flags & %d)", DT_IMAGE_RAW);
+          }
+          else if(!g_strcmp0("NOT RAW", name))
+          {
+            l->data = g_strdup_printf("(flags & %d == 0)", DT_IMAGE_RAW);
+          }
+          else if(!g_strcmp0("LDR", name))
+          {
+            l->data = g_strdup_printf("(flags & %d)", DT_IMAGE_LDR);
+          }
+          else if(!g_strcmp0("HDR", name))
+          {
+            l->data = g_strdup_printf("(flags & %d)", DT_IMAGE_HDR);
+          }
+          else
+          {
+            l->data = g_strdup_printf("(filename LIKE '%%%s%s%%')", g_str_has_prefix(name, ".") ? "" : ".", name);
+          }
+          g_free(name); // free the original filename
+        }
+
+        if(g_list_length(list) > 0)
+        {
+          if(subquery)
+          {
+            gchar *s = subquery;
+            subquery = g_strdup_printf("(%s) AND (%s)", subquery, dt_util_glist_to_str(" OR ", list));
+            g_free(s);
+          }
+          else
+            subquery = dt_util_glist_to_str(" OR ", list);
+        }
+        g_list_free_full(list, g_free); // free the SQL clauses as well as the list
       }
 
-      char *subquery = dt_util_glist_to_str(" OR ", list);
-      query = g_strdup_printf("(%s)", subquery);
+      g_strfreev(elems);
+      if(subquery)
+        query = g_strdup_printf("(%s)", subquery);
+      else
+        query = g_strdup("1=1");
+
       g_free(subquery);
-      g_list_free_full(list, g_free);	// free the SQL clauses as well as the list
 
       break;
     }
