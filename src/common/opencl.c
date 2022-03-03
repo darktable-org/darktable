@@ -2446,83 +2446,77 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
 */
 size_t dt_opencl_get_unused_device_mem(const int devid)
 {
-  if(darktable.opencl->dev[devid].tuned_available)
-    return darktable.opencl->dev[devid].tuned_available;
+  dt_opencl_t *cl = darktable.opencl;
+  if(cl->dev[devid].tuned_available)
+    return cl->dev[devid].tuned_available;
 
   size_t available = 0;
-  const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
+  const size_t allmem = cl->dev[devid].max_global_mem;
   const size_t l_buff = dt_opencl_get_device_memalloc(devid);
   const size_t m_buff = MIN(l_buff / 4, 256lu * 1024lu * 1024lu);
   const size_t s_buff = 64lu * 1024lu * 1024lu;
   int checked = 0;
-  cl_mem tbuf[128];
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  cl_mem sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
-                 CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, 16, NULL, &err);
-  if(!sbuf) return 0;
+  float *tmp = dt_calloc_align_float(4);
 
-  while((available < allmem) && (checked < 128) && (err == CL_SUCCESS))
+  cl_mem tbuf[128];
+  cl_int err = CL_SUCCESS;
+
+  while((available <= (allmem - l_buff)) && (checked < 128) && (err == CL_SUCCESS))
   {
-    tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
-                     CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, l_buff, NULL, &err);
+    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, l_buff, NULL, &err);
     if(err == CL_SUCCESS)
     {
-      err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
-                                                                   sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
+      err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
       if(err == CL_SUCCESS)
       {
         checked++;
         available += l_buff;
       }
       else
-        if(tbuf[checked]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
+        if(tbuf[checked]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
     }
   }
 
   err = CL_SUCCESS;
-  while((available < allmem) && (checked < 128) && (err == CL_SUCCESS))
+  while((available <= (allmem - m_buff)) && (checked < 128) && (err == CL_SUCCESS))
   {
-    tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
-                     CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, m_buff, NULL, &err);
+    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, m_buff, NULL, &err);
     if(err == CL_SUCCESS)
     {
-      err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
-                                                                   sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
+      err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
       if(err == CL_SUCCESS)
       {
         checked++;
         available += m_buff;
       }
       else
-        if(tbuf[checked]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
+        if(tbuf[checked]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
     }
   }
 
   if(m_buff > s_buff)
   {
     err = CL_SUCCESS;
-    while((available < allmem) && (checked < 128) && (err == CL_SUCCESS))
+    while((available <= (allmem - s_buff)) && (checked < 128) && (err == CL_SUCCESS))
     {
-      tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
-                       CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, s_buff, NULL, &err);
+      tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, s_buff, NULL, &err);
       if(err == CL_SUCCESS)
       {
-        err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
-                                                                   sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
+        err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
         if(err == CL_SUCCESS) available += s_buff;
         checked++;
       }
     }
   }
  
-  (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(sbuf);
   for(int i = 0; i < checked; i++)
-    if(tbuf[i]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
+    if(tbuf[i]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
 
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_unused_device_mem] %luMB available, %luMB of %luMB on device %i already used\n",
      available / 1024lu / 1024lu, (allmem - available) / 1024lu / 1024lu, allmem / 1024lu / 1024lu, devid);
 
-  darktable.opencl->dev[devid].tuned_available = available;
+  cl->dev[devid].tuned_available = available;
+  dt_free_align(tmp);
   return available;
 }
 
@@ -2572,37 +2566,33 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid)
 
 static gboolean _cl_test_available(const int devid, const size_t required)
 {
-  cl_int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-  cl_mem sbuf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
-                 CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, 16, NULL, &err);
-  if(!sbuf) return FALSE;
-
+  float *tmp = dt_calloc_align_float(4);
   int checked = 0;
   cl_mem tbuf[32];
   size_t remaining = required;
+  cl_int err = CL_SUCCESS;
+  dt_opencl_t *cl = darktable.opencl;
   while((remaining > 0) && (checked < 32) && (err == CL_SUCCESS))
   {
-    size_t now = MIN(darktable.opencl->dev[devid].max_mem_alloc, remaining);
+    size_t now = MIN(cl->dev[devid].max_mem_alloc, remaining);
     remaining = remaining - now;  
-    tbuf[checked] = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
-                     CL_MEM_READ_WRITE | CL_MEM_HOST_NO_ACCESS, now, NULL, &err);
+    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, now, NULL, &err);
     if(err == CL_SUCCESS)
     {
-      err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBuffer)(darktable.opencl->dev[devid].cmd_queue,
-                                                                   sbuf, tbuf[checked], 0, 0, 16, 0, NULL, NULL);
+      err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
       checked++;
     }
   }
   const gboolean success = (err == CL_SUCCESS);
 
-  (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(sbuf);
   for(int i = 0; i < checked; i++)
-    if(tbuf[i]) (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
+    if(tbuf[i]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
 
   if(!success)
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[_buffer_fits_device] had no success for %luMB on device %i\n",
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[_cl_test_available] had no success for %luMB on device %i\n",
       required / 1024lu / 1024lu, devid); 
- 
+
+  dt_free_align(tmp); 
   return success;
 }
 
