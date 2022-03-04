@@ -282,7 +282,8 @@ typedef struct dt_sys_resources_t
 {
   size_t total_memory;
   size_t mipmap_memory;
-  int *fractions; // fractions are calculated as res=input / 1024  * fraction
+  int *fractions;   // fractions are calculated as res=input / 1024  * fraction
+  int *refresource; // for the debug resource modes we use fixed settings
   int group;
   int level;
   int tunecl;

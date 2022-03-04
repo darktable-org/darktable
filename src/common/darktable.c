@@ -388,7 +388,8 @@ static inline size_t _get_total_memory()
 static size_t _get_mipmap_size()
 {
   const int level = darktable.dtresources.level;
-  if(level < 0) return 4096lu * 1024lu * 1024lu;
+  if(level < 0)
+    return darktable.dtresources.refresource[4*(-level-1) + 2] * 1024lu * 1024lu;
   const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 2];
   return darktable.dtresources.total_memory / 1024lu * fraction;
 }
@@ -1082,26 +1083,41 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_film_set_folder_status();
   }
 
-  // this is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed.
-  // for every resourcelevel we need 4 defined fractions
-  //  0 cpu available
-  //  1 cpu singlebuffer
-  //  2 mipmap size
-  //  3 opencl available
-  static int fractions[20] = {
-        0,    0,  16,    0, // mini
+  /* for every resourcelevel we have 4 ints defined, either absolute or a fraction
+     0 cpu available
+     1 cpu singlebuffer
+     2 mipmap size
+     3 opencl available
+  */
+  /* special modes are meant to be used for debugging & testing,
+     they are hidden in the ui menu and must be activated via --conf resourcelevel="xxx"
+     here all values are absolutes in MB as we require fixed settings.
+     reference, mini and notebook require a cl capable system with 16GB of ram and 2GB of free video ram
+  */
+  static int ref_resources[12] = {
+      8192,  32,  512, 2048,   // reference
+      1024,   2,  128,  400,   // mini system        
+      4096,  32,  512,  400,   // simple notebook with integrated graphics
+  };
+
+  /* This is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed.
+     all values are fractions val/1024 of total memory (0-2) or available OpenCL memory
+  */
+  static int fractions[16] = {
       128,    4,  64,  400, // small
       512,    8, 128,  700, // default
       700,   16, 128,  900, // large
-    16384, 1024, 128, 1024, // unrestricted
+    16384, 1024, 128,  900, // unrestricted
   };
-  // Allow the settings for each performance level to be changed via darktablerc
-  check_resourcelevel("resource_default", fractions, 2);
-  check_resourcelevel("resource_small", fractions, 1);
-  check_resourcelevel("resource_large", fractions, 3);
-  check_resourcelevel("resource_unrestricted", fractions, 4);
+
+  // Allow the settings for each UI performance level to be changed via darktablerc
+  check_resourcelevel("resource_small", fractions, 0);
+  check_resourcelevel("resource_default", fractions, 1);
+  check_resourcelevel("resource_large", fractions, 2);
+  check_resourcelevel("resource_unrestricted", fractions, 3);
 
   darktable.dtresources.fractions = fractions;
+  darktable.dtresources.refresource = ref_resources;
   darktable.dtresources.total_memory = _get_total_memory() * 1024lu;
   dt_get_sysresource_level();
   darktable.dtresources.mipmap_memory = _get_mipmap_size();
@@ -1296,39 +1312,44 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
 void dt_get_sysresource_level()
 {
-  static int oldlevel = -2;
-  darktable.dtresources.tunecl = dt_conf_get_bool("tuneopencl");
-  darktable.dtresources.level = 2;
+  static int oldlevel = -999;
+  static int oldtunecl = -999;
+
+  const int tunecl = dt_conf_get_bool("tuneopencl");
+  int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
-  /** These levels must correspond with preferences in xml.in **and** fractions
-      Please note: absolute values for "reference (debug)"
+  /** These levels must correspond with preferences in xml.in
+      modes available in the ui have levsls >= 0 **and** fractions
+      modes available for debugging / reference have negative levels and **and** ref_resources
       If we want a new setting here, we must
         - add a string->level conversion here
-        - add a line of fraction in int fractions[] above
-        - add a line in darktableconfig.xml.in
+        - add a line of fraction in int fractions[] or ref_resources[] above
+        - add a line in darktableconfig.xml.in if available via UI
   */
   if(config)
   {
-         if(!strcmp(config, "default"))           darktable.dtresources.level = 2;
-    else if(!strcmp(config, "small"))             darktable.dtresources.level = 1;
-    else if(!strcmp(config, "large"))             darktable.dtresources.level = 3;
-    else if(!strcmp(config, "mini (debug)"))      darktable.dtresources.level = 0;
-    else if(!strcmp(config, "unrestricted"))      darktable.dtresources.level = 4;
-    else if(!strcmp(config, "reference (debug)")) darktable.dtresources.level = -1;
-    else if(!strcmp(config, "reference"))         darktable.dtresources.level = -1;
+         if(!strcmp(config, "default"))      level = 1;
+    else if(!strcmp(config, "small"))        level = 0;
+    else if(!strcmp(config, "large"))        level = 2;
+    else if(!strcmp(config, "unrestricted")) level = 3;
+    else if(!strcmp(config, "reference"))    level = -1;
+    else if(!strcmp(config, "mini"))         level = -2;
+    else if(!strcmp(config, "notebook"))     level = -3;
   }
+  const gboolean mod = ((level != oldlevel) || (oldtunecl != tunecl));
+  darktable.dtresources.level = oldlevel = level;
+  darktable.dtresources.tunecl = oldtunecl = tunecl;
 
-  const gboolean mod = (darktable.dtresources.level != oldlevel);
-  oldlevel = darktable.dtresources.level;
   if(mod && (darktable.unmuted & DT_DEBUG_MEMORY))
   {
     const int oldgrp = darktable.dtresources.group;
-    darktable.dtresources.group = 4 * darktable.dtresources.level;
-    fprintf(stderr,"[dt_get_sysresource_level] switched to %i as `%s', OpenCL tuning=%s\n", darktable.dtresources.level, config, (darktable.dtresources.tunecl) ? "ON" : "OFF");
+    darktable.dtresources.group = 4 * level;
+    fprintf(stderr,"[dt_get_sysresource_level] switched to %i as `%s'\n", level, config);
     fprintf(stderr,"  total mem:     %luMB\n", darktable.dtresources.total_memory / 1024lu / 1024lu);
     fprintf(stderr,"  mipmap cache:  %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
     fprintf(stderr,"  available mem: %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
     fprintf(stderr,"  singlebuff:    %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+    fprintf(stderr,"  OpenCL tuning: %s\n", (tunecl && (level >= 0)) ? "ON" : "OFF");
     darktable.dtresources.group = oldgrp;
   }
 }
@@ -1666,7 +1687,9 @@ size_t dt_get_available_mem()
 {
   const int level = darktable.dtresources.level;
   const size_t total_mem = darktable.dtresources.total_memory;
-  if(level < 0) return 8192lu * 1024lu * 1024lu;
+  if(level < 0)
+    return darktable.dtresources.refresource[4*(-level-1)] * 1024lu * 1024lu;
+
   const int fraction = darktable.dtresources.fractions[darktable.dtresources.group];
   return MAX(512lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
 }
@@ -1675,7 +1698,9 @@ size_t dt_get_singlebuffer_mem()
 {
   const int level = darktable.dtresources.level;
   const size_t total_mem = darktable.dtresources.total_memory;
-  if(level < 0) return 64lu * 1024lu * 1024lu;
+  if(level < 0)
+    return darktable.dtresources.refresource[4*(-level-1) + 1] * 1024lu * 1024lu;
+
   const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 1];
   return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
 }
@@ -1707,7 +1732,7 @@ void dt_configure_performance()
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
     dt_conf_set_bool("ui/performance", TRUE);
-    dt_conf_set_string("resourcelevel", "mini (debug)");
+    dt_conf_set_string("resourcelevel", "small");
   }
 
   g_free(demosaic_quality);
