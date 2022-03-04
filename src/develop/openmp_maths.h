@@ -142,12 +142,3 @@ static inline float clamp_simd(const float x)
 {
   return fminf(fmaxf(x, 0.0f), 1.0f);
 }
-
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float sqf(const float x)
-{
-  return x * x;
-}
