@@ -1363,9 +1363,9 @@ const char *dt_bauhaus_combobox_get_text(GtkWidget *widget)
   const dt_bauhaus_combobox_data_t *d = _combobox_data(widget);
   if(!d) return NULL;
 
-  if(d->editable && d->active < 0)
+  if(d->active < 0)
   {
-    return d->text;
+    return d->editable ? d->text : NULL;
   }
   else
   {
