@@ -604,8 +604,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_requirement: %d\n",
            dt_conf_get_int("opencl_memory_requirement"));
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_headroom: %d\n",
-           dt_conf_get_int("opencl_memory_headroom"));
   str = dt_conf_get_string_const("opencl_device_priority");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
@@ -2529,20 +2527,27 @@ cl_ulong dt_opencl_get_device_available(const int devid)
 {
   if(!darktable.opencl->inited || devid < 0) return 0;
   const int level = darktable.dtresources.level;
-
-  if(level < 0) return 2048lu  * 1024ul * 1024ul;      // for reference system
-  static int oldlevel = -2;
+  static int oldlevel = -999;
   const gboolean mod = (oldlevel != level);
   oldlevel = level;
+  size_t available = 0;
+
+  if(level < 0)
+  {
+    available = darktable.dtresources.refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
+    if(mod)
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] reference mode %i, use %luMB as available on device %i\n",
+         level, available / 1024lu / 1024lu, devid);
+    return available;
+  }
   const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
   const gboolean tuned = darktable.dtresources.tunecl && (level > 0);
-  size_t available = 0;
 
   if(tuned)
   {
     // we always leave a safety margin, 128MB for level large, 100MB + 1/16 of graphics memory for default.
     const size_t unused = MAX(0, dt_opencl_get_unused_device_mem(devid) - 128lu * 1024lu * 1024lu);
-    available = unused * (16 - MAX(0, 3 - level)) / 16;
+    available = unused * (16 - MAX(0, 2 - level)) / 16;
   }
   else
   {
