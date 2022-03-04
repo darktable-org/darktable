@@ -2754,7 +2754,7 @@ Details :
 }
 
 #collapsible,
-#collapse-block #section_label
+#collapsible-label
 {
   padding: 0 0.14em 0.14em 0.7em;
   margin: 0;
@@ -2775,7 +2775,7 @@ Details :
   margin: 0.42em 0.07em;
 }
 
-#collapse-block #section_label,
+#collapsible-label,
 #collapse-block .section-expander
 {
   margin: 0.1em;
