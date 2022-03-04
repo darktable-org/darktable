@@ -187,20 +187,23 @@ static gboolean _text_entry_changed_wait(gpointer user_data)
       // by default adds start and end wildcard
       // ' or " removes the corresponding wildcard
       char start[2] = {0};
-      char *text;
+      char *text = NULL;
       const char *entry = gtk_entry_get_text(GTK_ENTRY(d->text));
       char *p = (char *)entry;
-      if(entry[0] == '"')
-        p++;
-      else
-        start[0] = '%';
-      if(entry[strlen(entry) - 1] == '"')
+      if(strlen(entry) > 1 && !(entry[0] == '"' && entry[1] == '"'))
       {
-        text = g_strconcat(start, (char *)p, NULL);
-        text[strlen(text) - 1] = '\0';
+        if(entry[0] == '"')
+          p++;
+        else if(entry[0])
+          start[0] = '%';
+        if(entry[strlen(entry) - 1] == '"')
+        {
+          text = g_strconcat(start, (char *)p, NULL);
+          text[strlen(text) - 1] = '\0';
+        }
+        else if(entry[0])
+          text = g_strconcat(start, (char *)p, "%", NULL);
       }
-      else
-        text = g_strconcat(start, (char *)p, "%", NULL);
 
       // avoids activating twice the same query
       if(g_strcmp0(dt_collection_get_text_filter(darktable.collection), text))
