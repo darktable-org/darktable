@@ -247,13 +247,13 @@ int dt_collection_update(const dt_collection_t *collection)
 
     if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
       wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           "WHERE history_hash.imgid=id AND "
                                            " (basic_hash IS NULL OR current_hash != basic_hash) AND "
                                            " (auto_hash IS NULL OR current_hash != auto_hash))",
                            and_operator(&and_term));
     else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
       wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           "WHERE history_hash.imgid=id AND "
                                            " (current_hash == basic_hash OR current_hash == auto_hash))",
                            and_operator(&and_term));
 
