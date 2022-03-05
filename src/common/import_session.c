@@ -319,23 +319,16 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
     return NULL;
   }
 
-
+  gchar *new_path = dt_variables_expand(self->vp, pattern, FALSE);
 #ifdef WIN32
-  gchar *s1 = dt_variables_expand(self->vp, pattern, FALSE);
-  gchar *new_path = g_ascii_strdown(s1, -1);
   if(new_path && (strlen(new_path) > 1))
   {
     const char first = g_ascii_toupper(new_path[0]);
     if(first >= 'A' && first <= 'Z' && new_path[1] == ':') // path format is <drive letter>:\path\to\file
       new_path[0] = first;                                 // drive letter in uppercase looks nicer
-  g_free(s1);
   }
-#else
-  gchar *new_path = dt_variables_expand(self->vp, pattern, FALSE);
 #endif
-
   g_free(pattern);
-
 
   /* did the session path change ? */
   if(self->current_path && strcmp(self->current_path, new_path) == 0)
