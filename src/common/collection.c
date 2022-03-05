@@ -247,27 +247,26 @@ int dt_collection_update(const dt_collection_t *collection)
 
     if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
       wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           "WHERE history_hash.imgid=id AND "
                                            " (basic_hash IS NULL OR current_hash != basic_hash) AND "
                                            " (auto_hash IS NULL OR current_hash != auto_hash))",
                            and_operator(&and_term));
     else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
       wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           "WHERE history_hash.imgid=id AND "
                                            " (current_hash == basic_hash OR current_hash == auto_hash))",
                            and_operator(&and_term));
 
     /* add text filter if any */
     if(collection->params.text_filter && collection->params.text_filter[0])
     {
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM main.meta_data WHERE id=mi.id AND value LIKE '%s'"
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
                                           " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
-                                          "   WHERE imgid=mi.id AND t.id=ti.tagid AND"
-                                          "         (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
+                                          "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
                                           " UNION SELECT id FROM main.images"
-                                          "   WHERE id=mi.id AND filename LIKE '%s'"
+                                          "   WHERE filename LIKE '%s'"
                                           " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
-                                          "   WHERE i.id=mi.id AND fr.id=i.film_id AND fr.folder LIKE '%s')",
+                                          "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s')",
                            and_operator(&and_term), collection->params.text_filter,
                                                     collection->params.text_filter,
                                                     collection->params.text_filter,
