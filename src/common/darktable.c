@@ -1594,93 +1594,13 @@ void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *su
   }
 }
 
-static inline int _get_num_atom_cores()
-{
-#if defined(__linux__)
-  int count = 0;
-  char line[256];
-  FILE *f = g_fopen("/proc/cpuinfo", "r");
-  if(f)
-  {
-    while(!feof(f))
-    {
-      if(fgets(line, sizeof(line), f))
-      {
-        if(!strncmp(line, "model name", 10))
-        {
-          if(strstr(line, "Atom"))
-          {
-            count++;
-          }
-        }
-      }
-    }
-    fclose(f);
-  }
-  return count;
-#elif defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-  int ret, hw_ncpu;
-  int mib[2] = { CTL_HW, HW_MODEL };
-  char *hw_model, *index;
-  size_t length;
-
-  /* Query hw.model to get the required buffer length and allocate the
-   * buffer. */
-  ret = sysctl(mib, 2, NULL, &length, NULL, 0);
-  if(ret != 0)
-  {
-    return 0;
-  }
-
-  hw_model = (char *)malloc(length + 1);
-  if(hw_model == NULL)
-  {
-    return 0;
-  }
-
-  /* Query hw.model again, this time with the allocated buffer. */
-  ret = sysctl(mib, 2, hw_model, &length, NULL, 0);
-  if(ret != 0)
-  {
-    free(hw_model);
-    return 0;
-  }
-  hw_model[length] = '\0';
-
-  /* Check if the processor model name contains "Atom". */
-  index = strstr(hw_model, "Atom");
-  free(hw_model);
-  if(index == NULL)
-  {
-    return 0;
-  }
-
-  /* Get the number of cores, using hw.ncpu sysctl. */
-  mib[1] = HW_NCPU;
-  hw_ncpu = 0;
-  length = sizeof(hw_ncpu);
-  ret = sysctl(mib, 2, &hw_ncpu, &length, NULL, 0);
-  if(ret != 0)
-  {
-    return 0;
-  }
-
-  return hw_ncpu;
-#else
-  return 0;
-#endif
-}
-
 int dt_worker_threads()
 {
-  const int atom_cores = _get_num_atom_cores();
   const size_t threads = dt_get_num_threads();
   const size_t mem = _get_total_memory();
-  if(mem >= (8lu << 20) && threads >= 4 && atom_cores == 0)
-    return 4;
-  else if(threads >= 2 && atom_cores == 0)
-    return 2;
-  return 1;
+  const int wthreads = (mem >= (8lu << 20) && threads >= 4) ? 4 : MIN(2, threads);
+  dt_print(DT_DEBUG_DEV, "[dt_worker_threads] using %i worker threads\n", wthreads);
+  return wthreads;
 }
 
 size_t dt_get_available_mem()
@@ -1707,14 +1627,13 @@ size_t dt_get_singlebuffer_mem()
 
 void dt_configure_performance()
 {
-  const int atom_cores = _get_num_atom_cores();
   const size_t threads = dt_get_num_threads();
   const size_t mem = _get_total_memory();
   const size_t bits = CHAR_BIT * sizeof(void *);
   gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
 
-  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %zu cores (%d atom based)\n",
-          bits, mem, threads, atom_cores);
+  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %zu cores\n",
+          bits, mem, threads);
   if(mem >= (4lu << 20) && threads >= 2)
   {
     // suggested minimum: at least 4GB RAM, and at least 2 CPU threads
