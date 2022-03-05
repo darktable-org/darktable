@@ -4088,7 +4088,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->csspot.container), GTK_WIDGET(g->spot_mode), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->spot_mode), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
-  g->use_mixing = gtk_check_button_new_with_label(_("take channel mixing into account"));
+  gchar *label = N_("take channel mixing into account");
+  g->use_mixing = gtk_check_button_new_with_label(_(label));
+  dt_action_define_iop(self, NULL, label, g->use_mixing, &dt_action_def_toggle);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->use_mixing))), PANGO_ELLIPSIZE_END);
   gtk_widget_set_tooltip_text(g->use_mixing,
                               _("compute the target by taking the channel mixing into account.\n"
                                 "if disabled, only the CAT is considered."));
