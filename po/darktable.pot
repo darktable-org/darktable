@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-05 09:49+0100\n"
+"POT-Creation-Date: 2022-03-05 21:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2015,7 +2015,7 @@ msgstr ""
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:779 ../src/gui/preferences.c:818
+#: ../src/common/collection.c:778 ../src/gui/preferences.c:818
 #: ../src/gui/presets.c:590 ../src/libs/camera.c:569
 #: ../src/libs/metadata_view.c:143
 msgid "focal length"
@@ -2262,7 +2262,7 @@ msgid "offset"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:778 ../src/gui/preferences.c:802
+#: ../src/common/collection.c:777 ../src/gui/preferences.c:802
 #: ../src/gui/presets.c:541 ../src/libs/metadata_view.c:139
 msgid "lens"
 msgstr ""
@@ -2281,7 +2281,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:110
 #: ../build/lib/darktable/plugins/introspection_borders.c:251
-#: ../src/common/collection.c:783 ../src/libs/tools/filter.c:113
+#: ../src/common/collection.c:782 ../src/libs/tools/filter.c:113
 msgid "aspect ratio"
 msgstr ""
 
@@ -2385,7 +2385,7 @@ msgid "very large chromatic aberration"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1531 ../src/develop/blend_gui.c:2006
+#: ../src/common/collection.c:1530 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
 #: ../src/gui/gtk.c:3020 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
@@ -2396,7 +2396,7 @@ msgid "red"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1535 ../src/develop/blend_gui.c:2009
+#: ../src/common/collection.c:1534 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
 #: ../src/gui/gtk.c:3021 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
@@ -2407,7 +2407,7 @@ msgid "green"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1537 ../src/develop/blend_gui.c:2012
+#: ../src/common/collection.c:1536 ../src/develop/blend_gui.c:2012
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
 #: ../src/gui/gtk.c:3022 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
@@ -3164,7 +3164,7 @@ msgid "Markesteijn 3-pass + VNG"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1553 ../src/common/collection.c:1561
+#: ../src/common/collection.c:1552 ../src/common/collection.c:1560
 #: ../src/libs/collect.c:1724
 msgid "basic"
 msgstr ""
@@ -3895,7 +3895,7 @@ msgstr ""
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:782 ../src/gui/preferences.c:810
+#: ../src/common/collection.c:781 ../src/gui/preferences.c:810
 #: ../src/gui/presets.c:560 ../src/iop/basicadj.c:597 ../src/iop/exposure.c:123
 #: ../src/iop/exposure.c:1047 ../src/libs/metadata_view.c:141
 msgid "exposure"
@@ -4509,161 +4509,161 @@ msgid ""
 "make sure it allows access and is not mounted otherwise"
 msgstr ""
 
-#: ../src/common/collection.c:727
+#: ../src/common/collection.c:726
 msgid "too much time to update aspect ratio for the collection"
 msgstr ""
 
-#: ../src/common/collection.c:766
+#: ../src/common/collection.c:765
 msgid "film roll"
 msgstr ""
 
-#: ../src/common/collection.c:767
+#: ../src/common/collection.c:766
 msgid "folder"
 msgstr ""
 
-#: ../src/common/collection.c:768
+#: ../src/common/collection.c:767
 msgid "camera"
 msgstr ""
 
-#: ../src/common/collection.c:769 ../src/libs/export_metadata.c:189
+#: ../src/common/collection.c:768 ../src/libs/export_metadata.c:189
 msgid "tag"
 msgstr ""
 
-#: ../src/common/collection.c:770
+#: ../src/common/collection.c:769
 msgid "date taken"
 msgstr ""
 
-#: ../src/common/collection.c:771
+#: ../src/common/collection.c:770
 msgid "date-time taken"
 msgstr ""
 
-#: ../src/common/collection.c:772 ../src/libs/metadata_view.c:130
+#: ../src/common/collection.c:771 ../src/libs/metadata_view.c:130
 msgid "import timestamp"
 msgstr ""
 
-#: ../src/common/collection.c:773 ../src/libs/metadata_view.c:131
+#: ../src/common/collection.c:772 ../src/libs/metadata_view.c:131
 msgid "change timestamp"
 msgstr ""
 
-#: ../src/common/collection.c:774 ../src/libs/metadata_view.c:132
+#: ../src/common/collection.c:773 ../src/libs/metadata_view.c:132
 msgid "export timestamp"
 msgstr ""
 
-#: ../src/common/collection.c:775 ../src/libs/metadata_view.c:133
+#: ../src/common/collection.c:774 ../src/libs/metadata_view.c:133
 msgid "print timestamp"
 msgstr ""
 
-#: ../src/common/collection.c:776 ../src/libs/history.c:85
+#: ../src/common/collection.c:775 ../src/libs/history.c:85
 msgid "history"
 msgstr ""
 
-#: ../src/common/collection.c:777 ../src/develop/lightroom.c:1546
+#: ../src/common/collection.c:776 ../src/develop/lightroom.c:1546
 #: ../src/libs/tools/filter.c:107
 msgid "color label"
 msgstr ""
 
 #. iso
-#: ../src/common/collection.c:780 ../src/gui/preferences.c:806
+#: ../src/common/collection.c:779 ../src/gui/preferences.c:806
 #: ../src/gui/presets.c:547 ../src/libs/camera.c:577
 #: ../src/libs/metadata_view.c:145
 msgid "ISO"
 msgstr ""
 
 #. aperture
-#: ../src/common/collection.c:781 ../src/gui/preferences.c:814
+#: ../src/common/collection.c:780 ../src/gui/preferences.c:814
 #: ../src/gui/presets.c:575 ../src/libs/camera.c:564 ../src/libs/camera.c:566
 #: ../src/libs/metadata_view.c:140
 msgid "aperture"
 msgstr ""
 
-#: ../src/common/collection.c:784 ../src/libs/metadata_view.c:126
+#: ../src/common/collection.c:783 ../src/libs/metadata_view.c:126
 #: ../src/libs/tools/filter.c:99
 msgid "filename"
 msgstr ""
 
-#: ../src/common/collection.c:785 ../src/develop/lightroom.c:1537
+#: ../src/common/collection.c:784 ../src/develop/lightroom.c:1537
 #: ../src/libs/geotagging.c:140
 msgid "geotagging"
 msgstr ""
 
-#: ../src/common/collection.c:786
+#: ../src/common/collection.c:785
 msgid "grouping"
 msgstr ""
 
-#: ../src/common/collection.c:787 ../src/dtgtk/thumbnail.c:1398
+#: ../src/common/collection.c:786 ../src/dtgtk/thumbnail.c:1398
 #: ../src/libs/metadata_view.c:129 ../src/libs/metadata_view.c:338
 msgid "local copy"
 msgstr ""
 
-#: ../src/common/collection.c:788 ../src/gui/preferences.c:782
+#: ../src/common/collection.c:787 ../src/gui/preferences.c:782
 msgid "module"
 msgstr ""
 
-#: ../src/common/collection.c:789 ../src/gui/hist_dialog.c:280
+#: ../src/common/collection.c:788 ../src/gui/hist_dialog.c:280
 #: ../src/gui/styles_dialog.c:566 ../src/gui/styles_dialog.c:610
 #: ../src/libs/ioporder.c:40
 msgid "module order"
 msgstr ""
 
-#: ../src/common/collection.c:790 ../src/common/ratings.c:300
+#: ../src/common/collection.c:789 ../src/common/ratings.c:300
 #: ../src/develop/lightroom.c:1521 ../src/libs/tools/filter.c:105
 msgid "rating"
 msgstr ""
 
-#: ../src/common/collection.c:1533 ../src/develop/lightroom.c:832
+#: ../src/common/collection.c:1532 ../src/develop/lightroom.c:832
 #: ../src/gui/guides.c:732 ../src/iop/colorzones.c:2318
 #: ../src/iop/temperature.c:1809 ../src/libs/collect.c:1764
 msgid "yellow"
 msgstr ""
 
-#: ../src/common/collection.c:1539 ../src/iop/colorzones.c:2322
+#: ../src/common/collection.c:1538 ../src/iop/colorzones.c:2322
 #: ../src/libs/collect.c:1764
 msgid "purple"
 msgstr ""
 
-#: ../src/common/collection.c:1555 ../src/libs/collect.c:1724
+#: ../src/common/collection.c:1554 ../src/libs/collect.c:1724
 msgid "auto applied"
 msgstr ""
 
-#: ../src/common/collection.c:1557 ../src/libs/collect.c:1724
+#: ../src/common/collection.c:1556 ../src/libs/collect.c:1724
 msgid "altered"
 msgstr ""
 
-#: ../src/common/collection.c:1569 ../src/common/collection.c:1652
+#: ../src/common/collection.c:1568 ../src/common/collection.c:1651
 #: ../src/libs/collect.c:1211 ../src/libs/collect.c:1343
 #: ../src/libs/collect.c:1365 ../src/libs/collect.c:1470
 #: ../src/libs/collect.c:2398
 msgid "not tagged"
 msgstr ""
 
-#: ../src/common/collection.c:1570 ../src/libs/collect.c:1365
+#: ../src/common/collection.c:1569 ../src/libs/collect.c:1365
 #: ../src/libs/map_locations.c:768
 msgid "tagged"
 msgstr ""
 
-#: ../src/common/collection.c:1571
+#: ../src/common/collection.c:1570
 msgid "tagged*"
 msgstr ""
 
-#: ../src/common/collection.c:1601 ../src/libs/collect.c:1736
+#: ../src/common/collection.c:1600 ../src/libs/collect.c:1736
 msgid "not copied locally"
 msgstr ""
 
 #. grouping
-#: ../src/common/collection.c:1899 ../src/libs/collect.c:1838
+#: ../src/common/collection.c:1898 ../src/libs/collect.c:1838
 msgid "group leaders"
 msgstr ""
 
-#: ../src/common/collection.c:1993 ../src/libs/collect.c:1911
+#: ../src/common/collection.c:1992 ../src/libs/collect.c:1911
 msgid "not defined"
 msgstr ""
 
-#: ../src/common/collection.c:2275
+#: ../src/common/collection.c:2274
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr ""
 
-#: ../src/common/collection.c:2281
+#: ../src/common/collection.c:2280
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -11852,7 +11852,7 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4494
-msgid "the delta E is using the CIE 2000 formula."
+msgid "the delta E is using the CIE 2000 formula"
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4500
