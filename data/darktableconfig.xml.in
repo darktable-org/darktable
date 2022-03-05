@@ -371,7 +371,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>tune OpenCL performance</shortdescription>
-    <longdescription>if switched on, darktable tunes OpenCL for best performance, overrides static settings in resourcelevel</longdescription>
+    <longdescription>if switched on, darktable tunes OpenCL for best performance, overrides static settings</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_synch_cache</name>
