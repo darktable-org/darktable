@@ -1879,6 +1879,7 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 }
 
 /* Hover states, some needed background only */
+.dt_transparent_background:hover,
 button:hover,
 #add-color-button:hover,
 menuitem:hover,
