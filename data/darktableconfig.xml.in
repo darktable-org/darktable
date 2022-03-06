@@ -3178,6 +3178,12 @@
     <longdescription>this is mainly useful for debugging and to add new camera support.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>darkroom/modules/exposure/lightness</name>
+    <type>float</type>
+    <default>50.0</default>
+    <shortdescription>lightness spot in exposure compensation</shortdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/modulegroups_preset</name>
     <type>string</type>
     <default></default>

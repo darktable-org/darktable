@@ -584,9 +584,7 @@ void gui_update(struct dt_iop_module_t *self)
   // get the saved params
   dt_iop_gui_enter_critical_section(self);
 
-  float lightness = 50.f;
-  if(dt_conf_key_exists("darkroom/modules/exposure/lightness"))
-    lightness = dt_conf_get_float("darkroom/modules/exposure/lightness");
+  const float lightness = dt_conf_get_float("darkroom/modules/exposure/lightness");
   dt_bauhaus_slider_set(g->lightness_spot, lightness);
 
   dt_iop_gui_leave_critical_section(self);
