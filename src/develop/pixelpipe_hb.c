@@ -1377,12 +1377,36 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
        Late errors are sometimes detected when trying to get back data from device into host memory and
        are treated in the same manner. */
 
-    /* try to enter opencl path after checking some module specific pre-requisites */
-    if(module->process_cl && piece->process_cl_ready
+    /* test for a possible opencl path after checking some module specific pre-requisites */
+    gboolean possible_cl = (module->process_cl && piece->process_cl_ready
        && !(((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
              || (pipe->type & DT_DEV_PIXELPIPE_PREVIEW2) == DT_DEV_PIXELPIPE_PREVIEW2)
             && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
-       && (fits_on_device || piece->process_tiling_ready))
+       && (fits_on_device || piece->process_tiling_ready));
+
+    if(possible_cl && !fits_on_device)
+    {
+      /* the rules for tile dimensions are much more tricky but this is a good guess estimating the
+         penalty of tiles depending on overlap.
+      */
+      const float cl_px  = dt_opencl_get_device_available(pipe->devid) / (float)(sizeof(float) * MAX(in_bpp, bpp) * tiling.factor_cl);
+      const float cl_tilesize = fmaxf(1.0f, sqrtf(cl_px) - tiling.overlap);
+      if(cl_tilesize < 3 * tiling.overlap)
+      {
+        dt_print(DT_DEBUG_OPENCL, "[dt_dev_pixelpipe_process_rec] module `%s' uses cpu because of extremely small tiles %i, overlap %i\n",
+            module->op, (int)cl_tilesize, (int)tiling.overlap);
+        possible_cl = FALSE;        
+
+        const float cpu_px = dt_get_available_mem() / (float)(sizeof(float) * MAX(in_bpp, bpp) * tiling.factor);
+        const float cpu_tilesize = fmaxf(1.0f, sqrtf(cpu_px) - tiling.overlap);
+        // At least push a warning here while trusting the cpu code to handle this gracefully
+        if(cpu_tilesize < 2 * tiling.overlap)
+          dt_control_log(_("Problems likely ahead because of heavy cpu tiling"));
+      } 
+      /* we might want some more checks here */
+    }
+
+    if(possible_cl)
     {
 
       // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, width %d, height %d, bpp %d\n",
