@@ -148,7 +148,6 @@
 @define-color timeline_fg_color @text_color;
 @define-color timeline_text_bg_color alpha(black, .8);
 @define-color timeline_text_fg_color alpha(white, .9);
-@define-color thumbnail_localcopy_color @grey_75;
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
@@ -346,9 +345,7 @@ checkbutton check:checked
 
 /* Button to open/close the dropdown section, especially header ones */
 #control-button,
-#control-button:checked,
-#filter-button,
-#filter-button:checked
+#control-button:checked
 {
   background-color: transparent;
   margin-left: 0.14em;
@@ -396,6 +393,28 @@ spinbutton>button
   margin: 0.14em 0.07em;
 }
 
+.quick_filter_box
+{
+  background-color: @border_color;
+  padding: 0.01em;
+}
+
+.dt_dimmed
+{
+  opacity: 0.5;
+}
+
+.dt_font_resize_07
+{
+  font-size: 0.7em;
+}
+
+.dt_transparent_background,
+.dt_transparent_background:checked
+{
+  background-color: transparent;
+}
+
 /*------------------------
   - Main header settings -
   ------------------------*/
@@ -432,9 +451,7 @@ spinbutton>button
 #header-toolbar #dt-toggle-button,
 #header-toolbar #dt-button,
 #footer-toolbar #dt-toggle-button,
-#footer-toolbar #dt-button,
-#filter-button,
-#filter-button:checked
+#footer-toolbar #dt-button
 {
   padding: 0.07em;
   min-height: 2.4em; /* align toolbox button height on comboboxe's one */
@@ -714,11 +731,6 @@ l
 .search image.left
 {
   padding: 0 0.35em 0 0.21em;
-}
-
-#filter-box
-{
-  padding-top: 0.28em;
 }
 
 /*-------------------
@@ -1869,7 +1881,6 @@ menuitem:hover > *:not(check),
 combobox window *:hover,
 radiobutton:hover label,
 #control-button:hover,
-#filter-button:hover,
 #history-button:hover,
 #history-button-enabled:hover,
 #history-button-always-enabled:hover,
@@ -1901,7 +1912,6 @@ menuitem:hover cellview,
 menuitem:hover > *,
 notebook tab:hover label,
 #control-button:hover,
-#filter-button:hover,
 #history-button:hover *,
 #history-button-enabled:hover *,
 #history-button-always-enabled:hover *,
@@ -2471,6 +2481,7 @@ Details :
 .dt_overlays_hover_block #thumb_image:hover .dt_thumb_btn:active,
 .dt_overlays_hover_block #thumb_image:hover #thumb_audio,
 .dt_overlays_hover_block #thumb_image:hover #thumb_altered,
+.dt_overlays_hover_block #thumb_image:hover #thumb_localcopy,
 .dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label
 {
   color: @thumbnail_font_color;
@@ -2578,6 +2589,10 @@ Details :
   border-top : 0.07em solid @lighttable_bg_color;
   border-right : 0.07em solid @lighttable_bg_color;
 }
+#thumb_localcopy:active
+{
+  border: none;
+}
 
 .dt_group_right #thumb_localcopy
 {
@@ -2586,16 +2601,6 @@ Details :
 .dt_group_top #thumb_localcopy
 {
   border-top: 0.14em solid rgb(255, 187, 0); /* to not overlay thumb borders */
-}
-
-#thumb_image:hover #thumb_localcopy,
-.dt_overlays_hover_block #thumb_image:hover #thumb_localcopy,
-.dt_overlays_always #thumb_localcopy,
-.dt_overlays_always_extended #thumb_localcopy,
-.dt_overlays_mixed #thumb_localcopy
-{
-  color: @thumbnail_localcopy_color;
-  background-color: @thumbnail_localcopy_color;
 }
 
 /*---------------------------------------------------------
@@ -2749,7 +2754,7 @@ Details :
 }
 
 #collapsible,
-#collapse-block #section_label
+#collapsible-label
 {
   padding: 0 0.14em 0.14em 0.7em;
   margin: 0;
@@ -2770,7 +2775,7 @@ Details :
   margin: 0.42em 0.07em;
 }
 
-#collapse-block #section_label,
+#collapsible-label,
 #collapse-block .section-expander
 {
   margin: 0.1em;

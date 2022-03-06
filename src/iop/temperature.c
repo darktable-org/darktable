@@ -1140,7 +1140,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   const gboolean is_raw = dt_image_is_matrix_correction_supported(&self->dev->image_storage);
-  self->hide_enable_button = monochrome;  
+  self->hide_enable_button = monochrome;
   self->default_enabled = is_raw;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "disabled" : "enabled");
 
@@ -1322,7 +1322,9 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
   }
 
   double mul[4];
-  if(dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, module->dev->image_storage.d65_color_matrix, mul))
+  if(dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.adobe_XYZ_to_CAM,
+                                            NULL, NULL,
+                                            module->dev->image_storage.d65_color_matrix, mul))
   {
     // normalize green:
     bwb[0] = mul[0] / mul[1];
@@ -1359,10 +1361,11 @@ static void prepare_matrices(dt_iop_module_t *module)
     return;
   }
 
-  char *camera = module->dev->image_storage.camera_makermodel;
-  if (!dt_colorspaces_conversion_matrices_xyz(camera, module->dev->image_storage.d65_color_matrix,
-                                                      g->XYZ_to_CAM, g->CAM_to_XYZ))
+  if (!dt_colorspaces_conversion_matrices_xyz(module->dev->image_storage.adobe_XYZ_to_CAM,
+                                              module->dev->image_storage.d65_color_matrix,
+                                              g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
+    char *camera = module->dev->image_storage.camera_makermodel;
     fprintf(stderr, "[temperature] `%s' color matrix not found for image\n", camera);
     dt_control_log(_("`%s' color matrix not found for image"), camera);
   }

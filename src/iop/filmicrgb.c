@@ -54,8 +54,6 @@
 #include <string.h>
 #include <time.h>
 
-
-#define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
 #define INVERSE_SQRT_3 0.5773502691896258f
 #define SAFETY_MARGIN 0.01f
 

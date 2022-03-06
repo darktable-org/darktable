@@ -19,7 +19,7 @@
 #pragma once
 
 /** solve the mathematical expression in formula, the only allowed variable is 'x' */
-float dt_calculator_solve(float x, const char *formula);
+float dt_calculator_solve(const float x, const char *formula);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

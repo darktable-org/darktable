@@ -131,7 +131,6 @@ typedef enum dt_colorlabels_actions_t
 } dt_colorlabels_actions_t;
 
 
-
 static void _colorlabels_execute(const GList *imgs, const int labels, GList **undo, const gboolean undo_on, int action)
 {
   if(action == DT_CA_TOGGLE)
@@ -151,9 +150,6 @@ static void _colorlabels_execute(const GList *imgs, const int labels, GList **un
       }
     }
   }
-
-
-
 
   for(const GList *image = imgs; image; image = g_list_next((GList *)image))
   {

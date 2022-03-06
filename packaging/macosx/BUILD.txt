@@ -11,7 +11,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, perl, pugixml, gmic, gtk-osx-application, exiv2 and downgrade lensfun
     (all fixes except for exiv2, gmic, gtk-osx-application and lensfun are required due to set deployment target, gmic patch removes extra dependencies,
     gtk-osx-application patch fixes a crash, lensfun downgrade fixes backwards compatibility, exiv2 enables CR3 support):
-     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/devel/gtk-osx-application/files ~/ports/lang/libomp/files ~/ports/lang/python3{8,9,10}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/devel/gtk-osx-application/files ~/ports/lang/python3{8,9,10}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/devel/libusb/files ~/ports/textproc ~/ports/science
      $ cp -R "$(port dir gnutls)" ~/ports/devel
      $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-fixes.diff
      $ cp -R "$(port dir python38)" ~/ports/lang
@@ -44,7 +44,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
-     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic libheif portmidi libsdl2
+     $ sudo port install git exiv2 libgphoto2 gtk-osx-application-gtk3 lensfun librsvg libsoup openexr json-glib GraphicsMagick openjpeg webp libsecret pugixml osm-gps-map adwaita-icon-theme tango-icon-theme intltool iso-codes libomp gmic libheif portmidi libsdl2 perl5
      $ sudo port select --set python2 python27
     Clone darktable git repository (in this example into ~/src):
      $ mkdir ~/src
