@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-05 09:49+0100\n"
-"PO-Revision-Date: 2022-03-06 00:37+0900\n"
+"POT-Creation-Date: 2022-03-05 21:49+0100\n"
+"PO-Revision-Date: 2022-03-06 13:35+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1095,8 +1095,8 @@ msgstr ""
 "スのほとんどをdarktableに使用させたい場合に最善の選択肢です\n"
 " - 無制限：極端に大きな画像を現像する場合にのみ選択してください。darktableが"
 "システムリソースの全てを使用するため、スワップや予期しないパフォーマンスの低"
-"下が起きる可能性があります。注意して使用してください。また、一般用途に用いる"
-"ことはおすすめしません！"
+"下が起きる可能性があります。注意して使用してください。一般用途にはおすすめし"
+"ません！"
 
 #: ../build/bin/preferences_gen.h:6179
 msgid "prefer performance over quality"
@@ -1218,8 +1218,8 @@ msgid ""
 "if switched on, darktable tunes OpenCL for best performance, overrides "
 "static settings"
 msgstr ""
-"オンにすると、darktableが最高のパフォーマンスを発揮するようOpenCLを調整し、静"
-"的設定を上書きします"
+"オンにすると、darktableが最高のパフォーマンスを発揮するようにOpenCLを調整し、"
+"静的設定を上書きします"
 
 #: ../build/bin/preferences_gen.h:6448
 msgid "security"
@@ -2264,7 +2264,7 @@ msgstr "せん断"
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:779 ../src/gui/preferences.c:818
+#: ../src/common/collection.c:778 ../src/gui/preferences.c:818
 #: ../src/gui/presets.c:590 ../src/libs/camera.c:569
 #: ../src/libs/metadata_view.c:143
 msgid "focal length"
@@ -2511,7 +2511,7 @@ msgid "offset"
 msgstr "オフセット"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:778 ../src/gui/preferences.c:802
+#: ../src/common/collection.c:777 ../src/gui/preferences.c:802
 #: ../src/gui/presets.c:541 ../src/libs/metadata_view.c:139
 msgid "lens"
 msgstr "レンズ"
@@ -2530,7 +2530,7 @@ msgstr "ガウシアンぼかし"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:110
 #: ../build/lib/darktable/plugins/introspection_borders.c:251
-#: ../src/common/collection.c:783 ../src/libs/tools/filter.c:113
+#: ../src/common/collection.c:782 ../src/libs/tools/filter.c:113
 msgid "aspect ratio"
 msgstr "アスペクト比"
 
@@ -2634,7 +2634,7 @@ msgid "very large chromatic aberration"
 msgstr "非常に大きな色収差"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1531 ../src/develop/blend_gui.c:2006
+#: ../src/common/collection.c:1530 ../src/develop/blend_gui.c:2006
 #: ../src/develop/blend_gui.c:2033 ../src/develop/lightroom.c:830
 #: ../src/gui/gtk.c:3020 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:317
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
@@ -2645,7 +2645,7 @@ msgid "red"
 msgstr "赤"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1535 ../src/develop/blend_gui.c:2009
+#: ../src/common/collection.c:1534 ../src/develop/blend_gui.c:2009
 #: ../src/develop/blend_gui.c:2036 ../src/develop/lightroom.c:834
 #: ../src/gui/gtk.c:3021 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:322
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
@@ -2656,7 +2656,7 @@ msgid "green"
 msgstr "緑"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1537 ../src/develop/blend_gui.c:2012
+#: ../src/common/collection.c:1536 ../src/develop/blend_gui.c:2012
 #: ../src/develop/blend_gui.c:2039 ../src/develop/lightroom.c:836
 #: ../src/gui/gtk.c:3022 ../src/iop/bilateral.cc:327
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
@@ -3413,7 +3413,7 @@ msgid "Markesteijn 3-pass + VNG"
 msgstr "Markesteijn 3-pass + VNG"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1553 ../src/common/collection.c:1561
+#: ../src/common/collection.c:1552 ../src/common/collection.c:1560
 #: ../src/libs/collect.c:1724
 msgid "basic"
 msgstr "ベーシック"
@@ -4145,7 +4145,7 @@ msgstr "ホワイトポイント"
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:782 ../src/gui/preferences.c:810
+#: ../src/common/collection.c:781 ../src/gui/preferences.c:810
 #: ../src/gui/presets.c:560 ../src/iop/basicadj.c:597 ../src/iop/exposure.c:123
 #: ../src/iop/exposure.c:1047 ../src/libs/metadata_view.c:141
 msgid "exposure"
@@ -4792,161 +4792,161 @@ msgstr ""
 "アクセスが許可されていること、非許可設定でマウントされていないことを確認して"
 "ください"
 
-#: ../src/common/collection.c:727
+#: ../src/common/collection.c:726
 msgid "too much time to update aspect ratio for the collection"
 msgstr "コレクションのアスペクト比を更新するのに時間がかかりすぎます"
 
-#: ../src/common/collection.c:766
+#: ../src/common/collection.c:765
 msgid "film roll"
 msgstr "フィルムロール"
 
-#: ../src/common/collection.c:767
+#: ../src/common/collection.c:766
 msgid "folder"
 msgstr "フォルダ"
 
-#: ../src/common/collection.c:768
+#: ../src/common/collection.c:767
 msgid "camera"
 msgstr "カメラ"
 
-#: ../src/common/collection.c:769 ../src/libs/export_metadata.c:189
+#: ../src/common/collection.c:768 ../src/libs/export_metadata.c:189
 msgid "tag"
 msgstr "タグ"
 
-#: ../src/common/collection.c:770
+#: ../src/common/collection.c:769
 msgid "date taken"
 msgstr "撮影日"
 
-#: ../src/common/collection.c:771
+#: ../src/common/collection.c:770
 msgid "date-time taken"
 msgstr "撮影日時"
 
-#: ../src/common/collection.c:772 ../src/libs/metadata_view.c:130
+#: ../src/common/collection.c:771 ../src/libs/metadata_view.c:130
 msgid "import timestamp"
 msgstr "インポート日時"
 
-#: ../src/common/collection.c:773 ../src/libs/metadata_view.c:131
+#: ../src/common/collection.c:772 ../src/libs/metadata_view.c:131
 msgid "change timestamp"
 msgstr "変更日時"
 
-#: ../src/common/collection.c:774 ../src/libs/metadata_view.c:132
+#: ../src/common/collection.c:773 ../src/libs/metadata_view.c:132
 msgid "export timestamp"
 msgstr "エクスポート日時"
 
-#: ../src/common/collection.c:775 ../src/libs/metadata_view.c:133
+#: ../src/common/collection.c:774 ../src/libs/metadata_view.c:133
 msgid "print timestamp"
 msgstr "印刷日時"
 
-#: ../src/common/collection.c:776 ../src/libs/history.c:85
+#: ../src/common/collection.c:775 ../src/libs/history.c:85
 msgid "history"
 msgstr "履歴"
 
-#: ../src/common/collection.c:777 ../src/develop/lightroom.c:1546
+#: ../src/common/collection.c:776 ../src/develop/lightroom.c:1546
 #: ../src/libs/tools/filter.c:107
 msgid "color label"
 msgstr "カラーラベル"
 
 #. iso
-#: ../src/common/collection.c:780 ../src/gui/preferences.c:806
+#: ../src/common/collection.c:779 ../src/gui/preferences.c:806
 #: ../src/gui/presets.c:547 ../src/libs/camera.c:577
 #: ../src/libs/metadata_view.c:145
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:781 ../src/gui/preferences.c:814
+#: ../src/common/collection.c:780 ../src/gui/preferences.c:814
 #: ../src/gui/presets.c:575 ../src/libs/camera.c:564 ../src/libs/camera.c:566
 #: ../src/libs/metadata_view.c:140
 msgid "aperture"
 msgstr "絞り"
 
-#: ../src/common/collection.c:784 ../src/libs/metadata_view.c:126
+#: ../src/common/collection.c:783 ../src/libs/metadata_view.c:126
 #: ../src/libs/tools/filter.c:99
 msgid "filename"
 msgstr "ファイル名"
 
-#: ../src/common/collection.c:785 ../src/develop/lightroom.c:1537
+#: ../src/common/collection.c:784 ../src/develop/lightroom.c:1537
 #: ../src/libs/geotagging.c:140
 msgid "geotagging"
 msgstr "ジオタグ"
 
-#: ../src/common/collection.c:786
+#: ../src/common/collection.c:785
 msgid "grouping"
 msgstr "グループ分け"
 
-#: ../src/common/collection.c:787 ../src/dtgtk/thumbnail.c:1398
+#: ../src/common/collection.c:786 ../src/dtgtk/thumbnail.c:1398
 #: ../src/libs/metadata_view.c:129 ../src/libs/metadata_view.c:338
 msgid "local copy"
 msgstr "ローカルコピー"
 
-#: ../src/common/collection.c:788 ../src/gui/preferences.c:782
+#: ../src/common/collection.c:787 ../src/gui/preferences.c:782
 msgid "module"
 msgstr "モジュール"
 
-#: ../src/common/collection.c:789 ../src/gui/hist_dialog.c:280
+#: ../src/common/collection.c:788 ../src/gui/hist_dialog.c:280
 #: ../src/gui/styles_dialog.c:566 ../src/gui/styles_dialog.c:610
 #: ../src/libs/ioporder.c:40
 msgid "module order"
 msgstr "モジュールの順序"
 
-#: ../src/common/collection.c:790 ../src/common/ratings.c:300
+#: ../src/common/collection.c:789 ../src/common/ratings.c:300
 #: ../src/develop/lightroom.c:1521 ../src/libs/tools/filter.c:105
 msgid "rating"
 msgstr "評価"
 
-#: ../src/common/collection.c:1533 ../src/develop/lightroom.c:832
+#: ../src/common/collection.c:1532 ../src/develop/lightroom.c:832
 #: ../src/gui/guides.c:732 ../src/iop/colorzones.c:2318
 #: ../src/iop/temperature.c:1809 ../src/libs/collect.c:1764
 msgid "yellow"
 msgstr "黄色"
 
-#: ../src/common/collection.c:1539 ../src/iop/colorzones.c:2322
+#: ../src/common/collection.c:1538 ../src/iop/colorzones.c:2322
 #: ../src/libs/collect.c:1764
 msgid "purple"
 msgstr "紫"
 
-#: ../src/common/collection.c:1555 ../src/libs/collect.c:1724
+#: ../src/common/collection.c:1554 ../src/libs/collect.c:1724
 msgid "auto applied"
 msgstr "自動適用"
 
-#: ../src/common/collection.c:1557 ../src/libs/collect.c:1724
+#: ../src/common/collection.c:1556 ../src/libs/collect.c:1724
 msgid "altered"
 msgstr "変更済み"
 
-#: ../src/common/collection.c:1569 ../src/common/collection.c:1652
+#: ../src/common/collection.c:1568 ../src/common/collection.c:1651
 #: ../src/libs/collect.c:1211 ../src/libs/collect.c:1343
 #: ../src/libs/collect.c:1365 ../src/libs/collect.c:1470
 #: ../src/libs/collect.c:2398
 msgid "not tagged"
 msgstr "タグなし"
 
-#: ../src/common/collection.c:1570 ../src/libs/collect.c:1365
+#: ../src/common/collection.c:1569 ../src/libs/collect.c:1365
 #: ../src/libs/map_locations.c:768
 msgid "tagged"
 msgstr "タグ付き"
 
-#: ../src/common/collection.c:1571
+#: ../src/common/collection.c:1570
 msgid "tagged*"
 msgstr "タグ付き*"
 
-#: ../src/common/collection.c:1601 ../src/libs/collect.c:1736
+#: ../src/common/collection.c:1600 ../src/libs/collect.c:1736
 msgid "not copied locally"
 msgstr "ローカルにコピーされていません"
 
 #. grouping
-#: ../src/common/collection.c:1899 ../src/libs/collect.c:1838
+#: ../src/common/collection.c:1898 ../src/libs/collect.c:1838
 msgid "group leaders"
 msgstr "グループリーダー"
 
-#: ../src/common/collection.c:1993 ../src/libs/collect.c:1911
+#: ../src/common/collection.c:1992 ../src/libs/collect.c:1911
 msgid "not defined"
 msgstr "未定義"
 
-#: ../src/common/collection.c:2275
+#: ../src/common/collection.c:2274
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "%d枚の画像が現在のコレクション内の%d枚の画像から選択されています (#%d)"
 
-#: ../src/common/collection.c:2281
+#: ../src/common/collection.c:2280
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -12498,9 +12498,9 @@ msgid ""
 "and can be used to sample a target."
 msgstr ""
 "補正：入力の色がターゲットへとマッピングされるように、\n"
-"自動的にイルミナントを調整します\n"
+"　　　自動的にイルミナントを調整します\n"
 "計測：入力の色がCATによってどのようにマッピングされるかを表示します\n"
-"ターゲットをサンプルを抽出するために使用することが出来ます"
+"　　　ターゲットをサンプルを抽出するために使用することが出来ます"
 
 #: ../src/iop/channelmixerrgb.c:4325 ../src/iop/exposure.c:1109
 msgid "correction"
@@ -12519,8 +12519,8 @@ msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
 msgstr ""
-"チャンネルミックスの効果を含めてターゲットを算出します\n"
-"無効にすると、CATの効果のみを含めて計算します"
+"チャンネルミックスの効果を考慮してターゲットを算出します\n"
+"無効にすると、CATの効果のみを考慮して算出します"
 
 #: ../src/iop/channelmixerrgb.c:4346 ../src/iop/exposure.c:1123
 msgid "the input color that should be mapped to the target"
@@ -12544,7 +12544,7 @@ msgstr "このLCh座標はCIE Lab 1976座標をもとに算出されたもので
 
 #: ../src/iop/channelmixerrgb.c:4366
 msgid "the desired target color after mapping"
-msgstr "マッピング後のターゲットにする色"
+msgstr "マッピング後のターゲットの色"
 
 #: ../src/iop/channelmixerrgb.c:4404
 msgid "input R"
@@ -12682,7 +12682,7 @@ msgstr ""
 "パッチの枠の影がパッチの縁にあります"
 
 #: ../src/iop/channelmixerrgb.c:4494
-msgid "the delta E is using the CIE 2000 formula."
+msgid "the delta E is using the CIE 2000 formula"
 msgstr "デルタEはCIE2000の方式を用いています"
 
 #: ../src/iop/channelmixerrgb.c:4500
@@ -14881,9 +14881,9 @@ msgid ""
 "and can be used to define a target."
 msgstr ""
 "補正：入力の明るさがターゲットへとマッピングされるように、\n"
-"自動的に露出を調整します\n"
+"　　　自動的に露出を調整します\n"
 "計測：入力の色が露出補正によってどのようにマッピングされるかを表示します\n"
-"ターゲットを定義するために使用することが出来ます"
+"　　　ターゲットを定義するために使用することが出来ます"
 
 #: ../src/iop/exposure.c:1128
 msgid "L : \tN/A"
@@ -14891,7 +14891,7 @@ msgstr "L : \tN/A"
 
 #: ../src/iop/exposure.c:1143
 msgid "the desired target exposure after mapping"
-msgstr "マッピング後のターゲットにする露出"
+msgstr "マッピング後のターゲットの露出"
 
 #: ../src/iop/filmic.c:179
 msgid "this module is deprecated. better use filmic rgb module instead."
