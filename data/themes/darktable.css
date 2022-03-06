@@ -971,7 +971,17 @@ dialog combobox window,
   border: 0.07em solid @button_border;
   min-height: 0.4em;
   min-width: 0.4em;
-  padding: 0.2em 0;
+  padding: 0.5em 0;
+}
+
+menuitem
+{
+  margin-left: -0.5em;
+}
+
+menuitem label
+{
+  margin-right: 0.5em;
 }
 
 menuitem > arrow
@@ -983,11 +993,6 @@ menuitem > arrow
 popover
 {
   padding: 0.4em;
-}
-
-menu menuitem
-{
-  padding: 0 0.2em;
 }
 
 tooltip
@@ -2507,8 +2512,8 @@ Details :
 .dt_overlays_mixed #thumb_main:selected #thumb_reject:active,
 .dt_overlays_mixed #thumb_reject:hover,
 .dt_overlays_mixed #thumb_main:hover #thumb_reject:hover,
-.dt_overlays_hover_block #thumb_main:hover #thumb_reject:active,
-.dt_overlays_hover_block #thumb_main:hover #thumb_reject:hover
+.dt_overlays_hover_block #thumb_image:hover #thumb_reject:active,  /* for overlay hover block, set it on #thumb_image and not #thumb_main here to avoid some glitches when block disappear */
+.dt_overlays_hover_block #thumb_image:hover #thumb_reject:hover
 {
   color: red;
 }
