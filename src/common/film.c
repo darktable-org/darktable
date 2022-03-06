@@ -90,7 +90,11 @@ int32_t dt_film_get_id(const char *folder)
   int32_t filmroll_id = -1;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+#ifdef WIN32
+                              "SELECT id FROM main.film_rolls WHERE folder LIKE ?1",
+#else
                               "SELECT id FROM main.film_rolls WHERE folder = ?1",
+#endif
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, folder, -1, SQLITE_STATIC);
   if(sqlite3_step(stmt) == SQLITE_ROW) filmroll_id = sqlite3_column_int(stmt, 0);

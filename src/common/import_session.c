@@ -311,7 +311,7 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
     self->current_path = NULL;
     return NULL;
   }
-  /* check if expanded path differs from current */
+
   gchar *pattern = _import_session_path_pattern();
   if(pattern == NULL)
   {
