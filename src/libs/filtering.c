@@ -74,13 +74,6 @@ typedef struct _widgets_filename_t
   int internal_change;
 } _widgets_filename_t;
 
-typedef struct _widgets_folders_t
-{
-  GtkWidget *folder;
-  GtkWidget *subfolders;
-  GtkWidget *explore;
-} _widgets_folders_t;
-
 typedef struct _widgets_fallback_t
 {
   GtkWidget *entry;
@@ -147,11 +140,9 @@ typedef enum _tree_cols_t
 } _tree_cols_t;
 
 static void _filters_gui_update(dt_lib_module_t *self);
-static void collection_updated(gpointer instance, dt_collection_change_t query_change,
-                               dt_collection_properties_t changed_property, gpointer imgs, int next,
-                               gpointer self);
-
-int last_state = 0;
+static void _dt_collection_updated(gpointer instance, dt_collection_change_t query_change,
+                                   dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                   gpointer self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -382,10 +373,10 @@ static void _event_rule_changed(GtkWidget *entry, dt_lib_filtering_rule_t *rule)
   _conf_update_rule(rule);
 
   // update the query without throwing signal everywhere
-  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
 }
 
@@ -1153,95 +1144,6 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
   rule->w_specific = special;
 }
 
-static void _folders_decode(const gchar *txt, gchar *path, gchar *dir, gboolean *sub)
-{
-  if(!txt || strlen(txt) == 0) return;
-
-  // do we include subfolders
-  *sub = g_str_has_suffix(txt, "*");
-
-  // set the path
-  path = g_strdup(txt);
-  if(*sub) path[strlen(path) - 1] = '\0';
-
-  // split the path to find dir name
-  gchar **elems = g_strsplit(path, G_DIR_SEPARATOR_S, -1);
-  const unsigned int size = g_strv_length(elems);
-  if(size > 0) dir = g_strdup(elems[size - 1]);
-  g_strfreev(elems);
-}
-
-static void _folders_changed(GtkWidget *widget, gpointer user_data)
-{
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
-  if(rule->manual_widget_set) return;
-  if(!rule->w_specific) return;
-  _widgets_folders_t *folders = (_widgets_folders_t *)rule->w_specific;
-
-  // we recreate the right raw text and put it in the raw entry
-  gchar *value = g_strdup(gtk_widget_get_tooltip_text(folders->folder));
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(folders->subfolders))) value = dt_util_dstrcat(value, "*");
-
-  _rule_set_raw_text(rule, value, TRUE);
-  g_free(value);
-}
-
-static gboolean _folders_update(dt_lib_filtering_rule_t *rule)
-{
-  if(!rule->w_specific) return FALSE;
-  gchar *path = NULL;
-  gchar *dir = NULL;
-  gboolean sub = TRUE;
-  _folders_decode(rule->raw_text, path, dir, &sub);
-
-  // if we don't manage to decode, we don't refresh and return false
-  if(!path || !dir)
-  {
-    if(path) g_free(path);
-    if(dir) g_free(dir);
-    return FALSE;
-  }
-
-  rule->manual_widget_set++;
-  _widgets_folders_t *folders = (_widgets_folders_t *)rule->w_specific;
-  gtk_entry_set_text(GTK_ENTRY(folders->folder), dir);
-  gtk_widget_set_tooltip_text(folders->folder, path);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(folders->subfolders), sub);
-  rule->manual_widget_set--;
-
-  g_free(path);
-  g_free(dir);
-  return TRUE;
-}
-
-static void _folders_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                 const gchar *text, dt_lib_module_t *self)
-{
-  _widgets_folders_t *folders = (_widgets_folders_t *)g_malloc0(sizeof(_widgets_folders_t));
-
-  gchar *path = NULL;
-  gchar *dir = NULL;
-  gboolean sub = TRUE;
-  _folders_decode(text, path, dir, &sub);
-
-  folders->folder = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(folders->folder), dir);
-  gtk_widget_set_tooltip_text(folders->folder, path);
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), folders->folder, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(folders->folder), "activate", G_CALLBACK(_folders_changed), rule);
-
-  folders->subfolders = dtgtk_togglebutton_new(dtgtk_cairo_paint_treelist, CPF_STYLE_FLAT, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(folders->subfolders), sub);
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), folders->subfolders, FALSE, TRUE, 0);
-
-  folders->explore = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_STYLE_FLAT, NULL);
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), folders->explore, FALSE, TRUE, 0);
-
-  if(path) g_free(path);
-  if(dir) g_free(dir);
-  rule->w_specific = folders;
-}
-
 static void _filename_decode(const gchar *txt, gchar **name, gchar **ext)
 {
   if(!txt || strlen(txt) == 0) return;
@@ -1710,8 +1612,6 @@ static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
       return _date_update(rule);
     case DT_COLLECTION_PROP_FILENAME:
       return _filename_update(rule);
-    case DT_COLLECTION_PROP_FOLDERS:
-      return _folders_update(rule);
     default:
       return _fallback_update(rule);
   }
@@ -1760,9 +1660,6 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
       break;
     case DT_COLLECTION_PROP_FILENAME:
       _filename_widget_init(rule, rule->prop, text, self);
-      break;
-    case DT_COLLECTION_PROP_FOLDERS:
-      _folders_widget_init(rule, rule->prop, text, self);
       break;
     default:
       _fallback_widget_init(rule, rule->prop, text, self);
@@ -1841,10 +1738,10 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
   }
 
   // update the query without throwing signal everywhere
-  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
 }
 
@@ -1882,65 +1779,6 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
   }
 }
 
-static void _preset_load(GtkWidget *widget, dt_lib_module_t *self)
-{
-  // add new rule
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-  const gboolean append = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_data"));
-  char confname[200] = { 0 };
-
-  GtkWidget *child = gtk_bin_get_child(GTK_BIN(widget));
-  const gchar *presetname = gtk_label_get_label(GTK_LABEL(child));
-  sqlite3_stmt *stmt;
-  gchar *query = g_strdup_printf("SELECT op_params"
-                                 " FROM data.presets"
-                                 " WHERE operation=?1 AND op_version=?2 AND name=?3");
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, presetname, -1, SQLITE_TRANSIENT);
-  g_free(query);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    void *op_params = (void *)sqlite3_column_blob(stmt, 0);
-    if(append)
-    {
-      // we append the presets rules to the existing ones
-      dt_lib_filtering_params_t *p = (dt_lib_filtering_params_t *)op_params;
-      if(d->nb_rules + p->rules > MAX_RULES)
-      {
-        dt_control_log("You can't have more than %d rules", MAX_RULES);
-        sqlite3_finalize(stmt);
-        return;
-      }
-      for(uint32_t i = 0; i < p->rules; i++)
-      {
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", d->nb_rules);
-        dt_conf_set_int(confname, p->rule[i].item);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", d->nb_rules);
-        dt_conf_set_int(confname, p->rule[i].mode);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", d->nb_rules);
-        dt_conf_set_int(confname, p->rule[i].off);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", d->nb_rules);
-        dt_conf_set_string(confname, p->rule[i].string);
-        d->nb_rules++;
-      }
-      dt_conf_set_int("plugins/lighttable/filtering/num_rules", d->nb_rules);
-
-      _filters_gui_update(self);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
-                                 NULL);
-    }
-    else
-    {
-      // we replace the existing rules by the preset
-      set_params(self, op_params, sqlite3_column_bytes(stmt, 0));
-    }
-  }
-  sqlite3_finalize(stmt);
-}
-
 static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, const gboolean title,
                             GCallback callback, gpointer data, dt_lib_module_t *self)
 {
@@ -1960,63 +1798,6 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
     g_signal_connect(G_OBJECT(smt), "activate", callback, self);
   }
   gtk_menu_shell_append(pop, smt);
-}
-
-static gboolean _preset_show_popup(GtkWidget *widget, gboolean append, dt_lib_module_t *self)
-{
-  // we show a popup with all the possible rules
-  GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
-  gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
-
-  if(append)
-    _popup_add_item(pop, _("append preset"), 0, TRUE, NULL, NULL, self);
-  else
-    _popup_add_item(pop, _("load preset"), 0, TRUE, NULL, NULL, self);
-
-  const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
-  const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
-
-  sqlite3_stmt *stmt;
-  // order like the pref value
-  gchar *query = g_strdup_printf("SELECT name, writeprotect, description"
-                                 " FROM data.presets"
-                                 " WHERE operation=?1 AND op_version=?2"
-                                 " ORDER BY writeprotect %s, LOWER(name), rowid",
-                                 default_first ? "DESC" : "ASC");
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
-  g_free(query);
-
-  // collect all presets for op from db
-  int last_wp = -1;
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    // default vs built-in stuff
-    const gboolean writeprotect = sqlite3_column_int(stmt, 1);
-    if(hide_default && writeprotect)
-    {
-      // skip default module if set to hide them.
-      continue;
-    }
-    if(last_wp == -1)
-    {
-      last_wp = writeprotect;
-    }
-    else if(last_wp != writeprotect)
-    {
-      last_wp = writeprotect;
-      _popup_add_item(pop, " ", 0, TRUE, NULL, NULL, self);
-    }
-
-    const char *name = (char *)sqlite3_column_text(stmt, 0);
-    _popup_add_item(pop, name, -1, FALSE, G_CALLBACK(_preset_load), GINT_TO_POINTER(append), self);
-  }
-  sqlite3_finalize(stmt);
-
-  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
-  return TRUE;
 }
 
 static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rule, dt_lib_module_t *self)
@@ -2100,18 +1881,6 @@ static gboolean _event_rule_change_popup(GtkWidget *widget, GdkEventButton *even
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   _rule_show_popup(rule->w_prop, rule, self);
-  return TRUE;
-}
-
-static gboolean _event_preset_append(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
-{
-  _preset_show_popup(widget, TRUE, self);
-  return TRUE;
-}
-
-static gboolean _event_preset_load(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
-{
-  _preset_show_popup(widget, FALSE, self);
   return TRUE;
 }
 
@@ -2276,8 +2045,9 @@ int position()
   return 380;
 }
 
-static void collection_updated(gpointer instance, dt_collection_change_t query_change,
-                               dt_collection_properties_t changed_property, gpointer imgs, int next, gpointer self)
+static void _dt_collection_updated(gpointer instance, dt_collection_change_t query_change,
+                                   dt_collection_properties_t changed_property, gpointer imgs, int next,
+                                   gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)dm->data;
@@ -2292,132 +2062,6 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
       _widget_update(&d->rule[i]);
     }
   }
-}
-
-
-static void filmrolls_updated(gpointer instance, gpointer self)
-{
-  // TODO: We should update the count of images here
-  _filters_gui_update(self);
-}
-
-static void filmrolls_imported(gpointer instance, int film_id, gpointer self)
-{
-  _filters_gui_update(self);
-}
-
-static void preferences_changed(gpointer instance, gpointer self)
-{
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
-}
-
-static void filmrolls_removed(gpointer instance, gpointer self)
-{
-  /*dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)dm->data;
-
-  // update tree
-  if (d->view_rule != DT_COLLECTION_PROP_FOLDERS)
-  {
-    d->view_rule = -1;
-  }
-  d->rule[d->active_rule].typing = FALSE;*/
-  _filters_gui_update(self);
-}
-
-static void tag_changed(gpointer instance, gpointer self)
-{
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)dm->data;
-  // we check if one of the rules is TAG
-  gboolean needs_update = FALSE;
-  for(int i = 0; i < d->nb_rules && !needs_update; i++)
-  {
-    needs_update = needs_update || d->rule[i].prop == DT_COLLECTION_PROP_TAG;
-  }
-  if(needs_update)
-  {
-    // we have tags as one of rules, needs reload.
-    dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
-                                    darktable.view_manager->proxy.module_collect.module);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_TAG, NULL);
-    dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
-                                      darktable.view_manager->proxy.module_collect.module);
-  }
-}
-
-static void _geotag_changed(gpointer instance, GList *imgs, const int locid, gpointer self)
-{
-  // if locid <> NULL this event doesn't concern collect module
-  if(!locid)
-  {
-    dt_lib_module_t *dm = (dt_lib_module_t *)self;
-    dt_lib_filtering_t *d = (dt_lib_filtering_t *)dm->data;
-    // update tree
-    gboolean needs_update = FALSE;
-    for(int i = 0; i < d->nb_rules && !needs_update; i++)
-    {
-      needs_update = needs_update || d->rule[i].prop == DT_COLLECTION_PROP_GEOTAGGING;
-    }
-    if(needs_update)
-    {
-      _filters_gui_update(self);
-
-      // need to reload collection since we have geotags as active collection filter
-      dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
-                                      darktable.view_manager->proxy.module_collect.module);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GEOTAGGING,
-                                 NULL);
-      dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
-                                        darktable.view_manager->proxy.module_collect.module);
-    }
-  }
-}
-
-static void metadata_changed(gpointer instance, int type, gpointer self)
-{
-  /* TODO
-  dt_lib_module_t *dm = (dt_lib_module_t *)self;
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)dm->data;
-  if(type == DT_METADATA_SIGNAL_HIDDEN
-     || type == DT_METADATA_SIGNAL_SHOWN)
-  {
-    // hidden/shown metadata have changed - update the collection list
-    for(int i = 0; i < MAX_RULES; i++)
-    {
-      g_signal_handlers_block_matched(d->rule[i].combo, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, combo_changed, NULL);
-      dt_bauhaus_combobox_clear(d->rule[i].combo);
-      _populate_collect_combo(d->rule[i].combo);
-      if(d->rule[i].prop != -1) // && !_combo_set_active_collection(d->rule[i].combo, property))
-      {
-        // this one has been hidden - remove entry
-        // g_signal_handlers_block_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-        gtk_entry_set_text(GTK_ENTRY(d->rule[i].w_raw_text), "");
-        // g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed,
-        // NULL); d->rule[i].typing = FALSE;
-        _conf_update_rule(&d->rule[i]);
-      }
-      // g_signal_handlers_unblock_matched(d->rule[i].combo, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, combo_changed, NULL);
-    }
-  }
-
-  // update collection if metadata have been hidden or a metadata collection is active
-  const dt_collection_properties_t prop = d->rule[d->active_rule].prop;
-  if(type == DT_METADATA_SIGNAL_HIDDEN
-     || (prop >= DT_COLLECTION_PROP_METADATA
-         && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER))
-  {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_METADATA,
-                               NULL);
-  }*/
-}
-
-
-static void view_set_click(gpointer instance, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-  d->singleclick = dt_conf_get_bool("plugins/lighttable/filtering/single-click");
 }
 
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
@@ -2699,7 +2343,6 @@ void gui_init(dt_lib_module_t *self)
 
   d->nb_rules = 0;
   d->params = (dt_lib_filtering_params_t *)g_malloc0(sizeof(dt_lib_filtering_params_t));
-  view_set_click(NULL, self);
 
   for(int i = 0; i < MAX_RULES; i++)
   {
@@ -2718,14 +2361,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(bhbox, "collect-actions-widget");
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  GtkWidget *btn = dt_ui_button_new(_("+ rule"), _("append new rule to collect images"), NULL);
+  GtkWidget *btn = dt_ui_button_new(_("new rule"), _("append new rule to collect images"), NULL);
   g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_rule_append), self);
-  gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_ui_button_new(_("+ preset"), _("append preset to collect images"), NULL);
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_preset_append), self);
-  gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_ui_button_new(_("load"), _("load a collect preset"), NULL);
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_preset_load), self);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   btn = dt_ui_button_new(_("history"), _("revert to a previous set of rules"), NULL);
   g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_history_show), self);
@@ -2752,63 +2389,16 @@ void gui_init(dt_lib_module_t *self)
   d->last_where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
   _filters_gui_update(self);
 
-  if(d->rule[0].prop == DT_COLLECTION_PROP_TAG)
-  {
-    const char *tag = dt_conf_get_string_const("plugins/lighttable/filtering/string0");
-    dt_collection_set_tag_id((dt_collection_t *)darktable.collection, dt_tag_get_tag_id_by_name(tag));
-  }
-
-  // force redraw collection images because of late update of the table memory.darktable_iop_names
-  d->nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, MAX_RULES);
-  for(int i = 0; i <= d->nb_rules; i++)
-  {
-    if(d->rule[i].prop == DT_COLLECTION_PROP_MODULE)
-    {
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_MODULE,
-                                 NULL);
-      break;
-    }
-  }
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
-                                  self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED, G_CALLBACK(filmrolls_updated),
-                                  self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(preferences_changed),
-                                  self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(filmrolls_imported),
-                                  self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED, G_CALLBACK(filmrolls_removed),
-                                  self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(tag_changed), self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, G_CALLBACK(_geotag_changed), self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_CHANGED, G_CALLBACK(metadata_changed),
-                                  self);
-
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click),
-                                  self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                                  G_CALLBACK(_dt_collection_updated), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(collection_updated), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_updated), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_imported), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(preferences_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_removed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(tag_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_geotag_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(view_set_click), self);
-  darktable.view_manager->proxy.module_collect.module = NULL;
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_updated), self);
+  darktable.view_manager->proxy.module_filtering.module = NULL;
   free(d->params);
 
   /* TODO: Make sure we are cleaning up all allocations */
@@ -2817,184 +2407,6 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-#ifdef USE_LUA
-static int new_rule_cb(lua_State *L)
-{
-  dt_lib_filtering_params_rule_t rule;
-  memset(&rule, 0, sizeof(dt_lib_filtering_params_rule_t));
-  luaA_push(L, dt_lib_filtering_params_rule_t, &rule);
-  return 1;
-}
-
-static int filter_cb(lua_State *L)
-{
-  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-
-  int size;
-  dt_lib_filtering_params_t *p = get_params(self, &size);
-  // put it in stack so memory is not lost if a lua exception is raised
-
-  if(lua_gettop(L) > 0)
-  {
-    luaL_checktype(L, 1, LUA_TTABLE);
-    dt_lib_filtering_params_t *new_p = get_params(self, &size);
-    new_p->rules = 0;
-
-    do
-    {
-      lua_pushinteger(L, new_p->rules + 1);
-      lua_gettable(L, 1);
-      if(lua_isnil(L, -1)) break;
-      luaA_to(L, dt_lib_filtering_params_rule_t, &new_p->rule[new_p->rules], -1);
-      new_p->rules++;
-    } while(new_p->rules < MAX_RULES);
-
-    if(new_p->rules == MAX_RULES)
-    {
-      lua_pushinteger(L, new_p->rules + 1);
-      lua_gettable(L, 1);
-      if(!lua_isnil(L, -1))
-      {
-        luaL_error(L, "Number of rules given exceeds max allowed (%d)", MAX_RULES);
-      }
-    }
-    set_params(self, new_p, size);
-    free(new_p);
-  }
-
-  lua_newtable(L);
-  for(int i = 0; i < p->rules; i++)
-  {
-    luaA_push(L, dt_lib_filtering_params_rule_t, &p->rule[i]);
-    lua_seti(L, -2, i + 1); // lua tables are 1 based
-  }
-  free(p);
-  return 1;
-}
-
-static int mode_member(lua_State *L)
-{
-  dt_lib_filtering_params_rule_t *rule = luaL_checkudata(L, 1, "dt_lib_filtering_params_rule_t");
-
-  if(lua_gettop(L) > 2)
-  {
-    dt_lib_collect_mode_t value;
-    luaA_to(L, dt_lib_collect_mode_t, &value, 3);
-    rule->mode = value;
-    return 0;
-  }
-
-  const dt_lib_collect_mode_t tmp = rule->mode; // temp buffer because of bitfield in the original struct
-  luaA_push(L, dt_lib_collect_mode_t, &tmp);
-  return 1;
-}
-
-static int item_member(lua_State *L)
-{
-  dt_lib_filtering_params_rule_t *rule = luaL_checkudata(L, 1, "dt_lib_filtering_params_rule_t");
-
-  if(lua_gettop(L) > 2)
-  {
-    dt_collection_properties_t value;
-    luaA_to(L, dt_collection_properties_t, &value, 3);
-    rule->item = value;
-    return 0;
-  }
-
-  const dt_collection_properties_t tmp = rule->item; // temp buffer because of bitfield in the original struct
-  luaA_push(L, dt_collection_properties_t, &tmp);
-  return 1;
-}
-
-static int data_member(lua_State *L)
-{
-  dt_lib_filtering_params_rule_t *rule = luaL_checkudata(L, 1, "dt_lib_filtering_params_rule_t");
-
-  if(lua_gettop(L) > 2)
-  {
-    size_t tgt_size;
-    const char *data = luaL_checklstring(L, 3, &tgt_size);
-    if(tgt_size > PARAM_STRING_SIZE)
-    {
-      return luaL_error(L, "string '%s' too long (max is %d)", data, PARAM_STRING_SIZE);
-    }
-    g_strlcpy(rule->string, data, sizeof(rule->string));
-    return 0;
-  }
-
-  lua_pushstring(L, rule->string);
-  return 1;
-}
-
-void init(struct dt_lib_module_t *self)
-{
-  lua_State *L = darktable.lua_state.state;
-  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
-  lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, filter_cb, 1);
-  dt_lua_gtk_wrap(L);
-  lua_pushcclosure(L, dt_lua_type_member_common, 1);
-  dt_lua_type_register_const_type(L, my_type, "filter");
-  lua_pushcfunction(L, new_rule_cb);
-  lua_pushcclosure(L, dt_lua_type_member_common, 1);
-  dt_lua_type_register_const_type(L, my_type, "new_rule");
-
-  dt_lua_init_type(L, dt_lib_filtering_params_rule_t);
-  lua_pushcfunction(L, mode_member);
-  dt_lua_type_register(L, dt_lib_filtering_params_rule_t, "mode");
-  lua_pushcfunction(L, item_member);
-  dt_lua_type_register(L, dt_lib_filtering_params_rule_t, "item");
-  lua_pushcfunction(L, data_member);
-  dt_lua_type_register(L, dt_lib_filtering_params_rule_t, "data");
-
-
-  luaA_enum(L, dt_lib_collect_mode_t);
-  luaA_enum_value(L, dt_lib_collect_mode_t, DT_LIB_COLLECT_MODE_AND);
-  luaA_enum_value(L, dt_lib_collect_mode_t, DT_LIB_COLLECT_MODE_OR);
-  luaA_enum_value(L, dt_lib_collect_mode_t, DT_LIB_COLLECT_MODE_AND_NOT);
-
-  luaA_enum(L, dt_collection_properties_t);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FILMROLL);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FOLDERS);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_CAMERA);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_TAG);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_DAY);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_TIME);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_PRINT_TIMESTAMP);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_HISTORY);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_RATING);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_COLORLABEL);
-
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-  {
-    if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
-    {
-      const char *name = dt_metadata_get_name(i);
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-      g_free(setting);
-
-      if(!hidden) luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_METADATA + i);
-    }
-  }
-
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LENS);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FOCAL_LENGTH);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ISO);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_APERTURE);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ASPECT_RATIO);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPOSURE);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_FILENAME);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GEOTAGGING);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_LOCAL_COPY);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_GROUPING);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_MODULE);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_ORDER);
-}
-#endif
 #undef MAX_RULES
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
