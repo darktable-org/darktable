@@ -35,8 +35,8 @@ typedef struct dt_import_session_t
   dt_film_t *film;
   dt_variables_params_t *vp;
 
-  const gchar *current_path;
-  const gchar *current_filename;
+  gchar *current_path;
+  gchar *current_filename;
 
 } dt_import_session_t;
 
@@ -53,6 +53,7 @@ static void _import_session_cleanup_filmroll(dt_import_session_t *self)
       // no need to ask for rmdir as it'll be re-created if it's needed
       // by another import session with same path params
       g_rmdir(self->current_path);
+      g_free(self->current_path);
       self->current_path = NULL;
     }
   }
@@ -63,7 +64,7 @@ static void _import_session_cleanup_filmroll(dt_import_session_t *self)
 }
 
 
-static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, const char *path)
+static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, char *path)
 {
   /* cleanup of previously used filmroll */
   _import_session_cleanup_filmroll(self);
@@ -87,6 +88,7 @@ static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, c
   }
 
   /* every thing is good lets setup current path */
+  g_free(self->current_path);
   self->current_path = path;
 
   return FALSE;
@@ -243,7 +245,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   gchar *result_fname = NULL;
 
   /* expand next filename */
-  g_free((void *)self->current_filename);
+  g_free(self->current_filename);
   self->current_filename = NULL;
 
   char *pattern = _import_session_filename_pattern();
@@ -308,6 +310,7 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
     // the current path might not be a writable directory so test for that
     if(currentok) return self->current_path;
     // the current path is not valid so we can't  cleanup
+    g_free(self->current_path);
     self->current_path = NULL;
     return NULL;
   }
@@ -338,7 +341,11 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
     if(currentok) return self->current_path;
   }
 
-  if(!currentok) self->current_path = NULL;
+  if(!currentok)
+  {
+    g_free(self->current_path);
+    self->current_path = NULL;
+  }
   /* we need to initialize a new filmroll for the new path */
   if(_import_session_initialize_filmroll(self, new_path) != 0)
   {
