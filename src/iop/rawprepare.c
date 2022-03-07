@@ -652,6 +652,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->white_point, _("white point"));
   dt_bauhaus_slider_set_soft_max(g->white_point, 16384);
 
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_section_label_new(_("crop")), FALSE, FALSE, 0);
+
   if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
   {
     g->x = dt_bauhaus_slider_from_params(self, "x");
