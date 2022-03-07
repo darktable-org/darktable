@@ -199,9 +199,15 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
 static void _cleanup_expansion(dt_variables_params_t *params)
 {
   if(params->data->time)
+  {
     g_date_time_unref(params->data->time);
+    params->data->time = NULL;
+  }
   if(params->data->datetime)
+  {
     g_date_time_unref(params->data->datetime);
+    params->data->datetime = NULL;
+  }
   g_free(params->data->homedir);
   g_free(params->data->pictures_folder);
   g_free(params->data->camera_maker);
