@@ -494,9 +494,6 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
   // accumulates scrolling regardless of source or the widget being scrolled
   static gdouble acc_x = 0.0, acc_y = 0.0;
 
-  if(gdk_event_get_pointer_emulated((GdkEvent*)event))
-    return FALSE; // avoid double counting real and emulated events when receiving smooth scrolls
-
   gboolean handled = FALSE;
 
   switch(event->direction)

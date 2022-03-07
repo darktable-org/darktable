@@ -618,12 +618,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
-
-  dt_bauhaus_combobox_set(g->operator, p->operator);
-  dt_bauhaus_slider_set(g->drago.bias, p->drago.bias);
-  dt_bauhaus_slider_set(g->drago.max_light, p->drago.max_light);
-  dt_bauhaus_slider_set(g->detail, p->detail);
 
   gui_changed(self, NULL, 0);
 
@@ -640,7 +634,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->lwmax = NAN;
   g->hash = 0;
 
-  g->operator= dt_bauhaus_combobox_from_params(self, N_("operator"));
+  g->operator = dt_bauhaus_combobox_from_params(self, N_("operator"));
   gtk_widget_set_tooltip_text(g->operator, _("the global tonemap operator"));
 
   g->drago.bias = dt_bauhaus_slider_from_params(self, "drago.bias");
@@ -648,7 +642,6 @@ void gui_init(struct dt_iop_module_t *self)
                                                "the higher the more details in blacks"));
 
   g->drago.max_light = dt_bauhaus_slider_from_params(self, "drago.max_light");
-  dt_bauhaus_slider_set_step(g->drago.max_light, 10);
   gtk_widget_set_tooltip_text(g->drago.max_light, _("the target light for tonemapper specified as cd/m2"));
 
   g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));

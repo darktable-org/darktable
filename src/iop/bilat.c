@@ -398,8 +398,6 @@ void gui_update(dt_iop_module_t *self)
 {
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   dt_iop_bilat_params_t *p = (dt_iop_bilat_params_t *)self->params;
-  dt_bauhaus_slider_set(g->detail, p->detail);
-  dt_bauhaus_combobox_set(g->mode, p->mode);
 
   if(p->mode == s_mode_local_laplacian)
   {
@@ -430,10 +428,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
   g->detail = dt_bauhaus_slider_from_params(self, N_("detail"));
-  dt_bauhaus_slider_set_step(g->detail, 0.01);
-  dt_bauhaus_slider_set_factor(g->detail, 100);
   dt_bauhaus_slider_set_offset(g->detail, 100);
-  dt_bauhaus_slider_set_format(g->detail, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->detail, "%");
   gtk_widget_set_tooltip_text(g->detail, _("changes the local contrast"));
 
   ++darktable.bauhaus->skip_accel;
@@ -443,26 +439,26 @@ void gui_init(dt_iop_module_t *self)
   g->shadows = dt_bauhaus_slider_from_params(self, "sigma_s");
   --darktable.bauhaus->skip_accel;
 
+  dt_bauhaus_slider_set_hard_min(g->spatial, 3.0);
   dt_bauhaus_slider_set_default(g->spatial, 50.0);
   dt_bauhaus_slider_set_digits(g->spatial, 0);
   dt_bauhaus_widget_set_label(g->spatial, NULL, N_("coarseness"));
   gtk_widget_set_tooltip_text(g->spatial, _("feature size of local details (spatial sigma of bilateral filter)"));
 
+  dt_bauhaus_slider_set_hard_min(g->range, 1.0);
   dt_bauhaus_slider_set_default(g->range, 20.0);
   dt_bauhaus_slider_set_digits(g->range, 0);
   dt_bauhaus_widget_set_label(g->range, NULL, N_("contrast"));
   gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
-  dt_bauhaus_slider_set_step(g->highlights, 0.01);
   dt_bauhaus_widget_set_label(g->highlights, NULL, N_("highlights"));
-  dt_bauhaus_slider_set_factor(g->highlights, 100);
-  dt_bauhaus_slider_set_format(g->highlights, "%.0f%%");
+  dt_bauhaus_slider_set_hard_max(g->highlights, 2.0);
+  dt_bauhaus_slider_set_format(g->highlights, "%");
   gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
 
-  dt_bauhaus_slider_set_step(g->shadows, 0.01);
   dt_bauhaus_widget_set_label(g->shadows, NULL, N_("shadows"));
-  dt_bauhaus_slider_set_factor(g->shadows, 100);
-  dt_bauhaus_slider_set_format(g->shadows, "%.0f%%");
+  dt_bauhaus_slider_set_hard_max(g->shadows, 2.0);
+  dt_bauhaus_slider_set_format(g->shadows, "%");
   gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
 
   g->midtone = dt_bauhaus_slider_from_params(self, "midtone");
@@ -476,10 +472,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->range), "no-show-all", TRUE, NULL);
   g_object_set(G_OBJECT(g->spatial), "no-show-all", TRUE, NULL);
 
-  dt_bauhaus_slider_set_hard_min(g->spatial, 3.0);
-  dt_bauhaus_slider_set_hard_min(g->range, 1.0);
-  dt_bauhaus_slider_set_hard_max(g->highlights, 2.0);
-  dt_bauhaus_slider_set_hard_max(g->shadows, 2.0);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -1563,21 +1563,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, i
   int ch = c->channel;
   dt_iop_colorzones_node_t *curve = p->curve[ch];
 
-  float multiplier;
-
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-  }
-  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-  }
-  else
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-  }
-
+  float multiplier = dt_accel_get_speed_multiplier(widget, state);
   dx *= multiplier;
   dy *= multiplier;
   if(p->splines_version == DT_IOP_COLORZONES_SPLINES_V1)
@@ -2363,7 +2349,7 @@ static float _action_process_zones(gpointer target, dt_action_element_t element,
       if(!close_enough)
         node = _add_node(curve, &p->curve_num_nodes[ch], x, return_value);
 
-      _move_point_internal(self, target, node, 0.f, move_size / 100, 0);
+      _move_point_internal(self, target, node, 0.f, move_size / 100, GDK_MODIFIER_MASK);
       return_value = curve[node].y;
       break;
     default:
@@ -2482,7 +2468,9 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *hbox_select_by = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   // edit by area
-  c->chk_edit_by_area = gtk_check_button_new_with_label(_("edit by area"));
+  gchar *label = N_("edit by area");
+  c->chk_edit_by_area = gtk_check_button_new_with_label(_(label));
+  dt_action_define_iop(self, NULL, label, c->chk_edit_by_area, &dt_action_def_toggle);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(c->chk_edit_by_area))), PANGO_ELLIPSIZE_START);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->chk_edit_by_area), c->edit_by_area);
   gtk_widget_set_tooltip_text(c->chk_edit_by_area, _("edit the curve nodes by area"));
@@ -2508,8 +2496,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(c->mode, _("choose between a smoother or stronger effect"));
 
   c->strength = dt_bauhaus_slider_from_params(self, "strength");
-  dt_bauhaus_slider_set_step(c->strength, 10.0f);
-  dt_bauhaus_slider_set_format(c->strength, "%.01f%%");
+  dt_bauhaus_slider_set_format(c->strength, "%");
   gtk_widget_set_tooltip_text(c->strength, _("make effect stronger or weaker"));
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
@@ -2558,10 +2545,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
 
-  dt_bauhaus_combobox_set(g->select_by, p->channel);
-  dt_bauhaus_slider_set(g->strength, p->strength);
   dt_bauhaus_combobox_set(g->interpolator, p->curve_type[g->channel]);
-  dt_bauhaus_combobox_set(g->mode, p->mode);
 
   dt_iop_cancel_history_update(self);
 

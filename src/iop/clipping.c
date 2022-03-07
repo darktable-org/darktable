@@ -1941,12 +1941,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 
-  /* update ui elements */
-  dt_bauhaus_slider_set(g->angle, p->angle);
-  dt_bauhaus_slider_set(g->cx, p->cx);
-  dt_bauhaus_slider_set(g->cy, p->cy);
-  dt_bauhaus_slider_set(g->cw, p->cw);
-  dt_bauhaus_slider_set(g->ch, p->ch);
   int hvflip = 0;
   if(p->cw < 0)
   {
@@ -2024,8 +2018,6 @@ void gui_update(struct dt_iop_module_t *self)
   g->clip_y = CLAMPF(p->cy, 0.0f, 0.9f);
   g->clip_w = CLAMPF(fabsf(p->cw) - p->cx, 0.1f, 1.0f - g->clip_x);
   g->clip_h = CLAMPF(fabsf(p->ch) - p->cy, 0.1f, 1.0f - g->clip_y);
-
-  dt_bauhaus_combobox_set(g->crop_auto, p->crop_auto);
 }
 
 static void hvflip_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -2135,9 +2127,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->hvflip, TRUE, TRUE, 0);
 
   g->angle = dt_bauhaus_slider_from_params(self, N_("angle"));
-  dt_bauhaus_slider_set_step(g->angle, 0.25);
   dt_bauhaus_slider_set_factor(g->angle, -1.0);
-  dt_bauhaus_slider_set_format(g->angle, "%.02f°");
+  dt_bauhaus_slider_set_format(g->angle, "°");
   gtk_widget_set_tooltip_text(g->angle, _("right-click and drag a line on the image to drag a straight line"));
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
@@ -2274,28 +2265,26 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
   dt_bauhaus_slider_set_digits(g->cx, 4);
-  dt_bauhaus_slider_set_factor(g->cx, 100.0);
-  dt_bauhaus_slider_set_format(g->cx, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->cx, "%");
   gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
 
   g->cw = dt_bauhaus_slider_from_params(self, "cw");
   dt_bauhaus_slider_set_digits(g->cw, 4);
   dt_bauhaus_slider_set_factor(g->cw, -100.0);
   dt_bauhaus_slider_set_offset(g->cw, 100.0);
-  dt_bauhaus_slider_set_format(g->cw, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->cw, "%");
   gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
 
   g->cy = dt_bauhaus_slider_from_params(self, "cy");
   dt_bauhaus_slider_set_digits(g->cy, 4);
-  dt_bauhaus_slider_set_factor(g->cy, 100.0);
-  dt_bauhaus_slider_set_format(g->cy, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->cy, "%");
   gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
 
   g->ch = dt_bauhaus_slider_from_params(self, "ch");
   dt_bauhaus_slider_set_digits(g->ch, 4);
   dt_bauhaus_slider_set_factor(g->ch, -100.0);
   dt_bauhaus_slider_set_offset(g->ch, 100.0);
-  dt_bauhaus_slider_set_format(g->ch, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->ch, "%");
   gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
 
   self->widget = GTK_WIDGET(g->notebook);

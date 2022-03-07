@@ -3196,19 +3196,21 @@ static void _do_get_structure_quad(dt_iop_module_t *self)
 }
 
 // helper function to start parameter fit and report about errors
-static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ashift_fitaxis_t dir)
+static void do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ashift_fitaxis_t dir)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)module->gui_data;
 
-  if(g->fitting) return FALSE;
+  if(g->fitting) return;
 
   // if no structure available get it
   if(g->lines == NULL)
-    if(!_do_get_structure_auto(module, p, ASHIFT_ENHANCE_NONE)) goto error;
+    if(!_do_get_structure_auto(module, p, ASHIFT_ENHANCE_NONE)) return;
 
   g->fitting = 1;
 
   dt_iop_ashift_nmsresult_t res = nmsfit(module, p, dir);
+
+  g->fitting = 0;
 
   switch(res)
   {
@@ -3216,27 +3218,25 @@ static int do_fit(dt_iop_module_t *module, dt_iop_ashift_params_t *p, dt_iop_ash
       dt_control_log(
           _("not enough structure for automatic correction\nminimum %d lines in each relevant direction"),
           MINIMUM_FITLINES);
-      goto error;
-      break;
+      return;
     case NMS_DID_NOT_CONVERGE:
     case NMS_INSANE:
       dt_control_log(_("automatic correction failed, please correct manually"));
-      goto error;
-      break;
+      return;
     case NMS_SUCCESS:
     default:
       break;
   }
 
-  g->fitting = 0;
-
   // finally apply cropping
   do_crop(module, p);
-  return TRUE;
 
-error:
-  g->fitting = 0;
-  return FALSE;
+  ++darktable.gui->reset;
+  dt_bauhaus_slider_set(g->rotation, p->rotation);
+  dt_bauhaus_slider_set(g->lensshift_v, p->lensshift_v);
+  dt_bauhaus_slider_set(g->lensshift_h, p->lensshift_h);
+  dt_bauhaus_slider_set(g->shear, p->shear);
+  --darktable.gui->reset;
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -4831,7 +4831,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     if(a > 180.0) a -= 360.0;
 
     a -= dt_bauhaus_slider_get(g->rotation);
-    dt_bauhaus_slider_set_soft(g->rotation, -a);
+    dt_bauhaus_slider_set(g->rotation, -a);
     return TRUE;
   }
 
@@ -5095,15 +5095,7 @@ static int _event_fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event,
     if(self->enabled)
     {
       // module is enable -> we process directly
-      if(do_fit(self, p, fitaxis))
-      {
-        ++darktable.gui->reset;
-        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-        dt_bauhaus_slider_set_soft(g->shear, p->shear);
-        --darktable.gui->reset;
-      }
+      do_fit(self, p, fitaxis);
     }
     else
     {
@@ -5148,15 +5140,7 @@ static int _event_fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event,
     if(self->enabled)
     {
       // module is enable -> we process directly
-      if(do_fit(self, p, fitaxis))
-      {
-        ++darktable.gui->reset;
-        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-        dt_bauhaus_slider_set_soft(g->shear, p->shear);
-        --darktable.gui->reset;
-      }
+      do_fit(self, p, fitaxis);
     }
     else
     {
@@ -5203,15 +5187,7 @@ static int _event_fit_both_button_clicked(GtkWidget *widget, GdkEventButton *eve
     if(self->enabled)
     {
       // module is enable -> we process directly
-      if(do_fit(self, p, fitaxis))
-      {
-        ++darktable.gui->reset;
-        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-        dt_bauhaus_slider_set_soft(g->shear, p->shear);
-        --darktable.gui->reset;
-      }
+      do_fit(self, p, fitaxis);
     }
     else
     {
@@ -5334,15 +5310,7 @@ static void _event_process_after_preview_callback(gpointer instance, gpointer us
       break;
 
     case ASHIFT_JOBCODE_FIT:
-      if(do_fit(self, p, (dt_iop_ashift_fitaxis_t)jobparams))
-      {
-        ++darktable.gui->reset;
-        dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-        dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-        dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-        dt_bauhaus_slider_set_soft(g->shear, p->shear);
-        --darktable.gui->reset;
-      }
+      do_fit(self, p, (dt_iop_ashift_fitaxis_t)jobparams);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       break;
 
@@ -5401,17 +5369,6 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-
-  dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
-  dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
-  dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
-  dt_bauhaus_slider_set_soft(g->shear, p->shear);
-  dt_bauhaus_slider_set_soft(g->f_length, p->f_length);
-  dt_bauhaus_slider_set_soft(g->crop_factor, p->crop_factor);
-  dt_bauhaus_slider_set(g->orthocorr, p->orthocorr);
-  dt_bauhaus_slider_set(g->aspect, p->aspect);
-  dt_bauhaus_combobox_set(g->mode, p->mode);
-  dt_bauhaus_combobox_set(g->cropmode, p->cropmode);
 
   gtk_widget_set_visible(g->specifics, p->mode == ASHIFT_MODE_SPECIFIC);
 
@@ -5604,7 +5561,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   }
 }
 
-static float log10_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
+static float log10_curve(float inval, dt_bauhaus_curve_t dir)
 {
   float outval;
   if(dir == DT_BAUHAUS_SET)
@@ -5618,7 +5575,7 @@ static float log10_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
   return outval;
 }
 
-static float log2_curve(GtkWidget *self, float inval, dt_bauhaus_curve_t dir)
+static float log2_curve(float inval, dt_bauhaus_curve_t dir)
 {
   float outval;
   if(dir == DT_BAUHAUS_SET)
@@ -5730,8 +5687,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->draw_line_move = -1;
 
   g->rotation = dt_bauhaus_slider_from_params(self, N_("rotation"));
-  dt_bauhaus_slider_set_step(g->rotation, 0.25);
-  dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
+  dt_bauhaus_slider_set_format(g->rotation, "°");
   dt_bauhaus_slider_set_soft_range(g->rotation, -ROTATION_RANGE, ROTATION_RANGE);
 
   g->cropmode = dt_bauhaus_combobox_from_params(self, "cropmode");
@@ -5764,14 +5720,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->f_length = dt_bauhaus_slider_from_params(self, "f_length");
   dt_bauhaus_slider_set_soft_range(g->f_length, 10.0f, 1000.0f);
   dt_bauhaus_slider_set_curve(g->f_length, log10_curve);
-  dt_bauhaus_slider_set_format(g->f_length, "%.0fmm");
-  dt_bauhaus_slider_set_step(g->f_length, 1.0);
+  dt_bauhaus_slider_set_digits(g->f_length, 0);
+  dt_bauhaus_slider_set_format(g->f_length, " mm");
 
   g->crop_factor = dt_bauhaus_slider_from_params(self, "crop_factor");
   dt_bauhaus_slider_set_soft_range(g->crop_factor, 1.0f, 2.0f);
 
   g->orthocorr = dt_bauhaus_slider_from_params(self, "orthocorr");
-  dt_bauhaus_slider_set_format(g->orthocorr, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->orthocorr, "%");
   // this parameter could serve to finetune between generic model (0%) and specific model (100%).
   // however, users can more easily get the same effect with the aspect adjust parameter so we keep
   // this one hidden.

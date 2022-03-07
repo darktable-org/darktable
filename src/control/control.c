@@ -141,7 +141,6 @@ void dt_control_init(dt_control_t *s)
   s->gui_thread = pthread_self();
 
   // s->last_expose_time = dt_get_wtime();
-  s->key_accelerators_on = 1;
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
@@ -171,22 +170,6 @@ void dt_control_init(dt_control_t *s)
   s->dev_zoom_y = 0;
   s->dev_zoom = DT_ZOOM_FIT;
   s->lock_cursor_shape = FALSE;
-}
-
-void dt_control_key_accelerators_on(struct dt_control_t *s)
-{
-  if(!s->key_accelerators_on) s->key_accelerators_on = 1;
-}
-
-void dt_control_key_accelerators_off(struct dt_control_t *s)
-{
-  s->key_accelerators_on = 0;
-}
-
-
-int dt_control_is_key_accelerators_on(struct dt_control_t *s)
-{
-  return s->key_accelerators_on;
 }
 
 void dt_control_forbid_change_cursor()
@@ -811,7 +794,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     }
     return 1;
   }
-  else if(key == ':' && darktable.control->key_accelerators_on)
+  else if(key == ':')
   {
     darktable.control->vimkey[0] = ':';
     darktable.control->vimkey[1] = 0;

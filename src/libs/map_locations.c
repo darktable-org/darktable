@@ -494,7 +494,6 @@ static void _name_editing_done(GtkCellEditable *editable, dt_lib_module_t *self)
   g_object_get(editable, "editing-canceled", &canceled, NULL);
   const gchar *name = gtk_entry_get_text(GTK_ENTRY(editable));
   const gboolean reset = name[0] ? FALSE : TRUE;
-  dt_control_key_accelerators_on(darktable.control);
   GtkTreeIter iter;
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->view));
@@ -649,8 +648,6 @@ static void _name_start_editing(GtkCellRenderer *renderer, GtkCellEditable *edit
     gtk_tree_path_free(new_path);
 
     g_signal_connect(G_OBJECT(editable), "editing-done", G_CALLBACK(_name_editing_done), self);
-    // grab all keys for edition
-    dt_control_key_accelerators_off(darktable.control);
   }
 }
 
