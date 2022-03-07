@@ -76,7 +76,6 @@ static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, c
     _import_session_cleanup_filmroll(self);
     return TRUE;
   }
-
   /* open one or initialize a filmroll for the session */
   self->film = (dt_film_t *)g_malloc0(sizeof(dt_film_t));
   const int32_t film_id = dt_film_new(self->film, path);
@@ -86,10 +85,20 @@ static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, c
     _import_session_cleanup_filmroll(self);
     return TRUE;
   }
-
   /* every thing is good lets setup current path */
+#ifdef _WIN32
+  else
+  {
+    // keep the existing film path (case)
+    g_free(path);
+    g_free(self->current_path);
+    dt_film_t *film = self->film;
+    self->current_path = g_strdup(film->dirname);
+  }
+#else
   g_free(self->current_path);
   self->current_path = path;
+#endif
 
   return FALSE;
 }
