@@ -1756,20 +1756,68 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // clang-format on
       else
       {
-        int color = 0;
-        if(strcmp(escaped_text, _("red")) == 0)
-          color = 0;
-        else if(strcmp(escaped_text, _("yellow")) == 0)
-          color = 1;
-        else if(strcmp(escaped_text, _("green")) == 0)
-          color = 2;
-        else if(strcmp(escaped_text, _("blue")) == 0)
-          color = 3;
-        else if(strcmp(escaped_text, _("purple")) == 0)
-          color = 4;
-        // clang-format off
-        query = g_strdup_printf("(id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
-        // clang-format on
+        // test the "integer" case (used by filters)
+        const int val = atoi(escaped_text);
+        if(val != 0 || !g_strcmp0(escaped_text, "0"))
+        {
+          const int colors_set = val & 0xFF;
+          const int colors_unset = (val & 0xFF00) >> 8;
+          const gboolean op = val & 0x80000000;
+          if(op) // AND
+          {
+            if(colors_set)
+              // clang-format off
+              query = g_strdup_printf("(id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) = %d) AND (mask & %d = 0)))",
+                                      colors_set, colors_set, colors_unset);
+              // clang-format on
+            else if(colors_unset)
+              // clang-format off
+              query = g_strdup_printf("(NOT id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) <> 0)))",
+                                      colors_unset);
+              // clang-format on
+          }
+          else // OR
+          {
+            if(!colors_unset)
+              // clang-format off
+              query = g_strdup_printf("(id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) <> 0)))",
+                                      colors_set);
+              // clang-format on
+            else
+              // clang-format off
+              query = g_strdup_printf("((id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) <> 0))"
+                                      " OR id NOT IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) = %d))))",
+                                      colors_set, colors_unset, colors_unset);
+              // clang-format on
+          }
+        }
+        else // fallback to the text version
+        {
+          int color = 0;
+          if(strcmp(escaped_text, _("red")) == 0)
+            color = 0;
+          else if(strcmp(escaped_text, _("yellow")) == 0)
+            color = 1;
+          else if(strcmp(escaped_text, _("green")) == 0)
+            color = 2;
+          else if(strcmp(escaped_text, _("blue")) == 0)
+            color = 3;
+          else if(strcmp(escaped_text, _("purple")) == 0)
+            color = 4;
+          // clang-format off
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
+          // clang-format on
+        }
       }
     }
     break;
