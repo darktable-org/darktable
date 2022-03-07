@@ -1596,6 +1596,17 @@ filechooser row:hover .sidebar-icon
   margin-top: 0.8em;
 }
 
+#filter_colors_box
+{
+  background-color: @border_color;
+  padding: 0.01em;
+}
+#filter_colors_box #dt-button
+{
+  font-size: 1em;
+  margin : 0;
+}
+
 /*--------------------------------
   - Tree view (lists and tables) -
   --------------------------------*/
