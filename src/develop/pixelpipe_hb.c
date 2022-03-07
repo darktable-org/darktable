@@ -1395,14 +1395,14 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       {
         dt_print(DT_DEBUG_OPENCL, "[dt_dev_pixelpipe_process_rec] module `%s' uses cpu because of extremely small tiles %i, overlap %i\n",
             module->op, (int)cl_tilesize, (int)tiling.overlap);
-        possible_cl = FALSE;        
+        possible_cl = FALSE;
 
         const float cpu_px = dt_get_available_mem() / (float)(sizeof(float) * MAX(in_bpp, bpp) * tiling.factor);
         const float cpu_tilesize = fmaxf(1.0f, sqrtf(cpu_px) - tiling.overlap);
         // At least push a warning here while trusting the cpu code to handle this gracefully
         if(cpu_tilesize < 2 * tiling.overlap)
-          dt_control_log(_("Problems likely ahead because of heavy cpu tiling"));
-      } 
+          dt_control_log(_("problems likely ahead because of heavy cpu tiling"));
+      }
       /* we might want some more checks here */
     }
 
@@ -2126,7 +2126,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
                                                      int pos)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
-  darktable.dtresources.group = 4 * darktable.dtresources.level; 
+  darktable.dtresources.group = 4 * darktable.dtresources.level;
 #ifdef HAVE_OPENCL
   if((darktable.dtresources.tunecl == 0) && (pipe->devid >= 0) && darktable.opencl->inited)
     darktable.opencl->dev[pipe->devid].tuned_available = 0;
