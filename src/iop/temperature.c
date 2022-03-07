@@ -1906,6 +1906,49 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
+  g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings"), N_("as shot"), NULL,
+                                          G_CALLBACK(btn_toggled), FALSE, 0, 0,
+                                          dtgtk_cairo_paint_camera, NULL);
+  gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance to as shot"));
+
+  // create color picker to be able to send its signal when spot selected,
+  // this module may expect data in RAW or RGB, setting the color picker CST to IOP_CS_NONE will make the color
+  // picker to depend on the number of color channels of the pixels. It is done like this as we may not know the
+  // actual kind of data we are using in the GUI (it is part of the pipeline).
+  g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, NULL, IOP_CS_NONE);
+  dt_action_define_iop(self, N_("settings"), N_("from image area"), g->colorpicker, &dt_action_def_toggle);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
+
+  g->btn_user = dt_iop_togglebutton_new(self, N_("settings"), N_("user modified"), NULL,
+                                        G_CALLBACK(btn_toggled), FALSE, 0, 0,
+                                        dtgtk_cairo_paint_masks_drawn, NULL);
+  gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
+
+
+  g->btn_d65 = dt_iop_togglebutton_new(self, N_("settings"), N_("camera reference"), NULL,
+                                       G_CALLBACK(btn_toggled), FALSE, 0, 0,
+                                       dtgtk_cairo_paint_bulb, NULL);
+  gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance to camera reference point\nin most cases it should be D65"));
+
+  g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0); // put buttons at top. fill later.
+  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_user, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->colorpicker, TRUE, TRUE, 0);
+  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_asshot, TRUE, TRUE, 0);
+  gtk_box_pack_start(box_enabled, g->buttonbar, TRUE, TRUE, 0);
+
+  g->presets = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->presets, N_("settings"), N_("settings")); // relabel to settings to remove confusion between module presets and white balance settings
+  gtk_widget_set_tooltip_text(g->presets, _("choose white balance setting"));
+  gtk_box_pack_start(box_enabled, g->presets, TRUE, TRUE, 0);
+
+  g->finetune = dt_bauhaus_slider_new_with_range_and_feedback(self, -9.0, 9.0, 0, 0.0, 0, feedback);
+  dt_bauhaus_widget_set_label(g->finetune, NULL, N_("finetune"));
+  dt_bauhaus_slider_set_format(g->finetune, " mired");
+  gtk_widget_set_tooltip_text(g->finetune, _("fine tune camera's white balance setting"));
+  gtk_box_pack_start(box_enabled, g->finetune, TRUE, TRUE, 0);
+
   g->mod_temp = NAN;
   for(int k = 0; k < 4; k++)
   {
@@ -1956,52 +1999,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->scale_g2, 3);
 
   gtk_widget_set_no_show_all(g->scale_g2, TRUE);
-
-  g->balance_label = dt_ui_section_label_new(_("white balance settings"));
-  gtk_box_pack_start(box_enabled, g->balance_label, TRUE, TRUE, 0);
-
-  g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings"), N_("as shot"), NULL,
-                                          G_CALLBACK(btn_toggled), FALSE, 0, 0,
-                                          dtgtk_cairo_paint_camera, NULL);
-  gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance to as shot"));
-
-  // create color picker to be able to send its signal when spot selected,
-  // this module may expect data in RAW or RGB, setting the color picker CST to IOP_CS_NONE will make the color
-  // picker to depend on the number of color channels of the pixels. It is done like this as we may not know the
-  // actual kind of data we are using in the GUI (it is part of the pipeline).
-  g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, NULL, IOP_CS_NONE);
-  dt_action_define_iop(self, N_("settings"), N_("from image area"), g->colorpicker, &dt_action_def_toggle);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
-
-  g->btn_user = dt_iop_togglebutton_new(self, N_("settings"), N_("user modified"), NULL,
-                                        G_CALLBACK(btn_toggled), FALSE, 0, 0,
-                                        dtgtk_cairo_paint_masks_drawn, NULL);
-  gtk_widget_set_tooltip_text(g->btn_user, _("set white balance to user modified"));
-
-
-  g->btn_d65 = dt_iop_togglebutton_new(self, N_("settings"), N_("camera reference"), NULL,
-                                       G_CALLBACK(btn_toggled), FALSE, 0, 0,
-                                       dtgtk_cairo_paint_bulb, NULL);
-  gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance to camera reference point\nin most cases it should be D65"));
-
-  g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_user, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->colorpicker, TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_asshot, TRUE, TRUE, 0);
-  gtk_box_pack_start(box_enabled, g->buttonbar, TRUE, TRUE, 0);
-
-  g->presets = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->presets, N_("settings"), N_("settings")); // relabel to settings to remove confusion between module presets and white balance settings
-  gtk_widget_set_tooltip_text(g->presets, _("choose white balance setting"));
-  gtk_box_pack_start(box_enabled, g->presets, TRUE, TRUE, 0);
-
-  g->finetune = dt_bauhaus_slider_new_with_range_and_feedback(self, -9.0, 9.0, 0, 0.0, 0, feedback);
-  dt_bauhaus_widget_set_label(g->finetune, NULL, N_("finetune"));
-  dt_bauhaus_slider_set_format(g->finetune, " mired");
-  gtk_widget_set_tooltip_text(g->finetune, _("fine tune camera's white balance setting"));
-  gtk_box_pack_start(box_enabled, g->finetune, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(g->scale_k), "value-changed", G_CALLBACK(temp_tint_callback), self);
   g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(temp_tint_callback), self);
