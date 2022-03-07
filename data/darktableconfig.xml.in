@@ -3177,6 +3177,24 @@
     <shortdescription>lightness spot in exposure compensation</shortdescription>
   </dtconfig>
   <dtconfig>
+    <name>darkroom/modules/channelmixerrgb/colorchecker</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>current colorchecker model used</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/modules/channelmixerrgb/optimization</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>current colorchecker optimization mode</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/modules/channelmixerrgb/safety</name>
+    <type>float</type>
+    <default>0.5</default>
+    <shortdescription>patch scale, safety margin</shortdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/modulegroups_preset</name>
     <type>string</type>
     <default></default>

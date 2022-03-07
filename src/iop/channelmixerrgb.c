@@ -3688,9 +3688,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->optimize, j);
   g->optimization = j;
 
-  g->safety_margin = 0.5f;
-  if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/safety"))
-    g->safety_margin = dt_conf_get_float("darkroom/modules/channelmixerrgb/safety");
+  g->safety_margin = dt_conf_get_float("darkroom/modules/channelmixerrgb/safety");
   dt_bauhaus_slider_set_soft(g->safety, g->safety_margin);
 
   dt_iop_gui_leave_critical_section(self);
