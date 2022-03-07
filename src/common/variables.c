@@ -198,11 +198,6 @@ static void _init_expansion(dt_variables_params_t *params, gboolean iterate)
 
 static void _cleanup_expansion(dt_variables_params_t *params)
 {
-  if(params->data->time)
-  {
-    g_date_time_unref(params->data->time);
-    params->data->time = NULL;
-  }
   if(params->data->datetime)
   {
     g_date_time_unref(params->data->datetime);
@@ -1042,6 +1037,8 @@ void dt_variables_params_init(dt_variables_params_t **params)
 
 void dt_variables_params_destroy(dt_variables_params_t *params)
 {
+  if(params->data->time)
+    g_date_time_unref(params->data->time);
   g_free(params->data);
   g_free(params);
 }
