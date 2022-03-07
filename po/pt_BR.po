@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-07 09:34-0300\n"
-"PO-Revision-Date: 2022-03-07 10:14-0300\n"
+"POT-Creation-Date: 2022-03-08 17:34-0300\n"
+"PO-Revision-Date: 2022-03-08 17:35-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2667,7 +2667,7 @@ msgstr "aberração cromática muito grande"
 #: ../src/gui/gtk.c:3030 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4179 ../src/iop/colorzones.c:2302
-#: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1949
+#: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1992
 #: ../src/libs/collect.c:1764
 msgid "red"
 msgstr "vermelho"
@@ -2679,7 +2679,7 @@ msgstr "vermelho"
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4180 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
-#: ../src/iop/temperature.c:1950 ../src/libs/collect.c:1764
+#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1764
 msgid "green"
 msgstr "verde"
 
@@ -2689,7 +2689,7 @@ msgstr "verde"
 #: ../src/gui/gtk.c:3032 ../src/iop/bilateral.cc:315
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2307
-#: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1951
+#: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1994
 #: ../src/libs/collect.c:1764
 msgid "blue"
 msgstr "azul"
@@ -3795,7 +3795,7 @@ msgstr "tratamento de spline"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:532
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/darktable.c:985 ../src/common/database.c:2550
-#: ../src/common/variables.c:589 ../src/develop/imageop_gui.c:196
+#: ../src/common/variables.c:590 ../src/develop/imageop_gui.c:196
 #: ../src/imageio/format/pdf.c:647 ../src/imageio/format/pdf.c:672
 #: ../src/libs/export.c:1214 ../src/libs/export.c:1220
 #: ../src/libs/export.c:1227 ../src/libs/metadata_view.c:672
@@ -4223,7 +4223,7 @@ msgid "erase"
 msgstr "apagar"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:442
-#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1087
+#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1106
 #: ../src/libs/colorpicker.c:298 ../src/libs/image.c:622
 #: ../src/libs/modulegroups.c:2407
 msgid "color"
@@ -4449,7 +4449,7 @@ msgstr "relação largura/altura"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:145
 #: ../build/lib/darktable/plugins/introspection_vignette.c:236
-#: ../src/iop/vignette.c:985
+#: ../src/iop/vignette.c:989
 msgid "shape"
 msgstr "forma"
 
@@ -5162,7 +5162,7 @@ msgstr ""
 "gostaria de aplicar esta atualização de configuração de desempenho?\n"
 
 #: ../src/common/darktable.c:985 ../src/common/database.c:2550
-#: ../src/common/database.c:3610 ../src/common/variables.c:587
+#: ../src/common/database.c:3610 ../src/common/variables.c:588
 #: ../src/develop/imageop_gui.c:197 ../src/imageio/format/pdf.c:648
 #: ../src/imageio/format/pdf.c:673 ../src/libs/export.c:1215
 #: ../src/libs/export.c:1221 ../src/libs/export.c:1228
@@ -7367,7 +7367,7 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "ajusta o pivô (fulcrum) usado por algumas operações de mesclagem"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3077 ../src/iop/watermark.c:1128
+#: ../src/develop/blend_gui.c:3077 ../src/iop/watermark.c:1121
 msgid "opacity"
 msgstr "opacidade"
 
@@ -8023,7 +8023,13 @@ msgstr ""
 "provavelmente foi introduzido ao aplicar uma predefinição, estilo ou "
 "copiar&colar de histórico"
 
-#: ../src/develop/pixelpipe_hb.c:2227
+#: ../src/develop/pixelpipe_hb.c:1404
+msgid "problems likely ahead because of heavy cpu tiling"
+msgstr ""
+"provavelmente haverá problemas adiante por causa do uso pesado de CPU em "
+"ladrilhamento"
+
+#: ../src/develop/pixelpipe_hb.c:2251
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -11715,7 +11721,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:965 ../src/iop/clipping.c:2159 ../src/iop/crop.c:1072
+#: ../src/iop/borders.c:965 ../src/iop/clipping.c:2159 ../src/iop/crop.c:1067
 msgid "golden cut"
 msgstr "proporção áurea"
 
@@ -11735,7 +11741,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:970 ../src/iop/clipping.c:2149 ../src/iop/crop.c:1062
+#: ../src/iop/borders.c:970 ../src/iop/clipping.c:2149 ../src/iop/crop.c:1057
 #: ../src/libs/collect.c:271
 msgid "square"
 msgstr "quadrado"
@@ -11772,7 +11778,7 @@ msgstr "2/3"
 msgid "size of the border in percent of the full image"
 msgstr "tamanho da borda em percentagem da imagem inteira"
 
-#: ../src/iop/borders.c:1032 ../src/iop/clipping.c:2246 ../src/iop/crop.c:1158
+#: ../src/iop/borders.c:1032 ../src/iop/clipping.c:2246 ../src/iop/crop.c:1153
 msgid "aspect"
 msgstr "proporção"
 
@@ -12492,7 +12498,7 @@ msgstr ""
 msgid "picker"
 msgstr "seletor"
 
-#: ../src/iop/channelmixerrgb.c:4035 ../src/iop/temperature.c:1975
+#: ../src/iop/channelmixerrgb.c:4035 ../src/iop/temperature.c:1921
 msgid "set white balance to detected from area"
 msgstr "define o balanço de branco para o detectado em uma área"
 
@@ -12500,7 +12506,7 @@ msgstr "define o balanço de branco para o detectado em uma área"
 msgid "illuminant"
 msgstr "iluminante"
 
-#: ../src/iop/channelmixerrgb.c:4045 ../src/iop/temperature.c:1931
+#: ../src/iop/channelmixerrgb.c:4045 ../src/iop/temperature.c:1974
 msgid "temperature"
 msgstr "temperatura"
 
@@ -12770,7 +12776,7 @@ msgid "change the framing and correct the perspective"
 msgstr "muda o enquadramento e corrige a perspectiva"
 
 #: ../src/iop/clipping.c:1412 ../src/iop/clipping.c:2148 ../src/iop/crop.c:451
-#: ../src/iop/crop.c:1061
+#: ../src/iop/crop.c:1056
 msgid "original image"
 msgstr "imagem original"
 
@@ -12819,81 +12825,81 @@ msgstr "distorção de perspectiva"
 msgid "set perspective correction for your image"
 msgstr "define a correção de perspectiva para sua imagem"
 
-#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1060
+#: ../src/iop/clipping.c:2147 ../src/iop/crop.c:1055
 msgid "freehand"
 msgstr "mão livre"
 
-#: ../src/iop/clipping.c:2150 ../src/iop/crop.c:1063
+#: ../src/iop/clipping.c:2150 ../src/iop/crop.c:1058
 msgid "10:8 in print"
 msgstr "10:8 em impressão"
 
-#: ../src/iop/clipping.c:2151 ../src/iop/crop.c:1064
+#: ../src/iop/clipping.c:2151 ../src/iop/crop.c:1059
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2152 ../src/iop/crop.c:1065
+#: ../src/iop/clipping.c:2152 ../src/iop/crop.c:1060
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2153 ../src/iop/crop.c:1066
+#: ../src/iop/clipping.c:2153 ../src/iop/crop.c:1061
 msgid "8.5x11, letter"
 msgstr "8.5x11, carta"
 
-#: ../src/iop/clipping.c:2154 ../src/iop/crop.c:1067
+#: ../src/iop/clipping.c:2154 ../src/iop/crop.c:1062
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2155 ../src/iop/crop.c:1068
+#: ../src/iop/clipping.c:2155 ../src/iop/crop.c:1063
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1069
+#: ../src/iop/clipping.c:2156 ../src/iop/crop.c:1064
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2157 ../src/iop/crop.c:1070
+#: ../src/iop/clipping.c:2157 ../src/iop/crop.c:1065
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2158 ../src/iop/crop.c:1071
+#: ../src/iop/clipping.c:2158 ../src/iop/crop.c:1066
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1073
+#: ../src/iop/clipping.c:2160 ../src/iop/crop.c:1068
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1074
+#: ../src/iop/clipping.c:2161 ../src/iop/crop.c:1069
 msgid "widescreen"
 msgstr "widescreen"
 
-#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1075
+#: ../src/iop/clipping.c:2162 ../src/iop/crop.c:1070
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1076
+#: ../src/iop/clipping.c:2163 ../src/iop/crop.c:1071
 msgid "cinemascope"
 msgstr "cinemascópio"
 
-#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1077
+#: ../src/iop/clipping.c:2164 ../src/iop/crop.c:1072
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1078
+#: ../src/iop/clipping.c:2165 ../src/iop/crop.c:1073
 msgid "anamorphic"
 msgstr "anamórfico"
 
-#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1079
+#: ../src/iop/clipping.c:2166 ../src/iop/crop.c:1074
 msgid "3:1, panorama"
 msgstr "3:1, panorâmica"
 
-#: ../src/iop/clipping.c:2198 ../src/iop/clipping.c:2210 ../src/iop/crop.c:1111
-#: ../src/iop/crop.c:1123
+#: ../src/iop/clipping.c:2198 ../src/iop/clipping.c:2210 ../src/iop/crop.c:1106
+#: ../src/iop/crop.c:1118
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "formato da proporção inválido para `%s'. deveria ser \"número:número\""
 
-#: ../src/iop/clipping.c:2257 ../src/iop/crop.c:1169
+#: ../src/iop/clipping.c:2257 ../src/iop/crop.c:1164
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -12905,23 +12911,23 @@ msgstr ""
 "para entrar uma proporção personalizada, abra o o menu\n"
 "suspenso e digite a proporção como x:y ou em formato decimal"
 
-#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1180
+#: ../src/iop/clipping.c:2264 ../src/iop/crop.c:1175
 msgid "margins"
 msgstr "margens"
 
-#: ../src/iop/clipping.c:2269 ../src/iop/crop.c:1188
+#: ../src/iop/clipping.c:2269 ../src/iop/crop.c:1183
 msgid "the left margin cannot overlap with the right margin"
 msgstr "a margem esquerda não pode sobrepor a margem direita"
 
-#: ../src/iop/clipping.c:2276 ../src/iop/crop.c:1195
+#: ../src/iop/clipping.c:2276 ../src/iop/crop.c:1190
 msgid "the right margin cannot overlap with the left margin"
 msgstr "a margem direita não pode sobrepor a margem esquerda"
 
-#: ../src/iop/clipping.c:2281 ../src/iop/crop.c:1200
+#: ../src/iop/clipping.c:2281 ../src/iop/crop.c:1195
 msgid "the top margin cannot overlap with the bottom margin"
 msgstr "a margem superior não pode sobrepor a margem inferior"
 
-#: ../src/iop/clipping.c:2288 ../src/iop/crop.c:1207
+#: ../src/iop/clipping.c:2288 ../src/iop/crop.c:1202
 msgid "the bottom margin cannot overlap with the top margin"
 msgstr "a margem inferior não pode sobrepor a margem superior"
 
@@ -12966,16 +12972,16 @@ msgstr ""
 "horizontalmente</b>: ctrl+arrastar\n"
 "<b>endireitar</b>: arrastar com botão direito, <b>finalizar</b>: clique duplo"
 
-#: ../src/iop/clipping.c:3367 ../src/iop/crop.c:1645
+#: ../src/iop/clipping.c:3367 ../src/iop/crop.c:1640
 msgid "commit"
 msgstr "finalizar"
 
-#: ../src/iop/clipping.c:3378 ../src/iop/crop.c:1656
+#: ../src/iop/clipping.c:3378 ../src/iop/crop.c:1651
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s em bordas] cortar"
 
-#: ../src/iop/clipping.c:3380 ../src/iop/crop.c:1658
+#: ../src/iop/clipping.c:3380 ../src/iop/crop.c:1653
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s em bordas] cortar mantendo aspecto"
@@ -14092,7 +14098,7 @@ msgstr ""
 "- monotônica é melhor para acurácia de funções puramente analíticas (log, "
 "gama, exp)\n"
 
-#: ../src/iop/crop.c:128
+#: ../src/iop/crop.c:128 ../src/iop/rawprepare.c:658
 msgid "crop"
 msgstr "cortar"
 
@@ -14104,16 +14110,12 @@ msgstr "reenquadramento|distorção"
 msgid "change the framing"
 msgstr "muda o enquadramento"
 
-#: ../src/iop/crop.c:1054
-msgid "crop settings"
-msgstr "configurações de corte"
-
-#: ../src/iop/crop.c:1532
+#: ../src/iop/crop.c:1527
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
 "<b>mudar tamanho</b>: arrastar, <b>manter proporção</b>: shift+arrastar"
 
-#: ../src/iop/crop.c:1539
+#: ../src/iop/crop.c:1534
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
@@ -14739,7 +14741,7 @@ msgstr ""
 "limiar.\n"
 "isto pode ser usado para reconstruir realces."
 
-#: ../src/iop/dither.c:97 ../src/iop/vignette.c:988
+#: ../src/iop/dither.c:97 ../src/iop/vignette.c:992
 msgid "dithering"
 msgstr "matização"
 
@@ -16097,7 +16099,7 @@ msgstr "olho de peixe thoby"
 
 #. scale
 #: ../src/iop/lens.cc:2394 ../src/iop/vignette.c:979
-#: ../src/iop/watermark.c:1130
+#: ../src/iop/watermark.c:1131
 msgid "scale"
 msgstr "escala"
 
@@ -17024,23 +17026,23 @@ msgstr "nível de preto 2"
 msgid "black level 3"
 msgstr "nível de preto 3"
 
-#: ../src/iop/rawprepare.c:658
+#: ../src/iop/rawprepare.c:661
 msgid "crop from left border"
 msgstr "corte a partir da borda esquerda"
 
-#: ../src/iop/rawprepare.c:662
+#: ../src/iop/rawprepare.c:665
 msgid "crop from top"
 msgstr "corte a partir do topo"
 
-#: ../src/iop/rawprepare.c:666
+#: ../src/iop/rawprepare.c:669
 msgid "crop from right border"
 msgstr "corte a partir da borda direita"
 
-#: ../src/iop/rawprepare.c:670
+#: ../src/iop/rawprepare.c:673
 msgid "crop from bottom"
 msgstr "corte a partir de baixo"
 
-#: ../src/iop/rawprepare.c:678
+#: ../src/iop/rawprepare.c:681
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -17592,8 +17594,7 @@ msgstr "seleciona o tom de cor"
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/splittoning.c:531 ../src/iop/watermark.c:1125
-#: ../src/libs/camera.c:503
+#: ../src/iop/splittoning.c:531 ../src/libs/camera.c:503
 msgid "properties"
 msgstr "propriedades"
 
@@ -17737,66 +17738,37 @@ msgstr "coeficiente para canal azul"
 msgid "emerald channel coefficient"
 msgstr "coeficiente para canal esmeralda"
 
-#: ../src/iop/temperature.c:1917
-msgid "scene illuminant temp"
-msgstr "temperatura do iluminante da cena"
-
-#: ../src/iop/temperature.c:1918
-msgid "click to cycle color mode on sliders"
-msgstr "clique para alternar o modo de cor nos deslizadores"
-
-#: ../src/iop/temperature.c:1932
-msgid "color temperature (in Kelvin)"
-msgstr "temperatura da cor (em Kelvin)"
-
-#: ../src/iop/temperature.c:1937
-msgid "tint"
-msgstr "tonalidade"
-
-#: ../src/iop/temperature.c:1938
-msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
-msgstr ""
-"tonalidade de cor da imagem, de magenta (valor < 1) à verde (valor > 1)"
-
-#: ../src/iop/temperature.c:1944
-msgid "channel coefficients"
-msgstr "coeficientes de canais"
-
-#: ../src/iop/temperature.c:1960
-msgid "white balance settings"
-msgstr "configurações do balanço de branco"
-
-#: ../src/iop/temperature.c:1963 ../src/iop/temperature.c:1973
-#: ../src/iop/temperature.c:1977 ../src/iop/temperature.c:1983
-#: ../src/iop/temperature.c:1996
+#: ../src/iop/temperature.c:1909 ../src/iop/temperature.c:1919
+#: ../src/iop/temperature.c:1923 ../src/iop/temperature.c:1929
+#: ../src/iop/temperature.c:1942
 msgid "settings"
 msgstr "configurações"
 
-#: ../src/iop/temperature.c:1963
+#: ../src/iop/temperature.c:1909
 msgid "as shot"
 msgstr "como ao tirar a foto"
 
-#: ../src/iop/temperature.c:1966
+#: ../src/iop/temperature.c:1912
 msgid "set white balance to as shot"
 msgstr "define balanço de branco para como ao tirar a foto"
 
-#: ../src/iop/temperature.c:1973
+#: ../src/iop/temperature.c:1919
 msgid "from image area"
 msgstr "de área na imagem"
 
-#: ../src/iop/temperature.c:1977
+#: ../src/iop/temperature.c:1923
 msgid "user modified"
 msgstr "modificado pelo usuário"
 
-#: ../src/iop/temperature.c:1980
+#: ../src/iop/temperature.c:1926
 msgid "set white balance to user modified"
 msgstr "define balanço de branco para modificado pelo usuário"
 
-#: ../src/iop/temperature.c:1983
+#: ../src/iop/temperature.c:1929
 msgid "camera reference"
 msgstr "referência da câmera"
 
-#: ../src/iop/temperature.c:1986
+#: ../src/iop/temperature.c:1932
 msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
@@ -17805,19 +17777,44 @@ msgstr ""
 "na maioria dos casos deveria ser D65"
 
 #. relabel to settings to remove confusion between module presets and white balance settings
-#: ../src/iop/temperature.c:1997
+#: ../src/iop/temperature.c:1943
 msgid "choose white balance setting"
 msgstr "seleciona configuração de balanço de branco"
 
-#: ../src/iop/temperature.c:2001
+#: ../src/iop/temperature.c:1947
 msgid "finetune"
 msgstr "ajuste fino"
 
-#: ../src/iop/temperature.c:2003
+#: ../src/iop/temperature.c:1949
 msgid "fine tune camera's white balance setting"
 msgstr "ajuste fino do balanço de branco da câmera"
 
-#: ../src/iop/temperature.c:2020
+#: ../src/iop/temperature.c:1960
+msgid "scene illuminant temp"
+msgstr "temperatura do iluminante da cena"
+
+#: ../src/iop/temperature.c:1961
+msgid "click to cycle color mode on sliders"
+msgstr "clique para alternar o modo de cor nos deslizadores"
+
+#: ../src/iop/temperature.c:1975
+msgid "color temperature (in Kelvin)"
+msgstr "temperatura da cor (em Kelvin)"
+
+#: ../src/iop/temperature.c:1980
+msgid "tint"
+msgstr "tonalidade"
+
+#: ../src/iop/temperature.c:1981
+msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
+msgstr ""
+"tonalidade de cor da imagem, de magenta (valor < 1) à verde (valor > 1)"
+
+#: ../src/iop/temperature.c:1987
+msgid "channel coefficients"
+msgstr "coeficientes de canais"
+
+#: ../src/iop/temperature.c:2017
 msgid "white balance disabled for camera"
 msgstr "balanço de branco desabilitado para câmera"
 
@@ -18252,31 +18249,35 @@ msgstr "simula o decaimento lento perto das bordas"
 msgid "lomo"
 msgstr "lomo"
 
-#: ../src/iop/vignette.c:999
+#: ../src/iop/vignette.c:985
+msgid "position / form"
+msgstr "posição / forma"
+
+#: ../src/iop/vignette.c:1003
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "a escala dos raios de vinheta para começar a decair"
 
-#: ../src/iop/vignette.c:1000
+#: ../src/iop/vignette.c:1004
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "a escala dos raios de vinheta para terminar de decair"
 
-#: ../src/iop/vignette.c:1001
+#: ../src/iop/vignette.c:1005
 msgid "strength of effect on brightness"
 msgstr "força do efeito no brilho"
 
-#: ../src/iop/vignette.c:1002
+#: ../src/iop/vignette.c:1006
 msgid "strength of effect on saturation"
 msgstr "força do efeito na saturação"
 
-#: ../src/iop/vignette.c:1003
+#: ../src/iop/vignette.c:1007
 msgid "horizontal offset of center of the effect"
 msgstr "deslocamento horizontal do centro do efeito"
 
-#: ../src/iop/vignette.c:1004
+#: ../src/iop/vignette.c:1008
 msgid "vertical offset of center of the effect"
 msgstr "deslocamento vertical do centro do efeito"
 
-#: ../src/iop/vignette.c:1005
+#: ../src/iop/vignette.c:1009
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -18288,29 +18289,29 @@ msgstr ""
 "1 produz um círculo ou elipse\n"
 "2 produz um losango"
 
-#: ../src/iop/vignette.c:1007
+#: ../src/iop/vignette.c:1011
 msgid "enable to have the ratio automatically follow the image size"
 msgstr "habilite para proporção seguir automaticamente o tamanho da imagem"
 
-#: ../src/iop/vignette.c:1008
+#: ../src/iop/vignette.c:1012
 msgid "width-to-height ratio"
 msgstr "relação de largura-altura"
 
-#: ../src/iop/vignette.c:1009
+#: ../src/iop/vignette.c:1013
 msgid "add some level of random noise to prevent banding"
 msgstr "adiciona um certo nível de ruído aleatório para prevenir bandas de cor"
 
-#: ../src/iop/vignette.c:1016
+#: ../src/iop/vignette.c:1020
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[%s no nó] muda vinheta/enevoamento"
 
-#: ../src/iop/vignette.c:1018
+#: ../src/iop/vignette.c:1022
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr "[%s no nó] muda vinheta/enevoamento, mantendo aspecto"
 
-#: ../src/iop/vignette.c:1020
+#: ../src/iop/vignette.c:1024
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[%s no centro] mover vinheta"
@@ -18323,41 +18324,21 @@ msgstr "marca d'água"
 msgid "overlay an SVG watermark like a signature on the picture"
 msgstr "sobrepõe uma marca d'água SVG como uma assinatura na imagem"
 
-#: ../src/iop/watermark.c:1053
-msgid "content"
-msgstr "conteúdo"
-
-#: ../src/iop/watermark.c:1069
+#: ../src/iop/watermark.c:1064
 msgid "marker"
 msgstr "marcador"
 
-#: ../src/iop/watermark.c:1072
+#: ../src/iop/watermark.c:1067
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "marcas d'água SVG em %s/watermarks ou %s/watermarks"
 
-#: ../src/iop/watermark.c:1089
-msgid ""
-"watermark color, tag:\n"
-"$(WATERMARK_COLOR)"
-msgstr ""
-"cor da marca d'água, etiqueta:\n"
-"$(WATERMARK_COLOR)"
-
-#: ../src/iop/watermark.c:1091
-msgid "select watermark color"
-msgstr "seleciona cor da marca d'água"
-
-#: ../src/iop/watermark.c:1093
-msgid "pick color from image"
-msgstr "seleciona cor a partir da imagem"
-
 #. Simple text
-#: ../src/iop/watermark.c:1100
+#: ../src/iop/watermark.c:1077
 msgid "text"
 msgstr "texto"
 
-#: ../src/iop/watermark.c:1103
+#: ../src/iop/watermark.c:1080
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -18366,11 +18347,11 @@ msgstr ""
 "$(WATERMARK_TEXT)"
 
 #. Text font
-#: ../src/iop/watermark.c:1111
+#: ../src/iop/watermark.c:1088
 msgid "font"
 msgstr "fonte"
 
-#: ../src/iop/watermark.c:1116
+#: ../src/iop/watermark.c:1093
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -18382,29 +18363,44 @@ msgstr ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 
-#. dt_bauhaus_combobox_add(g->sizeto, C_("size", "image"));
-#: ../src/iop/watermark.c:1138
+#: ../src/iop/watermark.c:1108
+msgid ""
+"watermark color, tag:\n"
+"$(WATERMARK_COLOR)"
+msgstr ""
+"cor da marca d'água, etiqueta:\n"
+"$(WATERMARK_COLOR)"
+
+#: ../src/iop/watermark.c:1110
+msgid "select watermark color"
+msgstr "seleciona cor da marca d'água"
+
+#: ../src/iop/watermark.c:1112
+msgid "pick color from image"
+msgstr "seleciona cor a partir da imagem"
+
+#: ../src/iop/watermark.c:1124
+msgid "placement"
+msgstr "posicionamento"
+
+#: ../src/iop/watermark.c:1137
 msgid "size is relative to"
 msgstr "tamanho é relativo a"
 
-#: ../src/iop/watermark.c:1140
-msgid "position"
-msgstr "posição"
-
-#: ../src/iop/watermark.c:1144 ../src/libs/print_settings.c:2325
+#: ../src/iop/watermark.c:1141 ../src/libs/print_settings.c:2325
 msgid "alignment"
 msgstr "alinhamento"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1165
+#: ../src/iop/watermark.c:1162
 msgid "the opacity of the watermark"
 msgstr "a opacidade da marca d'água"
 
-#: ../src/iop/watermark.c:1166
+#: ../src/iop/watermark.c:1163
 msgid "the scale of the watermark"
 msgstr "a escala da marca d'água"
 
-#: ../src/iop/watermark.c:1167
+#: ../src/iop/watermark.c:1164
 msgid "the rotation of the watermark"
 msgstr "a rotação da marca d'água"
 
@@ -23398,6 +23394,18 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1330
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "crop settings"
+#~ msgstr "configurações de corte"
+
+#~ msgid "white balance settings"
+#~ msgstr "configurações do balanço de branco"
+
+#~ msgid "content"
+#~ msgstr "conteúdo"
+
+#~ msgid "position"
+#~ msgstr "posição"
 
 #, c-format
 #~ msgid "%.0f ISO"
