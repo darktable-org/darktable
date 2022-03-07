@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-07 08:06+0100\n"
-"PO-Revision-Date: 2022-03-07 08:11+0100\n"
+"POT-Creation-Date: 2022-03-07 18:54+0100\n"
+"PO-Revision-Date: 2022-03-07 18:54+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2657,7 +2657,7 @@ msgstr "aberrations chromatiques très larges"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
 #: ../src/common/collection.c:1530 ../src/develop/blend_gui.c:2004
 #: ../src/develop/blend_gui.c:2031 ../src/develop/lightroom.c:830
-#: ../src/gui/gtk.c:3017 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
+#: ../src/gui/gtk.c:3030 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4179 ../src/iop/colorzones.c:2302
 #: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1949
@@ -2668,7 +2668,7 @@ msgstr "rouge"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
 #: ../src/common/collection.c:1534 ../src/develop/blend_gui.c:2007
 #: ../src/develop/blend_gui.c:2034 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:3018 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
+#: ../src/gui/gtk.c:3031 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4180 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
@@ -2679,7 +2679,7 @@ msgstr "vert"
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
 #: ../src/common/collection.c:1536 ../src/develop/blend_gui.c:2010
 #: ../src/develop/blend_gui.c:2037 ../src/develop/lightroom.c:836
-#: ../src/gui/gtk.c:3019 ../src/iop/bilateral.cc:315
+#: ../src/gui/gtk.c:3032 ../src/iop/bilateral.cc:315
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2307
 #: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1951
@@ -2925,7 +2925,7 @@ msgstr "version 3 (Avril 2021)"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
 #: ../build/lib/darktable/plugins/introspection_crop.c:61
 #: ../build/lib/darktable/plugins/introspection_crop.c:134
-#: ../src/gui/gtk.c:1566 ../src/iop/atrous.c:1589
+#: ../src/gui/gtk.c:1565 ../src/iop/atrous.c:1589
 msgid "left"
 msgstr "gauche"
 
@@ -2933,7 +2933,7 @@ msgstr "gauche"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
-#: ../src/gui/accelerators.c:103 ../src/gui/gtk.c:1516
+#: ../src/gui/accelerators.c:103 ../src/gui/gtk.c:1515
 msgid "top"
 msgstr "haut"
 
@@ -2941,7 +2941,7 @@ msgstr "haut"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:311
 #: ../build/lib/darktable/plugins/introspection_crop.c:73
 #: ../build/lib/darktable/plugins/introspection_crop.c:142
-#: ../src/gui/gtk.c:1580 ../src/iop/atrous.c:1588
+#: ../src/gui/gtk.c:1579 ../src/iop/atrous.c:1588
 msgid "right"
 msgstr "droite"
 
@@ -2949,7 +2949,7 @@ msgstr "droite"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
 #: ../build/lib/darktable/plugins/introspection_crop.c:79
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
-#: ../src/gui/accelerators.c:104 ../src/gui/gtk.c:1532
+#: ../src/gui/accelerators.c:104 ../src/gui/gtk.c:1531
 msgid "bottom"
 msgstr "bas"
 
@@ -3788,7 +3788,7 @@ msgstr "gestion de spline"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:532
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/darktable.c:985 ../src/common/database.c:2550
-#: ../src/common/variables.c:589 ../src/develop/imageop_gui.c:196
+#: ../src/common/variables.c:595 ../src/develop/imageop_gui.c:196
 #: ../src/imageio/format/pdf.c:647 ../src/imageio/format/pdf.c:672
 #: ../src/libs/export.c:1214 ../src/libs/export.c:1220
 #: ../src/libs/export.c:1227 ../src/libs/metadata_view.c:672
@@ -4443,7 +4443,7 @@ msgstr "largeur/hauteur"
 
 #: ../build/lib/darktable/plugins/introspection_vignette.c:145
 #: ../build/lib/darktable/plugins/introspection_vignette.c:236
-#: ../src/iop/vignette.c:985
+#: ../src/iop/vignette.c:989
 msgid "shape"
 msgstr "forme"
 
@@ -5166,7 +5166,7 @@ msgstr ""
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
 #: ../src/common/darktable.c:985 ../src/common/database.c:2550
-#: ../src/common/database.c:3610 ../src/common/variables.c:587
+#: ../src/common/database.c:3610 ../src/common/variables.c:593
 #: ../src/develop/imageop_gui.c:197 ../src/imageio/format/pdf.c:648
 #: ../src/imageio/format/pdf.c:673 ../src/libs/export.c:1215
 #: ../src/libs/export.c:1221 ../src/libs/export.c:1228
@@ -8037,7 +8037,11 @@ msgstr ""
 "probablement introduit en appliquant un préréglage, un style ou un copier/"
 "coller d'historique"
 
-#: ../src/develop/pixelpipe_hb.c:2227
+#: ../src/develop/pixelpipe_hb.c:1404
+msgid "problems likely ahead because of heavy cpu tiling"
+msgstr "problème possible par la suite à cause d'un tuilage cpu important"
+
+#: ../src/develop/pixelpipe_hb.c:2251
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -8539,12 +8543,12 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:109 ../src/gui/accelerators.c:138
-#: ../src/gui/gtk.c:2960 ../src/views/lighttable.c:755
+#: ../src/gui/gtk.c:2959 ../src/views/lighttable.c:755
 msgid "next"
 msgstr "suivant"
 
 #: ../src/gui/accelerators.c:110 ../src/gui/accelerators.c:137
-#: ../src/gui/gtk.c:2961 ../src/views/lighttable.c:756
+#: ../src/gui/gtk.c:2960 ../src/views/lighttable.c:756
 msgid "previous"
 msgstr "précédent"
 
@@ -8578,7 +8582,7 @@ msgstr "inverser-droit"
 msgid "right-on"
 msgstr "sur-droit"
 
-#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:2959
+#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:2958
 msgid "activate"
 msgstr "activer"
 
@@ -8893,7 +8897,7 @@ msgstr ""
 "ou juste pour une périphérique sélectionné\n"
 
 #: ../src/gui/accelerators.c:1859 ../src/gui/accelerators.c:1938
-#: ../src/gui/gtk.c:3016 ../src/imageio/format/pdf.c:659
+#: ../src/gui/gtk.c:3029 ../src/imageio/format/pdf.c:659
 #: ../src/iop/denoiseprofile.c:3584 ../src/iop/lens.cc:2274
 #: ../src/iop/rawdenoise.c:904 ../src/libs/tools/filter.c:383
 msgid "all"
@@ -9071,167 +9075,167 @@ msgstr ""
 "la visibilité des infos-bulles peut être changée seulement si le "
 "gestionnaire de fenêtre supporte la composition"
 
-#: ../src/gui/gtk.c:819
+#: ../src/gui/gtk.c:818
 msgid "closing darktable..."
 msgstr "quitter darktable..."
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:1210
+#: ../src/gui/gtk.c:1209
 msgctxt "accel"
 msgid "switch views/tethering"
 msgstr "changer de vue/capture"
 
-#: ../src/gui/gtk.c:1211
+#: ../src/gui/gtk.c:1210
 msgctxt "accel"
 msgid "switch views/lighttable"
 msgstr "changer de vue/table lumineuse"
 
-#: ../src/gui/gtk.c:1212
+#: ../src/gui/gtk.c:1211
 msgctxt "accel"
 msgid "switch views/darkroom"
 msgstr "changer de vue/chambre noire"
 
-#: ../src/gui/gtk.c:1213
+#: ../src/gui/gtk.c:1212
 msgctxt "accel"
 msgid "switch views/map"
 msgstr "changer de vue/carte"
 
-#: ../src/gui/gtk.c:1214
+#: ../src/gui/gtk.c:1213
 msgctxt "accel"
 msgid "switch views/slideshow"
 msgstr "changer de vue/diaporama"
 
-#: ../src/gui/gtk.c:1215
+#: ../src/gui/gtk.c:1214
 msgctxt "accel"
 msgid "switch views/print"
 msgstr "changer de vue/impression"
 
 #. an action that does nothing - used for overriding/removing default shortcuts
-#: ../src/gui/gtk.c:1218
+#: ../src/gui/gtk.c:1217
 msgctxt "accel"
 msgid "no-op"
 msgstr "sans-action"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1245
+#: ../src/gui/gtk.c:1244
 msgctxt "accel"
 msgid "quit"
 msgstr "quitter"
 
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
-#: ../src/gui/gtk.c:1250
+#: ../src/gui/gtk.c:1249
 msgctxt "accel"
 msgid "fullscreen"
 msgstr "plein écran"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:1256
+#: ../src/gui/gtk.c:1255
 msgctxt "accel"
 msgid "panels/all"
 msgstr "panneaux/tous"
 
-#: ../src/gui/gtk.c:1260
+#: ../src/gui/gtk.c:1259
 msgctxt "accel"
 msgid "panels/collapsing controls"
 msgstr "panneaux/contrôles de repli"
 
-#: ../src/gui/gtk.c:1264
+#: ../src/gui/gtk.c:1263
 msgctxt "accel"
 msgid "panels/left"
 msgstr "panneaux/gauche"
 
-#: ../src/gui/gtk.c:1268
+#: ../src/gui/gtk.c:1267
 msgctxt "accel"
 msgid "panels/right"
 msgstr "panneaux/droit"
 
-#: ../src/gui/gtk.c:1272
+#: ../src/gui/gtk.c:1271
 msgctxt "accel"
 msgid "panels/top"
 msgstr "panneaux/haut"
 
-#: ../src/gui/gtk.c:1276
+#: ../src/gui/gtk.c:1275
 msgctxt "accel"
 msgid "panels/bottom"
 msgstr "panneaux/bas"
 
 #. specific top/bottom toggles
-#: ../src/gui/gtk.c:1281
+#: ../src/gui/gtk.c:1280
 msgctxt "accel"
 msgid "panels/header"
 msgstr "panneaux/entête"
 
-#: ../src/gui/gtk.c:1284
+#: ../src/gui/gtk.c:1283
 msgctxt "accel"
 msgid "panels/filmstrip and timeline"
 msgstr "panneaux/bandeau et la chronologie"
 
-#: ../src/gui/gtk.c:1288
+#: ../src/gui/gtk.c:1287
 msgctxt "accel"
 msgid "panels/top toolbar"
 msgstr "panneaux/barre d'outil haute"
 
-#: ../src/gui/gtk.c:1292
+#: ../src/gui/gtk.c:1291
 msgctxt "accel"
 msgid "panels/bottom toolbar"
 msgstr "panneaux/barre d'outil basse"
 
-#: ../src/gui/gtk.c:1296
+#: ../src/gui/gtk.c:1295
 msgctxt "accel"
 msgid "panels/all top"
 msgstr "panneaux/haut tous"
 
-#: ../src/gui/gtk.c:1300
+#: ../src/gui/gtk.c:1299
 msgctxt "accel"
 msgid "panels/all bottom"
 msgstr "panneaux/bas tous"
 
 #. accels window
-#: ../src/gui/gtk.c:1305
+#: ../src/gui/gtk.c:1304
 msgctxt "accel"
 msgid "show accels window"
 msgstr "afficher la fenêtre des raccourcis"
 
 #. View-switch
-#: ../src/gui/gtk.c:1308
+#: ../src/gui/gtk.c:1307
 msgctxt "accel"
 msgid "toggle tooltip visibility"
 msgstr "basculer les infos-bulles"
 
 #. reinitialise input devices
-#: ../src/gui/gtk.c:1314
+#: ../src/gui/gtk.c:1313
 msgctxt "accel"
 msgid "reinitialise input devices"
 msgstr "réinitialise les périphériques d'entrée"
 
-#: ../src/gui/gtk.c:1355
+#: ../src/gui/gtk.c:1354
 msgid "toggle focus-peaking mode"
 msgstr "basculer le mode zones nettes"
 
 #. toggle focus peaking everywhere
-#: ../src/gui/gtk.c:1360
+#: ../src/gui/gtk.c:1359
 msgctxt "accel"
 msgid "toggle focus peaking"
 msgstr "basculer les zones nettes"
 
-#: ../src/gui/gtk.c:1516 ../src/gui/gtk.c:1532 ../src/gui/gtk.c:1566
-#: ../src/gui/gtk.c:1580
+#: ../src/gui/gtk.c:1515 ../src/gui/gtk.c:1531 ../src/gui/gtk.c:1565
+#: ../src/gui/gtk.c:1579
 msgid "panels"
 msgstr "panneaux"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:2710
+#: ../src/gui/gtk.c:2709
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:2712
+#: ../src/gui/gtk.c:2711
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:3023 ../src/gui/gtk.c:3028 ../src/gui/gtk.c:3033
+#: ../src/gui/gtk.c:3036 ../src/gui/gtk.c:3041 ../src/gui/gtk.c:3046
 msgid "tabs"
 msgstr "tabs"
 
@@ -14148,7 +14152,7 @@ msgstr ""
 "- monotone donne une meilleure précision sur les fonctions mathématiques "
 "analytiques (log, gamma, exp). \n"
 
-#: ../src/iop/crop.c:128
+#: ../src/iop/crop.c:128 ../src/iop/rawprepare.c:658
 msgid "crop"
 msgstr "recadrer"
 
@@ -14794,7 +14798,7 @@ msgstr ""
 "seuil.\n"
 "cela peut être utilisé pour reconstruire les hautes lumières."
 
-#: ../src/iop/dither.c:97 ../src/iop/vignette.c:988
+#: ../src/iop/dither.c:97 ../src/iop/vignette.c:992
 msgid "dithering"
 msgstr "homogénéisation"
 
@@ -17111,23 +17115,23 @@ msgstr "niveau de noir 2"
 msgid "black level 3"
 msgstr "niveau de noir 3"
 
-#: ../src/iop/rawprepare.c:658
+#: ../src/iop/rawprepare.c:661
 msgid "crop from left border"
 msgstr "rogner depuis le bord gauche"
 
-#: ../src/iop/rawprepare.c:662
+#: ../src/iop/rawprepare.c:665
 msgid "crop from top"
 msgstr "rogner depuis le haut"
 
-#: ../src/iop/rawprepare.c:666
+#: ../src/iop/rawprepare.c:669
 msgid "crop from right border"
 msgstr "rogner depuis le bord droit"
 
-#: ../src/iop/rawprepare.c:670
+#: ../src/iop/rawprepare.c:673
 msgid "crop from bottom"
 msgstr "rogner depuis le bas"
 
-#: ../src/iop/rawprepare.c:678
+#: ../src/iop/rawprepare.c:681
 msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
@@ -18352,31 +18356,35 @@ msgstr "simule la perte de lumière d'un objectif, proche des bords"
 msgid "lomo"
 msgstr "lomo"
 
-#: ../src/iop/vignette.c:999
+#: ../src/iop/vignette.c:985
+msgid "position / form"
+msgstr "position / forme"
+
+#: ../src/iop/vignette.c:1003
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "rayon de début du dégradé"
 
-#: ../src/iop/vignette.c:1000
+#: ../src/iop/vignette.c:1004
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "progressivité du dégradé"
 
-#: ../src/iop/vignette.c:1001
+#: ../src/iop/vignette.c:1005
 msgid "strength of effect on brightness"
 msgstr "force de l'effet sur la luminosité"
 
-#: ../src/iop/vignette.c:1002
+#: ../src/iop/vignette.c:1006
 msgid "strength of effect on saturation"
 msgstr "force de l'effet sur la saturation"
 
-#: ../src/iop/vignette.c:1003
+#: ../src/iop/vignette.c:1007
 msgid "horizontal offset of center of the effect"
 msgstr "décalage horizontal du centre"
 
-#: ../src/iop/vignette.c:1004
+#: ../src/iop/vignette.c:1008
 msgid "vertical offset of center of the effect"
 msgstr "décalage vertical du centre"
 
-#: ../src/iop/vignette.c:1005
+#: ../src/iop/vignette.c:1009
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -18388,31 +18396,31 @@ msgstr ""
 "1 = cercle ou ellipse\n"
 "2 = losange"
 
-#: ../src/iop/vignette.c:1007
+#: ../src/iop/vignette.c:1011
 msgid "enable to have the ratio automatically follow the image size"
 msgstr ""
 "règle le ratio hauteur/largeur pour qu'il soit identique à la taille de "
 "l'image"
 
-#: ../src/iop/vignette.c:1008
+#: ../src/iop/vignette.c:1012
 msgid "width-to-height ratio"
 msgstr "ratio entre la largeur et la hauteur"
 
-#: ../src/iop/vignette.c:1009
+#: ../src/iop/vignette.c:1013
 msgid "add some level of random noise to prevent banding"
 msgstr "ajoute du bruit aléatoire pour éviter l'apparition de bandes"
 
-#: ../src/iop/vignette.c:1016
+#: ../src/iop/vignette.c:1020
 #, c-format
 msgid "[%s on node] change vignette/feather size"
 msgstr "[%s sur nœud ] changer miniature/adoucissement"
 
-#: ../src/iop/vignette.c:1018
+#: ../src/iop/vignette.c:1022
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr "[%s sur nœud ] changer miniature/taille dégradé et garde ratio"
 
-#: ../src/iop/vignette.c:1020
+#: ../src/iop/vignette.c:1024
 #, c-format
 msgid "[%s on center] move vignette"
 msgstr "[%s au centre] déplacer vignette"
