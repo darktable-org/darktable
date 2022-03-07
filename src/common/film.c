@@ -90,7 +90,7 @@ int32_t dt_film_get_id(const char *folder)
   int32_t filmroll_id = -1;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-#ifdef WIN32
+#ifdef _WIN32
                               "SELECT id FROM main.film_rolls WHERE folder LIKE ?1",
 #else
                               "SELECT id FROM main.film_rolls WHERE folder = ?1",
@@ -243,6 +243,19 @@ int dt_film_new(dt_film_t *film, const char *directory)
       sqlite3_finalize(stmt2);
     }
   }
+#ifdef _WIN32
+  else
+  {
+    // make sure we reuse the same path case
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT folder FROM main.film_rolls WHERE id = ?1",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film->id);
+    if(sqlite3_step(stmt) != SQLITE_ROW)
+      g_strlcpy(film->dirname, (const char *)sqlite3_column_text(stmt, 0), sizeof(film->dirname));
+    sqlite3_finalize(stmt);
+  }
+#endif
 
   if(film->id <= 0) return 0;
   film->last_loaded = 0;
