@@ -897,8 +897,8 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
-  dt_bauhaus_slider_set(g->size, p->size);
 
+// FIXME by hand
   // ----- Aspect
   int k = 0;
   for(; k < DT_IOP_BORDERS_ASPECT_COUNT; k++)
@@ -913,9 +913,6 @@ void gui_update(struct dt_iop_module_t *self)
   {
       dt_bauhaus_combobox_set(g->aspect, k);
   }
-
-  // ----- aspect orientation
-  dt_bauhaus_combobox_set(g->aspect_orient, p->aspect_orient);
 
   // ----- Position H
   for(k = 0; k < DT_IOP_BORDERS_POSITION_H_COUNT; k++)
@@ -944,11 +941,6 @@ void gui_update(struct dt_iop_module_t *self)
   {
     dt_bauhaus_combobox_set(g->pos_v, k);
   }
-  dt_bauhaus_slider_set(g->aspect_slider, p->aspect);
-  dt_bauhaus_slider_set(g->pos_h_slider, p->pos_h);
-  dt_bauhaus_slider_set(g->pos_v_slider, p->pos_v);
-  dt_bauhaus_slider_set(g->frame_size, p->frame_size);
-  dt_bauhaus_slider_set(g->frame_offset, p->frame_offset);
 
   // ----- Border Color
   GdkRGBA c = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
@@ -1031,9 +1023,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->default_params;
 
   g->size = dt_bauhaus_slider_from_params(self, "size");
-  dt_bauhaus_slider_set_factor(g->size, 100);
   dt_bauhaus_slider_set_digits(g->size, 4);
-  dt_bauhaus_slider_set_format(g->size, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->size, "%");
   gtk_widget_set_tooltip_text(g->size, _("size of the border in percent of the full image"));
 
   g->aspect = dt_bauhaus_combobox_new(self);
@@ -1060,7 +1051,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->pos_h, _("select the horizontal position ratio relative to top "
                                           "or right click and type your own (y:h)"));
   g->pos_h_slider = dt_bauhaus_slider_from_params(self, "pos_h");
-  dt_bauhaus_slider_set_step(g->pos_h_slider, 0.1);
   gtk_widget_set_tooltip_text(g->pos_h_slider, _("custom horizontal position"));
 
   g->pos_v = dt_bauhaus_combobox_new(self);
@@ -1071,23 +1061,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->pos_v, _("select the vertical position ratio relative to left "
                                           "or right click and type your own (x:w)"));
   g->pos_v_slider = dt_bauhaus_slider_from_params(self, "pos_v");
-  dt_bauhaus_slider_set_step(g->pos_v_slider, 0.1);
   gtk_widget_set_tooltip_text(g->pos_v_slider, _("custom vertical position"));
 
   gui_init_positions(self);
 
   g->frame_size = dt_bauhaus_slider_from_params(self, "frame_size");
-  dt_bauhaus_slider_set_factor(g->frame_size, 100);
-  dt_bauhaus_slider_set_step(g->frame_size, 0.005);
   dt_bauhaus_slider_set_digits(g->frame_size, 4);
-  dt_bauhaus_slider_set_format(g->frame_size, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->frame_size, "%");
   gtk_widget_set_tooltip_text(g->frame_size, _("size of the frame line in percent of min border width"));
 
   g->frame_offset = dt_bauhaus_slider_from_params(self, "frame_offset");
-  dt_bauhaus_slider_set_factor(g->frame_offset, 100);
-  dt_bauhaus_slider_set_step(g->frame_size, 0.005);
   dt_bauhaus_slider_set_digits(g->frame_offset, 4);
-  dt_bauhaus_slider_set_format(g->frame_offset, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->frame_offset, "%");
   gtk_widget_set_tooltip_text(g->frame_offset, _("offset of the frame line beginning on picture side"));
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };

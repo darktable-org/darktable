@@ -420,15 +420,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t *)self->gui_data;
-  dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set(g->amount, p->amount);
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 7; // sharpen.cl, from programs.conf
@@ -456,17 +447,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   dt_bauhaus_slider_set_soft_max(g->radius, 8.0);
-  dt_bauhaus_slider_set_step(g->radius, 0.1);
   dt_bauhaus_slider_set_digits(g->radius, 3);
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the unblurring"));
 
   g->amount = dt_bauhaus_slider_from_params(self, N_("amount"));
-  dt_bauhaus_slider_set_step(g->amount, 0.01);
   dt_bauhaus_slider_set_digits(g->amount, 3);
   gtk_widget_set_tooltip_text(g->amount, _("strength of the sharpen"));
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
-  dt_bauhaus_slider_set_step(g->threshold, 0.1);
   dt_bauhaus_slider_set_digits(g->threshold, 3);
   gtk_widget_set_tooltip_text(g->threshold, _("threshold to activate sharpen"));
 }

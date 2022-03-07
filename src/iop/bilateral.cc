@@ -277,17 +277,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
-  dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)self->params;
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  // dt_bauhaus_slider_set(g->scale2, p->sigma[1]);
-  dt_bauhaus_slider_set_soft(g->red, p->red);
-  dt_bauhaus_slider_set_soft(g->green, p->green);
-  dt_bauhaus_slider_set_soft(g->blue, p->blue);
-}
-
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
@@ -312,7 +301,6 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   gtk_widget_set_tooltip_text(g->radius, _("spatial extent of the gaussian"));
   dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 30.0);
-  dt_bauhaus_slider_set_step(g->radius, 1.0);
 
   g->red = dt_bauhaus_slider_from_params(self, N_("red"));
   gtk_widget_set_tooltip_text(g->red, _("how much to blur red"));

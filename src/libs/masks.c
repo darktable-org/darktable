@@ -765,16 +765,9 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
   g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
 }
 
-static void _tree_cell_editing_started(GtkCellRenderer *cell, GtkCellEditable *editable, const gchar *path,
-                                       gpointer data)
-{
-  dt_control_key_accelerators_off(darktable.control);
-}
-
 static void _tree_cell_edited(GtkCellRendererText *cell, gchar *path_string, gchar *new_text,
                               dt_lib_module_t *self)
 {
-  dt_control_key_accelerators_on(darktable.control);
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeIter iter;
@@ -1731,7 +1724,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", TREE_TEXT);
   gtk_tree_view_column_add_attribute(col, renderer, "editable", TREE_EDITABLE);
-  g_signal_connect(renderer, "editing-started", (GCallback)_tree_cell_editing_started, self);
   g_signal_connect(renderer, "edited", (GCallback)_tree_cell_edited, self);
   renderer = gtk_cell_renderer_pixbuf_new();
   gtk_tree_view_column_pack_end(col, renderer, FALSE);

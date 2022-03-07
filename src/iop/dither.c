@@ -862,7 +862,6 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_dither_gui_data_t *g = (dt_iop_dither_gui_data_t *)self->gui_data;
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
-  dt_bauhaus_combobox_set(g->dither_type, p->dither_type);
 #if 0
   dt_bauhaus_slider_set(g->radius, p->random.radius);
 
@@ -871,8 +870,6 @@ void gui_update(struct dt_iop_module_t *self)
   dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[2], 2);
   dtgtk_gradient_slider_multivalue_set_value(DTGTK_GRADIENT_SLIDER(g->range), p->random.range[3], 3);
 #endif
-
-  dt_bauhaus_slider_set(g->damping, p->random.damping);
 
   gtk_widget_set_visible(g->random, p->dither_type == DITHER_RANDOM);
 }
@@ -908,7 +905,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text(g->damping, _("damping level of random dither"));
   dt_bauhaus_slider_set_digits(g->damping, 3);
-  dt_bauhaus_slider_set_format(g->damping, "%.0fdB");
+  dt_bauhaus_slider_set_format(g->damping, " dB");
 
 #if 0
   gtk_box_pack_start(GTK_BOX(g->random), g->radius, TRUE, TRUE, 0);

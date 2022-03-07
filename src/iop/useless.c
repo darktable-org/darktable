@@ -414,7 +414,7 @@ static void extra_callback(GtkWidget *w, dt_iop_module_t *self)
   // Setting a widget value will trigger a callback that will update params.
   // If this is not desirable (because it might result in a cycle) then use
   // ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->factor, p->factor + extra);
+  dt_bauhaus_slider_set(g->factor, p->factor + extra);
   // and reverse with --darktable.gui->reset;
 
   // If any params updated directly, not via a callback, then
@@ -580,7 +580,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->factor, .1);
   dt_bauhaus_slider_set_digits(g->factor, 2);
   // Additional parameters determine how the value will be shown.
-  dt_bauhaus_slider_set_format(g->factor, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->factor, "%");
   // For a percentage, use factor 100.
   dt_bauhaus_slider_set_factor(g->factor, -100.0f);
   dt_bauhaus_slider_set_offset(g->factor, 100.0f);
@@ -596,7 +596,7 @@ void gui_init(dt_iop_module_t *self)
 
   // Any widgets that are _not_ directly linked to a field need to have a custom callback
   // function set up to respond to the "value-changed" signal.
-  g->extra = dt_bauhaus_slider_new_with_range(self, -0.5, 0.5, .01, 0, 2);
+  g->extra = dt_bauhaus_slider_new_with_range(self, -0.5, 0.5, 0, 0, 2);
   dt_bauhaus_widget_set_label(g->extra, NULL, N_("extra"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->extra), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->extra), "value-changed", G_CALLBACK(extra_callback), self);

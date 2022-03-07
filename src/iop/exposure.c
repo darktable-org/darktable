@@ -569,17 +569,12 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_bauhaus_combobox_set(g->mode, p->mode);
-
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->compensate_exposure_bias), p->compensate_exposure_bias);
   /* xgettext:no-c-format */
   gchar *label = g_strdup_printf(_("compensate camera exposure (%+.1f EV)"), _get_exposure_bias(self));
   gtk_button_set_label(GTK_BUTTON(g->compensate_exposure_bias), label);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->compensate_exposure_bias))), PANGO_ELLIPSIZE_MIDDLE);
   g_free(label);
-
-  dt_bauhaus_slider_set_soft(g->black, p->black);
-  dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
 
   g->spot_RGB[0] = 0.f;
   g->spot_RGB[1] = 0.f;
@@ -595,9 +590,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->lightness_spot, lightness);
 
   dt_iop_gui_leave_critical_section(self);
-
-  dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
-  dt_bauhaus_slider_set(g->deflicker_target_level, p->deflicker_target_level);
 
   free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
@@ -653,7 +645,7 @@ static void _exposure_set_white(struct dt_iop_module_t *self, const float white)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
+  dt_bauhaus_slider_set(g->exposure, p->exposure);
   --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -710,7 +702,7 @@ static void _exposure_set_black(struct dt_iop_module_t *self, const float black)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->black, p->black);
+  dt_bauhaus_slider_set(g->black, p->black);
   --darktable.gui->reset;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -782,7 +774,7 @@ static void _auto_set_exposure(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
 
     // Return the values in sliders
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set_soft(g->lightness_spot, Lab_out[0]);
+    dt_bauhaus_slider_set(g->lightness_spot, Lab_out[0]);
     _paint_hue(self);
     --darktable.gui->reset;
 
@@ -970,8 +962,8 @@ static void _paint_hue(dt_iop_module_t *self)
   // update the fill background color of LCh sliders
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  const float lightness_min = DT_BAUHAUS_WIDGET(g->lightness_spot)->data.slider.min;
-  const float lightness_max = DT_BAUHAUS_WIDGET(g->lightness_spot)->data.slider.max;
+  const float lightness_min = dt_bauhaus_slider_get_hard_min(g->lightness_spot);
+  const float lightness_max = dt_bauhaus_slider_get_hard_max(g->lightness_spot);
 
   const float lightness_range = lightness_max - lightness_min;
 
@@ -1046,23 +1038,21 @@ void gui_init(struct dt_iop_module_t *self)
   g->exposure = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
                                     dt_bauhaus_slider_from_params(self, N_("exposure")));
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
-  dt_bauhaus_slider_set_step(g->exposure, 0.02);
   dt_bauhaus_slider_set_digits(g->exposure, 3);
-  dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   dt_bauhaus_slider_set_soft_range(g->exposure, -3.0, 4.0);
 
   GtkWidget *vbox_deflicker = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_deflicker, "deflicker");
 
   g->deflicker_percentile = dt_bauhaus_slider_from_params(self, "deflicker_percentile");
-  dt_bauhaus_slider_set_format(g->deflicker_percentile, "%.2f%%");
+  dt_bauhaus_slider_set_format(g->deflicker_percentile, "%");
   gtk_widget_set_tooltip_text(g->deflicker_percentile,
                               // xgettext:no-c-format
                               _("where in the histogram to meter for deflicking. E.g. 50% is median"));
 
   g->deflicker_target_level = dt_bauhaus_slider_from_params(self, "deflicker_target_level");
-  dt_bauhaus_slider_set_step(g->deflicker_target_level, 0.1);
-  dt_bauhaus_slider_set_format(g->deflicker_target_level, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->deflicker_target_level, _(" EV"));
   gtk_widget_set_tooltip_text(g->deflicker_target_level,
                               _("where to place the exposure level for processed pics, EV below overexposure."));
 
@@ -1090,7 +1080,6 @@ void gui_init(struct dt_iop_module_t *self)
                                           "you should never use it to add more density in blacks!\n"
                                           "if poorly set, it will clip near-black colors out of gamut\n"
                                           "by pushing RGB values into negatives."));
-  dt_bauhaus_slider_set_step(g->black, 0.001);
   dt_bauhaus_slider_set_digits(g->black, 4);
   dt_bauhaus_slider_set_soft_range(g->black, -0.1, 0.1);
 
@@ -1145,9 +1134,9 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->target_spot), "draw", G_CALLBACK(_target_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
 
-  g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.5, 0, 1);
+  g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., 100., 0, 0, 1);
   dt_bauhaus_widget_set_label(g->lightness_spot, NULL, _("lightness"));
-  dt_bauhaus_slider_set_format(g->lightness_spot, "%.1f %%");
+  dt_bauhaus_slider_set_format(g->lightness_spot, "%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);

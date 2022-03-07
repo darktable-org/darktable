@@ -1021,18 +1021,12 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  dt_bauhaus_slider_set(g->opacity, p->opacity);
-  dt_bauhaus_slider_set_soft(g->scale, p->scale);
-  dt_bauhaus_slider_set(g->rotate, p->rotate);
-  dt_bauhaus_slider_set(g->x_offset, p->xoffset);
-  dt_bauhaus_slider_set(g->y_offset, p->yoffset);
   for(int i = 0; i < 9; i++)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
   _combo_box_set_active_text(g, p->filename);
-  dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
@@ -1132,12 +1126,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Add opacity/scale sliders to table
   g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
-  dt_bauhaus_slider_set_format(g->opacity, "%.f%%");
+  dt_bauhaus_slider_set_format(g->opacity, "%");
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
   dt_bauhaus_slider_set_soft_max(g->scale, 100.0);
-  dt_bauhaus_slider_set_format(g->scale, "%.f%%");
+  dt_bauhaus_slider_set_format(g->scale, "%");
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
-  dt_bauhaus_slider_set_format(g->rotate, "%.02f°");
+  dt_bauhaus_slider_set_format(g->rotate, "°");
 
   g->sizeto = dt_bauhaus_combobox_from_params(self, "sizeto");
 //  dt_bauhaus_combobox_add(g->sizeto, C_("size", "image"));

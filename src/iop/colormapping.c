@@ -840,16 +840,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
-  dt_bauhaus_slider_set(g->clusters, p->n);
-  dt_bauhaus_slider_set(g->dominance, p->dominance);
-  dt_bauhaus_slider_set(g->equalization, p->equalization);
-  dt_control_queue_redraw_widget(self->widget);
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
@@ -1081,11 +1071,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->dominance = dt_bauhaus_slider_from_params(self, "dominance");
   gtk_widget_set_tooltip_text(g->dominance, _("how clusters are mapped. low values: based on color "
                                               "proximity, high values: based on color dominance"));
-  dt_bauhaus_slider_set_format(g->dominance, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->dominance, "%");
 
   g->equalization = dt_bauhaus_slider_from_params(self, "equalization");
   gtk_widget_set_tooltip_text(g->equalization, _("level of histogram equalization"));
-  dt_bauhaus_slider_set_format(g->equalization, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->equalization, "%");
 
   /* add signal handler for preview pipe finished: process clusters if requested */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,

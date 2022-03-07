@@ -462,8 +462,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     p->shadows_range = EVmin;
 
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
-    dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
+    dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
+    dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
     --darktable.gui->reset;
   }
 }
@@ -587,17 +587,8 @@ void gui_reset(dt_iop_module_t *self)
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
-
-  dt_bauhaus_combobox_set(g->mode, p->mode);
-  dt_bauhaus_slider_set_soft(g->linear, p->linear);
-  dt_bauhaus_slider_set_soft(g->gamma, p->gamma);
-  dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
-  dt_bauhaus_slider_set_soft(g->grey_point, p->grey_point);
-  dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
-  dt_bauhaus_slider_set_soft(g->security_factor, p->security_factor);
 
   gui_changed(self, g->mode, 0);
 }
@@ -651,27 +642,25 @@ void gui_init(dt_iop_module_t *self)
 
   g->grey_point
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "grey_point"));
-  dt_bauhaus_slider_set_step(g->grey_point, 0.5);
-  dt_bauhaus_slider_set_format(g->grey_point, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->grey_point, "%");
   gtk_widget_set_tooltip_text(g->grey_point, _("adjust to match the average luma of the subject"));
 
   g->shadows_range
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "shadows_range"));
   dt_bauhaus_slider_set_soft_max(g->shadows_range, 0.0);
-  dt_bauhaus_slider_set_format(g->shadows_range, "%.2f EV");
+  dt_bauhaus_slider_set_format(g->shadows_range, _(" EV"));
   gtk_widget_set_tooltip_text(g->shadows_range, _("number of stops between middle gray and pure black\nthis is a reading a posemeter would give you on the scene"));
 
   g->dynamic_range
       = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "dynamic_range"));
   dt_bauhaus_slider_set_soft_range(g->dynamic_range, 0.5, 16.0);
-  dt_bauhaus_slider_set_format(g->dynamic_range, "%.2f EV");
+  dt_bauhaus_slider_set_format(g->dynamic_range, _(" EV"));
   gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a posemeter would give you on the scene"));
 
   gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 0);
 
   g->security_factor = dt_bauhaus_slider_from_params(self, "security_factor");
-  dt_bauhaus_slider_set_step(g->security_factor, 0.1);
-  dt_bauhaus_slider_set_format(g->security_factor, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->security_factor, "%");
   gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is useful when noise perturbates the measurements"));
 
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));

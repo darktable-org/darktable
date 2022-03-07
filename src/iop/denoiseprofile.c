@@ -3017,8 +3017,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     {
       gtk_widget_set_visible(g->radius, TRUE);
       gtk_widget_set_visible(g->scattering, TRUE);
-      dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
-      dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
       gtk_widget_set_visible(g->radius, FALSE);
       gtk_widget_set_visible(g->scattering, FALSE);
     }
@@ -3027,8 +3027,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       // we are in wavelets mode.
       // we need to show the box_nlm, setting the sliders to visible is not enough
       gtk_widget_show_all(g->box_nlm);
-      dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
-      dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
+      dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
       gtk_widget_hide(g->box_nlm);
     }
     gtk_widget_set_visible(g->shadows, TRUE);
@@ -3054,14 +3054,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
 
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set_soft(g->nbhood, p->nbhood);
-  dt_bauhaus_slider_set_soft(g->strength, p->strength);
-  dt_bauhaus_slider_set_soft(g->overshooting, p->overshooting);
-  dt_bauhaus_slider_set_soft(g->shadows, p->shadows);
-  dt_bauhaus_slider_set_soft(g->bias, p->bias);
-  dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
-  dt_bauhaus_slider_set_soft(g->central_pixel_weight, p->central_pixel_weight);
   dt_bauhaus_combobox_set(g->profile, -1);
   unsigned combobox_index = 0;
   switch (p->mode)
@@ -3113,13 +3105,12 @@ void gui_update(dt_iop_module_t *self)
   if((p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO))
   {
     const float gain = p->overshooting;
-    dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
-    dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+    dt_bauhaus_slider_set(g->radius, infer_radius_from_profile(a * gain));
+    dt_bauhaus_slider_set(g->scattering, infer_scattering_from_profile(a * gain));
     dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
     dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
   }
   dt_bauhaus_combobox_set(g->mode, combobox_index);
-  dt_bauhaus_combobox_set(g->wavelet_color_mode, p->wavelet_color_mode);
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -3576,17 +3567,13 @@ void gui_init(dt_iop_module_t *self)
 
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_range(g->radius, 0.0, 8.0);
-  dt_bauhaus_slider_set_step(g->radius, 1.0);
   dt_bauhaus_slider_set_digits(g->radius, 0);
   g->nbhood = dt_bauhaus_slider_from_params(self, "nbhood");
-  dt_bauhaus_slider_set_step(g->nbhood, 1.0);
   dt_bauhaus_slider_set_digits(g->nbhood, 0);
   g->scattering = dt_bauhaus_slider_from_params(self, "scattering");
   dt_bauhaus_slider_set_soft_max(g->scattering, 1.0f);
-  dt_bauhaus_slider_set_step(g->scattering, 0.01f);
   g->central_pixel_weight = dt_bauhaus_slider_from_params(self, "central_pixel_weight");
   dt_bauhaus_slider_set_soft_max(g->central_pixel_weight, 1.0f);
-  dt_bauhaus_slider_set_step(g->central_pixel_weight, 0.01f);
 
   g->box_wavelets = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -3693,13 +3680,10 @@ void gui_init(dt_iop_module_t *self)
 
   g->overshooting = dt_bauhaus_slider_from_params(self, "overshooting");
   dt_bauhaus_slider_set_soft_max(g->overshooting, 4.0f);
-  dt_bauhaus_slider_set_step(g->overshooting, 0.05f);
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_soft_max(g->strength, 4.0f);
   dt_bauhaus_slider_set_digits(g->strength, 3);
-  dt_bauhaus_slider_set_step(g->strength, 0.05f);
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
-  dt_bauhaus_slider_set_step(g->shadows, 0.05f);
   g->bias = dt_bauhaus_slider_from_params(self, "bias");
   dt_bauhaus_slider_set_soft_range(g->bias, -10.0f, 10.0f);
 

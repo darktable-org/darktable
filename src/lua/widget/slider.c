@@ -140,7 +140,7 @@ static int value_member(lua_State *L)
   luaA_to(L,lua_slider,&slider,1);
   if(lua_gettop(L) > 2) {
     float value = luaL_checknumber(L,3);
-    dt_bauhaus_slider_set_soft(slider->widget,value);
+    dt_bauhaus_slider_set(slider->widget,value);
     return 0;
   }
   lua_pushnumber(L,dt_bauhaus_slider_get(slider->widget));
