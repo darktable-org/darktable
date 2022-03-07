@@ -171,11 +171,14 @@ GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
   {
     GDateTime *gdt = g_date_time_new((GTimeZone *)tz, dt.year, dt.month, dt.day,
                                      dt.hour, dt.minute, dt.second);
-    if(dt.msec)
+    if(gdt)
     {
-      GDateTime *gdt2 = g_date_time_add(gdt, dt.msec * 1000);
-      g_date_time_unref(gdt);
-      return gdt2;
+      if(dt.msec)
+      {
+        GDateTime *gdt2 = g_date_time_add(gdt, dt.msec * 1000);
+        g_date_time_unref(gdt);
+        return gdt2;
+      }
     }
     return gdt;
   }
@@ -257,12 +260,18 @@ gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_len
     else
       gdt2 = g_date_time_add(gdt, 2);
     g_date_time_unref(gdt);
-    GDateTime *gdt3 = g_date_time_add(gdt2, -1);
-    g_date_time_unref(gdt2);
-    gdt = gdt3;
-    dt_datetime_gdatetime_to_exif(exif, exif_len, gdt);
-    g_date_time_unref(gdt);
-    return TRUE;
+    if(gdt2)
+    {
+      GDateTime *gdt3 = g_date_time_add(gdt2, -1);
+      g_date_time_unref(gdt2);
+      gdt = gdt3;
+      if(gdt)
+      {
+        dt_datetime_gdatetime_to_exif(exif, exif_len, gdt);
+        g_date_time_unref(gdt);
+        return TRUE;
+      }
+    }
   }
   return FALSE;
 }
