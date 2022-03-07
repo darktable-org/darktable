@@ -2327,7 +2327,7 @@ static dt_job_t *_control_import_job_create(GList *imgs, const char *datetime_ov
     data->session = dt_import_session_new();
     char *jobcode = dt_conf_get_string("ui_last/import_jobcode");
     dt_import_session_set_name(data->session, jobcode);
-    if(datetime_override) dt_import_session_set_time(data->session, datetime_override);
+    if(datetime_override && datetime_override[0]) dt_import_session_set_time(data->session, datetime_override);
     g_free(jobcode);
   }
 
