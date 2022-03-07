@@ -980,6 +980,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->falloff_scale = dt_bauhaus_slider_from_params(self, "falloff_scale");
   g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_section_label_new(_("position / form")), FALSE, FALSE, 0);
+
   g->center_x = dt_bauhaus_slider_from_params(self, "center.x");
   g->center_y = dt_bauhaus_slider_from_params(self, "center.y");
   g->shape = dt_bauhaus_slider_from_params(self, N_("shape"));
