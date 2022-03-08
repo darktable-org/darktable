@@ -1543,10 +1543,9 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   #define CPF_USER_DATA_INCLUDE CPF_USER_DATA
   #define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
-  PREAMBLE(1, 0, 0, 0)
+  PREAMBLE(1, 1, 0, 0)
 
   const double r = 0.4;
-
   const float alpha = flags & CPF_PRELIGHT ? 1.0 : 0.6;
   const dt_colorlabels_enum color = (flags & 7);
   const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
@@ -1563,16 +1562,13 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   if(flags & CPF_USER_DATA_INCLUDE)
   {
     cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
-    cairo_set_line_width(cr, .2);
-    cairo_stroke(cr);
+    cairo_fill(cr);
   }
   else if(flags & CPF_USER_DATA_EXCLUDE)
   {
     /* fill base color */
     cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
-    cairo_fill(cr);
-    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.6);
-    cairo_set_line_width(cr, .2);
+    cairo_stroke(cr);
     cairo_move_to(cr, 0.1, 0.1);
     cairo_line_to(cr, 0.9, 0.9);
     cairo_move_to(cr, 0.9, 0.1);
@@ -1583,7 +1579,7 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   {
     /* fill base color */
     cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
-    cairo_fill(cr);
+    cairo_stroke(cr);
   }
 
   FINISH
