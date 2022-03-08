@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1050,11 +1050,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  GtkWidget *label = dt_ui_section_label_new(_("content"));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
-  gtk_style_context_add_class(context, "section_label_top");
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
@@ -1066,7 +1061,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
+  GtkWidget *label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
   g->watermarks = dt_bauhaus_combobox_new(self);
   gtk_widget_set_hexpand(GTK_WIDGET(g->watermarks), TRUE);
   char *tooltip = g_strdup_printf(_("SVG watermarks in %s/watermarks or %s/watermarks"), configdir, datadir);
@@ -1077,24 +1072,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->watermarks, label, GTK_POS_RIGHT, 1, 1);
   gtk_grid_attach_next_to(grid, g->refresh, g->watermarks, GTK_POS_RIGHT, 1, 1);
-
-  // Watermark color
-  float red = dt_conf_get_float("plugins/darkroom/watermark/color_red");
-  float green = dt_conf_get_float("plugins/darkroom/watermark/color_green");
-  float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
-  GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
-
-  label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
-  g->colorpick = gtk_color_button_new_with_rgba(&color);
-  gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
-  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
-  g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
-
-  gtk_grid_attach(grid, label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(grid, g->color_picker_button, g->colorpick, GTK_POS_RIGHT, 1, 1);
 
   // Simple text
   label = dt_ui_label_new(_("text"));
@@ -1120,24 +1097,44 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->fontsel, label, GTK_POS_RIGHT, 2, 1);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
+  // Watermark color
+  float red = dt_conf_get_float("plugins/darkroom/watermark/color_red");
+  float green = dt_conf_get_float("plugins/darkroom/watermark/color_green");
+  float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
+  GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), TRUE, TRUE, 0);
+  label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
+  g->colorpick = gtk_color_button_new_with_rgba(&color);
+  gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
+  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
+  g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
+
+  gtk_grid_attach(grid, label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(grid, g->color_picker_button, g->colorpick, GTK_POS_RIGHT, 1, 1);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
   g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
   dt_bauhaus_slider_set_format(g->opacity, "%");
-  g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
-  dt_bauhaus_slider_set_soft_max(g->scale, 100.0);
-  dt_bauhaus_slider_set_format(g->scale, "%");
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("placement")), TRUE, TRUE, 0);
+
+  // rotate
   g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
   dt_bauhaus_slider_set_format(g->rotate, "°");
 
-  g->sizeto = dt_bauhaus_combobox_from_params(self, "sizeto");
-//  dt_bauhaus_combobox_add(g->sizeto, C_("size", "image"));
-  gtk_widget_set_tooltip_text(g->sizeto, _("size is relative to"));
+  // scale
+  g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
+  dt_bauhaus_slider_set_soft_max(g->scale, 100.0);
+  dt_bauhaus_slider_set_format(g->scale, "%");
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("position")), TRUE, TRUE, 0);
+  // scale-on
+  g->sizeto = dt_bauhaus_combobox_from_params(self, "sizeto");
+  gtk_widget_set_tooltip_text(g->sizeto, _("size is relative to"));
 
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();
