@@ -1051,11 +1051,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *box_enabled = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  GtkWidget *lb = dt_ui_section_label_new(_("crop settings"));
-  GtkStyleContext *context = gtk_widget_get_style_context(lb);
-  gtk_style_context_add_class(context, "section_label_top");
-  gtk_box_pack_start(GTK_BOX(box_enabled), lb, TRUE, TRUE, 0);
-
   dt_iop_crop_aspect_t aspects[] = {
     { _("freehand"), 0, 0 },
     { _("original image"), 1, 0 },
