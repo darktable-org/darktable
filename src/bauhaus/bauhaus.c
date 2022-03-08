@@ -1412,7 +1412,7 @@ void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
 static void _bauhaus_combobox_set(dt_bauhaus_widget_t *w, const int pos, const gboolean mute)
 {
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  d->active = CLAMP(pos, -1, d->entries->len - 1);
+  d->active = CLAMP(pos, -1, (int)d->entries->len - 1);
   gtk_widget_queue_draw(GTK_WIDGET(w));
 
   if(!darktable.gui->reset && !mute)
