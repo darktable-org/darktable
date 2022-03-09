@@ -83,6 +83,13 @@ typedef struct _widgets_colors_t
   GtkWidget *operator;
 } _widgets_colors_t;
 
+typedef struct _widgets_search_t
+{
+  GtkWidget *text;
+  double last_key_time;
+  int time_out;
+} _widgets_search_t;
+
 typedef struct _widgets_fallback_t
 {
   GtkWidget *entry;
@@ -391,7 +398,7 @@ static void _event_rule_changed(GtkWidget *entry, dt_lib_filtering_rule_t *rule)
 
 static void _rule_set_raw_text(dt_lib_filtering_rule_t *rule, const gchar *text, const gboolean signal)
 {
-  snprintf(rule->raw_text, sizeof(rule->raw_text), "%s", text);
+  snprintf(rule->raw_text, sizeof(rule->raw_text), "%s", (text == NULL) ? "" : text);
   if(signal) _event_rule_changed(NULL, rule);
 }
 
@@ -1741,6 +1748,142 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), hbox, TRUE, TRUE, 0);
 }
 
+static void _search_set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  if(dimmed)
+    gtk_style_context_add_class(context, "dt_dimmed");
+  else
+    gtk_style_context_remove_class(context, "dt_dimmed");
+  gtk_widget_queue_draw(GTK_WIDGET(widget));
+}
+
+static gboolean _search_changed_wait(gpointer user_data)
+{
+  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
+  _widgets_search_t *search = (_widgets_search_t *)rule->w_specific;
+  if(search->time_out)
+  {
+    search->time_out--;
+    double clock = dt_get_wtime();
+    if(clock - search->last_key_time >= 0.4)
+    {
+      search->time_out = 1; // force the query execution
+      search->last_key_time = clock;
+    }
+
+    if(search->time_out == 1)
+    { // tell we are busy
+      _search_set_widget_dimmed(search->text, TRUE);
+    }
+    else if(!search->time_out)
+    {
+      // by default adds start and end wildcard
+      // ' or " removes the corresponding wildcard
+      char start[2] = { 0 };
+      char *text = NULL;
+      const char *entry = gtk_entry_get_text(GTK_ENTRY(search->text));
+      char *p = (char *)entry;
+      if(strlen(entry) > 1 && !(entry[0] == '"' && entry[1] == '"'))
+      {
+        if(entry[0] == '"')
+          p++;
+        else if(entry[0])
+          start[0] = '%';
+        if(entry[strlen(entry) - 1] == '"')
+        {
+          text = g_strconcat(start, (char *)p, NULL);
+          text[strlen(text) - 1] = '\0';
+        }
+        else if(entry[0])
+          text = g_strconcat(start, (char *)p, "%", NULL);
+      }
+
+      // avoids activating twice the same query
+      if(g_strcmp0(rule->raw_text, text))
+      {
+        _rule_set_raw_text(rule, text, TRUE);
+      }
+      else
+        g_free(text);
+      _search_set_widget_dimmed(search->text, FALSE);
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+static void _search_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
+  if(rule->manual_widget_set) return;
+  if(!rule->w_specific) return;
+  _widgets_search_t *search = (_widgets_search_t *)rule->w_specific;
+
+  search->last_key_time = dt_get_wtime();
+  if(!search->time_out)
+  {
+    search->time_out = 15;
+    g_timeout_add(100, _search_changed_wait, rule);
+  }
+}
+
+static void _search_reset_text_entry(GtkButton *button, dt_lib_filtering_rule_t *rule)
+{
+  _rule_set_raw_text(rule, "", TRUE);
+}
+
+static gboolean _search_update(dt_lib_filtering_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+
+  rule->manual_widget_set++;
+  _widgets_search_t *search = (_widgets_search_t *)rule->w_specific;
+  char txt[1024] = { 0 };
+  if(g_str_has_prefix(rule->raw_text, "%") && g_str_has_suffix(rule->raw_text, "%"))
+  {
+    snprintf(txt, MIN(sizeof(txt), strlen(rule->raw_text) - 1), "%s", rule->raw_text + 1);
+  }
+  else if(g_strcmp0(rule->raw_text, ""))
+  {
+    snprintf(txt, sizeof(txt), "\"%s\"", rule->raw_text);
+  }
+
+  gtk_entry_set_text(GTK_ENTRY(search->text), txt);
+  rule->manual_widget_set--;
+
+  return TRUE;
+}
+
+static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
+                                const gchar *text, dt_lib_module_t *self)
+{
+  _widgets_search_t *search = (_widgets_search_t *)g_malloc0(sizeof(_widgets_search_t));
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(rule->w_special_box), hbox, TRUE, TRUE, 0);
+  search->text = gtk_search_entry_new();
+  g_signal_connect(G_OBJECT(search->text), "search-changed", G_CALLBACK(_search_changed), rule);
+  g_signal_connect(G_OBJECT(search->text), "stop-search", G_CALLBACK(_search_reset_text_entry), rule);
+  gtk_entry_set_width_chars(GTK_ENTRY(search->text), 0);
+  gtk_widget_set_tooltip_text(search->text,
+                              /* xgettext:no-c-format */
+                              _("filter by text from images metadata, tags, file path and name"
+                                /* xgettext:no-c-format */
+                                "\n`%' is the wildcard character"
+                                /* xgettext:no-c-format */
+                                "\nby default start and end wildcards are auto-applied"
+                                /* xgettext:no-c-format */
+                                "\nstarting or ending with a double quote disables the corresponding wildcard"
+                                /* xgettext:no-c-format */
+                                "\nis dimmed during the search execution"));
+  GtkStyleContext *context = gtk_widget_get_style_context(search->text);
+  gtk_style_context_add_class(context, "dt_transparent_background");
+  gtk_box_pack_start(GTK_BOX(hbox), search->text, TRUE, TRUE, 0);
+
+  rule->w_specific = search;
+}
+
 static void _fallback_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
@@ -1798,6 +1941,8 @@ static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
       return _filename_update(rule);
     case DT_COLLECTION_PROP_COLORLABEL:
       return _colors_update(rule);
+    case DT_COLLECTION_PROP_TEXTSEARCH:
+      return _search_update(rule);
     default:
       return _fallback_update(rule);
   }
@@ -1849,6 +1994,9 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
       break;
     case DT_COLLECTION_PROP_COLORLABEL:
       _colors_widget_init(rule, rule->prop, text, self);
+      break;
+    case DT_COLLECTION_PROP_TEXTSEARCH:
+      _search_widget_init(rule, rule->prop, text, self);
       break;
     default:
       _fallback_widget_init(rule, rule->prop, text, self);
@@ -2030,6 +2178,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   }*/
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TEXTSEARCH);
   /*ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GEOTAGGING);*/
 
   _popup_add_item(spop, _("times"), 0, TRUE, NULL, NULL, self);
