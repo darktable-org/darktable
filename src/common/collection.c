@@ -921,6 +921,8 @@ const char *dt_collection_name_untranslated(dt_collection_properties_t prop)
       return "module order";
     case DT_COLLECTION_PROP_RATING:
       return "rating";
+    case DT_COLLECTION_PROP_TEXTSEARCH:
+      return "search";
     case DT_COLLECTION_PROP_LAST:             return NULL;
     default:
     {
@@ -2264,7 +2266,20 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       break;
 
-    case DT_COLLECTION_PROP_RATING: // image rating
+      case DT_COLLECTION_PROP_TEXTSEARCH: // text search
+      {
+        query = g_strdup_printf("(id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
+                                " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
+                                "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
+                                " UNION SELECT id FROM main.images"
+                                "   WHERE filename LIKE '%s'"
+                                " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
+                                "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
+                                escaped_text, escaped_text, escaped_text, escaped_text, escaped_text);
+      }
+      break;
+
+      case DT_COLLECTION_PROP_RATING: // image rating
       {
         gchar *operator, *number1, *number2;
         dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
