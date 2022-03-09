@@ -1602,6 +1602,7 @@ void init_presets(dt_lib_module_t *self)
   AM("borders");
   AM("colorize");
   AM("colormapping");
+  AM("enlargecanvas");
   AM("graduatednd");
   AM("grain");
   AM("highpass");
@@ -1693,6 +1694,7 @@ void init_presets(dt_lib_module_t *self)
 
   SMG(C_("modulegroup", "effect"), "effect");
   AM("borders");
+  AM("enlargecanvas");
   AM("colorize");
   AM("graduatednd");
   AM("grain");
@@ -1742,6 +1744,7 @@ void init_presets(dt_lib_module_t *self)
   SMG(C_("modulegroup", "effect"), "effect");
   AM("atrous");
   AM("borders");
+  AM("enlargecanvas");
   AM("graduatednd");
   AM("grain");
   AM("vignette");

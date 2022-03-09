@@ -36,6 +36,7 @@ build/lib/darktable/plugins/introspection_demosaic.c
 build/lib/darktable/plugins/introspection_denoiseprofile.c
 build/lib/darktable/plugins/introspection_diffuse.c
 build/lib/darktable/plugins/introspection_dither.c
+build/lib/darktable/plugins/introspection_enlargecanvas.c
 build/lib/darktable/plugins/introspection_equalizer.c
 build/lib/darktable/plugins/introspection_exposure.c
 build/lib/darktable/plugins/introspection_filmic.c
@@ -234,6 +235,7 @@ src/iop/demosaicing/xtrans.c
 src/iop/denoiseprofile.c
 src/iop/diffuse.c
 src/iop/dither.c
+src/iop/enlargecanvas.c
 src/iop/equalizer.c
 src/iop/exposure.c
 src/iop/filmic.c
