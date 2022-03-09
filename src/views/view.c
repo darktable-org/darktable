@@ -97,6 +97,7 @@ void dt_view_manager_gui_init(dt_view_manager_t *vm)
   {
     dt_view_t *view = (dt_view_t *)iter->data;
     if(view->gui_init) view->gui_init(view);
+    if(view->connect_key_accels) view->connect_key_accels(view);
   }
 }
 
