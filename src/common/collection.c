@@ -554,6 +554,9 @@ void dt_collection_reset(const dt_collection_t *collection)
   params->rating = dt_conf_get_int("plugins/collection/rating");
   params->comparator = dt_conf_get_int("plugins/collection/rating_comparator");
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
+  g_free(params->text_filter);
+  params->text_filter = dt_conf_get_string("plugins/collection/text_filter");
+  params->colors_filter = dt_conf_get_int("plugins/collection/colors_filter");
   params->sort = dt_conf_get_int("plugins/collection/sort");
   params->sort_second_order = dt_conf_get_int("plugins/collection/sort_second_order");
   params->descending = dt_conf_get_bool("plugins/collection/descending");
@@ -1059,6 +1062,8 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query,
   {
     dt_conf_set_int("plugins/collection/query_flags", collection->params.query_flags);
     dt_conf_set_int("plugins/collection/filter_flags", collection->params.filter_flags);
+    dt_conf_set_string("plugins/collection/text_filter", collection->params.text_filter ? collection->params.text_filter : "");
+    dt_conf_set_int("plugins/collection/colors_filter", collection->params.colors_filter);
     dt_conf_set_int("plugins/collection/film_id", collection->params.film_id);
     dt_conf_set_int("plugins/collection/rating", collection->params.rating);
     dt_conf_set_int("plugins/collection/rating_comparator", collection->params.comparator);
