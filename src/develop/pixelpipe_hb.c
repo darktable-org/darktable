@@ -1386,15 +1386,18 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     if(possible_cl && !fits_on_device)
     {
-      const float cl_px = dt_opencl_get_device_available(pipe->devid) / (sizeof(float) * MAX(in_bpp, bpp) * tiling.factor_cl);
+      const float cl_px = dt_opencl_get_device_available(pipe->devid) / (sizeof(float) * MAX(in_bpp, bpp) * ceilf(tiling.factor_cl));
       const float dx = MAX(roi_in.width, roi_out->width);
       const float dy = MAX(roi_in.height, roi_out->height);
       const float border = tiling.overlap + 1;
+      /* tests for required gpu mem reflects the different tiling stategies.
+         simple tiles over whole height or width or inside rectangles where we need at last the overlapping area.
+      */
       const gboolean possible = (cl_px > dx * border) || (cl_px > dy * border) || (cl_px > border * border);
       if(!possible)
       {
-        dt_print(DT_DEBUG_OPENCL, "[dt_dev_pixelpipe_process_rec] module `%s' uses cpu because of extremely small tiles %i, overlap %i\n",
-            module->op, (int)cl_tilesize, (int)tiling.overlap);
+        dt_print(DT_DEBUG_OPENCL, "[dt_dev_pixelpipe_process_rec] CL: tiling impossible in module `%s'. avail=%.1fM, requ=%.1fM (%ix%i). overlap=%i\n",
+            module->op, cl_px / 1e6f, dx*dy / 1e6f, (int)dx, (int)dy, (int)tiling.overlap);
         possible_cl = FALSE;
       }
     }
