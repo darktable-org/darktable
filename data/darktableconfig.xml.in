@@ -521,8 +521,8 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/collection/colors_filter</name>
-    <type>int</type>
-    <default>0x80000000</default>
+    <type>string</type>
+    <default>80000000</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

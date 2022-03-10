@@ -192,19 +192,23 @@ static char *_decode_text_filter(const char *text)
   char *text1 = g_strdup(text);
   char *p = text1;
   char *text2;
-  if(text1[0] == '%')
-    p++;
-  else
-    start[0] = '\"';
-  if(strlen(text1) > 1 && text1[strlen(text1) - 1] == '%')
+  if(text1[0])
   {
-    text1[strlen(text1) - 1] = '\0';
-    text2 = g_strconcat(start, (char *)p, NULL);
+    if(text1[0] == '%')
+      p++;
+    else
+      start[0] = '\"';
+    if(strlen(text1) > 1 && text1[strlen(text1) - 1] == '%')
+    {
+      text1[strlen(text1) - 1] = '\0';
+      text2 = g_strconcat(start, (char *)p, NULL);
+    }
+    else
+      text2 = g_strconcat(start, (char *)p, "\"", NULL);
+    g_free(text1);
+    return text2;
   }
-  else
-    text2 = g_strconcat(start, (char *)p, "\"", NULL);
-  g_free(text1);
-  return text2;
+  else return text1;
 }
 
 static gboolean _text_entry_changed_wait(gpointer user_data)
@@ -276,17 +280,17 @@ static void _reset_text_entry(GtkButton *button, dt_lib_module_t *self)
 #define CPF_USER_DATA_INCLUDE CPF_USER_DATA
 #define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
 #define CL_AND_MASK 0x80000000
-#define CL_ALL_EXCLUDED 0x3F00
+#define CL_ALL_EXCLUDED 0x3F000
 #define CL_ALL_INCLUDED 0x3F
 
 static void _update_colors_filter(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   int mask = dt_collection_get_colors_filter(darktable.collection);
-  int mask_excluded = 0x100;
+  int mask_excluded = 0x1000;
   int mask_included = 1;
   int nb = 0;
-  for(int i = 0; i < DT_COLORLABELS_LAST; i++)
+  for(int i = 0; i <= DT_COLORLABELS_LAST; i++)
   {
     const int i_mask = mask & mask_excluded ? CPF_USER_DATA_EXCLUDE : mask & mask_included ? CPF_USER_DATA_INCLUDE : 0;
     dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
@@ -317,7 +321,7 @@ static gboolean _colorlabel_clicked(GtkWidget *w, GdkEventButton *e, dt_lib_modu
 {
   const int mask = dt_collection_get_colors_filter(darktable.collection);
   const int k = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "colors_index"));
-  int mask_k = (1 << k) | (1 << (k + 8));
+  int mask_k = (1 << k) | (1 << (k + 12));
   if(k == DT_COLORLABELS_LAST)
   {
     if(mask & mask_k)
@@ -333,10 +337,10 @@ static gboolean _colorlabel_clicked(GtkWidget *w, GdkEventButton *e, dt_lib_modu
     if(mask & mask_k)
       mask_k = 0;
     else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
-      mask_k = 1 << (k + 8);
+      mask_k = 1 << (k + 12);
     else if(dt_modifier_is(e->state, 0))
       mask_k = 1 << k;
-    dt_collection_set_colors_filter(darktable.collection, (mask & ~((1 << k) | (1 << (k + 8)))) | mask_k);
+    dt_collection_set_colors_filter(darktable.collection, (mask & ~((1 << k) | (1 << (k + 12)))) | mask_k);
   }
   _update_colors_filter(self);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL, NULL);

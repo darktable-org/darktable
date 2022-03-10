@@ -277,8 +277,8 @@ int dt_collection_update(const dt_collection_t *collection)
     /* add colorlabel filter if any */
     if(collection->params.colors_filter & ~0x80000000)
     {
-      const int colors_set = collection->params.colors_filter & 0xFF;
-      const int colors_unset = (collection->params.colors_filter & 0xFF00) >> 8;
+      const int colors_set = collection->params.colors_filter & 0xFFF;
+      const int colors_unset = (collection->params.colors_filter & 0xFFF000) >> 12;
       const gboolean op = collection->params.colors_filter & 0x80000000;
       if(op) // AND
       {
@@ -556,7 +556,7 @@ void dt_collection_reset(const dt_collection_t *collection)
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
   g_free(params->text_filter);
   params->text_filter = dt_conf_get_string("plugins/collection/text_filter");
-  params->colors_filter = dt_conf_get_int("plugins/collection/colors_filter");
+  params->colors_filter = strtol(dt_conf_get_string_const("plugins/collection/colors_filter"), NULL, 16);
   params->sort = dt_conf_get_int("plugins/collection/sort");
   params->sort_second_order = dt_conf_get_int("plugins/collection/sort_second_order");
   params->descending = dt_conf_get_bool("plugins/collection/descending");
@@ -1063,7 +1063,9 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query,
     dt_conf_set_int("plugins/collection/query_flags", collection->params.query_flags);
     dt_conf_set_int("plugins/collection/filter_flags", collection->params.filter_flags);
     dt_conf_set_string("plugins/collection/text_filter", collection->params.text_filter ? collection->params.text_filter : "");
-    dt_conf_set_int("plugins/collection/colors_filter", collection->params.colors_filter);
+    char colors_filter[16];
+    sprintf(colors_filter, "%x", collection->params.colors_filter);
+    dt_conf_set_string("plugins/collection/colors_filter", colors_filter);
     dt_conf_set_int("plugins/collection/film_id", collection->params.film_id);
     dt_conf_set_int("plugins/collection/rating", collection->params.rating);
     dt_conf_set_int("plugins/collection/rating_comparator", collection->params.comparator);
