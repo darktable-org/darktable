@@ -707,6 +707,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     if(element_name) description = g_markup_escape_text(_(element_name), -1);
   }
 
+  int num_shortcuts = 0;
   for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
       !g_sequence_iter_is_end(iter);
       iter = g_sequence_iter_next(iter))
@@ -717,6 +718,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
         s->element == darktable.control->element ||
         (s->element == DT_ACTION_ELEMENT_DEFAULT && has_fallbacks)))
     {
+      num_shortcuts++;
       gchar *sc_escaped = g_markup_escape_text(_shortcut_description(s), -1);
       gchar *ac_escaped = g_markup_escape_text(_action_description(s, show_element > 0 ? 1 : 0), -1);
       description = dt_util_dstrcat(description, "%s<b><big>%s</big></b><i>%s</i>",
@@ -727,12 +729,15 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     }
   }
 
+  if(!num_shortcuts && original_markup && darktable.control->mapping_widget != widget)
+    g_clear_pointer(&description, g_free);
+
   if(description || original_markup || markup_text)
   {
     markup_text = dt_util_dstrcat(markup_text, "%s%s%s%s",
                                   markup_text && (original_markup || description) ? "\n\n" : "",
                                   original_markup ? original_markup : "",
-                                  original_markup && description ? "\n" : "",
+                                  original_markup && description ? "\n\n" : "",
                                   description ? description : "");
     gtk_tooltip_set_markup(tooltip, markup_text);
     g_free(description);
