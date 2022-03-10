@@ -54,6 +54,7 @@ declare -A LANG_NAME=( [af]=Afrikaans
                        [sr]="Serbian Cyrilic"
                        [sv]=Swedish
                        [th]=Thai
+                       [tr]=Turkish
                        [uk]=Ukrainian
                        [zh_CN]="Chinese - China"
                        [zh_TW]="Chinese - Taiwan" )
