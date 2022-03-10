@@ -1386,24 +1386,20 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     if(possible_cl && !fits_on_device)
     {
-      /* the rules for tile dimensions are much more tricky but this is a good guess estimating the
-         penalty of tiles depending on overlap.
+      const float cl_px = dt_opencl_get_device_available(pipe->devid) / (sizeof(float) * MAX(in_bpp, bpp) * ceilf(tiling.factor_cl));
+      const float dx = MAX(roi_in.width, roi_out->width);
+      const float dy = MAX(roi_in.height, roi_out->height);
+      const float border = tiling.overlap + 1;
+      /* tests for required gpu mem reflects the different tiling stategies.
+         simple tiles over whole height or width or inside rectangles where we need at last the overlapping area.
       */
-      const float cl_px  = dt_opencl_get_device_available(pipe->devid) / (float)(sizeof(float) * MAX(in_bpp, bpp) * tiling.factor_cl);
-      const float cl_tilesize = fmaxf(1.0f, sqrtf(cl_px) - tiling.overlap);
-      if(cl_tilesize < 3 * tiling.overlap)
+      const gboolean possible = (cl_px > dx * border) || (cl_px > dy * border) || (cl_px > border * border);
+      if(!possible)
       {
-        dt_print(DT_DEBUG_OPENCL, "[dt_dev_pixelpipe_process_rec] module `%s' uses cpu because of extremely small tiles %i, overlap %i\n",
-            module->op, (int)cl_tilesize, (int)tiling.overlap);
+        dt_print(DT_DEBUG_OPENCL, "[dt_dev_pixelpipe_process_rec] CL: tiling impossible in module `%s'. avail=%.1fM, requ=%.1fM (%ix%i). overlap=%i\n",
+            module->op, cl_px / 1e6f, dx*dy / 1e6f, (int)dx, (int)dy, (int)tiling.overlap);
         possible_cl = FALSE;
-
-        const float cpu_px = dt_get_available_mem() / (float)(sizeof(float) * MAX(in_bpp, bpp) * tiling.factor);
-        const float cpu_tilesize = fmaxf(1.0f, sqrtf(cpu_px) - tiling.overlap);
-        // At least push a warning here while trusting the cpu code to handle this gracefully
-        if(cpu_tilesize < 2 * tiling.overlap)
-          dt_control_log(_("problems likely ahead because of heavy cpu tiling"));
       }
-      /* we might want some more checks here */
     }
 
     if(possible_cl)
