@@ -4302,10 +4302,15 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
 
 void dt_accel_connect_instance_iop(dt_iop_module_t *module)
 {
+  gboolean focused = darktable.develop->gui_module &&
+                     darktable.develop->gui_module->so == module->so;
+  dt_action_t *blend = &darktable.control->actions_blend;
   for(GSList *w = module->widget_list; w; w = w->next)
   {
     dt_action_target_t *referral = w->data;
-    referral->action->target = referral->target;
+    dt_action_t *ac = referral->action;
+    if(focused || (ac->owner != blend && ac->owner->owner != blend))
+      ac->target = referral->target;
   }
 }
 
