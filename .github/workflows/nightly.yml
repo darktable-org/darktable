@@ -76,7 +76,7 @@ jobs:
             mingw-w64-x86_64-sqlite3
             mingw-w64-x86_64-zlib
           update: true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: true
@@ -110,7 +110,7 @@ jobs:
           cmake --build "${BUILD_DIR}" --target package
       - name: Package upload
         if: ${{ success() && matrix.btype == 'Release' && matrix.target == 'skiptest' }}
-        uses: 'actions/upload-artifact@v2'
+        uses: actions/upload-artifact@v3
         with:
           name: darktable.${{ github.sha }}.win64.zip
           path: ${{ env.BUILD_DIR }}/darktable-*.exe
