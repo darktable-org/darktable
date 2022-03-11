@@ -60,6 +60,7 @@ dt_help_url urls_db[] =
   {"masks_blending_op",          "darkroom/masking-and-blending/masks/drawn-and-parametric/"},
   {"masks_blending",             "darkroom/masking-and-blending/overview/"},
   {"masks_combined",             "darkroom/masking-and-blending/masks/drawn-and-parametric/"},
+  {"masks_refinement",           "darkroom/masking-and-blending/masks/refinement-controls/"},
   {"duplicate",                  "module-reference/utility-modules/darkroom/duplicate-manager/"},
   {"location",                   "module-reference/utility-modules/map/find-location/"},
   {"map_settings",               "module-reference/utility-modules/map/map-settings/"},
