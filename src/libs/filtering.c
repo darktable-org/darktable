@@ -62,39 +62,6 @@ typedef struct _widgets_sort_t
   GtkWidget *direction;
 } _widgets_sort_t;
 
-typedef struct _widgets_range_t
-{
-  GtkWidget *range_select;
-} _widgets_range_t;
-
-typedef struct _widgets_filename_t
-{
-  GtkWidget *name;
-  GtkWidget *ext;
-  GtkWidget *pop;
-  GtkWidget *name_tree;
-  GtkWidget *ext_tree;
-  int internal_change;
-} _widgets_filename_t;
-
-typedef struct _widgets_colors_t
-{
-  GtkWidget *colors[6];
-  GtkWidget *operator;
-} _widgets_colors_t;
-
-typedef struct _widgets_search_t
-{
-  GtkWidget *text;
-  double last_key_time;
-  int time_out;
-} _widgets_search_t;
-
-typedef struct _widgets_fallback_t
-{
-  GtkWidget *entry;
-} _widgets_fallback_t;
-
 typedef struct dt_lib_filtering_rule_t
 {
   int num;
@@ -111,9 +78,12 @@ typedef struct dt_lib_filtering_rule_t
   char raw_text[PARAM_STRING_SIZE];
   GtkWidget *w_special_box;
   void *w_specific;      // structure which contains all the widgets specific to the rule type
+  // and we have the same for the top bar duplicate widgets
+  GtkWidget *w_special_box_top;
+  void *w_specific_top;  // structure which contains all the widgets specific to the rule type
   int manual_widget_set; // when we update manually the widget, we don't want events to be handled
 
-  gchar *searchstring;
+  gboolean topbar;
 } dt_lib_filtering_rule_t;
 
 typedef struct dt_lib_filtering_t
@@ -137,6 +107,7 @@ typedef struct dt_lib_filtering_params_rule_t
   uint32_t item : 16;
   uint32_t mode : 16;
   uint32_t off : 16;
+  uint32_t topbar : 16;
   char string[PARAM_STRING_SIZE];
 } dt_lib_filtering_params_rule_t;
 
@@ -145,6 +116,49 @@ typedef struct dt_lib_filtering_params_t
   uint32_t rules;
   dt_lib_filtering_params_rule_t rule[MAX_RULES];
 } dt_lib_filtering_params_t;
+
+typedef struct _widgets_range_t
+{
+  dt_lib_filtering_rule_t *rule;
+
+  GtkWidget *range_select;
+} _widgets_range_t;
+
+typedef struct _widgets_filename_t
+{
+  dt_lib_filtering_rule_t *rule;
+
+  GtkWidget *name;
+  GtkWidget *ext;
+  GtkWidget *pop;
+  GtkWidget *name_tree;
+  GtkWidget *ext_tree;
+  int internal_change;
+} _widgets_filename_t;
+
+typedef struct _widgets_colors_t
+{
+  dt_lib_filtering_rule_t *rule;
+
+  GtkWidget *colors[6];
+  GtkWidget *operator;
+} _widgets_colors_t;
+
+typedef struct _widgets_search_t
+{
+  dt_lib_filtering_rule_t *rule;
+
+  GtkWidget *text;
+  double last_key_time;
+  int time_out;
+} _widgets_search_t;
+
+typedef struct _widgets_fallback_t
+{
+  dt_lib_filtering_rule_t *rule;
+
+  GtkWidget *entry;
+} _widgets_fallback_t;
 
 typedef enum _tree_cols_t
 {
@@ -217,6 +231,10 @@ static void _filters_update_params(dt_lib_filtering_t *d)
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
     p->rule[i].off = dt_conf_get_int(confname);
 
+    /* get topbar */
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
+    p->rule[i].topbar = dt_conf_get_int(confname);
+
     /* get string */
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
     const char *string = dt_conf_get_string_const(confname);
@@ -260,6 +278,10 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     /* set on-off */
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1u", i);
     dt_conf_set_int(confname, p->rule[i].off);
+
+    /* set topbar */
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1u", i);
+    dt_conf_set_int(confname, p->rule[i].topbar);
 
     /* set string */
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1u", i);
@@ -377,6 +399,8 @@ static void _conf_update_rule(dt_lib_filtering_rule_t *rule)
   dt_conf_set_int(confname, mode);
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", rule->num);
   dt_conf_set_int(confname, off);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", rule->num);
+  dt_conf_set_int(confname, rule->topbar);
 
   _history_save(get_collect(rule));
 }
@@ -423,6 +447,8 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
     const int item = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i + 1);
     const int off = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i + 1);
+    const int top = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i + 1);
     gchar *string = dt_conf_get_string(confname);
     if(string)
@@ -433,6 +459,8 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
       dt_conf_set_int(confname, item);
       snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
       dt_conf_set_int(confname, off);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
+      dt_conf_set_int(confname, top);
       snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
       dt_conf_set_string(confname, string);
       g_free(string);
@@ -511,7 +539,7 @@ static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   dtgtk_cairo_paint_star(cr, x, y, w, h, flags, my_data);
 }
 static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                const gchar *text, dt_lib_module_t *self)
+                                const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
@@ -657,7 +685,7 @@ static gchar *_ratio_print_func(const double value, gboolean detailled)
 }
 
 static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                               const gchar *text, dt_lib_module_t *self)
+                               const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
@@ -741,7 +769,7 @@ static gchar *_focal_print_func(const double value, gboolean detailled)
 }
 
 static void _focal_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                               const gchar *text, dt_lib_module_t *self)
+                               const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
@@ -823,7 +851,7 @@ static gchar *_aperture_print_func(const double value, gboolean detailled)
 }
 
 static void _aperture_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                  const gchar *text, dt_lib_module_t *self)
+                                  const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
@@ -929,7 +957,7 @@ static gchar *_iso_print_func(const double value, gboolean detailled)
 }
 
 static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                             const gchar *text, dt_lib_module_t *self)
+                             const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
@@ -1029,7 +1057,7 @@ static gchar *_exposure_print_func(const double value, gboolean detailled)
 }
 
 static void _exposure_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                  const gchar *text, dt_lib_module_t *self)
+                                  const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
@@ -1109,7 +1137,7 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
 }
 
 static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                              const gchar *text, dt_lib_module_t *self)
+                              const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
 
@@ -1477,7 +1505,7 @@ void _filename_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer
 }
 
 static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                  const gchar *text, dt_lib_module_t *self)
+                                  const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_filename_t *filename = (_widgets_filename_t *)g_malloc0(sizeof(_widgets_filename_t));
 
@@ -1716,7 +1744,7 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
 }
 
 static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                const gchar *text, dt_lib_module_t *self)
+                                const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_colors_t *colors = (_widgets_colors_t *)g_malloc0(sizeof(_widgets_colors_t));
   rule->w_specific = colors;
@@ -1748,6 +1776,50 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   gtk_box_pack_start(GTK_BOX(rule->w_special_box), hbox, TRUE, TRUE, 0);
 }
 
+static gboolean _search_update(dt_lib_filtering_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+
+  char txt[1024] = { 0 };
+  if(g_str_has_prefix(rule->raw_text, "%") && g_str_has_suffix(rule->raw_text, "%"))
+  {
+    snprintf(txt, MIN(sizeof(txt), strlen(rule->raw_text) - 1), "%s", rule->raw_text + 1);
+  }
+  else if(g_strcmp0(rule->raw_text, ""))
+  {
+    snprintf(txt, sizeof(txt), "\"%s\"", rule->raw_text);
+  }
+
+  rule->manual_widget_set++;
+  _widgets_search_t *search = (_widgets_search_t *)rule->w_specific;
+  gtk_entry_set_text(GTK_ENTRY(search->text), txt);
+  if(rule->w_specific_top)
+  {
+    search = (_widgets_search_t *)rule->w_specific_top;
+    gtk_entry_set_text(GTK_ENTRY(search->text), txt);
+  }
+  rule->manual_widget_set--;
+
+  return TRUE;
+}
+
+static void _search_synchronize(_widgets_search_t *source)
+{
+  _widgets_search_t *dest = NULL;
+  if(source == source->rule->w_specific_top)
+    dest = source->rule->w_specific;
+  else
+    dest = source->rule->w_specific_top;
+
+  if(dest)
+  {
+    source->rule->manual_widget_set++;
+    const gchar *txt = gtk_entry_get_text(GTK_ENTRY(source->text));
+    gtk_entry_set_text(GTK_ENTRY(dest->text), txt);
+    source->rule->manual_widget_set--;
+  }
+}
+
 static void _search_set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)
 {
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
@@ -1760,8 +1832,7 @@ static void _search_set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)
 
 static gboolean _search_changed_wait(gpointer user_data)
 {
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
-  _widgets_search_t *search = (_widgets_search_t *)rule->w_specific;
+  _widgets_search_t *search = (_widgets_search_t *)user_data;
   if(search->time_out)
   {
     search->time_out--;
@@ -1800,12 +1871,13 @@ static gboolean _search_changed_wait(gpointer user_data)
       }
 
       // avoids activating twice the same query
-      if(g_strcmp0(rule->raw_text, text))
+      if(g_strcmp0(search->rule->raw_text, text))
       {
-        _rule_set_raw_text(rule, text, TRUE);
+        _rule_set_raw_text(search->rule, text, TRUE);
+        _search_synchronize(search);
       }
-      else
-        g_free(text);
+
+      g_free(text);
       _search_set_widget_dimmed(search->text, FALSE);
       return FALSE;
     }
@@ -1815,16 +1887,14 @@ static gboolean _search_changed_wait(gpointer user_data)
 
 static void _search_changed(GtkWidget *widget, gpointer user_data)
 {
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
-  if(rule->manual_widget_set) return;
-  if(!rule->w_specific) return;
-  _widgets_search_t *search = (_widgets_search_t *)rule->w_specific;
+  _widgets_search_t *search = (_widgets_search_t *)user_data;
+  if(search->rule->manual_widget_set) return;
 
   search->last_key_time = dt_get_wtime();
   if(!search->time_out)
   {
     search->time_out = 15;
-    g_timeout_add(100, _search_changed_wait, rule);
+    g_timeout_add(100, _search_changed_wait, search);
   }
 }
 
@@ -1833,39 +1903,24 @@ static void _search_reset_text_entry(GtkButton *button, dt_lib_filtering_rule_t 
   _rule_set_raw_text(rule, "", TRUE);
 }
 
-static gboolean _search_update(dt_lib_filtering_rule_t *rule)
-{
-  if(!rule->w_specific) return FALSE;
-
-  rule->manual_widget_set++;
-  _widgets_search_t *search = (_widgets_search_t *)rule->w_specific;
-  char txt[1024] = { 0 };
-  if(g_str_has_prefix(rule->raw_text, "%") && g_str_has_suffix(rule->raw_text, "%"))
-  {
-    snprintf(txt, MIN(sizeof(txt), strlen(rule->raw_text) - 1), "%s", rule->raw_text + 1);
-  }
-  else if(g_strcmp0(rule->raw_text, ""))
-  {
-    snprintf(txt, sizeof(txt), "\"%s\"", rule->raw_text);
-  }
-
-  gtk_entry_set_text(GTK_ENTRY(search->text), txt);
-  rule->manual_widget_set--;
-
-  return TRUE;
-}
-
 static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                const gchar *text, dt_lib_module_t *self)
+                                const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_search_t *search = (_widgets_search_t *)g_malloc0(sizeof(_widgets_search_t));
+  search->rule = rule;
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), hbox, TRUE, TRUE, 0);
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), hbox, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), hbox, TRUE, TRUE, 0);
   search->text = gtk_search_entry_new();
-  g_signal_connect(G_OBJECT(search->text), "search-changed", G_CALLBACK(_search_changed), rule);
+  g_signal_connect(G_OBJECT(search->text), "search-changed", G_CALLBACK(_search_changed), search);
   g_signal_connect(G_OBJECT(search->text), "stop-search", G_CALLBACK(_search_reset_text_entry), rule);
-  gtk_entry_set_width_chars(GTK_ENTRY(search->text), 0);
+  if(top)
+    gtk_entry_set_width_chars(GTK_ENTRY(search->text), 14);
+  else
+    gtk_entry_set_width_chars(GTK_ENTRY(search->text), 0);
   gtk_widget_set_tooltip_text(search->text,
                               /* xgettext:no-c-format */
                               _("filter by text from images metadata, tags, file path and name"
@@ -1880,18 +1935,24 @@ static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   GtkStyleContext *context = gtk_widget_get_style_context(search->text);
   gtk_style_context_add_class(context, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(hbox), search->text, TRUE, TRUE, 0);
+  if(top)
+  {
+    context = gtk_widget_get_style_context(hbox);
+    gtk_style_context_add_class(context, "quick_filter_box");
+  }
 
-  rule->w_specific = search;
+  if(top)
+    rule->w_specific_top = search;
+  else
+    rule->w_specific = search;
 }
 
 static void _fallback_changed(GtkWidget *widget, gpointer user_data)
 {
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
-  if(rule->manual_widget_set) return;
-  if(!rule->w_specific) return;
-  _widgets_fallback_t *fallback = (_widgets_fallback_t *)rule->w_specific;
+  _widgets_fallback_t *fallback = (_widgets_fallback_t *)user_data;
+  if(fallback->rule->manual_widget_set) return;
 
-  _rule_set_raw_text(rule, gtk_entry_get_text(GTK_ENTRY(fallback->entry)), TRUE);
+  _rule_set_raw_text(fallback->rule, gtk_entry_get_text(GTK_ENTRY(fallback->entry)), TRUE);
 }
 
 static gboolean _fallback_update(dt_lib_filtering_rule_t *rule)
@@ -1901,22 +1962,34 @@ static gboolean _fallback_update(dt_lib_filtering_rule_t *rule)
   rule->manual_widget_set++;
   _widgets_fallback_t *fallback = (_widgets_fallback_t *)rule->w_specific;
   gtk_entry_set_text(GTK_ENTRY(fallback->entry), rule->raw_text);
+  if(rule->w_specific_top)
+  {
+    fallback = (_widgets_fallback_t *)rule->w_specific_top;
+    gtk_entry_set_text(GTK_ENTRY(fallback->entry), rule->raw_text);
+  }
   rule->manual_widget_set--;
 
   return TRUE;
 }
 
 static void _fallback_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                  const gchar *text, dt_lib_module_t *self)
+                                  const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_fallback_t *fallback = (_widgets_fallback_t *)g_malloc0(sizeof(_widgets_fallback_t));
 
+  fallback->rule = rule;
   fallback->entry = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(fallback->entry), text);
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), fallback->entry, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(fallback->entry), "activate", G_CALLBACK(_fallback_changed), rule);
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), fallback->entry, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), fallback->entry, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(fallback->entry), "activate", G_CALLBACK(_fallback_changed), fallback);
 
-  rule->w_specific = fallback;
+  if(top)
+    rule->w_specific_top = fallback;
+  else
+    rule->w_specific = fallback;
 }
 
 static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
@@ -1948,84 +2021,100 @@ static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
   }
 }
 
-static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar *text, dt_lib_module_t *self)
+static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar *text, dt_lib_module_t *self,
+                                     gboolean top)
 {
   // if the widgets already exits, destroy them
-  if(rule->w_special_box)
+  if(rule->w_special_box && !top)
   {
     gtk_widget_destroy(rule->w_special_box);
     rule->w_special_box = NULL;
     g_free(rule->w_specific);
     rule->w_specific = NULL;
   }
+  if(rule->w_special_box_top && top)
+  {
+    gtk_widget_destroy(rule->w_special_box_top);
+    rule->w_special_box_top = NULL;
+    g_free(rule->w_specific_top);
+    rule->w_specific_top = NULL;
+  }
 
   // recreate the box
-  rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(rule->w_special_box, "collect-rule-special");
-  gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_special_box, TRUE, TRUE, 0);
+  if(!top)
+    rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  else
+    rule->w_special_box_top = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *special_box = (top) ? rule->w_special_box_top : rule->w_special_box;
+  if(!top) gtk_widget_set_name(special_box, "collect-rule-special");
+  if(!top)
+    gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_special_box, TRUE, TRUE, 0);
+  else
+    g_object_ref(G_OBJECT(rule->w_special_box_top));
 
   // initialize the specific entries if any
   gboolean widgets_ok = FALSE;
   switch(rule->prop)
   {
     case DT_COLLECTION_PROP_RATING:
-      _rating_widget_init(rule, rule->prop, text, self);
+      _rating_widget_init(rule, rule->prop, text, self, top);
       break;
     case DT_COLLECTION_PROP_ASPECT_RATIO:
-      _ratio_widget_init(rule, rule->prop, text, self);
+      _ratio_widget_init(rule, rule->prop, text, self, top);
       break;
     case DT_COLLECTION_PROP_FOCAL_LENGTH:
-      _focal_widget_init(rule, rule->prop, text, self);
+      _focal_widget_init(rule, rule->prop, text, self, top);
       break;
     case DT_COLLECTION_PROP_APERTURE:
-      _aperture_widget_init(rule, rule->prop, text, self);
+      _aperture_widget_init(rule, rule->prop, text, self, top);
       break;
     case DT_COLLECTION_PROP_ISO:
-      _iso_widget_init(rule, rule->prop, text, self);
+      _iso_widget_init(rule, rule->prop, text, self, top);
       break;
     case DT_COLLECTION_PROP_EXPOSURE:
-      _exposure_widget_init(rule, rule->prop, text, self);
+      _exposure_widget_init(rule, rule->prop, text, self, top);
       break;
     case DT_COLLECTION_PROP_TIME:
-      _date_widget_init(rule, rule->prop, text, self);
+      _date_widget_init(rule, rule->prop, text, self, top);
       break;
     case DT_COLLECTION_PROP_FILENAME:
-      _filename_widget_init(rule, rule->prop, text, self);
+      _filename_widget_init(rule, rule->prop, text, self, top);
       break;
     case DT_COLLECTION_PROP_COLORLABEL:
-      _colors_widget_init(rule, rule->prop, text, self);
+      _colors_widget_init(rule, rule->prop, text, self, top);
       break;
     case DT_COLLECTION_PROP_TEXTSEARCH:
-      _search_widget_init(rule, rule->prop, text, self);
+      _search_widget_init(rule, rule->prop, text, self, top);
       break;
     default:
-      _fallback_widget_init(rule, rule->prop, text, self);
+      _fallback_widget_init(rule, rule->prop, text, self, top);
       break;
   }
 
   widgets_ok = _widget_update(rule);
 
   // set the visibility for the eventual special widgets
-  if(rule->w_specific)
+  void *specific = (top) ? rule->w_specific_top : rule->w_specific;
+  if(specific)
   {
-    gtk_widget_show_all(rule->w_special_box); // we ensure all the childs widgets are shown by default
-    gtk_widget_set_no_show_all(rule->w_special_box, TRUE);
+    gtk_widget_show_all(special_box); // we ensure all the childs widgets are shown by default
+    gtk_widget_set_no_show_all(special_box, TRUE);
 
     // special/raw state is stored per rule property
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/raw_%d", rule->prop);
     const gboolean special = (widgets_ok && !dt_conf_get_bool(confname));
 
-    gtk_widget_set_visible(rule->w_special_box, special);
+    gtk_widget_set_visible(special_box, special);
   }
   else
   {
-    gtk_widget_set_no_show_all(rule->w_special_box, TRUE);
-    gtk_widget_set_visible(rule->w_special_box, FALSE);
+    gtk_widget_set_no_show_all(special_box, TRUE);
+    gtk_widget_set_visible(special_box, FALSE);
   }
 
 
-  return (rule->w_specific != NULL);
+  return (specific != NULL);
 }
 
 static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
@@ -2044,7 +2133,7 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
   dt_conf_set_int(confname, dt_conf_get_int(confname) + 1);
 
   // re-init the special widgets
-  _widget_init_special(rule, "", self);
+  _widget_init_special(rule, "", self, FALSE);
 
   // reset the raw entry
   _rule_set_raw_text(rule, "", FALSE);
@@ -2215,17 +2304,62 @@ static gboolean _event_rule_append(GtkWidget *widget, GdkEventButton *event, dt_
   return TRUE;
 }
 
+static void _update_topbar(dt_lib_module_t *self)
+{
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+
+  // first, we cleanup the filter box
+  GtkWidget *fbox = dt_view_filter_get_filters_box(darktable.view_manager);
+  GList *childrens = gtk_container_get_children(GTK_CONTAINER(fbox));
+  for(GList *l = childrens; l; l = g_list_next(l))
+  {
+    gtk_container_remove(GTK_CONTAINER(fbox), GTK_WIDGET(l->data));
+  }
+  g_list_free(childrens);
+
+  // and we add all the special widgets with a top structure
+  for(int i = 0; i < d->nb_rules; i++)
+  {
+    if(d->rule[i].topbar)
+    {
+      // we create the widget if needed
+      if(!d->rule[i].w_special_box_top)
+      {
+        _widget_init_special(&d->rule[i], d->rule[i].raw_text, self, TRUE);
+      }
+      gtk_box_pack_start(GTK_BOX(fbox), d->rule[i].w_special_box_top, FALSE, TRUE, 0);
+    }
+    else if(d->rule[i].w_special_box_top)
+    {
+      // we destroy the widget if needed
+      gtk_widget_destroy(d->rule[i].w_special_box_top);
+      g_free(d->rule[i].w_specific_top);
+    }
+  }
+}
+
 static gboolean _event_rule_change_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
-  _rule_show_popup(rule->w_prop, rule, self);
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  {
+    rule->topbar = !rule->topbar;
+    _conf_update_rule(rule);
+    _update_topbar(self);
+  }
+  else if(!rule->topbar)
+  {
+    _rule_show_popup(rule->w_prop, rule, self);
+  }
+  else
+    return FALSE;
   return TRUE;
 }
 
 // initialise or update a rule widget. Return if the a new widget has been created
 static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                             const gchar *text, const dt_lib_collect_mode_t mode, gboolean off, const int pos,
-                             dt_lib_module_t *self)
+                             const gchar *text, const dt_lib_collect_mode_t mode, gboolean off, gboolean top,
+                             const int pos, dt_lib_module_t *self)
 {
   rule->manual_widget_set++;
 
@@ -2234,6 +2368,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   GtkWidget *hbox = NULL;
 
   rule->prop = prop;
+  rule->topbar = top;
 
   if(newmain)
   {
@@ -2325,7 +2460,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   _rule_set_raw_text(rule, text, FALSE);
 
   // initialize the specific entries if any
-  if(newmain || newprop || newraw) _widget_init_special(rule, text, self);
+  if(newmain || newprop || newraw) _widget_init_special(rule, text, self, FALSE);
 
   rule->manual_widget_set--;
   return newmain;
@@ -2350,9 +2485,17 @@ static void _filters_gui_update(dt_lib_module_t *self)
     const dt_lib_collect_mode_t rmode = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
     const int off = dt_conf_get_int(confname);
-    if(_widget_init(&d->rule[i], prop, txt, rmode, off, i, self))
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
+    const int top = dt_conf_get_int(confname);
+    if(_widget_init(&d->rule[i], prop, txt, rmode, off, top, i, self))
       gtk_box_pack_start(GTK_BOX(d->rules_box), d->rule[i].w_main, FALSE, TRUE, 0);
     gtk_widget_show_all(d->rule[i].w_main);
+
+    // if needed, we also load the duplicate widget for the topbar
+    if(top)
+    {
+      _widget_init_special(&d->rule[i], txt, self, TRUE);
+    }
   }
 
   // remove all remaining rules
@@ -2743,6 +2886,13 @@ void gui_cleanup(dt_lib_module_t *self)
 
   free(self->data);
   self->data = NULL;
+}
+
+void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
+{
+  // if we enter lighttable view, then we need to populate the filter topbar
+  // we do it here because we are sure that both libs are loaded at this point
+  _update_topbar(self);
 }
 
 #undef MAX_RULES

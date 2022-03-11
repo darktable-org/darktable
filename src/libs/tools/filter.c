@@ -32,6 +32,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_tool_filter_t
 {
+  GtkWidget *filter_box;
   GtkWidget *stars;
   GtkWidget *comparator;
   GtkWidget *sort;
@@ -355,11 +356,11 @@ static void _colors_operation_clicked(GtkWidget *w, dt_lib_module_t *self)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL, NULL);
 }
 
-#undef CPF_USER_DATA_INCLUDE
-#undef CPF_USER_DATA_EXCLUDE
-#undef CL_AND_MASK
-#undef CL_ALL_EXCLUDED
-#undef CL_ALL_INCLUDED
+static GtkWidget *_lib_filter_get_filter_box(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  return d->filter_box;
+}
 
 static void _reset_filters(dt_action_t *action)
 {
@@ -380,8 +381,10 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label = gtk_label_new(C_("quickfilter", "filter"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
+  d->filter_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->filter_box, TRUE, TRUE, 0);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
+  gtk_box_pack_start(GTK_BOX(d->filter_box), hbox, TRUE, TRUE, 4);
   GtkWidget *overlay = gtk_overlay_new();
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->comparator, self, NULL, N_("comparator"),
@@ -439,14 +442,14 @@ void gui_init(dt_lib_module_t *self)
                                               "\nand (∩): images having all selected color labels"
                                               "\nor (∪): images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(d->colors_op), "clicked", G_CALLBACK(_colors_operation_clicked), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 2);
-  gtk_widget_set_name(hbox, "lib-label-colors");
+
+  gtk_box_pack_start(GTK_BOX(d->filter_box), hbox, FALSE, FALSE, 2);
   dt_gui_add_class(hbox, "quick_filter_box");
   dt_gui_add_class(hbox, "dt_font_resize_07");
 
   // text filter
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
+  gtk_box_pack_start(GTK_BOX(d->filter_box), hbox, TRUE, TRUE, 4);
   d->text = gtk_search_entry_new();
   char *text = _decode_text_filter(dt_collection_get_text_filter(darktable.collection));
   gtk_entry_set_text(GTK_ENTRY(d->text), text);
@@ -499,6 +502,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.filter.module = self;
   darktable.view_manager->proxy.filter.reset_filter = _lib_filter_reset;
   darktable.view_manager->proxy.filter.update_sort = _lib_filter_update_sort;
+  darktable.view_manager->proxy.filter.get_filter_box = _lib_filter_get_filter_box;
 
   g_signal_connect_swapped(G_OBJECT(d->comparator), "map",
                            G_CALLBACK(_lib_filter_sync_combobox_and_comparator), self);
