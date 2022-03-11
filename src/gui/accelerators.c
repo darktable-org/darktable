@@ -180,10 +180,12 @@ static float _action_process_toggle(gpointer target, dt_action_element_t element
     g_object_ref(event->button.window);
 
     // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
-    if(!gtk_widget_event(target, event))
-      gtk_button_clicked(GTK_BUTTON(target));
+    // gtk_widget_event does not work when widgets are hidden in event boxes or some other conditions
+    gboolean handled;
+    g_signal_emit_by_name(G_OBJECT(target), "button-press-event", event, &handled);
+    if(!handled) gtk_button_clicked(GTK_BUTTON(target));
     event->type = GDK_BUTTON_RELEASE;
-    gtk_widget_event(target, event);
+    g_signal_emit_by_name(G_OBJECT(target), "button-release-event", event, &handled);
 
     gdk_event_free(event);
 
