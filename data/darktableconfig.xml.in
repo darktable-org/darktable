@@ -520,6 +520,20 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/collection/colors_filter</name>
+    <type>string</type>
+    <default>80000000</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/collection/text_filter</name>
+    <type>string</type>
+    <default/>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/collection/descending</name>
     <type>bool</type>
     <default>false</default>
