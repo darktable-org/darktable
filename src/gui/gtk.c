@@ -2129,12 +2129,8 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
-  container = widget;
-  widget = gtk_event_box_new();
-  gtk_widget_add_events(GTK_WIDGET(widget), darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
-  gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* create the container */
   container = widget;
