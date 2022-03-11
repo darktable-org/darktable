@@ -644,9 +644,9 @@ static void _blendop_blend_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
   }
 }
 
-static void _blendop_blend_order_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *module)
+static gboolean _blendop_blend_order_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *module)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return TRUE;
 
   dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)module->blend_params;
   const gboolean active = !(bp->blend_mode & DEVELOP_BLEND_REVERSE);
@@ -659,6 +659,8 @@ static void _blendop_blend_order_clicked(GtkWidget *button, GdkEventButton *even
 
   dt_dev_add_history_item(darktable.develop, module, TRUE);
   dt_control_queue_redraw_widget(GTK_WIDGET(button));
+
+  return TRUE;
 }
 
 static void _blendop_masks_combine_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
@@ -1134,9 +1136,9 @@ static void _blendop_blendif_details_callback(GtkWidget *slider, dt_iop_gui_blen
   }
 }
 
-static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *module)
+static gboolean _blendop_blendif_showmask_clicked(GtkToggleButton *button, GdkEventButton *event, dt_iop_module_t *module)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return TRUE;
 
   if(event->button == 1)
   {
@@ -1152,24 +1154,9 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
     else
       module->request_mask_display |= (has_mask_display ? 0 : DT_DEV_PIXELPIPE_DISPLAY_MASK);
-    const gboolean is_active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
 
-    // note that a ctrl+click followed by a shift-click must keep the
-    // toggle button active. But a single click must invert current
-    // toggle button.  That's why we check for request_mask_display
-    // value below. But note that the toggle button state has not yet
-    // been inverted by Gtk at this stage. So if a button must be ON
-    // we ensure it is OFF now.
-
-    if(module->request_mask_display
-       & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
-    {
-      if(is_active) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
-    }
-    else
-    {
-      if(!is_active) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), TRUE);
-    }
+    gtk_toggle_button_set_active(button,
+                                 module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE);
 
     if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
 
@@ -1183,11 +1170,13 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
     dt_iop_request_focus(module);
     dt_iop_refresh_center(module);
   }
+
+  return TRUE;
 }
 
-static void _blendop_masks_modes_none_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *module)
+static gboolean _blendop_masks_modes_none_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *module)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return TRUE;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
   if(event->button == 1 && data->selected_mask_mode != button)
@@ -1204,6 +1193,8 @@ static void _blendop_masks_modes_none_clicked(GtkWidget *button, GdkEventButton 
     /* and finally remove hinter messages */
     dt_control_hinter_message(darktable.control, "");
   }
+
+  return TRUE;
 }
 
 static gboolean _blendop_masks_modes_toggle(GtkToggleButton *button, dt_iop_module_t *module, const unsigned int mask_mode)
@@ -1333,10 +1324,13 @@ static gboolean _blendop_blendif_invert(GtkButton *button, GdkEventButton *event
   return TRUE;
 }
 
-static int _blendop_masks_add_shape(GtkWidget *widget, dt_iop_module_t *self, gboolean continuous)
+static gboolean _blendop_masks_add_shape(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
+  if(darktable.gui->reset || event->button != GDK_BUTTON_PRIMARY) return TRUE;
+
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  gboolean continuous = dt_modifier_is(event->state, GDK_CONTROL_MASK);
 
   // find out who we are
   int this = -1;
@@ -1378,16 +1372,7 @@ static int _blendop_masks_add_shape(GtkWidget *widget, dt_iop_module_t *self, gb
   return TRUE;
 }
 
-static int _blendop_masks_add_shape_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
-{
-  if(event->button == 1)
-  {
-    return _blendop_masks_add_shape(widget, self, dt_modifier_is(event->state, GDK_CONTROL_MASK));
-  }
-  return FALSE;
-}
-
-static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+static gboolean _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
@@ -2340,40 +2325,40 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     dt_bauhaus_combobox_add_populate_fct(bd->masks_combo, dt_masks_iop_combo_populate);
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_combo, TRUE, TRUE, 0);
 
-    GtkWidget *abox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     bd->masks_polarity = dt_iop_togglebutton_new(module, "blend`tools", N_("toggle polarity of drawn mask"), NULL,
                                                  G_CALLBACK(_blendop_masks_polarity_callback),
                                                  FALSE, 0, 0, dtgtk_cairo_paint_plusminus, hbox);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_polarity), dtgtk_cairo_paint_plusminus,
                                  CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
 
+    GtkWidget *abox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     bd->masks_edit = dt_iop_togglebutton_new(module, "blend`tools", N_("show and edit mask elements"), N_("show and edit in restricted mode"),
                                              G_CALLBACK(_blendop_masks_show_and_edit),
                                              FALSE, 0, 0, dtgtk_cairo_paint_masks_eye, abox);
 
     bd->masks_type[0] = DT_MASKS_GRADIENT;
     bd->masks_shapes[0] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add gradient"), N_("add multiple gradients"),
-                                                  G_CALLBACK(_blendop_masks_add_shape_callback),
+                                                  G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_gradient, abox);
 
     bd->masks_type[4] = DT_MASKS_BRUSH;
     bd->masks_shapes[4] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add brush"), N_("add multiple brush strokes"),
-                                                  G_CALLBACK(_blendop_masks_add_shape_callback),
+                                                  G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_brush, abox);
 
     bd->masks_type[1] = DT_MASKS_PATH;
     bd->masks_shapes[1] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add path"), N_("add multiple paths"),
-                                                  G_CALLBACK(_blendop_masks_add_shape_callback),
+                                                  G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_path, abox);
 
     bd->masks_type[2] = DT_MASKS_ELLIPSE;
     bd->masks_shapes[2] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add ellipse"), N_("add multiple ellipses"),
-                                                  G_CALLBACK(_blendop_masks_add_shape_callback),
+                                                  G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_ellipse, abox);
 
     bd->masks_type[3] = DT_MASKS_CIRCLE;
     bd->masks_shapes[3] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add circle"), N_("add multiple circles"),
-                                                  G_CALLBACK(_blendop_masks_add_shape_callback),
+                                                  G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_circle, abox);
 
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(hbox), TRUE, TRUE, 0);
