@@ -2407,6 +2407,11 @@ int dt_collection_serialize(char *buf, int bufsize, gboolean filtering)
       c = snprintf(buf, bufsize, "%d:", off);
       buf += c;
       bufsize -= c;
+      snprintf(confname, sizeof(confname), "%s/top%1d", plugin_name, k);
+      const int top = dt_conf_get_int(confname);
+      c = snprintf(buf, bufsize, "%d:", top);
+      buf += c;
+      bufsize -= c;
     }
     snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
     const char *str = dt_conf_get_string_const(confname);
@@ -2440,7 +2445,7 @@ void dt_collection_deserialize(const char *buf, gboolean filtering)
   }
   else
   {
-    int mode = 0, item = 0, off = 0;
+    int mode = 0, item = 0, off = 0, top = 0;
     snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
     dt_conf_set_int(confname, num_rules);
     while(buf[0] != '\0' && buf[0] != ':') buf++;
@@ -2448,9 +2453,9 @@ void dt_collection_deserialize(const char *buf, gboolean filtering)
     char str[400];
     for(int k = 0; k < num_rules; k++)
     {
-      const int n = (filtering) ? sscanf(buf, "%d:%d:%d:%399[^$]", &mode, &item, &off, str)
+      const int n = (filtering) ? sscanf(buf, "%d:%d:%d:%d:%399[^$]", &mode, &item, &off, &top, str)
                                 : sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
-      if((!filtering && n == 3) || (filtering && n == 4))
+      if((!filtering && n == 3) || (filtering && n == 5))
       {
         snprintf(confname, sizeof(confname), "%s/mode%1d", plugin_name, k);
         dt_conf_set_int(confname, mode);
@@ -2460,6 +2465,8 @@ void dt_collection_deserialize(const char *buf, gboolean filtering)
         {
           snprintf(confname, sizeof(confname), "%s/off%1d", plugin_name, k);
           dt_conf_set_int(confname, off);
+          snprintf(confname, sizeof(confname), "%s/top%1d", plugin_name, k);
+          dt_conf_set_int(confname, top);
         }
         snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
         dt_conf_set_string(confname, str);
