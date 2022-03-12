@@ -2532,7 +2532,9 @@ static void _topbar_update(dt_lib_module_t *self)
     {
       // we destroy the widget if needed
       gtk_widget_destroy(d->rule[i].w_special_box_top);
+      d->rule[i].w_special_box_top = NULL;
       g_free(d->rule[i].w_specific_top);
+      d->rule[i].w_specific_top = NULL;
     }
   }
 }
