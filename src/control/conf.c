@@ -327,7 +327,7 @@ const char *dt_conf_get_string_const(const char *name)
   return dt_conf_get_var(name);
 }
 
-gboolean dt_conf_key_valid(const char *name)
+gboolean dt_conf_key_not_empty(const char *name)
 {
   const char *val = dt_conf_get_string_const(name);
   if(val == NULL)      return FALSE;

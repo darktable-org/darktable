@@ -1630,19 +1630,19 @@ void dt_configure_runtime_performance(const int old, char *info)
     (sufficient) ? "sufficient" : "low performance", bits, mem, threads);      
 
   // All runtime conf settings only write data if there is no valid data found in conf
-  if(!dt_conf_key_valid("ui/performance"))
+  if(!dt_conf_key_not_empty("ui/performance"))
   {
     dt_conf_set_bool("ui/performance", !sufficient);
     dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] ui/performance=%s\n", (sufficient) ? "FALSE" : "TRUE");
   }
 
-  if(!dt_conf_key_valid("resourcelevel"))
+  if(!dt_conf_key_not_empty("resourcelevel"))
   {
     dt_conf_set_string("resourcelevel", (sufficient) ? "default" : "small");
     dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] resourcelevel=%s\n", (sufficient) ? "default" : "small");
   }
 
-  if(!dt_conf_key_valid("plugins/darkroom/demosaic/quality"))
+  if(!dt_conf_key_not_empty("plugins/darkroom/demosaic/quality"))
   {
     dt_conf_set_string("plugins/darkroom/demosaic/quality", (sufficient) ? "at most RCD (reasonable)" : "always bilinear (fast)");
     dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] plugins/darkroom/demosaic/quality=%s",
@@ -1658,7 +1658,7 @@ void dt_configure_runtime_performance(const int old, char *info)
     }
   }
 
-  if(!dt_conf_key_valid("cache_disk_backend_full"))
+  if(!dt_conf_key_not_empty("cache_disk_backend_full"))
   {
     char cachedir[PATH_MAX] = { 0 };
     guint64 freecache = 0;
