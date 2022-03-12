@@ -939,6 +939,9 @@ static gboolean _yes_no_dialog(gchar *title, gchar *question)
 
 static gboolean _insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 {
+  if(!shortcut->speed && shortcut->effect != DT_ACTION_EFFECT_SET)
+    return FALSE;
+
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
   *s = *shortcut;
   s->views = _find_views(s->action);
