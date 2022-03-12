@@ -44,15 +44,6 @@
 #define SELECT_QUERY "SELECT DISTINCT * FROM %s"
 #define LIMIT_QUERY "LIMIT ?1, ?2"
 
-static const char *comparators[] = {
-  "<",  // DT_COLLECTION_RATING_COMP_LT = 0,
-  "<=", // DT_COLLECTION_RATING_COMP_LEQ,
-  "=",  // DT_COLLECTION_RATING_COMP_EQ,
-  ">=", // DT_COLLECTION_RATING_COMP_GEQ,
-  ">",  // DT_COLLECTION_RATING_COMP_GT,
-  "!=", // DT_COLLECTION_RATING_COMP_NE,
-};
-
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store(const dt_collection_t *collection, gchar *query, gchar *query_no_group);
 /* Counts the number of images in the current collection */
@@ -218,8 +209,6 @@ int dt_collection_update(const dt_collection_t *collection)
   {
     char *rejected_check = g_strdup_printf("((flags & %d) == %d)", DT_IMAGE_REJECTED, DT_IMAGE_REJECTED);
     int and_term = and_operator_initial();
-    dt_collection_filter_t rating = collection->params.rating;
-    if(rating == DT_COLLECTION_FILTER_NOT_REJECT) rating = DT_COLLECTION_FILTER_STAR_NO;
 
     /* add default filters */
     if(collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
@@ -230,104 +219,6 @@ int dt_collection_update(const dt_collection_t *collection)
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d",
                          and_operator(&and_term), DT_IMAGE_REMOVE,
                          DT_IMAGE_REMOVE);
-
-    if(collection->params.filter_flags & COLLECTION_FILTER_REJECTED)
-      wq = dt_util_dstrcat(wq, " %s %s",
-                           and_operator(&and_term),
-                           rejected_check);
-    else if(collection->params.filter_flags & COLLECTION_FILTER_CUSTOM_COMPARE)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) %s %d AND NOT %s",
-                           and_operator(&and_term),
-                           comparators[collection->params.comparator], rating - 1,
-                           rejected_check);
-    else if(collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d AND NOT %s",
-                           and_operator(&and_term), rating - 1,
-                           rejected_check);
-    else if(collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d AND NOT %s",
-                           and_operator(&and_term), rating - 1,
-                           rejected_check);
-
-    if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      // clang-format off
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE history_hash.imgid=id AND "
-                                           " (basic_hash IS NULL OR current_hash != basic_hash) AND "
-                                           " (auto_hash IS NULL OR current_hash != auto_hash))",
-                           and_operator(&and_term));
-      // clang-format on
-    else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      // clang-format off
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE history_hash.imgid=id AND "
-                                           " (current_hash == basic_hash OR current_hash == auto_hash))",
-                           and_operator(&and_term));
-      // clang-format on
-
-    /* add text filter if any */
-    if(collection->params.text_filter && collection->params.text_filter[0])
-    {
-      // clang-format off
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
-                                          " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
-                                          "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
-                                          " UNION SELECT id FROM main.images"
-                                          "   WHERE filename LIKE '%s'"
-                                          " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
-                                          "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s')",
-                           and_operator(&and_term), collection->params.text_filter,
-                                                    collection->params.text_filter,
-                                                    collection->params.text_filter,
-                                                    collection->params.text_filter,
-                                                    collection->params.text_filter);
-      // clang-format on
-    }
-
-    /* add colorlabel filter if any */
-    if(collection->params.colors_filter & ~0x80000000)
-    {
-      const int colors_set = collection->params.colors_filter & 0xFFF;
-      const int colors_unset = (collection->params.colors_filter & 0xFFF000) >> 12;
-      const gboolean op = collection->params.colors_filter & 0x80000000;
-      if(op) // AND
-      {
-        if(colors_set)
-          // clang-format off
-          wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) = %d) AND (mask & %d = 0))",
-                               and_operator(&and_term), colors_set, colors_set, colors_unset);
-          // clang-format on
-        else if(colors_unset)
-          // clang-format off
-          wq = dt_util_dstrcat(wq, " %s NOT id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) <> 0))",
-                               and_operator(&and_term), colors_unset);
-          // clang-format on
-      }
-      else  // OR
-      {
-        if(!colors_unset)
-          // clang-format off
-          wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) <> 0))",
-                               and_operator(&and_term), colors_set);
-          // clang-format on
-        else
-          // clang-format off
-          wq = dt_util_dstrcat(wq, " %s (id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) <> 0))"
-                                   " OR id NOT IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) = %d)))",
-                               and_operator(&and_term), colors_set, colors_unset, colors_unset);
-          // clang-format on
-      }
-    }
 
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
@@ -590,16 +481,10 @@ void dt_collection_reset(const dt_collection_t *collection)
   params->query_flags = COLLECTION_QUERY_FULL;
   params->filter_flags = COLLECTION_FILTER_FILM_ID | COLLECTION_FILTER_ATLEAST_RATING;
   params->film_id = 1;
-  params->rating = DT_COLLECTION_FILTER_STAR_NO;
 
   /* apply stored query parameters from previous darktable session */
   params->film_id = dt_conf_get_int("plugins/collection/film_id");
-  params->rating = dt_conf_get_int("plugins/collection/rating");
-  params->comparator = dt_conf_get_int("plugins/collection/rating_comparator");
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
-  g_free(params->text_filter);
-  params->text_filter = dt_conf_get_string("plugins/collection/text_filter");
-  params->colors_filter = strtol(dt_conf_get_string_const("plugins/collection/colors_filter"), NULL, 16);
   params->sort = dt_conf_get_int("plugins/collection/sort");
   params->sort_second_order = dt_conf_get_int("plugins/collection/sort_second_order");
   params->descending = dt_conf_get_bool("plugins/collection/descending");
@@ -630,29 +515,6 @@ void dt_collection_set_filter_flags(const dt_collection_t *collection, uint32_t 
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
   params->filter_flags = flags;
-}
-
-char *dt_collection_get_text_filter(const dt_collection_t *collection)
-{
-  return collection->params.text_filter;
-}
-
-void dt_collection_set_text_filter(const dt_collection_t *collection, char *text_filter)
-{
-  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  g_free(params->text_filter);
-  params->text_filter = text_filter;
-}
-
-int dt_collection_get_colors_filter(const dt_collection_t *collection)
-{
-  return collection->params.colors_filter;
-}
-
-void dt_collection_set_colors_filter(const dt_collection_t *collection, int colors_filter)
-{
-  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  params->colors_filter = colors_filter;
 }
 
 uint32_t dt_collection_get_query_flags(const dt_collection_t *collection)
@@ -712,31 +574,6 @@ void dt_collection_set_film_id(const dt_collection_t *collection, const int32_t 
 void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid)
 {
   collection->tagid = tagid;
-}
-
-void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating)
-{
-  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  params->rating = rating;
-}
-
-uint32_t dt_collection_get_rating(const dt_collection_t *collection)
-{
-  uint32_t i;
-  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  i = params->rating;
-  return i;
-}
-
-void dt_collection_set_rating_comparator(const dt_collection_t *collection,
-                                         const dt_collection_rating_comperator_t comparator)
-{
-  ((dt_collection_t *)collection)->params.comparator = comparator;
-}
-
-dt_collection_rating_comperator_t dt_collection_get_rating_comparator(const dt_collection_t *collection)
-{
-  return collection->params.comparator;
 }
 
 static void _collection_update_aspect_ratio(const dt_collection_t *collection)
@@ -1254,13 +1091,7 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query,
   {
     dt_conf_set_int("plugins/collection/query_flags", collection->params.query_flags);
     dt_conf_set_int("plugins/collection/filter_flags", collection->params.filter_flags);
-    dt_conf_set_string("plugins/collection/text_filter", collection->params.text_filter ? collection->params.text_filter : "");
-    char colors_filter[16];
-    sprintf(colors_filter, "%x", collection->params.colors_filter);
-    dt_conf_set_string("plugins/collection/colors_filter", colors_filter);
     dt_conf_set_int("plugins/collection/film_id", collection->params.film_id);
-    dt_conf_set_int("plugins/collection/rating", collection->params.rating);
-    dt_conf_set_int("plugins/collection/rating_comparator", collection->params.comparator);
     dt_conf_set_int("plugins/collection/sort", collection->params.sort);
     dt_conf_set_int("plugins/collection/sort_second_order", collection->params.sort_second_order);
     dt_conf_set_bool("plugins/collection/descending", collection->params.descending);

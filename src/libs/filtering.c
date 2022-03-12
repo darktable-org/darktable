@@ -296,7 +296,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   if(reset_view_filter)
   {
-    dt_view_filter_reset(darktable.view_manager, FALSE);
+    dt_view_filtering_reset(darktable.view_manager, FALSE);
   }
 
   /* set number of rules */
@@ -3081,6 +3081,12 @@ static void _proxy_set_sort(dt_lib_module_t *self, dt_collection_sort_t sort, gb
   _sort_update_query(self, FALSE);
 }
 
+// this proxy function is primary called when the sort part of the filter bar is changed
+static void _proxy_reset_filter(dt_lib_module_t *self, gboolean smart_filter)
+{
+  // TODO
+}
+
 static _widgets_sort_t *_sort_get_widgets(dt_lib_module_t *self)
 {
   _widgets_sort_t *wsort = (_widgets_sort_t *)g_malloc0(sizeof(_widgets_sort_t));
@@ -3185,6 +3191,7 @@ void gui_init(dt_lib_module_t *self)
   /* setup proxy */
   darktable.view_manager->proxy.module_filtering.module = self;
   darktable.view_manager->proxy.module_filtering.update = _filters_gui_update;
+  darktable.view_manager->proxy.module_filtering.reset_filter = _proxy_reset_filter;
   darktable.view_manager->proxy.module_filtering.set_sort = _proxy_set_sort;
 
   d->last_where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
