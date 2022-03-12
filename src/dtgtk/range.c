@@ -1817,6 +1817,7 @@ void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *ran
   if(!strcmp(txt, "") || !strcmp(txt, "%"))
   {
     sbounds = DT_RANGE_BOUND_MAX | DT_RANGE_BOUND_MIN;
+    dtgtk_range_select_set_selection(range, sbounds, smin, smax, signal, FALSE);
     return;
   }
   else if(g_str_has_prefix(txt, "<="))
