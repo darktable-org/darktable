@@ -3084,7 +3084,15 @@ static void _proxy_set_sort(dt_lib_module_t *self, dt_collection_sort_t sort, gb
 // this proxy function is primary called when the sort part of the filter bar is changed
 static void _proxy_reset_filter(dt_lib_module_t *self, gboolean smart_filter)
 {
-  // TODO
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+
+  // reset each rule. we only throw the signal for the last one
+  for(int i = 0; i < d->nb_rules; i++)
+  {
+    _rule_set_raw_text(&d->rule[i], "", (i == d->nb_rules - 1));
+    _widget_update(&d->rule[i]);
+    _conf_update_rule(&d->rule[i]);
+  }
 }
 
 static _widgets_sort_t *_sort_get_widgets(dt_lib_module_t *self)
