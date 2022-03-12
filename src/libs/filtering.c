@@ -1907,24 +1907,14 @@ static void _colors_operator_clicked(GtkWidget *w, _widgets_colors_t *colors)
   _colors_synchronise(colors);
 }
 
-static void _colors_reset(dt_lib_filtering_rule_t *rule)
+static void _colors_reset(_widgets_colors_t *colors)
 {
-  _widgets_colors_t *colors = (_widgets_colors_t *)rule->w_specific;
-  _widgets_colors_t *colorstop = (_widgets_colors_t *)rule->w_specific_top;
-
   for(int i = 0; i < DT_COLORLABELS_LAST; i++)
   {
     g_object_set_data(G_OBJECT(colors->colors[i]), "sel_value", GINT_TO_POINTER(0));
     dtgtk_button_set_paint(DTGTK_BUTTON(colors->colors[i]), dtgtk_cairo_paint_label_sel, (i | CPF_BG_TRANSPARENT),
                            NULL);
     gtk_widget_queue_draw(colors->colors[i]);
-    if(colorstop)
-    {
-      g_object_set_data(G_OBJECT(colorstop->colors[i]), "sel_value", GINT_TO_POINTER(0));
-      dtgtk_button_set_paint(DTGTK_BUTTON(colorstop->colors[i]), dtgtk_cairo_paint_label_sel,
-                             (i | CPF_BG_TRANSPARENT), NULL);
-      gtk_widget_queue_draw(colorstop->colors[i]);
-    }
   }
   g_object_set_data(G_OBJECT(colors->operator), "sel_value", GINT_TO_POINTER(1));
   dtgtk_button_set_paint(DTGTK_BUTTON(colors->operator), dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
@@ -2020,7 +2010,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                      GINT_TO_POINTER(k));
   }
   colors->operator= dtgtk_button_new(dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
-  _colors_reset(rule);
+  _colors_reset(colors);
   gtk_box_pack_start(GTK_BOX(hbox), colors->operator, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(colors->operator,
                               _("filter by images color label"
@@ -2289,22 +2279,6 @@ static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
 static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar *text, dt_lib_module_t *self,
                                      gboolean top)
 {
-  // if the widgets already exits, destroy them
-  if(rule->w_special_box && !top)
-  {
-    gtk_widget_destroy(rule->w_special_box);
-    rule->w_special_box = NULL;
-    g_free(rule->w_specific);
-    rule->w_specific = NULL;
-  }
-  if(rule->w_special_box_top && top)
-  {
-    gtk_widget_destroy(rule->w_special_box_top);
-    rule->w_special_box_top = NULL;
-    g_free(rule->w_specific_top);
-    rule->w_specific_top = NULL;
-  }
-
   // recreate the box
   if(!top)
     rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2377,7 +2351,6 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
     gtk_widget_set_no_show_all(special_box, TRUE);
     gtk_widget_set_visible(special_box, FALSE);
   }
-
 
   return (specific != NULL);
 }
@@ -2720,15 +2693,33 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_widget_set_name(rule->w_widget_box, "collect-module-hbox");
   }
 
-  const gboolean newraw = g_strcmp0(text, rule->raw_text);
+  // const gboolean newraw = g_strcmp0(text, rule->raw_text);
 
   _rule_set_raw_text(rule, text, FALSE);
 
   // initialize the specific entries if any
-  if(newmain || newprop || newraw) _widget_init_special(rule, text, self, FALSE);
+  _widget_init_special(rule, text, self, FALSE);
 
   rule->manual_widget_set--;
   return newmain;
+}
+
+static void _widget_special_destroy(dt_lib_filtering_rule_t *rule)
+{
+  if(rule->w_special_box)
+  {
+    gtk_widget_destroy(rule->w_special_box);
+    rule->w_special_box = NULL;
+    g_free(rule->w_specific);
+    rule->w_specific = NULL;
+  }
+  if(rule->w_special_box_top)
+  {
+    gtk_widget_destroy(rule->w_special_box_top);
+    rule->w_special_box_top = NULL;
+    g_free(rule->w_specific_top);
+    rule->w_specific_top = NULL;
+  }
 }
 
 static void _filters_gui_update(dt_lib_module_t *self)
@@ -2752,6 +2743,9 @@ static void _filters_gui_update(dt_lib_module_t *self)
     const int off = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
     const int top = dt_conf_get_int(confname);
+    // cleanup previous special widgets
+    _widget_special_destroy(&d->rule[i]);
+    // recreate main widget
     if(_widget_init(&d->rule[i], prop, txt, rmode, off, top, i, self))
       gtk_box_pack_start(GTK_BOX(d->rules_box), d->rule[i].w_main, FALSE, TRUE, 0);
     gtk_widget_show_all(d->rule[i].w_main);
@@ -2774,6 +2768,9 @@ static void _filters_gui_update(dt_lib_module_t *self)
       d->rule[i].w_special_box = NULL;
     }
   }
+
+  // update topbar
+  _topbar_update(self);
 
   --darktable.gui->reset;
 }
