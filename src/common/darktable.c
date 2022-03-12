@@ -1234,8 +1234,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // Save the default shortcuts
     dt_shortcuts_save(".defaults", FALSE);
 
-    // Then load any shortcuts if available
-    dt_shortcuts_load(NULL, FALSE); //
+    // Then load any shortcuts if available (wipe defaults first if requested)
+    dt_shortcuts_load(NULL, !dt_conf_get_bool("accel/load_defaults"));
 
     // Save the shortcuts including defaults
     dt_shortcuts_save(NULL, TRUE);
