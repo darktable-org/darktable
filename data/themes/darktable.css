@@ -479,6 +479,13 @@ spinbutton>button
   margin: 0.14em 0.07em;
 }
 
+.quick_filter_box
+{
+  background-color: @border_color;
+  padding: 0.01em;
+  margin: 0 0.4em;
+}
+
 .dt_dimmed
 {
   opacity: 0.5;
