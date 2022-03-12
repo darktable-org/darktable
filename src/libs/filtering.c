@@ -2517,6 +2517,7 @@ static void _topbar_update(dt_lib_module_t *self)
   g_list_free(childrens);
 
   // and we add all the special widgets with a top structure
+  int nb = 0;
   for(int i = 0; i < d->nb_rules; i++)
   {
     if(d->rule[i].topbar)
@@ -2526,7 +2527,15 @@ static void _topbar_update(dt_lib_module_t *self)
       {
         _widget_init_special(&d->rule[i], d->rule[i].raw_text, self, TRUE);
       }
+      // we add the filter label if it's the first filter
+      if(nb == 0)
+      {
+        GtkWidget *label = gtk_label_new(C_("quickfilter", "filter"));
+        gtk_box_pack_start(GTK_BOX(fbox), label, TRUE, TRUE, 0);
+        gtk_widget_show(label);
+      }
       gtk_box_pack_start(GTK_BOX(fbox), d->rule[i].w_special_box_top, FALSE, TRUE, 0);
+      nb++;
     }
     else if(d->rule[i].w_special_box_top)
     {

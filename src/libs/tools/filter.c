@@ -163,14 +163,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   gtk_widget_set_valign(self->widget, GTK_ALIGN_CENTER);
 
-  GtkWidget *label = gtk_label_new(C_("quickfilter", "filter"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-
   d->filter_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->filter_box, TRUE, TRUE, 0);
 
   /* sort combobox */
-  label = gtk_label_new(_("sort by"));
+  GtkWidget *label = gtk_label_new(_("sort by"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
