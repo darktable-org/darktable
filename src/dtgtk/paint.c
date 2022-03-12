@@ -3154,6 +3154,30 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
+void dtgtk_cairo_paint_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  // the needle
+  cairo_move_to(cr, 0.5, 0.5);
+  cairo_line_to(cr, 0, 1.0);
+  cairo_stroke(cr);
+
+  // the main part
+  cairo_move_to(cr, 0.13, 0.45);
+  cairo_line_to(cr, 0.57, 0.88);
+  cairo_line_to(cr, 0.67, 0.34);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+  cairo_move_to(cr, 0.61, 0);
+  cairo_line_to(cr, 1.0, 0.4);
+  cairo_line_to(cr, 0.34, 0.66);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+
+  FINISH
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
