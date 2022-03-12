@@ -150,18 +150,8 @@ typedef struct dt_collection_params_t
   /** flags for which filters to use, see COLLECTION_FILTER_x defines... */
   uint32_t filter_flags;
 
-  /** text filter */
-  char *text_filter;
-
-  /** colors filter */
-  int colors_filter;
-
   /** current film id */
   uint32_t film_id;
-
-  /** current  filter */
-  uint32_t rating;
-  dt_collection_rating_comperator_t comparator;
 
   /** sorting **/
   dt_collection_sort_t sort; // Has to be changed to a dt_collection_sort struct
@@ -222,29 +212,10 @@ uint32_t dt_collection_get_query_flags(const dt_collection_t *collection);
 /** set filter flags for collection */
 void dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t flags);
 
-/** get text filter for collection */
-char *dt_collection_get_text_filter(const dt_collection_t *collection);
-/** set text filter for collection */
-void dt_collection_set_text_filter(const dt_collection_t *collection, char *text_filter);
-
-/** get colors filter for collection */
-int dt_collection_get_colors_filter(const dt_collection_t *collection);
-/** set colors filter for collection */
-void dt_collection_set_colors_filter(const dt_collection_t *collection, int colors_filter);
-
 /** set the film_id of collection */
 void dt_collection_set_film_id(const dt_collection_t *collection, const int32_t film_id);
 /** set the tagid of collection */
 void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid);
-/** set the star level for filter */
-void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating);
-/** get the star level for filter. The value returned starts on 0 **/
-uint32_t dt_collection_get_rating(const dt_collection_t *collection);
-/** set the comparator for rating */
-void dt_collection_set_rating_comparator(const dt_collection_t *collection,
-                                         const dt_collection_rating_comperator_t comparator);
-/** get the comparator for rating */
-dt_collection_rating_comperator_t dt_collection_get_rating_comparator(const dt_collection_t *collection);
 
 /** set the sort fields and flags used to show the collection **/
 void dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t sort, gint reverse);

@@ -933,10 +933,10 @@ void dt_view_toggle_selection(int imgid)
 /**
  * \brief Reset filter
  */
-void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter)
+void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter)
 {
-  if(vm->proxy.filter.module && vm->proxy.filter.reset_filter)
-    vm->proxy.filter.reset_filter(vm->proxy.filter.module, smart_filter);
+  if(vm->proxy.module_filtering.module && vm->proxy.module_filtering.reset_filter)
+    vm->proxy.module_filtering.reset_filter(vm->proxy.module_filtering.module, smart_filter);
 }
 
 void dt_view_filter_update_sort(const dt_view_manager_t *vm, int sort, gboolean asc)

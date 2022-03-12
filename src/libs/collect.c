@@ -407,7 +407,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   if(reset_view_filter)
   {
-    dt_view_filter_reset(darktable.view_manager, FALSE);
+    dt_view_filtering_reset(darktable.view_manager, FALSE);
   }
 
   /* set number of rules */
@@ -521,7 +521,7 @@ static void view_popup_menu_onSearchFilmroll(GtkWidget *menuitem, gpointer userd
       g_free(query);
 
       /* reset filter so that view isn't empty */
-      dt_view_filter_reset(darktable.view_manager, FALSE);
+      dt_view_filtering_reset(darktable.view_manager, FALSE);
 
       // refresh the folders status
       dt_film_set_folder_status();
