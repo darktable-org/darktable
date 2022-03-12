@@ -2892,7 +2892,7 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
 
   int num_rules = 0;
   char str[400] = { 0 };
-  int mode, item, off;
+  int mode, item, off, top;
   int c;
   sscanf(buf, "%d", &num_rules);
   while(buf[0] != '\0' && buf[0] != ':') buf++;
@@ -2900,9 +2900,9 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
 
   for(int k = 0; k < num_rules; k++)
   {
-    const int n = sscanf(buf, "%d:%d:%d:%399[^$]", &mode, &item, &off, str);
+    const int n = sscanf(buf, "%d:%d:%d:%d:%399[^$]", &mode, &item, &off, &top, str);
 
-    if(n == 4)
+    if(n == 5)
     {
       if(k > 0)
       {
@@ -2933,6 +2933,11 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
       {
         c = snprintf(out, outsize, "%s%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
                      _("(off)"), item == 0 ? dt_image_film_roll_name(str) : str);
+      }
+      else if(top)
+      {
+        c = snprintf(out, outsize, "%s%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
+                     _("(top)"), item == 0 ? dt_image_film_roll_name(str) : str);
       }
       else
       {
