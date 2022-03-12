@@ -472,16 +472,32 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
   return TRUE;
 }
 
+static void _range_synchronise(_widgets_range_t *source)
+{
+  _widgets_range_t *dest = NULL;
+  if(source == source->rule->w_specific_top)
+    dest = source->rule->w_specific;
+  else
+    dest = source->rule->w_specific_top;
+
+  if(dest)
+  {
+    source->rule->manual_widget_set++;
+    dtgtk_range_select_set_selection_from_raw_text(DTGTK_RANGE_SELECT(dest->range_select), source->rule->raw_text,
+                                                   FALSE);
+    source->rule->manual_widget_set--;
+  }
+}
+
 static void _range_changed(GtkWidget *widget, gpointer user_data)
 {
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)user_data;
-  if(rule->manual_widget_set) return;
-  if(!rule->w_specific) return;
-  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  _widgets_range_t *special = (_widgets_range_t *)user_data;
+  if(special->rule->manual_widget_set) return;
 
   // we recreate the right raw text and put it in the raw entry
   gchar *txt = dtgtk_range_select_get_raw_text(DTGTK_RANGE_SELECT(special->range_select));
-  _rule_set_raw_text(rule, txt, TRUE);
+  _rule_set_raw_text(special->rule, txt, TRUE);
+  _range_synchronise(special);
   g_free(txt);
 }
 
@@ -489,9 +505,13 @@ static gboolean _range_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
 
   rule->manual_widget_set++;
   dtgtk_range_select_set_selection_from_raw_text(DTGTK_RANGE_SELECT(special->range_select), rule->raw_text, FALSE);
+  if(specialtop)
+    dtgtk_range_select_set_selection_from_raw_text(DTGTK_RANGE_SELECT(specialtop->range_select), rule->raw_text,
+                                                   FALSE);
   rule->manual_widget_set--;
   return TRUE;
 }
@@ -542,9 +562,11 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                 const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  special->rule = rule;
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE, DT_RANGE_TYPE_NUMERIC);
+  if(top) gtk_widget_set_size_request(special->range_select, 160, -1);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
   range->step_bd = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
@@ -591,10 +613,22 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   range->min_r = -1;
   range->max_r = 5.999;
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
 
-  rule->w_specific = special;
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
+    gtk_style_context_add_class(context, "quick_filter_box");
+  }
+
+  if(top)
+    rule->w_specific_top = special;
+  else
+    rule->w_specific = special;
 }
 
 static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
@@ -603,7 +637,9 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
 
   dt_lib_filtering_t *d = get_collect(rule);
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -620,6 +656,7 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
   int nb_square = 0;
   int nb_landscape = 0;
   dtgtk_range_select_reset_blocks(range);
+  if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const double val = sqlite3_column_double(stmt, 0);
@@ -632,6 +669,7 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
       nb_square += count;
 
     dtgtk_range_select_add_block(range, val, count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, val, count);
   }
   sqlite3_finalize(stmt);
 
@@ -644,9 +682,24 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+
+  if(rangetop)
+  {
+    // predefined selections
+    dtgtk_range_select_add_range_block(rangetop, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX,
+                                       _("all images"), nb_portrait + nb_square + nb_landscape);
+    dtgtk_range_select_add_range_block(rangetop, 0.5, 0.99, DT_RANGE_BOUND_MIN, _("portrait images"), nb_portrait);
+    dtgtk_range_select_add_range_block(rangetop, 1.0, 1.0, DT_RANGE_BOUND_FIXED, _("square images"), nb_square);
+    dtgtk_range_select_add_range_block(rangetop, 1.01, 2.0, DT_RANGE_BOUND_MAX, _("landsacpe images"),
+                                       nb_landscape);
+
+    // and setup the selection
+    dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
+  }
   rule->manual_widget_set--;
 
   dtgtk_range_select_redraw(range);
+  if(rangetop) dtgtk_range_select_redraw(rangetop);
   return TRUE;
 }
 
@@ -688,9 +741,11 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
                                const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  special->rule = rule;
 
   special->range_select
-      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
+  if(top) gtk_widget_set_size_request(special->range_select, 160, -1);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
@@ -715,10 +770,21 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   range->min_r = min;
   range->max_r = max;
 
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
+    gtk_style_context_add_class(context, "quick_filter_box");
+  }
 
-  rule->w_specific = special;
+  if(top)
+    rule->w_specific_top = special;
+  else
+    rule->w_specific = special;
 }
 
 static gboolean _focal_update(dt_lib_filtering_rule_t *rule)
@@ -727,7 +793,9 @@ static gboolean _focal_update(dt_lib_filtering_rule_t *rule)
 
   dt_lib_filtering_t *d = get_collect(rule);
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -741,19 +809,23 @@ static gboolean _focal_update(dt_lib_filtering_rule_t *rule)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
+  if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const double val = sqlite3_column_double(stmt, 0);
     const int count = sqlite3_column_int(stmt, 1);
     dtgtk_range_select_add_block(range, val, count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, val, count);
   }
   sqlite3_finalize(stmt);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  if(rangetop) dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
   rule->manual_widget_set--;
 
   dtgtk_range_select_redraw(range);
+  if(rangetop) dtgtk_range_select_redraw(rangetop);
   return TRUE;
 }
 
@@ -772,9 +844,11 @@ static void _focal_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
                                const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  special->rule = rule;
 
   special->range_select
-      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
+  if(top) gtk_widget_set_size_request(special->range_select, 160, -1);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
   range->step_bd = 1.0;
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
@@ -797,10 +871,21 @@ static void _focal_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   range->min_r = floor(min);
   range->max_r = floor(max) + 1.0;
 
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
+    gtk_style_context_add_class(context, "quick_filter_box");
+  }
 
-  rule->w_specific = special;
+  if(top)
+    rule->w_specific_top = special;
+  else
+    rule->w_specific = special;
 }
 
 static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
@@ -809,7 +894,9 @@ static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
 
   dt_lib_filtering_t *d = get_collect(rule);
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -823,19 +910,23 @@ static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
+  if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const double val = sqlite3_column_double(stmt, 0);
     const int count = sqlite3_column_int(stmt, 1);
     dtgtk_range_select_add_block(range, val, count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, val, count);
   }
   sqlite3_finalize(stmt);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  if(rangetop) dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
   rule->manual_widget_set--;
 
   dtgtk_range_select_redraw(range);
+  if(rangetop) dtgtk_range_select_redraw(rangetop);
   return TRUE;
 }
 
@@ -854,9 +945,11 @@ static void _aperture_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                   const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  special->rule = rule;
 
   special->range_select
-      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
+  if(top) gtk_widget_set_size_request(special->range_select, 160, -1);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
   range->step_bd = 1.0;
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
@@ -879,10 +972,21 @@ static void _aperture_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   range->min_r = floor(min * 10.0) / 10.0;
   range->max_r = (floor(max * 10.0) + 1.0) / 10.0;
 
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
+    gtk_style_context_add_class(context, "quick_filter_box");
+  }
 
-  rule->w_specific = special;
+  if(top)
+    rule->w_specific_top = special;
+  else
+    rule->w_specific = special;
 }
 
 static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
@@ -891,7 +995,9 @@ static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
 
   dt_lib_filtering_t *d = get_collect(rule);
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -905,20 +1011,24 @@ static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
+  if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const double val = sqlite3_column_double(stmt, 0);
     const int count = sqlite3_column_int(stmt, 1);
 
     dtgtk_range_select_add_block(range, val, count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, val, count);
   }
   sqlite3_finalize(stmt);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  if(rangetop) dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
   rule->manual_widget_set--;
 
   dtgtk_range_select_redraw(range);
+  if(rangetop) dtgtk_range_select_redraw(rangetop);
   return TRUE;
 }
 
@@ -960,9 +1070,11 @@ static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
                              const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  special->rule = rule;
 
   special->range_select
-      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
+  if(top) gtk_widget_set_size_request(special->range_select, 160, -1);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
@@ -986,10 +1098,21 @@ static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   range->min_r = floor(min);
   range->max_r = floor(max) + 1;
 
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
+    gtk_style_context_add_class(context, "quick_filter_box");
+  }
 
-  rule->w_specific = special;
+  if(top)
+    rule->w_specific_top = special;
+  else
+    rule->w_specific = special;
 }
 
 static gboolean _exposure_update(dt_lib_filtering_rule_t *rule)
@@ -998,7 +1121,9 @@ static gboolean _exposure_update(dt_lib_filtering_rule_t *rule)
 
   dt_lib_filtering_t *d = get_collect(rule);
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -1012,20 +1137,24 @@ static gboolean _exposure_update(dt_lib_filtering_rule_t *rule)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
+  if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const double val = sqlite3_column_double(stmt, 0);
     const int count = sqlite3_column_int(stmt, 1);
 
     dtgtk_range_select_add_block(range, val, count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, val, count);
   }
   sqlite3_finalize(stmt);
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  if(rangetop) dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
   rule->manual_widget_set--;
 
   dtgtk_range_select_redraw(range);
+  if(rangetop) dtgtk_range_select_redraw(rangetop);
   return TRUE;
 }
 
@@ -1060,13 +1189,18 @@ static void _exposure_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                   const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  special->rule = rule;
 
   special->range_select
-      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_NUMERIC);
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
+  if(top) gtk_widget_set_size_request(special->range_select, 160, -1);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
-  gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 10);
-  gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 10);
+  if(!top)
+  {
+    gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 10);
+    gtk_entry_set_width_chars(GTK_ENTRY(range->entry_max), 10);
+  }
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
   dtgtk_range_select_set_band_func(range, _exposure_value_from_band_func, _exposure_value_to_band_func);
   dtgtk_range_select_add_marker(range, 1.0, TRUE);
@@ -1089,10 +1223,21 @@ static void _exposure_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   range->min_r = min;
   range->max_r = max;
 
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
+    gtk_style_context_add_class(context, "quick_filter_box");
+  }
 
-  rule->w_specific = special;
+  if(top)
+    rule->w_specific_top = special;
+  else
+    rule->w_specific = special;
 }
 
 static gboolean _date_update(dt_lib_filtering_rule_t *rule)
@@ -1101,7 +1246,9 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
 
   dt_lib_filtering_t *d = get_collect(rule);
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
+  _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -1115,6 +1262,7 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
+  if(rangetop) dtgtk_range_select_reset_blocks(rangetop);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int count = sqlite3_column_int(stmt, 1);
@@ -1123,6 +1271,7 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
     if(dt)
     {
       dtgtk_range_select_add_block(range, g_date_time_to_unix(dt), count);
+      if(rangetop) dtgtk_range_select_add_block(rangetop, g_date_time_to_unix(dt), count);
       g_date_time_unref(dt);
     }
   }
@@ -1130,9 +1279,11 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
 
   // and setup the selection
   dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  if(rangetop) dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
   rule->manual_widget_set--;
 
   dtgtk_range_select_redraw(range);
+  if(rangetop) dtgtk_range_select_redraw(rangetop);
   return TRUE;
 }
 
@@ -1140,9 +1291,11 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
                               const gchar *text, dt_lib_module_t *self, gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  special->rule = rule;
 
   special->range_select
-      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), TRUE, DT_RANGE_TYPE_DATETIME);
+      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_DATETIME);
+  if(top) gtk_widget_set_size_request(special->range_select, 160, -1);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
 
   range->type = DT_RANGE_TYPE_DATETIME;
@@ -1182,10 +1335,21 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
     g_free(max);
   }
 
-  gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), rule);
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
+  else
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
+    gtk_style_context_add_class(context, "quick_filter_box");
+  }
 
-  rule->w_specific = special;
+  if(top)
+    rule->w_specific_top = special;
+  else
+    rule->w_specific = special;
 }
 
 static void _filename_synchronise(_widgets_filename_t *source)
