@@ -1804,6 +1804,8 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
     dt_shortcuts_load(".edit", wipe);
     break;
   }
+
+  dt_shortcuts_save(NULL, FALSE);
 }
 
 static void _import_export_dev_changed(GtkComboBox *widget, gpointer user_data)
