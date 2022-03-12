@@ -132,6 +132,7 @@ typedef struct dt_control_t
   GSequence *shortcuts;
   gboolean enable_fallbacks;
   GtkWidget *mapping_widget;
+  gboolean confirm_mapping;
   dt_action_element_t element;
   GPtrArray *widget_definitions;
   GSList *input_drivers;

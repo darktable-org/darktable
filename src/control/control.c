@@ -122,6 +122,7 @@ void dt_control_init(dt_control_t *s)
   s->shortcuts = g_sequence_new(g_free);
   s->enable_fallbacks = dt_conf_get_bool("accel/enable_fallbacks");
   s->mapping_widget = NULL;
+  s->confirm_mapping = TRUE;
   s->widget_definitions = g_ptr_array_new ();
   s->input_drivers = NULL;
 
