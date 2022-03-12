@@ -795,10 +795,11 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
       }
     }
     break;
+  case DT_ACTION_TYPE_BLEND:
+    vws = DT_VIEW_DARKROOM;
+    break;
   case DT_ACTION_TYPE_CATEGORY:
-    if(owner == &darktable.control->actions_blend)
-      vws = DT_VIEW_DARKROOM;
-    else if(owner == &darktable.control->actions_fallbacks)
+    if(owner == &darktable.control->actions_fallbacks)
       vws = 0;
     else if(owner == &darktable.control->actions_lua)
       vws = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
