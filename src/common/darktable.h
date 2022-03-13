@@ -156,7 +156,8 @@ typedef unsigned int u_int;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 4
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 5
+#define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
 #ifdef _DEBUG
@@ -615,8 +616,7 @@ static inline const GList *g_list_prev_wraparound(const GList *list)
 
 void dt_print_mem_usage();
 
-void dt_configure_performance();
-
+void dt_configure_runtime_performance(const int version, char *config_info);
 // helper function which loads whatever image_to_load points to: single image files or whole directories
 // it tells you if it was a single image or a directory in single_image (when it's not NULL)
 int dt_load_from_string(const gchar *image_to_load, gboolean open_image_in_dr, gboolean *single_image);
