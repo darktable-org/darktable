@@ -1,4 +1,3 @@
-
 /*
     This file is part of darktable,
     Copyright (C) 2009-2022 darktable developers.
@@ -3369,6 +3368,8 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
      CPF_STYLE_BOX | (expanded?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), expanded);
   gtk_widget_set_name(cs->toggle, "control-button");
+  context = gtk_widget_get_style_context(cs->toggle);
+  gtk_style_context_add_class(context, "dt_transparent_background");
 
   cs->container = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   gtk_widget_set_name(GTK_WIDGET(cs->container), "collapsible");
