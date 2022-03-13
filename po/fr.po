@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-13 10:02+0100\n"
-"PO-Revision-Date: 2022-03-13 10:10+0100\n"
+"POT-Creation-Date: 2022-03-13 10:50+0100\n"
+"PO-Revision-Date: 2022-03-13 10:52+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5147,61 +5147,53 @@ msgstr "le fichier « %s » possède un format inconnu !"
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
-#: ../src/common/darktable.c:1288
-msgid "configuration info"
+#: ../src/common/darktable.c:1289
+msgid "configuration information"
 msgstr "information configuration"
 
-#: ../src/common/darktable.c:1288
+#: ../src/common/darktable.c:1291
 msgid "show this information again"
 msgstr "montrer encore cette information"
 
-#: ../src/common/darktable.c:1288
+#: ../src/common/darktable.c:1291
 msgid "understood"
 msgstr "entendu"
 
-#: ../src/common/darktable.c:1683
-msgid ""
-"the RCD demosaicer has been defined as default instead of PPG because of "
-"better quality and performance\n"
-msgstr ""
-"le dématriçage RCD a été défini par défaut à la place de PPG car il est plus "
-"performant et de meilleur qualité.\n"
-
-#: ../src/common/darktable.c:1684
-msgid ""
-"  see preferences/darkroom/demosaicing for zoomed out darkroom mode\n"
-"\n"
-msgstr ""
-"voir préférences / chambre noire / dématriçage pour vue chambre noire\n"
-"\n"
-
-#: ../src/common/darktable.c:1688
-msgid ""
-"the user interface and the underlying internals for tuning darktable "
-"performance have changed.\n"
-msgstr ""
-"l'interface utilisateur et les options internes pour optimiser les "
-"performance ont changé.\n"
-
 #: ../src/common/darktable.c:1689
 msgid ""
-"  you won't find headroom and friends any longer, instead in preferences/"
-"processing use:\n"
+"the RCD demosaicer has been defined as default instead of PPG because of "
+"better quality and performance."
 msgstr ""
-" vous ne trouverez plus « headroom » et autres maintenant, à la place dans "
-"préférences / traitement utiliser:\n"
-
-#: ../src/common/darktable.c:1690
-msgid "  1) darktable resources\n"
-msgstr " 1) ressources darktable\n"
+"le dématriçage RCD a été défini par défaut à la place de PPG car il est plus "
+"performant et de meilleur qualité."
 
 #: ../src/common/darktable.c:1691
+msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
+msgstr "voir préférences / chambre noire / dématriçage pour vue chambre noire"
+
+#: ../src/common/darktable.c:1697
 msgid ""
-"  2) tune OpenCL performance\n"
-"\n"
+"the user interface and the underlying internals for tuning darktable "
+"performance have changed."
 msgstr ""
-" 2) optimiser les performances OpenCL\n"
-"\n"
+"l'interface utilisateur et les options internes pour optimiser les "
+"performance ont changé."
+
+#: ../src/common/darktable.c:1699
+msgid ""
+"you won't find headroom and friends any longer, instead in preferences/"
+"processing use:"
+msgstr ""
+"vous ne trouverez plus « headroom » et autres maintenant, à la place dans "
+"préférences / traitement utiliser:"
+
+#: ../src/common/darktable.c:1701
+msgid "1) darktable resources"
+msgstr "1) ressources darktable"
+
+#: ../src/common/darktable.c:1703
+msgid "2) tune OpenCL performance"
+msgstr "2) optimiser les performances OpenCL"
 
 #: ../src/common/database.c:2522
 #, c-format
@@ -23606,6 +23598,13 @@ msgstr "créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1331
 msgid "mouse actions"
 msgstr "actions souris"
+
+#~ msgid ""
+#~ "  2) tune OpenCL performance\n"
+#~ "\n"
+#~ msgstr ""
+#~ " 2) optimiser les performances OpenCL\n"
+#~ "\n"
 
 #~ msgid "darktable - run performance configuration?"
 #~ msgstr "darktable - exécute la configuration des performances?"
