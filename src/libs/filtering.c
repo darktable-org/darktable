@@ -605,7 +605,7 @@ static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
   _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -746,7 +746,7 @@ static gboolean _focal_update(dt_lib_filtering_rule_t *rule)
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
   _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -832,7 +832,7 @@ static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
   _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -918,7 +918,7 @@ static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
   _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -1029,7 +1029,7 @@ static gboolean _exposure_update(dt_lib_filtering_rule_t *rule)
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
   _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(special->range_select) : NULL;
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
   // first, we update the graph
@@ -2168,7 +2168,6 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
     g_object_ref(G_OBJECT(rule->w_special_box_top));
 
   // initialize the specific entries if any
-  gboolean widgets_ok = FALSE;
   switch(rule->prop)
   {
     case DT_COLLECTION_PROP_RATING:
@@ -2206,29 +2205,7 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
       break;
   }
 
-  widgets_ok = _widget_update(rule);
-
-  // set the visibility for the eventual special widgets
-  void *specific = (top) ? rule->w_specific_top : rule->w_specific;
-  if(specific)
-  {
-    gtk_widget_show_all(special_box); // we ensure all the childs widgets are shown by default
-    gtk_widget_set_no_show_all(special_box, TRUE);
-
-    // special/raw state is stored per rule property
-    char confname[200] = { 0 };
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/raw_%d", rule->prop);
-    const gboolean special = (widgets_ok && !dt_conf_get_bool(confname));
-
-    gtk_widget_set_visible(special_box, special);
-  }
-  else
-  {
-    gtk_widget_set_no_show_all(special_box, TRUE);
-    gtk_widget_set_visible(special_box, FALSE);
-  }
-
-  return (specific != NULL);
+  return TRUE;
 }
 
 static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
@@ -2248,6 +2225,7 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 
   // re-init the special widgets
   _widget_init_special(rule, "", self, FALSE);
+  _widget_update(rule);
 
   // reset the raw entry
   _rule_set_raw_text(rule, "", FALSE);
@@ -2441,6 +2419,7 @@ static void _topbar_update(dt_lib_module_t *self)
       if(!d->rule[i].w_special_box_top)
       {
         _widget_init_special(&d->rule[i], d->rule[i].raw_text, self, TRUE);
+        _widget_update(&d->rule[i]);
       }
       // we add the filter label if it's the first filter
       if(nb == 0)
@@ -2555,7 +2534,7 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
 static gboolean _event_rule_change_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK) || (rule->topbar && widget != rule->w_prop))
   {
     _rule_topbar_toggle(rule, self);
   }
@@ -2732,6 +2711,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
     {
       _widget_init_special(&d->rule[i], txt, self, TRUE);
     }
+    _widget_update(&d->rule[i]);
   }
 
   // remove all remaining rules
