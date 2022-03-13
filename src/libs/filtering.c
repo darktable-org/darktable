@@ -477,6 +477,25 @@ static gboolean _range_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
+static void _range_widget_add_to_rule(dt_lib_filtering_rule_t *rule, _widgets_range_t *special, const gboolean top)
+{
+  special->rule = rule;
+
+  gtk_box_pack_start(GTK_BOX((top) ? rule->w_special_box_top : rule->w_special_box), special->range_select, TRUE,
+                     TRUE, 0);
+  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
+  if(top)
+  {
+    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
+    gtk_style_context_add_class(context, "quick_filter_box");
+  }
+
+  if(top)
+    rule->w_specific_top = special;
+  else
+    rule->w_specific = special;
+}
+
 static gchar *_rating_print_func(const double value, gboolean detailled)
 {
   if(detailled)
@@ -519,15 +538,15 @@ static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   // then we draw the regular icon
   dtgtk_cairo_paint_star(cr, x, y, w, h, flags, my_data);
 }
+
 static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                const gchar *text, dt_lib_module_t *self, gboolean top)
+                                const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
-  special->rule = rule;
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE, DT_RANGE_TYPE_NUMERIC);
-  if(top) gtk_widget_set_size_request(special->range_select, 160, -1);
+  if(top) gtk_widget_set_size_request(special->range_select, DT_PIXEL_APPLY_DPI(120), -1);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
   range->step_bd = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
@@ -575,21 +594,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   range->min_r = -1;
   range->max_r = 5.999;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
-  if(top)
-  {
-    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
-    gtk_style_context_add_class(context, "quick_filter_box");
-  }
-
-  if(top)
-    rule->w_specific_top = special;
-  else
-    rule->w_specific = special;
+  _range_widget_add_to_rule(rule, special, top);
 }
 
 static gboolean _ratio_update(dt_lib_filtering_rule_t *rule)
@@ -699,10 +704,9 @@ static gchar *_ratio_print_func(const double value, gboolean detailled)
 }
 
 static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                               const gchar *text, dt_lib_module_t *self, gboolean top)
+                               const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
-  special->rule = rule;
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
@@ -731,21 +735,7 @@ static void _ratio_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   range->min_r = min;
   range->max_r = max;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
-  if(top)
-  {
-    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
-    gtk_style_context_add_class(context, "quick_filter_box");
-  }
-
-  if(top)
-    rule->w_specific_top = special;
-  else
-    rule->w_specific = special;
+  _range_widget_add_to_rule(rule, special, top);
 }
 
 static gboolean _focal_update(dt_lib_filtering_rule_t *rule)
@@ -802,10 +792,9 @@ static gchar *_focal_print_func(const double value, gboolean detailled)
 }
 
 static void _focal_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                               const gchar *text, dt_lib_module_t *self, gboolean top)
+                               const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
-  special->rule = rule;
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
@@ -832,21 +821,7 @@ static void _focal_widget_init(dt_lib_filtering_rule_t *rule, const dt_collectio
   range->min_r = floor(min);
   range->max_r = floor(max) + 1.0;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
-  if(top)
-  {
-    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
-    gtk_style_context_add_class(context, "quick_filter_box");
-  }
-
-  if(top)
-    rule->w_specific_top = special;
-  else
-    rule->w_specific = special;
+  _range_widget_add_to_rule(rule, special, top);
 }
 
 static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
@@ -903,10 +878,9 @@ static gchar *_aperture_print_func(const double value, gboolean detailled)
 }
 
 static void _aperture_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                  const gchar *text, dt_lib_module_t *self, gboolean top)
+                                  const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
-  special->rule = rule;
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
@@ -933,21 +907,7 @@ static void _aperture_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   range->min_r = floor(min * 10.0) / 10.0;
   range->max_r = (floor(max * 10.0) + 1.0) / 10.0;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
-  if(top)
-  {
-    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
-    gtk_style_context_add_class(context, "quick_filter_box");
-  }
-
-  if(top)
-    rule->w_specific_top = special;
-  else
-    rule->w_specific = special;
+  _range_widget_add_to_rule(rule, special, top);
 }
 
 static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
@@ -1028,10 +988,9 @@ static gchar *_iso_print_func(const double value, gboolean detailled)
 }
 
 static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                             const gchar *text, dt_lib_module_t *self, gboolean top)
+                             const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
-  special->rule = rule;
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
@@ -1059,21 +1018,7 @@ static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   range->min_r = floor(min);
   range->max_r = floor(max) + 1;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
-  if(top)
-  {
-    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
-    gtk_style_context_add_class(context, "quick_filter_box");
-  }
-
-  if(top)
-    rule->w_specific_top = special;
-  else
-    rule->w_specific = special;
+  _range_widget_add_to_rule(rule, special, top);
 }
 
 static gboolean _exposure_update(dt_lib_filtering_rule_t *rule)
@@ -1147,10 +1092,9 @@ static gchar *_exposure_print_func(const double value, gboolean detailled)
 }
 
 static void _exposure_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                  const gchar *text, dt_lib_module_t *self, gboolean top)
+                                  const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
-  special->rule = rule;
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_NUMERIC);
@@ -1184,21 +1128,7 @@ static void _exposure_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   range->min_r = min;
   range->max_r = max;
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
-  if(top)
-  {
-    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
-    gtk_style_context_add_class(context, "quick_filter_box");
-  }
-
-  if(top)
-    rule->w_specific_top = special;
-  else
-    rule->w_specific = special;
+  _range_widget_add_to_rule(rule, special, top);
 }
 
 static gboolean _date_update(dt_lib_filtering_rule_t *rule)
@@ -1249,10 +1179,9 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
 }
 
 static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                              const gchar *text, dt_lib_module_t *self, gboolean top)
+                              const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
-  special->rule = rule;
 
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), !top, DT_RANGE_TYPE_DATETIME);
@@ -1296,21 +1225,7 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
     g_free(max);
   }
 
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), special->range_select, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), special->range_select, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
-  if(top)
-  {
-    GtkStyleContext *context = gtk_widget_get_style_context(special->range_select);
-    gtk_style_context_add_class(context, "quick_filter_box");
-  }
-
-  if(top)
-    rule->w_specific_top = special;
-  else
-    rule->w_specific = special;
+  _range_widget_add_to_rule(rule, special, top);
 }
 
 static void _filename_synchronise(_widgets_filename_t *source)

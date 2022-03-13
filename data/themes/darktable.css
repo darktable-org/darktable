@@ -1584,9 +1584,17 @@ filechooser row:hover .sidebar-icon
   border-top: 80px solid red;    /* not real pixels. This is used as a per thousand of the band height */
   border-bottom: 34px solid red; /* not real pixels. This is used as a per thousand of the band height */
 }
+.quick_filter_box #dt-range-band
+{
+  min-height: 1.8em;
+}
 .dt_range_rating #dt-range-band
 {
   min-width: 16em;
+}
+.quick_filter_box .dt_range_rating #dt-range-band
+{
+  min-width: 12em;
 }
 #dt-range-current
 {
@@ -1607,6 +1615,7 @@ filechooser row:hover .sidebar-icon
 {
   background-color: @border_color;
   padding: 0.01em;
+  font-size: 1.2em;
 }
 #filter_colors_box #dt-button
 {
