@@ -60,7 +60,7 @@
 @define-color button_fg @fg_color;
 @define-color button_checked_bg @grey_70;
 @define-color button_checked_fg @grey_100;
-@define-color button_hover_bg @grey_80;
+@define-color button_hover_bg @grey_75;
 @define-color button_hover_fg @grey_25;
 
 /* text fields */
