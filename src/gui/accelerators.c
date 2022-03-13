@@ -4059,7 +4059,7 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
 void dt_action_define_preset(dt_action_t *action, const gchar *name)
 {
   gchar *path[3] = { "preset", (gchar *)name, NULL };
-  dt_action_t *p = dt_action_locate(action, path, TRUE);
+  dt_action_t *const p = dt_action_locate(action, path, TRUE);
   if(p)
   {
     p->type = DT_ACTION_TYPE_PRESET;
@@ -4095,7 +4095,7 @@ void dt_action_rename(dt_action_t *action, const gchar *new_name)
     GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
     while(!g_sequence_iter_is_end(iter))
     {
-      GSequenceIter *current = iter;
+      GSequenceIter *const current = iter;
       iter = g_sequence_iter_next(iter); // remove will invalidate
 
       dt_shortcut_t *s = g_sequence_get(current);
@@ -4205,7 +4205,7 @@ void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *
     ac->type = DT_ACTION_TYPE_CLOSURE;
 
     // to support multi-instance, save in and own by per instance widget list
-    dt_action_target_t *referral = g_malloc0(sizeof(dt_action_target_t));
+    dt_action_target_t *const referral = g_malloc0(sizeof(dt_action_target_t));
     referral->action = ac;
     referral->target = closure;
     g_closure_ref(closure);
@@ -4298,7 +4298,7 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
       GSequenceIter *speed_adjustment = g_sequence_lookup(darktable.control->shortcuts, &s, _shortcut_compare_func, NULL);
       if(speed_adjustment)
       {
-        dt_shortcut_t *f = g_sequence_get(speed_adjustment);
+        const dt_shortcut_t *const f = g_sequence_get(speed_adjustment);
 
         multiplier *= f->speed;
       }
@@ -4313,13 +4313,13 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
 
 void dt_accel_connect_instance_iop(dt_iop_module_t *module)
 {
-  gboolean focused = darktable.develop->gui_module &&
-                     darktable.develop->gui_module->so == module->so;
-  dt_action_t *blend = &darktable.control->actions_blend;
+  const gboolean focused = darktable.develop->gui_module
+                           && darktable.develop->gui_module->so == module->so;
+  const dt_action_t *const blend = &darktable.control->actions_blend;
   for(GSList *w = module->widget_list; w; w = w->next)
   {
-    dt_action_target_t *referral = w->data;
-    dt_action_t *ac = referral->action;
+    const dt_action_target_t *const referral = w->data;
+    dt_action_t *const ac = referral->action;
     if(focused || (ac->owner != blend && ac->owner->owner != blend))
       ac->target = referral->target;
   }
@@ -4327,7 +4327,7 @@ void dt_accel_connect_instance_iop(dt_iop_module_t *module)
 
 static void _destroy_referral(gpointer data)
 {
-  dt_action_target_t *referral = data;
+  dt_action_target_t *const referral = data;
   if(referral->action && referral->action->type == DT_ACTION_TYPE_CLOSURE)
   {
     if(referral->action->target == referral->target)
