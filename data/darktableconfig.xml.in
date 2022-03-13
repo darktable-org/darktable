@@ -71,8 +71,8 @@
     <name>accel/load_defaults</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>restore default shortcuts at startup</shortdescription>
-    <longdescription>load default shortcuts before user settings add/overwrite. switch off to prevent deleted defaults returning</longdescription>
+    <shortdescription>load default shortcuts at startup</shortdescription>
+    <longdescription>load default shortcuts before user settings. switch off to prevent deleted defaults returning</longdescription>
   </dtconfig>
   <dtconfig>
     <name>bauhaus/scale</name>
