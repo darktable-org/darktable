@@ -180,10 +180,12 @@ static float _action_process_toggle(gpointer target, dt_action_element_t element
     g_object_ref(event->button.window);
 
     // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
-    if(!gtk_widget_event(target, event))
-      gtk_button_clicked(GTK_BUTTON(target));
+    // gtk_widget_event does not work when widgets are hidden in event boxes or some other conditions
+    gboolean handled;
+    g_signal_emit_by_name(G_OBJECT(target), "button-press-event", event, &handled);
+    if(!handled) gtk_button_clicked(GTK_BUTTON(target));
     event->type = GDK_BUTTON_RELEASE;
-    gtk_widget_event(target, event);
+    g_signal_emit_by_name(G_OBJECT(target), "button-release-event", event, &handled);
 
     gdk_event_free(event);
 
@@ -798,10 +800,11 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
       }
     }
     break;
+  case DT_ACTION_TYPE_BLEND:
+    vws = DT_VIEW_DARKROOM;
+    break;
   case DT_ACTION_TYPE_CATEGORY:
-    if(owner == &darktable.control->actions_blend)
-      vws = DT_VIEW_DARKROOM;
-    else if(owner == &darktable.control->actions_fallbacks)
+    if(owner == &darktable.control->actions_fallbacks)
       vws = 0;
     else if(owner == &darktable.control->actions_lua)
       vws = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
@@ -4310,10 +4313,15 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
 
 void dt_accel_connect_instance_iop(dt_iop_module_t *module)
 {
+  gboolean focused = darktable.develop->gui_module &&
+                     darktable.develop->gui_module->so == module->so;
+  dt_action_t *blend = &darktable.control->actions_blend;
   for(GSList *w = module->widget_list; w; w = w->next)
   {
     dt_action_target_t *referral = w->data;
-    referral->action->target = referral->target;
+    dt_action_t *ac = referral->action;
+    if(focused || (ac->owner != blend && ac->owner->owner != blend))
+      ac->target = referral->target;
   }
 }
 

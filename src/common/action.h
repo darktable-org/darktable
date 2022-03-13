@@ -27,6 +27,7 @@ typedef enum dt_action_type_t
   DT_ACTION_TYPE_VIEW,
   DT_ACTION_TYPE_LIB,
   DT_ACTION_TYPE_IOP,
+  DT_ACTION_TYPE_BLEND,
   // ==== all below need to be freed and own their strings
   DT_ACTION_TYPE_SECTION,
   // ==== all above split off chains
