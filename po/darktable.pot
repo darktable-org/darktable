@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-13 10:02+0100\n"
+"POT-Creation-Date: 2022-03-13 10:50+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4848,50 +4848,46 @@ msgstr ""
 msgid "error loading file `%s'"
 msgstr ""
 
-#: ../src/common/darktable.c:1288
-msgid "configuration info"
+#: ../src/common/darktable.c:1289
+msgid "configuration information"
 msgstr ""
 
-#: ../src/common/darktable.c:1288
+#: ../src/common/darktable.c:1291
 msgid "show this information again"
 msgstr ""
 
-#: ../src/common/darktable.c:1288
+#: ../src/common/darktable.c:1291
 msgid "understood"
-msgstr ""
-
-#: ../src/common/darktable.c:1683
-msgid ""
-"the RCD demosaicer has been defined as default instead of PPG because of "
-"better quality and performance\n"
-msgstr ""
-
-#: ../src/common/darktable.c:1684
-msgid ""
-"  see preferences/darkroom/demosaicing for zoomed out darkroom mode\n"
-"\n"
-msgstr ""
-
-#: ../src/common/darktable.c:1688
-msgid ""
-"the user interface and the underlying internals for tuning darktable "
-"performance have changed.\n"
 msgstr ""
 
 #: ../src/common/darktable.c:1689
 msgid ""
-"  you won't find headroom and friends any longer, instead in preferences/"
-"processing use:\n"
-msgstr ""
-
-#: ../src/common/darktable.c:1690
-msgid "  1) darktable resources\n"
+"the RCD demosaicer has been defined as default instead of PPG because of "
+"better quality and performance."
 msgstr ""
 
 #: ../src/common/darktable.c:1691
+msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
+msgstr ""
+
+#: ../src/common/darktable.c:1697
 msgid ""
-"  2) tune OpenCL performance\n"
-"\n"
+"the user interface and the underlying internals for tuning darktable "
+"performance have changed."
+msgstr ""
+
+#: ../src/common/darktable.c:1699
+msgid ""
+"you won't find headroom and friends any longer, instead in preferences/"
+"processing use:"
+msgstr ""
+
+#: ../src/common/darktable.c:1701
+msgid "1) darktable resources"
+msgstr ""
+
+#: ../src/common/darktable.c:1703
+msgid "2) tune OpenCL performance"
 msgstr ""
 
 #: ../src/common/database.c:2522
