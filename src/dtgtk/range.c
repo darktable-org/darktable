@@ -1359,6 +1359,15 @@ static void _dt_pref_changed(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  int mh = -1;
+  int mw = -1;
+  gtk_widget_get_size_request(range->band, &mw, &mh);
+  gtk_style_context_get(context, state, "min-height", &mh, NULL);
+  gtk_widget_set_size_request(range->band, mw, mh);
+
   dtgtk_range_select_redraw(range);
 }
 
