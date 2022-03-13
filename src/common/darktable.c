@@ -1076,7 +1076,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   */
   static int ref_resources[12] = {
       8192,  32,  512, 2048,   // reference
-      1024,   2,  128,  400,   // mini system        
+      1024,   2,  128,  400,   // mini system
       4096,  32,  512,  400,   // simple notebook with integrated graphics
   };
 
@@ -1285,9 +1285,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // there might be some info created in dt_configure_runtime_performance() for feedback
     gboolean not_again = TRUE;
     if(last_configure_version && config_info[0])
-      not_again = dt_gui_show_standalone_yes_no_dialog(_("configuration info"), config_info, _("show this information again"), _("understood"));
+      not_again = dt_gui_show_standalone_yes_no_dialog
+        (_("configuration information"),
+         config_info,
+         _("show this information again"), _("understood"));
 
-    if(not_again || (last_configure_version == 0))      
+    if(not_again || (last_configure_version == 0))
       dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
   }
   free(config_info);
@@ -1627,7 +1630,7 @@ void dt_configure_runtime_performance(const int old, char *info)
   const gboolean sufficient = mem >= 4096 && threads >= 2;
 
   dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] found a %s %zu-bit system with %zu Mb ram and %zu cores\n",
-    (sufficient) ? "sufficient" : "low performance", bits, mem, threads);      
+    (sufficient) ? "sufficient" : "low performance", bits, mem, threads);
 
   // All runtime conf settings only write data if there is no valid data found in conf
   if(!dt_conf_key_not_empty("ui/performance"))
@@ -1678,18 +1681,30 @@ void dt_configure_runtime_performance(const int old, char *info)
   // we might add some info now but only for non-fresh installs
   if(old == 0) return;
 
+  #define INFO_HEADER "> "
+
   if(old < 2) // we introduced RCD as the default demosaicer in 2
   {
-    g_strlcat(info, _("the RCD demosaicer has been defined as default instead of PPG because of better quality and performance\n"), DT_PERF_INFOSIZE);  
-    g_strlcat(info, _("  see preferences/darkroom/demosaicing for zoomed out darkroom mode\n\n"), DT_PERF_INFOSIZE);  
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("the RCD demosaicer has been defined as default instead of PPG because of better quality and performance."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("see preferences/darkroom/demosaicing for zoomed out darkroom mode"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
   if(old < 5)
   {
-    g_strlcat(info, _("the user interface and the underlying internals for tuning darktable performance have changed.\n"), DT_PERF_INFOSIZE);  
-    g_strlcat(info, _("  you won't find headroom and friends any longer, instead in preferences/processing use:\n"), DT_PERF_INFOSIZE);  
-    g_strlcat(info, _("  1) darktable resources\n"), DT_PERF_INFOSIZE);  
-    g_strlcat(info, _("  2) tune OpenCL performance\n\n"), DT_PERF_INFOSIZE);  
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("the user interface and the underlying internals for tuning darktable performance have changed."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you won't find headroom and friends any longer, instead in preferences/processing use:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("1) darktable resources"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("2) tune OpenCL performance"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
+
+  #undef INFO_HEADER
 }
 
 int dt_capabilities_check(char *capability)
