@@ -348,7 +348,6 @@ checkbutton check:checked
 #control-button,
 #control-button:checked
 {
-  background-color: transparent;
   margin-left: 0.14em;
   border: 0;
 }
@@ -365,7 +364,7 @@ decoration
   margin: 0.07em;
 }
 
-/* Avoid having too much empty space at top/bottom of sidepanels when scrolled */
+/* Set no background and no border. And avoid undershoot and overshoot having too much empty space at top/bottom of sidepanels when scrolled */
 undershoot,
 undershoot.top,
 undershoot.bottom,
@@ -375,10 +374,14 @@ overshoot,
 overshoot.top,
 overshoot.bottom,
 overshoot.left,
-overshoot.right
+overshoot.right,
+.dt_transparent_background,
+.dt_transparent_background:checked,
+#view_dropdown .combo,
+#usercss_box textview
 {
   background-color: transparent;
-  border: 0;
+  border: none;
 }
 
 /* Other buttons */
@@ -410,12 +413,6 @@ spinbutton>button
   font-size: 0.7em;
 }
 
-.dt_transparent_background,
-.dt_transparent_background:checked
-{
-  background-color: transparent;
-}
-
 /*------------------------
   - Main header settings -
   ------------------------*/
@@ -428,13 +425,6 @@ spinbutton>button
   font-size: 1.5em;
   border-radius: 0.14em;
   color: @button_checked_bg;
-}
-
-#view_dropdown .combo,
-#usercss_box textview
-{
-  background-color: transparent;
-  border: none;
 }
 
 #view_dropdown menu,
@@ -615,7 +605,6 @@ l
 #module-always-enabled-button,
 #module-always-disabled-button
 {
-  /* background-color: transparent; this doesn't work */
   min-height: 1.15em;
   min-width: 1.15em;
   padding: 0.06em;
