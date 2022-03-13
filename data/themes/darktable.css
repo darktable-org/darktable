@@ -325,9 +325,7 @@ button,
 combobox,
 combobox button,
 combobox *,
-#iop-plugin-ui-main #control-button,
-#lib-plugin-ui-main #control-button,
-#header-toolbar #control-button
+#control-button
 {
   min-height: 1em;
   min-width: 1em;
@@ -615,14 +613,6 @@ l
   padding: 0.56em;
 }
 
-/* Entries options in lighttable collections module */
-#left #lib-plugin-ui #lib-collect-entry,
-#lib-dtbutton #control-button
-{
-  margin-top: 0;
-  margin-bottom: 0.28em;
-}
-
 /* Set duplicate module space in darkroom */
 #left .duplicate-ui .text-button
 {
@@ -691,12 +681,6 @@ l
 #section_label.section_label_top
 {
   margin-top: 0.14em;
-}
-
-.section-expander #control-button
-{
-  margin: 0;
-  padding: 0;
 }
 
 /* Special modules: image infos, navigation and search ones */
@@ -1862,8 +1846,6 @@ radiobutton:hover label,
 #history-button-default-enabled:hover,
 #iop-plugin-ui button:hover,
 #lib-plugin-ui button:hover,
-#iop-plugin-ui #control-button:hover,
-#lib-plugin-ui #control-button:hover,
 #recent-collection-button:hover,
 #view_label:hover,
 #view_dropdown menuitem:hover,
