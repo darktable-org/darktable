@@ -334,6 +334,7 @@ combobox *,
 
 /* Default text fields and text boxes */
 .combo,
+#collapsible #bauhaus-combobox,
 checkbutton check,
 entry,
 textview
@@ -354,6 +355,14 @@ textview
 entry selection
 {
   background-color: @field_selected_bg;
+}
+
+/* Bauhaus-combobox and search box defaults */
+#bauhaus-combobox,
+.search
+{
+  background-color: shade(@button_bg, 0.9);
+  border: 0.07em solid shade(@bauhaus_indicator_border, 0.9);
 }
 
 /* Checkbox */
@@ -386,14 +395,6 @@ radiobutton label
 spinbutton>button
 {
   margin: 0.14em 0.07em;
-}
-
-/* Quick filter toolbar */
-#bauhaus-combobox,
-.search
-{
-  background-color: shade(@button_bg, 0.9);
-  border: 0.07em solid shade(@bauhaus_indicator_border, 0.9);
 }
 
 .dt_dimmed
@@ -911,7 +912,7 @@ dialog combobox window,
   border: 0.07em solid @button_border;
   min-height: 0.4em;
   min-width: 0.4em;
-  padding: 0.5em 0;
+  padding: 0.5em 0.07em;
 }
 
 /* fix for menuitem in bottom toolbar mainly */
@@ -1837,6 +1838,7 @@ menuitem:hover,
 menuitem:hover > *:not(check),
 combobox window *:hover,
 #bauhaus-combobox:hover,
+#collapsible #bauhaus-combobox:hover,
 radiobutton:hover label,
 #control-button:hover,
 #history-button:hover,
@@ -1856,6 +1858,7 @@ radiobutton:hover label,
 
  /* and same for color as other needs only color setting */
 #bauhaus-combobox:hover,
+#collapsible #bauhaus-combobox:hover,
 button:hover,
 button:hover cellview,
 button:hover image,
@@ -2705,6 +2708,11 @@ Details :
 }
 
 /* Collapsible sections on lib & iop modules */
+#collapse-block
+{
+  margin: 0.14em 0;
+}
+
 #collapsible
 {
   padding: 0.14em 0.28em 0.28em 0.42em;
@@ -2715,7 +2723,7 @@ Details :
 #collapsible,
 #collapsible #bauhaus-slider
 {
-  background-color: shade(@collapsible_bg_color, 0.99);
+  background-color: shade(@collapsible_bg_color, 1.06);
 }
 
 /* for the import parameters to be more aligned with the imports buttons */
@@ -2725,9 +2733,9 @@ Details :
 }
 
 #collapse-block .section-expander,
-#collapse-block #section_label
+#collapsible-label
 {
-  background-color: shade(@collapsible_bg_color, 0.95);
+  background-color: shade(@collapsible_bg_color, 0.96);
   border: none;
   margin-top: 0.14em;
   padding: 0.07em 0;
@@ -2737,6 +2745,6 @@ Details :
 #collapsible entry,
 #collapsible textview
 {
-  background-color: @button_border;
+  background-color: shade(@button_border, 1.06);
   border: 0.07em solid shade(@field_active_bg, 1.06);
 }
