@@ -305,6 +305,19 @@ void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const cha
   exif[exif_len - 1] = '\0';
 }
 
+char *dt_datetime_gtimespan_to_sdatetime(const GTimeSpan time, const gboolean msec)
+{
+  char tdt[DT_DATETIME_LENGTH];
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, time);
+  if(gdt)
+  {
+    dt_datetime_gdatetime_to_exif(tdt, msec ? DT_DATETIME_LENGTH : DT_DATETIME_EXIF_LENGTH, gdt);
+    g_date_time_unref(gdt);
+  }
+  else tdt[0] = '\0';
+  return g_strdup(tdt);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
