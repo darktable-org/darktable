@@ -670,11 +670,6 @@ l
 #section_label
 {
   border-bottom: 0.035em solid  @section_label;
-}
-
-#section_label,
-.section-expander
-{
   margin: 0.35em 0;
 }
 
@@ -2730,7 +2725,7 @@ Details :
 {
   background-color: shade(@collapsible_bg_color, 0.95);
   border: none;
-  margin: 0.14em 0.14em 0 0.14em;
+  margin-top: 0.14em;
   padding: 0.07em 0;
 }
 
