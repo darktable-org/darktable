@@ -33,6 +33,7 @@ DT_MODULE(1)
 typedef struct dt_lib_tool_filter_t
 {
   GtkWidget *filter_box;
+  GtkWidget *sort_box;
   GtkWidget *sort;
   GtkWidget *reverse;
 
@@ -144,6 +145,11 @@ static GtkWidget *_lib_filter_get_filter_box(dt_lib_module_t *self)
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   return d->filter_box;
 }
+static GtkWidget *_lib_filter_get_sort_box(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  return d->sort_box;
+}
 
 static void _reset_filters(dt_action_t *action)
 {
@@ -165,11 +171,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->filter_box, TRUE, TRUE, 0);
 
   /* sort combobox */
+  d->sort_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, TRUE, TRUE, 0);
   GtkWidget *label = gtk_label_new(_("sort by"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(d->sort_box), label, TRUE, TRUE, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
+  gtk_box_pack_start(GTK_BOX(d->sort_box), hbox, TRUE, TRUE, 4);
   const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
   d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
                                          _("determine the sort order of shown images"),
@@ -197,6 +205,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.filter.module = self;
   darktable.view_manager->proxy.filter.update_sort = _lib_filter_update_sort;
   darktable.view_manager->proxy.filter.get_filter_box = _lib_filter_get_filter_box;
+  darktable.view_manager->proxy.filter.get_sort_box = _lib_filter_get_sort_box;
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE,
                             G_CALLBACK(_lib_filter_images_order_change), self);

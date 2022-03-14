@@ -1623,6 +1623,11 @@ filechooser row:hover .sidebar-icon
   margin : 0;
 }
 
+#filter_sort_box #dt-toggle-button
+{
+  margin: 0;
+  font-size: 1.2em;
+}
 /*--------------------------------
   - Tree view (lists and tables) -
   --------------------------------*/
