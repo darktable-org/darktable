@@ -331,6 +331,33 @@ GTimeSpan dt_datetime_sdatetime_to_gtimespan(const char *sdt)
   return gts;
 }
 
+gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan time)
+{
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, time);
+  if(gdt)
+  {
+    const gboolean res = _datetime_gdatetime_to_numbers(dt, gdt);
+    g_date_time_unref(gdt);
+    return res;
+  }
+  return FALSE;
+}
+
+GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt)
+{
+  GDateTime *gdt = g_date_time_new(darktable.utc_tz,
+                                   dt->year, dt->month, dt->day,
+                                   dt->hour, dt->minute, (double)dt->second);
+  if(gdt)
+  {
+    GTimeSpan gts = g_date_time_difference(gdt, darktable.origin_gdt);
+    g_date_time_unref(gdt);
+    return gts;
+  }
+  return 0;
+}
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
