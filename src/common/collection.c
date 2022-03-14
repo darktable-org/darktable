@@ -1328,7 +1328,10 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
     gchar *txt = g_match_info_fetch(match_info, 2);
 
     if(strcmp(*operator, "") == 0 || strcmp(*operator, "=") == 0 || strcmp(*operator, "<>") == 0)
+    {
       *number1 = dt_util_dstrcat(*number1, "%s%%", txt);
+      *number2 = _dt_collection_compute_datetime(">", txt);
+    }
     else
       *number1 = _dt_collection_compute_datetime(*operator, txt);
 
@@ -1835,21 +1838,24 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     {
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
+      if(number1 && number1[strlen(number1) - 1] == '%')
+        number1[strlen(number1) - 1] = '\0';
+      GTimeSpan nb1 = number1 ? dt_datetime_sdatetime_to_gtimespan(number1) : 0;
+      GTimeSpan nb2 = number2 ? dt_datetime_sdatetime_to_gtimespan(number2) : 0;
 
       if(strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = g_strdup_printf("((datetime_taken >= '%s' COLLATE NOCASE) AND (datetime_taken <= '%s' COLLATE NOCASE))", number1,
-                                  number2);
+          query = g_strdup_printf("((datetime_taken >= %ld) AND (datetime_taken <= %ld))", (long int)nb1, (long int)nb2);
       }
       else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
-        query = g_strdup_printf("(datetime_taken LIKE '%s')", number1);
-      else if(strcmp(operator, "<>") == 0 && number1)
-        query = g_strdup_printf("(datetime_taken NOT LIKE '%s')", number1);
+        query = g_strdup_printf("((datetime_taken >= %ld) AND (datetime_taken <= %ld))", (long int)nb1, (long int)nb2);
+      else if(strcmp(operator, "<>") == 0 && number1 && number2)
+        query = g_strdup_printf("((datetime_taken < %ld) AND (datetime_taken > %ld))", (long int)nb1, (long int)nb2);
       else if(number1)
-        query = g_strdup_printf("(datetime_taken %s '%s')", operator, number1);
+        query = g_strdup_printf("(datetime_taken %s %ld)", operator, (long int)nb1);
       else
-        query = g_strdup_printf("(datetime_taken LIKE '%%%s%%')", escaped_text);
+        query = g_strdup("1 = 1");
 
       g_free(operator);
       g_free(number1);
