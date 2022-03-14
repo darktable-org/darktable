@@ -1680,7 +1680,7 @@ cell:selected
 #left #history-button-always-enabled,
 #left #history-button-default-enabled
 {
-  padding: 0.07em 0.14em 0.14em 0.14em;
+  padding: 0.07em 0.14em 0.14em 0.24em;
   margin: 0 0.07em 0.07em 0.07em;
 }
 
