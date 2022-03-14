@@ -2377,7 +2377,7 @@ static void _slider_add_step(GtkWidget *widget, float delta, guint state, gboole
 
   delta *= dt_bauhaus_slider_get_step(widget) * dt_accel_get_speed_multiplier(widget, state);
 
-  const float min_visible = powf(10.0f, -d->digits) / d->factor;
+  const float min_visible = powf(10.0f, -d->digits) / fabsf(d->factor);
   if(delta && fabsf(delta) < min_visible)
     delta = copysignf(min_visible, delta);
 
@@ -2385,8 +2385,8 @@ static void _slider_add_step(GtkWidget *widget, float delta, guint state, gboole
 
   if(force || dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
   {
-    if(d->pos < 0.0001) d->min = d->soft_min;
-    if(d->pos > 0.9999) d->max = d->soft_max;
+    if(d->factor > 0 ? d->pos < 0.0001 : d->pos > 0.9999) d->min = d->soft_min;
+    if(d->factor < 0 ? d->pos < 0.0001 : d->pos > 0.9999) d->max = d->soft_max;
     dt_bauhaus_slider_set(widget, value + delta);
   }
   else
@@ -2920,21 +2920,27 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
   }
   else if(event->button == 1)
   {
+    dt_bauhaus_slider_data_t *d = &w->data.slider;
     // reset to default.
     if(event->type == GDK_2BUTTON_PRESS)
     {
-      dt_bauhaus_slider_data_t *d = &w->data.slider;
       d->is_dragging = 0;
       dt_bauhaus_slider_reset(widget);
     }
     else
     {
-      if(event->y > darktable.bauhaus->line_height)
+      if(!dt_modifier_is(event->state, 0))
+      {
+        darktable.bauhaus->mouse_x = event->x;
+        d->is_dragging = 1;
+      }
+      else if(event->y > darktable.bauhaus->line_height)
       {
         const float l = 0.0f;
         const float r = slider_right_pos((float)allocation.width);
         dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
-        dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+        darktable.bauhaus->mouse_x = NAN;
         d->is_dragging = 1;
       }
       else
@@ -2961,18 +2967,12 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
   dt_bauhaus_widget_release_quad(widget);
-  if((event->button == 1) && (d->is_dragging))
+  if(event->button == 1 && d->is_dragging)
   {
-    bauhaus_request_focus(w);
-
-    GtkAllocation tmp;
-    gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
     d->is_dragging = 0;
     if(d->timeout_handle) g_source_remove(d->timeout_handle);
     d->timeout_handle = 0;
-    const float l = 0.0f;
-    const float r = slider_right_pos((float)tmp.width);
-    dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
+    dt_bauhaus_slider_set_normalized(w, d->pos);
 
     return TRUE;
   }
@@ -2987,11 +2987,25 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   if(d->is_dragging && event->state & GDK_BUTTON1_MASK)
+  {
+    const float l = 0.0f;
+    const float r = slider_right_pos((float)allocation.width);
+
+    if(isnan(darktable.bauhaus->mouse_x))
     {
-      bauhaus_request_focus(w);
-      const float l = 0.0f;
-      const float r = slider_right_pos((float)allocation.width);
-      dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
+      if(dt_modifier_is(event->state, 0))
+        dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
+      else
+        darktable.bauhaus->mouse_x = event->x;
+    }
+    else
+    {
+      const float scaled_step = allocation.width * (r - l) * dt_bauhaus_slider_get_step(widget) / (d->max - d->min);
+      const float steps = floorf((event->x - darktable.bauhaus->mouse_x) / scaled_step);
+      _slider_add_step(widget, copysignf(1, d->factor) * steps, event->state, FALSE);
+
+      darktable.bauhaus->mouse_x += steps * scaled_step;
+    }
   }
 
   if(event->x <= allocation.width - darktable.bauhaus->quad_width)
