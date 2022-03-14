@@ -54,8 +54,6 @@ static void _lib_filter_update_sort(dt_lib_module_t *self, dt_collection_sort_t 
 static void _lib_filter_sort_combobox_changed(GtkWidget *widget, gpointer user_data);
 /* callback for reverse sort check button change */
 static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget, dt_lib_module_t *self);
-/* updates the query and redraws the view */
-static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_properties_t changed_property);
 /* images order change from outside */
 static void _lib_filter_images_order_change(gpointer instance, int order, dt_lib_module_t *self);
 
@@ -243,15 +241,6 @@ static void _lib_filter_sort_combobox_changed(GtkWidget *widget, gpointer user_d
   dt_view_filtering_set_sort(darktable.view_manager, items[dt_bauhaus_combobox_get(d->sort)], reverse);
 }
 
-static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_properties_t changed_property)
-{
-  /* sometimes changes */
-  dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
-
-  /* updates query */
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, changed_property, NULL);
-}
-
 static void _lib_filter_update_sort(dt_lib_module_t *self, dt_collection_sort_t sort, gboolean asc)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
@@ -262,6 +251,15 @@ static void _lib_filter_update_sort(dt_lib_module_t *self, dt_collection_sort_t 
 }
 
 #ifdef USE_LUA
+static void _lib_filter_update_query(dt_lib_module_t *self, dt_collection_properties_t changed_property)
+{
+  /* sometimes changes */
+  dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
+
+  /* updates query */
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, changed_property, NULL);
+}
+
 static int sort_cb(lua_State *L)
 {
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));

@@ -161,7 +161,6 @@ typedef struct _filter_t
 
 
 // filters definitions
-
 #include "libs/filters/aperture.c"
 #include "libs/filters/colors.c"
 #include "libs/filters/date.c"
