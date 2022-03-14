@@ -54,9 +54,14 @@ DT_MODULE(1)
 
 typedef struct _widgets_sort_t
 {
+  dt_collection_sort_t sortid;
   GtkWidget *box;
   GtkWidget *sort;
   GtkWidget *direction;
+
+  int num;
+  gboolean top;
+  struct dt_lib_filtering_t *lib;
 } _widgets_sort_t;
 
 typedef struct dt_lib_filtering_rule_t
@@ -92,10 +97,13 @@ typedef struct dt_lib_filtering_t
 
   GtkWidget *rules_box;
   GtkWidget *rules_sw;
-  _widgets_sort_t *sort;
+
+  _widgets_sort_t sort[MAX_RULES];
+  int nb_sort;
+  _widgets_sort_t sorttop;
+  GtkWidget *sort_box;
   gboolean manual_sort_set;
 
-  gboolean singleclick;
   struct dt_lib_filtering_params_t *params;
 
   gchar *last_where_ext;
@@ -1268,33 +1276,65 @@ static gboolean _event_history_show(GtkWidget *widget, GdkEventButton *event, dt
   return TRUE;
 }
 
-/* save the images order if the first collect filter is on tag*/
-static void _sort_set_tag_order(dt_lib_module_t *self)
+// save a sort rule inside the conf
+static void _conf_update_sort(_widgets_sort_t *sort)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  const gboolean order = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
+  const int sortid = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(sort->sort));
+
+  char confname[200] = { 0 };
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", sort->num);
+  dt_conf_set_int(confname, sortid);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", sort->num);
+  dt_conf_set_int(confname, order);
+}
+
+/* save the images order if the first collect filter is on tag*/
+static void _sort_set_tag_order(_widgets_sort_t *sort)
+{
   if(darktable.collection->tagid)
   {
-    const uint32_t sort = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(d->sort->sort));
-    const gboolean descending = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->sort->direction));
-    dt_tag_set_tag_order_by_id(darktable.collection->tagid, sort, descending);
+    const uint32_t sortid = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(sort->sort));
+    const gboolean descending = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
+    dt_tag_set_tag_order_by_id(darktable.collection->tagid, sortid, descending);
   }
 }
 
-// set the sort order to the collection and update the query
-static void _sort_update_query(dt_lib_module_t *self, gboolean update_filter)
+// update the sort asc/desc arrow
+static void _sort_update_arrow(GtkWidget *widget)
 {
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-  const dt_collection_sort_t sort = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(d->sort->sort));
-  const gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->sort->direction));
+  const gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  if(reverse)
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget), dtgtk_cairo_paint_sortby, CPF_DIRECTION_DOWN, NULL);
+  else
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget), dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
+  gtk_widget_queue_draw(widget);
+}
 
+// set the sort order to the collection and update the query
+static void _sort_update_query(_widgets_sort_t *sort)
+{
   // if needed, we sync the filter bar
-  if(update_filter) dt_view_filter_update_sort(darktable.view_manager, sort, reverse);
+  if(sort->num == 0)
+  {
+    _widgets_sort_t *dest = (sort->top) ? &sort->lib->sort[0] : &sort->lib->sorttop;
+    sort->lib->manual_sort_set++;
+    const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dest->direction), active);
+    _sort_update_arrow(dest->direction);
+    const int val = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(sort->sort));
+    dt_bauhaus_combobox_set_from_value(dest->sort, val);
+    sort->lib->manual_sort_set--;
+  }
+
+  // we save the sort in conf
+  _conf_update_sort(sort);
 
   // we update the collection
-  dt_collection_set_sort(darktable.collection, sort, reverse);
+  // dt_collection_set_sort(darktable.collection, sort, reverse);
 
   /* save the images order */
-  _sort_set_tag_order(self);
+  _sort_set_tag_order(sort);
 
   /* sometimes changes */
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
@@ -1303,34 +1343,20 @@ static void _sort_update_query(dt_lib_module_t *self, gboolean update_filter)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
 }
 
-// update the sort asc/desc arrow
-static void _sort_update_arrow(GtkWidget *widget)
+static void _sort_reverse_changed(GtkDarktableToggleButton *widget, _widgets_sort_t *sort)
 {
-  const gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  if(reverse)
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget), dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN,
-                                 NULL);
-  else
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget), dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_UP, NULL);
-  gtk_widget_queue_draw(widget);
-}
-
-static void _sort_reverse_changed(GtkDarktableToggleButton *widget, dt_lib_module_t *self)
-{
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-  if(d->manual_sort_set) return;
+  if(sort->lib->manual_sort_set) return;
 
   _sort_update_arrow(GTK_WIDGET(widget));
-  _sort_update_query(self, TRUE);
+  _sort_update_query(sort);
 }
 
 static void _sort_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-  if(d->manual_sort_set) return;
+  _widgets_sort_t *sort = (_widgets_sort_t *)user_data;
+  if(sort->lib->manual_sort_set) return;
 
-  _sort_update_query(self, TRUE);
+  _sort_update_query(sort);
 }
 
 // this proxy function is primary called when the sort part of the filter bar is changed
@@ -1345,7 +1371,7 @@ static void _proxy_set_sort(dt_lib_module_t *self, dt_collection_sort_t sort, gb
   d->manual_sort_set = FALSE;
 
   // we update the collection
-  _sort_update_query(self, FALSE);
+  //_sort_update_query(sort);
 }
 
 // this proxy function is primary called when the sort part of the filter bar is changed
@@ -1362,18 +1388,21 @@ static void _proxy_reset_filter(dt_lib_module_t *self, gboolean smart_filter)
   }
 }
 
-static _widgets_sort_t *_sort_get_widgets(dt_lib_module_t *self)
+static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sortid, const int sortorder,
+                           const int num, dt_lib_module_t *self)
 {
-  _widgets_sort_t *wsort = (_widgets_sort_t *)g_malloc0(sizeof(_widgets_sort_t));
-  wsort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(wsort->box, "collect-sort-widget");
-  const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
-  wsort->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
-                                             _("determine the sort order of shown images"), sort,
-                                             _sort_combobox_changed, self, NULL);
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  sort->num = num;
+  sort->lib = d;
+  sort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(sort->box, "collect-sort-widget");
+  sort->sortid = sortid;
+  sort->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
+                                            _("determine the sort order of shown images"), sortid,
+                                            _sort_combobox_changed, sort, NULL);
 
 #define ADD_SORT_ENTRY(value)                                                                                     \
-  dt_bauhaus_combobox_add_full(wsort->sort, dt_collection_sort_name(value), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,      \
+  dt_bauhaus_combobox_add_full(sort->sort, dt_collection_sort_name(value), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,       \
                                GUINT_TO_POINTER(value), NULL, TRUE)
 
   ADD_SORT_ENTRY(DT_COLLECTION_SORT_FILENAME);
@@ -1395,24 +1424,86 @@ static _widgets_sort_t *_sort_get_widgets(dt_lib_module_t *self)
 
 #undef ADD_SORT_ENTRY
 
-  gtk_box_pack_start(GTK_BOX(wsort->box), wsort->sort, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(sort->box), sort->sort, TRUE, TRUE, 0);
 
   /* reverse order checkbutton */
-  wsort->direction = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_UP, NULL);
-  gtk_widget_set_name(GTK_WIDGET(wsort->direction), "control-button");
-  if(darktable.collection->params.descending)
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(wsort->direction), dtgtk_cairo_paint_solid_arrow,
-                                 CPF_DIRECTION_DOWN, NULL);
-  gtk_widget_set_halign(wsort->direction, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(wsort->box), wsort->direction, FALSE, TRUE, 0);
-  /* select the last value and connect callback */
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(wsort->direction),
-                               dt_collection_get_sort_descending(darktable.collection));
-  g_signal_connect(G_OBJECT(wsort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), self);
+  sort->direction = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
+  if(sortorder)
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(sort->direction), dtgtk_cairo_paint_sortby, CPF_DIRECTION_DOWN,
+                                 NULL);
+  gtk_widget_set_halign(sort->direction, GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(sort->box), sort->direction, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
+  GtkStyleContext *context = gtk_widget_get_style_context(sort->direction);
+  gtk_style_context_add_class(context, "dt_transparent_background");
 
-  gtk_widget_show_all(wsort->box);
+  gtk_widget_show_all(sort->box);
 
-  return wsort;
+  return TRUE;
+}
+
+static void _sort_gui_update(dt_lib_module_t *self)
+{
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+
+  ++darktable.gui->reset;
+  d->nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, MAX_RULES);
+  char confname[200] = { 0 };
+
+  // handle the case where no sort item is already defined
+  if(d->nb_sort == 0)
+  {
+    // set conf values
+    dt_conf_set_int("plugins/lighttable/filtering/num_sort", 1);
+    dt_conf_set_int("plugins/lighttable/filtering/sort0", DT_COLLECTION_SORT_FILENAME);
+    dt_conf_set_int("plugins/lighttable/filtering/sortorder0", 0);
+    d->nb_sort = 1;
+  }
+
+  // remove eventual widgets from the topbar
+  GtkWidget *sort_topbox = dt_view_filter_get_sort_box(darktable.view_manager);
+  GList *childrens = gtk_container_get_children(GTK_CONTAINER(sort_topbox));
+  for(GList *l = childrens; l; l = g_list_next(l))
+  {
+    gtk_container_remove(GTK_CONTAINER(sort_topbox), GTK_WIDGET(l->data));
+  }
+  g_list_free(childrens);
+
+  // create or update defined rules
+  for(int i = 0; i < d->nb_sort; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
+    const dt_collection_sort_t sort = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", i);
+    const int sortorder = dt_conf_get_int(confname);
+
+    // recreate main widget
+    if(_sort_init(&d->sort[i], sort, sortorder, i, self))
+      gtk_box_pack_start(GTK_BOX(d->sort_box), d->sort[i].box, FALSE, TRUE, 0);
+
+    // we also put the first sort item into the topbar
+    if(i == 0)
+    {
+      d->sorttop.top = TRUE;
+      if(_sort_init(&d->sorttop, sort, sortorder, i, self))
+      {
+        gtk_box_pack_start(GTK_BOX(sort_topbox), d->sorttop.box, FALSE, TRUE, 0);
+      }
+    }
+  }
+
+  // remove all remaining rules
+  for(int i = d->nb_sort; i < MAX_RULES; i++)
+  {
+    d->sort[i].sortid = 0;
+    if(d->sort[i].box)
+    {
+      gtk_widget_destroy(d->sort[i].box);
+      d->sort[i].box = NULL;
+    }
+  }
+
+  --darktable.gui->reset;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1457,9 +1548,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(spacer, "collect-spacer2");
   bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), spacer, TRUE, TRUE, 0);
-  d->sort = _sort_get_widgets(self);
-  gtk_box_pack_start(GTK_BOX(bhbox), d->sort->box, TRUE, TRUE, 0);
+  d->sort_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(d->sort_box, "filter_sort_box");
+  gtk_box_pack_start(GTK_BOX(bhbox), d->sort_box, TRUE, TRUE, 0);
   btn = dt_ui_button_new(_("+"), _("add sort order"), NULL);
+  gtk_widget_set_valign(btn, GTK_ALIGN_END);
   // g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_history_show), self);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, FALSE, TRUE, 0);
@@ -1472,6 +1565,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->last_where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
   _filters_gui_update(self);
+  _sort_gui_update(self);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                                   G_CALLBACK(_dt_collection_updated), self);
