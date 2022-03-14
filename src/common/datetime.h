@@ -85,6 +85,9 @@ gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_len
 // add subsec (decimal numbers) to exif datetime
 void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const char*subsec);
 
+// get datetime string from gtimespan
+char *dt_datetime_gtimespan_to_sdatetime(const GTimeSpan time, const gboolean msec);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

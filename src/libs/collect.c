@@ -26,6 +26,7 @@
 #include "common/utility.h"
 #include "common/history.h"
 #include "common/map_locations.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -1366,13 +1367,13 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 (int)strlen(dt_map_location_data_tag_root()) + 1, where_ext);
         break;
       case DT_COLLECTION_PROP_DAY:
-        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
+        query = g_strdup_printf("SELECT datetime_taken AS date, 1, COUNT(*) AS count"
                                 " FROM main.images AS mi"
                                 " WHERE datetime_taken IS NOT NULL AND %s"
                                 " GROUP BY date", where_ext);
         break;
       case DT_COLLECTION_PROP_TIME:
-        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 19) AS date, 1, COUNT(*) AS count"
+        query = g_strdup_printf("SELECT datetime_taken AS date, 1, COUNT(*) AS count"
                                 " FROM main.images AS mi"
                                 " WHERE datetime_taken IS NOT NULL AND %s"
                                 " GROUP BY date", where_ext);
@@ -1415,8 +1416,14 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     guint index = 0;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const char* sqlite_name = (const char *)sqlite3_column_text(stmt, 0);
-      char *name = sqlite_name == NULL ? g_strdup("") : g_strdup(sqlite_name);
+      char *name;
+      if(property == DT_COLLECTION_PROP_TIME || property == DT_COLLECTION_PROP_DAY)
+        name = dt_datetime_gtimespan_to_sdatetime(sqlite3_column_int64(stmt, 0), FALSE);
+      else
+      {
+        const char* sqlite_name = (const char *)sqlite3_column_text(stmt, 0);
+        name = sqlite_name == NULL ? g_strdup("") : g_strdup(sqlite_name);
+      }
       gchar *collate_key = NULL;
 
       const int count = sqlite3_column_int(stmt, 2);
