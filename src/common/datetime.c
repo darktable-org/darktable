@@ -40,8 +40,9 @@ gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
 {
   if(exif && *exif && dt)
   {
-    char sdt[DT_DATETIME_LENGTH];
-    g_strlcpy(sdt, exif, sizeof(sdt));
+    char sdt[DT_DATETIME_LENGTH] = DT_DATETIME_ORIGIN;
+    const int len = strlen(exif) > sizeof(sdt) - 1 ? sizeof(sdt) - 1 : strlen(exif);
+    memcpy(sdt, exif, len);
     sdt[4] = sdt[7] = '-';
     GDateTime *gdt = g_date_time_new_from_iso8601(sdt, darktable.utc_tz);
     if(gdt)
@@ -316,6 +317,18 @@ char *dt_datetime_gtimespan_to_sdatetime(const GTimeSpan time, const gboolean ms
   }
   else tdt[0] = '\0';
   return g_strdup(tdt);
+}
+
+GTimeSpan dt_datetime_sdatetime_to_gtimespan(const char *sdt)
+{
+  GTimeSpan gts = 0;
+  GDateTime *gdt = dt_datetime_exif_to_gdatetime(sdt, darktable.utc_tz);
+  if(gdt)
+  {
+    gts = g_date_time_difference(gdt, darktable.origin_gdt);
+    g_date_time_unref(gdt);
+  }
+  return gts;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
