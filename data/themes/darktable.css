@@ -272,8 +272,9 @@ overshoot.left,
 overshoot.right,
 .dt_transparent_background,
 .dt_transparent_background:checked,
-#view_dropdown .combo,
-#usercss_box textview
+popover #bauhaus-combobox,
+#usercss_box textview,
+#view_dropdown .combo
 {
   background-color: transparent;
   border: none;
@@ -417,14 +418,6 @@ spinbutton>button
   font-size: 1.5em;
   border-radius: 0.14em;
   color: @button_checked_bg;
-}
-
-#view_dropdown menu,
-#view_dropdown button,
-#view_dropdown menuitem,
-#view_label
-{
-  padding: 0.2em 0.4em;
 }
 
 /*------------------------------
@@ -921,25 +914,36 @@ dialog combobox window,
   padding: 0.5em 0;
 }
 
-menuitem
+/* fix for menuitem in bottom toolbar mainly */
+menu menuitem
 {
-  margin-left: -0.5em;
+  margin-left: -0.42em;
 }
 
-menuitem label
+menu menuitem label
 {
-  margin-right: 0.5em;
+  margin-right: 0.42em;
 }
 
 menuitem > arrow
 {
-  margin-right: 0.14em;
+  padding-right: 0.14em;
   border: 0;
+}
+
+/* but do not apply to menu item related to sort of combobox like metadata presets in import module */
+#gtk-combobox-popup-menu menuitem,
+#view_dropdown button,
+#view_dropdown menuitem,
+#view_label
+{
+  padding: 0.07em 0.42em;
+  margin: 0;
 }
 
 popover
 {
-  padding: 0.4em;
+  padding: 0.42em;
 }
 
 tooltip
