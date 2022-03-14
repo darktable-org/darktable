@@ -126,7 +126,7 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n");
   printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,demosaic\n");
-  printf("      pwstorage,print,signal,sql,undo,act_on}\n");
+  printf("      pwstorage,print,signal,sql,undo,act_on,tiling}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
 #ifdef DT_HAVE_SIGNAL_TRACE
@@ -684,6 +684,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_DEMOSAIC;
         else if(!strcmp(argv[k + 1], "act_on"))
           darktable.unmuted |= DT_DEBUG_ACT_ON;
+        else if(!strcmp(argv[k + 1], "tiling"))
+          darktable.unmuted |= DT_DEBUG_TILING;
         else
           return usage(argv[0]);
         k++;
@@ -1076,8 +1078,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   */
   static int ref_resources[12] = {
       8192,  32,  512, 2048,   // reference
-      1024,   2,  128,  400,   // mini system
-      4096,  32,  512,  400,   // simple notebook with integrated graphics
+      1024,   2,  128,  200,   // mini system
+      4096,  32,  512,  200,   // simple notebook with integrated graphics
   };
 
   /* This is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed.
