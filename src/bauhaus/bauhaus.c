@@ -392,6 +392,19 @@ static void _slider_zoom_range(dt_bauhaus_widget_t *w, float zoom)
   gtk_widget_queue_draw(GTK_WIDGET(w));
 }
 
+static void _slider_zoom_toast(dt_bauhaus_widget_t *w)
+{
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  gchar *min_text = dt_bauhaus_slider_get_text(GTK_WIDGET(w), d->factor > 0 ? d->min : d->max);
+  gchar *max_text = dt_bauhaus_slider_get_text(GTK_WIDGET(w), d->factor > 0 ? d->max : d->min);
+  gchar *text = g_strdup_printf(("\n[%s , %s]"), min_text, max_text);
+  dt_action_widget_toast(w->module, GTK_WIDGET(w), text);
+  g_free(text);
+  g_free(min_text);
+  g_free(max_text);
+}
+
 static gboolean dt_bauhaus_popup_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   int delta_y = 0;
@@ -2415,7 +2428,10 @@ static gboolean _widget_scroll(GtkWidget *widget, GdkEventScroll *event)
     {
       gboolean force = darktable.control->element == DT_ACTION_ELEMENT_FORCE;
       if(force && dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+      {
         _slider_zoom_range(w, delta_y);
+        _slider_zoom_toast(w);
+      }
       else
         _slider_add_step(widget, - delta_y, event->state, force);
     }
@@ -2918,6 +2934,11 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     dt_bauhaus_show_popup(widget);
     return TRUE;
   }
+  else if(event->button == 2)
+  {
+    _slider_zoom_range(w, 0); // reset zoom range to soft min/max
+    _slider_zoom_toast(w);
+  }
   else if(event->button == 1)
   {
     dt_bauhaus_slider_data_t *d = &w->data.slider;
@@ -3209,23 +3230,19 @@ static float _action_process_slider(gpointer target, dt_action_element_t element
         _slider_zoom_range(bhw, move_size);
         break;
       case DT_ACTION_EFFECT_TOP:
-        d->max = d->hard_max;
-        gtk_widget_queue_draw(GTK_WIDGET(widget));
-        break;
       case DT_ACTION_EFFECT_BOTTOM:
-        d->min = d->hard_min;
-        gtk_widget_queue_draw(GTK_WIDGET(widget));
+        if((effect == DT_ACTION_EFFECT_TOP) ^ (d->factor < 0))
+          d->max = d->hard_max;
+        else
+          d->min = d->hard_min;
+        gtk_widget_queue_draw(widget);
         break;
       default:
         fprintf(stderr, "[_action_process_slider] unknown shortcut effect (%d) for slider\n", effect);
         break;
       }
 
-      gchar *min_text = dt_bauhaus_slider_get_text(widget, d->factor > 0 ? d->min : d->max);
-      gchar *max_text = dt_bauhaus_slider_get_text(widget, d->factor > 0 ? d->max : d->min);
-      dt_toast_log(("[%s , %s]"), min_text, max_text);
-      g_free(min_text);
-      g_free(max_text);
+      _slider_zoom_toast(bhw);
       break;
     default:
       fprintf(stderr, "[_action_process_slider] unknown shortcut element (%d) for slider\n", element);
