@@ -1651,15 +1651,17 @@ void show_guiding_controls(struct dt_iop_module_t *self)
 
 void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g, dt_iop_toneequalizer_params_t *p)
 {
-  dt_bauhaus_slider_set_soft(g->noise, p->noise);
-  dt_bauhaus_slider_set_soft(g->ultra_deep_blacks, p->ultra_deep_blacks);
-  dt_bauhaus_slider_set_soft(g->deep_blacks, p->deep_blacks);
-  dt_bauhaus_slider_set_soft(g->blacks, p->blacks);
-  dt_bauhaus_slider_set_soft(g->shadows, p->shadows);
-  dt_bauhaus_slider_set_soft(g->midtones, p->midtones);
-  dt_bauhaus_slider_set_soft(g->highlights, p->highlights);
-  dt_bauhaus_slider_set_soft(g->whites, p->whites);
-  dt_bauhaus_slider_set_soft(g->speculars, p->speculars);
+  ++darktable.gui->reset;
+  dt_bauhaus_slider_set(g->noise, p->noise);
+  dt_bauhaus_slider_set(g->ultra_deep_blacks, p->ultra_deep_blacks);
+  dt_bauhaus_slider_set(g->deep_blacks, p->deep_blacks);
+  dt_bauhaus_slider_set(g->blacks, p->blacks);
+  dt_bauhaus_slider_set(g->shadows, p->shadows);
+  dt_bauhaus_slider_set(g->midtones, p->midtones);
+  dt_bauhaus_slider_set(g->highlights, p->highlights);
+  dt_bauhaus_slider_set(g->whites, p->whites);
+  dt_bauhaus_slider_set(g->speculars, p->speculars);
+  --darktable.gui->reset;
 }
 
 
@@ -1668,17 +1670,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
-  update_exposure_sliders(g, p);
-
-  dt_bauhaus_combobox_set(g->method, p->method);
-  dt_bauhaus_combobox_set(g->details, p->details);
-  dt_bauhaus_slider_set_soft(g->blending, p->blending);
-  dt_bauhaus_slider_set_soft(g->feathering, p->feathering);
-  dt_bauhaus_slider_set_soft(g->smoothing, logf(p->smoothing) / logf(sqrtf(2.0f)) - 1.0f);
-  dt_bauhaus_slider_set_soft(g->iterations, p->iterations);
-  dt_bauhaus_slider_set_soft(g->quantization, p->quantization);
-  dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
-  dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
+  dt_bauhaus_slider_set(g->smoothing, logf(p->smoothing) / logf(sqrtf(2.0f)) - 1.0f);
 
   show_guiding_controls(self);
   invalidate_luminance_cache(self);
@@ -1748,7 +1740,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   {
     // activate module and do nothing
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
+    dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
@@ -1791,7 +1783,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
 
   // Update the GUI stuff
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
+  dt_bauhaus_slider_set(g->exposure_boost, p->exposure_boost);
   --darktable.gui->reset;
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1815,7 +1807,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   {
     // activate module and do nothing
     ++darktable.gui->reset;
-    dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
+    dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
     --darktable.gui->reset;
 
     invalidate_luminance_cache(self);
@@ -1869,7 +1861,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 
   // Update the GUI stuff
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
+  dt_bauhaus_slider_set(g->contrast_boost, p->contrast_boost);
   --darktable.gui->reset;
   invalidate_luminance_cache(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -2173,9 +2165,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   if(commit)
   {
     // Update GUI with new params
-    ++darktable.gui->reset;
     update_exposure_sliders(g, p);
-    --darktable.gui->reset;
 
     dt_dev_add_history_item(darktable.develop, self, FALSE);
   }
@@ -2882,9 +2872,7 @@ static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gp
   if(g->area_dragging)
   {
     // cursor left area : force commit to avoid glitches
-    ++darktable.gui->reset;
     update_exposure_sliders(g, p);
-    --darktable.gui->reset;
 
     dt_dev_add_history_item(darktable.develop, self, FALSE);
   }
@@ -2927,9 +2915,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
     p->speculars = d->speculars;
 
     // update UI sliders
-    ++darktable.gui->reset;
     update_exposure_sliders(g, p);
-    --darktable.gui->reset;
 
     // Redraw graph
     gtk_widget_queue_draw(self->widget);
@@ -3023,9 +3009,7 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
     if(g->area_dragging)
     {
       // Update GUI with new params
-      ++darktable.gui->reset;
       update_exposure_sliders(g, p);
-      --darktable.gui->reset;
 
       dt_dev_add_history_item(darktable.develop, self, FALSE);
 
@@ -3143,40 +3127,31 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("simple"), NULL);
 
   g->noise = dt_bauhaus_slider_from_params(self, "noise");
-  dt_bauhaus_slider_set_step(g->noise, .05);
-  dt_bauhaus_slider_set_format(g->noise, _("%+.2f EV"));
+  dt_bauhaus_slider_set_format(g->noise, _(" EV"));
 
   g->ultra_deep_blacks = dt_bauhaus_slider_from_params(self, "ultra_deep_blacks");
-  dt_bauhaus_slider_set_step(g->ultra_deep_blacks, .05);
-  dt_bauhaus_slider_set_format(g->ultra_deep_blacks, _("%+.2f EV"));
+  dt_bauhaus_slider_set_format(g->ultra_deep_blacks, _(" EV"));
 
   g->deep_blacks = dt_bauhaus_slider_from_params(self, "deep_blacks");
-  dt_bauhaus_slider_set_step(g->deep_blacks, .05);
-  dt_bauhaus_slider_set_format(g->deep_blacks, _("%+.2f EV"));
+  dt_bauhaus_slider_set_format(g->deep_blacks, _(" EV"));
 
   g->blacks = dt_bauhaus_slider_from_params(self, "blacks");
-  dt_bauhaus_slider_set_step(g->blacks, .05);
-  dt_bauhaus_slider_set_format(g->blacks, _("%+.2f EV"));
+  dt_bauhaus_slider_set_format(g->blacks, _(" EV"));
 
   g->shadows = dt_bauhaus_slider_from_params(self, "shadows");
-  dt_bauhaus_slider_set_step(g->shadows, .05);
-  dt_bauhaus_slider_set_format(g->shadows, _("%+.2f EV"));
+  dt_bauhaus_slider_set_format(g->shadows, _(" EV"));
 
   g->midtones = dt_bauhaus_slider_from_params(self, "midtones");
-  dt_bauhaus_slider_set_step(g->midtones, .05);
-  dt_bauhaus_slider_set_format(g->midtones, _("%+.2f EV"));
+  dt_bauhaus_slider_set_format(g->midtones, _(" EV"));
 
   g->highlights = dt_bauhaus_slider_from_params(self, "highlights");
-  dt_bauhaus_slider_set_step(g->highlights, .05);
-  dt_bauhaus_slider_set_format(g->highlights, _("%+.2f EV"));
+  dt_bauhaus_slider_set_format(g->highlights, _(" EV"));
 
   g->whites = dt_bauhaus_slider_from_params(self, "whites");
-  dt_bauhaus_slider_set_step(g->whites, .05);
-  dt_bauhaus_slider_set_format(g->whites, _("%+.2f EV"));
+  dt_bauhaus_slider_set_format(g->whites, _(" EV"));
 
   g->speculars = dt_bauhaus_slider_from_params(self, "speculars");
-  dt_bauhaus_slider_set_step(g->speculars, .05);
-  dt_bauhaus_slider_set_format(g->speculars, _("%+.2f EV"));
+  dt_bauhaus_slider_set_format(g->speculars, _(" EV"));
 
   dt_bauhaus_widget_set_label(g->noise, N_("simple"), N_("-8 EV"));
   dt_bauhaus_widget_set_label(g->ultra_deep_blacks, N_("simple"), N_("-7 EV"));
@@ -3211,8 +3186,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("double-click to reset the curve"));
 
-  g->smoothing = dt_bauhaus_slider_new_with_range(self, -1.0f, +1.0f, 0.1, 0.0f, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->smoothing, -2.33f, 1.67f);
+  g->smoothing = dt_bauhaus_slider_new_with_range(self, -2.33f, +1.67f, 0, 0.0f, 2);
+  dt_bauhaus_slider_set_soft_range(g->smoothing, -1.0f, 1.0f);
   dt_bauhaus_widget_set_label(g->smoothing, NULL, N_("curve smoothing"));
   gtk_widget_set_tooltip_text(g->smoothing, _("positive values will produce more progressive tone transitions\n"
                                               "but the curve might become oscillatory in some settings.\n"
@@ -3245,14 +3220,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->blending = dt_bauhaus_slider_from_params(self, "blending");
   dt_bauhaus_slider_set_soft_range(g->blending, 1.0, 45.0);
-  dt_bauhaus_slider_set_format(g->blending, "%.2f %%");
+  dt_bauhaus_slider_set_format(g->blending, "%");
   gtk_widget_set_tooltip_text(g->blending, _("diameter of the blur in percent of the largest image size\n"
                                              "warning: big values of this parameter can make the darkroom\n"
                                              "preview much slower if denoise profiled is used."));
 
   g->feathering = dt_bauhaus_slider_from_params(self, "feathering");
   dt_bauhaus_slider_set_soft_range(g->feathering, 0.1, 50.0);
-  dt_bauhaus_slider_set_step(g->feathering, 0.2);
   gtk_widget_set_tooltip_text(g->feathering, _("precision of the feathering :\n"
                                                "higher values force the mask to follow edges more closely\n"
                                                "but may void the effect of the smoothing\n"
@@ -3271,15 +3245,14 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g->quantization = dt_bauhaus_slider_from_params(self, "quantization");
-  dt_bauhaus_slider_set_step(g->quantization, 0.25);
-  dt_bauhaus_slider_set_format(g->quantization, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->quantization, _(" EV"));
   gtk_widget_set_tooltip_text(g->quantization, _("0 disables the quantization.\n"
                                                  "higher values posterize the luminance mask to help the guiding\n"
                                                  "produce piece-wise smooth areas when using high feathering values"));
 
   g->exposure_boost = dt_bauhaus_slider_from_params(self, "exposure_boost");
   dt_bauhaus_slider_set_soft_range(g->exposure_boost, -4.0, 4.0);
-  dt_bauhaus_slider_set_format(g->exposure_boost, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->exposure_boost, _(" EV"));
   gtk_widget_set_tooltip_text(g->exposure_boost, _("use this to slide the mask average exposure along channels\n"
                                                    "for a better control of the exposure correction with the available nodes.\n"
                                                    "the magic wand will auto-adjust the average exposure"));
@@ -3289,7 +3262,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->contrast_boost = dt_bauhaus_slider_from_params(self, "contrast_boost");
   dt_bauhaus_slider_set_soft_range(g->contrast_boost, -2.0, 2.0);
-  dt_bauhaus_slider_set_format(g->contrast_boost, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->contrast_boost, _(" EV"));
   gtk_widget_set_tooltip_text(g->contrast_boost, _("use this to counter the averaging effect of the guided filter\n"
                                                    "and dilate the mask contrast around -4EV\n"
                                                    "this allows to spread the exposure histogram over more channels\n"

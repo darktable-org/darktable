@@ -504,17 +504,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(dt_iop_module_t *self)
-{
-  // let gui slider match current parameters:
-  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
-  dt_iop_nlmeans_params_t *p = (dt_iop_nlmeans_params_t *)self->params;
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set_soft(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->luma, p->luma);
-  dt_bauhaus_slider_set(g->chroma, p->chroma);
-}
-
 void gui_init(dt_iop_module_t *self)
 {
   dt_iop_nlmeans_gui_data_t *g = IOP_GUI_ALLOC(nlmeans);
@@ -522,20 +511,17 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   dt_bauhaus_slider_set_soft_max(g->radius, 4.0f);
   dt_bauhaus_slider_set_digits(g->radius, 0);
-  dt_bauhaus_slider_set_format(g->radius, "%.0f");
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match"));
   g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   dt_bauhaus_slider_set_soft_max(g->strength, 100.0f);
   dt_bauhaus_slider_set_digits(g->strength, 0);
-  dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->strength, "%");
   gtk_widget_set_tooltip_text(g->strength, _("strength of the effect"));
   g->luma = dt_bauhaus_slider_from_params(self, N_("luma"));
-  dt_bauhaus_slider_set_factor(g->luma, 100.0f);
-  dt_bauhaus_slider_set_format(g->luma, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->luma, "%");
   gtk_widget_set_tooltip_text(g->luma, _("how much to smooth brightness"));
   g->chroma = dt_bauhaus_slider_from_params(self, N_("chroma"));
-  dt_bauhaus_slider_set_factor(g->chroma, 100.0f);
-  dt_bauhaus_slider_set_format(g->chroma, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->chroma, "%");
   gtk_widget_set_tooltip_text(g->chroma, _("how much to smooth colors"));
 }
 

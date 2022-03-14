@@ -97,6 +97,7 @@ void dt_view_manager_gui_init(dt_view_manager_t *vm)
   {
     dt_view_t *view = (dt_view_t *)iter->data;
     if(view->gui_init) view->gui_init(view);
+    if(view->connect_key_accels) view->connect_key_accels(view);
   }
 }
 
@@ -240,9 +241,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 {
   dt_view_t *old_view = vm->current_view;
   dt_view_t *new_view = (dt_view_t *)nv; // views belong to us, we can de-const them :-)
-
-  // Before switching views, restore accelerators if disabled
-  if(!darktable.control->key_accelerators_on) dt_control_key_accelerators_on(darktable.control);
 
   // reset the cursor to the default one
   dt_control_change_cursor(GDK_LEFT_PTR);

@@ -220,11 +220,24 @@ dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint
 }
 
 /** Listener interface for import job */
-void _camera_import_image_downloaded(const dt_camera_t *camera, const char *filename, void *data)
+void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_path,
+                                     const char *in_filename, const char *filename, void *data)
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   const int32_t imgid = dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE, TRUE);
+
+  const time_t timestamp = (!in_path || !in_filename) ? 0 :
+               dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
+  if(timestamp && imgid >= 0)
+  {
+    char dt_txt[DT_DATETIME_LENGTH];
+    dt_metadata_unix_time_to_text(dt_txt, sizeof(dt_txt), &timestamp);
+    gchar *id = g_strconcat(in_filename, "-", dt_txt, NULL);
+    dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
+    g_free(id);
+  }
+
   dt_control_queue_redraw_center();
   gchar *basename = g_path_get_basename(filename);
   const int num_images = g_list_length(t->images);
@@ -358,7 +371,7 @@ dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
   dt_control_job_set_params(job, params, dt_camera_import_cleanup);
 
   /* initialize import session for camera import job */
-  if(time_override) dt_import_session_set_time(params->shared.session, time_override);
+  if(time_override && time_override[0]) dt_import_session_set_time(params->shared.session, time_override);
   const char *jobcode = dt_conf_get_string_const("ui_last/import_jobcode");
   dt_import_session_set_name(params->shared.session, jobcode);
 

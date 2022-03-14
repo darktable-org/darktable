@@ -402,28 +402,15 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 #endif
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_censorize_gui_data_t *g = (dt_iop_censorize_gui_data_t *)self->gui_data;
-  dt_iop_censorize_params_t *p = (dt_iop_censorize_params_t *)self->params;
-  dt_bauhaus_slider_set(g->radius_1, p->radius_1);
-  dt_bauhaus_slider_set(g->pixelate, p->pixelate);
-  dt_bauhaus_slider_set(g->radius_2, p->radius_2);
-  dt_bauhaus_slider_set(g->noise, p->noise);
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_censorize_gui_data_t *g = IOP_GUI_ALLOC(censorize);
 
   g->radius_1 = dt_bauhaus_slider_from_params(self, N_("radius_1"));
-  dt_bauhaus_slider_set_step(g->radius_1, 0.1);
 
   g->pixelate = dt_bauhaus_slider_from_params(self, N_("pixelate"));
-  dt_bauhaus_slider_set_step(g->pixelate, 0.1);
 
   g->radius_2 = dt_bauhaus_slider_from_params(self, N_("radius_2"));
-  dt_bauhaus_slider_set_step(g->radius_2, 0.1);
 
   g->noise = dt_bauhaus_slider_from_params(self, N_("noise"));
 

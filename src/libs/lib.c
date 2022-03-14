@@ -547,7 +547,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
 
   if(minfo->module->set_preferences)
   {
-    if(minfo->params && cnt>0)
+    if(cnt>0)
     {
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
     }
@@ -762,6 +762,7 @@ static void dt_lib_init_module(void *m)
   {
     if(module->init_key_accels) module->init_key_accels(module);
     module->gui_init(module);
+    if(module->connect_key_accels) module->connect_key_accels(module);
     g_object_ref_sink(module->widget);
   }
 }

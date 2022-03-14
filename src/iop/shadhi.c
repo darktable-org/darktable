@@ -656,20 +656,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  dt_bauhaus_slider_set(g->shadows, p->shadows);
-  dt_bauhaus_slider_set(g->highlights, p->highlights);
-  dt_bauhaus_slider_set(g->whitepoint, p->whitepoint);
-  dt_bauhaus_slider_set(g->radius, p->radius);
-  dt_bauhaus_combobox_set(g->shadhi_algo, p->shadhi_algo);
-  dt_bauhaus_slider_set(g->compress, p->compress);
-  dt_bauhaus_slider_set(g->shadows_ccorrect, p->shadows_ccorrect);
-  dt_bauhaus_slider_set(g->highlights_ccorrect, p->highlights_ccorrect);
-}
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 6; // gaussian.cl, from programs.conf
@@ -697,11 +683,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->shadhi_algo = dt_bauhaus_combobox_from_params(self, "shadhi_algo");
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   g->compress = dt_bauhaus_slider_from_params(self, N_("compress"));
-  dt_bauhaus_slider_set_format(g->compress, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->compress, "%");
   g->shadows_ccorrect = dt_bauhaus_slider_from_params(self, "shadows_ccorrect");
-  dt_bauhaus_slider_set_format(g->shadows_ccorrect, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->shadows_ccorrect, "%");
   g->highlights_ccorrect = dt_bauhaus_slider_from_params(self, "highlights_ccorrect");
-  dt_bauhaus_slider_set_format(g->highlights_ccorrect, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->highlights_ccorrect, "%");
 
   gtk_widget_set_tooltip_text(g->shadows, _("correct shadows"));
   gtk_widget_set_tooltip_text(g->highlights, _("correct highlights"));

@@ -1140,7 +1140,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   const gboolean is_raw = dt_image_is_matrix_correction_supported(&self->dev->image_storage);
-  self->hide_enable_button = monochrome;  
+  self->hide_enable_button = monochrome;
   self->default_enabled = is_raw;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "disabled" : "enabled");
 
@@ -1322,7 +1322,9 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
   }
 
   double mul[4];
-  if(dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, module->dev->image_storage.d65_color_matrix, mul))
+  if(dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.adobe_XYZ_to_CAM,
+                                            NULL, NULL,
+                                            module->dev->image_storage.d65_color_matrix, mul))
   {
     // normalize green:
     bwb[0] = mul[0] / mul[1];
@@ -1359,10 +1361,11 @@ static void prepare_matrices(dt_iop_module_t *module)
     return;
   }
 
-  char *camera = module->dev->image_storage.camera_makermodel;
-  if (!dt_colorspaces_conversion_matrices_xyz(camera, module->dev->image_storage.d65_color_matrix,
-                                                      g->XYZ_to_CAM, g->CAM_to_XYZ))
+  if (!dt_colorspaces_conversion_matrices_xyz(module->dev->image_storage.adobe_XYZ_to_CAM,
+                                              module->dev->image_storage.d65_color_matrix,
+                                              g->XYZ_to_CAM, g->CAM_to_XYZ))
   {
+    char *camera = module->dev->image_storage.camera_makermodel;
     fprintf(stderr, "[temperature] `%s' color matrix not found for image\n", camera);
     dt_control_log(_("`%s' color matrix not found for image"), camera);
   }
@@ -1903,64 +1906,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->mod_temp = NAN;
-  for(int k = 0; k < 4; k++)
-  {
-    g->daylight_wb[k] = 1.0;
-    g->as_shot_wb[k] = 1.f;
-  }
-
-  GtkWidget *temp_label_box = gtk_event_box_new();
-  g->temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
-  gtk_widget_set_tooltip_text(g->temp_label, _("click to cycle color mode on sliders"));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(g->temp_label));
-  gtk_style_context_add_class(context, "section_label_top");
-  gtk_container_add(GTK_CONTAINER(temp_label_box), g->temp_label);
-
-  g_signal_connect(G_OBJECT(temp_label_box), "button-release-event", G_CALLBACK(temp_label_click), self);
-
-  gtk_box_pack_start(box_enabled, temp_label_box, TRUE, TRUE, 0);
-
-  //Match UI order: temp first, then tint (like every other app ever)
-  g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
-                                                             10., 5000.0, 0, feedback);
-  dt_bauhaus_slider_set_format(g->scale_k, "%.0f K");
-  dt_bauhaus_widget_set_label(g->scale_k, NULL, N_("temperature"));
-  gtk_widget_set_tooltip_text(g->scale_k, _("color temperature (in Kelvin)"));
-  gtk_box_pack_start(box_enabled, g->scale_k, TRUE, TRUE, 0);
-
-  g->scale_tint = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT,
-                                                                .01, 1.0, 3, feedback);
-  dt_bauhaus_widget_set_label(g->scale_tint, NULL, N_("tint"));
-  gtk_widget_set_tooltip_text(g->scale_tint, _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
-  gtk_box_pack_start(box_enabled, g->scale_tint, TRUE, TRUE, 0);
-
-  dt_gui_new_collapsible_section
-    (&g->cs,
-     "plugins/darkroom/temperature/expand_coefficients",
-     _("channel coefficients"),
-     GTK_BOX(box_enabled));
-
-  self->widget = GTK_WIDGET(g->cs.container);
-
-  g->scale_r = dt_bauhaus_slider_from_params(self, N_("red"));
-  g->scale_g = dt_bauhaus_slider_from_params(self, N_("green"));
-  g->scale_b = dt_bauhaus_slider_from_params(self, N_("blue"));
-  g->scale_g2 = dt_bauhaus_slider_from_params(self, "g2");
-  dt_bauhaus_slider_set_digits(g->scale_r, 3);
-  dt_bauhaus_slider_set_digits(g->scale_g, 3);
-  dt_bauhaus_slider_set_digits(g->scale_b, 3);
-  dt_bauhaus_slider_set_digits(g->scale_g2, 3);
-  dt_bauhaus_slider_set_step(g->scale_r, 0.05);
-  dt_bauhaus_slider_set_step(g->scale_g, 0.05);
-  dt_bauhaus_slider_set_step(g->scale_b, 0.05);
-  dt_bauhaus_slider_set_step(g->scale_g2, 0.05);
-
-  gtk_widget_set_no_show_all(g->scale_g2, TRUE);
-
-  g->balance_label = dt_ui_section_label_new(_("white balance settings"));
-  gtk_box_pack_start(box_enabled, g->balance_label, TRUE, TRUE, 0);
-
   g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings"), N_("as shot"), NULL,
                                           G_CALLBACK(btn_toggled), FALSE, 0, 0,
                                           dtgtk_cairo_paint_camera, NULL);
@@ -1986,7 +1931,7 @@ void gui_init(struct dt_iop_module_t *self)
                                        dtgtk_cairo_paint_bulb, NULL);
   gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance to camera reference point\nin most cases it should be D65"));
 
-  g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0); // put buttons at top. fill later.
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_user, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->colorpicker, TRUE, TRUE, 0);
@@ -1998,11 +1943,62 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->presets, _("choose white balance setting"));
   gtk_box_pack_start(box_enabled, g->presets, TRUE, TRUE, 0);
 
-  g->finetune = dt_bauhaus_slider_new_with_range_and_feedback(self, -9.0, 9.0, 1.0, 0.0, 0, feedback);
+  g->finetune = dt_bauhaus_slider_new_with_range_and_feedback(self, -9.0, 9.0, 0, 0.0, 0, feedback);
   dt_bauhaus_widget_set_label(g->finetune, NULL, N_("finetune"));
-  dt_bauhaus_slider_set_format(g->finetune, _("%.0f mired"));
+  dt_bauhaus_slider_set_format(g->finetune, " mired");
   gtk_widget_set_tooltip_text(g->finetune, _("fine tune camera's white balance setting"));
   gtk_box_pack_start(box_enabled, g->finetune, TRUE, TRUE, 0);
+
+  g->mod_temp = NAN;
+  for(int k = 0; k < 4; k++)
+  {
+    g->daylight_wb[k] = 1.0;
+    g->as_shot_wb[k] = 1.f;
+  }
+
+  GtkWidget *temp_label_box = gtk_event_box_new();
+  g->temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
+  gtk_widget_set_tooltip_text(g->temp_label, _("click to cycle color mode on sliders"));
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(g->temp_label));
+  gtk_style_context_add_class(context, "section_label_top");
+  gtk_container_add(GTK_CONTAINER(temp_label_box), g->temp_label);
+
+  g_signal_connect(G_OBJECT(temp_label_box), "button-release-event", G_CALLBACK(temp_label_click), self);
+
+  gtk_box_pack_start(box_enabled, temp_label_box, TRUE, TRUE, 0);
+
+  //Match UI order: temp first, then tint (like every other app ever)
+  g->scale_k = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE,
+                                                             0, 5000.0, 0, feedback);
+  dt_bauhaus_slider_set_format(g->scale_k, " K");
+  dt_bauhaus_widget_set_label(g->scale_k, NULL, N_("temperature"));
+  gtk_widget_set_tooltip_text(g->scale_k, _("color temperature (in Kelvin)"));
+  gtk_box_pack_start(box_enabled, g->scale_k, TRUE, TRUE, 0);
+
+  g->scale_tint = dt_bauhaus_slider_new_with_range_and_feedback(self, DT_IOP_LOWEST_TINT, DT_IOP_HIGHEST_TINT,
+                                                                0, 1.0, 3, feedback);
+  dt_bauhaus_widget_set_label(g->scale_tint, NULL, N_("tint"));
+  gtk_widget_set_tooltip_text(g->scale_tint, _("color tint of the image, from magenta (value < 1) to green (value > 1)"));
+  gtk_box_pack_start(box_enabled, g->scale_tint, TRUE, TRUE, 0);
+
+  dt_gui_new_collapsible_section
+    (&g->cs,
+     "plugins/darkroom/temperature/expand_coefficients",
+     _("channel coefficients"),
+     GTK_BOX(box_enabled));
+
+  self->widget = GTK_WIDGET(g->cs.container);
+
+  g->scale_r = dt_bauhaus_slider_from_params(self, N_("red"));
+  g->scale_g = dt_bauhaus_slider_from_params(self, N_("green"));
+  g->scale_b = dt_bauhaus_slider_from_params(self, N_("blue"));
+  g->scale_g2 = dt_bauhaus_slider_from_params(self, "g2");
+  dt_bauhaus_slider_set_digits(g->scale_r, 3);
+  dt_bauhaus_slider_set_digits(g->scale_g, 3);
+  dt_bauhaus_slider_set_digits(g->scale_b, 3);
+  dt_bauhaus_slider_set_digits(g->scale_g2, 3);
+
+  gtk_widget_set_no_show_all(g->scale_g2, TRUE);
 
   g_signal_connect(G_OBJECT(g->scale_k), "value-changed", G_CALLBACK(temp_tint_callback), self);
   g_signal_connect(G_OBJECT(g->scale_tint), "value-changed", G_CALLBACK(temp_tint_callback), self);

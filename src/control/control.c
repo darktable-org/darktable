@@ -111,7 +111,7 @@ void dt_control_init(dt_control_t *s)
   s->actions_thumb = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "thumbtable", C_("accel", "thumbtable"), .owner = &s->actions_views };
   s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lib", C_("accel", "utility modules"), .next = &s->actions_iops };
   s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "iop", C_("accel", "processing modules"), .next = &s->actions_lua, .target = &s->actions_blend };
-  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "blend", C_("accel", "blending"), .owner = &s->actions_iops };
+  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_BLEND, "blend", C_("accel", "blending"), .owner = &s->actions_iops };
   s->actions_lua = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lua", C_("accel", "lua scripts"), .next = &s->actions_fallbacks };
   s->actions_fallbacks = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "fallbacks", C_("accel", "fallbacks") };
   s->actions = &s->actions_global;
@@ -141,7 +141,6 @@ void dt_control_init(dt_control_t *s)
   s->gui_thread = pthread_self();
 
   // s->last_expose_time = dt_get_wtime();
-  s->key_accelerators_on = 1;
   s->log_pos = s->log_ack = 0;
   s->log_busy = 0;
   s->log_message_timeout_id = 0;
@@ -171,22 +170,6 @@ void dt_control_init(dt_control_t *s)
   s->dev_zoom_y = 0;
   s->dev_zoom = DT_ZOOM_FIT;
   s->lock_cursor_shape = FALSE;
-}
-
-void dt_control_key_accelerators_on(struct dt_control_t *s)
-{
-  if(!s->key_accelerators_on) s->key_accelerators_on = 1;
-}
-
-void dt_control_key_accelerators_off(struct dt_control_t *s)
-{
-  s->key_accelerators_on = 0;
-}
-
-
-int dt_control_is_key_accelerators_on(struct dt_control_t *s)
-{
-  return s->key_accelerators_on;
 }
 
 void dt_control_forbid_change_cursor()
@@ -811,7 +794,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     }
     return 1;
   }
-  else if(key == ':' && darktable.control->key_accelerators_on)
+  else if(key == ':')
   {
     darktable.control->vimkey[0] = ':';
     darktable.control->vimkey[1] = 0;

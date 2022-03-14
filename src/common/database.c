@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 
+#include "common/atomic.h"
 #include "common/database.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -49,6 +50,11 @@
 // _upgrade_*_schema_step()!
 #define CURRENT_DATABASE_VERSION_LIBRARY 34
 #define CURRENT_DATABASE_VERSION_DATA     9
+
+// #define USE_NESTED_TRANSACTIONS
+#define MAX_NESTED_TRANSACTIONS 0
+/* transaction id */
+static dt_atomic_int _trxid;
 
 typedef struct dt_database_t
 {
@@ -2381,7 +2387,8 @@ static void _create_memory_schema(dt_database_t *db)
       NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.tmp_selection (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.taglist "
-                           "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, count INTEGER)",
+                           "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, "
+                           "count INTEGER DEFAULT 0, count2 INTEGER DEFAULT 0)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.darktable_tags (tagid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
@@ -2890,6 +2897,8 @@ start:
   dt_database_t *db = (dt_database_t *)g_malloc0(sizeof(dt_database_t));
   db->dbfilename_data = g_strdup(dbfilename_data);
   db->dbfilename_library = g_strdup(dbfilename_library);
+
+  dt_atomic_set_int(&_trxid, 0);
 
   /* make sure the folder exists. this might not be the case for new databases */
   /* also check if a database backup is needed */
@@ -4389,6 +4398,86 @@ gchar *dt_database_get_most_recent_snap(const char* db_filename)
   g_free(last_snap_name);
 
   return ret;
+}
+
+// Nested transactions support
+//
+// NOTE: the nested support is actually not activated (see || TRUE below). This current
+//       implementation is just a refactoring of the previous code using:
+//          - dt_database_start_transaction()
+//          - dt_database_release_transaction()
+//          - dt_database_rollback_transaction()
+//
+//       With this refactoring we can count and check for nested transaction and unmatched
+//       transaction routines. And it has been done to help further implementation for
+//       proper threading and nested transaction support.
+//
+void dt_database_start_transaction(const struct dt_database_t *db)
+{
+  const int trxid = dt_atomic_add_int(&_trxid, 1);
+
+  // if top level a simple unamed transaction is used BEGIN / COMMIT / ROLLBACK
+  // otherwise we use a savepoint (named transaction).
+
+  if(trxid == 0 || TRUE)
+  {
+    // In theads application it may be safer to use an IMMEDIATE transaction:
+    // "BEGIN IMMEDIATE TRANSACTION"
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  }
+#ifdef USE_NESTED_TRANSACTIONS
+  else
+  {
+    char SQLTRX[32] = { 0 };
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "SAVEPOINT trx%d", trxid);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#endif
+
+  if(trxid > MAX_NESTED_TRANSACTIONS)
+    fprintf(stderr, "[dt_database_start_transaction] more than %d nested transaction\n", MAX_NESTED_TRANSACTIONS);
+}
+
+void dt_database_release_transaction(const struct dt_database_t *db)
+{
+  const int trxid = dt_atomic_sub_int(&_trxid, 1);
+
+  if(trxid <= 0)
+    fprintf(stderr, "[dt_database_release_transaction] COMMIT outside a transaction\n");
+
+  if(trxid == 1 || TRUE)
+  {
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+  }
+#ifdef USE_NESTED_TRANSACTIONS
+  else
+  {
+    char SQLTRX[64] = { 0 };
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "RELEASE SAVEPOINT trx%d", trxid - 1);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#endif
+}
+
+void dt_database_rollback_transaction(const struct dt_database_t *db)
+{
+  const int trxid = dt_atomic_sub_int(&_trxid, 1);
+
+  if(trxid <= 0)
+    fprintf(stderr, "[dt_database_rollback_transaction] ROLLBACK outside a transaction\n");
+
+  if(trxid == 1 || TRUE)
+  {
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+  }
+#ifdef USE_NESTED_TRANSACTIONS
+  else
+  {
+    char SQLTRX[64] = { 0 };
+    g_snprintf(SQLTRX, sizeof(SQLTRX), "ROLLBACK TRANSACTION TO SAVEPOINT trx%d", trxid - 1);
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(db), SQLTRX, NULL, NULL, NULL);
+  }
+#endif
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

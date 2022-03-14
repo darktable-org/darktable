@@ -49,7 +49,7 @@ typedef struct dt_iop_relight_params_t
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   dt_gui_presets_add_generic(_("fill-light 0.25EV with 4 zones"), self->op, self->version(),
                              &(dt_iop_relight_params_t){ 0.25, 0.25, 4.0 }, sizeof(dt_iop_relight_params_t),
@@ -59,7 +59,7 @@ void init_presets(dt_iop_module_so_t *self)
                              &(dt_iop_relight_params_t){ -0.25, 0.25, 4.0 }, sizeof(dt_iop_relight_params_t),
                              1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 }
 
 typedef struct dt_iop_relight_gui_data_t
@@ -237,8 +237,6 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
-  dt_bauhaus_slider_set(g->exposure, p->ev);
-  dt_bauhaus_slider_set(g->width, p->width);
   dtgtk_gradient_slider_set_value(g->center, p->center);
 }
 
@@ -266,7 +264,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_relight_gui_data_t *g = IOP_GUI_ALLOC(relight);
 
   g->exposure = dt_bauhaus_slider_from_params(self, "ev");
-  dt_bauhaus_slider_set_format(g->exposure, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->exposure, _(" EV"));
   gtk_widget_set_tooltip_text(g->exposure, _("the fill-light in EV"));
 
   /* lightnessslider */
@@ -284,8 +282,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sliderbox), TRUE, FALSE, 0);
 
   g->width = dt_bauhaus_slider_from_params(self, N_("width"));
-  dt_bauhaus_slider_set_format(g->width, "%.1f");
-  dt_bauhaus_slider_set_step(g->width, 0.5);
   gtk_widget_set_tooltip_text(g->width, _("width of fill-light area defined in zones"));
 }
 

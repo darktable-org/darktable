@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2014 Pascal de Bruijn
+# Copyright (c) 2014-2022 darktable developers.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -97,14 +97,6 @@ fi
 
 echo "DNG created by : $SOFTWARE"
 echo "DNG Illuminant : $ILLUMINANT (should be 21)"
-echo ""
-
-echo ""
-echo "$ nano -w src/external/adobe_coeff.c"
-echo ""
-echo "{ \"$ID_MAKE $ID_MODEL\", { ${MATRIX[0]},${MATRIX[1]},${MATRIX[2]},${MATRIX[3]},${MATRIX[4]},${MATRIX[5]},${MATRIX[6]},${MATRIX[7]},${MATRIX[8]} } },"
-echo ""
-echo "$ git commit -a -m \"adobe_coeff: $MANGLED_MAKE_MODEL support\" --author \"$AUTHOR\""
 echo ""
 
 echo ""

@@ -134,7 +134,6 @@ static int usage(const char *argv0)
 #endif
   printf(">\n");
   printf("  --datadir <data directory>\n");
-  printf("  --enforce-tiling\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
 #endif
@@ -338,6 +337,77 @@ static void dt_codepaths_init()
     fprintf(stderr, "[dt_codepaths_init] SSE2-optimized codepath is disabled or unavailable.\n");
   }
 #endif
+}
+
+static inline size_t _get_total_memory()
+{
+#if defined(__linux__)
+  FILE *f = g_fopen("/proc/meminfo", "rb");
+  if(!f) return 0;
+  size_t mem = 0;
+  char *line = NULL;
+  size_t len = 0;
+  int first = 1, found = 0;
+  // return "MemTotal" or the value from the first line
+  while(!found && getline(&line, &len, f) != -1)
+  {
+    char *colon = strchr(line, ':');
+    if(!colon) continue;
+    found = !strncmp(line, "MemTotal:", 9);
+    if(found || first) mem = atol(colon + 1);
+    first = 0;
+  }
+  fclose(f);
+  if(len > 0) free(line);
+  return mem;
+#elif defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__)            \
+    || defined(__OpenBSD__)
+#if defined(__APPLE__)
+  int mib[2] = { CTL_HW, HW_MEMSIZE };
+#elif defined(HW_PHYSMEM64)
+  int mib[2] = { CTL_HW, HW_PHYSMEM64 };
+#else
+  int mib[2] = { CTL_HW, HW_PHYSMEM };
+#endif
+  uint64_t physical_memory;
+  size_t length = sizeof(uint64_t);
+  sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
+  return physical_memory / 1024;
+#elif defined _WIN32
+  MEMORYSTATUSEX memInfo;
+  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+  GlobalMemoryStatusEx(&memInfo);
+  return memInfo.ullTotalPhys / (uint64_t)1024;
+#else
+  // assume 2GB until we have a better solution.
+  fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
+  return 2097152;
+#endif
+}
+
+static size_t _get_mipmap_size()
+{
+  const int level = darktable.dtresources.level;
+  if(level < 0)
+    return darktable.dtresources.refresource[4*(-level-1) + 2] * 1024lu * 1024lu;
+  const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 2];
+  return darktable.dtresources.total_memory / 1024lu * fraction;
+}
+
+void check_resourcelevel(const char *key, int *fractions, const int level)
+{
+  const int g = level * 4;
+  gchar out[128] = { 0 };
+  if(!dt_conf_key_exists(key))
+  {
+    g_snprintf(out, 126, "%i %i %i %i", fractions[g], fractions[g+1], fractions[g+2], fractions[g+3]);
+    dt_conf_set_string(key, out);
+  }
+  else
+  {
+    const gchar *in = dt_conf_get_string_const(key);
+    sscanf(in, "%i %i %i %i", &fractions[g], &fractions[g+1], &fractions[g+2], &fractions[g+3]);
+  }
 }
 
 int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load_data, lua_State *L)
@@ -567,7 +637,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
         if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted = 0xffffffff & ~DT_DEBUG_TILING; // enable all debug information except the enforce-tiling flag
+          darktable.unmuted = 0xffffffff; // enable all debug information
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k + 1], "control"))
@@ -751,11 +821,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
         argv[k] = NULL;
       }
-      else if(!strcmp(argv[k], "--enforce-tiling"))
-      {
-        darktable.unmuted |= DT_DEBUG_TILING;
-        argv[k] = NULL;
-      }
       else if(!strcmp(argv[k], "--"))
       {
         // "--" confuses the argument parser of glib/gtk. remove it.
@@ -891,6 +956,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.l10n = dt_l10n_init(init_gui);
 
   dt_confgen_init();
+  const int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
 
   // we need this REALLY early so that error messages can be shown, however after gtk_disable_setlocale
   if(init_gui)
@@ -904,27 +970,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     gtk_init(&argc, &argv);
 
     darktable.themes = NULL;
-
-    // execute a performance check and configuration if needed
-    int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
-    if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
-    {
-      // ask the user whether he/she would like
-      // dt to make changes in the settings
-      const gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
-          _("darktable - run performance configuration?"),
-          _("we have an updated performance configuration logic - executing that might improve the performance of "
-            "darktable.\nthis will potentially overwrite some of your existing settings - especially in case you "
-            "have manually modified them to custom values.\nwould you like to execute this update of the "
-            "performance configuration?\n"),
-          _("no"), _("yes"));
-
-      if(run_configure)
-        dt_configure_performance();
-      else
-        // make sure to set this, otherwise the user will be nagged until he eventually agrees
-        dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
-    }
   }
 
   // detect cpu features and decide which codepaths to enable
@@ -1018,6 +1063,49 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_film_set_folder_status();
   }
 
+  /* for every resourcelevel we have 4 ints defined, either absolute or a fraction
+     0 cpu available
+     1 cpu singlebuffer
+     2 mipmap size
+     3 opencl available
+  */
+  /* special modes are meant to be used for debugging & testing,
+     they are hidden in the ui menu and must be activated via --conf resourcelevel="xxx"
+     here all values are absolutes in MB as we require fixed settings.
+     reference, mini and notebook require a cl capable system with 16GB of ram and 2GB of free video ram
+  */
+  static int ref_resources[12] = {
+      8192,  32,  512, 2048,   // reference
+      1024,   2,  128,  400,   // mini system
+      4096,  32,  512,  400,   // simple notebook with integrated graphics
+  };
+
+  /* This is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed.
+     all values are fractions val/1024 of total memory (0-2) or available OpenCL memory
+  */
+  static int fractions[16] = {
+      128,    4,  64,  400, // small
+      512,    8, 128,  700, // default
+      700,   16, 128,  900, // large
+    16384, 1024, 128,  900, // unrestricted
+  };
+
+  // Allow the settings for each UI performance level to be changed via darktablerc
+  check_resourcelevel("resource_small", fractions, 0);
+  check_resourcelevel("resource_default", fractions, 1);
+  check_resourcelevel("resource_large", fractions, 2);
+  check_resourcelevel("resource_unrestricted", fractions, 3);
+
+  darktable.dtresources.fractions = fractions;
+  darktable.dtresources.refresource = ref_resources;
+  darktable.dtresources.total_memory = _get_total_memory() * 1024lu;
+
+  char *config_info = calloc(1, DT_PERF_INFOSIZE);
+  if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
+    dt_configure_runtime_performance(last_configure_version, config_info);
+
+  dt_get_sysresource_level();
+  darktable.dtresources.mipmap_memory = _get_mipmap_size();
   // initialize collection query
   darktable.collection = dt_collection_new(NULL);
 
@@ -1193,7 +1281,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
 #endif
+
+    // there might be some info created in dt_configure_runtime_performance() for feedback
+    gboolean not_again = TRUE;
+    if(last_configure_version && config_info[0])
+      not_again = dt_gui_show_standalone_yes_no_dialog
+        (_("configuration information"),
+         config_info,
+         _("show this information again"), _("understood"));
+
+    if(not_again || (last_configure_version == 0))
+      dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
   }
+  free(config_info);
 
   // last but not least construct the popup that asks the user about images whose xmp files are newer than the
   // db entry
@@ -1205,6 +1305,50 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_print(DT_DEBUG_CONTROL, "[init] startup took %f seconds\n", dt_get_wtime() - start_wtime);
 
   return 0;
+}
+
+void dt_get_sysresource_level()
+{
+  static int oldlevel = -999;
+  static int oldtunecl = -999;
+
+  const int tunecl = dt_conf_get_bool("tuneopencl");
+  int level = 1;
+  const char *config = dt_conf_get_string_const("resourcelevel");
+  /** These levels must correspond with preferences in xml.in
+      modes available in the ui have levsls >= 0 **and** fractions
+      modes available for debugging / reference have negative levels and **and** ref_resources
+      If we want a new setting here, we must
+        - add a string->level conversion here
+        - add a line of fraction in int fractions[] or ref_resources[] above
+        - add a line in darktableconfig.xml.in if available via UI
+  */
+  if(config)
+  {
+         if(!strcmp(config, "default"))      level = 1;
+    else if(!strcmp(config, "small"))        level = 0;
+    else if(!strcmp(config, "large"))        level = 2;
+    else if(!strcmp(config, "unrestricted")) level = 3;
+    else if(!strcmp(config, "reference"))    level = -1;
+    else if(!strcmp(config, "mini"))         level = -2;
+    else if(!strcmp(config, "notebook"))     level = -3;
+  }
+  const gboolean mod = ((level != oldlevel) || (oldtunecl != tunecl));
+  darktable.dtresources.level = oldlevel = level;
+  darktable.dtresources.tunecl = oldtunecl = tunecl;
+
+  if(mod && (darktable.unmuted & DT_DEBUG_MEMORY))
+  {
+    const int oldgrp = darktable.dtresources.group;
+    darktable.dtresources.group = 4 * level;
+    fprintf(stderr,"[dt_get_sysresource_level] switched to %i as `%s'\n", level, config);
+    fprintf(stderr,"  total mem:     %luMB\n", darktable.dtresources.total_memory / 1024lu / 1024lu);
+    fprintf(stderr,"  mipmap cache:  %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
+    fprintf(stderr,"  available mem: %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
+    fprintf(stderr,"  singlebuff:    %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+    fprintf(stderr,"  OpenCL tuning: %s\n", (tunecl && (level >= 0)) ? "ON" : "OFF");
+    darktable.dtresources.group = oldgrp;
+  }
 }
 
 void dt_cleanup()
@@ -1255,6 +1399,7 @@ void dt_cleanup()
     free(darktable.imageio);
     free(darktable.gui);
   }
+
   dt_image_cache_cleanup(darktable.image_cache);
   free(darktable.image_cache);
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);
@@ -1446,226 +1591,121 @@ void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *su
   }
 }
 
-static inline int _get_num_atom_cores()
-{
-#if defined(__linux__)
-  int count = 0;
-  char line[256];
-  FILE *f = g_fopen("/proc/cpuinfo", "r");
-  if(f)
-  {
-    while(!feof(f))
-    {
-      if(fgets(line, sizeof(line), f))
-      {
-        if(!strncmp(line, "model name", 10))
-        {
-          if(strstr(line, "Atom"))
-          {
-            count++;
-          }
-        }
-      }
-    }
-    fclose(f);
-  }
-  return count;
-#elif defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-  int ret, hw_ncpu;
-  int mib[2] = { CTL_HW, HW_MODEL };
-  char *hw_model, *index;
-  size_t length;
-
-  /* Query hw.model to get the required buffer length and allocate the
-   * buffer. */
-  ret = sysctl(mib, 2, NULL, &length, NULL, 0);
-  if(ret != 0)
-  {
-    return 0;
-  }
-
-  hw_model = (char *)malloc(length + 1);
-  if(hw_model == NULL)
-  {
-    return 0;
-  }
-
-  /* Query hw.model again, this time with the allocated buffer. */
-  ret = sysctl(mib, 2, hw_model, &length, NULL, 0);
-  if(ret != 0)
-  {
-    free(hw_model);
-    return 0;
-  }
-  hw_model[length] = '\0';
-
-  /* Check if the processor model name contains "Atom". */
-  index = strstr(hw_model, "Atom");
-  free(hw_model);
-  if(index == NULL)
-  {
-    return 0;
-  }
-
-  /* Get the number of cores, using hw.ncpu sysctl. */
-  mib[1] = HW_NCPU;
-  hw_ncpu = 0;
-  length = sizeof(hw_ncpu);
-  ret = sysctl(mib, 2, &hw_ncpu, &length, NULL, 0);
-  if(ret != 0)
-  {
-    return 0;
-  }
-
-  return hw_ncpu;
-#else
-  return 0;
-#endif
-}
-
-static inline size_t _get_total_memory()
-{
-#if defined(__linux__)
-  FILE *f = g_fopen("/proc/meminfo", "rb");
-  if(!f) return 0;
-  size_t mem = 0;
-  char *line = NULL;
-  size_t len = 0;
-  int first = 1, found = 0;
-  // return "MemTotal" or the value from the first line
-  while(!found && getline(&line, &len, f) != -1)
-  {
-    char *colon = strchr(line, ':');
-    if(!colon) continue;
-    found = !strncmp(line, "MemTotal:", 9);
-    if(found || first) mem = atol(colon + 1);
-    first = 0;
-  }
-  fclose(f);
-  if(len > 0) free(line);
-  return mem;
-#elif defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__)            \
-    || defined(__OpenBSD__)
-#if defined(__APPLE__)
-  int mib[2] = { CTL_HW, HW_MEMSIZE };
-#elif defined(HW_PHYSMEM64)
-  int mib[2] = { CTL_HW, HW_PHYSMEM64 };
-#else
-  int mib[2] = { CTL_HW, HW_PHYSMEM };
-#endif
-  uint64_t physical_memory;
-  size_t length = sizeof(uint64_t);
-  sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
-  return physical_memory / 1024;
-#elif defined _WIN32
-  MEMORYSTATUSEX memInfo;
-  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-  GlobalMemoryStatusEx(&memInfo);
-  return memInfo.ullTotalPhys / (uint64_t)1024;
-#else
-  // assume 2GB until we have a better solution.
-  fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
-  return 2097152;
-#endif
-}
-
 int dt_worker_threads()
 {
-  const int atom_cores = _get_num_atom_cores();
   const size_t threads = dt_get_num_threads();
   const size_t mem = _get_total_memory();
-  if(mem >= (8lu << 20) && threads >= 4 && atom_cores == 0)
-    return 4;
-  else if(threads >= 2 && atom_cores == 0)
-    return 2;
-  return 1;
+  const int wthreads = (mem >= (8lu << 20) && threads >= 4) ? 4 : MIN(2, threads);
+  dt_print(DT_DEBUG_DEV, "[dt_worker_threads] using %i worker threads\n", wthreads);
+  return wthreads;
 }
 
-void dt_configure_performance()
+size_t dt_get_available_mem()
 {
-  const int atom_cores = _get_num_atom_cores();
-  const size_t threads = dt_get_num_threads();
-  const size_t mem = _get_total_memory();
-  const size_t bits = CHAR_BIT * sizeof(void *);
-  gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
+  const int level = darktable.dtresources.level;
+  const size_t total_mem = darktable.dtresources.total_memory;
+  if(level < 0)
+    return darktable.dtresources.refresource[4*(-level-1)] * 1024lu * 1024lu;
 
-  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %zu cores (%d atom based)\n",
-          bits, mem, threads, atom_cores);
-  if(mem >= (16lu << 20) && threads > 4)
-  {
-    // CONFIG 0: at least 16GB RAM, and more than 6 CPU threads
-    // But respect if user has set higher values manually earlier
-    fprintf(stderr, "[defaults] setting very high quality defaults\n");
-    // if machine has at least 16GB RAM, use all of the total memory size leaving 4GB "breathing room"
-    dt_conf_set_int("host_memory_limit", MAX((mem - (4lu << 20)) >> 11, dt_conf_get_int("host_memory_limit")));
-    dt_conf_set_int("singlebuffer_limit", MAX(128, dt_conf_get_int("singlebuffer_limit")));
-    if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
-       || !strcmp(demosaic_quality, "always bilinear (fast)"))
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
-    dt_conf_set_bool("ui/performance", FALSE);
-  }
-  else if(mem >= (8lu << 20) && threads >= 4)
-  {
-    // CONFIG 1: at least 8GB RAM, and at least 4 CPU threads
-    // But respect if user has set higher values manually earlier
-    fprintf(stderr, "[defaults] setting high quality defaults\n");
-
-    // if machine has at least 8GB RAM, use half of the total memory size
-    dt_conf_set_int("host_memory_limit", MAX(mem >> 11, dt_conf_get_int("host_memory_limit")));
-    dt_conf_set_int("singlebuffer_limit", MAX(32, dt_conf_get_int("singlebuffer_limit")));
-    if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
-       || !strcmp(demosaic_quality, "always bilinear (fast)"))
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
-    dt_conf_set_bool("ui/performance", FALSE);
-  }
-  else if(mem >= (4lu << 20) && threads >= 2)
-  {
-    // CONFIG 2: at least 4GB RAM, and at least 2 CPU threads
-    fprintf(stderr, "[defaults] setting standard defaults\n");
-
-    dt_conf_set_int("host_memory_limit", MAX(1500, dt_conf_get_int("host_memory_limit")));
-    dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
-    if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
-       || !strcmp(demosaic_quality, "always bilinear (fast)"))
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
-    dt_conf_set_bool("ui/performance", FALSE);
-  }
-  else
-  {
-    // CONFIG 3: for small and slow systems
-    // use very low/conservative settings
-    fprintf(stderr, "[defaults] setting very conservative defaults\n");
-    dt_conf_set_int("host_memory_limit", 500);
-    dt_conf_set_int("singlebuffer_limit", 16);
-    dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
-    dt_conf_set_bool("ui/performance", TRUE);
-  }
-
-  g_free(demosaic_quality);
-
-  char cachedir[PATH_MAX] = { 0 };
-  guint64 freecache = 0;
-  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
-  GFile *gfile = g_file_new_for_path(cachedir);
-  GFileInfo *gfileinfo = g_file_query_filesystem_info(gfile, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, NULL);
-  if(gfileinfo != NULL)
-    freecache = g_file_info_get_attribute_uint64(gfileinfo, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
-  g_object_unref(gfile);
-  g_object_unref(gfileinfo);
-
-  // set cache_memory to half of freediskspace - 4gb (eg 1gb cache_mem in case of 6gb free space)
-  if(freecache > (6lu << 20))
-    dt_conf_set_int64("cache_memory", (freecache - (4lu << 20))/2);
-
-  // enable cache_disk_backend_full when user has over 8gb free diskspace
-  dt_conf_set_bool("cache_disk_backend_full", freecache > (8lu << 20));
-
-  // store the current performance configure version as the last completed
-  // that would prevent further execution of previous performance configuration run
-  // at subsequent startups
-  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
+  const int fraction = darktable.dtresources.fractions[darktable.dtresources.group];
+  return MAX(512lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
 }
 
+size_t dt_get_singlebuffer_mem()
+{
+  const int level = darktable.dtresources.level;
+  const size_t total_mem = darktable.dtresources.total_memory;
+  if(level < 0)
+    return darktable.dtresources.refresource[4*(-level-1) + 1] * 1024lu * 1024lu;
+
+  const int fraction = darktable.dtresources.fractions[darktable.dtresources.group + 1];
+  return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
+}
+
+void dt_configure_runtime_performance(const int old, char *info)
+{
+  const size_t threads = dt_get_num_threads();
+  const size_t mem = darktable.dtresources.total_memory / 1024lu / 1024lu;
+  const size_t bits = CHAR_BIT * sizeof(void *);
+  const gboolean sufficient = mem >= 4096 && threads >= 2;
+
+  dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] found a %s %zu-bit system with %zu Mb ram and %zu cores\n",
+    (sufficient) ? "sufficient" : "low performance", bits, mem, threads);
+
+  // All runtime conf settings only write data if there is no valid data found in conf
+  if(!dt_conf_key_not_empty("ui/performance"))
+  {
+    dt_conf_set_bool("ui/performance", !sufficient);
+    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] ui/performance=%s\n", (sufficient) ? "FALSE" : "TRUE");
+  }
+
+  if(!dt_conf_key_not_empty("resourcelevel"))
+  {
+    dt_conf_set_string("resourcelevel", (sufficient) ? "default" : "small");
+    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] resourcelevel=%s\n", (sufficient) ? "default" : "small");
+  }
+
+  if(!dt_conf_key_not_empty("plugins/darkroom/demosaic/quality"))
+  {
+    dt_conf_set_string("plugins/darkroom/demosaic/quality", (sufficient) ? "at most RCD (reasonable)" : "always bilinear (fast)");
+    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] plugins/darkroom/demosaic/quality=%s",
+      (sufficient) ? "at most RCD (reasonable)" : "always bilinear (fast)");
+  }
+  else if(old == 2)
+  {
+    const gchar *demosaic_quality = dt_conf_get_string_const("plugins/darkroom/demosaic/quality");
+    if(!strcmp(demosaic_quality, "always bilinear (fast)"))
+    {
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
+      dt_print(DT_DEBUG_DEV, "[dt_configure_performance] override: plugins/darkroom/demosaic/quality=at most RCD (reasonable)\n");
+    }
+  }
+
+  if(!dt_conf_key_not_empty("cache_disk_backend_full"))
+  {
+    char cachedir[PATH_MAX] = { 0 };
+    guint64 freecache = 0;
+    dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+    GFile *gfile = g_file_new_for_path(cachedir);
+    GFileInfo *gfileinfo = g_file_query_filesystem_info(gfile, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, NULL);
+    if(gfileinfo != NULL)
+      freecache = g_file_info_get_attribute_uint64(gfileinfo, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
+    g_object_unref(gfile);
+    g_object_unref(gfileinfo);
+    const gboolean largedisk = freecache > (8lu << 20);
+    // enable cache_disk_backend_full when user has over 8gb free diskspace
+    dt_conf_set_bool("cache_disk_backend_full", largedisk);
+    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] cache_disk_backend_full=%s\n", (largedisk) ? "TRUE" : "FALSE");
+  }
+
+  // we might add some info now but only for non-fresh installs
+  if(old == 0) return;
+
+  #define INFO_HEADER "> "
+
+  if(old < 2) // we introduced RCD as the default demosaicer in 2
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("the RCD demosaicer has been defined as default instead of PPG because of better quality and performance."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("see preferences/darkroom/demosaicing for zoomed out darkroom mode"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
+  }
+  if(old < 5)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("the user interface and the underlying internals for tuning darktable performance have changed."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you won't find headroom and friends any longer, instead in preferences/processing use:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("1) darktable resources"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("2) tune OpenCL performance"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
+  }
+
+  #undef INFO_HEADER
+}
 
 int dt_capabilities_check(char *capability)
 {

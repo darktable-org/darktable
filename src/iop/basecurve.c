@@ -396,13 +396,13 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
 void init_presets(dt_iop_module_so_t *self)
 {
   // sql begin
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   set_presets(self, basecurve_presets, basecurve_presets_cnt, FALSE);
   set_presets(self, basecurve_camera_presets, basecurve_camera_presets_cnt, TRUE);
 
   // sql commit
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 }
 
 static float exposure_increment(float stops, int e, float fusion, float bias)
@@ -1425,15 +1425,11 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
-  dt_bauhaus_combobox_set(g->fusion, p->exposure_fusion);
 
   gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
 
   dt_iop_cancel_history_update(self);
-  dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
-  dt_bauhaus_slider_set(g->exposure_bias, p->exposure_bias);
   // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -1955,21 +1951,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
   int ch = 0;
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
-  float multiplier;
-
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-  }
-  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-  }
-  else
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-  }
-
+  float multiplier = dt_accel_get_speed_multiplier(widget, state);
   dx *= multiplier;
   dy *= multiplier;
 
@@ -2118,7 +2100,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
   gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
   gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
-  c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0.5f, 0.0f, 2);
+  c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0, 0.0f, 2);
   dt_bauhaus_widget_set_label(c->logbase, NULL, N_("scale for graph"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 

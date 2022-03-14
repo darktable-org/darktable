@@ -264,7 +264,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_velvia_gui_data_t *g = IOP_GUI_ALLOC(velvia);
 
   g->strength_scale = dt_bauhaus_slider_from_params(self, N_("strength"));
-  dt_bauhaus_slider_set_format(g->strength_scale, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->strength_scale, "%");
   gtk_widget_set_tooltip_text(g->strength_scale, _("the strength of saturation boost"));
 
   g->bias_scale = dt_bauhaus_slider_from_params(self, "bias");

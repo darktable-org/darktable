@@ -357,7 +357,8 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
 
   if(can_delete)
   {
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+    dt_database_start_transaction(darktable.db);
+
     for (const GList *style = style_names; style; style = g_list_next(style))
     {
       dt_styles_delete_by_name_adv((char*)style->data, single_raise);
@@ -368,7 +369,7 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
       // this also calls _gui_styles_update_view
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
     }
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+    dt_database_release_transaction(darktable.db);
   }
   g_list_free_full(style_names, g_free);
 }
@@ -928,12 +929,13 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
+
   GList *all_styles = dt_styles_get_list("");
 
   if(all_styles == NULL)
   {
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "END TRANSACTION", NULL, NULL, NULL);
+    dt_database_release_transaction(darktable.db);
     return;
   }
 
@@ -950,7 +952,7 @@ void gui_reset(dt_lib_module_t *self)
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
   g_list_free_full(all_styles, dt_style_free);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
   _update(self);
 }
 

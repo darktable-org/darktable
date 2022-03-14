@@ -143,7 +143,7 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src
@@ -310,7 +310,7 @@ jobs:
             python3-jsonschema \
             xsltproc \
             zlib1g-dev;
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src
@@ -426,7 +426,7 @@ jobs:
             mingw-w64-x86_64-sqlite3
             mingw-w64-x86_64-zlib
           update: true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src
@@ -490,12 +490,11 @@ jobs:
       SRC_DIR: ${{ github.workspace }}/src
       BUILD_DIR: ${{ github.workspace }}/build
       INSTALL_PREFIX: ${{ github.workspace }}/install
-      CMAKE_PREFIX_PATH: /usr/local/opt/libsoup@2:/usr/local/opt/icu4c
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
           path: src

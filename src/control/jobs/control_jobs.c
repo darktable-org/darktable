@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -284,6 +284,7 @@ typedef struct dt_control_merge_hdr_t
   float whitelevel;
   float epsw;
   dt_aligned_pixel_t wb_coeffs;
+  float adobe_XYZ_to_CAM[4][3];
   char camera_makermodel[128];
 
   // 0 - ok; 1 - errors, abort
@@ -364,8 +365,11 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->wd = datai->width;
     d->ht = datai->height;
     d->orientation = image.orientation;
-    for(int i = 0; i < 3; i++) d->wb_coeffs[i] = image.wb_coeffs[i];
-    g_strlcpy(d->camera_makermodel, image.camera_makermodel,sizeof(d->camera_makermodel));
+    for(int i = 0; i < 3; i++)
+      d->wb_coeffs[i] = image.wb_coeffs[i];
+    for(int k=0; k<4; k++)
+      for(int i=0; i<3; i++)
+        d->adobe_XYZ_to_CAM[k][i] = image.adobe_XYZ_to_CAM[k][i];
   }
 
   if(image.buf_dsc.filters == 0u || image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16)
@@ -540,7 +544,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
                        (const uint8_t (*)[6])d.first_xtrans,
                        1.0f,
                        (const float (*))d.wb_coeffs,
-                       (const char (*))d.camera_makermodel);
+                       d.adobe_XYZ_to_CAM);
   free(exif);
 
   dt_control_job_set_progress(job, 1.0);
@@ -1673,11 +1677,11 @@ void dt_control_move_images()
         _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
         _("_select as destination"), _("_cancel"));
 
-  dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
+  dt_conf_get_folder_to_file_chooser("ui_last/move_path", GTK_FILE_CHOOSER(filechooser));
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_folder_from_file_chooser("ui_last/move_path", GTK_FILE_CHOOSER(filechooser));
   }
   g_object_unref(filechooser);
 
@@ -1735,11 +1739,11 @@ void dt_control_copy_images()
         _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
         _("_select as destination"), _("_cancel"));
 
-  dt_conf_get_folder_to_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
+  dt_conf_get_folder_to_file_chooser("ui_last/copy_path", GTK_FILE_CHOOSER(filechooser));
   if(gtk_native_dialog_run(GTK_NATIVE_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    dt_conf_set_folder_from_file_chooser("ui_last/copymove_path", GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_folder_from_file_chooser("ui_last/copy_path", GTK_FILE_CHOOSER(filechooser));
   }
   g_object_unref(filechooser);
 
@@ -2083,6 +2087,22 @@ static int _control_import_image_copy(const char *filename,
     if(!imgid) dt_control_log(_("error loading file `%s'"), output);
     else
     {
+      GError *error = NULL;
+      GFile *gfile = g_file_new_for_path(filename);
+      GFileInfo *info = g_file_query_info(gfile,
+                                G_FILE_ATTRIBUTE_STANDARD_NAME ","
+                                G_FILE_ATTRIBUTE_TIME_MODIFIED,
+                                G_FILE_QUERY_INFO_NONE, NULL, &error);
+      const char *fn = g_file_info_get_name(info);
+      // FIXME set a routine common with import.c
+      const time_t datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      char dt_txt[DT_DATETIME_LENGTH];
+      dt_metadata_unix_time_to_text(dt_txt, sizeof(dt_txt), &datetime);
+      char *id = g_strconcat(fn, "-", dt_txt, NULL);
+      dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
+      g_free(id);
+      g_object_unref(info);
+      g_object_unref(gfile);
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(imgid));
       if((imgid & 3) == 3)
       {
@@ -2307,7 +2327,7 @@ static dt_job_t *_control_import_job_create(GList *imgs, const char *datetime_ov
     data->session = dt_import_session_new();
     char *jobcode = dt_conf_get_string("ui_last/import_jobcode");
     dt_import_session_set_name(data->session, jobcode);
-    if(datetime_override) dt_import_session_set_time(data->session, datetime_override);
+    if(datetime_override && datetime_override[0]) dt_import_session_set_time(data->session, datetime_override);
     g_free(jobcode);
   }
 

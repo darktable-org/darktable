@@ -108,7 +108,7 @@ const char *description(struct dt_iop_module_t *self)
 
 void init_presets(dt_iop_module_so_t *self)
 {
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
+  dt_database_start_transaction(darktable.db);
 
   // shadows: #ED7212
   // highlights: #ECA413
@@ -146,7 +146,7 @@ void init_presets(dt_iop_module_so_t *self)
       &(dt_iop_splittoning_params_t){ 28.0 / 360.0, 39.0 / 100.0, 28.0 / 360.0, 8.0 / 100.0, 0.60, 0.0 },
       sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  dt_database_release_transaction(darktable.db);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -510,13 +510,13 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *shadows_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   g->shadow_hue_gslider = dt_bauhaus_slider_from_params(self, "shadow_hue");
   dt_bauhaus_slider_set_factor(g->shadow_hue_gslider, 360.0f);
-  dt_bauhaus_slider_set_format(g->shadow_hue_gslider, "%.2f°");
+  dt_bauhaus_slider_set_format(g->shadow_hue_gslider, "°");
   g->shadow_sat_gslider = dt_bauhaus_slider_from_params(self, "shadow_saturation");
 
   GtkWidget *highlights_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   g->highlight_hue_gslider = dt_bauhaus_slider_from_params(self, "highlight_hue");
   dt_bauhaus_slider_set_factor(g->highlight_hue_gslider, 360.0f);
-  dt_bauhaus_slider_set_format(g->highlight_hue_gslider, "%.2f°");
+  dt_bauhaus_slider_set_format(g->highlight_hue_gslider, "°");
   g->highlight_sat_gslider = dt_bauhaus_slider_from_params(self, "highlight_saturation");
   --darktable.bauhaus->skip_accel;
 
@@ -532,17 +532,15 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->balance_scale = dt_bauhaus_slider_from_params(self, N_("balance"));
   dt_bauhaus_slider_set_feedback(g->balance_scale, 0);
-  dt_bauhaus_slider_set_step(g->balance_scale, 0.001);
   dt_bauhaus_slider_set_digits(g->balance_scale, 4);
   dt_bauhaus_slider_set_factor(g->balance_scale, -100.0);
   dt_bauhaus_slider_set_offset(g->balance_scale, +100.0);
-  dt_bauhaus_slider_set_format(g->balance_scale, "%.2f");
   dt_bauhaus_slider_set_stop(g->balance_scale, 0.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_slider_set_stop(g->balance_scale, 1.0f, 0.5f, 0.5f, 0.5f);
   gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of split-toning"));
 
   g->compress_scale = dt_bauhaus_slider_from_params(self, N_("compress"));
-  dt_bauhaus_slider_set_format(g->compress_scale, "%.2f%%");
+  dt_bauhaus_slider_set_format(g->compress_scale, "%");
   gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve mid-tones"));
 }
 
