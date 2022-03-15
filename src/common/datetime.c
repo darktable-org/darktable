@@ -357,6 +357,13 @@ GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt)
   return 0;
 }
 
+GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt)
+{
+  if(gdt)
+    return g_date_time_difference(gdt, darktable.origin_gdt);
+  else
+    return 0;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
