@@ -1852,8 +1852,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
       if(number1 && number1[strlen(number1) - 1] == '%')
         number1[strlen(number1) - 1] = '\0';
-      GTimeSpan nb1 = number1 ? dt_datetime_sdatetime_to_gtimespan(number1) : 0;
-      GTimeSpan nb2 = number2 ? dt_datetime_sdatetime_to_gtimespan(number2) : 0;
+      GTimeSpan nb1 = number1 ? dt_datetime_exif_to_gtimespan(number1) : 0;
+      GTimeSpan nb2 = number2 ? dt_datetime_exif_to_gtimespan(number2) : 0;
 
       if(strcmp(operator, "[]") == 0)
       {
