@@ -48,8 +48,6 @@
 
 DT_MODULE(1)
 
-#define MAX_RULES 10
-
 #define PARAM_STRING_SIZE 256 // FIXME: is this enough !?
 
 typedef struct _widgets_sort_t
@@ -92,13 +90,13 @@ typedef struct dt_lib_filtering_rule_t
 
 typedef struct dt_lib_filtering_t
 {
-  dt_lib_filtering_rule_t rule[MAX_RULES];
+  dt_lib_filtering_rule_t rule[DT_COLLECTION_MAX_RULES];
   int nb_rules;
 
   GtkWidget *rules_box;
   GtkWidget *rules_sw;
 
-  _widgets_sort_t sort[MAX_RULES];
+  _widgets_sort_t sort[DT_COLLECTION_MAX_RULES];
   int nb_sort;
   _widgets_sort_t sorttop;
   GtkWidget *sort_box;
@@ -121,7 +119,7 @@ typedef struct dt_lib_filtering_params_rule_t
 typedef struct dt_lib_filtering_params_t
 {
   uint32_t rules;
-  dt_lib_filtering_params_rule_t rule[MAX_RULES];
+  dt_lib_filtering_params_rule_t rule[DT_COLLECTION_MAX_RULES];
 } dt_lib_filtering_params_t;
 
 typedef struct _widgets_range_t
@@ -242,7 +240,7 @@ static void _filters_update_params(dt_lib_filtering_t *d)
 
   /* for each active rule set update params */
   const int _a = dt_conf_get_int("plugins/lighttable/filtering/num_rules") - 1;
-  const int active = CLAMP(_a, 0, (MAX_RULES - 1));
+  const int active = CLAMP(_a, 0, (DT_COLLECTION_MAX_RULES - 1));
   char confname[200] = { 0 };
   for(int i = 0; i <= active; i++)
   {
@@ -640,9 +638,9 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
   if(mode >= 0)
   {
     // add an empty rule
-    if(d->nb_rules >= MAX_RULES)
+    if(d->nb_rules >= DT_COLLECTION_MAX_RULES)
     {
-      dt_control_log("You can't have more than %d rules", MAX_RULES);
+      dt_control_log("You can't have more than %d rules", DT_COLLECTION_MAX_RULES);
       return;
     }
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", d->nb_rules);
@@ -863,7 +861,7 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
     dt_conf_set_int("plugins/lighttable/filtering/num_rules", d->nb_rules);
 
     // move up all still active rules by one.
-    for(int i = rule->num; i < MAX_RULES - 1; i++)
+    for(int i = rule->num; i < DT_COLLECTION_MAX_RULES - 1; i++)
     {
       char confname[200] = { 0 };
       snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i + 1);
@@ -1054,7 +1052,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
 
   ++darktable.gui->reset;
-  d->nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, MAX_RULES);
+  d->nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
   char confname[200] = { 0 };
 
   // create or update defined rules
@@ -1086,7 +1084,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
   }
 
   // remove all remaining rules
-  for(int i = d->nb_rules; i < MAX_RULES; i++)
+  for(int i = d->nb_rules; i < DT_COLLECTION_MAX_RULES; i++)
   {
     d->rule[i].prop = 0;
     if(d->rule[i].w_main)
@@ -1279,10 +1277,24 @@ static gboolean _event_history_show(GtkWidget *widget, GdkEventButton *event, dt
 // save a sort rule inside the conf
 static void _conf_update_sort(_widgets_sort_t *sort)
 {
-  const gboolean order = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
+  const gboolean order = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
   const int sortid = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(sort->sort));
 
   char confname[200] = { 0 };
+  // if it's the last sort order, remember previous value for last order
+  if(sort->num == sort->lib->nb_sort - 1)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", sort->num);
+    const dt_collection_sort_t lastsort = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", sort->num);
+    const int lastsortorder = dt_conf_get_int(confname);
+    if(lastsort != sortid)
+    {
+      dt_conf_set_int("plugins/lighttable/filtering/lastsort", lastsort);
+      dt_conf_set_int("plugins/lighttable/filtering/lastsortorder", lastsortorder);
+    }
+  }
+
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", sort->num);
   dt_conf_set_int(confname, sortid);
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", sort->num);
@@ -1295,7 +1307,7 @@ static void _sort_set_tag_order(_widgets_sort_t *sort)
   if(darktable.collection->tagid)
   {
     const uint32_t sortid = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(sort->sort));
-    const gboolean descending = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
+    const gboolean descending = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
     dt_tag_set_tag_order_by_id(darktable.collection->tagid, sortid, descending);
   }
 }
@@ -1392,6 +1404,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
                            const int num, dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  d->manual_sort_set++;
   sort->num = num;
   sort->lib = d;
   sort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -1424,13 +1437,15 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
 
 #undef ADD_SORT_ENTRY
 
+  dt_bauhaus_combobox_set_from_value(sort->sort, sortid);
   gtk_box_pack_start(GTK_BOX(sort->box), sort->sort, TRUE, TRUE, 0);
 
   /* reverse order checkbutton */
   sort->direction = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
-  if(sortorder)
+  if(!sortorder)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(sort->direction), dtgtk_cairo_paint_sortby, CPF_DIRECTION_DOWN,
                                  NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sort->direction), !sortorder);
   gtk_widget_set_halign(sort->direction, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(sort->box), sort->direction, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
@@ -1439,6 +1454,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
 
   gtk_widget_show_all(sort->box);
 
+  d->manual_sort_set--;
   return TRUE;
 }
 
@@ -1447,7 +1463,7 @@ static void _sort_gui_update(dt_lib_module_t *self)
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
 
   ++darktable.gui->reset;
-  d->nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, MAX_RULES);
+  d->nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, DT_COLLECTION_MAX_RULES);
   char confname[200] = { 0 };
 
   // handle the case where no sort item is already defined
@@ -1493,7 +1509,7 @@ static void _sort_gui_update(dt_lib_module_t *self)
   }
 
   // remove all remaining rules
-  for(int i = d->nb_sort; i < MAX_RULES; i++)
+  for(int i = d->nb_sort; i < DT_COLLECTION_MAX_RULES; i++)
   {
     d->sort[i].sortid = 0;
     if(d->sort[i].box)
@@ -1517,7 +1533,7 @@ void gui_init(dt_lib_module_t *self)
   d->nb_rules = 0;
   d->params = (dt_lib_filtering_params_t *)g_malloc0(sizeof(dt_lib_filtering_params_t));
 
-  for(int i = 0; i < MAX_RULES; i++)
+  for(int i = 0; i < DT_COLLECTION_MAX_RULES; i++)
   {
     d->rule[i].num = i;
     d->rule[i].lib = d;
@@ -1591,8 +1607,6 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   // we do it here because we are sure that both libs are loaded at this point
   _topbar_update(self);
 }
-
-#undef MAX_RULES
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
