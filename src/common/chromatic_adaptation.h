@@ -385,3 +385,108 @@ static inline void XYZ_D65_to_D50(const dt_aligned_pixel_t XYZ_in, dt_aligned_pi
 {
   dot_product(XYZ_in, XYZ_D65_to_D50_CAT16, XYZ_out);
 }
+
+/* Helper function to directly chroma-adapt a pixel in CIE XYZ 1931 2° */
+
+static inline void chroma_adapt_pixel(const dt_aligned_pixel_t in, dt_aligned_pixel_t out,
+                                      const dt_aligned_pixel_t illuminant, const dt_adaptation_t adaptation, const float p)
+{
+
+  // intermediate temp buffers
+  dt_aligned_pixel_t temp_one;
+  dt_aligned_pixel_t temp_two;
+
+  /* WE START IN XYZ */
+  const float Y = in[1];
+
+  switch(adaptation)
+  {
+    case DT_ADAPTATION_FULL_BRADFORD:
+    {
+      convert_XYZ_to_bradford_LMS(in, temp_two);
+      downscale_vector(temp_two, Y);
+      bradford_adapt_D50(temp_two, illuminant, p, TRUE, temp_one);
+      upscale_vector(temp_one, Y);
+      convert_bradford_LMS_to_XYZ(temp_one, out);
+      break;
+    }
+    case DT_ADAPTATION_LINEAR_BRADFORD:
+    {
+      convert_XYZ_to_bradford_LMS(in, temp_two);
+      downscale_vector(temp_two, Y);
+      bradford_adapt_D50(temp_two, illuminant, p, FALSE, temp_one);
+      upscale_vector(temp_one, Y);
+      convert_bradford_LMS_to_XYZ(temp_one, out);
+      break;
+    }
+    case DT_ADAPTATION_CAT16:
+    {
+      convert_XYZ_to_CAT16_LMS(in, temp_two);
+      downscale_vector(temp_two, Y);
+      CAT16_adapt_D50(temp_two, illuminant, 1.0f, TRUE, temp_one); // force full-adaptation
+      upscale_vector(temp_one, Y);
+      convert_CAT16_LMS_to_XYZ(temp_one, out);
+      break;
+    }
+    case DT_ADAPTATION_XYZ:
+    {
+      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_one[c] = in[c];
+      downscale_vector(temp_one, Y);
+      XYZ_adapt_D50(temp_one, illuminant, temp_two);
+      upscale_vector(temp_two, Y);
+      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) out[c] = temp_two[c];
+      break;
+    }
+    case DT_ADAPTATION_RGB:
+    case DT_ADAPTATION_LAST:
+    default:
+    {
+      // No white balance.
+      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) out[c] = in[c];
+      break;
+    }
+  }
+}
+
+/* Helper to get the D50 white point coordinates in LMS spaces */
+static inline void convert_D50_to_LMS(const dt_adaptation_t adaptation, dt_aligned_pixel_t D50)
+{
+  switch(adaptation)
+  {
+    case DT_ADAPTATION_FULL_BRADFORD:
+    case DT_ADAPTATION_LINEAR_BRADFORD:
+    {
+      D50[0] = 0.996078f;
+      D50[1] = 1.020646f;
+      D50[2] = 0.818155f;
+      D50[3] = 0.f;
+      break;
+    }
+    case DT_ADAPTATION_CAT16:
+    {
+      D50[0] = 0.994535f;
+      D50[1] = 1.000997f;
+      D50[2] = 0.833036f;
+      D50[3] = 0.f;
+      break;
+    }
+    case DT_ADAPTATION_XYZ:
+    {
+      D50[0] = 0.9642119944211994f;
+      D50[1] = 1.0f;
+      D50[2] = 0.8251882845188288f;
+      D50[3] = 0.f;
+      break;
+    }
+    case DT_ADAPTATION_RGB:
+    case DT_ADAPTATION_LAST:
+    default:
+    {
+      D50[0] = 1.f;
+      D50[1] = 1.f;
+      D50[2] = 1.f;
+      D50[3] = 0.f;
+      break;
+    }
+  }
+}

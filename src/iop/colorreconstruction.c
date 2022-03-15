@@ -1239,12 +1239,6 @@ void gui_update(struct dt_iop_module_t *self)
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), !monochrome ? "default" : "monochrome");
 
-  dt_bauhaus_slider_set(g->threshold, p->threshold);
-  dt_bauhaus_slider_set(g->spatial, p->spatial);
-  dt_bauhaus_slider_set(g->range, p->range);
-  dt_bauhaus_combobox_set(g->precedence, p->precedence);
-  dt_bauhaus_slider_set(g->hue, p->hue);
-
   gtk_widget_set_visible(g->hue, p->precedence == COLORRECONSTRUCT_PRECEDENCE_HUE);
 
   dt_iop_gui_enter_critical_section(self);
@@ -1288,14 +1282,12 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box_enabled = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
-  dt_bauhaus_slider_set_step(g->threshold, 0.1f);
   g->spatial = dt_bauhaus_slider_from_params(self, N_("spatial"));
   g->range = dt_bauhaus_slider_from_params(self, N_("range"));
-  dt_bauhaus_slider_set_step(g->range, 0.1f);
   g->precedence = dt_bauhaus_combobox_from_params(self, N_("precedence"));
   g->hue = dt_bauhaus_slider_from_params(self, N_("hue"));
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);
-  dt_bauhaus_slider_set_format(g->hue, "%.2f°");
+  dt_bauhaus_slider_set_format(g->hue, "°");
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_stop(g->hue, 0.0f,   1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);

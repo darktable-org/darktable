@@ -847,7 +847,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(lowlight_scrolled), self);
 
   c->scale_blueness = dt_bauhaus_slider_from_params(self, "blueness");
-  dt_bauhaus_slider_set_format(c->scale_blueness, "%0.2f%%");
+  dt_bauhaus_slider_set_format(c->scale_blueness, "%");
   gtk_widget_set_tooltip_text(c->scale_blueness, _("blueness in shadows"));
 }
 

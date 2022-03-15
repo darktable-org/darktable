@@ -968,17 +968,8 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p = (dt_iop_vignette_params_t *)self->params;
-  dt_bauhaus_slider_set(g->scale, p->scale);
-  dt_bauhaus_slider_set(g->falloff_scale, p->falloff_scale);
-  dt_bauhaus_slider_set(g->brightness, p->brightness);
-  dt_bauhaus_slider_set(g->saturation, p->saturation);
-  dt_bauhaus_slider_set(g->center_x, p->center.x);
-  dt_bauhaus_slider_set(g->center_y, p->center.y);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoratio), p->autoratio);
-  dt_bauhaus_slider_set(g->whratio, p->whratio);
-  dt_bauhaus_slider_set(g->shape, p->shape);
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
-  dt_bauhaus_combobox_set(g->dithering, p->dithering);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -989,6 +980,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->falloff_scale = dt_bauhaus_slider_from_params(self, "falloff_scale");
   g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_section_label_new(_("position / form")), FALSE, FALSE, 0);
+
   g->center_x = dt_bauhaus_slider_from_params(self, "center.x");
   g->center_y = dt_bauhaus_slider_from_params(self, "center.y");
   g->shape = dt_bauhaus_slider_from_params(self, N_("shape"));
@@ -1002,8 +997,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->center_y, 3);
   dt_bauhaus_slider_set_digits(g->whratio, 3);
 
-  dt_bauhaus_slider_set_format(g->scale, "%.02f%%");
-  dt_bauhaus_slider_set_format(g->falloff_scale, "%.02f%%");
+  dt_bauhaus_slider_set_format(g->scale, "%");
+  dt_bauhaus_slider_set_format(g->falloff_scale, "%");
 
   gtk_widget_set_tooltip_text(g->scale, _("the radii scale of vignette for start of fall-off"));
   gtk_widget_set_tooltip_text(g->falloff_scale, _("the radii scale of vignette for end of fall-off"));

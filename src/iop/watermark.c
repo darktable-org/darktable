@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -378,27 +378,11 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
 static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data_t *data,
                                     const dt_image_t *image, const gchar *filename)
 {
-  char datetime[200];
-
-  // EXIF datetime
-  struct tm tt_exif = { 0 };
-  dt_datetime_img_to_tm_lt(&tt_exif, image);
-
-  // Current datetime
-  struct tm tt_cur = { 0 };
-  time_t t = time(NULL);
-  (void)localtime_r(&t, &tt_cur);
-
   gchar *svgdata = NULL;
   gsize length = 0;
   if(g_file_get_contents(filename, &svgdata, &length, NULL))
   {
     // File is loaded lets substitute strings if found...
-
-    // Darktable internal
-    svgdata = _string_substitute(svgdata, "$(DARKTABLE.NAME)", PACKAGE_NAME);
-    svgdata = _string_substitute(svgdata, "$(DARKTABLE.VERSION)", darktable_package_version);
-
     // Simple text from watermark module
     gchar buffer[1024];
 
@@ -440,160 +424,14 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
     svgdata = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
 
-    // Current image ID
-    g_snprintf(buffer, sizeof(buffer), "%d", image->id);
-    svgdata = _string_substitute(svgdata, "$(IMAGE.ID)", buffer);
-
-    // Current image
-    dt_image_print_exif(image, buffer, sizeof(buffer));
-    svgdata = _string_substitute(svgdata, "$(IMAGE.EXIF)", buffer);
-
-    // Image exif
-    // EXIF date
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE)", datetime);
-    // $(EXIF.DATE.SECOND) -- 00..60
-    strftime(datetime, sizeof(datetime), "%S", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SECOND)", datetime);
-    // $(EXIF.DATE.MINUTE) -- 00..59
-    strftime(datetime, sizeof(datetime), "%M", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.MINUTE)", datetime);
-    // $(EXIF.DATE.HOUR) -- 00..23
-    strftime(datetime, sizeof(datetime), "%H", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.HOUR)", datetime);
-    // $(EXIF.DATE.HOUR_AMPM) -- 01..12
-    strftime(datetime, sizeof(datetime), "%I %p", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.HOUR_AMPM)", datetime);
-    // $(EXIF.DATE.DAY) -- 01..31
-    strftime(datetime, sizeof(datetime), "%d", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.DAY)", datetime);
-    // $(EXIF.DATE.MONTH) -- 01..12
-    strftime(datetime, sizeof(datetime), "%m", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.MONTH)", datetime);
-    // $(EXIF.DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
-    strftime(datetime, sizeof(datetime), "%b", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_MONTH)", datetime);
-    // $(EXIF.DATE.LONG_MONTH) -- January, February, .., December, localized
-    strftime(datetime, sizeof(datetime), "%B", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.LONG_MONTH)", datetime);
-    // $(EXIF.DATE.SHORT_YEAR) -- 12
-    strftime(datetime, sizeof(datetime), "%y", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_YEAR)", datetime);
-    // $(EXIF.DATE.LONG_YEAR) -- 2012
-    strftime(datetime, sizeof(datetime), "%Y", &tt_exif);
-    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.LONG_YEAR)", datetime);
-
-    // Current date
-    // $(DATE) -- YYYY:
-    dt_datetime_unix_lt_to_exif(datetime, sizeof(datetime), &t);
-    svgdata = _string_substitute(svgdata, "$(DATE)", datetime);
-    // $(DATE.SECOND) -- 00..60
-    strftime(datetime, sizeof(datetime), "%S", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.SECOND)", datetime);
-    // $(DATE.MINUTE) -- 00..59
-    strftime(datetime, sizeof(datetime), "%M", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.MINUTE)", datetime);
-    // $(DATE.HOUR) -- 00..23
-    strftime(datetime, sizeof(datetime), "%H", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.HOUR)", datetime);
-    // $(DATE.HOUR_AMPM) -- 01..12
-    strftime(datetime, sizeof(datetime), "%I %p", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.HOUR_AMPM)", datetime);
-    // $(DATE.DAY) -- 01..31
-    strftime(datetime, sizeof(datetime), "%d", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.DAY)", datetime);
-    // $(DATE.MONTH) -- 01..12
-    strftime(datetime, sizeof(datetime), "%m", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.MONTH)", datetime);
-    // $(DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
-    strftime(datetime, sizeof(datetime), "%b", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_MONTH)", datetime);
-    // $(DATE.LONG_MONTH) -- January, February, .., December, localized
-    strftime(datetime, sizeof(datetime), "%B", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.LONG_MONTH)", datetime);
-    // $(DATE.SHORT_YEAR) -- 12
-    strftime(datetime, sizeof(datetime), "%y", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_YEAR)", datetime);
-    // $(DATE.LONG_YEAR) -- 2012
-    strftime(datetime, sizeof(datetime), "%Y", &tt_cur);
-    svgdata = _string_substitute(svgdata, "$(DATE.LONG_YEAR)", datetime);
-    svgdata = _string_substitute(svgdata, "$(EXIF.MAKER)", image->camera_maker);
-    svgdata = _string_substitute(svgdata, "$(EXIF.MODEL)", image->camera_model);
-    svgdata = _string_substitute(svgdata, "$(EXIF.LENS)", image->exif_lens);
-    svgdata = _string_substitute(svgdata, "$(IMAGE.FILENAME)", image->filename);
-
-    gchar *basename = g_path_get_basename(image->filename);
-    if(g_strrstr(basename, ".")) *(g_strrstr(basename, ".")) = '\0';
-    svgdata = _string_substitute(svgdata, "$(IMAGE.BASENAME)", basename);
-    g_free(basename);
-
-    // TODO: auto generate that code?
-    GList *res;
-    res = dt_metadata_get(image->id, "Xmp.dc.creator", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.creator)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_metadata_get(image->id, "Xmp.dc.publisher", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.publisher)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_metadata_get(image->id, "Xmp.dc.title", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.title)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_metadata_get(image->id, "Xmp.dc.description", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.description)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_metadata_get(image->id, "Xmp.dc.rights", NULL);
-    svgdata = _string_substitute(svgdata, "$(Xmp.dc.rights)", (res ? res->data : ""));
-    g_list_free_full(res, &g_free);
-
-    res = dt_tag_get_list(image->id);
-    gchar *keywords = dt_util_glist_to_str(", ", res);
-    svgdata = _string_substitute(svgdata, "$(IMAGE.TAGS)", (keywords ? keywords : ""));
-    g_free(keywords);
-    g_list_free_full(res, &g_free);
-
-    const int stars = image->flags & 0x7;
-    const char *const rating_str[] = { "☆☆☆☆☆", "★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★", "❌", "" };
-    svgdata = _string_substitute(svgdata, "$(Xmp.xmp.Rating)", rating_str[stars]);
-
-    // geolocation
-    gchar *latitude = NULL, *longitude = NULL, *elevation = NULL;
-    if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
-    {
-      latitude = dt_util_latitude_str(image->geoloc.latitude);
-      longitude = dt_util_longitude_str(image->geoloc.longitude);
-      elevation = dt_util_elevation_str(image->geoloc.elevation);
-    }
-    else
-    {
-      const gchar NS = image->geoloc.latitude < 0 ? 'S' : 'N';
-      const gchar EW = image->geoloc.longitude < 0 ? 'W' : 'E';
-      if(image->geoloc.latitude) latitude = g_strdup_printf("%c %09.6f", NS, fabs(image->geoloc.latitude));
-      if(image->geoloc.longitude) longitude = g_strdup_printf("%c %010.6f", EW, fabs(image->geoloc.longitude));
-      if(image->geoloc.elevation) elevation = g_strdup_printf("%.2f %s", image->geoloc.elevation, _("m"));
-    }
-    gchar *parts[4] = { 0 };
-    int i = 0;
-    if(latitude) parts[i++] = latitude;
-    if(longitude) parts[i++] = longitude;
-    if(elevation) parts[i++] = elevation;
-    gchar *location = g_strjoinv(", ", parts);
-    svgdata = _string_substitute(svgdata, "$(GPS.LATITUDE)", (latitude ? latitude : "-"));
-    svgdata = _string_substitute(svgdata, "$(GPS.LONGITUDE)", (longitude ? longitude : "-"));
-    svgdata = _string_substitute(svgdata, "$(GPS.ELEVATION)", (elevation ? elevation : "-"));
-    svgdata = _string_substitute(svgdata, "$(GPS.LOCATION)", location);
-    g_free(latitude);
-    g_free(longitude);
-    g_free(elevation);
-    g_free(location);
-
     // standard calculation on the remaining variables
     const int32_t flags = dt_lib_export_metadata_get_conf_flags();
     dt_variables_params_t *params;
     dt_variables_params_init(&params);
-    params->filename = image->filename;
+    gboolean from_cache = FALSE;
+    char image_path[PATH_MAX] = { 0 };
+    dt_image_full_path(image->id, image_path, sizeof(image_path), &from_cache);
+    params->filename = image_path;
     params->jobcode = "infos";
     params->sequence = 0;
     params->imgid = image->id;
@@ -1183,18 +1021,12 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  dt_bauhaus_slider_set(g->opacity, p->opacity);
-  dt_bauhaus_slider_set_soft(g->scale, p->scale);
-  dt_bauhaus_slider_set(g->rotate, p->rotate);
-  dt_bauhaus_slider_set(g->x_offset, p->xoffset);
-  dt_bauhaus_slider_set(g->y_offset, p->yoffset);
   for(int i = 0; i < 9; i++)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[i]), FALSE);
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->align[p->alignment]), TRUE);
   _combo_box_set_active_text(g, p->filename);
-  dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
@@ -1218,11 +1050,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  GtkWidget *label = dt_ui_section_label_new(_("content"));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
-  gtk_style_context_add_class(context, "section_label_top");
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_row_spacing(grid, DT_BAUHAUS_SPACE);
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
@@ -1234,7 +1061,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
+  GtkWidget *label = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(p->filename));
   g->watermarks = dt_bauhaus_combobox_new(self);
   gtk_widget_set_hexpand(GTK_WIDGET(g->watermarks), TRUE);
   char *tooltip = g_strdup_printf(_("SVG watermarks in %s/watermarks or %s/watermarks"), configdir, datadir);
@@ -1245,24 +1072,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->watermarks, label, GTK_POS_RIGHT, 1, 1);
   gtk_grid_attach_next_to(grid, g->refresh, g->watermarks, GTK_POS_RIGHT, 1, 1);
-
-  // Watermark color
-  float red = dt_conf_get_float("plugins/darkroom/watermark/color_red");
-  float green = dt_conf_get_float("plugins/darkroom/watermark/color_green");
-  float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
-  GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
-
-  label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
-  g->colorpick = gtk_color_button_new_with_rgba(&color);
-  gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
-  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
-  g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
-
-  gtk_grid_attach(grid, label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);
-  gtk_grid_attach_next_to(grid, g->color_picker_button, g->colorpick, GTK_POS_RIGHT, 1, 1);
 
   // Simple text
   label = dt_ui_label_new(_("text"));
@@ -1288,24 +1097,44 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->fontsel, label, GTK_POS_RIGHT, 2, 1);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
+  // Watermark color
+  float red = dt_conf_get_float("plugins/darkroom/watermark/color_red");
+  float green = dt_conf_get_float("plugins/darkroom/watermark/color_green");
+  float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
+  GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), TRUE, TRUE, 0);
+  label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
+  g->colorpick = gtk_color_button_new_with_rgba(&color);
+  gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
+  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
+  g->color_picker_button = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, NULL);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
+
+  gtk_grid_attach(grid, label, 0, line++, 1, 1);
+  gtk_grid_attach_next_to(grid, g->colorpick, label, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(grid, g->color_picker_button, g->colorpick, GTK_POS_RIGHT, 1, 1);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
   g->opacity = dt_bauhaus_slider_from_params(self, N_("opacity"));
-  dt_bauhaus_slider_set_format(g->opacity, "%.f%%");
+  dt_bauhaus_slider_set_format(g->opacity, "%");
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("placement")), TRUE, TRUE, 0);
+
+  // rotate
+  g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
+  dt_bauhaus_slider_set_format(g->rotate, "°");
+
+  // scale
   g->scale = dt_bauhaus_slider_from_params(self, N_("scale"));
   dt_bauhaus_slider_set_soft_max(g->scale, 100.0);
-  dt_bauhaus_slider_set_format(g->scale, "%.f%%");
-  g->rotate = dt_bauhaus_slider_from_params(self, "rotate");
-  dt_bauhaus_slider_set_format(g->rotate, "%.02f°");
+  dt_bauhaus_slider_set_format(g->scale, "%");
 
+  // scale-on
   g->sizeto = dt_bauhaus_combobox_from_params(self, "sizeto");
-//  dt_bauhaus_combobox_add(g->sizeto, C_("size", "image"));
   gtk_widget_set_tooltip_text(g->sizeto, _("size is relative to"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("position")), TRUE, TRUE, 0);
 
   // Create the 3x3 gtk table toggle button table...
   GtkWidget *bat = gtk_grid_new();

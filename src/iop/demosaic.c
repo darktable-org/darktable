@@ -5725,15 +5725,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 
   gui_changed(self, NULL, NULL);
-
-  dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
-  dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
-  dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
-  dt_bauhaus_combobox_set(g->lmmse_refine, p->lmmse_refine);
-  dt_bauhaus_slider_set(g->dual_thrs, p->dual_thrs);
 
   g->show_mask = FALSE;
   dt_bauhaus_widget_set_quad_active(g->dual_mask, g->show_mask);
@@ -5783,12 +5776,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("xtrans sensor demosaicing method, Markesteijn 3-pass and frequency domain chroma are slow.\ndual demosaicers double processing time."));
 
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
-  dt_bauhaus_slider_set_step(g->median_thrs, 0.001);
   dt_bauhaus_slider_set_digits(g->median_thrs, 3);
   gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off\n"
                                                 "set to 1.0 to ignore edges"));
   g->dual_thrs = dt_bauhaus_slider_from_params(self, "dual_thrs");
-  dt_bauhaus_slider_set_step(g->dual_thrs, 0.01);
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
   gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content\n"
                                                 "set to 1.0 for flat content"));

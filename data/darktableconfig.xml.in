@@ -74,6 +74,13 @@
     <shortdescription>widget scale</shortdescription>
     <longdescription>scaling factor for bauhaus widgets, will affect font size</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>bauhaus/zoom_step</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>scale slider step with min/max</shortdescription>
+    <longdescription>vary bauhaus slider step size with min/max range</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>database</name>
     <type>string</type>
@@ -183,13 +190,11 @@
         <option>default</option>
         <option>large</option>
         <option>unrestricted</option>
-        <option>mini (debug)</option>
-        <option>reference (debug)</option>
       </enum>
     </type>
     <default>default</default>
     <shortdescription>darktable resources</shortdescription>
-    <longdescription>defines how much darktable may take from your system resources. lower the setting if you are using simultaneously applications taking large parts of your systems memory or opencl/gl applications like games or hugin. increase if you are using darktable alone on your machine.\n - default: takes ~50%% of your systems resources and gives darktable enough to be still performant.\n\nthere are some special modes:\n\n - mini: darktable takes 0.5 GB ram and 0.25GB video ram\n - reference: - darktable takes 8GB ram and 2GB video ram\n - unrestricted: darktable will take almost all of your systems resources and might lead to swapping and unexpected performance drops. use with caution!</longdescription>
+    <longdescription>defines how much darktable may take from your system resources.\n - default: darktable takes ~50%% of your systems resources and gives darktable enough to be still performant.\n - small: should be used if you are simultaneously running applications taking large parts of your systems memory or opencl/gl applications like games or hugin.\n - large: is the best option if you are mainly using darktable and want it to take most of your systems resources for performance.\n - unrestricted: should only be used for developing extremely large images as darktable will take all of your systems resources and thus might lead to swapping and unexpected performance drops. use with caution and not recommended for general use!</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu">
     <name>ui/performance</name>
@@ -368,6 +373,13 @@
     <shortdescription>OpenCL scheduling profile</shortdescription>
     <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelpipes sequentially on the GPU.</longdescription>
   </dtconfig>
+  <dtconfig prefs="processing" section="cpugpu" capability="opencl">
+    <name>tuneopencl</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>tune OpenCL performance</shortdescription>
+    <longdescription>if switched on, darktable tunes OpenCL for best performance, overrides static settings</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>opencl_synch_cache</name>
     <type>
@@ -504,6 +516,20 @@
     <name>plugins/collection/filter_flags</name>
     <type>int</type>
     <default>3</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/collection/colors_filter</name>
+    <type>string</type>
+    <default>80000000</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/collection/text_filter</name>
+    <type>string</type>
+    <default/>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -3164,6 +3190,30 @@
     <default>false</default>
     <shortdescription>allow editing raw cropping boundaries</shortdescription>
     <longdescription>this is mainly useful for debugging and to add new camera support.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/modules/exposure/lightness</name>
+    <type>float</type>
+    <default>50.0</default>
+    <shortdescription>lightness spot in exposure compensation</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/modules/channelmixerrgb/colorchecker</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>current colorchecker model used</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/modules/channelmixerrgb/optimization</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>current colorchecker optimization mode</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/modules/channelmixerrgb/safety</name>
+    <type>float</type>
+    <default>0.5</default>
+    <shortdescription>patch scale, safety margin</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/modulegroups_preset</name>

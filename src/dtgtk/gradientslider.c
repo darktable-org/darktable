@@ -25,6 +25,7 @@
 #include "develop/develop.h"
 #include "gradientslider.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 
 #define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX 50
 #define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN 10
@@ -228,22 +229,7 @@ static gboolean _gradient_slider_add_delta_internal(GtkWidget *widget, gdouble d
 
   if(selected == -1) return TRUE;
 
-  float multiplier;
-
-  if(dt_modifier_is(state, GDK_SHIFT_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_rough_step_multiplier");
-  }
-  else if(dt_modifier_is(state, GDK_CONTROL_MASK))
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_precise_step_multiplier");
-  }
-  else
-  {
-    multiplier = dt_conf_get_float("darkroom/ui/scale_step_multiplier");
-  }
-
-  delta *= multiplier;
+  delta *= dt_accel_get_speed_multiplier(widget, state);
 
   gslider->position[selected] = gslider->position[selected] + delta;
   _clamp_marker(gslider, selected);
@@ -429,26 +415,26 @@ static gboolean _gradient_slider_key_press_event(GtkWidget *widget, GdkEventKey 
 
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
 
+  int handled = FALSE;
+  float delta = -gslider->increment;
+  switch(event->keyval)
+  {
+    case GDK_KEY_Up:
+    case GDK_KEY_KP_Up:
+    case GDK_KEY_Right:
+    case GDK_KEY_KP_Right:
+      delta = gslider->increment;
+    case GDK_KEY_Down:
+    case GDK_KEY_KP_Down:
+    case GDK_KEY_Left:
+    case GDK_KEY_KP_Left:
+      handled = TRUE;
+  }
+
+  if(!handled) return FALSE;
+
   const gint selected = _get_active_marker(gslider);
   if(selected == -1) return TRUE;
-
-  int handled = 0;
-  float delta = 0.0f;
-
-  if(event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_KP_Up || event->keyval == GDK_KEY_Right
-     || event->keyval == GDK_KEY_KP_Right)
-  {
-    handled = 1;
-    delta = gslider->increment;
-  }
-  else if(event->keyval == GDK_KEY_Down || event->keyval == GDK_KEY_KP_Down || event->keyval == GDK_KEY_Left
-          || event->keyval == GDK_KEY_KP_Left)
-  {
-    handled = 1;
-    delta = -gslider->increment;
-  }
-
-  if(!handled) return TRUE;
 
   return _gradient_slider_add_delta_internal(widget, delta, event->state, selected);
 }

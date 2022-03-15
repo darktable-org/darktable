@@ -78,8 +78,6 @@ typedef struct dt_iop_gui_simple_callback_t
   int index;
 } dt_iop_gui_simple_callback_t;
 
-static void _iop_panel_label(dt_iop_module_t *module);
-
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   memcpy(module->params, module->default_params, module->params_size);
@@ -1084,7 +1082,7 @@ static void _iop_panel_label(dt_iop_module_t *module)
   g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
 }
 
-static void _iop_gui_update_header(dt_iop_module_t *module)
+void dt_iop_gui_update_header(dt_iop_module_t *module)
 {
   if (!module->header)                  /* some modules such as overexposed don't actually have a header */
     return;
@@ -1131,11 +1129,6 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
   }
 }
 
-void dt_iop_gui_update_header(dt_iop_module_t *module)
-{
-  _iop_gui_update_header(module);
-}
-
 void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
                                        const char* const trouble_msg,
                                        const char* const trouble_tooltip,
@@ -1151,12 +1144,6 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
   if(!dt_iop_is_hidden(module) && module->gui_data && dt_conf_get_bool("plugins/darkroom/show_warnings"))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
                                   module, trouble_msg, trouble_tooltip);
-}
-
-static void _iop_gui_update_label(dt_iop_module_t *module)
-{
-  if(!module->header) return;
-  _iop_panel_label(module);
 }
 
 void dt_iop_gui_init(dt_iop_module_t *module)
@@ -1189,7 +1176,7 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
   dt_iop_load_default_params(module);
   if(darktable.gui) --darktable.gui->reset;
 
-  if(module->header) _iop_gui_update_header(module);
+  if(module->header) dt_iop_gui_update_header(module);
 }
 
 void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
@@ -1795,6 +1782,8 @@ void dt_iop_gui_update(dt_iop_module_t *module)
   {
     if(module->gui_data)
     {
+      dt_bauhaus_update_module(module);
+
       if(module->params && module->gui_update)
       {
         if(module->widget && dt_conf_get_bool("plugins/darkroom/show_warnings"))
@@ -1808,8 +1797,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       dt_iop_gui_update_blending(module);
       dt_iop_gui_update_expanded(module);
     }
-    _iop_gui_update_label(module);
-    dt_iop_gui_set_enable_button(module);
+    dt_iop_gui_update_header(module);
     dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
     dt_guides_update_module_widget(module);
   }
@@ -2454,9 +2442,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   /* add preset button if module has implementation */
   hw[IOP_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
   module->presets_button = GTK_WIDGET(hw[IOP_MODULE_PRESETS]);
-  if (module->flags() & IOP_FLAGS_ONE_INSTANCE)
-    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets"));
-  else
+  if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets\nright-click to apply on new instance"));
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "clicked", G_CALLBACK(_presets_popup_callback), module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
@@ -2518,7 +2504,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   module->expander = expander;
 
   /* update header */
-  _iop_gui_update_header(module);
+  dt_iop_gui_update_header(module);
 
   gtk_widget_set_hexpand(module->widget, FALSE);
   gtk_widget_set_vexpand(module->widget, FALSE);
@@ -3164,6 +3150,18 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
     }
     return FALSE;
   }
+}
+
+void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data)
+{
+  if(!action || action->type != DT_ACTION_TYPE_IOP_INSTANCE) return;
+  dt_iop_module_t *module = (dt_iop_module_t *)action;
+
+  if(module->gui_changed) module->gui_changed(module, widget, data);
+
+  dt_iop_color_picker_reset(module, TRUE);
+
+  dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
 
 enum

@@ -2203,7 +2203,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
       gtk_entry_set_text(GTK_ENTRY(d->rule[i].text), text);
       gtk_editable_set_position(GTK_EDITABLE(d->rule[i].text), -1);
       g_signal_handlers_unblock_matched(d->rule[i].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
-      d->rule[i].typing = TRUE;
+      d->rule[i].typing = FALSE;
     }
 
     GtkDarktableButton *button = DTGTK_BUTTON(d->rule[i].button);

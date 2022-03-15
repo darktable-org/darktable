@@ -926,12 +926,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
 
-  /* update ui elements */
-  dt_bauhaus_slider_set(g->cx, p->cx);
-  dt_bauhaus_slider_set(g->cy, p->cy);
-  dt_bauhaus_slider_set(g->cw, p->cw);
-  dt_bauhaus_slider_set(g->ch, p->ch);
-
   //  set aspect ratio based on the current image, if not found let's default
   //  to free aspect.
 
@@ -1056,11 +1050,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->preview_ready = FALSE;
 
   GtkWidget *box_enabled = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  GtkWidget *lb = dt_ui_section_label_new(_("crop settings"));
-  GtkStyleContext *context = gtk_widget_get_style_context(lb);
-  gtk_style_context_add_class(context, "section_label_top");
-  gtk_box_pack_start(GTK_BOX(box_enabled), lb, TRUE, TRUE, 0);
 
   dt_iop_crop_aspect_t aspects[] = {
     { _("freehand"), 0, 0 },
@@ -1190,28 +1179,26 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->cx = dt_bauhaus_slider_from_params(self, "cx");
   dt_bauhaus_slider_set_digits(g->cx, 4);
-  dt_bauhaus_slider_set_factor(g->cx, 100.0);
-  dt_bauhaus_slider_set_format(g->cx, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->cx, "%");
   gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
 
   g->cw = dt_bauhaus_slider_from_params(self, "cw");
   dt_bauhaus_slider_set_digits(g->cw, 4);
   dt_bauhaus_slider_set_factor(g->cw, -100.0);
   dt_bauhaus_slider_set_offset(g->cw, 100.0);
-  dt_bauhaus_slider_set_format(g->cw, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->cw, "%");
   gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
 
   g->cy = dt_bauhaus_slider_from_params(self, "cy");
   dt_bauhaus_slider_set_digits(g->cy, 4);
-  dt_bauhaus_slider_set_factor(g->cy, 100.0);
-  dt_bauhaus_slider_set_format(g->cy, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->cy, "%");
   gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
 
   g->ch = dt_bauhaus_slider_from_params(self, "ch");
   dt_bauhaus_slider_set_digits(g->ch, 4);
   dt_bauhaus_slider_set_factor(g->ch, -100.0);
   dt_bauhaus_slider_set_offset(g->ch, 100.0);
-  dt_bauhaus_slider_set_format(g->ch, "%0.2f %%");
+  dt_bauhaus_slider_set_format(g->ch, "%");
   gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
 
   self->widget = box_enabled;

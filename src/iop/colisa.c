@@ -279,16 +279,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(struct dt_iop_module_t *self)
-{
-  dt_iop_colisa_gui_data_t *g = (dt_iop_colisa_gui_data_t *)self->gui_data;
-  dt_iop_colisa_params_t *p = (dt_iop_colisa_params_t *)self->params;
-  dt_bauhaus_slider_set(g->contrast, p->contrast);
-  dt_bauhaus_slider_set(g->brightness, p->brightness);
-  dt_bauhaus_slider_set(g->saturation, p->saturation);
-}
-
-
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf

@@ -247,27 +247,26 @@ int dt_collection_update(const dt_collection_t *collection)
 
     if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
       wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           "WHERE history_hash.imgid=id AND "
                                            " (basic_hash IS NULL OR current_hash != basic_hash) AND "
                                            " (auto_hash IS NULL OR current_hash != auto_hash))",
                            and_operator(&and_term));
     else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
       wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE imgid=mi.id AND history_hash.imgid=id AND "
+                                           "WHERE history_hash.imgid=id AND "
                                            " (current_hash == basic_hash OR current_hash == auto_hash))",
                            and_operator(&and_term));
 
     /* add text filter if any */
     if(collection->params.text_filter && collection->params.text_filter[0])
     {
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM main.meta_data WHERE id=mi.id AND value LIKE '%s'"
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
                                           " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
-                                          "   WHERE imgid=mi.id AND t.id=ti.tagid AND"
-                                          "         (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
+                                          "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
                                           " UNION SELECT id FROM main.images"
-                                          "   WHERE id=mi.id AND filename LIKE '%s'"
+                                          "   WHERE filename LIKE '%s'"
                                           " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
-                                          "   WHERE i.id=mi.id AND fr.id=i.film_id AND fr.folder LIKE '%s')",
+                                          "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s')",
                            and_operator(&and_term), collection->params.text_filter,
                                                     collection->params.text_filter,
                                                     collection->params.text_filter,
@@ -278,8 +277,8 @@ int dt_collection_update(const dt_collection_t *collection)
     /* add colorlabel filter if any */
     if(collection->params.colors_filter & ~0x80000000)
     {
-      const int colors_set = collection->params.colors_filter & 0xFF;
-      const int colors_unset = (collection->params.colors_filter & 0xFF00) >> 8;
+      const int colors_set = collection->params.colors_filter & 0xFFF;
+      const int colors_unset = (collection->params.colors_filter & 0xFFF000) >> 12;
       const gboolean op = collection->params.colors_filter & 0x80000000;
       if(op) // AND
       {
@@ -555,6 +554,9 @@ void dt_collection_reset(const dt_collection_t *collection)
   params->rating = dt_conf_get_int("plugins/collection/rating");
   params->comparator = dt_conf_get_int("plugins/collection/rating_comparator");
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
+  g_free(params->text_filter);
+  params->text_filter = dt_conf_get_string("plugins/collection/text_filter");
+  params->colors_filter = strtol(dt_conf_get_string_const("plugins/collection/colors_filter"), NULL, 16);
   params->sort = dt_conf_get_int("plugins/collection/sort");
   params->sort_second_order = dt_conf_get_int("plugins/collection/sort_second_order");
   params->descending = dt_conf_get_bool("plugins/collection/descending");
@@ -1060,6 +1062,10 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query,
   {
     dt_conf_set_int("plugins/collection/query_flags", collection->params.query_flags);
     dt_conf_set_int("plugins/collection/filter_flags", collection->params.filter_flags);
+    dt_conf_set_string("plugins/collection/text_filter", collection->params.text_filter ? collection->params.text_filter : "");
+    char colors_filter[16];
+    sprintf(colors_filter, "%x", collection->params.colors_filter);
+    dt_conf_set_string("plugins/collection/colors_filter", colors_filter);
     dt_conf_set_int("plugins/collection/film_id", collection->params.film_id);
     dt_conf_set_int("plugins/collection/rating", collection->params.rating);
     dt_conf_set_int("plugins/collection/rating_comparator", collection->params.comparator);

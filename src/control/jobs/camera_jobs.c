@@ -371,7 +371,7 @@ dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
   dt_control_job_set_params(job, params, dt_camera_import_cleanup);
 
   /* initialize import session for camera import job */
-  if(time_override) dt_import_session_set_time(params->shared.session, time_override);
+  if(time_override && time_override[0]) dt_import_session_set_time(params->shared.session, time_override);
   const char *jobcode = dt_conf_get_string_const("ui_last/import_jobcode");
   dt_import_session_set_name(params->shared.session, jobcode);
 

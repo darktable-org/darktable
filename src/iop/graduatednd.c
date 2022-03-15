@@ -1086,12 +1086,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_bauhaus_slider_set(g->density, p->density);
-  dt_bauhaus_slider_set(g->hardness, p->hardness);
-  dt_bauhaus_slider_set(g->rotation, p->rotation);
-  dt_bauhaus_slider_set(g->hue, p->hue);
-  dt_bauhaus_slider_set(g->saturation, p->saturation);
-
   g->define = 0;
   update_saturation_slider_end_color(g->saturation, p->hue);
 }
@@ -1101,22 +1095,22 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_graduatednd_gui_data_t *g = IOP_GUI_ALLOC(graduatednd);
 
   g->density = dt_bauhaus_slider_from_params(self, "density");
-  dt_bauhaus_slider_set_format(g->density, _("%.2f EV"));
+  dt_bauhaus_slider_set_format(g->density, _(" EV"));
   gtk_widget_set_tooltip_text(g->density, _("the density in EV for the filter"));
 
   g->hardness = dt_bauhaus_slider_from_params(self, "hardness");
-  dt_bauhaus_slider_set_format(g->hardness, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->hardness, "%");
   /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->hardness, _("hardness of graduation:\n0% = soft, 100% = hard"));
 
   g->rotation = dt_bauhaus_slider_from_params(self, "rotation");
-  dt_bauhaus_slider_set_format(g->rotation, "%.2f°");
+  dt_bauhaus_slider_set_format(g->rotation, "°");
   gtk_widget_set_tooltip_text(g->rotation, _("rotation of filter -180 to 180 degrees"));
 
   g->hue = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, dt_bauhaus_slider_from_params(self, "hue"));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_factor(g->hue, 360.0f);
-  dt_bauhaus_slider_set_format(g->hue, "%.2f°");
+  dt_bauhaus_slider_set_format(g->hue, "°");
   dt_bauhaus_slider_set_stop(g->hue, 0.0f, 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.322f, 0.0f, 1.0f, 0.0f);
@@ -1127,8 +1121,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue, _("select the hue tone of filter"));
 
   g->saturation = dt_bauhaus_slider_from_params(self, "saturation");
-  dt_bauhaus_slider_set_factor(g->saturation, 100.0f);
-  dt_bauhaus_slider_set_format(g->saturation, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->saturation, "%");
   dt_bauhaus_slider_set_stop(g->saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(g->saturation, _("select the saturation of filter"));

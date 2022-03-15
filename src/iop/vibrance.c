@@ -219,7 +219,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_vibrance_gui_data_t *g = IOP_GUI_ALLOC(vibrance);
 
   g->amount_scale = dt_bauhaus_slider_from_params(self, "amount");
-  dt_bauhaus_slider_set_format(g->amount_scale, "%.0f%%");
+  dt_bauhaus_slider_set_format(g->amount_scale, "%");
   gtk_widget_set_tooltip_text(g->amount_scale, _("the amount of vibrance"));
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

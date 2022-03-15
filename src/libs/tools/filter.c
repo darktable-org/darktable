@@ -51,9 +51,6 @@ typedef enum dt_collection_sort_order_t
 } dt_collection_sort_order_t;
 #endif
 
-#define CPF_USER_DATA_INCLUDE CPF_USER_DATA
-#define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
-
 /* proxy function to intelligently reset filter */
 static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter);
 
@@ -164,6 +161,56 @@ static void _set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)
   gtk_widget_queue_draw(GTK_WIDGET(widget));
 }
 
+static char *_encode_text_filter(const char *entry)
+{
+  // by default adds start and end wildcard
+  // " removes the corresponding wildcard
+  char start[2] = {0};
+  char *text = NULL;
+  char *p = (char *)entry;
+  if(strlen(entry) > 1 && !(entry[0] == '"' && entry[1] == '"'))
+  {
+    if(entry[0] == '"')
+      p++;
+    else if(entry[0])
+      start[0] = '%';
+    if(entry[strlen(entry) - 1] == '"')
+    {
+      text = g_strconcat(start, (char *)p, NULL);
+      text[strlen(text) - 1] = '\0';
+    }
+    else if(entry[0])
+      text = g_strconcat(start, (char *)p, "%", NULL);
+  }
+  return text;
+}
+
+static char *_decode_text_filter(const char *text)
+{
+  // revert the encoded filter for display
+  char start[2] = {0};
+  char *text1 = g_strdup(text);
+  char *p = text1;
+  char *text2;
+  if(text1[0])
+  {
+    if(text1[0] == '%')
+      p++;
+    else
+      start[0] = '\"';
+    if(strlen(text1) > 1 && text1[strlen(text1) - 1] == '%')
+    {
+      text1[strlen(text1) - 1] = '\0';
+      text2 = g_strconcat(start, (char *)p, NULL);
+    }
+    else
+      text2 = g_strconcat(start, (char *)p, "\"", NULL);
+    g_free(text1);
+    return text2;
+  }
+  else return text1;
+}
+
 static gboolean _text_entry_changed_wait(gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -184,23 +231,7 @@ static gboolean _text_entry_changed_wait(gpointer user_data)
     }
     else if(!d->time_out)
     {
-      // by default adds start and end wildcard
-      // ' or " removes the corresponding wildcard
-      char start[2] = {0};
-      char *text;
-      const char *entry = gtk_entry_get_text(GTK_ENTRY(d->text));
-      char *p = (char *)entry;
-      if(entry[0] == '"')
-        p++;
-      else
-        start[0] = '%';
-      if(entry[strlen(entry) - 1] == '"')
-      {
-        text = g_strconcat(start, (char *)p, NULL);
-        text[strlen(text) - 1] = '\0';
-      }
-      else
-        text = g_strconcat(start, (char *)p, "%", NULL);
+      char *text = _encode_text_filter(gtk_entry_get_text(GTK_ENTRY(d->text)));
 
       // avoids activating twice the same query
       if(g_strcmp0(dt_collection_get_text_filter(darktable.collection), text))
@@ -236,7 +267,7 @@ static void _text_entry_changed(GtkEntry *entry, dt_lib_module_t *self)
 static void _reset_text_filter(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  dt_collection_set_text_filter(darktable.collection, NULL);
+  dt_collection_set_text_filter(darktable.collection, strdup(""));
   gtk_entry_set_text(GTK_ENTRY(d->text), "");
 }
 
@@ -246,100 +277,89 @@ static void _reset_text_entry(GtkButton *button, dt_lib_module_t *self)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
 }
 
-static void _update_colors_operation(dt_lib_module_t *self)
+#define CPF_USER_DATA_INCLUDE CPF_USER_DATA
+#define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
+#define CL_AND_MASK 0x80000000
+#define CL_ALL_EXCLUDED 0x3F000
+#define CL_ALL_INCLUDED 0x3F
+
+static void _update_colors_filter(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  int mask = dt_collection_get_colors_filter(darktable.collection);
+  int mask_excluded = 0x1000;
+  int mask_included = 1;
   int nb = 0;
-  int mask = 0;
-
-  for(int k = 0; k < DT_COLORLABELS_LAST; k++)
+  for(int i = 0; i <= DT_COLORLABELS_LAST; i++)
   {
-    const int sel_value = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->colors[k]), "sel_value"));
-    if(sel_value)
-    {
+    const int i_mask = mask & mask_excluded ? CPF_USER_DATA_EXCLUDE : mask & mask_included ? CPF_USER_DATA_INCLUDE : 0;
+    dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
+                          (i | i_mask | CPF_BG_TRANSPARENT), NULL);
+    gtk_widget_queue_draw(d->colors[i]);
+    if((mask & mask_excluded) || (mask & mask_included))
       nb++;
-      mask = sel_value == 1 ? (mask | 1 << k) : (mask | 1 << (8 + k));
-    }
+    mask_excluded <<= 1;
+    mask_included <<= 1;
   }
-
-  const gboolean and_op = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(d->colors_op), "sel_value"));
+  if(nb <= 1)
+  {
+    mask |= CL_AND_MASK;
+    dt_collection_set_colors_filter(darktable.collection, mask);
+  }
   dtgtk_button_set_paint(DTGTK_BUTTON(d->colors_op),
-                         and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
+                         (mask & CL_AND_MASK) ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
                          CPF_STYLE_FLAT, NULL);
   gtk_widget_set_sensitive(d->colors_op, nb > 1);
-
-  if(and_op || nb == 1)
-    mask |= 0x80000000;
-
-  dt_collection_set_colors_filter(darktable.collection, mask);
 }
 
 static void _reset_colors_filter(dt_lib_module_t *self)
 {
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  for(int i = 0; i < DT_COLORLABELS_LAST; i++)
-  {
-    g_object_set_data(G_OBJECT(d->colors[i]), "sel_value", GINT_TO_POINTER(0));
-    dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
-                          (i | CPF_BG_TRANSPARENT), NULL);
-    gtk_widget_queue_draw(d->colors[i]);
-  }
-  g_object_set_data(G_OBJECT(d->colors_op), "sel_value", GINT_TO_POINTER(1));
-  dtgtk_button_set_paint(DTGTK_BUTTON(d->colors_op), dtgtk_cairo_paint_and,
-                         CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_sensitive(d->colors_op, FALSE);
-  dt_collection_set_colors_filter(darktable.collection, 0x80000000);
+  dt_collection_set_colors_filter(darktable.collection, CL_AND_MASK);
 }
 
-static gboolean _colorlabel_clicked(GtkWidget *w, GdkEventButton *e, gpointer user_data)
+static gboolean _colorlabel_clicked(GtkWidget *w, GdkEventButton *e, dt_lib_module_t *self)
 {
-  dt_lib_module_t *self = g_object_get_data(G_OBJECT(w), "colors_self");
-  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  const int k = GPOINTER_TO_INT(user_data);
-  int sel_value = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
-  if(sel_value)
-    sel_value = 0;
-  else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
-    sel_value = 2;
-  else if(dt_modifier_is(e->state, 0))
-    sel_value = 1;
-  const int mask = sel_value == 0 ? 0 : sel_value == 1 ? CPF_USER_DATA_INCLUDE : CPF_USER_DATA_EXCLUDE;
-
+  const int mask = dt_collection_get_colors_filter(darktable.collection);
+  const int k = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "colors_index"));
+  int mask_k = (1 << k) | (1 << (k + 12));
   if(k == DT_COLORLABELS_LAST)
   {
-    g_object_set_data(G_OBJECT(d->colors[DT_COLORLABELS_LAST]), "sel_value", GINT_TO_POINTER(sel_value));
-    for(int i = 0; i < DT_COLORLABELS_LAST; i++)
-    {
-      g_object_set_data(G_OBJECT(d->colors[i]), "sel_value", GINT_TO_POINTER(sel_value));
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
-                            (i | mask | CPF_BG_TRANSPARENT), NULL);
-      gtk_widget_queue_draw(d->colors[i]);
-    }
+    if(mask & mask_k)
+      mask_k = 0;
+    else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
+      mask_k = CL_ALL_EXCLUDED;
+    else if(dt_modifier_is(e->state, 0))
+      mask_k = CL_ALL_INCLUDED;
+    dt_collection_set_colors_filter(darktable.collection, mask_k | (mask & CL_AND_MASK));
   }
   else
   {
-    g_object_set_data(G_OBJECT(d->colors[DT_COLORLABELS_LAST]), "sel_value", GINT_TO_POINTER(0));
-    g_object_set_data(G_OBJECT(w), "sel_value", GINT_TO_POINTER(sel_value));
-    dtgtk_button_set_paint(DTGTK_BUTTON(w), dtgtk_cairo_paint_label_sel,
-                           (k | mask | CPF_BG_TRANSPARENT), NULL);
-    gtk_widget_queue_draw(w);
+    if(mask & mask_k)
+      mask_k = 0;
+    else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
+      mask_k = 1 << (k + 12);
+    else if(dt_modifier_is(e->state, 0))
+      mask_k = 1 << k;
+    dt_collection_set_colors_filter(darktable.collection, (mask & ~((1 << k) | (1 << (k + 12)))) | mask_k);
   }
-
-  _update_colors_operation(self);
+  _update_colors_filter(self);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL, NULL);
   return FALSE;
 }
 
 static void _colors_operation_clicked(GtkWidget *w, dt_lib_module_t *self)
 {
-  const gboolean and_op = !GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
-  g_object_set_data(G_OBJECT(w), "sel_value", GINT_TO_POINTER(and_op));
-  dtgtk_button_set_paint(DTGTK_BUTTON(w),
-                         and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
-                         CPF_STYLE_FLAT, NULL);
-  _update_colors_operation(self);
+  const int mask = dt_collection_get_colors_filter(darktable.collection);
+  dt_collection_set_colors_filter(darktable.collection, mask ^ CL_AND_MASK);
+  _update_colors_filter(self);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_COLORLABEL, NULL);
 }
+
+#undef CPF_USER_DATA_INCLUDE
+#undef CPF_USER_DATA_EXCLUDE
+#undef CL_AND_MASK
+#undef CL_ALL_EXCLUDED
+#undef CL_ALL_INCLUDED
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -396,17 +416,16 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
     d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, (k | CPF_BG_TRANSPARENT), NULL);
-    g_object_set_data(G_OBJECT(d->colors[k]), "colors_self", self);
+    g_object_set_data(G_OBJECT(d->colors[k]), "colors_index", GINT_TO_POINTER(k));
     gtk_box_pack_start(GTK_BOX(hbox), d->colors[k], FALSE, FALSE, 0);
     gtk_widget_set_tooltip_text(d->colors[k], _("filter by images color label"
                                                 "\nclick to toggle the color label selection"
                                                 "\nctrl+click to exclude the color label"
                                                 "\nthe grey button affects all color labels"));
-    g_signal_connect(G_OBJECT(d->colors[k]), "button-press-event", G_CALLBACK(_colorlabel_clicked),
-                     GINT_TO_POINTER(k));
+    g_signal_connect(G_OBJECT(d->colors[k]), "button-press-event", G_CALLBACK(_colorlabel_clicked), self);
   }
   d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
-  _reset_colors_filter(self);
+  _update_colors_filter(self);
   gtk_box_pack_start(GTK_BOX(hbox), d->colors_op, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(d->colors_op, _("filter by images color label"
                                               "\nand (∩): images having all selected color labels"
@@ -421,6 +440,9 @@ void gui_init(dt_lib_module_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
   d->text = gtk_search_entry_new();
+  char *text = _decode_text_filter(dt_collection_get_text_filter(darktable.collection));
+  gtk_entry_set_text(GTK_ENTRY(d->text), text);
+  g_free(text);
   g_signal_connect(G_OBJECT(d->text), "search-changed", G_CALLBACK(_text_entry_changed), self);
   g_signal_connect(G_OBJECT(d->text), "stop-search", G_CALLBACK(_reset_text_entry), self);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text), 14);

@@ -707,10 +707,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)self->gui_data;
   dt_iop_cacorrectrgb_params_t *p = (dt_iop_cacorrectrgb_params_t *)self->params;
 
-  dt_bauhaus_combobox_set_from_value(g->guide_channel, p->guide_channel);
-  dt_bauhaus_slider_set_soft(g->radius, p->radius);
-  dt_bauhaus_slider_set_soft(g->strength, p->strength);
-  dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->refine_manifolds), p->refine_manifolds);
 }
 

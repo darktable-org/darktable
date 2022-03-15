@@ -494,9 +494,6 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
   // accumulates scrolling regardless of source or the widget being scrolled
   static gdouble acc_x = 0.0, acc_y = 0.0;
 
-  if(gdk_event_get_pointer_emulated((GdkEvent*)event))
-    return FALSE; // avoid double counting real and emulated events when receiving smooth scrolls
-
   gboolean handled = FALSE;
 
   switch(event->direction)
@@ -711,8 +708,7 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
 static gboolean _borders_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   // pass the scroll event to the matching side panel
-  gboolean res;
-  g_signal_emit_by_name(G_OBJECT(user_data), "scroll-event", event, &res);
+  gtk_widget_event(GTK_WIDGET(user_data), (GdkEvent*)event);
 
   return TRUE;
 }
@@ -2133,12 +2129,8 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
   gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
-  container = widget;
-  widget = gtk_event_box_new();
-  gtk_widget_add_events(GTK_WIDGET(widget), darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
-  gtk_container_add(GTK_CONTAINER(container), widget);
 
   /* create the container */
   container = widget;
@@ -2980,6 +2972,18 @@ GtkNotebook *dt_ui_notebook_new(dt_action_def_t *def)
   return _current_notebook;
 }
 
+static gboolean _notebook_scroll_callback(GtkNotebook *notebook, GdkEventScroll *event, gpointer user_data)
+{
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
+  int delta = 0;
+  if(dt_gui_get_scroll_unit_delta(event, &delta) && delta)
+    _action_process_tabs(notebook, DT_ACTION_EFFECT_DEFAULT_KEY,
+                         delta < 0 ? DT_ACTION_EFFECT_NEXT : DT_ACTION_EFFECT_PREVIOUS, delta);
+
+  return TRUE;
+}
+
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
 {
   if(notebook != _current_notebook)
@@ -3001,6 +3005,8 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const ch
   {
     g_signal_connect(G_OBJECT(notebook), "size-allocate", G_CALLBACK(_notebook_size_callback), NULL);
     g_signal_connect(G_OBJECT(notebook), "motion-notify-event", G_CALLBACK(_notebook_motion_notify_callback), NULL);
+    g_signal_connect(G_OBJECT(notebook), "scroll-event", G_CALLBACK(_notebook_scroll_callback), NULL);
+    gtk_widget_add_events(GTK_WIDGET(notebook), darktable.gui->scroll_mask);
   }
   if(_current_action_def)
   {
@@ -3349,6 +3355,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *header_evb = gtk_event_box_new();
   GtkWidget *destdisp = dt_ui_section_label_new(label);
+  gtk_widget_set_name(destdisp, "collapsible-label");
   GtkStyleContext *context = gtk_widget_get_style_context(destdisp_head);
   gtk_style_context_add_class(context, "section-expander");
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
