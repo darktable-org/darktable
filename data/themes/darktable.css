@@ -253,7 +253,6 @@ box *
 /*----------------------
   - General properties -
   ----------------------*/
-
 *:disabled
 {
   color: @disabled_fg_color;
@@ -334,7 +333,6 @@ combobox *,
 
 /* Default text fields and text boxes */
 .combo,
-#collapsible #bauhaus-combobox,
 checkbutton check,
 entry,
 textview
@@ -358,7 +356,7 @@ entry selection
 }
 
 /* Bauhaus-combobox and search box defaults */
-#bauhaus-combobox,
+#header-toolbar #bauhaus-combobox,
 .search
 {
   background-color: shade(@button_bg, 0.9);
@@ -410,7 +408,6 @@ spinbutton>button
 /*------------------------
   - Main header settings -
   ------------------------*/
-
 /* Labels in views */
 #darktable_label,
 #view_label,
@@ -424,7 +421,6 @@ spinbutton>button
 /*------------------------------
   - Header and footer toolbars -
   ------------------------------*/
-
 #header-toolbar,
 #footer-toolbar
 {
@@ -1838,7 +1834,7 @@ menuitem:hover,
 menuitem:hover > *:not(check),
 combobox window *:hover,
 #bauhaus-combobox:hover,
-#collapsible #bauhaus-combobox:hover,
+#header-toolbar #bauhaus-combobox:hover,
 radiobutton:hover label,
 #control-button:hover,
 #history-button:hover,
@@ -1857,8 +1853,9 @@ radiobutton:hover label,
 }
 
  /* and same for color as other needs only color setting */
+.combo:hover *,
 #bauhaus-combobox:hover,
-#collapsible #bauhaus-combobox:hover,
+#header-toolbar #bauhaus-combobox:hover,
 button:hover,
 button:hover cellview,
 button:hover image,
@@ -1878,8 +1875,7 @@ notebook tab:hover label,
 #history-button-default-enabled:hover *,
 #recent-collection-button:hover,
 #view_label:hover,button:checked image,
-#view_dropdown menuitem:hover,
-#view_dropdown .combo:hover *
+#view_dropdown menuitem:hover
 {
   color: @button_hover_fg;
 }
@@ -2550,6 +2546,7 @@ Details :
   border-top : 0.07em solid @lighttable_bg_color;
   border-right : 0.07em solid @lighttable_bg_color;
 }
+
 #thumb_localcopy:active
 {
   border: none;
