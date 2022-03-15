@@ -1367,17 +1367,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 (int)strlen(dt_map_location_data_tag_root()) + 1, where_ext);
         break;
       case DT_COLLECTION_PROP_DAY:
-        query = g_strdup_printf("SELECT datetime_taken AS date, 1, COUNT(*) AS count"
-                                " FROM main.images AS mi"
-                                " WHERE datetime_taken IS NOT NULL AND %s"
-                                " GROUP BY date", where_ext);
-        break;
       case DT_COLLECTION_PROP_TIME:
-        query = g_strdup_printf("SELECT datetime_taken AS date, 1, COUNT(*) AS count"
-                                " FROM main.images AS mi"
-                                " WHERE datetime_taken IS NOT NULL AND %s"
-                                " GROUP BY date", where_ext);
-        break;
       case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
       case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
       case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
@@ -1388,16 +1378,18 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
         switch(local_property)
         {
+          case DT_COLLECTION_PROP_DAY: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_PROP_TIME: colname = "datetime_taken" ; break ;
           case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
           case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
           case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
           case DT_COLLECTION_PROP_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
         }
-        query = g_strdup_printf("SELECT strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') AS date, 1, COUNT(*) AS count"
+        query = g_strdup_printf("SELECT %s AS date, 1, COUNT(*) AS count"
                                 " FROM main.images AS mi"
-                                " WHERE %s <> -1"
+                                " WHERE %s IS NOT NULL AND %s <> 0"
                                 " AND %s"
-                                " GROUP BY date", colname, colname, where_ext);
+                                " GROUP BY date", colname, colname, colname, where_ext);
         break;
         }
     }
@@ -1417,7 +1409,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       char *name;
-      if(property == DT_COLLECTION_PROP_TIME || property == DT_COLLECTION_PROP_DAY)
+      if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
         name = dt_datetime_gtimespan_to_sdatetime(sqlite3_column_int64(stmt, 0), FALSE);
       else
       {

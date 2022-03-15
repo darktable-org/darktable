@@ -1829,13 +1829,25 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
       break;
     }
-
     case DT_COLLECTION_PROP_DAY:
-    // query = g_strdup_printf("(datetime_taken like '%%%s%%')", escaped_text);
-    // break;
-
     case DT_COLLECTION_PROP_TIME:
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
     {
+      const int local_property = property;
+      char *colname = NULL;
+
+      switch(local_property)
+      {
+        case DT_COLLECTION_PROP_DAY: colname = "datetime_taken" ; break ;
+        case DT_COLLECTION_PROP_TIME: colname = "datetime_taken" ; break ;
+        case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
+        case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
+        case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
+        case DT_COLLECTION_PROP_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
+      }
       gchar *operator, *number1, *number2;
       dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
       if(number1 && number1[strlen(number1) - 1] == '%')
@@ -1846,63 +1858,22 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = g_strdup_printf("((datetime_taken >= %ld) AND (datetime_taken <= %ld))", (long int)nb1, (long int)nb2);
+          query = g_strdup_printf("((%s >= %ld) AND (%s <= %ld))", colname, (long int)nb1, colname, (long int)nb2);
       }
       else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
-        query = g_strdup_printf("((datetime_taken >= %ld) AND (datetime_taken <= %ld))", (long int)nb1, (long int)nb2);
+        query = g_strdup_printf("((%s >= %ld) AND (%s <= %ld))", colname, (long int)nb1, colname, (long int)nb2);
       else if(strcmp(operator, "<>") == 0 && number1 && number2)
-        query = g_strdup_printf("((datetime_taken < %ld) AND (datetime_taken > %ld))", (long int)nb1, (long int)nb2);
+        query = g_strdup_printf("((%s < %ld) AND (%s > %ld))", colname, (long int)nb1, colname, (long int)nb2);
       else if(number1)
-        query = g_strdup_printf("(datetime_taken %s %ld)", operator, (long int)nb1);
+        query = g_strdup_printf("(%s %s %ld)", colname, operator, (long int)nb1);
       else
         query = g_strdup("1 = 1");
 
       g_free(operator);
       g_free(number1);
       g_free(number2);
+      break;
     }
-    break;
-
-    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
-    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
-    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
-    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
-    {
-      const int local_property = property;
-      char *colname = NULL;
-      gchar *operator, *number1, *number2;
-
-      dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
-
-      switch(local_property)
-      {
-        case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
-        case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
-        case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-        case DT_COLLECTION_PROP_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
-      }
-
-      if(strcmp(operator, "[]") == 0)
-      {
-        if(number1 && number2)
-          query = g_strdup_printf("((strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') >= '%s')"
-                                  "AND (strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') <= '%s'))",
-                                  colname, number1, colname, number2);
-      }
-      else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
-        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%s')", colname, number1);
-      else if(strcmp(operator, "<>") == 0 && number1)
-        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') NOT LIKE '%s')", colname, number1);
-      else if(number1)
-        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') %s '%s')", colname, operator, number1);
-      else
-        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%%%s%%')", colname, escaped_text);
-
-      g_free(operator);
-      g_free(number1);
-      g_free(number2);
-    }
-    break;
 
     case DT_COLLECTION_PROP_GROUPING: // grouping
       query = g_strdup_printf("(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
