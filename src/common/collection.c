@@ -787,11 +787,11 @@ const char *dt_collection_name(dt_collection_properties_t prop)
   return _(dt_collection_name_untranslated(prop));
 };
 
-gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
+static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort, const int sortorder)
 {
-  gchar *second_order = NULL;/*string for previous sorting criteria as second order sorting criteria*/
-
-  switch(collection->params.sort_second_order)/*build ORDER BY string for second order*/
+  // construct the text query
+  gchar *sq = NULL;
+  switch(sort)
   {
     case DT_COLLECTION_SORT_DATETIME:
     case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
@@ -799,288 +799,134 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
     case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
       {
-        const int local_order = collection->params.sort_second_order;
+        const int local_order = sort;
         char *colname;
 
         switch(local_order)
         {
-          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
-          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
-          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
-          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
-          default: colname = "";
+          case DT_COLLECTION_SORT_DATETIME:
+            colname = "datetime_taken";
+            break;
+          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+            colname = "import_timestamp";
+            break;
+          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+            colname = "change_timestamp";
+            break;
+          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+            colname = "export_timestamp";
+            break;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+            colname = "print_timestamp";
+            break;
+          default:
+            colname = "";
         }
-      second_order = g_strdup_printf("%s %s", colname, (collection->params.descending ? "DESC" : ""));
-      break;
+        sq = g_strdup_printf("%s%s", colname, (sortorder) ? " DESC" : "");
+        break;
       }
 
     case DT_COLLECTION_SORT_RATING:
-      second_order = g_strdup_printf("CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END %s", (collection->params.descending ? "" : "DESC"));
+      sq = g_strdup_printf("CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END%s", (sortorder) ? "" : " DESC");
       break;
 
     case DT_COLLECTION_SORT_FILENAME:
-      second_order = g_strdup_printf("filename %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("filename%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_ID:
-      second_order = g_strdup_printf("mi.id %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("mi.id%s", (sortorder) ? " DESC" : ""); /* makes no sense to consider second order here
+                                                                      since ID is unique ;) */
       break;
 
     case DT_COLLECTION_SORT_COLOR:
-      second_order = g_strdup_printf("color %s", (collection->params.descending ? "" : "DESC"));
+      sq = g_strdup_printf("color%s", (sortorder) ? "" : " DESC");
       break;
 
     case DT_COLLECTION_SORT_GROUP:
-      second_order = g_strdup_printf("group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("group_id%s, mi.id-group_id != 0, mi.id", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_PATH:
-      second_order = g_strdup_printf("folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("folder%s, filename%s", (sortorder) ? " DESC" : "", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_CUSTOM_ORDER:
-      second_order = g_strdup_printf("position %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("position%s", (sortorder) ? " DESC" : "");
       break;
 
-     case DT_COLLECTION_SORT_TITLE:
-     case DT_COLLECTION_SORT_DESCRIPTION:/*same sorting for TITLE and DESCRIPTION -> Fall through*/
-       second_order = g_strdup_printf("m.value %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_TITLE:
+      sq = g_strdup_printf("m.value%s", (sortorder) ? " DESC" : "");
+      break;
+
+    case DT_COLLECTION_SORT_DESCRIPTION:
+      sq = g_strdup_printf("m.value%s", (sortorder) ? " DESC" : "");
+      break;
 
     case DT_COLLECTION_SORT_ASPECT_RATIO:
-      second_order = g_strdup_printf("aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("aspect_ratio%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_SHUFFLE:
+      sq = g_strdup("RANDOM()"); /* do not consider second order for shuffle */
       /* do not remember shuffle for second order */
-      if(!second_order) second_order = g_strdup_printf("filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
       break;
 
-    case DT_COLLECTION_SORT_NONE:/*fall through for default*/
-    default:
+    case DT_COLLECTION_SORT_NONE:
+    default: /*fall through for default*/
       // shouldn't happen
-      second_order = g_strdup_printf("filename %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup("mi.id");
       break;
   }
-
-
-  gchar *sq = NULL;
-  if(collection->params.descending)
-  {
-    switch(collection->params.sort)
-    {
-      case DT_COLLECTION_SORT_DATETIME:
-      case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
-      case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
-      case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
-      case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
-        {
-        const int local_order = collection->params.sort;
-        char *colname;
-
-        switch(local_order)
-        {
-          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
-          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
-          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
-          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
-          default: colname = "";
-        }
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY %s DESC, %s, filename DESC, version DESC", colname, second_order);
-        // clang-format on
-        break;
-        }
-
-      case DT_COLLECTION_SORT_RATING:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END, %s, filename DESC, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_FILENAME:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY filename DESC, %s, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_ID:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY mi.id DESC"); /* makes no sense to consider second order here since ID is unique ;) */
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_COLOR:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY color, %s, filename DESC, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_GROUP:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY group_id DESC, %s, mi.id-group_id != 0, mi.id DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_PATH:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY folder DESC, filename DESC, %s, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_CUSTOM_ORDER:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY position DESC, %s, filename DESC, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_TITLE:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY m.value DESC, filename DESC, version DESC");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_DESCRIPTION:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY m.value DESC, filename DESC, version DESC");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_ASPECT_RATIO:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY aspect_ratio DESC, %s, filename DESC, version DESC", second_order);
-        // clang-format on
-        break;
-
-
-      case DT_COLLECTION_SORT_SHUFFLE:
-        // clang-format off
-        /* do not consider second order for shuffle */
-        /* do not remember shuffle for second order */
-        sq = g_strdup("ORDER BY RANDOM()");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_NONE:
-      default:/*fall through for default*/
-        // shouldn't happen
-        // clang-format off
-        sq = g_strdup("ORDER BY mi.id DESC");
-        // clang-format on
-        break;
-    }
-  }
-  else
-  {
-    switch(collection->params.sort)
-    {
-      case DT_COLLECTION_SORT_DATETIME:
-      case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
-      case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
-      case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
-      case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
-        {
-        const int local_order = collection->params.sort;
-        char *colname;
-
-        switch(local_order)
-        {
-          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
-          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
-          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
-          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
-          default: colname = "";
-        }
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY %s, %s, filename, version", colname, second_order);
-        // clang-format on
-        break;
-        }
-
-      case DT_COLLECTION_SORT_RATING:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END DESC, %s, filename, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_FILENAME:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY filename, %s, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_ID:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY mi.id"); /* makes no sense to consider second order here since ID is unique ;) */
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_COLOR:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY color DESC, %s, filename, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_GROUP:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY group_id, %s, mi.id-group_id != 0, mi.id", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_PATH:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY folder, filename, %s, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_CUSTOM_ORDER:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY position, %s, filename, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_TITLE:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY m.value, filename, version");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_DESCRIPTION:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY m.value, filename, version");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_ASPECT_RATIO:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY aspect_ratio, %s, filename, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_SHUFFLE:
-        /* do not consider second order for shuffle */
-        /* do not remember shuffle for second order */
-        // clang-format off
-        sq = g_strdup("ORDER BY RANDOM()");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_NONE:
-      default:/*fall through for default*/
-        // shouldn't happen
-        // clang-format off
-        sq = g_strdup("ORDER BY mi.id");
-        // clang-format on
-        break;
-    }
-  }
-
-  g_free(second_order);/*free second order part, it's now part of sq*/
 
   return sq;
+}
+
+gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
+{
+  gboolean filename = FALSE;
+  int first_order = 0;
+  const dt_collection_sort_t lastsort = dt_conf_get_int("plugins/lighttable/filtering/lastsort");
+  const int lastsortorder = dt_conf_get_int("plugins/lighttable/filtering/lastsortorder");
+  gboolean already_last_sort = FALSE;
+  gchar *query = g_strdup("ORDER BY");
+
+  const int nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, DT_COLLECTION_MAX_RULES);
+  for(int i = 0; i < nb_sort; i++)
+  {
+    // read the sort value from conf
+    char confname[200] = { 0 };
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
+    const dt_collection_sort_t sort = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", i);
+    const int sortorder = dt_conf_get_int(confname);
+
+    // get the sort query
+    gchar *sq = _dt_collection_get_sort_text(sort, sortorder);
+    query = dt_util_dstrcat(query, "%s %s", (i == 0) ? "" : ",", sq);
+    g_free(sq);
+
+    // set the "already done" values
+    if(sort == DT_COLLECTION_SORT_FILENAME) filename = TRUE;
+    if(i == 0) first_order = sortorder;
+    if(sort == lastsort) already_last_sort = TRUE;
+  }
+
+  // and last sort order set
+  if(!already_last_sort)
+  {
+    gchar *lsq = _dt_collection_get_sort_text(lastsort, lastsortorder);
+    query = dt_util_dstrcat(query, ", %s", lsq);
+    g_free(lsq);
+    if(lastsort == DT_COLLECTION_SORT_FILENAME) filename = TRUE;
+  }
+
+  // complete the query with fallback if needed
+  if(!filename) query = dt_util_dstrcat(query, ", filename%s", (first_order) ? " DESC" : "");
+
+  query = dt_util_dstrcat(query, ", version%s", (first_order) ? " DESC" : "");
+
+  return query;
 }
 
 
