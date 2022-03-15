@@ -327,6 +327,14 @@ const char *dt_conf_get_string_const(const char *name)
   return dt_conf_get_var(name);
 }
 
+gboolean dt_conf_key_not_empty(const char *name)
+{
+  const char *val = dt_conf_get_string_const(name);
+  if(val == NULL)      return FALSE;
+  if(strlen(val) == 0) return FALSE;
+  return TRUE;
+}
+
 gboolean dt_conf_get_folder_to_file_chooser(const char *name, GtkFileChooser *chooser)
 {
   const gchar *folder = dt_conf_get_string_const(name);
@@ -429,7 +437,6 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
   char line[LINE_SIZE + 1];
 
   FILE *f = NULL;
-  gboolean defaults = FALSE;
 
   // check for user config
   f = g_fopen(filename, "rb");
@@ -466,9 +473,6 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
   }
   else
   {
-    // this is first run, remember we init
-    defaults = TRUE;
-
     // we initialize the conf table with default values
     GHashTableIter iter;
     gpointer key, value;
@@ -481,11 +485,6 @@ void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
       g_hash_table_insert(darktable.conf->table, g_strdup(name), g_strdup(entry->def));
     }
   }
-
-  // for the very first time after a fresh install
-  // execute performance configuration no matter what
-  if(defaults)
-    dt_configure_performance();
 
   if(override_entries)
   {

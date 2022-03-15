@@ -956,6 +956,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.l10n = dt_l10n_init(init_gui);
 
   dt_confgen_init();
+  const int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
 
   // we need this REALLY early so that error messages can be shown, however after gtk_disable_setlocale
   if(init_gui)
@@ -969,27 +970,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     gtk_init(&argc, &argv);
 
     darktable.themes = NULL;
-
-    // execute a performance check and configuration if needed
-    int last_configure_version = dt_conf_get_int("performance_configuration_version_completed");
-    if(last_configure_version < DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
-    {
-      // ask the user whether he/she would like
-      // dt to make changes in the settings
-      const gboolean run_configure = dt_gui_show_standalone_yes_no_dialog(
-          _("darktable - run performance configuration?"),
-          _("we have an updated performance configuration logic - executing that might improve the performance of "
-            "darktable.\nthis will potentially overwrite some of your existing settings - especially in case you "
-            "have manually modified them to custom values.\nwould you like to execute this update of the "
-            "performance configuration?\n"),
-          _("no"), _("yes"));
-
-      if(run_configure)
-        dt_configure_performance();
-      else
-        // make sure to set this, otherwise the user will be nagged until he eventually agrees
-        dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
-    }
   }
 
   // detect cpu features and decide which codepaths to enable
@@ -1096,7 +1076,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   */
   static int ref_resources[12] = {
       8192,  32,  512, 2048,   // reference
-      1024,   2,  128,  400,   // mini system        
+      1024,   2,  128,  400,   // mini system
       4096,  32,  512,  400,   // simple notebook with integrated graphics
   };
 
@@ -1119,6 +1099,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.dtresources.fractions = fractions;
   darktable.dtresources.refresource = ref_resources;
   darktable.dtresources.total_memory = _get_total_memory() * 1024lu;
+
+  char *config_info = calloc(1, DT_PERF_INFOSIZE);
+  if(last_configure_version != DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION)
+    dt_configure_runtime_performance(last_configure_version, config_info);
+
   dt_get_sysresource_level();
   darktable.dtresources.mipmap_memory = _get_mipmap_size();
   // initialize collection query
@@ -1296,7 +1281,19 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_pathlist_import_create(argc,argv));
     }
 #endif
+
+    // there might be some info created in dt_configure_runtime_performance() for feedback
+    gboolean not_again = TRUE;
+    if(last_configure_version && config_info[0])
+      not_again = dt_gui_show_standalone_yes_no_dialog
+        (_("configuration information"),
+         config_info,
+         _("show this information again"), _("understood"));
+
+    if(not_again || (last_configure_version == 0))
+      dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
   }
+  free(config_info);
 
   // last but not least construct the popup that asks the user about images whose xmp files are newer than the
   // db entry
@@ -1625,56 +1622,90 @@ size_t dt_get_singlebuffer_mem()
   return MAX(2lu * 1024lu * 1024lu, total_mem / 1024lu * fraction);
 }
 
-void dt_configure_performance()
+void dt_configure_runtime_performance(const int old, char *info)
 {
   const size_t threads = dt_get_num_threads();
-  const size_t mem = _get_total_memory();
+  const size_t mem = darktable.dtresources.total_memory / 1024lu / 1024lu;
   const size_t bits = CHAR_BIT * sizeof(void *);
-  gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
+  const gboolean sufficient = mem >= 4096 && threads >= 2;
 
-  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %zu cores\n",
-          bits, mem, threads);
-  if(mem >= (4lu << 20) && threads >= 2)
+  dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] found a %s %zu-bit system with %zu Mb ram and %zu cores\n",
+    (sufficient) ? "sufficient" : "low performance", bits, mem, threads);
+
+  // All runtime conf settings only write data if there is no valid data found in conf
+  if(!dt_conf_key_not_empty("ui/performance"))
   {
-    // suggested minimum: at least 4GB RAM, and at least 2 CPU threads
-    fprintf(stderr, "[defaults] setting standard defaults\n");
-    if(demosaic_quality == NULL || strlen(demosaic_quality) == 0
-       || !strcmp(demosaic_quality, "always bilinear (fast)"))
+    dt_conf_set_bool("ui/performance", !sufficient);
+    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] ui/performance=%s\n", (sufficient) ? "FALSE" : "TRUE");
+  }
+
+  if(!dt_conf_key_not_empty("resourcelevel"))
+  {
+    dt_conf_set_string("resourcelevel", (sufficient) ? "default" : "small");
+    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] resourcelevel=%s\n", (sufficient) ? "default" : "small");
+  }
+
+  if(!dt_conf_key_not_empty("plugins/darkroom/demosaic/quality"))
+  {
+    dt_conf_set_string("plugins/darkroom/demosaic/quality", (sufficient) ? "at most RCD (reasonable)" : "always bilinear (fast)");
+    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] plugins/darkroom/demosaic/quality=%s",
+      (sufficient) ? "at most RCD (reasonable)" : "always bilinear (fast)");
+  }
+  else if(old == 2)
+  {
+    const gchar *demosaic_quality = dt_conf_get_string_const("plugins/darkroom/demosaic/quality");
+    if(!strcmp(demosaic_quality, "always bilinear (fast)"))
+    {
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
-    dt_conf_set_bool("ui/performance", FALSE);
-    dt_conf_set_string("resourcelevel", "default");
+      dt_print(DT_DEBUG_DEV, "[dt_configure_performance] override: plugins/darkroom/demosaic/quality=at most RCD (reasonable)\n");
+    }
   }
-  else
+
+  if(!dt_conf_key_not_empty("cache_disk_backend_full"))
   {
-    // for small and slow systems
-    // use very low/conservative settings
-    fprintf(stderr, "[defaults] setting very conservative defaults\n");
-    dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
-    dt_conf_set_bool("ui/performance", TRUE);
-    dt_conf_set_string("resourcelevel", "small");
+    char cachedir[PATH_MAX] = { 0 };
+    guint64 freecache = 0;
+    dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+    GFile *gfile = g_file_new_for_path(cachedir);
+    GFileInfo *gfileinfo = g_file_query_filesystem_info(gfile, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, NULL);
+    if(gfileinfo != NULL)
+      freecache = g_file_info_get_attribute_uint64(gfileinfo, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
+    g_object_unref(gfile);
+    g_object_unref(gfileinfo);
+    const gboolean largedisk = freecache > (8lu << 20);
+    // enable cache_disk_backend_full when user has over 8gb free diskspace
+    dt_conf_set_bool("cache_disk_backend_full", largedisk);
+    dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] cache_disk_backend_full=%s\n", (largedisk) ? "TRUE" : "FALSE");
   }
 
-  g_free(demosaic_quality);
+  // we might add some info now but only for non-fresh installs
+  if(old == 0) return;
 
-  char cachedir[PATH_MAX] = { 0 };
-  guint64 freecache = 0;
-  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
-  GFile *gfile = g_file_new_for_path(cachedir);
-  GFileInfo *gfileinfo = g_file_query_filesystem_info(gfile, G_FILE_ATTRIBUTE_FILESYSTEM_FREE, NULL, NULL);
-  if(gfileinfo != NULL)
-    freecache = g_file_info_get_attribute_uint64(gfileinfo, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
-  g_object_unref(gfile);
-  g_object_unref(gfileinfo);
+  #define INFO_HEADER "> "
 
-  // enable cache_disk_backend_full when user has over 8gb free diskspace
-  dt_conf_set_bool("cache_disk_backend_full", freecache > (8lu << 20));
+  if(old < 2) // we introduced RCD as the default demosaicer in 2
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("the RCD demosaicer has been defined as default instead of PPG because of better quality and performance."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("see preferences/darkroom/demosaicing for zoomed out darkroom mode"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
+  }
+  if(old < 5)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("the user interface and the underlying internals for tuning darktable performance have changed."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you won't find headroom and friends any longer, instead in preferences/processing use:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("1) darktable resources"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("2) tune OpenCL performance"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
+  }
 
-  // store the current performance configure version as the last completed
-  // that would prevent further execution of previous performance configuration run
-  // at subsequent startups
-  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
+  #undef INFO_HEADER
 }
-
 
 int dt_capabilities_check(char *capability)
 {

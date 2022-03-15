@@ -180,10 +180,12 @@ static float _action_process_toggle(gpointer target, dt_action_element_t element
     g_object_ref(event->button.window);
 
     // some togglebuttons connect to the clicked signal, others to toggled or button-press-event
-    if(!gtk_widget_event(target, event))
-      gtk_button_clicked(GTK_BUTTON(target));
+    // gtk_widget_event does not work when widgets are hidden in event boxes or some other conditions
+    gboolean handled;
+    g_signal_emit_by_name(G_OBJECT(target), "button-press-event", event, &handled);
+    if(!handled) gtk_button_clicked(GTK_BUTTON(target));
     event->type = GDK_BUTTON_RELEASE;
-    gtk_widget_event(target, event);
+    g_signal_emit_by_name(G_OBJECT(target), "button-release-event", event, &handled);
 
     gdk_event_free(event);
 
@@ -707,6 +709,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     if(element_name) description = g_markup_escape_text(_(element_name), -1);
   }
 
+  int num_shortcuts = 0;
   for(GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
       !g_sequence_iter_is_end(iter);
       iter = g_sequence_iter_next(iter))
@@ -717,6 +720,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
         s->element == darktable.control->element ||
         (s->element == DT_ACTION_ELEMENT_DEFAULT && has_fallbacks)))
     {
+      num_shortcuts++;
       gchar *sc_escaped = g_markup_escape_text(_shortcut_description(s), -1);
       gchar *ac_escaped = g_markup_escape_text(_action_description(s, show_element > 0 ? 1 : 0), -1);
       description = dt_util_dstrcat(description, "%s<b><big>%s</big></b><i>%s</i>",
@@ -727,12 +731,15 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
     }
   }
 
+  if(!num_shortcuts && original_markup && darktable.control->mapping_widget != widget)
+    g_clear_pointer(&description, g_free);
+
   if(description || original_markup || markup_text)
   {
     markup_text = dt_util_dstrcat(markup_text, "%s%s%s%s",
                                   markup_text && (original_markup || description) ? "\n\n" : "",
                                   original_markup ? original_markup : "",
-                                  original_markup && description ? "\n" : "",
+                                  original_markup && description ? "\n\n" : "",
                                   description ? description : "");
     gtk_tooltip_set_markup(tooltip, markup_text);
     g_free(description);
@@ -793,10 +800,11 @@ static dt_view_type_flags_t _find_views(dt_action_t *action)
       }
     }
     break;
+  case DT_ACTION_TYPE_BLEND:
+    vws = DT_VIEW_DARKROOM;
+    break;
   case DT_ACTION_TYPE_CATEGORY:
-    if(owner == &darktable.control->actions_blend)
-      vws = DT_VIEW_DARKROOM;
-    else if(owner == &darktable.control->actions_fallbacks)
+    if(owner == &darktable.control->actions_fallbacks)
       vws = 0;
     else if(owner == &darktable.control->actions_lua)
       vws = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING |
@@ -939,6 +947,9 @@ static gboolean _yes_no_dialog(gchar *title, gchar *question)
 
 static gboolean _insert_shortcut(dt_shortcut_t *shortcut, gboolean confirm)
 {
+  if(!shortcut->speed && shortcut->effect != DT_ACTION_EFFECT_SET)
+    return FALSE;
+
   dt_shortcut_t *s = calloc(sizeof(dt_shortcut_t), 1);
   *s = *shortcut;
   s->views = _find_views(s->action);
@@ -4048,7 +4059,7 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
 void dt_action_define_preset(dt_action_t *action, const gchar *name)
 {
   gchar *path[3] = { "preset", (gchar *)name, NULL };
-  dt_action_t *p = dt_action_locate(action, path, TRUE);
+  dt_action_t *const p = dt_action_locate(action, path, TRUE);
   if(p)
   {
     p->type = DT_ACTION_TYPE_PRESET;
@@ -4084,7 +4095,7 @@ void dt_action_rename(dt_action_t *action, const gchar *new_name)
     GSequenceIter *iter = g_sequence_get_begin_iter(darktable.control->shortcuts);
     while(!g_sequence_iter_is_end(iter))
     {
-      GSequenceIter *current = iter;
+      GSequenceIter *const current = iter;
       iter = g_sequence_iter_next(iter); // remove will invalidate
 
       dt_shortcut_t *s = g_sequence_get(current);
@@ -4194,7 +4205,7 @@ void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *
     ac->type = DT_ACTION_TYPE_CLOSURE;
 
     // to support multi-instance, save in and own by per instance widget list
-    dt_action_target_t *referral = g_malloc0(sizeof(dt_action_target_t));
+    dt_action_target_t *const referral = g_malloc0(sizeof(dt_action_target_t));
     referral->action = ac;
     referral->target = closure;
     g_closure_ref(closure);
@@ -4287,7 +4298,7 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
       GSequenceIter *speed_adjustment = g_sequence_lookup(darktable.control->shortcuts, &s, _shortcut_compare_func, NULL);
       if(speed_adjustment)
       {
-        dt_shortcut_t *f = g_sequence_get(speed_adjustment);
+        const dt_shortcut_t *const f = g_sequence_get(speed_adjustment);
 
         multiplier *= f->speed;
       }
@@ -4302,16 +4313,21 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
 
 void dt_accel_connect_instance_iop(dt_iop_module_t *module)
 {
+  const gboolean focused = darktable.develop->gui_module
+                           && darktable.develop->gui_module->so == module->so;
+  const dt_action_t *const blend = &darktable.control->actions_blend;
   for(GSList *w = module->widget_list; w; w = w->next)
   {
-    dt_action_target_t *referral = w->data;
-    referral->action->target = referral->target;
+    const dt_action_target_t *const referral = w->data;
+    dt_action_t *const ac = referral->action;
+    if(focused || (ac->owner != blend && ac->owner->owner != blend))
+      ac->target = referral->target;
   }
 }
 
 static void _destroy_referral(gpointer data)
 {
-  dt_action_target_t *referral = data;
+  dt_action_target_t *const referral = data;
   if(referral->action && referral->action->type == DT_ACTION_TYPE_CLOSURE)
   {
     if(referral->action->target == referral->target)
