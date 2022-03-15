@@ -297,10 +297,10 @@ static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_mo
   }
 }
 
-static void _metadata_update_timestamp(const int i, const GTimeSpan value, dt_lib_module_t *self)
+static void _metadata_update_timestamp(const int i, const GTimeSpan gts, dt_lib_module_t *self)
 {
   char datetime[200];
-  const gboolean valid = value ? dt_datetime_gtimespan_to_local(datetime, sizeof(datetime), value) : FALSE;
+  const gboolean valid = gts ? dt_datetime_gtimespan_to_local(datetime, sizeof(datetime), gts, FALSE, TRUE) : FALSE;
   _metadata_update_value(i, valid ? datetime : NODATA_STRING, self);
 }
 
