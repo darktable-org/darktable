@@ -3676,9 +3676,9 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   g_list_free_full(iop_list, free);
 
   // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-  gchar *exif_datetime = dt_datetime_gtimespan_to_sdatetime(gts, TRUE);
+  gchar exif_datetime[DT_DATETIME_LENGTH];
+  dt_datetime_gtimespan_to_exif(exif_datetime, sizeof(exif_datetime), gts);
   xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
-  g_free(exif_datetime);
 
   // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
@@ -3806,9 +3806,9 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
     // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
     if (!(metadata->flags & DT_META_EXIF))
     {
-      gchar *exif_datetime = dt_datetime_gtimespan_to_sdatetime(gts, TRUE);
+      gchar exif_datetime[DT_DATETIME_LENGTH];
+      dt_datetime_gtimespan_to_exif(exif_datetime, sizeof(exif_datetime), gts);
       xmpData["Xmp.exif.DateTimeOriginal"] = exif_datetime;
-      g_free(exif_datetime);
     }
     // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
     Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));

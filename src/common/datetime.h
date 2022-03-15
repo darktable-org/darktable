@@ -28,6 +28,7 @@
 // The GTimeSpan saved in db is an offset to datetime_origin
 // Datetime_taken is to be displayed and stored in XMP without time zone conversion
 // The timestamps consider the timezone (GTimeSpan converted from local to UTC)
+// The text format of datetime follows the exif format except when local format
 
 typedef struct dt_datetime_t
 {
@@ -74,9 +75,6 @@ void dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_len, GDateTime 
 // img cache datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
 GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz);
 
-// img cache datetime to numbers. Returns TRUE if OK.
-gboolean dt_datetime_img_to_numbers(dt_datetime_t *dt, const dt_image_t *img);
-
 // progressive manual entry datetime to exif datetime
 gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_len, const char *entry);
 // progressive manual entry datetime to exif datetime bound
@@ -85,20 +83,20 @@ gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_len
 // add subsec (decimal numbers) to exif datetime
 void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const char*subsec);
 
-// get datetime string from gtimespan
-char *dt_datetime_gtimespan_to_sdatetime(const GTimeSpan gts, const gboolean msec);
-// get gtimespan from datetime string
-GTimeSpan dt_datetime_sdatetime_to_gtimespan(const char *sdt);
+// gtimespan to exif datetime
+gboolean dt_datetime_gtimespan_to_exif(char *sdt, const size_t sdt_len, const GTimeSpan gts);
+// exif datetime to gtimespan
+GTimeSpan dt_datetime_exif_to_gtimespan(const char *sdt);
 
-// get datetime numbers from gtimespan
+// gtimepsan to datetime numbers
 gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan gts);
-// get gtimespan from datetime numbers
+// datetime numbers to gtimespan
 GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt);
 
-// get gtimespan from gdatetime
+// gdatetime to gtimespan
 GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt);
 
-// get gtimespan from now
+// now to gtimespan
 GTimeSpan dt_datetime_now_to_gtimespan(void);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

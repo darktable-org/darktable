@@ -1410,7 +1410,11 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     {
       char *name;
       if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
-        name = dt_datetime_gtimespan_to_sdatetime(sqlite3_column_int64(stmt, 0), FALSE);
+      {
+        char sdt[DT_DATETIME_EXIF_LENGTH] = {0};
+        dt_datetime_gtimespan_to_exif(sdt, sizeof(sdt), sqlite3_column_int64(stmt, 0));
+        name = g_strdup(sdt);
+      }
       else
       {
         const char* sqlite_name = (const char *)sqlite3_column_text(stmt, 0);
