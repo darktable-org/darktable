@@ -2003,14 +2003,13 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
         "lens, exposure, aperture, iso, focal_length, focus_distance, NULL AS datetime_taken, flags, "
         "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, "
         "license, sha1sum, orientation, histogram, lightmap, longitude, latitude, altitude, color_matrix, colorspace, version, "
-        "max_version, NULL AS write_timestamp, history_end, position, aspect_ratio, exposure_bias, "
+        "max_version, write_timestamp, history_end, position, aspect_ratio, exposure_bias, "
         "NULL AS import_timestamp, NULL AS change_timestamp, NULL AS export_timestamp, NULL AS print_timestamp "
         "FROM `images`",
         "[init] can't copy back from images\n");
 
     TRY_PREPARE(stmt, "SELECT id,"
                       " CASE WHEN datetime_taken = '' THEN NULL ELSE datetime_taken END,"
-                      " write_timestamp,"
                       " CASE WHEN import_timestamp = -1 THEN NULL ELSE import_timestamp END,"
                       " CASE WHEN change_timestamp = -1 THEN NULL ELSE change_timestamp END,"
                       " CASE WHEN export_timestamp = -1 THEN NULL ELSE export_timestamp END,"
@@ -2022,9 +2021,9 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       sqlite3_stmt *stmt2;
       sqlite3_prepare_v2(db->handle,
                          "UPDATE `images_new` SET"
-                         " (datetime_taken, write_timestamp, import_timestamp,"
+                         " (datetime_taken, import_timestamp,"
                          "  change_timestamp, export_timestamp, print_timestamp) = "
-                         " (?2, ?3, ?4, ?5, ?6, ?7) WHERE id = ?1",
+                         " (?2, ?3, ?4, ?5, ?6) WHERE id = ?1",
                          -1, &stmt2, NULL);
       sqlite3_bind_int(stmt2, 1, sqlite3_column_int(stmt, 0));
       if(sqlite3_column_type(stmt, 1) != SQLITE_NULL)
@@ -2036,7 +2035,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           g_date_time_unref(gdt);
         }
       }
-      for(int i = 0; i < 5; i++)
+      for(int i = 0; i < 4; i++)
       {
         if(sqlite3_column_type(stmt, i + 2) != SQLITE_NULL)
         {
