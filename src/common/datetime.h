@@ -87,15 +87,16 @@ void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const cha
 
 // get datetime string from gtimespan
 char *dt_datetime_gtimespan_to_sdatetime(const GTimeSpan time, const gboolean msec);
-
 // get gtimespan from datetime string
 GTimeSpan dt_datetime_sdatetime_to_gtimespan(const char *sdt);
 
 // get datetime numbers from gtimespan
 gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan time);
-
 // get gtimespan from datetime numbers
 GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt);
+
+// get gtimespan from gdatetime
+GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

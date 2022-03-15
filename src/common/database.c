@@ -1992,8 +1992,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
         "latitude REAL, altitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, "
         "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
         "aspect_ratio REAL, exposure_bias REAL, "
-        "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
-        "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+        "import_timestamp INTEGER, change_timestamp INTEGER, "
+        "export_timestamp INTEGER, print_timestamp INTEGER, "
         "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
         "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
         "[init] can't create new images table\n");
@@ -2003,32 +2003,53 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
         "lens, exposure, aperture, iso, focal_length, focus_distance, NULL AS datetime_taken, flags, "
         "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, raw_auto_bright_threshold, raw_black, raw_maximum, "
         "license, sha1sum, orientation, histogram, lightmap, longitude, latitude, altitude, color_matrix, colorspace, version, "
-        "max_version, write_timestamp, history_end, position, aspect_ratio, exposure_bias, import_timestamp, change_timestamp, "
-        "export_timestamp, print_timestamp "
+        "max_version, NULL AS write_timestamp, history_end, position, aspect_ratio, exposure_bias, "
+        "NULL AS import_timestamp, NULL AS change_timestamp, NULL AS export_timestamp, NULL AS print_timestamp "
         "FROM `images`",
         "[init] can't copy back from images\n");
 
-    TRY_PREPARE(stmt, "SELECT id, datetime_taken FROM `images`",
+    TRY_PREPARE(stmt, "SELECT id,"
+                      " CASE WHEN datetime_taken = '' THEN NULL ELSE datetime_taken END,"
+                      " write_timestamp,"
+                      " CASE WHEN import_timestamp = -1 THEN NULL ELSE import_timestamp END,"
+                      " CASE WHEN change_timestamp = -1 THEN NULL ELSE change_timestamp END,"
+                      " CASE WHEN export_timestamp = -1 THEN NULL ELSE export_timestamp END,"
+                      " CASE WHEN print_timestamp = -1 THEN NULL ELSE print_timestamp END "
+                      "FROM `images`",
                 "[init] can't get datetime from images\n");
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const int32_t imgid= sqlite3_column_int(stmt, 0);
-      const char *datetime = (const char *)sqlite3_column_text(stmt, 1);
-      GDateTime *gdatetime = dt_datetime_exif_to_gdatetime(datetime, darktable.utc_tz);
-      if(gdatetime)
+      sqlite3_stmt *stmt2;
+      sqlite3_prepare_v2(db->handle,
+                         "UPDATE `images_new` SET"
+                         " (datetime_taken, write_timestamp, import_timestamp,"
+                         "  change_timestamp, export_timestamp, print_timestamp) = "
+                         " (?2, ?3, ?4, ?5, ?6, ?7) WHERE id = ?1",
+                         -1, &stmt2, NULL);
+      sqlite3_bind_int(stmt2, 1, sqlite3_column_int(stmt, 0));
+      if(sqlite3_column_type(stmt, 1) != SQLITE_NULL)
       {
-        GTimeSpan dt = g_date_time_difference(gdatetime, darktable.origin_gdt);
-        // insert the hash for that image
-        sqlite3_stmt *stmt2;
-        sqlite3_prepare_v2(db->handle,
-                           "UPDATE `images_new` SET datetime_taken = ?2 WHERE id = ?1",
-                           -1, &stmt2, NULL);
-        sqlite3_bind_int(stmt2, 1, imgid);
-        sqlite3_bind_int64(stmt2, 2, dt);
-        TRY_STEP(stmt2, SQLITE_DONE, "[init] can't update datetime into images_new table\n");
-        sqlite3_finalize(stmt2);
-        g_date_time_unref(gdatetime);
+        GDateTime *gdt = dt_datetime_exif_to_gdatetime((const char *)sqlite3_column_text(stmt, 1), darktable.utc_tz);
+        if(gdt)
+        {
+          sqlite3_bind_int64(stmt2, 2, dt_datetime_gdatetime_to_gtimespan(gdt));
+          g_date_time_unref(gdt);
+        }
       }
+      for(int i = 0; i < 5; i++)
+      {
+        if(sqlite3_column_type(stmt, i + 2) != SQLITE_NULL)
+        {
+          GDateTime *gdt = g_date_time_new_from_unix_utc(sqlite3_column_int(stmt, i + 2));
+          if(gdt)
+          {
+            sqlite3_bind_int64(stmt2, i + 3, dt_datetime_gdatetime_to_gtimespan(gdt));
+            g_date_time_unref(gdt);
+          }
+        }
+      }
+      TRY_STEP(stmt2, SQLITE_DONE, "[init] can't update datetimes into images_new table\n");
+      sqlite3_finalize(stmt2);
     }
     sqlite3_finalize(stmt);
 
