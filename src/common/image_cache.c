@@ -113,10 +113,10 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       img->exif_exposure_bias = sqlite3_column_double(stmt, 28);
     else
       img->exif_exposure_bias = NAN;
-    img->import_timestamp = sqlite3_column_int(stmt, 29);
-    img->change_timestamp = sqlite3_column_int(stmt, 30);
-    img->export_timestamp = sqlite3_column_int(stmt, 31);
-    img->print_timestamp = sqlite3_column_int(stmt, 32);
+    img->import_timestamp = sqlite3_column_int64(stmt, 29);
+    img->change_timestamp = sqlite3_column_int64(stmt, 30);
+    img->export_timestamp = sqlite3_column_int64(stmt, 31);
+    img->print_timestamp = sqlite3_column_int64(stmt, 32);
     img->final_width = sqlite3_column_int(stmt, 33);
     img->final_height = sqlite3_column_int(stmt, 34);
 
@@ -287,10 +287,10 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 25, img->raw_white_point);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 26, img->aspect_ratio);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 27, img->exif_exposure_bias);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 28, img->import_timestamp);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 29, img->change_timestamp);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 30, img->export_timestamp);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 31, img->print_timestamp);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 28, img->import_timestamp);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 29, img->change_timestamp);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 30, img->export_timestamp);
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 31, img->print_timestamp);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 32, img->final_width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 33, img->final_height);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 34, img->id);

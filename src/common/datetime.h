@@ -39,8 +39,8 @@ typedef struct dt_datetime_t
 // exif datetime to numbers. Returns TRUE if OK.
 gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif);
 
-// time_t to display local string. Returns TRUE if OK.
-gboolean dt_datetime_unix_lt_to_local(char *local, const size_t local_size, const time_t *unix);
+// gtimespan to display local string. Returns TRUE if OK.
+gboolean dt_datetime_gtimespan_to_local(char *local, const size_t local_size, const GTimeSpan gts);
 
 // img cache datetime to display local string. Returns TRUE if OK.
 gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
@@ -91,7 +91,7 @@ char *dt_datetime_gtimespan_to_sdatetime(const GTimeSpan time, const gboolean ms
 GTimeSpan dt_datetime_sdatetime_to_gtimespan(const char *sdt);
 
 // get datetime numbers from gtimespan
-gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan time);
+gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan gts);
 // get gtimespan from datetime numbers
 GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt);
 
