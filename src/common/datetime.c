@@ -55,36 +55,21 @@ gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
   return FALSE;
 }
 
-gboolean dt_datetime_unix_lt_to_local(char *local, const size_t local_size, const time_t *unix)
+gboolean dt_datetime_gtimespan_to_local(char *local, const size_t local_size, const GTimeSpan gts)
 {
-  struct tm tm_val;
-  // just %c is too long and includes a time zone that we don't know from exif
-  const size_t datetime_len = strftime(local, local_size, "%a %x %X", localtime_r(unix, &tm_val));
-  if(datetime_len > 0)
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, gts);
+  if(gdt)
   {
-    const gboolean valid_utf = g_utf8_validate(local, datetime_len, NULL);
-    if(valid_utf)
-      return TRUE;
-    else
+    gchar *sdt = g_date_time_format(gdt, "%a %x %X");
+    g_date_time_unref(gdt);
+    if(sdt)
     {
-      GError *error = NULL;
-      gchar *local_datetime = g_locale_to_utf8(local, datetime_len, NULL, NULL, &error);
-      if(local_datetime)
-      {
-        g_strlcpy(local, local_datetime, local_size);
-        g_free(local_datetime);
-        return TRUE;
-      }
-      else
-      {
-        fprintf(stderr, "[metadata timestamp] could not convert '%s' to UTF-8: %s\n", local, error->message);
-        g_error_free(error);
-        return FALSE;
-      }
+      g_strlcpy(local, sdt, local_size);
+      g_free(sdt);
+      return TRUE;
     }
   }
-  else
-    return FALSE;
+  return FALSE;
 }
 
 gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
@@ -331,9 +316,9 @@ GTimeSpan dt_datetime_sdatetime_to_gtimespan(const char *sdt)
   return gts;
 }
 
-gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan time)
+gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan gts)
 {
-  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, time);
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, gts);
   if(gdt)
   {
     const gboolean res = _datetime_gdatetime_to_numbers(dt, gdt);

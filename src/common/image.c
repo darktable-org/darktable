@@ -1737,7 +1737,7 @@ void dt_image_init(dt_image_t *img)
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
 
-  img->import_timestamp = img->change_timestamp = img->export_timestamp = img->print_timestamp = -1;
+  img->import_timestamp = img->change_timestamp = img->export_timestamp = img->print_timestamp = 0;
 
   img->legacy_flip.legacy = 0;
   img->legacy_flip.user_flip = 0;

@@ -230,7 +230,7 @@ typedef struct dt_image_t
   int32_t num, flags, film_id, id, group_id, version;
 
   //timestamps
-  time_t import_timestamp, change_timestamp, export_timestamp, print_timestamp;
+  GTimeSpan import_timestamp, change_timestamp, export_timestamp, print_timestamp;
 
   dt_image_loader_t loader;
 
