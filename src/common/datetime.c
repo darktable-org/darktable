@@ -291,17 +291,17 @@ void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const cha
   exif[exif_len - 1] = '\0';
 }
 
-char *dt_datetime_gtimespan_to_sdatetime(const GTimeSpan time, const gboolean msec)
+char *dt_datetime_gtimespan_to_sdatetime(const GTimeSpan gts, const gboolean msec)
 {
-  char tdt[DT_DATETIME_LENGTH];
-  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, time);
+  char sdt[DT_DATETIME_LENGTH];
+  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, gts);
   if(gdt)
   {
-    dt_datetime_gdatetime_to_exif(tdt, msec ? DT_DATETIME_LENGTH : DT_DATETIME_EXIF_LENGTH, gdt);
+    dt_datetime_gdatetime_to_exif(sdt, msec ? DT_DATETIME_LENGTH : DT_DATETIME_EXIF_LENGTH, gdt);
     g_date_time_unref(gdt);
   }
-  else tdt[0] = '\0';
-  return g_strdup(tdt);
+  else sdt[0] = '\0';
+  return g_strdup(sdt);
 }
 
 GTimeSpan dt_datetime_sdatetime_to_gtimespan(const char *sdt)
