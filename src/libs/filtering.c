@@ -153,6 +153,7 @@ static void _rule_set_raw_text(dt_lib_filtering_rule_t *rule, const gchar *text,
 
 static void _range_changed(GtkWidget *widget, gpointer user_data);
 static void _range_widget_add_to_rule(dt_lib_filtering_rule_t *rule, _widgets_range_t *special, const gboolean top);
+static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self);
 
 typedef void (*_widget_init_func)(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                   const gchar *text, dt_lib_module_t *self, gboolean top);
@@ -583,11 +584,6 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
   rule->prop = mode;
   gtk_button_set_label(GTK_BUTTON(rule->w_prop), dt_collection_name(mode));
 
-  // increase the nb of use of this property
-  char confname[200] = { 0 };
-  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/nb_use_%d", mode);
-  dt_conf_set_int(confname, dt_conf_get_int(confname) + 1);
-
   // re-init the special widgets
   _widget_init_special(rule, "", self, FALSE);
   _widget_update(rule);
@@ -653,8 +649,6 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     dt_conf_set_string(confname, "");
     d->nb_rules++;
     dt_conf_set_int("plugins/lighttable/filtering/num_rules", d->nb_rules);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/nb_use_%d", mode);
-    dt_conf_set_int(confname, dt_conf_get_int(confname) + 1);
 
     _filters_gui_update(self);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
@@ -666,7 +660,7 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
                             GCallback callback, gpointer data, dt_lib_module_t *self)
 {
   // we first verify that the filter is defined
-  if(!title && !_filters_get(id)) return;
+  if(callback != G_CALLBACK(_sort_append_sort) && !title && !_filters_get(id)) return;
 
   GtkWidget *smt = gtk_menu_item_new_with_label(name);
   if(title)
@@ -757,6 +751,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
 
   dt_gui_menu_popup(GTK_MENU(spop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
   return TRUE;
+#undef ADD_COLLECT_ENTRY
 }
 
 static gboolean _event_rule_append(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -1406,51 +1401,54 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
   d->manual_sort_set++;
   sort->num = num;
-  sort->lib = d;
-  sort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(sort->box, "collect-sort-widget");
   sort->sortid = sortid;
-  sort->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
-                                            _("determine the sort order of shown images"), sortid,
-                                            _sort_combobox_changed, sort, NULL);
+
+  if(!sort->box)
+  {
+    sort->lib = d;
+    sort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_set_name(sort->box, "collect-sort-widget");
+    sort->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
+                                              _("determine the sort order of shown images"), sortid,
+                                              _sort_combobox_changed, sort, NULL);
 
 #define ADD_SORT_ENTRY(value)                                                                                     \
   dt_bauhaus_combobox_add_full(sort->sort, dt_collection_sort_name(value), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,       \
                                GUINT_TO_POINTER(value), NULL, TRUE)
 
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_FILENAME);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_DATETIME);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_CHANGE_TIMESTAMP);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_EXPORT_TIMESTAMP);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_PRINT_TIMESTAMP);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_RATING);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_ID);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_COLOR);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_GROUP);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_PATH);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_CUSTOM_ORDER);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_TITLE);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_DESCRIPTION);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_ASPECT_RATIO);
-  ADD_SORT_ENTRY(DT_COLLECTION_SORT_SHUFFLE);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_FILENAME);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_DATETIME);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_CHANGE_TIMESTAMP);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_EXPORT_TIMESTAMP);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_PRINT_TIMESTAMP);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_RATING);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_ID);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_COLOR);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_GROUP);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_PATH);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_CUSTOM_ORDER);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_TITLE);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_DESCRIPTION);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_ASPECT_RATIO);
+    ADD_SORT_ENTRY(DT_COLLECTION_SORT_SHUFFLE);
 
 #undef ADD_SORT_ENTRY
 
-  dt_bauhaus_combobox_set_from_value(sort->sort, sortid);
-  gtk_box_pack_start(GTK_BOX(sort->box), sort->sort, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(sort->box), sort->sort, TRUE, TRUE, 0);
 
-  /* reverse order checkbutton */
-  sort->direction = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
-  if(!sortorder)
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(sort->direction), dtgtk_cairo_paint_sortby, CPF_DIRECTION_DOWN,
-                                 NULL);
+    /* reverse order checkbutton */
+    sort->direction = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
+    gtk_widget_set_halign(sort->direction, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(sort->box), sort->direction, FALSE, TRUE, 0);
+    g_signal_connect(G_OBJECT(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
+    GtkStyleContext *context = gtk_widget_get_style_context(sort->direction);
+    gtk_style_context_add_class(context, "dt_transparent_background");
+  }
+
+  dt_bauhaus_combobox_set_from_value(sort->sort, sortid);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sort->direction), !sortorder);
-  gtk_widget_set_halign(sort->direction, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(sort->box), sort->direction, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
-  GtkStyleContext *context = gtk_widget_get_style_context(sort->direction);
-  gtk_style_context_add_class(context, "dt_transparent_background");
+  _sort_update_arrow(sort->direction);
 
   gtk_widget_show_all(sort->box);
 
@@ -1522,6 +1520,67 @@ static void _sort_gui_update(dt_lib_module_t *self)
   --darktable.gui->reset;
 }
 
+static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)
+{
+  // add new rule
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  const int sortid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
+  char confname[200] = { 0 };
+
+  if(sortid >= 0)
+  {
+    // add an empty rule
+    if(d->nb_sort >= DT_COLLECTION_MAX_RULES)
+    {
+      dt_control_log("You can't have more than %d sort orders", DT_COLLECTION_MAX_RULES);
+      return;
+    }
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", d->nb_sort);
+    dt_conf_set_int(confname, sortid);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", d->nb_sort);
+    dt_conf_set_int(confname, 0);
+    d->nb_sort++;
+    dt_conf_set_int("plugins/lighttable/filtering/num_sort", d->nb_sort);
+
+    _sort_gui_update(self);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
+                               NULL);
+  }
+}
+
+static gboolean _sort_show_add_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  // we show a popup with all the possible sort
+  GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
+  gtk_widget_set_name(GTK_WIDGET(spop), "collect-popup");
+  gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
+
+#define ADD_SORT_ENTRY(value)                                                                                     \
+  _popup_add_item(spop, dt_collection_sort_name(value), value, FALSE, G_CALLBACK(_sort_append_sort), NULL, self);
+
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_FILENAME);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_DATETIME);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_CHANGE_TIMESTAMP);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_EXPORT_TIMESTAMP);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_PRINT_TIMESTAMP);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_RATING);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_ID);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_COLOR);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_GROUP);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_PATH);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_CUSTOM_ORDER);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_TITLE);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_DESCRIPTION);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_ASPECT_RATIO);
+  ADD_SORT_ENTRY(DT_COLLECTION_SORT_SHUFFLE);
+
+  dt_gui_menu_popup(GTK_MENU(spop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
+#undef ADD_SORT_ENTRY
+
+  return TRUE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)calloc(1, sizeof(dt_lib_filtering_t));
@@ -1569,7 +1628,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(bhbox), d->sort_box, TRUE, TRUE, 0);
   btn = dt_ui_button_new(_("+"), _("add sort order"), NULL);
   gtk_widget_set_valign(btn, GTK_ALIGN_END);
-  // g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_history_show), self);
+  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_sort_show_add_popup), self);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, FALSE, TRUE, 0);
 
