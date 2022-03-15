@@ -480,11 +480,11 @@ check_exposure() {
 	convert_flags_gm="-process analyze= -format %[BrightnessMean] info:-"
 
 	if convert -version | grep ImageMagick &>/dev/null; then
-		over=$(convert -threshold 99% "$input" $convert_flags_im)
-		under=$(convert -negate -threshold 99% "$input" $convert_flags_im)
+		over=$(convert -threshold 99% "$input" $convert_flags_im | awk '{ print int($1) }')
+		under=$(convert -negate -threshold 99% "$input" $convert_flags_im | awk '{ print int($1) }')
 	else
-		over=$(convert -threshold 99% "$input" $convert_flags_gm)
-		under=$(convert -negate -threshold 99% "$input" $convert_flags_gm)
+		over=$(convert -threshold 99% "$input" $convert_flags_gm | awk '{ print int($1) }')
+		under=$(convert -negate -threshold 99% "$input" $convert_flags_gm | awk '{ print int($1) }')
 	fi
 
 	if [ "$over" ] && [ "$over" -lt $pixel_percentile ]; then
