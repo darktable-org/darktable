@@ -1551,7 +1551,6 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
   }
 }
 
-
 static void draw_equilateral_triangle(cairo_t *cr, float radius)
 {
   const float sin = 0.866025404 * radius;
@@ -1561,7 +1560,6 @@ static void draw_equilateral_triangle(cairo_t *cr, float radius)
   cairo_line_to(cr, sin, -cos);
   cairo_line_to(cr, 0.0, radius);
 }
-
 
 static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr, float wd, const GdkRGBA fg_color, const GdkRGBA border_color)
 {
@@ -1638,11 +1636,17 @@ static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
     {
       case DT_BAUHAUS_COMBOBOX:
         cairo_translate(cr, width - darktable.bauhaus->quad_width * .5f, height * .4f);
-        draw_equilateral_triangle(cr, darktable.bauhaus->quad_width * .3f);
-        cairo_fill_preserve(cr);
-        cairo_set_line_width(cr, 0.5);
-        set_color(cr, darktable.bauhaus->color_border);
-        cairo_stroke(cr);
+          GdkRGBA *text_color = default_color_assign();
+          GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(w));
+          const GtkStateFlags state = gtk_widget_get_state_flags(GTK_WIDGET(w));
+          gtk_style_context_get_color(context, state, text_color);
+          const float r = darktable.bauhaus->quad_width * .25f;
+          cairo_move_to(cr, -r, 0);
+          cairo_line_to(cr, 0, r);
+          cairo_line_to(cr, r, 0);
+          set_color(cr, *text_color);
+          cairo_stroke(cr);
+        gdk_rgba_free(text_color);
         break;
       case DT_BAUHAUS_SLIDER:
         break;
@@ -2223,6 +2227,9 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
+
+  // render eventual css borders
+  gtk_render_frame(context, crf, 0, 0, width, height);
 
   gdk_rgba_free(text_color);
   gdk_rgba_free(fg_color);
