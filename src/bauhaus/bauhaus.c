@@ -1780,7 +1780,8 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
   GtkAllocation allocation_popup_window;
   gtk_widget_get_allocation(darktable.bauhaus->popup_window, &allocation_popup_window);
 
-  const int width = allocation_popup_window.width, height = inner_height(allocation_popup_window);
+  const int width = allocation_popup_window.width;
+  const int height = inner_height(allocation_popup_window);
   const int base_width = width - darktable.bauhaus->widget_space;
   const int base_height = darktable.bauhaus->line_height + darktable.bauhaus->widget_space * 2.0f + INNER_PADDING * 2.0f;
 
@@ -1791,7 +1792,7 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       // only set to what's in the filtered list.
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       const int active = darktable.bauhaus->end_mouse_y >= 0
-                 ? ((darktable.bauhaus->end_mouse_y - darktable.bauhaus->widget_space) / (darktable.bauhaus->line_height))
+                 ? ((darktable.bauhaus->end_mouse_y - INNER_PADDING) / (darktable.bauhaus->line_height))
                  : d->active;
 
       int k = 0, i = 0, kk = 0, match = 1;
@@ -1995,7 +1996,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       gboolean first_label = TRUE;
       gboolean show_box_label = TRUE;
       int k = 0, i = 0;
-      const int hovered = (darktable.bauhaus->mouse_y - darktable.bauhaus->widget_space) / darktable.bauhaus->line_height;
+      const int hovered = (darktable.bauhaus->mouse_y - INNER_PADDING) / darktable.bauhaus->line_height;
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
       const PangoEllipsizeMode ellipsis = d->entries_ellipsis;
       ht = darktable.bauhaus->line_height;
@@ -2022,7 +2023,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
           {
             gchar *esc_label = g_markup_escape_text(entry->label, -1);
             gchar *label = g_strdup_printf("<b>%s</b>", esc_label);
-            label_width = show_pango_text(w, context, cr, label, INNER_PADDING, ht * k + darktable.bauhaus->widget_space,
+            label_width = show_pango_text(w, context, cr, label, INNER_PADDING,
+                                          ht * k + INNER_PADDING,
                                           max_width, FALSE, FALSE, ellipsis, TRUE, FALSE);
             g_free(label);
             g_free(esc_label);
@@ -2030,7 +2032,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
           else
             label_width
                 = show_pango_text(w, context, cr, entry->label, wd - darktable.bauhaus->quad_width,
-                                  ht * k + darktable.bauhaus->widget_space, max_width, TRUE, FALSE, ellipsis, FALSE, FALSE);
+                                  ht * k + INNER_PADDING,
+                                  max_width, TRUE, FALSE, ellipsis, FALSE, FALSE);
 
           // prefer the entry over the label wrt. ellipsization when expanded
           if(first_label)
@@ -2052,7 +2055,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       {
         set_color(cr, text_color);
         gchar *lb = _build_label(w);
-        show_pango_text(w, context, cr, lb, INNER_PADDING, darktable.bauhaus->widget_space,
+        show_pango_text(w, context, cr, lb, INNER_PADDING, INNER_PADDING,
                         wd - INNER_PADDING - darktable.bauhaus->quad_width - first_label_width, FALSE, FALSE,
                         PANGO_ELLIPSIZE_END, FALSE, TRUE);
         g_free(lb);
@@ -2163,9 +2166,10 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
       //calculate total widths of label and combobox
       gchar *label_text = _build_label(w);
       const float label_width
-          = show_pango_text(w, context, cr, label_text, 0, 0, 0, FALSE, TRUE, PANGO_ELLIPSIZE_END, FALSE, TRUE);
+          = show_pango_text(w, context, cr, label_text, 0, INNER_PADDING, 0, FALSE, TRUE, PANGO_ELLIPSIZE_END, FALSE, TRUE);
       const float combo_width
-        = show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0, 0,
+        = show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING,
+                          INNER_PADDING, 0,
                           TRUE, TRUE, combo_ellipsis, FALSE, FALSE);
 
       //check if they fit
@@ -2173,27 +2177,29 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
       {
         //they don't fit: evenly divide the available width between the two in proportion
         const float ratio = label_width / (label_width + combo_width);
-        show_pango_text(w, context, cr, label_text, 0, darktable.bauhaus->widget_space,
+        show_pango_text(w, context, cr, label_text, 0, INNER_PADDING,
                         available_width * ratio - INNER_PADDING * 2, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE,
                         TRUE);
         if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
-          show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, darktable.bauhaus->widget_space,
+          show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING,
+                          INNER_PADDING,
                           available_width * (1.0f - ratio),
                           TRUE, FALSE, combo_ellipsis, FALSE, FALSE);
         else
-          show_pango_text(w, context, cr, text, INNER_PADDING, darktable.bauhaus->widget_space,
+          show_pango_text(w, context, cr, text, INNER_PADDING, INNER_PADDING,
                           available_width * (1.0f - ratio),
                           FALSE, FALSE, combo_ellipsis, FALSE, FALSE);
       }
       else
       {
-        show_pango_text(w, context, cr, label_text, 0, darktable.bauhaus->widget_space, 0, FALSE, FALSE,
+        show_pango_text(w, context, cr, label_text, 0, INNER_PADDING, 0, FALSE, FALSE,
                         PANGO_ELLIPSIZE_END, FALSE, TRUE);
         if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
-          show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, darktable.bauhaus->widget_space, 0,
+          show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING,
+                          INNER_PADDING, 0,
                           TRUE, FALSE, combo_ellipsis, FALSE, FALSE);
         else
-          show_pango_text(w, context, cr, text, INNER_PADDING, darktable.bauhaus->widget_space, 0,
+          show_pango_text(w, context, cr, text, INNER_PADDING, INNER_PADDING, 0,
                           FALSE, FALSE, combo_ellipsis, FALSE, FALSE);
       }
       g_free(label_text);
