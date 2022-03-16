@@ -1260,7 +1260,7 @@ static gboolean _event_history_show(GtkWidget *widget, GdkEventButton *event, dt
 // save a sort rule inside the conf
 static void _conf_update_sort(_widgets_sort_t *sort)
 {
-  const gboolean order = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
+  const gboolean order = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
   const int sortid = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(sort->sort));
 
   char confname[200] = { 0 };
@@ -1451,7 +1451,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
   }
 
   dt_bauhaus_combobox_set_from_value(sort->sort, sortid);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sort->direction), !sortorder);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sort->direction), sortorder);
   gtk_widget_set_visible(sort->close, (sort->lib->nb_sort > 1) && !top);
   _sort_update_arrow(sort->direction);
 

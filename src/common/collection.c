@@ -765,7 +765,7 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort, cons
       }
 
     case DT_COLLECTION_SORT_RATING:
-      sq = g_strdup_printf("CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END%s", (sortorder) ? "" : " DESC");
+      sq = g_strdup_printf("CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_FILENAME:
@@ -773,8 +773,7 @@ static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort, cons
       break;
 
     case DT_COLLECTION_SORT_ID:
-      sq = g_strdup_printf("mi.id%s", (sortorder) ? " DESC" : ""); /* makes no sense to consider second order here
-                                                                      since ID is unique ;) */
+      sq = g_strdup_printf("mi.id%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_COLOR:
