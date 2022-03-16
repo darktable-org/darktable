@@ -1470,6 +1470,8 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
   sort->num = num;
   sort->sortid = sortid;
 
+  const gboolean top = (sort == &d->sorttop);
+
   const gboolean ret = (!sort->box);
 
   if(!sort->box)
@@ -1477,9 +1479,10 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     sort->lib = d;
     sort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(sort->box, "collect-sort-widget");
-    sort->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
-                                              _("determine the sort order of shown images"), sortid,
-                                              _sort_combobox_changed, sort, NULL);
+    sort->sort = dt_bauhaus_combobox_new(NULL);
+    if(!top) dt_bauhaus_widget_set_label(sort->sort, NULL, N_("sort by"));
+    gtk_widget_set_tooltip_text(sort->sort, _("determine the sort order of shown images"));
+    g_signal_connect(G_OBJECT(sort->sort), "value-changed", G_CALLBACK(_sort_combobox_changed), sort);
 
 #define ADD_SORT_ENTRY(value)                                                                                     \
   dt_bauhaus_combobox_add_full(sort->sort, dt_collection_sort_name(value), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,       \
@@ -1525,7 +1528,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
 
   dt_bauhaus_combobox_set_from_value(sort->sort, sortid);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sort->direction), !sortorder);
-  gtk_widget_set_visible(sort->close, sort->lib->nb_sort > 1);
+  gtk_widget_set_visible(sort->close, (sort->lib->nb_sort > 1) && !top);
   _sort_update_arrow(sort->direction);
 
   gtk_widget_show_all(sort->box);
