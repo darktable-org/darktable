@@ -354,15 +354,42 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
-static void _history_save(dt_lib_filtering_t *d)
+static void _sort_serialize(char *buf, int bufsize)
+{
+  char confname[200];
+  int c;
+  const int num_sort = dt_conf_get_int("plugins/lighttable/filtering/num_sort");
+  c = snprintf(buf, bufsize, "%d:", num_sort);
+  buf += c;
+  bufsize -= c;
+  for(int k = 0; k < num_sort; k++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", k);
+    const int sortid = dt_conf_get_int(confname);
+    c = snprintf(buf, bufsize, "%d:", sortid);
+    buf += c;
+    bufsize -= c;
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", k);
+    const int sortorder = dt_conf_get_int(confname);
+    c = snprintf(buf, bufsize, "%d$", sortorder);
+    buf += c;
+    bufsize -= c;
+  }
+}
+
+static void _history_save(dt_lib_filtering_t *d, const gboolean sort)
 {
   // get the string of the rules
   char buf[4096] = { 0 };
-  dt_collection_serialize(buf, sizeof(buf), TRUE);
+  if(sort)
+    _sort_serialize(buf, sizeof(buf));
+  else
+    dt_collection_serialize(buf, sizeof(buf), TRUE);
 
   // compare to last saved history
   char confname[200] = { 0 };
-  gchar *str = dt_conf_get_string("plugins/lighttable/filtering/history0");
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory0", (sort) ? "sort_" : "");
+  gchar *str = dt_conf_get_string(confname);
   if(!g_strcmp0(str, buf))
   {
     g_free(str);
@@ -371,11 +398,12 @@ static void _history_save(dt_lib_filtering_t *d)
   g_free(str);
 
   // remove all subseqeunt history that have the same values
-  const int nbmax = dt_conf_get_int("plugins/lighttable/filtering/history_max");
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory_max", (sort) ? "sort_" : "");
+  const int nbmax = dt_conf_get_int(confname);
   int move = 0;
   for(int i = 1; i < nbmax; i++)
   {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "", i);
     gchar *string = dt_conf_get_string(confname);
 
     if(!g_strcmp0(string, buf))
@@ -386,7 +414,8 @@ static void _history_save(dt_lib_filtering_t *d)
     else if(move > 0)
     {
       dt_conf_set_string(confname, "");
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i - move);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "",
+               i - move);
       dt_conf_set_string(confname, string);
     }
     g_free(string);
@@ -395,16 +424,17 @@ static void _history_save(dt_lib_filtering_t *d)
   // move all history entries +1 (and delete the last one)
   for(int i = nbmax - 2; i >= 0; i--)
   {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "", i);
     gchar *string = dt_conf_get_string(confname);
 
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i + 1);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "", i + 1);
     dt_conf_set_string(confname, string);
     g_free(string);
   }
 
   // save current history
-  dt_conf_set_string("plugins/lighttable/filtering/history0", buf);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory0", (sort) ? "sort_" : "");
+  dt_conf_set_string(confname, buf);
 }
 
 static void _conf_update_rule(dt_lib_filtering_rule_t *rule)
@@ -424,7 +454,7 @@ static void _conf_update_rule(dt_lib_filtering_rule_t *rule)
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", rule->num);
   dt_conf_set_int(confname, rule->topbar);
 
-  _history_save(rule->lib);
+  _history_save(rule->lib, FALSE);
 }
 
 static void _event_rule_changed(GtkWidget *entry, dt_lib_filtering_rule_t *rule)
@@ -1296,6 +1326,8 @@ static void _conf_update_sort(_widgets_sort_t *sort)
   dt_conf_set_int(confname, sortid);
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", sort->num);
   dt_conf_set_int(confname, order);
+
+  _history_save(sort->lib, TRUE);
 }
 
 /* save the images order if the first collect filter is on tag*/
@@ -1423,6 +1455,7 @@ static gboolean _sort_close(GtkWidget *widget, GdkEventButton *event, dt_lib_mod
     dt_conf_set_int(confname, sortorder);
   }
 
+  _history_save(d, TRUE);
   _sort_gui_update(self);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 
@@ -1579,6 +1612,7 @@ static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)
     d->nb_sort++;
     dt_conf_set_int("plugins/lighttable/filtering/num_sort", d->nb_sort);
 
+    _history_save(d, TRUE);
     _sort_gui_update(self);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
                                NULL);
@@ -1615,6 +1649,113 @@ static gboolean _sort_show_add_popup(GtkWidget *widget, GdkEventButton *event, d
   dt_gui_menu_popup(GTK_MENU(spop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 #undef ADD_SORT_ENTRY
 
+  return TRUE;
+}
+
+static void _sort_history_pretty_print(const char *buf, char *out, size_t outsize)
+{
+  memset(out, 0, outsize);
+
+  if(!buf || buf[0] == '\0') return;
+
+  int num_rules = 0;
+  int sortid, sortorder;
+  int c;
+  sscanf(buf, "%d", &num_rules);
+  while(buf[0] != '\0' && buf[0] != ':') buf++;
+  if(buf[0] == ':') buf++;
+
+  for(int k = 0; k < num_rules; k++)
+  {
+    const int n = sscanf(buf, "%d:%d", &sortid, &sortorder);
+
+    if(n == 2)
+    {
+      c = snprintf(out, outsize, "%s%s (%s)", (k > 0) ? " - " : "", dt_collection_sort_name(sortid),
+                   (sortorder) ? _("DESC") : _("ASC"));
+      out += c;
+      outsize -= c;
+    }
+    while(buf[0] != '$' && buf[0] != '\0') buf++;
+    if(buf[0] == '$') buf++;
+  }
+}
+
+static void _sort_deserialize(const char *buf)
+{
+  char confname[200];
+  int num_sort = 0;
+  sscanf(buf, "%d", &num_sort);
+  int sortid = 0, sortorder = 0;
+  dt_conf_set_int("plugins/lighttable/filtering/num_sort", num_sort);
+  while(buf[0] != '\0' && buf[0] != ':') buf++;
+  if(buf[0] == ':') buf++;
+  for(int k = 0; k < num_sort; k++)
+  {
+    const int n = sscanf(buf, "%d:%d", &sortid, &sortorder);
+    if(n == 2)
+    {
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", k);
+      dt_conf_set_int(confname, sortid);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", k);
+      dt_conf_set_int(confname, sortorder);
+    }
+    else
+    {
+      dt_conf_set_int("plugins/lighttable/filtering/num_sort", k);
+      break;
+    }
+    while(buf[0] != '$' && buf[0] != '\0') buf++;
+    if(buf[0] == '$') buf++;
+  }
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+}
+
+static void _sort_history_apply(GtkWidget *widget, dt_lib_module_t *self)
+{
+  const int hid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history"));
+  if(hid < 0 || hid >= dt_conf_get_int("plugins/lighttable/filtering/sort_history_max")) return;
+
+  char confname[200];
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort_history%1d", hid);
+  const char *line = dt_conf_get_string_const(confname);
+  if(line && line[0] != '\0')
+  {
+    _sort_deserialize(line);
+    _sort_gui_update(self);
+  }
+}
+
+static gboolean _sort_history_show(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  // we show a popup with all the history entries
+  GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
+  gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
+  gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
+
+  const int maxitems = dt_conf_get_int("plugins/lighttable/filtering/sort_history_max");
+
+  for(int i = 0; i < maxitems; i++)
+  {
+    char confname[200];
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort_history%1d", i);
+    const char *line = dt_conf_get_string_const(confname);
+    if(line && line[0] != '\0')
+    {
+      char str[2048] = { 0 };
+      _sort_history_pretty_print(line, str, sizeof(str));
+      GtkWidget *smt = gtk_menu_item_new_with_label(str);
+      gtk_widget_set_name(smt, "collect-popup-item");
+      gtk_widget_set_tooltip_text(smt, str);
+      g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
+      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_sort_history_apply), self);
+      gtk_menu_shell_append(pop, smt);
+    }
+    else
+      break;
+  }
+
+  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
   return TRUE;
 }
 
@@ -1669,7 +1810,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_sort_show_add_popup), self);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   btn = dt_ui_button_new(_("history"), _("revert to a previous set of sort orders"), NULL);
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_history_show), self);
+  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_sort_history_show), self);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
 
