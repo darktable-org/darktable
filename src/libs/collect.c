@@ -2283,8 +2283,7 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
 
   _set_tooltip(d);
 
-  gboolean order_request = FALSE;
-  uint32_t order = 0;
+  gchar *order = NULL;
   if(c->active_rule == 0)
   {
     const int prev_property = dt_conf_get_int("plugins/lighttable/collect/item0");
@@ -2292,22 +2291,21 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
     if(prev_property != DT_COLLECTION_PROP_TAG && property == DT_COLLECTION_PROP_TAG)
     {
       // save global order
-      const uint32_t sort = dt_collection_get_sort_field(darktable.collection);
-      const gboolean descending = dt_collection_get_sort_descending(darktable.collection);
-      dt_conf_set_int("plugins/lighttable/collect/order", sort | (descending ? DT_COLLECTION_ORDER_FLAG : 0));
+      char buf[4096] = { 0 };
+      dt_collection_sort_serialize(buf, sizeof(buf));
+      dt_conf_set_string("plugins/lighttable/collect/lastorder", buf);
     }
     else if(prev_property == DT_COLLECTION_PROP_TAG && property != DT_COLLECTION_PROP_TAG)
     {
       // restore global order
-      order = dt_conf_get_int("plugins/lighttable/collect/order");
-      order_request = TRUE;
+      order = dt_conf_get_string("plugins/lighttable/collect/lastorder");
       dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
     }
   }
 
   set_properties(d);
   c->view_rule = -1;
-  if(order_request) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
+  if(order) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
@@ -2328,8 +2326,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   }
 
   gchar *text;
-  gboolean order_request = FALSE;
-  int order;
+  gchar *order = NULL;
 
   const int active = d->active_rule;
   d->rule[active].typing = FALSE;
@@ -2408,17 +2405,17 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
         const uint32_t tagid = dt_tag_get_tag_id_by_name(text);
         if(tagid)
         {
-          order_request = TRUE;
           if(dt_tag_get_tag_order_by_id(tagid, &sort, &descending))
           {
-            order = sort | (descending  ? DT_COLLECTION_ORDER_FLAG : 0);
+            order = g_strdup_printf("1:%d:%d$", sort, descending);
           }
           else
           {
             // the tag order is not set yet - default order (filename)
-            order = DT_COLLECTION_SORT_FILENAME;
-            dt_tag_set_tag_order_by_id(tagid, order & ~DT_COLLECTION_ORDER_FLAG,
-                                       order & DT_COLLECTION_ORDER_FLAG);
+            const int orderid = DT_COLLECTION_SORT_FILENAME;
+            order = g_strdup_printf("1:%d:0$", orderid);
+            dt_tag_set_tag_order_by_id(tagid, orderid & ~DT_COLLECTION_ORDER_FLAG,
+                                       orderid & DT_COLLECTION_ORDER_FLAG);
           }
           dt_collection_set_tag_id((dt_collection_t *)darktable.collection, tagid);
         }
@@ -2446,8 +2443,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
 
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
-  if(order_request)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
+  if(order) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);

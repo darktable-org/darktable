@@ -354,35 +354,12 @@ uint32_t container(dt_lib_module_t *self)
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
 }
 
-static void _sort_serialize(char *buf, int bufsize)
-{
-  char confname[200];
-  int c;
-  const int num_sort = dt_conf_get_int("plugins/lighttable/filtering/num_sort");
-  c = snprintf(buf, bufsize, "%d:", num_sort);
-  buf += c;
-  bufsize -= c;
-  for(int k = 0; k < num_sort; k++)
-  {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", k);
-    const int sortid = dt_conf_get_int(confname);
-    c = snprintf(buf, bufsize, "%d:", sortid);
-    buf += c;
-    bufsize -= c;
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", k);
-    const int sortorder = dt_conf_get_int(confname);
-    c = snprintf(buf, bufsize, "%d$", sortorder);
-    buf += c;
-    bufsize -= c;
-  }
-}
-
 static void _history_save(dt_lib_filtering_t *d, const gboolean sort)
 {
   // get the string of the rules
   char buf[4096] = { 0 };
   if(sort)
-    _sort_serialize(buf, sizeof(buf));
+    dt_collection_sort_serialize(buf, sizeof(buf));
   else
     dt_collection_serialize(buf, sizeof(buf), TRUE);
 
@@ -612,7 +589,6 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "collect_data");
   if(mode == rule->prop) return;
 
-  const dt_collection_properties_t oldprop = rule->prop;
   rule->prop = mode;
   gtk_button_set_label(GTK_BUTTON(rule->w_prop), dt_collection_name(mode));
 
@@ -625,28 +601,6 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 
   // update the config files
   _conf_update_rule(rule);
-
-  // when tag was/become the first rule, we need to handle the order
-  if(rule->num == 0)
-  {
-    gboolean order_request = FALSE;
-    uint32_t order = 0;
-    if(oldprop != DT_COLLECTION_PROP_TAG && rule->prop == DT_COLLECTION_PROP_TAG)
-    {
-      // save global order
-      const uint32_t sort = dt_collection_get_sort_field(darktable.collection);
-      const gboolean descending = dt_collection_get_sort_descending(darktable.collection);
-      dt_conf_set_int("plugins/lighttable/filtering/order", sort | (descending ? DT_COLLECTION_ORDER_FLAG : 0));
-    }
-    else if(oldprop == DT_COLLECTION_PROP_TAG && rule->prop != DT_COLLECTION_PROP_TAG)
-    {
-      // restore global order
-      order = dt_conf_get_int("plugins/lighttable/filtering/order");
-      order_request = TRUE;
-      dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
-    }
-    if(order_request) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
-  }
 
   // update the query without throwing signal everywhere
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
@@ -1332,17 +1286,6 @@ static void _conf_update_sort(_widgets_sort_t *sort)
   _history_save(sort->lib, TRUE);
 }
 
-/* save the images order if the first collect filter is on tag*/
-static void _sort_set_tag_order(_widgets_sort_t *sort)
-{
-  if(darktable.collection->tagid)
-  {
-    const uint32_t sortid = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(sort->sort));
-    const gboolean descending = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sort->direction));
-    dt_tag_set_tag_order_by_id(darktable.collection->tagid, sortid, descending);
-  }
-}
-
 // update the sort asc/desc arrow
 static void _sort_update_arrow(GtkWidget *widget)
 {
@@ -1373,12 +1316,6 @@ static void _sort_update_query(_widgets_sort_t *sort)
   // we save the sort in conf
   _conf_update_sort(sort);
 
-  // we update the collection
-  // dt_collection_set_sort(darktable.collection, sort, reverse);
-
-  /* save the images order */
-  _sort_set_tag_order(sort);
-
   /* sometimes changes */
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
 
@@ -1400,21 +1337,6 @@ static void _sort_combobox_changed(GtkWidget *widget, gpointer user_data)
   if(sort->lib->manual_sort_set) return;
 
   _sort_update_query(sort);
-}
-
-// this proxy function is primary called when the sort part of the filter bar is changed
-static void _proxy_set_sort(dt_lib_module_t *self, dt_collection_sort_t sort, gboolean asc)
-{
-  // we update the widgets
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-  d->manual_sort_set = TRUE;
-  dt_bauhaus_combobox_set(d->sort->sort, sort);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->sort->direction), asc);
-  _sort_update_arrow(d->sort->direction);
-  d->manual_sort_set = FALSE;
-
-  // we update the collection
-  //_sort_update_query(sort);
 }
 
 // this proxy function is primary called when the sort part of the filter bar is changed
@@ -1686,36 +1608,6 @@ static void _sort_history_pretty_print(const char *buf, char *out, size_t outsiz
   }
 }
 
-static void _sort_deserialize(const char *buf)
-{
-  char confname[200];
-  int num_sort = 0;
-  sscanf(buf, "%d", &num_sort);
-  int sortid = 0, sortorder = 0;
-  dt_conf_set_int("plugins/lighttable/filtering/num_sort", num_sort);
-  while(buf[0] != '\0' && buf[0] != ':') buf++;
-  if(buf[0] == ':') buf++;
-  for(int k = 0; k < num_sort; k++)
-  {
-    const int n = sscanf(buf, "%d:%d", &sortid, &sortorder);
-    if(n == 2)
-    {
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", k);
-      dt_conf_set_int(confname, sortid);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", k);
-      dt_conf_set_int(confname, sortorder);
-    }
-    else
-    {
-      dt_conf_set_int("plugins/lighttable/filtering/num_sort", k);
-      break;
-    }
-    while(buf[0] != '$' && buf[0] != '\0') buf++;
-    if(buf[0] == '$') buf++;
-  }
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-}
-
 static void _sort_history_apply(GtkWidget *widget, dt_lib_module_t *self)
 {
   const int hid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history"));
@@ -1726,7 +1618,17 @@ static void _sort_history_apply(GtkWidget *widget, dt_lib_module_t *self)
   const char *line = dt_conf_get_string_const(confname);
   if(line && line[0] != '\0')
   {
-    _sort_deserialize(line);
+    dt_collection_sort_deserialize(line);
+    _sort_gui_update(self);
+  }
+}
+
+static void _dt_images_order_change(gpointer instance, gpointer order, gpointer self)
+{
+  gchar *txt = (gchar *)order;
+  if(txt)
+  {
+    dt_collection_sort_deserialize(txt);
     _sort_gui_update(self);
   }
 }
@@ -1823,7 +1725,6 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.module_filtering.module = self;
   darktable.view_manager->proxy.module_filtering.update = _filters_gui_update;
   darktable.view_manager->proxy.module_filtering.reset_filter = _proxy_reset_filter;
-  darktable.view_manager->proxy.module_filtering.set_sort = _proxy_set_sort;
 
   d->last_where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
   _filters_gui_update(self);
@@ -1831,8 +1732,8 @@ void gui_init(dt_lib_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                                   G_CALLBACK(_dt_collection_updated), self);
-  /*DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE,
-                            G_CALLBACK(_lib_filter_images_order_change), self);*/
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE,
+                                  G_CALLBACK(_dt_images_order_change), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
