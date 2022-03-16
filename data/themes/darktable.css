@@ -479,13 +479,6 @@ spinbutton>button
   margin: 0.14em 0.07em;
 }
 
-.quick_filter_box
-{
-  background-color: @border_color;
-  padding: 0.01em;
-  margin: 0 0.4em;
-}
-
 .dt_dimmed
 {
   opacity: 0.5;
@@ -1570,9 +1563,27 @@ filechooser row:hover .sidebar-icon
 {
   margin-top: 2em;
 }
-#collect-header-box #dt-toggle-button
+#header-sort-box #collect-sort-widget,
+#header-sort-box #dt-toggle-button
 {
-  background-color: transparent;
+  background-color: shade(@button_bg, 0.9);
+}
+#header-sort-box #dt-toggle-button:hover
+{
+  background-color: @button_hover_bg;
+  color: @button_hover_fg;
+}
+#header-sort-box #bauhaus-combobox
+{
+  border: none;
+}
+#header-toolbar .search
+{
+  margin : 0;
+}
+#header-rule-box > box
+{
+  padding : 0.2em;
 }
 
 #dt-range-band
@@ -1625,6 +1636,7 @@ filechooser row:hover .sidebar-icon
   margin: 0;
   font-size: 1.2em;
 }
+
 /*--------------------------------
   - Tree view (lists and tables) -
   --------------------------------*/

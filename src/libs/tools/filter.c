@@ -96,10 +96,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_valign(self->widget, GTK_ALIGN_CENTER);
 
   d->filter_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(d->filter_box, "header-rule-box");
   gtk_box_pack_start(GTK_BOX(self->widget), d->filter_box, TRUE, TRUE, 0);
 
   /* sort combobox */
   d->sort_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(d->sort_box, "header-sort-box");
   gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, TRUE, TRUE, 0);
   GtkWidget *label = gtk_label_new(_("sort by"));
   gtk_box_pack_start(GTK_BOX(d->sort_box), label, TRUE, TRUE, 0);
