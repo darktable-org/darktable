@@ -67,6 +67,13 @@
     <shortdescription>enable shortcut fallbacks</shortdescription>
     <longdescription>enables default meanings for additional buttons, modifiers or moves when used in combination with a base shortcut</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>accel/load_defaults</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>load default shortcuts at startup</shortdescription>
+    <longdescription>load default shortcuts before user settings. switch off to prevent deleted defaults returning</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>bauhaus/scale</name>
     <type>float</type>

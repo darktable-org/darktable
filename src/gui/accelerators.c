@@ -1815,6 +1815,8 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
     dt_shortcuts_load(".edit", wipe);
     break;
   }
+
+  dt_shortcuts_save(NULL, FALSE);
 }
 
 static void _import_export_dev_changed(GtkComboBox *widget, gpointer user_data)
@@ -3197,7 +3199,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
         GtkWidget *mapped_widget = darktable.control->mapping_widget;
 
         dt_shortcut_t s = _sc;
-        if(_insert_shortcut(&s, TRUE))
+        if(_insert_shortcut(&s, darktable.control->confirm_mapping))
         {
           dt_control_log(_("%s assigned to %s"),
                          _shortcut_description(&s), _action_description(&s, 2));
