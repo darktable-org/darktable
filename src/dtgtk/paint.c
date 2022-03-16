@@ -200,7 +200,7 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
 
 void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.8, 0.8, 0, 0)
+  PREAMBLE(0.9, 1, 0, 0)
 
   cairo_move_to(cr, 0.1, 0.05);
   cairo_line_to(cr, 0.1, 0.95);
