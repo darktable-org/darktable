@@ -255,8 +255,6 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*reset_filter)(struct dt_lib_module_t *, gboolean smart_filter);
-      void (*update_sort)(struct dt_lib_module_t *, int sort, gboolean asc);
       GtkWidget *(*get_filter_box)(struct dt_lib_module_t *);
       GtkWidget *(*get_sort_box)(struct dt_lib_module_t *);
     } filter;
@@ -416,7 +414,6 @@ void dt_view_filtering_set_sort(const dt_view_manager_t *vm, int sort, gboolean 
  * Filter dropdown proxy
  */
 void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter);
-void dt_view_filter_update_sort(const dt_view_manager_t *vm, int sort, gboolean asc);
 GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm);
 GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm);
 
