@@ -218,10 +218,20 @@ void dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_len, GDateTime 
 
 GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz)
 {
+  // GTimeSpan is UTC based. Therefore we have to cheat a little bit to get image datetime
   GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
-  GDateTime *gdt_tz = g_date_time_to_timezone(gdt, (GTimeZone *)tz);
-  g_date_time_unref(gdt);
-  return gdt_tz;
+  if(gdt)
+  {
+    dt_datetime_t dt;
+    if(_datetime_gdatetime_to_numbers(&dt, gdt))
+    {
+      g_date_time_unref(gdt);
+      gdt = g_date_time_new((GTimeZone *)tz, dt.year, dt.month, dt.day,
+                            dt.hour, dt.minute, (double)dt.second);
+      return gdt;
+    }
+  }
+  return NULL;
 }
 
 gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_len, const char *entry)
