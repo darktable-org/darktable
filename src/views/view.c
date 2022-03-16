@@ -939,12 +939,6 @@ void dt_view_filtering_reset(const dt_view_manager_t *vm, gboolean smart_filter)
     vm->proxy.module_filtering.reset_filter(vm->proxy.module_filtering.module, smart_filter);
 }
 
-void dt_view_filter_update_sort(const dt_view_manager_t *vm, int sort, gboolean asc)
-{
-  if(vm->proxy.filter.module && vm->proxy.filter.update_sort)
-    vm->proxy.filter.update_sort(vm->proxy.filter.module, sort, asc);
-}
-
 GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm)
 {
   if(vm->proxy.filter.module && vm->proxy.filter.get_filter_box)

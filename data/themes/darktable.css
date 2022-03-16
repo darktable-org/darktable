@@ -1496,11 +1496,16 @@ filechooser row:hover .sidebar-icon
   - collect module -
 --------------------*/
 #collect-rule-widget,
+#collect-actions-widget,
 #collect-sort-widget
 {
   background-color: @button_border;
   margin: 0.3em 0 0.5em 0;
   padding: 0 0.2em;
+}
+#collect-actions-widget
+{
+  background-color: transparent;
 }
 #collect-sort-widget
 {
@@ -1564,14 +1569,6 @@ filechooser row:hover .sidebar-icon
 #collect-spacer2
 {
   margin-top: 2em;
-}
-#collect-actions-widget :nth-child(2)
-{
-  margin-right: 0.6em;
-}
-#collect-actions-widget :nth-child(3)
-{
-  margin-left: 0.6em;
 }
 #collect-header-box #dt-toggle-button
 {
