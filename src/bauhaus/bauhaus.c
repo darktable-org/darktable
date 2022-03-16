@@ -1636,16 +1636,16 @@ static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
     {
       case DT_BAUHAUS_COMBOBOX:
         cairo_translate(cr, width - darktable.bauhaus->quad_width * .5f, height * .4f);
-          GdkRGBA *text_color = default_color_assign();
-          GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(w));
-          const GtkStateFlags state = gtk_widget_get_state_flags(GTK_WIDGET(w));
-          gtk_style_context_get_color(context, state, text_color);
-          const float r = darktable.bauhaus->quad_width * .25f;
-          cairo_move_to(cr, -r, 0);
-          cairo_line_to(cr, 0, r);
-          cairo_line_to(cr, r, 0);
-          set_color(cr, *text_color);
-          cairo_stroke(cr);
+        GdkRGBA *text_color = default_color_assign();
+        GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(w));
+        const GtkStateFlags state = gtk_widget_get_state_flags(GTK_WIDGET(w));
+        gtk_style_context_get_color(context, state, text_color);
+        const float r = darktable.bauhaus->quad_width * .25f;
+        cairo_move_to(cr, -r, 0);
+        cairo_line_to(cr, 0, r);
+        cairo_line_to(cr, r, 0);
+        set_color(cr, *text_color);
+        cairo_stroke(cr);
         gdk_rgba_free(text_color);
         break;
       case DT_BAUHAUS_SLIDER:
