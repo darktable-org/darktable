@@ -801,6 +801,7 @@ static void _topbar_update(dt_lib_module_t *self)
   GList *childrens = gtk_container_get_children(GTK_CONTAINER(fbox));
   for(GList *l = childrens; l; l = g_list_next(l))
   {
+    g_object_ref(G_OBJECT(l->data));
     gtk_container_remove(GTK_CONTAINER(fbox), GTK_WIDGET(l->data));
   }
   g_list_free(childrens);
@@ -825,6 +826,7 @@ static void _topbar_update(dt_lib_module_t *self)
         gtk_widget_show(label);
       }
       gtk_box_pack_start(GTK_BOX(fbox), d->rule[i].w_special_box_top, FALSE, TRUE, 0);
+      gtk_widget_show_all(d->rule[i].w_special_box_top);
       nb++;
     }
     else if(d->rule[i].w_special_box_top)
