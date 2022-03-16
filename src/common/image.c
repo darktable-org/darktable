@@ -33,7 +33,6 @@
 #include "common/ratings.h"
 #include "common/tags.h"
 #include "common/undo.h"
-#include "common/history.h"
 #include "common/selection.h"
 #include "common/datetime.h"
 #include "control/conf.h"
