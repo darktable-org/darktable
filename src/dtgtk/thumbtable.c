@@ -1770,7 +1770,7 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
   }
   // if we can reorder, let's update the thumbtable class accordingly
   // this will show up vertical bar for the image destination point
-  if(darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER && table->mode != DT_THUMBTABLE_MODE_ZOOM)
+  if(darktable.collection->params.sorts[DT_COLLECTION_SORT_CUSTOM_ORDER] && table->mode != DT_THUMBTABLE_MODE_ZOOM)
   {
     // we set the class correctly
     dt_gui_add_class(table->widget, "dt_thumbtable_reorder");
@@ -1809,7 +1809,7 @@ void dt_thumbtable_event_dnd_received(GtkWidget *widget, GdkDragContext *context
     dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
     if(table->drag_list)
     {
-      if(darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER
+      if(darktable.collection->params.sorts[DT_COLLECTION_SORT_CUSTOM_ORDER]
          && table->mode != DT_THUMBTABLE_MODE_ZOOM)
       {
         // source = dest = thumbtable => we are reordering

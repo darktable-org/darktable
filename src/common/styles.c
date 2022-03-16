@@ -945,7 +945,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     dt_image_update_final_size(newimgid);
 
     /* update the aspect ratio. recompute only if really needed for performance reasons */
-    if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+    if(darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
       dt_image_set_aspect_ratio(newimgid, TRUE);
     else
       dt_image_reset_aspect_ratio(newimgid, TRUE);
