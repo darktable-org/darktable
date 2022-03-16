@@ -1565,7 +1565,7 @@ int dt_exif_read(dt_image_t *img, const char *path)
 
   if(!stat(path, &statbuf))
   {
-    dt_datetime_unix_lt_to_img(img, &statbuf.st_mtime);
+    dt_datetime_unix_to_img(img, &statbuf.st_mtime);
   }
 
   try

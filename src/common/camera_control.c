@@ -20,6 +20,7 @@
 #endif
 #include "common/camera_control.h"
 #include "common/exif.h"
+#include "common/datetime.h"
 #include "common/imageio_jpeg.h"
 #include "control/control.h"
 #include <gphoto2/gphoto2-file.h>

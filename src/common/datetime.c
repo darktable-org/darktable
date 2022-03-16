@@ -19,6 +19,15 @@
 #include "common/darktable.h"
 #include "common/datetime.h"
 
+#define DT_DATETIME_ORIGIN "0001-01-01 00:00:00.000"
+#define DT_DATETIME_EPOCH "1970-01-01 00:00:00.000"
+#define DT_DATETIME_EXIF_FORMAT "%Y:%m:%d %H:%M:%S.%f"
+
+void dt_datetime_init()
+{
+  darktable.utc_tz =  g_time_zone_new_utc();
+  darktable.origin_gdt = g_date_time_new_from_iso8601(DT_DATETIME_ORIGIN, darktable.utc_tz);
+}
 
 gboolean _datetime_gdatetime_to_numbers(dt_datetime_t *dt, GDateTime *gdt)
 {
@@ -34,6 +43,17 @@ gboolean _datetime_gdatetime_to_numbers(dt_datetime_t *dt, GDateTime *gdt)
     return TRUE;
   }
   return FALSE;
+}
+
+static GTimeSpan _gdatetime_to_gtimespan(GDateTime *gdt)
+{
+  if(gdt)
+  {
+    GTimeSpan gts = g_date_time_difference(gdt, darktable.origin_gdt);
+    g_date_time_unref(gdt);
+    return gts;
+  }
+  return 0;
 }
 
 gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
@@ -105,15 +125,28 @@ gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
   return dt_datetime_gtimespan_to_local(local, local_size, img->exif_datetime_taken, msec, FALSE);
 }
 
-void dt_datetime_unix_lt_to_img(dt_image_t *img, const time_t *unix)
+gboolean dt_datetime_unix_to_img(dt_image_t *img, const time_t *unix)
 {
   GDateTime *gdt = g_date_time_new_from_unix_local(*unix);
   if(gdt)
   {
     img->exif_datetime_taken = g_date_time_difference(gdt, darktable.origin_gdt);
     g_date_time_unref(gdt);
+    return TRUE;
   }
-  else img->exif_datetime_taken = 0;
+  img->exif_datetime_taken = 0;
+  return FALSE;
+}
+
+gboolean dt_datetime_unix_to_exif(char *exif, const size_t exif_len, const time_t *unix)
+{
+  GDateTime *gdt = g_date_time_new_from_unix_local(*unix);
+  if(gdt)
+  {
+    dt_datetime_gdatetime_to_exif(exif, exif_len, gdt);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 void dt_datetime_now_to_exif(char *exif)
@@ -125,6 +158,12 @@ void dt_datetime_now_to_exif(char *exif)
     g_date_time_unref(gdt);
   }
   else exif[0] = '\0';
+}
+
+GTimeSpan dt_datetime_now_to_gtimespan()
+{
+  GDateTime *gdt = g_date_time_new_now_local();
+  return _gdatetime_to_gtimespan(gdt);
 }
 
 void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
@@ -172,7 +211,7 @@ GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
 
 void dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_len, GDateTime *gdt)
 {
-  char *dt = g_date_time_format(gdt, "%Y:%m:%d %H:%M:%S.%f");
+  char *dt = g_date_time_format(gdt, DT_DATETIME_EXIF_FORMAT);
   g_strlcpy(exif, dt, exif_len);
   g_free(dt);
 }
@@ -281,17 +320,6 @@ GTimeSpan dt_datetime_exif_to_gtimespan(const char *sdt)
   return gts;
 }
 
-static GTimeSpan _gdatetime_to_gtimespan(GDateTime *gdt)
-{
-  if(gdt)
-  {
-    GTimeSpan gts = g_date_time_difference(gdt, darktable.origin_gdt);
-    g_date_time_unref(gdt);
-    return gts;
-  }
-  return 0;
-}
-
 gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan gts)
 {
   GDateTime *gdt = g_date_time_add(darktable.origin_gdt, gts);
@@ -315,12 +343,6 @@ GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt)
 GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt)
 {
   return g_date_time_difference(gdt, darktable.origin_gdt);
-}
-
-GTimeSpan dt_datetime_now_to_gtimespan()
-{
-  GDateTime *gdt = g_date_time_new_now_local();
-  return _gdatetime_to_gtimespan(gdt);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

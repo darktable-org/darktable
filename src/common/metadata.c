@@ -775,13 +775,6 @@ gboolean dt_metadata_already_imported(const char *filename, const char *datetime
   return res;
 }
 
-void dt_metadata_unix_time_to_text(char *exif, const size_t exif_len, const time_t *unix)
-{
-  struct tm tt;
-  (void)localtime_r(unix, &tt);
-  strftime(exif, exif_len, "%Y:%m:%d %H:%M:%S", &tt);
-}
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

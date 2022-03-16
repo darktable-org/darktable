@@ -283,24 +283,15 @@ void init_presets(dt_lib_module_t *self)
                        &params, sizeof(params), TRUE);
 
   // based on date/time
-  struct tm tt;
-  char datetime_today[100] = { 0 };
-  char datetime_24hrs[100] = { 0 };
-  char datetime_30d[100] = { 0 };
-
-  const time_t now = time(NULL);
-  const time_t ONE_DAY = (24 * 60 * 60);
-  const time_t last24h = now - ONE_DAY;
-  const time_t last30d = now - (ONE_DAY * 30);
-
-  (void)localtime_r(&now, &tt);
-  strftime(datetime_today, 100, "%Y:%m:%d", &tt);
-
-  (void)localtime_r(&last24h, &tt);
-  strftime(datetime_24hrs, 100, "> %Y:%m:%d %H:%M", &tt);
-
-  (void)localtime_r(&last30d, &tt);
-  strftime(datetime_30d, 100, "> %Y:%m:%d", &tt);
+  GDateTime *now = g_date_time_new_now_local();
+  char *datetime_today = g_date_time_format(now, "%Y:%m:%d");
+  GDateTime *gdt = g_date_time_add_days(now, -1);
+  char *datetime_24hrs = g_date_time_format(gdt, "> %Y:%m:%d %H:%M");
+  g_date_time_unref(gdt);
+  gdt = g_date_time_add_days(now, -30);
+  char *datetime_30d = g_date_time_format(gdt, "> %Y:%m:%d");
+  g_date_time_unref(gdt);
+  g_date_time_unref(now);
 
   // presets based on import
   CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
@@ -334,6 +325,9 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
+  g_free(datetime_today);
+  g_free(datetime_24hrs);
+  g_free(datetime_30d);
 #undef CLEAR_PARAMS
 }
 
