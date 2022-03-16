@@ -471,6 +471,13 @@
     <longdescription>the number of recent filters to store and show in history list</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/filtering/sort_history_max</name>
+    <type min="1" max="50">int</type>
+    <default>10</default>
+    <shortdescription>number of sort orders to be stored</shortdescription>
+    <longdescription>the number of recent sort orders to store and show in history list</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/filtering/num_rules</name>
     <type>int</type>
     <default>3</default>
