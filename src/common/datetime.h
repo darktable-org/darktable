@@ -20,14 +20,12 @@
 #include <glib.h>
 #include "common/image.h"
 
-#define DT_DATETIME_ORIGIN "0001-01-01 00:00:00.000"
-#define DT_DATETIME_EPOCH "1970-01-01 00:00:00.000"
-//  #define DT_DATETIME_LENGTH 24 // defined in image.h
-#define DT_DATETIME_EXIF_LENGTH 20
+#define DT_DATETIME_LENGTH 24       // includes msec
+#define DT_DATETIME_EXIF_LENGTH 20  // exif format string length
 
-// The GTimeSpan saved in db is an offset to datetime_origin
+// The GTimeSpan saved in db is an offset to datetime_origin (0001:01:01 00:00:00)
 // Datetime_taken is to be displayed and stored in XMP without time zone conversion
-// The timestamps consider the timezone (GTimeSpan converted from local to UTC)
+// The other timestamps consider the timezone (GTimeSpan converted from local to UTC)
 // The text format of datetime follows the exif format except when local format
 
 typedef struct dt_datetime_t
@@ -41,26 +39,31 @@ typedef struct dt_datetime_t
   gint msec;
 } dt_datetime_t;
 
+// initialize datetime
+void dt_datetime_init(void);
+
 // exif datetime to numbers. Returns TRUE if OK.
 gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif);
 
 // gtimespan to display local string. Returns TRUE if OK.
 gboolean dt_datetime_gtimespan_to_local(char *local, const size_t local_size,
                                         const GTimeSpan gts, const gboolean msec, const gboolean tz);
-
 // gdatetime to display local string. Returns TRUE if OK.
 gboolean dt_datetime_gdatetime_to_local(char *local, const size_t local_size,
                                         GDateTime *gdt, const gboolean msec, const gboolean tz);
-
 // img cache datetime to display local string. Returns TRUE if OK.
 gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
                                   const dt_image_t *img, const gboolean msec);
 
 // unix datetime to img cache datetime
-void dt_datetime_unix_lt_to_img(dt_image_t *img, const time_t *unix);
+gboolean dt_datetime_unix_to_img(dt_image_t *img, const time_t *unix);
+// unix datetime to exif datetime
+gboolean dt_datetime_unix_to_exif(char *exif, const size_t exif_len, const time_t *unix);
 
-// current datetime to exif
+// now to exif
 void dt_datetime_now_to_exif(char *exif);
+// now to gtimespan
+GTimeSpan dt_datetime_now_to_gtimespan(void);
 
 // exif datetime to img cache datetime
 void dt_datetime_exif_to_img(dt_image_t *img, const char *exif);
@@ -95,9 +98,6 @@ GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt);
 
 // gdatetime to gtimespan
 GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt);
-
-// now to gtimespan
-GTimeSpan dt_datetime_now_to_gtimespan(void);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
