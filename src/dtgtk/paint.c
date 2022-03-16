@@ -206,7 +206,6 @@ void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   cairo_line_to(cr, 0.1, 0.95);
   cairo_move_to(cr, 0.0, 0.80);
   cairo_line_to(cr, 0.1, 0.95);
-  cairo_move_to(cr, 0.1, 0.95);
   cairo_line_to(cr, 0.2, 0.80);
   cairo_stroke(cr);
 
@@ -1917,11 +1916,9 @@ void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 
   cairo_move_to(cr, 0.30, 0.15);
   cairo_line_to(cr, 0.95, 0.15);
-  cairo_move_to(cr, 0.95, 0.15);
   cairo_line_to(cr, 0.95, 0.65);
   cairo_move_to(cr, 0.20, 0.25);
   cairo_line_to(cr, 0.85, 0.25);
-  cairo_move_to(cr, 0.85, 0.25);
   cairo_line_to(cr, 0.85, 0.75);
   cairo_stroke(cr);
   if(flags & CPF_ACTIVE)
