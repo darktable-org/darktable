@@ -2551,7 +2551,7 @@ void dt_image_get_datetime(const int32_t imgid, char *datetime)
   datetime[0] = '\0';
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(!cimg) return;
-  dt_datetime_img_to_exif(datetime, cimg);
+  dt_datetime_img_to_exif(datetime, DT_DATETIME_LENGTH, cimg);
   dt_image_cache_read_release(darktable.image_cache, cimg);
 }
 
