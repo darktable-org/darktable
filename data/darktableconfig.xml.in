@@ -325,27 +325,6 @@
     <shortdescription>tags case sensitivity</shortdescription>
     <longdescription>tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 26 latin letters</longdescription>
   </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/expand_0</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>visibility of the treeview</shortdescription>
-    <longdescription>visibility of the treeview for this rule</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/expand_1</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>visibility of the treeview</shortdescription>
-    <longdescription>visibility of the treeview for this rule</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/lighttable/collect/expand_17</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>visibility of the treeview</shortdescription>
-    <longdescription>visibility of the treeview for this rule</longdescription>
-  </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
