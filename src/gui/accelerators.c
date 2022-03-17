@@ -66,6 +66,7 @@ typedef struct dt_device_key_t
 } dt_device_key_t;
 
 #define DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE 0
+#define DT_SHORTCUT_DEVICE_TABLET 1
 
 const char *move_string[]
   = { "",
@@ -445,6 +446,10 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
       else
         name = key_or_move ? gtk_accelerator_name(key_or_move, 0) : g_strdup("None");
     }
+  }
+  else if(id == DT_SHORTCUT_DEVICE_TABLET)
+  {
+    return g_strdup_printf("%s %d", display ? _("tablet button") : "tablet button", key_or_move);
   }
   else
   {
@@ -2405,6 +2410,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
           {
             gtk_accelerator_parse(token, &s.key, &s.mods);
             if(s.mods) fprintf(stderr, "[dt_shortcuts_load] unexpected modifiers found in %s\n", token);
+            if(!s.key && sscanf(token, "tablet button %d", &s.key))
+              s.key_device = DT_SHORTCUT_DEVICE_TABLET;
             if(!s.key) fprintf(stderr, "[dt_shortcuts_load] no key name found in %s\n", token);
           }
           else
@@ -3496,6 +3503,18 @@ static guint _fix_keyval(GdkEvent *event)
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data)
 {
+  if((event->type ==  GDK_BUTTON_PRESS || event->type ==  GDK_BUTTON_RELEASE ||
+      event->type ==  GDK_DOUBLE_BUTTON_PRESS || event->type ==  GDK_TRIPLE_BUTTON_PRESS)
+     && event->button.button > 7)
+  {
+    if(event->type == GDK_BUTTON_RELEASE)
+      dt_shortcut_key_release(DT_SHORTCUT_DEVICE_TABLET, event->button.time, event->button.button - 7);
+    else
+      dt_shortcut_key_press  (DT_SHORTCUT_DEVICE_TABLET, event->button.time, event->button.button - 7);
+
+    return TRUE;
+  }
+
   if(_pressed_keys == NULL)
   {
     dt_shortcut_t s = { .action = _sc.action };
