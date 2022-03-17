@@ -86,9 +86,9 @@ static inline int _align_down(int n, int a)
 }
 
 
-void _print_roi(const dt_iop_roi_t *roi, const char *label)
+static inline void _print_roi(const dt_iop_roi_t *roi, const char *label, const char *title)
 {
-  printf("{ %5d  %5d  %5d  %5d  %.6f } %s\n", roi->x, roi->y, roi->width, roi->height, roi->scale, label);
+  dt_vprint(DT_DEBUG_TILING, "[%s] { %5d  %5d  %5d  %5d  %.6f } %s\n", title, roi->x, roi->y, roi->width, roi->height, roi->scale, label);
 }
 
 
@@ -524,7 +524,7 @@ static int _nm_fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_d
 
   int iter = _simplex(_nm_fitness, start, 4, epsilon, 1.0, maxiter, NULL, rest);
 
-  // printf("_simplex: %d, delta: %d, epsilon: %f\n", iter, delta, epsilon);
+  dt_vprint(DT_DEBUG_TILING, "[_nm_fit_output_to_input_roi] _simplex: %d, delta: %d, epsilon: %f\n", iter, delta, epsilon);
 
   oroi->x = start[0] * piece->iwidth;
   oroi->y = start[1] * piece->iheight;
@@ -552,15 +552,15 @@ static int _fit_output_to_input_roi(struct dt_iop_module_t *self, struct dt_dev_
          || abs((int)iroi_probe.width - (int)iroi->width) > delta
          || abs((int)iroi_probe.height - (int)iroi->height) > delta) && iter > 0)
   {
-    //_print_roi(&iroi_probe, "tile iroi_probe");
-    //_print_roi(oroi, "tile oroi old");
+    _print_roi(&iroi_probe, "tile iroi_probe", "_fit_output_to_input_roi");
+    _print_roi(oroi, "tile oroi old", "_fit_output_to_input_roi");
 
     oroi->x += (iroi->x - iroi_probe.x) * oroi->scale / iroi->scale;
     oroi->y += (iroi->y - iroi_probe.y) * oroi->scale / iroi->scale;
     oroi->width += (iroi->width - iroi_probe.width) * oroi->scale / iroi->scale;
     oroi->height += (iroi->height - iroi_probe.height) * oroi->scale / iroi->scale;
 
-    //_print_roi(oroi, "tile oroi new");
+    _print_roi(oroi, "tile oroi new", "_fit_output_to_input_roi");
 
     self->modify_roi_in(self, piece, oroi, &iroi_probe);
     iter--;
@@ -842,8 +842,8 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   void *input = NULL;
   void *output = NULL;
 
-  //_print_roi(roi_in, "module roi_in");
-  //_print_roi(roi_out, "module roi_out");
+  _print_roi(roi_in, "module roi_in", "_default_process_tiling_roi");
+  _print_roi(roi_out, "module roi_out", "_default_process_tiling_roi");
 
   dt_iop_buffer_dsc_t dsc;
   self->output_format(self, piece->pipe, piece, &dsc);
@@ -1012,8 +1012,8 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       iroi_good.width = _min(iroi_good.width, roi_in->width + roi_in->x - iroi_good.x);
       iroi_good.height = _min(iroi_good.height, roi_in->height + roi_in->y - iroi_good.y);
 
-      //_print_roi(&iroi_good, "tile iroi_good");
-      //_print_roi(&oroi_good, "tile oroi_good");
+      _print_roi(&iroi_good, "tile iroi_good", "_default_process_tiling_roi");
+      _print_roi(&oroi_good, "tile oroi_good", "_default_process_tiling_roi");
 
       /* now we need to calculate full region of this tile: increase input roi to take care of overlap
          requirements
@@ -1035,8 +1035,8 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       dt_iop_roi_t iroi_full = { new_x_in, new_y_in, new_width_in, new_height_in, iroi_good.scale };
       dt_iop_roi_t oroi_full = oroi_good; // a good starting point for optimization
 
-      //_print_roi(&iroi_full, "tile iroi_full before optimization");
-      //_print_roi(&oroi_full, "tile oroi_full before optimization");
+      _print_roi(&iroi_full, "tile iroi_full before optimization", "_default_process_tiling_roi");
+      _print_roi(&oroi_full, "tile oroi_full before optimization", "_default_process_tiling_roi");
 
       /* try to find a matching oroi_full */
       if(!_fit_output_to_input_roi(self, piece, &iroi_full, &oroi_full, delta, 10))
@@ -1073,8 +1073,8 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       iroi_full.height = _min(iroi_full.height, roi_in->height + roi_in->y - iroi_full.y);
 
 
-      //_print_roi(&iroi_full, "tile iroi_full final");
-      //_print_roi(&oroi_full, "tile oroi_full final");
+      _print_roi(&iroi_full, "tile iroi_full final", "_default_process_tiling_roi");
+      _print_roi(&oroi_full, "tile oroi_full final", "_default_process_tiling_roi");
 
       /* offsets of tile into ivoid and ovoid */
       const size_t ioffs = ((size_t)iroi_full.y - roi_in->y) * ipitch + ((size_t)iroi_full.x - roi_in->x) * in_bpp;
@@ -1558,8 +1558,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   void *output_buffer = NULL;
 
 
-  //_print_roi(roi_in, "module roi_in");
-  //_print_roi(roi_out, "module roi_out");
+  _print_roi(roi_in, "module roi_in", "_default_process_tiling_cl_roi");
+  _print_roi(roi_out, "module roi_out", "_default_process_tiling_cl_roi");
 
   dt_iop_buffer_dsc_t dsc;
   self->output_format(self, piece->pipe, piece, &dsc);
@@ -1777,8 +1777,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       iroi_good.width = _min(iroi_good.width, roi_in->width + roi_in->x - iroi_good.x);
       iroi_good.height = _min(iroi_good.height, roi_in->height + roi_in->y - iroi_good.y);
 
-      //_print_roi(&iroi_good, "tile iroi_good");
-      //_print_roi(&oroi_good, "tile oroi_good");
+      _print_roi(&iroi_good, "tile iroi_good", "_default_process_tiling_cl_roi");
+      _print_roi(&oroi_good, "tile oroi_good", "_default_process_tiling_cl_roi");
 
       /* now we need to calculate full region of this tile: increase input roi to take care of overlap
          requirements
@@ -1800,8 +1800,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       dt_iop_roi_t iroi_full = { new_x_in, new_y_in, new_width_in, new_height_in, iroi_good.scale };
       dt_iop_roi_t oroi_full = oroi_good; // a good starting point for optimization
 
-      //_print_roi(&iroi_full, "tile iroi_full before optimization");
-      //_print_roi(&oroi_full, "tile oroi_full before optimization");
+      _print_roi(&iroi_full, "tile iroi_full before optimization", "_default_process_tiling_cl_roi");
+      _print_roi(&oroi_full, "tile oroi_full before optimization", "_default_process_tiling_cl_roi");
 
       /* try to find a matching oroi_full */
       if(!_fit_output_to_input_roi(self, piece, &iroi_full, &oroi_full, delta, 10))
@@ -1836,8 +1836,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       iroi_full.width = _min(iroi_full.width, roi_in->width + roi_in->x - iroi_full.x);
       iroi_full.height = _min(iroi_full.height, roi_in->height + roi_in->y - iroi_full.y);
 
-      //_print_roi(&iroi_full, "tile iroi_full");
-      //_print_roi(&oroi_full, "tile oroi_full");
+      _print_roi(&iroi_full, "tile iroi_full", "_default_process_tiling_cl_roi");
+      _print_roi(&oroi_full, "tile oroi_full", "_default_process_tiling_cl_roi");
 
       /* offsets of tile into ivoid and ovoid */
       const size_t ioffs = ((size_t)iroi_full.y - roi_in->y) * ipitch + ((size_t)iroi_full.x - roi_in->x) * in_bpp;

@@ -126,7 +126,7 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n");
   printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,demosaic\n");
-  printf("      pwstorage,print,signal,sql,undo,act_on,tiling}\n");
+  printf("      pwstorage,print,signal,sql,undo,act_on,tiling,verbose}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
 #ifdef DT_HAVE_SIGNAL_TRACE
@@ -637,7 +637,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
         if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted = 0xffffffff; // enable all debug information
+          darktable.unmuted = 0xffffffff & ~DT_DEBUG_VERBOSE; // enable all debug information except verbose
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k + 1], "control"))
@@ -686,6 +686,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_ACT_ON;
         else if(!strcmp(argv[k + 1], "tiling"))
           darktable.unmuted |= DT_DEBUG_TILING;
+        else if(!strcmp(argv[k + 1], "verbose"))
+          darktable.unmuted |= DT_DEBUG_VERBOSE;
         else
           return usage(argv[0]);
         k++;
@@ -1496,6 +1498,19 @@ void dt_cleanup()
 void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 {
   if(darktable.unmuted & thread)
+  {
+    printf("%f ", dt_get_wtime() - darktable.start_wtime);
+    va_list ap;
+    va_start(ap, msg);
+    vprintf(msg, ap);
+    va_end(ap);
+    fflush(stdout);
+  }
+}
+
+void dt_vprint(dt_debug_thread_t thread, const char *msg, ...)
+{
+  if((darktable.unmuted & DT_DEBUG_VERBOSE) && (darktable.unmuted & thread))
   {
     printf("%f ", dt_get_wtime() - darktable.start_wtime);
     va_list ap;
