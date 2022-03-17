@@ -1884,6 +1884,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         "Exif.Image.Copyright",
         "Exif.Image.Rating",
         "Exif.Image.RatingPercent",
+        "Exif.Photo.SubSecTimeOriginal",
         "Exif.GPSInfo.GPSVersionID",
         "Exif.GPSInfo.GPSLongitudeRef",
         "Exif.GPSInfo.GPSLatitudeRef",
@@ -1980,11 +1981,12 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       dt_datetime_now_to_exif(new_datetime);
       exifData["Exif.Image.DateTime"] = new_datetime;
       gchar datetime[DT_DATETIME_LENGTH];
-      dt_datetime_img_to_exif(datetime, cimg);
+      dt_datetime_img_to_exif(datetime, sizeof(datetime), cimg);
       datetime[DT_DATETIME_EXIF_LENGTH - 1] = '\0';
       exifData["Exif.Image.DateTimeOriginal"] = datetime;
       exifData["Exif.Photo.DateTimeOriginal"] = datetime;
-      exifData["Exif.Photo.SubSecTimeOriginal"] = &datetime[DT_DATETIME_EXIF_LENGTH];
+      if(g_strcmp0(&datetime[DT_DATETIME_EXIF_LENGTH], "000"))
+        exifData["Exif.Photo.SubSecTimeOriginal"] = &datetime[DT_DATETIME_EXIF_LENGTH];
 
       dt_image_cache_read_release(darktable.image_cache, cimg);
     }

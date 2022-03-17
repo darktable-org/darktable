@@ -177,12 +177,12 @@ void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
   else img->exif_datetime_taken = 0;
 }
 
-void dt_datetime_img_to_exif(char *exif, const dt_image_t *img)
+void dt_datetime_img_to_exif(char *exif, const size_t exif_len, const dt_image_t *img)
 {
   GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
   if(gdt)
   {
-    dt_datetime_gdatetime_to_exif(exif, DT_DATETIME_LENGTH, gdt);
+    dt_datetime_gdatetime_to_exif(exif, exif_len, gdt);
     g_date_time_unref(gdt);
   }
   else exif[0] = '\0';
