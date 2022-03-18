@@ -411,9 +411,10 @@ void midi_open_devices(dt_lib_module_t *self)
 
     if(info->input && !strstr(info->name, "Midi Through Port"))
     {
-      int dev = -1;
+      int dev = -1, encoding = 0, num_keys = 0;
 
       gchar **cur_dev = dev_strings;
+      gchar **cur_dev_par = NULL;
       for(; cur_dev && *cur_dev; cur_dev++)
       {
         if(**cur_dev == '-')
@@ -430,12 +431,21 @@ void midi_open_devices(dt_lib_module_t *self)
 
           if(dev > last_dev) last_dev = dev;
 
-          if(strstr(info->name, *cur_dev))
+          g_strfreev(cur_dev_par);
+          cur_dev_par = g_strsplit(*cur_dev, ":", 3);
+          if(*cur_dev_par && strstr(info->name, *cur_dev_par))
           {
+            if(*(cur_dev_par+1))
+            {
+              sscanf(*(cur_dev_par+1), "%d", &encoding);
+              if(*(cur_dev_par+2))
+                sscanf(*(cur_dev_par+2), "%d", &num_keys);
+            }
             break;
           }
         }
       }
+      g_strfreev(cur_dev_par);
 
       if(!cur_dev || !*cur_dev) dev = ++last_dev;
 
@@ -462,13 +472,14 @@ void midi_open_devices(dt_lib_module_t *self)
 
       midi->is_x_touch_mini = strstr(info->name, "X-TOUCH MINI") != NULL;
 
+      midi->encoding    = encoding;
       midi->num_knobs   = midi->is_x_touch_mini ? 18 :   0;
       midi->first_knob  = midi->is_x_touch_mini ?  1 :   0;
-      midi->num_keys    = midi->is_x_touch_mini ? 16 :   0;
+      midi->num_keys    = midi->is_x_touch_mini ? 16 :   num_keys;
       midi->first_key   = midi->is_x_touch_mini ?  8 :   0;
       midi->first_light = 0;
 
-      midi->num_identical = midi->is_x_touch_mini ? 0 : 5; // countdown "relative down" moves received before switching to relative mode
+      midi->num_identical = midi->is_x_touch_mini || encoding ? 0 : 5; // countdown "relative down" moves received before switching to relative mode
       midi->last_received = -1;
       for(int j = 0; j < 128; j++) midi->last_known[j] = -1;
 
