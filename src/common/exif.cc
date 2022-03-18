@@ -726,6 +726,10 @@ static gboolean dt_check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
     g_free(data);
     has_opcodes = TRUE;
   }
+  else
+  {
+    dt_vprint(DT_DEBUG_IMAGEIO, "DNG OpcodeList2 tag not found\n");
+  }
   return has_opcodes;
 }
 
@@ -913,7 +917,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     if (dt_check_usercrop(exifData, img))
       {
-        img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
+        img->flags |= DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS;
         guint tagid = 0;
         char tagname[64];
         snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
@@ -923,7 +927,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     if(dt_check_dng_opcodes(exifData, img))
     {
-      img->flags |= DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS;
+      img->flags |= DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS;
     }
 
     /*

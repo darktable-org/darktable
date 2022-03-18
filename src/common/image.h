@@ -84,9 +84,9 @@ typedef enum
   DT_IMAGE_4BAYER = 16384,
   // image was detected as monochrome
   DT_IMAGE_MONOCHROME = 32768,
-  // image has exif tags which are not cached in the database but must be read and stored in dt_image_t when
-  // the image is loaded.
-  DT_IMAGE_HAS_ADDITIONAL_EXIF_TAGS = 65536,
+  // DNG image has exif tags which are not cached in the database but must be read and stored in dt_image_t
+  // when the image is loaded.
+  DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS = 65536,
   // image is an sraw
   DT_IMAGE_S_RAW = 1 << 17,
   // image has a monochrome preview tested

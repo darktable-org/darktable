@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <glib.h>
 #include <stdint.h>
 #include "image.h"
 

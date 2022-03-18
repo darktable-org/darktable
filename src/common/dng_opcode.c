@@ -17,11 +17,10 @@
 */
 
 #include <glib.h>
-#include <stdint.h>
 #include <stdio.h>
 
+#include "debug.h"
 #include "dng_opcode.h"
-#include "image.h"
 
 #define OPCODE_ID_GAINMAP (9)
 
@@ -75,7 +74,7 @@ void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t buf_size, dt_ima
 
     if(offset + 16 + param_size > buf_size)
     {
-      fprintf(stderr, "[dng_opcode] Invalid opcode size in OpcodeList2\n");
+      dt_print(DT_DEBUG_IMAGEIO, "[dng_opcode] Invalid opcode size in OpcodeList2\n");
       return;
     }
 
@@ -105,7 +104,7 @@ void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t buf_size, dt_ima
     }
     else
     {
-      fprintf(stderr, "[dng_opcode] OpcodeList2 has unsupported %s opcode %d\n",
+      dt_print(DT_DEBUG_IMAGEIO, "[dng_opcode] OpcodeList2 has unsupported %s opcode %d\n",
         flags & 1 ? "optional" : "mandatory", opcode_id);
     }
 
