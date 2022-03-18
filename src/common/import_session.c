@@ -35,8 +35,8 @@ typedef struct dt_import_session_t
   dt_film_t *film;
   dt_variables_params_t *vp;
 
-  const gchar *current_path;
-  const gchar *current_filename;
+  gchar *current_path;
+  gchar *current_filename;
 
 } dt_import_session_t;
 
@@ -53,6 +53,7 @@ static void _import_session_cleanup_filmroll(dt_import_session_t *self)
       // no need to ask for rmdir as it'll be re-created if it's needed
       // by another import session with same path params
       g_rmdir(self->current_path);
+      g_free(self->current_path);
       self->current_path = NULL;
     }
   }
@@ -63,7 +64,7 @@ static void _import_session_cleanup_filmroll(dt_import_session_t *self)
 }
 
 
-static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, const char *path)
+static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, char *path)
 {
   /* cleanup of previously used filmroll */
   _import_session_cleanup_filmroll(self);
@@ -75,7 +76,6 @@ static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, c
     _import_session_cleanup_filmroll(self);
     return TRUE;
   }
-
   /* open one or initialize a filmroll for the session */
   self->film = (dt_film_t *)g_malloc0(sizeof(dt_film_t));
   const int32_t film_id = dt_film_new(self->film, path);
@@ -85,9 +85,20 @@ static gboolean _import_session_initialize_filmroll(dt_import_session_t *self, c
     _import_session_cleanup_filmroll(self);
     return TRUE;
   }
-
   /* every thing is good lets setup current path */
+#ifdef _WIN32
+  else
+  {
+    // keep the existing film path (case)
+    g_free(path);
+    g_free(self->current_path);
+    dt_film_t *film = self->film;
+    self->current_path = g_strdup(film->dirname);
+  }
+#else
+  g_free(self->current_path);
   self->current_path = path;
+#endif
 
   return FALSE;
 }
@@ -243,7 +254,7 @@ const char *dt_import_session_filename(struct dt_import_session_t *self, gboolea
   gchar *result_fname = NULL;
 
   /* expand next filename */
-  g_free((void *)self->current_filename);
+  g_free(self->current_filename);
   self->current_filename = NULL;
 
   char *pattern = _import_session_filename_pattern();
@@ -308,10 +319,11 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
     // the current path might not be a writable directory so test for that
     if(currentok) return self->current_path;
     // the current path is not valid so we can't  cleanup
+    g_free(self->current_path);
     self->current_path = NULL;
     return NULL;
   }
-  /* check if expanded path differs from current */
+
   gchar *pattern = _import_session_path_pattern();
   if(pattern == NULL)
   {
@@ -319,23 +331,16 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
     return NULL;
   }
 
-
+  gchar *new_path = dt_variables_expand(self->vp, pattern, FALSE);
 #ifdef WIN32
-  gchar *s1 = dt_variables_expand(self->vp, pattern, FALSE);
-  gchar *new_path = g_ascii_strdown(s1, -1);
   if(new_path && (strlen(new_path) > 1))
   {
     const char first = g_ascii_toupper(new_path[0]);
     if(first >= 'A' && first <= 'Z' && new_path[1] == ':') // path format is <drive letter>:\path\to\file
       new_path[0] = first;                                 // drive letter in uppercase looks nicer
-  g_free(s1);
   }
-#else
-  gchar *new_path = dt_variables_expand(self->vp, pattern, FALSE);
 #endif
-
   g_free(pattern);
-
 
   /* did the session path change ? */
   if(self->current_path && strcmp(self->current_path, new_path) == 0)
@@ -345,7 +350,11 @@ static const char *_import_session_path(struct dt_import_session_t *self, gboole
     if(currentok) return self->current_path;
   }
 
-  if(!currentok) self->current_path = NULL;
+  if(!currentok)
+  {
+    g_free(self->current_path);
+    self->current_path = NULL;
+  }
   /* we need to initialize a new filmroll for the new path */
   if(_import_session_initialize_filmroll(self, new_path) != 0)
   {
