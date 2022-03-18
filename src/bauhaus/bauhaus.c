@@ -1135,6 +1135,29 @@ GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, 
   return dt_bauhaus_slider_from_widget(w,self, min, max, step, defval, digits, feedback);
 }
 
+static void dt_bauhaus_style_updated(GtkWidget *widget, gpointer user_data)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  const GtkStateFlags state = gtk_widget_get_state_flags(widget);
+  GtkBorder margin, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_padding(context, state, &padding);
+  if(w->type == DT_BAUHAUS_COMBOBOX)
+  {
+    gtk_widget_set_size_request(widget, -1,
+                                margin.top + padding.top + margin.bottom + padding.bottom + get_line_height());
+  }
+  else if(w->type == DT_BAUHAUS_SLIDER)
+  {
+    gtk_widget_set_size_request(widget, -1,
+                                margin.top + padding.top + margin.bottom + padding.bottom + INNER_PADDING
+                                    + darktable.bauhaus->baseline_size + get_line_height()
+                                    - darktable.bauhaus->border_width / 2.0f);
+  }
+}
+
 GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *self, float min, float max,
                                                          float step, float defval, int digits, int feedback)
 {
@@ -1165,11 +1188,11 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->curve = _default_linear_curve;
 
   gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-slider");
-  gtk_widget_set_size_request(GTK_WIDGET(w), -1, 2 * darktable.bauhaus->widget_space + INNER_PADDING + darktable.bauhaus->baseline_size + get_line_height() - darktable.bauhaus->border_width / 2.0f);
 
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(dt_bauhaus_slider_button_press), NULL);
   g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(dt_bauhaus_slider_button_release), NULL);
   g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(dt_bauhaus_slider_motion_notify), NULL);
+  g_signal_connect(G_OBJECT(w), "style-updated", G_CALLBACK(dt_bauhaus_style_updated), NULL);
   g_signal_connect(G_OBJECT(w), "destroy", G_CALLBACK(dt_bauhaus_slider_destroy), NULL);
   return GTK_WIDGET(w);
 }
@@ -1228,11 +1251,11 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->text = NULL;
 
   gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-combobox");
-  gtk_widget_set_size_request(GTK_WIDGET(w), -1, 2 * darktable.bauhaus->widget_space + get_line_height());
 
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(dt_bauhaus_combobox_button_press), NULL);
   g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(dt_bauhaus_popup_button_release), NULL);
   g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(dt_bauhaus_combobox_motion_notify), NULL);
+  g_signal_connect(G_OBJECT(w), "style-updated", G_CALLBACK(dt_bauhaus_style_updated), NULL);
   g_signal_connect(G_OBJECT(w), "destroy", G_CALLBACK(dt_bauhaus_combobox_destroy), NULL);
 }
 
@@ -1616,14 +1639,9 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   cairo_restore(cr);
 }
 
-static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
+static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr, const int width, const int height)
 {
-  GtkWidget *widget = GTK_WIDGET(w);
   const gboolean sensitive = gtk_widget_is_sensitive(GTK_WIDGET(w));
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  const int width = allocation.width;
-  const int height = inner_height(allocation);
 
   if(w->quad_paint)
   {
@@ -2132,17 +2150,25 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
   cairo_t *cr = cairo_create(cst);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
 
-  // translate to account for the widget spacing
-  cairo_translate(cr, 0, darktable.bauhaus->widget_space);
-
   GdkRGBA *fg_color = default_color_assign();
   GdkRGBA *bg_color;
   GdkRGBA *text_color = default_color_assign();
   const GtkStateFlags state = gtk_widget_get_state_flags(widget);
   gtk_style_context_get_color(context, state, text_color);
-  gtk_render_background(context, cr, 0, 0, width, height);
+
   gtk_style_context_get_color(context, state, fg_color);
   gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
+  GtkBorder margin, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_padding(context, state, &padding);
+
+  // translate to account for the widget spacing
+  const int h2 = height - margin.top - margin.bottom;
+  const int w2 = width - margin.left - margin.right;
+  const int h3 = h2 - padding.top - padding.bottom;
+  const int w3 = w2 - padding.left - padding.right;
+  gtk_render_background(context, cr, margin.left, margin.top, w2, h2);
+  cairo_translate(cr, margin.left + padding.left, margin.top + padding.top);
 
   // draw type specific content:
   cairo_save(cr);
@@ -2153,7 +2179,7 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
     {
       // draw label and quad area at right end
       set_color(cr, *text_color);
-      dt_bauhaus_draw_quad(w, cr);
+      dt_bauhaus_draw_quad(w, cr, w3, h3);
 
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       const PangoEllipsizeMode combo_ellipsis = d->entries_ellipsis;
@@ -2165,7 +2191,7 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
       }
       set_color(cr, *text_color);
 
-      const float available_width = width - darktable.bauhaus->quad_width - INNER_PADDING;
+      const float available_width = w3 - darktable.bauhaus->quad_width - INNER_PADDING;
 
       //calculate total widths of label and combobox
       gchar *label_text = _build_label(w);
@@ -2175,11 +2201,10 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
                       &label_width, &label_height);
       float combo_width = 0;
       float combo_height = 0;
-      show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0, 0, TRUE,
-                      TRUE, combo_ellipsis, FALSE, FALSE, &combo_width, &combo_height);
+      show_pango_text(w, context, cr, text, w3 - darktable.bauhaus->quad_width - INNER_PADDING, 0, 0, TRUE, TRUE,
+                      combo_ellipsis, FALSE, FALSE, &combo_width, &combo_height);
       // we want to center the text verticaly
-      const float posy_txt
-          = floor((height - 2 * darktable.bauhaus->widget_space - fmaxf(label_height, combo_height)) / 2.0f);
+      const float posy_txt = floor((h3 - fmaxf(label_height, combo_height)) / 2.0f);
       //check if they fit
       if((label_width + combo_width) > available_width)
       {
@@ -2188,10 +2213,10 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
         show_pango_text(w, context, cr, label_text, 0, posy_txt, available_width * ratio - INNER_PADDING * 2,
                         FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE, NULL, NULL);
         if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
-          show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, posy_txt,
+          show_pango_text(w, context, cr, text, w3 - darktable.bauhaus->quad_width - INNER_PADDING, posy_txt,
                           available_width * (1.0f - ratio), TRUE, FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
         else
-          show_pango_text(w, context, cr, text, INNER_PADDING, posy_txt, available_width * (1.0f - ratio), FALSE,
+          show_pango_text(w, context, cr, 0, INNER_PADDING, posy_txt, available_width * (1.0f - ratio), FALSE,
                           FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
       }
       else
@@ -2199,10 +2224,10 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
         show_pango_text(w, context, cr, label_text, 0, posy_txt, 0, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE,
                         NULL, NULL);
         if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
-          show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, posy_txt, 0,
+          show_pango_text(w, context, cr, text, w3 - darktable.bauhaus->quad_width - INNER_PADDING, posy_txt, 0,
                           TRUE, FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
         else
-          show_pango_text(w, context, cr, text, INNER_PADDING, posy_txt, 0, FALSE, FALSE, combo_ellipsis, FALSE,
+          show_pango_text(w, context, cr, 0, INNER_PADDING, posy_txt, 0, FALSE, FALSE, combo_ellipsis, FALSE,
                           FALSE, NULL, NULL);
       }
       g_free(label_text);
@@ -2211,30 +2236,30 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
     case DT_BAUHAUS_SLIDER:
     {
       // line for orientation
-      dt_bauhaus_draw_baseline(w, cr, width);
-      dt_bauhaus_draw_quad(w, cr);
+      dt_bauhaus_draw_baseline(w, cr, w3);
+      dt_bauhaus_draw_quad(w, cr, w3, h3);
 
       float value_width = 0;
       if(gtk_widget_is_sensitive(widget))
       {
         cairo_save(cr);
-        cairo_rectangle(cr, 0, 0, width - darktable.bauhaus->quad_width - INNER_PADDING, height + INNER_PADDING);
+        cairo_rectangle(cr, 0, 0, w3 - darktable.bauhaus->quad_width - INNER_PADDING, h3 + INNER_PADDING);
         cairo_clip(cr);
-        dt_bauhaus_draw_indicator(w, w->data.slider.pos, cr, width, *fg_color, *bg_color);
+        dt_bauhaus_draw_indicator(w, w->data.slider.pos, cr, w3, *fg_color, *bg_color);
         cairo_restore(cr);
 
         // TODO: merge that text with combo
 
         char *text = dt_bauhaus_slider_get_text(widget, dt_bauhaus_slider_get(widget));
         set_color(cr, *text_color);
-        value_width = show_pango_text(w, context, cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING,
-                                      0, 0, TRUE, FALSE, PANGO_ELLIPSIZE_END, FALSE, FALSE, NULL, NULL);
+        value_width = show_pango_text(w, context, cr, text, w3 - darktable.bauhaus->quad_width - INNER_PADDING, 0,
+                                      0, TRUE, FALSE, PANGO_ELLIPSIZE_END, FALSE, FALSE, NULL, NULL);
         g_free(text);
       }
       // label on top of marker:
       gchar *label_text = _build_label(w);
       set_color(cr, *text_color);
-      const float label_width = width - darktable.bauhaus->quad_width - INNER_PADDING - value_width;
+      const float label_width = w3 - darktable.bauhaus->quad_width - INNER_PADDING - value_width;
       if(label_width > 0)
         show_pango_text(w, context, cr, label_text, 0, 0, label_width, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE,
                         TRUE, NULL, NULL);
@@ -2251,7 +2276,7 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
   cairo_surface_destroy(cst);
 
   // render eventual css borders
-  gtk_render_frame(context, crf, 0, 0, width, height);
+  gtk_render_frame(context, crf, margin.left, margin.top, w2, h2);
 
   gdk_rgba_free(text_color);
   gdk_rgba_free(fg_color);

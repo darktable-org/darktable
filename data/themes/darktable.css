@@ -2056,12 +2056,20 @@ treeview#delete-dialog:selected
 
 #bauhaus-combobox *
 {
-    color: shade(@bauhaus_fg, 0.8);
+  color: shade(@bauhaus_fg, 0.8);
 }
 
 #bauhaus-combobox *:selected
 {
-    color: shade(@bauhaus_fg_selected, 1.2);
+  color: shade(@bauhaus_fg_selected, 1.2);
+}
+
+#lib-plugin-ui #bauhaus-combobox,
+#lib-plugin-ui #bauhaus-slider,
+#iop-plugin-ui #bauhaus-combobox,
+#iop-plugin-ui #bauhaus-slider
+{
+  margin-top : 1px;
 }
 
 /* Notebooks states */
