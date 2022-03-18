@@ -58,7 +58,7 @@ gboolean dt_datetime_img_to_local(char *local, const size_t local_size,
 // unix datetime to img cache datetime
 gboolean dt_datetime_unix_to_img(dt_image_t *img, const time_t *unix);
 // unix datetime to exif datetime
-gboolean dt_datetime_unix_to_exif(char *exif, const size_t exif_len, const time_t *unix);
+gboolean dt_datetime_unix_to_exif(char *exif, const size_t exif_size, const time_t *unix);
 
 // now to exif
 void dt_datetime_now_to_exif(char *exif);
@@ -68,26 +68,26 @@ GTimeSpan dt_datetime_now_to_gtimespan(void);
 // exif datetime to img cache datetime
 void dt_datetime_exif_to_img(dt_image_t *img, const char *exif);
 // img cache datetime to exif datetime
-void dt_datetime_img_to_exif(char *exif, const size_t exif_len, const dt_image_t *img);
+gboolean dt_datetime_img_to_exif(char *exif, const size_t exif_size, const dt_image_t *img);
 
 // exif datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
 GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz);
 // GDateTime to exif datetime.
-void dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_len, GDateTime *gdt);
+gboolean dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_size, GDateTime *gdt);
 
 // img cache datetime to GDateTime. Returns NULL if NOK. Should be freed by g_date_time_unref().
 GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz);
 
 // progressive manual entry datetime to exif datetime
-gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_len, const char *entry);
+gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_size, const char *entry);
 // progressive manual entry datetime to exif datetime bound
-gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_len, const char *entry);
+gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_size, const char *entry);
 
 // add subsec (decimal numbers) to exif datetime
-void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const char*subsec);
+void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_size, const char*subsec);
 
 // gtimespan to exif datetime
-gboolean dt_datetime_gtimespan_to_exif(char *sdt, const size_t sdt_len, const GTimeSpan gts);
+gboolean dt_datetime_gtimespan_to_exif(char *sdt, const size_t sdt_size, const GTimeSpan gts);
 // exif datetime to gtimespan
 GTimeSpan dt_datetime_exif_to_gtimespan(const char *sdt);
 
