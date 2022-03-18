@@ -21,7 +21,7 @@
 
 #define DT_DATETIME_ORIGIN "0001-01-01 00:00:00.000"
 #define DT_DATETIME_EPOCH "1970-01-01 00:00:00.000"
-#define DT_DATETIME_EXIF_FORMAT "%Y:%m:%d %H:%M:%S.%f"
+#define DT_DATETIME_EXIF_FORMAT "%Y:%m:%d %H:%M:%S"
 
 void dt_datetime_init()
 {
@@ -44,6 +44,11 @@ gboolean _datetime_gdatetime_to_numbers(dt_datetime_t *dt, GDateTime *gdt)
   }
   return FALSE;
 }
+
+static char *_datetime_append_msec(char *exif, GDateTime *gdt)
+{
+  return g_strdup_printf("%s%s%03d", exif, ".", (int)(g_date_time_get_microsecond(gdt) * 0.001));
+  }
 
 static GTimeSpan _gdatetime_to_gtimespan(GDateTime *gdt)
 {
@@ -78,38 +83,41 @@ gboolean dt_datetime_exif_to_numbers(dt_datetime_t *dt, const char *exif)
 gboolean dt_datetime_gdatetime_to_local(char *local, const size_t local_size,
                                         GDateTime *gdt, const gboolean msec, const gboolean tz)
 {
-  gboolean res = FALSE;
+  if(!local || !local_size || !gdt) return FALSE;
+  local[0] = '\0';
   if(gdt)
   {
     char *sdt;
     if(tz)
     {
       GDateTime *lgdt = g_date_time_to_local(gdt);
-      sdt = g_date_time_format(lgdt, msec ? "%a %x %X.%f" : "%a %x %X");
+      sdt = g_date_time_format(lgdt, "%a %x %X");
       g_date_time_unref(lgdt);
     }
     else
-      sdt = g_date_time_format(gdt, msec ? "%a %x %X.%f" : "%a %x %X");
+      sdt = g_date_time_format(gdt, "%a %x %X");
     if(sdt)
     {
       if(msec)
-      { // keep only milliseconds
-        char *p = g_strrstr(sdt, ".");
-        for(int i = 0; i < 4 && *p != '\0'; i++) p++;
-        *p = '\0';
+      { // add milliseconds
+        char *sdt2 = _datetime_append_msec(sdt, gdt);
+        g_free(sdt);
+        sdt = sdt2;
       }
       g_strlcpy(local, sdt, local_size);
       g_free(sdt);
-      res = TRUE;
+      return TRUE;
     }
   }
-  return res;
+  return FALSE;
 }
 
 gboolean dt_datetime_gtimespan_to_local(char *local, const size_t local_size,
                                         const GTimeSpan gts, const gboolean msec, const gboolean tz)
 {
   gboolean res = FALSE;
+  if(!local || !local_size) return FALSE;
+  local[0] = '\0';
   GDateTime *gdt = g_date_time_add(darktable.origin_gdt, gts);
   if(gdt)
   {
@@ -138,26 +146,28 @@ gboolean dt_datetime_unix_to_img(dt_image_t *img, const time_t *unix)
   return FALSE;
 }
 
-gboolean dt_datetime_unix_to_exif(char *exif, const size_t exif_len, const time_t *unix)
+gboolean dt_datetime_unix_to_exif(char *exif, const size_t exif_size, const time_t *unix)
 {
   GDateTime *gdt = g_date_time_new_from_unix_local(*unix);
   if(gdt)
   {
-    dt_datetime_gdatetime_to_exif(exif, exif_len, gdt);
-    return TRUE;
+    const gboolean res = dt_datetime_gdatetime_to_exif(exif, exif_size, gdt);
+    g_date_time_unref(gdt);
+    return res;
   }
   return FALSE;
 }
 
 void dt_datetime_now_to_exif(char *exif)
 {
+  if(!exif) return;
+  exif[0] = '\0';
   GDateTime *gdt = g_date_time_new_now_local();
   if(gdt)
   {
     dt_datetime_gdatetime_to_exif(exif, DT_DATETIME_EXIF_LENGTH, gdt);
     g_date_time_unref(gdt);
   }
-  else exif[0] = '\0';
 }
 
 GTimeSpan dt_datetime_now_to_gtimespan()
@@ -168,6 +178,7 @@ GTimeSpan dt_datetime_now_to_gtimespan()
 
 void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
 {
+  if(!exif) return;
   GDateTime *gdt = dt_datetime_exif_to_gdatetime(exif, darktable.utc_tz);
   if(gdt)
   {
@@ -177,15 +188,9 @@ void dt_datetime_exif_to_img(dt_image_t *img, const char *exif)
   else img->exif_datetime_taken = 0;
 }
 
-void dt_datetime_img_to_exif(char *exif, const size_t exif_len, const dt_image_t *img)
+gboolean dt_datetime_img_to_exif(char *exif, const size_t exif_size, const dt_image_t *img)
 {
-  GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
-  if(gdt)
-  {
-    dt_datetime_gdatetime_to_exif(exif, exif_len, gdt);
-    g_date_time_unref(gdt);
-  }
-  else exif[0] = '\0';
+  return dt_datetime_gtimespan_to_exif(exif, exif_size, img->exif_datetime_taken);
 }
 
 GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
@@ -209,16 +214,31 @@ GDateTime *dt_datetime_exif_to_gdatetime(const char *exif, const GTimeZone *tz)
   return NULL;
 }
 
-void dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_len, GDateTime *gdt)
+gboolean dt_datetime_gdatetime_to_exif(char *exif, const size_t exif_size, GDateTime *gdt)
 {
-  char *dt = g_date_time_format(gdt, DT_DATETIME_EXIF_FORMAT);
-  g_strlcpy(exif, dt, exif_len);
-  g_free(dt);
+  if(!exif || !exif_size || !gdt) return FALSE;
+  exif[0] = '\0';
+  char *sdt = g_date_time_format(gdt, DT_DATETIME_EXIF_FORMAT);
+  if(sdt)
+  {
+    if(exif_size == DT_DATETIME_LENGTH)
+    {
+      // the format %f seems not to be available in glib2.0  before version 2.70
+      char *sdt2 = _datetime_append_msec(sdt, gdt);
+      g_free(sdt);
+      sdt = sdt2;
+    }
+    g_strlcpy(exif, sdt, exif_size);
+    g_free(sdt);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *tz)
 {
   // GTimeSpan is UTC based. Therefore we have to cheat a little bit to get image datetime
+  if(!tz) return NULL;
   GDateTime *gdt = g_date_time_add(darktable.origin_gdt, img->exif_datetime_taken);
   if(gdt)
   {
@@ -234,8 +254,10 @@ GDateTime *dt_datetime_img_to_gdatetime(const dt_image_t *img, const GTimeZone *
   return NULL;
 }
 
-gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_len, const char *entry)
+gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_size, const char *entry)
 {
+  if(!exif || !exif_size) return FALSE;
+  exif[0] = '\0';
   if(strlen(entry) > DT_DATETIME_LENGTH - 1)
     return FALSE;
   char idt[DT_DATETIME_LENGTH];
@@ -245,15 +267,17 @@ gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_len, const char
   GDateTime *gdt = g_date_time_new_from_iso8601(idt, darktable.utc_tz);
   if(gdt)
   {
-    dt_datetime_gdatetime_to_exif(exif, exif_len, gdt);
+    const gboolean res = dt_datetime_gdatetime_to_exif(exif, exif_size, gdt);
     g_date_time_unref(gdt);
-    return TRUE;
+    return res;
   }
   return FALSE;
 }
 
-gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_len, const char *entry)
+gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_size, const char *entry)
 {
+  if(!exif || !exif_size) return FALSE;
+  exif[0] = '\0';
   const int len = strlen(entry);
   if(len > DT_DATETIME_LENGTH - 1)
     return FALSE;
@@ -287,33 +311,36 @@ gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_len
       gdt = gdt3;
       if(gdt)
       {
-        dt_datetime_gdatetime_to_exif(exif, exif_len, gdt);
+        const gboolean res = dt_datetime_gdatetime_to_exif(exif, exif_size, gdt);
         g_date_time_unref(gdt);
-        return TRUE;
+        return res;
       }
     }
   }
   return FALSE;
 }
 
-void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_len, const char*subsec)
+void dt_datetime_add_subsec_to_exif(char *exif, const size_t exif_size, const char*subsec)
 {
-  if(exif_len < DT_DATETIME_EXIF_LENGTH + 1) return;
+  if(!exif || exif_size < DT_DATETIME_EXIF_LENGTH + 1) return;
 
-  g_strlcpy(&exif[DT_DATETIME_EXIF_LENGTH - 1], ".000000", exif_len - DT_DATETIME_EXIF_LENGTH + 1);
-  for(int i = 0; i < 6 && subsec[i] != '\0' && (DT_DATETIME_EXIF_LENGTH + i < exif_len - 1); i++)
+  g_strlcpy(&exif[DT_DATETIME_EXIF_LENGTH - 1], ".000000", exif_size - DT_DATETIME_EXIF_LENGTH + 1);
+  for(int i = 0; i < 6 && subsec[i] != '\0' && (DT_DATETIME_EXIF_LENGTH + i < exif_size - 1); i++)
     exif[DT_DATETIME_EXIF_LENGTH + i] = subsec[i];
-  exif[exif_len - 1] = '\0';
+  exif[exif_size - 1] = '\0';
 }
 
-gboolean dt_datetime_gtimespan_to_exif(char *sdt, const size_t sdt_len, const GTimeSpan gts)
+gboolean dt_datetime_gtimespan_to_exif(char *sdt, const size_t sdt_size, const GTimeSpan gts)
 {
+  if(!sdt || !sdt_size) return FALSE;
+  sdt[0] = '\0';
+  if(!gts) return FALSE;
   GDateTime *gdt = g_date_time_add(darktable.origin_gdt, gts);
   if(gdt)
   {
-    dt_datetime_gdatetime_to_exif(sdt, sdt_len, gdt);
+    const gboolean res = dt_datetime_gdatetime_to_exif(sdt, sdt_size, gdt);
     g_date_time_unref(gdt);
-    return TRUE;
+    return res;
   }
   return FALSE;
 }
@@ -321,6 +348,7 @@ gboolean dt_datetime_gtimespan_to_exif(char *sdt, const size_t sdt_len, const GT
 GTimeSpan dt_datetime_exif_to_gtimespan(const char *sdt)
 {
   GTimeSpan gts = 0;
+  if(!sdt) return gts;
   GDateTime *gdt = dt_datetime_exif_to_gdatetime(sdt, darktable.utc_tz);
   if(gdt)
   {
@@ -344,6 +372,7 @@ gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan gts
 
 GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt)
 {
+  if(!dt) return 0;
   GDateTime *gdt = g_date_time_new(darktable.utc_tz,
                                    dt->year, dt->month, dt->day,
                                    dt->hour, dt->minute, (double)dt->second);
@@ -352,7 +381,10 @@ GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt)
 
 GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt)
 {
-  return g_date_time_difference(gdt, darktable.origin_gdt);
+  if(gdt)
+    return g_date_time_difference(gdt, darktable.origin_gdt);
+  else
+    return 0;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
