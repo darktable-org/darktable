@@ -26,36 +26,33 @@
 
 static double get_double(uint8_t *ptr)
 {
-  double v;
-  ((uint8_t *)&v)[0] = ptr[7];
-  ((uint8_t *)&v)[1] = ptr[6];
-  ((uint8_t *)&v)[2] = ptr[5];
-  ((uint8_t *)&v)[3] = ptr[4];
-  ((uint8_t *)&v)[4] = ptr[3];
-  ((uint8_t *)&v)[5] = ptr[2];
-  ((uint8_t *)&v)[6] = ptr[1];
-  ((uint8_t *)&v)[7] = ptr[0];
-  return v;
+  guint64 in;
+  union {
+    guint64 out;
+    double v;
+  } u;
+  memcpy(&in, ptr, sizeof(in));
+  u.out = GUINT64_FROM_BE(in);
+  return u.v;
 }
 
 static float get_float(uint8_t *ptr)
 {
-  float v;
-  ((uint8_t *)&v)[0] = ptr[3];
-  ((uint8_t *)&v)[1] = ptr[2];
-  ((uint8_t *)&v)[2] = ptr[1];
-  ((uint8_t *)&v)[3] = ptr[0];
-  return v;
+  guint32 in;
+  union {
+    guint32 out;
+    float v;
+  } u;
+  memcpy(&in, ptr, sizeof(in));
+  u.out = GUINT32_FROM_BE(in);
+  return u.v;
 }
 
 static uint32_t get_long(uint8_t *ptr)
 {
-  uint32_t v;
-  ((uint8_t *)&v)[0] = ptr[3];
-  ((uint8_t *)&v)[1] = ptr[2];
-  ((uint8_t *)&v)[2] = ptr[1];
-  ((uint8_t *)&v)[3] = ptr[0];
-  return v;
+  uint32_t in;
+  memcpy(&in, ptr, sizeof(in));
+  return GUINT32_FROM_BE(in);
 }
 
 void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t buf_size, dt_image_t *img)
@@ -99,7 +96,7 @@ void dt_dng_opcode_process_opcode_list_2(uint8_t *buf, uint32_t buf_size, dt_ima
       gm->map_planes = get_long(&param[72]);
       for(int i = 0; i < gain_count; i++)
         gm->map_gain[i] = get_float(&param[76 + 4*i]);
-      
+
       img->dng_gain_maps = g_list_append(img->dng_gain_maps, gm);
     }
     else
