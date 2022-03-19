@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-16 19:33-0300\n"
-"PO-Revision-Date: 2022-03-16 19:35-0300\n"
+"POT-Creation-Date: 2022-03-19 09:47-0300\n"
+"PO-Revision-Date: 2022-03-19 09:48-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1574,7 +1574,9 @@ msgstr "carregar atalhos padrão ao iniciar"
 msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
-msgstr "carregar atalhos padrão antes de usar as configurações. defina como desligado para prevenir padrões removidos de retornarem"
+msgstr ""
+"carregar atalhos padrão antes de usar as configurações. defina como "
+"desligado para prevenir padrões removidos de retornarem"
 
 #: ../build/bin/preferences_gen.h:7575
 msgid "scale slider step with min/max"
@@ -2351,8 +2353,8 @@ msgstr "específico"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2972 ../src/develop/develop.c:2239
-#: ../src/gui/accelerators.c:118 ../src/gui/accelerators.c:127
-#: ../src/gui/accelerators.c:195 ../src/imageio/format/avif.c:825
+#: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:128
+#: ../src/gui/accelerators.c:196 ../src/imageio/format/avif.c:825
 #: ../src/imageio/format/j2k.c:673 ../src/libs/live_view.c:427
 msgid "off"
 msgstr "desligado"
@@ -2951,7 +2953,7 @@ msgstr "esquerda"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
-#: ../src/gui/accelerators.c:103 ../src/gui/gtk.c:1514
+#: ../src/gui/accelerators.c:104 ../src/gui/gtk.c:1514
 msgid "top"
 msgstr "superior"
 
@@ -2967,7 +2969,7 @@ msgstr "direita"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
 #: ../build/lib/darktable/plugins/introspection_crop.c:79
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
-#: ../src/gui/accelerators.c:104 ../src/gui/gtk.c:1530
+#: ../src/gui/accelerators.c:105 ../src/gui/gtk.c:1530
 msgid "bottom"
 msgstr "inferior"
 
@@ -4582,47 +4584,47 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:3170
+#: ../src/bauhaus/bauhaus.c:3176
 msgid "button on"
 msgstr "botão ligado"
 
-#: ../src/bauhaus/bauhaus.c:3170
+#: ../src/bauhaus/bauhaus.c:3176
 msgid "button off"
 msgstr "botão desligado"
 
-#: ../src/bauhaus/bauhaus.c:3339 ../src/gui/accelerators.c:267
+#: ../src/bauhaus/bauhaus.c:3345 ../src/gui/accelerators.c:268
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:3340 ../src/bauhaus/bauhaus.c:3346
-#: ../src/gui/accelerators.c:250
+#: ../src/bauhaus/bauhaus.c:3346 ../src/bauhaus/bauhaus.c:3352
+#: ../src/gui/accelerators.c:251
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:3341
+#: ../src/bauhaus/bauhaus.c:3347
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:3342
+#: ../src/bauhaus/bauhaus.c:3348
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3345
+#: ../src/bauhaus/bauhaus.c:3351
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:3364
+#: ../src/bauhaus/bauhaus.c:3370
 msgid "slider"
 msgstr "controle deslizante"
 
-#: ../src/bauhaus/bauhaus.c:3369
+#: ../src/bauhaus/bauhaus.c:3375
 msgid "dropdown"
 msgstr "menu flutuante"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1678
-#: ../src/control/jobs/control_jobs.c:1740 ../src/gui/accelerators.c:1791
-#: ../src/gui/accelerators.c:1867 ../src/gui/accelerators.c:1918
-#: ../src/gui/accelerators.c:1946 ../src/gui/accelerators.c:2005
+#: ../src/control/jobs/control_jobs.c:1740 ../src/gui/accelerators.c:1796
+#: ../src/gui/accelerators.c:1872 ../src/gui/accelerators.c:1923
+#: ../src/gui/accelerators.c:1951 ../src/gui/accelerators.c:2010
 #: ../src/gui/hist_dialog.c:195 ../src/gui/preferences.c:995
 #: ../src/gui/preferences.c:1034 ../src/gui/presets.c:366
 #: ../src/gui/presets.c:466 ../src/gui/styles_dialog.c:420
@@ -5154,19 +5156,19 @@ msgstr "arquivo `%s' é de formato desconhecido!"
 msgid "error loading file `%s'"
 msgstr "erro carregando arquivo `%s'"
 
-#: ../src/common/darktable.c:1291
+#: ../src/common/darktable.c:1293
 msgid "configuration information"
 msgstr "informações de configuração"
 
-#: ../src/common/darktable.c:1293
+#: ../src/common/darktable.c:1295
 msgid "show this information again"
 msgstr "mostrar esta informação novamente"
 
-#: ../src/common/darktable.c:1293
+#: ../src/common/darktable.c:1295
 msgid "understood"
 msgstr "entendido"
 
-#: ../src/common/darktable.c:1691
+#: ../src/common/darktable.c:1706
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
@@ -5174,12 +5176,12 @@ msgstr ""
 "O interpolador RCD foi definido como padrão ao invés do PPG porque tem "
 "melhor desempenho e qualidade."
 
-#: ../src/common/darktable.c:1693
+#: ../src/common/darktable.c:1708
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 "veja preferências/sala escura/interpolação cromática para zoom na sala escura"
 
-#: ../src/common/darktable.c:1699
+#: ../src/common/darktable.c:1714
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
@@ -5187,7 +5189,7 @@ msgstr ""
 "a interface com o usuário e os mecanismos internos para ajuste fino de "
 "desempenho do darktable mudaram"
 
-#: ../src/common/darktable.c:1701
+#: ../src/common/darktable.c:1716
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5195,11 +5197,11 @@ msgstr ""
 "você não encontrará mais headroom e amigos, ao invés disso em preferências/"
 "processamento use:"
 
-#: ../src/common/darktable.c:1703
+#: ../src/common/darktable.c:1718
 msgid "1) darktable resources"
 msgstr "1) recursos do darktable"
 
-#: ../src/common/darktable.c:1705
+#: ../src/common/darktable.c:1720
 msgid "2) tune OpenCL performance"
 msgstr "2) ajustar desempenho OpenCL"
 
@@ -5511,25 +5513,25 @@ msgstr ""
 "o filtro fast guided não conseguiu alocar memória, verifique sua "
 "configuração de RAM"
 
-#: ../src/common/film.c:305
+#: ../src/common/film.c:322
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "você realmente deseja remover esta pasta vazia?"
 msgstr[1] "você realmente deseja remover estes diretórios vazios?"
 
-#: ../src/common/film.c:312
+#: ../src/common/film.c:329
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "remover pasta vazia?"
 msgstr[1] "remover pastas vazias?"
 
-#: ../src/common/film.c:331 ../src/gui/preferences.c:790
+#: ../src/common/film.c:348 ../src/gui/preferences.c:790
 #: ../src/gui/styles_dialog.c:447 ../src/libs/geotagging.c:829
 #: ../src/libs/import.c:1570
 msgid "name"
 msgstr "nome"
 
-#: ../src/common/film.c:437
+#: ../src/common/film.c:454
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -5688,7 +5690,7 @@ msgid "cannot find the style '%s' to apply during export."
 msgstr ""
 "não foi possível encontrar o estilo '%s' para aplicar durante exportação."
 
-#: ../src/common/import_session.c:283
+#: ../src/common/import_session.c:294
 msgid ""
 "couldn't expand to a unique filename for session, please check your import "
 "session settings."
@@ -5696,7 +5698,7 @@ msgstr ""
 "não foi possível expandir em um nome de arquivo único para importação, "
 "verifique as configurações de importação."
 
-#: ../src/common/import_session.c:364
+#: ../src/common/import_session.c:373
 msgid "requested session path not available. device not mounted?"
 msgstr ""
 "o caminho da sessão requisitada não está disponível. o dispositivo não está "
@@ -5993,7 +5995,7 @@ msgstr "abaixo do nível do mar"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:66 ../src/gui/accelerators.c:125
+#: ../src/control/control.c:66 ../src/gui/accelerators.c:126
 #: ../src/views/darkroom.c:2099
 msgid "hold"
 msgstr "segurar"
@@ -6962,8 +6964,8 @@ msgid "input after blur"
 msgstr "entrada depois do desfoque"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2239
-#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:126
-#: ../src/gui/accelerators.c:195 ../src/imageio/format/avif.c:823
+#: ../src/gui/accelerators.c:118 ../src/gui/accelerators.c:127
+#: ../src/gui/accelerators.c:196 ../src/imageio/format/avif.c:823
 #: ../src/libs/live_view.c:428
 msgid "on"
 msgstr "ligado"
@@ -7568,7 +7570,7 @@ msgstr "mover para baixo"
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
 #: ../src/develop/imageop.c:951 ../src/develop/imageop.c:3240
-#: ../src/gui/accelerators.c:140 ../src/gui/presets.c:467
+#: ../src/gui/accelerators.c:141 ../src/gui/presets.c:467
 #: ../src/libs/image.c:185 ../src/libs/masks.c:1055 ../src/libs/tagging.c:1506
 #: ../src/libs/tagging.c:1594
 msgid "delete"
@@ -7664,7 +7666,7 @@ msgstr ""
 "com os requisitos."
 
 #: ../src/develop/imageop.c:3236 ../src/develop/imageop.c:3246
-#: ../src/gui/accelerators.c:136 ../src/libs/lib.c:1264
+#: ../src/gui/accelerators.c:137 ../src/libs/lib.c:1264
 msgid "show"
 msgstr "mostrar"
 
@@ -7687,12 +7689,12 @@ msgstr "ativar"
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3249 ../src/gui/accelerators.c:2128
+#: ../src/develop/imageop.c:3249 ../src/gui/accelerators.c:2133
 msgid "instance"
 msgstr "instância"
 
-#: ../src/develop/imageop.c:3250 ../src/gui/accelerators.c:102
-#: ../src/gui/accelerators.c:111 ../src/iop/atrous.c:1583
+#: ../src/develop/imageop.c:3250 ../src/gui/accelerators.c:103
+#: ../src/gui/accelerators.c:112 ../src/iop/atrous.c:1583
 #: ../src/libs/lib.c:1265 ../src/libs/modulegroups.c:3935
 msgid "reset"
 msgstr "redefinir"
@@ -8478,15 +8480,15 @@ msgstr "erro: garanta que min_mip <= max_mip\n"
 msgid "creating complete lighttable thumbnail cache\n"
 msgstr "criando cache completo de miniaturas para mesa de luz\n"
 
-#: ../src/gui/accelerators.c:72 ../src/views/view.c:1180
+#: ../src/gui/accelerators.c:73 ../src/views/view.c:1180
 msgid "scroll"
 msgstr "rolar"
 
-#: ../src/gui/accelerators.c:73
+#: ../src/gui/accelerators.c:74
 msgid "pan"
 msgstr "arrastar"
 
-#: ../src/gui/accelerators.c:74 ../src/iop/ashift.c:5420
+#: ../src/gui/accelerators.c:75 ../src/iop/ashift.c:5420
 #: ../src/iop/ashift.c:5421 ../src/iop/ashift.c:5523 ../src/iop/ashift.c:5524
 #: ../src/iop/ashift.c:5833 ../src/iop/clipping.c:1920
 #: ../src/iop/clipping.c:2122 ../src/iop/clipping.c:2138
@@ -8494,7 +8496,7 @@ msgstr "arrastar"
 msgid "horizontal"
 msgstr "horizontal"
 
-#: ../src/gui/accelerators.c:75 ../src/iop/ashift.c:5420
+#: ../src/gui/accelerators.c:76 ../src/iop/ashift.c:5420
 #: ../src/iop/ashift.c:5421 ../src/iop/ashift.c:5523 ../src/iop/ashift.c:5524
 #: ../src/iop/ashift.c:5832 ../src/iop/clipping.c:1919
 #: ../src/iop/clipping.c:2123 ../src/iop/clipping.c:2137
@@ -8502,213 +8504,217 @@ msgstr "horizontal"
 msgid "vertical"
 msgstr "vertical"
 
-#: ../src/gui/accelerators.c:76
+#: ../src/gui/accelerators.c:77
 msgid "diagonal"
 msgstr "diagonal"
 
-#: ../src/gui/accelerators.c:77
+#: ../src/gui/accelerators.c:78
 msgid "skew"
 msgstr "inclinar"
 
-#: ../src/gui/accelerators.c:78
+#: ../src/gui/accelerators.c:79
 msgid "leftright"
 msgstr "esquerda-direita"
 
-#: ../src/gui/accelerators.c:79
+#: ../src/gui/accelerators.c:80
 msgid "updown"
 msgstr "acima-abaixo"
 
-#: ../src/gui/accelerators.c:80
+#: ../src/gui/accelerators.c:81
 msgid "pgupdown"
 msgstr "pgupdown"
 
-#: ../src/gui/accelerators.c:88 ../src/views/view.c:1164
+#: ../src/gui/accelerators.c:89 ../src/views/view.c:1164
 msgid "shift"
 msgstr "shift"
 
-#: ../src/gui/accelerators.c:89 ../src/views/view.c:1165
+#: ../src/gui/accelerators.c:90 ../src/views/view.c:1165
 msgid "ctrl"
 msgstr "ctrl"
 
-#: ../src/gui/accelerators.c:90 ../src/views/view.c:1166
+#: ../src/gui/accelerators.c:91 ../src/views/view.c:1166
 msgid "alt"
 msgstr "alt"
 
-#: ../src/gui/accelerators.c:91
+#: ../src/gui/accelerators.c:92
 msgid "cmd"
 msgstr "cmd"
 
-#: ../src/gui/accelerators.c:92
+#: ../src/gui/accelerators.c:93
 msgid "altgr"
 msgstr "altgr"
 
-#: ../src/gui/accelerators.c:99 ../src/gui/accelerators.c:141
+#: ../src/gui/accelerators.c:100 ../src/gui/accelerators.c:142
 #: ../src/libs/tagging.c:1804
 msgid "edit"
 msgstr "editar"
 
-#: ../src/gui/accelerators.c:100 ../src/gui/accelerators.c:545
+#: ../src/gui/accelerators.c:101 ../src/gui/accelerators.c:550
 msgid "up"
 msgstr "para cima"
 
-#: ../src/gui/accelerators.c:101 ../src/gui/accelerators.c:545
+#: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:550
 msgid "down"
 msgstr "para baixo"
 
-#: ../src/gui/accelerators.c:105
+#: ../src/gui/accelerators.c:106
 msgid "set"
 msgstr "definir"
 
-#: ../src/gui/accelerators.c:108
+#: ../src/gui/accelerators.c:109
 msgid "popup"
 msgstr "popup"
 
-#: ../src/gui/accelerators.c:109 ../src/gui/accelerators.c:138
+#: ../src/gui/accelerators.c:110 ../src/gui/accelerators.c:139
 #: ../src/gui/gtk.c:2954 ../src/views/lighttable.c:755
 msgid "next"
 msgstr "próxima"
 
-#: ../src/gui/accelerators.c:110 ../src/gui/accelerators.c:137
+#: ../src/gui/accelerators.c:111 ../src/gui/accelerators.c:138
 #: ../src/gui/gtk.c:2955 ../src/views/lighttable.c:756
 msgid "previous"
 msgstr "anterior"
 
-#: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:1112
+#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:1117
 msgid "last"
 msgstr "última"
 
-#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:1111
+#: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:1116
 msgid "first"
 msgstr "primeira"
 
-#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:128
-#: ../src/gui/accelerators.c:238 ../src/views/darkroom.c:2296
+#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:129
+#: ../src/gui/accelerators.c:239 ../src/views/darkroom.c:2296
 #: ../src/views/darkroom.c:2351
 msgid "toggle"
 msgstr "ligar/desligar"
 
-#: ../src/gui/accelerators.c:119
+#: ../src/gui/accelerators.c:120
 msgid "ctrl-toggle"
 msgstr "ctrl-alternar"
 
-#: ../src/gui/accelerators.c:120
+#: ../src/gui/accelerators.c:121
 msgid "ctrl-on"
 msgstr "ctrl-ligado"
 
-#: ../src/gui/accelerators.c:121
+#: ../src/gui/accelerators.c:122
 msgid "right-toggle"
 msgstr "alternar-direita"
 
-#: ../src/gui/accelerators.c:122
+#: ../src/gui/accelerators.c:123
 msgid "right-on"
 msgstr "à direita"
 
-#: ../src/gui/accelerators.c:131 ../src/gui/gtk.c:2953
+#: ../src/gui/accelerators.c:132 ../src/gui/gtk.c:2953
 msgid "activate"
 msgstr "ativar"
 
-#: ../src/gui/accelerators.c:132
+#: ../src/gui/accelerators.c:133
 msgid "ctrl-activate"
 msgstr "ctrl-ativar"
 
-#: ../src/gui/accelerators.c:133
+#: ../src/gui/accelerators.c:134
 msgid "right-activate"
 msgstr "direita-ativar"
 
-#: ../src/gui/accelerators.c:139
+#: ../src/gui/accelerators.c:140
 msgid "store"
 msgstr "armazenar"
 
-#: ../src/gui/accelerators.c:142 ../src/gui/styles_dialog.c:509
+#: ../src/gui/accelerators.c:143 ../src/gui/styles_dialog.c:509
 msgid "update"
 msgstr "atualizar"
 
-#: ../src/gui/accelerators.c:143 ../src/libs/tools/global_toolbox.c:61
+#: ../src/gui/accelerators.c:144 ../src/libs/tools/global_toolbox.c:61
 msgid "preferences"
 msgstr "preferências"
 
 #. apply button
-#: ../src/gui/accelerators.c:146 ../src/iop/colortransfer.c:670
+#: ../src/gui/accelerators.c:147 ../src/iop/colortransfer.c:670
 #: ../src/libs/metadata.c:761 ../src/libs/styles.c:889
 msgid "apply"
 msgstr "aplicar"
 
-#: ../src/gui/accelerators.c:147
+#: ../src/gui/accelerators.c:148
 msgid "apply on new instance"
 msgstr "aplicar em nova instância"
 
-#: ../src/gui/accelerators.c:459
+#: ../src/gui/accelerators.c:455
+msgid "tablet button"
+msgstr "botão do tablet"
+
+#: ../src/gui/accelerators.c:464
 msgid "unknown driver"
 msgstr "driver desconhecido"
 
-#: ../src/gui/accelerators.c:526
+#: ../src/gui/accelerators.c:531
 msgid "long"
 msgstr "longo"
 
-#: ../src/gui/accelerators.c:527
+#: ../src/gui/accelerators.c:532
 msgid "double-press"
 msgstr "pressionar duplo"
 
-#: ../src/gui/accelerators.c:528
+#: ../src/gui/accelerators.c:533
 msgid "triple-press"
 msgstr "pressionar triplo"
 
-#: ../src/gui/accelerators.c:529
+#: ../src/gui/accelerators.c:534
 msgid "press"
 msgstr "pressionar"
 
-#: ../src/gui/accelerators.c:533
+#: ../src/gui/accelerators.c:538
 msgctxt "accel"
 msgid "left"
 msgstr "esquerda"
 
-#: ../src/gui/accelerators.c:534
+#: ../src/gui/accelerators.c:539
 msgctxt "accel"
 msgid "right"
 msgstr "direita"
 
-#: ../src/gui/accelerators.c:535
+#: ../src/gui/accelerators.c:540
 msgctxt "accel"
 msgid "middle"
 msgstr "meio"
 
-#: ../src/gui/accelerators.c:536
+#: ../src/gui/accelerators.c:541
 msgctxt "accel"
 msgid "long"
 msgstr "longo"
 
-#: ../src/gui/accelerators.c:537
+#: ../src/gui/accelerators.c:542
 msgctxt "accel"
 msgid "double-click"
 msgstr "clique duplo"
 
-#: ../src/gui/accelerators.c:538
+#: ../src/gui/accelerators.c:543
 msgctxt "accel"
 msgid "triple-click"
 msgstr "clique triplo"
 
-#: ../src/gui/accelerators.c:539
+#: ../src/gui/accelerators.c:544
 msgid "click"
 msgstr "clique"
 
-#: ../src/gui/accelerators.c:567
+#: ../src/gui/accelerators.c:572
 msgid "first instance"
 msgstr "primeira instância"
 
-#: ../src/gui/accelerators.c:569
+#: ../src/gui/accelerators.c:574
 msgid "last instance"
 msgstr "última instância"
 
-#: ../src/gui/accelerators.c:571
+#: ../src/gui/accelerators.c:576
 msgid "relative instance"
 msgstr "instância relativa"
 
-#: ../src/gui/accelerators.c:598 ../src/gui/accelerators.c:842
-#: ../src/gui/accelerators.c:2118 ../src/gui/accelerators.c:2986
+#: ../src/gui/accelerators.c:603 ../src/gui/accelerators.c:847
+#: ../src/gui/accelerators.c:2123 ../src/gui/accelerators.c:2993
 msgid "speed"
 msgstr "velocidade"
 
-#: ../src/gui/accelerators.c:656
+#: ../src/gui/accelerators.c:661
 msgid ""
 "press Del to delete selected shortcut\n"
 "double-click to add new shortcut\n"
@@ -8718,7 +8724,7 @@ msgstr ""
 "clique duplo para adicionar um novo atalho\n"
 "comece a digitar para busca incremental"
 
-#: ../src/gui/accelerators.c:671
+#: ../src/gui/accelerators.c:676
 msgid ""
 "click to filter shortcut list\n"
 "double-click to define new shortcut\n"
@@ -8728,7 +8734,7 @@ msgstr ""
 "clique duplo para definir um novo atalho\n"
 "comece a digitar para busca incremental"
 
-#: ../src/gui/accelerators.c:690
+#: ../src/gui/accelerators.c:695
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
@@ -8736,94 +8742,94 @@ msgstr ""
 "pressione teclas com combinações de clique, rolar e movimentos do mouse para "
 "criar um atalho"
 
-#: ../src/gui/accelerators.c:691
+#: ../src/gui/accelerators.c:696
 msgid "click to open shortcut configuration"
 msgstr "clique para abrir configuração de atalho"
 
-#: ../src/gui/accelerators.c:692
+#: ../src/gui/accelerators.c:697
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "ctrl+clique para adicionar ao painel de acesso rápido\n"
 
-#: ../src/gui/accelerators.c:693
+#: ../src/gui/accelerators.c:698
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "ctrl+clique para remover do painel de acesso rápido\n"
 
-#: ../src/gui/accelerators.c:694
+#: ../src/gui/accelerators.c:699
 msgid "scroll to change default speed"
 msgstr "scroll muda velocidade padrão"
 
-#: ../src/gui/accelerators.c:695
+#: ../src/gui/accelerators.c:700
 msgid "right click to exit mapping mode"
 msgstr "clique direito para sair do modo de mapeamento"
 
-#: ../src/gui/accelerators.c:839
+#: ../src/gui/accelerators.c:844
 msgid "active view"
 msgstr "vista ativa"
 
-#: ../src/gui/accelerators.c:840
+#: ../src/gui/accelerators.c:845
 msgid "other views"
 msgstr "outras vistas"
 
-#: ../src/gui/accelerators.c:841
+#: ../src/gui/accelerators.c:846
 msgid "fallbacks"
 msgstr "alternativos"
 
-#: ../src/gui/accelerators.c:992
+#: ../src/gui/accelerators.c:997
 msgid "shortcut for move exists with single effect"
 msgstr "atalho para movimento existe com único efeito"
 
-#: ../src/gui/accelerators.c:993
+#: ../src/gui/accelerators.c:998
 msgid "create separate shortcuts for up and down move?"
 msgstr "criar atalhos separados para movimentos para cima e para baixo?"
 
-#: ../src/gui/accelerators.c:1016
+#: ../src/gui/accelerators.c:1021
 #, c-format
 msgid "%s, speed reset"
 msgstr "%s, redefinir velocidade"
 
-#: ../src/gui/accelerators.c:1025
+#: ../src/gui/accelerators.c:1030
 msgid "shortcut exists with different settings"
 msgstr "existe um atalho com configuração diferente"
 
-#: ../src/gui/accelerators.c:1026
+#: ../src/gui/accelerators.c:1031
 msgid "reset the settings of the shortcut?"
 msgstr "redefinir a configuração do atalho?"
 
-#: ../src/gui/accelerators.c:1037
+#: ../src/gui/accelerators.c:1042
 msgid "shortcut already exists"
 msgstr "o atalho já existe"
 
-#: ../src/gui/accelerators.c:1038
+#: ../src/gui/accelerators.c:1043
 msgid "remove the shortcut?"
 msgstr "remover o atalho?"
 
-#: ../src/gui/accelerators.c:1071
+#: ../src/gui/accelerators.c:1076
 msgid "remove these existing shortcuts?"
 msgstr "remover estes atalhos existentes?"
 
-#: ../src/gui/accelerators.c:1073
+#: ../src/gui/accelerators.c:1078
 msgid "clashing shortcuts exist"
 msgstr "há atalhos conflitantes"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1110
+#: ../src/gui/accelerators.c:1115
 msgid "preferred"
 msgstr "preferido"
 
-#: ../src/gui/accelerators.c:1113
+#: ../src/gui/accelerators.c:1118
 msgid "second"
 msgstr "segundo"
 
-#: ../src/gui/accelerators.c:1114
+#: ../src/gui/accelerators.c:1119
 msgid "last but one"
 msgstr "penúltimo"
 
-#: ../src/gui/accelerators.c:1256 ../src/gui/accelerators.c:1310
+#: ../src/gui/accelerators.c:1261 ../src/gui/accelerators.c:1315
 msgid "(unchanged)"
 msgstr "(não modificado)"
 
-#: ../src/gui/accelerators.c:1405
+#: ../src/gui/accelerators.c:1410
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -8848,31 +8854,31 @@ msgstr ""
 "\n"
 "clique direito para cancelar"
 
-#: ../src/gui/accelerators.c:1452
+#: ../src/gui/accelerators.c:1457
 msgid "removing shortcut"
 msgstr "removendo atalho"
 
-#: ../src/gui/accelerators.c:1453
+#: ../src/gui/accelerators.c:1458
 msgid "remove the selected shortcut?"
 msgstr "excluir os atalhos selecionados?"
 
-#: ../src/gui/accelerators.c:1788
+#: ../src/gui/accelerators.c:1793
 msgid "restore shortcuts"
 msgstr "restaurar atalhos"
 
-#: ../src/gui/accelerators.c:1792
+#: ../src/gui/accelerators.c:1797
 msgid "_defaults"
 msgstr "_padrões"
 
-#: ../src/gui/accelerators.c:1793
+#: ../src/gui/accelerators.c:1798
 msgid "_startup"
 msgstr "_ao iniciar"
 
-#: ../src/gui/accelerators.c:1794
+#: ../src/gui/accelerators.c:1799
 msgid "_edits"
 msgstr "_editados"
 
-#: ../src/gui/accelerators.c:1799
+#: ../src/gui/accelerators.c:1804
 msgid ""
 "restore default shortcuts\n"
 "  or as at startup\n"
@@ -8882,7 +8888,7 @@ msgstr ""
 "  ou como ao iniciar\n"
 "  ou como quando o diálogo de configuração foi aberto\n"
 
-#: ../src/gui/accelerators.c:1802
+#: ../src/gui/accelerators.c:1807
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -8890,21 +8896,21 @@ msgstr ""
 "limpar todos os atalhos mais novos\n"
 "(ao invés de simplesmente restaurar os modificados)"
 
-#: ../src/gui/accelerators.c:1856 ../src/gui/preferences.c:875
+#: ../src/gui/accelerators.c:1861 ../src/gui/preferences.c:875
 #: ../src/libs/tools/global_toolbox.c:843
 msgid "shortcuts"
 msgstr "atalhos"
 
-#: ../src/gui/accelerators.c:1865
+#: ../src/gui/accelerators.c:1870
 msgid "export shortcuts"
 msgstr "exportar atalhos"
 
-#: ../src/gui/accelerators.c:1868 ../src/gui/accelerators.c:1947
+#: ../src/gui/accelerators.c:1873 ../src/gui/accelerators.c:1952
 #: ../src/gui/hist_dialog.c:198 ../src/gui/presets.c:467
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/gui/accelerators.c:1873
+#: ../src/gui/accelerators.c:1878
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -8912,34 +8918,34 @@ msgstr ""
 "exportar todos os atalhos para um arquivo\n"
 "ou somente para um dispositivo selecionado\n"
 
-#: ../src/gui/accelerators.c:1878 ../src/gui/accelerators.c:1957
+#: ../src/gui/accelerators.c:1883 ../src/gui/accelerators.c:1962
 #: ../src/gui/gtk.c:3024 ../src/imageio/format/pdf.c:659
 #: ../src/iop/denoiseprofile.c:3584 ../src/iop/lens.cc:2274
 #: ../src/iop/rawdenoise.c:904 ../src/libs/tools/filter.c:400
 msgid "all"
 msgstr "tudo"
 
-#: ../src/gui/accelerators.c:1879 ../src/gui/accelerators.c:1958
+#: ../src/gui/accelerators.c:1884 ../src/gui/accelerators.c:1963
 msgid "keyboard"
 msgstr "teclado"
 
-#: ../src/gui/accelerators.c:1891
+#: ../src/gui/accelerators.c:1896
 msgid "device id"
 msgstr "id do dispositivo"
 
-#: ../src/gui/accelerators.c:1917
+#: ../src/gui/accelerators.c:1922
 msgid "select file to export"
 msgstr "selecione arquivo para exportar"
 
-#: ../src/gui/accelerators.c:1918 ../src/libs/tagging.c:2547
+#: ../src/gui/accelerators.c:1923 ../src/libs/tagging.c:2547
 msgid "_export"
 msgstr "_exportar"
 
-#: ../src/gui/accelerators.c:1944
+#: ../src/gui/accelerators.c:1949
 msgid "import shortcuts"
 msgstr "importar atalhos"
 
-#: ../src/gui/accelerators.c:1952
+#: ../src/gui/accelerators.c:1957
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -8947,31 +8953,31 @@ msgstr ""
 "importar todos os atalhos de um arquivo\n"
 "ou somente para um dispositivo selecionado\n"
 
-#: ../src/gui/accelerators.c:1970
+#: ../src/gui/accelerators.c:1975
 msgid "id in file"
 msgstr "id no arquivo"
 
-#: ../src/gui/accelerators.c:1976
+#: ../src/gui/accelerators.c:1981
 msgid "id when loaded"
 msgstr "id quando carregado"
 
-#: ../src/gui/accelerators.c:1980
+#: ../src/gui/accelerators.c:1985
 msgid "clear device first"
 msgstr "limpar o dispositivo primeiro"
 
-#: ../src/gui/accelerators.c:2004
+#: ../src/gui/accelerators.c:2009
 msgid "select file to import"
 msgstr "selecione arquivo para importar"
 
-#: ../src/gui/accelerators.c:2005 ../src/libs/tagging.c:2511
+#: ../src/gui/accelerators.c:2010 ../src/libs/tagging.c:2511
 msgid "_import"
 msgstr "_importar"
 
-#: ../src/gui/accelerators.c:2078
+#: ../src/gui/accelerators.c:2083
 msgid "search shortcuts list"
 msgstr "buscar na lista de atalhos"
 
-#: ../src/gui/accelerators.c:2079
+#: ../src/gui/accelerators.c:2084
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -8981,28 +8987,28 @@ msgstr ""
 "resultados"
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2094 ../src/views/view.c:1373
+#: ../src/gui/accelerators.c:2099 ../src/views/view.c:1373
 msgid "shortcut"
 msgstr "atalho"
 
-#: ../src/gui/accelerators.c:2096 ../src/gui/accelerators.c:2184
+#: ../src/gui/accelerators.c:2101 ../src/gui/accelerators.c:2189
 #: ../src/views/view.c:1375
 msgid "action"
 msgstr "ação"
 
-#: ../src/gui/accelerators.c:2105
+#: ../src/gui/accelerators.c:2110
 msgid "element"
 msgstr "elemento"
 
-#: ../src/gui/accelerators.c:2112
+#: ../src/gui/accelerators.c:2117
 msgid "effect"
 msgstr "efeito"
 
-#: ../src/gui/accelerators.c:2169
+#: ../src/gui/accelerators.c:2174
 msgid "search actions list"
 msgstr "buscar na lista de ações"
 
-#: ../src/gui/accelerators.c:2170
+#: ../src/gui/accelerators.c:2175
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -9011,16 +9017,16 @@ msgstr ""
 "pressione as teclas para cima e para baixo para percorrer ciclicamente os "
 "resultados"
 
-#: ../src/gui/accelerators.c:2190 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2195 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:192
 msgid "type"
 msgstr "tipo"
 
-#: ../src/gui/accelerators.c:2225
+#: ../src/gui/accelerators.c:2230
 msgid "enable fallbacks"
 msgstr "ativar alternativos"
 
-#: ../src/gui/accelerators.c:2226
+#: ../src/gui/accelerators.c:2231
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -9029,45 +9035,45 @@ msgstr ""
 "adicionais,\n"
 "quando usados em combinação com um atalho base"
 
-#: ../src/gui/accelerators.c:2232
+#: ../src/gui/accelerators.c:2237
 msgid "restore..."
 msgstr "restaurar..."
 
-#: ../src/gui/accelerators.c:2233
+#: ../src/gui/accelerators.c:2238
 msgid "restore default shortcuts or previous state"
 msgstr "restaurar atalhos padrão ou estado anterior"
 
-#: ../src/gui/accelerators.c:2237
+#: ../src/gui/accelerators.c:2242
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/gui/accelerators.c:2238
+#: ../src/gui/accelerators.c:2243
 msgid "fully or partially import shortcuts from file"
 msgstr "importar atalhos completamente ou parcialmente de um arquivo"
 
 #. export button
-#: ../src/gui/accelerators.c:2242 ../src/libs/styles.c:884
+#: ../src/gui/accelerators.c:2247 ../src/libs/styles.c:884
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/gui/accelerators.c:2243
+#: ../src/gui/accelerators.c:2248
 msgid "fully or partially export shortcuts to file"
 msgstr "exportar atalhos completamente ou parcialmente para um arquivo"
 
-#: ../src/gui/accelerators.c:2651
+#: ../src/gui/accelerators.c:2658
 msgid "input devices reinitialised"
 msgstr "dispositivos de entrada reinicializados"
 
-#: ../src/gui/accelerators.c:2866
+#: ../src/gui/accelerators.c:2873
 msgid "fallback to move"
 msgstr "alternativo para mover"
 
-#: ../src/gui/accelerators.c:3058
+#: ../src/gui/accelerators.c:3065
 #, c-format
 msgid "%s not assigned"
 msgstr "%s não associado"
 
-#: ../src/gui/accelerators.c:3210
+#: ../src/gui/accelerators.c:3217
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s associado a %s"
@@ -22459,9 +22465,11 @@ msgstr ""
 "definir atalhos\n"
 "ctrl+clique para desligar as confirmações de sobrescrita\n"
 "\n"
-"passe o mouse sobre uma ferramenta e pressione teclas com clique e rolar do mouse ou combinações de movimentos\n"
+"passe o mouse sobre uma ferramenta e pressione teclas com clique e rolar do "
+"mouse ou combinações de movimentos\n"
 "repita a mesma combinação novamente para remover o mapeamento\n"
-"clique em uma ferramenta, módulo ou área da tela para abrir o diálogo para mais configurações"
+"clique em uma ferramenta, módulo ou área da tela para abrir o diálogo para "
+"mais configurações"
 
 #: ../src/libs/tools/global_toolbox.c:533
 msgid "show global preferences"
@@ -22488,59 +22496,59 @@ msgstr "erro abrindo url de ajuda aberta no navegador"
 msgid "there is no help available for this element"
 msgstr "não há ajuda disponível para este elemento"
 
-#: ../src/libs/tools/global_toolbox.c:976
+#: ../src/libs/tools/global_toolbox.c:978
 msgctxt "accel"
 msgid "grouping"
 msgstr "agrupar"
 
-#: ../src/libs/tools/global_toolbox.c:977
+#: ../src/libs/tools/global_toolbox.c:979
 msgctxt "accel"
 msgid "thumbnail overlays options"
 msgstr "opções de informações em miniaturas"
 
-#: ../src/libs/tools/global_toolbox.c:978
+#: ../src/libs/tools/global_toolbox.c:980
 msgctxt "accel"
 msgid "preferences"
 msgstr "preferências"
 
-#: ../src/libs/tools/global_toolbox.c:979
+#: ../src/libs/tools/global_toolbox.c:981
 msgctxt "accel"
 msgid "shortcuts"
 msgstr "atalhos"
 
-#: ../src/libs/tools/global_toolbox.c:981
+#: ../src/libs/tools/global_toolbox.c:983
 msgctxt "accel"
 msgid "thumbnail overlays/no overlays"
 msgstr "informações em miniaturas/nenhuma informação"
 
-#: ../src/libs/tools/global_toolbox.c:982
+#: ../src/libs/tools/global_toolbox.c:984
 msgctxt "accel"
 msgid "thumbnail overlays/overlays on mouse hover"
 msgstr "informações em miniaturas/informações ao passar o mouse"
 
-#: ../src/libs/tools/global_toolbox.c:983
+#: ../src/libs/tools/global_toolbox.c:985
 msgctxt "accel"
 msgid "thumbnail overlays/extended overlays on mouse hover"
 msgstr "informações em miniaturas/informações estendidas ao passar o mouse"
 
-#: ../src/libs/tools/global_toolbox.c:984
+#: ../src/libs/tools/global_toolbox.c:986
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays"
 msgstr "informações em miniaturas/informações permanentes"
 
-#: ../src/libs/tools/global_toolbox.c:985
+#: ../src/libs/tools/global_toolbox.c:987
 msgctxt "accel"
 msgid "thumbnail overlays/permanent extended overlays"
 msgstr "informações em miniaturas/informações estendidas permanentes"
 
-#: ../src/libs/tools/global_toolbox.c:986
+#: ../src/libs/tools/global_toolbox.c:988
 msgctxt "accel"
 msgid "thumbnail overlays/permanent overlays extended on mouse hover"
 msgstr ""
 "informações em miniaturas/informações permanentes estendidas ao passar o "
 "mouse"
 
-#: ../src/libs/tools/global_toolbox.c:987
+#: ../src/libs/tools/global_toolbox.c:989
 msgctxt "accel"
 msgid "thumbnail overlays/overlays block on mouse hover"
 msgstr "informações/bloco de informações em miniaturas ao passar o mouse"
