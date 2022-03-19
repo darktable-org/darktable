@@ -131,6 +131,16 @@ static GdkRGBA * default_color_assign()
   return gdk_rgba_copy(&color);
 }
 
+static void _margins_retrieve(dt_bauhaus_widget_t *w)
+{
+  if(!w->margin) w->margin = gtk_border_new();
+  if(!w->padding) w->padding = gtk_border_new();
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(w));
+  const GtkStateFlags state = gtk_widget_get_state_flags(GTK_WIDGET(w));
+  gtk_style_context_get_margin(context, state, w->margin);
+  gtk_style_context_get_padding(context, state, w->padding);
+}
+
 void dt_bauhaus_widget_set_section(GtkWidget *widget, const gboolean is_section)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -1138,22 +1148,18 @@ GtkWidget *dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, 
 static void dt_bauhaus_style_updated(GtkWidget *widget, gpointer user_data)
 {
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  _margins_retrieve(w);
 
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  const GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  GtkBorder margin, padding;
-  gtk_style_context_get_margin(context, state, &margin);
-  gtk_style_context_get_padding(context, state, &padding);
   if(w->type == DT_BAUHAUS_COMBOBOX)
   {
-    gtk_widget_set_size_request(widget, -1,
-                                margin.top + padding.top + margin.bottom + padding.bottom + get_line_height());
+    gtk_widget_set_size_request(
+        widget, -1, w->margin->top + w->padding->top + w->margin->bottom + w->padding->bottom + get_line_height());
   }
   else if(w->type == DT_BAUHAUS_SLIDER)
   {
     gtk_widget_set_size_request(widget, -1,
-                                margin.top + padding.top + margin.bottom + padding.bottom + INNER_PADDING
-                                    + darktable.bauhaus->baseline_size + get_line_height()
+                                w->margin->top + w->padding->top + w->margin->bottom + w->padding->bottom
+                                    + INNER_PADDING + darktable.bauhaus->baseline_size + get_line_height()
                                     - darktable.bauhaus->border_width / 2.0f);
   }
 }
@@ -2158,17 +2164,15 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
 
   gtk_style_context_get_color(context, state, fg_color);
   gtk_style_context_get(context, state, "background-color", &bg_color, NULL);
-  GtkBorder margin, padding;
-  gtk_style_context_get_margin(context, state, &margin);
-  gtk_style_context_get_padding(context, state, &padding);
+  _margins_retrieve(w);
 
   // translate to account for the widget spacing
-  const int h2 = height - margin.top - margin.bottom;
-  const int w2 = width - margin.left - margin.right;
-  const int h3 = h2 - padding.top - padding.bottom;
-  const int w3 = w2 - padding.left - padding.right;
-  gtk_render_background(context, cr, margin.left, margin.top, w2, h2);
-  cairo_translate(cr, margin.left + padding.left, margin.top + padding.top);
+  const int h2 = height - w->margin->top - w->margin->bottom;
+  const int w2 = width - w->margin->left - w->margin->right;
+  const int h3 = h2 - w->padding->top - w->padding->bottom;
+  const int w3 = w2 - w->padding->left - w->padding->right;
+  gtk_render_background(context, cr, w->margin->left, w->margin->top, w2, h2);
+  cairo_translate(cr, w->margin->left + w->padding->left, w->margin->top + w->padding->top);
 
   // draw type specific content:
   cairo_save(cr);
@@ -2276,7 +2280,7 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
   cairo_surface_destroy(cst);
 
   // render eventual css borders
-  gtk_render_frame(context, crf, margin.left, margin.top, w2, h2);
+  gtk_render_frame(context, crf, w->margin->left, w->margin->top, w2, h2);
 
   gdk_rgba_free(text_color);
   gdk_rgba_free(fg_color);
@@ -2965,7 +2969,11 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  if(event->x > allocation.width - darktable.bauhaus->quad_width - INNER_PADDING)
+  const int w3 = allocation.width - w->margin->left - w->padding->left - w->margin->right - w->padding->right;
+  const double ex = event->x - w->margin->left - w->padding->left;
+  const double ey = event->y - w->margin->top - w->padding->top;
+  if(event->x
+     > allocation.width - darktable.bauhaus->quad_width - INNER_PADDING - w->margin->right - w->padding->right)
   {
     dt_bauhaus_widget_press_quad(widget);
     return TRUE;
@@ -2993,14 +3001,13 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     {
       if(!dt_modifier_is(event->state, 0))
       {
-        darktable.bauhaus->mouse_x = event->x;
+        darktable.bauhaus->mouse_x = ex;
         d->is_dragging = 1;
       }
-      else if(event->y > darktable.bauhaus->line_height)
+      else if(ey > darktable.bauhaus->line_height)
       {
-        const float l = 0.0f;
-        const float r = slider_right_pos((float)allocation.width);
-        dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
+        const float r = slider_right_pos((float)w3);
+        dt_bauhaus_slider_set_normalized(w, (ex / w3) / r);
 
         darktable.bauhaus->mouse_x = NAN;
         d->is_dragging = 1;
@@ -3014,7 +3021,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
         g_object_unref(layout);
         g_free(text);
 
-        if(event->x > allocation.width - value_width/PANGO_SCALE - darktable.bauhaus->quad_width - INNER_PADDING)
+        if(ex > w3 - value_width / PANGO_SCALE - darktable.bauhaus->quad_width - INNER_PADDING)
           dt_bauhaus_show_popup(widget);
       }
     }
@@ -3048,34 +3055,35 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
+  const int w3 = allocation.width - w->margin->left - w->padding->left - w->margin->right - w->padding->right;
+  const double ex = event->x - w->margin->left - w->padding->left;
   if(d->is_dragging && event->state & GDK_BUTTON1_MASK)
   {
-    const float l = 0.0f;
-    const float r = slider_right_pos((float)allocation.width);
+    const float r = slider_right_pos((float)w3);
 
     if(isnan(darktable.bauhaus->mouse_x))
     {
       if(dt_modifier_is(event->state, 0))
-        dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
+        dt_bauhaus_slider_set_normalized(w, (ex / w3) / r);
       else
-        darktable.bauhaus->mouse_x = event->x;
+        darktable.bauhaus->mouse_x = ex;
     }
     else
     {
-      const float scaled_step = allocation.width * (r - l) * dt_bauhaus_slider_get_step(widget) / (d->max - d->min);
-      const float steps = floorf((event->x - darktable.bauhaus->mouse_x) / scaled_step);
+      const float scaled_step = w3 * r * dt_bauhaus_slider_get_step(widget) / (d->max - d->min);
+      const float steps = floorf((ex - darktable.bauhaus->mouse_x) / scaled_step);
       _slider_add_step(widget, copysignf(1, d->factor) * steps, event->state, FALSE);
 
       darktable.bauhaus->mouse_x += steps * scaled_step;
     }
   }
 
-  if(event->x <= allocation.width - darktable.bauhaus->quad_width)
+  if(ex <= w3 - darktable.bauhaus->quad_width)
   {
-    darktable.control->element = event->x > (0.1 * (allocation.width - darktable.bauhaus->quad_width)) &&
-                                 event->x < (0.9 * (allocation.width - darktable.bauhaus->quad_width))
-                               ? DT_ACTION_ELEMENT_VALUE
-                               : DT_ACTION_ELEMENT_FORCE;
+    darktable.control->element
+        = ex > (0.1 * (w3 - darktable.bauhaus->quad_width)) && ex < (0.9 * (w3 - darktable.bauhaus->quad_width))
+              ? DT_ACTION_ELEMENT_VALUE
+              : DT_ACTION_ELEMENT_FORCE;
   }
   else
     darktable.control->element = DT_ACTION_ELEMENT_BUTTON;
