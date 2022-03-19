@@ -2035,9 +2035,8 @@ treeview#delete-dialog:selected
 }
 
 /* Sliders states */
-#bauhaus-popup *:hover,
-#bauhaus-combobox *:hover,
-#bauhaus-slider *:hover
+#bauhaus-popup:hover,
+#bauhaus-slider:hover
 {
   color: @bauhaus_fg_hover;
 }
