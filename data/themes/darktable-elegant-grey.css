@@ -49,7 +49,7 @@
 @define-color bauhaus_indicator_border @grey_50;
 @define-color bauhaus_fill @grey_70;
 @define-color bauhaus_bg_hover @grey_65;
-@define-color bauhaus_fg_hover @grey_95;
+@define-color bauhaus_fg_hover @grey_85;
 @define-color bauhaus_fg_selected @grey_85;
 @define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.5);
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
