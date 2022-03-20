@@ -3451,7 +3451,7 @@
     <shortdescription>height of the collect list</shortdescription>
     <longdescription>maximum height the collect list in lighttable will grow to before scrolling</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig prefs="misc" section="interface" capability="midi">
     <name>plugins/midi/devices</name>
     <type>string</type>
     <default></default>
