@@ -432,7 +432,7 @@ static gboolean dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
   GtkAllocation allocation_w;
   gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
-  GtkBorder *padding = darktable.bauhaus->popup_padding;
+  const GtkBorder *padding = darktable.bauhaus->popup_padding;
   const int width = allocation_popup_window.width - padding->left - padding->right;
   const int height = allocation_popup_window.height - padding->top - padding->bottom;
   const int ht = darktable.bauhaus->line_height + INNER_PADDING * 2.0f;
@@ -532,7 +532,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
     else
     {
       // only accept left mouse click
-      GtkBorder *padding = darktable.bauhaus->popup_padding;
+      const GtkBorder *padding = darktable.bauhaus->popup_padding;
       darktable.bauhaus->end_mouse_x = event->x - padding->left;
       darktable.bauhaus->end_mouse_y = event->y - padding->top;
       dt_bauhaus_widget_accept(darktable.bauhaus->current);
@@ -1801,7 +1801,7 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
 
   GtkAllocation allocation_popup_window;
   gtk_widget_get_allocation(darktable.bauhaus->popup_window, &allocation_popup_window);
-  GtkBorder *padding = darktable.bauhaus->popup_padding;
+  const GtkBorder *padding = darktable.bauhaus->popup_padding;
 
   const int width = allocation_popup_window.width - padding->left - padding->right;
   const int height = allocation_popup_window.height - padding->top - padding->bottom;
@@ -1888,7 +1888,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // dimensions of the popup
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  GtkBorder *padding = darktable.bauhaus->popup_padding;
+  const GtkBorder *padding = darktable.bauhaus->popup_padding;
   const int w2 = allocation.width - padding->left - padding->right;
   const int h2 = allocation.height - padding->top - padding->bottom;
 
