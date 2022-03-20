@@ -318,7 +318,7 @@ void gamepad_close_devices(dt_lib_module_t *self)
   g_slist_free_full(self->data, (void (*)(void *))gamepad_device_free);
   self->data = NULL;
 
-  SDL_Quit();
+  // Don't call SDL_Quit here because reinitialising using SDL_Init won't work
 }
 
 void gui_init(dt_lib_module_t *self)
