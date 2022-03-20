@@ -292,11 +292,10 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   dt_lib_filtering_params_t *p = (dt_lib_filtering_params_t *)params;
   char confname[200] = { 0 };
 
-  gboolean reset_view_filter = FALSE;
   for(uint32_t i = 0; i < p->rules; i++)
   {
     /* set item */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1u", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
     dt_conf_set_int(confname, p->rule[i].item);
 
     /* set mode */
@@ -314,17 +313,6 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     /* set string */
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1u", i);
     dt_conf_set_string(confname, p->rule[i].string);
-
-    /* if one of the rules is a rating filter, the view rating filter will be reset to all */
-    if(p->rule[i].item == DT_COLLECTION_PROP_RATING)
-    {
-      reset_view_filter = TRUE;
-    }
-  }
-
-  if(reset_view_filter)
-  {
-    dt_view_filtering_reset(darktable.view_manager, FALSE);
   }
 
   /* set number of rules */
