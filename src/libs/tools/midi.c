@@ -546,6 +546,8 @@ static gboolean _timeout_midi_update(gpointer user_data)
 
 void gui_init(dt_lib_module_t *self)
 {
+  dt_capabilities_add("midi");
+
   if(!self->widget)
   {
     self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
