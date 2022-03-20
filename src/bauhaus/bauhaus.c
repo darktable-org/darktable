@@ -1144,10 +1144,11 @@ static void dt_bauhaus_style_updated(GtkWidget *widget, gpointer user_data)
   }
   else if(w->type == DT_BAUHAUS_SLIDER)
   {
+    // the lower thing to draw is indicator. See dt_bauhaus_draw_baseline for compute details
     gtk_widget_set_size_request(widget, -1,
                                 w->margin->top + w->padding->top + w->margin->bottom + w->padding->bottom
                                     + INNER_PADDING + darktable.bauhaus->baseline_size
-                                    + darktable.bauhaus->line_height - darktable.bauhaus->border_width / 2.0f);
+                                    + darktable.bauhaus->line_height + 1.5f * darktable.bauhaus->border_width);
   }
 }
 
@@ -1766,7 +1767,7 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr, float 
       cairo_arc(cr, slider_width - graduation_height, graduation_top, graduation_height, 0, 2 * M_PI);
     else
       cairo_arc(cr, origin, graduation_top, graduation_height, 0, 2 * M_PI);
-}
+  }
 
   cairo_fill(cr);
   cairo_restore(cr);
