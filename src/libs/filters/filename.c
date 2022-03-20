@@ -387,6 +387,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   g_signal_connect(G_OBJECT(filename->name), "button-press-event", G_CALLBACK(_filename_press), filename);
   GtkStyleContext *context = gtk_widget_get_style_context(filename->name);
   gtk_style_context_add_class(context, "dt_transparent_background");
+  gtk_style_context_add_class(context, "search");
 
   filename->ext = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(filename->ext), (top) ? 5 : 0);
@@ -401,6 +402,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   g_signal_connect(G_OBJECT(filename->ext), "button-press-event", G_CALLBACK(_filename_press), filename);
   context = gtk_widget_get_style_context(filename->ext);
   gtk_style_context_add_class(context, "dt_transparent_background");
+  gtk_style_context_add_class(context, "search");
   if(top)
   {
     context = gtk_widget_get_style_context(hb);
