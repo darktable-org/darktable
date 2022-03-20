@@ -75,7 +75,7 @@ static double _iso_value_from_band_func(const double value)
   return 100 * pow(2.0, value);
 }
 
-static gchar *_iso_print_func(const double value, gboolean detailled)
+static gchar *_iso_print_func(const double value, const gboolean detailled)
 {
   if(detailled)
   {

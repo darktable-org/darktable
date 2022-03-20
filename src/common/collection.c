@@ -1991,7 +1991,6 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
 void dt_collection_sort_deserialize(const char *buf)
 {
-  char confname[200];
   int num_sort = 0;
   sscanf(buf, "%d", &num_sort);
   int sortid = 0, sortorder = 0;
@@ -2003,6 +2002,7 @@ void dt_collection_sort_deserialize(const char *buf)
     const int n = sscanf(buf, "%d:%d", &sortid, &sortorder);
     if(n == 2)
     {
+      char confname[200];
       snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", k);
       dt_conf_set_int(confname, sortid);
       snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", k);
@@ -2021,7 +2021,6 @@ void dt_collection_sort_deserialize(const char *buf)
 
 void dt_collection_sort_serialize(char *buf, int bufsize)
 {
-  char confname[200];
   int c;
   const int num_sort = dt_conf_get_int("plugins/lighttable/filtering/num_sort");
   c = snprintf(buf, bufsize, "%d:", num_sort);
@@ -2029,6 +2028,7 @@ void dt_collection_sort_serialize(char *buf, int bufsize)
   bufsize -= c;
   for(int k = 0; k < num_sort; k++)
   {
+    char confname[200];
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", k);
     const int sortid = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", sortid);

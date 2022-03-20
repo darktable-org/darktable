@@ -63,7 +63,7 @@ static gboolean _focal_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static gchar *_focal_print_func(const double value, gboolean detailled)
+static gchar *_focal_print_func(const double value, const gboolean detailled)
 {
   gchar *txt = g_strdup_printf("%.0lf", value);
 

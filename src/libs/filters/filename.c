@@ -365,7 +365,7 @@ void _filename_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer
 }
 
 static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                  const gchar *text, dt_lib_module_t *self, gboolean top)
+                                  const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_filename_t *filename = (_widgets_filename_t *)g_malloc0(sizeof(_widgets_filename_t));
   filename->rule = rule;

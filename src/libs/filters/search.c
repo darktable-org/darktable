@@ -158,7 +158,7 @@ static void _search_reset_text_entry(GtkButton *button, dt_lib_filtering_rule_t 
 }
 
 static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                const gchar *text, dt_lib_module_t *self, gboolean top)
+                                const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_search_t *search = (_widgets_search_t *)g_malloc0(sizeof(_widgets_search_t));
   search->rule = rule;

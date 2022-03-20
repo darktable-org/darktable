@@ -35,7 +35,7 @@ static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static gchar *_rating_print_func(const double value, gboolean detailled)
+static gchar *_rating_print_func(const double value, const gboolean detailled)
 {
   if(detailled)
   {

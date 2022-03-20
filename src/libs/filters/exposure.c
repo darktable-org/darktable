@@ -74,7 +74,7 @@ static double _exposure_value_from_band_func(const double value)
   return pow(value, 4);
 }
 
-static gchar *_exposure_print_func(const double value, gboolean detailled)
+static gchar *_exposure_print_func(const double value, const gboolean detailled)
 {
   if(detailled)
   {
