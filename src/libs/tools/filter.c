@@ -421,7 +421,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_tooltip_text(d->colors[k], _("filter by images color label"
                                                 "\nclick to toggle the color label selection"
                                                 "\nctrl+click to exclude the color label"
-                                                "\nthe grey button affects all color labels"));
+                                                "\nthe gray button affects all color labels"));
     g_signal_connect(G_OBJECT(d->colors[k]), "button-press-event", G_CALLBACK(_colorlabel_clicked), self);
   }
   d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
