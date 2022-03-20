@@ -432,14 +432,15 @@ static gboolean dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion
   dt_bauhaus_widget_t *w = darktable.bauhaus->current;
   GtkAllocation allocation_w;
   gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
-  const int width = allocation_popup_window.width - w->padding->left - w->padding->right;
-  const int height = allocation_popup_window.height - w->padding->top - w->padding->bottom;
+  GtkBorder *padding = darktable.bauhaus->popup_padding;
+  const int width = allocation_popup_window.width - padding->left - padding->right;
+  const int height = allocation_popup_window.height - padding->top - padding->bottom;
   const int ht = darktable.bauhaus->line_height + INNER_PADDING * 2.0f;
   // coordinate transform is in vain because we're only ever called after a button release.
   // that means the system is always the one of the popup.
   // that also means that we can't have hovering combobox entries while still holding the button. :(
-  const float ex = event->x - w->padding->left;
-  const float ey = event->y - w->padding->top;
+  const float ex = event->x - padding->left;
+  const float ey = event->y - padding->top;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
@@ -487,8 +488,9 @@ static gboolean dt_bauhaus_popup_leave_notify(GtkWidget *widget, GdkEventCrossin
 
 static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  if(darktable.bauhaus->current && (darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX)
-     && (event->button == 1) &&                                // only accept left mouse click
+  if(!darktable.bauhaus->hiding && darktable.bauhaus->current
+     && (darktable.bauhaus->current->type == DT_BAUHAUS_COMBOBOX) && (event->button == 1)
+     &&                                                        // only accept left mouse click
      (dt_get_wtime() - darktable.bauhaus->opentime >= 0.250f)) // default gtk timeout for double-clicks
   {
     gtk_widget_set_state_flags(widget, GTK_STATE_FLAG_ACTIVE, TRUE);
@@ -530,8 +532,9 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
     else
     {
       // only accept left mouse click
-      darktable.bauhaus->end_mouse_x = event->x - darktable.bauhaus->current->padding->left;
-      darktable.bauhaus->end_mouse_y = event->y - darktable.bauhaus->current->padding->top;
+      GtkBorder *padding = darktable.bauhaus->popup_padding;
+      darktable.bauhaus->end_mouse_x = event->x - padding->left;
+      darktable.bauhaus->end_mouse_y = event->y - padding->top;
       dt_bauhaus_widget_accept(darktable.bauhaus->current);
       gtk_widget_set_state_flags(GTK_WIDGET(darktable.bauhaus->current),
                                  GTK_STATE_FLAG_FOCUSED, FALSE);
@@ -1798,9 +1801,10 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
 
   GtkAllocation allocation_popup_window;
   gtk_widget_get_allocation(darktable.bauhaus->popup_window, &allocation_popup_window);
+  GtkBorder *padding = darktable.bauhaus->popup_padding;
 
-  const int width = allocation_popup_window.width - w->padding->left - w->padding->right;
-  const int height = allocation_popup_window.height - w->padding->top - w->padding->bottom;
+  const int width = allocation_popup_window.width - padding->left - padding->right;
+  const int height = allocation_popup_window.height - padding->top - padding->bottom;
   const int base_height = darktable.bauhaus->line_height + INNER_PADDING * 2.0f;
 
   switch(w->type)
@@ -1810,9 +1814,8 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       // only set to what's in the filtered list.
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       const int active = darktable.bauhaus->end_mouse_y >= 0
-                 ? ((darktable.bauhaus->end_mouse_y - INNER_PADDING) / (darktable.bauhaus->line_height))
-                 : d->active;
-
+                             ? (darktable.bauhaus->end_mouse_y / darktable.bauhaus->line_height)
+                             : d->active;
       int k = 0, i = 0, kk = 0, match = 1;
 
       gchar *keys = g_utf8_casefold(darktable.bauhaus->keys, -1);
