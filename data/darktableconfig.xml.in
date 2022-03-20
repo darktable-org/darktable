@@ -457,6 +457,20 @@
     <longdescription>the number of recent sort orders to store and show in history list</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/filtering/num_sort</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>nb of sort orders by default</shortdescription>
+    <longdescription></longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/filtering/sort0</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>first sort orders</shortdescription>
+    <longdescription></longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/filtering/num_rules</name>
     <type>int</type>
     <default>3</default>
