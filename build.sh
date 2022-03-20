@@ -34,11 +34,15 @@ SUDO=""
 
 PRINT_HELP=0
 
-FEATURES="CAMERA COLORD FLICKR GRAPHICSMAGICK IMAGEMAGICK KWALLET LIBSECRET LUA MAP MAC_INTEGRATION NLS OPENCL OPENEXR OPENMP UNITY WEBP GAME"
+FEATURES="USE_CAMERA_SUPPORT USE_COLORD USE_FLICKR USE_GRAPHICSMAGICK USE_IMAGEMAGICK "
+FEATURES+="USE_KWALLET USE_LIBSECRET USE_LUA USE_MAP USE_MAC_INTEGRATION USE_NLS USE_OPENCL USE_OPENEXR "
+FEATURES+="USE_OPENMP USE_UNITY USE_WEBP USE_OPENJPEG USE_GAME USE_GMIC USE_LENSFUN USE_XMLLINT USE_ICU "
+FEATURES+="USE_DARKTABLE_PROFILING BUILD_NOISE_TOOLS BUILD_CURVE_TOOLS BUILD_USERMANUAL BINARY_PACKAGE_BUILD "
+FEATURES+="BUILD_PRINT BUILD_CMSTEST "
 
-# prepare a lowercase version with a space before and after
+# prepare a lowercase version with underscores replaced by dashes and a space before and after
 # it's very important for parse_feature, has no impact in for loop expansions
-FEATURES_=$(for i in $FEATURES ; do printf " $(printf $i|tr A-Z a-z) "; done)
+FEATURES_=$(for i in $FEATURES ; do printf " $(printf $i | tr A-Z a-z | tr '_' '-') "; done)
 
 # ---------------------------------------------------------------------------
 # Parsing functions
@@ -50,7 +54,7 @@ parse_feature()
 	local value="$2"
 
 	if printf "$FEATURES_" | grep -q " $feature " ; then
-		eval "FEAT_$(printf $feature|tr a-z A-Z)"=$value
+		eval "FEAT_$(printf $feature | tr a-z A-Z | tr '-' '_')"=$value
 	else
 		printf "warning: unknown feature '$feature'\n"
 	fi
@@ -304,7 +308,7 @@ fi
 
 CMAKE_MORE_OPTIONS=""
 for i in $FEATURES; do
-	eval cmake_boolean_option USE_$i \$FEAT_$i
+	eval cmake_boolean_option $i \$FEAT_$i
 done
 
 # Some people might need this, but ignore if unset in environment
