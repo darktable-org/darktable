@@ -1075,6 +1075,12 @@ static void _filters_gui_update(dt_lib_module_t *self)
 void gui_reset(dt_lib_module_t *self)
 {
   dt_conf_set_int("plugins/lighttable/filtering/num_rules", 0);
+  dt_conf_set_int("plugins/lighttable/filtering/num_sort", 1);
+  dt_conf_set_int("plugins/lighttable/filtering/sort0", 0);
+  dt_conf_set_int("plugins/lighttable/filtering/sortorder0", 0);
+
+  _filters_gui_update(self);
+  _sort_gui_update(self);
 
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
