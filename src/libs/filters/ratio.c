@@ -106,7 +106,7 @@ static double _ratio_value_from_band_func(const double value)
   return 1.0 / (2.0 - value);
 }
 
-static gchar *_ratio_print_func(const double value, gboolean detailled)
+static gchar *_ratio_print_func(const double value, const gboolean detailled)
 {
   gchar *locale = strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_NUMERIC, "C");

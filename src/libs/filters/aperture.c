@@ -63,7 +63,7 @@ static gboolean _aperture_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
-static gchar *_aperture_print_func(const double value, gboolean detailled)
+static gchar *_aperture_print_func(const double value, const gboolean detailled)
 {
   gchar *locale = strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_NUMERIC, "C");

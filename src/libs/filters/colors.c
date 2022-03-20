@@ -220,7 +220,7 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
 }
 
 static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                const gchar *text, dt_lib_module_t *self, gboolean top)
+                                const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
   _widgets_colors_t *colors = (_widgets_colors_t *)g_malloc0(sizeof(_widgets_colors_t));
   colors->rule = rule;
