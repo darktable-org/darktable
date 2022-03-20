@@ -3188,7 +3188,7 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   // Margins
   const double INNER_PADDING = 4.0;
-  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(1.5);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
@@ -3228,7 +3228,7 @@ static gboolean target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user
 
   // Margins
   const double INNER_PADDING = 4.0;
-  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(1.5);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
@@ -3271,7 +3271,7 @@ static gboolean origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user
 
   // Margins
   const double INNER_PADDING = 4.0;
-  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(1.5);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
