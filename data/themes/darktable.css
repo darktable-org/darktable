@@ -2064,6 +2064,23 @@ treeview#delete-dialog:selected
   color: shade(@bauhaus_fg_selected, 1.2);
 }
 
+#bauhaus-slider
+{
+ padding: 0px 0px 1px 0px;
+}
+.bauhaus_slider_popup
+{
+  padding: 2px 0px 2px 4px;
+}
+.bauhaus_combo_popup
+{
+  padding: 2px 0px 0px 2px;
+}
+#bauhaus-combobox
+{
+ padding: 2px 0px 2px 0px;
+}
+
 #lib-plugin-ui #bauhaus-combobox,
 #lib-plugin-ui #bauhaus-slider,
 #iop-plugin-ui #bauhaus-combobox,
