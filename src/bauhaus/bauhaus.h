@@ -167,6 +167,8 @@ typedef struct dt_bauhaus_widget_t
 
   // margin and padding structure, defined in css, retrieve on each draw
   GtkBorder *margin, *padding;
+  // gap to add to the top padding due to the vertical centering
+  int top_gap;
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
@@ -214,9 +216,6 @@ typedef struct dt_bauhaus_t
 
   // appearance relevant stuff:
   // sizes and fonts:
-  float scale;                           // gui scale multiplier
-  float widget_space;                    // space between widgets in a module
-  float line_space;                      // space between lines of text in e.g. the combo box
   float line_height;                     // height of a line of text
   float marker_size;                     // height of the slider indicator
   float baseline_size;                   // height of the slider bar
@@ -224,6 +223,7 @@ typedef struct dt_bauhaus_t
   float quad_width;                      // width of the quad area to paint icons
   PangoFontDescription *pango_font_desc; // no need to recreate this for every string we want to print
   PangoFontDescription *pango_sec_font_desc; // as above but for section labels
+  GtkBorder *popup_padding;                  // padding of the popup. updated in show function
 
   // the slider popup has a blinking cursor
   guint cursor_timeout;
