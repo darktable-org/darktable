@@ -271,7 +271,7 @@ overshoot.left,
 overshoot.right,
 .dt_transparent_background,
 .dt_transparent_background:checked,
-popover #bauhaus-combobox,
+popover #bauhaus_combobox,
 #usercss_box textview,
 #view_dropdown .combo
 {
@@ -356,7 +356,7 @@ entry selection
 }
 
 /* Bauhaus-combobox and search box defaults */
-#header-toolbar #bauhaus-combobox,
+#header-toolbar #bauhaus_combobox,
 .search
 {
   background-color: shade(@button_bg, 0.9);
@@ -848,23 +848,23 @@ dialog headerbar entry
   - Bauhaus controls (sliders and comboboxes in modules) -
   --------------------------------------------------------*/
 
-#bauhaus-popup
+#bauhaus_popup
 {
   color: @bauhaus_fg;
 }
 
-#bauhaus-popup:selected
+#bauhaus_popup:selected
 {
   color: @bauhaus_fg_selected;
 }
 
-popover #bauhaus-slider
+popover #bauhaus_slider
 {
   background-color: @tooltip_bg_color;
 }
 
-#iop-plugin-ui #bauhaus-slider,
-#lib-plugin-ui #bauhaus-slider
+#iop-plugin-ui #bauhaus_slider,
+#lib-plugin-ui #bauhaus_slider
 {
   background-color: @plugin_bg_color;
 }
@@ -899,8 +899,8 @@ tooltip,
 popover,
 combobox window,
 dialog combobox window,
-#bauhaus-combobox *,
-#bauhaus-slider *
+#bauhaus_combobox *,
+#bauhaus_slider *
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
@@ -1833,8 +1833,8 @@ button:hover,
 menuitem:hover,
 menuitem:hover > *:not(check),
 combobox window *:hover,
-#bauhaus-combobox:hover,
-#header-toolbar #bauhaus-combobox:hover,
+#bauhaus_combobox:hover,
+#header-toolbar #bauhaus_combobox:hover,
 radiobutton:hover label,
 #control-button:hover,
 #history-button:hover,
@@ -1854,8 +1854,8 @@ radiobutton:hover label,
 
  /* and same for color as other needs only color setting */
 .combo:hover *,
-#bauhaus-combobox:hover,
-#header-toolbar #bauhaus-combobox:hover,
+#bauhaus_combobox:hover,
+#header-toolbar #bauhaus_combobox:hover,
 button:hover,
 button:hover cellview,
 button:hover image,
@@ -2035,35 +2035,35 @@ treeview#delete-dialog:selected
 }
 
 /* Sliders states */
-#bauhaus-popup:hover,
-#bauhaus-slider:hover
+#bauhaus_popup:hover,
+#bauhaus_slider:hover
 {
   color: @bauhaus_fg_hover;
 }
 
-#bauhaus-popup:disabled,
-#bauhaus-combobox:disabled,
-#bauhaus-slider:disabled
+#bauhaus_popup:disabled,
+#bauhaus_combobox:disabled,
+#bauhaus_slider:disabled
 {
   color: @bauhaus_fg_disabled;
 }
 
-#bauhaus-popup:disabled
+#bauhaus_popup:disabled
 {
   color: @plugin_bg;
 }
 
-#bauhaus-combobox *
+#bauhaus_combobox *
 {
   color: shade(@bauhaus_fg, 0.8);
 }
 
-#bauhaus-combobox *:selected
+#bauhaus_combobox *:selected
 {
   color: shade(@bauhaus_fg_selected, 1.2);
 }
 
-#bauhaus-slider
+#bauhaus_slider
 {
  padding: 0px 0px 1px 0px;
 }
@@ -2075,15 +2075,15 @@ treeview#delete-dialog:selected
 {
   padding: 2px 0px 2px 2px;
 }
-#bauhaus-combobox
+#bauhaus_combobox
 {
  padding: 2px 0px 2px 0px;
 }
 
-#lib-plugin-ui #bauhaus-combobox,
-#lib-plugin-ui #bauhaus-slider,
-#iop-plugin-ui #bauhaus-combobox,
-#iop-plugin-ui #bauhaus-slider
+#lib-plugin-ui #bauhaus_combobox,
+#lib-plugin-ui #bauhaus_slider,
+#iop-plugin-ui #bauhaus_combobox,
+#iop-plugin-ui #bauhaus_slider
 {
   margin-top : 1px;
 }
@@ -2742,7 +2742,7 @@ Details :
 }
 
 #collapsible,
-#collapsible #bauhaus-slider
+#collapsible #bauhaus_slider
 {
   background-color: shade(@collapsible_bg_color, 1.04);
 }
