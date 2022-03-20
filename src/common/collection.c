@@ -647,57 +647,57 @@ const char *dt_collection_name_untranslated(dt_collection_properties_t prop)
   switch(prop)
   {
     case DT_COLLECTION_PROP_FILMROLL:
-      return "film roll";
+      return N_("film roll");
     case DT_COLLECTION_PROP_FOLDERS:
-      return "folder";
+      return N_("folder");
     case DT_COLLECTION_PROP_CAMERA:
-      return "camera";
+      return N_("camera");
     case DT_COLLECTION_PROP_TAG:
-      return "tag";
+      return N_("tag");
     case DT_COLLECTION_PROP_DAY:
-      return "date taken";
+      return N_("date taken");
     case DT_COLLECTION_PROP_TIME:
-      return "date-time taken";
+      return N_("date-time taken");
     case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
-      return "import timestamp";
+      return N_("import timestamp");
     case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
-      return "change timestamp";
+      return N_("change timestamp");
     case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
-      return "export timestamp";
+      return N_("export timestamp");
     case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
-      return "print timestamp";
+      return N_("print timestamp");
     case DT_COLLECTION_PROP_HISTORY:
-      return "history";
+      return N_("history");
     case DT_COLLECTION_PROP_COLORLABEL:
-      return "color label";
+      return N_("color label");
     case DT_COLLECTION_PROP_LENS:
-      return "lens";
+      return N_("lens");
     case DT_COLLECTION_PROP_FOCAL_LENGTH:
-      return "focal length";
+      return N_("focal length");
     case DT_COLLECTION_PROP_ISO:
-      return "ISO";
+      return N_("ISO");
     case DT_COLLECTION_PROP_APERTURE:
-      return "aperture";
+      return N_("aperture");
     case DT_COLLECTION_PROP_EXPOSURE:
-      return "exposure";
+      return N_("exposure");
     case DT_COLLECTION_PROP_ASPECT_RATIO:
-      return "aspect ratio";
+      return N_("aspect ratio");
     case DT_COLLECTION_PROP_FILENAME:
-      return "filename";
+      return N_("filename");
     case DT_COLLECTION_PROP_GEOTAGGING:
-      return "geotagging";
+      return N_("geotagging");
     case DT_COLLECTION_PROP_GROUPING:
-      return "grouping";
+      return N_("grouping");
     case DT_COLLECTION_PROP_LOCAL_COPY:
-      return "local copy";
+      return N_("local copy");
     case DT_COLLECTION_PROP_MODULE:
-      return "module";
+      return N_("module");
     case DT_COLLECTION_PROP_ORDER:
-      return "module order";
+      return N_("module order");
     case DT_COLLECTION_PROP_RATING:
-      return "rating";
+      return N_("rating");
     case DT_COLLECTION_PROP_TEXTSEARCH:
-      return "search";
+      return N_("search");
     case DT_COLLECTION_PROP_LAST:             return NULL;
     default:
     {
