@@ -67,6 +67,13 @@
     <shortdescription>enable shortcut fallbacks</shortdescription>
     <longdescription>enables default meanings for additional buttons, modifiers or moves when used in combination with a base shortcut</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="interface">
+    <name>accel/load_defaults</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>load default shortcuts at startup</shortdescription>
+    <longdescription>load default shortcuts before user settings. switch off to prevent deleted defaults returning</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>bauhaus/scale</name>
     <type>float</type>
@@ -3444,11 +3451,11 @@
     <shortdescription>height of the collect list</shortdescription>
     <longdescription>maximum height the collect list in lighttable will grow to before scrolling</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig prefs="misc" section="interface" capability="midi">
     <name>plugins/midi/devices</name>
     <type>string</type>
     <default></default>
     <shortdescription>order or exclude midi devices</shortdescription>
-    <longdescription>comma-separated list of device name fragments that if matched load midi device at id given by location in list or if preceded by - prevent matching devices from loading</longdescription>
+    <longdescription>comma-separated list of device name fragments that if matched load midi device at id given by location in list or if preceded by - prevent matching devices from loading. add encoding and number of knobs like 'BeatStep:63:16'</longdescription>
   </dtconfig>
 </dtconfiglist>

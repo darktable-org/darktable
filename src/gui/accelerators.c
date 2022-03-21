@@ -66,6 +66,7 @@ typedef struct dt_device_key_t
 } dt_device_key_t;
 
 #define DT_SHORTCUT_DEVICE_KEYBOARD_MOUSE 0
+#define DT_SHORTCUT_DEVICE_TABLET 1
 
 const char *move_string[]
   = { "",
@@ -253,13 +254,14 @@ const dt_action_def_t dt_action_def_button
       _action_fallbacks_button };
 
 static const dt_shortcut_fallback_t _action_fallbacks_value[]
-  = { { .mods = GDK_CONTROL_MASK           , .effect = -1, .speed = 0.1 },
-      { .mods = GDK_SHIFT_MASK             , .effect = -1, .speed = 10. },
-      { .move = DT_SHORTCUT_MOVE_HORIZONTAL, .effect = -1, .speed = 0.1 },
-      { .move = DT_SHORTCUT_MOVE_VERTICAL  , .effect = -1, .speed = 10. },
-      { .effect = DT_ACTION_EFFECT_RESET   , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
-      { .effect = DT_ACTION_EFFECT_TOP     , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .move = DT_SHORTCUT_MOVE_VERTICAL, .direction = DT_SHORTCUT_UP },
-      { .effect = DT_ACTION_EFFECT_BOTTOM  , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .move = DT_SHORTCUT_MOVE_VERTICAL, .direction = DT_SHORTCUT_DOWN },
+  = { { .mods = GDK_CONTROL_MASK                  , .effect = -1, .speed = 0.1 },
+      { .mods = GDK_SHIFT_MASK                    , .effect = -1, .speed = 10. },
+      { .mods = GDK_CONTROL_MASK | GDK_SHIFT_MASK , .effect = -1, .speed = 10. },
+      { .move = DT_SHORTCUT_MOVE_HORIZONTAL       , .effect = -1, .speed = 0.1 },
+      { .move = DT_SHORTCUT_MOVE_VERTICAL         , .effect = -1, .speed = 10. },
+      { .effect = DT_ACTION_EFFECT_RESET  , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE },
+      { .effect = DT_ACTION_EFFECT_TOP    , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .move = DT_SHORTCUT_MOVE_VERTICAL, .direction = DT_SHORTCUT_UP },
+      { .effect = DT_ACTION_EFFECT_BOTTOM , .button = DT_SHORTCUT_LEFT, .click = DT_SHORTCUT_DOUBLE, .move = DT_SHORTCUT_MOVE_VERTICAL, .direction = DT_SHORTCUT_DOWN },
       { } };
 
 const dt_action_def_t dt_action_def_value
@@ -447,6 +449,10 @@ static gchar *_shortcut_key_move_name(dt_input_device_t id, guint key_or_move, g
       else
         name = key_or_move ? gtk_accelerator_name(key_or_move, 0) : g_strdup("None");
     }
+  }
+  else if(id == DT_SHORTCUT_DEVICE_TABLET)
+  {
+    return g_strdup_printf("%s %d", display ? _("tablet button") : "tablet button", key_or_move);
   }
   else
   {
@@ -1732,11 +1738,16 @@ static gboolean _visible_shortcuts(GtkTreeModel *model, GtkTreeIter  *iter, gpoi
   void *data_ptr = NULL;
   gtk_tree_model_get(model, iter, 0, &data_ptr, -1);
 
-  if(GPOINTER_TO_UINT(data_ptr) == CATEGORY_FALLBACKS && !darktable.control->enable_fallbacks) return FALSE;
-
-  if(!_selected_action || GPOINTER_TO_UINT(data_ptr) < NUM_CATEGORIES) return TRUE;
+  if(GPOINTER_TO_UINT(data_ptr) < NUM_CATEGORIES) return TRUE;
 
   dt_shortcut_t *s = g_sequence_get(data_ptr);
+
+  if(!darktable.control->enable_fallbacks && s->action->type == DT_ACTION_TYPE_FALLBACK
+     && (GPOINTER_TO_INT(s->action->target) != DT_ACTION_TYPE_VALUE_FALLBACK
+         || s->key_device || s->key || s->press || s->move_device || s->move || s->button))
+    return FALSE;
+
+  if(!_selected_action) return TRUE;
 
   if(_selected_action->type == DT_ACTION_TYPE_FALLBACK &&
      s->action->type == GPOINTER_TO_INT(_selected_action->target))
@@ -1815,6 +1826,8 @@ static void _restore_clicked(GtkButton *button, gpointer user_data)
     dt_shortcuts_load(".edit", wipe);
     break;
   }
+
+  dt_shortcuts_save(NULL, FALSE);
 }
 
 static void _import_export_dev_changed(GtkComboBox *widget, gpointer user_data)
@@ -2416,6 +2429,8 @@ static void _shortcuts_load(const gchar *shortcuts_file, dt_input_device_t file_
           {
             gtk_accelerator_parse(token, &s.key, &s.mods);
             if(s.mods) fprintf(stderr, "[dt_shortcuts_load] unexpected modifiers found in %s\n", token);
+            if(!s.key && sscanf(token, "tablet button %d", &s.key))
+              s.key_device = DT_SHORTCUT_DEVICE_TABLET;
             if(!s.key) fprintf(stderr, "[dt_shortcuts_load] no key name found in %s\n", token);
           }
           else
@@ -3197,7 +3212,7 @@ float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size
         GtkWidget *mapped_widget = darktable.control->mapping_widget;
 
         dt_shortcut_t s = _sc;
-        if(_insert_shortcut(&s, TRUE))
+        if(_insert_shortcut(&s, darktable.control->confirm_mapping))
         {
           dt_control_log(_("%s assigned to %s"),
                          _shortcut_description(&s), _action_description(&s, 2));
@@ -3507,6 +3522,18 @@ static guint _fix_keyval(GdkEvent *event)
 
 gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data)
 {
+  if((event->type ==  GDK_BUTTON_PRESS || event->type ==  GDK_BUTTON_RELEASE ||
+      event->type ==  GDK_DOUBLE_BUTTON_PRESS || event->type ==  GDK_TRIPLE_BUTTON_PRESS)
+     && event->button.button > 7)
+  {
+    if(event->type == GDK_BUTTON_RELEASE)
+      dt_shortcut_key_release(DT_SHORTCUT_DEVICE_TABLET, event->button.time, event->button.button - 7);
+    else
+      dt_shortcut_key_press  (DT_SHORTCUT_DEVICE_TABLET, event->button.time, event->button.button - 7);
+
+    return TRUE;
+  }
+
   if(_pressed_keys == NULL)
   {
     dt_shortcut_t s = { .action = _sc.action };

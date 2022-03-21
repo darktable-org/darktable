@@ -126,7 +126,7 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n");
   printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,demosaic\n");
-  printf("      pwstorage,print,signal,sql,undo,act_on}\n");
+  printf("      pwstorage,print,signal,sql,undo,act_on,tiling,verbose}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
 #ifdef DT_HAVE_SIGNAL_TRACE
@@ -637,7 +637,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
         if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted = 0xffffffff; // enable all debug information
+          darktable.unmuted = 0xffffffff & ~DT_DEBUG_VERBOSE; // enable all debug information except verbose
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k + 1], "control"))
@@ -684,6 +684,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_DEMOSAIC;
         else if(!strcmp(argv[k + 1], "act_on"))
           darktable.unmuted |= DT_DEBUG_ACT_ON;
+        else if(!strcmp(argv[k + 1], "tiling"))
+          darktable.unmuted |= DT_DEBUG_TILING;
+        else if(!strcmp(argv[k + 1], "verbose"))
+          darktable.unmuted |= DT_DEBUG_VERBOSE;
         else
           return usage(argv[0]);
         k++;
@@ -1076,8 +1080,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   */
   static int ref_resources[12] = {
       8192,  32,  512, 2048,   // reference
-      1024,   2,  128,  400,   // mini system
-      4096,  32,  512,  400,   // simple notebook with integrated graphics
+      1024,   2,  128,  200,   // mini system
+      4096,  32,  512,  200,   // simple notebook with integrated graphics
   };
 
   /* This is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed.
@@ -1219,8 +1223,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // Save the default shortcuts
     dt_shortcuts_save(".defaults", FALSE);
 
-    // Then load any shortcuts if available
-    dt_shortcuts_load(NULL, FALSE); //
+    // Then load any shortcuts if available (wipe defaults first if requested)
+    dt_shortcuts_load(NULL, !dt_conf_get_bool("accel/load_defaults"));
 
     // Save the shortcuts including defaults
     dt_shortcuts_save(NULL, TRUE);
@@ -1494,6 +1498,19 @@ void dt_cleanup()
 void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 {
   if(darktable.unmuted & thread)
+  {
+    printf("%f ", dt_get_wtime() - darktable.start_wtime);
+    va_list ap;
+    va_start(ap, msg);
+    vprintf(msg, ap);
+    va_end(ap);
+    fflush(stdout);
+  }
+}
+
+void dt_vprint(dt_debug_thread_t thread, const char *msg, ...)
+{
+  if((darktable.unmuted & DT_DEBUG_VERBOSE) && (darktable.unmuted & thread))
   {
     printf("%f ", dt_get_wtime() - darktable.start_wtime);
     va_list ap;

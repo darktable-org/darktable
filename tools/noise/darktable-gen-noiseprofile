@@ -437,9 +437,9 @@ for iso in $iso_settings; do
 		if [ "$skip_correctness_check" != "1" ]; then
 			if ! check_exposure "$image" "$jpeg_export"; then
 				if [ "$incorrect_isos" ]; then
-					incorrect_isos="$iso"
-				else
 					incorrect_isos="$incorrect_isos $iso"
+				else
+					incorrect_isos="$iso"
 				fi
 			fi
 		fi
@@ -452,7 +452,7 @@ if [ "$incorrect_isos" ]; then
 The following ISO settings have incorrect images:
 EOF
 	for iso in $incorrect_isos; do
-		echo "    o  $iso ISO"
+		echo "    - $iso ISO"
 	done
 	cat <<EOF
 

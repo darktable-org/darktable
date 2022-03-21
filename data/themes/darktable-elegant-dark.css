@@ -38,6 +38,7 @@
 @define-color plugin_bg_color @grey_35;
 @define-color plugin_fg_color @fg_color;
 @define-color plugin_label_color @grey_70;
+@define-color collapsible_bg_color @grey_40;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg @bg_color;

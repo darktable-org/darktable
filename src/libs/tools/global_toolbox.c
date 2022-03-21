@@ -515,6 +515,7 @@ void gui_init(dt_lib_module_t *self)
   dt_action_define(&darktable.control->actions_global, NULL, "shortcuts", d->keymap_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->keymap_button, _("define shortcuts\n"
+                                                  "ctrl+click to switch off overwrite confirmations\n\n"
                                                   "hover over a widget and press keys with mouse click and scroll or move combinations\n"
                                                   "repeat same combination again to delete mapping\n"
                                                   "click on a widget, module or screen area to open the dialog for further configuration"));
@@ -899,6 +900,8 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->keymap_button), FALSE);
     else if(event->button.button == GDK_BUTTON_MIDDLE)
       dt_shortcut_dispatcher(event_widget, event, data);
+    else if(event->button.button > 7)
+      break;
     else if(dt_modifier_is(event->button.state, GDK_CONTROL_MASK))
     {
       if(darktable.develop)
@@ -951,6 +954,8 @@ static void _lib_keymap_button_clicked(GtkWidget *widget, gpointer user_data)
 static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButton *event, gpointer user_data)
 {
   static guint start_time = 0;
+
+  darktable.control->confirm_mapping = !dt_modifier_is(event->state, GDK_CONTROL_MASK);
 
   int delay = 0;
   g_object_get(gtk_settings_get_default(), "gtk-long-press-time", &delay, NULL);
