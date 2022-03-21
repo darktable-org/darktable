@@ -2198,7 +2198,7 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
           show_pango_text(w, context, cr, text, w3 - darktable.bauhaus->quad_width - INNER_PADDING, w->top_gap,
                           available_width * (1.0f - ratio), TRUE, FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
         else
-          show_pango_text(w, context, cr, 0, INNER_PADDING, w->top_gap, available_width * (1.0f - ratio), FALSE,
+          show_pango_text(w, context, cr, text, INNER_PADDING, w->top_gap, available_width * (1.0f - ratio), FALSE,
                           FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
       }
       else
@@ -2209,7 +2209,7 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
           show_pango_text(w, context, cr, text, w3 - darktable.bauhaus->quad_width - INNER_PADDING, w->top_gap, 0,
                           TRUE, FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
         else
-          show_pango_text(w, context, cr, 0, INNER_PADDING, w->top_gap, 0, FALSE, FALSE, combo_ellipsis, FALSE,
+          show_pango_text(w, context, cr, text, INNER_PADDING, w->top_gap, 0, FALSE, FALSE, combo_ellipsis, FALSE,
                           FALSE, NULL, NULL);
       }
       g_free(label_text);
