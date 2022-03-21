@@ -2329,6 +2329,7 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
 
   GtkAllocation tmp;
   gtk_widget_get_allocation(widget, &tmp);
+  gboolean w_valid = TRUE;
   if(tmp.width == 1)
   {
     if(dt_ui_panel_ancestor(darktable.gui->ui, DT_UI_PANEL_RIGHT, widget))
@@ -2338,11 +2339,15 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
     else
       tmp.width = 300;
     tmp.width -= INNER_PADDING * 2;
+    w_valid = FALSE;
   }
 
   // by default, we want the popup to be exactly the size of the widget content
-  tmp.width -= w->margin->left + w->margin->right + w->padding->left + w->padding->right;
-  tmp.height -= w->margin->top + w->margin->bottom + w->padding->top + w->padding->bottom;
+  if(w_valid)
+  {
+    tmp.width = MAX(1, tmp.width - (w->margin->left + w->margin->right + w->padding->left + w->padding->right));
+    tmp.height = MAX(1, tmp.height - (w->margin->top + w->margin->bottom + w->padding->top + w->padding->bottom));
+  }
 
   GdkWindow *widget_window = gtk_widget_get_window(widget);
 
@@ -2377,7 +2382,7 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
       darktable.bauhaus->change_active = 1;
       if(!d->entries->len) return;
       tmp.height = darktable.bauhaus->line_height * d->entries->len;
-      tmp.height += w->margin->top + w->margin->bottom;
+      if(w_valid) tmp.height += w->margin->top + w->margin->bottom;
       tmp.width *= d->scale;
 
       GtkAllocation allocation_w;
@@ -2394,8 +2399,11 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
   }
 
   // by default, we want the popup to be exactly at the position of the widget content
-  wx += w->margin->left + w->padding->left;
-  wy += w->margin->top + w->padding->top;
+  if(w_valid)
+  {
+    wx += w->margin->left + w->padding->left;
+    wy += w->margin->top + w->padding->top;
+  }
 
   // we update the popup padding defined in css
   if(!darktable.bauhaus->popup_padding) darktable.bauhaus->popup_padding = gtk_border_new();
