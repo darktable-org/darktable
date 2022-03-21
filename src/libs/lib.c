@@ -1008,7 +1008,6 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   GtkWidget *label_evb = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(label_evb), label);
   gtk_label_set_markup(GTK_LABEL(label), module->name(module));
-  gtk_widget_set_tooltip_text(label_evb, module->name(module));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "halign", GTK_ALIGN_START, "xalign", 0.0, (gchar *)0);
   gtk_widget_set_name(label, "lib-panel-label");
