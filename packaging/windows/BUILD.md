@@ -87,7 +87,7 @@ How to make a darktable Windows installer (x64 only):
 * From the MINGW64 terminal, clone the darktable git repository (in this example into `~/darktable`):
     ```bash
     $ cd ~
-    $ git clone git://github.com/darktable-org/darktable.git
+    $ git clone https://github.com/darktable-org/darktable.git
     $ cd darktable
     $ git submodule init
     $ git submodule update
