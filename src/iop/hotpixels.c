@@ -67,7 +67,7 @@ const char *name()
   return _("hot pixels");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove abnormally bright pixels by dampening them with neighbours"),
                                       _("corrective"),

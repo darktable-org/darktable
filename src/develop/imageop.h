@@ -477,9 +477,9 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *module,
                                        const char *stderr_message);
 
 // format modules description going in tooltips
-char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
-                             const char *purpose, const char *input,
-                             const char *process, const char *output);
+const char **dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
+                                    const char *purpose, const char *input,
+                                    const char *process, const char *output);
 
 static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
 {

@@ -124,7 +124,7 @@ const char *name()
   return _("raw denoise");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("denoise the raw picture early in the pipeline"),
                                       _("corrective"),

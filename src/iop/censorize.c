@@ -77,7 +77,7 @@ name()
   return _("censorize");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("censorize license plates and body parts for privacy"),
                                       _("creative"),

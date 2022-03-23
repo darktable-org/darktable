@@ -332,7 +332,7 @@ const char *name()
   return _("base curve");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply a view transform based on personal or camera manufacturer look,\n"
                                         "for corrective purposes, to prepare images for display"),

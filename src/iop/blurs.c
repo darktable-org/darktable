@@ -86,7 +86,7 @@ const char *aliases()
   return _("blur|lens|motion");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("simulate physically-accurate lens and motion blurs"),

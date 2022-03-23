@@ -61,7 +61,7 @@ const char *deprecated_msg()
   return _("this module is deprecated. please use the retouch module instead.");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove sensor dust spots"),
                                       _("corrective"),
