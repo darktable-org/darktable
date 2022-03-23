@@ -2369,7 +2369,7 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
       darktable.bauhaus->change_active = 1;
       if(!d->entries->len) return;
       tmp.height = darktable.bauhaus->line_height * d->entries->len;
-      if(w->margin) tmp.height += w->margin->top + w->margin->bottom;
+      if(w->margin) tmp.height += w->margin->top + w->margin->bottom + w->top_gap;
       tmp.width *= d->scale;
 
       GtkAllocation allocation_w;
