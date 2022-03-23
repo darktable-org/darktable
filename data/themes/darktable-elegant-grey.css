@@ -60,7 +60,6 @@
 @define-color button_fg @fg_color;
 @define-color button_checked_bg @grey_70;
 @define-color button_checked_fg @grey_100;
-@define-color button_hover_bg @grey_75;
 @define-color button_hover_fg @grey_25;
 
 /* text fields */
@@ -118,6 +117,34 @@
 #history-button *
 {
   color: shade(@plugin_fg_color, 0.8);
+}
+
+/* Hover states, some needed background only */
+.dt_transparent_background:hover,
+button:hover,
+menuitem:hover,
+menuitem:hover > *:not(check),
+combobox window *:hover,
+#bauhaus_combobox:hover,
+radiobutton:hover label,
+#history-button:hover,
+#history-button-enabled:hover,
+#history-button-always-enabled:hover,
+#history-button-default-enabled:hover,
+#iop-plugin-ui button:hover,
+#lib-plugin-ui button:hover,
+#recent-collection-button:hover,
+#view_label:hover,
+#view_dropdown menuitem:hover,
+#view_dropdown .combo:hover
+{
+  background-color: shade(@button_bg, 1.1);
+  background-image: none;
+}
+
+#header-toolbar #bauhaus_combobox:hover
+{
+  background-color: @button_bg;
 }
 
 /* Adjust color of top shown infos on darkroom */
