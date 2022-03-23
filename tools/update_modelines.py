@@ -52,21 +52,21 @@ def process_line(line, lineno):
 if __name__ == "__main__":
 	if(sys.argv[1] is None):
 		raise RuntimeError("no input file")
-	lineno = 0
+	print('parsing {}'.format(sys.argv[1]));
 	with open(sys.argv[1],'r') as file:
 		lines = file.readlines()
 	for lineno,line in enumerate(lines):
 		process_line(line, lineno)
-	print(begin)
-	print(end)
 	if((begin == -1) != (end == -1)):
 		raise RuntimeError("parsing error")
 	if(not ((begin == -1) and (end == -1))):
-		with open('out.txt','w') as file:
+		print('removing old modelines');
+		with open(sys.argv[1],'w') as file:
 			for lineno,line in enumerate(lines):
 				if(not ((lineno >= begin) and (lineno <= end))):
 					file.write(line)
-	with open('out.txt','a') as file:
+	with open(sys.argv[1],'a') as file:
+		print('adding new modelines');
 		file.write(CLANG_OFF)
 		file.write(NOTIFICATION_LINE)
 		file.write(VIM_MODELINE)

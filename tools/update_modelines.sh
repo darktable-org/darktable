@@ -9,13 +9,14 @@
 # For useful options in the vim modeline see also the one used in this file
 #
 
+set -e
 
 # thank you for collecting these files in tools/beautify_style.sh
 SOURCES=$(find src/ -name "*.c" -or -name "*.cc" -or -name "*.h" | grep -v src/external)
 
 for f in $SOURCES
 do
-  ./tools/update-modelines.py $f
+  python3 tools/update_modelines.py $f
 done
 
 # vim: et sw=2 ts=2 list listchars=trail\:·,eol\:¶,tab\:->,extends\:»,precedes\:«
