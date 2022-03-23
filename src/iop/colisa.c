@@ -79,7 +79,7 @@ const char *name()
   return _("contrast brightness saturation");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("adjust the look of the image"),
                                       _("creative"),

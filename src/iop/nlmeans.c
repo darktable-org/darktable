@@ -93,7 +93,7 @@ const char *aliases()
   return _("denoise (non-local means)");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply a poisson noise removal best suited for astrophotography"),
                                       _("corrective"),

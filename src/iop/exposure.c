@@ -123,14 +123,15 @@ const char *name()
   return _("exposure");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char** description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("redo the exposure of the shot as if you were still in-camera\n"
-                                        "using a color-safe brightening similar to increasing ISO setting"),
-                                      _("corrective and creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("linear, RGB"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self,
+                                _("redo the exposure of the shot as if you were still in-camera\n"
+                                  "using a color-safe brightening similar to increasing ISO setting"),
+                                _("corrective and creative"),
+                                _("linear, RGB, scene-referred"),
+                                _("linear, RGB"),
+                                _("linear, RGB, scene-referred"));
 }
 
 int default_group()

@@ -116,7 +116,7 @@ const char *deprecated_msg()
   return _("this module is deprecated. please use the negadoctor module instead.");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("invert film negatives"),
                                       _("corrective"),
