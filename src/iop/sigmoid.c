@@ -680,6 +680,7 @@ void gui_update(dt_iop_module_t *self)
 
   dt_bauhaus_slider_set(g->contrast_slider, p->middle_grey_contrast);
   dt_bauhaus_slider_set(g->skewness_slider, p->contrast_skewness);
+  dt_bauhaus_slider_set(g->hue_preservation_slider, p->hue_preservation);
   dt_bauhaus_slider_set(g->display_black_slider, p->display_black_target);
   dt_bauhaus_slider_set(g->display_white_slider, p->display_white_target);
 
