@@ -1823,6 +1823,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #undef DT_IOP_RGBCURVE_MIN_X_DISTANCE
 #undef DT_IOP_COLOR_ICC_LEN
 
+// clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

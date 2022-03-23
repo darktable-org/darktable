@@ -944,3 +944,9 @@ void gui_reset(dt_imageio_module_format_t *self)
   quality_changed(GTK_WIDGET(gui->quality), self);
   bit_depth_changed(GTK_WIDGET(gui->bit_depth), self);
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

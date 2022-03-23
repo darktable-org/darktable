@@ -66,6 +66,9 @@ char *dt_variables_expand(dt_variables_params_t *params, gchar *source, gboolean
 /** reset sequence number */
 void dt_variables_reset_sequence(dt_variables_params_t *params);
 
+// clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

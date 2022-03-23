@@ -1774,6 +1774,9 @@ void dt_tag_set_tag_order_by_id(const uint32_t tagid, const uint32_t sort,
   sqlite3_finalize(stmt);
 }
 
+// clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

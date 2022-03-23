@@ -466,6 +466,9 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
 // routine to hide the collapsible section
 void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
 
+// clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

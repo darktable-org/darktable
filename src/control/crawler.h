@@ -36,6 +36,9 @@ GList *dt_control_crawler_run();
 // show a popup with the images, let the user decide what to do and free the list afterwards
 void dt_control_crawler_show_image_list(GList *images);
 
+// clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

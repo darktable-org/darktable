@@ -379,6 +379,9 @@ boolean dt_win_file_trash(GFile *file, GCancellable *cancellable, GError **error
   g_free(wfilename);
   return success;
 }
+// clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+
