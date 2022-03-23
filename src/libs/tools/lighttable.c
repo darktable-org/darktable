@@ -28,6 +28,7 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "views/view.h"
 
 DT_MODULE(1)
 
@@ -38,12 +39,16 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *layout_box;
   GtkWidget *layout_filemanager;
   GtkWidget *layout_zoomable;
-  GtkWidget *layout_culling_dynamic;
   GtkWidget *layout_culling_fix;
+  GtkWidget *layout_culling_restricted;
+  GtkWidget *layout_culling_dynamic;
   GtkWidget *layout_preview;
   dt_lighttable_layout_t layout, base_layout;
+  GtkWidget *zoom_box;
   int current_zoom;
+  gboolean fullpreview;
   gboolean fullpreview_focus;
+  gboolean combo_evt_reset;
 } dt_lib_tool_lighttable_t;
 
 /* set zoom proxy function */
@@ -92,13 +97,14 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
 
   gboolean fullpreview = dt_view_lighttable_preview_state(darktable.view_manager);
 
-  // which btn should be active ?
+  // which layout btn should be active ?
   GtkWidget *active = d->layout_filemanager;
   if(fullpreview)
     active = d->layout_preview;
   else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     active = d->layout_culling_dynamic;
-  else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING ||
+	  d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
     active = d->layout_culling_fix;
   else if(d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     active = d->layout_zoomable;
@@ -109,6 +115,22 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
     GtkWidget *w = l->data;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (w == active));
     gtk_widget_queue_draw(w); // force redraw even if state not changed
+  }
+  // should the culling restricted button also be active?
+  gtk_widget_set_visible(
+	d->layout_culling_restricted,
+	(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING ||
+	 d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
+  );
+
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
+    active = d->layout_culling_restricted;
+
+  children = gtk_container_get_children(GTK_CONTAINER(d->zoom_box));
+  for(GList *l = children; l; l = g_list_delete_link(l, l))
+  {
+    GtkWidget *w = (GtkWidget *)l->data;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (w == active));
   }
 
   // and now we set the tooltips
@@ -159,7 +181,8 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layo
       if(d->current_zoom == 1)
         d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
     }
-    else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING ||
+	    d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
     {
       d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
     }
@@ -201,7 +224,28 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
       new_layout = DT_LIGHTTABLE_LAYOUT_PREVIEW;
     }
     else if(w == d->layout_culling_fix)
-      new_layout = DT_LIGHTTABLE_LAYOUT_CULLING;
+    {
+      // if selection count > 1 then enter culling restricted
+
+      int sel_count = 0;
+      sqlite3_stmt *stmt;
+      // clang-format off
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT count(*) "
+                                  "FROM memory.collected_images AS col, main.selected_images as sel "
+                                  "WHERE col.imgid=sel.imgid",
+                                  -1, &stmt, NULL);
+      // clang-format on
+      if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+
+      if(sel_count > 1)
+        new_layout = DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED;
+      else
+       new_layout = DT_LIGHTTABLE_LAYOUT_CULLING;
+    }
+    else if(w == d->layout_culling_restricted)
+      new_layout = DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED;
     else if(w == d->layout_culling_dynamic)
       new_layout = DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC;
     else if(w == d->layout_zoomable)
@@ -214,6 +258,8 @@ static gboolean _lib_lighttable_layout_btn_release(GtkWidget *w, GdkEventButton 
       new_layout = d->layout;
     else if(w == d->layout_culling_dynamic || w == d->layout_culling_fix)
       new_layout = d->base_layout;
+    else if(w == d->layout_culling_restricted)
+      new_layout = DT_LIGHTTABLE_LAYOUT_CULLING;
     else
     {
       // we can't exit from filemanager or zoomable
@@ -243,7 +289,9 @@ static void _lib_lighttable_key_accel_toggle_culling_dynamic_mode(dt_action_t *a
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
   // if we are already in any culling layout, we return to the base layout
-  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING && d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
+  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING &&
+     d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED &&
+     d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
   else
     _lib_lighttable_set_layout(self, d->base_layout);
@@ -256,12 +304,50 @@ static void _lib_lighttable_key_accel_toggle_culling_mode(dt_action_t *action)
   dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
-  // if we are already in any culling layout, we return to the base layout
-  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING && d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
-    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
-  else
+  // if we are already in unrestricted culling mode, return to base mode
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     _lib_lighttable_set_layout(self, d->base_layout);
+  else
+    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
+  dt_control_queue_redraw_center();
+}
 
+static void _lib_lighttable_key_accel_toggle_culling_restricted_mode(dt_action_t *action)
+{
+  dt_lib_module_t *self = darktable.view_manager->proxy.lighttable.module;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+
+  // if we are already in restricted culling mode, leave the mode
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
+    _lib_lighttable_set_layout(self, d->base_layout);
+  else // otherwise first check, what the selection count is
+  {
+    int sel_count = 0;
+    sqlite3_stmt *stmt;
+    // clang-format off
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT count(*) "
+                                "FROM memory.collected_images AS col, main.selected_images as sel "
+                                "WHERE col.imgid=sel.imgid",
+                                -1, &stmt, NULL);
+    // clang-format on
+    if(sqlite3_step(stmt) == SQLITE_ROW) sel_count = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+
+    // if we are not already in restricted mode and selection count is > 1 then switch to culling restricted
+    if(sel_count > 1)
+    {
+      if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
+        _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED);
+    }
+    else // otherwise we cannot switch into restricted mode so we either enter unrestricted culling or return to base mode
+    {
+      if (d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+        _lib_lighttable_set_layout(self, d->base_layout);
+      else
+        _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
+    }
+  }
   dt_control_queue_redraw_center();
 }
 
@@ -342,7 +428,8 @@ void gui_init(dt_lib_module_t *self)
   d->layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/layout"));
   d->base_layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/base_layout"));
 
-  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING ||
+     d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED)
     d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
   else if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
@@ -381,7 +468,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL);
   ac = dt_action_define(ltv, NULL, N_("toggle culling mode"), d->layout_culling_fix, NULL);
-  dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_mode, GDK_KEY_x, 0);
+  dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_mode, GDK_KEY_c, 0);
   dt_gui_add_help_link(d->layout_culling_fix, "layout_culling");
   g_signal_connect(G_OBJECT(d->layout_culling_fix), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
@@ -405,12 +492,17 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_preview, TRUE, TRUE, 0);
 
+  // create the box for zoom widgets
+  d->zoom_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(d->zoom_box, "lighttable-zoom-box");
+  gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_box, TRUE, TRUE, 0);
+
   /* create horizontal zoom slider */
   d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, DT_LIGHTTABLE_MAX_ZOOM, 1);
   gtk_widget_set_size_request(GTK_WIDGET(d->zoom), DT_PIXEL_APPLY_DPI(140), -1);
   gtk_scale_set_draw_value(GTK_SCALE(d->zoom), FALSE);
   gtk_range_set_increments(GTK_RANGE(d->zoom), 1, 1);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->zoom, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(d->zoom_box), d->zoom, TRUE, TRUE, 0);
 
   /* manual entry of the zoom level */
   d->zoom_entry = gtk_entry_new();
@@ -418,8 +510,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_max_length(GTK_ENTRY(d->zoom_entry), 2);
   gtk_entry_set_width_chars(GTK_ENTRY(d->zoom_entry), 3);
   gtk_entry_set_max_width_chars(GTK_ENTRY(d->zoom_entry), 3);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_entry, TRUE, TRUE, 0);
-
+  gtk_box_pack_start(GTK_BOX(d->zoom_box), d->zoom_entry, TRUE, TRUE, 0);
   _lib_lighttable_update_btn(self);
 
   g_signal_connect(G_OBJECT(d->zoom), "value-changed", G_CALLBACK(_lib_lighttable_zoom_slider_changed), self);
@@ -429,6 +520,23 @@ void gui_init(dt_lib_module_t *self)
   _lib_lighttable_zoom_slider_changed(GTK_RANGE(d->zoom), self); // the slider defaults to 1 and GTK doesn't
                                                                  // fire a value-changed signal when setting
                                                                  // it to 1 => empty text box
+
+  gtk_widget_set_sensitive(d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
+  gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
+
+  d->layout_culling_restricted = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_restricted, 0, NULL);
+  ac = dt_action_define(ltv, NULL, N_("toggle restricted culling mode"), d->layout_culling_restricted, NULL);
+  dt_action_register(ac, NULL, _lib_lighttable_key_accel_toggle_culling_restricted_mode, GDK_KEY_x, 0);
+  dt_gui_add_help_link(d->layout_culling_restricted, dt_get_help_url("layout_filemanager"));
+  g_signal_connect(G_OBJECT(d->layout_culling_restricted), "button-release-event",
+                   G_CALLBACK(_lib_lighttable_layout_btn_release), self);
+  gtk_box_pack_start(GTK_BOX(d->zoom_box), d->layout_culling_restricted, TRUE, TRUE, 0);
+
+  //gtk_widget_set_sensitive(d->layout_culling_restricted, (d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED));
+  gtk_widget_set_visible(d->layout_culling_restricted, (d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED));
+  gtk_widget_set_no_show_all(d->layout_culling_restricted, TRUE);
+  _lib_lighttable_update_btn(self);
+
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
   darktable.view_manager->proxy.lighttable.get_zoom = _lib_lighttable_get_zoom;
