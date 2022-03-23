@@ -967,8 +967,8 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
    *  image_over OR first selected OR first OR -1
    *
    * For the navigation in selection :
-   *  culling dynamic mode                       => OFF
-   *  first image in selection AND selection > 1 => ON
+   *  culling dynamic mode                       => ON
+   *  culling restricted mode                    => ON
    *  otherwise                                  => OFF
    *
    * For the selection following :
@@ -992,24 +992,28 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
     thumb->img_surf_dirty = TRUE;
   }
 
+  // calculate if the user wants to enter culling_dynamic or culling_restricted
   const gboolean culling_dynamic
       = (table->mode == DT_CULLING_MODE_CULLING
          && dt_view_lighttable_get_layout(darktable.view_manager)
             == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
+  const gboolean culling_restricted
+      = (table->mode == DT_CULLING_MODE_CULLING
+         && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_RESTRICTED);
 
-  // get first id
+  // get id of image that should be displayed first when entering culling
   sqlite3_stmt *stmt;
   gchar *query = NULL;
   dt_imgid_t first_id = NO_IMGID;
 
-  // prioritize mouseover if available
+  // ... we start at mouseover (if available)
   first_id = dt_control_get_mouse_over_id();
 
-  // try active images
+  // ... otherwise we try active images (if available)
   if(!dt_is_valid_imgid(first_id) && darktable.view_manager->active_images)
-     first_id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
+    first_id = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
 
-  // overwrite with selection no active images
+  // ... otherwise use selection
   if(!dt_is_valid_imgid(first_id))
   {
     // search the first selected image
@@ -1028,23 +1032,24 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
     sqlite3_finalize(stmt);
   }
 
-  // if no new offset is available until now, we continue with the fallback one
+  // calculate offset position for filmstrip
+  // ... if no new offset is available until now, we continue with the fallback one
   if(!dt_is_valid_imgid(first_id))
     first_id = _thumb_get_imgid(fallback_offset);
 
-  // if this also fails we start at the beginning of the collection
+  // ... if this also fails we start at the beginning of the collection
   if(!dt_is_valid_imgid(first_id))
   {
     first_id = _thumb_get_imgid(1);
   }
 
+  // ... abort. (Collection probably empty?)
   if(!dt_is_valid_imgid(first_id))
   {
-    // Collection probably empty?
     return;
   }
 
-  // selection count
+  // Calculate the selection count. Number of selected images is important for movement in culling
   int sel_count = 0;
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -1058,9 +1063,10 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
     sel_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  // special culling dynamic mode
-  if(culling_dynamic)
+  // in culling dynamic and culling restricted mode we activate navigation inside selection and are done
+  if(culling_dynamic || culling_restricted)
   {
+    // dynamic and restricted don't work without selected images
     if(sel_count == 0)
     {
       dt_control_log(_("no image selected!"));
@@ -1072,55 +1078,28 @@ void dt_culling_init(dt_culling_t *table, const int fallback_offset)
     return;
   }
 
-  // is first_id inside selection ?
-  gboolean inside = FALSE;
-  // clang-format off
-  query = g_strdup_printf
-    ("SELECT col.imgid"
-     " FROM memory.collected_images AS col, main.selected_images AS sel"
-     " WHERE col.imgid=sel.imgid AND col.imgid=%d",
-     first_id);
-  // clang-format on
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW) inside = TRUE;
-  sqlite3_finalize(stmt);
-  g_free(query);
-
+  // for fullscreen preview it is important if the initial image is part of a selection
+  //    - if it is not, movement in this mode is free
+  //    - if it is, movement is restricted to the selection
+  //        (additionally, if selection count == 1, the selection will follow the movement)
+  
   if(table->mode == DT_CULLING_MODE_PREVIEW)
   {
+    gboolean inside = FALSE;
+    // clang-format off
+    query = g_strdup_printf
+      ("SELECT col.imgid"
+      " FROM memory.collected_images AS col, main.selected_images AS sel"
+      " WHERE col.imgid=sel.imgid AND col.imgid=%d",
+      first_id);
+    // clang-format on
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW) inside = TRUE;
+    sqlite3_finalize(stmt);
+    g_free(query);
+
     table->navigate_inside_selection = (sel_count > 1 && inside);
     table->selection_sync = (sel_count == 1 && inside);
-  }
-  else if(table->mode == DT_CULLING_MODE_CULLING)
-  {
-    const int zoom = dt_view_lighttable_get_zoom(darktable.view_manager);
-    // we first determine if we synchronize the selection with culling images
-    table->selection_sync = FALSE;
-    if(sel_count == 1 && inside)
-      table->selection_sync = TRUE;
-    else if(sel_count == zoom && inside)
-    {
-      // we ensure that the selection is continuous
-      // clang-format off
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "SELECT MIN(rowid), MAX(rowid)"
-         " FROM memory.collected_images AS col, main.selected_images as sel"
-         " WHERE col.imgid=sel.imgid",
-         -1, &stmt, NULL);
-      // clang-format on
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        if(sqlite3_column_int(stmt, 0) + sel_count - 1 == sqlite3_column_int(stmt, 1))
-        {
-          table->selection_sync = TRUE;
-        }
-      }
-      sqlite3_finalize(stmt);
-    }
-
-    // we now determine if we limit culling images to the selection
-    table->navigate_inside_selection = (!table->selection_sync && inside);
   }
 
   table->offset = _thumb_get_rowid(first_id);
@@ -2051,3 +2030,4 @@ void dt_culling_force_overlay(dt_culling_t *table, const gboolean force)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
+
