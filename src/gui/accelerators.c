@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2021 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -652,6 +652,7 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
   gchar *original_markup = gtk_widget_get_tooltip_markup(widget);
 
   const gchar *widget_name = gtk_widget_get_name(widget);
+
   if(!strcmp(widget_name, "actions_view") || !strcmp(widget_name, "shortcuts_view"))
   {
     if(!gtk_widget_is_sensitive(widget)) return FALSE;
@@ -742,20 +743,40 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
 
   if(description || original_markup || markup_text)
   {
-    markup_text = dt_util_dstrcat(markup_text, "%s%s%s%s",
-                                  markup_text && (original_markup || description) ? "\n\n" : "",
-                                  original_markup ? original_markup : "",
-                                  original_markup && description ? "\n\n" : "",
-                                  description ? description : "");
-    gtk_tooltip_set_markup(tooltip, markup_text);
-    g_free(description);
-    g_free(original_markup);
+    if(!strcmp(widget_name, "iop_description"))
+    {
+      //  The IOP description is a custom tooltip. We have a vertical-box as top-level widget.
+      //  We need to add the description as label inside this vertical-box.
+
+      GtkWidget *label = gtk_label_new(NULL);
+      GtkWidget *vbox = g_object_get_data(G_OBJECT(widget), "iopdes");
+
+      markup_text = dt_util_dstrcat(NULL, "\n%s", description);
+      gtk_label_set_markup(GTK_LABEL(label), markup_text);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+
+      gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+      gtk_widget_show(label);
+    }
+    else
+    {
+      markup_text = dt_util_dstrcat(markup_text, "%s%s%s%s",
+                                    markup_text && (original_markup || description) ? "\n\n" : "",
+                                    original_markup ? original_markup : "",
+                                    original_markup && description ? "\n\n" : "",
+                                    description ? description : "");
+      gtk_tooltip_set_markup(tooltip, markup_text);
+    }
+
     g_free(markup_text);
+    g_free(original_markup);
+    g_free(description);
 
     return TRUE;
   }
 
-  return FALSE;
+  // For iop_description we always have a content to display
+  return strcmp(widget_name, "iop_description") ? FALSE : TRUE;
 }
 
 static dt_view_type_flags_t _find_views(dt_action_t *action)
