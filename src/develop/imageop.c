@@ -2363,8 +2363,8 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
   }
 }
 
-gboolean _iop_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyboard_mode,
-                               GtkTooltip* tooltip, gpointer user_data)
+gboolean _iop_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
+                               GtkTooltip *tooltip, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
 
@@ -2372,7 +2372,7 @@ gboolean _iop_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyboar
 
   if(!des) return FALSE;
 
-  GtkWidget *ht = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
@@ -2381,7 +2381,7 @@ gboolean _iop_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyboar
   GtkWidget *label = gtk_label_new(des[0]?des[0]:"");
   // if there is no more description, do not add a separator
   if(des[1]) gtk_widget_set_name(label, "section_label");
-  gtk_box_pack_start(GTK_BOX(ht), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
 #ifdef _WIN32
   // TODO: a windows dev is needed to find 4 icons properly rendered
@@ -2421,11 +2421,17 @@ gboolean _iop_tooltip_callback(GtkWidget* self, gint x, gint y, gboolean keyboar
     }
   }
 
-  gtk_box_pack_start(GTK_BOX(ht), grid, FALSE, FALSE, 0);
-  gtk_widget_show_all(ht);
+  gtk_box_pack_start(GTK_BOX(vbox), grid, FALSE, FALSE, 0);
 
-  gtk_tooltip_set_custom(tooltip, ht);
-  return TRUE;
+  gtk_widget_show_all(vbox);
+  gtk_tooltip_set_custom(tooltip, vbox);
+
+  //  Record the vbox into the widget to be able to retrieve it
+  //  for adding the shortcut (see accelerators.c).
+
+  g_object_set_data(G_OBJECT(widget), "iopdes", vbox);
+
+  return FALSE;
 }
 
 void dt_iop_gui_set_expander(dt_iop_module_t *module)
@@ -2478,6 +2484,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(lab, module->deprecated_msg());
   else
   {
+    gtk_widget_set_name(lab, "iop_description");
     g_signal_connect(lab, "query-tooltip", G_CALLBACK(_iop_tooltip_callback), module);
   }
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_LABEL]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
