@@ -300,28 +300,27 @@ textview
   font-family: sans-serif;
 }
 
-button:disabled
+button:disabled,
+#collapsible .combo:disabled,
+#recent-collection-button:disabled
 {
+  background-color: transparent;
   border: 0.07em solid shade(@button_border, 0.95);
+}
+
+/* Set same settings on all those items */
+.combo,
+.combo *,
+button
+{
+  min-height: 1em;
+  min-width: 1em;
 }
 
 /* Default extra margin for icons optical alignment */
 #button-canvas
 {
   margin: 5px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
-}
-
-/* Set same settings on all those items */
-button,
-#modules-tabs button,
-#blending-tabs button,
-combobox,
-combobox button,
-combobox *,
-#control-button
-{
-  min-height: 1em;
-  min-width: 1em;
 }
 
 /* Default text fields and text boxes */
@@ -677,6 +676,48 @@ l
   padding: 0 0.35em 0 0.21em;
 }
 
+/* Collapsible sections on lib & iop modules */
+#collapse-block
+{
+  margin: 0.14em 0;
+}
+
+#collapsible
+{
+  padding: 0.14em 0.28em 0.28em 0.42em;
+  border: 0.07em solid shade(@collapsible_bg_color, 0.85);
+  border-top: 0;
+}
+
+#collapsible,
+#collapsible #bauhaus_slider
+{
+  background-color: shade(@collapsible_bg_color, 1.04);
+}
+
+/* for the import parameters to be more aligned with the imports buttons */
+#lib-plugin-ui #collapse-block
+{
+  margin: 0.42em 0.07em;
+}
+
+#collapse-block .section-expander,
+#collapsible-label
+{
+  background-color: shade(@collapsible_bg_color, 0.96);
+  border: none;
+  margin-top: 0.14em;
+  padding: 0.07em 0;
+}
+
+#collapsible .combo,
+#collapsible entry,
+#collapsible textview
+{
+  background-color: shade(@button_border, 1.06);
+  border: 0.07em solid shade(@field_active_bg, 1.06);
+}
+
 /*-------------------
   - Scope/Histogram -
   -------------------*/
@@ -942,14 +983,6 @@ combobox label
   margin: 0 0.35em 0 0;
 }
 
-/* Menus options */
-menuitem button,
-popover button,
-tooltip button
-{
-  background-color: transparent;
-}
-
 /* Header and footer labels, especially for combobox */
 #header-toolbar label,
 #footer-toolbar label
@@ -986,7 +1019,7 @@ notebook tabs,
 #blending-tabs,
 #guides-line
 {
-  background-color: @button_border;
+  background-color: @field_active_bg;
 }
 
 #modules-tabs #dt-toggle-button
@@ -1495,14 +1528,9 @@ filechooser widget treeview
   color: @field_fg;
 }
 
-treeview header widget button,
-#iop-plugin-ui treeview header button,
-#lib-plugin-ui treeview header button,
-#preferences_notebook header button,
+treeview header widget button
 .accels_window_list header button
 {
-  background-color: @button_bg;
-  color: @button_fg;
   border: 0;
   border-radius: 0;
   padding: 0;
@@ -1510,9 +1538,6 @@ treeview header widget button,
 }
 
 treeview header label,
-#iop-plugin-ui treeview header label,
-#lib-plugin-ui treeview header label,
-#preferences_notebook header button label,
 .accels_window_list header button label
 {
   font-weight: bold;
@@ -1596,8 +1621,6 @@ progressbar progress
 }
 
 /* Checkbutton check state */
-#lib-plugin-ui checkbutton check,
-#iop-plugin-ui checkbutton check,
 checkbutton check
 {
   margin: 0.35em 0.56em 0.35em 0;
@@ -1768,7 +1791,6 @@ menuitem:active,
 menuitem:selected,
 combobox window *:active,
 combobox window *:selected,
-#modules-tabs button:checked,
 #history-button:active,
 #history-button-enabled:active,
 #history-button-always-enabled:active,
@@ -1787,7 +1809,6 @@ combobox window *:selected,
 messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 {
   background-color: @button_checked_bg;
-  background-image: none;
   color: @button_checked_fg;
 }
 
@@ -1813,9 +1834,9 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 button:hover,
 menuitem:hover,
 menuitem:hover > *:not(check),
+radiobutton:hover label,
 combobox window *:hover,
 #bauhaus_combobox:hover,
-radiobutton:hover label,
 #history-button:hover,
 #history-button-enabled:hover,
 #history-button-always-enabled:hover,
@@ -1825,13 +1846,16 @@ radiobutton:hover label,
 #view_dropdown .combo:hover
 {
   background-color: shade(@button_bg, 1.33);
-  background-image: none;
 }
 
-#header-toolbar #bauhaus_combobox:hover,
-#modules-tabs button:hover
+#header-toolbar #bauhaus_combobox:hover
 {
   background-color: shade(@button_bg, 1.2);
+}
+
+#collapsible .combo:hover
+{
+  background-color: shade(@button_bg, 1.5);
 }
 
 /* workaround for a macOS quartz GTK backend bug
@@ -1859,15 +1883,6 @@ menuitem > *
 #history-button *
 {
   color: shade(@plugin_fg_color, 0.7);
-  background-color: transparent;
-}
-
-/* Disabled buttons */
-button:disabled,
-#collapsible .combo:disabled,
-#recent-collection-button:disabled
-{
-  color: @disabled_fg_color;
   background-color: transparent;
 }
 
@@ -1982,11 +1997,6 @@ treeview#delete-dialog:selected
 #view_label:disabled
 {
   color: @tooltip_bg_color;
-}
-
-#view_dropdown *:disabled
-{
-  color: @disabled_fg_color;
 }
 
 /* Sliders states */
@@ -2681,46 +2691,4 @@ Details :
 #lighttable_layouts_box #dt-toggle-button
 {
   margin: 0 0.4em;
-}
-
-/* Collapsible sections on lib & iop modules */
-#collapse-block
-{
-  margin: 0.14em 0;
-}
-
-#collapsible
-{
-  padding: 0.14em 0.28em 0.28em 0.42em;
-  border: 0.07em solid shade(@collapsible_bg_color, 0.85);
-  border-top: 0;
-}
-
-#collapsible,
-#collapsible #bauhaus_slider
-{
-  background-color: shade(@collapsible_bg_color, 1.04);
-}
-
-/* for the import parameters to be more aligned with the imports buttons */
-#lib-plugin-ui #collapse-block
-{
-  margin: 0.42em 0.07em;
-}
-
-#collapse-block .section-expander,
-#collapsible-label
-{
-  background-color: shade(@collapsible_bg_color, 0.96);
-  border: none;
-  margin-top: 0.14em;
-  padding: 0.07em 0;
-}
-
-#collapsible .combo,
-#collapsible entry,
-#collapsible textview
-{
-  background-color: shade(@button_border, 1.06);
-  border: 0.07em solid shade(@field_active_bg, 1.06);
 }

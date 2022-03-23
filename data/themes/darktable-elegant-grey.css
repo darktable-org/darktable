@@ -139,12 +139,16 @@ radiobutton:hover label,
 #view_dropdown .combo:hover
 {
   background-color: shade(@button_bg, 1.1);
-  background-image: none;
 }
 
 #header-toolbar #bauhaus_combobox:hover
 {
   background-color: @button_bg;
+}
+
+#collapsible .combo:hover
+{
+  background-color: shade(@button_bg, 1.25);
 }
 
 /* Adjust color of top shown infos on darkroom */
