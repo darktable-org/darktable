@@ -619,6 +619,8 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", d->nb_rules);
     dt_conf_set_int(confname, 0);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", d->nb_rules);
+    dt_conf_set_int(confname, 0);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", d->nb_rules);
     dt_conf_set_string(confname, "");
     d->nb_rules++;
