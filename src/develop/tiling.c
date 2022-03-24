@@ -36,7 +36,7 @@
 /* this defines an additional alignment requirement for opencl image width.
    It can have strong effects on processing speed. Reasonable values are a
    power of 2. set to 1 for no effect. */
-#define CL_ALIGNMENT 4
+#define CL_ALIGNMENT ((piece->pipe->dsc.filters != 9u) ? 4 : 1)
 
 /* parameter RESERVE for extended roi_in sizes due to inaccuracies when doing
    roi_out -> roi_in estimations.
@@ -84,6 +84,12 @@ static inline int _align_down(int n, int a)
   return n % a != 0 ? (n / a) * a : n;
 }
 
+static inline int _align_close(int n, int a)
+{
+  const int off = n % a;
+  if(!off) return n;
+  return (off > a/2) ? a - off : -off;    
+}
 
 static inline void _print_roi(const dt_iop_roi_t *roi, const char *label)
 {
@@ -893,33 +899,6 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   int width = _max(roi_in->width, roi_out->width);
   int height = _max(roi_in->height, roi_out->height);
 
-  /* shrink tile size in case it would exceed singlebuffer size */
-  if((float)width * height * max_bpp * maxbuf > singlebuffer)
-  {
-    const float scale = singlebuffer / ((float)width * height * max_bpp * maxbuf);
-
-    /* TODO: can we make this more efficient to minimize total overlap between tiles? */
-    if(width < height && scale >= 0.333f)
-    {
-      height = floorf(height * scale);
-    }
-    else if(height <= width && scale >= 0.333f)
-    {
-      width = floorf(width * scale);
-    }
-    else
-    {
-      width = floorf(width * sqrtf(scale));
-      height = floorf(height * sqrtf(scale));
-    }
-  }
-
-  /* make sure we have a reasonably effective tile dimension. if not try square tiles */
-  if(3 * tiling.overlap > width || 3 * tiling.overlap > height)
-  {
-    width = height = floorf(sqrtf((float)width * height));
-  }
-
   /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
      Modules will report alignment requirements via xalign and yalign within tiling_callback().
      Typical use case is demosaic where Bayer pattern requires alignment to a multiple of 2 in x and y
@@ -929,6 +908,37 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   const unsigned int xyalign = _lcm(tiling.xalign, tiling.yalign);
 
   assert(xyalign != 0);
+
+  /* shrink tile size in case it would exceed singlebuffer size */
+  if((float)width * height * max_bpp * maxbuf > singlebuffer)
+  {
+    const float scale = singlebuffer / ((float)width * height * max_bpp * maxbuf);
+
+    /* TODO: can we make this more efficient to minimize total overlap between tiles? */
+    if(width < height && scale >= 0.333f)
+    {
+      height = _align_down((int)floorf(height * scale), xyalign);
+    }
+    else if(height <= width && scale >= 0.333f)
+    {
+      width = _align_down((int)floorf(width * scale), xyalign);
+    }
+    else
+    {
+      width = _align_down((int)floorf(width * sqrtf(scale)), xyalign);
+      height = _align_down((int)floorf(height * sqrtf(scale)), xyalign);
+    }
+    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_roi] buffer exceeds singlebuffer, corrected to %dx%d\n",
+            width, height);
+  }
+
+  /* make sure we have a reasonably effective tile dimension. if not try square tiles */
+  if(3 * tiling.overlap > width || 3 * tiling.overlap > height)
+  {
+    width = height = _align_down((int)floorf(sqrtf((float)width * height)), xyalign);
+    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_roi] use squares because of overlap, corrected to %dx%d\n",
+            width, height);
+  }
 
   /* make sure that overlap follows alignment rules by making it wider when needed.
      overlap_in needs to be aligned, overlap_out is only here to calculate output buffer size */
@@ -1014,8 +1024,8 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       const int y_in = iroi_good.y;
       const int width_in = iroi_good.width;
       const int height_in = iroi_good.height;
-      const int new_x_in = _max(_align_down(x_in - overlap_in - delta, xyalign), roi_in->x);
-      const int new_y_in = _max(_align_down(y_in - overlap_in - delta, xyalign), roi_in->y);
+      const int new_x_in = _max(_align_close(x_in - overlap_in - delta, xyalign), roi_in->x);
+      const int new_y_in = _max(_align_close(y_in - overlap_in - delta, xyalign), roi_in->y);
       const int new_width_in = _min(_align_up(width_in + overlap_in + delta + (x_in - new_x_in), xyalign),
                                     roi_in->width + roi_in->x - new_x_in);
       const int new_height_in = _min(_align_up(height_in + overlap_in + delta + (y_in - new_y_in), xyalign),
@@ -1579,35 +1589,6 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   int width = _min(_max(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
   int height = _min(_max(roi_in->height, roi_out->height), darktable.opencl->dev[devid].max_image_height);
 
-  /* shrink tile size in case it would exceed singlebuffer size */
-  if((float)width * height * max_bpp * maxbuf > singlebuffer)
-  {
-    const float scale = singlebuffer / ((float)width * height * max_bpp * maxbuf);
-
-    if(width < height && scale >= 0.333f)
-    {
-      height = floorf(height * scale);
-    }
-    else if(height <= width && scale >= 0.333f)
-    {
-      width = floorf(width * scale);
-    }
-    else
-    {
-      width = floorf(width * sqrtf(scale));
-      height = floorf(height * sqrtf(scale));
-    }
-    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_cl_roi] buffer exceeds singlebuffer, corrected to %dx%d\n",
-            width, height);
-  }
-
-  /* make sure we have a reasonably effective tile dimension. if not try square tiles */
-  if(3 * tiling.overlap > width || 3 * tiling.overlap > height)
-  {
-    width = height = floorf(sqrtf((float)width * height));
-  }
-
-
   /* Alignment rules: we need to make sure that alignment requirements of module are fulfilled.
      Modules will report alignment requirements via xalign and yalign within tiling_callback().
      Typical use case is demosaic where Bayer pattern requires alignment to a multiple of 2 in x and y
@@ -1618,6 +1599,36 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   xyalign = _lcm(xyalign, CL_ALIGNMENT);
 
   assert(xyalign != 0);
+
+  /* shrink tile size in case it would exceed singlebuffer size */
+  if((float)width * height * max_bpp * maxbuf > singlebuffer)
+  {
+    const float scale = singlebuffer / ((float)width * height * max_bpp * maxbuf);
+
+    if(width < height && scale >= 0.333f)
+    {
+      height = _align_down((int)floorf(height * scale), xyalign);
+    }
+    else if(height <= width && scale >= 0.333f)
+    {
+      width = _align_down((int)floorf(width * scale), xyalign);
+    }
+    else
+    {
+      width = _align_down((int)floorf(width * sqrtf(scale)), xyalign);
+      height = _align_down((int)floorf(height * sqrtf(scale)), xyalign);
+    }
+    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_cl_roi] buffer exceeds singlebuffer, corrected to %dx%d\n",
+            width, height);
+  }
+
+  /* make sure we have a reasonably effective tile dimension. if not try square tiles */
+  if(3 * tiling.overlap > width || 3 * tiling.overlap > height)
+  {
+    width = height = _align_down((int)floorf(sqrtf((float)width * height)), xyalign);
+    dt_vprint(DT_DEBUG_TILING, "[default_process_tiling_cl_roi] use squares because of overlap, corrected to %dx%d\n",
+            width, height);
+  }
 
   /* make sure that overlap follows alignment rules by making it wider when needed.
      overlap_in needs to be aligned, overlap_out is only here to calculate output buffer size */
@@ -1762,8 +1773,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       const int y_in = iroi_good.y;
       const int width_in = iroi_good.width;
       const int height_in = iroi_good.height;
-      const int new_x_in = _max(_align_down(x_in - overlap_in - delta, xyalign), roi_in->x);
-      const int new_y_in = _max(_align_down(y_in - overlap_in - delta, xyalign), roi_in->y);
+      const int new_x_in = _max(_align_close(x_in - overlap_in - delta, xyalign), roi_in->x);
+      const int new_y_in = _max(_align_close(y_in - overlap_in - delta, xyalign), roi_in->y);
       const int new_width_in = _min(_align_up(width_in + overlap_in + delta + (x_in - new_x_in), xyalign),
                                     roi_in->width + roi_in->x - new_x_in);
       const int new_height_in = _min(_align_up(height_in + overlap_in + delta + (y_in - new_y_in), xyalign),
@@ -2010,9 +2021,9 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   if(piece->pipe->dsc.filters == 9u)
   {
-    // X-Trans, sensor is 6x6
-    tiling->xalign = 6;
-    tiling->yalign = 6;
+    // X-Trans, sensor is 6x6 but algorithms have been corrected to work with 3x3
+    tiling->xalign = 3;
+    tiling->yalign = 3;
   }
   else
   {
