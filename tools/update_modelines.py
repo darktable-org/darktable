@@ -48,6 +48,19 @@ def process_line(line, lineno):
 		else:
 			state=estate.none
 		return
+		
+def remove_lines():
+	with open(sys.argv[1],'w') as file:
+		for lineno,line in enumerate(lines):
+			if((lineno >= begin) and (lineno <= end)):
+				continue
+			if(line.startswith('// modelines')):
+				continue
+			if(line.startswith('// vim')):
+				continue
+			if(line.startswith('// kate')):
+				continue
+			file.write(line)
 
 if __name__ == "__main__":
 	if(sys.argv[1] is None):
@@ -59,12 +72,8 @@ if __name__ == "__main__":
 		process_line(line, lineno)
 	if((begin == -1) != (end == -1)):
 		raise RuntimeError("parsing error")
-	if(not ((begin == -1) and (end == -1))):
-		print('removing old modelines');
-		with open(sys.argv[1],'w') as file:
-			for lineno,line in enumerate(lines):
-				if(not ((lineno >= begin) and (lineno <= end))):
-					file.write(line)
+	print('removing old modelines');
+	remove_lines()
 	with open(sys.argv[1],'a') as file:
 		print('adding new modelines');
 		file.write(CLANG_OFF)
