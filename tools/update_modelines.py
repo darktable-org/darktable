@@ -3,9 +3,11 @@
 import re
 import sys
 from enum import Enum
+import shlex
+import subprocess
 
 CLANG_OFF='// clang-format off\n'
-NOTIFICATION_LINE='// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh\n'
+NOTIFICATION_LINE='// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py\n'
 VIM_MODELINE='// vim: shiftwidth=2 expandtab tabstop=2 cindent\n'
 KATE_MODELINE='// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;\n'
 CLANG_ON='// clang-format on\n'
@@ -53,7 +55,7 @@ class modelines_updater_t:
 			return
 		
 	def remove_lines(self):
-		with open(sys.argv[1],'w') as file:
+		with open(self.filename,'w') as file:
 			for lineno,line in enumerate(self.lines):
 				if((lineno >= self.begin) and (lineno <= self.end)):
 					continue
@@ -89,6 +91,17 @@ class modelines_updater_t:
 
 
 if __name__ == "__main__":
-	updater = modelines_updater_t(sys.argv[1])
-	updater.update()
+	files = []
+	args = shlex.split('sh -c \'find src/ -name "*.c" -or -name "*.cc" -or -name "*.h" | grep -v src/external\'')
+	ret = subprocess.run(args,capture_output=True)
+	if ret.returncode != 0:
+		print(ret.stderr.decode(sys.stderr.encoding))
+		raise RuntimeError("error listing files")
+	files = ret.stdout.decode(sys.stdout.encoding).split('\n')
+	for file in files:
+		if (not file.strip()):
+			continue
+		updater = modelines_updater_t(file.strip())
+		updater.update()
+	
 

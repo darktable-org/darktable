@@ -64,7 +64,7 @@ void dt_guides_update_module_widget(struct dt_iop_module_t *module);
 void dt_guides_set_overlay_colors();
 
 // clang-format off
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on

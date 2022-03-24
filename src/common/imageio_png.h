@@ -41,7 +41,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
 int dt_imageio_png_read_profile(const char *filename, uint8_t **out);
 
 // clang-format off
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
