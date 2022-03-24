@@ -1301,9 +1301,6 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     cairo_rectangle(cr, posx_px + range->alloc_padding.x - 1, range->alloc_padding.y, 2,
                     range->alloc_padding.height * 0.1);
     cairo_fill(cr);
-    cairo_rectangle(cr, posx_px + range->alloc_padding.x - 1, range->alloc_padding.y + range->alloc_padding.height,
-                    2, -range->alloc_padding.height * 0.1);
-    cairo_fill(cr);
   }
 
   // draw the icons
