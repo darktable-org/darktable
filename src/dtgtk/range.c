@@ -1286,9 +1286,24 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   // draw the icons
   if(g_list_length(range->icons) > 0)
   {
-    // determine icon size
-    const int size = bandh * 0.6;
-    const int posy = margin_top + bandh * 0.2;
+    // we do a first pass to determine the max icon width
+    int last = 0;
+    int min_percent = 100;
+    for(const GList *bl = range->icons; bl; bl = g_list_next(bl))
+    {
+      _range_icon *icon = bl->data;
+      if(last == 0)
+        min_percent = MIN(min_percent, icon->posx * 2);
+      else
+        min_percent = MIN(min_percent, icon->posx - last);
+      last = icon->posx;
+    }
+    min_percent = MIN(min_percent, (100 - last) * 2);
+    // we want to let some marging between icons
+    min_percent *= 0.9;
+    // and we don't want to exceed 60% of the height
+    const int size = MIN(bandh * 0.6, range->band_real_width_px * min_percent / 100);
+    const int posy = margin_top + (bandh - size) / 2.0;
 
     for(const GList *bl = range->icons; bl; bl = g_list_next(bl))
     {
