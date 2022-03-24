@@ -1589,8 +1589,7 @@ filechooser row:hover .sidebar-icon
 #dt-range-band
 {
   min-height: 2.5em;                /* band height */
-  border-top: 80px solid red;    /* not real pixels. This is used as a per thousand of the band height */
-  border-bottom: 34px solid red; /* not real pixels. This is used as a per thousand of the band height */
+  background-color: @range_bg_color;
 }
 .quick_filter_box #dt-range-band
 {
