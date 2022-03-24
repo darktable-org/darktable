@@ -197,7 +197,7 @@ typedef struct dt_bauhaus_t
   float mouse_x, mouse_y;
   // time when the popup window was opened. this is sortof a hack to
   // detect `double clicks between windows' to reset the combobox.
-  double opentime;
+  guint32 opentime;
   // pointer position when popup window is closed
   float end_mouse_x, end_mouse_y;
   // used to determine whether the user crossed the line already.
