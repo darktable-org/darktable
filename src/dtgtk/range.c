@@ -1139,26 +1139,40 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
 
-  // retrieve the margins
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
-  GtkBorder bord;
-  gtk_style_context_get_border(context, state, &bord);
-  const int margin_top = bord.top * allocation.height / 1000;
-  const int margin_bottom = bord.bottom * allocation.height / 1000;
-  const int bandh = allocation.height - margin_bottom - margin_top;
-
   // draw the graph (and create it if needed)
-  if(!range->surface || range->surf_width_px != allocation.width)
+  if(!range->surface || range->alloc_main.width != allocation.width
+     || range->alloc_main.height != allocation.height)
   {
+    range->alloc_main = allocation;
+    // get all the margins, paddings defined in css
+    GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+    GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+    GtkBorder margin, padding;
+    gtk_style_context_get_margin(context, state, &margin);
+    gtk_style_context_get_padding(context, state, &padding);
+
+    // set the area inside margins
+    range->alloc_margin.width = range->alloc_main.width - margin.left - margin.right;
+    range->alloc_margin.x = margin.left;
+    range->alloc_margin.height = range->alloc_main.height - margin.top - margin.bottom;
+    range->alloc_margin.y = margin.top;
+
+    // get the maximal width of the widget (we use 'min-width' because max-width doesn't exists)
     int mw = -1;
     gtk_style_context_get(context, state, "min-width", &mw, NULL);
-    range->surf_width_px = allocation.width;
-    if(mw > 0)
-      range->band_real_width_px = MIN(allocation.width, mw);
-    else
-      range->band_real_width_px = allocation.width;
-    range->band_margin_side_px = (allocation.width - range->band_real_width_px) / 2;
+
+    if(mw > 0 && range->alloc_margin.width > mw)
+    {
+      const int dx = range->alloc_margin.width - mw;
+      range->alloc_margin.width -= dx;
+      range->alloc_margin.x += dx / 2;
+    }
+
+    // set the area inside padding
+    range->alloc_padding.width = range->alloc_margin.width - padding.left - padding.right;
+    range->alloc_padding.x = range->alloc_margin.x + padding.left;
+    range->alloc_padding.height = range->alloc_margin.height - padding.top - padding.bottom;
+    range->alloc_padding.y = range->alloc_margin.y + padding.top;
 
     // if the surface already exist, destroy it
     if(range->surface) cairo_surface_destroy(range->surface);
@@ -1166,13 +1180,13 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     // determine the steps of blocks and extrema values
     range->band_start_bd = range->value_to_band(range->min_r);
     const double width_bd = range->value_to_band(range->max_r) - range->band_start_bd;
-    range->band_factor = width_bd / range->band_real_width_px;
+    range->band_factor = width_bd / range->alloc_padding.width;
     // we want at least blocks with width of BAR_WIDTH pixels
     const double step_bd = fmax(range->step_bd, range->band_factor * BAR_WIDTH);
     const int bl_width_px = step_bd / range->band_factor;
 
     // get the maximum height of blocks
-    // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
+    // we have to do some clever things in order to packed together blocks that will be shown at the same place
     // (see step above)
     double bl_min_px = 0;
     int bl_count = 0;
@@ -1199,20 +1213,12 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     range->surface = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
     cairo_t *scr = cairo_create(range->surface);
 
-    // draw the markers
-    dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
-    for(const GList *bl = range->markers; bl; bl = g_list_next(bl))
-    {
-      _range_marker *mark = bl->data;
-      const int posx_px = _graph_value_to_pos(range, mark->value_r);
-      cairo_rectangle(scr, posx_px + range->band_margin_side_px, 0, 2, allocation.height);
-      cairo_fill(scr);
-    }
-
-    // draw background
-    dt_gui_gtk_set_source_rgba(scr, DT_GUI_COLOR_RANGE_BG, 1.0);
-    cairo_rectangle(scr, range->band_margin_side_px, margin_top, range->band_real_width_px, bandh);
-    cairo_fill(scr);
+    // draw background (defined in css)
+    gtk_render_background(context, scr, range->alloc_margin.x, range->alloc_margin.y, range->alloc_margin.width,
+                          range->alloc_margin.height);
+    // draw border (defined in css)
+    gtk_render_frame(context, scr, range->alloc_margin.x, range->alloc_margin.y, range->alloc_margin.width,
+                     range->alloc_margin.height);
 
     // draw the rectangles on the surface
     // we have to do some clever things in order to packed together blocks that wiil be shown at the same place
@@ -1234,8 +1240,9 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
         if(bl_count > 0)
         {
           const int posx_px = (int)(bl_min_px / bl_width_px) * bl_width_px;
-          const int bh = _graph_get_height(bl_count, count_max, bandh);
-          cairo_rectangle(scr, posx_px + range->band_margin_side_px, margin_top + bandh - bh, bl_width_px, bh);
+          const int bh = _graph_get_height(bl_count, count_max, range->alloc_padding.height);
+          cairo_rectangle(scr, posx_px + range->alloc_padding.x,
+                          range->alloc_padding.y + range->alloc_padding.height - bh, bl_width_px, bh);
           cairo_fill(scr);
         }
         bl_count = blo->nb;
@@ -1246,8 +1253,9 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     if(bl_count > 0)
     {
       const int posx_px = (int)(bl_min_px / bl_width_px) * bl_width_px;
-      const int bh = _graph_get_height(bl_count, count_max, bandh);
-      cairo_rectangle(scr, posx_px + range->band_margin_side_px, margin_top + bandh - bh, bl_width_px, bh);
+      const int bh = _graph_get_height(bl_count, count_max, range->alloc_padding.height);
+      cairo_rectangle(scr, posx_px + range->alloc_padding.x,
+                      range->alloc_padding.y + range->alloc_padding.height - bh, bl_width_px, bh);
       cairo_fill(scr);
     }
 
@@ -1271,17 +1279,32 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   }
   int sel_min_px = (range->bounds & DT_RANGE_BOUND_MIN) ? 0 : _graph_value_to_pos(range, sel_min_r);
   int sel_max_px
-      = (range->bounds & DT_RANGE_BOUND_MAX) ? range->band_real_width_px : _graph_value_to_pos(range, sel_max_r);
+      = (range->bounds & DT_RANGE_BOUND_MAX) ? range->alloc_padding.width : _graph_value_to_pos(range, sel_max_r);
   // we need to add the step in order to show that the value is included in the selection
   sel_max_px += range->step_bd / range->band_factor;
   sel_min_px = MAX(sel_min_px, 0);
-  sel_max_px = MIN(sel_max_px, range->band_real_width_px);
+  sel_max_px = MIN(sel_max_px, range->alloc_padding.width);
   const int sel_width_px = MAX(2, sel_max_px - sel_min_px);
   dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_SELECTION, 1.0);
-  cairo_rectangle(cr, sel_min_px + range->band_margin_side_px, margin_top, sel_width_px, bandh);
+  cairo_rectangle(cr, sel_min_px + range->alloc_padding.x, range->alloc_padding.y, sel_width_px,
+                  range->alloc_padding.height);
   cairo_fill(cr);
 
   double current_value_r = _graph_value_from_pos(range, range->current_x_px, TRUE);
+
+  // draw the markers
+  dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_ICONS, 1.0);
+  for(const GList *bl = range->markers; bl; bl = g_list_next(bl))
+  {
+    _range_marker *mark = bl->data;
+    const int posx_px = _graph_value_to_pos(range, mark->value_r);
+    cairo_rectangle(cr, posx_px + range->alloc_padding.x - 1, range->alloc_padding.y, 2,
+                    range->alloc_padding.height * 0.1);
+    cairo_fill(cr);
+    cairo_rectangle(cr, posx_px + range->alloc_padding.x - 1, range->alloc_padding.y + range->alloc_padding.height,
+                    2, -range->alloc_padding.height * 0.1);
+    cairo_fill(cr);
+  }
 
   // draw the icons
   if(g_list_length(range->icons) > 0)
@@ -1302,13 +1325,13 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     // we want to let some marging between icons
     min_percent *= 0.9;
     // and we don't want to exceed 60% of the height
-    const int size = MIN(bandh * 0.6, range->band_real_width_px * min_percent / 100);
-    const int posy = margin_top + (bandh - size) / 2.0;
+    const int size = MIN(range->alloc_padding.height * 0.6, range->alloc_padding.width * min_percent / 100);
+    const int posy = range->alloc_padding.y + (range->alloc_padding.height - size) / 2.0;
 
     for(const GList *bl = range->icons; bl; bl = g_list_next(bl))
     {
       _range_icon *icon = bl->data;
-      const int posx_px = range->band_real_width_px * icon->posx / 100 - size / 2;
+      const int posx_px = range->alloc_padding.width * icon->posx / 100 - size / 2;
       // we set prelight flag if the mouse value correspond
       gint f = icon->flags;
       if(range->mouse_inside && range->current_x_px > 0 && icon->value_r == current_value_r)
@@ -1329,7 +1352,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
       else
         f &= ~CPF_ACTIVE;
       // and we draw the icon
-      icon->paint(cr, posx_px + range->band_margin_side_px, posy, size, size, f, icon->data);
+      icon->paint(cr, posx_px + range->alloc_padding.x, posy, size, size, f, icon->data);
     }
   }
 
@@ -1337,9 +1360,9 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
   if(range->mouse_inside && range->current_x_px > 0)
   {
     dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_RANGE_CURSOR, 1.0);
-    const int posx_px = _graph_snap_position(range, range->current_x_px) + range->band_margin_side_px;
-    cairo_move_to(cr, posx_px, margin_top);
-    cairo_line_to(cr, posx_px, bandh);
+    const int posx_px = _graph_snap_position(range, range->current_x_px) + range->alloc_padding.x;
+    cairo_move_to(cr, posx_px, range->alloc_padding.y);
+    cairo_line_to(cr, posx_px, range->alloc_padding.height + range->alloc_padding.y);
     cairo_stroke(cr);
     if(range->show_entries)
     {
@@ -1365,7 +1388,7 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
     _popup_date_recreate_model(range);
   }
   // invalidate the surface
-  range->surf_width_px = 0;
+  range->alloc_main.width = 0;
   // redraw the band
   gtk_widget_queue_draw(range->band);
 }
@@ -1389,10 +1412,10 @@ static void _dt_pref_changed(gpointer instance, gpointer user_data)
 static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-  range->current_x_px = event->x - range->band_margin_side_px;
+  range->current_x_px = event->x - range->alloc_padding.x;
 
   // if we are outside the graph, don't go further
-  const gboolean inside = (range->current_x_px >= 0 && range->current_x_px <= range->band_real_width_px);
+  const gboolean inside = (range->current_x_px >= 0 && range->current_x_px <= range->alloc_padding.width);
   if(!inside)
   {
     range->mouse_inside = HOVER_OUTSIDE;
@@ -1446,7 +1469,7 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
   else if(e->button == 1)
   {
     if(!range->mouse_inside) return TRUE;
-    const double pos_r = _graph_value_from_pos(range, e->x - range->band_margin_side_px, TRUE);
+    const double pos_r = _graph_value_from_pos(range, e->x - range->alloc_padding.x, TRUE);
     if(range->mouse_inside == HOVER_MAX)
     {
       range->bounds &= ~DT_RANGE_BOUND_MAX;
@@ -1479,7 +1502,7 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   if(!range->set_selection) return TRUE;
-  range->select_max_r = _graph_value_from_pos(range, e->x - range->band_margin_side_px, TRUE);
+  range->select_max_r = _graph_value_from_pos(range, e->x - range->alloc_padding.x, TRUE);
   const double min_pos_px = _graph_value_to_pos(range, range->select_min_r);
 
   // we verify that the values are in the right order
@@ -1491,7 +1514,7 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
   }
 
   // we also set the bounds
-  if(fabs(e->x - range->band_margin_side_px - min_pos_px) < 2)
+  if(fabs(e->x - range->alloc_padding.x - min_pos_px) < 2)
     range->bounds = DT_RANGE_BOUND_FIXED;
   else
   {
@@ -1536,13 +1559,13 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   range->mouse_inside = HOVER_OUTSIDE;
   range->current_x_px = 0.0;
   range->surface = NULL;
-  range->surf_width_px = 0;
   range->value_from_band = _default_value_translator;
   range->value_to_band = _default_value_translator;
   range->print = (type == DT_RANGE_TYPE_NUMERIC) ? _default_print_func : _default_print_date_func;
   range->decode = (type == DT_RANGE_TYPE_NUMERIC) ? _default_decode_func : _default_decode_date_func;
   range->show_entries = show_entries;
   range->type = type;
+  range->alloc_main.width = 0;
 
   // the boxes widgets
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

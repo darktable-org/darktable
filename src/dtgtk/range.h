@@ -83,7 +83,6 @@ typedef struct _GtkDarktableRangeSelect
   gboolean set_selection; // are we setting the selection
 
   cairo_surface_t *surface; // cached graph drawing
-  int surf_width_px;        // width of the cached drawing
 
   GtkWidget *entry_min;
   GtkWidget *current;
@@ -107,8 +106,9 @@ typedef struct _GtkDarktableRangeSelect
   GList *icons;
   GList *markers;
 
-  int band_margin_side_px; // if the band has a max width, this is the empty left-right space
-  int band_real_width_px;  // if the band has a max width, this is the real width of the band
+  GtkAllocation alloc_main;    // area of the total widget
+  GtkAllocation alloc_margin;  // area of the widget without margins (for border and background)
+  GtkAllocation alloc_padding; // area of the widget without margins and padding (for drawing)
 
   struct _range_date_popup *date_popup;
 } GtkDarktableRangeSelect;
