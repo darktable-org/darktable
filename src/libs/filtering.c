@@ -117,10 +117,18 @@ typedef struct dt_lib_filtering_params_rule_t
   char string[PARAM_STRING_SIZE];
 } dt_lib_filtering_params_rule_t;
 
+typedef struct dt_lib_filtering_params_sort_t
+{
+  uint32_t item : 16;
+  uint32_t order : 16;
+} dt_lib_filtering_params_sort_t;
+
 typedef struct dt_lib_filtering_params_t
 {
   uint32_t rules;
   dt_lib_filtering_params_rule_t rule[DT_COLLECTION_MAX_RULES];
+  uint32_t sorts;
+  dt_lib_filtering_params_sort_t sort[DT_COLLECTION_MAX_RULES];
 } dt_lib_filtering_params_t;
 
 typedef struct _widgets_range_t
@@ -209,29 +217,7 @@ const char *name(dt_lib_module_t *self)
 
 void init_presets(dt_lib_module_t *self)
 {
-  dt_lib_filtering_params_t params;
 
-#define CLEAR_PARAMS(r)                                                                                           \
-  {                                                                                                               \
-    memset(&params, 0, sizeof(params));                                                                           \
-    params.rules = 1;                                                                                             \
-    params.rule[0].mode = 0;                                                                                      \
-    params.rule[0].item = r;                                                                                      \
-  }
-
-  CLEAR_PARAMS(DT_COLLECTION_PROP_RATING);
-  g_strlcpy(params.rule[0].string, ">=0", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("rating : all except rejected"), self->plugin_name, self->version(), &params,
-                     sizeof(params), TRUE);
-  CLEAR_PARAMS(DT_COLLECTION_PROP_RATING);
-  g_strlcpy(params.rule[0].string, ">=2", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("rating : ★ ★"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
-
-  CLEAR_PARAMS(DT_COLLECTION_PROP_COLORLABEL);
-  g_strlcpy(params.rule[0].string, "red", PARAM_STRING_SIZE);
-  dt_lib_presets_add(_("color labels : red"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
-
-#undef CLEAR_PARAMS
 }
 
 /* Update the params struct with active ruleset */
@@ -242,10 +228,9 @@ static void _filters_update_params(dt_lib_filtering_t *d)
   memset(p, 0, sizeof(dt_lib_filtering_params_t));
 
   /* for each active rule set update params */
-  const int _a = dt_conf_get_int("plugins/lighttable/filtering/num_rules") - 1;
-  const int active = CLAMP(_a, 0, (DT_COLLECTION_MAX_RULES - 1));
+  p->rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
   char confname[200] = { 0 };
-  for(int i = 0; i <= active; i++)
+  for(int i = 0; i < p->rules; i++)
   {
     /* get item */
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
@@ -272,7 +257,18 @@ static void _filters_update_params(dt_lib_filtering_t *d)
     }
   }
 
-  p->rules = active + 1;
+  /* for each sort orders set update params */
+  p->sorts = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, DT_COLLECTION_MAX_RULES);
+  for(int i = 0; i < p->sorts; i++)
+  {
+    /* get item */
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
+    p->sort[i].item = dt_conf_get_int(confname);
+
+    /* get sort order */
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", i);
+    p->sort[i].order = dt_conf_get_int(confname);
+  }
 }
 
 void *get_params(dt_lib_module_t *self, int *size)
@@ -319,11 +315,27 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   g_strlcpy(confname, "plugins/lighttable/filtering/num_rules", sizeof(confname));
   dt_conf_set_int(confname, p->rules);
 
+  for(uint32_t i = 0; i < p->sorts; i++)
+  {
+    /* set item */
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
+    dt_conf_set_int(confname, p->sort[i].item);
+
+    /* set order */
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1u", i);
+    dt_conf_set_int(confname, p->sort[i].order);
+  }
+
+  /* set number of sorts */
+  g_strlcpy(confname, "plugins/lighttable/filtering/num_sort", sizeof(confname));
+  dt_conf_set_int(confname, p->sorts);
+
   /* update internal params */
   _filters_update_params(self->data);
 
   /* update ui */
   _filters_gui_update(self);
+  _sort_gui_update(self);
 
   /* update view */
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
