@@ -1157,13 +1157,9 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     range->alloc_margin.height = range->alloc_main.height - margin.top - margin.bottom;
     range->alloc_margin.y = margin.top;
 
-    // get the maximal width of the widget (we use 'min-width' because max-width doesn't exists)
-    int mw = -1;
-    gtk_style_context_get(context, state, "min-width", &mw, NULL);
-
-    if(mw > 0 && range->alloc_margin.width > mw)
+    if(range->max_width_px > 0 && range->alloc_margin.width > range->max_width_px)
     {
-      const int dx = range->alloc_margin.width - mw;
+      const int dx = range->alloc_margin.width - range->max_width_px;
       range->alloc_margin.width -= dx;
       range->alloc_margin.x += dx / 2;
     }
@@ -1399,8 +1395,13 @@ static void _dt_pref_changed(gpointer instance, gpointer user_data)
   GtkStateFlags state = gtk_widget_get_state_flags(range->band);
   int mh = -1;
   int mw = -1;
-  gtk_widget_get_size_request(range->band, &mw, &mh);
   gtk_style_context_get(context, state, "min-height", &mh, NULL);
+  gtk_style_context_get(context, state, "min-width", &mw, NULL);
+  GtkBorder margin, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_padding(context, state, &padding);
+  if(mw >= 0) mw += margin.left + margin.right + padding.right + padding.left;
+  if(mh >= 0) mh += margin.top + margin.bottom + padding.top + padding.bottom;
   gtk_widget_set_size_request(range->band, mw, mh);
 
   dtgtk_range_select_redraw(range);
@@ -1563,6 +1564,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   range->show_entries = show_entries;
   range->type = type;
   range->alloc_main.width = 0;
+  range->max_width_px = -1;
 
   // the boxes widgets
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1580,11 +1582,6 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   g_signal_connect(G_OBJECT(range->band), "style-updated", G_CALLBACK(_dt_pref_changed), range);
   gtk_widget_set_name(GTK_WIDGET(range->band), "dt-range-band");
   gtk_widget_set_can_default(range->band, TRUE);
-  context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
-  int mh = -1;
-  gtk_style_context_get(context, state, "min-height", &mh, NULL);
-  gtk_widget_set_size_request(range->band, -1, mh);
   gtk_box_pack_start(GTK_BOX(vbox), range->band, TRUE, TRUE, 0);
 
   if(range->show_entries)

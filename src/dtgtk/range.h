@@ -110,6 +110,8 @@ typedef struct _GtkDarktableRangeSelect
   GtkAllocation alloc_margin;  // area of the widget without margins (for border and background)
   GtkAllocation alloc_padding; // area of the widget without margins and padding (for drawing)
 
+  int max_width_px; // maximal width of the widget in pixels
+
   struct _range_date_popup *date_popup;
 } GtkDarktableRangeSelect;
 
