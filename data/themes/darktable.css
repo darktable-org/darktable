@@ -1591,17 +1591,18 @@ filechooser row:hover .sidebar-icon
   min-height: 2.5em;                /* band height */
   background-color: @range_bg_color;
 }
+.dt_range_rating #dt-range-band
+{
+  min-height: 2em;
+}
 .quick_filter_box #dt-range-band
 {
   min-height: 1.8em;
-}
-.dt_range_rating #dt-range-band
-{
   min-width: 16em;
 }
-.quick_filter_box .dt_range_rating #dt-range-band
+.quick_filter_box.dt_range_rating #dt-range-band
 {
-  min-width: 12em;
+  min-width: 10em;
 }
 #dt-range-current
 {

@@ -86,8 +86,12 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   special->range_select
       = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE, DT_RANGE_TYPE_NUMERIC);
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  // for the topbar widget, we need to set the width to 8 * fontheight (7 icons + little space between them)
-  if(top) gtk_widget_set_size_request(GTK_WIDGET(range), darktable.bauhaus->line_height * 8, -1);
+  // to keep a nice ratio, we don't want the widget to exceed a certain value
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  int mh = -1;
+  gtk_style_context_get(context, state, "min-height", &mh, NULL);
+  if(mh > 0) range->max_width_px = 8 * mh * 0.8;
   range->step_bd = 1.0;
   dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
   dtgtk_range_select_add_icon(range, 22, 0, dtgtk_cairo_paint_unratestar, 0, NULL);
