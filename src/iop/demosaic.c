@@ -54,6 +54,9 @@ DT_MODULE_INTROSPECTION(4, dt_iop_demosaic_params_t)
 #define DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
 #define REDUCESIZE 64
 
+#define XTRANS_SNAPPER 3
+#define BAYER_SNAPPER 2
+
 typedef enum dt_iop_demosaic_method_t
 {
   // methods for Bayer images
@@ -2824,20 +2827,17 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   const gboolean passthrough = (method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
                                (method == DT_IOP_DEMOSAIC_PASSTHR_MONOX);
 
-  // clamp to even x/y, to make demosaic pattern still hold..
+  // set position to closest sensor pattern snap
   if(!passthrough)
   {
-    if(piece->pipe->dsc.filters != 9u)
-    {
-      roi_in->x = MAX(0, roi_in->x & ~1);
-      roi_in->y = MAX(0, roi_in->y & ~1);
-    }
-    else
-    {
-      // Markesteijn needs factors of 3
-      roi_in->x = MAX(0, roi_in->x - (roi_in->x % 3));
-      roi_in->y = MAX(0, roi_in->y - (roi_in->y % 3));
-    }
+    const int aligner = (piece->pipe->dsc.filters != 9u) ? BAYER_SNAPPER : XTRANS_SNAPPER;
+    const int dx = roi_in->x % aligner;
+    const int dy = roi_in->y % aligner;
+    const int shift_x = (dx > aligner / 2) ? aligner - dx : -dx;
+    const int shift_y = (dy > aligner / 2) ? aligner - dy : -dy;
+
+    roi_in->x = MAX(0, roi_in->x + shift_x);
+    roi_in->y = MAX(0, roi_in->y + shift_y);
   }
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
@@ -3006,13 +3006,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else if(piece->pipe->dsc.filters == 9u)
     {
+      const int passes = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN) ? 1 : 3;
       if(demosaicing_method == DT_IOP_DEMOSAIC_MARKEST3_VNG)
-        xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans, 3);
+        xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans, passes);
       else if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DEMOSAIC_XTRANS_FULL))
         xtrans_fdc_interpolate(self, tmp, pixels, &roo, &roi, xtrans);
       else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DEMOSAIC_XTRANS_FULL))
-        xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans,
-                                       1 + (demosaicing_method - DT_IOP_DEMOSAIC_MARKESTEIJN) * 2);
+        xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans, passes); 
       else
         vng_interpolate(tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, xtrans, qual_flags & DEMOSAIC_ONLY_VNG_LINEAR);
     }
@@ -5310,14 +5310,14 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->yalign = 2;
     tiling->overlap = 5; // take care of border handling
   }
-  else if(((demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN) ||
-           (demosaicing_method ==  DT_IOP_DEMOSAIC_MARKESTEIJN_3) ||
+  else if(((demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN) ||
+           (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ||
            (demosaicing_method == DT_IOP_DEMOSAIC_FDC)) &&
           (qual_flags & DEMOSAIC_XTRANS_FULL))
   {
     // X-Trans pattern full Markesteijn processing
     const int ndir = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 8 : 4;
-    const int overlap = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 17 : 12;
+    const int overlap = (demosaicing_method == DT_IOP_DEMOSAIC_MARKESTEIJN_3) ? 18 : 12;
 
     tiling->factor = 1.0f + ioratio;
     tiling->factor += ndir * 1.0f      // rgb
@@ -5334,8 +5334,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
-    tiling->xalign = 3;
-    tiling->yalign = 3;
+    tiling->xalign = XTRANS_SNAPPER;
+    tiling->yalign = XTRANS_SNAPPER;
     tiling->overlap = overlap;
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
