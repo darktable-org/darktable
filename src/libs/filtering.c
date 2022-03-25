@@ -138,13 +138,6 @@ typedef struct _widgets_range_t
   GtkWidget *range_select;
 } _widgets_range_t;
 
-typedef struct _widgets_fallback_t
-{
-  dt_lib_filtering_rule_t *rule;
-
-  GtkWidget *entry;
-} _widgets_fallback_t;
-
 typedef enum _tree_cols_t
 {
   TREE_COL_TEXT = 0,
@@ -507,56 +500,11 @@ static void _range_widget_add_to_rule(dt_lib_filtering_rule_t *rule, _widgets_ra
     rule->w_specific = special;
 }
 
-static void _fallback_changed(GtkWidget *widget, gpointer user_data)
-{
-  _widgets_fallback_t *fallback = (_widgets_fallback_t *)user_data;
-  if(fallback->rule->manual_widget_set) return;
-
-  _rule_set_raw_text(fallback->rule, gtk_entry_get_text(GTK_ENTRY(fallback->entry)), TRUE);
-}
-
-static gboolean _fallback_update(dt_lib_filtering_rule_t *rule)
-{
-  if(!rule->w_specific) return FALSE;
-
-  rule->manual_widget_set++;
-  _widgets_fallback_t *fallback = (_widgets_fallback_t *)rule->w_specific;
-  gtk_entry_set_text(GTK_ENTRY(fallback->entry), rule->raw_text);
-  if(rule->w_specific_top)
-  {
-    fallback = (_widgets_fallback_t *)rule->w_specific_top;
-    gtk_entry_set_text(GTK_ENTRY(fallback->entry), rule->raw_text);
-  }
-  rule->manual_widget_set--;
-
-  return TRUE;
-}
-
-static void _fallback_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                  const gchar *text, dt_lib_module_t *self, gboolean top)
-{
-  _widgets_fallback_t *fallback = (_widgets_fallback_t *)g_malloc0(sizeof(_widgets_fallback_t));
-
-  fallback->rule = rule;
-  fallback->entry = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(fallback->entry), text);
-  if(top)
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), fallback->entry, TRUE, TRUE, 0);
-  else
-    gtk_box_pack_start(GTK_BOX(rule->w_special_box), fallback->entry, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(fallback->entry), "activate", G_CALLBACK(_fallback_changed), fallback);
-
-  if(top)
-    rule->w_specific_top = fallback;
-  else
-    rule->w_specific = fallback;
-}
-
 static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
 {
   _filter_t *f = _filters_get(rule->prop);
   if(f) return f->update(rule);
-  return _fallback_update(rule);
+  return FALSE;
 }
 
 static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar *text, dt_lib_module_t *self,
@@ -578,7 +526,7 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
   if(f)
     f->widget_init(rule, rule->prop, text, self, top);
   else
-    _fallback_widget_init(rule, rule->prop, text, self, top);
+    return FALSE;
 
   return TRUE;
 }
