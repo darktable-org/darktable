@@ -36,6 +36,7 @@ typedef struct _GtkDarktableExpander
 {
   GtkBox box;
   gboolean expanded;
+  GtkWidget *revealer;
   GtkWidget *frame;
   GtkWidget *header;
   GtkWidget *header_evb;

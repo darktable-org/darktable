@@ -71,11 +71,11 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
   {
     expander->expanded = expanded;
 
-    GtkWidget *frame = expander->body;
+    GtkWidget *revealer = expander->revealer;
 
-    if(frame)
+    if(revealer)
     {
-      gtk_widget_set_visible(frame, expander->expanded);
+      gtk_revealer_set_reveal_child(GTK_REVEALER(revealer), expander->expanded);
     }
   }
 }
@@ -89,6 +89,25 @@ gboolean dtgtk_expander_get_expanded(GtkDarktableExpander *expander)
 
 static void dtgtk_expander_init(GtkDarktableExpander *expander)
 {
+}
+
+// this should work as long as everything happens in the gui thread
+static gboolean dtgtk_expander_scroll(GtkRevealer *widget)
+{
+  GtkAllocation allocation;
+
+  GtkWidget *expander = gtk_widget_get_parent(GTK_WIDGET(widget));
+  GtkWidget *box = gtk_widget_get_parent(expander);
+  if(!GTK_IS_WIDGET(box)) return FALSE; // it may not have been added to a box yet
+
+  GtkWidget *viewport = gtk_widget_get_parent(box);
+  GtkWidget *scrolled_window = gtk_widget_get_parent(viewport);
+  GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
+
+  gtk_widget_get_allocation(expander, &allocation);
+  gtk_adjustment_set_value(adjustment, allocation.y);
+
+  return TRUE;
 }
 
 // public functions
@@ -111,9 +130,13 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   gtk_container_add(GTK_CONTAINER(expander->body_evb), expander->body);
   expander->frame = gtk_frame_new(NULL);
   gtk_container_add(GTK_CONTAINER(expander->frame), expander->body_evb);
+  expander->revealer = gtk_revealer_new();
+  gtk_container_add(GTK_CONTAINER(expander->revealer), expander->frame);
+
+  g_signal_connect(G_OBJECT(expander->revealer), "notify::child-revealed", G_CALLBACK(dtgtk_expander_scroll), NULL);
 
   gtk_box_pack_start(GTK_BOX(expander), expander->header_evb, TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(expander), expander->frame, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(expander), expander->revealer, TRUE, FALSE, 0);
 
   return GTK_WIDGET(expander);
 }
