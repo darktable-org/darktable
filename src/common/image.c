@@ -1490,6 +1490,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   }
 
   //insert a v0 record (which may be updated later if no v0 xmp exists)
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      "INSERT INTO main.images (id, film_id, filename, license, sha1sum, flags, version, "
@@ -1497,6 +1498,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
      " SELECT NULL, ?1, ?2, '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000)  + (1 << 32), ?4 "
      " FROM images",
      -1, &stmt, NULL);
+  // clang-format on
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_TRANSIENT);
@@ -2468,7 +2470,7 @@ int dt_image_write_sidecar_file(const int32_t imgid)
     }
   }
 
-  return 1; // error : nothing written
+  return 1; // error : nothing written
 }
 
 void dt_image_synch_xmps(const GList *img)
@@ -2712,7 +2714,7 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
   // just check that pointers exist and are initialized
   if((image_storage) && (image_storage->exif_exposure_bias))
   {
-    // sanity checks because I don't trust exif tags too much
+    // sanity checks because I don't trust exif tags too much
     if(image_storage->exif_exposure_bias == NAN
        || image_storage->exif_exposure_bias != image_storage->exif_exposure_bias
        || isnan(image_storage->exif_exposure_bias)

@@ -957,10 +957,13 @@ void dt_masks_write_masks_history_item(const int imgid, const int num, dt_masks_
   sqlite3_stmt *stmt;
 
   // write the form into the database
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO main.masks_history (imgid, num, formid, form, name, "
-                                                             "version, points, points_count,source) VALUES "
-                                                             "(?1, ?9, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO main.masks_history (imgid, num, formid, form, name, "
+                              "version, points, points_count,source) VALUES "
+                              "(?1, ?9, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, form->formid);
