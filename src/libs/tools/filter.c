@@ -111,9 +111,12 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.filter.get_filter_box = _lib_filter_get_filter_box;
   darktable.view_manager->proxy.filter.get_sort_box = _lib_filter_get_sort_box;
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE,
-                            G_CALLBACK(_lib_filter_images_order_change), self);
-  dt_action_register(DT_ACTION(self), N_("reset filters"), _reset_filters, 0, 0);
+  // test if the filtering module is already load and update its gui in this case
+  // otherwise filtering module will do it in its gui_init()
+  if(darktable.view_manager->proxy.module_filtering.module)
+  {
+    darktable.view_manager->proxy.module_filtering.update(darktable.view_manager->proxy.module_filtering.module);
+  }
 }
 
 void gui_cleanup(dt_lib_module_t *self)

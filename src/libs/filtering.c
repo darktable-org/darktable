@@ -149,6 +149,7 @@ typedef enum _tree_cols_t
 
 static void _filters_gui_update(dt_lib_module_t *self);
 static void _sort_gui_update(dt_lib_module_t *self);
+static void _filtering_gui_update(dt_lib_module_t *self);
 static void _dt_collection_updated(gpointer instance, dt_collection_change_t query_change,
                                    dt_collection_properties_t changed_property, gpointer imgs, int next,
                                    gpointer self);
@@ -1038,6 +1039,12 @@ static void _filters_gui_update(dt_lib_module_t *self)
   --darktable.gui->reset;
 }
 
+static void _filtering_gui_update(dt_lib_module_t *self)
+{
+  _filters_gui_update(self);
+  _sort_gui_update(self);
+}
+
 void gui_reset(dt_lib_module_t *self)
 {
   dt_conf_set_int("plugins/lighttable/filtering/num_rules", 0);
@@ -1683,12 +1690,14 @@ void gui_init(dt_lib_module_t *self)
 
   /* setup proxy */
   darktable.view_manager->proxy.module_filtering.module = self;
-  darktable.view_manager->proxy.module_filtering.update = _filters_gui_update;
+  darktable.view_manager->proxy.module_filtering.update = _filtering_gui_update;
   darktable.view_manager->proxy.module_filtering.reset_filter = _proxy_reset_filter;
 
   d->last_where_ext = dt_collection_get_extended_where(darktable.collection, 99999);
-  _filters_gui_update(self);
-  _sort_gui_update(self);
+
+  // test if the filter toolbar module is already loaded and update the gui in this case
+  // otherwise, the filter toolbar module will do it in it's gui_init()
+  if(darktable.view_manager->proxy.filter.module) _filtering_gui_update(self);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                                   G_CALLBACK(_dt_collection_updated), self);
