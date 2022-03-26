@@ -1912,7 +1912,7 @@ void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *ran
   if(range->type == DT_RANGE_TYPE_DATETIME)
   {
     // initialize to a more rational value than 01/01/1970
-    v1 = v2 = time(NULL);
+    v1 = v2 = dt_datetime_now_to_gtimespan();
     // if we have relative values at both ends, it's invalid
     if(!g_str_has_prefix(n1, "-") || !g_str_has_prefix(n2, "+"))
     {
@@ -1937,7 +1937,7 @@ void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *ran
       else if(!g_strcmp0(n2, "now"))
       {
         sbounds |= DT_RANGE_BOUND_MAX_NOW;
-        v2 = time(NULL);
+        v2 = dt_datetime_now_to_gtimespan();
       }
       else
         range->decode(n2, &v2);
