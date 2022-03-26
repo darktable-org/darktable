@@ -17,6 +17,7 @@
 */
 
 #include "dtgtk/expander.h"
+#include "control/conf.h"
 
 #include <gtk/gtk.h>
 
@@ -106,13 +107,15 @@ static void dtgtk_expander_init(GtkDarktableExpander *expander)
 }
 
 // this should work as long as everything happens in the gui thread
-static gboolean dtgtk_expander_scroll(GtkRevealer *widget)
+static void dtgtk_expander_scroll(GtkRevealer *widget)
 {
+  if(!dt_conf_get_bool("lighttable/ui/scroll_to_module") && !dt_conf_get_bool("darkroom/ui/scroll_to_module")) return;
+
   GtkAllocation allocation;
 
   GtkWidget *expander = gtk_widget_get_parent(GTK_WIDGET(widget));
   GtkWidget *box = gtk_widget_get_parent(expander);
-  if(!GTK_IS_WIDGET(box)) return FALSE; // it may not have been added to a box yet
+  if(!GTK_IS_WIDGET(box)) return; // it may not have been added to a box yet
 
   GtkWidget *viewport = gtk_widget_get_parent(box);
   GtkWidget *scrolled_window = gtk_widget_get_parent(viewport);
@@ -120,8 +123,6 @@ static gboolean dtgtk_expander_scroll(GtkRevealer *widget)
 
   gtk_widget_get_allocation(expander, &allocation);
   gtk_adjustment_set_value(adjustment, allocation.y);
-
-  return TRUE;
 }
 
 // public functions
