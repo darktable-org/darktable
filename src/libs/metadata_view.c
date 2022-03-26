@@ -297,10 +297,10 @@ static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_mo
   }
 }
 
-static void _metadata_update_timestamp(const int i, const time_t *value, dt_lib_module_t *self)
+static void _metadata_update_timestamp(const int i, const GTimeSpan gts, dt_lib_module_t *self)
 {
   char datetime[200];
-  const gboolean valid = dt_datetime_unix_lt_to_local(datetime, sizeof(datetime), value);
+  const gboolean valid = gts ? dt_datetime_gtimespan_to_local(datetime, sizeof(datetime), gts, FALSE, TRUE) : FALSE;
   _metadata_update_value(i, valid ? datetime : NODATA_STRING, self);
 }
 
@@ -674,31 +674,19 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         break;
 
       case md_internal_import_timestamp:
-        if (img->import_timestamp >= 0)
-          _metadata_update_timestamp(md_internal_import_timestamp, &img->import_timestamp, self);
-        else
-          _metadata_update_value(md_internal_import_timestamp, NODATA_STRING, self);
+        _metadata_update_timestamp(md_internal_import_timestamp, img->import_timestamp, self);
         break;
 
       case md_internal_change_timestamp:
-        if (img->change_timestamp >=0)
-          _metadata_update_timestamp(md_internal_change_timestamp, &img->change_timestamp, self);
-        else
-          _metadata_update_value(md_internal_change_timestamp, NODATA_STRING, self);
+        _metadata_update_timestamp(md_internal_change_timestamp, img->change_timestamp, self);
         break;
 
       case md_internal_export_timestamp:
-        if (img->export_timestamp >=0)
-          _metadata_update_timestamp(md_internal_export_timestamp, &img->export_timestamp, self);
-        else
-          _metadata_update_value(md_internal_export_timestamp, NODATA_STRING, self);
+        _metadata_update_timestamp(md_internal_export_timestamp, img->export_timestamp, self);
         break;
 
       case md_internal_print_timestamp:
-        if (img->print_timestamp >=0)
-          _metadata_update_timestamp(md_internal_print_timestamp, &img->print_timestamp, self);
-        else
-          _metadata_update_value(md_internal_print_timestamp, NODATA_STRING, self);
+        _metadata_update_timestamp(md_internal_print_timestamp, img->print_timestamp, self);
         break;
 
       case md_internal_flags:

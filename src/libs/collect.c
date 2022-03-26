@@ -26,6 +26,7 @@
 #include "common/utility.h"
 #include "common/history.h"
 #include "common/map_locations.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -282,24 +283,15 @@ void init_presets(dt_lib_module_t *self)
                        &params, sizeof(params), TRUE);
 
   // based on date/time
-  struct tm tt;
-  char datetime_today[100] = { 0 };
-  char datetime_24hrs[100] = { 0 };
-  char datetime_30d[100] = { 0 };
-
-  const time_t now = time(NULL);
-  const time_t ONE_DAY = (24 * 60 * 60);
-  const time_t last24h = now - ONE_DAY;
-  const time_t last30d = now - (ONE_DAY * 30);
-
-  (void)localtime_r(&now, &tt);
-  strftime(datetime_today, 100, "%Y:%m:%d", &tt);
-
-  (void)localtime_r(&last24h, &tt);
-  strftime(datetime_24hrs, 100, "> %Y:%m:%d %H:%M", &tt);
-
-  (void)localtime_r(&last30d, &tt);
-  strftime(datetime_30d, 100, "> %Y:%m:%d", &tt);
+  GDateTime *now = g_date_time_new_now_local();
+  char *datetime_today = g_date_time_format(now, "%Y:%m:%d");
+  GDateTime *gdt = g_date_time_add_days(now, -1);
+  char *datetime_24hrs = g_date_time_format(gdt, "> %Y:%m:%d %H:%M");
+  g_date_time_unref(gdt);
+  gdt = g_date_time_add_days(now, -30);
+  char *datetime_30d = g_date_time_format(gdt, "> %Y:%m:%d");
+  g_date_time_unref(gdt);
+  g_date_time_unref(now);
 
   // presets based on import
   CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
@@ -333,6 +325,9 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
+  g_free(datetime_today);
+  g_free(datetime_24hrs);
+  g_free(datetime_30d);
 #undef CLEAR_PARAMS
 }
 
@@ -1366,17 +1361,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 (int)strlen(dt_map_location_data_tag_root()) + 1, where_ext);
         break;
       case DT_COLLECTION_PROP_DAY:
-        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
-                                " FROM main.images AS mi"
-                                " WHERE datetime_taken IS NOT NULL AND %s"
-                                " GROUP BY date", where_ext);
-        break;
       case DT_COLLECTION_PROP_TIME:
-        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 19) AS date, 1, COUNT(*) AS count"
-                                " FROM main.images AS mi"
-                                " WHERE datetime_taken IS NOT NULL AND %s"
-                                " GROUP BY date", where_ext);
-        break;
       case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
       case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
       case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
@@ -1387,16 +1372,18 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
         switch(local_property)
         {
+          case DT_COLLECTION_PROP_DAY: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_PROP_TIME: colname = "datetime_taken" ; break ;
           case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
           case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
           case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
           case DT_COLLECTION_PROP_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
         }
-        query = g_strdup_printf("SELECT strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') AS date, 1, COUNT(*) AS count"
+        query = g_strdup_printf("SELECT %s AS date, 1, COUNT(*) AS count"
                                 " FROM main.images AS mi"
-                                " WHERE %s <> -1"
+                                " WHERE %s IS NOT NULL AND %s <> 0"
                                 " AND %s"
-                                " GROUP BY date", colname, colname, where_ext);
+                                " GROUP BY date", colname, colname, colname, where_ext);
         break;
         }
     }
@@ -1415,8 +1402,18 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     guint index = 0;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const char* sqlite_name = (const char *)sqlite3_column_text(stmt, 0);
-      char *name = sqlite_name == NULL ? g_strdup("") : g_strdup(sqlite_name);
+      char *name;
+      if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
+      {
+        char sdt[DT_DATETIME_EXIF_LENGTH] = {0};
+        dt_datetime_gtimespan_to_exif(sdt, sizeof(sdt), sqlite3_column_int64(stmt, 0));
+        name = g_strdup(sdt);
+      }
+      else
+      {
+        const char* sqlite_name = (const char *)sqlite3_column_text(stmt, 0);
+        name = sqlite_name == NULL ? g_strdup("") : g_strdup(sqlite_name);
+      }
       gchar *collate_key = NULL;
 
       const int count = sqlite3_column_int(stmt, 2);

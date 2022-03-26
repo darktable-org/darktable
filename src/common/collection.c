@@ -180,8 +180,6 @@ void dt_collection_memory_update()
   g_free(ins_query);
 }
 
-#define DATETIME "(CASE WHEN LENGTH(datetime_taken) = 19 THEN datetime_taken || '.000' ELSE datetime_taken END) AS datetime_taken"
-
 static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, char **selq_pre)
 {
   const uint32_t tagid = collection->tagid;
@@ -190,12 +188,12 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, 
 
   *selq_pre = dt_util_dstrcat(*selq_pre,
                               "SELECT DISTINCT mi.id FROM (SELECT"
-                              "  id, group_id, film_id, filename, %s, "
+                              "  id, group_id, film_id, filename, datetime_taken, "
                               "  flags, version, %s position, aspect_ratio,"
                               "  maker, model, lens, aperture, exposure, focal_length,"
                               "  iso, import_timestamp, change_timestamp,"
                               "  export_timestamp, print_timestamp"
-                              "  FROM main.images AS mi %s%s WHERE ", DATETIME,
+                              "  FROM main.images AS mi %s%s WHERE ",
                               tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                               tagid ? " LEFT JOIN main.tagged_images AS ti"
                                       " ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -466,12 +464,12 @@ int dt_collection_update(const dt_collection_t *collection)
     snprintf(tag, sizeof(tag), "%d", tagid);
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
-                               "  id, group_id, film_id, filename, %s, "
+                               "  id, group_id, film_id, filename, datetime_taken, "
                                "  flags, version, %s position, aspect_ratio,"
                                "  maker, model, lens, aperture, exposure, focal_length,"
                                "  iso, import_timestamp, change_timestamp,"
                                "  export_timestamp, print_timestamp"
-                               "  FROM main.images AS mi %s%s ) AS mi ", DATETIME,
+                               "  FROM main.images AS mi %s%s ) AS mi ",
                                tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                                tagid ? " LEFT JOIN main.tagged_images AS ti"
                                        " ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -484,12 +482,12 @@ int dt_collection_update(const dt_collection_t *collection)
     snprintf(tag, sizeof(tag), "%d", tagid);
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
-                               "  id, group_id, film_id, filename, %s, "
+                               "  id, group_id, film_id, filename, datetime_taken, "
                                "  flags, version, %s position, aspect_ratio,"
                                "  maker, model, lens, aperture, exposure, focal_length,"
                                "  iso, import_timestamp, change_timestamp,"
                                "  export_timestamp, print_timestamp"
-                               "  FROM main.images AS mi %s%s ) AS mi WHERE ", DATETIME,
+                               "  FROM main.images AS mi %s%s ) AS mi WHERE ",
                                tagid ? "CASE WHEN ti.position IS NULL THEN 0 ELSE ti.position END AS" : "",
                                tagid ? " LEFT JOIN main.tagged_images AS ti"
                                        " ON ti.imgid = mi.id AND ti.tagid = " : "",
@@ -537,7 +535,6 @@ int dt_collection_update(const dt_collection_t *collection)
 
   return result;
 }
-#undef DATETIME
 
 void dt_collection_reset(const dt_collection_t *collection)
 {
@@ -1331,7 +1328,10 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
     gchar *txt = g_match_info_fetch(match_info, 2);
 
     if(strcmp(*operator, "") == 0 || strcmp(*operator, "=") == 0 || strcmp(*operator, "<>") == 0)
+    {
       *number1 = dt_util_dstrcat(*number1, "%s%%", txt);
+      *number2 = _dt_collection_compute_datetime(">", txt);
+    }
     else
       *number1 = _dt_collection_compute_datetime(*operator, txt);
 
@@ -1829,37 +1829,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
       break;
     }
-
     case DT_COLLECTION_PROP_DAY:
-    // query = g_strdup_printf("(datetime_taken like '%%%s%%')", escaped_text);
-    // break;
-
     case DT_COLLECTION_PROP_TIME:
-    {
-      gchar *operator, *number1, *number2;
-      dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
-
-      if(strcmp(operator, "[]") == 0)
-      {
-        if(number1 && number2)
-          query = g_strdup_printf("((datetime_taken >= '%s' COLLATE NOCASE) AND (datetime_taken <= '%s' COLLATE NOCASE))", number1,
-                                  number2);
-      }
-      else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
-        query = g_strdup_printf("(datetime_taken LIKE '%s')", number1);
-      else if(strcmp(operator, "<>") == 0 && number1)
-        query = g_strdup_printf("(datetime_taken NOT LIKE '%s')", number1);
-      else if(number1)
-        query = g_strdup_printf("(datetime_taken %s '%s')", operator, number1);
-      else
-        query = g_strdup_printf("(datetime_taken LIKE '%%%s%%')", escaped_text);
-
-      g_free(operator);
-      g_free(number1);
-      g_free(number2);
-    }
-    break;
-
     case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
     case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
     case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
@@ -1867,39 +1838,42 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     {
       const int local_property = property;
       char *colname = NULL;
-      gchar *operator, *number1, *number2;
-
-      dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
 
       switch(local_property)
       {
+        case DT_COLLECTION_PROP_DAY: colname = "datetime_taken" ; break ;
+        case DT_COLLECTION_PROP_TIME: colname = "datetime_taken" ; break ;
         case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
         case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
         case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
         case DT_COLLECTION_PROP_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
       }
+      gchar *operator, *number1, *number2;
+      dt_collection_split_operator_datetime(escaped_text, &number1, &number2, &operator);
+      if(number1 && number1[strlen(number1) - 1] == '%')
+        number1[strlen(number1) - 1] = '\0';
+      GTimeSpan nb1 = number1 ? dt_datetime_exif_to_gtimespan(number1) : 0;
+      GTimeSpan nb2 = number2 ? dt_datetime_exif_to_gtimespan(number2) : 0;
 
       if(strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = g_strdup_printf("((strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') >= '%s')"
-                                  "AND (strftime('%%Y:%%m:%%d:%%H:%%M:%%S', %s, 'unixepoch', 'localtime') <= '%s'))",
-                                  colname, number1, colname, number2);
+          query = g_strdup_printf("((%s >= %ld) AND (%s <= %ld))", colname, (long int)nb1, colname, (long int)nb2);
       }
       else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
-        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%s')", colname, number1);
-      else if(strcmp(operator, "<>") == 0 && number1)
-        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') NOT LIKE '%s')", colname, number1);
+        query = g_strdup_printf("((%s >= %ld) AND (%s <= %ld))", colname, (long int)nb1, colname, (long int)nb2);
+      else if(strcmp(operator, "<>") == 0 && number1 && number2)
+        query = g_strdup_printf("((%s < %ld) AND (%s > %ld))", colname, (long int)nb1, colname, (long int)nb2);
       else if(number1)
-        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') %s '%s')", colname, operator, number1);
+        query = g_strdup_printf("(%s %s %ld)", colname, operator, (long int)nb1);
       else
-        query = g_strdup_printf("(strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') LIKE '%%%s%%')", colname, escaped_text);
+        query = g_strdup("1 = 1");
 
       g_free(operator);
       g_free(number1);
       g_free(number2);
+      break;
     }
-    break;
 
     case DT_COLLECTION_PROP_GROUPING: // grouping
       query = g_strdup_printf("(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
