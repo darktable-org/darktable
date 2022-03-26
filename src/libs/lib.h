@@ -117,6 +117,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module);
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded);
 /** get the expanded state of a plugin */
 gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module);
+/** set the transition duration of the plugin expander */
+void dt_lib_gui_set_transition_duration(dt_lib_module_t *module, guint duration);
+/** get the transition duration of a plugin expander */
+guint dt_lib_gui_get_transition_duration(dt_lib_module_t *module);
 
 extern const struct dt_action_def_t dt_action_def_lib;
 
