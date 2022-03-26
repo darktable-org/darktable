@@ -102,12 +102,14 @@ GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt);
 
 // gdatetime to gtimespan
 GTimeSpan dt_datetime_gdatetime_to_gtimespan(GDateTime *gdt);
+// gtimespan to gdatetime
+GDateTime *dt_datetime_gtimespan_to_gdatetime(const GTimeSpan gts);
 
 // add values (represented by dt_datetime_t) to gdatetime
 GDateTime *dt_datetime_gdatetime_add_numbers(GDateTime *dte, const dt_datetime_t numbers, const gboolean add);
 
 // add values (represented by dt_datetime_t) to unix datetime
-time_t dt_datetime_unix_add_numbers(const time_t dt, const dt_datetime_t numbers, const gboolean add);
+GTimeSpan dt_datetime_gtimespan_add_numbers(const GTimeSpan dt, const dt_datetime_t numbers, const gboolean add);
 
 // add values (represented by dt_datetime_t) to exif datetime
 gboolean dt_datetime_exif_add_numbers(const gchar *exif, const dt_datetime_t numbers, const gboolean add,

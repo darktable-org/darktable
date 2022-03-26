@@ -162,23 +162,18 @@ static gboolean _default_decode_func(const gchar *text, double *value)
 }
 static gchar *_default_print_date_func(const double value, const gboolean detailled)
 {
-  GDateTime *dt = g_date_time_new_from_unix_utc(value);
-  if(dt)
-  {
-    gchar *txt = g_date_time_format(dt, "%Y:%m:%d %H:%M:%S");
-    g_date_time_unref(dt);
-    return txt;
-  }
+  char txt[DT_DATETIME_EXIF_LENGTH] = { 0 };
+  if(dt_datetime_gtimespan_to_exif(txt, sizeof(txt), value))
+    return g_strdup(txt);
   else
     return g_strdup(_("invalid"));
 }
 static gboolean _default_decode_date_func(const gchar *text, double *value)
 {
-  GDateTime *dt = dt_datetime_exif_to_gdatetime(text, darktable.utc_tz);
-  if(dt)
+  long val = dt_datetime_exif_to_gtimespan(text);
+  if(val > 0)
   {
-    *value = g_date_time_to_unix(dt);
-    g_date_time_unref(dt);
+    *value = val;
     return TRUE;
   }
   return FALSE;
@@ -225,7 +220,7 @@ static void _popup_date_recreate_model(GtkDarktableRangeSelect *range)
   for(const GList *bl = range->blocks; bl; bl = g_list_next(bl))
   {
     _range_block *blo = bl->data;
-    GDateTime *dt = g_date_time_new_from_unix_utc(blo->value_r);
+    GDateTime *dt = dt_datetime_gtimespan_to_gdatetime(blo->value_r);
     if(!dt) continue;
 
     // find the number of common parts at the beginning of tokens and last_tokens
@@ -338,9 +333,11 @@ static void _popup_date_recreate_model(GtkDarktableRangeSelect *range)
         iter = parent;
       }
 
+      if(last_dt) g_date_time_unref(last_dt);
       last_dt = dt;
     }
   }
+  if(last_dt) g_date_time_unref(last_dt);
 
   // now that the treemodel is OK, we update the treeview, based on this
   gtk_tree_view_set_model(GTK_TREE_VIEW(pop->treeview), model);
@@ -444,7 +441,7 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
     val = range->select_max_r;
   else
     val = range->select_min_r;
-  GDateTime *dt = g_date_time_new_from_unix_utc(val);
+  GDateTime *dt = dt_datetime_gtimespan_to_gdatetime(val);
   if(!dt) dt = g_date_time_new_now_utc();
 
   // update the calendar
@@ -531,7 +528,7 @@ static void _bound_change(GtkDarktableRangeSelect *range, const gchar *val, cons
   else if(range->type == DT_RANGE_TYPE_DATETIME && bound == BOUND_MIDDLE && !g_strcmp0(txt, "now"))
   {
     range->bounds = DT_RANGE_BOUND_FIXED;
-    range->select_min_r = range->select_max_r = time(NULL);
+    range->select_min_r = range->select_max_r = dt_datetime_now_to_gtimespan();
   }
   else if(range->type == DT_RANGE_TYPE_DATETIME && bound == BOUND_MAX && !g_strcmp0(txt, "now"))
   {
@@ -539,7 +536,7 @@ static void _bound_change(GtkDarktableRangeSelect *range, const gchar *val, cons
     range->bounds &= ~DT_RANGE_BOUND_MAX_RELATIVE;
     range->bounds &= ~DT_RANGE_BOUND_FIXED;
     range->bounds |= DT_RANGE_BOUND_MAX_NOW;
-    range->select_max_r = time(NULL);
+    range->select_max_r = dt_datetime_now_to_gtimespan();
   }
   else if(range->type == DT_RANGE_TYPE_DATETIME && bound == BOUND_MAX && g_str_has_prefix(txt, "+")
           && !(range->bounds & DT_RANGE_BOUND_MIN_RELATIVE))
@@ -550,7 +547,8 @@ static void _bound_change(GtkDarktableRangeSelect *range, const gchar *val, cons
       range->bounds |= DT_RANGE_BOUND_MAX_RELATIVE;
       range->bounds &= ~DT_RANGE_BOUND_FIXED;
       range->bounds &= ~DT_RANGE_BOUND_MAX_NOW;
-      range->select_max_r = dt_datetime_unix_add_numbers(range->select_min_r, range->select_relative_date_r, TRUE);
+      range->select_max_r
+          = dt_datetime_gtimespan_add_numbers(range->select_min_r, range->select_relative_date_r, TRUE);
     }
   }
   else if(range->type == DT_RANGE_TYPE_DATETIME && bound == BOUND_MIN && g_str_has_prefix(txt, "-")
@@ -562,7 +560,7 @@ static void _bound_change(GtkDarktableRangeSelect *range, const gchar *val, cons
       range->bounds |= DT_RANGE_BOUND_MIN_RELATIVE;
       range->bounds &= ~DT_RANGE_BOUND_FIXED;
       range->select_min_r
-          = dt_datetime_unix_add_numbers(range->select_max_r, range->select_relative_date_r, FALSE);
+          = dt_datetime_gtimespan_add_numbers(range->select_max_r, range->select_relative_date_r, FALSE);
     }
   }
   else
@@ -1933,7 +1931,7 @@ void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *ran
         if(dt_datetime_exif_to_numbers_raw(&range->select_relative_date_r, n2 + 1))
         {
           sbounds = DT_RANGE_BOUND_MAX_RELATIVE;
-          v2 = dt_datetime_unix_add_numbers(v1, range->select_relative_date_r, TRUE);
+          v2 = dt_datetime_gtimespan_add_numbers(v1, range->select_relative_date_r, TRUE);
         }
       }
       else if(!g_strcmp0(n2, "now"))
@@ -1947,7 +1945,7 @@ void dtgtk_range_select_set_selection_from_raw_text(GtkDarktableRangeSelect *ran
       // last round if min was relative
       if(sbounds & DT_RANGE_BOUND_MIN_RELATIVE)
       {
-        v1 = dt_datetime_unix_add_numbers(v2, range->select_relative_date_r, FALSE);
+        v1 = dt_datetime_gtimespan_add_numbers(v2, range->select_relative_date_r, FALSE);
       }
     }
     smin = v1;

@@ -35,9 +35,9 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   // first, we update the graph
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
-             "SELECT SUBSTR(datetime_taken, 1, 19) AS date, COUNT(*) AS count"
+             "SELECT datetime_taken AS date, COUNT(*) AS count"
              " FROM main.images AS mi"
-             " WHERE datetime_taken IS NOT NULL AND LENGTH(datetime_taken)>=19 AND %s"
+             " WHERE datetime_taken IS NOT NULL AND %s"
              " GROUP BY date",
              d->last_where_ext);
   sqlite3_stmt *stmt;
@@ -47,14 +47,9 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int count = sqlite3_column_int(stmt, 1);
-
-    GDateTime *dt = dt_datetime_exif_to_gdatetime((const char *)sqlite3_column_text(stmt, 0), darktable.utc_tz);
-    if(dt)
-    {
-      dtgtk_range_select_add_block(range, g_date_time_to_unix(dt), count);
-      if(rangetop) dtgtk_range_select_add_block(rangetop, g_date_time_to_unix(dt), count);
-      g_date_time_unref(dt);
-    }
+    const long dt = sqlite3_column_int64(stmt, 0);
+    dtgtk_range_select_add_block(range, dt, count);
+    if(rangetop) dtgtk_range_select_add_block(rangetop, dt, count);
   }
   sqlite3_finalize(stmt);
 
@@ -84,36 +79,17 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
 
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
-             "SELECT SUBSTR(MIN(datetime_taken),1,19), SUBSTR(MAX(datetime_taken),1,19)"
+             "SELECT MIN(datetime_taken), MAX(datetime_taken)"
              " FROM main.images"
-             " WHERE datetime_taken IS NOT NULL AND LENGTH(datetime_taken)>=19");
+             " WHERE datetime_taken IS NOT NULL");
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  gchar *min = NULL;
-  gchar *max = NULL;
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    min = g_strdup((const char *)sqlite3_column_text(stmt, 0));
-    max = g_strdup((const char *)sqlite3_column_text(stmt, 1));
+    range->min_r = sqlite3_column_int64(stmt, 0);
+    range->max_r = sqlite3_column_int64(stmt, 1);
   }
   sqlite3_finalize(stmt);
-  if(min && max)
-  {
-    GDateTime *dtmin = dt_datetime_exif_to_gdatetime(min, darktable.utc_tz);
-    if(dtmin)
-    {
-      range->min_r = g_date_time_to_unix(dtmin);
-      g_date_time_unref(dtmin);
-    }
-    g_free(min);
-    GDateTime *dtmax = dt_datetime_exif_to_gdatetime(max, darktable.utc_tz);
-    if(dtmax)
-    {
-      range->max_r = g_date_time_to_unix(dtmax);
-      g_date_time_unref(dtmax);
-    }
-    g_free(max);
-  }
 
   _range_widget_add_to_rule(rule, special, top);
 }
