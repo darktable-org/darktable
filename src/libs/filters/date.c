@@ -20,6 +20,22 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
+static gchar *_date_get_db_colname(dt_lib_filtering_rule_t *rule)
+{
+  switch(rule->prop)
+  {
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
+      return g_strdup("import_timestamp");
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
+      return g_strdup("change_timestamp");
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
+      return g_strdup("export_timestamp");
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
+      return g_strdup("print_timestamp");
+    default:
+      return g_strdup("datetime_taken");
+  }
+}
 
 static gboolean _date_update(dt_lib_filtering_rule_t *rule)
 {
@@ -33,13 +49,15 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
 
   rule->manual_widget_set++;
   // first, we update the graph
+  gchar *colname = _date_get_db_colname(rule);
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
-             "SELECT datetime_taken AS date, COUNT(*) AS count"
+             "SELECT %s AS date, COUNT(*) AS count"
              " FROM main.images AS mi"
-             " WHERE datetime_taken IS NOT NULL AND %s"
+             " WHERE %s IS NOT NULL AND %s"
              " GROUP BY date",
-             d->last_where_ext);
+             colname, colname, d->last_where_ext);
+  g_free(colname);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
@@ -77,11 +95,14 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
   range->step_bd = 86400; // step of 1 day (in seconds)
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
 
+  gchar *colname = _date_get_db_colname(rule);
   char query[1024] = { 0 };
   g_snprintf(query, sizeof(query),
-             "SELECT MIN(datetime_taken), MAX(datetime_taken)"
+             "SELECT MIN(%s), MAX(%s)"
              " FROM main.images"
-             " WHERE datetime_taken IS NOT NULL");
+             " WHERE %s IS NOT NULL",
+             colname, colname, colname);
+  g_free(colname);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
