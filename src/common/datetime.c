@@ -289,9 +289,7 @@ gboolean dt_datetime_entry_to_exif(char *exif, const size_t exif_size, const cha
 
   if(strcmp(entry, "now") == 0)
   {
-    const time_t now = time(NULL);
-    dt_datetime_unix_lt_to_exif(exif, exif_len, &now);
-    printf("direct %s %s\n", entry, exif);
+    dt_datetime_now_to_exif(exif);
     return TRUE;
   }
 
@@ -318,9 +316,7 @@ gboolean dt_datetime_entry_to_exif_upper_bound(char *exif, const size_t exif_siz
 
   if(strcmp(entry, "now") == 0)
   {
-    const time_t now = time(NULL);
-    dt_datetime_unix_lt_to_exif(exif, exif_len, &now);
-    printf("bound %s %s\n", entry, exif);
+    dt_datetime_now_to_exif(exif);
     return TRUE;
   }
 
@@ -416,6 +412,11 @@ gboolean dt_datetime_gtimespan_to_numbers(dt_datetime_t *dt, const GTimeSpan gts
   return FALSE;
 }
 
+GDateTime *dt_datetime_gtimespan_to_gdatetime(const GTimeSpan gts)
+{
+  return g_date_time_add(darktable.origin_gdt, gts);
+}
+
 GTimeSpan dt_datetime_numbers_to_gtimespan(const dt_datetime_t *dt)
 {
   if(!dt) return 0;
@@ -451,11 +452,11 @@ GDateTime *dt_datetime_gdatetime_add_numbers(GDateTime *dte, const dt_datetime_t
   return dt;
 }
 
-time_t dt_datetime_unix_add_numbers(const time_t dt, const dt_datetime_t numbers, const gboolean add)
+GTimeSpan dt_datetime_gtimespan_add_numbers(const GTimeSpan dt, const dt_datetime_t numbers, const gboolean add)
 {
-  GDateTime *dte = g_date_time_new_from_unix_utc(dt);
+  GDateTime *dte = dt_datetime_gtimespan_to_gdatetime(dt);
   GDateTime *dt2 = dt_datetime_gdatetime_add_numbers(dte, numbers, add);
-  double ret = g_date_time_to_unix(dt2);
+  GTimeSpan ret = dt_datetime_gdatetime_to_gtimespan(dt2);
   g_date_time_unref(dte);
   g_date_time_unref(dt2);
   return ret;
