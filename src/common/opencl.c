@@ -248,7 +248,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
   cname_size = infostr_size;
   cname = malloc(cname_size);
-  _ascii_str_canonical(infostr, cname, sizeof(cname_size));
+  _ascii_str_canonical(infostr, cname, cname_size);
 
   if(!strncasecmp(vendor, "NVIDIA", 6))
   {
