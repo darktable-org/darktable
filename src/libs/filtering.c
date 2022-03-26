@@ -72,6 +72,7 @@ typedef struct dt_lib_filtering_rule_t
   GtkWidget *w_main;
   GtkWidget *w_operator;
   GtkWidget *w_prop;
+  GtkWidget *w_btn_box;
   GtkWidget *w_close;
   GtkWidget *w_off;
 
@@ -854,6 +855,13 @@ static gboolean _event_rule_change_popup(GtkWidget *widget, GdkEventButton *even
   return TRUE;
 }
 
+static void _event_header_resized(GtkWidget *widget, GtkAllocation *allocation, dt_lib_filtering_rule_t *rule)
+{
+  // we want to ensure that the combobox and the buttons box are the same size
+  // so the property widget is centered
+  gtk_widget_set_size_request(rule->w_btn_box, allocation->width, -1);
+}
+
 // initialise or update a rule widget. Return if the a new widget has been created
 static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                              const gchar *text, const dt_lib_collect_mode_t mode, gboolean off, gboolean top,
@@ -911,21 +919,8 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
 
   if(newmain)
   {
-    // in order to ensure the property is correctly centered, we add an invisible widget at the right
-    GtkWidget *overlay = gtk_overlay_new();
-    GtkWidget *false_cb = gtk_combo_box_text_new();
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("and"));
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("or"));
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(false_cb), _("and not"));
-    gtk_widget_set_sensitive(false_cb, FALSE);
-    gtk_widget_set_name(false_cb, "collect-operator");
-    gtk_container_add(GTK_CONTAINER(overlay), false_cb);
-    gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
-
-
-    GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_set_halign(hbox2, GTK_ALIGN_FILL);
-    gtk_overlay_add_overlay(GTK_OVERLAY(overlay), hbox2);
+    rule->w_btn_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), rule->w_btn_box, FALSE, FALSE, 0);
 
     // on-off button
     rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
@@ -933,7 +928,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     g_object_set_data(G_OBJECT(rule->w_off), "rule", rule);
     g_signal_connect(G_OBJECT(rule->w_off), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
     g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_changed), rule);
-    gtk_box_pack_end(GTK_BOX(hbox2), rule->w_off, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
     // remove button
     rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
@@ -943,7 +938,9 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_widget_set_tooltip_text(rule->w_close,
                                 _("remove this collect rule\nctrl-click to pin into the top toolbar"));
     g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), self);
-    gtk_box_pack_end(GTK_BOX(hbox2), rule->w_close, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_close, FALSE, FALSE, 0);
+
+    g_signal_connect(G_OBJECT(rule->w_operator), "size-allocate", G_CALLBACK(_event_header_resized), rule);
   }
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), !off);
