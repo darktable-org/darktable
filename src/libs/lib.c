@@ -878,6 +878,22 @@ gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
   return dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander));
 }
 
+guint dt_lib_gui_get_transition_duration(dt_lib_module_t *module)
+{
+  if(!module->expandable(module)) return 0;
+  if(!module->expander) return 0;
+  if(!module->widget) return 0;
+
+  return dtgtk_expander_get_transition_duration(DTGTK_EXPANDER(module->expander));
+}
+
+void dt_lib_gui_set_transition_duration(dt_lib_module_t *module, guint duration)
+{
+  if(!module->expander || !module->arrow) return;
+
+  dtgtk_expander_set_transition_duration(DTGTK_EXPANDER(module->expander), duration);
+}
+
 static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   if(e->type == GDK_2BUTTON_PRESS || e->type == GDK_3BUTTON_PRESS) return TRUE;

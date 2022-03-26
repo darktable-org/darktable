@@ -59,6 +59,8 @@ GtkWidget *dtgtk_expander_get_body_event_box(GtkDarktableExpander *expander);
 
 void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expanded);
 gboolean dtgtk_expander_get_expanded(GtkDarktableExpander *expander);
+void dtgtk_expander_set_transition_duration(GtkDarktableExpander *expander, guint duration);
+guint dtgtk_expander_get_transition_duration(GtkDarktableExpander *expander);
 
 GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body);
 

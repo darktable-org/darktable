@@ -371,11 +371,16 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       char var[1024];
       gboolean expanded = FALSE;
       gboolean visible = dt_lib_is_visible(plugin);
+      guint transition_duration = 0;
       if(plugin->expandable(plugin))
       {
         snprintf(var, sizeof(var), "plugins/%s/%s/expanded", new_view->module_name, plugin->plugin_name);
         expanded = dt_conf_get_bool(var);
+        /* prevent modules expanding with a transition */
+        transition_duration = dt_lib_gui_get_transition_duration(plugin);
+        dt_lib_gui_set_transition_duration(plugin, 0);
         dt_lib_gui_set_expanded(plugin, expanded);
+        dt_lib_gui_set_transition_duration(plugin, transition_duration);
         dt_lib_set_visible(plugin, visible);
       }
       else

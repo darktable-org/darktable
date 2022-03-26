@@ -87,6 +87,20 @@ gboolean dtgtk_expander_get_expanded(GtkDarktableExpander *expander)
   return expander->expanded;
 }
 
+void dtgtk_expander_set_transition_duration(GtkDarktableExpander *expander, guint duration)
+{
+  g_return_if_fail(DTGTK_IS_EXPANDER(expander));
+
+  gtk_revealer_set_transition_duration(GTK_REVEALER(expander->revealer), duration);
+}
+
+guint dtgtk_expander_get_transition_duration(GtkDarktableExpander *expander)
+{
+  g_return_val_if_fail(DTGTK_IS_EXPANDER(expander), 0);
+
+  return gtk_revealer_get_transition_duration(GTK_REVEALER(expander->revealer));
+}
+
 static void dtgtk_expander_init(GtkDarktableExpander *expander)
 {
 }
