@@ -2096,8 +2096,8 @@ static int _control_import_image_copy(const char *filename,
       const char *fn = g_file_info_get_name(info);
       // FIXME set a routine common with import.c
       const time_t datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-      char dt_txt[DT_DATETIME_LENGTH];
-      dt_metadata_unix_time_to_text(dt_txt, sizeof(dt_txt), &datetime);
+      char dt_txt[DT_DATETIME_EXIF_LENGTH];
+      dt_datetime_unix_to_exif(dt_txt, sizeof(dt_txt), &datetime);
       char *id = g_strconcat(fn, "-", dt_txt, NULL);
       dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
       g_free(id);

@@ -189,8 +189,6 @@ typedef struct dt_image_geoloc_t
 
 struct dt_cache_entry_t;
 
-#define DT_DATETIME_LENGTH 24
-
 // TODO: add color labels and such as cacheable
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
@@ -208,7 +206,7 @@ typedef struct dt_image_t
   char exif_maker[64];
   char exif_model[64];
   char exif_lens[128];
-  char exif_datetime_taken[DT_DATETIME_LENGTH];
+  GTimeSpan exif_datetime_taken;
 
   char camera_maker[64];
   char camera_model[64];
@@ -230,7 +228,7 @@ typedef struct dt_image_t
   int32_t num, flags, film_id, id, group_id, version;
 
   //timestamps
-  time_t import_timestamp, change_timestamp, export_timestamp, print_timestamp;
+  GTimeSpan import_timestamp, change_timestamp, export_timestamp, print_timestamp;
 
   dt_image_loader_t loader;
 

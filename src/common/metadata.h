@@ -127,9 +127,6 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on); // libs/metad
 /** check if the "Xmp.darktable.image_id" already exists */
 gboolean dt_metadata_already_imported(const char *filename, const char *datetime);
 
-/** temporary routine waiting for common datetime.c */
-void dt_metadata_unix_time_to_text(char *exif, const size_t exif_len, const time_t *unix);
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

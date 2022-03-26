@@ -1501,7 +1501,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, flags);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, time(0));
+  DT_DEBUG_SQLITE3_BIND_INT64(stmt, 4, dt_datetime_now_to_gtimespan());
 
   rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE) fprintf(stderr, "sqlite3 error %d\n", rc);
@@ -1736,7 +1736,7 @@ void dt_image_init(dt_image_t *img)
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
 
-  img->import_timestamp = img->change_timestamp = img->export_timestamp = img->print_timestamp = -1;
+  img->import_timestamp = img->change_timestamp = img->export_timestamp = img->print_timestamp = 0;
 
   img->legacy_flip.legacy = 0;
   img->legacy_flip.user_flip = 0;
@@ -2550,7 +2550,7 @@ void dt_image_get_datetime(const int32_t imgid, char *datetime)
   datetime[0] = '\0';
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   if(!cimg) return;
-  dt_datetime_img_to_exif(datetime, cimg);
+  dt_datetime_img_to_exif(datetime, DT_DATETIME_LENGTH, cimg);
   dt_image_cache_read_release(darktable.image_cache, cimg);
 }
 
