@@ -48,9 +48,9 @@
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_50;
 @define-color bauhaus_fill @grey_70;
-@define-color bauhaus_bg_hover @grey_65;
-@define-color bauhaus_fg_hover @grey_85;
-@define-color bauhaus_fg_selected @grey_85;
+@define-color bauhaus_bg_hover @grey_80;
+@define-color bauhaus_fg_hover @grey_100;
+@define-color bauhaus_fg_selected @grey_75;
 @define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.5);
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
 
@@ -117,38 +117,6 @@
 #history-button *
 {
   color: shade(@plugin_fg_color, 0.8);
-}
-
-/* Hover states, some needed background only */
-.dt_transparent_background:hover,
-button:hover,
-menuitem:hover,
-menuitem:hover > *:not(check),
-combobox window *:hover,
-#bauhaus_combobox:hover,
-radiobutton:hover label,
-#history-button:hover,
-#history-button-enabled:hover,
-#history-button-always-enabled:hover,
-#history-button-default-enabled:hover,
-#iop-plugin-ui button:hover,
-#lib-plugin-ui button:hover,
-#recent-collection-button:hover,
-#view_label:hover,
-#view_dropdown menuitem:hover,
-#view_dropdown .combo:hover
-{
-  background-color: shade(@button_bg, 1.1);
-}
-
-#header-toolbar #bauhaus_combobox:hover
-{
-  background-color: @button_bg;
-}
-
-#collapsible .combo:hover
-{
-  background-color: shade(@button_bg, 1.25);
 }
 
 /* Adjust color of top shown infos on darkroom */
