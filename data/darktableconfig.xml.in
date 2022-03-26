@@ -421,13 +421,6 @@
     <shortdescription>round OpenCL work group sizes to a multiple of</shortdescription>
     <longdescription>in OpenCL processing round width/height of global work groups to a multiple of this value. reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.</longdescription>
   </dtconfig>
-  <dtconfig>
-    <name>maximum_number_tiles</name>
-    <type>int</type>
-    <default>10000</default>
-    <shortdescription>assumed maximum sane number of tiles</shortdescription>
-    <longdescription>if during tiling this number is exceeded darktable assumes that tiling is not possible and falls back to untiled processing - with all system memory limits taking full effect. in case you want to process huge images you may want to increase this number.</longdescription>
-  </dtconfig>
   <dtconfig prefs="security" section="general">
     <name>ask_before_remove</name>
     <type>bool</type>

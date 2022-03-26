@@ -91,6 +91,18 @@ static inline int _align_close(int n, int a)
   return (off > a/2) ? a - off : -off;    
 }
 
+/* 
+  _maximum_number_tiles is the assumed maximum sane number of tiles
+  if during tiling this number is exceeded darktable assumes that tiling is not possible and falls back
+  to untiled processing - with all system memory limits taking full effect.
+  For huge images like stitched panos the user might choose resourcelevel="unrestricted", in that
+  case the allowed number of tiles is practically unlimited
+*/
+static inline int _maximum_number_tiles()
+{
+  return (darktable.dtresources.level == 3) ? 0x40000000 : 10000;
+}
+
 static inline void _print_roi(const dt_iop_roi_t *roi, const char *label)
 {
   if((darktable.unmuted & DT_DEBUG_VERBOSE) && (darktable.unmuted & DT_DEBUG_TILING))
@@ -696,7 +708,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   const int tiles_y = height < roi_in->height ? ceilf(roi_in->height / (float)tile_ht) : 1;
 
   /* sanity check: don't run wild on too many tiles */
-  if(tiles_x * tiles_y > dt_conf_get_int("maximum_number_tiles"))
+  if(tiles_x * tiles_y > _maximum_number_tiles())
   {
     dt_print(DT_DEBUG_TILING, "[default_process_tiling_ptp] gave up tiling for module '%s'. too many tiles: %d x %d\n",
              self->op, tiles_x, tiles_y);
@@ -967,7 +979,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
                   : 1;
 
   /* sanity check: don't run wild on too many tiles */
-  if(tiles_x * tiles_y > dt_conf_get_int("maximum_number_tiles"))
+  if(tiles_x * tiles_y > _maximum_number_tiles())
   {
     dt_print(DT_DEBUG_TILING, "[default_process_tiling_roi] gave up tiling for module '%s'. too many tiles: %d x %d\n",
              self->op, tiles_x, tiles_y);
@@ -1299,7 +1311,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   const int tiles_y = height < roi_in->height ? ceilf(roi_in->height / (float)tile_ht) : 1;
 
   /* sanity check: don't run wild on too many tiles */
-  if(tiles_x * tiles_y > dt_conf_get_int("maximum_number_tiles"))
+  if(tiles_x * tiles_y > _maximum_number_tiles())
   {
     dt_print(DT_DEBUG_TILING, "[default_process_tiling_cl_ptp] aborted tiling for module '%s'. too many tiles: %d x %d\n",
              self->op, tiles_x, tiles_y);
@@ -1657,7 +1669,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
                   : 1;
 
   /* sanity check: don't run wild on too many tiles */
-  if(tiles_x * tiles_y > dt_conf_get_int("maximum_number_tiles"))
+  if(tiles_x * tiles_y > _maximum_number_tiles())
   {
     dt_print(DT_DEBUG_TILING,
              "[default_process_tiling_cl_roi] aborted tiling for module '%s'. too many tiles: %dx%d\n",
