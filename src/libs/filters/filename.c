@@ -101,6 +101,7 @@ void _filename_tree_update(_widgets_filename_t *filename)
   gtk_list_store_clear(GTK_LIST_STORE(name_model));
   GtkTreeModel *ext_model = gtk_tree_view_get_model(GTK_TREE_VIEW(filename->ext_tree));
   gtk_list_store_clear(GTK_LIST_STORE(ext_model));
+  // clang-format off
   g_snprintf(query, sizeof(query),
              "SELECT filename, COUNT(*) AS count, flags"
              " FROM main.images AS mi"
@@ -108,6 +109,7 @@ void _filename_tree_update(_widgets_filename_t *filename)
              " GROUP BY filename"
              " ORDER BY filename",
              d->last_where_ext);
+  // clang-format on
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -480,3 +482,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   else
     rule->w_specific = filename;
 }
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

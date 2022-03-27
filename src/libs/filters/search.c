@@ -200,3 +200,9 @@ static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   else
     rule->w_specific = search;
 }
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
