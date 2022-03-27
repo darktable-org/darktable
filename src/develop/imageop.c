@@ -2383,18 +2383,10 @@ gboolean _iop_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keybo
   if(des[1]) gtk_widget_set_name(label, "section_label");
   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
-#ifdef _WIN32
-  // TODO: a windows dev is needed to find 4 icons properly rendered
-  const char *icon_purpose = "•";
-  const char *icon_input   = "•";
-  const char *icon_process = "•";
-  const char *icon_output  = "•";
-#else
   const char *icon_purpose = "⟳";
   const char *icon_input   = "⇥";
   const char *icon_process = "⟴";
   const char *icon_output  = "↦";
-#endif
 
   const char *icons[4] = {icon_purpose, icon_input, icon_process, icon_output};
   const char *ilabs[4] = {_("purpose"), _("input"), _("process"), _("output")};
