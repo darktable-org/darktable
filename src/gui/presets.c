@@ -117,13 +117,15 @@ static gchar *_get_active_preset_name(dt_iop_module_t *module, int *writeprotect
   // if we sort by writeprotect DESC then in case user copied the writeprotected preset
   // then the preset name returned will be writeprotected and thus not deletable
   // sorting ASC prefers user created presets.
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+    dt_database_get(darktable.db),
      "SELECT name, op_params, blendop_params, enabled, writeprotect"
      " FROM data.presets"
      " WHERE operation=?1 AND op_version=?2"
      " ORDER BY writeprotect ASC, LOWER(name), rowid",
      -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   gchar *name = NULL;
@@ -222,6 +224,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
 
       // editing existing preset with different name or store new preset -> check for a preset with the same
       // name:
+      // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
           "SELECT name"
@@ -229,6 +232,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
           " WHERE name = ?1 AND operation=?2 AND op_version=?3"
           " LIMIT 1",
           -1, &stmt, NULL);
+      // clang-format on
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->operation, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->op_version);
@@ -614,6 +618,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
   gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
 
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
      "SELECT rowid, description, model, maker, lens, iso_min, iso_max, "
@@ -622,6 +627,7 @@ static void _presets_show_edit_dialog(dt_gui_presets_edit_dialog_t *g, gboolean 
      " FROM data.presets"
      " WHERE name = ?1 AND operation = ?2 AND op_version = ?3",
      -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, g->original_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, g->operation, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, g->op_version);
@@ -853,12 +859,14 @@ static void _menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2
-    (dt_database_get(darktable.db),
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+     dt_database_get(darktable.db),
      "SELECT op_params, enabled, blendop_params, blendop_version, writeprotect"
      " FROM data.presets"
      " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
      -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, name, -1, SQLITE_TRANSIENT);
@@ -923,6 +931,7 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
 
   char query[2024];
+  // clang-format off
   snprintf(query, sizeof(query),
      "SELECT name"
      " FROM data.presets"
@@ -938,6 +947,7 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
      "               ('ioporder', 'metadata', 'export', 'tagging', 'collect', '%s'))"
      "  OR (name = ?13)) AND op_version = ?14",
      is_display_referred?"":"basecurve");
+  // clang-format on
 
   sqlite3_stmt *stmt;
   const char *workflow_preset = has_matrix && is_display_referred
@@ -1135,12 +1145,14 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
       g_free(iopname);
 
       /* query presets for module */
+      // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "SELECT name"
                                   " FROM data.presets"
                                   " WHERE operation=?1"
                                   " ORDER BY writeprotect DESC, LOWER(name), rowid",
                                   -1, &stmt, NULL);
+      // clang-format on
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, iop->op, -1, SQLITE_TRANSIENT);
 
       int nb = 0;
@@ -1192,12 +1204,14 @@ void dt_gui_favorite_presets_menu_show()
 
   const gboolean default_first = dt_conf_get_bool("plugins/darkroom/default_presets_first");
 
+  // clang-format off
   gchar *query = g_strdup_printf("SELECT name"
                                  " FROM data.presets"
                                  " WHERE operation=?1"
                                  " ORDER BY writeprotect %s, LOWER(name), rowid",
                                  default_first ? "DESC" : "ASC"
                                 );
+  // clang-format on
 
   gtk_widget_set_name(GTK_WIDGET(menu), "quick-presets-menu");
 
@@ -1300,6 +1314,7 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t
     else
       excluded |= FOR_NOT_COLOR;
 
+    // clang-format off
     query = g_strdup_printf
       ("SELECT name, op_params, writeprotect, description, blendop_params, "
        "  op_version, enabled"
@@ -1316,6 +1331,7 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t
        "        AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))))"
        " ORDER BY writeprotect %s, LOWER(name), rowid",
        default_first ? "DESC":"ASC");
+    // clang-format on
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, -1, SQLITE_TRANSIENT);

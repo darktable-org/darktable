@@ -873,10 +873,12 @@ static void _dev_change_image(dt_develop_t *dev, const int32_t imgid)
   if(dev->image_storage.id > 0)
   {
     sqlite3_stmt *stmt;
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
                                 "WHERE m.imgid=s.imgid",
                                 -1, &stmt, NULL);
+    // clang-format on
     gboolean follow = FALSE;
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -1178,10 +1180,12 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 
   // we new offset and imgid after the jump
   sqlite3_stmt *stmt;
+  // clang-format off
   gchar *query = g_strdup_printf("SELECT rowid, imgid "
                                  "FROM memory.collected_images "
                                  "WHERE rowid=(SELECT rowid FROM memory.collected_images WHERE imgid=%d)+%d",
                                  imgid, diff);
+  // clang-format on
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {

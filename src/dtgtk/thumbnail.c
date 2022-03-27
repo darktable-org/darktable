@@ -99,11 +99,13 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
 
   // and the other images
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id, version, filename"
                               " FROM main.images"
                               " WHERE group_id = ?1", -1, &stmt,
                               NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {

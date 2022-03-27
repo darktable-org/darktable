@@ -37,6 +37,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   entry->data = img;
   // load stuff from db and store in cache:
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure,"
@@ -47,6 +48,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       "  FROM main.images"
       "  WHERE id = ?1",
       -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {

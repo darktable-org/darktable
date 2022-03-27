@@ -352,10 +352,12 @@ gboolean dt_image_safe_remove(const int32_t imgid)
 void dt_image_full_path(const int32_t imgid, char *pathname, size_t pathname_len, gboolean *from_cache)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT folder || '" G_DIR_SEPARATOR_S "' || filename FROM main.images i, main.film_rolls f WHERE "
                               "i.film_id = f.id and i.id = ?1",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -380,10 +382,12 @@ static void _image_local_copy_full_path(const int32_t imgid, char *pathname, siz
   sqlite3_stmt *stmt;
 
   *pathname = '\0';
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT folder || '" G_DIR_SEPARATOR_S "' || filename FROM main.images i, main.film_rolls f "
                               "WHERE i.film_id = f.id AND i.id = ?1",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {

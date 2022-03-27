@@ -2574,12 +2574,14 @@ static gboolean _view_map_center_on_image_list(dt_view_t *self, const char* tabl
   double min_latitude = INFINITY;
   int count = 0;
 
+  // clang-format off
   gchar *query = g_strdup_printf("SELECT MIN(latitude), MAX(latitude),"
                                 "       MIN(longitude), MAX(longitude), COUNT(*)"
                                 " FROM main.images AS i "
                                 " JOIN %s AS l ON l.imgid = i.id "
                                 " WHERE latitude NOT NULL AND longitude NOT NULL",
                                 table);
+  // clang-format on
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2802,6 +2804,7 @@ static void _view_map_build_main_query(dt_map_t *lib)
   if(lib->main_query) sqlite3_finalize(lib->main_query);
 
   lib->filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
+  // clang-format off
   geo_query = g_strdup_printf("SELECT * FROM"
                               " (SELECT id, longitude, latitude "
                               "   FROM %s WHERE longitude >= ?1 AND longitude <= ?2"
@@ -2811,6 +2814,7 @@ static void _view_map_build_main_query(dt_map_t *lib)
                               lib->filter_images_drawn
                               ? "main.images i INNER JOIN memory.collected_images c ON i.id = c.imgid"
                               : "main.images");
+  // clang-format on
 
   /* prepare the main query statement */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->main_query, NULL);

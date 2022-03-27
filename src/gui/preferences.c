@@ -597,13 +597,14 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
                                                      DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
                                                      cairo_image_surface_get_stride(check_cst),
                                                      cairo_destroy_from_pixbuf, check_cr);
-
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
                               "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
                               "focal_length_min, focal_length_max, writeprotect FROM data.presets ORDER BY "
                               "operation, name",
                               -1, &stmt, NULL);
+  // clang-format on
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const gint rowid = sqlite3_column_int(stmt, 0);

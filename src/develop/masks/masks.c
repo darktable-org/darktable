@@ -863,11 +863,13 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
   int num_prev = -1;
 
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT imgid, formid, form, name, version, points, points_count, source, num "
       "FROM main.masks_history WHERE imgid = ?1 ORDER BY num",
       -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)

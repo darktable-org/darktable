@@ -229,11 +229,13 @@ static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
   gtk_list_store_clear(metadata->m_model);
   GtkTreeIter iter;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name, op_params FROM data.presets "
                               "WHERE operation = 'metadata' "
                               "ORDER BY writeprotect DESC, LOWER(name)",
                               -1, &stmt, NULL);
+  // clang-format on
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
@@ -292,11 +294,13 @@ static void _import_tags_presets_update(dt_import_metadata_t *metadata)
   gtk_list_store_clear(metadata->t_model);
   GtkTreeIter iter;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name, op_params FROM data.presets "
                               "WHERE operation = 'tagging' "
                               "ORDER BY writeprotect DESC, LOWER(name)",
                               -1, &stmt, NULL);
+  // clang-format on
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);

@@ -1496,6 +1496,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
+  // clang-format off
   snprintf(query, sizeof(query),
            "INSERT INTO memory.history"
            " SELECT ?1, 0, op_version, operation, op_params,"
@@ -1514,6 +1515,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
            preset_table[legacy],
            is_display_referred?"":"basecurve");
+  // clang-format on
   // query for all modules at once:
   sqlite3_stmt *stmt;
   const char *workflow_preset = has_matrix && is_display_referred
@@ -1554,6 +1556,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   if(!dt_ioppr_has_iop_order_list(imgid))
   {
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT op_params"
                                 " FROM data.presets"
@@ -1567,6 +1570,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                                 "       AND operation = 'ioporder'"
                                 " ORDER BY writeprotect DESC, LENGTH(model), LENGTH(maker), LENGTH(lens)",
                                 -1, &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, image->exif_maker, -1, SQLITE_TRANSIENT);
@@ -1715,11 +1719,13 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       if(sqlite3_step(stmt) == SQLITE_DONE)
       {
         sqlite3_finalize(stmt);
+        // clang-format off
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "UPDATE main.images"
                                     " SET history_end=history_end+?1"
                                     " WHERE id=?2",
                                     -1, &stmt, NULL);
+        // clang-format on
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
@@ -1727,6 +1733,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
         {
           // and finally prepend the rest with increasing numbers (starting at 0)
           sqlite3_finalize(stmt);
+          // clang-format off
           DT_DEBUG_SQLITE3_PREPARE_V2(
             dt_database_get(darktable.db),
             "INSERT INTO main.history"
@@ -1735,6 +1742,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
             "        multi_name"
             " FROM memory.history",
             -1, &stmt, NULL);
+          // clang-format on
           sqlite3_step(stmt);
           sqlite3_finalize(stmt);
         }
@@ -1825,6 +1833,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   sqlite3_finalize(stmt);
 
   // Load current image history from DB
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT imgid, num, module, operation,"
                               "       op_params, enabled, blendop_params,"
@@ -1833,6 +1842,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
                               " WHERE imgid = ?1"
                               " ORDER BY num",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   dev->history_end = 0;

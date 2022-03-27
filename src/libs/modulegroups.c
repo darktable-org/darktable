@@ -1329,11 +1329,13 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
 {
   // we retrieve old modulelist presets
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name, op_params"
                               " FROM data.presets"
                               " WHERE operation = 'modulelist' AND op_version = 1 AND writeprotect = 0",
                               -1, &stmt, NULL);
+  // clang-format on
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -2720,6 +2722,7 @@ static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *s
   if(!image) return;
 
   char query[1024];
+  // clang-format off
   snprintf(query, sizeof(query),
            "SELECT name"
            " FROM data.presets"
@@ -2734,6 +2737,7 @@ static void _dt_dev_image_changed_callback(gpointer instance, dt_lib_module_t *s
            "       AND (format = 0 OR (format&?11 != 0 AND ~format&?12 != 0))"
            " ORDER BY writeprotect DESC, name DESC"
            " LIMIT 1");
+  // clang-format on
 
   int iformat = 0;
   if(dt_image_is_rawprepare_supported(image))
@@ -3413,11 +3417,13 @@ static void _preset_autoapply_changed(dt_gui_presets_edit_dialog_t *g)
 
   // we reread the presets autoapply values from the database
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT autoapply"
                               " FROM data.presets"
                               " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, d->edit_preset, -1, SQLITE_TRANSIENT);
@@ -3487,11 +3493,13 @@ static void _manage_editor_preset_action(GtkWidget *btn, dt_lib_module_t *self)
   // we first get the list of all the existing preset names
   GList *names = NULL;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name"
                               " FROM data.presets"
                               " WHERE operation = ?1 AND op_version = ?2",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -3531,11 +3539,13 @@ static void _manage_editor_preset_action(GtkWidget *btn, dt_lib_module_t *self)
     if(btn == d->presets_btn_rename)
     {
       // we update the database
+      // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "UPDATE data.presets"
                                   " SET name=?1"
                                   " WHERE name=?2 AND operation = ?3 AND op_version = ?4",
                                   -1, &stmt, NULL);
+      // clang-format on
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(GTK_ENTRY(tb)), -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, d->edit_preset, -1, SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, self->plugin_name, -1, SQLITE_TRANSIENT);
@@ -3589,11 +3599,13 @@ static void _preset_autoapply_edit(GtkButton *button, dt_lib_module_t *self)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   if(d->editor_reset) return;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT rowid"
                               " FROM data.presets"
                               " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, d->edit_preset, -1, SQLITE_TRANSIENT);
@@ -3638,11 +3650,13 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   d->edit_groups = NULL;
   d->edit_preset = NULL;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT writeprotect, op_params, autoapply"
                               " FROM data.presets"
                               " WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, sel_preset, -1, SQLITE_TRANSIENT);
@@ -3781,12 +3795,14 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
   // and we repopulate it
   sqlite3_stmt *stmt;
   // order: get shipped defaults first
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name"
                               " FROM data.presets"
                               " WHERE operation=?1 AND op_version=?2"
                               " ORDER BY writeprotect DESC, name, rowid",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, self->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, self->version());
 

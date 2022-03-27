@@ -833,10 +833,12 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int 
     // get the profile assigned from colorin
     // FIXME: does this work when using JPEG thumbs and the image was never opened?
     sqlite3_stmt *stmt;
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT op_params FROM main.history WHERE imgid=?1 AND operation='colorin' ORDER BY num DESC LIMIT 1", -1,
       &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -889,10 +891,12 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
     // get the profile assigned from colorout
     // FIXME: does this work when using JPEG thumbs and the image was never opened?
     sqlite3_stmt *stmt;
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT op_params FROM main.history WHERE imgid=?1 AND operation='colorout' ORDER BY num DESC LIMIT 1", -1,
       &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {

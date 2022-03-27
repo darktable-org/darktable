@@ -57,11 +57,13 @@ static void _insert_in_list(GList **list, const int imgid, gboolean only_visible
     else
     {
       sqlite3_stmt *stmt;
+      // clang-format off
       gchar *query = g_strdup_printf(
           "SELECT id"
           "  FROM main.images"
           "  WHERE group_id = %d AND id IN (%s)",
           img_group_id, dt_collection_get_query_no_group(dt_selection_get_collection(darktable.selection)));
+      // clang-format on
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
@@ -379,12 +381,14 @@ int dt_act_on_get_main_image()
     else
     {
       sqlite3_stmt *stmt;
+      // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "SELECT s.imgid"
                                   " FROM main.selected_images as s, memory.collected_images as c"
                                   " WHERE s.imgid=c.imgid"
                                   " ORDER BY c.rowid LIMIT 1",
                                   -1, &stmt, NULL);
+      // clang-format on
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
         ret = sqlite3_column_int(stmt, 0);

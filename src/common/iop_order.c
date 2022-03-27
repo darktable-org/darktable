@@ -749,10 +749,12 @@ gboolean dt_ioppr_has_iop_order_list(int32_t imgid)
   gboolean result = FALSE;
   sqlite3_stmt *stmt;
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT version, iop_list"
                               " FROM main.module_order"
                               " WHERE imgid=?1", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -778,10 +780,12 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
     // search, but there will not be many such presets and we do call this routine
     // only when loading an image and when changing the iop-order.
 
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT version, iop_list"
                                 " FROM main.module_order"
                                 " WHERE imgid=?1", -1, &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)

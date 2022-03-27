@@ -394,6 +394,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     sqlite3_stmt *stmt;
 
     // count duplicates
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT COUNT(1)"
                                 " FROM images AS i1"
@@ -402,6 +403,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
                                 "               AND    i1.film_id = i2.film_id"
                                 "               AND    i1.filename = i2.filename)",
                                 -1, &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, params->imgid);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)

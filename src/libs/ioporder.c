@@ -83,11 +83,13 @@ void update(dt_lib_module_t *self)
 
     sqlite3_stmt *stmt;
 
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT op_params, name"
                                 " FROM data.presets"
                                 " WHERE operation='ioporder'"
                                 " ORDER BY writeprotect DESC", -1, &stmt, NULL);
+    // clang-format on
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
