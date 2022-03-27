@@ -155,10 +155,11 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", "cldevice_", cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i",
+  g_snprintf(dat, 510, "%i %i %i %i",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
-    cl->dev[devid].pinned_memory);
+    cl->dev[devid].pinned_memory,
+    cl->dev[devid].clroundup);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 }
@@ -172,15 +173,18 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(!dt_conf_key_not_empty(key)) return TRUE;
 
   const gchar *dat = dt_conf_get_string_const(key);
-  sscanf(dat, "%i %i %i",
+  sscanf(dat, "%i %i %i %i",
     &cl->dev[devid].avoid_atomics,
     &cl->dev[devid].micro_nap,
-    &cl->dev[devid].pinned_memory);
+    &cl->dev[devid].pinned_memory,
+    &cl->dev[devid].clroundup);
   // do some safety housekeeping
   cl->dev[devid].avoid_atomics &= 1;
   cl->dev[devid].pinned_memory &= 1;
-  if((cl->dev[devid].micro_nap <= 0) || (cl->dev[devid].micro_nap > 1000000))
+  if((cl->dev[devid].micro_nap <= 100) || (cl->dev[devid].micro_nap > 1000000))
     cl->dev[devid].micro_nap = 1000;
+  if((cl->dev[devid].clroundup <= 4) || (cl->dev[devid].clroundup > 512))
+    cl->dev[devid].clroundup = 16;
 
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] found '%s' for '%s'\n", dat, key);
   return FALSE;
@@ -218,8 +222,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].tuned_available = 0;
   // setting sane defaults at first
   cl->dev[dev].avoid_atomics = 0;
-  cl->dev[dev].micro_nap = 0;
+  cl->dev[dev].micro_nap = 1000;
   cl->dev[dev].pinned_memory = 0;
+  cl->dev[dev].clroundup = 16;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -410,6 +415,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     fprintf(stderr, "     MICRO_NAP:                %i\n", cl->dev[dev].micro_nap);
     fprintf(stderr, "     AVOID_ATOMICS:            %s\n", (cl->dev[dev].avoid_atomics) ? "TRUE" : "FALSE");
     fprintf(stderr, "     PINNED_MEMORY:            %s\n", (cl->dev[dev].pinned_memory) ? "TRUE" : "FALSE");
+    fprintf(stderr, "     ROUNDUP:                  %i\n", cl->dev[dev].clroundup);
     fprintf(stderr, "     DRIVER_VERSION:           %s\n", driverversion);
     fprintf(stderr, "     DEVICE_VERSION:           %s\n", deviceversion);
   }
@@ -2696,6 +2702,14 @@ int dt_opencl_roundup(int size)
   return (size % roundup == 0 ? size : (size / roundup + 1) * roundup);
 }
 
+/** round size to a multiple of the value given in the device specifig config parameter for opencl_size_roundup */
+int dt_opencl_dev_roundup(int size, const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 16;
+
+  const int roundup = darktable.opencl->dev[devid].clroundup;
+  return (size % roundup == 0 ? size : (size / roundup + 1) * roundup);
+}
 
 /** check if opencl is inited */
 int dt_opencl_is_inited(void)
