@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-19 09:04+0100\n"
-"PO-Revision-Date: 2022-03-22 21:32+0200\n"
+"PO-Revision-Date: 2022-03-27 12:46+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -9289,50 +9289,36 @@ msgid "tabs"
 msgstr "вкладки"
 
 #: ../src/gui/gtkentry.c:172
-#, fuzzy
-#| msgid "$(ROLL_NAME) - roll of the input image"
 msgid "$(ROLL.NAME) - roll of the input image"
-msgstr "$(ROLL_NAME) - плівка вхідного зображення"
+msgstr "$(ROLL.NAME) - плівка вхідного зображення"
 
 #: ../src/gui/gtkentry.c:173
-#, fuzzy
-#| msgid "$(FILE_FOLDER) - folder containing the input image"
 msgid "$(FILE.FOLDER) - folder containing the input image"
-msgstr "$(FILE_FOLDER) - каталог, що містить вхідне зображення"
+msgstr "$(FILE.FOLDER) - каталог, що містить вхідне зображення"
 
 #: ../src/gui/gtkentry.c:174
-#, fuzzy
-#| msgid "$(FILE_NAME) - basename of the input image"
 msgid "$(FILE.NAME) - basename of the input image"
-msgstr "$(FILE_NAME) - базове ім'я файлу вхідного зображення"
+msgstr "$(FILE.NAME) - базове ім'я файлу вхідного зображення"
 
 #: ../src/gui/gtkentry.c:175
-#, fuzzy
-#| msgid "$(FILE_EXTENSION) - extension of the input image"
 msgid "$(FILE.EXTENSION) - extension of the input image"
-msgstr "$(FILE_EXTENSION) - розширення файлу вхідного зображення"
+msgstr "$(FILE.EXTENSION) - розширення файлу вхідного зображення"
 
 #: ../src/gui/gtkentry.c:176
 msgid "$(VERSION) - duplicate version"
 msgstr "$(VERSION) - версія дубліката"
 
 #: ../src/gui/gtkentry.c:177
-#, fuzzy
-#| msgid ""
-#| "$(VERSION_IF_MULTI) - same as $(VERSION) but null string if only one "
-#| "version exists"
 msgid ""
 "$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
 "exists"
 msgstr ""
-"$(VERSION_IF_MULTI) - те саме, що й $(VERSION), але без значення, якщо існує "
+"$(VERSION.IF_MULTI) - те саме, що й $(VERSION), але без значення, якщо існує "
 "лише одна версія"
 
 #: ../src/gui/gtkentry.c:178
-#, fuzzy
-#| msgid "$(VERSION_NAME) - version name from metadata"
 msgid "$(VERSION.NAME) - version name from metadata"
-msgstr "$(VERSION_NAME) - ім'я версії з метаданих"
+msgstr "$(VERSION.NAME) - ім'я версії з метаданих"
 
 #: ../src/gui/gtkentry.c:179
 msgid "$(JOBCODE) - job code for import"
@@ -9343,64 +9329,44 @@ msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - порядковий номер"
 
 #: ../src/gui/gtkentry.c:181
-#, fuzzy
-#| msgid "$(MAX_WIDTH) - maximum image export width"
 msgid "$(WIDTH.MAX) - maximum image export width"
-msgstr "$(MAX_WIDTH) - максимальна ширина зображення при експорті"
+msgstr "$(WIDTH.MAX) - максимальна ширина зображення при експорті"
 
 #: ../src/gui/gtkentry.c:182
-#, fuzzy
-#| msgid "$(SENSOR_WIDTH) - image sensor width"
 msgid "$(WIDTH.SENSOR) - image sensor width"
-msgstr "$(SENSOR_WIDTH) - ширина сенсора зображення"
+msgstr "$(WIDTH.SENSOR) - ширина сенсора зображення"
 
 #: ../src/gui/gtkentry.c:183
-#, fuzzy
-#| msgid "$(RAW_WIDTH) - RAW image width"
 msgid "$(WIDTH.RAW) - RAW image width"
-msgstr "$(RAW_WIDTH) - ширина зображення raw"
+msgstr "$(WIDTH.RAW) - ширина зображення raw"
 
 #: ../src/gui/gtkentry.c:184
-#, fuzzy
-#| msgid "$(CROP_WIDTH) - image width after crop"
 msgid "$(WIDTH.CROP) - image width after crop"
-msgstr "$(CROP_WIDTH) - ширина зображення після обрізання"
+msgstr "$(WIDTH.CROP) - ширина зображення після обрізання"
 
 #: ../src/gui/gtkentry.c:185
-#, fuzzy
-#| msgid "$(EXPORT_WIDTH) - exported image width"
 msgid "$(WIDTH.EXPORT) - exported image width"
-msgstr "$(EXPORT_WIDTH) - ширина експортованого зображення"
+msgstr "$(WIDTH.EXPORT) - ширина експортованого зображення"
 
 #: ../src/gui/gtkentry.c:186
-#, fuzzy
-#| msgid "$(MAX_HEIGHT) - maximum image export height"
 msgid "$(HEIGHT.MAX) - maximum image export height"
-msgstr "$(MAX_HEIGHT) - максимальна висота зображення при експорті"
+msgstr "$(HEIGHT.MAX) - максимальна висота зображення при експорті"
 
 #: ../src/gui/gtkentry.c:187
-#, fuzzy
-#| msgid "$(SENSOR_HEIGHT) - image sensor height"
 msgid "$(HEIGHT.SENSOR) - image sensor height"
-msgstr "$(SENSOR_HEIGHT) - висота сенсора зображення"
+msgstr "$(HEIGHT.SENSOR) - висота сенсора зображення"
 
 #: ../src/gui/gtkentry.c:188
-#, fuzzy
-#| msgid "$(RAW_HEIGHT) - RAW image height"
 msgid "$(HEIGHT.RAW) - RAW image height"
-msgstr "$(RAW_HEIGHT) - висота зображення raw"
+msgstr "$(HEIGHT.RAW) - висота зображення raw"
 
 #: ../src/gui/gtkentry.c:189
-#, fuzzy
-#| msgid "$(CROP_HEIGHT) - image height after crop"
 msgid "$(HEIGHT.CROP) - image height after crop"
-msgstr "$(CROP_HEIGHT) - висота зображення після обрізання"
+msgstr "$(HEIGHT.CROP) - висота зображення після обрізання"
 
 #: ../src/gui/gtkentry.c:190
-#, fuzzy
-#| msgid "$(EXPORT_HEIGHT) - exported image height"
 msgid "$(HEIGHT.EXPORT) - exported image height"
-msgstr "$(EXPORT_HEIGHT) - висота експортованого зображення"
+msgstr "$(HEIGHT.EXPORT) - висота експортованого зображення"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(YEAR) - year"
@@ -9408,7 +9374,7 @@ msgstr "$(YEAR) - рік"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(YEAR.SHORT) - year without century"
-msgstr ""
+msgstr "$(YEAR.SHORT) - рік без століття"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MONTH) - month"
@@ -9416,11 +9382,11 @@ msgstr "$(MONTH) - місяць"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
-msgstr ""
+msgstr "$(MONTH.SHORT) - скорочена назва місяця відповідно до поточної локалі"
 
 #: ../src/gui/gtkentry.c:195
 msgid "$(MONTH.LONG) - full month name according to the current locale"
-msgstr ""
+msgstr "$(MONTH.LONG) - повна назва місяця відповідно до поточної локалі"
 
 #: ../src/gui/gtkentry.c:196
 msgid "$(DAY) - day"
@@ -9432,7 +9398,7 @@ msgstr "$(HOUR) - година"
 
 #: ../src/gui/gtkentry.c:198
 msgid "$(HOUR.AMPM) - hour, 12-hour clock"
-msgstr ""
+msgstr "$(HOUR.AMPM) - година в 12-годинному форматі"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(MINUTE) - minute"
@@ -9447,22 +9413,16 @@ msgid "$(MSEC) - millisecond"
 msgstr "$(MSEC) - мілісекунда"
 
 #: ../src/gui/gtkentry.c:202
-#, fuzzy
-#| msgid "$(EXIF_YEAR) - EXIF year"
 msgid "$(EXIF.YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) - рік з EXIF"
+msgstr "$(EXIF.YEAR) - рік з EXIF"
 
 #: ../src/gui/gtkentry.c:203
-#, fuzzy
-#| msgid "$(EXIF_YEAR) - EXIF year"
 msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
-msgstr "$(EXIF_YEAR) - рік з EXIF"
+msgstr "$(EXIF.YEAR.SHORT) - рік з EXIF без століття"
 
 #: ../src/gui/gtkentry.c:204
-#, fuzzy
-#| msgid "$(EXIF_MONTH) - EXIF month"
 msgid "$(EXIF.MONTH) - EXIF month"
-msgstr "$(EXIF_MONTH) - місяць з EXIF"
+msgstr "$(EXIF.MONTH) - місяць з EXIF"
 
 #: ../src/gui/gtkentry.c:205
 msgid ""
@@ -9476,94 +9436,64 @@ msgid ""
 msgstr ""
 
 #: ../src/gui/gtkentry.c:207
-#, fuzzy
-#| msgid "$(EXIF_DAY) - EXIF day"
 msgid "$(EXIF.DAY) - EXIF day"
-msgstr "$(EXIF_DAY) - день з EXIF"
+msgstr "$(EXIF.DAY) - день з EXIF"
 
 #: ../src/gui/gtkentry.c:208
-#, fuzzy
-#| msgid "$(EXIF_HOUR) - EXIF hour"
 msgid "$(EXIF.HOUR) - EXIF hour"
-msgstr "$(EXIF_HOUR) - година з EXIF"
+msgstr "$(EXIF.HOUR) - година з EXIF"
 
 #: ../src/gui/gtkentry.c:209
-#, fuzzy
-#| msgid "$(EXIF_HOUR) - EXIF hour"
 msgid "$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock"
-msgstr "$(EXIF_HOUR) - година з EXIF"
+msgstr "$(EXIF.HOUR.AMPM) - година з EXIF у 12-годинному форматі"
 
 #: ../src/gui/gtkentry.c:210
-#, fuzzy
-#| msgid "$(EXIF_MINUTE) - EXIF minute"
 msgid "$(EXIF.MINUTE) - EXIF minute"
-msgstr "$(EXIF_MINUTE) - хвилина з EXIF"
+msgstr "$(EXIF.MINUTE) - хвилина з EXIF"
 
 #: ../src/gui/gtkentry.c:211
-#, fuzzy
-#| msgid "$(EXIF_SECOND) - EXIF second"
 msgid "$(EXIF.SECOND) - EXIF second"
-msgstr "$(EXIF_SECOND) - секунда з EXIF"
+msgstr "$(EXIF.SECOND) - секунда з EXIF"
 
 #: ../src/gui/gtkentry.c:212
-#, fuzzy
-#| msgid "$(EXIF_MSEC) - EXIF millisecond"
 msgid "$(EXIF.MSEC) - EXIF millisecond"
-msgstr "$(EXIF_MSEC) - мілісекунда з EXIF"
+msgstr "$(EXIF.MSEC) - мілісекунда з EXIF"
 
 #: ../src/gui/gtkentry.c:213
-#, fuzzy
-#| msgid "$(EXIF_ISO) - ISO value"
 msgid "$(EXIF.ISO) - ISO value"
-msgstr "$(EXIF_ISO) - значення ISO"
+msgstr "$(EXIF.ISO) - значення ISO"
 
 #: ../src/gui/gtkentry.c:214
-#, fuzzy
-#| msgid "$(EXIF_EXPOSURE) - EXIF exposure"
 msgid "$(EXIF.EXPOSURE) - EXIF exposure"
-msgstr "$(EXIF_EXPOSURE) - експозиція з EXIF"
+msgstr "$(EXIF.EXPOSURE) - експозиція з EXIF"
 
 #: ../src/gui/gtkentry.c:215
-#, fuzzy
-#| msgid "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
 msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
-msgstr "$(EXIF_EXPOSURE_BIAS) - компенсація експозиції з EXIF"
+msgstr "$(EXIF.EXPOSURE.BIAS) - компенсація експозиції з EXIF"
 
 #: ../src/gui/gtkentry.c:216
-#, fuzzy
-#| msgid "$(EXIF_APERTURE) - EXIF aperture"
 msgid "$(EXIF.APERTURE) - EXIF aperture"
-msgstr "$(EXIF_APERTURE) - діафрагма з EXIF"
+msgstr "$(EXIF.APERTURE) - діафрагма з EXIF"
 
 #: ../src/gui/gtkentry.c:217
-#, fuzzy
-#| msgid "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
 msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
-msgstr "$(EXIF_FOCAL_LENGTH) - фокусна відстань з EXIF"
+msgstr "$(EXIF.FOCAL.LENGTH) - фокусна відстань з EXIF"
 
 #: ../src/gui/gtkentry.c:218
-#, fuzzy
-#| msgid "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
 msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
-msgstr "$(EXIF_FOCUS_DISTANCE) - дистанція фокусування з EXIF"
+msgstr "$(EXIF.FOCUS.DISTANCE) - дистанція фокусування з EXIF"
 
 #: ../src/gui/gtkentry.c:219
-#, fuzzy
-#| msgid "$(MAKER) - camera maker"
 msgid "$(EXIF.MAKER) - camera maker"
-msgstr "$(MAKER) - виробник камери"
+msgstr "$(EXIF.MAKER) - виробник камери"
 
 #: ../src/gui/gtkentry.c:220
-#, fuzzy
-#| msgid "$(MODEL) - camera model"
 msgid "$(EXIF.MODEL) - camera model"
-msgstr "$(MODEL) - модель камери"
+msgstr "$(EXIF.MODEL) - модель камери"
 
 #: ../src/gui/gtkentry.c:221
-#, fuzzy
-#| msgid "$(LENS) - lens"
 msgid "$(EXIF.LENS) - lens"
-msgstr "$(LENS) - об'єктив"
+msgstr "$(EXIF.LENS) - об'єктив"
 
 #: ../src/gui/gtkentry.c:222
 msgid "$(LONGITUDE) - longitude"
@@ -9582,21 +9512,17 @@ msgid "$(STARS) - star rating as number (-1 for rejected)"
 msgstr "$(STARS) - рейтинг в зірках як число (-1 означає відхилення)"
 
 #: ../src/gui/gtkentry.c:226
-#, fuzzy
-#| msgid "$(RATING_ICONS) - star/reject rating in icon form"
 msgid "$(RATING.ICONS) - star/reject rating in icon form"
 msgstr ""
-"$(RATING_ICONS) - рейтинг в зірках чи статус відхилення у вигляді значка"
+"$(RATING.ICONS) - рейтинг в зірках чи статус відхилення у вигляді значка"
 
 #: ../src/gui/gtkentry.c:227
 msgid "$(LABELS) - color labels as text"
 msgstr "$(LABELS) - кольорові позначки як текст"
 
 #: ../src/gui/gtkentry.c:228
-#, fuzzy
-#| msgid "$(LABELS_ICONS) - color labels as icons"
 msgid "$(LABELS.ICONS) - color labels as icons"
-msgstr "$(LABELS_ICONS) - кольорові позначки як значки"
+msgstr "$(LABELS.ICONS) - кольорові позначки як значки"
 
 #: ../src/gui/gtkentry.c:229
 msgid "$(ID) - image ID"
@@ -9627,28 +9553,20 @@ msgid "$(USERNAME) - login name"
 msgstr "$(USERNAME) - ім'я облікового запису"
 
 #: ../src/gui/gtkentry.c:236
-#, fuzzy
-#| msgid "$(PICTURES_FOLDER) - pictures folder"
 msgid "$(FOLDER.PICTURES) - pictures folder"
-msgstr "$(PICTURES_FOLDER) - каталог із зображеннями"
+msgstr "$(FOLDER.PICTURES) - каталог із зображеннями"
 
 #: ../src/gui/gtkentry.c:237
-#, fuzzy
-#| msgid "$(HOME) - home folder"
 msgid "$(FOLDER.HOME) - home folder"
-msgstr "$(HOME) - домашній каталог"
+msgstr "$(FOLDER.HOME) - домашній каталог"
 
 #: ../src/gui/gtkentry.c:238
-#, fuzzy
-#| msgid "$(DESKTOP) - desktop folder"
 msgid "$(FOLDER.DESKTOP) - desktop folder"
-msgstr "$(DESKTOP) - каталог робочого стола"
+msgstr "$(FOLDER.DESKTOP) - каталог робочого стола"
 
 #: ../src/gui/gtkentry.c:239
-#, fuzzy
-#| msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
-msgstr "$(OPENCL_ACTIVATED) - чи активовано OpenCL"
+msgstr "$(OPENCL.ACTIVATED) - чи активовано OpenCL"
 
 #: ../src/gui/gtkentry.c:240
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
@@ -9659,16 +9577,12 @@ msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) - теги"
 
 #: ../src/gui/gtkentry.c:242
-#, fuzzy
-#| msgid "$(DARKTABLE_VERSION) - current darktable version"
 msgid "$(DARKTABLE.NAME) - darktable name"
-msgstr "$(DARKTABLE_VERSION) - поточна версія darktable"
+msgstr "$(DARKTABLE.NAME) - ім'я darktable"
 
 #: ../src/gui/gtkentry.c:243
-#, fuzzy
-#| msgid "$(DARKTABLE_VERSION) - current darktable version"
 msgid "$(DARKTABLE.VERSION) - current darktable version"
-msgstr "$(DARKTABLE_VERSION) - поточна версія darktable"
+msgstr "$(DARKTABLE.VERSION) - версія поточного екземпляра darktable"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:263
 msgid "grid"
