@@ -461,6 +461,13 @@ spinbutton>button
   font-size: 0.7em;
 }
 
+.dt_module_button
+{
+  background-color: transparent;
+  border: 0;
+  color: alpha(@button_fg, 0.5);
+}
+
 /*------------------------
   - Main header settings -
   ------------------------*/
@@ -1780,6 +1787,11 @@ combobox window *:hover,
 #header-toolbar #bauhaus_combobox:hover
 {
   color: shade(@fg_color, 1.2);
+}
+
+.dt_module_button:hover
+{
+  color: alpha(@button_hover_fg, 0.6);
 }
 
 /* workaround for a macOS quartz GTK backend bug
