@@ -232,13 +232,6 @@
     <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_avoid_atomics</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>do not run OpenCL kernels which require atomic operations</shortdescription>
-    <longdescription>if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral). pixelpipe processing will be done on CPU for the affected modules. useful if your OpenCL implementation freezes/crashes on atomics or if they are processed with a bad performance.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>opencl_number_event_handles</name>
     <type>int</type>
     <default>25</default>
@@ -251,13 +244,6 @@
     <default>false</default>
     <shortdescription>run OpenCL pixelpipe asynchronously</shortdescription>
     <longdescription>if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module. export pixelpipe will always be run synchronously.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>opencl_micro_nap</name>
-    <type>int</type>
-    <default>1000</default>
-    <shortdescription>pause OpenCL processing for this number of microseconds from time to time</shortdescription>
-    <longdescription>for slow GPUs this gives your graphics driver some time to breathe to do needed screen updates. can be left at zero for fast devices.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_device_priority</name>

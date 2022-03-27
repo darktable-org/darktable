@@ -121,6 +121,13 @@ typedef struct dt_opencl_device_t
   size_t memory_in_use;
   size_t peak_memory;
   size_t tuned_available;
+
+  // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
+  // pixelpipe processing will be done on CPU for the affected modules.
+  // useful if your OpenCL implementation freezes/crashes on atomics or if they are processed with a bad performance.
+  int avoid_atomics;
+  // pause OpenCL processing for this number of microseconds from time to time
+  int micro_nap;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -138,13 +145,11 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
-  int avoid_atomics;
   int use_events;
   int async_pixelpipe;
   int number_event_handles;
   int print_statistics;
   dt_opencl_sync_cache_t sync_cache;
-  int micro_nap;
   int enabled;
   int stopped;
   int num_devs;
@@ -402,6 +407,12 @@ void dt_opencl_events_profiling(const int devid, const int aggregated);
 
 /** utility function to calculate optimal work group dimensions for a given kernel */
 int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_local_buffer_t *factors);
+
+/** utility functions handling device specific properties */
+void dt_opencl_write_device_config(const int devid);
+gboolean dt_opencl_read_device_config(const int devid);
+int dt_opencl_avoid_atomics(const int devid);
+int dt_opencl_micro_nap(const int devid);
 
 #else
 #include "control/conf.h"

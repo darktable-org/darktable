@@ -998,7 +998,7 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
       dt_opencl_finish(devid);
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_iop_nap(dt_opencl_micro_nap(devid));
   }
 
 error:
@@ -1094,7 +1094,7 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
       dt_opencl_finish(devid);
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_iop_nap(dt_opencl_micro_nap(devid));
   }
 
 error:

@@ -344,7 +344,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
         dt_opencl_finish(devid);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
-      dt_iop_nap(darktable.opencl->micro_nap);
+      dt_iop_nap(dt_opencl_micro_nap(devid));
     }
 
   // normalize and blend

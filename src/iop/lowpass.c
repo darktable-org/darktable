@@ -465,7 +465,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 #ifdef HAVE_OPENCL
   if(d->lowpass_algo == LOWPASS_ALGO_BILATERAL)
-    piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
 #endif
 
 
