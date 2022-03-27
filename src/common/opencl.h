@@ -180,6 +180,8 @@ typedef struct dt_opencl_t
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
 
+  // we want the cpu benchmark to be available
+  float cpubenchmark;
   // global kernels for blending operations.
   struct dt_blendop_cl_global_t *blendop;
 

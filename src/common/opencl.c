@@ -661,6 +661,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   const int opencl_memory_requirement = MAX(200, dt_conf_get_int("opencl_memory_requirement"));
   dt_conf_set_int("opencl_memory_requirement", opencl_memory_requirement);
 
+  cl->cpubenchmark = dt_conf_get_float("dt_cpubenchmark");
+
   if(exclude_opencl)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] do not try to find and use an opencl runtime library due to "
@@ -849,17 +851,24 @@ finally:
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
     const char *oldchecksum = dt_conf_get_string_const("opencl_checksum");
 
-    const gboolean manually =  strcasecmp(oldchecksum, "OFF") == 0;
+    const gboolean manually = strcasecmp(oldchecksum, "OFF") == 0;
+    const gboolean newcheck = ((strcmp(oldchecksum, checksum) != 0) || (strlen(oldchecksum) < 1));
+
     gboolean rebench = FALSE;
     for(int n = 0; n < cl->num_devs; n++)
       if(cl->dev[n].benchmark <= 0.0f) rebench = TRUE;
 
-    // check if the configuration (OpenCL device setup) has changed, indicated by checksum != oldchecksum
-    if(strcmp(oldchecksum, checksum) != 0 || strlen(oldchecksum) < 1 || rebench)
+    float tcpu = cl->cpubenchmark;
+    // do CPU bencharking
+    if(rebench || tcpu <= 0.0f)
     {
-      // do CPU bencharking
-      const float tcpu = dt_opencl_benchmark_cpu(1024, 1024, 5, 100.0f);
-      // possibly store new checksum value in config
+      tcpu = cl->cpubenchmark = dt_opencl_benchmark_cpu(1024, 1024, 5, 100.0f);
+      dt_conf_set_float("dt_cpubenchmark", tcpu);
+    }
+
+    // check if the configuration (OpenCL device setup) has changed, indicated by checksum != oldchecksum
+    if(newcheck || rebench)
+    {
       if(!manually) dt_conf_set_string("opencl_checksum", checksum);
 
       // get best benchmarking value of all detected OpenCL devices
