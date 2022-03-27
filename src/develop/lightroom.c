@@ -344,12 +344,14 @@ static void dt_add_hist(int imgid, char *operation, dt_iop_params_t *params, int
   sqlite3_finalize(stmt);
 
   // add new history info
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.history"
                               "  (imgid, num, module, operation, op_params, enabled,"
                               "   blendop_params, blendop_version, multi_priority, multi_name)"
                               " VALUES (?1, ?2, ?3, ?4, ?5, 1, ?6, ?7, 0, ' ')",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);

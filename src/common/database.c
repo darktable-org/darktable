@@ -475,8 +475,10 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // 2 -> 3 reset raw_black and raw_maximum. in theory we should change the columns from REAL to INTEGER,
     // but sqlite doesn't care about types so whatever
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    // clang-format off
     TRY_EXEC("UPDATE main.images SET raw_black = 0, raw_maximum = 16384",
              "[init] can't reset raw_black and raw_maximum\n");
+    // clang-format on
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 3;
   }

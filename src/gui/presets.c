@@ -87,6 +87,7 @@ void dt_gui_presets_add_with_blendop(
 {
   sqlite3_stmt *stmt;
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "INSERT OR REPLACE"
@@ -99,6 +100,7 @@ void dt_gui_presets_add_with_blendop(
       "         340282346638528859812000000000000000000, 0, 10000000, 0, 100000000, 0,"
       "         1000, 1, 0, 0, 0, 0)",
       -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
@@ -275,6 +277,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     if(g->old_id >= 0)
     {
       // we update presets values
+      // clang-format off
       query = g_strdup_printf("UPDATE data.presets "
                               "SET"
                               " name=?1, description=?2,"
@@ -284,10 +287,12 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
                               " filter=?15, format=?16 "
                               "WHERE rowid=%d",
                               g->old_id);
+      // clang-format on
     }
     else
     {
       // we create a new preset
+      // clang-format off
       query = g_strdup_printf("INSERT INTO data.presets"
                               " (name, description, "
                               "  model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min,"
@@ -297,6 +302,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
                               "VALUES"
                               " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, 0, 0, ?17,"
                               "  ?18, ?19, ?20, ?21, ?22, 0, '')");
+      // clang-format on
     }
 
     // rename accelerators
