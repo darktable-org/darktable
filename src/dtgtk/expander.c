@@ -109,7 +109,8 @@ static void dtgtk_expander_init(GtkDarktableExpander *expander)
 // this should work as long as everything happens in the gui thread
 static void dtgtk_expander_scroll(GtkRevealer *widget)
 {
-  if(!dt_conf_get_bool("lighttable/ui/scroll_to_module") && !dt_conf_get_bool("darkroom/ui/scroll_to_module")) return;
+  if(!dt_conf_get_bool("lighttable/ui/scroll_to_module") && !dt_conf_get_bool("darkroom/ui/scroll_to_module"))
+    return;
 
   GtkAllocation allocation;
 
@@ -119,6 +120,8 @@ static void dtgtk_expander_scroll(GtkRevealer *widget)
 
   GtkWidget *viewport = gtk_widget_get_parent(box);
   GtkWidget *scrolled_window = gtk_widget_get_parent(viewport);
+  if(!GTK_IS_SCROLLED_WINDOW(scrolled_window)) return; // may not be part of a panel yet
+
   GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
 
   gtk_widget_get_allocation(expander, &allocation);
