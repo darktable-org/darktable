@@ -176,6 +176,12 @@ gboolean dt_opencl_read_device_config(const int devid)
     &cl->dev[devid].avoid_atomics,
     &cl->dev[devid].micro_nap,
     &cl->dev[devid].pinned_memory);
+  // do some safety housekeeping
+  cl->dev[devid].avoid_atomics &= 1;
+  cl->dev[devid].pinned_memory &= 1;
+  if((cl->dev[devid].micro_nap <= 0) || (cl->dev[devid].micro_nap > 1000000))
+    cl->dev[devid].micro_nap = 1000;
+
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] found '%s' for '%s'\n", dat, key);
   return FALSE;
 }
@@ -212,7 +218,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].tuned_available = 0;
   // setting sane defaults at first
   cl->dev[dev].avoid_atomics = 0;
-  cl->dev[dev].micro_nap = 1000;
+  cl->dev[dev].micro_nap = 0;
   cl->dev[dev].pinned_memory = 0;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
