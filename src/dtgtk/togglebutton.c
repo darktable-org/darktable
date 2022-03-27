@@ -48,9 +48,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   GdkRGBA fg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
 
-  if(button->icon_flags & CPF_CUSTOM_FG)
-    fg_color = button->fg;
-  else if(button->icon_flags & CPF_IGNORE_FG_STATE)
+  if(button->icon_flags & CPF_IGNORE_FG_STATE)
     gtk_style_context_get_color(context, state & ~GTK_STATE_FLAG_SELECTED, &fg_color);
   else
     gtk_style_context_get_color(context, state, &fg_color);
@@ -98,22 +96,8 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   int cwidth = width - margin.left - margin.right;
   int cheight = height - margin.top - margin.bottom;
 
-  /* draw standard button background if not transparent nor flat styled */
-  if((flags & CPF_STYLE_FLAT))
-  {
-    if((flags & CPF_PRELIGHT) || ((flags & CPF_ACTIVE) && !(flags & CPF_BG_TRANSPARENT)))
-    {
-      // When CPF_BG_TRANSPARENT is set, change the background on
-      // PRELIGHT, but not on ACTIVE
-      if(!(flags & CPF_BG_TRANSPARENT) || (flags & CPF_PRELIGHT))
-        gtk_render_background(context, cr, startx, starty, cwidth, cheight);
-    }
-    if(!(flags & CPF_ACTIVE) || (flags & CPF_IGNORE_FG_STATE))
-      fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
-  }
-  else if(!(flags & CPF_BG_TRANSPARENT))
-    gtk_render_background(context, cr, startx, starty, cwidth, cheight);
-
+  /* draw standard button background and borders */
+  gtk_render_background(context, cr, startx, starty, cwidth, cheight);
   gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
 
   gdk_cairo_set_source_rgba(cr, &fg_color);
@@ -193,30 +177,6 @@ void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPa
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
-}
-
-void dtgtk_togglebutton_override_color(GtkDarktableToggleButton *button, GdkRGBA *color)
-{
-  g_return_if_fail(button != NULL);
-  if(color)
-  {
-    button->fg = *color;
-    button->icon_flags |= CPF_CUSTOM_FG;
-  }
-  else
-    button->icon_flags &= ~CPF_CUSTOM_FG;
-}
-
-void dtgtk_togglebutton_override_background_color(GtkDarktableToggleButton *button, GdkRGBA *color)
-{
-  g_return_if_fail(button != NULL);
-  if(color)
-  {
-    button->bg = *color;
-    button->icon_flags |= CPF_CUSTOM_BG;
-  }
-  else
-    button->icon_flags &= ~CPF_CUSTOM_BG;
 }
 
 // clang-format off
