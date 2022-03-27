@@ -53,8 +53,8 @@
 #define ROUNDUPHT(a) dt_opencl_roundup(a)
 
 // use per device roundups here
-#define DEVROUNDUPWD(a, b) dt_opencl_dev_roundup(a, b)
-#define DEVROUNDUPHT(a, b) dt_opencl_dev_roundup(a, b)
+#define ROUNDUPDWD(a, b) dt_opencl_dev_roundup(a, b)
+#define ROUNDUPDHT(a, b) dt_opencl_dev_roundup(a, b)
 
 typedef enum dt_opencl_memory_t
 {
