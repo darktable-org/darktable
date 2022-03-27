@@ -589,9 +589,11 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   sqlite3_stmt *stmt;
+  // clang-format off
   const char *query = "SELECT MIN(db.datetime_taken) AS dt "
                       "FROM main.images AS db, memory.collected_images AS col "
                       "WHERE db.id=col.imgid AND db.datetime_taken > 1";
+  // clang-format on
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -603,9 +605,11 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
     strip->has_selection = FALSE;
   sqlite3_finalize(stmt);
 
+  // clang-format off
   const char *query2 = "SELECT MAX(db.datetime_taken) AS dt "
                        "FROM main.images AS db, memory.collected_images AS col "
                        "WHERE db.id=col.imgid";
+  // clang-format on
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -659,12 +663,14 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
   if(_time_compare_at_zoom(strip->stop_t, strip->time_pos, strip->zoom) < 0) strip->stop_x = -1;
 
   sqlite3_stmt *stmt;
+  // clang-format off
   gchar *query = g_strdup_printf("SELECT db.datetime_taken AS dt,"
                                  " col.imgid FROM main.images AS db "
                                  "LEFT JOIN memory.collected_images AS col ON db.id=col.imgid "
                                  "WHERE dt > %ld "
                                  "ORDER BY dt ASC",
                                  (long int)_time_format_for_db(strip->time_pos, strip->zoom));
+  // clang-format on
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
   dt_datetime_t tx;
@@ -1457,6 +1463,9 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

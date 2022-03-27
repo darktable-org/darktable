@@ -37,6 +37,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   entry->data = img;
   // load stuff from db and store in cache:
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure,"
@@ -47,6 +48,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       "  FROM main.images"
       "  WHERE id = ?1",
       -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -246,6 +248,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   if(img->id <= 0) return;
 
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images"
                               " SET width = ?1, height = ?2, filename = ?3, maker = ?4, model = ?5,"
@@ -259,6 +262,7 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
                               "     print_timestamp = ?31, output_width = ?32, output_height = ?33"
                               " WHERE id = ?34",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, img->filename, -1, SQLITE_STATIC);
@@ -387,6 +391,9 @@ void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const int32_t i
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

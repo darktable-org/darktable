@@ -89,11 +89,13 @@ int dt_map_location_get_images_count(const guint locid)
 {
   int count = 0;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT COUNT (*)"
                               "  FROM main.tagged_images"
                               "  WHERE tagid = ?1",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, locid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
@@ -121,6 +123,7 @@ GList *dt_map_location_get_locations_by_path(const gchar *path,
   GList *locs = NULL;
 
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT t.id, t.name, ti.count"
                               "  FROM data.tags AS t"
@@ -131,6 +134,7 @@ GList *dt_map_location_get_locations_by_path(const gchar *path,
                               "  ON ti.tagid = t.id"
                               "  WHERE name = ?1 OR SUBSTR(name, 1, LENGTH(?2)) = ?2",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, path1, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, path2, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -162,6 +166,7 @@ GList *dt_map_location_get_locations_on_map(const dt_map_box_t *const bbox)
   GList *locs = NULL;
 
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT *"
                               "  FROM data.locations AS t"
@@ -171,6 +176,7 @@ GList *dt_map_location_get_locations_on_map(const dt_map_box_t *const bbox)
                               "    AND (longitude + delta1) > ?3"
                               "    AND (longitude - delta1) < ?4",
                               -1, &stmt, NULL);
+  // clang-format on
 
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, bbox->lat1);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, bbox->lat2);
@@ -202,10 +208,12 @@ void dt_map_location_get_polygons(dt_location_draw_t *ld)
   if(ld->data.shape != MAP_LOCATION_SHAPE_POLYGONS)
     return;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT polygons FROM data.locations AS t"
                               "  WHERE tagid = ?1",
                               -1, &stmt, NULL);
+  // clang-format on
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, ld->id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -318,6 +326,7 @@ dt_map_location_data_t *dt_map_location_get_data(const guint locid)
   if(locid == -1) return NULL;
   dt_map_location_data_t *g = NULL;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT type, longitude, latitude, delta1, delta2, ratio"
                               "  FROM data.locations"
@@ -325,6 +334,7 @@ dt_map_location_data_t *dt_map_location_get_data(const guint locid)
                               "  WHERE tagid = ?1 AND longitude IS NOT NULL"
                               "    AND SUBSTR(name, 1, LENGTH(?2)) = ?2",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, locid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, location_tag_prefix, -1, SQLITE_STATIC);
 
@@ -347,11 +357,13 @@ void dt_map_location_set_data(const guint locid, const dt_map_location_data_t *g
 {
   if(locid == -1) return;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT OR REPLACE INTO data.locations"
                               "  (tagid, type, longitude, latitude, delta1, delta2, ratio, polygons)"
                               "  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, locid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, g->shape);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 3, g->lon);
@@ -377,6 +389,7 @@ GList *dt_map_location_find_locations(const guint imgid)
 {
   GList *tags = NULL;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT l.tagid, l.type, i.longitude, i.latitude FROM main.images AS i"
                               "  JOIN data.locations AS l"
@@ -393,6 +406,7 @@ GList *dt_map_location_find_locations(const guint imgid)
                               " WHERE i.id = ?1 "
                               "       AND i.latitude IS NOT NULL AND i.longitude IS NOT NULL",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, MAP_LOCATION_SHAPE_ELLIPSE);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, MAP_LOCATION_SHAPE_RECTANGLE);
@@ -437,6 +451,7 @@ GList *_map_location_find_images(dt_location_draw_t *ld)
   GList *imgs = NULL;
   sqlite3_stmt *stmt;
   if(ld->data.shape == MAP_LOCATION_SHAPE_ELLIPSE)
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT i.id FROM main.images AS i"
                                 "  JOIN data.locations AS l"
@@ -447,7 +462,9 @@ GList *_map_location_find_images(dt_location_draw_t *ld)
                                               "(delta2*delta2)) <= 1))"
                                 "  WHERE l.tagid = ?1 ",
                                 -1, &stmt, NULL);
+  // clang-format on
   else if(ld->data.shape == MAP_LOCATION_SHAPE_RECTANGLE)
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT i.id FROM main.images AS i"
                                 "  JOIN data.locations AS l"
@@ -458,7 +475,9 @@ GList *_map_location_find_images(dt_location_draw_t *ld)
                                 "       AND i.latitude<=(l.latitude+delta2))"
                                 "  WHERE l.tagid = ?1 ",
                                 -1, &stmt, NULL);
+  // clang-format on
   else // MAP_LOCATION_SHAPE_POLYGONS
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT i.id, i.longitude, i.latitude FROM main.images AS i"
                                 "  JOIN data.locations AS l"
@@ -469,6 +488,7 @@ GList *_map_location_find_images(dt_location_draw_t *ld)
                                 "       AND i.latitude<=(l.latitude+delta2))"
                                 "  WHERE l.tagid = ?1 ",
                                 -1, &stmt, NULL);
+    // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, ld->id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, ld->data.shape);
 
@@ -498,12 +518,14 @@ void dt_map_location_update_locations(const guint imgid, const GList *tags)
   // get current locations
   GList *old_tags = NULL;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT t.id FROM main.tagged_images ti"
                               "  JOIN data.tags AS t ON t.id = ti.tagid"
                               "  JOIN data.locations AS l ON l.tagid = t.id"
                               "  WHERE imgid = ?1",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -624,6 +646,9 @@ GList *dt_map_location_convert_polygons(void *polygons, dt_map_box_t *bbox, int 
   return (npol);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

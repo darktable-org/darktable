@@ -117,7 +117,7 @@ static int usage(const char *argv0)
 #ifdef _WIN32
   char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
 #endif
-
+  // clang-format off
   printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
   printf("\n");
   printf("options:\n");
@@ -130,6 +130,7 @@ static int usage(const char *argv0)
   printf("      pwstorage,print,signal,sql,undo,act_on,tiling,verbose}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
+  // clang-format on
 #ifdef DT_HAVE_SIGNAL_TRACE
   printf(",print-trace");
 #endif
@@ -1852,6 +1853,9 @@ void dt_print_mem_usage()
 #endif
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+
