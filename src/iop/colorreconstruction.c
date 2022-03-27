@@ -1214,7 +1214,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->hue = p->hue;
 
 #ifdef HAVE_OPENCL
-  piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+  piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
 #endif
 }
 

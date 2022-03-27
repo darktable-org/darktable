@@ -567,7 +567,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_iop_nap(dt_opencl_micro_nap(devid));
   }
 
   /* now synthesize again */
@@ -600,7 +600,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto error;
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_iop_nap(dt_opencl_micro_nap(devid));
   }
 
   if(!darktable.opencl->async_pixelpipe || (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT)
