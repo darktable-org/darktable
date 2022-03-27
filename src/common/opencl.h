@@ -121,6 +121,7 @@ typedef struct dt_opencl_device_t
   const char *cname;
   const char *options;
   cl_int summary;
+  // the benchmark value must not be changed by the user
   float benchmark;
   size_t memory_in_use;
   size_t peak_memory;

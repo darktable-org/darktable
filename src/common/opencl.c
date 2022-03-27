@@ -155,11 +155,12 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", "cldevice_", cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i",
+  g_snprintf(dat, 510, "%i %i %i %i %f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
-    cl->dev[devid].clroundup);
+    cl->dev[devid].clroundup,
+    cl->dev[devid].benchmark);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 }
@@ -173,11 +174,12 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(!dt_conf_key_not_empty(key)) return TRUE;
 
   const gchar *dat = dt_conf_get_string_const(key);
-  sscanf(dat, "%i %i %i %i",
+  sscanf(dat, "%i %i %i %i %f",
     &cl->dev[devid].avoid_atomics,
     &cl->dev[devid].micro_nap,
     &cl->dev[devid].pinned_memory,
-    &cl->dev[devid].clroundup);
+    &cl->dev[devid].clroundup,
+    &cl->dev[devid].benchmark);
   // do some safety housekeeping
   cl->dev[devid].avoid_atomics &= 1;
   cl->dev[devid].pinned_memory &= 1;
@@ -185,6 +187,8 @@ gboolean dt_opencl_read_device_config(const int devid)
     cl->dev[devid].micro_nap = 1000;
   if((cl->dev[devid].clroundup <= 4) || (cl->dev[devid].clroundup > 512))
     cl->dev[devid].clroundup = 16;
+
+  cl->dev[devid].benchmark = fminf(1e6, fmaxf(0.0f, cl->dev[devid].benchmark));
 
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] found '%s' for '%s'\n", dat, key);
   return FALSE;
@@ -225,6 +229,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].micro_nap = 1000;
   cl->dev[dev].pinned_memory = 0;
   cl->dev[dev].clroundup = 16;
+  cl->dev[dev].benchmark = 0.0f;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -416,6 +421,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     fprintf(stderr, "     AVOID_ATOMICS:            %s\n", (cl->dev[dev].avoid_atomics) ? "TRUE" : "FALSE");
     fprintf(stderr, "     PINNED_MEMORY:            %s\n", (cl->dev[dev].pinned_memory) ? "TRUE" : "FALSE");
     fprintf(stderr, "     ROUNDUP:                  %i\n", cl->dev[dev].clroundup);
+    fprintf(stderr, "     PERFORMANCE:              %f\n", cl->dev[dev].benchmark);
     fprintf(stderr, "     DRIVER_VERSION:           %s\n", driverversion);
     fprintf(stderr, "     DEVICE_VERSION:           %s\n", deviceversion);
   }
@@ -843,54 +849,68 @@ finally:
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
     const char *oldchecksum = dt_conf_get_string_const("opencl_checksum");
 
+    const gboolean manually =  strcasecmp(oldchecksum, "OFF") == 0;
+    gboolean rebench = FALSE;
+    for(int n = 0; n < cl->num_devs; n++)
+      if(cl->dev[n].benchmark <= 0.0f) rebench = TRUE;
+
     // check if the configuration (OpenCL device setup) has changed, indicated by checksum != oldchecksum
-    if(strcasecmp(oldchecksum, "OFF") != 0 && strcmp(oldchecksum, checksum) != 0)
+    if(strcmp(oldchecksum, checksum) != 0 || strlen(oldchecksum) < 1 || rebench)
     {
-      // store new checksum value in config
-      dt_conf_set_string("opencl_checksum", checksum);
       // do CPU bencharking
-      float tcpu = dt_opencl_benchmark_cpu(1024, 1024, 5, 100.0f);
+      const float tcpu = dt_opencl_benchmark_cpu(1024, 1024, 5, 100.0f);
+      // possibly store new checksum value in config
+      if(!manually) dt_conf_set_string("opencl_checksum", checksum);
+
       // get best benchmarking value of all detected OpenCL devices
       float tgpumin = INFINITY;
       for(int n = 0; n < cl->num_devs; n++)
       {
-        float tgpu = cl->dev[n].benchmark = dt_opencl_benchmark_gpu(n, 1024, 1024, 5, 100.0f);
-        tgpumin = fmin(tgpu, tgpumin);
-      }
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] benchmarking results: %f seconds for fastest GPU versus %f seconds for CPU.\n",
-           tgpumin, tcpu);
+        if(cl->dev[n].benchmark <= 0.0f) // only do the benchmark is no given performance is available
+        {
+          cl->dev[n].benchmark = dt_opencl_benchmark_gpu(n, 1024, 1024, 5, 100.0f);
+          // update device specific config
+          dt_opencl_write_device_config(n);
+        }
+        tgpumin = fminf(cl->dev[n].benchmark, tgpumin);
 
-      if(tcpu <= 1.5f * tgpumin)
-      {
-        // de-activate opencl for darktable in case of too slow GPU(s). user can always manually overrule this later.
-        cl->enabled = FALSE;
-        dt_conf_set_bool("opencl", FALSE);
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
-        dt_control_log(_("due to a slow GPU hardware acceleration via opencl has been de-activated"));
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] benchmarking result for `%s', %fsec versus %fsec for CPU.\n",
+           cl->dev[n].name, cl->dev[n].benchmark, tcpu);
       }
-      else if(cl->num_devs >= 2)
-      {
-        // set scheduling profile to "multiple GPUs" if more than one device has been found
-        dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for multiple GPUs.\n");
-        dt_control_log(_("multiple GPUs detected - opencl scheduling profile has been set accordingly"));
-      }
-      else if(tcpu >= 6.0f * tgpumin)
-      {
-        // set scheduling profile to "very fast GPU" if CPU is way too slow
-        dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
-        dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly"));
-      }
-      else
-      {
-        // set scheduling profile to "default"
-        dt_conf_set_string("opencl_scheduling_profile", "default");
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile to default.\n");
-        dt_control_log(_("opencl scheduling profile set to default"));
+
+      if(!manually)
+      {      
+        if(tcpu <= 1.5f * tgpumin)
+        {
+          // de-activate opencl for darktable in case of too slow GPU(s). user can always manually overrule this later.
+          cl->enabled = FALSE;
+          dt_conf_set_bool("opencl", FALSE);
+          dt_print(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
+          dt_control_log(_("due to a slow GPU hardware acceleration via opencl has been de-activated"));
+        }
+        else if(cl->num_devs >= 2)
+        {
+          // set scheduling profile to "multiple GPUs" if more than one device has been found
+          dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
+          dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for multiple GPUs.\n");
+          dt_control_log(_("multiple GPUs detected - opencl scheduling profile has been set accordingly"));
+        }
+        else if(tcpu >= 6.0f * tgpumin)
+        {
+          // set scheduling profile to "very fast GPU" if CPU is way too slow
+          dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
+          dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
+          dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly"));
+        }
+        else
+        {
+          // set scheduling profile to "default"
+          dt_conf_set_string("opencl_scheduling_profile", "default");
+          dt_print(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile to default.\n");
+          dt_control_log(_("opencl scheduling profile set to default"));
+        }
       }
     }
-
     // apply config settings for scheduling profile: sets device priorities and pixelpipe synchronization timeout
     dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
     dt_opencl_apply_scheduling_profile(profile);
