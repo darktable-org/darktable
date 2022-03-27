@@ -51,12 +51,14 @@ static gboolean _date_update(dt_lib_filtering_rule_t *rule)
   // first, we update the graph
   gchar *colname = _date_get_db_colname(rule);
   char query[1024] = { 0 };
+  // clang-format off
   g_snprintf(query, sizeof(query),
              "SELECT %s AS date, COUNT(*) AS count"
              " FROM main.images AS mi"
              " WHERE %s IS NOT NULL AND %s"
              " GROUP BY date",
              colname, colname, d->last_where_ext);
+  // clang-format on
   g_free(colname);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -97,11 +99,13 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
 
   gchar *colname = _date_get_db_colname(rule);
   char query[1024] = { 0 };
+  // clang-format off
   g_snprintf(query, sizeof(query),
              "SELECT MIN(%s), MAX(%s)"
              " FROM main.images"
              " WHERE %s IS NOT NULL",
              colname, colname, colname);
+  // clang-format on
   g_free(colname);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -114,3 +118,9 @@ static void _date_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection
 
   _range_widget_add_to_rule(rule, special, top);
 }
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

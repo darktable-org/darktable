@@ -1879,6 +1879,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
       case DT_COLLECTION_PROP_TEXTSEARCH: // text search
       {
+        // clang-format off
         query = g_strdup_printf("(id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
                                 " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
                                 "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
@@ -1887,6 +1888,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                                 " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
                                 "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
                                 escaped_text, escaped_text, escaped_text, escaped_text, escaped_text);
+        // clang-format on
       }
       break;
 

@@ -105,12 +105,14 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
 
   char query[1024] = { 0 };
+  // clang-format off
   g_snprintf(query, sizeof(query),
              "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
              " COUNT(*) AS count"
              " FROM main.images AS mi"
              " GROUP BY rating"
              " ORDER BY rating");
+  // clang-format on
   int nb[7] = { 0 };
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -140,3 +142,9 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   _range_widget_add_to_rule(rule, special, top);
 }
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

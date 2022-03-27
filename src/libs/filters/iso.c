@@ -34,12 +34,14 @@ static gboolean _iso_update(dt_lib_filtering_rule_t *rule)
   rule->manual_widget_set++;
   // first, we update the graph
   char query[1024] = { 0 };
+  // clang-format off
   g_snprintf(query, sizeof(query),
              "SELECT ROUND(iso,0), COUNT(*) AS count"
              " FROM main.images AS mi"
              " WHERE %s"
              " GROUP BY ROUND(iso, 0)",
              d->last_where_ext);
+  // clang-format on
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   dtgtk_range_select_reset_blocks(range);
@@ -113,9 +115,11 @@ static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   range->print = _iso_print_func;
 
   char query[1024] = { 0 };
+  // clang-format off
   g_snprintf(query, sizeof(query),
              "SELECT MIN(iso), MAX(iso)"
              " FROM main.images");
+  // clang-format on
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   double min = 50;
@@ -131,3 +135,9 @@ static void _iso_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
 
   _range_widget_add_to_rule(rule, special, top);
 }
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
