@@ -2065,6 +2065,13 @@ static int _control_import_image_copy(const char *filename,
     char *basename = g_path_get_basename(filename);
     dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
 
+    if(!exif_time[0])
+    { // if no exif datetime try file datetime
+      struct stat statbuf;
+      if(!stat(filename, &statbuf))
+        dt_datetime_unix_to_exif(exif_time, sizeof(exif_time), &statbuf.st_mtime);
+    }
+
     if(exif_time[0])
       dt_import_session_set_exif_time(session, exif_time);
     dt_import_session_set_filename(session, basename);
