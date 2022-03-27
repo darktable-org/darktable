@@ -128,6 +128,12 @@ typedef struct dt_opencl_device_t
   int avoid_atomics;
   // pause OpenCL processing for this number of microseconds from time to time
   int micro_nap;
+  // during tiling huge amounts of memory need to be transferred between host and device.
+  // for some OpenCL implementations direct memory transfers give a drastic performance penalty.
+  // this can often be avoided by using indirect transfers via pinned memory.
+  // other devices have more efficient direct memory transfer implementations.
+  // AMD seems to belong to the first group, nvidia to the second.
+  int pinned_memory;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -413,6 +419,7 @@ void dt_opencl_write_device_config(const int devid);
 gboolean dt_opencl_read_device_config(const int devid);
 int dt_opencl_avoid_atomics(const int devid);
 int dt_opencl_micro_nap(const int devid);
+int dt_opencl_pinned_memory(const int devid);
 
 #else
 #include "control/conf.h"

@@ -260,13 +260,6 @@
     <longdescription>time period (in units of 5ms) after which we give up try-locking an opencl device for mandatory use. defaults to 400 (2 seconds).</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_use_pinned_memory</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>whether to use pinned memory transfer during tiling</shortdescription>
-    <longdescription>during tiling huge amounts of memory need to be transferred between host and device. for some OpenCL implementations direct memory transfers give a drastic performance penalty. this can often be avoided by using indirect transfers via pinned memory. other devices have more efficient direct memory transfer implementations. AMD seems to belong to the first group, nvidia to the second.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>opencl_use_cpu_devices</name>
     <type>bool</type>
     <default>false</default>

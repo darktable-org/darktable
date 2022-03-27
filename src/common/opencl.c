@@ -142,6 +142,12 @@ int dt_opencl_micro_nap(const int devid)
   return (!cl->inited || devid < 0) ? 0 : cl->dev[devid].micro_nap;
 }
 
+int dt_opencl_pinned_memory(const int devid)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  return (!cl->inited || devid < 0) ? 0 : cl->dev[devid].pinned_memory;
+}
+
 void dt_opencl_write_device_config(const int devid)
 {
   if(devid < 0) return;
@@ -149,9 +155,10 @@ void dt_opencl_write_device_config(const int devid)
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
   g_snprintf(key, 254, "%s%s", "cldevice_", cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i",
+  g_snprintf(dat, 510, "%i %i %i",
     cl->dev[devid].avoid_atomics,
-    cl->dev[devid].micro_nap);
+    cl->dev[devid].micro_nap,
+    cl->dev[devid].pinned_memory);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 }
@@ -165,9 +172,10 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(!dt_conf_key_not_empty(key)) return TRUE;
 
   const gchar *dat = dt_conf_get_string_const(key);
-  sscanf(dat, "%i %i",
+  sscanf(dat, "%i %i %i",
     &cl->dev[devid].avoid_atomics,
-    &cl->dev[devid].micro_nap);
+    &cl->dev[devid].micro_nap,
+    &cl->dev[devid].pinned_memory);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] found '%s' for '%s'\n", dat, key);
   return FALSE;
 }
@@ -205,6 +213,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   // setting sane defaults at first
   cl->dev[dev].avoid_atomics = 0;
   cl->dev[dev].micro_nap = 1000;
+  cl->dev[dev].pinned_memory = 0;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -394,6 +403,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
     fprintf(stderr, "     MICRO_NAP:                %i\n", cl->dev[dev].micro_nap);
     fprintf(stderr, "     AVOID_ATOMICS:            %s\n", (cl->dev[dev].avoid_atomics) ? "TRUE" : "FALSE");
+    fprintf(stderr, "     PINNED_MEMORY:            %s\n", (cl->dev[dev].pinned_memory) ? "TRUE" : "FALSE");
     fprintf(stderr, "     DRIVER_VERSION:           %s\n", driverversion);
     fprintf(stderr, "     DEVICE_VERSION:           %s\n", deviceversion);
   }
@@ -661,8 +671,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %s\n", str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_number_event_handles: %d\n",
            dt_conf_get_int("opencl_number_event_handles"));
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_use_pinned_memory: %d\n",
-           dt_conf_get_bool("opencl_use_pinned_memory"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_use_cpu_devices: %d\n",
            dt_conf_get_bool("opencl_use_cpu_devices"));
 
