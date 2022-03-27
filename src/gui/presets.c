@@ -1516,12 +1516,14 @@ void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const in
                                const char *maker, const char *model, const char *lens)
 {
   sqlite3_stmt *stmt;
+  // clang-format off¨
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "UPDATE data.presets"
       " SET maker='%' || ?1 || '%', model=?2, lens=?3"
       " WHERE operation=?4 AND op_version=?5 AND name=?6", -1,
       &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, maker, -1, SQLITE_TRANSIENT);
   if (*model)
   {
@@ -1550,12 +1552,14 @@ void dt_gui_presets_update_iso(const char *name, dt_dev_operation_t op, const in
                                const float min, const float max)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "UPDATE data.presets"
       " SET iso_min=?1, iso_max=?2"
       " WHERE operation=?3 AND op_version=?4 AND name=?5", -1, &stmt,
       NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, min);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, max);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, op, -1, SQLITE_TRANSIENT);
@@ -1569,12 +1573,14 @@ void dt_gui_presets_update_av(const char *name, dt_dev_operation_t op, const int
                               const float max)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "UPDATE data.presets"
       " SET aperture_min=?1, aperture_max=?2"
       " WHERE operation=?3 AND op_version=?4 AND name=?5",
       -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, min);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, max);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, op, -1, SQLITE_TRANSIENT);
@@ -1605,11 +1611,13 @@ void dt_gui_presets_update_fl(const char *name, dt_dev_operation_t op, const int
                               const float max)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE data.presets"
                               " SET focal_length_min=?1, focal_length_max=?2"
                               " WHERE operation=?3 AND op_version=?4 AND name=?5",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, min);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, max);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, op, -1, SQLITE_TRANSIENT);
@@ -1623,11 +1631,13 @@ void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const in
                                const int ldrflag)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE data.presets"
                               " SET format=?1"
                               " WHERE operation=?2 AND op_version=?3 AND name=?4",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, ldrflag);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
@@ -1640,11 +1650,13 @@ void dt_gui_presets_update_autoapply(const char *name, dt_dev_operation_t op, co
                                      const int autoapply)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "UPDATE data.presets"
       " SET autoapply=?1"
       " WHERE operation=?2 AND op_version=?3 AND name=?4", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, autoapply);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);
@@ -1657,11 +1669,13 @@ void dt_gui_presets_update_filter(const char *name, dt_dev_operation_t op, const
                                   const int filter)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE data.presets"
                               " SET filter=?1"
                               " WHERE operation=?2 AND op_version=?3 AND name=?4",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filter);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);

@@ -171,11 +171,13 @@ static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
   {
     // commit all the module fields
     sqlite3_stmt *stmt;
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "UPDATE data.presets"
                                 " SET op_version=?2, op_params=?3"
                                 " WHERE name=?4 AND operation=?1",
                                 -1, &stmt, NULL);
+    // clang-format on
 
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
