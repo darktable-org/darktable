@@ -44,8 +44,11 @@ typedef struct dt_undo_colorlabels_t
 int dt_colorlabels_get_labels(const int imgid)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT color FROM main.color_labels WHERE imgid = ?1", -1, &stmt, NULL);
+                              "SELECT color FROM main.color_labels WHERE imgid = ?1",
+                              -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   int colors = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -94,8 +97,9 @@ static void _colorlabels_undo_data_free(gpointer data)
 void dt_colorlabels_remove_labels(const int imgid)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.color_labels WHERE imgid=?1", -1,
-                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.color_labels WHERE imgid=?1",
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -104,8 +108,11 @@ void dt_colorlabels_remove_labels(const int imgid)
 void dt_colorlabels_set_label(const int imgid, const int color)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO main.color_labels (imgid, color) VALUES (?1, ?2)", -1, &stmt, NULL);
+                              "INSERT INTO main.color_labels (imgid, color) VALUES (?1, ?2)",
+                              -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   sqlite3_step(stmt);
@@ -115,8 +122,11 @@ void dt_colorlabels_set_label(const int imgid, const int color)
 void dt_colorlabels_remove_label(const int imgid, const int color)
 {
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.color_labels WHERE imgid=?1 AND color=?2", -1, &stmt, NULL);
+                              "DELETE FROM main.color_labels WHERE imgid=?1 AND color=?2",
+                              -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   sqlite3_step(stmt);
@@ -238,9 +248,11 @@ int dt_colorlabels_check_label(const int imgid, const int color)
 {
   if(imgid <= 0) return 0;
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT * FROM main.color_labels WHERE imgid=?1 AND color=?2 LIMIT 1",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -326,6 +338,9 @@ const dt_action_def_t dt_action_def_color_label
       _action_process_color_label,
       _action_elements_color_label };
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

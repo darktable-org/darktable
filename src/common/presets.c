@@ -53,6 +53,7 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
 
   g_free(presetname);
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT op_params, blendop_params, name, description, operation,"
                               "   autoapply, model, maker, lens, iso_min, iso_max, exposure_min,"
@@ -62,6 +63,7 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
                               " FROM data.presets"
                               " WHERE rowid = ?1",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -246,6 +248,7 @@ int dt_presets_import_from_file(const char *preset_path)
   sqlite3_stmt *stmt;
   int result = 0;
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
      "INSERT OR REPLACE"
      "  INTO data.presets"
@@ -257,6 +260,7 @@ int dt_presets_import_from_file(const char *preset_path)
      "  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, "
      "          ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, 0)",
      -1, &stmt, NULL);
+  // clang-format on
 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, description, strlen(description), SQLITE_TRANSIENT);
@@ -313,6 +317,9 @@ gboolean dt_presets_module_can_autoapply(const gchar *operation)
   }
   return TRUE;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -100,6 +100,9 @@ int dt_cache_for_all(dt_cache_t *cache,
     int (*process)(const uint32_t key, const void *data, void *user_data),
     void *user_data);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

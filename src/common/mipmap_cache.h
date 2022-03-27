@@ -167,6 +167,9 @@ void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint3
 
 // return the mipmap corresponding to text value saved in prefs
 dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(const char *value);
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

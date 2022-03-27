@@ -161,3 +161,9 @@ Testimg *testimg_gen_grey_max_dr_neg();
 // create 3 "grey'ish" gradients where in each one a color dominates and clips:
 // height: 3, y=0 => red clips, y=1 => green clips, y=2 => blue clips
 Testimg *testimg_gen_grey_with_rgb_clipping(const int width);
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

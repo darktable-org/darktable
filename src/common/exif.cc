@@ -2197,12 +2197,14 @@ static void _exif_import_tags(dt_image_t *img, Exiv2::XmpData::iterator &pos)
                               &stmt_sel_id, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO data.tags (id, name) VALUES (NULL, ?1)",
                               -1, &stmt_ins_tags, NULL);
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.tagged_images (tagid, imgid, position)"
                               "  VALUES (?1, ?2,"
                               "    (SELECT (IFNULL(MAX(position),0) & 0xFFFFFFFF00000000) + (1 << 32)"
                               "      FROM main.tagged_images))",
                                -1, &stmt_ins_tagged, NULL);
+  // clang-format on
   for(int i = 0; i < cnt; i++)
   {
     char tagbuf[1024];
@@ -2757,11 +2759,13 @@ static void add_mask_entry_to_db(int imgid, mask_entry_t *entry)
   const int mask_num = 0;
 
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
                               "INSERT INTO main.masks_history (imgid, num, formid, form, name, version, points, points_count, source) "
                               "VALUES (?1, ?9, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, entry->mask_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, entry->mask_type);
@@ -2841,6 +2845,7 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
 
   char query[1024] = { 0 };
 
+  // clang-format off
   snprintf(query, sizeof(query),
            "SELECT 1"
            " FROM main.history, main.images"
@@ -2849,6 +2854,7 @@ static gboolean _image_altered_deprecated(const uint32_t imgid)
            "                             'colorin', 'colorout', 'gamma', 'demosaic', 'temperature'%s%s)",
            basecurve_auto_apply ? ", 'basecurve'" : "",
            sharpen_auto_apply ? ", 'sharpen'" : "");
+  // clang-format on
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -3035,12 +3041,13 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       goto end;
     }
     sqlite3_finalize(stmt);
-
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO main.history"
                                 " (imgid, num, module, operation, op_params, enabled, "
                                 "  blendop_params, blendop_version, multi_priority, multi_name) "
                                 "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)", -1, &stmt, NULL);
+    // clang-format on
 
     for(GList *iter = history_entries; iter; iter = g_list_next(iter))
     {
@@ -3178,13 +3185,14 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         sqlite3_finalize(stmt);
 
         // insert mask_manager entry
-
+        // clang-format off
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "INSERT INTO main.history"
                                     " (imgid, num, module, operation, op_params, enabled, "
                                     "  blendop_params, blendop_version, multi_priority, multi_name) "
                                     "VALUES"
                                     " (?1, 0, 1, 'mask_manager', NULL, 0, NULL, 0, 0, '')", -1, &stmt, NULL);
+        // clang-format on
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
         if(sqlite3_step(stmt) != SQLITE_DONE)
         {
@@ -3221,6 +3229,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     else
     {
       if(preset_applied) preset_applied = -1;
+      // clang-format off
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "UPDATE main.images "
                                   " SET history_end = (SELECT IFNULL(MAX(num) + 1, 0)"
@@ -3228,6 +3237,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
                                   "                    WHERE imgid = ?1)"
                                   " WHERE id = ?1", -1,
                                   &stmt, NULL);
+      // clang-format on
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
       if(sqlite3_step(stmt) != SQLITE_DONE)
       {
@@ -3342,7 +3352,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
   Exiv2::XmpTextValue tvm("");
   tvm.setXmpArrayType(Exiv2::XmpValue::xaSeq);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.masks_history"), &tvm);
-
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT imgid, formid, form, name, version, points, points_count, source, num"
@@ -3350,6 +3360,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
       " WHERE imgid = ?1"
       " ORDER BY num",
       -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -3395,7 +3406,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
   Exiv2::XmpTextValue tv("");
   tv.setXmpArrayType(Exiv2::XmpValue::xaSeq);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.history"), &tv);
-
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT module, operation, op_params, enabled, blendop_params, "
@@ -3404,6 +3415,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
       " WHERE imgid = ?1"
       " ORDER BY num",
       -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -3475,7 +3487,7 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
   dt_remove_xmp_keys(xmpData, keys, n_keys);
 
   sqlite3_stmt *stmt;
-
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "SELECT import_timestamp, change_timestamp, export_timestamp, print_timestamp"
@@ -3483,6 +3495,7 @@ static void set_xmp_timestamps(Exiv2::XmpData &xmpData, const int imgid)
       " WHERE id = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  // clang-format on
 
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -3648,12 +3661,14 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   // get stars and raw params from db
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT filename, flags, raw_parameters, "
                               "       longitude, latitude, altitude, history_end, datetime_taken"
                               " FROM main.images"
                               " WHERE id = ?1",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -3774,12 +3789,14 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
 
   // get stars and raw params from db
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT filename, flags, raw_parameters, "
                               "       longitude, latitude, altitude, history_end, datetime_taken"
                               " FROM main.images"
                               " WHERE id = ?1",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -4344,12 +4361,13 @@ dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data,
     Exiv2::ExifData::const_iterator pos;
     Exiv2::ExifData exifData;
     Exiv2::ExifParser::decode(exifData, data, size);
-
+    // clang-format off
     // 0x01   -> sRGB
     // 0x02   -> AdobeRGB
     // 0xffff -> Uncalibrated
     //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
     //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
+    // clang-format on
     if((pos = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace"))) != exifData.end() && pos->size())
     {
       int colorspace = pos->toLong();
@@ -4447,6 +4465,9 @@ void dt_exif_cleanup()
   Exiv2::XmpParser::terminate();
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

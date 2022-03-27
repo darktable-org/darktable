@@ -1610,3 +1610,9 @@ void gui_init(struct dt_iop_module_t *self)
                                 "any higher value excludes pixels with luminance lower than the threshold.\n"
                                 "this can be used to inpaint highlights."));
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

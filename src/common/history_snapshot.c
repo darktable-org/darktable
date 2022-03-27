@@ -61,10 +61,12 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
   if(*history_end == 0)
   {
     // insert a dummy undo_histroy to ensure proper snap_id later
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO memory.undo_history"
                                 "  VALUES (?1, ?2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)"
                                 , -1, &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
@@ -74,12 +76,14 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
 
   // copy current state into undo_history
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO memory.undo_history"
                               "  SELECT ?1, imgid, num, module, operation, op_params, enabled, "
                               "         blendop_params, blendop_version, multi_priority, multi_name "
                               "  FROM main.history"
                               "  WHERE imgid=?2", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
@@ -87,12 +91,14 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
 
   // copy current state into undo_masks_history
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO memory.undo_masks_history"
                               "  SELECT ?1, imgid, num, formid, form, name, version,"
                               "         points, points_count, source"
                               "  FROM main.masks_history"
                               "  WHERE imgid=?2", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
@@ -100,11 +106,13 @@ void dt_history_snapshot_undo_create(const int32_t imgid, int *snap_id, int *his
 
   // copy the module order
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO memory.undo_module_order"
                               "  SELECT ?1, imgid, version, iop_list"
                               "  FROM main.module_order"
                               "  WHERE imgid=?2", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
@@ -145,12 +153,14 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
 
   // copy undo_history snapshot back as current history state
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.history"
                               "  SELECT imgid, num, module, operation, op_params, enabled, "
                               "         blendop_params, blendop_version, multi_priority, multi_name "
                               "  FROM memory.undo_history"
                               "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
@@ -158,6 +168,7 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
 
   // copy undo_masks_history snapshot back as current masks_history state
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.masks_history"
                               "  SELECT imgid, num, formid, form, name, version, "
@@ -165,6 +176,7 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
                               "  FROM memory.undo_masks_history"
                               "  WHERE imgid=?2 AND id=?1",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
@@ -172,11 +184,13 @@ static void _history_snapshot_undo_restore(const int32_t imgid, const int snap_i
 
   // restore module order
 
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.module_order"
                               "  SELECT imgid, version, iop_list"
                               "  FROM memory.undo_module_order"
                               "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
@@ -262,3 +276,9 @@ void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_un
     *imgs = g_list_append(*imgs, GINT_TO_POINTER(hist->imgid));
   }
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

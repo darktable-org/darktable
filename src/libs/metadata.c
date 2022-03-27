@@ -186,11 +186,13 @@ static void _update(dt_lib_module_t *self)
   if(images)
   {
     sqlite3_stmt *stmt;
+    // clang-format off
     gchar *query = g_strdup_printf(
                             "SELECT key, value, COUNT(id) AS ct FROM main.meta_data"
                             " WHERE id IN (%s)"
                             " GROUP BY key, value ORDER BY value",
                             images);
+    // clang-format on
     g_free(images);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -968,6 +970,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   _update(self);
   return 0;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

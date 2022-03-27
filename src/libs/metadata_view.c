@@ -481,10 +481,12 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       images = dt_act_on_get_query(FALSE);
       sqlite3_stmt *stmt;
+      // clang-format off
       gchar *query = g_strdup_printf("SELECT id, COUNT(id) "
                                      "FROM main.images "
                                      "WHERE id IN (%s)",
                                      images);
+      // clang-format on
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW)
       {
@@ -512,6 +514,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     if(!images) images = dt_act_on_get_query(FALSE);
     sqlite3_stmt *stmt = NULL;
+    // clang-format off
     gchar *query = g_strdup_printf("SELECT COUNT(DISTINCT film_id), "
                                          "2, " //id always different
                                          "COUNT(DISTINCT group_id), "
@@ -551,15 +554,18 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                          "FROM main.images "
                                          "WHERE id IN (%s)",
                                    images, images, images, images, images, images, images, images);
+    // clang-format on
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
     sqlite3_stmt *stmt_tags = NULL;
+    // clang-format off
     gchar *tag_query = g_strdup_printf("SELECT flags, COUNT(DISTINCT imgid) "
                                        "FROM main.tagged_images "
                                        "JOIN data.tags "
                                        "ON data.tags.id = main.tagged_images.tagid AND name NOT LIKE 'darktable|%%' "
                                        "WHERE imgid in (%s) GROUP BY tagid", images);
+    // clang-format on
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), tag_query, -1, &stmt_tags, NULL);
     g_free(tag_query);
     g_free(query);
@@ -1638,6 +1644,9 @@ void init(struct dt_lib_module_t *self)
   lua_pop(L, 2);
 }
 #endif
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

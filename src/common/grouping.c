@@ -170,11 +170,13 @@ void dt_grouping_add_grouped_images(GList **images)
          && dt_selection_get_collection(darktable.selection))
       {
         sqlite3_stmt *stmt;
+        // clang-format off
         gchar *query = g_strdup_printf(
             "SELECT id"
             "  FROM main.images"
             "  WHERE group_id = %d AND id IN (%s)",
             img_group_id, dt_collection_get_query_no_group(dt_selection_get_collection(darktable.selection)));
+        // clang-format on
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
         while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -193,6 +195,9 @@ void dt_grouping_add_grouped_images(GList **images)
     *images = g_list_concat(*images, g_list_reverse(gimgs));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

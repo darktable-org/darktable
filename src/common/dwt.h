@@ -145,3 +145,9 @@ cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func);
 #endif
 
 #endif
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

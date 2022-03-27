@@ -519,12 +519,14 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     int space = first->y;
     if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP) space = first->x;
     const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
+    // clang-format off
     gchar *query = g_strdup_printf(
        "SELECT rowid, imgid"
        " FROM memory.collected_images"
        " WHERE rowid<%d"
        " ORDER BY rowid DESC LIMIT %d",
         first->rowid, nb_to_load * table->thumbs_per_row);
+    // clang-format on
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     int posx = first->x;
     int posy = first->y;
@@ -573,12 +575,14 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
       space = table->view_width - (last->x + table->thumb_size);
     const int nb_to_load = space / table->thumb_size + (space % table->thumb_size != 0);
+    // clang-format off
     gchar *query = g_strdup_printf(
        "SELECT rowid, imgid"
        " FROM memory.collected_images"
        " WHERE rowid>%d"
        " ORDER BY rowid LIMIT %d",
         last->rowid, nb_to_load * table->thumbs_per_row);
+    // clang-format on
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
     int posx = last->x;
@@ -1498,6 +1502,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
         if(table->navigate_inside_selection)
         {
           sqlite3_stmt *stmt;
+          // clang-format off
           gchar *query = g_strdup_printf(
               "SELECT m.imgid"
               " FROM memory.collected_images AS m, main.selected_images AS s"
@@ -1505,6 +1510,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
               "   AND m.rowid>=(SELECT rowid FROM memory.collected_images WHERE imgid=%d)"
               " ORDER BY m.rowid LIMIT 1",
               next);
+          // clang-format on
           DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
           if(sqlite3_step(stmt) == SQLITE_ROW)
           {
@@ -1515,6 +1521,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
             // no select image after, search before
             g_free(query);
             sqlite3_finalize(stmt);
+            // clang-format off
             query = g_strdup_printf(
                 "SELECT m.imgid"
                 " FROM memory.collected_images AS m, main.selected_images AS s"
@@ -1522,6 +1529,7 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
                 "   AND m.rowid<(SELECT rowid FROM memory.collected_images WHERE imgid=%d)"
                 " ORDER BY m.rowid DESC LIMIT 1",
                 next);
+            // clang-format on
             DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
             if(sqlite3_step(stmt) == SQLITE_ROW)
             {
@@ -2777,6 +2785,9 @@ gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table)
   return TRUE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+
