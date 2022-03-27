@@ -52,6 +52,10 @@
 #define ROUNDUPWD(a) dt_opencl_roundup(a)
 #define ROUNDUPHT(a) dt_opencl_roundup(a)
 
+// use per device roundups here
+#define DEVROUNDUPWD(a, b) dt_opencl_dev_roundup(a, b)
+#define DEVROUNDUPHT(a, b) dt_opencl_dev_roundup(a, b)
+
 typedef enum dt_opencl_memory_t
 {
   OPENCL_MEMORY_ADD,
@@ -134,6 +138,9 @@ typedef struct dt_opencl_device_t
   // other devices have more efficient direct memory transfer implementations.
   // AMD seems to belong to the first group, nvidia to the second.
   int pinned_memory;
+  // in OpenCL processing round width/height of global work groups to a multiple of this value.
+  // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
+  int clroundup;  
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -393,6 +400,9 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid);
 
 /** round size to a multiple of the value given in config parameter opencl_size_roundup */
 int dt_opencl_roundup(int size);
+
+/** round size to a multiple of the value given in the device specifig config parameter for opencl_size_roundup */
+int dt_opencl_dev_roundup(int size, const int devid);
 
 /** get next free slot in eventlist and manage size of eventlist */
 cl_event *dt_opencl_events_get_slot(const int devid, const char *tag);
