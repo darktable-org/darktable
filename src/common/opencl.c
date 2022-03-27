@@ -2734,8 +2734,6 @@ int dt_opencl_roundup(int size)
 /** round size to a multiple of the value given in the device specifig config parameter for opencl_size_roundup */
 int dt_opencl_dev_roundup(int size, const int devid)
 {
-  if(!darktable.opencl->inited || devid < 0) return 16;
-
   const int roundup = darktable.opencl->dev[devid].clroundup;
   return (size % roundup == 0 ? size : (size / roundup + 1) * roundup);
 }
