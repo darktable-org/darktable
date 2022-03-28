@@ -1917,7 +1917,7 @@ void gui_init(struct dt_iop_module_t *self)
   // actual kind of data we are using in the GUI (it is part of the pipeline).
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, NULL, IOP_CS_NONE);
   dt_action_define_iop(self, N_("settings"), N_("from image area"), g->colorpicker, &dt_action_def_toggle);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, 0, NULL);
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
 
   g->btn_user = dt_iop_togglebutton_new(self, N_("settings"), N_("user modified"), NULL,

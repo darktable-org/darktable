@@ -306,14 +306,11 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url("tethering_live_view"));
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-  lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL);
-  lib->live_view_zoom = dtgtk_button_new(
-      dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT, NULL); // TODO: see _zoom_live_view_clicked
-  lib->rotate_ccw = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT, NULL);
-  lib->rotate_cw = dtgtk_button_new(dtgtk_cairo_paint_refresh,
-                                    CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
-  lib->flip = dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,
-                                     CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
+  lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL);
+  lib->live_view_zoom = dtgtk_button_new(dtgtk_cairo_paint_zoom, 0, NULL); // TODO: see _zoom_live_view_clicked
+  lib->rotate_ccw = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
+  lib->rotate_cw = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DIRECTION_UP, NULL);
+  lib->flip = dtgtk_togglebutton_new(dtgtk_cairo_paint_flip, CPF_DIRECTION_UP, NULL);
 
   gtk_box_pack_start(GTK_BOX(box), lib->live_view, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->live_view_zoom, TRUE, TRUE, 0);
@@ -336,16 +333,12 @@ void gui_init(dt_lib_module_t *self)
   // focus buttons
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-  lib->focus_in_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
-                                       CPF_STYLE_FLAT | CPF_DIRECTION_LEFT, NULL);
+  lib->focus_in_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_LEFT, NULL);
   lib->focus_in_small
-      = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT
-                                                  | CPF_DIRECTION_LEFT, NULL); // TODO icon not centered
-  lib->auto_focus = dtgtk_button_new(dtgtk_cairo_paint_lock, CPF_STYLE_FLAT, NULL);
-  lib->focus_out_small = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT
-                                                                   | CPF_DIRECTION_RIGHT, NULL); // TODO same here
-  lib->focus_out_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
-                                        CPF_STYLE_FLAT | CPF_DIRECTION_RIGHT, NULL);
+      = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT, NULL); // TODO icon not centered
+  lib->auto_focus = dtgtk_button_new(dtgtk_cairo_paint_lock, 0, NULL);
+  lib->focus_out_small = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DIRECTION_RIGHT, NULL); // TODO same here
+  lib->focus_out_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_RIGHT, NULL);
 
   gtk_box_pack_start(GTK_BOX(box), lib->focus_in_big, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), lib->focus_in_small, TRUE, TRUE, 0);

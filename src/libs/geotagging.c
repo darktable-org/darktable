@@ -1740,7 +1740,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, label, 0, line, 2, 1);
   gtk_widget_set_tooltip_text(label, _("offset or difference ([-]dd hh:mm:ss[.sss])"));
 
-  d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, CPF_STYLE_FLAT, NULL);
+  d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, 0, NULL);
   gtk_widget_set_tooltip_text(d->lock_offset, _("lock date/time offset value to apply it onto another selection"));
   gtk_widget_set_halign(d->lock_offset, GTK_ALIGN_START);
   gtk_grid_attach(grid, d->lock_offset, 2, line, 1, 1);

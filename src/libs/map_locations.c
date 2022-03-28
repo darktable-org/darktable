@@ -347,8 +347,7 @@ static void _shape_button_clicked(GtkButton *button, dt_lib_module_t *self)
 
   g_signal_handler_block (d->shape_button, d->shape_button_handler);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->shape_button), FALSE);
-  dtgtk_togglebutton_set_paint((GtkDarktableToggleButton *)d->shape_button,
-                               location_shapes[shape], CPF_STYLE_FLAT, NULL);
+  dtgtk_togglebutton_set_paint((GtkDarktableToggleButton *)d->shape_button, location_shapes[shape], 0, NULL);
   g_signal_handler_unblock (d->shape_button, d->shape_button_handler);
 }
 
@@ -473,7 +472,7 @@ static void _view_map_location_changed(gpointer instance, GList *polygons, dt_li
   {
     g_signal_handler_block (d->shape_button, d->shape_button_handler);
     dtgtk_togglebutton_set_paint((GtkDarktableToggleButton *)d->shape_button,
-                                 location_shapes[MAP_LOCATION_SHAPE_ELLIPSE], CPF_STYLE_FLAT, NULL);
+                                 location_shapes[MAP_LOCATION_SHAPE_ELLIPSE], 0, NULL);
     g_signal_handler_unblock (d->shape_button, d->shape_button_handler);
     dt_conf_set_int("plugins/map/locationshape", MAP_LOCATION_SHAPE_ELLIPSE);
   }
@@ -980,7 +979,7 @@ void gui_init(dt_lib_module_t *self)
     shape = MAP_LOCATION_SHAPE_ELLIPSE;
     dt_conf_set_int("plugins/map/locationshape", shape);
   }
-  d->shape_button = dtgtk_togglebutton_new(location_shapes[shape], CPF_STYLE_FLAT, NULL);
+  d->shape_button = dtgtk_togglebutton_new(location_shapes[shape], 0, NULL);
   gtk_box_pack_start(hbox, d->shape_button, FALSE, TRUE, 0);
   d->shape_button_handler = g_signal_connect(G_OBJECT(d->shape_button), "clicked",
                                              G_CALLBACK(_shape_button_clicked), self);

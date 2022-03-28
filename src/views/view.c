@@ -1259,8 +1259,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   gtk_box_pack_start(GTK_BOX(hb), vm->accels_window.flow_box, TRUE, TRUE, 0);
 
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  vm->accels_window.sticky_btn
-      = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
+  vm->accels_window.sticky_btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, 0, NULL);
   g_object_set(G_OBJECT(vm->accels_window.sticky_btn), "tooltip-text",
                _("switch to a classic window which will stay open after key release"), (char *)NULL);
   g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "button-press-event", G_CALLBACK(_accels_window_sticky),

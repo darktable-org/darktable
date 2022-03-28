@@ -138,7 +138,7 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       dt_bauhaus_widget_set_label(prop->values, NULL, label);
       g_object_ref_sink(prop->values);
 
-      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL));
+      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL));
       g_object_ref_sink(prop->osd);
       gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
       do
@@ -449,12 +449,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(steps_label), 0, lib->gui.rows++, 1, 1);
 
   // capture modes buttons
-  lib->gui.toggle_timer = DTGTK_TOGGLEBUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_timer, CPF_STYLE_FLAT, NULL));
-  lib->gui.toggle_sequence = DTGTK_TOGGLEBUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip, CPF_STYLE_FLAT, NULL));
-  lib->gui.toggle_bracket = DTGTK_TOGGLEBUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, CPF_STYLE_FLAT, NULL));
+  lib->gui.toggle_timer = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_timer, 0, NULL));
+  lib->gui.toggle_sequence = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip, 0, NULL));
+  lib->gui.toggle_bracket = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, 0, NULL));
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.toggle_timer), TRUE, TRUE, 0);

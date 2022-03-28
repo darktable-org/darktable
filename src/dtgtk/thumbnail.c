@@ -188,15 +188,15 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
     const int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
     // we reuse CPF_* flags, as we'll pass them to the paint fct after
     if(col == 0)
-      thumb->colorlabels |= CPF_DIRECTION_UP;
+      thumb->colorlabels |= CPF_LABEL_RED;
     else if(col == 1)
-      thumb->colorlabels |= CPF_DIRECTION_DOWN;
+      thumb->colorlabels |= CPF_LABEL_YELLOW;
     else if(col == 2)
-      thumb->colorlabels |= CPF_DIRECTION_LEFT;
+      thumb->colorlabels |= CPF_LABEL_GREEN;
     else if(col == 3)
-      thumb->colorlabels |= CPF_DIRECTION_RIGHT;
+      thumb->colorlabels |= CPF_LABEL_BLUE;
     else if(col == 4)
-      thumb->colorlabels |= CPF_BG_TRANSPARENT;
+      thumb->colorlabels |= CPF_LABEL_PURPLE;
   }
   if(thumb->w_color)
   {

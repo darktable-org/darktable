@@ -3166,7 +3166,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->detach_button), "clicked", G_CALLBACK(_detach_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, d->detach_button, TRUE, TRUE, 0);
 
-  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_minus_simple, CPF_STYLE_FLAT, NULL);
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
   d->toggle_hide_button = button;
   gtk_widget_set_tooltip_text(button, _("toggle list with / without hierarchy"));
   dt_gui_add_help_link(button, dt_get_help_url("tagging"));
@@ -3174,7 +3174,7 @@ void gui_init(dt_lib_module_t *self)
   d->hide_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
                                             G_CALLBACK(_toggle_hide_button_callback), (gpointer)self);
 
-  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_sorting, CPF_STYLE_FLAT, NULL);
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_sorting, 0, NULL);
   d->toggle_sort_button = button;
   gtk_widget_set_tooltip_text(button, _("toggle sort by name or by count"));
   dt_gui_add_help_link(button, dt_get_help_url("tagging"));
@@ -3182,7 +3182,7 @@ void gui_init(dt_lib_module_t *self)
   d->sort_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
                                             G_CALLBACK(_toggle_sort_button_callback), (gpointer)self);
 
-  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_FLAT, NULL);
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_check_mark, 0, NULL);
   d->toggle_dttags_button = button;
   d->dttags_flag = FALSE;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button), FALSE);
@@ -3215,7 +3215,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(_enter_key_pressed), (gpointer)self);
   d->entry = GTK_ENTRY(w);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, CPF_STYLE_FLAT, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_multiply_small, 0, NULL);
   gtk_widget_set_tooltip_text(button, _("clear entry"));
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_clear_entry_button_callback), (gpointer)self);
@@ -3316,7 +3316,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, d->export_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(_export_button_clicked), (gpointer)self);
 
-  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_treelist, CPF_STYLE_FLAT, NULL);
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_treelist, 0, NULL);
   d->toggle_tree_button = button;
   gtk_widget_set_tooltip_text(button, _("toggle list / tree view"));
   dt_gui_add_help_link(button, dt_get_help_url("tagging"));
@@ -3324,7 +3324,7 @@ void gui_init(dt_lib_module_t *self)
   d->tree_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
                                             G_CALLBACK(_toggle_tree_button_callback), (gpointer)self);
 
-  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_plus_simple, CPF_STYLE_FLAT, NULL);
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
   d->toggle_suggestion_button = button;
   gtk_widget_set_tooltip_text(button, _("toggle list with / without suggestion"));
   dt_gui_add_help_link(button, dt_get_help_url("tagging"));
