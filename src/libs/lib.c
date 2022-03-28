@@ -837,7 +837,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
 
   /* update expander arrow state */
-  gint flags = (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_RIGHT) | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
+  gint flags = (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_RIGHT);
   dtgtk_button_set_paint(DTGTK_BUTTON(module->arrow), dtgtk_cairo_paint_solid_arrow, flags, NULL);
 
   /* show / hide plugin widget */
@@ -1026,7 +1026,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
    * initialize the header widgets
    */
   /* add the expand indicator icon */
-  module->arrow = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_FLAT, NULL);
+  module->arrow = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, 0, NULL);
   gtk_widget_set_tooltip_text(module->arrow, _("show module"));
   g_signal_connect(G_OBJECT(module->arrow), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press), module);
   dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
@@ -1045,7 +1045,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_box_pack_start(GTK_BOX(header), label_evb, FALSE, FALSE, 0);
 
   /* add preset button if module has implementation */
-  module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+  module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(presets_popup_callback), module);
   g_signal_connect(G_OBJECT(module->presets_button), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
@@ -1055,7 +1055,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_box_pack_end(GTK_BOX(header), module->presets_button, FALSE, FALSE, 0);
 
   /* add reset button if module has implementation */
-  module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+  module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   g_signal_connect(G_OBJECT(module->reset_button), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
   g_signal_connect(G_OBJECT(module->reset_button), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));

@@ -468,6 +468,11 @@ spinbutton>button
   color: alpha(@button_fg, 0.5);
 }
 
+.dt_toggle_button:checked,
+.dt_button:checked
+{
+  background-color: transparent;
+}
 /*------------------------
   - Main header settings -
   ------------------------*/
@@ -1741,7 +1746,8 @@ combobox window *:selected,
 #recent-collection-button:active,
 #recent-collection-button:checked,
 #recent-collection-button:selected,
-messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
+messagedialog .default,  /* this show that a button in confirmation action pop-up has the focus (no by default) */
+.dt_checked_background:checked
 {
   background-color: @button_checked_bg;
   color: @button_checked_fg;

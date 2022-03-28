@@ -1750,35 +1750,35 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
 
   const float r = 0.18;
 
-  if(flags & CPF_DIRECTION_UP)
+  if(flags & CPF_LABEL_RED)
   {
     cairo_arc(cr, r, r, r, 0, 2.0f * M_PI);
     set_color(cr, colorlabels[DT_COLORLABELS_RED]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_DIRECTION_DOWN)
+  if(flags & CPF_LABEL_YELLOW)
   {
     cairo_arc(cr, 1.0 - r, r, r, 0, 2.0f * M_PI);
     set_color(cr, colorlabels[DT_COLORLABELS_YELLOW]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_DIRECTION_LEFT)
+  if(flags & CPF_LABEL_GREEN)
   {
     cairo_arc(cr, 0.5, 0.5, r, 0, 2.0f * M_PI);
     set_color(cr, colorlabels[DT_COLORLABELS_GREEN]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_DIRECTION_RIGHT)
+  if(flags & CPF_LABEL_BLUE)
   {
     cairo_arc(cr, r, 1.0 - r, r, 0, 2.0f * M_PI);
     set_color(cr, colorlabels[DT_COLORLABELS_BLUE]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_BG_TRANSPARENT)
+  if(flags & CPF_LABEL_PURPLE)
   {
     cairo_arc(cr, 1.0 - r, 1.0 - r, r, 0, 2.0f * M_PI);
     set_color(cr, colorlabels[DT_COLORLABELS_PURPLE]);

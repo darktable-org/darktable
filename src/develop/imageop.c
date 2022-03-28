@@ -1097,6 +1097,7 @@ void dt_iop_gui_set_enable_button_icon(GtkWidget *w, dt_iop_module_t *module)
   // set on/off icon
   if(module->default_enabled && module->hide_enable_button)
   {
+<<<<<<< HEAD
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
                                  dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
   }
@@ -1109,6 +1110,20 @@ void dt_iop_gui_set_enable_button_icon(GtkWidget *w, dt_iop_module_t *module)
   {
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
                                  dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+=======
+    gtk_widget_set_name(w, "module-always-enabled-button");
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w), dtgtk_cairo_paint_switch_on, 0, module);
+  }
+  else if(!module->default_enabled && module->hide_enable_button)
+  {
+    gtk_widget_set_name(w, "module-always-disabled-button");
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w), dtgtk_cairo_paint_switch_off, 0, module);
+  }
+  else
+  {
+    gtk_widget_set_name(w, "module-enable-button");
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w), dtgtk_cairo_paint_switch, 0, module);
+>>>>>>> 8b4e68185 (remove unused drawing flags now managed by css)
   }
 }
 
@@ -2326,9 +2341,7 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
   }
   else if(show)
   {
-    module->mask_indicator = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask,
-                                                    CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-    dt_gui_add_class(module->mask_indicator, "dt_module_btn");
+    module->mask_indicator = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, 0, NULL);
     g_signal_connect(G_OBJECT(module->mask_indicator), "toggled",
                      G_CALLBACK(_display_mask_indicator_callback), module);
     g_signal_connect(G_OBJECT(module->mask_indicator), "query-tooltip",
@@ -2414,7 +2427,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
 
   /* add multi instances menu button */
-  hw[IOP_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
+  hw[IOP_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, 0, NULL);
   module->multimenu_button = GTK_WIDGET(hw[IOP_MODULE_INSTANCE]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]),
                               _("multiple instance actions\nright-click creates new instance"));
@@ -2427,7 +2440,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
 
   /* add reset button */
-  hw[IOP_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+  hw[IOP_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   module->reset_button = GTK_WIDGET(hw[IOP_MODULE_RESET]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_RESET]), _("reset parameters\nctrl+click to reapply any automatic presets"));
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "button-press-event", G_CALLBACK(_gui_reset_callback), module);
@@ -2436,7 +2449,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_RESET]), "dt_module_btn");
 
   /* add preset button if module has implementation */
-  hw[IOP_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+  hw[IOP_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   module->presets_button = GTK_WIDGET(hw[IOP_MODULE_PRESETS]);
   if(!(module->flags() & IOP_FLAGS_ONE_INSTANCE))
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets\nright-click to apply on new instance"));
@@ -2446,8 +2459,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "dt_module_btn");
 
   /* add enabled button */
-  hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch,
-                                                 CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
+  hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, module);
   dt_iop_gui_set_enable_button_icon(hw[IOP_MODULE_SWITCH], module);
 
   gchar *module_label = dt_history_item_get_name(module);

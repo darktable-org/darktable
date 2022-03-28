@@ -399,7 +399,8 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   /* create the grouping button */
-  d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, CPF_STYLE_FLAT, NULL);
+  d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, 0, NULL);
+  gtk_style_context_add_class(gtk_widget_get_style_context(d->grouping_button), "dt_checked_background");
   dt_action_define(&darktable.control->actions_global, NULL, "grouping", d->grouping_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 0);
   if(darktable.gui->grouping)
@@ -411,7 +412,7 @@ void gui_init(dt_lib_module_t *self)
                    NULL);
 
   /* create the "show/hide overlays" button */
-  d->overlays_button = dtgtk_button_new(dtgtk_cairo_paint_overlays, CPF_STYLE_FLAT, NULL);
+  d->overlays_button = dtgtk_button_new(dtgtk_cairo_paint_overlays, 0, NULL);
   gtk_widget_set_tooltip_text(d->overlays_button, _("click to change the type of overlays shown on thumbnails"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 0);
   d->over_popup = gtk_popover_new(d->overlays_button);
@@ -504,14 +505,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show(vbox);
 
   /* create the widget help button */
-  d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, CPF_STYLE_FLAT, NULL);
+  d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, 0, NULL);
+  gtk_style_context_add_class(gtk_widget_get_style_context(d->help_button), "dt_checked_background");
   gtk_box_pack_start(GTK_BOX(self->widget), d->help_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
   g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
   dt_gui_add_help_link(d->help_button, dt_get_help_url("global_toolbox_help"));
 
   /* create the shortcuts button */
-  d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, CPF_STYLE_FLAT, NULL);
+  d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, 0, NULL);
+  gtk_style_context_add_class(gtk_widget_get_style_context(d->keymap_button), "dt_checked_background");
   dt_action_define(&darktable.control->actions_global, NULL, "shortcuts", d->keymap_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->keymap_button, _("define shortcuts\n"
@@ -528,7 +531,7 @@ void gui_init(dt_lib_module_t *self)
   // that's done so that buttons added via Lua will come first.
 
   /* create the preference button */
-  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT, NULL);
+  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
   gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
