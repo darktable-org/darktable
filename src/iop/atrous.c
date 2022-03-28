@@ -394,7 +394,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   // clear dev_out to zeros, as we will be incrementally accumulating results there
   dt_opencl_set_kernel_arg(devid, gd->kernel_zero, 0, sizeof(cl_mem), (void *)&dev_out);
@@ -533,7 +533,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { width, height, 1 };
 

@@ -1900,7 +1900,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
     goto error;
   }
 
-  size_t sizes[3] = { ROUNDUPWD(width), ROUNDUP(height * taps, vblocksize), 1 };
+  size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUP(height * taps, vblocksize), 1 };
   size_t local[3] = { 1, vblocksize, 1 };
 
   // store resampling plan to device memory

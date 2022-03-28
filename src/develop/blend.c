@@ -708,7 +708,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   }
 
   {
-    size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_read_mask;
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &tmp);
@@ -719,7 +719,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   }
 
   {
-    size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_calc_blend;
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &blur);
@@ -738,7 +738,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
     dev_blurmat = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 13, blurmat);
     if(dev_blurmat != NULL)
     {
-      size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
+      size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
       const int clkernel = darktable.opencl->blendop->kernel_mask_blur;
       dt_opencl_set_kernel_arg(devid, clkernel, 0, sizeof(cl_mem), &blur);
       dt_opencl_set_kernel_arg(devid, clkernel, 1, sizeof(cl_mem), &out);
@@ -757,7 +757,7 @@ static void _refine_with_detail_mask_cl(struct dt_iop_module_t *self, struct dt_
   }
 
   {
-    size_t sizes[3] = { ROUNDUPWD(iwidth), ROUNDUPHT(iheight), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(iwidth, devid), ROUNDUPDHT(iheight, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_write_mask;
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &out);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &tmp);
@@ -918,7 +918,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   const int devid = piece->pipe->devid;
   const int offs[2] = { xoffs, yoffs };
-  const size_t sizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(owidth, devid), ROUNDUPDHT(oheight, devid), 1 };
 
   cl_int err = -999;
   cl_mem dev_blendif_params = NULL;

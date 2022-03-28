@@ -196,8 +196,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_m == NULL) goto error;
 
   /* invert image */
-  sizes[0] = ROUNDUPWD(width);
-  sizes[1] = ROUNDUPHT(height);
+  sizes[0] = ROUNDUPDWD(width, devid);
+  sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_invert, 1, sizeof(cl_mem), (void *)&dev_tmp);
@@ -210,7 +210,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     /* horizontal blur */
     sizes[0] = bwidth;
-    sizes[1] = ROUNDUPHT(height);
+    sizes[1] = ROUNDUPDHT(height, devid);
     sizes[2] = 1;
     local[0] = hblocksize;
     local[1] = 1;
@@ -228,7 +228,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 
     /* vertical blur */
-    sizes[0] = ROUNDUPWD(width);
+    sizes[0] = ROUNDUPDWD(width, devid);
     sizes[1] = bheight;
     sizes[2] = 1;
     local[0] = 1;
@@ -247,8 +247,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   /* mixing tmp and in -> out */
-  sizes[0] = ROUNDUPWD(width);
-  sizes[1] = ROUNDUPHT(height);
+  sizes[0] = ROUNDUPDWD(width, devid);
+  sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highpass_mix, 1, sizeof(cl_mem), (void *)&dev_tmp);

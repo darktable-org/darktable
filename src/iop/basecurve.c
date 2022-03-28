@@ -423,7 +423,7 @@ int gauss_blur_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const int devid = piece->pipe->devid;
 
   /* horizontal blur */
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 1, sizeof(cl_mem), (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blur_h, 2, sizeof(int), (void *)&width);
@@ -452,7 +452,7 @@ int gauss_expand_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   cl_int err = -999;
   const int devid = piece->pipe->devid;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_expand, 2, sizeof(int), (void *)&width);
@@ -482,7 +482,7 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     const int cw = (width - 1) / 2 + 1;
     const int ch = (height - 1) / 2 + 1;
 
-    size_t sizes[] = { ROUNDUPWD(cw), ROUNDUPHT(ch), 1 };
+    size_t sizes[] = { ROUNDUPDWD(cw, devid), ROUNDUPDHT(ch, devid), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 0, sizeof(cl_mem), (void *)&dev_tmp1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 1, sizeof(cl_mem), (void *)&dev_coarse);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reduce, 2, sizeof(int), (void *)&cw);
@@ -496,7 +496,7 @@ int gauss_reduce_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     if(!gauss_expand_cl(self, piece, dev_coarse, dev_tmp1, dev_tmp2, width, height))
       return FALSE;
 
-    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 1, sizeof(cl_mem), (void *)&dev_tmp1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_detail, 2, sizeof(cl_mem), (void *)&dev_detail);
@@ -563,7 +563,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     dev_comb[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_comb[k] == NULL) goto error;
 
-    size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+    size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_zero, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_zero, 1, sizeof(int), (void *)&w);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_zero, 2, sizeof(int), (void *)&h);
@@ -594,7 +594,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     {
       const float mul = exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias);
 
-      size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+      size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
       if(d->preserve_colors == DT_RGB_NORM_NONE)
       {
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -637,7 +637,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
     // adjust features
     {
-      size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+      size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 0, sizeof(cl_mem), (void *)&dev_col[0]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 1, sizeof(cl_mem), (void *)&dev_out);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_adjust_features, 2, sizeof(cl_mem), (void *)&dev_tmp1);
@@ -682,7 +682,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       if(k == num_levels - 1)
       {
         // blend gaussian base
-        size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+        size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 1, sizeof(cl_mem), (void *)&dev_col[k]);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_gaussian, 2, sizeof(cl_mem), (void *)&dev_tmp1);
@@ -699,7 +699,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       else
       {
         // blend laplacian
-        size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+        size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 1, sizeof(cl_mem), (void *)&dev_col[k]);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_blend_laplacian, 2, sizeof(cl_mem), (void *)&dev_tmp2);
@@ -731,7 +731,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
     {
       // normalize both gaussian base and laplacian
-      size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+      size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 1, sizeof(cl_mem), (void *)&dev_tmp1);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_normalize, 2, sizeof(int), (void *)&w);
@@ -755,7 +755,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
         goto error;
 
       // dev_comb[k] + dev_tmp1 -> dev_tmp2
-      size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
+      size_t sizes[] = { ROUNDUPDWD(w, devid), ROUNDUPDHT(h, devid), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 0, sizeof(cl_mem), (void *)&dev_comb[k]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 1, sizeof(cl_mem), (void *)&dev_tmp1);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_reconstruct, 2, sizeof(cl_mem), (void *)&dev_tmp2);
@@ -774,7 +774,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
   // copy output buffer
   {
-    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 1, sizeof(cl_mem), (void *)&dev_comb[0]);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 2, sizeof(cl_mem), (void *)&dev_out);
@@ -840,7 +840,7 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   const float mul = 1.0f;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
   if(dev_m == NULL) goto error;
 
