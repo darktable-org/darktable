@@ -101,11 +101,12 @@
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.4);
 
 /* GTK Buttons and tabs */
-@define-color button_border @grey_30;
 @define-color button_bg @grey_25;
+@define-color button_border shade(@button_bg, 1.05);
 @define-color button_fg @fg_color;
-@define-color button_checked_bg @grey_45;
+@define-color button_checked_bg @grey_35;
 @define-color button_checked_fg @grey_85;
+@define-color button_hover_bg @grey_50;
 @define-color button_hover_fg @grey_15;
 
 /* text fields */
@@ -113,9 +114,9 @@
 @define-color field_fg @button_fg;
 @define-color field_active_bg @grey_30;
 @define-color field_active_fg @grey_80;
-@define-color field_selected_bg @grey_40;
+@define-color field_selected_bg @grey_45;
 @define-color field_selected_fg @button_checked_fg;
-@define-color field_hover_bg @grey_45;
+@define-color field_hover_bg @grey_55;
 @define-color field_hover_fg @grey_95;
 
 /* Tooltips and contextual helpers */
@@ -301,11 +302,13 @@ textview
 }
 
 button:disabled,
+spinbutton *:disabled,
 #collapsible .combo:disabled,
+#collapsible spinbutton button:disabled,
 #recent-collection-button:disabled
 {
   background-color: transparent;
-  border: 0.07em solid shade(@button_border, 0.95);
+  border: 0.07em solid shade(@button_border, 0.9);
 }
 
 /* Set same settings on all those items */
@@ -685,7 +688,7 @@ l
 #collapsible
 {
   padding: 0.14em 0.28em 0.28em 0.42em;
-  border: 0.07em solid shade(@collapsible_bg_color, 0.85);
+  border: 0.07em solid shade(@collapsible_bg_color, 1.05);
   border-top: 0;
 }
 
@@ -693,6 +696,11 @@ l
 #collapsible #bauhaus_slider
 {
   background-color: shade(@collapsible_bg_color, 1.04);
+}
+
+#import_metadata #collapsible
+{
+  background-color: @collapsible_bg_color;
 }
 
 /* for the import parameters to be more aligned with the imports buttons */
@@ -712,6 +720,7 @@ l
 
 #collapsible .combo,
 #collapsible entry,
+#collapsible spinbutton button,
 #collapsible textview
 {
   background-color: shade(@button_border, 1.06);
@@ -1460,13 +1469,6 @@ filechooser row:hover .sidebar-icon
   border-left-color: @field_hover_bg;   /* make the border left visible with chosen color if category on sidebar is selected */
 }
 
-filechooser row:hover,
-#preferences_box .sidebar :hover  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
-{
-  border-left-color: @button_bg;
-  background-color: @button_bg;
-}
-
 #preferences_box .sidebar label
 {
   padding: 0.14em 0.84em;
@@ -1826,27 +1828,32 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 /* Hover states, some needed background only */
 .dt_transparent_background:hover,
 button:hover,
+filechooser row:hover,
 menuitem:hover,
 menuitem:hover > *:not(check),
+notebook tab:hover,
 radiobutton:hover label,
+treeview:not(#lutname) *:hover:not(check),
+#bauhaus_combobox:hover,
+#collapsible spinbutton button:hover,
 #history-button:hover,
 #history-button-enabled:hover,
 #history-button-always-enabled:hover,
 #history-button-default-enabled:hover,
+#preferences_box .sidebar :hover,
 #recent-collection-button:hover,
 #view_label:hover,
 #view_dropdown .combo:hover
 {
-  background-color: shade(@button_bg, 1.15);
-  border-color: shade(@button_bg, 1.15);
+  background-color: alpha(@button_hover_bg, 0.5);
+  border-color: alpha(@button_hover_bg, 0.5);
   color: shade(@fg_color, 1.15);
 }
 
 .combo,
 combobox window *:hover,
-#bauhaus_combobox:hover,
-#header-toolbar #bauhaus_combobox:hover,
-#collapsible .combo:hover
+#collapsible .combo:hover,
+#header-toolbar #bauhaus_combobox:hover
 {
   background-color: alpha(@bauhaus_bg_hover, 0.15);
   color: shade(@fg_color, 1.15);
@@ -1902,16 +1909,6 @@ menuitem check
 {
   background-color: @field_active_bg;
   border-color: @border_color;
-}
-
-treeview:not(#lutname) *:hover:not(check),
-filechooser .sidebar :hover .sidebar-button,  /* set here specific button hover like eject button in filechooser sidebar */
-#import_metadata title:hover,
-#import_metadata title:hover *,
-radiobutton:hover label  /* set hover effect on popover menu from star icon */
-{
-  background-color: @field_hover_bg;
-  color: @field_hover_fg;
 }
 
 treeview *:active,
@@ -2022,43 +2019,32 @@ treeview#delete-dialog:selected
   color: shade(@bauhaus_fg_selected, 1.2);
 }
 
-#bauhaus_slider
-{
- padding: 0px 0px 1px 0px;
-}
-.bauhaus_slider_popup
-{
-  padding: 2px 0px 2px 4px;
-}
+.bauhaus_slider_popup,
 .bauhaus_combo_popup
 {
-  padding: 2px 0px 2px 2px;
-}
-#bauhaus_combobox
-{
- padding: 2px 0px 2px 0px;
+  padding: 0.14em 0 0.14em 0.42em;
 }
 
-#lib-plugin-ui #bauhaus_combobox,
-#lib-plugin-ui #bauhaus_slider,
-#iop-plugin-ui #bauhaus_combobox,
-#iop-plugin-ui #bauhaus_slider
+#bauhaus_combobox
 {
-  margin-top : 1px;
+  padding: 0.14em 0 0.14em 0.28em;
+  margin-left: -0.14em;   /* needed to align combobox to lines around when setting a padding left for spacing inside combobox ; set it half of padding left set line above */
 }
 
 /* Notebooks states */
 notebook tab:hover
 {
-  border-bottom: 0.14em solid @button_hover_fg;
-  color: @button_hover_fg;
-  background-color: @button_bg;
+  border-bottom: 0.14em solid shade(@button_checked_fg, 0.7);
+}
+
+notebook tab:hover label
+{
+  color: shade(@button_checked_fg, 0.9);
 }
 
 notebook tab:checked
 {
   border-bottom: 0.14em solid @button_checked_fg;
-  color: @button_checked_fg;
 }
 
 notebook tab:checked label
