@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-19 09:04+0100\n"
-"PO-Revision-Date: 2022-03-27 12:46+0300\n"
+"PO-Revision-Date: 2022-03-28 21:35+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -8664,10 +8664,8 @@ msgid "apply on new instance"
 msgstr "застосувати на новому екземплярі"
 
 #: ../src/gui/accelerators.c:455
-#, fuzzy
-#| msgid "last but one"
 msgid "tablet button"
-msgstr "передостанній"
+msgstr "кнопка планшета"
 
 #: ../src/gui/accelerators.c:464
 msgid "unknown driver"
@@ -9429,11 +9427,14 @@ msgid ""
 "$(EXIF.MONTH.SHORT) - abbreviated exif month name according to the current "
 "locale"
 msgstr ""
+"$(EXIF.MONTH.SHORT) - скорочена назва місяця з EXIF відповідно до поточної "
+"локалі"
 
 #: ../src/gui/gtkentry.c:206
 msgid ""
 "$(EXIF.MONTH.LONG) - full exif month name according to the current locale"
 msgstr ""
+"$(EXIF.MONTH.LONG) - повна назва місяця з EXIF відповідно до поточної локалі"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(EXIF.DAY) - EXIF day"
@@ -12517,6 +12518,9 @@ msgid ""
 "h : \t%.1f °\n"
 "c : \t%.1f"
 msgstr ""
+"L : \t%.1f %%\n"
+"h : \t%.1f °\n"
+"c : \t%.1f"
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4002 ../src/iop/clipping.c:2115
@@ -12611,20 +12615,16 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4084 ../src/iop/exposure.c:1096
-#, fuzzy
-#| msgid "corrections"
 msgid "correction"
-msgstr "корекції"
+msgstr "корекція"
 
 #: ../src/iop/channelmixerrgb.c:4085 ../src/iop/exposure.c:1097
-#, fuzzy
-#| msgid "exposure"
 msgid "measure"
-msgstr "експозиція"
+msgstr "вимірювання"
 
 #: ../src/iop/channelmixerrgb.c:4089
 msgid "take channel mixing into account"
-msgstr ""
+msgstr "врахувати змішування каналів"
 
 #: ../src/iop/channelmixerrgb.c:4094
 msgid ""
@@ -12642,10 +12642,13 @@ msgid ""
 "h : \tN/A\n"
 "c : \tN/A"
 msgstr ""
+"L : \tN/A \n"
+"h : \tN/A\n"
+"c : \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4115 ../src/iop/exposure.c:1117
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
-msgstr ""
+msgstr "ці координати LCh обчислюються з координат CIE Lab 1976"
 
 #: ../src/iop/channelmixerrgb.c:4128
 msgid "the desired target color after mapping"
@@ -14918,7 +14921,7 @@ msgstr "компенсувати експозицію камери (%+.1f EV)"
 #: ../src/iop/exposure.c:749
 #, c-format
 msgid "L : \t%.1f %%"
-msgstr ""
+msgstr "L : \t%.1f %%"
 
 #: ../src/iop/exposure.c:870 ../src/libs/history.c:879
 #, c-format
@@ -14987,7 +14990,7 @@ msgstr ""
 
 #: ../src/iop/exposure.c:1115
 msgid "L : \tN/A"
-msgstr ""
+msgstr "L : \tN/A"
 
 #: ../src/iop/exposure.c:1130
 msgid "the desired target exposure after mapping"
@@ -22369,17 +22372,13 @@ msgid "filter"
 msgstr "фільтр"
 
 #: ../src/libs/tools/filter.c:374
-#, fuzzy
-#| msgid "filter"
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "фільтр"
 
 #: ../src/libs/tools/filter.c:382 ../src/libs/tools/filter.c:397
-#, fuzzy
-#| msgid "filtered images"
 msgid "filter by images rating"
-msgstr "фільтрувати"
+msgstr "фільтр за рейтингом зображень"
 
 #: ../src/libs/tools/filter.c:401
 msgid "unstarred only"
@@ -22428,11 +22427,9 @@ msgid "determine the sort order of shown images"
 msgstr "визначає порядок сортування показаних зображень"
 
 #: ../src/libs/tools/filter.c:691
-#, fuzzy
-#| msgid "red filter"
 msgctxt "accel"
 msgid "reset filters"
-msgstr "червоний фільтр"
+msgstr "скинути фільтри"
 
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:224
