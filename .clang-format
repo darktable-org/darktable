@@ -5,7 +5,7 @@ AlignEscapedNewlinesLeft: false
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: false # otherwise the braces behind if(...) get moved up
-AllowShortFunctionsOnASingleLine: false # change to SFS_Emtpy once it is supported
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
 AlwaysBreakTemplateDeclarations: false
@@ -14,7 +14,7 @@ BreakBeforeBinaryOperators: true
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: true
 BinPackParameters: true
-ColumnLimit:     115   # needed for the modelines
+ColumnLimit:     80
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 DerivePointerBinding: false
 #ExperimentalAutoDetectBinPacking: false
