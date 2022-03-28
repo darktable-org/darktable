@@ -1598,7 +1598,7 @@ static cl_int_t apply_global_distortion_map_cl(struct dt_iop_module_t *module,
   dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 6, sizeof(cl_mem), &dev_kdesc);
   dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 7, sizeof(cl_mem), &dev_kernel);
 
-  const size_t sizes[] = { ROUNDUPWD(map_extent->width), ROUNDUPHT(map_extent->height) };
+  const size_t sizes[] = { ROUNDUPDWD(map_extent->width, devid), ROUNDUPDHT(map_extent->height, devid) };
   err = dt_opencl_enqueue_kernel_2d(devid, gd->warp_kernel, sizes);
 
 error:
