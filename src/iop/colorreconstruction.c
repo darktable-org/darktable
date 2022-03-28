@@ -777,7 +777,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 
   // zero out grid
   int wd = 4 * b->size_x, ht = b->size_y * b->size_z;
-  size_t sizes[] = { ROUNDUPWD(wd), ROUNDUPHT(ht), 1 };
+  size_t sizes[] = { ROUNDUPDWD(wd, b->devid), ROUNDUPDHT(ht, b->devid), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_zero, 0, sizeof(cl_mem), (void *)&b->dev_grid);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_zero, 1, sizeof(int), (void *)&wd);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_zero, 2, sizeof(int), (void *)&ht);
@@ -971,8 +971,8 @@ static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_
                                                 b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
   if(err != CL_SUCCESS) return err;
 
-  sizes[0] = ROUNDUPWD(b->size_z);
-  sizes[1] = ROUNDUPHT(b->size_y);
+  sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
+  sizes[1] = ROUNDUPDHT(b->size_y, b->devid);
   int stride1, stride2, stride3;
   stride1 = b->size_x * b->size_y;
   stride2 = b->size_x;
@@ -991,8 +991,8 @@ static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_
   stride1 = b->size_x * b->size_y;
   stride2 = 1;
   stride3 = b->size_x;
-  sizes[0] = ROUNDUPWD(b->size_z);
-  sizes[1] = ROUNDUPHT(b->size_x);
+  sizes[0] = ROUNDUPDWD(b->size_z, b->devid);
+  sizes[1] = ROUNDUPDHT(b->size_x, b->devid);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, sizeof(cl_mem), (void *)&b->dev_grid);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 1, sizeof(cl_mem), (void *)&b->dev_grid_tmp);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 2, sizeof(int), (void *)&stride1);
@@ -1007,8 +1007,8 @@ static cl_int dt_iop_colorreconstruct_bilateral_blur_cl(dt_iop_colorreconstruct_
   stride1 = 1;
   stride2 = b->size_x;
   stride3 = b->size_x * b->size_y;
-  sizes[0] = ROUNDUPWD(b->size_x);
-  sizes[1] = ROUNDUPHT(b->size_y);
+  sizes[0] = ROUNDUPDWD(b->size_x, b->devid);
+  sizes[1] = ROUNDUPDHT(b->size_y, b->devid);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 0, sizeof(cl_mem),
                            (void *)&b->dev_grid_tmp);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_blur_line, 1, sizeof(cl_mem), (void *)&b->dev_grid);
@@ -1031,7 +1031,7 @@ static cl_int dt_iop_colorreconstruct_bilateral_slice_cl(dt_iop_colorreconstruct
   const int roixy[2] = { roi->x, roi->y };
   const float rescale = iscale / (roi->scale * b->scale);
 
-  size_t sizes[] = { ROUNDUPWD(roi->width), ROUNDUPHT(roi->height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(roi->width, b->devid), ROUNDUPDHT(roi->height, b->devid), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 0, sizeof(cl_mem), (void *)&in);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 1, sizeof(cl_mem), (void *)&out);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_colorreconstruct_slice, 2, sizeof(cl_mem), (void *)&b->dev_grid);

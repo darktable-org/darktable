@@ -197,7 +197,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   /* horizontal blur */
   sizes[0] = bwidth;
-  sizes[1] = ROUNDUPHT(height);
+  sizes[1] = ROUNDUPDHT(height, devid);
   sizes[2] = 1;
   local[0] = hblocksize;
   local[1] = 1;

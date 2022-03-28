@@ -2017,7 +2017,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       if(err != CL_SUCCESS) goto error;
 
       sizesl[0] = bwidth;
-      sizesl[1] = ROUNDUPHT(height);
+      sizesl[1] = ROUNDUPDHT(height, devid);
       sizesl[2] = 1;
       local[0] = hblocksize;
       local[1] = 1;

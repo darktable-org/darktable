@@ -49,8 +49,6 @@
 // #pragma GCC diagnostic
 
 #define ROUNDUP(a, n) ((a) % (n) == 0 ? (a) : ((a) / (n)+1) * (n))
-#define ROUNDUPWD(a) dt_opencl_roundup(a)
-#define ROUNDUPHT(a) dt_opencl_roundup(a)
 
 // use per device roundups here
 #define ROUNDUPDWD(a, b) dt_opencl_dev_roundup(a, b)

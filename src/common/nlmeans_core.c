@@ -886,7 +886,7 @@ static inline cl_int nlmeans_cl_horiz(const int devid, const int kernel, cl_mem 
                                       const int P, const int q[2], const int height, const int width,
                                       const int bwidth, const int hblocksize)
 {
-  const size_t sizesl[3] = { bwidth, ROUNDUPHT(height), 1 };
+  const size_t sizesl[3] = { bwidth, ROUNDUPDHT(height, devid), 1 };
   const size_t local[3] = { hblocksize, 1, 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_U4);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_U4_t);
