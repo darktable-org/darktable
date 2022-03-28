@@ -2001,7 +2001,12 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module)
 
   const gboolean expanded = module->expanded;
 
+  /* don't show with transition when entering this view */
+  char *conf_name = "ui/transition_duration";
+  guint transition_duration = dt_conf_get_int(conf_name);
+  dt_conf_set_int(conf_name, 0);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
+  dt_conf_set_int(conf_name, transition_duration);
 }
 
 static gboolean _iop_plugin_body_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
