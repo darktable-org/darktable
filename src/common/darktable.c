@@ -1730,9 +1730,9 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("instead you will find 'per device' data in 'cldevice_canonical-name'. content is:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
-    g_strlcat(info, _("  'avoid_atomics'  'micro_nap'  'pinned_memory'  'clroundup'  -magic-"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("  'avoid_atomics'  'micro_nap'  'pinned_memory'  'clroundup'  'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
-    g_strlcat(info, _("you may tune as before except -magic-"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
