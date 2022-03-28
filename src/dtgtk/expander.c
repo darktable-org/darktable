@@ -76,6 +76,8 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
 
     if(revealer)
     {
+      uint32_t transition_duration = dt_conf_get_int("ui/transition_duration");
+      gtk_revealer_set_transition_duration(GTK_REVEALER(expander->revealer), transition_duration);
       gtk_revealer_set_reveal_child(GTK_REVEALER(revealer), expander->expanded);
     }
   }

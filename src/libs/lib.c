@@ -881,7 +881,7 @@ guint dt_lib_gui_get_transition_duration(dt_lib_module_t *module)
   if(!module->expander) return 0;
   if(!module->widget) return 0;
 
-  return dtgtk_expander_get_transition_duration(DTGTK_EXPANDER(module->expander));
+  return dt_conf_get_int("ui/transition_duration");
 }
 
 void dt_lib_gui_set_transition_duration(dt_lib_module_t *module, guint duration)
@@ -889,6 +889,7 @@ void dt_lib_gui_set_transition_duration(dt_lib_module_t *module, guint duration)
   if(!module->expander || !module->arrow) return;
 
   dtgtk_expander_set_transition_duration(DTGTK_EXPANDER(module->expander), duration);
+  dt_conf_set_int("ui/transition_duration", duration);
 }
 
 static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
