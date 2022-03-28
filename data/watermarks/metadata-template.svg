@@ -431,17 +431,57 @@
        width="1"
        height="1">
       <feColorMatrix
-         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"
+         values="1 0 0 0 0
+                 0 1 0 0 0
+                 0 0 1 0 0
+                 0 0 0 1 0"
          id="feColorMatrix17778"
          result="fbSourceGraphic" />
       <feColorMatrix
          result="fbSourceGraphicAlpha"
          in="fbSourceGraphic"
-         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         values="0 0 0 -1 0
+                 0 0 0 -1 0
+                 0 0 0 -1 0
+                 0 0 0  1 0"
          id="feColorMatrix17800" />
       <feColorMatrix
          id="feColorMatrix17802"
-         values="0.21 0.72 0.072 0 0 0.21 0.72 0.072 0 0 0.21 0.72 0.072 0 0 0 0 0 1 0 "
+         values="0.21 0.72 0.072 0 0
+                 0.21 0.72 0.072 0 0
+                 0.21 0.72 0.072 0 0
+                 0    0    0     1 0 "
+         in="fbSourceGraphic" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Colored"
+       id="filter17781"
+       x="0"
+       y="0"
+       width="1"
+       height="1">
+      <feColorMatrix
+         values="1 0 0 0 0
+                 0 1 0 0 0
+                 0 0 1 0 0
+                 0 0 0 1 0"
+         id="feColorMatrix17778"
+         result="fbSourceGraphic" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0
+                 0 0 0 -1 0
+                 0 0 0 -1 0
+                 0 0 0  1 0"
+         id="feColorMatrix17800" />
+      <feColorMatrix
+         id="feColorMatrix17802"
+         values="1 0 0 0 0
+                 0 1 0 0 0
+                 0 0 1 0 0
+                 0 0 0 1 0"
          in="fbSourceGraphic" />
     </filter>
     <filter
@@ -478,17 +518,26 @@
        width="1.6"
        height="1.6">
       <feColorMatrix
-         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"
+         values="1 0 0 0 0
+                 0 1 0 0 0
+                 0 0 1 0 0
+                 0 0 0 1 0"
          id="feColorMatrix3328"
          result="fbSourceGraphic" />
       <feColorMatrix
          result="fbSourceGraphicAlpha"
          in="fbSourceGraphic"
-         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         values="0 0 0 -1 0
+                 0 0 0 -1 0
+                 0 0 0 -1 0
+                 0 0 0  1 0"
          id="feColorMatrix3330" />
       <feColorMatrix
          id="feColorMatrix3332"
-         values="0.21 0.72 0.072 0 0 0.21 0.72 0.072 0 0 0.21 0.72 0.072 0 0 0 0 0 1 0 "
+         values="0.21 0.72 0.072 0 0
+                 0.21 0.72 0.072 0 0
+                 0.21 0.72 0.072 0 0
+                 0    0    0     1 0 "
          in="fbSourceGraphic" />
     </filter>
     <linearGradient
@@ -773,7 +822,10 @@
        id="text77001"><tspan
          sodipodi:role="line"
          id="tspan76999"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.0711678"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.002436"
          y="61.982769">$(MAKER) $(MODEL)</tspan></text>
     <text
@@ -784,7 +836,10 @@
        id="text94405"><tspan
          sodipodi:role="line"
          id="tspan94403"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.002436"
          y="69.435417">$(LENS)</tspan></text>
     <text
@@ -795,7 +850,10 @@
        id="text102373"><tspan
          sodipodi:role="line"
          id="tspan102371"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.002436"
          y="46.952057">$(FILE_NAME).$(FILE_EXTENSION)</tspan></text>
     <text
@@ -806,9 +864,12 @@
        id="text117081"><tspan
          sodipodi:role="line"
          id="tspan117079"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.002436"
-         y="54.40472">$(EXIF_DAY) $(EXIF_MONTH) $(EXIF_YEAR)</tspan></text>
+         y="54.40472">$(EXIF_DAY).$(EXIF_MONTH).$(EXIF_YEAR)</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke:none;stroke-width:0.322921;filter:url(#filter1073)"
@@ -817,7 +878,10 @@
        id="text156536"><tspan
          sodipodi:role="line"
          id="tspan156534"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.322921"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="21.96406"
          y="11.253872">/$(EXIF_APERTURE)</tspan></text>
     <text
@@ -828,7 +892,10 @@
        id="text166188"><tspan
          sodipodi:role="line"
          id="tspan166186"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.322921"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.541971"
          y="34.076046">$(EXIF_FOCAL_LENGTH)mm</tspan></text>
     <text
@@ -839,7 +906,10 @@
        id="text171934"><tspan
          sodipodi:role="line"
          id="tspan171932"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.322921"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.541971"
          y="18.861258">$(EXIF_EXPOSURE)sec</tspan></text>
     <text
@@ -850,7 +920,10 @@
        id="text178272"><tspan
          sodipodi:role="line"
          id="tspan178270"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.322921"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.541971"
          y="26.468645">ISO: $(EXIF_ISO)</tspan></text>
     <text
@@ -861,7 +934,10 @@
        id="text187429"><tspan
          sodipodi:role="line"
          id="tspan187427"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.002436"
          y="76.762672">$(SENSOR_WIDTH) x $(SENSOR_HEIGHT) px</tspan></text>
     <text
@@ -872,7 +948,10 @@
        id="text201604"><tspan
          sodipodi:role="line"
          id="tspan201602"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.002436"
          y="84.21534">$(EXPORT_WIDTH) x $(EXPORT_HEIGHT) px</tspan></text>
     <text
@@ -883,7 +962,10 @@
        id="text235790"><tspan
          sodipodi:role="line"
          id="tspan235788"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.002436"
          y="91.853729">$(LONGITUDE), $(LATITUDE), $(ELEVATION) </tspan></text>
     <text
@@ -894,7 +976,10 @@
        id="text241410"><tspan
          sodipodi:role="line"
          id="tspan241408"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.002436"
          y="99.171104">$(TAGS) </tspan></text>
     <text
@@ -905,7 +990,10 @@
        id="text241414"><tspan
          sodipodi:role="line"
          id="tspan241412"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         fill="#666666"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.002436"
          y="106.61303">$(CREATOR) </tspan></text>
     <g
@@ -915,7 +1003,7 @@
        transform="matrix(0.48414363,0,0,0.48414363,29.437639,5.9604515)">
       <path
          d="m -20.068177,13.490351 c 0.08877,0.12633 0.34195,0.265186 0.53245,0.265186 0.349249,0 0.509109,-0.08974 0.678441,-0.184986 0.306916,-0.169333 0.846664,-0.687914 1.132413,-1.05833 0.328083,-0.444498 0.709081,-1.344079 0.952497,-2.317742 0.402166,-1.5134123 0.603248,-2.2965764 0.624415,-2.3706595 0.447853,-0.1552 0.690182,-0.1172552 1.052244,0.060982 0.47631,0.2344796 0.457258,-0.3130884 0.08098,-0.3844128 -0.341517,-0.064736 -0.665595,-0.029232 -1.048558,-0.015236 0.687915,-2.6987414 0.955201,-3.0940918 1.590199,-3.0940918 0.1905,0 0.146172,0.063162 0.376362,0.2485936 0.23019,0.1854313 0.572011,0.019741 0.578942,-0.3426747 0.004,-0.2104351 -0.174843,-0.3783997 -0.386509,-0.3783997 -0.645582,0 -1.068914,0.2222493 -1.788578,0.9207471 -0.592665,0.5820814 -0.730248,0.8784138 -1.142996,2.6458249 -0.961632,0.2755364 -1.031372,-0.01483 -1.136131,0.029609 -0.152521,0.1503095 -0.265157,0.3451533 -0.09876,0.4572234 0.408402,0.1612933 0.735936,-0.096014 1.17397,-0.1790775 -0.169333,0.6455812 -0.256586,0.9516585 -0.457669,1.8829889 -0.634998,2.9209921 -1.334668,3.7406501 -1.817161,3.5772501 -0.150362,-0.05092 -0.343985,-0.390736 -0.542026,-0.423544 -0.23498,-0.03893 -0.325219,0.08487 -0.388874,0.185553 -0.09131,0.144416 -0.08085,0.311268 0.03434,0.475196 z"
-         style="font-size:10.5833px;font-family:Z003;-inkscape-font-specification:'Z003, Normal';fill:#666666;fill-opacity:1"
+         style="font-size:10.5833px;font-family:Z003;-inkscape-font-specification:'Z003, Normal';fill:$(WATERMARK_COLOR);fill-opacity:1"
          id="path374081"
          sodipodi:nodetypes="ssccccsscszssccccccsssss" />
     </g>
@@ -926,11 +1014,11 @@
       <path
          d="M 0,3.5 A 1.5,1.5 0 0 1 1.5,2 h 13 A 1.5,1.5 0 0 1 16,3.5 v 9 A 1.5,1.5 0 0 1 14.5,14 H 1.5 A 1.5,1.5 0 0 1 0,12.5 Z M 1.5,3 A 0.5,0.5 0 0 0 1,3.5 v 9 A 0.5,0.5 0 0 0 1.5,13 h 13 A 0.5,0.5 0 0 0 15,12.5 v -9 A 0.5,0.5 0 0 0 14.5,3 Z"
          id="path80"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
       <path
          d="M 2,4.5 A 0.5,0.5 0 0 1 2.5,4 h 3 a 0.5,0.5 0 0 1 0,1 H 3 v 2.5 a 0.5,0.5 0 0 1 -1,0 z m 12,7 A 0.5,0.5 0 0 1 13.5,12 h -3 a 0.5,0.5 0 0 1 0,-1 H 13 V 8.5 a 0.5,0.5 0 0 1 1,0 z"
          id="path82"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
     </g>
     <g
        style="display:inline;fill:#000000;fill-opacity:1"
@@ -939,11 +1027,11 @@
       <path
          d="m 15,12 a 1,1 0 0 1 -1,1 H 2 A 1,1 0 0 1 1,12 V 6 A 1,1 0 0 1 2,5 H 3.172 A 3,3 0 0 0 5.292,4.121 L 6.122,3.293 A 1,1 0 0 1 6.827,3 h 2.344 a 1,1 0 0 1 0.707,0.293 l 0.828,0.828 A 3,3 0 0 0 12.828,5 H 14 a 1,1 0 0 1 1,1 z M 2,4 A 2,2 0 0 0 0,6 v 6 a 2,2 0 0 0 2,2 h 12 a 2,2 0 0 0 2,-2 V 6 A 2,2 0 0 0 14,4 H 12.828 A 2,2 0 0 1 11.414,3.414 L 10.586,2.586 A 2,2 0 0 0 9.172,2 H 6.828 A 2,2 0 0 0 5.414,2.586 L 4.586,3.414 A 2,2 0 0 1 3.172,4 Z"
          id="path86"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
       <path
          d="m 8,11 a 2.5,2.5 0 1 1 0,-5 2.5,2.5 0 0 1 0,5 z m 0,1 A 3.5,3.5 0 1 0 8,5 3.5,3.5 0 0 0 8,12 Z M 3,6.5 a 0.5,0.5 0 1 1 -1,0 0.5,0.5 0 0 1 1,0 z"
          id="path88"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
     </g>
     <g
        style="display:inline;fill:#000000;fill-opacity:1"
@@ -952,7 +1040,7 @@
       <path
          d="M 3.5,0.5 A 0.5,0.5 0 0 1 4,1 v 13 h 13 a 0.5,0.5 0 0 1 0,1 h -2 v 2 a 0.5,0.5 0 0 1 -1,0 V 15 H 3.5 A 0.5,0.5 0 0 1 3,14.5 V 4 H 1 A 0.5,0.5 0 0 1 1,3 H 3 V 1 A 0.5,0.5 0 0 1 3.5,0.5 Z M 6,3.5 A 0.5,0.5 0 0 1 6.5,3 h 8 A 0.5,0.5 0 0 1 15,3.5 v 8 a 0.5,0.5 0 0 1 -1,0 V 4 H 6.5 A 0.5,0.5 0 0 1 6,3.5 Z"
          id="path92"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
     </g>
     <g
        style="display:inline;fill:#000000;fill-opacity:1"
@@ -961,7 +1049,7 @@
       <path
          d="M 0,1 A 1,1 0 0 1 1,0 h 14 a 1,1 0 0 1 1,1 v 14 a 1,1 0 0 1 -1,1 H 1 A 1,1 0 0 1 0,15 Z m 4,0 v 6 h 8 V 1 Z m 8,8 H 4 v 6 h 8 z M 1,1 V 3 H 3 V 1 Z M 3,4 H 1 V 6 H 3 Z M 1,7 V 9 H 3 V 7 Z m 2,3 H 1 v 2 h 2 z m -2,3 v 2 H 3 V 13 Z M 15,1 h -2 v 2 h 2 z m -2,3 v 2 h 2 V 4 Z m 2,3 h -2 v 2 h 2 z m -2,3 v 2 h 2 v -2 z m 2,3 h -2 v 2 h 2 z"
          id="path96"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
     </g>
     <g
        style="display:inline;fill:#000000;fill-opacity:1"
@@ -970,11 +1058,11 @@
       <path
          d="m 12.166,8.94 c -0.524,1.062 -1.234,2.12 -1.96,3.07 A 31.493,31.493 0 0 1 8,14.58 31.481,31.481 0 0 1 5.794,12.01 C 5.068,11.06 4.358,10.002 3.834,8.94 3.304,7.867 3,6.862 3,6 a 5,5 0 0 1 10,0 c 0,0.862 -0.305,1.867 -0.834,2.94 z M 8,16 c 0,0 6,-5.686 6,-10 A 6,6 0 0 0 2,6 c 0,4.314 6,10 6,10 z"
          id="path100"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
       <path
          d="M 8,8 A 2,2 0 1 1 8,4 2,2 0 0 1 8,8 Z M 8,9 A 3,3 0 1 0 8,3 3,3 0 0 0 8,9 Z"
          id="path102"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
     </g>
     <g
        style="display:inline;fill:#000000;fill-opacity:1"
@@ -983,11 +1071,11 @@
       <path
          d="m 6.002,5.5 a 1.5,1.5 0 1 1 -3,0 1.5,1.5 0 0 1 3,0 z"
          id="path106"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
       <path
          d="m 2.002,1 a 2,2 0 0 0 -2,2 v 10 a 2,2 0 0 0 2,2 h 12 a 2,2 0 0 0 2,-2 V 3 a 2,2 0 0 0 -2,-2 z m 12,1 a 1,1 0 0 1 1,1 V 9.5 L 11.225,7.553 a 0.5,0.5 0 0 0 -0.577,0.093 l -3.71,3.71 -2.66,-1.772 A 0.5,0.5 0 0 0 3.648,9.646 L 1.002,12 V 3 a 1,1 0 0 1 1,-1 z"
          id="path108"
-         style="fill:#ffffff;fill-opacity:1" />
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1" />
     </g>
     <g
        style="display:inline;fill:#000000;fill-opacity:1"
@@ -996,7 +1084,7 @@
       <path
          d="M 6,8 C 9.9999983,8 9.9999983,2 6,2 2.0000017,2 2.0000017,8 6,8 Z M 8.1770249,4.9999144 c 0,1.4616338 -1.1039938,2.187272 -2.2001646,2.1769146 C 4.8961155,7.1666174 3.8229751,6.4409792 3.8229751,4.9999144 c 0,-1.4976464 1.1590658,-2.2225827 2.2811581,-2.1748087 1.0527173,0.04482 2.0728917,0.7697565 2.0728917,2.1748087 z M 12,13 c 0,1 -1,1 -1,1 H 1 c 0,0 -1,0 -1,-1 0,-1 1,-4 6,-4 5,0 6,3 6,4 z m -0.74869,0.234787 C 11.250259,12.949574 11.089569,12.091615 10.377492,11.305539 9.692721,10.549608 8.4040496,9.7612131 6,9.7612131 c -2.4050999,0 -3.692721,0.7883949 -4.3774918,1.5443259 -0.71207759,0.786076 -0.87171741,1.644035 -0.87381793,1.929248 z"
          id="path112"
-         style="fill:#ffffff;fill-opacity:1"
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1"
          sodipodi:nodetypes="sssssssssccssscssscc" />
     </g>
     <g
@@ -1006,12 +1094,12 @@
       <path
          d="M 2.8929039,1.8173416 V 6.6464734 L 10.048295,13.777414 14.789049,8.9700707 7.586,1.7568682 Z M 2,2 C 2,1.4477153 2.4477153,1 3,1 h 4.586 c 0.2651948,5.66e-5 0.5195073,0.1054506 0.707,0.293 l 7,7 c 0.390382,0.3904999 0.390382,1.0235001 0,1.414 l -4.586,4.586 c -0.3905,0.390382 -1.0235001,0.390382 -1.414,0 l -7,-7 C 2.1054506,7.1055073 2.0000566,6.8511948 2,6.586 Z"
          id="path116"
-         style="fill:#ffffff;fill-opacity:1"
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1"
          sodipodi:nodetypes="ccccccssccccccccs" />
       <path
          d="m 5.5,5 c -0.6666664,0 -0.6666664,-1 0,-1 0.6666664,0 0.6666664,1 0,1 z m 0,1 C 7.4999991,6 7.4999991,3 5.5,3 3.5000009,3 3.5000009,6 5.5,6 Z M 0.82297624,7.128921 c 5.664e-5,0.2651948 0.0937933,0.6021359 0.28134266,0.7896286 L 8.5281518,15.280334 C 7.9160133,15.690618 7.6626852,15.402216 7.293,15.293 l -7,-7 C 0.10545063,8.1055073 5.6637405e-5,7.8511948 0,7.586 V 3 C 0,2.4477153 0.27069149,2.042921 0.82297624,2.042921 Z"
          id="path118"
-         style="fill:#ffffff;fill-opacity:1"
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1"
          sodipodi:nodetypes="ssssssccccccscc" />
     </g>
     <g
@@ -1020,168 +1108,207 @@
        transform="matrix(0,0.25541616,-0.25025602,0,32.537011,44.22706)">
       <path
          id="path122"
-         style="fill:#ffffff;fill-opacity:1;stroke-width:1.27475"
+         style="fill:$(WATERMARK_COLOR);fill-opacity:1;stroke-width:1.27475"
          d="m 86.031352,64.634243 0.002,4.85938 h 1.9121 v 5.98828 l 2.32422,2.33789 v 3.26562 h 8.09571 v -3.26562 l 2.328118,-2.33789 v -5.98828 h 1.91211 v -4.85938 h -1.27539 l -1.597658,1.28906 h -0.88086 l -0.77148,-1.7539 h -7.53125 l -0.77148,1.7539 h -0.88086 l -1.5918,-1.28906 z m 0.89749,3.797444 v -2.727868 h 0.307957 l 1.275023,1.196053 h 1.84375 l 0.70508,-1.76368 h 6.50781 l 0.70508,1.76368 h 1.843748 l 1.29828,-1.196053 h 0.2847 v 2.727867 z m 2.042138,6.723815 v -0.314609 h 10.696923 v 0.314609 l -1.966519,1.95473 h -6.786851 z m 0,-1.956589 v -1.505458 h 10.696923 v 1.505458 z m 0,-2.340718 v -1.354581 l 0.548652,-0.01 v 1.35937 z m 1.212722,-0.0052 v -1.35937 h 0.33007 v 1.35937 z m 0.976559,9.279308 v -2.086894 h 6.295395 v 2.086894 z m 0.0176,-9.279308 v -1.35937 h 0.33007 v 1.35937 z m 0.99414,0 v -1.35937 h 0.33007 v 1.35937 z m 0.99414,0 v -1.35937 h 0.33008 v 1.35937 z m 0.99414,0 v -1.35937 h 0.33008 v 1.35937 z m 0.99414,0 v -1.35937 h 0.32812 v 1.35937 z m 0.99219,0 v -1.35937 h 0.33007 v 1.35937 z m 0.99414,0 v -1.35937 h 0.33008 v 1.35937 z m 0.99414,0 v -1.35937 h 0.33008 v 1.35937 z m 0.99414,0 v -1.35937 l 0.538892,0.01 v 1.354581 z"
          sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" />
     </g>
     <path
        d="m 14.31387,7.6236471 c -1.320381,0 -2.394163,1.0737874 -2.394163,2.3941669 0,1.320379 1.073782,2.394155 2.394163,2.394155 1.320384,0 2.394166,-1.073776 2.394166,-2.394155 0,-1.3203795 -1.073782,-2.3941669 -2.394166,-2.3941669 z m 0,0.2942219 c 0.632281,0 1.198284,0.2786687 1.582461,0.7199795 L 15.270386,9.721285 14.231373,7.9195996 c 0.02744,-0.00112 0.05481,-0.00227 0.0825,-0.00227 z m -0.403834,0.039136 0.625946,1.0834357 h -2.080905 c 0.291147,-0.5534696 0.82178,-0.9602698 1.454959,-1.0834357 z m 2.17898,0.9392087 c 0.204599,0.3242875 0.322491,0.7090435 0.322491,1.1215103 0,0.23899 -0.0393,0.468117 -0.112499,0.681907 h -1.250736 l 0.393449,-0.681907 z M 12.327001,9.33697 h 1.253044 l -0.39345,0.680754 -0.647867,1.121508 c -0.205403,-0.324173 -0.324224,-0.708555 -0.324224,-1.121508 0,-0.238334 0.03953,-0.467326 0.1125,-0.680754 z m 1.593418,0 h 0.786326 l 0.39345,0.6796 -0.394603,0.682483 h -0.784594 l -0.39345,-0.681329 0.156919,-0.272302 z m -0.563638,0.975553 0.39403,0.681329 0.646713,1.119201 c -0.02771,0.0011 -0.05567,0.0023 -0.08366,0.0023 -0.632277,0 -1.198269,-0.278115 -1.583033,-0.718825 z m 0.734405,0.681329 h 2.080328 c -0.290806,0.553481 -0.821321,0.960282 -1.454961,1.082859 z"
-       style="color:#000000;fill:#ffffff;fill-opacity:1;stroke-width:1.11638;-inkscape-stroke:none"
+       style="color:#000000;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke-width:1.11638;-inkscape-stroke:none"
        id="path126" />
     <path
        id="path128"
-       style="color:#000000;fill:#ffffff;fill-opacity:1;stroke-width:1.16204;-inkscape-stroke:none"
+       style="color:#000000;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke-width:1.16204;-inkscape-stroke:none"
        d="m 16.490504,30.445866 -1.335226,0.698636 c 0,0 0,-6.8e-4 0,-6.8e-4 l -0.017,0.0091 -3.218565,1.683802 4.570786,2.397367 0.101967,-0.321142 L 16.337,34.779198 c 0.493093,-1.124214 0.49472,-2.754106 0.0047,-3.881554 l 0.250685,-0.131716 z m -0.403647,0.585253 c 0.450295,1.011295 0.448499,2.607311 -0.0048,3.614727 l -0.829072,-0.434524 c 0.253026,-0.934662 0.253359,-1.808539 0,-2.742964 z m -1.076041,0.570313 c 0.234077,0.935647 0.23158,1.528751 0,2.472065 l -0.02497,-0.0023 -0.129593,-0.06797 c -0.07322,-0.697426 -0.07907,-1.642414 -0.001,-2.326752 l 0.141277,-0.07398 z m -0.453574,0.231513 c -0.06319,0.640249 -0.06172,1.365906 -0.0026,2.012433 L 12.636206,32.83984 Z" />
     <path
        id="path130"
-       style="color:#000000;fill:#ffffff;fill-opacity:1;stroke-width:1;-inkscape-stroke:none"
+       style="color:#000000;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke-width:1;-inkscape-stroke:none"
        d="m 14.361306,51.33997 c -1.154925,0 -2.093413,0.93901 -2.093413,2.09393 0,1.15493 0.938488,2.09341 2.093413,2.09341 1.154926,0 2.093929,-0.93848 2.093929,-2.09341 0,-1.15492 -0.939003,-2.09393 -2.093929,-2.09393 z m 0,0.26355 c 1.011934,0 1.83038,0.81845 1.83038,1.83038 0,1.01194 -0.818446,1.8278 -1.83038,1.8278 -1.011933,0 -1.827795,-0.81586 -1.827795,-1.8278 0,-1.01193 0.815862,-1.83038 1.827795,-1.83038 z m -0.126606,0.20309 -0.0041,1.67018 0.599965,0.7891 0.210838,-0.1602 -0.545184,-0.71675 0.0021,-1.58233 z" />
     <path
        id="path132"
-       style="color:#000000;fill:#ffffff;fill-opacity:1;stroke-width:1.00109;-inkscape-stroke:none"
+       style="color:#000000;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke-width:1.00109;-inkscape-stroke:none"
        d="m 13.588929,15.230885 -0.0022,0.26384 0.595962,0.0023 -0.0026,0.334704 c -1.09397,0.06934 -1.962228,0.980879 -1.962228,2.092083 0,1.156188 0.940029,2.095691 2.096217,2.095691 1.156188,0 2.0957,-0.939503 2.0957,-2.095691 0,-1.110583 -0.867055,-2.021425 -1.96016,-2.091563 l -0.0022,-0.335224 0.595961,-0.0023 -0.0022,-0.26384 z m 0.725296,0.860315 c 1.013038,0 1.831861,0.819346 1.831861,1.832383 0,1.013047 -0.818823,1.829792 -1.831861,1.829792 -1.01304,0 -1.83238,-0.816745 -1.83238,-1.829792 0,-1.013037 0.81934,-1.832383 1.83238,-1.832383 z m -0.129332,0.367823 -0.0016,1.595439 1.489908,0.0023 v -0.26435 l -1.226071,-0.0023 0.0037,-1.331103 z"
        sodipodi:nodetypes="ccccssscccccsssssccccccc" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.0711678"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.0711678"
        x="18.886328"
        y="61.761723"
        id="text136"><tspan
          sodipodi:role="line"
          id="tspan134"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.0711678"
          x="18.886328"
-         y="61.761723">$(MAKER) $(MODEL)</tspan></text>
+         y="61.761723"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)">$(MAKER) $(MODEL)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.886328"
        y="69.214371"
        id="text140"><tspan
          sodipodi:role="line"
          id="tspan138"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.886328"
          y="69.214371">$(LENS)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.886328"
        y="46.731007"
        id="text144"><tspan
          sodipodi:role="line"
          id="tspan142"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.886328"
          y="46.731007">$(FILE_NAME).$(FILE_EXTENSION)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.886328"
        y="54.183674"
        id="text148"><tspan
          sodipodi:role="line"
          id="tspan146"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.886328"
-         y="54.183674">$(EXIF_DAY) $(EXIF_MONTH) $(EXIF_YEAR)</tspan></text>
+         y="54.183674">$(EXIF_DAY).$(EXIF_MONTH).$(EXIF_YEAR)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.322921"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.322921"
        x="21.84796"
        y="11.032825"
        id="text152"><tspan
          sodipodi:role="line"
          id="tspan150"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.322921"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="21.84796"
          y="11.032825">/$(EXIF_APERTURE)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.322921"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.322921"
        x="19.425875"
        y="33.854996"
        id="text156"><tspan
          sodipodi:role="line"
          id="tspan154"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.322921"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.425875"
          y="33.854996">$(EXIF_FOCAL_LENGTH)mm</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.322921"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.322921"
        x="19.425875"
        y="18.640211"
        id="text160"><tspan
          sodipodi:role="line"
          id="tspan158"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.322921"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.425875"
          y="18.640211">$(EXIF_EXPOSURE)sec</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.322921"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.322921"
        x="19.425875"
        y="26.247597"
        id="text164"><tspan
          sodipodi:role="line"
          id="tspan162"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:3.4445px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.322921"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="19.425875"
          y="26.247597">ISO: $(EXIF_ISO)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.886328"
        y="76.541626"
        id="text168"><tspan
          sodipodi:role="line"
          id="tspan166"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.886328"
          y="76.541626">$(SENSOR_WIDTH) x $(SENSOR_HEIGHT) px</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.886328"
        y="83.994293"
        id="text172"><tspan
          sodipodi:role="line"
          id="tspan170"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.886328"
          y="83.994293">$(EXPORT_WIDTH) x $(EXPORT_HEIGHT) px</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.886328"
        y="91.632675"
        id="text176"><tspan
          sodipodi:role="line"
          id="tspan174"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.886328"
          y="91.632675">$(LONGITUDE), $(LATITUDE), $(ELEVATION) </tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.886328"
        y="98.950058"
        id="text180"><tspan
          sodipodi:role="line"
          id="tspan178"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.886328"
          y="98.950058">$(TAGS) </tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.886328"
        y="106.39198"
        id="text184"><tspan
          sodipodi:role="line"
          id="tspan182"
-         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222px;font-family:Roboto;-inkscape-font-specification:'Roboto, Light';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.886328"
          y="106.39198">$(CREATOR) </tspan></text>
     <g
@@ -1191,41 +1318,47 @@
        transform="matrix(0.48414363,0,0,0.48414363,29.321537,5.7394024)">
       <path
          d="m -20.068177,13.490351 c 0.08877,0.12633 0.34195,0.265186 0.53245,0.265186 0.349249,0 0.509109,-0.08974 0.678441,-0.184986 0.306916,-0.169333 0.846664,-0.687914 1.132413,-1.05833 0.328083,-0.444498 0.709081,-1.344079 0.952497,-2.317742 0.402166,-1.5134123 0.603248,-2.2965764 0.624415,-2.3706595 0.447853,-0.1552 0.690182,-0.1172552 1.052244,0.060982 0.47631,0.2344796 0.457258,-0.3130884 0.08098,-0.3844128 -0.341517,-0.064736 -0.665595,-0.029232 -1.048558,-0.015236 0.687915,-2.6987414 0.955201,-3.0940918 1.590199,-3.0940918 0.1905,0 0.146172,0.063162 0.376362,0.2485936 0.23019,0.1854313 0.572011,0.019741 0.578942,-0.3426747 0.004,-0.2104351 -0.174843,-0.3783997 -0.386509,-0.3783997 -0.645582,0 -1.068914,0.2222493 -1.788578,0.9207471 -0.592665,0.5820814 -0.730248,0.8784138 -1.142996,2.6458249 -0.961632,0.2755364 -1.031372,-0.01483 -1.136131,0.029609 -0.152521,0.1503095 -0.265157,0.3451533 -0.09876,0.4572234 0.408402,0.1612933 0.735936,-0.096014 1.17397,-0.1790775 -0.169333,0.6455812 -0.256586,0.9516585 -0.457669,1.8829889 -0.634998,2.9209921 -1.334668,3.7406501 -1.817161,3.5772501 -0.150362,-0.05092 -0.343985,-0.390736 -0.542026,-0.423544 -0.23498,-0.03893 -0.325219,0.08487 -0.388874,0.185553 -0.09131,0.144416 -0.08085,0.311268 0.03434,0.475196 z"
-         style="font-size:10.5833px;font-family:Z003;-inkscape-font-specification:'Z003, Normal';fill:#ffffff"
+         style="font-size:10.5833px;font-family:Z003;-inkscape-font-specification:'Z003, Normal';fill:$(WATERMARK_COLOR)"
          id="path186"
          sodipodi:nodetypes="ssccccsscszssccccccsssss" />
     </g>
     <path
        d="m 8.6199064,38.935101 v 0.05143 H 77.127765 v -0.05143 z"
-       style="color:#000000;fill:#ffffff;stroke-width:0.105751;-inkscape-stroke:none"
+       style="color:#000000;fill:$(WATERMARK_COLOR);stroke-width:0.105751;-inkscape-stroke:none"
        id="path3222" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.06572px;line-height:1.25;font-family:'San Francisco Display';-inkscape-font-specification:'San Francisco Display, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke:none;stroke-width:0.264583;filter:url(#filter1105-3)"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.06572px;line-height:1.25;font-family:'San Francisco Display';-inkscape-font-specification:'San Francisco Display, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583;filter:url(#filter1105-3)"
        x="18.936054"
        y="114.09785"
        id="text197"><tspan
          sodipodi:role="line"
          id="tspan195"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.06572px;font-family:'San Francisco Display';-inkscape-font-specification:'San Francisco Display, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.936054"
          y="114.09785">$(DARKTABLE.NAME) v$(DARKTABLE.VERSION)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.06572px;line-height:1.25;font-family:'San Francisco Display';-inkscape-font-specification:'San Francisco Display, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.06572px;line-height:1.25;font-family:'San Francisco Display';-inkscape-font-specification:'San Francisco Display, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="18.819946"
        y="113.87679"
        id="text221"><tspan
          sodipodi:role="line"
          id="tspan219"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.06572px;font-family:'San Francisco Display';-inkscape-font-specification:'San Francisco Display, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;stroke-width:0.264583"
+         fill="$(WATERMARK_COLOR)"
+         font-family="'$(WATERMARK_FONT_FAMILY)'"
+         font-style="$(WATERMARK_FONT_STYLE)"
+         font-weight="$(WATERMARK_FONT_WEIGHT)"
          x="18.819946"
          y="113.87679">$(DARKTABLE.NAME) v$(DARKTABLE.VERSION)</tspan></text>
     <g
        id="g18074"
        transform="translate(-0.1629946,17.954156)">
       <g
-         style="display:inline;fill:#ffffff;filter:url(#filter17780)"
+         style="display:inline;fill:$(WATERMARK_COLOR);filter:url(#filter17781)"
          inkscape:label="Backdrop"
          id="layer3"
          transform="matrix(0.00828238,0,0,0.00828238,12.5768,92.979808)">
@@ -1239,7 +1372,7 @@
            sodipodi:cy="287"
            sodipodi:cx="285"
            id="path3947"
-           style="opacity:0.95;fill:#ffffff;fill-opacity:1;stroke:none;filter:url(#filter4107-3)"
+           style="opacity:0.95;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;filter:url(#filter4107-3)"
            sodipodi:type="arc"
            sodipodi:arc-type="arc"
            d="M 510,287 A 225,225 0 0 1 288.48211,511.97305 225,225 0 0 1 60.107778,293.96338 225,225 0 0 1 274.55701,62.242477 225,225 0 0 1 509.56899,273.07991" />
@@ -1253,13 +1386,13 @@
            sodipodi:cy="287"
            sodipodi:cx="285"
            id="path3892"
-           style="display:inline;opacity:0.95;fill:#ffffff;fill-opacity:1;stroke:none;filter:url(#filter3902-1)"
+           style="display:inline;opacity:0.95;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none;filter:url(#filter3902-1)"
            sodipodi:type="arc"
            sodipodi:arc-type="arc"
            d="M 510,287 A 225,225 0 0 1 288.48211,511.97305 225,225 0 0 1 60.107778,293.96338 225,225 0 0 1 274.55701,62.242477 225,225 0 0 1 509.56899,273.07991" />
         <path
            sodipodi:type="arc"
-           style="display:inline;opacity:0.95;fill:#ffffff;fill-opacity:1;stroke:none"
+           style="display:inline;opacity:0.95;fill:$(WATERMARK_COLOR);fill-opacity:1;stroke:none"
            id="path3021"
            sodipodi:cx="285"
            sodipodi:cy="287"
