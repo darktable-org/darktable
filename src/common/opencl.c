@@ -194,6 +194,16 @@ gboolean dt_opencl_read_device_config(const int devid)
   return FALSE;
 }
 
+float dt_opencl_device_perfgain(const int devid)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || devid < 0) return 1.0f;
+
+  const float tcpu = fmaxf(1e-8f, cl->cpubenchmark);
+  const float tgpu = fmaxf(1e-8f, cl->dev[devid].benchmark);
+  return tcpu / fminf(tgpu, tcpu);  
+} 
+
 // returns 0 if all ok or an error if we failed to init this device
 static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *devices, const int k,
                                  const int opencl_memory_requirement)
@@ -882,9 +892,6 @@ finally:
           dt_opencl_write_device_config(n);
         }
         tgpumin = fminf(cl->dev[n].benchmark, tgpumin);
-
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] benchmarking result for `%s', %fsec versus %fsec for CPU.\n",
-           cl->dev[n].name, cl->dev[n].benchmark, tcpu);
       }
 
       if(!manually)
@@ -920,6 +927,12 @@ finally:
         }
       }
     }
+
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] benchmarking result %4fsec for CPU\n", tcpu);
+    for(int n = 0; n < cl->num_devs; n++)
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] benchmarking result %4fsec for `%s', rel: %f\n",
+           cl->dev[n].benchmark, cl->dev[n].name, dt_opencl_device_perfgain(n));
+
     // apply config settings for scheduling profile: sets device priorities and pixelpipe synchronization timeout
     dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
     dt_opencl_apply_scheduling_profile(profile);
