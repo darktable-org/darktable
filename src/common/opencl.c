@@ -693,8 +693,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
            dt_conf_get_int("opencl_mandatory_timeout"));
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_size_roundup: %d\n",
-           dt_conf_get_int("opencl_size_roundup"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n",
            dt_conf_get_bool("opencl_async_pixelpipe"));
   str = dt_conf_get_string_const("opencl_synch_cache");
@@ -2721,27 +2719,6 @@ gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
 
   if((dt_opencl_get_device_memalloc(devid) < required) || (dt_opencl_get_device_available(devid) < required)) return FALSE; 
   return _cl_test_available(devid, required);
-}
-
-/** round size to a multiple of the value given in config parameter opencl_size_roundup */
-int dt_opencl_roundup(int size)
-{
-  static int roundup = -1;
-
-  /* first time run */
-  if(roundup < 0)
-  {
-    roundup = dt_conf_get_int("opencl_size_roundup");
-
-    /* if not yet defined (or unsane), set a sane default */
-    if(roundup <= 0)
-    {
-      roundup = 16;
-      dt_conf_set_int("opencl_size_roundup", roundup);
-    }
-  }
-
-  return (size % roundup == 0 ? size : (size / roundup + 1) * roundup);
 }
 
 /** round size to a multiple of the value given in the device specifig config parameter for opencl_size_roundup */
