@@ -399,9 +399,6 @@ cl_ulong dt_opencl_get_device_available(const int devid);
 /** get size of allocatable single buffer */
 cl_ulong dt_opencl_get_device_memalloc(const int devid);
 
-/** round size to a multiple of the value given in config parameter opencl_size_roundup */
-int dt_opencl_roundup(int size);
-
 /** round size to a multiple of the value given in the device specifig config parameter for opencl_size_roundup */
 int dt_opencl_dev_roundup(int size, const int devid);
 
