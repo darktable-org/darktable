@@ -19,6 +19,7 @@
 #include "dtgtk/expander.h"
 #include "control/conf.h"
 
+#include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
 G_DEFINE_TYPE(GtkDarktableExpander, dtgtk_expander, GTK_TYPE_BOX);
@@ -108,6 +109,75 @@ static void dtgtk_expander_init(GtkDarktableExpander *expander)
 {
 }
 
+/* From clutter-easing.c, based on Robert Penner's
+ * infamous easing equations, MIT license.
+ */
+gdouble ease_out_cubic(gdouble t)
+{
+  gdouble p = t - 1;
+  return p * p * p + 1;
+}
+
+typedef struct _smoothScrollData
+{
+  GtkAdjustment *adjustment;
+  gdouble start;
+  gdouble end;
+  gint64 start_time;
+  gint64 end_time;
+} smoothScrollData;
+
+static gboolean _scrolled_window_tick_callback(GtkWidget *scrolled_window, GdkFrameClock *clock, gpointer user_data)
+{
+  smoothScrollData *data = (smoothScrollData *)user_data;
+  if(!GTK_IS_ADJUSTMENT(data->adjustment)) return G_SOURCE_REMOVE;
+
+  gint64 now = gdk_frame_clock_get_frame_time(clock);
+  gdouble current_pos = gtk_adjustment_get_value(data->adjustment);
+
+  if(now < data->end_time && current_pos != data->end)
+  {
+    gdouble t = (gdouble)(now - data->start_time) / (gdouble)(data->end_time - data->start_time);
+    t = ease_out_cubic(t);
+
+    if(data->start > data->end)
+      gtk_adjustment_set_value(data->adjustment, data->start - t * (data->start - data->end));
+    else
+      gtk_adjustment_set_value(data->adjustment, data->start + t * (data->end - data->start));
+
+    return G_SOURCE_CONTINUE;
+  }
+  else
+  {
+    gtk_adjustment_set_value(data->adjustment, data->end);
+
+    return G_SOURCE_REMOVE;
+  }
+}
+
+void _scrolled_window_smooth_scroll(GtkWidget *scrolled_window, int target, guint duration)
+{
+  GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
+  if(!GTK_IS_ADJUSTMENT(adjustment)) return;
+
+  GdkFrameClock *clock = gtk_widget_get_frame_clock(scrolled_window);
+  if(!clock) return;
+
+  gdouble start = gtk_adjustment_get_value(adjustment);
+  gdouble end = target;
+  gint64 start_time = gdk_frame_clock_get_frame_time(clock);
+  gint64 end_time = start_time + 1000 * duration;
+
+  smoothScrollData *data = malloc(sizeof(smoothScrollData));
+  data->adjustment = adjustment;
+  data->start = start;
+  data->end = end;
+  data->start_time = start_time;
+  data->end_time = end_time;
+
+  gtk_widget_add_tick_callback(scrolled_window, (GtkTickCallback)_scrolled_window_tick_callback, data, NULL);
+}
+
 // this should work as long as everything happens in the gui thread
 static void dtgtk_expander_scroll(GtkRevealer *widget)
 {
@@ -124,10 +194,8 @@ static void dtgtk_expander_scroll(GtkRevealer *widget)
   GtkWidget *scrolled_window = gtk_widget_get_parent(viewport);
   if(!GTK_IS_SCROLLED_WINDOW(scrolled_window)) return; // may not be part of a panel yet
 
-  GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
-
   gtk_widget_get_allocation(expander, &allocation);
-  gtk_adjustment_set_value(adjustment, allocation.y);
+  _scrolled_window_smooth_scroll(scrolled_window, allocation.y, dt_conf_get_int("ui/transition_duration"));
 }
 
 // public functions
