@@ -220,8 +220,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int order = d->order;
   const int unbound = d->unbound;
 
-  size_t sizes[3];
-
   cl_mem dev_cm = NULL;
   cl_mem dev_ccoeffs = NULL;
   cl_mem dev_lm = NULL;
@@ -287,9 +285,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
   if(err != CL_SUCCESS) goto error;
 
-  sizes[0] = ROUNDUPDWD(width, devid);
-  sizes[1] = ROUNDUPDWD(height, devid);
-  sizes[2] = 1;
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 0, sizeof(cl_mem), (void *)&dev_tmp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 2, sizeof(int), (void *)&width);
