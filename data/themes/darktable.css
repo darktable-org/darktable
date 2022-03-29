@@ -1834,7 +1834,6 @@ menuitem:hover > *:not(check),
 notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
-#bauhaus_combobox:hover,
 #collapsible spinbutton button:hover,
 #history-button:hover,
 #history-button-enabled:hover,
@@ -1845,13 +1844,14 @@ treeview:not(#lutname) *:hover:not(check),
 #view_label:hover,
 #view_dropdown .combo:hover
 {
-  background-color: alpha(@button_hover_bg, 0.5);
-  border-color: alpha(@button_hover_bg, 0.5);
+  background-color: alpha(@button_hover_bg, 0.6);
+  border-color: alpha(@button_hover_bg, 0.6);
   color: shade(@fg_color, 1.15);
 }
 
 .combo,
 combobox window *:hover,
+#bauhaus_combobox:hover,
 #collapsible .combo:hover,
 #header-toolbar #bauhaus_combobox:hover
 {
