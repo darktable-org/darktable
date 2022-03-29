@@ -386,7 +386,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dev_thresholds = dt_opencl_copy_host_to_device_constant(devid, sizeof(unsigned int) * 4, (void *)d->threshold);
   if(dev_thresholds == NULL) goto error;
 
-  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), &dev_coord);

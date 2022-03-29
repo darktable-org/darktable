@@ -1231,7 +1231,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = dt_conf_get_bool("opencl_use_pinned_memory");
+  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) != 0);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)
@@ -1586,7 +1586,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = dt_conf_get_bool("opencl_use_pinned_memory");
+  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) != 0);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)

@@ -1466,7 +1466,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         // cl_mem_input, *cl_mem_output);
 
         // indirectly give gpu some air to breathe (and to do display related stuff)
-        dt_iop_nap(darktable.opencl->micro_nap);
+        dt_iop_nap(dt_opencl_micro_nap(pipe->devid));
 
         // transform to input colorspace
         if(success_opencl)
@@ -1629,7 +1629,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         // indirectly give gpu some air to breathe (and to do display related stuff)
-        dt_iop_nap(darktable.opencl->micro_nap);
+        dt_iop_nap(dt_opencl_micro_nap(pipe->devid));
 
         // transform to module input colorspace
         if(success_opencl)
@@ -2518,7 +2518,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     {
       wb[0] = wb[1] = wb[2] = 1.0f;
     }
-    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &in);
     dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
@@ -2530,7 +2530,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     if(err != CL_SUCCESS) goto error;
   }
   {
-    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_write_scharr_mask;
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &out);

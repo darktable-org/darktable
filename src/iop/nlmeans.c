@@ -195,7 +195,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if (err == CL_SUCCESS)
   {
     // normalize and blend
-    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     const float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
     dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
@@ -266,7 +266,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   size_t sizesl[3];
   size_t local[3];
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 0, sizeof(cl_mem), (void *)&dev_U2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_nlmeans_init, 1, sizeof(int), (void *)&width);
@@ -295,7 +295,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(err != CL_SUCCESS) goto error;
 
       sizesl[0] = bwidth;
-      sizesl[1] = ROUNDUPHT(height);
+      sizesl[1] = ROUNDUPDHT(height, devid);
       sizesl[2] = 1;
       local[0] = hblocksize;
       local[1] = 1;
@@ -312,7 +312,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if(err != CL_SUCCESS) goto error;
 
 
-      sizesl[0] = ROUNDUPWD(width);
+      sizesl[0] = ROUNDUPDWD(width, devid);
       sizesl[1] = bheight;
       sizesl[2] = 1;
       local[0] = 1;
@@ -344,7 +344,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
         dt_opencl_finish(devid);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
-      dt_iop_nap(darktable.opencl->micro_nap);
+      dt_iop_nap(dt_opencl_micro_nap(devid));
     }
 
   // normalize and blend

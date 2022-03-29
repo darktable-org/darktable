@@ -633,8 +633,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t origin[] = { 0, 0, 0 };
   size_t iregion[] = { (size_t)iwidth, (size_t)iheight, 1 };
   size_t oregion[] = { (size_t)owidth, (size_t)oheight, 1 };
-  size_t isizes[] = { (size_t)ROUNDUPWD(iwidth), (size_t)ROUNDUPHT(iheight), 1 };
-  size_t osizes[] = { (size_t)ROUNDUPWD(owidth), (size_t)ROUNDUPHT(oheight), 1 };
+  size_t isizes[] = { (size_t)ROUNDUPDWD(iwidth, devid), (size_t)ROUNDUPDHT(iheight, devid), 1 };
+  size_t osizes[] = { (size_t)ROUNDUPDWD(owidth, devid), (size_t)ROUNDUPDHT(oheight, devid), 1 };
 
   int modflags;
   int ldkernel = -1;
