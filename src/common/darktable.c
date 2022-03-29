@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1731,7 +1731,7 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, _("instead you will find 'per device' data in 'cldevice_canonical-name'. content is:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
     g_strlcat(info, _("  'avoid_atomics'  'micro_nap'  'pinned_memory'  'clroundup'  'magic'"), DT_PERF_INFOSIZE);
-    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
@@ -1871,4 +1871,3 @@ void dt_print_mem_usage()
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
