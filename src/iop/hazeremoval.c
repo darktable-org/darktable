@@ -567,7 +567,7 @@ static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   dt_opencl_set_kernel_arg(devid, kernel_x, 2, sizeof(in), &in);
   dt_opencl_set_kernel_arg(devid, kernel_x, 3, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_x, 4, sizeof(w), &w);
-  const size_t sizes_x[] = { 1, ROUNDUPDWD(height, devid) };
+  const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) goto error;
 
