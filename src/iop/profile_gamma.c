@@ -202,7 +202,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_coeffs = NULL;
 
 
-  size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   if(d->mode == PROFILEGAMMA_LOG)
   {

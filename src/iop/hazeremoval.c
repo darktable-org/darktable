@@ -567,7 +567,7 @@ static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   dt_opencl_set_kernel_arg(devid, kernel_x, 2, sizeof(in), &in);
   dt_opencl_set_kernel_arg(devid, kernel_x, 3, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_x, 4, sizeof(w), &w);
-  const size_t sizes_x[] = { 1, ROUNDUPWD(height) };
+  const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) goto error;
 
@@ -577,7 +577,7 @@ static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   dt_opencl_set_kernel_arg(devid, kernel_y, 2, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_y, 3, sizeof(out), &out);
   dt_opencl_set_kernel_arg(devid, kernel_y, 4, sizeof(w), &w);
-  const size_t sizes_y[] = { ROUNDUPWD(width), 1 };
+  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 
 error:
@@ -600,7 +600,7 @@ static int box_max_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   dt_opencl_set_kernel_arg(devid, kernel_x, 2, sizeof(in), &in);
   dt_opencl_set_kernel_arg(devid, kernel_x, 3, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_x, 4, sizeof(w), &w);
-  const size_t sizes_x[] = { 1, ROUNDUPWD(height) };
+  const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) goto error;
 
@@ -610,7 +610,7 @@ static int box_max_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem
   dt_opencl_set_kernel_arg(devid, kernel_y, 2, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_y, 3, sizeof(out), &out);
   dt_opencl_set_kernel_arg(devid, kernel_y, 4, sizeof(w), &w);
-  const size_t sizes_y[] = { ROUNDUPWD(width), 1 };
+  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 
 error:
@@ -636,7 +636,7 @@ static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(A0[0]), &A0[0]);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(A0[1]), &A0[1]);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(A0[2]), &A0[2]);
-  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS)
   {
@@ -666,7 +666,7 @@ static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(A0[0]), &A0[0]);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(A0[1]), &A0[1]);
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(A0[2]), &A0[2]);
-  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   int err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[hazeremoval, dehaze_cl] unknown error: %d\n", err);
   return err;

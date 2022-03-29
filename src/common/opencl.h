@@ -49,8 +49,10 @@
 // #pragma GCC diagnostic
 
 #define ROUNDUP(a, n) ((a) % (n) == 0 ? (a) : ((a) / (n)+1) * (n))
-#define ROUNDUPWD(a) dt_opencl_roundup(a)
-#define ROUNDUPHT(a) dt_opencl_roundup(a)
+
+// use per device roundups here
+#define ROUNDUPDWD(a, b) dt_opencl_dev_roundup(a, b)
+#define ROUNDUPDHT(a, b) dt_opencl_dev_roundup(a, b)
 
 typedef enum dt_opencl_memory_t
 {
@@ -117,10 +119,27 @@ typedef struct dt_opencl_device_t
   const char *cname;
   const char *options;
   cl_int summary;
+  // the benchmark value must not be changed by the user
   float benchmark;
   size_t memory_in_use;
   size_t peak_memory;
   size_t tuned_available;
+
+  // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
+  // pixelpipe processing will be done on CPU for the affected modules.
+  // useful if your OpenCL implementation freezes/crashes on atomics or if they are processed with a bad performance.
+  int avoid_atomics;
+  // pause OpenCL processing for this number of microseconds from time to time
+  int micro_nap;
+  // during tiling huge amounts of memory need to be transferred between host and device.
+  // for some OpenCL implementations direct memory transfers give a drastic performance penalty.
+  // this can often be avoided by using indirect transfers via pinned memory.
+  // other devices have more efficient direct memory transfer implementations.
+  // AMD seems to belong to the first group, nvidia to the second.
+  int pinned_memory;
+  // in OpenCL processing round width/height of global work groups to a multiple of this value.
+  // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
+  int clroundup;  
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -138,13 +157,11 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
-  int avoid_atomics;
   int use_events;
   int async_pixelpipe;
   int number_event_handles;
   int print_statistics;
   dt_opencl_sync_cache_t sync_cache;
-  int micro_nap;
   int enabled;
   int stopped;
   int num_devs;
@@ -161,6 +178,8 @@ typedef struct dt_opencl_t
   dt_opencl_device_t *dev;
   dt_dlopencl_t *dlocl;
 
+  // we want the cpu benchmark to be available
+  float cpubenchmark;
   // global kernels for blending operations.
   struct dt_blendop_cl_global_t *blendop;
 
@@ -380,8 +399,8 @@ cl_ulong dt_opencl_get_device_available(const int devid);
 /** get size of allocatable single buffer */
 cl_ulong dt_opencl_get_device_memalloc(const int devid);
 
-/** round size to a multiple of the value given in config parameter opencl_size_roundup */
-int dt_opencl_roundup(int size);
+/** round size to a multiple of the value given in the device specifig config parameter for opencl_size_roundup */
+int dt_opencl_dev_roundup(int size, const int devid);
 
 /** get next free slot in eventlist and manage size of eventlist */
 cl_event *dt_opencl_events_get_slot(const int devid, const char *tag);
@@ -402,6 +421,13 @@ void dt_opencl_events_profiling(const int devid, const int aggregated);
 
 /** utility function to calculate optimal work group dimensions for a given kernel */
 int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_local_buffer_t *factors);
+
+/** utility functions handling device specific properties */
+void dt_opencl_write_device_config(const int devid);
+gboolean dt_opencl_read_device_config(const int devid);
+int dt_opencl_avoid_atomics(const int devid);
+int dt_opencl_micro_nap(const int devid);
+int dt_opencl_pinned_memory(const int devid);
 
 #else
 #include "control/conf.h"
