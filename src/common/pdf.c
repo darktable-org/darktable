@@ -301,7 +301,6 @@ static size_t _pdf_write_stream(dt_pdf_t *pdf, dt_pdf_stream_encoder_t encoder, 
       stream_size = _pdf_stream_encoder_Flate(pdf, data, len);
       break;
   }
-  pdf->bytes_written += stream_size;
   return stream_size;
 }
 
