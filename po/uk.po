@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-19 09:04+0100\n"
-"PO-Revision-Date: 2022-03-28 21:35+0300\n"
+"PO-Revision-Date: 2022-03-30 14:22+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1573,24 +1573,25 @@ msgid "interface"
 msgstr "інтерфейс"
 
 #: ../build/bin/preferences_gen.h:7539
-#, fuzzy
-#| msgid "restore default shortcuts or previous state"
 msgid "load default shortcuts at startup"
-msgstr "відновити прискорювачі за замовчуванням або попередній стан"
+msgstr "завантажувати стандартні прискорювачі під час запуску"
 
 #: ../build/bin/preferences_gen.h:7553
 msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
 msgstr ""
+"завантажувати прискорювачі за замовчуванням перед налаштованими "
+"користувачем. вимкніть, щоб запобігти поверненню видалених налаштувань за "
+"замовчуванням"
 
 #: ../build/bin/preferences_gen.h:7575
 msgid "scale slider step with min/max"
-msgstr ""
+msgstr "масштабувати крок повзунка відповідно до мін/макс"
 
 #: ../build/bin/preferences_gen.h:7589
 msgid "vary bauhaus slider step size with min/max range"
-msgstr ""
+msgstr "змінювати розмір кроку повзунка відповідно до діапазону мін/макс"
 
 #: ../build/bin/preferences_gen.h:7611
 msgid "sort built-in presets first"
@@ -5168,12 +5169,14 @@ msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
 msgstr ""
+"метод демозаїки RCD було встановлено за замовчуванням замість PPG через "
+"кращу якість та продуктивність."
 
 #: ../src/common/darktable.c:1708
-#, fuzzy
-#| msgid "demosaicing for zoomed out darkroom mode"
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
-msgstr "демозаїкізація масштабованих зображень в режимі темної кімнати"
+msgstr ""
+"щодо демозаїки масштабованих зображень в режимі темної кімнати перегляньте "
+"відповідний параметр в \"налаштування > темна кімната\""
 
 #: ../src/common/darktable.c:1714
 msgid ""
@@ -8779,10 +8782,8 @@ msgid "ctrl+click to remove from quick access panel\n"
 msgstr "ctrl+клік, щоб видалити з панелі швидкого доступу\n"
 
 #: ../src/gui/accelerators.c:699
-#, fuzzy
-#| msgid "ctrl+scroll to change display height"
 msgid "scroll to change default speed"
-msgstr "ctrl+прокрутка для зміни висоти відображення"
+msgstr "прокрутіть, щоб змінити швидкість за замовчуванням"
 
 #: ../src/gui/accelerators.c:700
 msgid "right click to exit mapping mode"
@@ -12591,20 +12592,16 @@ msgid "temperature"
 msgstr "температура"
 
 #: ../src/iop/channelmixerrgb.c:4073
-#, fuzzy
-#| msgid "color mapping"
 msgid "spot color mapping"
-msgstr "перенос кольорів"
+msgstr "відображення кольору області зображення"
 
 #: ../src/iop/channelmixerrgb.c:4076 ../src/iop/channelmixerrgb.c:4204
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "використати кольорову мішень для автовстановлення CAT і каналів"
 
 #: ../src/iop/channelmixerrgb.c:4078 ../src/iop/exposure.c:1090
-#, fuzzy
-#| msgid "show module"
 msgid "spot mode"
-msgstr "показати модуль"
+msgstr "режим області зображення"
 
 #: ../src/iop/channelmixerrgb.c:4079
 msgid ""
@@ -14974,10 +14971,8 @@ msgstr ""
 "шляхом підштовхування значень RGB до негативних."
 
 #: ../src/iop/exposure.c:1087
-#, fuzzy
-#| msgid "display exposure mask"
 msgid "spot exposure mapping"
-msgstr "показати маску експозиції"
+msgstr "відображення експозиції області зображення"
 
 #: ../src/iop/exposure.c:1091
 msgid ""
@@ -18357,10 +18352,8 @@ msgid "lomo"
 msgstr "ломо"
 
 #: ../src/iop/vignette.c:985
-#, fuzzy
-#| msgid "position"
 msgid "position / form"
-msgstr "положення"
+msgstr "позиція / форма"
 
 #: ../src/iop/vignette.c:1003
 msgid "the radii scale of vignette for start of fall-off"
@@ -18493,10 +18486,8 @@ msgid "pick color from image"
 msgstr "вибрати колір із зображення"
 
 #: ../src/iop/watermark.c:1124
-#, fuzzy
-#| msgid "element"
 msgid "placement"
-msgstr "елемент"
+msgstr "розміщення"
 
 #: ../src/iop/watermark.c:1137
 msgid "size is relative to"
@@ -22399,6 +22390,10 @@ msgid ""
 "ctrl+click to exclude the color label\n"
 "the grey button affects all color labels"
 msgstr ""
+"фільтрувати за кольоровою позначкою зображень\n"
+"клікніть, щоб перемкнути вибір кольорової позначки\n"
+"клікніть з утриманням ctrl для виключення кольорової позначки\n"
+"сіра кнопка впливає на всі кольорові позначки"
 
 #: ../src/libs/tools/filter.c:430
 msgid ""
@@ -22406,6 +22401,10 @@ msgid ""
 "and (∩): images having all selected color labels\n"
 "or (∪): images with at least one of the selected color labels"
 msgstr ""
+"фільтрувати за кольоровою позначкою зображень\n"
+"оператор \"і\" (∩): зображення, які мають усі вибрані кольорові позначки\n"
+"оператор \"або\" (∪): зображення з принаймні однією з вибраних кольорових "
+"позначок"
 
 #: ../src/libs/tools/filter.c:451
 #, no-c-format
@@ -22416,6 +22415,14 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
+"фільтрувати за текстом із метаданих, тегів зображень, шляху до файлу та "
+"імені\n"
+"`%' відповідає будь-якому тексту\n"
+"за замовчуванням шаблони `%' на початку та в кінці тексту застосовуються "
+"автоматично\n"
+"подвійні лапки на початку чи в кінці тексту вимикають автозастосування "
+"відповідного шаблону\n"
+"фільтр затемнений під час виконання пошуку"
 
 #. sort combobox
 #: ../src/libs/tools/filter.c:467
