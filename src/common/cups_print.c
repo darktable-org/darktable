@@ -556,7 +556,8 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
       num_options = cupsAddOption("Borderless", "true", num_options, &options);
     }
 
-    num_options = cupsAddOption("landscape", pinfo->page.landscape ? "true" : "false", num_options, &options);
+    // as cups-filter pdftopdf will autorotate the page, there is no
+    // need to set an option in the case of landscape mode images
   }
 
   // print lp options
