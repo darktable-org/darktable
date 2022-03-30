@@ -1044,7 +1044,71 @@ static void _filtering_gui_update(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_conf_set_int("plugins/lighttable/filtering/num_rules", 0);
+  GdkKeymap *kmap = gdk_keymap_get_for_display(gdk_display_get_default());
+  guint state = gdk_keymap_get_modifier_state(kmap);
+  if(state & GDK_CONTROL_MASK)
+  {
+    // easy case : we remove all rules
+    dt_conf_set_int("plugins/lighttable/filtering/num_rules", 0);
+  }
+  else
+  {
+    // for the filtering rules, we
+    // - remove the unpinned ones
+    // - reset the pinned ones
+    const int nb_rules
+        = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
+    int nb_removed = 0;
+    for(int i = 0; i < nb_rules; i++)
+    {
+      char confname[200] = { 0 };
+      // read the topbar state
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i - nb_removed);
+      if(dt_conf_get_int(confname))
+      {
+        // we "just" reset the filter
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i - nb_removed);
+        dt_conf_set_int(confname, 0);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i - nb_removed);
+        dt_conf_set_string(confname, "");
+      }
+      else
+      {
+        // we remove the filter and move up the next ones
+        for(int j = i + 1; j < nb_rules; j++)
+        {
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", j - nb_removed);
+          const int mode = dt_conf_get_int(confname);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", j - nb_removed);
+          const int item = dt_conf_get_int(confname);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", j - nb_removed);
+          const int off = dt_conf_get_int(confname);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", j - nb_removed);
+          const int top = dt_conf_get_int(confname);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", j - nb_removed);
+          gchar *string = dt_conf_get_string(confname);
+          nb_removed++;
+          if(string)
+          {
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", j - nb_removed);
+            dt_conf_set_int(confname, mode);
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", j - nb_removed);
+            dt_conf_set_int(confname, item);
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", j - nb_removed);
+            dt_conf_set_int(confname, off);
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", j - nb_removed);
+            dt_conf_set_int(confname, top);
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", j - nb_removed);
+            dt_conf_set_string(confname, string);
+            g_free(string);
+          }
+        }
+      }
+    }
+    dt_conf_set_int("plugins/lighttable/filtering/num_rules", nb_rules - nb_removed);
+  }
+
+  // we reset the sorting orders
   dt_conf_set_int("plugins/lighttable/filtering/num_sort", 1);
   dt_conf_set_int("plugins/lighttable/filtering/sort0", 0);
   dt_conf_set_int("plugins/lighttable/filtering/sortorder0", 0);
@@ -1697,6 +1761,9 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   // if we enter lighttable view, then we need to populate the filter topbar
   // we do it here because we are sure that both libs are loaded at this point
   _topbar_update(self);
+
+  // we change the tooltip of the reset button here, as we are sure the header is defined now
+  gtk_widget_set_tooltip_text(self->reset_button, "reset\nctrl-click to remove pinned rules too");
 }
 
 // clang-format off
