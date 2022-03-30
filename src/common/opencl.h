@@ -139,7 +139,10 @@ typedef struct dt_opencl_device_t
   int pinned_memory;
   // in OpenCL processing round width/height of global work groups to a multiple of this value.
   // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
-  int clroundup;  
+  int clroundup;
+
+  // A bitfield that identifies the type of OpenCL device
+  unsigned int cltype;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
