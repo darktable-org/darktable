@@ -744,12 +744,31 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     cl_platform_id platform = all_platforms[n];
     // get the number of GPU devices available to the platforms
     // the other common option is CL_DEVICE_TYPE_GPU/CPU (but the latter doesn't work with the nvidia drivers)
-    err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_ALL, 0, NULL,
-                                                  &(all_num_devices[n]));
+    err = (cl->dlocl->symbols->dt_clGetDeviceIDs)(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &(all_num_devices[n]));
     if(err != CL_SUCCESS)
     {
       all_num_devices[n] = 0;
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);
+    }
+    else
+    {
+      char profile[64] = { 0 };
+      size_t profile_size;
+      err = (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform, CL_PLATFORM_PROFILE, 64, profile, &profile_size);
+      if(err != CL_SUCCESS)
+      {
+        all_num_devices[n] = 0;
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get profile: %d\n", err);
+      }
+      else
+      {
+        // fprintf(stderr, "%s\n", profile);
+        if(strcmp("FULL_PROFILE", profile) != 0)
+        {
+          all_num_devices[n] = 0;
+          dt_print(DT_DEBUG_OPENCL, "[opencl_init] platform %i is not FULL_PROFILE\n", n);
+        }
+      }
     }
   }
 
