@@ -1827,7 +1827,7 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 
 /* Hover states, some needed background only */
 .dt_transparent_background:hover,
-button:hover,
+button:hover:not(.combo),
 filechooser row:hover,
 menuitem:hover,
 menuitem:hover > *:not(check),
@@ -1849,14 +1849,13 @@ treeview:not(#lutname) *:hover:not(check),
   color: shade(@fg_color, 1.15);
 }
 
-.combo,
+.combo:hover,
 combobox window *:hover,
 #bauhaus_combobox:hover,
 #collapsible .combo:hover,
 #header-toolbar #bauhaus_combobox:hover
 {
-  background-color: alpha(@bauhaus_bg_hover, 0.15);
-  color: shade(@fg_color, 1.15);
+  color: shade(@fg_color, 1.2);
 }
 
 /* workaround for a macOS quartz GTK backend bug
@@ -1991,8 +1990,7 @@ treeview#delete-dialog:selected
 }
 
 /* Sliders states */
-#bauhaus_popup:hover,
-#bauhaus_slider:hover
+#bauhaus_popup:hover
 {
   color: @bauhaus_fg_hover;
 }

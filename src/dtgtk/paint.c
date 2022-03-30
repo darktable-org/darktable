@@ -43,7 +43,7 @@ const GdkRGBA _colorlabels[]
   = { {.red = 0.9, .green = 0.0, .blue = 0.0, .alpha = 1.0 }, // red
       {.red = 0.9, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // yellow
       {.red = 0.0, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // green
-      {.red = 0.0, .green = 0.0, .blue = 0.9, .alpha = 1.0 }, // blue
+      {.red = 0.0, .green = 0.1, .blue = 0.9, .alpha = 1.0 }, // blue (need a little green here to improve contrast of blue label in darker theme especially while being good in other themes)
       {.red = 0.9, .green = 0.0, .blue = 0.9, .alpha = 1.0 }, // purple
     };
 
