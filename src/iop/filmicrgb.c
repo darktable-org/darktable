@@ -3204,8 +3204,7 @@ void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t
 
   const float scale = 0.85;
   cairo_scale(cr, scale, scale);
-  button->icon(cr, -scale * button->w / 2., -scale * button->h / 2., scale * button->w, scale * button->h,
-               CPF_DO_NOT_USE_BORDER, NULL);
+  button->icon(cr, -scale * button->w / 2., -scale * button->h / 2., scale * button->w, scale * button->h, 0, NULL);
   cairo_restore(cr);
 }
 
