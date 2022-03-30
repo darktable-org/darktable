@@ -32,7 +32,6 @@ typedef enum dtgtk_cairo_paint_flags_t
   CPF_DIRECTION_RIGHT = 1 << 3,
   CPF_ACTIVE = 1 << 4,
   CPF_PRELIGHT = 1 << 5,
-  CPF_IGNORE_FG_STATE = 1 << 6, // Ignore state when setting foregroundcolor
   CPF_FOCUS = 1 << 13,
   CPF_SPECIAL_FLAG = 1 << 14, // this needs to be the last one. also update shift in dtgtk_cairo_paint_alignment
 

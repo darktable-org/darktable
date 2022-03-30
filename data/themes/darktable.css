@@ -461,7 +461,8 @@ spinbutton>button
   font-size: 0.7em;
 }
 
-.dt_module_button
+.dt_module_button,
+.dt_ignore_fg_state:checked
 {
   background-color: transparent;
   border: 0;
@@ -637,7 +638,7 @@ spinbutton>button
 
 /* Labels of controls sections in modules */
 #section_label,
-#section_label *
+#section_label label
 {
   padding: 0;
   color: @section_label;

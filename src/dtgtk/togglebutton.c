@@ -41,17 +41,11 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_TOGGLEBUTTON(widget), FALSE);
 
-  GtkDarktableToggleButton *button = DTGTK_TOGGLEBUTTON(widget);
-
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
 
   GdkRGBA fg_color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-
-  if(button->icon_flags & CPF_IGNORE_FG_STATE)
-    gtk_style_context_get_color(context, state & ~GTK_STATE_FLAG_SELECTED, &fg_color);
-  else
-    gtk_style_context_get_color(context, state, &fg_color);
+  gtk_style_context_get_color(context, state, &fg_color);
 
   /* fetch flags */
   int flags = DTGTK_TOGGLEBUTTON(widget)->icon_flags;
