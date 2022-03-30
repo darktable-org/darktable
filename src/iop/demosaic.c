@@ -5785,7 +5785,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                 "set to 1.0 for flat content"));
   g->dual_mask = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->dual_mask, NULL, N_("display blending mask"));
-  dt_bauhaus_widget_set_quad_paint(g->dual_mask, dtgtk_cairo_paint_showmask, CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->dual_mask, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->dual_mask, TRUE);
   g_signal_connect(G_OBJECT(g->dual_mask), "quad-pressed", G_CALLBACK(show_mask_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->dual_mask, FALSE, FALSE, 0);

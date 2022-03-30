@@ -66,7 +66,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->fill = _get_fill();
 
-  self->widget = d->icon = dtgtk_icon_new(_paint_battery, CPF_DO_NOT_USE_BORDER, d);
+  self->widget = d->icon = dtgtk_icon_new(_paint_battery, 0, d);
   gtk_widget_set_size_request(d->icon, DT_PIXEL_APPLY_DPI(23), -1);
   gtk_widget_set_tooltip_text(d->icon, _("battery indicator"));
 

@@ -2263,6 +2263,15 @@ Details :
 /*--------------------
   - Thumbnails infos -
   --------------------*/
+
+/* set some padding for some icons */
+#thumb_star,
+#thumb_reject,
+#thumb_colorlabels
+{
+  padding : 12.5px; /* percent of the full size */
+}
+
 /* By default, the extension is hidden */
 #thumb_ext
 {
