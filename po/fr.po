@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-31 17:52+0200\n"
-"PO-Revision-Date: 2022-03-31 18:18+0200\n"
+"POT-Creation-Date: 2022-03-31 19:53+0200\n"
+"PO-Revision-Date: 2022-03-31 19:54+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5236,17 +5236,19 @@ msgstr ""
 
 #: ../src/common/darktable.c:1731
 msgid ""
-"instead you will find 'per device' data in 'cldevice_canonical-name'. "
+"instead you will find 'per device' data in 'cldevice_v0_canonical-name'. "
 "content is:"
 msgstr ""
 "à la place vous trouverez les données par périphérique dans « "
-"cldevice_canonical-name ». le contenu est :"
+"cldevice_v0_canonical-name ». le contenu est :"
 
 #: ../src/common/darktable.c:1733
-msgid "  'avoid_atomics'  'micro_nap'  'pinned_memory'  'clroundup'  'magic'"
+msgid ""
+"  'avoid_atomics'  'micro_nap'  'pinned_memory'  'roundupwd'  'roundupht'  "
+"'magic'"
 msgstr ""
-"  « avoid_atomics »  « micro_nap »  « pinned_memory'  « clroundup »  « magic "
-"»"
+"  « avoid_atomics »  « micro_nap »  « pinned_memory'  « roundupwd »  « "
+"roundupht »  « magic »"
 
 #: ../src/common/darktable.c:1735
 msgid "you may tune as before except 'magic'"
@@ -5823,26 +5825,26 @@ msgstr "distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "le profil de gestion du bruit « %s » n'est pas valide"
 
-#: ../src/common/opencl.c:924
+#: ../src/common/opencl.c:930
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
 
-#: ../src/common/opencl.c:931
+#: ../src/common/opencl.c:937
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU multiples détectés - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:938
+#: ../src/common/opencl.c:944
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU très rapide détecté - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:945
+#: ../src/common/opencl.c:951
 msgid "opencl scheduling profile set to default"
 msgstr "profil de planification opencl par défaut positionné"
 
