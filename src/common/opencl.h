@@ -51,8 +51,8 @@
 #define ROUNDUP(a, n) ((a) % (n) == 0 ? (a) : ((a) / (n)+1) * (n))
 
 // use per device roundups here
-#define ROUNDUPDWD(a, b) dt_opencl_dev_roundup(a, b, 0)
-#define ROUNDUPDHT(a, b) dt_opencl_dev_roundup(a, b, 1)
+#define ROUNDUPDWD(a, b) dt_opencl_dev_roundup_width(a, b)
+#define ROUNDUPDHT(a, b) dt_opencl_dev_roundup_height(a, b)
 
 typedef enum dt_opencl_memory_t
 {
@@ -403,7 +403,8 @@ cl_ulong dt_opencl_get_device_available(const int devid);
 cl_ulong dt_opencl_get_device_memalloc(const int devid);
 
 /** round size to a multiple of the value given in the device specifig config parameter for opencl_size_roundup */
-int dt_opencl_dev_roundup(int size, const int devid, const int mode);
+int dt_opencl_dev_roundup_width(int size, const int devid);
+int dt_opencl_dev_roundup_height(int size, const int devid);
 
 /** get next free slot in eventlist and manage size of eventlist */
 cl_event *dt_opencl_events_get_slot(const int devid, const char *tag);
