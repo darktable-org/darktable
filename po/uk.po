@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-19 09:04+0100\n"
-"PO-Revision-Date: 2022-03-30 14:22+0300\n"
+"PO-Revision-Date: 2022-03-31 20:53+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -8812,7 +8812,7 @@ msgstr "створити окремі прискорювачі для перем
 #: ../src/gui/accelerators.c:1021
 #, c-format
 msgid "%s, speed reset"
-msgstr ""
+msgstr "%s, скидання швидкості"
 
 #: ../src/gui/accelerators.c:1030
 msgid "shortcut exists with different settings"
@@ -12610,6 +12610,10 @@ msgid ""
 "\"measure\" simply shows how an input color is mapped by the CAT\n"
 "and can be used to sample a target."
 msgstr ""
+"\"корекція\" автоматично регулює освітлювач таким чином,\n"
+"що вхідний колір відображається на цільовий.\n"
+"\"вимірювання\" просто показує, як вхідний колір відображається CAT\n"
+"і може використовуватися для вибірки цілі."
 
 #: ../src/iop/channelmixerrgb.c:4084 ../src/iop/exposure.c:1096
 msgid "correction"
@@ -12628,10 +12632,12 @@ msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
 msgstr ""
+"обчислити ціль, беручи до уваги змішування каналів.\n"
+"якщо вимкнено, розглядається лише CAT."
 
 #: ../src/iop/channelmixerrgb.c:4108 ../src/iop/exposure.c:1110
 msgid "the input color that should be mapped to the target"
-msgstr ""
+msgstr "вхідний колір, який має бути відображений на цільовий"
 
 #: ../src/iop/channelmixerrgb.c:4113
 msgid ""
@@ -12649,7 +12655,7 @@ msgstr "ці координати LCh обчислюються з координ
 
 #: ../src/iop/channelmixerrgb.c:4128
 msgid "the desired target color after mapping"
-msgstr ""
+msgstr "бажаний цільовий колір після відображення"
 
 #: ../src/iop/channelmixerrgb.c:4163
 msgid "input R"
@@ -14982,6 +14988,11 @@ msgid ""
 "compensation\n"
 "and can be used to define a target."
 msgstr ""
+"\"корекція\" автоматично регулює експозицію таким чином,\n"
+"що вхідна освітленість відображається на цільову.\n"
+"\"вимірювання\" просто показує, як вхідний колір відображається за "
+"допомогою\n"
+"компенсації експозиції і може використовуватися для визначення цілі."
 
 #: ../src/iop/exposure.c:1115
 msgid "L : \tN/A"
@@ -14989,7 +15000,7 @@ msgstr "L : \tN/A"
 
 #: ../src/iop/exposure.c:1130
 msgid "the desired target exposure after mapping"
-msgstr ""
+msgstr "бажана цільова експозиція після відображення"
 
 #: ../src/iop/filmic.c:179
 msgid "this module is deprecated. better use filmic rgb module instead."
