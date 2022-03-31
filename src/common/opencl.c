@@ -2659,8 +2659,8 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   }
   const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
   const gboolean tuned = darktable.dtresources.tunecl && (level > 0);
-
-  if(tuned)
+  const gboolean board = darktable.opencl->dev[devid].cltype & CL_DEVICE_TYPE_CPU;
+  if(tuned && !board)
   {
     // we always leave a safety margin, 128MB for level large, 100MB + 1/16 of graphics memory for default.
     const size_t unused = MAX(0, dt_opencl_get_unused_device_mem(devid) - 128lu * 1024lu * 1024lu);
@@ -2675,8 +2675,8 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   }
 
   if(mod)
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tune=%s) as available on device %i\n",
-       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", devid);
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tune=%s, cpu=%s) as available on device %i\n",
+       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (board) ? "yes" : "no", devid);
   return available;
 }
 
