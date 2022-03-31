@@ -2749,9 +2749,14 @@ gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
 }
 
 /** round size to a multiple of the value given in the device specifig config parameter clroundup_wd/ht */
-int dt_opencl_dev_roundup(int size, const int devid, const int mode)
+int dt_opencl_dev_roundup_width(int size, const int devid)
 {
-  const int roundup = (mode) ? darktable.opencl->dev[devid].clroundup_ht : darktable.opencl->dev[devid].clroundup_wd;
+  const int roundup = darktable.opencl->dev[devid].clroundup_wd;
+  return (size % roundup == 0 ? size : (size / roundup + 1) * roundup);
+}
+int dt_opencl_dev_roundup_height(int size, const int devid)
+{
+  const int roundup = darktable.opencl->dev[devid].clroundup_ht;
   return (size % roundup == 0 ? size : (size / roundup + 1) * roundup);
 }
 
