@@ -153,12 +153,13 @@ void dt_opencl_write_device_config(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_", cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %f",
+  g_snprintf(key, 254, "%s%s", "cldevice_v0_", cl->dev[devid].cname);
+  g_snprintf(dat, 510, "%i %i %i %i %i %f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory,
-    cl->dev[devid].clroundup,
+    cl->dev[devid].clroundup_wd,
+    cl->dev[devid].clroundup_ht,
     cl->dev[devid].benchmark);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -169,23 +170,26 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(devid < 0) return FALSE;
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_", cl->dev[devid].cname);
+  g_snprintf(key, 254, "%s%s", "cldevice_v0_", cl->dev[devid].cname);
   if(!dt_conf_key_not_empty(key)) return TRUE;
 
   const gchar *dat = dt_conf_get_string_const(key);
-  sscanf(dat, "%i %i %i %i %f",
+  sscanf(dat, "%i %i %i %i %i %f",
     &cl->dev[devid].avoid_atomics,
     &cl->dev[devid].micro_nap,
     &cl->dev[devid].pinned_memory,
-    &cl->dev[devid].clroundup,
+    &cl->dev[devid].clroundup_wd,
+    &cl->dev[devid].clroundup_ht,
     &cl->dev[devid].benchmark);
   // do some safety housekeeping
   cl->dev[devid].avoid_atomics &= 1;
   cl->dev[devid].pinned_memory &= 1;
   if((cl->dev[devid].micro_nap <= 100) || (cl->dev[devid].micro_nap > 1000000))
     cl->dev[devid].micro_nap = 1000;
-  if((cl->dev[devid].clroundup <= 4) || (cl->dev[devid].clroundup > 512))
-    cl->dev[devid].clroundup = 16;
+  if((cl->dev[devid].clroundup_wd <= 4) || (cl->dev[devid].clroundup_wd > 512))
+    cl->dev[devid].clroundup_wd = 16;
+  if((cl->dev[devid].clroundup_ht <= 4) || (cl->dev[devid].clroundup_ht > 512))
+    cl->dev[devid].clroundup_ht = 16;
 
   cl->dev[devid].benchmark = fminf(1e6, fmaxf(0.0f, cl->dev[devid].benchmark));
 
@@ -237,7 +241,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].avoid_atomics = 0;
   cl->dev[dev].micro_nap = 1000;
   cl->dev[dev].pinned_memory = 0;
-  cl->dev[dev].clroundup = 16;
+  cl->dev[dev].clroundup_wd = 16;
+  cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].benchmark = 0.0f;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
@@ -430,7 +435,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     fprintf(stderr, "     MICRO_NAP:                %i\n", cl->dev[dev].micro_nap);
     fprintf(stderr, "     AVOID_ATOMICS:            %s\n", (cl->dev[dev].avoid_atomics) ? "TRUE" : "FALSE");
     fprintf(stderr, "     PINNED_MEMORY:            %s\n", (cl->dev[dev].pinned_memory) ? "TRUE" : "FALSE");
-    fprintf(stderr, "     ROUNDUP:                  %i\n", cl->dev[dev].clroundup);
+    fprintf(stderr, "     ROUNDUP WIDTH:            %i\n", cl->dev[dev].clroundup_wd);
+    fprintf(stderr, "     ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
     fprintf(stderr, "     PERFORMANCE:              %f\n", cl->dev[dev].benchmark);
     fprintf(stderr, "     DEVICE_TYPE:              %s%s%s\n",
       ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? "CPU" : "",
@@ -2742,10 +2748,10 @@ gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
   return _cl_test_available(devid, required);
 }
 
-/** round size to a multiple of the value given in the device specifig config parameter for opencl_size_roundup */
-int dt_opencl_dev_roundup(int size, const int devid)
+/** round size to a multiple of the value given in the device specifig config parameter clroundup_wd/ht */
+int dt_opencl_dev_roundup(int size, const int devid, const int mode)
 {
-  const int roundup = darktable.opencl->dev[devid].clroundup;
+  const int roundup = (mode) ? darktable.opencl->dev[devid].clroundup_ht : darktable.opencl->dev[devid].clroundup_wd;
   return (size % roundup == 0 ? size : (size / roundup + 1) * roundup);
 }
 
