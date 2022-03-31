@@ -162,6 +162,8 @@ typedef struct dt_bauhaus_widget_t
   void *quad_paint_data;
   // quad is a toggle button?
   int quad_toggle;
+  // show quad icon or space
+  gboolean show_quad;
   // if a section label
   gboolean is_section;
 
@@ -264,6 +266,8 @@ void dt_bauhaus_widget_set_quad_toggle(GtkWidget *w, int toggle);
 void dt_bauhaus_widget_set_quad_active(GtkWidget *w, int active);
 // get active status for the quad toggle button:
 int dt_bauhaus_widget_get_quad_active(GtkWidget *w);
+// set quad visibility:
+void dt_bauhaus_widget_set_quad_visibility(GtkWidget *w, const gboolean visible);
 // set pointer to iop params field:
 void dt_bauhaus_widget_set_field(GtkWidget *w, gpointer field, dt_introspection_type_t field_type);
 
