@@ -165,13 +165,13 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     d->decodeMetaData(meta);
     RawImage r = d->mRaw;
 
-    const auto errors = r->getErrors();
+    const auto errors = r.get(0)->getErrors();
     for(const auto &error : errors)
       fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
 
-    g_strlcpy(img->camera_maker, r->metadata.canonical_make.c_str(), sizeof(img->camera_maker));
-    g_strlcpy(img->camera_model, r->metadata.canonical_model.c_str(), sizeof(img->camera_model));
-    g_strlcpy(img->camera_alias, r->metadata.canonical_alias.c_str(), sizeof(img->camera_alias));
+    g_strlcpy(img->camera_maker, r.metadata.canonical_make.c_str(), sizeof(img->camera_maker));
+    g_strlcpy(img->camera_model, r.metadata.canonical_model.c_str(), sizeof(img->camera_model));
+    g_strlcpy(img->camera_alias, r.metadata.canonical_alias.c_str(), sizeof(img->camera_alias));
     dt_image_refresh_makermodel(img);
 
     // We used to partial match the Canon local rebrandings so lets pass on
@@ -211,27 +211,27 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     };
 
     for(uint32_t i = 0; i < (sizeof(legacy_aliases) / sizeof(legacy_aliases[1])); i++)
-      if(!strcmp(legacy_aliases[i].origname, r->metadata.model.c_str()))
+      if(!strcmp(legacy_aliases[i].origname, r.metadata.model.c_str()))
       {
         g_strlcpy(img->camera_legacy_makermodel, legacy_aliases[i].mungedname, sizeof(img->camera_legacy_makermodel));
         break;
       }
 
-    img->raw_black_level = r->blackLevel;
-    img->raw_white_point = r->whitePoint;
+    img->raw_black_level = r.get(0)->blackLevel;
+    img->raw_white_point = r.get(0)->whitePoint;
 
-    if(r->blackLevelSeparate[0] == -1
-       || r->blackLevelSeparate[1] == -1
-       || r->blackLevelSeparate[2] == -1
-       || r->blackLevelSeparate[3] == -1)
+    if(r.get(0)->blackLevelSeparate[0] == -1
+       || r.get(0)->blackLevelSeparate[1] == -1
+       || r.get(0)->blackLevelSeparate[2] == -1
+       || r.get(0)->blackLevelSeparate[3] == -1)
     {
-      r->calculateBlackAreas();
+      r.get(0)->calculateBlackAreas();
     }
 
     for(uint8_t i = 0; i < 4; i++)
-      img->raw_black_level_separate[i] = r->blackLevelSeparate[i];
+      img->raw_black_level_separate[i] = r.get(0)->blackLevelSeparate[i];
 
-    if(r->blackLevel == -1)
+    if(r.get(0)->blackLevel == -1)
     {
       float black = 0.0f;
       for(uint8_t i = 0; i < 4; i++)
@@ -255,9 +255,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
     // Grab the WB
     for(int i = 0; i < 4; i++)
-      img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
+      img->wb_coeffs[i] = r.metadata.wbCoeffs[i];
 
-    const int msize = r->metadata.colorMatrix.size();
+    const int msize = r.metadata.colorMatrix.size();
     // Grab the adobe coeff
     for(int k = 0; k < 4; k++)
       for(int i = 0; i < 3; i++)
@@ -265,7 +265,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         const int idx = k*3 + i;
         if(idx < msize)
           img->adobe_XYZ_to_CAM[k][i] =
-            (float)r->metadata.colorMatrix[idx] / (float)ADOBE_COEFF_FACTOR;
+            (float)r.metadata.colorMatrix[idx] / (float)ADOBE_COEFF_FACTOR;
         else
           img->adobe_XYZ_to_CAM[k][i] = 0.0f;
       }
@@ -276,7 +276,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     if (img->flags & DT_IMAGE_HAS_USERCROP)
       dt_exif_img_check_usercrop(img, filename);
 
-    if(r->getDataType() == TYPE_FLOAT32)
+    if(r.get(0)->getDataType() == TYPE_FLOAT32)
     {
       img->flags |= DT_IMAGE_HDR;
 
@@ -286,30 +286,30 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     }
 
     img->buf_dsc.filters = 0u;
-    if(!r->isCFA)
+    if(!r.get(0)->isCFA)
     {
       const dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, mbuf);
       return ret;
     }
 
-    if((r->getDataType() != TYPE_USHORT16) && (r->getDataType() != TYPE_FLOAT32))
+    if((r.get(0)->getDataType() != TYPE_USHORT16) && (r.get(0)->getDataType() != TYPE_FLOAT32))
       return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getBpp() != sizeof(uint16_t)) && (r->getBpp() != sizeof(float)))
+    if((r.get(0)->getBpp() != sizeof(uint16_t)) && (r.get(0)->getBpp() != sizeof(float)))
       return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getDataType() == TYPE_USHORT16) && (r->getBpp() != sizeof(uint16_t)))
+    if((r.get(0)->getDataType() == TYPE_USHORT16) && (r.get(0)->getBpp() != sizeof(uint16_t)))
       return DT_IMAGEIO_FILE_CORRUPTED;
 
-    if((r->getDataType() == TYPE_FLOAT32) && (r->getBpp() != sizeof(float)))
+    if((r.get(0)->getDataType() == TYPE_FLOAT32) && (r.get(0)->getBpp() != sizeof(float)))
       return DT_IMAGEIO_FILE_CORRUPTED;
 
-    const float cpp = r->getCpp();
+    const auto cpp = r.get(0)->getCpp();
     if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
 
     img->buf_dsc.channels = 1;
 
-    switch(r->getBpp())
+    switch(r.get(0)->getBpp())
     {
       case sizeof(uint16_t):
         img->buf_dsc.datatype = TYPE_UINT16;
@@ -322,15 +322,15 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     }
 
     // dimensions of uncropped image
-    iPoint2D dimUncropped = r->getUncroppedDim();
+    iPoint2D dimUncropped = r.get(0)->getUncroppedDim();
     img->width = dimUncropped.x;
     img->height = dimUncropped.y;
 
     // dimensions of cropped image
-    iPoint2D dimCropped = r->dim;
+    iPoint2D dimCropped = r.get(0)->dim;
 
     // crop - Top,Left corner
-    iPoint2D cropTL = r->getCropOffset();
+    iPoint2D cropTL = r.get(0)->getCropOffset();
     img->crop_x = cropTL.x;
     img->crop_y = cropTL.y;
 
@@ -339,12 +339,12 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->crop_width = cropBR.x;
     img->crop_height = cropBR.y;
 
-    img->fuji_rotation_pos = r->metadata.fujiRotationPos;
-    img->pixel_aspect_ratio = (float)r->metadata.pixelAspectRatio;
+    img->fuji_rotation_pos = r.metadata.fujiRotationPos;
+    img->pixel_aspect_ratio = (float)r.metadata.pixelAspectRatio;
 
     // as the X-Trans filters comments later on states, these are for
     // cropped image, so we need to uncrop them.
-    img->buf_dsc.filters = dt_rawspeed_crop_dcraw_filters(r->cfa.getDcrawFilter(), cropTL.x, cropTL.y);
+    img->buf_dsc.filters = dt_rawspeed_crop_dcraw_filters(r.get(0)->cfa.getDcrawFilter(), cropTL.x, cropTL.y);
 
     if(FILTERS_ARE_4BAYER(img->buf_dsc.filters)) img->flags |= DT_IMAGE_4BAYER;
 
@@ -365,7 +365,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
         for(int i = 0; i < 6; ++i)
           for(int j = 0; j < 6; ++j)
           {
-            img->buf_dsc.xtrans[j][i] = (uint8_t)r->cfa.getColorAt(i % 6, j % 6);
+            img->buf_dsc.xtrans[j][i] = (uint8_t)r.get(0)->cfa.getColorAt(i % 6, j % 6);
           }
       }
     }
@@ -388,22 +388,23 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
      * (from Klaus: r->pitch may differ from DT pitch (line to line spacing))
      * else fallback to generic dt_imageio_flip_buffers()
      */
-    const size_t bufSize_mipmap = (size_t)img->width * img->height * r->getBpp();
-    const size_t bufSize_rawspeed = (size_t)r->pitch * dimUncropped.y;
+    const size_t bufSize_mipmap = (size_t)img->width * img->height * r.get(0)->getBpp();
+    const size_t bufSize_rawspeed = (size_t)r.get(0)->pitch * dimUncropped.y;
+
     if(bufSize_mipmap == bufSize_rawspeed)
     {
-      memcpy(buf, r->getDataUncropped(0, 0), bufSize_mipmap);
+      memcpy(buf, r.get(0)->getDataUncropped(0, 0), bufSize_mipmap);
     }
     else
     {
-      dt_imageio_flip_buffers((char *)buf, (char *)r->getDataUncropped(0, 0), r->getBpp(), dimUncropped.x,
-                              dimUncropped.y, dimUncropped.x, dimUncropped.y, r->pitch, ORIENTATION_NONE);
+      dt_imageio_flip_buffers((char *)buf, (char *)r.get(0)->getDataUncropped(0, 0), r.get(0)->getBpp(), dimUncropped.x,
+                              dimUncropped.y, dimUncropped.x, dimUncropped.y, r.get(0)->pitch, ORIENTATION_NONE);
     }
 
     //  Check if the camera is missing samples
-    const Camera *cam = meta->getCamera(r->metadata.make.c_str(),
-                                        r->metadata.model.c_str(),
-                                        r->metadata.mode.c_str());
+    const Camera *cam = meta->getCamera(r.metadata.make.c_str(),
+                                        r.metadata.model.c_str(),
+                                        r.metadata.mode.c_str());
 
     if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples)
       img->camera_missing_sample = TRUE;
@@ -434,17 +435,17 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->flags &= ~DT_IMAGE_LDR;
   img->flags &= ~DT_IMAGE_RAW;
   img->flags |= DT_IMAGE_S_RAW;
-  img->width = r->dim.x;
-  img->height = r->dim.y;
+  img->width = r.get(0)->dim.x;
+  img->height = r.get(0)->dim.y;
 
   // actually we want to store full floats here:
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
 
-  if(r->getDataType() != TYPE_USHORT16 && r->getDataType() != TYPE_FLOAT32)
+  if(r.get(0)->getDataType() != TYPE_USHORT16 && r.get(0)->getDataType() != TYPE_FLOAT32)
     return DT_IMAGEIO_FILE_CORRUPTED;
 
-  const uint32_t cpp = r->getCpp();
+  const uint32_t cpp = r.get(0)->getCpp();
   if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
 
   // if buf is NULL, we quit the fct here
@@ -467,14 +468,14 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
      * we need to copy data from only channel to each of 3 channels
      */
 
-    if(r->getDataType() == TYPE_USHORT16)
+    if(r.get(0)->getDataType() == TYPE_USHORT16)
     {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) dt_omp_firstprivate(cpp) shared(r, img, buf)
 #endif
       for(int j = 0; j < img->height; j++)
       {
-        const uint16_t *in = (uint16_t *)r->getData(0, j);
+        const uint16_t *in = (uint16_t *)r.get(0)->getData(0, j);
         float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
         for(int i = 0; i < img->width; i++, in += cpp, out += 4)
@@ -493,7 +494,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 #endif
       for(int j = 0; j < img->height; j++)
       {
-        const float *in = (float *)r->getData(0, j);
+        const float *in = (float *)r.get(0)->getData(0, j);
         float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
         for(int i = 0; i < img->width; i++, in += cpp, out += 4)
@@ -513,14 +514,14 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
      * just copy 3 ch to 3 ch
      */
 
-    if(r->getDataType() == TYPE_USHORT16)
+    if(r.get(0)->getDataType() == TYPE_USHORT16)
     {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) dt_omp_firstprivate(cpp) shared(r, img, buf)
 #endif
       for(int j = 0; j < img->height; j++)
       {
-        const uint16_t *in = (uint16_t *)r->getData(0, j);
+        const uint16_t *in = (uint16_t *)r.get(0)->getData(0, j);
         float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
         for(int i = 0; i < img->width; i++, in += cpp, out += 4)
@@ -539,7 +540,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 #endif
       for(int j = 0; j < img->height; j++)
       {
-        const float *in = (float *)r->getData(0, j);
+        const float *in = (float *)r.get(0)->getData(0, j);
         float *out = ((float *)buf) + (size_t)4 * j * img->width;
 
         for(int i = 0; i < img->width; i++, in += cpp, out += 4)
@@ -557,9 +558,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->loader = LOADER_RAWSPEED;
 
   //  Check if the camera is missing samples
-  const Camera *cam = meta->getCamera(r->metadata.make.c_str(),
-                                      r->metadata.model.c_str(),
-                                      r->metadata.mode.c_str());
+  const Camera *cam = meta->getCamera(r.metadata.make.c_str(),
+                                      r.metadata.model.c_str(),
+                                      r.metadata.mode.c_str());
 
   if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples)
     img->camera_missing_sample = TRUE;
