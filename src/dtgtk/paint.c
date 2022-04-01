@@ -1558,6 +1558,13 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
     cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, alpha);
   }
 
+  /* make blue color label icon more visible and well balanced with other colors */
+  if(flags & CPF_DIRECTION_RIGHT)
+  {
+    cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
+  }
+  
+  /* then improve hover effect for same blue icon */
   if (flags & CPF_PRELIGHT)
   {
     cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
@@ -1568,7 +1575,6 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
     cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
     cairo_fill(cr);
   }
-
   else if(flags & CPF_USER_DATA_EXCLUDE)
   {
     /* fill base color */
