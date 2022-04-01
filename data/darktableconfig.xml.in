@@ -393,13 +393,6 @@
     <shortdescription>minimum amount of GPU memory (MB) required to activate OpenCL</shortdescription>
     <longdescription>OpenCL will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 200 will be treated as 200.</longdescription>
   </dtconfig>
-  <dtconfig>
-    <name>opencl_size_roundup</name>
-    <type>int</type>
-    <default>16</default>
-    <shortdescription>round OpenCL work group sizes to a multiple of</shortdescription>
-    <longdescription>in OpenCL processing round width/height of global work groups to a multiple of this value. reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.</longdescription>
-  </dtconfig>
   <dtconfig prefs="security" section="general">
     <name>ask_before_remove</name>
     <type>bool</type>
