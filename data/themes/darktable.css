@@ -94,15 +94,15 @@
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
-@define-color bauhaus_bg_hover @grey_55;
+@define-color bauhaus_bg_hover @grey_60;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
 @define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.4);
 
 /* GTK Buttons and tabs */
-@define-color button_border @grey_30;
 @define-color button_bg @grey_25;
+@define-color button_border shade(@button_bg, 1.05);
 @define-color button_fg @fg_color;
 @define-color button_checked_bg @grey_45;
 @define-color button_checked_fg @grey_85;
@@ -114,9 +114,9 @@
 @define-color field_fg @button_fg;
 @define-color field_active_bg @grey_30;
 @define-color field_active_fg @grey_80;
-@define-color field_selected_bg @grey_40;
+@define-color field_selected_bg @grey_45;
 @define-color field_selected_fg @button_checked_fg;
-@define-color field_hover_bg @grey_45;
+@define-color field_hover_bg @grey_55;
 @define-color field_hover_fg @grey_95;
 
 /* Tooltips and contextual helpers */
@@ -271,7 +271,7 @@ overshoot.left,
 overshoot.right,
 .dt_transparent_background,
 .dt_transparent_background:checked,
-popover #bauhaus-combobox,
+popover #bauhaus_combobox,
 #usercss_box textview,
 #view_dropdown .combo
 {
@@ -286,12 +286,15 @@ popover #bauhaus-combobox,
   min-width: 1.4em;
 }
 
-/* Default gtk buttons */
+/* Default Gtk buttons and other entries */
 button,
-#add-color-button
+checkbutton check,
+entry,
+textview
 {
   padding: 2px; /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
   border: 0.07em solid @button_border;
+  border-radius: 0.21em;
   background-color: @button_bg;
   color: @button_fg;
   font-weight: normal;
@@ -299,9 +302,22 @@ button,
 }
 
 button:disabled,
-#add-color-button:disabled
+spinbutton *:disabled,
+#collapsible .combo:disabled,
+#collapsible spinbutton button:disabled,
+#recent-collection-button:disabled
 {
-  border: 0.07em solid shade(@button_border, 0.95);
+  background-color: transparent;
+  border: 0.07em solid shade(@button_border, 0.9);
+}
+
+/* Set same settings on all those items */
+.combo,
+.combo *,
+button
+{
+  min-height: 1em;
+  min-width: 1em;
 }
 
 /* Default extra margin for icons optical alignment */
@@ -310,38 +326,7 @@ button:disabled,
   margin: 5px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
 
-/* Set same settings on all those items */
-button,
-#add-color-button,
-#dt-icon,
-entry,
-textview
-{
-  border-radius: 0.21em;
-}
-
-button,
-#add-color-button,
-combobox,
-combobox button,
-combobox *,
-#control-button
-{
-  min-height: 1em;
-  min-width: 1em;
-}
-
 /* Default text fields and text boxes */
-.combo,
-checkbutton check,
-entry,
-textview
-{
-  color: @field_fg;
-  background-color: @button_bg;
-  border: 0.07em solid shade(@button_border, 0.94);
-}
-
 entry,
 textview
 {
@@ -350,17 +335,32 @@ textview
   padding: 0.14em;
 }
 
-entry selection
+label selection,
+textview text selection
 {
   background-color: @field_selected_bg;
 }
 
-/* Bauhaus-combobox and search box defaults */
-#header-toolbar #bauhaus-combobox,
+entry selection
+{
+  background-color: shade(@field_selected_bg, 1.1);
+}
+
+/* Filter bar bauhaus-combobox and search box defaults */
+#header-toolbar #bauhaus_combobox
+{
+  background-color: alpha(@fg_color, 0.05);
+  border: none;
+}
+
 .search
 {
-  background-color: shade(@button_bg, 0.9);
-  border: 0.07em solid shade(@bauhaus_indicator_border, 0.9);
+  background-color: alpha(@fg_color, 0.12);
+}
+
+.search image:disabled
+{
+  color: shade(@fg_color, 0.75);
 }
 
 /* Checkbox */
@@ -694,6 +694,54 @@ l
   padding: 0 0.35em 0 0.21em;
 }
 
+/* Collapsible sections on lib & iop modules */
+#collapse-block
+{
+  margin: 0.14em 0;
+}
+
+#collapsible
+{
+  padding: 0.14em 0.28em 0.28em 0.42em;
+  border: 0.07em solid shade(@collapsible_bg_color, 1.05);
+  border-top: 0;
+}
+
+#collapsible,
+#collapsible #bauhaus_slider
+{
+  background-color: shade(@collapsible_bg_color, 1.04);
+}
+
+#import_metadata #collapsible
+{
+  background-color: @collapsible_bg_color;
+}
+
+/* for the import parameters to be more aligned with the imports buttons */
+#lib-plugin-ui #collapse-block
+{
+  margin: 0.42em 0.07em;
+}
+
+#collapse-block .section-expander,
+#collapsible-label
+{
+  background-color: shade(@collapsible_bg_color, 0.96);
+  border: none;
+  margin-top: 0.14em;
+  padding: 0.07em 0;
+}
+
+#collapsible .combo,
+#collapsible entry,
+#collapsible spinbutton button,
+#collapsible textview
+{
+  background-color: shade(@button_border, 1.06);
+  border: 0.07em solid shade(@field_active_bg, 1.06);
+}
+
 /*-------------------
   - Scope/Histogram -
   -------------------*/
@@ -848,23 +896,22 @@ dialog headerbar entry
   - Bauhaus controls (sliders and comboboxes in modules) -
   --------------------------------------------------------*/
 
-#bauhaus-popup
+#bauhaus_popup
 {
   color: @bauhaus_fg;
 }
 
-#bauhaus-popup:selected
+#bauhaus_popup:selected
 {
   color: @bauhaus_fg_selected;
 }
 
-popover #bauhaus-slider
+popover #bauhaus_slider
 {
   background-color: @tooltip_bg_color;
 }
 
-#iop-plugin-ui #bauhaus-slider,
-#lib-plugin-ui #bauhaus-slider
+#bauhaus_slider
 {
   background-color: @plugin_bg_color;
 }
@@ -899,8 +946,8 @@ tooltip,
 popover,
 combobox window,
 dialog combobox window,
-#bauhaus-combobox *,
-#bauhaus-slider *
+#bauhaus_combobox *,
+#bauhaus_slider *
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
@@ -917,14 +964,9 @@ menu menuitem
   margin-left: -0.42em;
 }
 
-menu menuitem label
-{
-  margin-right: 0.42em;
-}
-
 menuitem > arrow
 {
-  padding-right: 0.14em;
+  padding-right: 0.28em;
   border: 0;
 }
 
@@ -957,14 +999,6 @@ tooltip label
 combobox label
 {
   margin: 0 0.35em 0 0;
-}
-
-/* Menus options */
-menuitem button,
-popover button,
-tooltip button
-{
-  background-color: transparent;
 }
 
 /* Header and footer labels, especially for combobox */
@@ -1003,7 +1037,7 @@ notebook tabs,
 #blending-tabs,
 #guides-line
 {
-  background-color: @button_border;
+  background-color: @field_active_bg;
 }
 
 #modules-tabs #dt-toggle-button
@@ -1450,13 +1484,6 @@ filechooser row:hover .sidebar-icon
   border-left-color: @field_hover_bg;   /* make the border left visible with chosen color if category on sidebar is selected */
 }
 
-filechooser row:hover,
-#preferences_box .sidebar :hover  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
-{
-  border-left-color: @button_hover_bg;
-  background-color: @button_hover_bg;
-}
-
 #preferences_box .sidebar label
 {
   padding: 0.14em 0.84em;
@@ -1512,14 +1539,9 @@ filechooser widget treeview
   color: @field_fg;
 }
 
-treeview header widget button,
-#iop-plugin-ui treeview header button,
-#lib-plugin-ui treeview header button,
-#preferences_notebook header button,
+treeview header widget button
 .accels_window_list header button
 {
-  background-color: @button_bg;
-  color: @button_fg;
   border: 0;
   border-radius: 0;
   padding: 0;
@@ -1527,9 +1549,6 @@ treeview header widget button,
 }
 
 treeview header label,
-#iop-plugin-ui treeview header label,
-#lib-plugin-ui treeview header label,
-#preferences_notebook header button label,
 .accels_window_list header button label
 {
   font-weight: bold;
@@ -1613,8 +1632,6 @@ progressbar progress
 }
 
 /* Checkbutton check state */
-#lib-plugin-ui checkbutton check,
-#iop-plugin-ui checkbutton check,
 checkbutton check
 {
   margin: 0.35em 0.56em 0.35em 0;
@@ -1798,14 +1815,11 @@ combobox window *:selected,
 #history-button-enabled:selected,
 #history-button-always-enabled:selected,
 #history-button-default-enabled:selected,
-#iop-plugin-ui button:active,
-#lib-plugin-ui button:active,
 #recent-collection-button:active,
 #recent-collection-button:selected,
 messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 {
   background-color: @button_checked_bg;
-  background-image: none;
   color: @button_checked_fg;
 }
 
@@ -1828,56 +1842,37 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 
 /* Hover states, some needed background only */
 .dt_transparent_background:hover,
-button:hover,
-#add-color-button:hover,
+button:hover:not(.combo),
+filechooser row:hover,
 menuitem:hover,
 menuitem:hover > *:not(check),
-combobox window *:hover,
-#bauhaus-combobox:hover,
-#header-toolbar #bauhaus-combobox:hover,
+notebook tab:hover,
 radiobutton:hover label,
-#control-button:hover,
+treeview:not(#lutname) *:hover:not(check),
+#collapsible spinbutton button:hover,
 #history-button:hover,
 #history-button-enabled:hover,
 #history-button-always-enabled:hover,
 #history-button-default-enabled:hover,
-#iop-plugin-ui button:hover,
-#lib-plugin-ui button:hover,
+#preferences_box .sidebar :hover,
 #recent-collection-button:hover,
 #view_label:hover,
-#view_dropdown menuitem:hover,
 #view_dropdown .combo:hover
 {
-  background-color: @button_hover_bg;
-  background-image: none;
+  background-color: alpha(@button_hover_bg, 0.5);
+  border-color: transparent;
+  color: shade(@fg_color, 1.15);
 }
 
- /* and same for color as other needs only color setting */
-.combo:hover *,
-#bauhaus-combobox:hover,
-#header-toolbar #bauhaus-combobox:hover,
-button:hover,
-button:hover cellview,
-button:hover image,
-button:hover label,
-#blending-box button:hover, /* needed for hover effect for some blending mask box buttons */
-button:checked cellview,
-button:checked image,
-button:checked label,
-dialog row:hover label,
-menuitem:hover cellview,
-menuitem:hover > *,
-notebook tab:hover label,
-#control-button:hover,
-#history-button:hover *,
-#history-button-enabled:hover *,
-#history-button-always-enabled:hover *,
-#history-button-default-enabled:hover *,
-#recent-collection-button:hover,
-#view_label:hover,button:checked image,
-#view_dropdown menuitem:hover
+.combo:hover,
+.combo:hover cellview,
+combobox window *:hover,
+#bauhaus_combobox:hover,
+#bauhaus_slider:hover,
+#collapsible .combo:hover,
+#header-toolbar #bauhaus_combobox:hover
 {
-  color: @button_hover_fg;
+  color: shade(@fg_color, 1.2);
 }
 
 /* workaround for a macOS quartz GTK backend bug
@@ -1890,7 +1885,9 @@ button:checked cellview
 }
 
 /* Set submenus */
-menuitem > *
+menuitem > *,
+#module-always-enabled-button,
+#module-enable-button
 {
     color: @fg_color;
 }
@@ -1905,15 +1902,6 @@ menuitem > *
 #history-button *
 {
   color: shade(@plugin_fg_color, 0.7);
-  background-color: transparent;
-}
-
-/* Disabled buttons */
-button:disabled,
-#collapsible .combo:disabled,
-#recent-collection-button:disabled
-{
-  color: @disabled_fg_color;
   background-color: transparent;
 }
 
@@ -1939,16 +1927,6 @@ menuitem check
 {
   background-color: @field_active_bg;
   border-color: @border_color;
-}
-
-treeview:not(#lutname) *:hover:not(check),
-filechooser .sidebar :hover .sidebar-button,  /* set here specific button hover like eject button in filechooser sidebar */
-#import_metadata title:hover,
-#import_metadata title:hover *,
-radiobutton:hover label  /* set hover effect on popover menu from star icon */
-{
-  background-color: @field_hover_bg;
-  color: @field_hover_fg;
 }
 
 treeview *:active,
@@ -2019,7 +1997,8 @@ treeview#delete-dialog:selected
 
 /* Views links states in header */
 #view_dropdown *:selected,
-#view_label:selected
+#view_label:selected,
+#view_label:hover
 {
   color: @button_fg;
 }
@@ -2029,77 +2008,54 @@ treeview#delete-dialog:selected
   color: @tooltip_bg_color;
 }
 
-#view_dropdown *:disabled
-{
-  color: @disabled_fg_color;
-}
-
 /* Sliders states */
-#bauhaus-popup:hover,
-#bauhaus-slider:hover
+#bauhaus_popup:hover
 {
   color: @bauhaus_fg_hover;
 }
 
-#bauhaus-popup:disabled,
-#bauhaus-combobox:disabled,
-#bauhaus-slider:disabled
+#bauhaus_popup:disabled,
+#bauhaus_combobox:disabled,
+#bauhaus_slider:disabled
 {
   color: @bauhaus_fg_disabled;
 }
 
-#bauhaus-popup:disabled
+#bauhaus_popup:disabled
 {
   color: @plugin_bg;
 }
 
-#bauhaus-combobox *
+#bauhaus_combobox *
 {
   color: shade(@bauhaus_fg, 0.8);
 }
 
-#bauhaus-combobox *:selected
+#bauhaus_combobox *:selected
 {
   color: shade(@bauhaus_fg_selected, 1.2);
 }
 
-#bauhaus-slider
-{
- padding: 0px 0px 1px 0px;
-}
-.bauhaus_slider_popup
-{
-  padding: 2px 0px 2px 4px;
-}
+.bauhaus_slider_popup,
 .bauhaus_combo_popup
 {
-  padding: 2px 0px 2px 2px;
-}
-#bauhaus-combobox
-{
- padding: 2px 0px 2px 0px;
-}
-
-#lib-plugin-ui #bauhaus-combobox,
-#lib-plugin-ui #bauhaus-slider,
-#iop-plugin-ui #bauhaus-combobox,
-#iop-plugin-ui #bauhaus-slider
-{
-  margin-top : 1px;
+  padding: 0.14em 0 0.14em 0.42em;
 }
 
 /* Notebooks states */
 notebook tab:hover
 {
-  border-bottom: 0.14em solid @button_hover_fg;
-  color: @button_hover_fg;
-  background-color: @button_hover_bg;
+  border-bottom: 0.14em solid shade(@button_checked_fg, 0.7);
+}
+
+notebook tab:hover label
+{
+  color: shade(@button_checked_fg, 0.9);
 }
 
 notebook tab:checked
 {
   border-bottom: 0.14em solid @button_checked_fg;
-  color: @button_checked_fg;
 }
 
 notebook tab:checked label
@@ -2121,14 +2077,6 @@ entry:active
 }
 
 entry:checked
-{
-  color: @field_selected_fg;
-  background-color: @field_selected_bg;
-}
-
-entry:selected,
-label selection,
-textview text selection
 {
   color: @field_selected_fg;
   background-color: @field_selected_bg;
@@ -2726,46 +2674,4 @@ Details :
 #lighttable_layouts_box #dt-toggle-button
 {
   margin: 0 0.4em;
-}
-
-/* Collapsible sections on lib & iop modules */
-#collapse-block
-{
-  margin: 0.14em 0;
-}
-
-#collapsible
-{
-  padding: 0.14em 0.28em 0.28em 0.42em;
-  border: 0.07em solid shade(@collapsible_bg_color, 0.85);
-  border-top: 0;
-}
-
-#collapsible,
-#collapsible #bauhaus-slider
-{
-  background-color: shade(@collapsible_bg_color, 1.04);
-}
-
-/* for the import parameters to be more aligned with the imports buttons */
-#lib-plugin-ui #collapse-block
-{
-  margin: 0.42em 0.07em;
-}
-
-#collapse-block .section-expander,
-#collapsible-label
-{
-  background-color: shade(@collapsible_bg_color, 0.96);
-  border: none;
-  margin-top: 0.14em;
-  padding: 0.07em 0;
-}
-
-#collapsible .combo,
-#collapsible entry,
-#collapsible textview
-{
-  background-color: shade(@button_border, 1.06);
-  border: 0.07em solid shade(@field_active_bg, 1.06);
 }
