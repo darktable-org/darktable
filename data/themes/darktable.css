@@ -104,7 +104,7 @@
 @define-color button_bg @grey_25;
 @define-color button_border shade(@button_bg, 1.05);
 @define-color button_fg @fg_color;
-@define-color button_checked_bg @grey_35;
+@define-color button_checked_bg @grey_45;
 @define-color button_checked_fg @grey_85;
 @define-color button_hover_bg @grey_50;
 @define-color button_hover_fg @grey_15;
@@ -335,17 +335,32 @@ textview
   padding: 0.14em;
 }
 
-entry selection
+label selection,
+textview text selection
 {
   background-color: @field_selected_bg;
 }
 
+entry selection
+{
+  background-color: shade(@field_selected_bg, 1.1);
+}
+
 /* Filter bar bauhaus-combobox and search box defaults */
-#header-toolbar #bauhaus_combobox,
-.search
+#header-toolbar #bauhaus_combobox
 {
   background-color: alpha(@fg_color, 0.05);
   border: none;
+}
+
+.search
+{
+  background-color: alpha(@fg_color, 0.12);
+}
+
+.search image:disabled
+{
+  color: shade(@fg_color, 0.75);
 }
 
 /* Checkbox */
@@ -896,6 +911,11 @@ popover #bauhaus_slider
   background-color: @tooltip_bg_color;
 }
 
+#bauhaus_slider
+{
+  background-color: @plugin_bg_color;
+}
+
 #blending-box #dt-toggle-button
 {
   margin-top: 0;
@@ -944,14 +964,9 @@ menu menuitem
   margin-left: -0.42em;
 }
 
-menu menuitem label
-{
-  margin-right: 0.42em;
-}
-
 menuitem > arrow
 {
-  padding-right: 0.14em;
+  padding-right: 0.28em;
   border: 0;
 }
 
@@ -1844,14 +1859,16 @@ treeview:not(#lutname) *:hover:not(check),
 #view_label:hover,
 #view_dropdown .combo:hover
 {
-  background-color: alpha(@button_hover_bg, 0.6);
-  border-color: alpha(@button_hover_bg, 0.6);
+  background-color: alpha(@button_hover_bg, 0.5);
+  border-color: transparent;
   color: shade(@fg_color, 1.15);
 }
 
 .combo:hover,
+.combo:hover cellview,
 combobox window *:hover,
 #bauhaus_combobox:hover,
+#bauhaus_slider:hover,
 #collapsible .combo:hover,
 #header-toolbar #bauhaus_combobox:hover
 {
@@ -1868,7 +1885,9 @@ button:checked cellview
 }
 
 /* Set submenus */
-menuitem > *
+menuitem > *,
+#module-always-enabled-button,
+#module-enable-button
 {
     color: @fg_color;
 }
@@ -2023,12 +2042,6 @@ treeview#delete-dialog:selected
   padding: 0.14em 0 0.14em 0.42em;
 }
 
-#bauhaus_combobox
-{
-  padding: 0.14em 0 0.14em 0.28em;
-  margin-left: -0.14em;   /* needed to align combobox to lines around when setting a padding left for spacing inside combobox ; set it half of padding left set line above */
-}
-
 /* Notebooks states */
 notebook tab:hover
 {
@@ -2064,14 +2077,6 @@ entry:active
 }
 
 entry:checked
-{
-  color: @field_selected_fg;
-  background-color: @field_selected_bg;
-}
-
-entry:selected,
-label selection,
-textview text selection
 {
   color: @field_selected_fg;
   background-color: @field_selected_bg;
