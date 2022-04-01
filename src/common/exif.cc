@@ -1938,7 +1938,6 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       {
         const int rating = GPOINTER_TO_INT(res->data) + 1;
         exifData["Exif.Image.Rating"] = rating;
-        exifData["Exif.Image.RatingPercent"] = int(rating / 5. * 100.);
         g_list_free(res);
       }
 
