@@ -75,7 +75,7 @@ typedef struct dt_iop_sigmoid_params_t
   float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "skew"
   float display_white_target;  // $MIN: 20.0  $MAX: 1600.0 $DEFAULT: 100.0 $DESCRIPTION: "target white"
   float display_grey_target;   // $MIN: 0.1  $MAX: 0.2 $DEFAULT: 0.1845 $DESCRIPTION: "target grey"
-  float display_black_target;  // $MIN: 0.0  $MAX: 10.0 $DEFAULT: 0.0152 $DESCRIPTION: "target black"
+  float display_black_target;  // $MIN: 0.0  $MAX: 15.0 $DEFAULT: 0.0152 $DESCRIPTION: "target black"
   dt_iop_sigmoid_methods_type_t color_processing;  // $DEFAULT: DT_SIGMOID_METHOD_PER_CHANNEL $DESCRIPTION: "color processing"
   float hue_preservation;                          // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "preserve hue"
 } dt_iop_sigmoid_params_t;
@@ -729,7 +729,7 @@ void gui_init(dt_iop_module_t *self)
   // Color handling
   g->color_processing_list = dt_bauhaus_combobox_from_params(self, "color_processing");
   g->hue_preservation_slider = dt_bauhaus_slider_from_params(self, "hue_preservation");
-  dt_bauhaus_slider_set_format(g->hue_preservation_slider, "%.1f %%");
+  dt_bauhaus_slider_set_format(g->hue_preservation_slider, "%");
 
   // Target display
   GtkWidget *label = dt_ui_section_label_new(_("display luminance"));
@@ -739,12 +739,11 @@ void gui_init(dt_iop_module_t *self)
 
   g->display_black_slider = dt_bauhaus_slider_from_params(self, "display_black_target");
   dt_bauhaus_slider_set_soft_range(g->display_black_slider, 0.0f, 1.0f);
-  dt_bauhaus_slider_set_step(g->display_black_slider, .001);
   dt_bauhaus_slider_set_digits(g->display_black_slider, 4);
-  dt_bauhaus_slider_set_format(g->display_black_slider, "%.3f %%");
+  dt_bauhaus_slider_set_format(g->display_black_slider, "%");
   g->display_white_slider = dt_bauhaus_slider_from_params(self, "display_white_target");
   dt_bauhaus_slider_set_soft_range(g->display_white_slider, 50.0f, 100.0f);
-  dt_bauhaus_slider_set_format(g->display_white_slider, "%.1f %%");
+  dt_bauhaus_slider_set_format(g->display_white_slider, "%");
 }
 
 void gui_cleanup(dt_iop_module_t *self)
