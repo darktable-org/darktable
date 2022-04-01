@@ -54,8 +54,7 @@
 
 /* GTK Buttons and tabs */
 @define-color button_bg @grey_40;
-@define-color button_fg @fg_color;
-@define-color button_checked_bg @grey_55;
+@define-color button_checked_bg @grey_60;
 @define-color button_checked_fg @grey_95;
 @define-color button_hover_bg @grey_65;
 @define-color button_hover_fg @grey_25;
