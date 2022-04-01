@@ -415,7 +415,7 @@ static void _history_save(dt_lib_filtering_t *d, const gboolean sort)
 
 static void _conf_update_rule(dt_lib_filtering_rule_t *rule)
 {
-  const dt_lib_collect_mode_t mode = MAX(0, gtk_combo_box_get_active(GTK_COMBO_BOX(rule->w_operator)));
+  const dt_lib_collect_mode_t mode = MAX(0, dt_bauhaus_combobox_get(rule->w_operator));
   const gboolean off = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off));
 
   char confname[200] = { 0 };
@@ -888,17 +888,19 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_widget_set_name(hbox, "collect-header-box");
 
     // operator type
-    rule->w_operator = gtk_combo_box_text_new();
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("and"));
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("or"));
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rule->w_operator), _("and not"));
-    gtk_widget_set_name(rule->w_operator, "collect-operator");
+    rule->w_operator = dt_bauhaus_combobox_new(NULL);
+    DT_BAUHAUS_WIDGET(rule->w_operator)->show_quad = FALSE;
+    dt_bauhaus_combobox_add_aligned(rule->w_operator, _("and"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+    dt_bauhaus_combobox_add_aligned(rule->w_operator, _("or"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+    dt_bauhaus_combobox_add_aligned(rule->w_operator, _("and not"), DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
+    dt_bauhaus_combobox_set_selected_text_align(rule->w_operator, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     gtk_widget_set_tooltip_text(rule->w_operator, _("define how this rule should interact with the previous one"));
     gtk_box_pack_start(GTK_BOX(hbox), rule->w_operator, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(rule->w_operator), "changed", G_CALLBACK(_event_rule_changed), rule);
+    g_signal_connect(G_OBJECT(rule->w_operator), "value-changed", G_CALLBACK(_event_rule_changed), rule);
   }
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(rule->w_operator), mode);
+  dt_bauhaus_combobox_set(rule->w_operator, mode);
+  gtk_widget_set_sensitive(rule->w_operator, pos > 0);
 
   // property
   if(newmain)
