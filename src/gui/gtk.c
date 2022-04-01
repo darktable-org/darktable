@@ -3010,10 +3010,12 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const ch
   if(_current_action_def)
   {
     dt_action_element_def_t *elements = calloc(page_num + 2, sizeof(dt_action_element_def_t));
-    memcpy(elements, _current_action_def->elements, page_num * sizeof(dt_action_element_def_t));
+    if(_current_action_def->elements)
+      memcpy(elements, _current_action_def->elements, page_num * sizeof(dt_action_element_def_t));
     elements[page_num].name = text;
     elements[page_num].effects = dt_action_effect_tabs;
-    free((void *)_current_action_def->elements);
+    if(_current_action_def->elements)
+      free((void *)_current_action_def->elements);
     _current_action_def->elements = elements;
   }
 
@@ -3390,4 +3392,3 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
