@@ -723,7 +723,7 @@ void dt_bauhaus_init()
   darktable.bauhaus->keys_cnt = 0;
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
-  gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
+  gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus_popup");
   darktable.bauhaus->pango_font_desc = NULL;
 
   dt_bauhaus_load_theme();
@@ -1195,7 +1195,7 @@ GtkWidget *dt_bauhaus_slider_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t 
   d->timeout_handle = 0;
   d->curve = _default_linear_curve;
 
-  gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-slider");
+  gtk_widget_set_name(GTK_WIDGET(w), "bauhaus_slider");
 
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(dt_bauhaus_slider_button_press), NULL);
   g_signal_connect(G_OBJECT(w), "button-release-event", G_CALLBACK(dt_bauhaus_slider_button_release), NULL);
@@ -1244,7 +1244,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->populate = NULL;
   d->text = NULL;
 
-  gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-combobox");
+  gtk_widget_set_name(GTK_WIDGET(w), "bauhaus_combobox");
 
   g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(dt_bauhaus_combobox_button_press), NULL);
   g_signal_connect(G_OBJECT(w), "motion-notify-event", G_CALLBACK(dt_bauhaus_combobox_motion_notify), NULL);
