@@ -1522,19 +1522,6 @@ filechooser row:hover .sidebar-icon
 {
   background-color: @button_hover_bg;
 }
-#collect-operator arrow
-{
-  -gtk-icon-source: none;
-}
-#collect-operator
-{
-  background-image: none;
-}
-#collect-operator button
-{
-  background-image: none;
-  background-color: transparent;
-}
 #collect-rule-special,
 #collect-rule-special *
 {
@@ -1544,20 +1531,6 @@ filechooser row:hover .sidebar-icon
 {
   margin: 0 0.3em 0.4em 0.3em;
   padding : 0.2em;
-}
-#collect-rating box
-{
-  background-color: transparent;
-}
-#collect-expand-line *
-{
-  margin: 0;
-  padding: 0;
-  font-size: 0.6em;
-}
-#collect-spacer
-{
-  margin-top: 1em;
 }
 #collect-spacer2
 {
