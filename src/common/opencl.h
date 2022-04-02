@@ -91,6 +91,14 @@ typedef enum dt_opencl_tunemode_t
   DT_OPENCL_TUNE_PINNED  = 2
 } dt_opencl_tunemode_t;
 
+typedef enum dt_opencl_pinmode_t
+{
+  DT_OPENCL_PINNING_OFF = 0,
+  DT_OPENCL_PINNING_ON = 1,
+  DT_OPENCL_PINNING_DISABLED = 2,
+  DT_OPENCL_PINNING_ERROR = 4
+} dt_opencl_pinmode_t;
+
 /**
  * to support multi-gpu and mixed systems with cpu support,
  * we encapsulate devices and use separate command queues.
@@ -142,6 +150,11 @@ typedef struct dt_opencl_device_t
   // this can often be avoided by using indirect transfers via pinned memory.
   // other devices have more efficient direct memory transfer implementations.
   // AMD seems to belong to the first group, nvidia to the second.
+  // this holds a bitmask defined by dt_opencl_pinmode_t
+  // the device specific conf key might hold
+  // 0 -> disabled by default; might be switched on by tune for performance
+  // 1 -> enabled by default
+  // 2 -> disabled under all circumstances. This could/should be used if we give away / ship specific keys for buggy systems 
   int pinned_memory;
   // in OpenCL processing round width/height of global work groups to a multiple of these values.
   // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
