@@ -87,8 +87,8 @@ static inline int _align_down(int n, int a)
 static inline int _align_close(int n, int a)
 {
   const int off = n % a;
-  if(!off) return n;
-  return (off > a/2) ? a - off : -off;    
+  const int shift = (off > a/2) ? a - off : -off;
+  return n + shift;
 }
 
 /* 
