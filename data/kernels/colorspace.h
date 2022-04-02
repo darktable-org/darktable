@@ -714,3 +714,34 @@ static inline void XYZ_adapt_D50(float4 *lms_in,
   const float4 D50 = { 0.9642119944211994f, 1.0f, 0.8251882845188288f, 0.f };
   *lms_in *= D50 / origin_illuminant;
 }
+
+static inline float4 gamut_check_Yrg(float4 Ych)
+{
+  // Do a test conversion to Yrg
+  float4 Yrg = Ych_to_Yrg(Ych);
+
+  // Gamut-clip in Yrg at constant hue and luminance
+  // e.g. find the max chroma value that fits in gamut at the current hue
+  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+  float max_c = Ych.y;
+  const float cos_h = native_cos(Ych.z);
+  const float sin_h = native_sin(Ych.z);
+
+  if(Yrg.y < 0.f)
+  {
+    max_c = fmin(-D65[0] / cos_h, max_c);
+  }
+  if(Yrg.z < 0.f)
+  {
+    max_c = fmin(-D65[1] / sin_h, max_c);
+  }
+  if(Yrg.y + Yrg.z > 1.f)
+  {
+    max_c = fmin((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
+  }
+
+  // Overwrite chroma with the sanitized value and
+  Ych.y = max_c;
+
+  return Ych;
+}

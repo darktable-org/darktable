@@ -1237,6 +1237,42 @@ static inline void Ych_to_XYZ(const dt_aligned_pixel_t Ych, dt_aligned_pixel_t X
   LMS_to_XYZ(LMS, XYZ);
 }
 
+
+static inline void gamut_check_Yrg(dt_aligned_pixel_t Ych)
+{
+  // Check if the color fits in Yrg and LMS cone space
+  // clip chroma at constant hue and luminance otherwise
+
+  // Do a test conversion to Yrg
+  dt_aligned_pixel_t Yrg = { 0.f };
+  Ych_to_Yrg(Ych, Yrg);
+
+  // Gamut-clip chroma in Yrg at constant hue and luminance
+  // e.g. find the max chroma value that fits in gamut at the current hue
+  // taken from colorbalancergb.c
+  const dt_aligned_pixel_t D65 = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+
+  float max_c = Ych[1];
+  const float cos_h = cosf(Ych[2]);
+  const float sin_h = sinf(Ych[2]);
+
+  if(Yrg[1] < 0.f)
+  {
+    max_c = fminf(-D65[0] / cos_h, max_c);
+  }
+  if(Yrg[2] < 0.f)
+  {
+    max_c = fminf(-D65[1] / sin_h, max_c);
+  }
+  if(Yrg[1] + Yrg[2] > 1.f)
+  {
+    max_c = fminf((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
+  }
+
+  // Overwrite chroma with the sanitized value
+  Ych[1] = max_c;
+}
+
 #undef DT_RESTRICT
 
 // clang-format off
