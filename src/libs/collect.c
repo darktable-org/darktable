@@ -2983,9 +2983,10 @@ void gui_init(dt_lib_module_t *self)
     if(_combo_get_active_collection(d->rule[i].combo) == DT_COLLECTION_PROP_MODULE) has_iop_name_rule = TRUE;
 
     g_signal_connect(G_OBJECT(d->rule[i].combo), "value-changed", G_CALLBACK(combo_changed), d->rule + i);
-    gtk_box_pack_start(box, d->rule[i].combo, FALSE, FALSE, 0);
+    gtk_box_pack_start(box, d->rule[i].combo, FALSE, TRUE, 0);
 
     w = gtk_entry_new();
+    gtk_entry_set_max_width_chars(GTK_ENTRY(w), 10);
     d->rule[i].text = w;
     gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
     g_signal_connect(G_OBJECT(w), "focus-in-event", G_CALLBACK(entry_focus_in_callback), d->rule + i);
