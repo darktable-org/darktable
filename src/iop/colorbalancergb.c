@@ -576,31 +576,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
     Ych[1] *= chroma_factor;
 
-    // Do a test conversion to Yrg
-    Ych_to_Yrg(Ych, Yrg);
+    // clip chroma at constant hue and Y if needed
+    gamut_check_Yrg(Ych);
 
-    // Gamut-clip in Yrg at constant hue and luminance
-    // e.g. find the max chroma value that fits in gamut at the current hue
-    const dt_aligned_pixel_t D65 = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
-    float max_c = Ych[1];
-    const float cos_h = cosf(Ych[2]);
-    const float sin_h = sinf(Ych[2]);
-
-    if(Yrg[1] < 0.f)
-    {
-      max_c = fminf(-D65[0] / cos_h, max_c);
-    }
-    if(Yrg[2] < 0.f)
-    {
-      max_c = fminf(-D65[1] / sin_h, max_c);
-    }
-    if(Yrg[1] + Yrg[2] > 1.f)
-    {
-      max_c = fminf((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
-    }
-
-    // Overwrite chroma with the sanitized value and go to Yrg for real
-    Ych[1] = max_c;
+    // go to Yrg for real
     Ych_to_Yrg(Ych, Yrg);
 
     // Go to LMS
