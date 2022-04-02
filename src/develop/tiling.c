@@ -76,14 +76,12 @@ static inline int _max(int a, int b)
 
 static inline int _align_up(int n, int a)
 {
-  return n % a != 0 ? (n / a + 1) * a : n;
+  return n + a - (n % a);
 }
-
 static inline int _align_down(int n, int a)
 {
-  return n % a != 0 ? (n / a) * a : n;
+  return n - (n % a);
 }
-
 static inline int _align_close(int n, int a)
 {
   const int off = n % a;
