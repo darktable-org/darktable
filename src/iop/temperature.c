@@ -1932,6 +1932,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance to camera reference point\nin most cases it should be D65"));
 
   g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0); // put buttons at top. fill later.
+  dt_util_add_class(g->buttonbar, "dt_iop_toggle");
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_user, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->colorpicker, TRUE, TRUE, 0);

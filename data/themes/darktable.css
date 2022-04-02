@@ -492,7 +492,7 @@ spinbutton>button
 #iop-plugin-ui-main,
 #lib-plugin-ui-main
 {
-  padding: 0.35em 0.7em;
+  padding: 0.28em 0.7em;
 }
 
 /* Frame around blending boxes */
@@ -562,12 +562,6 @@ l
   border-color: transparent;
   font-weight: normal;
   border: 0;
-}
-
-#history-number
-{
-  padding-right: 0.28em;
-  font-family: monospace;
 }
 
 /* Precise default buttons margins on side panels */
@@ -919,6 +913,19 @@ popover #bauhaus_slider
 #blending-box #dt-toggle-button
 {
   margin-top: 0;
+}
+
+/* fix misalignment for specific icons related to bauhaus widgets */
+.dt_bauhaus_alignment,
+.dt_iop_toggle #dt-toggle-button
+{
+  margin: 0;
+  padding: 0.21em 0.07em;
+}
+
+.dt_bauhaus_alignment #button-canvas
+{
+  margin: 0;
 }
 
 /*---------------------------------------
@@ -1516,6 +1523,7 @@ filechooser row:hover .sidebar-icon
   padding: 0.28em;
 }
 
+.combo,
 #basics-box-labels #basics-header-box:first-child,
 #basics-box-labels #section_label,
 #basics-link
@@ -1644,14 +1652,26 @@ cell:selected
 }
 
 /* Set below spacing between history items in darkroom */
+/* the history number */
+#history-number
+{
+  padding: 0.14em 0.35em 0 0;
+  font-family: monospace;
+}
+
 /* the label buttons */
 #left #history-button,
 #left #history-button-enabled,
 #left #history-button-always-enabled,
-#left #history-button-default-enabled
+#left #history-button-default-enabled,
+#left #history-switch,
+#left #history-switch-enabled,
+#left #history-switch-always-enabled,
+#left #history-switch-default-enabled,
+#left #history-switch-deprecated
 {
-  padding: 0.07em 0.21em 0.14em 0.21em;
-  margin: 0 0.07em 0.07em 0.07em;
+  padding: 0.14em;
+  margin: 0;
 }
 
 /* then the switches */
@@ -1661,17 +1681,11 @@ cell:selected
 #left #history-switch-default-enabled,
 #left #history-switch-deprecated
 {
-  font-size: 0.6em;
+  font-size: 0.5em;
   min-width: 1.2em;
   min-height: 1.2em;
-  padding: 0.15em;
-  margin: 0.07em 0.14em 0.14em 0.14em; /* align switches with create style icon */
+  margin-left: 0.42em;
   border: 0;
-}
-
-#left #history-switch-deprecated
-{
-  font-size: 0.5em;
 }
 
 #history-tooltip,

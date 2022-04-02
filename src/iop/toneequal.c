@@ -3288,6 +3288,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->show_luminance_mask = dt_iop_togglebutton_new(self, NULL, N_("display exposure mask"), NULL, G_CALLBACK(show_luminance_mask_callback),
                                            FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_luminance_mask), dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_util_add_class(g->show_luminance_mask, "dt_bauhaus_alignment");
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   // Force UI redraws when pipe starts/finishes computing and switch cursors
