@@ -2124,8 +2124,11 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   darktable.dtresources.group = 4 * darktable.dtresources.level;
 #ifdef HAVE_OPENCL
-  if((darktable.dtresources.tunecl == 0) && (pipe->devid >= 0) && darktable.opencl->inited)
+  if((darktable.dtresources.tunememory == 0) && (pipe->devid >= 0) && darktable.opencl->inited)
     darktable.opencl->dev[pipe->devid].tuned_available = 0;
+
+  if((darktable.dtresources.tunepinning != 0) && (pipe->devid >= 0) && darktable.opencl->inited)
+    darktable.opencl->dev[pipe->devid].pinned_memory = 1;
 #endif
   int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #ifdef HAVE_OPENCL

@@ -1318,7 +1318,7 @@ void dt_get_sysresource_level()
   static int oldlevel = -999;
   static int oldtunecl = -999;
 
-  const int tunecl = dt_conf_get_bool("tuneopencl");
+  const int tunecl = dt_opencl_get_tuning_mode();
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1341,18 +1341,23 @@ void dt_get_sysresource_level()
   }
   const gboolean mod = ((level != oldlevel) || (oldtunecl != tunecl));
   darktable.dtresources.level = oldlevel = level;
-  darktable.dtresources.tunecl = oldtunecl = tunecl;
+  oldtunecl = tunecl;
+  darktable.dtresources.tunememory  = (tunecl & DT_OPENCL_TUNE_MEMSIZE) ? 1 : 0;
+  darktable.dtresources.tunepinning = (tunecl & DT_OPENCL_TUNE_PINNED) ? 1 : 0;
 
   if(mod && (darktable.unmuted & DT_DEBUG_MEMORY))
   {
     const int oldgrp = darktable.dtresources.group;
     darktable.dtresources.group = 4 * level;
     fprintf(stderr,"[dt_get_sysresource_level] switched to %i as `%s'\n", level, config);
-    fprintf(stderr,"  total mem:     %luMB\n", darktable.dtresources.total_memory / 1024lu / 1024lu);
-    fprintf(stderr,"  mipmap cache:  %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
-    fprintf(stderr,"  available mem: %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
-    fprintf(stderr,"  singlebuff:    %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
-    fprintf(stderr,"  OpenCL tuning: %s\n", (tunecl && (level >= 0)) ? "ON" : "OFF");
+    fprintf(stderr,"  total mem:        %luMB\n", darktable.dtresources.total_memory / 1024lu / 1024lu);
+    fprintf(stderr,"  mipmap cache:     %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
+    fprintf(stderr,"  available mem:    %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
+    fprintf(stderr,"  singlebuff:       %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+#ifdef HAVE_OPENCL
+    fprintf(stderr,"  OpenCL available: %s\n", ((darktable.dtresources.tunememory) && (level >= 0)) ? "ON" : "OFF");
+    fprintf(stderr,"  OpenCL pinned:    %s\n", ((darktable.dtresources.tunepinning) && (level >= 0)) ? "ON" : "OFF");
+#endif
     darktable.dtresources.group = oldgrp;
   }
 }
