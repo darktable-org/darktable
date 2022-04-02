@@ -1871,6 +1871,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     _cairo_rectangle(cr, ps->sel_controls, x1, y1, x2, y2);
 
     // display corner coordinates
+    // FIXME: here and elsewhere eliminate hardcoded RGB values -- use CSS
     char dimensions[100];
     PangoLayout *layout;
     PangoRectangle ext;
@@ -1883,105 +1884,124 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     const double margin = DT_PIXEL_APPLY_DPI(6);
     const double dash = DT_PIXEL_APPLY_DPI(3.0);
     const char *precision = _unit_precision[ps->unit];
+    double xp, yp;
 
-    // FIXME: here and elsewhere eliminate hardcoded RGB values -- use CSS
-    snprintf(dimensions, sizeof(dimensions), precision, dx1);
-    pango_layout_set_text(layout, dimensions, -1);
-    pango_layout_get_pixel_extents(layout, NULL, &ext);
-    double xp = x1 - ext.width * 0.5 - margin;
-    xp = CLAMP(xp, ps->imgs.screen.page.x + margin, ps->imgs.screen.page.x + ps->imgs.screen.page.width - 3 * margin - ext.width);
-    cairo_set_source_rgba(cr, .5, .5, .5, .9);
-    dt_gui_draw_rounded_rectangle(cr, ext.width + 2 * margin, text_h + 2 * margin,
-                                  xp, ps->imgs.screen.page.y + margin);
-    cairo_set_dash(cr, &dash, 1, dash);
-    cairo_move_to(cr, CLAMP(x1, xp + margin, xp + margin + ext.width), ps->imgs.screen.page.y + 3 * margin + text_h);
-    cairo_line_to(cr, x1, y1);
-    cairo_stroke(cr);
-    cairo_set_dash(cr, NULL, 0, 0);
-    cairo_set_source_rgb(cr, .8, .8, .8);
-    cairo_move_to(cr, xp + margin, ps->imgs.screen.page.y + 2 * margin);
-    pango_cairo_show_layout(cr, layout);
+    if(x1 >= ps->imgs.screen.page.x && x1 <= (ps->imgs.screen.page.x + ps->imgs.screen.page.width))
+    {
+      snprintf(dimensions, sizeof(dimensions), precision, dx1);
+      pango_layout_set_text(layout, dimensions, -1);
+      pango_layout_get_pixel_extents(layout, NULL, &ext);
+      xp = x1 - ext.width * 0.5 - margin;
+      xp = CLAMP(xp, ps->imgs.screen.page.x + margin, ps->imgs.screen.page.x + ps->imgs.screen.page.width - 3 * margin - ext.width);
+      cairo_set_source_rgba(cr, .5, .5, .5, .9);
+      dt_gui_draw_rounded_rectangle(cr, ext.width + 2 * margin, text_h + 2 * margin,
+                                    xp, ps->imgs.screen.page.y + margin);
+      cairo_set_dash(cr, &dash, 1, dash);
+      cairo_move_to(cr, x1, ps->imgs.screen.page.y);
+      cairo_line_to(cr, x1, y1);
+      cairo_stroke(cr);
+      cairo_set_dash(cr, NULL, 0, 0);
+      cairo_set_source_rgb(cr, .8, .8, .8);
+      cairo_move_to(cr, xp + margin, ps->imgs.screen.page.y + 2 * margin);
+      pango_cairo_show_layout(cr, layout);
+    }
+    else
+    {
+      xp = ps->imgs.screen.page.x + ps->imgs.screen.page.width;
+    }
 
-    snprintf(dimensions, sizeof(dimensions), precision, dy1);
-    pango_layout_set_text(layout, dimensions, -1);
-    pango_layout_get_pixel_extents(layout, NULL, &ext);
-    double yp = CLAMP(y1, ps->imgs.screen.page.y + 2 * margin + ext.width * 0.5,
-                      ps->imgs.screen.page.y + ps->imgs.screen.page.height - 2 * margin - ext.width * 0.5);
-    if(xp < ps->imgs.screen.page.x + text_h + 4 * margin
-       && yp - ext.width * 0.5 - 3 * margin < ps->imgs.screen.page.y + text_h + 2 * margin)
-      yp = MAX(yp, ps->imgs.screen.page.y + text_h + 5 * margin + ext.width * 0.5);
-    cairo_set_source_rgba(cr, .5, .5, .5, .9);
-    dt_gui_draw_rounded_rectangle(cr, text_h + 2 * margin, ext.width + 2 * margin,
-                                  ps->imgs.screen.page.x + margin,
-                                  yp - margin - ext.width * 0.5);
-    cairo_set_dash(cr, &dash, 1, dash);
-    cairo_move_to(cr, ps->imgs.screen.page.x + 3 * margin + text_h, CLAMP(y1, yp - ext.width * 0.5, yp + ext.width * 0.5));
-    cairo_line_to(cr, x1, y1);
-    cairo_stroke(cr);
-    cairo_set_dash(cr, NULL, 0, 0);
-    cairo_set_source_rgb(cr, .8, .8, .8);
-    cairo_move_to(cr, ps->imgs.screen.page.x + 2 * margin + text_h * 0.5, yp);
-    cairo_save(cr);
-    cairo_rotate(cr, -M_PI_2);
-    cairo_rel_move_to(cr, -0.5 * ext.width, -0.5 * text_h);
-    pango_cairo_update_layout(cr, layout);
-    pango_cairo_show_layout(cr, layout);
-    cairo_restore(cr);
+    if(y1 >= ps->imgs.screen.page.y && y1 <= (ps->imgs.screen.page.y + ps->imgs.screen.page.height))
+    {
+      snprintf(dimensions, sizeof(dimensions), precision, dy1);
+      pango_layout_set_text(layout, dimensions, -1);
+      pango_layout_get_pixel_extents(layout, NULL, &ext);
+      yp = CLAMP(y1, ps->imgs.screen.page.y + 2 * margin + ext.width * 0.5,
+                 ps->imgs.screen.page.y + ps->imgs.screen.page.height - 2 * margin - ext.width * 0.5);
+      if(xp < ps->imgs.screen.page.x + text_h + 4 * margin
+         && yp - ext.width * 0.5 - 3 * margin < ps->imgs.screen.page.y + text_h + 2 * margin)
+        yp = MAX(yp, ps->imgs.screen.page.y + text_h + 5 * margin + ext.width * 0.5);
+      cairo_set_source_rgba(cr, .5, .5, .5, .9);
+      dt_gui_draw_rounded_rectangle(cr, text_h + 2 * margin, ext.width + 2 * margin,
+                                    ps->imgs.screen.page.x + margin,
+                                    yp - margin - ext.width * 0.5);
+      cairo_set_dash(cr, &dash, 1, dash);
+      cairo_move_to(cr, ps->imgs.screen.page.x, y1);
+      cairo_line_to(cr, x1, y1);
+      cairo_stroke(cr);
+      cairo_set_dash(cr, NULL, 0, 0);
+      cairo_set_source_rgb(cr, .8, .8, .8);
+      cairo_move_to(cr, ps->imgs.screen.page.x + 2 * margin + text_h * 0.5, yp);
+      cairo_save(cr);
+      cairo_rotate(cr, -M_PI_2);
+      cairo_rel_move_to(cr, -0.5 * ext.width, -0.5 * text_h);
+      pango_cairo_update_layout(cr, layout);
+      pango_cairo_show_layout(cr, layout);
+      cairo_restore(cr);
+    }
 
-    snprintf(dimensions, sizeof(dimensions), precision, dx2);
-    pango_layout_set_text(layout, dimensions, -1);
-    pango_layout_get_pixel_extents(layout, NULL, &ext);
-    xp = x2 - ext.width * 0.5 - margin;
-    xp = CLAMP(xp, ps->imgs.screen.page.x + margin, ps->imgs.screen.page.x + ps->imgs.screen.page.width - 3 * margin - ext.width);
-    cairo_set_source_rgba(cr, .5, .5, .5, .9);
-    dt_gui_draw_rounded_rectangle(cr, ext.width + 2 * margin, text_h + 2 * margin,
-                                  xp, ps->imgs.screen.page.y + ps->imgs.screen.page.height - text_h - 3 * margin);
-    cairo_set_dash(cr, &dash, 1, dash);
-    cairo_move_to(cr, CLAMP(x2, xp + margin, xp + margin + ext.width), ps->imgs.screen.page.y + ps->imgs.screen.page.height - 3 * margin - text_h);
-    cairo_line_to(cr, x2, y2);
-    cairo_stroke(cr);
-    cairo_set_dash(cr, NULL, 0, 0);
-    cairo_set_source_rgb(cr, .8, .8, .8);
-    cairo_move_to(cr, xp + margin, ps->imgs.screen.page.y + ps->imgs.screen.page.height - text_h - 2 * margin);
-    pango_cairo_show_layout(cr, layout);
+    if(x2 >= ps->imgs.screen.page.x && x2 <= (ps->imgs.screen.page.x + ps->imgs.screen.page.width))
+    {
+      snprintf(dimensions, sizeof(dimensions), precision, dx2);
+      pango_layout_set_text(layout, dimensions, -1);
+      pango_layout_get_pixel_extents(layout, NULL, &ext);
+      xp = x2 - ext.width * 0.5 - margin;
+      xp = CLAMP(xp, ps->imgs.screen.page.x + margin, ps->imgs.screen.page.x + ps->imgs.screen.page.width - 3 * margin - ext.width);
+      cairo_set_source_rgba(cr, .5, .5, .5, .9);
+      dt_gui_draw_rounded_rectangle(cr, ext.width + 2 * margin, text_h + 2 * margin,
+                                    xp, ps->imgs.screen.page.y + ps->imgs.screen.page.height - text_h - 3 * margin);
+      cairo_set_dash(cr, &dash, 1, dash);
+      cairo_move_to(cr, x2, ps->imgs.screen.page.y + ps->imgs.screen.page.height);
+      cairo_line_to(cr, x2, y2);
+      cairo_stroke(cr);
+      cairo_set_dash(cr, NULL, 0, 0);
+      cairo_set_source_rgb(cr, .8, .8, .8);
+      cairo_move_to(cr, xp + margin, ps->imgs.screen.page.y + ps->imgs.screen.page.height - text_h - 2 * margin);
+      pango_cairo_show_layout(cr, layout);
+    }
+    else
+    {
+      xp = ps->imgs.screen.page.x;
+    }
 
-    snprintf(dimensions, sizeof(dimensions), precision, dy2);
-    pango_layout_set_text(layout, dimensions, -1);
-    xp += ext.width + 2 * margin;
-    pango_layout_get_pixel_extents(layout, NULL, &ext);
-    yp = CLAMP(y2, ps->imgs.screen.page.y + 2 * margin + ext.width * 0.5,
-               ps->imgs.screen.page.y + ps->imgs.screen.page.height - 2 * margin - ext.width * 0.5);
-    if(xp > ps->imgs.screen.page.x + ps->imgs.screen.page.width - text_h - 4 * margin
-       && yp + ext.width * 0.5 + 3 * margin > ps->imgs.screen.page.y + ps->imgs.screen.page.height - text_h - 2 * margin)
-      yp = MIN(yp, ps->imgs.screen.page.y + ps->imgs.screen.page.height - text_h - 5 * margin - ext.width * 0.5);
-    cairo_set_source_rgba(cr, .5, .5, .5, .9);
-    dt_gui_draw_rounded_rectangle(cr, text_h + 2 * margin, ext.width + 2 * margin,
-                                  ps->imgs.screen.page.x + ps->imgs.screen.page.width - text_h - 3 * margin,
-                                  yp - margin - ext.width * 0.5);
-    cairo_set_dash(cr, &dash, 1, dash);
-    cairo_move_to(cr, ps->imgs.screen.page.x + ps->imgs.screen.page.width - 3 * margin - text_h, CLAMP(y2, yp - ext.width * 0.5, yp + ext.width * 0.5));
-    cairo_line_to(cr, x2, y2);
-    cairo_stroke(cr);
-    cairo_set_dash(cr, NULL, 0, 0);
-    cairo_set_source_rgb(cr, .8, .8, .8);
-    cairo_move_to(cr, ps->imgs.screen.page.x + ps->imgs.screen.page.width - text_h * 0.5 - 2 * margin, yp);
-    cairo_save(cr);
-    cairo_rotate(cr, M_PI_2);
-    cairo_rel_move_to(cr, -0.5 * ext.width, -0.5 * text_h);
-    pango_cairo_update_layout(cr, layout);
-    pango_cairo_show_layout(cr, layout);
-    cairo_restore(cr);
+    if(y2 >= ps->imgs.screen.page.y && y2 <= (ps->imgs.screen.page.y + ps->imgs.screen.page.height))
+    {
+      snprintf(dimensions, sizeof(dimensions), precision, dy2);
+      pango_layout_set_text(layout, dimensions, -1);
+      xp += ext.width + 2 * margin;
+      pango_layout_get_pixel_extents(layout, NULL, &ext);
+      yp = CLAMP(y2, ps->imgs.screen.page.y + 2 * margin + ext.width * 0.5,
+                 ps->imgs.screen.page.y + ps->imgs.screen.page.height - 2 * margin - ext.width * 0.5);
+      if(xp > ps->imgs.screen.page.x + ps->imgs.screen.page.width - text_h - 4 * margin
+         && yp + ext.width * 0.5 + 3 * margin > ps->imgs.screen.page.y + ps->imgs.screen.page.height - text_h - 2 * margin)
+        yp = MIN(yp, ps->imgs.screen.page.y + ps->imgs.screen.page.height - text_h - 5 * margin - ext.width * 0.5);
+      cairo_set_source_rgba(cr, .5, .5, .5, .9);
+      dt_gui_draw_rounded_rectangle(cr, text_h + 2 * margin, ext.width + 2 * margin,
+                                    ps->imgs.screen.page.x + ps->imgs.screen.page.width - text_h - 3 * margin,
+                                    yp - margin - ext.width * 0.5);
+      cairo_set_dash(cr, &dash, 1, dash);
+      cairo_move_to(cr, ps->imgs.screen.page.x + ps->imgs.screen.page.width, y2);
+      cairo_line_to(cr, x2, y2);
+      cairo_stroke(cr);
+      cairo_set_dash(cr, NULL, 0, 0);
+      cairo_set_source_rgb(cr, .8, .8, .8);
+      cairo_move_to(cr, ps->imgs.screen.page.x + ps->imgs.screen.page.width - text_h * 0.5 - 2 * margin, yp);
+      cairo_save(cr);
+      cairo_rotate(cr, M_PI_2);
+      cairo_rel_move_to(cr, -0.5 * ext.width, -0.5 * text_h);
+      pango_cairo_update_layout(cr, layout);
+      pango_cairo_show_layout(cr, layout);
+      cairo_restore(cr);
+    }
 
     // display width and height
-    // FIXME: display these embedded in the frame lines rather than above/below? -- or at least slightly closer to what they measure
     snprintf(dimensions, sizeof(dimensions), precision, dwidth);
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
     xp = (x1 + x2 - ext.width) * .5;
-    if(y1 > text_h + margin * 4)
-      yp = y1 - text_h - margin * 3;
+    if(y1 > text_h * 0.5 + margin)
+      yp = y1 - text_h * 0.5;
     else
-      yp = y1 + text_h;
+      yp = y1 + text_h - 2 * margin;
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
     dt_gui_draw_rounded_rectangle(cr, ext.width + 2 * margin, text_h + 2 * margin,
                                   xp - margin, yp - margin);
@@ -1992,10 +2012,10 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     snprintf(dimensions, sizeof(dimensions), precision, dheight);
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
-    if(x1 > text_h + margin * 5)
-      xp = x1 - text_h - margin * 3;
+    if(x1 > text_h * 0.5 + margin)
+      xp = x1 - text_h * 0.5;
     else
-      xp = x1 + text_h;
+      xp = x1 + text_h - 2 * margin;
     yp = (y1 + y2) * .5;
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
     dt_gui_draw_rounded_rectangle(cr, text_h + 2 * margin, ext.width + 2 * margin,
