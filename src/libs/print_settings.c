@@ -81,6 +81,7 @@ typedef enum _unit_t
 
 static const float units[UNIT_N] = { 1.0f, 0.1f, 1.0f/25.4f };
 static const gchar *_unit_names[] = { N_("mm"), N_("cm"), N_("inch"), NULL };
+static const char *_unit_precision[UNIT_N] = { "%0.0f", "%0.1f", "%0.1f" };
 
 typedef struct dt_lib_print_settings_t
 {
@@ -1881,10 +1882,10 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     const double text_h = DT_PIXEL_APPLY_DPI(16+2);
     const double margin = DT_PIXEL_APPLY_DPI(6);
     const double dash = DT_PIXEL_APPLY_DPI(3.0);
+    const char *precision = _unit_precision[ps->unit];
 
-    // FIXME: # of significant digits should be 0 for mm, 1 for cm, 2 for inch
     // FIXME: here and elsewhere eliminate hardcoded RGB values -- use CSS
-    snprintf(dimensions, sizeof(dimensions), "%.2f", dx1);
+    snprintf(dimensions, sizeof(dimensions), precision, dx1);
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
     double xp = x1 - ext.width * 0.5 - margin;
@@ -1901,7 +1902,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     cairo_move_to(cr, xp + margin, ps->imgs.screen.page.y + 2 * margin);
     pango_cairo_show_layout(cr, layout);
 
-    snprintf(dimensions, sizeof(dimensions), "%.2f", dy1);
+    snprintf(dimensions, sizeof(dimensions), precision, dy1);
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
     double yp = CLAMP(y1, ps->imgs.screen.page.y + 2 * margin + ext.width * 0.5,
@@ -1927,7 +1928,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     pango_cairo_show_layout(cr, layout);
     cairo_restore(cr);
 
-    snprintf(dimensions, sizeof(dimensions), "%.2f", dx2);
+    snprintf(dimensions, sizeof(dimensions), precision, dx2);
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
     xp = x2 - ext.width * 0.5 - margin;
@@ -1944,7 +1945,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     cairo_move_to(cr, xp + margin, ps->imgs.screen.page.y + ps->imgs.screen.page.height - text_h - 2 * margin);
     pango_cairo_show_layout(cr, layout);
 
-    snprintf(dimensions, sizeof(dimensions), "%.2f", dy2);
+    snprintf(dimensions, sizeof(dimensions), precision, dy2);
     pango_layout_set_text(layout, dimensions, -1);
     xp += ext.width + 2 * margin;
     pango_layout_get_pixel_extents(layout, NULL, &ext);
@@ -1972,8 +1973,8 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     cairo_restore(cr);
 
     // display width and height
-    // FIXME: display these embedded in the frame lines rather than above/below?
-    snprintf(dimensions, sizeof(dimensions), "%.2f", dwidth);
+    // FIXME: display these embedded in the frame lines rather than above/below? -- or at least slightly closer to what they measure
+    snprintf(dimensions, sizeof(dimensions), precision, dwidth);
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
     xp = (x1 + x2 - ext.width) * .5;
@@ -1988,7 +1989,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
 
-    snprintf(dimensions, sizeof(dimensions), "%.2f", dheight);
+    snprintf(dimensions, sizeof(dimensions), precision, dheight);
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
     if(x1 > text_h + margin * 5)
