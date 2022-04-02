@@ -632,7 +632,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   float available = dt_get_available_mem();
   assert(available >= 500.0f * 1024.0f * 1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
-  available = fmax(available - ((float)roi_out->width * roi_out->height * out_bpp)
+  available = fmaxf(available - ((float)roi_out->width * roi_out->height * out_bpp)
                    - ((float)roi_in->width * roi_in->height * in_bpp) - tiling.overhead,
                    0);
 
@@ -640,9 +640,9 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = dt_get_singlebuffer_mem();
-  const float factor = fmax(tiling.factor, 1.0f);
-  const float maxbuf = fmax(tiling.maxbuf, 1.0f);
-  singlebuffer = fmax(available / factor, singlebuffer);
+  const float factor = fmaxf(tiling.factor, 1.0f);
+  const float maxbuf = fmaxf(tiling.maxbuf, 1.0f);
+  singlebuffer = fmaxf(available / factor, singlebuffer);
 
   int width = roi_in->width;
   int height = roi_in->height;
@@ -868,7 +868,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
 
-  float fullscale = fmax(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
+  float fullscale = fmaxf(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
                                                               / ((float)roi_out->width * roi_out->height)));
 
   /* inaccuracy for roi_in elements in roi_out -> roi_in calculations */
@@ -894,7 +894,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   float available = dt_get_available_mem();
   assert(available >= 500.0f * 1024.0f * 1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
-  available = fmax(available - ((float)roi_out->width * roi_out->height * out_bpp)
+  available = fmaxf(available - ((float)roi_out->width * roi_out->height * out_bpp)
                    - ((float)roi_in->width * roi_in->height * in_bpp) - tiling.overhead,
                    0);
 
@@ -902,9 +902,9 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = dt_get_singlebuffer_mem();
-  const float factor = fmax(tiling.factor, 1.0f);
-  const float maxbuf = fmax(tiling.maxbuf, 1.0f);
-  singlebuffer = fmax(available / factor, singlebuffer);
+  const float factor = fmaxf(tiling.factor, 1.0f);
+  const float maxbuf = fmaxf(tiling.maxbuf, 1.0f);
+  singlebuffer = fmaxf(available / factor, singlebuffer);
 
   int width = _max(roi_in->width, roi_out->width);
   int height = _max(roi_in->height, roi_out->height);
@@ -1236,10 +1236,10 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   // avoid problems when pinned buffer size gets too close to max_mem_alloc size
   const float pinned_buffer_slack = use_pinned_memory ? 0.85f : 1.0f;
   const float available = (float)dt_opencl_get_device_available(devid);
-  const float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
-  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
+  const float factor = fmaxf(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
+  const float singlebuffer = fminf(fmaxf((available - tiling.overhead) / factor, 0.0f),
                                   pinned_buffer_slack * (float)(dt_opencl_get_device_memalloc(devid)));
-  const float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
+  const float maxbuf = fmaxf(tiling.maxbuf_cl, 1.0f);
   int width = _min(roi_in->width, darktable.opencl->dev[devid].max_image_width);
   int height = _min(roi_in->height, darktable.opencl->dev[devid].max_image_height);
 
@@ -1570,7 +1570,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
 
-  const float fullscale = fmax(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
+  const float fullscale = fmaxf(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
                                                               / ((float)roi_out->width * roi_out->height)));
 
   /* inaccuracy for roi_in elements in roi_out -> roi_in calculations */
@@ -1591,10 +1591,10 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   // avoid problems when pinned buffer size gets too close to max_mem_alloc size
   const float pinned_buffer_slack = use_pinned_memory ? 0.85f : 1.0f;
   const float available = (float)dt_opencl_get_device_available(devid);
-  const float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
-  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
+  const float factor = fmaxf(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
+  const float singlebuffer = fminf(fmaxf((available - tiling.overhead) / factor, 0.0f),
                                   pinned_buffer_slack * (float)(dt_opencl_get_device_memalloc(devid)));
-  const float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
+  const float maxbuf = fmaxf(tiling.maxbuf_cl, 1.0f);
 
   int width = _min(_max(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
   int height = _min(_max(roi_in->height, roi_out->height), darktable.opencl->dev[devid].max_image_height);
