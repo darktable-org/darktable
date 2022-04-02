@@ -84,6 +84,12 @@ typedef struct dt_opencl_eventtag_t
   char tag[DT_OPENCL_EVENTNAMELENGTH];
 } dt_opencl_eventtag_t;
 
+typedef enum dt_opencl_tunemode_t
+{
+  DT_OPENCL_TUNE_NOTHING = 0,
+  DT_OPENCL_TUNE_MEMSIZE = 1,
+  DT_OPENCL_TUNE_PINNED  = 2
+} dt_opencl_tunemode_t;
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -296,6 +302,9 @@ int dt_opencl_is_enabled(void);
 
 /** disable opencl */
 void dt_opencl_disable(void);
+
+/** get OpenCL tuning mode flags */
+int dt_opencl_get_tuning_mode(void);
 
 /** update enabled flag and profile with value from preferences, returns enabled flag */
 int dt_opencl_update_settings(void);
@@ -522,6 +531,11 @@ static inline int dt_opencl_is_enabled(void)
 }
 static inline void dt_opencl_disable(void)
 {
+}
+/** get OpenCL tuning mode flags */
+static inline int dt_opencl_get_tuning_mode(void)
+{
+  return 0;
 }
 static inline int dt_opencl_update_settings(void)
 {

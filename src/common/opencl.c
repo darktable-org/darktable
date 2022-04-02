@@ -2664,7 +2664,7 @@ cl_ulong dt_opencl_get_device_available(const int devid)
     return available;
   }
   const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
-  const gboolean tuned = darktable.dtresources.tunecl && (level > 0);
+  const gboolean tuned = darktable.dtresources.tunememory && (level > 0);
   const gboolean board = darktable.opencl->dev[devid].cltype & CL_DEVICE_TYPE_CPU;
   if(tuned && !board)
   {
@@ -2681,7 +2681,7 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   }
 
   if(mod)
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tune=%s, cpu=%s) as available on device %i\n",
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tune=%s, CPU=%s) as available on device %i\n",
        available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (board) ? "yes" : "no", devid);
   return available;
 }
@@ -2834,6 +2834,19 @@ static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
     profile = OPENCL_PROFILE_VERYFAST_GPU;
 
   return profile;
+}
+
+int dt_opencl_get_tuning_mode(void)
+{
+  int res = DT_OPENCL_TUNE_NOTHING;
+  const char *pstr = dt_conf_get_string_const("opencl_tuning_mode");
+  if(pstr)
+  {
+    if(!strcmp(pstr, "memory size"))                   res = DT_OPENCL_TUNE_MEMSIZE;
+    else if(!strcmp(pstr, "memory transfer"))          res = DT_OPENCL_TUNE_PINNED;
+    else if(!strcmp(pstr, "memory size and transfer")) res = DT_OPENCL_TUNE_MEMSIZE | DT_OPENCL_TUNE_PINNED;
+  }
+  return res;  
 }
 
 /** read config of when/if to synch to cache */

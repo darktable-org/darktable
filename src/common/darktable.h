@@ -289,7 +289,8 @@ typedef struct dt_sys_resources_t
   int *refresource; // for the debug resource modes we use fixed settings
   int group;
   int level;
-  int tunecl;
+  int tunememory;
+  int tunepinning;
 } dt_sys_resources_t;
 
 typedef struct darktable_t
