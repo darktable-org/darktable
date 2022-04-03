@@ -2172,12 +2172,14 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
       gchar *label_text = _build_label(w);
       float label_width = 0;
       float label_height = 0;
-      show_pango_text(w, context, cr, label_text, 0, 0, 0, FALSE, TRUE, PANGO_ELLIPSIZE_END, FALSE, TRUE,
-                      &label_width, &label_height);
+      // we only show the label if the text is aligned on the right
+      if(label_text && d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
+        show_pango_text(w, context, cr, label_text, 0, 0, 0, FALSE, TRUE, PANGO_ELLIPSIZE_END, FALSE, TRUE,
+                        &label_width, &label_height);
       float combo_width = 0;
       float combo_height = 0;
-      show_pango_text(w, context, cr, text, w3 - _widget_get_quad_width(w), 0, 0, TRUE, TRUE, combo_ellipsis,
-                      FALSE, FALSE, &combo_width, &combo_height);
+      show_pango_text(w, context, cr, text, available_width, 0, 0, TRUE, TRUE, combo_ellipsis, FALSE, FALSE,
+                      &combo_width, &combo_height);
       // we want to center the text verticaly
       w->top_gap = floor((h3 - fmaxf(label_height, combo_height)) / 2.0f);
       //check if they fit
@@ -2185,25 +2187,29 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
       {
         //they don't fit: evenly divide the available width between the two in proportion
         const float ratio = label_width / (label_width + combo_width);
-        show_pango_text(w, context, cr, label_text, 0, w->top_gap, available_width * ratio - INNER_PADDING * 2,
-                        FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE, NULL, NULL);
         if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
-          show_pango_text(w, context, cr, text, w3 - _widget_get_quad_width(w), w->top_gap,
-                          available_width * (1.0f - ratio), TRUE, FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
+        {
+          show_pango_text(w, context, cr, label_text, 0, w->top_gap, available_width * ratio - INNER_PADDING * 2,
+                          FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE, NULL, NULL);
+          show_pango_text(w, context, cr, text, available_width, w->top_gap, available_width * (1.0f - ratio),
+                          TRUE, FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
+        }
         else
-          show_pango_text(w, context, cr, text, INNER_PADDING, w->top_gap, available_width * (1.0f - ratio), FALSE,
-                          FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
+          show_pango_text(w, context, cr, text, 0, w->top_gap, available_width * (1.0f - ratio), FALSE, FALSE,
+                          combo_ellipsis, FALSE, FALSE, NULL, NULL);
       }
       else
       {
-        show_pango_text(w, context, cr, label_text, 0, w->top_gap, 0, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE,
-                        TRUE, NULL, NULL);
         if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
-          show_pango_text(w, context, cr, text, w3 - _widget_get_quad_width(w), w->top_gap, 0, TRUE, FALSE,
-                          combo_ellipsis, FALSE, FALSE, NULL, NULL);
-        else
-          show_pango_text(w, context, cr, text, INNER_PADDING, w->top_gap, 0, FALSE, FALSE, combo_ellipsis, FALSE,
+        {
+          show_pango_text(w, context, cr, label_text, 0, w->top_gap, 0, FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE,
+                          TRUE, NULL, NULL);
+          show_pango_text(w, context, cr, text, available_width, w->top_gap, 0, TRUE, FALSE, combo_ellipsis, FALSE,
                           FALSE, NULL, NULL);
+        }
+        else
+          show_pango_text(w, context, cr, text, 0, w->top_gap, 0, FALSE, FALSE, combo_ellipsis, FALSE, FALSE, NULL,
+                          NULL);
       }
       g_free(label_text);
       break;
@@ -2281,11 +2287,16 @@ static void _get_preferred_width(GtkWidget *widget, gint *minimum_size, gint *na
         *natural_size = pango_width / PANGO_SCALE;
     }
 
-    pango_layout_set_text(layout, w->label, -1);
-    pango_layout_get_size(layout, &pango_width, NULL);
+    pango_width = 0;
+    if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
+    {
+      pango_layout_set_text(layout, w->label, -1);
+      pango_layout_get_size(layout, &pango_width, NULL);
+    }
     _margins_retrieve(w);
-    *natural_size += pango_width / PANGO_SCALE + _widget_get_quad_width(w) + 2 * INNER_PADDING + w->margin->left
-                     + w->margin->right + w->padding->left + w->padding->right;
+    *natural_size += pango_width / PANGO_SCALE + _widget_get_quad_width(w) + w->margin->left + w->margin->right
+                     + w->padding->left + w->padding->right;
+    if(pango_width > 0) *natural_size += 2 * INNER_PADDING;
 
     g_object_unref(layout);
   }
