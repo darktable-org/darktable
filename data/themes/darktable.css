@@ -259,6 +259,7 @@ box *
 }
 
 /* Set no background and no border. And avoid undershoot and overshoot having too much empty space at top/bottom of sidepanels when scrolled */
+.accels_window_box treeview,
 .dt_transparent_background,
 .dt_transparent_background:checked,
 filechooser .sidebar-button,
@@ -300,6 +301,15 @@ textview
   color: @button_fg;
   font-weight: normal;
   font-family: sans-serif;
+}
+
+/* then set specific background color for all text zones and combo */
+.combo,
+entry,
+spinbutton button,
+textview
+{
+  background-color: alpha(@fg_color, 0.09);
 }
 
 button:disabled,
@@ -599,16 +609,10 @@ l
   padding: 0.5em;
 }
 
-#module-header entry
-{
-  background-color: @field_active_bg;
-}
-
 /* Labels in modules */
 #iop-panel-label,
 #lib-panel-label
 {
-  background-color: @bg_color;
   color: @plugin_label_color;
   padding: 0 0.14em 0.14em 0.45em;
   font-weight: normal;
@@ -705,15 +709,6 @@ l
   border: none;
   margin-top: 0.14em;
   padding: 0.07em 0;
-}
-
-#collapsible .combo,
-#collapsible entry,
-#collapsible spinbutton button,
-#collapsible textview
-{
-  background-color: shade(@button_border, 1.06);
-  border: 0.07em solid shade(@field_active_bg, 1.06);
 }
 
 /*-------------------
@@ -1116,11 +1111,6 @@ scale contents trough
   min-height: 0.5em;
 }
 
-scale entry
-{
-  background-color: @field_bg;
-}
-
 scale contents trough highlight
 {
   background-color: @button_bg;
@@ -1170,11 +1160,6 @@ dialog scrollbar
    font-size: 0.9em;
    padding-top: 0.07em;
    padding-right: 0.7em;
-}
-
-.accels_window_box treeview
-{
-   background-color: transparent;
 }
 
 .accels_window_stick
