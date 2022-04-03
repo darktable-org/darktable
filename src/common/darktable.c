@@ -1342,9 +1342,13 @@ void dt_get_sysresource_level()
   const gboolean mod = ((level != oldlevel) || (oldtunecl != tunecl));
   darktable.dtresources.level = oldlevel = level;
   oldtunecl = tunecl;
+#ifdef HAVE_OPENCL
   darktable.dtresources.tunememory  = (tunecl & DT_OPENCL_TUNE_MEMSIZE) ? 1 : 0;
   darktable.dtresources.tunepinning = (tunecl & DT_OPENCL_TUNE_PINNED) ? 1 : 0;
-
+#else
+  darktable.dtresources.tunememory  = 0;
+  darktable.dtresources.tunepinning = 0;
+#endif
   if(mod && (darktable.unmuted & DT_DEBUG_MEMORY))
   {
     const int oldgrp = darktable.dtresources.group;
