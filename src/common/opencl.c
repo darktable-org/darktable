@@ -144,7 +144,7 @@ int dt_opencl_micro_nap(const int devid)
 int dt_opencl_pinned_memory(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  return (!cl->inited || devid < 0) ? 0 : cl->dev[devid].pinned_memory;
+  return (!cl->inited || devid < 0) ? DT_OPENCL_PINNING_OFF : cl->dev[devid].pinned_memory;
 }
 
 void dt_opencl_write_device_config(const int devid)
@@ -157,7 +157,7 @@ void dt_opencl_write_device_config(const int devid)
   g_snprintf(dat, 510, "%i %i %i %i %i %f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
-    cl->dev[devid].pinned_memory,
+    cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
     cl->dev[devid].clroundup_wd,
     cl->dev[devid].clroundup_ht,
     cl->dev[devid].benchmark);
@@ -183,12 +183,12 @@ gboolean dt_opencl_read_device_config(const int devid)
     &cl->dev[devid].benchmark);
   // do some safety housekeeping
   cl->dev[devid].avoid_atomics &= 1;
-  cl->dev[devid].pinned_memory &= 1;
-  if((cl->dev[devid].micro_nap <= 100) || (cl->dev[devid].micro_nap > 1000000))
+  cl->dev[devid].pinned_memory &= (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED);
+  if((cl->dev[devid].micro_nap < 0) || (cl->dev[devid].micro_nap > 1000000))
     cl->dev[devid].micro_nap = 1000;
-  if((cl->dev[devid].clroundup_wd <= 4) || (cl->dev[devid].clroundup_wd > 512))
+  if((cl->dev[devid].clroundup_wd < 2) || (cl->dev[devid].clroundup_wd > 512))
     cl->dev[devid].clroundup_wd = 16;
-  if((cl->dev[devid].clroundup_ht <= 4) || (cl->dev[devid].clroundup_ht > 512))
+  if((cl->dev[devid].clroundup_ht < 2) || (cl->dev[devid].clroundup_ht > 512))
     cl->dev[devid].clroundup_ht = 16;
 
   cl->dev[devid].benchmark = fminf(1e6, fmaxf(0.0f, cl->dev[devid].benchmark));
@@ -237,10 +237,10 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
   cl->dev[dev].tuned_available = 0;
-  // setting sane defaults at first
+  // setting sane/conservative defaults at first
   cl->dev[dev].avoid_atomics = 0;
   cl->dev[dev].micro_nap = 1000;
-  cl->dev[dev].pinned_memory = 0;
+  cl->dev[dev].pinned_memory = DT_OPENCL_PINNING_OFF;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].benchmark = 0.0f;
@@ -350,6 +350,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     goto end;
   }
 
+  // micro_nap can be made less conservative on current systems at least if not on-CPU
+  cl->dev[dev].micro_nap = ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? 1000 : 250;
+
   if(dt_opencl_check_driver_blacklist(deviceversion) && !dt_conf_get_bool("opencl_disable_drivers_blacklist"))
   {
     dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] discarding device %d `%s' because the driver `%s' is blacklisted.\n",
@@ -434,7 +437,10 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
     fprintf(stderr, "     MICRO_NAP:                %i\n", cl->dev[dev].micro_nap);
     fprintf(stderr, "     AVOID_ATOMICS:            %s\n", (cl->dev[dev].avoid_atomics) ? "TRUE" : "FALSE");
-    fprintf(stderr, "     PINNED_MEMORY:            %s\n", (cl->dev[dev].pinned_memory) ? "TRUE" : "FALSE");
+    if(cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_DISABLED)
+    fprintf(stderr, "     PINNED_MEMORY:            DISABLED\n");
+    else
+    fprintf(stderr, "     PINNED_MEMORY DEFAULT:    %s\n", (cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_ON) ? "ON" : "OFF");
     fprintf(stderr, "     ROUNDUP WIDTH:            %i\n", cl->dev[dev].clroundup_wd);
     fprintf(stderr, "     ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
     fprintf(stderr, "     PERFORMANCE:              %f\n", cl->dev[dev].benchmark);
@@ -2664,7 +2670,7 @@ cl_ulong dt_opencl_get_device_available(const int devid)
     return available;
   }
   const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
-  const gboolean tuned = darktable.dtresources.tunecl && (level > 0);
+  const gboolean tuned = darktable.dtresources.tunememory && (level > 0);
   const gboolean board = darktable.opencl->dev[devid].cltype & CL_DEVICE_TYPE_CPU;
   if(tuned && !board)
   {
@@ -2681,7 +2687,7 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   }
 
   if(mod)
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tune=%s, cpu=%s) as available on device %i\n",
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tune=%s, CPU=%s) as available on device %i\n",
        available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (board) ? "yes" : "no", devid);
   return available;
 }
@@ -2834,6 +2840,19 @@ static dt_opencl_scheduling_profile_t dt_opencl_get_scheduling_profile(void)
     profile = OPENCL_PROFILE_VERYFAST_GPU;
 
   return profile;
+}
+
+int dt_opencl_get_tuning_mode(void)
+{
+  int res = DT_OPENCL_TUNE_NOTHING;
+  const char *pstr = dt_conf_get_string_const("opencl_tuning_mode");
+  if(pstr)
+  {
+    if(!strcmp(pstr, "memory size"))                   res = DT_OPENCL_TUNE_MEMSIZE;
+    else if(!strcmp(pstr, "memory transfer"))          res = DT_OPENCL_TUNE_PINNED;
+    else if(!strcmp(pstr, "memory size and transfer")) res = DT_OPENCL_TUNE_MEMSIZE | DT_OPENCL_TUNE_PINNED;
+  }
+  return res;  
 }
 
 /** read config of when/if to synch to cache */
