@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2929,14 +2929,20 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     int newevents = DT_OPENCL_EVENTLISTSIZE;
     *eventlist = calloc(newevents, sizeof(cl_event));
     *eventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
+    const size_t allmem = (newevents * (sizeof(cl_event) + sizeof(dt_opencl_eventtag_t))) / 1024lu;
     if(!*eventlist || !*eventtags)
     {
-      free(*eventlist);
-      free(*eventtags);
+      if(eventlist) free(*eventlist);
+      if(eventtags) free(*eventtags);
       *eventlist = NULL;
       *eventtags = NULL;
+      *maxevents = 0;
+      dt_print(DT_DEBUG_OPENCL, "[dt_opencl_events_get_slot] could not allocate eventlist with size %i (%lukb) for device %i\n",
+         newevents, allmem, devid);
       return NULL;
     }
+    dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_events_get_slot] successfully allocated eventlist with size %i (%lukb) for device %i\n",
+       newevents, allmem, devid);
     *maxevents = newevents;
   }
 
@@ -2969,10 +2975,13 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     int newevents = *maxevents + DT_OPENCL_EVENTLISTSIZE;
     cl_event *neweventlist = calloc(newevents, sizeof(cl_event));
     dt_opencl_eventtag_t *neweventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
+    const size_t allmem = (newevents * (sizeof(cl_event) + sizeof(dt_opencl_eventtag_t))) / 1024lu;
     if(!neweventlist || !neweventtags)
     {
-      free(neweventlist);
-      free(neweventtags);
+      if(neweventlist) free(neweventlist);
+      if(neweventtags) free(neweventtags);
+      dt_print(DT_DEBUG_OPENCL, "[dt_opencl_events_get_slot] could not allocate new eventlist with size %i (%lukb) for device %i\n",
+         newevents, allmem, devid);
       return NULL;
     }
     memcpy(neweventlist, *eventlist, sizeof(cl_event) * *maxevents);
@@ -2982,6 +2991,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     *eventlist = neweventlist;
     *eventtags = neweventtags;
     *maxevents = newevents;
+    dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_events_get_slot] successfully allocated new eventlist with size %i (%lukb) for device %i\n",
+       newevents, allmem, devid);
   }
 
   // init next event slot and return it
@@ -3065,9 +3076,13 @@ void dt_opencl_events_wait_for(const int devid)
   // now wait for all remaining events to terminate
   // Risk: might never return in case of OpenCL blocks or endless loops
   // TODO: run clWaitForEvents in separate thread and implement watchdog timer
-  (cl->dlocl->symbols->dt_clWaitForEvents)(*numevents - *eventsconsolidated,
+  cl_int err = (cl->dlocl->symbols->dt_clWaitForEvents)(*numevents - *eventsconsolidated,
                                            (*eventlist) + *eventsconsolidated);
-
+  if(err != CL_SUCCESS)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_events_wait_for] finished with err=%d for devive %i\n",
+             err, devid);
+  }
   return;
 }
 
