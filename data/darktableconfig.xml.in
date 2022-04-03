@@ -435,8 +435,8 @@
     <shortdescription>ask before removing empty folders</shortdescription>
     <longdescription>always ask the user before removing any empty folder. this can happen after moving or deleting images.</longdescription>
   </dtconfig>
-  <dtconfig dialog="recentcollect">
-    <name>plugins/lighttable/recentcollect/max_items</name>
+  <dtconfig dialog="collect">
+    <name>plugins/lighttable/collect/history_max</name>
     <type min="1" max="50">int</type>
     <default>10</default>
     <shortdescription>number of collections to be stored</shortdescription>
