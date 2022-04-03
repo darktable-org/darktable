@@ -3052,7 +3052,6 @@ void gui_init(dt_lib_module_t *self)
     gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
 
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
-    gtk_widget_set_name(GTK_WIDGET(w), "control-button");
     d->rule[i].button = w;
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);

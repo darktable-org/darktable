@@ -259,19 +259,20 @@ box *
 }
 
 /* Set no background and no border. And avoid undershoot and overshoot having too much empty space at top/bottom of sidepanels when scrolled */
-undershoot,
-undershoot.top,
-undershoot.bottom,
-undershoot.left,
-undershoot.right,
+.dt_transparent_background,
+.dt_transparent_background:checked,
+filechooser .sidebar-button,
+popover #bauhaus_combobox,
 overshoot,
 overshoot.top,
 overshoot.bottom,
 overshoot.left,
 overshoot.right,
-.dt_transparent_background,
-.dt_transparent_background:checked,
-popover #bauhaus_combobox,
+undershoot,
+undershoot.top,
+undershoot.bottom,
+undershoot.left,
+undershoot.right,
 #usercss_box textview,
 #view_dropdown .combo
 {
@@ -451,17 +452,10 @@ spinbutton>button
 /* Set default button spacing  in toolbars and modules */
 #header-toolbar #button-canvas,
 #footer-toolbar #button-canvas,
-#control-button #button-canvas,
 #module-header #button-canvas,
 #modules-tabs #button-canvas
 {
   margin: 12px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
-}
-
-/* Set color labels on left footer toolbar on lighttable view */
-#footer-toolbar #lib-label-colors #button-canvas
-{
-  margin: 16px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
 
 #footer-toolbar #lib-label-colors #dt-button
@@ -548,20 +542,6 @@ l
 #iop-plugin-ui-main widget + notebook
 {
   margin-top: 0.5em;
-}
-
-/* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
-   list of GTK buttons, to not look like action buttons */
-#recent-collection-button,
-#history-button,
-#history-button-enabled,
-#history-button-always-enabled,
-#history-button-default-enabled
-{
-  background-color: transparent;
-  border-color: transparent;
-  font-weight: normal;
-  border: 0;
 }
 
 /* Precise default buttons margins on side panels */
@@ -920,7 +900,7 @@ popover #bauhaus_slider
 .dt_iop_toggle #dt-toggle-button
 {
   margin: 0;
-  padding: 0.21em 0.07em;
+  padding: 0.28em 0.07em;
 }
 
 .dt_bauhaus_alignment #button-canvas
@@ -1408,11 +1388,6 @@ box #modulegroups-iop-header:last-child
   border: 0;
 }
 
-#modulegroups-header #dt-button
-{
-  border: 0;
-}
-
 #modulegroups-icons-popup
 {
   padding: 0.5em;
@@ -1454,8 +1429,6 @@ filechooser .sidebar-label
 filechooser .sidebar-button /* set icons displayed in the right of the sidebar, like eject buttons */
 {
   margin-right: 0.28em;
-  background-color: transparent;
-  border: 0;
 }
 
 filechooser row
@@ -1526,7 +1499,8 @@ filechooser row:hover .sidebar-icon
 .combo,
 #basics-box-labels #basics-header-box:first-child,
 #basics-box-labels #section_label,
-#basics-link
+#modulegroups-header #dt-button,
+#thumb_localcopy:active
 {
   border: none;
 }
@@ -1652,40 +1626,32 @@ cell:selected
 }
 
 /* Set below spacing between history items in darkroom */
-/* the history number */
-#history-number
-{
-  padding: 0.14em 0.35em 0 0;
-  font-family: monospace;
-}
-
 /* the label buttons */
-#left #history-button,
-#left #history-button-enabled,
-#left #history-button-always-enabled,
-#left #history-button-default-enabled,
-#left #history-switch,
-#left #history-switch-enabled,
-#left #history-switch-always-enabled,
-#left #history-switch-default-enabled,
-#left #history-switch-deprecated
+.dt_history_items
 {
-  padding: 0.14em;
+  padding: 0;
   margin: 0;
 }
 
 /* then the switches */
-#left #history-switch,
-#left #history-switch-enabled,
-#left #history-switch-always-enabled,
-#left #history-switch-default-enabled,
-#left #history-switch-deprecated
+.dt_history_switch
 {
-  font-size: 0.5em;
-  min-width: 1.2em;
-  min-height: 1.2em;
+  font-size: 0.7em;
   margin-left: 0.42em;
   border: 0;
+}
+
+/* the history number */
+#history-number
+{
+  padding-right: 0.35em;
+  font-family: monospace;
+}
+
+/* then deprecated switch to suit to other icons */
+#left #history-switch-deprecated
+{
+  font-size: 0.6em;
 }
 
 #history-tooltip,
@@ -1712,22 +1678,14 @@ cell:selected
 }
 
 /* Set messages shown on bottom middle of the UI. For example "loading image..." or "working on..." */
-#log-msg,
-#toast-msg
+.dt_messages
 {
   color: @log_fg_color;
   font-size: 1em;
   font-weight: bold;
-  background-color: rgba(75,75,75,0.6);
+  background-color: alpha(@bg_color,0.6);
   padding: 0.56em 1.4em;
   border-radius: 0.56em;
-}
-
- /* then set infos shown on top of the image on darkroom, like for example opacity in drawn masks */
-#toast-msg
-{
-  padding: 0.14em 1em 0.28em 1em;
-  border-radius: 0 0 0.56em 0.56em;
 }
 
 /* Set some specific fonts */
@@ -1816,20 +1774,11 @@ menuitem:active,
 menuitem:selected,
 combobox window *:active,
 combobox window *:selected,
-#history-button:active,
-#history-button-enabled:active,
-#history-button-always-enabled:active,
-#history-button-default-enabled:active,
-#recent-collection-button:checked,
-#history-button:checked,
-#history-button-enabled:checked,
-#history-button-always-enabled:checked,
-#history-button-default-enabled:checked,
-#history-button:selected,
-#history-button-enabled:selected,
-#history-button-always-enabled:selected,
-#history-button-default-enabled:selected,
+.dt_history_items:active,
+.dt_history_items:checked,
+.dt_history_items:selected,
 #recent-collection-button:active,
+#recent-collection-button:checked,
 #recent-collection-button:selected,
 messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 {
@@ -1838,18 +1787,9 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 }
 
 /* History currently selected button */
-#history-button:active *,
-#history-button-enabled:active *,
-#history-button-always-enabled:active *,
-#history-button-default-enabled:active *,
-#history-button:checked *,
-#history-button-enabled:checked *,
-#history-button-always-enabled:checked *,
-#history-button-default-enabled:checked *,
-#history-button:selected *,
-#history-button-enabled:selected *,
-#history-button-always-enabled:selected *,
-#history-button-default-enabled:selected *
+.dt_history_items:active *,
+.dt_history_items:checked *,
+.dt_history_items:selected *
 {
   color: @button_checked_fg;
 }
@@ -1864,10 +1804,7 @@ notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #collapsible spinbutton button:hover,
-#history-button:hover,
-#history-button-enabled:hover,
-#history-button-always-enabled:hover,
-#history-button-default-enabled:hover,
+.dt_history_items:hover,
 #preferences_box .sidebar :hover,
 #recent-collection-button:hover,
 #view_label:hover,
@@ -1928,9 +1865,7 @@ menuitem > *,
 
 /* Deprecated/always-on switch are visible */
 #history-switch-deprecated:disabled,
-#history-switch-always-enabled:disabled,
-#history-switch-enabled:disabled,
-#history-switch-default-enabled:disabled
+.dt_history_switch:disabled
 {
   color: @plugin_label_color;
 }
@@ -2531,11 +2466,6 @@ Details :
 {
   border-top : 0.07em solid @lighttable_bg_color;
   border-right : 0.07em solid @lighttable_bg_color;
-}
-
-#thumb_localcopy:active
-{
-  border: none;
 }
 
 .dt_group_right #thumb_localcopy
