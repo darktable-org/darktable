@@ -260,6 +260,8 @@ box *
 
 /* Set no background and no border. And avoid undershoot and overshoot having too much empty space at top/bottom of sidepanels when scrolled */
 .accels_window_box treeview,
+.dt_module_btn,
+.dt_module_btn:disabled,
 .dt_transparent_background,
 .dt_transparent_background:checked,
 filechooser .sidebar-button,
@@ -312,6 +314,25 @@ textview
   background-color: alpha(@fg_color, 0.09);
 }
 
+/* Set same settings on all those items */
+.combo,
+.combo *,
+button
+{
+  min-height: 1em;
+  min-width: 1em;
+}
+
+/* Buttons in modules header, near the module name */
+.dt_module_btn
+{
+  min-height: 1.15em;
+  min-width: 1.15em;
+  padding: 0.06em;
+  margin: 0 0.07em;
+}
+
+/* set disabled options of above settings */
 button:disabled,
 spinbutton *:disabled,
 #collapsible .combo:disabled,
@@ -320,15 +341,6 @@ spinbutton *:disabled,
 {
   background-color: transparent;
   border: 0.07em solid shade(@button_border, 0.9);
-}
-
-/* Set same settings on all those items */
-.combo,
-.combo *,
-button
-{
-  min-height: 1em;
-  min-width: 1em;
 }
 
 /* Default extra margin for icons optical alignment */
@@ -559,24 +571,6 @@ l
 #lib-plugin-ui button
 {
   margin: 2px;  /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
-}
-
-/* Buttons in modules header, near the module name */
-#module-preset-button,
-#module-reset-button,
-#module-enable-button,
-#module-mask-indicator,
-#module-instance-button,
-#module-collapse-button,
-#module-always-enabled-button,
-#module-always-disabled-button
-{
-  /* background-color: transparent; this doesn't work */
-  min-height: 1.15em;
-  min-width: 1.15em;
-  padding: 0.06em;
-  margin: 0 0.07em;
-  border: 0;
 }
 
 /* Gradient sliders */
@@ -1473,15 +1467,16 @@ filechooser row:hover .sidebar-icon
   padding: 0.28em 0.84em;
 }
 
-#basics-box #module-enable-button,
-#basics-box-labels #module-enable-button,
+#basics-box .dt_module_btn,
+#basics-box-labels .dt_module_btn,
 #basics-link
 {
   margin: 0 0.56em;
-  padding: 0.28em;
+  padding: 0.42em;
 }
 
 .combo,
+#basics-box-labels #basics-link,
 #basics-box-labels #basics-header-box:first-child,
 #basics-box-labels #section_label,
 #modulegroups-header #dt-button,
@@ -1821,9 +1816,7 @@ button:checked cellview
 }
 
 /* Set submenus */
-menuitem > *,
-#module-always-enabled-button,
-#module-enable-button
+menuitem > *
 {
     color: @fg_color;
 }
