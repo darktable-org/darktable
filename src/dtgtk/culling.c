@@ -838,11 +838,10 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
     gtk_widget_set_name(table->widget, "preview");
   else
     gtk_widget_set_name(table->widget, "culling");
-  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
   if(mode == DT_CULLING_MODE_PREVIEW)
-    gtk_style_context_add_class(context, "dt_preview");
+    dt_util_add_class(table->widget, "dt_preview");
   else
-    gtk_style_context_add_class(context, "dt_culling");
+    dt_util_add_class(table->widget, "dt_culling");
 
   // overlays
   gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
@@ -850,7 +849,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   g_free(otxt);
 
   gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
-  gtk_style_context_add_class(context, cl0);
+  dt_util_add_class(table->widget, cl0);
   free(cl0);
 
   otxt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
@@ -1748,9 +1747,8 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
   gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
   gchar *cl1 = _thumbs_get_overlays_class(over);
 
-  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
-  gtk_style_context_remove_class(context, cl0);
-  gtk_style_context_add_class(context, cl1);
+  dt_util_remove_class(table->widget, cl0);
+  dt_util_add_class(table->widget, cl1);
 
   txt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
   int timeout = 2;

@@ -4353,8 +4353,7 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("reconstruct"), NULL);
 
   GtkWidget *label = dt_ui_section_label_new(_("highlights clipping"));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
-  gtk_style_context_add_class(context, "section_label_top");
+  dt_util_add_class(GTK_WIDGET(label), "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
   g->reconstruct_threshold = dt_bauhaus_slider_from_params(self, "reconstruct_threshold");
