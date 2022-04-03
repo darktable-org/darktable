@@ -1266,6 +1266,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(d->intent, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(d->intent, _("absolute colorimetric"));
+  dt_bauhaus_combobox_set_selected_text_align(d->intent, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
   gtk_box_pack_start(GTK_BOX(self->widget), d->intent, FALSE, TRUE, 0);
 
   tooltip = g_strdup_printf(_("• perceptual : "
