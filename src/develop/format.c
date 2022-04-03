@@ -21,7 +21,7 @@
 
 size_t dt_iop_buffer_dsc_to_bpp(const struct dt_iop_buffer_dsc_t *dsc)
 {
-  size_t bpp = dsc->channels;
+  size_t bpp = dsc->channels * dsc->frames;
 
   switch(dsc->datatype)
   {

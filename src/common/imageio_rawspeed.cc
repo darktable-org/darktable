@@ -132,6 +132,86 @@ static gboolean _ignore_image(const gchar *filename)
   return FALSE;
 }
 
+static void load_image_metadata(const RawImage &r, dt_image_t *img)
+{
+  g_strlcpy(img->camera_maker, r.metadata.canonical_make.c_str(), sizeof(img->camera_maker));
+  g_strlcpy(img->camera_model, r.metadata.canonical_model.c_str(), sizeof(img->camera_model));
+  g_strlcpy(img->camera_alias, r.metadata.canonical_alias.c_str(), sizeof(img->camera_alias));
+  dt_image_refresh_makermodel(img);
+
+  // We used to partial match the Canon local rebrandings so lets pass on
+  // the value just in those cases to be able to fix old history stacks
+  static const struct
+  {
+    const char *mungedname;
+    const char *origname;
+  } legacy_aliases[] = {
+    { "Canon EOS", "Canon EOS REBEL SL1" },
+    { "Canon EOS", "Canon EOS Kiss X7" },
+    { "Canon EOS", "Canon EOS DIGITAL REBEL XT" },
+    { "Canon EOS", "Canon EOS Kiss Digital N" },
+    { "Canon EOS", "Canon EOS 350D" },
+    { "Canon EOS", "Canon EOS DIGITAL REBEL XSi" },
+    { "Canon EOS", "Canon EOS Kiss Digital X2" },
+    { "Canon EOS", "Canon EOS Kiss X2" },
+    { "Canon EOS", "Canon EOS REBEL T5i" },
+    { "Canon EOS", "Canon EOS Kiss X7i" },
+    { "Canon EOS", "Canon EOS Rebel T6i" },
+    { "Canon EOS", "Canon EOS Kiss X8i" },
+    { "Canon EOS", "Canon EOS Rebel T6s" },
+    { "Canon EOS", "Canon EOS 8000D" },
+    { "Canon EOS", "Canon EOS REBEL T1i" },
+    { "Canon EOS", "Canon EOS Kiss X3" },
+    { "Canon EOS", "Canon EOS REBEL T2i" },
+    { "Canon EOS", "Canon EOS Kiss X4" },
+    { "Canon EOS REBEL T3", "Canon EOS REBEL T3i" },
+    { "Canon EOS", "Canon EOS Kiss X5" },
+    { "Canon EOS", "Canon EOS REBEL T4i" },
+    { "Canon EOS", "Canon EOS Kiss X6i" },
+    { "Canon EOS", "Canon EOS DIGITAL REBEL XS" },
+    { "Canon EOS", "Canon EOS Kiss Digital F" },
+    { "Canon EOS", "Canon EOS REBEL T5" },
+    { "Canon EOS", "Canon EOS Kiss X70" },
+    { "Canon EOS", "Canon EOS DIGITAL REBEL XTi" },
+    { "Canon EOS", "Canon EOS Kiss Digital X" },
+  };
+
+  for(uint32_t i = 0; i < (sizeof(legacy_aliases) / sizeof(legacy_aliases[1])); i++)
+  {
+    if(!strcmp(legacy_aliases[i].origname, r.metadata.model.c_str()))
+    {
+      g_strlcpy(img->camera_legacy_makermodel, legacy_aliases[i].mungedname, sizeof(img->camera_legacy_makermodel));
+      break;
+    }
+  }
+
+  // Grab the WB
+  for(int i = 0; i < 4; i++) img->wb_coeffs[i] = r.metadata.wbCoeffs[i];
+
+  const int msize = r.metadata.colorMatrix.size();
+  // Grab the adobe coeff
+  for(int k = 0; k < 4; k++)
+    for(int i = 0; i < 3; i++)
+    {
+      const int idx = k * 3 + i;
+      if(idx < msize)
+        img->adobe_XYZ_to_CAM[k][i] = (float)r.metadata.colorMatrix[idx] / (float)ADOBE_COEFF_FACTOR;
+      else
+        img->adobe_XYZ_to_CAM[k][i] = 0.0f;
+    }
+
+  // FIXME: grab r->metadata.colorMatrix.
+
+  img->fuji_rotation_pos = r.metadata.fujiRotationPos;
+  img->pixel_aspect_ratio = (float)r.metadata.pixelAspectRatio;
+
+
+  //  Check if the camera is missing samples
+  const Camera *cam = meta->getCamera(r.metadata.make.c_str(), r.metadata.model.c_str(), r.metadata.mode.c_str());
+
+  if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples) img->camera_missing_sample = TRUE;
+}
+
 dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filename,
                                              dt_mipmap_buffer_t *mbuf)
 {
@@ -141,21 +221,18 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
   char filen[PATH_MAX] = { 0 };
   snprintf(filen, sizeof(filen), "%s", filename);
-  FileReader f(filen);
-
-  std::unique_ptr<RawDecoder> d;
-  std::unique_ptr<const Buffer> m;
+  FileReader file(filen);
 
   try
   {
     dt_rawspeed_load_meta();
 
     dt_pthread_mutex_lock(&darktable.readFile_mutex);
-    m = f.readFile();
+    auto m = file.readFile();
     dt_pthread_mutex_unlock(&darktable.readFile_mutex);
 
     RawParser t(*m.get());
-    d = t.getDecoder(meta);
+    auto d = t.getDecoder(meta);
 
     if(!d.get()) return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -164,72 +241,86 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     d->decodeRaw();
     d->decodeMetaData(meta);
     RawImage r = d->mRaw;
+    bool isMultiFrame{false};
 
-    const auto errors = r.get(0)->getErrors();
-    for(const auto &error : errors)
-      fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
+    /* free auto pointers on spot */
+    d.reset();
+    m.reset();
 
-    g_strlcpy(img->camera_maker, r.metadata.canonical_make.c_str(), sizeof(img->camera_maker));
-    g_strlcpy(img->camera_model, r.metadata.canonical_model.c_str(), sizeof(img->camera_model));
-    g_strlcpy(img->camera_alias, r.metadata.canonical_alias.c_str(), sizeof(img->camera_alias));
-    dt_image_refresh_makermodel(img);
 
-    // We used to partial match the Canon local rebrandings so lets pass on
-    // the value just in those cases to be able to fix old history stacks
-    static const struct {
-      const char *mungedname;
-      const char *origname;
-    } legacy_aliases[] = {
-      {"Canon EOS","Canon EOS REBEL SL1"},
-      {"Canon EOS","Canon EOS Kiss X7"},
-      {"Canon EOS","Canon EOS DIGITAL REBEL XT"},
-      {"Canon EOS","Canon EOS Kiss Digital N"},
-      {"Canon EOS","Canon EOS 350D"},
-      {"Canon EOS","Canon EOS DIGITAL REBEL XSi"},
-      {"Canon EOS","Canon EOS Kiss Digital X2"},
-      {"Canon EOS","Canon EOS Kiss X2"},
-      {"Canon EOS","Canon EOS REBEL T5i"},
-      {"Canon EOS","Canon EOS Kiss X7i"},
-      {"Canon EOS","Canon EOS Rebel T6i"},
-      {"Canon EOS","Canon EOS Kiss X8i"},
-      {"Canon EOS","Canon EOS Rebel T6s"},
-      {"Canon EOS","Canon EOS 8000D"},
-      {"Canon EOS","Canon EOS REBEL T1i"},
-      {"Canon EOS","Canon EOS Kiss X3"},
-      {"Canon EOS","Canon EOS REBEL T2i"},
-      {"Canon EOS","Canon EOS Kiss X4"},
-      {"Canon EOS REBEL T3","Canon EOS REBEL T3i"},
-      {"Canon EOS","Canon EOS Kiss X5"},
-      {"Canon EOS","Canon EOS REBEL T4i"},
-      {"Canon EOS","Canon EOS Kiss X6i"},
-      {"Canon EOS","Canon EOS DIGITAL REBEL XS"},
-      {"Canon EOS","Canon EOS Kiss Digital F"},
-      {"Canon EOS","Canon EOS REBEL T5"},
-      {"Canon EOS","Canon EOS Kiss X70"},
-      {"Canon EOS","Canon EOS DIGITAL REBEL XTi"},
-      {"Canon EOS","Canon EOS Kiss Digital X"},
-    };
-
-    for(uint32_t i = 0; i < (sizeof(legacy_aliases) / sizeof(legacy_aliases[1])); i++)
-      if(!strcmp(legacy_aliases[i].origname, r.metadata.model.c_str()))
+    for(const auto &frame : r)
+    {
+      const auto errors = frame->getErrors();
+      for(const auto &error : errors)
       {
-        g_strlcpy(img->camera_legacy_makermodel, legacy_aliases[i].mungedname, sizeof(img->camera_legacy_makermodel));
-        break;
+        fprintf(stderr, "[rawspeed] (%s) %s\n", img->filename, error.c_str());
       }
+    }
+
+    // Get DefaultUserCrop
+    if(img->flags & DT_IMAGE_HAS_USERCROP) dt_exif_img_check_usercrop(img, filename);
+
+    load_image_metadata(r, img);
+
+    if(r.size() > 1)
+    {
+      auto isCFA = r.get(0)->isCFA;
+      for(const auto &f : r)
+      {
+        if(f->isCFA != isCFA)
+        {
+          fprintf(stderr, "[rawspeed] (%s) inconsistent CFA flag across frames\n", img->filename);
+          return DT_IMAGEIO_FILE_CORRUPTED;
+        }
+      }
+      isMultiFrame = isCFA;
+    }
 
     img->raw_black_level = r.get(0)->blackLevel;
     img->raw_white_point = r.get(0)->whitePoint;
-
-    if(r.get(0)->blackLevelSeparate[0] == -1
-       || r.get(0)->blackLevelSeparate[1] == -1
-       || r.get(0)->blackLevelSeparate[2] == -1
-       || r.get(0)->blackLevelSeparate[3] == -1)
+    if(isMultiFrame)
     {
-      r.get(0)->calculateBlackAreas();
+      for(size_t i=0;i< r.size();++i)
+      {
+        if(r.get(i)->blackLevel != img->raw_black_level)
+        {
+          fprintf(stderr, "[rawspeed] (%s) inconsistent black levels across frames\n", img->filename);
+        }
+        if(static_cast<uint32_t>(r.get(i)->whitePoint) != img->raw_white_point)
+        {
+          fprintf(stderr, "[rawspeed] (%s) inconsistent white points across frames\n", img->filename);
+        }
+      }
+    }
+
+    for(const auto &f : r)
+    {
+      if(f->blackLevelSeparate[0] == -1
+      || f->blackLevelSeparate[1] == -1
+      || f->blackLevelSeparate[2] == -1
+      || f->blackLevelSeparate[3] == -1)
+      {
+        f->calculateBlackAreas();
+      }
     }
 
     for(uint8_t i = 0; i < 4; i++)
+    {
       img->raw_black_level_separate[i] = r.get(0)->blackLevelSeparate[i];
+    }
+    if(isMultiFrame)
+    {
+      for(const auto &f : r)
+      {
+        for(uint8_t i = 0; i < 4; i++)
+        {
+          if(img->raw_black_level_separate[i] != f->blackLevelSeparate[i])
+          {
+            fprintf(stderr, "[rawspeed] (%s) inconsistent separate black levels across frames\n", img->filename);
+          }
+        }
+      }
+    }
 
     if(r.get(0)->blackLevel == -1)
     {
@@ -249,32 +340,20 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
      *   ???
      */
 
-    /* free auto pointers on spot */
-    d.reset();
-    m.reset();
 
-    // Grab the WB
-    for(int i = 0; i < 4; i++)
-      img->wb_coeffs[i] = r.metadata.wbCoeffs[i];
-
-    const int msize = r.metadata.colorMatrix.size();
-    // Grab the adobe coeff
-    for(int k = 0; k < 4; k++)
-      for(int i = 0; i < 3; i++)
+    if(isMultiFrame)
+    {
+      auto type = r.get(0)->getDataType();
+      for(const auto &f : r)
       {
-        const int idx = k*3 + i;
-        if(idx < msize)
-          img->adobe_XYZ_to_CAM[k][i] =
-            (float)r.metadata.colorMatrix[idx] / (float)ADOBE_COEFF_FACTOR;
-        else
-          img->adobe_XYZ_to_CAM[k][i] = 0.0f;
+        if(f->getDataType() != type)
+        {
+          fprintf(stderr, "[rawspeed] (%s) inconsistent data types across frames\n", img->filename);
+          return DT_IMAGEIO_FILE_CORRUPTED;
+        }
       }
+    }
 
-    // FIXME: grab r->metadata.colorMatrix.
-
-    // Get DefaultUserCrop
-    if (img->flags & DT_IMAGE_HAS_USERCROP)
-      dt_exif_img_check_usercrop(img, filename);
 
     if(r.get(0)->getDataType() == TYPE_FLOAT32)
     {
@@ -285,6 +364,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       for(int k = 0; k < 4; k++) img->buf_dsc.processed_maximum[k] = 1.0f;
     }
 
+    // we don't support multiframe foll color images now
     img->buf_dsc.filters = 0u;
     if(!r.get(0)->isCFA)
     {
@@ -292,6 +372,20 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       return ret;
     }
 
+    if(isMultiFrame)
+    {
+      auto bpp = r.get(0)->getBpp();
+      for(const auto &f : r)
+      {
+        if(f->getBpp() != bpp)
+        {
+          fprintf(stderr, "[rawspeed] (%s) inconsistent bit depth across frames\n", img->filename);
+          return DT_IMAGEIO_FILE_CORRUPTED;
+        }
+      }
+    }
+
+    //all frames should have data type and bit depth consistent, so we only check first frame
     if((r.get(0)->getDataType() != TYPE_USHORT16) && (r.get(0)->getDataType() != TYPE_FLOAT32))
       return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -308,6 +402,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     if(cpp != 1) return DT_IMAGEIO_FILE_CORRUPTED;
 
     img->buf_dsc.channels = 1;
+    img->buf_dsc.frames = r.size();
 
     switch(r.get(0)->getBpp())
     {
@@ -326,6 +421,18 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->width = dimUncropped.x;
     img->height = dimUncropped.y;
 
+    if(isMultiFrame)
+    {
+      for(const auto &f : r)
+      {
+        if((img->width != f->getUncroppedDim().x) || (img->height != f->getUncroppedDim().y))
+        {
+          fprintf(stderr, "[rawspeed] (%s) inconsistent uncropped dimensions across frames\n", img->filename);
+          return DT_IMAGEIO_FILE_CORRUPTED;
+        }
+      }
+    }
+
     // dimensions of cropped image
     iPoint2D dimCropped = r.get(0)->dim;
 
@@ -339,8 +446,23 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     img->crop_width = cropBR.x;
     img->crop_height = cropBR.y;
 
-    img->fuji_rotation_pos = r.metadata.fujiRotationPos;
-    img->pixel_aspect_ratio = (float)r.metadata.pixelAspectRatio;
+    if(isMultiFrame)
+    {
+      for(const auto &f : r)
+      {
+        if(dimCropped != f->dim)
+        {
+          fprintf(stderr, "[rawspeed] (%s) inconsistent cropped dimensions across frames\n", img->filename);
+          return DT_IMAGEIO_FILE_CORRUPTED;
+        }
+        if(cropTL != f->getCropOffset())
+        {
+          fprintf(stderr, "[rawspeed] (%s) inconsistent crop offset across frames\n", img->filename);
+          return DT_IMAGEIO_FILE_CORRUPTED;
+        }
+      }
+    }
+
 
     // as the X-Trans filters comments later on states, these are for
     // cropped image, so we need to uncrop them.
@@ -388,26 +510,36 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
      * (from Klaus: r->pitch may differ from DT pitch (line to line spacing))
      * else fallback to generic dt_imageio_flip_buffers()
      */
-    const size_t bufSize_mipmap = (size_t)img->width * img->height * r.get(0)->getBpp();
-    const size_t bufSize_rawspeed = (size_t)r.get(0)->pitch * dimUncropped.y;
-
-    if(bufSize_mipmap == bufSize_rawspeed)
+    if(isMultiFrame)
     {
-      memcpy(buf, r.get(0)->getDataUncropped(0, 0), bufSize_mipmap);
+      const size_t bufSize_mipmap = (size_t)img->width * img->height * img->buf_dsc.frames * r.get(0)->getBpp();
+      const size_t bufSize_rawspeed = (size_t)r.get(0)->pitch * dimUncropped.y * r.size();
+      const size_t frame_size = bufSize_mipmap / r.size();
+      printf("size mipmap: %lu\n size raw: %lu\nsize frame: %lu\n",bufSize_mipmap,bufSize_rawspeed,frame_size);
+      for(size_t i = 0; i < r.size(); ++i)
+      {
+        dt_imageio_flip_buffers(((char *)buf) + (i * frame_size), (char *)r.get(i)->getDataUncropped(0, 0),
+                                r.get(i)->getBpp(), dimUncropped.x, dimUncropped.y, dimUncropped.x, dimUncropped.y,
+                                r.get(i)->pitch, ORIENTATION_NONE);
+      }
     }
     else
     {
-      dt_imageio_flip_buffers((char *)buf, (char *)r.get(0)->getDataUncropped(0, 0), r.get(0)->getBpp(), dimUncropped.x,
-                              dimUncropped.y, dimUncropped.x, dimUncropped.y, r.get(0)->pitch, ORIENTATION_NONE);
+      const size_t bufSize_mipmap = (size_t)img->width * img->height * r.get(0)->getBpp();
+      const size_t bufSize_rawspeed = (size_t)r.get(0)->pitch * dimUncropped.y;
+      if(bufSize_mipmap == bufSize_rawspeed)
+      {
+        memcpy(buf, r.get(0)->getDataUncropped(0, 0), bufSize_mipmap);
+      }
+      else
+      {
+        dt_imageio_flip_buffers((char *)buf, (char *)r.get(0)->getDataUncropped(0, 0), r.get(0)->getBpp(),
+                                dimUncropped.x, dimUncropped.y, dimUncropped.x, dimUncropped.y, r.get(0)->pitch,
+                                ORIENTATION_NONE);
+      }
     }
 
-    //  Check if the camera is missing samples
-    const Camera *cam = meta->getCamera(r.metadata.make.c_str(),
-                                        r.metadata.model.c_str(),
-                                        r.metadata.mode.c_str());
 
-    if(cam && cam->supportStatus == Camera::SupportStatus::NoSamples)
-      img->camera_missing_sample = TRUE;
   }
   catch(const std::exception &exc)
   {
