@@ -2010,7 +2010,6 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         if(!strncmp(text_cmp, keys, darktable.bauhaus->keys_cnt))
         {
           float max_width = w2 - _widget_get_quad_width(w);
-          if(first_label) max_width *= 0.8; // give the label at least some room
           float label_width = 0.0f;
           if(!entry->sensitive)
             set_color(cr, text_color_insensitive);
@@ -2030,10 +2029,23 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
             g_free(label);
             g_free(esc_label);
           }
+          else if(entry->alignment == DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE)
+          {
+            // first pass, we just get the text width
+            label_width = show_pango_text(w, context, cr, entry->label, 0, ht * k + w->top_gap, max_width, FALSE,
+                                          TRUE, ellipsis, TRUE, FALSE, NULL, NULL);
+            // second pass, we draw it in the middle
+            const int posx = MAX(0, (max_width - label_width) / 2);
+            label_width = show_pango_text(w, context, cr, entry->label, posx, ht * k + w->top_gap, max_width,
+                                          FALSE, FALSE, ellipsis, TRUE, FALSE, NULL, NULL);
+          }
           else
+          {
+            if(first_label) max_width *= 0.8; // give the label at least some room
             label_width
                 = show_pango_text(w, context, cr, entry->label, w2 - _widget_get_quad_width(w),
                                   ht * k + w->top_gap, max_width, TRUE, FALSE, ellipsis, FALSE, FALSE, NULL, NULL);
+          }
 
           // prefer the entry over the label wrt. ellipsization when expanded
           if(first_label)
@@ -2185,18 +2197,24 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
       //check if they fit
       if((label_width + combo_width) > available_width)
       {
-        //they don't fit: evenly divide the available width between the two in proportion
-        const float ratio = label_width / (label_width + combo_width);
         if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT)
         {
+          // they don't fit: evenly divide the available width between the two in proportion
+          const float ratio = label_width / (label_width + combo_width);
           show_pango_text(w, context, cr, label_text, 0, w->top_gap, available_width * ratio - INNER_PADDING * 2,
                           FALSE, FALSE, PANGO_ELLIPSIZE_END, FALSE, TRUE, NULL, NULL);
           show_pango_text(w, context, cr, text, available_width, w->top_gap, available_width * (1.0f - ratio),
                           TRUE, FALSE, combo_ellipsis, FALSE, FALSE, NULL, NULL);
         }
+        else if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE)
+        {
+          const int posx = MAX(0, (available_width - combo_width) / 2);
+          show_pango_text(w, context, cr, text, posx, w->top_gap, available_width, FALSE, FALSE, combo_ellipsis,
+                          FALSE, FALSE, NULL, NULL);
+        }
         else
-          show_pango_text(w, context, cr, text, 0, w->top_gap, available_width * (1.0f - ratio), FALSE, FALSE,
-                          combo_ellipsis, FALSE, FALSE, NULL, NULL);
+          show_pango_text(w, context, cr, text, 0, w->top_gap, available_width, FALSE, FALSE, combo_ellipsis,
+                          FALSE, FALSE, NULL, NULL);
       }
       else
       {
@@ -2206,6 +2224,12 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
                           TRUE, NULL, NULL);
           show_pango_text(w, context, cr, text, available_width, w->top_gap, 0, TRUE, FALSE, combo_ellipsis, FALSE,
                           FALSE, NULL, NULL);
+        }
+        else if(d->text_align == DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE)
+        {
+          const int posx = MAX(0, (available_width - combo_width) / 2);
+          show_pango_text(w, context, cr, text, posx, w->top_gap, 0, FALSE, FALSE, combo_ellipsis, FALSE, FALSE,
+                          NULL, NULL);
         }
         else
           show_pango_text(w, context, cr, text, 0, w->top_gap, 0, FALSE, FALSE, combo_ellipsis, FALSE, FALSE, NULL,

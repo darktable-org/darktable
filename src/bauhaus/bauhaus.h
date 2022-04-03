@@ -93,7 +93,8 @@ typedef struct dt_bauhaus_slider_data_t
 typedef enum dt_bauhaus_combobox_alignment_t
 {
   DT_BAUHAUS_COMBOBOX_ALIGN_LEFT = 0,
-  DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT = 1
+  DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT = 1,
+  DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE = 2
 } dt_bauhaus_combobox_alignment_t;
 
 // data portion for a combobox
