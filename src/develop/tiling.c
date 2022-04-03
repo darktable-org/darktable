@@ -1229,7 +1229,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) != 0);
+  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)
@@ -1316,8 +1316,8 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
     return FALSE;
   }
 
-  dt_print(DT_DEBUG_TILING, "[default_process_tiling_cl_ptp] (%dx%d) tiles with max dimensions %dx%d, good %dx%d and overlap %d\n",
-           tiles_x, tiles_y, width, height, tile_wd, tile_ht, overlap);
+  dt_print(DT_DEBUG_TILING, "[default_process_tiling_cl_ptp] (%dx%d) tiles with max dimensions %dx%d, pinned=%s, good %dx%d and overlap %d\n",
+           tiles_x, tiles_y, width, height, (use_pinned_memory) ? "ON" : "OFF", tile_wd, tile_ht, overlap);
 
   /* store processed_maximum to be re-used and aggregated */
   dt_aligned_pixel_t processed_maximum_saved;
@@ -1538,11 +1538,11 @@ error:
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
-  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) != 0);
+  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
   dt_print(DT_DEBUG_TILING | DT_DEBUG_OPENCL,
       "[default_process_tiling_opencl_ptp] couldn't run process_cl() for module '%s' in tiling mode:%s %d\n",
       self->op, (pinning_error) ? " pinning problem" : "", err);
-  if(pinning_error) darktable.opencl->dev[devid].pinned_memory = 0;
+  if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
   return FALSE;
 }
 
@@ -1591,7 +1591,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) != 0);
+  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)
@@ -1690,8 +1690,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       roi_out->height % tiles_y == 0 ? roi_out->height / tiles_y : roi_out->height / tiles_y + 1, xyalign);
 
   dt_print(DT_DEBUG_TILING,
-           "[default_process_tiling_cl_roi] (%dx%d) tiles with max input dimensions %dx%d, good %ix%i\n",
-           tiles_x, tiles_y, width, height, tile_wd, tile_ht);
+           "[default_process_tiling_cl_roi] (%dx%d) tiles with max input dimensions %dx%d, pinned=%s, good %ix%i\n",
+           tiles_x, tiles_y, width, height, (use_pinned_memory) ? "ON" : "OFF", tile_wd, tile_ht);
 
 
   /* store processed_maximum to be re-used and aggregated */
@@ -1978,11 +1978,11 @@ error:
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
-  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) != 0);
+  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
       "[default_process_tiling_opencl_roi] couldn't run process_cl() for module '%s' in tiling mode:%s %d\n",
       self->op, (pinning_error) ? " pinning problem" : "", err);
-  if(pinning_error) darktable.opencl->dev[devid].pinned_memory = 0;
+  if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
   return FALSE;
 }
 

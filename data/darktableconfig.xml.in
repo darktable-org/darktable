@@ -360,11 +360,18 @@
     <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelpipes sequentially on the GPU.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
-    <name>tuneopencl</name>
-    <type>bool</type>
-    <default>false</default>
+    <name>opencl_tuning_mode</name>
+    <type>
+      <enum>
+        <option>nothing</option>
+        <option>memory size</option>
+        <option>memory transfer</option>
+        <option>memory size and transfer</option>
+      </enum>
+    </type>
+    <default>nothing</default>
     <shortdescription>tune OpenCL performance</shortdescription>
-    <longdescription>if switched on, darktable tunes OpenCL for best performance, overrides static settings</longdescription>
+    <longdescription>allows runtime tuning of OpenCL devices. 'memory size' tests for available graphics ram, 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_synch_cache</name>
