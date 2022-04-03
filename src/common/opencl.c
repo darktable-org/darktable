@@ -184,11 +184,11 @@ gboolean dt_opencl_read_device_config(const int devid)
   // do some safety housekeeping
   cl->dev[devid].avoid_atomics &= 1;
   cl->dev[devid].pinned_memory &= (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED);
-  if((cl->dev[devid].micro_nap <= 100) || (cl->dev[devid].micro_nap > 1000000))
+  if((cl->dev[devid].micro_nap < 0) || (cl->dev[devid].micro_nap > 1000000))
     cl->dev[devid].micro_nap = 1000;
-  if((cl->dev[devid].clroundup_wd <= 4) || (cl->dev[devid].clroundup_wd > 512))
+  if((cl->dev[devid].clroundup_wd < 2) || (cl->dev[devid].clroundup_wd > 512))
     cl->dev[devid].clroundup_wd = 16;
-  if((cl->dev[devid].clroundup_ht <= 4) || (cl->dev[devid].clroundup_ht > 512))
+  if((cl->dev[devid].clroundup_ht < 2) || (cl->dev[devid].clroundup_ht > 512))
     cl->dev[devid].clroundup_ht = 16;
 
   cl->dev[devid].benchmark = fminf(1e6, fmaxf(0.0f, cl->dev[devid].benchmark));
@@ -237,7 +237,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
   cl->dev[dev].tuned_available = 0;
-  // setting sane defaults at first
+  // setting sane/conservative defaults at first
   cl->dev[dev].avoid_atomics = 0;
   cl->dev[dev].micro_nap = 1000;
   cl->dev[dev].pinned_memory = DT_OPENCL_PINNING_OFF;
@@ -349,6 +349,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     res = -1;
     goto end;
   }
+
+  // micro_nap can be made less conservative on current systems at least if not on-CPU
+  cl->dev[dev].micro_nap = ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? 1000 : 250;
 
   if(dt_opencl_check_driver_blacklist(deviceversion) && !dt_conf_get_bool("opencl_disable_drivers_blacklist"))
   {
