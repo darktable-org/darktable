@@ -812,8 +812,7 @@ void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t color, float opacity
 void dt_gui_gtk_quit()
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkStyleContext *context = gtk_widget_get_style_context(win);
-  gtk_style_context_add_class(context, "dt_gui_quit");
+  dt_util_add_class(win, "dt_gui_quit");
   gtk_window_set_title(GTK_WINDOW(win), _("closing darktable..."));
 
   // Write out windows dimension
@@ -3357,8 +3356,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   GtkWidget *header_evb = gtk_event_box_new();
   GtkWidget *destdisp = dt_ui_section_label_new(label);
   gtk_widget_set_name(destdisp, "collapsible-label");
-  GtkStyleContext *context = gtk_widget_get_style_context(destdisp_head);
-  gtk_style_context_add_class(context, "section-expander");
+  dt_util_add_class(destdisp_head, "section-expander");
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
 
   cs->toggle = dtgtk_togglebutton_new
@@ -3366,8 +3364,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
      CPF_STYLE_BOX | (expanded?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), expanded);
   gtk_widget_set_name(cs->toggle, "control-button");
-  context = gtk_widget_get_style_context(cs->toggle);
-  gtk_style_context_add_class(context, "dt_transparent_background");
+  dt_util_add_class(cs->toggle, "dt_transparent_background");
 
   cs->container = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   gtk_widget_set_name(GTK_WIDGET(cs->container), "collapsible");

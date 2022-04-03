@@ -100,9 +100,8 @@ static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
   // we change the class that indicate the thumb size
   gchar *c0 = g_strdup_printf("dt_thumbnails_%d", table->prefs_size);
   gchar *c1 = g_strdup_printf("dt_thumbnails_%d", ns);
-  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
-  gtk_style_context_remove_class(context, c0);
-  gtk_style_context_add_class(context, c1);
+  dt_util_remove_class(table->widget, c0);
+  dt_util_add_class(table->widget, c1);
   g_free(c0);
   g_free(c1);
   table->prefs_size = ns;
@@ -140,9 +139,8 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
   gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
   gchar *cl1 = _thumbs_get_overlays_class(over);
 
-  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
-  gtk_style_context_remove_class(context, cl0);
-  gtk_style_context_add_class(context, cl1);
+  dt_util_remove_class(table->widget, cl0);
+  dt_util_add_class(table->widget, cl1);
 
   txt = g_strdup_printf("plugins/lighttable/overlays_block_timeout/%d/%d", table->mode, table->prefs_size);
   int timeout = 2;
@@ -1775,8 +1773,7 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
   if(darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER && table->mode != DT_THUMBTABLE_MODE_ZOOM)
   {
     // we set the class correctly
-    GtkStyleContext *tablecontext = gtk_widget_get_style_context(table->widget);
-    gtk_style_context_add_class(tablecontext, "dt_thumbtable_reorder");
+    dt_util_add_class(table->widget, "dt_thumbtable_reorder");
   }
 }
 
@@ -1841,8 +1838,7 @@ static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, gpointer 
     table->drag_list = NULL;
   }
   // in any case, with reset the reordering class if any
-  GtkStyleContext *tablecontext = gtk_widget_get_style_context(table->widget);
-  gtk_style_context_remove_class(tablecontext, "dt_thumbtable_reorder");
+  dt_util_remove_class(table->widget, "dt_thumbtable_reorder");
 }
 
 dt_thumbtable_t *dt_thumbtable_new()
@@ -1859,14 +1855,13 @@ dt_thumbtable_t *dt_thumbtable_new()
 
   // set css name and class
   gtk_widget_set_name(table->widget, "thumbtable_filemanager");
-  GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
-  gtk_style_context_add_class(context, "dt_thumbtable");
-  if(dt_conf_get_bool("lighttable/ui/expose_statuses")) gtk_style_context_add_class(context, "dt_show_overlays");
+  dt_util_add_class(table->widget, "dt_thumbtable");
+  if(dt_conf_get_bool("lighttable/ui/expose_statuses")) dt_util_add_class(table->widget, "dt_show_overlays");
 
   // overlays mode
   table->overlays = DT_THUMBNAIL_OVERLAYS_NONE;
   gchar *cl = _thumbs_get_overlays_class(table->overlays);
-  gtk_style_context_add_class(context, cl);
+  dt_util_add_class(table->widget, cl);
   g_free(cl);
 
   table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/recentcollect/pos0"));
@@ -2052,8 +2047,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       if(tl)
       {
         dt_thumbnail_t *thumb = (dt_thumbnail_t *)tl->data;
-        GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_main);
-        gtk_style_context_remove_class(context, "dt_last_active");
+        dt_util_remove_class(thumb->w_main, "dt_last_active");
         thumb->rowid = nrow; // this may have changed
         // we set new position/size if needed
         if(thumb->x != posx || thumb->y != posy)
@@ -2114,8 +2108,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
         dt_thumbnail_t *th = _thumbtable_get_thumb(table, GPOINTER_TO_INT(l->data));
         if(th)
         {
-          GtkStyleContext *context = gtk_widget_get_style_context(th->w_main);
-          gtk_style_context_add_class(context, "dt_last_active");
+          dt_util_add_class(th->w_main, "dt_last_active");
           th->active = FALSE;
           dt_thumbnail_update_infos(th);
         }

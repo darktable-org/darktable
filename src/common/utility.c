@@ -1001,6 +1001,12 @@ void dt_util_add_class(GtkWidget *widget, const gchar *class_name)
   gtk_style_context_add_class(context, class_name);
 }
 
+void dt_util_remove_class(GtkWidget *widget, const gchar *class_name)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_remove_class(context, class_name);
+}
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

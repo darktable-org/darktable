@@ -1779,7 +1779,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
       for(int i=0; i<3; i++)
       {
         gtk_widget_set_name(label[i], "section_label");
-        gtk_style_context_add_class(gtk_widget_get_style_context(label[i]), "section_label_top");
+        dt_util_add_class(label[i], "section_label_top");
 
         gtk_container_add(GTK_CONTAINER(new_container), label[i]);
         if(old_container) gtk_widget_show(label[i]);

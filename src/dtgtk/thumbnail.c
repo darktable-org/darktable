@@ -139,14 +139,13 @@ static void _thumb_update_rating_class(dt_thumbnail_t *thumb)
 {
   if(!thumb->w_main) return;
 
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_main);
   for(int i = DT_VIEW_DESERT; i <= DT_VIEW_REJECT; i++)
   {
     gchar *cn = g_strdup_printf("dt_thumbnail_rating_%d", i);
     if(thumb->rating == i)
-      gtk_style_context_add_class(context, cn);
+      dt_util_add_class(thumb->w_main, cn);
     else
-      gtk_style_context_remove_class(context, cn);
+      dt_util_remove_class(thumb->w_main, cn);
     g_free(cn);
   }
 }
@@ -1286,11 +1285,10 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_widget_show(evt_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), evt_image);
     thumb->w_image = gtk_drawing_area_new();
-    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
     if(thumb->container == DT_THUMBNAIL_CONTAINER_PREVIEW)
-      gtk_style_context_add_class(context, "dt_preview_thumb_image");
+      dt_util_add_class(thumb->w_image, "dt_preview_thumb_image");
     else if(thumb->container == DT_THUMBNAIL_CONTAINER_CULLING)
-      gtk_style_context_add_class(context, "dt_culling_thumb_image");
+      dt_util_add_class(thumb->w_image, "dt_culling_thumb_image");
     gtk_widget_set_name(thumb->w_image, "thumb_image");
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
@@ -1864,24 +1862,23 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
 
 void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border)
 {
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_main);
   if(border == DT_THUMBNAIL_BORDER_NONE)
   {
-    gtk_style_context_remove_class(context, "dt_group_left");
-    gtk_style_context_remove_class(context, "dt_group_top");
-    gtk_style_context_remove_class(context, "dt_group_right");
-    gtk_style_context_remove_class(context, "dt_group_bottom");
+    dt_util_remove_class(thumb->w_main, "dt_group_left");
+    dt_util_remove_class(thumb->w_main, "dt_group_top");
+    dt_util_remove_class(thumb->w_main, "dt_group_right");
+    dt_util_remove_class(thumb->w_main, "dt_group_bottom");
     thumb->group_borders = DT_THUMBNAIL_BORDER_NONE;
     return;
   }
   else if(border & DT_THUMBNAIL_BORDER_LEFT)
-    gtk_style_context_add_class(context, "dt_group_left");
+    dt_util_add_class(thumb->w_main, "dt_group_left");
   else if(border & DT_THUMBNAIL_BORDER_TOP)
-    gtk_style_context_add_class(context, "dt_group_top");
+    dt_util_add_class(thumb->w_main, "dt_group_top");
   else if(border & DT_THUMBNAIL_BORDER_RIGHT)
-    gtk_style_context_add_class(context, "dt_group_right");
+    dt_util_add_class(thumb->w_main, "dt_group_right");
   else if(border & DT_THUMBNAIL_BORDER_BOTTOM)
-    gtk_style_context_add_class(context, "dt_group_bottom");
+    dt_util_add_class(thumb->w_main, "dt_group_bottom");
 
   thumb->group_borders |= border;
 }

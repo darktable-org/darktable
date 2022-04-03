@@ -1860,7 +1860,6 @@ static void _presets_popup_callback(GtkButton *button, dt_iop_module_t *module)
   dt_gui_menu_popup(darktable.gui->presets_popup_menu, GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST);
 }
 
-
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   dt_iop_module_t *out_focus_module = darktable.develop->gui_module;
@@ -1898,8 +1897,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     // we also remove the focus css class
     GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(out_focus_module));
-    GtkStyleContext *context = gtk_widget_get_style_context(iop_w);
-    gtk_style_context_remove_class(context, "dt_module_focus");
+    dt_util_remove_class(iop_w, "dt_module_focus");
 
     // if the module change the image size, we update the final sizes
     if(out_focus_module->modify_roi_out) dt_image_update_final_size(darktable.develop->preview_pipe->output_imgid);
@@ -1921,8 +1919,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     // we also add the focus css class
     GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
-    GtkStyleContext *context = gtk_widget_get_style_context(iop_w);
-    gtk_style_context_add_class(context, "dt_module_focus");
+    dt_util_add_class(iop_w, "dt_module_focus");
   }
 
   /* update sticky accels window */
@@ -1935,7 +1932,6 @@ void dt_iop_request_focus(dt_iop_module_t *module)
   dt_control_change_cursor(GDK_LEFT_PTR);
   dt_control_queue_redraw_center();
 }
-
 
 /*
  * NEW EXPANDER
