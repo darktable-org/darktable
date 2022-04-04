@@ -175,7 +175,7 @@ static void _get_page_dimension(dt_print_info_t *prt, float *width, float *heigh
   }
 }
 
-static void precision_by_unit(_unit_t unit, int *n_digits, float *incr, char **format)
+static void _precision_by_unit(_unit_t unit, int *n_digits, float *incr, char **format)
 {
   // this gives us these precisions
   //  unit  precision  increment
@@ -201,7 +201,7 @@ static void precision_by_unit(_unit_t unit, int *n_digits, float *incr, char **f
 
 // unit conversion
 
-static float to_mm(dt_lib_print_settings_t *ps, double value)
+static float _to_mm(dt_lib_print_settings_t *ps, double value)
 {
   return value / units[ps->unit];
 }
@@ -850,7 +850,7 @@ _update_slider(dt_lib_print_settings_t *ps)
     const double h = box_size_mm.height * units[ps->unit];
     char *value, *precision;
     int n_digits;
-    precision_by_unit(ps->unit, &n_digits, NULL, &precision);
+    _precision_by_unit(ps->unit, &n_digits, NULL, &precision);
 
     value = g_strdup_printf(precision, w);
     gtk_label_set_text(GTK_LABEL(ps->width), value);
@@ -890,13 +890,13 @@ _top_border_callback(GtkWidget *spin, gpointer user_data)
 
   dt_conf_set_float("plugins/print/print/top_margin", value);
 
-  ps->prt.page.margin_top = to_mm(ps, value);
+  ps->prt.page.margin_top = _to_mm(ps, value);
 
   if(ps->lock_activated == TRUE)
   {
-    ps->prt.page.margin_bottom = to_mm(ps, value);
-    ps->prt.page.margin_left = to_mm(ps, value);
-    ps->prt.page.margin_right = to_mm(ps, value);
+    ps->prt.page.margin_bottom = _to_mm(ps, value);
+    ps->prt.page.margin_left = _to_mm(ps, value);
+    ps->prt.page.margin_right = _to_mm(ps, value);
 
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), value);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), value);
@@ -919,7 +919,7 @@ _bottom_border_callback(GtkWidget *spin, gpointer user_data)
 
   dt_conf_set_float("plugins/print/print/bottom_margin", value);
 
-  ps->prt.page.margin_bottom = to_mm(ps, value);
+  ps->prt.page.margin_bottom = _to_mm(ps, value);
   _update_slider(ps);
 }
 
@@ -932,7 +932,7 @@ _left_border_callback(GtkWidget *spin, gpointer user_data)
 
   dt_conf_set_float("plugins/print/print/left_margin", value);
 
-  ps->prt.page.margin_left = to_mm(ps, value);
+  ps->prt.page.margin_left = _to_mm(ps, value);
   _update_slider(ps);
 }
 
@@ -945,7 +945,7 @@ _right_border_callback(GtkWidget *spin, gpointer user_data)
 
   dt_conf_set_float("plugins/print/print/right_margin", value);
 
-  ps->prt.page.margin_right = to_mm(ps, value);
+  ps->prt.page.margin_right = _to_mm(ps, value);
   _update_slider(ps);
 }
 
@@ -1035,7 +1035,7 @@ static void _grid_size_changed(GtkWidget *widget, dt_lib_module_t *self)
 
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const float value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(ps->grid_size));
-  dt_conf_set_float("plugins/print/print/grid_size", to_mm(ps, value));
+  dt_conf_set_float("plugins/print/print/grid_size", _to_mm(ps, value));
 
   dt_control_queue_redraw_center();
 }
@@ -1061,7 +1061,7 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
 
   int n_digits;
   float incr;
-  precision_by_unit(ps->unit, &n_digits, &incr, NULL);
+  _precision_by_unit(ps->unit, &n_digits, &incr, NULL);
 
   ++darktable.gui->reset;
 
@@ -1910,7 +1910,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     const double dash = DT_PIXEL_APPLY_DPI(4.0);
     int n_digits;
     char *precision;
-    precision_by_unit(ps->unit, &n_digits, NULL, &precision);
+    _precision_by_unit(ps->unit, &n_digits, NULL, &precision);
     double xp, yp;
 
     yp = y1 + (y2 - y1 - text_h) * 0.5;
@@ -2199,17 +2199,17 @@ void gui_init(dt_lib_module_t *self)
   const float left_b = dt_conf_get_float("plugins/print/print/left_margin");
   const float right_b = dt_conf_get_float("plugins/print/print/right_margin");
 
-  d->prt.page.margin_top = to_mm(d, top_b);
-  d->prt.page.margin_bottom = to_mm(d, bottom_b);
-  d->prt.page.margin_left = to_mm(d, left_b);
-  d->prt.page.margin_right = to_mm(d, right_b);
+  d->prt.page.margin_top = _to_mm(d, top_b);
+  d->prt.page.margin_bottom = _to_mm(d, bottom_b);
+  d->prt.page.margin_left = _to_mm(d, left_b);
+  d->prt.page.margin_right = _to_mm(d, right_b);
 
   //  create the spin-button now as values could be set when the printer has no hardware margin
 
   // FIXME: set digits/increments on all of these by calling _unit_changed() later?
   int n_digits;
   float incr;
-  precision_by_unit(d->unit, &n_digits, &incr, NULL);
+  _precision_by_unit(d->unit, &n_digits, &incr, NULL);
 
   d->b_top    = gtk_spin_button_new_with_range(0, 1000, incr);
   d->b_left   = gtk_spin_button_new_with_range(0, 1000, incr);
@@ -3275,4 +3275,3 @@ void connect_key_accels(dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
