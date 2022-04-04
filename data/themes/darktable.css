@@ -545,7 +545,6 @@ spinbutton>button
 #blending-box #show_mask_button,
 #blending-box #keep-active,
 #non-flat,
-#color-picker-button,
 #picker-black,
 #picker-grey,
 #picker-white,
@@ -1674,11 +1673,16 @@ cell:selected
 .dt_messages
 {
   color: @log_fg_color;
-  font-size: 1em;
   font-weight: bold;
-  background-color: alpha(@bg_color,0.6);
-  padding: 0.56em 1.4em;
-  border-radius: 0.56em;
+  background-color: alpha(@plugin_bg_color,0.5);
+  padding: 0.35em 0.7em;
+  border-radius: 0.35em;
+}
+
+/* then set infos shown on top of the image on darkroom, like for example opacity in drawn masks */
+.top .dt_messages
+{
+  border-radius: 0 0 0.56em 0.56em;
 }
 
 /* Set some specific fonts */
@@ -1698,9 +1702,17 @@ cell:selected
   ---------------------*/
 /** Module in darkroom left panel **/
 /* the main color picker button */
+#color-picker-button
+{
+  min-height: 1.5em;
+  min-width: 1.5em;
+  border: 0;
+}
+
 #color-picker-area
 {
   min-height: 5em;
+  margin-bottom: 0.14em;
 }
 
 #live-sample
