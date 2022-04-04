@@ -175,6 +175,30 @@ static void _get_page_dimension(dt_print_info_t *prt, float *width, float *heigh
   }
 }
 
+static void precision_by_unit(_unit_t unit, int *n_digits, float *incr, char **format)
+{
+  // this gives us these precisions
+  //  unit  precision  increment
+  //   mm      1          1
+  //   cm      0.1        0.1
+  //   in      0.01       0.05
+  //
+  // This allows for >= 1mm precision display regardless of unit, and
+  // allows for entering common fractions (e.g. 1/4 as .25) for
+  // inches. Increment is kept to 1mm except in the cases of inches,
+  // where we round up from 0.03937 (1mm) to 0.05 to keep to a factor
+  // of a power of ten.
+  *n_digits = ceilf(log10f(1.0f / units[unit]));
+  if(incr)
+  {
+    *incr = roundf(units[unit] * 20.0f) / 20.0f;
+  }
+  if(format)
+  {
+    *format = g_strdup_printf("%%.%df", *n_digits);
+  }
+}
+
 // unit conversion
 
 static float to_mm(dt_lib_print_settings_t *ps, double value)
@@ -824,11 +848,10 @@ _update_slider(dt_lib_print_settings_t *ps)
 
     const double w = box_size_mm.width * units[ps->unit];
     const double h = box_size_mm.height * units[ps->unit];
-    char *value;
+    char *value, *precision;
+    int n_digits;
+    precision_by_unit(ps->unit, &n_digits, NULL, &precision);
 
-    const int n_digits = 1 + (int)log10f(1.0f / units[ps->unit]);
-    char precision[8];
-    snprintf(precision, sizeof(precision), "%%3.%df", n_digits);
     value = g_strdup_printf(precision, w);
     gtk_label_set_text(GTK_LABEL(ps->width), value);
     g_free(value);
@@ -836,6 +859,7 @@ _update_slider(dt_lib_print_settings_t *ps)
     value = g_strdup_printf(precision, h);
     gtk_label_set_text(GTK_LABEL(ps->height), value);
     g_free(value);
+    g_free(precision);
 
     // compute the image down/up scale and report information
 
@@ -1035,8 +1059,9 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   const double margin_right = ps->prt.page.margin_right;
   const double margin_bottom = ps->prt.page.margin_bottom;
 
-  const int n_digits = 1 + (int)log10f(1.0f / units[ps->unit]);
-  const float incr = roundf(units[ps->unit] * 20.0f) / 20.0f;
+  int n_digits;
+  float incr;
+  precision_by_unit(ps->unit, &n_digits, &incr, NULL);
 
   ++darktable.gui->reset;
 
@@ -1883,9 +1908,9 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     const double text_h = DT_PIXEL_APPLY_DPI(16+2);
     const double margin = DT_PIXEL_APPLY_DPI(6);
     const double dash = DT_PIXEL_APPLY_DPI(4.0);
-    const int n_digits = (int)log10f(1.0f / units[ps->unit]);
-    char precision[8];
-    snprintf(precision, sizeof(precision), "%%0.%df", n_digits);
+    int n_digits;
+    char *precision;
+    precision_by_unit(ps->unit, &n_digits, NULL, &precision);
     double xp, yp;
 
     yp = y1 + (y2 - y1 - text_h) * 0.5;
@@ -2039,6 +2064,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     pango_font_description_free(desc);
     g_object_unref(layout);
+    g_free(precision);
   }
 
   if(ps->imgs.screen.borderless)
@@ -2164,9 +2190,6 @@ void gui_init(dt_lib_module_t *self)
     if(g_strcmp0(str, *names) == 0)
       d->unit = i;
 
-  const int n_digits = 1 + (int)log10f(1.0f / units[d->unit]);
-  const float incr = roundf(units[d->unit] * 20.0f) / 20.0f;
-
   dt_printing_clear_boxes(&d->imgs);
 
   // set all margins + unit from settings
@@ -2184,6 +2207,10 @@ void gui_init(dt_lib_module_t *self)
   //  create the spin-button now as values could be set when the printer has no hardware margin
 
   // FIXME: set digits/increments on all of these by calling _unit_changed() later?
+  int n_digits;
+  float incr;
+  precision_by_unit(d->unit, &n_digits, &incr, NULL);
+
   d->b_top    = gtk_spin_button_new_with_range(0, 1000, incr);
   d->b_left   = gtk_spin_button_new_with_range(0, 1000, incr);
   d->b_right  = gtk_spin_button_new_with_range(0, 1000, incr);
@@ -3175,33 +3202,13 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_printer_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_media_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_printer_profile_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_printer_intent_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_printer_bpc_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_paper_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_orientation_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_top_border_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_bottom_border_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_left_border_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_right_border_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_grid_size_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_grid_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_snap_grid_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_alignment_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_page_new_area_clicked), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_page_delete_area_clicked), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_page_clear_area_clicked), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_x_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_y_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_width_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_height_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_profile_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_intent_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_style_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_style_mode_changed), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_print_button_clicked), self);
+  // these can be called on shutdown, resulting in null-pointer
+  // dereference and division by zero -- not sure what interaction
+  // makes them called, but better to disconnect and not have segfault
+  g_signal_handlers_disconnect_by_func(G_OBJECT(ps->b_top), G_CALLBACK(_top_border_callback), self);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(ps->b_bottom), G_CALLBACK(_bottom_border_callback), self);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(ps->b_left), G_CALLBACK(_left_border_callback), self);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(ps->b_right), G_CALLBACK(_right_border_callback), self);
 
   g_list_free_full(ps->profiles, g_free);
   g_list_free_full(ps->paper_list, free);
