@@ -128,11 +128,6 @@ uint32_t container(dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "attach"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "detach"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "new"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "import..."), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "export..."), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "clear entry"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "toggle tree"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "toggle suggestion"), 0, 0);
@@ -147,11 +142,6 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "attach", d->attach_button);
-  dt_accel_connect_button_lib(self, "detach", d->detach_button);
-  dt_accel_connect_button_lib(self, "new", d->new_button);
-  dt_accel_connect_button_lib(self, "import...", d->import_button);
-  dt_accel_connect_button_lib(self, "export...", d->export_button);
   dt_accel_connect_button_lib(self, "clear entry", d->clear_button);
   dt_accel_connect_button_lib(self, "toggle tree", d->toggle_tree_button);
   dt_accel_connect_button_lib(self, "toggle suggestion", d->toggle_suggestion_button);
@@ -3158,12 +3148,12 @@ void gui_init(dt_lib_module_t *self)
   // attach/detach buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  d->attach_button = dt_ui_button_new(_("attach"), _("attach tag to all selected images"), dt_get_help_url("tagging"));
+  d->attach_button = dt_action_button_new(self, N_("attach"), _attach_button_clicked, self,
+                                          _("attach tag to all selected images"), 0, 0);
   gtk_box_pack_start(hbox, d->attach_button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->attach_button), "clicked", G_CALLBACK(_attach_button_clicked), (gpointer)self);
 
-  d->detach_button = dt_ui_button_new(_("detach"), _("detach tag from all selected images"), dt_get_help_url("tagging"));
-  g_signal_connect(G_OBJECT(d->detach_button), "clicked", G_CALLBACK(_detach_button_clicked), (gpointer)self);
+  d->detach_button = dt_action_button_new(self, N_("detach"), _detach_button_clicked, self,
+                                          _("detach tag from all selected images"), 0, 0);
   gtk_box_pack_start(hbox, d->detach_button, TRUE, TRUE, 0);
 
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_minus_simple, 0, NULL);
@@ -3304,17 +3294,14 @@ void gui_init(dt_lib_module_t *self)
   // buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  d->new_button = dt_ui_button_new(_("new"), _("create a new tag with the\nname you entered"), dt_get_help_url("tagging"));
+  d->new_button = dt_action_button_new(self, N_("new"), _new_button_clicked, self, _("create a new tag with the\nname you entered"), 0, 0);
   gtk_box_pack_start(hbox, d->new_button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->new_button), "clicked", G_CALLBACK(_new_button_clicked), (gpointer)self);
 
-  d->import_button = dt_ui_button_new(C_("verb", "import..."), _("import tags from a Lightroom keyword file"), dt_get_help_url("tagging"));
+  d->import_button = dt_action_button_new(self, N_("import..."), _import_button_clicked, self, _("import tags from a Lightroom keyword file"), 0, 0);
   gtk_box_pack_start(hbox, d->import_button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->import_button), "clicked", G_CALLBACK(_import_button_clicked), (gpointer)self);
 
-  d->export_button = dt_ui_button_new(C_("verb", "export..."), _("export all tags to a Lightroom keyword file"), dt_get_help_url("tagging"));
+  d->export_button = dt_action_button_new(self, N_("export..."), _export_button_clicked, self, _("export all tags to a Lightroom keyword file"), 0, 0);
   gtk_box_pack_start(hbox, d->export_button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(_export_button_clicked), (gpointer)self);
 
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_treelist, 0, NULL);
   d->toggle_tree_button = button;

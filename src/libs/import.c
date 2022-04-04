@@ -193,8 +193,6 @@ void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "copy & import from camera"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "tethered shoot"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "add to library"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "copy & import"), GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "mount camera"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "unmount camera"), 0, 0);
 }
@@ -203,8 +201,6 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "add to library", GTK_WIDGET(d->import_inplace));
-  dt_accel_connect_button_lib(self, "copy & import", GTK_WIDGET(d->import_copy));
   if(d->tethered_shoot) dt_accel_connect_button_lib(self, "tethered shoot", GTK_WIDGET(d->tethered_shoot));
   if(d->import_camera) dt_accel_connect_button_lib(self, "copy & import from camera", GTK_WIDGET(d->import_camera));
   if(d->mount_camera) dt_accel_connect_button_lib(self, "mount camera", GTK_WIDGET(d->mount_camera));
@@ -2015,23 +2011,23 @@ void gui_init(dt_lib_module_t *self)
 
   // add import buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *widget = dt_ui_button_new(_("add to library..."),
-                                       _("add existing images to the library"),
-                                       "module-reference/utility-modules/lighttable/import");
+
+  GtkWidget *widget = dt_action_button_new(self, N_("add to library..."), _lib_import_from_callback, self,
+                                           _("add existing images to the library"), 0, 0);
   d->import_inplace = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_from_callback), self);
-  widget = dt_ui_button_new(_("copy & import..."),
-                            _("copy and optionally rename images before adding them to the library"
-                              "\npatterns can be defined to rename the images and specify the destination folders"),
-                            "module-reference/utility-modules/lighttable/import");
+
+  widget = dt_action_button_new(self, N_("copy & import..."), _lib_import_from_callback, self,
+                                _("copy and optionally rename images before adding them to the library"
+                                  "\npatterns can be defined to rename the images and specify the destination folders"),
+                                GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   d->import_copy = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_from_callback), self);
+
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
 #ifdef HAVE_GPHOTO2

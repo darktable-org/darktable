@@ -615,8 +615,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
 
-  g->bt_auto_levels = dt_ui_button_new(_("auto"), _("apply auto exposure based on the entire image"), NULL);
-  g_signal_connect(G_OBJECT(g->bt_auto_levels), "clicked", G_CALLBACK(_auto_levels_callback), self);
+  g->bt_auto_levels = dt_action_button_new(NULL, N_("auto"), _auto_levels_callback, self, _("apply auto exposure based on the entire image"), 0, 0);
   gtk_widget_set_size_request(g->bt_auto_levels, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
 

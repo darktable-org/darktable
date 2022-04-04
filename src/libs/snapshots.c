@@ -102,16 +102,11 @@ int position()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "take snapshot"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "toggle last snapshot"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "take snapshot", d->take_button);
-
   GClosure *closure;
   closure = g_cclosure_new(G_CALLBACK(_lib_snapshots_toggle_last), (gpointer)self, NULL);
   dt_accel_connect_lib(self, "toggle last snapshot", closure);
@@ -379,10 +374,9 @@ void gui_init(dt_lib_module_t *self)
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* create take snapshot button */
-  d->take_button = dt_ui_button_new(_("take snapshot"), _("take snapshot to compare with another image "
-                                      "or the same image at another stage of development"), dt_get_help_url("snapshots"));
-  g_signal_connect(G_OBJECT(d->take_button), "clicked",
-                   G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
+  d->take_button = dt_action_button_new(self, N_("take snapshot"), _lib_snapshots_add_button_clicked_callback, self,
+                                        _("take snapshot to compare with another image "
+                                          "or the same image at another stage of development"), 0, 0);
 
   /*
    * initialize snapshots
