@@ -81,7 +81,6 @@ typedef enum _unit_t
 
 static const float units[UNIT_N] = { 1.0f, 0.1f, 1.0f/25.4f };
 static const gchar *_unit_names[] = { N_("mm"), N_("cm"), N_("inch"), NULL };
-static const char *_unit_precision[UNIT_N] = { "%0.0f", "%0.1f", "%0.1f" };
 
 typedef struct dt_lib_print_settings_t
 {
@@ -811,6 +810,7 @@ _update_slider(dt_lib_print_settings_t *ps)
 
   // if widget are created, let's display the current image size
 
+  // FIXME: why doesn't this update when units are changed?
   if(ps->selected != -1
      && ps->imgs.box[ps->selected].imgid != -1
      && ps->width && ps->height
@@ -826,11 +826,14 @@ _update_slider(dt_lib_print_settings_t *ps)
     const double h = box_size_mm.height * units[ps->unit];
     char *value;
 
-    value = g_strdup_printf("%3.2f", w);
+    const int n_digits = 1 + (int)log10f(1.0f / units[ps->unit]);
+    char precision[8];
+    snprintf(precision, sizeof(precision), "%%3.%df", n_digits);
+    value = g_strdup_printf(precision, w);
     gtk_label_set_text(GTK_LABEL(ps->width), value);
     g_free(value);
 
-    value = g_strdup_printf("%3.2f", h);
+    value = g_strdup_printf(precision, h);
     gtk_label_set_text(GTK_LABEL(ps->height), value);
     g_free(value);
 
@@ -1032,35 +1035,31 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   const double margin_right = ps->prt.page.margin_right;
   const double margin_bottom = ps->prt.page.margin_bottom;
 
-  const int n_digits = (int)(1.0 / (units[ps->unit] * 10.0));
+  const int n_digits = 1 + (int)log10f(1.0f / units[ps->unit]);
+  const float incr = roundf(units[ps->unit] * 20.0f) / 20.0f;
 
   ++darktable.gui->reset;
 
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_top),    n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_top), n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_bottom), n_digits);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_left),   n_digits);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_right),  n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_left), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_right), n_digits);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_top), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_bottom), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_left), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_right), incr, 10.f*incr);
 
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->grid_size),  n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_x), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_y), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_width), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_height), n_digits);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_x), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_y), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_width), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_height), incr, 10.f*incr);
 
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_x),      2);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_y),      2);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_width),  2);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_height), 2);
-
-  const float incr = units[ps->unit];
-
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_top), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_bottom), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_left), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_right), incr, incr);
-
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_x), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_y), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_width), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_height), incr, incr);
-
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->grid_size), incr, incr);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->grid_size), n_digits);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->grid_size), incr, 10.f*incr);
 
   _update_slider(ps);
 
@@ -1884,7 +1883,9 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     const double text_h = DT_PIXEL_APPLY_DPI(16+2);
     const double margin = DT_PIXEL_APPLY_DPI(6);
     const double dash = DT_PIXEL_APPLY_DPI(4.0);
-    const char *precision = _unit_precision[ps->unit];
+    const int n_digits = (int)log10f(1.0f / units[ps->unit]);
+    char precision[8];
+    snprintf(precision, sizeof(precision), "%%0.%df", n_digits);
     double xp, yp;
 
     yp = y1 + (y2 - y1 - text_h) * 0.5;
@@ -2163,6 +2164,9 @@ void gui_init(dt_lib_module_t *self)
     if(g_strcmp0(str, *names) == 0)
       d->unit = i;
 
+  const int n_digits = 1 + (int)log10f(1.0f / units[d->unit]);
+  const float incr = roundf(units[d->unit] * 20.0f) / 20.0f;
+
   dt_printing_clear_boxes(&d->imgs);
 
   // set all margins + unit from settings
@@ -2179,17 +2183,27 @@ void gui_init(dt_lib_module_t *self)
 
   //  create the spin-button now as values could be set when the printer has no hardware margin
 
-  d->b_top    = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_left   = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_right  = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_bottom = gtk_spin_button_new_with_range(0, 1000, 1);
+  // FIXME: set digits/increments on all of these by calling _unit_changed() later?
+  d->b_top    = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_left   = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_right  = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_bottom = gtk_spin_button_new_with_range(0, 1000, incr);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_top),    n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_bottom), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_left),   n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_right),  n_digits);
 
-  d->b_x      = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_y      = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_width  = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
+  d->b_x      = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_y      = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_width  = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_height = gtk_spin_button_new_with_range(0, 1000, incr);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_x), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_y), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_width), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_height), n_digits);
 
-  d->grid_size = gtk_spin_button_new_with_range(0, 100, 0.1);
+  d->grid_size = gtk_spin_button_new_with_range(0, 100, incr);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->grid_size),  n_digits);
 
   gtk_entry_set_alignment(GTK_ENTRY(d->b_top), 1);
   gtk_entry_set_alignment(GTK_ENTRY(d->b_left), 1);
@@ -2511,6 +2525,7 @@ void gui_init(dt_lib_module_t *self)
 
   // X x Y
   GtkWidget *box;
+  // FIXME: add labels to x/y/width/height as otherwise are obscure -- and there is the horizontal space to do this
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   // d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
