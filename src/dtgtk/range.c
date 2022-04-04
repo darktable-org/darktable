@@ -1086,6 +1086,12 @@ static void _event_entry_activated(GtkWidget *entry, gpointer user_data)
   _bound_change(range, gtk_entry_get_text(GTK_ENTRY(entry)), bound);
 }
 
+static gboolean _event_entry_focus_out(GtkWidget *entry, GdkEventFocus *event, gpointer user_data)
+{
+  _event_entry_activated(entry, user_data);
+  return FALSE;
+}
+
 static double _graph_value_to_pos(GtkDarktableRangeSelect *range, const double value)
 {
   return (range->value_to_band(value) - range->band_start_bd) / range->band_factor;
@@ -1593,6 +1599,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     gtk_entry_set_width_chars(GTK_ENTRY(range->entry_min), 0);
     _entry_set_tooltip(range->entry_min, BOUND_MIN, range->type);
     g_signal_connect(G_OBJECT(range->entry_min), "activate", G_CALLBACK(_event_entry_activated), range);
+    g_signal_connect(G_OBJECT(range->entry_min), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
     g_signal_connect(G_OBJECT(range->entry_min), "button-press-event", G_CALLBACK(_event_entry_press), range);
     gtk_box_pack_start(GTK_BOX(hbox), range->entry_min, TRUE, TRUE, 0);
 
@@ -1611,6 +1618,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     gtk_entry_set_alignment(GTK_ENTRY(range->entry_max), 1.0);
     _entry_set_tooltip(range->entry_min, BOUND_MAX, range->type);
     g_signal_connect(G_OBJECT(range->entry_max), "activate", G_CALLBACK(_event_entry_activated), range);
+    g_signal_connect(G_OBJECT(range->entry_max), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
     g_signal_connect(G_OBJECT(range->entry_max), "button-press-event", G_CALLBACK(_event_entry_press), range);
     gtk_box_pack_end(GTK_BOX(hbox), range->entry_max, TRUE, TRUE, 0);
   }
