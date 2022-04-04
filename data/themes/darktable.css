@@ -545,6 +545,7 @@ spinbutton>button
 #blending-box #show_mask_button,
 #blending-box #keep-active,
 #non-flat,
+#color-picker-button,
 #picker-black,
 #picker-grey,
 #picker-white,
@@ -554,7 +555,7 @@ spinbutton>button
   min-width: 1.2em;
   border: 0;
 }
-l
+
 #lib-plugin-ui-main viewport
 {
   margin-left: 0.14em;
@@ -877,6 +878,18 @@ popover #bauhaus_slider
 #bauhaus_slider
 {
   background-color: @plugin_bg_color;
+}
+
+#bauhaus_combobox,
+#bauhaus_slider
+{
+  margin: 0.1em 0;
+}
+
+.bauhaus_slider_popup,
+.bauhaus_combo_popup
+{
+  padding: 0.14em 0 0.14em 0.42em;
 }
 
 #blending-box #dt-toggle-button
@@ -1683,42 +1696,17 @@ cell:selected
 /*---------------------
   - Set color pickers -
   ---------------------*/
-
 /** Module in darkroom left panel **/
 /* the main color picker button */
-#color-picker-button
-{
-  min-height: 2em;
-  min-width: 1.7em;
-  padding: 0.07em;
-  border: 0;
-}
-
 #color-picker-area
 {
-  min-height: 7em;
-  min-width: 7em;
-}
-
-.picker-module button
-{
-  padding: 0;
-}
-
-.picker-module combobox,
-.picker-module combobox button
-{
-  padding-top: 0;
-  padding-bottom: 0;
-  border: 0;
+  min-height: 5em;
 }
 
 #live-sample
 {
-  padding: 0;
-  margin: 0 0.21em 0.21em 0;
-  min-height: 1em;
-  min-width: 3em;
+  margin: 0.21em 0.21em 0.21em 0;
+  min-width: 2em;
 }
 
 /* Color picker visibility for levels and rgb levels modules.
@@ -1961,12 +1949,6 @@ treeview#delete-dialog:selected
 #bauhaus_combobox *:selected
 {
   color: shade(@bauhaus_fg_selected, 1.2);
-}
-
-.bauhaus_slider_popup,
-.bauhaus_combo_popup
-{
-  padding: 0.14em 0 0.14em 0.42em;
 }
 
 /* Notebooks states */
