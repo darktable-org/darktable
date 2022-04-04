@@ -70,6 +70,19 @@ typedef enum _set_controls
   BOX_ALL          = BOX_LEFT | BOX_RIGHT | BOX_TOP | BOX_BOTTOM
 } dt_box_control_set;
 
+typedef enum _unit_t
+{
+  UNIT_MM = 0,
+  UNIT_CM,
+  UNIT_IN,
+  UNIT_N // needs to be the last one
+} _unit_t;
+
+
+static const float units[UNIT_N] = { 1.0f, 0.1f, 1.0f/25.4f };
+static const gchar *_unit_names[] = { N_("mm"), N_("cm"), N_("inch"), NULL };
+static const char *_unit_precision[UNIT_N] = { "%0.0f", "%0.1f", "%0.1f" };
+
 typedef struct dt_lib_print_settings_t
 {
   GtkWidget *profile, *intent, *style, *style_mode, *papers, *media;
@@ -90,7 +103,7 @@ typedef struct dt_lib_print_settings_t
   gboolean lock_activated;
   dt_print_info_t prt;
   dt_images_box imgs;
-  int unit;
+  _unit_t unit;
   int v_intent, v_pintent;
   int v_icctype, v_picctype;
   char *v_iccprofile, *v_piccprofile, *v_style;
@@ -135,8 +148,6 @@ typedef struct _dialog_description
 {
   const char *name;
 } dialog_description_t;
-
-static const float units[3] = { 1.0f, 0.1f, 1.0f/25.4f };
 
 static void _update_slider(dt_lib_print_settings_t *ps);
 static void _width_changed(GtkWidget *widget, gpointer user_data);
@@ -1014,7 +1025,7 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   const int unit = dt_bauhaus_combobox_get(combo);
   if(unit < 0) return; // shouldn't happen, but it could be -1 if nothing is selected
   ps->unit = unit;
-  dt_conf_set_int("plugins/print/print/unit", ps->unit);
+  dt_conf_set_string("plugins/print/print/unit", _unit_names[unit]);
 
   const double margin_top = ps->prt.page.margin_top;
   const double margin_left = ps->prt.page.margin_left;
@@ -1406,6 +1417,7 @@ static void _snap_to_grid(dt_lib_print_settings_t *ps, float *x, float *y)
       grid_pos += v_step;
     }
   }
+  // FIXME: should clamp values to page size here?
 }
 
 int mouse_moved(struct dt_lib_module_t *self, double x, double y, double pressure, int which)
@@ -1786,7 +1798,8 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
         cairo_translate(cr, screen.x, screen.y);
         cairo_scale(cr, scaler, scaler);
         cairo_set_source_surface(cr, surf, 0, 0);
-        cairo_paint_with_alpha(cr, ps->dragging ? 0.5 : 1.0);
+        const double alpha = (ps->dragging || (ps->selected != -1 && ps->selected != k)) ? 0.25 : 1.0;
+        cairo_paint_with_alpha(cr, alpha);
         cairo_surface_destroy(surf);
         cairo_restore(cr);
         if(ps->busy) dt_control_log_busy_leave();
@@ -1817,6 +1830,9 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     float dx1, dy1, dx2, dy2, dwidth, dheight; // displayed values
     float x1, y1, x2, y2;                      // box screen coordinates
 
+    float pwidth, pheight;
+    _get_page_dimension(&ps->prt, &pwidth, &pheight);
+
     if(ps->dragging)
     {
       x1      = ps->x1;
@@ -1839,9 +1855,6 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
       // to fill the editable box values to avoid discrepancies between values due
       // to rounding errors.
 
-      float pwidth, pheight;
-      _get_page_dimension(&ps->prt, &pwidth, &pheight);
-
       dx1     = _percent_unit_of(ps, pwidth, box->pos.x);
       dy1     = _percent_unit_of(ps, pheight, box->pos.y);
       dwidth  = _percent_unit_of(ps, pwidth, box->pos.width);
@@ -1858,8 +1871,9 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     cairo_set_source_rgba(cr, .4, .4, .4, 1.0);
     _cairo_rectangle(cr, ps->sel_controls, x1, y1, x2, y2);
 
-    // display size-box
-    char dimensions[100];
+    // display corner coordinates
+    // FIXME: here and elsewhere eliminate hardcoded RGB values -- use CSS
+    char dimensions[16];
     PangoLayout *layout;
     PangoRectangle ext;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
@@ -1867,28 +1881,161 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
+    const double text_h = DT_PIXEL_APPLY_DPI(16+2);
+    const double margin = DT_PIXEL_APPLY_DPI(6);
+    const double dash = DT_PIXEL_APPLY_DPI(4.0);
+    const char *precision = _unit_precision[ps->unit];
+    double xp, yp;
 
-    snprintf(dimensions, sizeof(dimensions),
-             "(%.2f %.2f) -> (%.2f %.2f) | (%.2f x %.2f)",
-             dx1, dy1, dx2, dy2, dwidth, dheight);
+    yp = y1 + (y2 - y1 - text_h) * 0.5;
+
+    if(x1 >= ps->imgs.screen.page.x && x1 <= (ps->imgs.screen.page.x + ps->imgs.screen.page.width))
+    {
+      snprintf(dimensions, sizeof(dimensions), precision, dx1);
+      pango_layout_set_text(layout, dimensions, -1);
+      pango_layout_get_pixel_extents(layout, NULL, &ext);
+      xp = ps->imgs.screen.page.x + (x1 - text_h - ps->imgs.screen.page.x - ext.width) * 0.5;
+      if(xp < ps->imgs.screen.page.x + 3 * margin)
+      {
+        xp = x1 + 2 * margin;
+        // somewhat hacky, assumes that all numeric labels are about
+        // the same width
+        yp = MIN(y2 - text_h, yp + ext.width + 0.5 * text_h + margin * 3);
+      }
+      cairo_set_source_rgba(cr, .7, .7, .7, .9);
+      cairo_move_to(cr, ps->imgs.screen.page.x, yp + text_h * 0.5);
+      cairo_line_to(cr, x1, yp + text_h * 0.5);
+      cairo_stroke_preserve(cr);
+      cairo_set_source_rgba(cr, .5, .5, .5, .9);
+      cairo_set_dash(cr, &dash, 1, dash);
+      cairo_stroke(cr);
+      cairo_set_dash(cr, NULL, 0, 0);
+      dt_gui_draw_rounded_rectangle(cr, ext.width + 2 * margin, text_h + 2 * margin, xp - margin, yp - margin);
+      cairo_set_source_rgb(cr, .8, .8, .8);
+      cairo_move_to(cr, xp, yp);
+      pango_cairo_show_layout(cr, layout);
+    }
+
+    if(x2 >= ps->imgs.screen.page.x && x2 <= (ps->imgs.screen.page.x + ps->imgs.screen.page.width))
+    {
+      snprintf(dimensions, sizeof(dimensions), precision, pwidth * units[ps->unit] - dx2);
+      pango_layout_set_text(layout, dimensions, -1);
+      pango_layout_get_pixel_extents(layout, NULL, &ext);
+      xp = x2 + (ps->imgs.screen.page.x + ps->imgs.screen.page.width - x2 - ext.width) * 0.5;
+      if(xp + ext.width + margin > ps->imgs.screen.page.x + ps->imgs.screen.page.width)
+        xp = x2 - ext.width - 2 * margin;
+      cairo_set_source_rgba(cr, .7, .7, .7, .9);
+      cairo_move_to(cr, x2, yp + text_h * 0.5);
+      cairo_line_to(cr, ps->imgs.screen.page.x + ps->imgs.screen.page.width, yp + text_h * 0.5);
+      cairo_stroke_preserve(cr);
+      cairo_set_source_rgba(cr, .5, .5, .5, .9);
+      cairo_set_dash(cr, &dash, 1, dash);
+      cairo_stroke(cr);
+      cairo_set_dash(cr, NULL, 0, 0);
+      dt_gui_draw_rounded_rectangle(cr, ext.width + 2 * margin, text_h + 2 * margin,
+                                    xp - margin, yp - margin);
+      cairo_set_source_rgb(cr, .8, .8, .8);
+      cairo_move_to(cr, xp, yp);
+      pango_cairo_show_layout(cr, layout);
+    }
+
+    xp = x1 + (x2 - x1 - text_h) * 0.5;
+
+    if(y1 >= ps->imgs.screen.page.y && y1 <= (ps->imgs.screen.page.y + ps->imgs.screen.page.height))
+    {
+      snprintf(dimensions, sizeof(dimensions), precision, dy1);
+      pango_layout_set_text(layout, dimensions, -1);
+      pango_layout_get_pixel_extents(layout, NULL, &ext);
+      yp = ps->imgs.screen.page.y + (y1 - text_h - ps->imgs.screen.page.y - ext.width) * 0.5;
+      if(yp < ps->imgs.screen.page.y + 3 * margin)
+      {
+        xp = MIN(x2 - text_h, xp + ext.width + 0.5 * text_h + margin * 3);
+        yp = y1 + 2 * margin;
+      }
+      cairo_set_source_rgba(cr, .7, .7, .7, .9);
+      cairo_move_to(cr, xp + text_h * 0.5, ps->imgs.screen.page.y);
+      cairo_line_to(cr, xp + text_h * 0.5, y1);
+      cairo_stroke_preserve(cr);
+      cairo_set_source_rgba(cr, .5, .5, .5, .9);
+      cairo_set_dash(cr, &dash, 1, dash);
+      cairo_stroke(cr);
+      cairo_set_dash(cr, NULL, 0, 0);
+      dt_gui_draw_rounded_rectangle(cr, text_h + 2 * margin, ext.width + 2 * margin,
+                                    xp - margin, yp - margin);
+      cairo_set_source_rgb(cr, .8, .8, .8);
+      cairo_move_to(cr, xp + text_h * 0.5, yp + ext.width * 0.5);
+      cairo_save(cr);
+      cairo_rotate(cr, -M_PI_2);
+      cairo_rel_move_to(cr, -0.5 * ext.width, -0.5 * text_h);
+      pango_cairo_update_layout(cr, layout);
+      pango_cairo_show_layout(cr, layout);
+      cairo_restore(cr);
+    }
+
+    if(y2 >= ps->imgs.screen.page.y && y2 <= (ps->imgs.screen.page.y + ps->imgs.screen.page.height))
+    {
+      snprintf(dimensions, sizeof(dimensions), precision, pheight * units[ps->unit] - dy2);
+      pango_layout_set_text(layout, dimensions, -1);
+      pango_layout_get_pixel_extents(layout, NULL, &ext);
+      yp = y2 + (ps->imgs.screen.page.y + ps->imgs.screen.page.height - y2 - ext.width) * 0.5;
+      if(yp + ext.width + margin > ps->imgs.screen.page.y + ps->imgs.screen.page.height)
+        yp = y2 - ext.width - 2 * margin;
+      cairo_set_source_rgba(cr, .7, .7, .7, .9);
+      cairo_move_to(cr, xp + text_h * 0.5, y2);
+      cairo_line_to(cr, xp + text_h * 0.5, ps->imgs.screen.page.y + ps->imgs.screen.page.height);
+      cairo_stroke_preserve(cr);
+      cairo_set_source_rgba(cr, .5, .5, .5, .9);
+      cairo_set_dash(cr, &dash, 1, dash);
+      cairo_stroke(cr);
+      cairo_set_dash(cr, NULL, 0, 0);
+      dt_gui_draw_rounded_rectangle(cr, text_h + 2 * margin, ext.width + 2 * margin,
+                                    xp - margin, yp - margin);
+      cairo_set_source_rgb(cr, .8, .8, .8);
+      cairo_move_to(cr, xp + text_h * 0.5, yp + ext.width * 0.5);
+      cairo_save(cr);
+      cairo_rotate(cr, -M_PI_2);
+      cairo_rel_move_to(cr, -0.5 * ext.width, -0.5 * text_h);
+      pango_cairo_update_layout(cr, layout);
+      pango_cairo_show_layout(cr, layout);
+      cairo_restore(cr);
+    }
+
+    // display width and height
+    snprintf(dimensions, sizeof(dimensions), precision, dwidth);
     pango_layout_set_text(layout, dimensions, -1);
     pango_layout_get_pixel_extents(layout, NULL, &ext);
-    const float text_w = ext.width;
-    const float text_h = DT_PIXEL_APPLY_DPI(16+2);
-    const float margin = DT_PIXEL_APPLY_DPI(6);
-    const float xp = (x1 + x2 - text_w) * .5f;
-    float yp = y1 - text_h - (margin * 2.0f);
-
-    // put text in the center if not enough space on top
-    if(yp < text_h)
-      yp = (y1 + y2 - text_h) * .5f;
-
+    xp = (x1 + x2 - ext.width) * .5;
+    if(y1 > text_h * 0.5 + margin)
+      yp = y1 - text_h * 0.5;
+    else
+      yp = y1 + text_h - 2 * margin;
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
-    dt_gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
+    dt_gui_draw_rounded_rectangle(cr, ext.width + 2 * margin, text_h + 2 * margin,
                                   xp - margin, yp - margin);
     cairo_set_source_rgb(cr, .8, .8, .8);
     cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
+
+    snprintf(dimensions, sizeof(dimensions), precision, dheight);
+    pango_layout_set_text(layout, dimensions, -1);
+    pango_layout_get_pixel_extents(layout, NULL, &ext);
+    if(x1 > text_h * 0.5 + margin)
+      xp = x1 - text_h * 0.5;
+    else
+      xp = x1 + text_h - 2 * margin;
+    yp = (y1 + y2) * .5;
+    cairo_set_source_rgba(cr, .5, .5, .5, .9);
+    dt_gui_draw_rounded_rectangle(cr, text_h + 2 * margin, ext.width + 2 * margin,
+                                  xp - margin, yp - margin - 0.5 * ext.width);
+    cairo_set_source_rgb(cr, .8, .8, .8);
+    cairo_move_to(cr, xp + text_h * 0.5, yp);
+    cairo_save(cr);
+    cairo_rotate(cr, -M_PI_2);
+    cairo_rel_move_to(cr, -0.5 * ext.width, -0.5 * text_h);
+    pango_cairo_update_layout(cr, layout);
+    pango_cairo_show_layout(cr, layout);
+    cairo_restore(cr);
+
     pango_font_description_free(desc);
     g_object_unref(layout);
   }
@@ -2010,6 +2157,12 @@ void gui_init(dt_lib_module_t *self)
 
   d->imgs.motion_over = -1;
 
+  const char *str = dt_conf_get_string_const("plugins/print/print/unit");
+  const char **names = _unit_names;
+  for(_unit_t i=0; *names; names++, i++)
+    if(g_strcmp0(str, *names) == 0)
+      d->unit = i;
+
   dt_printing_clear_boxes(&d->imgs);
 
   // set all margins + unit from settings
@@ -2019,7 +2172,6 @@ void gui_init(dt_lib_module_t *self)
   const float left_b = dt_conf_get_float("plugins/print/print/left_margin");
   const float right_b = dt_conf_get_float("plugins/print/print/right_margin");
 
-  d->unit = dt_conf_get_int("plugins/print/print/unit");
   d->prt.page.margin_top = to_mm(d, top_b);
   d->prt.page.margin_bottom = to_mm(d, bottom_b);
   d->prt.page.margin_left = to_mm(d, left_b);
@@ -2172,21 +2324,17 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_widget_set_label(d->orientation, NULL, N_("orientation"));
   dt_bauhaus_combobox_add(d->orientation, _("portrait"));
   dt_bauhaus_combobox_add(d->orientation, _("landscape"));
-
+  g_signal_connect(G_OBJECT(d->orientation), "value-changed", G_CALLBACK(_orientation_changed), self);
+  dt_bauhaus_combobox_set(d->orientation, d->prt.page.landscape?1:0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->orientation), TRUE, TRUE, 0);
 
-  GtkWidget *ucomb = dt_bauhaus_combobox_new_action(DT_ACTION(self));
-  dt_bauhaus_combobox_add(ucomb, _("mm"));
-  dt_bauhaus_combobox_add(ucomb, _("cm"));
-  dt_bauhaus_combobox_add(ucomb, _("inch"));
+  // NOTE: units has no label, which makes for cleaner UI but means that no action can be assigned
+  GtkWidget *ucomb =
+    dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, NULL,
+                                 _("measurement units"),
+                                 d->unit, (GtkCallback)_unit_changed, self,
+                                 _unit_names);
   gtk_box_pack_start(GTK_BOX(self->widget), ucomb, TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(d->orientation), "value-changed", G_CALLBACK(_orientation_changed), self);
-  g_signal_connect(G_OBJECT(ucomb), "value-changed", G_CALLBACK(_unit_changed), self);
-
-  dt_bauhaus_combobox_set(ucomb, d->unit);
-
-  dt_bauhaus_combobox_set(d->orientation, d->prt.page.landscape?1:0);
 
   //// image dimensions, create them now as we need them
 
