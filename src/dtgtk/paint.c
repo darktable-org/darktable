@@ -172,7 +172,7 @@ void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
 void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 1, 0, 0)
+  PREAMBLE(0.75, 1, 0, 0)
 
   /* initialize rotation and flip matrices */
   cairo_matrix_t hflip_matrix;
