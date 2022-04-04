@@ -3860,17 +3860,13 @@ static void _manage_show_window(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 2);
   // presets buttons
   hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  d->presets_btn_remove = dt_ui_button_new(_("remove"), _("remove the preset"), NULL);
-  g_signal_connect(G_OBJECT(d->presets_btn_remove), "clicked", G_CALLBACK(_manage_preset_delete), self);
+  d->presets_btn_remove = dt_action_button_new(NULL, N_("remove"), _manage_preset_delete, self,_("remove the preset"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_remove, TRUE, TRUE, 2);
-  d->presets_btn_dup = dt_ui_button_new(_("duplicate"), _("duplicate the preset"), NULL);
-  g_signal_connect(G_OBJECT(d->presets_btn_dup), "clicked", G_CALLBACK(_manage_editor_preset_action), self);
+  d->presets_btn_dup = dt_action_button_new(NULL, N_("duplicate"), _manage_editor_preset_action, self,_("duplicate the preset"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_dup, TRUE, TRUE, 2);
-  d->presets_btn_rename = dt_ui_button_new(_("rename"), _("rename the preset"), NULL);
-  g_signal_connect(G_OBJECT(d->presets_btn_rename), "clicked", G_CALLBACK(_manage_editor_preset_action), self);
+  d->presets_btn_rename = dt_action_button_new(NULL, N_("rename"), _manage_editor_preset_action, self,_("rename the preset"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_rename, TRUE, TRUE, 2);
-  d->presets_btn_new = dt_ui_button_new(_("new"), _("create a new empty preset"), NULL);
-  g_signal_connect(G_OBJECT(d->presets_btn_new), "clicked", G_CALLBACK(_manage_editor_preset_action), self);
+  d->presets_btn_new = dt_action_button_new(NULL, N_("new"), _manage_editor_preset_action, self,_("create a new empty preset"), 0, 0);
   gtk_box_pack_start(GTK_BOX(hb2), d->presets_btn_new, TRUE, TRUE, 2);
   gtk_box_pack_start(GTK_BOX(vb), hb2, FALSE, TRUE, 2);
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, TRUE, 2);

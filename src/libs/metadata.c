@@ -634,18 +634,6 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "apply"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "apply", d->apply_button);
-}
-
 void _menu_line_activated(GtkMenuItem *menuitem, GtkTextView *textview)
 {
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
@@ -760,8 +748,8 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // apply button
-  d->apply_button = dt_ui_button_new(_("apply"), _("write metadata for selected images"), NULL);
-  g_signal_connect(G_OBJECT(d->apply_button), "clicked", G_CALLBACK(_apply_button_clicked), self);
+  d->apply_button = dt_action_button_new(self, N_("apply"), _apply_button_clicked, self,
+                                         _("write metadata for selected images"), 0, 0);
 
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(d->apply_button), 0, DT_METADATA_NUMBER, 2, 1);
 

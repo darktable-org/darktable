@@ -3750,7 +3750,7 @@ static void _remove_widget_from_hashtable(GtkWidget *widget, gpointer user_data)
 
 static inline gchar *path_without_symbols(const gchar *path)
 {
-  return g_strdelimit(g_strdup(path), "=,/.", '-');
+  return g_strdelimit(g_strndup(path, strlen(path) - (g_str_has_suffix(path, "...")?3:0)), "=,/.", '-');
 }
 
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
@@ -3822,8 +3822,6 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path, gboolean create)
       fprintf(stderr, "[dt_action_locate] found action '%s' internal node\n", owner->id);
       return NULL;
     }
-    else if(owner->type == DT_ACTION_TYPE_SECTION)
-      owner->type = DT_ACTION_TYPE_CLOSURE; // mark newly created leaf as closure
   }
 
   return owner;
@@ -4387,6 +4385,22 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_name)
 
   if(p) dt_action_rename(p, new_name);
 }
+
+GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, guint accel_key, GdkModifierType mods)
+{
+  GtkWidget *button = gtk_button_new_with_label(_(label));
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
+  if(tooltip) gtk_widget_set_tooltip_text(button, tooltip);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), data);
+
+  if(self)
+  {
+    if(accel_key) dt_accel_register_shortcut(DT_ACTION(self), label, 0, 0, accel_key, mods);
+    dt_action_define(DT_ACTION(self), NULL, label, button, &dt_action_def_button);
+  }
+
+  return button;
+};
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
