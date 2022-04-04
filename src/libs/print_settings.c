@@ -81,7 +81,6 @@ typedef enum _unit_t
 
 static const float units[UNIT_N] = { 1.0f, 0.1f, 1.0f/25.4f };
 static const gchar *_unit_names[] = { N_("mm"), N_("cm"), N_("inch"), NULL };
-static const char *_unit_precision[UNIT_N] = { "%0.0f", "%0.1f", "%0.1f" };
 
 typedef struct dt_lib_print_settings_t
 {
@@ -173,6 +172,30 @@ static void _get_page_dimension(dt_print_info_t *prt, float *width, float *heigh
   {
     *width = prt->paper.width;
     *height = prt->paper.height;
+  }
+}
+
+static void precision_by_unit(_unit_t unit, int *n_digits, float *incr, char **format)
+{
+  // this gives us these precisions
+  //  unit  precision  increment
+  //   mm      1          1
+  //   cm      0.1        0.1
+  //   in      0.01       0.05
+  //
+  // This allows for >= 1mm precision display regardless of unit, and
+  // allows for entering common fractions (e.g. 1/4 as .25) for
+  // inches. Increment is kept to 1mm except in the cases of inches,
+  // where we round up from 0.03937 (1mm) to 0.05 to keep to a factor
+  // of a power of ten.
+  *n_digits = ceilf(log10f(1.0f / units[unit]));
+  if(incr)
+  {
+    *incr = roundf(units[unit] * 20.0f) / 20.0f;
+  }
+  if(format)
+  {
+    *format = g_strdup_printf("%%.%df", *n_digits);
   }
 }
 
@@ -811,6 +834,7 @@ _update_slider(dt_lib_print_settings_t *ps)
 
   // if widget are created, let's display the current image size
 
+  // FIXME: why doesn't this update when units are changed?
   if(ps->selected != -1
      && ps->imgs.box[ps->selected].imgid != -1
      && ps->width && ps->height
@@ -824,15 +848,18 @@ _update_slider(dt_lib_print_settings_t *ps)
 
     const double w = box_size_mm.width * units[ps->unit];
     const double h = box_size_mm.height * units[ps->unit];
-    char *value;
+    char *value, *precision;
+    int n_digits;
+    precision_by_unit(ps->unit, &n_digits, NULL, &precision);
 
-    value = g_strdup_printf("%3.2f", w);
+    value = g_strdup_printf(precision, w);
     gtk_label_set_text(GTK_LABEL(ps->width), value);
     g_free(value);
 
-    value = g_strdup_printf("%3.2f", h);
+    value = g_strdup_printf(precision, h);
     gtk_label_set_text(GTK_LABEL(ps->height), value);
     g_free(value);
+    g_free(precision);
 
     // compute the image down/up scale and report information
 
@@ -1032,35 +1059,32 @@ _unit_changed(GtkWidget *combo, dt_lib_module_t *self)
   const double margin_right = ps->prt.page.margin_right;
   const double margin_bottom = ps->prt.page.margin_bottom;
 
-  const int n_digits = (int)(1.0 / (units[ps->unit] * 10.0));
+  int n_digits;
+  float incr;
+  precision_by_unit(ps->unit, &n_digits, &incr, NULL);
 
   ++darktable.gui->reset;
 
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_top),    n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_top), n_digits);
   gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_bottom), n_digits);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_left),   n_digits);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_right),  n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_left), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_right), n_digits);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_top), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_bottom), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_left), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_right), incr, 10.f*incr);
 
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->grid_size),  n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_x), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_y), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_width), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_height), n_digits);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_x), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_y), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_width), incr, 10.f*incr);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_height), incr, 10.f*incr);
 
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_x),      2);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_y),      2);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_width),  2);
-  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->b_height), 2);
-
-  const float incr = units[ps->unit];
-
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_top), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_bottom), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_left), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_right), incr, incr);
-
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_x), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_y), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_width), incr, incr);
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->b_height), incr, incr);
-
-  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->grid_size), incr, incr);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(ps->grid_size), n_digits);
+  gtk_spin_button_set_increments(GTK_SPIN_BUTTON(ps->grid_size), incr, 10.f*incr);
 
   _update_slider(ps);
 
@@ -1884,7 +1908,9 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
     const double text_h = DT_PIXEL_APPLY_DPI(16+2);
     const double margin = DT_PIXEL_APPLY_DPI(6);
     const double dash = DT_PIXEL_APPLY_DPI(4.0);
-    const char *precision = _unit_precision[ps->unit];
+    int n_digits;
+    char *precision;
+    precision_by_unit(ps->unit, &n_digits, NULL, &precision);
     double xp, yp;
 
     yp = y1 + (y2 - y1 - text_h) * 0.5;
@@ -2038,6 +2064,7 @@ void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, i
 
     pango_font_description_free(desc);
     g_object_unref(layout);
+    g_free(precision);
   }
 
   if(ps->imgs.screen.borderless)
@@ -2179,17 +2206,31 @@ void gui_init(dt_lib_module_t *self)
 
   //  create the spin-button now as values could be set when the printer has no hardware margin
 
-  d->b_top    = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_left   = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_right  = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_bottom = gtk_spin_button_new_with_range(0, 1000, 1);
+  // FIXME: set digits/increments on all of these by calling _unit_changed() later?
+  int n_digits;
+  float incr;
+  precision_by_unit(d->unit, &n_digits, &incr, NULL);
 
-  d->b_x      = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_y      = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_width  = gtk_spin_button_new_with_range(0, 1000, 1);
-  d->b_height = gtk_spin_button_new_with_range(0, 1000, 1);
+  d->b_top    = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_left   = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_right  = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_bottom = gtk_spin_button_new_with_range(0, 1000, incr);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_top),    n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_bottom), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_left),   n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_right),  n_digits);
 
-  d->grid_size = gtk_spin_button_new_with_range(0, 100, 0.1);
+  d->b_x      = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_y      = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_width  = gtk_spin_button_new_with_range(0, 1000, incr);
+  d->b_height = gtk_spin_button_new_with_range(0, 1000, incr);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_x), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_y), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_width), n_digits);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->b_height), n_digits);
+
+  d->grid_size = gtk_spin_button_new_with_range(0, 100, incr);
+  gtk_spin_button_set_digits(GTK_SPIN_BUTTON(d->grid_size),  n_digits);
 
   gtk_entry_set_alignment(GTK_ENTRY(d->b_top), 1);
   gtk_entry_set_alignment(GTK_ENTRY(d->b_left), 1);
@@ -2511,6 +2552,7 @@ void gui_init(dt_lib_module_t *self)
 
   // X x Y
   GtkWidget *box;
+  // FIXME: add labels to x/y/width/height as otherwise are obscure -- and there is the horizontal space to do this
 
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
   // d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
@@ -3159,6 +3201,14 @@ void *get_params(dt_lib_module_t *self, int *size)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
+
+  // these can be called on shutdown, resulting in null-pointer
+  // dereference and division by zero -- not sure what interaction
+  // makes them called, but better to disconnect and not have segfault
+  g_signal_handlers_disconnect_by_func(G_OBJECT(ps->b_top), G_CALLBACK(_top_border_callback), self);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(ps->b_bottom), G_CALLBACK(_bottom_border_callback), self);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(ps->b_left), G_CALLBACK(_left_border_callback), self);
+  g_signal_handlers_disconnect_by_func(G_OBJECT(ps->b_right), G_CALLBACK(_right_border_callback), self);
 
   g_list_free_full(ps->profiles, g_free);
   g_list_free_full(ps->paper_list, free);
