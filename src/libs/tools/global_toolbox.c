@@ -400,7 +400,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the grouping button */
   d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, 0, NULL);
-  dt_action_define(&darktable.control->actions_global, NULL, "grouping", d->grouping_button, &dt_action_def_toggle);
+  dt_action_define(&darktable.control->actions_global, NULL, N_("grouping"), d->grouping_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 0);
   if(darktable.gui->grouping)
     gtk_widget_set_tooltip_text(d->grouping_button, _("expand grouped images"));
@@ -412,6 +412,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the "show/hide overlays" button */
   d->overlays_button = dtgtk_button_new(dtgtk_cairo_paint_overlays, 0, NULL);
+  dt_action_define(&darktable.control->actions_global, NULL, N_("thumbnail overlays options"), d->overlays_button, &dt_action_def_button);
   gtk_widget_set_tooltip_text(d->overlays_button, _("click to change the type of overlays shown on thumbnails"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 0);
   d->over_popup = gtk_popover_new(d->overlays_button);
@@ -505,6 +506,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the widget help button */
   d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, 0, NULL);
+  dt_action_define(&darktable.control->actions_global, NULL, N_("help"), d->help_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->help_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
   g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
@@ -512,7 +514,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the shortcuts button */
   d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, 0, NULL);
-  dt_action_define(&darktable.control->actions_global, NULL, "shortcuts", d->keymap_button, &dt_action_def_toggle);
+  dt_action_define(&darktable.control->actions_global, NULL, N_("shortcuts"), d->keymap_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->keymap_button, _("define shortcuts\n"
                                                   "ctrl+click to switch off overwrite confirmations\n\n"
@@ -529,6 +531,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the preference button */
   d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
+  dt_action_define(&darktable.control->actions_global, NULL, N_("preferences"), d->preferences_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
@@ -975,11 +978,6 @@ static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButt
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_global(NC_("accel", "grouping"), 0, 0);
-  dt_accel_register_global(NC_("accel", "thumbnail overlays options"), 0, 0);
-  dt_accel_register_global(NC_("accel", "preferences"), 0, 0);
-  dt_accel_register_global(NC_("accel", "shortcuts"), 0, 0);
-
   dt_accel_register_global(NC_("accel", "thumbnail overlays/no overlays"), 0, 0);
   dt_accel_register_global(NC_("accel", "thumbnail overlays/overlays on mouse hover"), 0, 0);
   dt_accel_register_global(NC_("accel", "thumbnail overlays/extended overlays on mouse hover"), 0, 0);
@@ -991,13 +989,9 @@ void init_key_accels(dt_lib_module_t *self)
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  dt_lib_tool_preferences_t *d = (dt_lib_tool_preferences_t *)self->data;
-
-  dt_accel_connect_button_lib_as_global(self, "thumbnail overlays options", d->overlays_button);
-  dt_accel_connect_button_lib_as_global(self, "preferences", d->preferences_button);
-
-  dt_accel_connect_lib_as_global( self, "thumbnail overlays/no overlays",
-      g_cclosure_new(G_CALLBACK(_overlays_accels_callback), GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_NONE), NULL));
+  dt_accel_connect_lib_as_global(self, "thumbnail overlays/no overlays",
+                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
+                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_NONE), NULL));
   dt_accel_connect_lib_as_global(self, "thumbnail overlays/overlays on mouse hover",
                        g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
                                       GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_NORMAL), NULL));
@@ -1010,9 +1004,9 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_lib_as_global(self, "thumbnail overlays/permanent extended overlays",
                        g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
                                       GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED), NULL));
-  dt_accel_connect_lib_as_global(
-      self, "thumbnail overlays/permanent overlays extended on mouse hover",
-      g_cclosure_new(G_CALLBACK(_overlays_accels_callback), GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_MIXED), NULL));
+  dt_accel_connect_lib_as_global(self, "thumbnail overlays/permanent overlays extended on mouse hover",
+                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
+                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_MIXED), NULL));
   dt_accel_connect_lib_as_global(self, "thumbnail overlays/overlays block on mouse hover",
                        g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
                                       GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK), NULL));

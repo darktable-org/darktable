@@ -99,18 +99,6 @@ int position()
   return 997;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "capture image(s)"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_camera_t *lib = (dt_lib_camera_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "capture image(s)", GTK_WIDGET(lib->gui.button1));
-}
-
 /** Property changed*/
 static void property_changed_callback(GtkComboBox *cb, gpointer data)
 {
@@ -469,7 +457,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.brackets), GTK_WIDGET(brackets_label), GTK_POS_RIGHT, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.steps), GTK_WIDGET(steps_label), GTK_POS_RIGHT, 1, 1);
 
-  lib->gui.button1 = gtk_button_new_with_label(_("capture image(s)"));
+  lib->gui.button1 = dt_action_button_new(self, N_("capture image(s)"), _capture_button_clicked, lib, NULL, 0, 0);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.button1), 0, lib->gui.rows++, 2, 1);
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(lib->gui.toggle_timer), _("toggle delayed capture mode"));
@@ -488,7 +476,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->gui.toggle_timer), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.toggle_sequence), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.toggle_bracket), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
-  g_signal_connect(G_OBJECT(lib->gui.button1), "clicked", G_CALLBACK(_capture_button_clicked), lib);
 
   gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.timer), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(lib->gui.count), FALSE);

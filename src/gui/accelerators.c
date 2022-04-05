@@ -3868,7 +3868,7 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
     {
       ac->target = widget;
     }
-    else if(!darktable.control->accel_initialising)
+    else if(!darktable.control->accel_initialising && widget)
     {
       if(label && action_def && !ac->target) ac->target = widget;
       g_hash_table_insert(darktable.control->widgets, widget, ac);
@@ -3881,7 +3881,7 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
   return ac;
 }
 
-void dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def)
+dt_action_t *dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def)
 {
   // add to module_so or blending actions list
   dt_action_t *ac = NULL;
@@ -3900,6 +3900,8 @@ void dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gch
   referral->action = ac;
   referral->target = widget;
   self->widget_list = g_slist_prepend(self->widget_list, referral);
+
+  return ac;
 }
 
 static GdkModifierType _mods_fix_primary(GdkModifierType mods)
@@ -4247,21 +4249,6 @@ void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *
 void dt_accel_connect_lua(const gchar *path, GClosure *closure)
 {
   dt_accel_connect_shortcut(&darktable.control->actions_lua, path, closure);
-}
-
-void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button)
-{
-  dt_action_define_iop(module, NULL, path, button, &dt_action_def_button);
-}
-
-void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button)
-{
-  dt_action_define(DT_ACTION(module), NULL, path, button, &dt_action_def_button);
-}
-
-void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar *path, GtkWidget *button)
-{
-  dt_action_define(&darktable.control->actions_global, NULL, path, button, &dt_action_def_button);
 }
 
 void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *text)
