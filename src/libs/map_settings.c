@@ -143,6 +143,9 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
   d->filtered_images_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/filter_images_drawn", 0, line++, FALSE);
   g_signal_connect(G_OBJECT(d->filtered_images_checkbutton), "toggled", G_CALLBACK(_parameter_changed), NULL);
+  dt_accel_register_shortcut(dt_action_define(DT_ACTION(self), NULL, N_("filtered images"),
+                                              d->filtered_images_checkbutton, &dt_action_def_button),
+                             NULL, 0, 0, GDK_KEY_s, GDK_CONTROL_MASK);
   d->max_images_entry = dt_gui_preferences_int(grid, "plugins/map/max_images_drawn", 0, line++);
   g_signal_connect(G_OBJECT(d->max_images_entry), "value-changed", G_CALLBACK(_parameter_changed), self);
   d->epsilon_factor = dt_gui_preferences_int(grid, "plugins/map/epsilon_factor", 0, line++);
@@ -191,14 +194,11 @@ static gboolean _thumbnail_change(GtkAccelGroup *accel_group, GObject *accelerat
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "filtered images"), GDK_KEY_s, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "thumbnail display"), GDK_KEY_s, GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
-  dt_accel_connect_button_lib(self, "filtered images", d->filtered_images_checkbutton);
   dt_accel_connect_lib(self, "thumbnail display", g_cclosure_new(G_CALLBACK(_thumbnail_change), self, NULL));
 }
 

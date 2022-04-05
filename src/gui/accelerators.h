@@ -143,7 +143,7 @@ extern const dt_action_def_t dt_action_def_toggle;
 extern const dt_action_def_t dt_action_def_button;
 extern const dt_action_def_t dt_action_def_value;
 
-void dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
+dt_action_t *dt_action_define_iop(dt_iop_module_t *self, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
 
 dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gchar *label, GtkWidget *widget, const dt_action_def_t *action_def);
 
@@ -175,9 +175,6 @@ void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *
 void dt_accel_connect_lib_as_view(dt_lib_module_t *module, gchar *view_name, const gchar *path, GClosure *closure);
 //connect lib as a global shortcut
 void dt_accel_connect_lib_as_global(dt_lib_module_t *module, const gchar *path, GClosure *closure);
-void dt_accel_connect_button_lib_as_global(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
-void dt_accel_connect_button_iop(dt_iop_module_t *module, const gchar *path, GtkWidget *button);
-void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path, GtkWidget *button);
 void dt_accel_connect_instance_iop(dt_iop_module_t *module);
 void dt_accel_connect_lua(const gchar *path, GClosure *closure);
 void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path_string, GClosure *closure);

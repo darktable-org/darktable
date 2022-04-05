@@ -101,23 +101,6 @@ int position()
   return 900;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "create style from history"), 0, 0);
-//   dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "compress history stack"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_history_t *d = (dt_lib_history_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "create style from history", d->create_button);
-//   dt_accel_connect_button_lib(self, "apply style from popup menu", d->apply_button);
-
-  dt_accel_connect_button_lib(self, "compress history stack", d->compress_button);
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -149,6 +132,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   gtk_widget_set_name(d->create_button, "non-flat");
   gtk_widget_set_tooltip_text(d->create_button, _("create a style from the current history stack"));
+  dt_action_define(DT_ACTION(self), NULL, N_("create style from history"), d->create_button, &dt_action_def_button);
 
   /* add buttons to buttonbox */
   gtk_box_pack_start(GTK_BOX(hhbox), d->compress_button, TRUE, TRUE, 0);

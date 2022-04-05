@@ -2726,15 +2726,15 @@ void gui_init(dt_lib_module_t *self)
 
   // Print button
 
-  GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("print")));
-  d->print_button = button;
-  gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("print with current settings"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
-  dt_gui_add_help_link(GTK_WIDGET(button), dt_get_help_url("print_settings_button"));
+  GtkWidget *button = gtk_button_new_with_label(_("print"));
+  d->print_button = GTK_BUTTON(button);
+  dt_accel_register_shortcut(dt_action_define(DT_ACTION(self), NULL, N_("print"), button, &dt_action_def_button),
+                             NULL, 0, 0, GDK_KEY_p, GDK_CONTROL_MASK);
+  gtk_widget_set_tooltip_text(button, _("print with current settings"));
+  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
+  dt_gui_add_help_link(button, dt_get_help_url("print_settings_button"));
 
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (_print_button_clicked),
-                    (gpointer)self);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_print_button_clicked), self);
 
   g_free(system_profile_dir);
   g_free(user_profile_dir);
@@ -3257,18 +3257,6 @@ void gui_reset(dt_lib_module_t *self)
   ps->has_changed = FALSE;
 
   dt_control_queue_redraw_center();
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "print"), GDK_KEY_p, GDK_CONTROL_MASK);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_print_settings_t *d = (dt_lib_print_settings_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "print", GTK_WIDGET(d->print_button));
 }
 
 // clang-format off
