@@ -21,7 +21,7 @@
 
 size_t dt_iop_buffer_dsc_to_bpp(const struct dt_iop_buffer_dsc_t *dsc)
 {
-  size_t bpp = dsc->channels * dsc->frames;
+  size_t bpp = dsc->channels;
 
   switch(dsc->datatype)
   {
@@ -60,6 +60,7 @@ void default_input_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void default_output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
                            dt_iop_buffer_dsc_t *dsc)
 {
+  dsc->frames = 1;
   dsc->channels = 4;
   dsc->datatype = TYPE_FLOAT;
   dsc->cst = self->output_colorspace(self, pipe, piece);

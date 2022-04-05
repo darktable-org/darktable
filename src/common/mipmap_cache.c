@@ -257,7 +257,7 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   const int ht = img->height;
 
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(&img->buf_dsc);
-  const size_t buffer_size = (size_t)wd * ht * bpp + sizeof(*dsc);
+  const size_t buffer_size = (size_t)wd * ht * bpp * img->buf_dsc.frames + sizeof(*dsc);
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:

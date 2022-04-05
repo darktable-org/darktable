@@ -231,7 +231,7 @@ void output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixel
                    dt_iop_buffer_dsc_t *dsc)
 {
   default_output_format(self, pipe, piece, dsc);
-
+  dsc->frames = pipe->image.buf_dsc.frames;
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
   dsc->rawprepare.raw_black_level = d->rawprepare.raw_black_level;

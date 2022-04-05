@@ -1097,7 +1097,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   if(module) g_strlcpy(module_name, module->op, MIN(sizeof(module_name), sizeof(module->op)));
   get_output_format(module, pipe, piece, dev, *out_format);
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
-  const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height;
+  const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height * pipe->image.buf_dsc.frames;
 
   // 1) if cached buffer is still available, return data
   if(dt_atomic_get_int(&pipe->shutdown))
