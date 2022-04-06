@@ -844,12 +844,13 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ASPECT_RATIO);
 
+  /* TO BE restored once the filters will be implemented
   _popup_add_item(spop, _("darktable"), 0, TRUE, NULL, NULL, self);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GROUPING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_MODULE);
-  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ORDER);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ORDER);*/
 
   dt_gui_menu_popup(GTK_MENU(spop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
   return TRUE;
