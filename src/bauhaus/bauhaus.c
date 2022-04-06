@@ -799,7 +799,7 @@ static gboolean dt_bauhaus_combobox_motion_notify(GtkWidget *widget, GdkEventMot
 // common initialization
 static void _bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self)
 {
-  w->module = DT_ACTION(self);
+  if(self) w->module = DT_ACTION(self);
   w->field = NULL;
 
   w->section = NULL;

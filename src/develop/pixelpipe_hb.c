@@ -41,6 +41,7 @@
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
+#include <errno.h>
 
 typedef enum dt_pixelpipe_flow_t
 {
@@ -104,6 +105,57 @@ static char *_pipe_type_to_str(int pipe_type)
       r = "unknown";
   }
   return r;
+}
+
+static void save_debug_bitmap(dt_dev_pixelpipe_t *pipe, const char *name, void *out, const dt_iop_roi_t *roi_out)
+{
+  char filename[128];
+  snprintf(filename, 128, "save_debug_bitmap_%s_%s.pfm", name, _pipe_type_to_str(pipe->type));
+  for(int i = 0; i < 128; ++i)
+  {
+    if(filename[i] == '\0')
+    {
+      break;
+    }
+    if((filename[i] == ' ') || (filename[i] == '/'))
+    {
+      filename[i] = '_';
+    }
+  }
+
+  FILE *file = g_fopen(filename, "w");
+  if(file == NULL)
+  {
+    fprintf(stderr, "error opening debug file: %s, %s\n", filename, strerror(errno));
+    return;
+  }
+  if(pipe->dsc.channels > 1)
+  {
+    fprintf(file, "PF\n");
+  }
+  else
+  {
+    fprintf(file, "Pf\n");
+  }
+  fprintf(file, "%i %i\n", roi_out->width, roi_out->height * pipe->dsc.frames);
+  fprintf(file, "-1.0\n");
+  float *ptr = (float *)out;
+  if((pipe->dsc.channels == 1) || (pipe->dsc.channels == 3))
+  {
+    fwrite(ptr, sizeof(float), roi_out->height * roi_out->width * pipe->dsc.channels * pipe->dsc.frames, file);
+  }
+  else
+  {
+    for(size_t i = 0; i < roi_out->height * roi_out->width * pipe->dsc.frames * pipe->dsc.channels;
+        i += pipe->dsc.channels)
+    {
+      for(size_t j = 0; j < 3; ++j)
+      {
+        fwrite(ptr + i + j, sizeof(float), 1, file);
+      }
+    }
+  }
+  fclose(file);
 }
 
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
@@ -2030,6 +2082,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       g_free(module_label);
     }
   }
+
+  save_debug_bitmap(pipe,dt_history_item_get_name(module),*output,roi_out);
+
 
   // 4) colorpicker and scopes:
   if(dt_atomic_get_int(&pipe->shutdown))
