@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #define DT_OPENCL_MAX_KERNELS 512
 #define DT_OPENCL_EVENTLISTSIZE 256
 #define DT_OPENCL_EVENTNAMELENGTH 64
-#define DT_OPENCL_MAX_EVENTS 256
 #define DT_OPENCL_MAX_ERRORS 5
 #define DT_OPENCL_MAX_INCLUDES 7
 #define DT_OPENCL_VENDOR_AMD 4098
@@ -127,6 +126,7 @@ typedef struct dt_opencl_device_t
   int totalevents;
   int totalsuccess;
   int totallost;
+  int maxeventslot;
   int nvidia_sm_20;
   const char *vendor;
   const char *name;
