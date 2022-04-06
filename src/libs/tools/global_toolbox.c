@@ -82,13 +82,6 @@ int position()
   return 1001;
 }
 
-static void _overlays_accels_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, gpointer data)
-{
-  dt_thumbnail_overlay_t over = (dt_thumbnail_overlay_t)GPOINTER_TO_INT(data);
-  dt_thumbtable_set_overlays_mode(dt_ui_thumbtable(darktable.gui->ui), over);
-}
-
 static void _overlays_toggle_button(GtkWidget *w, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -426,39 +419,31 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_container_add(GTK_CONTAINER(d->over_popup), vbox);
 
+#define NEW_RADIO(widget, box, callback, label)                                               \
+  rb = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(rb), _(label)); \
+  dt_action_define(ac, NULL, label, rb, &dt_action_def_button);                     \
+  g_signal_connect(G_OBJECT(rb), "clicked", G_CALLBACK(callback), self);            \
+  gtk_box_pack_start(GTK_BOX(box), rb, TRUE, TRUE, 0);                              \
+  widget = rb;
+
   // thumbnails overlays
   d->thumbnails_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   d->over_label = gtk_label_new(_("overlay mode for size"));
   gtk_widget_set_name(d->over_label, "overlays_label");
   gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_label, TRUE, TRUE, 0);
-  d->over_r0 = gtk_radio_button_new_with_label(NULL, _("no overlays"));
-  g_signal_connect(G_OBJECT(d->over_r0), "toggled", G_CALLBACK(_overlays_toggle_button), self);
-  gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_r0, TRUE, TRUE, 0);
-  d->over_r1
-      = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_r0), _("overlays on mouse hover"));
-  g_signal_connect(G_OBJECT(d->over_r1), "toggled", G_CALLBACK(_overlays_toggle_button), self);
-  gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_r1, TRUE, TRUE, 0);
-  d->over_r2 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_r0),
-                                                           _("extended overlays on mouse hover"));
-  g_signal_connect(G_OBJECT(d->over_r2), "toggled", G_CALLBACK(_overlays_toggle_button), self);
-  gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_r2, TRUE, TRUE, 0);
-  d->over_r3 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_r0), _("permanent overlays"));
-  g_signal_connect(G_OBJECT(d->over_r3), "toggled", G_CALLBACK(_overlays_toggle_button), self);
-  gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_r3, TRUE, TRUE, 0);
-  d->over_r4 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_r0),
-                                                           _("permanent extended overlays"));
-  g_signal_connect(G_OBJECT(d->over_r4), "toggled", G_CALLBACK(_overlays_toggle_button), self);
-  gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_r4, TRUE, TRUE, 0);
-  d->over_r5 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_r0),
-                                                           _("permanent overlays extended on mouse hover"));
-  g_signal_connect(G_OBJECT(d->over_r5), "toggled", G_CALLBACK(_overlays_toggle_button), self);
-  gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_r5, TRUE, TRUE, 0);
+
+  dt_action_t *ac = dt_action_section(&darktable.control->actions_global, N_("thumbnail overlays"));
+  GtkWidget *rb = NULL;
+  NEW_RADIO(d->over_r0, d->thumbnails_box, _overlays_toggle_button, N_("no overlays"));
+  NEW_RADIO(d->over_r1, d->thumbnails_box, _overlays_toggle_button, N_("overlays on mouse hover"));
+  NEW_RADIO(d->over_r2, d->thumbnails_box, _overlays_toggle_button, N_("extended overlays on mouse hover"));
+  NEW_RADIO(d->over_r3, d->thumbnails_box, _overlays_toggle_button, N_("permanent overlays"));
+  NEW_RADIO(d->over_r4, d->thumbnails_box, _overlays_toggle_button, N_("permanent extended overlays"));
+  NEW_RADIO(d->over_r5, d->thumbnails_box, _overlays_toggle_button, N_("permanent overlays extended on mouse hover"));
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  d->over_r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_r0),
-                                                           _("overlays block on mouse hover during (s)"));
-  g_signal_connect(G_OBJECT(d->over_r6), "toggled", G_CALLBACK(_overlays_toggle_button), self);
-  gtk_box_pack_start(GTK_BOX(hbox), d->over_r6, TRUE, TRUE, 0);
+  NEW_RADIO(d->over_r6, hbox, _overlays_toggle_button, N_("overlays block on mouse hover"));
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_("during (s)")), FALSE, FALSE, 0);
   d->over_timeout = gtk_spin_button_new_with_range(-1, 99, 1);
   g_signal_connect(G_OBJECT(d->over_timeout), "value-changed", G_CALLBACK(_overlays_timeout_changed), self);
   gtk_box_pack_start(GTK_BOX(hbox), d->over_timeout, TRUE, TRUE, 0);
@@ -476,22 +461,15 @@ void gui_init(dt_lib_module_t *self)
   d->over_culling_label = gtk_label_new(_("overlay mode for size"));
   gtk_widget_set_name(d->over_culling_label, "overlays_label");
   gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_label, TRUE, TRUE, 0);
-  d->over_culling_r0 = gtk_radio_button_new_with_label(NULL, _("no overlays"));
-  g_signal_connect(G_OBJECT(d->over_culling_r0), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
-  gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r0, TRUE, TRUE, 0);
-  d->over_culling_r3
-      = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_culling_r0), _("permanent overlays"));
-  g_signal_connect(G_OBJECT(d->over_culling_r3), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
-  gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r3, TRUE, TRUE, 0);
-  d->over_culling_r4 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_culling_r0),
-                                                                   _("permanent extended overlays"));
-  g_signal_connect(G_OBJECT(d->over_culling_r4), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
-  gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_r4, TRUE, TRUE, 0);
+
+  ac = dt_action_section(&darktable.control->actions_global, N_("culling overlays"));
+  rb = NULL;
+  NEW_RADIO(d->over_culling_r0, d->culling_box, _overlays_toggle_culling_button, N_("no overlays"));
+  NEW_RADIO(d->over_culling_r3, d->culling_box, _overlays_toggle_culling_button, N_("permanent overlays"));
+  NEW_RADIO(d->over_culling_r4, d->culling_box, _overlays_toggle_culling_button, N_("permanent extended overlays"));
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  d->over_culling_r6 = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(d->over_culling_r0),
-                                                                   _("overlays block on mouse hover during (s)"));
-  g_signal_connect(G_OBJECT(d->over_culling_r6), "toggled", G_CALLBACK(_overlays_toggle_culling_button), self);
-  gtk_box_pack_start(GTK_BOX(hbox), d->over_culling_r6, TRUE, TRUE, 0);
+  NEW_RADIO(d->over_culling_r6, hbox, _overlays_toggle_culling_button, N_("overlays block on mouse hover"));
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(_("during (s)")), FALSE, FALSE, 0);
   d->over_culling_timeout = gtk_spin_button_new_with_range(-1, 99, 1);
   g_signal_connect(G_OBJECT(d->over_culling_timeout), "value-changed", G_CALLBACK(_overlays_timeout_changed), self);
   gtk_box_pack_start(GTK_BOX(hbox), d->over_culling_timeout, TRUE, TRUE, 0);
@@ -502,7 +480,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_tt, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), d->culling_box, TRUE, TRUE, 0);
-  gtk_widget_show(vbox);
+#undef NEW_RADIO
+
+  gtk_widget_show_all(vbox);
 
   /* create the widget help button */
   d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, 0, NULL);
@@ -621,6 +601,10 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
       GtkWidget *event_widget = gtk_get_event_widget(event);
       if(event_widget)
       {
+        // if clicking on help button again process normally to switch off mode
+        if(event_widget == d->help_button)
+          break;
+
         // TODO: When the widget doesn't have a help url set we should probably look at the parent(s)
         gchar *help_url = get_help_url(event_widget);
         if(help_url && *help_url)
@@ -765,14 +749,7 @@ static void _main_do_event_help(GdkEvent *event, gpointer data)
     case GDK_BUTTON_RELEASE:
     {
       // reset GTK to normal behaviour
-
-      g_signal_handlers_block_by_func(d->help_button, _lib_help_button_clicked, d);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->help_button), FALSE);
-      g_signal_handlers_unblock_by_func(d->help_button, _lib_help_button_clicked, d);
-
-      dt_control_allow_change_cursor();
-      dt_control_change_cursor(GDK_LEFT_PTR);
-      gdk_event_handler_set((GdkEventFunc)gtk_main_do_event, NULL, NULL);
 
       handled = TRUE;
     }
@@ -934,9 +911,18 @@ static void _main_do_event_keymap(GdkEvent *event, gpointer data)
 
 static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  dt_control_change_cursor(GDK_X_CURSOR);
-  dt_control_forbid_change_cursor();
-  gdk_event_handler_set(_main_do_event_help, user_data, NULL);
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    dt_control_change_cursor(GDK_X_CURSOR);
+    dt_control_forbid_change_cursor();
+    gdk_event_handler_set(_main_do_event_help, user_data, NULL);
+  }
+  else
+  {
+    dt_control_allow_change_cursor();
+    dt_control_change_cursor(GDK_LEFT_PTR);
+    gdk_event_handler_set((GdkEventFunc)gtk_main_do_event, NULL, NULL);
+  }
 }
 
 static void _lib_keymap_button_clicked(GtkWidget *widget, gpointer user_data)
@@ -974,42 +960,6 @@ static gboolean _lib_keymap_button_press_release(GtkWidget *button, GdkEventButt
     start_time = event->time;
     return FALSE;
   }
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_global(NC_("accel", "thumbnail overlays/no overlays"), 0, 0);
-  dt_accel_register_global(NC_("accel", "thumbnail overlays/overlays on mouse hover"), 0, 0);
-  dt_accel_register_global(NC_("accel", "thumbnail overlays/extended overlays on mouse hover"), 0, 0);
-  dt_accel_register_global(NC_("accel", "thumbnail overlays/permanent overlays"), 0, 0);
-  dt_accel_register_global(NC_("accel", "thumbnail overlays/permanent extended overlays"), 0, 0);
-  dt_accel_register_global(NC_("accel", "thumbnail overlays/permanent overlays extended on mouse hover"), 0, 0);
-  dt_accel_register_global(NC_("accel", "thumbnail overlays/overlays block on mouse hover"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_connect_lib_as_global(self, "thumbnail overlays/no overlays",
-                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
-                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_NONE), NULL));
-  dt_accel_connect_lib_as_global(self, "thumbnail overlays/overlays on mouse hover",
-                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
-                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_NORMAL), NULL));
-  dt_accel_connect_lib_as_global(self, "thumbnail overlays/extended overlays on mouse hover",
-                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
-                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED), NULL));
-  dt_accel_connect_lib_as_global(self, "thumbnail overlays/permanent overlays",
-                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
-                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL), NULL));
-  dt_accel_connect_lib_as_global(self, "thumbnail overlays/permanent extended overlays",
-                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
-                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED), NULL));
-  dt_accel_connect_lib_as_global(self, "thumbnail overlays/permanent overlays extended on mouse hover",
-                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
-                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_MIXED), NULL));
-  dt_accel_connect_lib_as_global(self, "thumbnail overlays/overlays block on mouse hover",
-                       g_cclosure_new(G_CALLBACK(_overlays_accels_callback),
-                                      GINT_TO_POINTER(DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK), NULL));
 }
 
 #ifdef USE_LUA

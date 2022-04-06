@@ -583,7 +583,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(flag), dt_conf_get_bool("plugins/lighttable/copy_metadata/metadata"));
   g_signal_connect(G_OBJECT(flag), "clicked", G_CALLBACK(metadata_flag_callback), self);
 
-  dt_lib_module_t *meta = (dt_lib_module_t *) dt_action_locate(DT_ACTION(self), (gchar **)(const gchar *[]){N_("metadata"), NULL}, TRUE);
+  dt_lib_module_t *meta = (dt_lib_module_t *) dt_action_section(DT_ACTION(self), N_("metadata"));
   d->copy_metadata_button = dt_action_button_new(meta, N_("copy"), copy_metadata_callback, self,
                                                  _("set the (first) selected image as source of metadata"), 0, 0);
   gtk_grid_attach(grid, d->copy_metadata_button, 0, line, 2, 1);

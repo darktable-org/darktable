@@ -206,7 +206,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
           dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
       }
 
-      dt_action_t *action = dt_action_locate(&self->so->actions, (gchar **)(const gchar *[]){ *f->header.description ? f->header.description : f->header.field_name, NULL}, FALSE);
+      dt_action_t *action = dt_action_section(&self->so->actions, *f->header.description ? f->header.description : f->header.field_name);
       if(action && f->Enum.values)
         g_hash_table_insert(darktable.control->combo_introspection, action, f->Enum.values);
     }
