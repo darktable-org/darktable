@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -223,6 +223,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].numevents = 0;
   cl->dev[dev].eventsconsolidated = 0;
   cl->dev[dev].maxevents = 0;
+  cl->dev[dev].maxeventslot = 0;
   cl->dev[dev].lostevents = 0;
   cl->dev[dev].totalevents = 0;
   cl->dev[dev].totalsuccess = 0;
@@ -1038,8 +1039,9 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         if(cl->dev[i].totalevents)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s' (%d): %d out of %d events were "
-                                    "successful and %d events lost\n",
-                   cl->dev[i].name, i, cl->dev[i].totalsuccess, cl->dev[i].totalevents, cl->dev[i].totallost);
+                                    "successful and %d events lost, max event=%d\n",
+            cl->dev[i].name, i, cl->dev[i].totalsuccess, cl->dev[i].totalevents, cl->dev[i].totallost,
+            cl->dev[i].maxeventslot);
         }
         else
         {
@@ -2225,7 +2227,7 @@ int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image (on device)]");
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(
       darktable.opencl->dev[devid].cmd_queue, src, dst, orig_src, orig_dst, region, 0, NULL, eventp);
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image] could not copy image: %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image] could not copy image on device %d: %d\n", devid, err);
   return err;
 }
 
@@ -2238,7 +2240,7 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImageToBuffer)(
       darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer, origin, region, offset, 0, NULL, eventp);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl copy_image_to_buffer] could not copy image: %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl copy_image_to_buffer] could not copy image on device %d: %d\n", devid, err);
   return err;
 }
 
@@ -2251,7 +2253,7 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)(
       darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset, origin, region, 0, NULL, eventp);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer: %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer on device %d: %d\n", devid, err);
   return err;
 }
 
@@ -2265,7 +2267,7 @@ int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid, cl_mem src_buffer, 
                                                                    src_buffer, dst_buffer, srcoffset,
                                                                    dstoffset, size, 0, NULL, eventp);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_buffer] could not copy buffer: %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_buffer] could not copy buffer on device %d: %d\n", devid, err);
   return err;
 }
 
@@ -2365,7 +2367,7 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Map Buffer]");
   ptr = (darktable.opencl->dlocl->symbols->dt_clEnqueueMapBuffer)(
       darktable.opencl->dev[devid].cmd_queue, buffer, blocking, flags, offset, size, 0, NULL, eventp, &err);
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer: %d\n", err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer on device %d: %d\n", devid, err);
   return ptr;
 }
 
@@ -2377,7 +2379,7 @@ int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueUnmapMemObject)(
       darktable.opencl->dev[devid].cmd_queue, mem_object, mapped_ptr, 0, NULL, eventp);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl unmap mem object] could not unmap mem object: %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl unmap mem object] could not unmap mem object on device %d: %d\n", devid, err);
   return err;
 }
 
@@ -2687,7 +2689,7 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   }
 
   if(mod)
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tune=%s, CPU=%s) as available on device %i\n",
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tunemem=%s, cpudevice=%s) as available on device %i\n",
        available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (board) ? "yes" : "no", devid);
   return available;
 }
@@ -2922,7 +2924,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   int *lostevents = &(cl->dev[devid].lostevents);
   int *totalevents = &(cl->dev[devid].totalevents);
   int *totallost = &(cl->dev[devid].totallost);
-
+  int *maxeventslot = &(cl->dev[devid].maxeventslot);
   // if first time called: allocate initial buffers
   if(*eventlist == NULL)
   {
@@ -2935,6 +2937,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
       free(*eventtags);
       *eventlist = NULL;
       *eventtags = NULL;
+      dt_print(DT_DEBUG_OPENCL, "[dt_opencl_events_get_slot] NO eventlist for device %i\n", devid);
       return NULL;
     }
     *maxevents = newevents;
@@ -2959,9 +2962,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   }
 
   // check if we would exceed the number of available event handles. In that case first flush existing handles
-  if(*numevents - *eventsconsolidated + 1 > darktable.opencl->number_event_handles)
-    (void)dt_opencl_events_flush(devid, FALSE);
-
+  if((*numevents - *eventsconsolidated + 1 > cl->number_event_handles) || (*numevents == *maxevents))
+    (void)dt_opencl_events_flush(devid, 0);
 
   // if no more space left in eventlist: grow buffer
   if(*numevents == *maxevents)
@@ -2971,6 +2973,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     dt_opencl_eventtag_t *neweventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if(!neweventlist || !neweventtags)
     {
+      dt_print(DT_DEBUG_OPENCL, "[dt_opencl_events_get_slot] NO new eventlist with size %i for device %i\n",
+         newevents, devid);
       free(neweventlist);
       free(neweventtags);
       return NULL;
@@ -2997,6 +3001,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   }
 
   (*totalevents)++;
+  *maxeventslot = MAX(*maxeventslot, *numevents - 1);
   return (*eventlist) + *numevents - 1;
 }
 

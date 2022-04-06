@@ -1354,13 +1354,13 @@ void dt_get_sysresource_level()
     const int oldgrp = darktable.dtresources.group;
     darktable.dtresources.group = 4 * level;
     fprintf(stderr,"[dt_get_sysresource_level] switched to %i as `%s'\n", level, config);
-    fprintf(stderr,"  total mem:        %luMB\n", darktable.dtresources.total_memory / 1024lu / 1024lu);
-    fprintf(stderr,"  mipmap cache:     %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
-    fprintf(stderr,"  available mem:    %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
-    fprintf(stderr,"  singlebuff:       %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+    fprintf(stderr,"  total mem:       %luMB\n", darktable.dtresources.total_memory / 1024lu / 1024lu);
+    fprintf(stderr,"  mipmap cache:    %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
+    fprintf(stderr,"  available mem:   %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
+    fprintf(stderr,"  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
 #ifdef HAVE_OPENCL
-    fprintf(stderr,"  OpenCL available: %s\n", ((darktable.dtresources.tunememory) && (level >= 0)) ? "ON" : "OFF");
-    fprintf(stderr,"  OpenCL pinned:    %s\n", ((darktable.dtresources.tunepinning) && (level >= 0)) ? "ON" : "OFF");
+    fprintf(stderr,"  OpenCL tune mem: %s\n", ((darktable.dtresources.tunememory) && (level >= 0)) ? "ON" : "OFF");
+    fprintf(stderr,"  OpenCL pinned:   %s\n", ((darktable.dtresources.tunepinning) && (level >= 0)) ? "ON" : "OFF");
 #endif
     darktable.dtresources.group = oldgrp;
   }
