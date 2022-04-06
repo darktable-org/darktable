@@ -50,6 +50,15 @@ DT_MODULE(1)
 
 #define PARAM_STRING_SIZE 256 // FIXME: is this enough !?
 
+typedef enum _preset_save_type_t
+{
+  _PRESET_NONE = 0,
+  _PRESET_FILTERS = 1 << 0,
+  _PRESET_SORT = 1 << 1,
+  _PRESET_ERASE_TOPBAR = 1 << 2,
+  _PRESET_ALL = _PRESET_FILTERS | _PRESET_SORT | _PRESET_ERASE_TOPBAR
+} _preset_save_type_t;
+
 typedef struct _widgets_sort_t
 {
   dt_collection_sort_t sortid;
@@ -130,6 +139,7 @@ typedef struct dt_lib_filtering_params_t
   dt_lib_filtering_params_rule_t rule[DT_COLLECTION_MAX_RULES];
   uint32_t sorts;
   dt_lib_filtering_params_sort_t sort[DT_COLLECTION_MAX_RULES];
+  uint32_t preset_type;
 } dt_lib_filtering_params_t;
 
 typedef struct _widgets_range_t
@@ -216,7 +226,132 @@ const char *name(dt_lib_module_t *self)
 
 void init_presets(dt_lib_module_t *self)
 {
+  dt_lib_filtering_params_t params;
 
+#define CLEAR_PARAMS(t, r, s)                                                                                     \
+  {                                                                                                               \
+    memset(&params, 0, sizeof(params));                                                                           \
+    params.preset_type = t;                                                                                       \
+    params.rules = 1;                                                                                             \
+    params.rule[0].mode = 0;                                                                                      \
+    params.rule[0].off = 0;                                                                                       \
+    params.rule[0].topbar = 0;                                                                                    \
+    params.rule[0].item = r;                                                                                      \
+    params.sorts = 1;                                                                                             \
+    params.sort[0].item = s;                                                                                      \
+    params.sort[0].order = 0;                                                                                     \
+  }
+
+  // based on aspect-ratio
+
+  CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
+  g_strlcpy(params.rule[0].string, "[1;1]", PARAM_STRING_SIZE);
+
+  dt_lib_presets_add(_("square"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+
+  CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
+  g_strlcpy(params.rule[0].string, ">=1.01", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("landscape"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+
+  CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
+  g_strlcpy(params.rule[0].string, "<=0.99", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("portrait"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+
+  // presets based on import
+  CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
+               DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
+  g_strlcpy(params.rule[0].string, "[-0000:00:01 00:00:00;now]", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("imported: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+
+  CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_IMPORT_TIMESTAMP,
+               DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
+  g_strlcpy(params.rule[0].string, "[-0000:00:30 00:00:00;now]", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("imported: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params),
+                     TRUE);
+
+  // presets based on image metadata (image taken)
+  CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_TIME, DT_COLLECTION_SORT_DATETIME);
+  g_strlcpy(params.rule[0].string, "[-0000:00:01 00:00:00;now]", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("taken: last 24h"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+
+  CLEAR_PARAMS(_PRESET_FILTERS | _PRESET_SORT, DT_COLLECTION_PROP_TIME, DT_COLLECTION_SORT_DATETIME);
+  g_strlcpy(params.rule[0].string, "[-0000:00:30 00:00:00;now]", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
+
+#undef CLEAR_PARAMS
+}
+
+static void _filtering_reset(const _preset_save_type_t reset)
+{
+  if((reset & _PRESET_FILTERS) && (reset & _PRESET_ERASE_TOPBAR))
+  {
+    // easy case : we remove all rules
+    dt_conf_set_int("plugins/lighttable/filtering/num_rules", 0);
+  }
+  else if(reset & _PRESET_FILTERS)
+  {
+    // for the filtering rules, we
+    // - remove the unpinned ones
+    // - reset the pinned ones
+    const int nb_rules
+        = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
+    int nb_removed = 0;
+    for(int i = 0; i < nb_rules; i++)
+    {
+      char confname[200] = { 0 };
+      // read the topbar state
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i - nb_removed);
+      if(dt_conf_get_int(confname))
+      {
+        // we "just" reset the filter
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i - nb_removed);
+        dt_conf_set_int(confname, 0);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i - nb_removed);
+        dt_conf_set_string(confname, "");
+      }
+      else
+      {
+        // we remove the filter and move up the next ones
+        for(int j = i + 1; j < nb_rules; j++)
+        {
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", j - nb_removed);
+          const int mode = dt_conf_get_int(confname);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", j - nb_removed);
+          const int item = dt_conf_get_int(confname);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", j - nb_removed);
+          const int off = dt_conf_get_int(confname);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", j - nb_removed);
+          const int top = dt_conf_get_int(confname);
+          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", j - nb_removed);
+          gchar *string = dt_conf_get_string(confname);
+          if(string)
+          {
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", j - nb_removed - 1);
+            dt_conf_set_int(confname, mode);
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", j - nb_removed - 1);
+            dt_conf_set_int(confname, item);
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", j - nb_removed - 1);
+            dt_conf_set_int(confname, off);
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", j - nb_removed - 1);
+            dt_conf_set_int(confname, top);
+            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", j - nb_removed - 1);
+            dt_conf_set_string(confname, string);
+            g_free(string);
+          }
+        }
+        nb_removed++;
+      }
+    }
+    dt_conf_set_int("plugins/lighttable/filtering/num_rules", nb_rules - nb_removed);
+  }
+
+  if(reset & _PRESET_SORT)
+  {
+    // we reset the sorting orders
+    dt_conf_set_int("plugins/lighttable/filtering/num_sort", 1);
+    dt_conf_set_int("plugins/lighttable/filtering/sort0", 0);
+    dt_conf_set_int("plugins/lighttable/filtering/sortorder0", 0);
+  }
 }
 
 /* Update the params struct with active ruleset */
@@ -225,6 +360,7 @@ static void _filters_update_params(dt_lib_filtering_t *d)
   /* reset params */
   dt_lib_filtering_params_t *p = d->params;
   memset(p, 0, sizeof(dt_lib_filtering_params_t));
+  p->preset_type = _PRESET_ALL;
 
   /* for each active rule set update params */
   p->rules = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
@@ -285,49 +421,73 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 {
   /* update conf settings from params */
   dt_lib_filtering_params_t *p = (dt_lib_filtering_params_t *)params;
+
+  // reset conf value
+  _filtering_reset(p->preset_type);
+
   char confname[200] = { 0 };
+  const int nb_rules_ini = dt_conf_get_int("plugins/lighttable/filtering/num_rules");
+  int nb_rules_skipped = 0;
 
   for(uint32_t i = 0; i < p->rules; i++)
   {
+    // if we don't have erased the topbar, be sure that the rule don't already exist in topbar
+    int pos = i + nb_rules_ini - nb_rules_skipped;
+    for(int j = 0; j < nb_rules_ini; j++)
+    {
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", j);
+      if(p->rule[i].item == dt_conf_get_int(confname))
+      {
+        pos = j;
+        nb_rules_skipped++;
+        // force params value to be ok for topbar
+        p->rule[i].topbar = TRUE;
+        p->rule[i].mode = 0;
+        p->rule[i].off = FALSE;
+      }
+    }
     /* set item */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", pos);
     dt_conf_set_int(confname, p->rule[i].item);
 
     /* set mode */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1u", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1u", pos);
     dt_conf_set_int(confname, p->rule[i].mode);
 
     /* set on-off */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1u", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1u", pos);
     dt_conf_set_int(confname, p->rule[i].off);
 
     /* set topbar */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1u", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1u", pos);
     dt_conf_set_int(confname, p->rule[i].topbar);
 
     /* set string */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1u", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1u", pos);
     dt_conf_set_string(confname, p->rule[i].string);
   }
 
   /* set number of rules */
   g_strlcpy(confname, "plugins/lighttable/filtering/num_rules", sizeof(confname));
-  dt_conf_set_int(confname, p->rules);
+  dt_conf_set_int(confname, p->rules + nb_rules_ini - nb_rules_skipped);
 
-  for(uint32_t i = 0; i < p->sorts; i++)
+  if(p->preset_type & _PRESET_SORT)
   {
-    /* set item */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
-    dt_conf_set_int(confname, p->sort[i].item);
+    for(uint32_t i = 0; i < p->sorts; i++)
+    {
+      /* set item */
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
+      dt_conf_set_int(confname, p->sort[i].item);
 
-    /* set order */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1u", i);
-    dt_conf_set_int(confname, p->sort[i].order);
+      /* set order */
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1u", i);
+      dt_conf_set_int(confname, p->sort[i].order);
+    }
+
+    /* set number of sorts */
+    g_strlcpy(confname, "plugins/lighttable/filtering/num_sort", sizeof(confname));
+    dt_conf_set_int(confname, p->sorts);
   }
-
-  /* set number of sorts */
-  g_strlcpy(confname, "plugins/lighttable/filtering/num_sort", sizeof(confname));
-  dt_conf_set_int(confname, p->sorts);
 
   /* update internal params */
   _filters_update_params(self->data);
@@ -1050,70 +1210,13 @@ void gui_reset(dt_lib_module_t *self)
   guint state = gdk_keymap_get_modifier_state(kmap);
   if(state & GDK_CONTROL_MASK)
   {
-    // easy case : we remove all rules
-    dt_conf_set_int("plugins/lighttable/filtering/num_rules", 0);
+    // we remove all rules
+    _filtering_reset(_PRESET_ALL);
   }
   else
   {
-    // for the filtering rules, we
-    // - remove the unpinned ones
-    // - reset the pinned ones
-    const int nb_rules
-        = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_rules"), 0, DT_COLLECTION_MAX_RULES);
-    int nb_removed = 0;
-    for(int i = 0; i < nb_rules; i++)
-    {
-      char confname[200] = { 0 };
-      // read the topbar state
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i - nb_removed);
-      if(dt_conf_get_int(confname))
-      {
-        // we "just" reset the filter
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i - nb_removed);
-        dt_conf_set_int(confname, 0);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i - nb_removed);
-        dt_conf_set_string(confname, "");
-      }
-      else
-      {
-        // we remove the filter and move up the next ones
-        for(int j = i + 1; j < nb_rules; j++)
-        {
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", j - nb_removed);
-          const int mode = dt_conf_get_int(confname);
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", j - nb_removed);
-          const int item = dt_conf_get_int(confname);
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", j - nb_removed);
-          const int off = dt_conf_get_int(confname);
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", j - nb_removed);
-          const int top = dt_conf_get_int(confname);
-          snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", j - nb_removed);
-          gchar *string = dt_conf_get_string(confname);
-          nb_removed++;
-          if(string)
-          {
-            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", j - nb_removed);
-            dt_conf_set_int(confname, mode);
-            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", j - nb_removed);
-            dt_conf_set_int(confname, item);
-            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", j - nb_removed);
-            dt_conf_set_int(confname, off);
-            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", j - nb_removed);
-            dt_conf_set_int(confname, top);
-            snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", j - nb_removed);
-            dt_conf_set_string(confname, string);
-            g_free(string);
-          }
-        }
-      }
-    }
-    dt_conf_set_int("plugins/lighttable/filtering/num_rules", nb_rules - nb_removed);
+    _filtering_reset(_PRESET_FILTERS | _PRESET_SORT);
   }
-
-  // we reset the sorting orders
-  dt_conf_set_int("plugins/lighttable/filtering/num_sort", 1);
-  dt_conf_set_int("plugins/lighttable/filtering/sort0", 0);
-  dt_conf_set_int("plugins/lighttable/filtering/sortorder0", 0);
 
   _filters_gui_update(self);
   _sort_gui_update(self);
