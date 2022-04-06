@@ -3124,7 +3124,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl+click to display mask, "
                                                 "shift+click to display channel. hover over parametric mask slider to "
                                                 "select channel for display"));
-    gtk_widget_set_name(bd->showmask, "show_mask_button");
 
     bd->suppress = dt_iop_togglebutton_new(module, "blend`tools", N_("temporarily switch off blend mask"), NULL, G_CALLBACK(_blendop_blendif_suppress_toggled),
                                            FALSE, 0, 0, dtgtk_cairo_paint_eye_toggle, hbox);

@@ -1029,7 +1029,6 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   module->arrow = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(module->arrow, _("show module"));
   g_signal_connect(G_OBJECT(module->arrow), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press), module);
-  dt_util_add_class(module->arrow, "dt_module_btn");
   dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
   gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
 
