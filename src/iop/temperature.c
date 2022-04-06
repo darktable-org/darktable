@@ -1231,7 +1231,7 @@ void gui_update(struct dt_iop_module_t *self)
         // look through all variants of this preset, with different tuning
         int i = g->preset_num[j] + 1;
         while(!found && (i < wb_preset_count) && !strcmp(wb_preset[i].make, self->dev->image_storage.camera_maker)
-              && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_maker)
+              && !strcmp(wb_preset[i].model, self->dev->image_storage.camera_model)
               && !strcmp(wb_preset[i].name, wb_preset[g->preset_num[j]].name))
         {
           // let's find gaps
