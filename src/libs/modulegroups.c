@@ -474,7 +474,6 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       // because it create too much pb to remove the button from the expander
       GtkWidget *btn
           = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, item->module);
-      dt_util_add_class(btn, "dt_module_btn");
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
                                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item->widget)));
       g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_basics_on_off_callback), item);

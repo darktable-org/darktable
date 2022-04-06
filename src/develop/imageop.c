@@ -1110,7 +1110,6 @@ void dt_iop_gui_set_enable_button_icon(GtkWidget *w, dt_iop_module_t *module)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
                                  dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
   }
-  dt_util_add_class(w, "dt_module_btn");
 }
 
 void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
