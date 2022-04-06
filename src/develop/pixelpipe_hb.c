@@ -43,6 +43,8 @@
 #include <unistd.h>
 #include <errno.h>
 
+//#define DEBUG_PIXELPIPE
+
 typedef enum dt_pixelpipe_flow_t
 {
   PIXELPIPE_FLOW_NONE = 0,
@@ -107,6 +109,7 @@ static char *_pipe_type_to_str(int pipe_type)
   return r;
 }
 
+#ifdef DEBUG_PIXELPIPE
 static void save_debug_bitmap(dt_dev_pixelpipe_t *pipe, const char *name, void *out, const dt_iop_roi_t *roi_out)
 {
   char filename[128];
@@ -157,6 +160,7 @@ static void save_debug_bitmap(dt_dev_pixelpipe_t *pipe, const char *name, void *
   }
   fclose(file);
 }
+#endif
 
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks)
@@ -2083,7 +2087,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     }
   }
 
+#ifdef DEBUG_PIXELPIPE
   save_debug_bitmap(pipe,dt_history_item_get_name(module),*output,roi_out);
+#endif
 
 
   // 4) colorpicker and scopes:
