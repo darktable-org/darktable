@@ -3118,7 +3118,7 @@ void gui_init(dt_lib_module_t *self)
                                           _("detach tag from all selected images"), 0, 0);
   gtk_box_pack_start(hbox, d->detach_button, TRUE, TRUE, 0);
 
-  dt_action_t *toggle = dt_action_locate(DT_ACTION(self), (gchar **)(const gchar *[]){N_("toggle"), NULL}, TRUE);
+  dt_action_t *toggle = dt_action_section(DT_ACTION(self), N_("toggle"));
 
 #define NEW_TOGGLE_BUTTON(paint, callback, tooltip, action)                  \
   button = dtgtk_togglebutton_new(paint, 0, NULL);                           \
