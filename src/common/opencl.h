@@ -162,6 +162,10 @@ typedef struct dt_opencl_device_t
   int clroundup_ht;
   // A bitfield that identifies the type of OpenCL device
   unsigned int cltype;
+  // how often should dt_opencl_events_get_slot do a dt_opencl_events_flush
+  int event_handles;
+  // opencl_events enabled for the device
+  int use_events;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -179,9 +183,7 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
-  int use_events;
   int async_pixelpipe;
-  int number_event_handles;
   int print_statistics;
   dt_opencl_sync_cache_t sync_cache;
   int enabled;

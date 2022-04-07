@@ -153,13 +153,14 @@ void dt_opencl_write_device_config(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_v0_", cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %f",
+  g_snprintf(key, 254, "%s%s", "cldevice_v1_", cl->dev[devid].cname);
+  g_snprintf(dat, 510, "%i %i %i %i %i %i %f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
     cl->dev[devid].clroundup_wd,
     cl->dev[devid].clroundup_ht,
+    cl->dev[devid].event_handles,
     cl->dev[devid].benchmark);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -170,16 +171,17 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(devid < 0) return FALSE;
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_v0_", cl->dev[devid].cname);
+  g_snprintf(key, 254, "%s%s", "cldevice_v1_", cl->dev[devid].cname);
   if(!dt_conf_key_not_empty(key)) return TRUE;
 
   const gchar *dat = dt_conf_get_string_const(key);
-  sscanf(dat, "%i %i %i %i %i %f",
+  sscanf(dat, "%i %i %i %i %i %i %f",
     &cl->dev[devid].avoid_atomics,
     &cl->dev[devid].micro_nap,
     &cl->dev[devid].pinned_memory,
     &cl->dev[devid].clroundup_wd,
     &cl->dev[devid].clroundup_ht,
+    &cl->dev[devid].event_handles,
     &cl->dev[devid].benchmark);
   // do some safety housekeeping
   cl->dev[devid].avoid_atomics &= 1;
@@ -190,8 +192,11 @@ gboolean dt_opencl_read_device_config(const int devid)
     cl->dev[devid].clroundup_wd = 16;
   if((cl->dev[devid].clroundup_ht < 2) || (cl->dev[devid].clroundup_ht > 512))
     cl->dev[devid].clroundup_ht = 16;
-
+  if(cl->dev[devid].event_handles < 0)
+    cl->dev[devid].event_handles = 0x40000000;
   cl->dev[devid].benchmark = fminf(1e6, fmaxf(0.0f, cl->dev[devid].benchmark));
+
+  cl->dev[devid].use_events = (cl->dev[devid].event_handles != 0) ? 1 : 0;
 
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] found '%s' for '%s'\n", dat, key);
   return FALSE;
@@ -245,6 +250,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
   cl->dev[dev].benchmark = 0.0f;
+  cl->dev[dev].use_events = 1;
+  cl->dev[dev].event_handles = 128;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -444,6 +451,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     fprintf(stderr, "     PINNED_MEMORY DEFAULT:    %s\n", (cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_ON) ? "ON" : "OFF");
     fprintf(stderr, "     ROUNDUP WIDTH:            %i\n", cl->dev[dev].clroundup_wd);
     fprintf(stderr, "     ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
+    fprintf(stderr, "     EVENT HANDLES:            %i\n", cl->dev[dev].event_handles);
     fprintf(stderr, "     PERFORMANCE:              %f\n", cl->dev[dev].benchmark);
     fprintf(stderr, "     DEVICE_TYPE:              %s%s%s\n",
       ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? "CPU" : "",
@@ -665,11 +673,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   char *locale = strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_ALL, "C");
 
-  int handles = dt_conf_get_int("opencl_number_event_handles");
-  handles = (handles < 0 ? 0x7fffffff : handles);
-  cl->number_event_handles = handles;
-  cl->use_events = (handles != 0);
-
   cl->async_pixelpipe = dt_conf_get_bool("opencl_async_pixelpipe");
   cl->sync_cache = dt_opencl_get_sync_cache();
   cl->crc = 5781;
@@ -715,8 +718,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
            dt_conf_get_bool("opencl_async_pixelpipe"));
   str = dt_conf_get_string_const("opencl_synch_cache");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %s\n", str);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_number_event_handles: %d\n",
-           dt_conf_get_int("opencl_number_event_handles"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_use_cpu_devices: %d\n",
            dt_conf_get_bool("opencl_use_cpu_devices"));
 
@@ -980,7 +981,7 @@ finally:
         if(cl->dev[i].program_used[k]) (cl->dlocl->symbols->dt_clReleaseProgram)(cl->dev[i].program[k]);
       (cl->dlocl->symbols->dt_clReleaseCommandQueue)(cl->dev[i].cmd_queue);
       (cl->dlocl->symbols->dt_clReleaseContext)(cl->dev[i].context);
-      if(cl->use_events)
+      if(cl->dev[i].use_events)
       {
         dt_opencl_events_reset(i);
         free(cl->dev[i].eventlist);
@@ -1034,7 +1035,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
                    cl->dev[i].name, i, cl->dev[i].peak_memory, (float)cl->dev[i].peak_memory/(1024*1024));
       }
 
-      if(cl->print_statistics && cl->use_events)
+      if(cl->print_statistics && cl->dev[i].use_events)
       {
         if(cl->dev[i].totalevents)
         {
@@ -1050,7 +1051,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         }
       }
 
-      if(cl->use_events)
+      if(cl->dev[i].use_events)
       {
         dt_opencl_events_reset(i);
 
@@ -2913,7 +2914,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return NULL;
-  if(!cl->use_events) return NULL;
+  if(!cl->dev[devid].use_events) return NULL;
 
   static const cl_event zeroevent[1]; // implicitly initialized to zero
   cl_event **eventlist = &(cl->dev[devid].eventlist);
@@ -2962,7 +2963,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   }
 
   // check if we would exceed the number of available event handles. In that case first flush existing handles
-  if((*numevents - *eventsconsolidated + 1 > cl->number_event_handles) || (*numevents == *maxevents))
+  if((*numevents - *eventsconsolidated + 1 > cl->dev[devid].event_handles) || (*numevents == *maxevents))
     (void)dt_opencl_events_flush(devid, 0);
 
   // if no more space left in eventlist: grow buffer
@@ -3011,7 +3012,7 @@ void dt_opencl_events_reset(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return;
-  if(!cl->use_events) return;
+  if(!cl->dev[devid].use_events) return;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
@@ -3044,7 +3045,7 @@ void dt_opencl_events_wait_for(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return;
-  if(!cl->use_events) return;
+  if(!cl->dev[devid].use_events) return;
 
   static const cl_event zeroevent[1]; // implicitly initialized to zero
   cl_event **eventlist = &(cl->dev[devid].eventlist);
@@ -3070,10 +3071,11 @@ void dt_opencl_events_wait_for(const int devid)
   // now wait for all remaining events to terminate
   // Risk: might never return in case of OpenCL blocks or endless loops
   // TODO: run clWaitForEvents in separate thread and implement watchdog timer
-  (cl->dlocl->symbols->dt_clWaitForEvents)(*numevents - *eventsconsolidated,
+  cl_int err = (cl->dlocl->symbols->dt_clWaitForEvents)(*numevents - *eventsconsolidated,
                                            (*eventlist) + *eventsconsolidated);
-
-  return;
+  if((err != CL_SUCCESS) && (err != CL_INVALID_VALUE))
+    dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_events_wait_for] reported err=%d for device %i\n",
+       err, devid);
 }
 
 
@@ -3087,7 +3089,7 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return FALSE;
-  if(!cl->use_events) return FALSE;
+  if(!cl->dev[devid].use_events) return FALSE;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
@@ -3176,7 +3178,7 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return;
-  if(!cl->use_events) return;
+  if(!cl->dev[devid].use_events) return;
 
   cl_event **eventlist = &(cl->dev[devid].eventlist);
   dt_opencl_eventtag_t **eventtags = &(cl->dev[devid].eventtags);
