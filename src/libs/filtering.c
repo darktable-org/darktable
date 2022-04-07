@@ -676,6 +676,12 @@ static gboolean _widget_update(dt_lib_filtering_rule_t *rule)
 static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar *text, dt_lib_module_t *self,
                                      gboolean top)
 {
+  // remove eventual existing box
+  if(!top && rule->w_special_box)
+    gtk_widget_destroy(rule->w_special_box);
+  else if(rule->w_special_box_top)
+    gtk_widget_destroy(rule->w_special_box_top);
+
   // recreate the box
   if(!top)
     rule->w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -694,17 +700,18 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
   else
     return FALSE;
 
+  gtk_widget_show_all(special_box);
   return TRUE;
 }
 
 static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 {
-  const int mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "collect_id"));
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "collect_data");
+  const int mode = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(widget));
+  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+
   if(mode == rule->prop) return;
 
   rule->prop = mode;
-  gtk_button_set_label(GTK_BUTTON(rule->w_prop), dt_collection_name(mode));
 
   // re-init the special widgets
   _widget_init_special(rule, "", self, FALSE);
@@ -784,16 +791,8 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
 
 static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rule, dt_lib_module_t *self)
 {
-  if(rule && rule->manual_widget_set) return TRUE;
-
-  GCallback callback;
-  if(rule)
-    callback = G_CALLBACK(_event_rule_change_type);
-  else
-    callback = G_CALLBACK(_event_append_rule);
-
 #define ADD_COLLECT_ENTRY(menu, value)                                                                            \
-  _popup_add_item(menu, dt_collection_name(value), value, FALSE, callback, rule, self);
+  _popup_add_item(menu, dt_collection_name(value), value, FALSE, G_CALLBACK(_event_append_rule), rule, self);
 
   // we show a popup with all the possible rules
   // note that only rules with defined filters will be shown
@@ -855,6 +854,90 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   dt_gui_menu_popup(GTK_MENU(spop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
   return TRUE;
 #undef ADD_COLLECT_ENTRY
+}
+
+static void _rule_populate_prop_combo_add(GtkWidget *w, const dt_collection_properties_t prop)
+{
+  if(!_filters_get(prop)) return;
+  dt_bauhaus_combobox_add_full(w, dt_collection_name(prop), DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE,
+                               GUINT_TO_POINTER(prop), NULL, TRUE);
+}
+static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
+{
+  GtkWidget *w = rule->w_prop;
+  // first we cleanup existing entries
+  dt_bauhaus_combobox_clear(w);
+#define ADD_COLLECT_ENTRY(value) _rule_populate_prop_combo_add(w, value);
+
+  // in the case of a pinned rule, we only add the selected entry
+  if(rule->topbar)
+  {
+    ADD_COLLECT_ENTRY(rule->prop);
+    gtk_widget_set_tooltip_text(w,
+                                _("rule property\nthis can't be changed as the rule is pinned into the toolbar"));
+    rule->manual_widget_set++;
+    dt_bauhaus_combobox_set_from_value(rule->w_prop, rule->prop);
+    rule->manual_widget_set--;
+    return;
+  }
+  // otherwise we add all implemented rules
+  gtk_widget_set_tooltip_text(w, _("rule property"));
+
+  dt_bauhaus_combobox_add_section(w, _("files"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILMROLL);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOLDERS);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILENAME);
+
+  dt_bauhaus_combobox_add_section(w, _("metadata"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    const gchar *name = dt_metadata_get_name(keyid);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    const int meta_type = dt_metadata_get_type(keyid);
+    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
+    {
+      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
+    }
+  }
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TEXTSEARCH);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
+
+  dt_bauhaus_combobox_add_section(w, _("times"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);
+
+  dt_bauhaus_combobox_add_section(w, _("capture details"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
+
+  /* TO BE restored once the filters will be implemented
+  dt_bauhaus_combobox_add_section(w, _("darktable"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);*/
+
+#undef ADD_COLLECT_ENTRY
+
+  rule->manual_widget_set++;
+  dt_bauhaus_combobox_set_from_value(rule->w_prop, rule->prop);
+  rule->manual_widget_set--;
 }
 
 static gboolean _event_rule_append(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
@@ -926,6 +1009,7 @@ static void _widget_header_update(dt_lib_filtering_rule_t *rule)
     gtk_widget_set_tooltip_text(rule->w_off,
                                 _("disable this collect rule\nctrl-click to pin into the top toolbar"));
   }
+  _rule_populate_prop_combo(rule);
 }
 
 static void _rule_topbar_toggle(dt_lib_filtering_rule_t *rule, dt_lib_module_t *self)
@@ -1066,18 +1150,19 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
   // property
   if(newmain)
   {
-    rule->w_prop = gtk_button_new_with_label(dt_collection_name(prop));
-    gtk_widget_set_name(rule->w_prop, "collect-property");
-    gtk_widget_set_tooltip_text(rule->w_prop, _("rule property\nctrl-click to (un)pin into the top toolbar"));
+    rule->w_prop = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_combobox_set_selected_text_align(rule->w_prop, DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE);
+    DT_BAUHAUS_WIDGET(rule->w_prop)->show_quad = FALSE;
+    _rule_populate_prop_combo(rule);
     g_object_set_data(G_OBJECT(rule->w_prop), "rule", rule);
-    GtkWidget *lb = gtk_bin_get_child(GTK_BIN(rule->w_prop));
-    gtk_label_set_ellipsize(GTK_LABEL(lb), PANGO_ELLIPSIZE_END);
-    g_signal_connect(G_OBJECT(rule->w_prop), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
+    dt_bauhaus_combobox_set_from_value(rule->w_prop, prop);
+    g_signal_connect(G_OBJECT(rule->w_prop), "value-changed", G_CALLBACK(_event_rule_change_type), self);
     gtk_box_pack_start(GTK_BOX(hbox), rule->w_prop, TRUE, TRUE, 0);
   }
   else if(newprop)
   {
-    gtk_button_set_label(GTK_BUTTON(rule->w_prop), dt_collection_name(prop));
+    _rule_populate_prop_combo(rule);
+    dt_bauhaus_combobox_set_from_value(rule->w_prop, prop);
   }
 
   if(newmain)
