@@ -232,13 +232,6 @@
     <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_number_event_handles</name>
-    <type>int</type>
-    <default>25</default>
-    <shortdescription>the number of OpenCL event handles darktable can use</shortdescription>
-    <longdescription>a positive non-zero integer defines the number of event handles that darktable may have opened on a device. a value of -1 does not pose any restrictions, bearing the risk of hitting the device's resource limits. a value of zero completely prevents the use of event handles.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>opencl_async_pixelpipe</name>
     <type>bool</type>
     <default>false</default>
