@@ -944,7 +944,7 @@ void change_image(struct dt_iop_module_t *self)
 
 const dt_action_element_def_t _action_elements_levels[]
   = { { N_("black"), dt_action_effect_value },
-      { N_("grey" ), dt_action_effect_value },
+      { N_("gray" ), dt_action_effect_value },
       { N_("white"), dt_action_effect_value },
       { NULL } };
 
