@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-06 01:13-0300\n"
-"PO-Revision-Date: 2022-04-06 01:22-0300\n"
+"POT-Creation-Date: 2022-04-07 09:53-0300\n"
+"PO-Revision-Date: 2022-04-07 09:55-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -1248,7 +1248,10 @@ msgid ""
 "allows runtime tuning of OpenCL devices. 'memory size' tests for available "
 "graphics ram, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
-msgstr "permite ajuste dos dispositivos OpenCL durante excução. 'tamanho da memória' testa a memória ram disponível para gráficos, 'transferência de memória' tenta um modo mais rápido de acesso à memória usado para ladrilhamento."
+msgstr ""
+"permite ajuste dos dispositivos OpenCL durante excução. 'tamanho da memória' "
+"testa a memória ram disponível para gráficos, 'transferência de memória' "
+"tenta um modo mais rápido de acesso à memória usado para ladrilhamento."
 
 #: ../build/bin/preferences_gen.h:6597
 msgid "security"
@@ -5265,16 +5268,19 @@ msgstr "2) ajustar desempenho OpenCL"
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
-msgstr "alguns valores de configuração globais relevantes para o desempenho de OpenCL não são mais usados."
+msgstr ""
+"alguns valores de configuração globais relevantes para o desempenho de "
+"OpenCL não são mais usados."
 
 #: ../src/common/darktable.c:1740
 msgid ""
 "instead you will find 'per device' data in 'cldevice_v0_canonical-name'. "
 "content is:"
-msgstr "ao invés disso você encontrará dados 'por dispositivo' em 'cldevice_v0_canonical-name'. o conteúdo é:"
+msgstr ""
+"ao invés disso você encontrará dados 'por dispositivo' em "
+"'cldevice_v0_canonical-name'. o conteúdo é:"
 
 #: ../src/common/darktable.c:1742
-#, fuzzy
 msgid ""
 "  'avoid_atomics'  'micro_nap'  'pinned_memory'  'roundupwd'  'roundupht'  "
 "'magic'"
@@ -5850,25 +5856,25 @@ msgstr "distribuição de Poisson genérica"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "perfil de controle de ruído `%s' não é válido"
 
-#: ../src/common/opencl.c:936
+#: ../src/common/opencl.c:937
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr "devido a baixa aceleração de hardware da GPU o opencl foi desativado."
 
-#: ../src/common/opencl.c:943
+#: ../src/common/opencl.c:944
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "detectadas múltiplas GPUs - o perfil de escalonamento foi ajustado de acordo."
 
-#: ../src/common/opencl.c:950
+#: ../src/common/opencl.c:951
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU muito rápida detectada - o perfil de escalonamento foi ajustado de "
 "acordo."
 
-#: ../src/common/opencl.c:957
+#: ../src/common/opencl.c:958
 msgid "opencl scheduling profile set to default"
 msgstr "perfil de escalonamento OpenCL ajustado para padrão."
 
@@ -15011,9 +15017,8 @@ msgstr ""
 "do preto para fora do gama tornando valores RGB negativos."
 
 #: ../src/iop/exposure.c:1087
-#, fuzzy
 msgid "spot exposure mapping"
-msgstr "mostrar máscara de exposição"
+msgstr "mapeamento de exposição"
 
 #: ../src/iop/exposure.c:1091
 msgid ""
@@ -21951,7 +21956,6 @@ msgid "toggle sort"
 msgstr "alterna ordenação"
 
 #: ../src/libs/tagging.c:140
-#, fuzzy
 msgctxt "accel"
 msgid "toggle hide"
 msgstr "alternar esconder"
