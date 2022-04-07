@@ -23,7 +23,7 @@
 /* Perceptually uniform grey gradient */
 
 /* General */
-@define-color selected_bg_color @grey_55; /* legacy stuff */
+@define-color selected_bg_color @grey_60; /* legacy stuff */
 @define-color border_color @grey_40; /* border, when used */
 @define-color bg_color @grey_45; /* general background */
 @define-color fg_color @grey_95; /* general text */
