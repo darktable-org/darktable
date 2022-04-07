@@ -80,6 +80,12 @@ static void _filename_changed(GtkWidget *widget, gpointer user_data)
   g_free(value);
 }
 
+static gboolean _filename_focus_out(GtkWidget *entry, GdkEventFocus *event, gpointer user_data)
+{
+  _filename_changed(entry, user_data);
+  return FALSE;
+}
+
 void _filename_tree_update_visibility(GtkWidget *w, _widgets_filename_t *filename)
 {
   gtk_widget_set_visible(gtk_widget_get_parent(filename->name_tree), w == filename->name);
@@ -386,6 +392,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                                 "\nright-click to get existing filenames."));
   gtk_box_pack_start(GTK_BOX(hb), filename->name, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->name), "activate", G_CALLBACK(_filename_changed), filename);
+  g_signal_connect(G_OBJECT(filename->name), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
   g_signal_connect(G_OBJECT(filename->name), "button-press-event", G_CALLBACK(_filename_press), filename);
   GtkStyleContext *context = gtk_widget_get_style_context(filename->name);
   gtk_style_context_add_class(context, "dt_transparent_background");
@@ -401,6 +408,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
                                                "\nright-click to get existing extensions."));
   gtk_box_pack_start(GTK_BOX(hb), filename->ext, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->ext), "activate", G_CALLBACK(_filename_changed), filename);
+  g_signal_connect(G_OBJECT(filename->ext), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
   g_signal_connect(G_OBJECT(filename->ext), "button-press-event", G_CALLBACK(_filename_press), filename);
   context = gtk_widget_get_style_context(filename->ext);
   gtk_style_context_add_class(context, "dt_transparent_background");
