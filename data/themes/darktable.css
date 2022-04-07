@@ -63,6 +63,22 @@
   * create optical margins by aligning content properly, not by using borders.
 ***/
 
+/*** Using classes and ids :
+
+  * classes are used to set same settings for multiples and differents widgets in the UI.
+  * ids are used to set a name to a specific widget and so allow to set CSS for this widget
+  * some classes had been set on darktable, they all began with a dot. Before adding classes or ids, check what exist before
+
+  * on those classes, some general ones had been set and should be added to your widget on Gtk code:
+  - dt_transparent_background: use it on a widget to set transparent background and border
+  - dt_module_btn: set for all icons (button widget without text on it)
+  - section_expander: use it for all expanders you could add on a module
+  - search: use it for all search box
+  - dt_bauhaus_alignment: used for some icons related to bauhaus widget (color picker for auto-tune setting in filmic or mask on same module and tone equalizer actually ; could be used so if an icon related to a bauhaus is not aligned by default)
+
+  * the list above is not exhausting. Those are main ones set actually and should be completed if needed. You could see other classes on this file
+***/
+
 /*--------------------------------------
   - Define default colors and settings -
   --------------------------------------*/
@@ -89,7 +105,7 @@
 @define-color collapsible_bg_color @grey_25;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_bg @bg_color;
+@define-color bauhaus_bg shade(@bg_color, 1.06);
 @define-color bauhaus_fg @fg_color;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
@@ -1242,7 +1258,8 @@ dialog scrollbar
   margin: 0.35em 1.05em 1.05em 1.05em;
 }
 
-#preferences_box #preset_controls button
+#preferences_box #preset_controls button,
+#preferences_box #shortcut_controls check
 {
   margin-right: 0.21em;
 }
@@ -1494,7 +1511,7 @@ padding: 0.14em;
 
 #dt-map-location
 {
-border-bottom: 0.07em solid @button_border;
+border-bottom: 0.07em solid @selected_bg_color;
 }
 
 #dt-map-location:hover
