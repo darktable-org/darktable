@@ -232,13 +232,6 @@
     <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_avoid_atomics</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>do not run OpenCL kernels which require atomic operations</shortdescription>
-    <longdescription>if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral). pixelpipe processing will be done on CPU for the affected modules. useful if your OpenCL implementation freezes/crashes on atomics or if they are processed with a bad performance.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>opencl_number_event_handles</name>
     <type>int</type>
     <default>25</default>
@@ -253,13 +246,6 @@
     <longdescription>if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module. export pixelpipe will always be run synchronously.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_micro_nap</name>
-    <type>int</type>
-    <default>1000</default>
-    <shortdescription>pause OpenCL processing for this number of microseconds from time to time</shortdescription>
-    <longdescription>for slow GPUs this gives your graphics driver some time to breathe to do needed screen updates. can be left at zero for fast devices.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>opencl_device_priority</name>
     <type>string</type>
     <default>*/!0,*/*/*/!0,*</default>
@@ -272,13 +258,6 @@
     <default>400</default>
     <shortdescription>timeout period for locking mandatory opencl device</shortdescription>
     <longdescription>time period (in units of 5ms) after which we give up try-locking an opencl device for mandatory use. defaults to 400 (2 seconds).</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>opencl_use_pinned_memory</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>whether to use pinned memory transfer during tiling</shortdescription>
-    <longdescription>during tiling huge amounts of memory need to be transferred between host and device. for some OpenCL implementations direct memory transfers give a drastic performance penalty. this can often be avoided by using indirect transfers via pinned memory. other devices have more efficient direct memory transfer implementations. AMD seems to belong to the first group, nvidia to the second.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_use_cpu_devices</name>
@@ -381,11 +360,18 @@
     <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelpipes sequentially on the GPU.</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="cpugpu" capability="opencl">
-    <name>tuneopencl</name>
-    <type>bool</type>
-    <default>false</default>
+    <name>opencl_tuning_mode</name>
+    <type>
+      <enum>
+        <option>nothing</option>
+        <option>memory size</option>
+        <option>memory transfer</option>
+        <option>memory size and transfer</option>
+      </enum>
+    </type>
+    <default>nothing</default>
     <shortdescription>tune OpenCL performance</shortdescription>
-    <longdescription>if switched on, darktable tunes OpenCL for best performance, overrides static settings</longdescription>
+    <longdescription>allows runtime tuning of OpenCL devices. 'memory size' tests for available graphics ram, 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_synch_cache</name>
@@ -413,20 +399,6 @@
     <default>768</default>
     <shortdescription>minimum amount of GPU memory (MB) required to activate OpenCL</shortdescription>
     <longdescription>OpenCL will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 200 will be treated as 200.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>opencl_size_roundup</name>
-    <type>int</type>
-    <default>16</default>
-    <shortdescription>round OpenCL work group sizes to a multiple of</shortdescription>
-    <longdescription>in OpenCL processing round width/height of global work groups to a multiple of this value. reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.</longdescription>
-  </dtconfig>
-  <dtconfig>
-    <name>maximum_number_tiles</name>
-    <type>int</type>
-    <default>10000</default>
-    <shortdescription>assumed maximum sane number of tiles</shortdescription>
-    <longdescription>if during tiling this number is exceeded darktable assumes that tiling is not possible and falls back to untiled processing - with all system memory limits taking full effect. in case you want to process huge images you may want to increase this number.</longdescription>
   </dtconfig>
   <dtconfig prefs="security" section="general">
     <name>ask_before_remove</name>
@@ -3032,6 +3004,19 @@
     <type min="0" max="100">float</type>
     <default>10</default>
     <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/print/print/unit</name>
+    <type>
+      <enum>
+	<option>mm</option>
+	<option>cm</option>
+	<option>inch</option>
+      </enum>
+    </type>
+    <default>mm</default>
+    <shortdescription>measurement units</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>

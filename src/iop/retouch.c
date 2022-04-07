@@ -3636,7 +3636,7 @@ static cl_int rt_copy_in_to_out_cl(const int devid, cl_mem dev_in, const struct 
   cl_mem dev_roi_out = NULL;
 
   const size_t sizes[]
-      = { ROUNDUPWD(MIN(roi_out->width, roi_in->width)), ROUNDUPHT(MIN(roi_out->height, roi_in->height)), 1 };
+      = { ROUNDUPDWD(MIN(roi_out->width, roi_in->width), devid), ROUNDUPDHT(MIN(roi_out->height, roi_in->height), devid), 1 };
 
   dev_roi_in = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_in);
   dev_roi_out = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_out);
@@ -3711,7 +3711,7 @@ static cl_int rt_copy_image_masked_cl(const int devid, cl_mem dev_src, cl_mem de
 {
   cl_int err = CL_SUCCESS;
 
-  const size_t sizes[] = { ROUNDUPWD(roi_mask_scaled->width), ROUNDUPHT(roi_mask_scaled->height), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
 
   const cl_mem dev_roi_dest =
     dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_dest);
@@ -3749,7 +3749,7 @@ static cl_int rt_copy_mask_to_alpha_cl(const int devid, cl_mem dev_layer, dt_iop
 
   // fill it
   const int kernel = gd->kernel_retouch_copy_mask_to_alpha;
-  const size_t sizes[] = { ROUNDUPWD(roi_mask_scaled->width), ROUNDUPHT(roi_mask_scaled->height), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
 
   const cl_mem  dev_roi_layer = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_layer);
   const cl_mem dev_roi_mask_scaled
@@ -3826,7 +3826,7 @@ static cl_int retouch_fill_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
 
   // fill it
   const int kernel = gd->kernel_retouch_fill;
-  const size_t sizes[] = { ROUNDUPWD(roi_mask_scaled->width), ROUNDUPHT(roi_mask_scaled->height), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(roi_mask_scaled->width, devid), ROUNDUPDHT(roi_mask_scaled->height, devid), 1 };
 
   const cl_mem dev_roi_layer = dt_opencl_copy_host_to_device_constant(devid, sizeof(dt_iop_roi_t), (void *)roi_layer);
   const cl_mem dev_roi_mask_scaled
@@ -3880,7 +3880,7 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
   if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL)
   {
     const int kernel = gd->kernel_retouch_image_rgb2lab;
-    size_t sizes[] = { ROUNDUPWD(roi_layer->width), ROUNDUPHT(roi_layer->height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(roi_layer->width, devid), ROUNDUPDHT(roi_layer->height, devid), 1 };
 
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_layer);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(roi_layer->width));
@@ -3941,7 +3941,7 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
   if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL)
   {
     const int kernel = gd->kernel_retouch_image_lab2rgb;
-    const size_t sizes[] = { ROUNDUPWD(roi_layer->width), ROUNDUPHT(roi_layer->height), 1 };
+    const size_t sizes[] = { ROUNDUPDWD(roi_layer->width, devid), ROUNDUPDHT(roi_layer->height, devid), 1 };
 
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_layer);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(roi_layer->width));
@@ -4283,7 +4283,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
     const int kernel = gd->kernel_retouch_clear_alpha;
-    const size_t sizes[] = { ROUNDUPWD(roi_rt->width), ROUNDUPHT(roi_rt->height), 1 };
+    const size_t sizes[] = { ROUNDUPDWD(roi_rt->width, devid), ROUNDUPDHT(roi_rt->height, devid), 1 };
 
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&in_retouch);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(roi_rt->width));
@@ -4356,7 +4356,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && g && !g->mask_display)
   {
     const int kernel = gd->kernel_retouch_copy_alpha;
-    const size_t sizes[] = { ROUNDUPWD(roi_rt->width), ROUNDUPHT(roi_rt->height), 1 };
+    const size_t sizes[] = { ROUNDUPDWD(roi_rt->width, devid), ROUNDUPDHT(roi_rt->height, devid), 1 };
 
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&in_retouch);
@@ -4381,6 +4381,9 @@ cleanup:
 }
 #endif
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
-// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

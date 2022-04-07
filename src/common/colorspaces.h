@@ -293,6 +293,9 @@ void dt_colorspaces_cygm_to_rgb(float *out, int num, double CAM_to_RGB[3][4]);
 /** convert RGB buffer to CYGM */
 void dt_colorspaces_rgb_to_cygm(float *out, int num, double RGB_to_CAM[4][3]);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

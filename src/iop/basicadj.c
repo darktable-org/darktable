@@ -1362,7 +1362,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     goto cleanup;
   }
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 2, sizeof(int), (void *)&width);
@@ -1565,6 +1565,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #undef exposure2white
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

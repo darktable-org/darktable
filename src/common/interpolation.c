@@ -1900,7 +1900,7 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
     goto error;
   }
 
-  size_t sizes[3] = { ROUNDUPWD(width), ROUNDUP(height * taps, vblocksize), 1 };
+  size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUP(height * taps, vblocksize), 1 };
   size_t local[3] = { 1, vblocksize, 1 };
 
   // store resampling plan to device memory
@@ -2187,6 +2187,9 @@ void dt_interpolation_resample_roi_1c(const struct dt_interpolation *itor, float
   dt_interpolation_resample_1c(itor, out, &oroi, out_stride, in, &iroi, in_stride);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

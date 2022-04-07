@@ -26,6 +26,7 @@
 #include "common/utility.h"
 #include "common/history.h"
 #include "common/map_locations.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -282,24 +283,15 @@ void init_presets(dt_lib_module_t *self)
                        &params, sizeof(params), TRUE);
 
   // based on date/time
-  struct tm tt;
-  char datetime_today[100] = { 0 };
-  char datetime_24hrs[100] = { 0 };
-  char datetime_30d[100] = { 0 };
-
-  const time_t now = time(NULL);
-  const time_t ONE_DAY = (24 * 60 * 60);
-  const time_t last24h = now - ONE_DAY;
-  const time_t last30d = now - (ONE_DAY * 30);
-
-  (void)localtime_r(&now, &tt);
-  strftime(datetime_today, 100, "%Y:%m:%d", &tt);
-
-  (void)localtime_r(&last24h, &tt);
-  strftime(datetime_24hrs, 100, "> %Y:%m:%d %H:%M", &tt);
-
-  (void)localtime_r(&last30d, &tt);
-  strftime(datetime_30d, 100, "> %Y:%m:%d", &tt);
+  GDateTime *now = g_date_time_new_now_local();
+  char *datetime_today = g_date_time_format(now, "%Y:%m:%d");
+  GDateTime *gdt = g_date_time_add_days(now, -1);
+  char *datetime_24hrs = g_date_time_format(gdt, "> %Y:%m:%d %H:%M");
+  g_date_time_unref(gdt);
+  gdt = g_date_time_add_days(now, -30);
+  char *datetime_30d = g_date_time_format(gdt, "> %Y:%m:%d");
+  g_date_time_unref(gdt);
+  g_date_time_unref(now);
 
   // presets based on import
   CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
@@ -333,6 +325,9 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("taken: last 30 days"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
+  g_free(datetime_today);
+  g_free(datetime_24hrs);
+  g_free(datetime_30d);
 #undef CLEAR_PARAMS
 }
 
@@ -574,11 +569,13 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
     /* Clean selected images, and add to the table those which are going to be deleted */
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
+    // clang-format off
     fullq = g_strdup_printf("INSERT INTO main.selected_images"
                             " SELECT id"
                             " FROM main.images"
                             " WHERE film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%')",
                             filmroll_path);
+    // clang-format on
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), fullq, NULL, NULL, NULL);
     g_free(filmroll_path);
 
@@ -1296,6 +1293,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     switch (property)
     {
       case DT_COLLECTION_PROP_FOLDERS:
+        // clang-format off
         query = g_strdup_printf("SELECT folder, film_rolls_id, COUNT(*) AS count, status"
                                 " FROM main.images AS mi"
                                 " JOIN (SELECT fr.id AS film_rolls_id, folder, status"
@@ -1305,6 +1303,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 "   ON film_id = film_rolls_id "
                                 " WHERE %s"
                                 " GROUP BY folder, film_rolls_id", where_ext);
+          // clang-format on
         break;
       case DT_COLLECTION_PROP_TAG:
       {
@@ -1312,6 +1311,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           dt_conf_is_equal("plugins/lighttable/tagging/case_sensitivity", "insensitive");
 
         if(is_insensitive)
+          // clang-format off
           query = g_strdup_printf("SELECT name, 1 AS tagid, SUM(count) AS count"
                                   " FROM (SELECT tagid, COUNT(*) as count"
                                   "   FROM main.images AS mi"
@@ -1322,7 +1322,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                   " JOIN (SELECT lower(name) AS name, id AS tag_id FROM data.tags)"
                                   "   ON tagid = tag_id"
                                   "   GROUP BY name", where_ext);
+          // clang-format on
         else
+          // clang-format off
           query = g_strdup_printf("SELECT name, tagid, count"
                                   " FROM (SELECT tagid, COUNT(*) AS count"
                                   "  FROM main.images AS mi"
@@ -1333,7 +1335,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                   " JOIN (SELECT name, id AS tag_id FROM data.tags)"
                                   "   ON tagid = tag_id"
                                   , where_ext);
+          // clang-format on
 
+        // clang-format off
         query = dt_util_dstrcat(query, " UNION ALL "
                                        "SELECT '%s' AS name, 0 as id, COUNT(*) AS count "
                                        "FROM main.images AS mi "
@@ -1341,9 +1345,11 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                        "  (SELECT DISTINCT imgid FROM main.tagged_images AS ti"
                                        "   WHERE ti.tagid NOT IN memory.darktable_tags)",
                                 _("not tagged"));
+        // clang-format on
       }
       break;
       case DT_COLLECTION_PROP_GEOTAGGING:
+        // clang-format off
         query = g_strdup_printf("SELECT "
                                 " CASE WHEN mi.longitude IS NULL"
                                 "           OR mi.latitude IS null THEN \'%s\'"
@@ -1364,19 +1370,10 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 " GROUP BY name, tag_id",
                                 _("not tagged"), _("tagged"), _("tagged"),
                                 (int)strlen(dt_map_location_data_tag_root()) + 1, where_ext);
+        // clang-format on
         break;
       case DT_COLLECTION_PROP_DAY:
-        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
-                                " FROM main.images AS mi"
-                                " WHERE datetime_taken IS NOT NULL AND %s"
-                                " GROUP BY date", where_ext);
-        break;
       case DT_COLLECTION_PROP_TIME:
-        query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 19) AS date, 1, COUNT(*) AS count"
-                                " FROM main.images AS mi"
-                                " WHERE datetime_taken IS NOT NULL AND %s"
-                                " GROUP BY date", where_ext);
-        break;
       case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
       case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
       case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
@@ -1387,16 +1384,20 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
         switch(local_property)
         {
+          case DT_COLLECTION_PROP_DAY: colname = "datetime_taken" ; break ;
+          case DT_COLLECTION_PROP_TIME: colname = "datetime_taken" ; break ;
           case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
           case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
           case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
           case DT_COLLECTION_PROP_PRINT_TIMESTAMP: colname = "print_timestamp" ; break ;
         }
-        query = g_strdup_printf("SELECT strftime('%%Y:%%m:%%d %%H:%%M:%%S', %s, 'unixepoch', 'localtime') AS date, 1, COUNT(*) AS count"
+        // clang-format off
+        query = g_strdup_printf("SELECT %s AS date, 1, COUNT(*) AS count"
                                 " FROM main.images AS mi"
-                                " WHERE %s <> -1"
+                                " WHERE %s IS NOT NULL AND %s <> 0"
                                 " AND %s"
-                                " GROUP BY date", colname, colname, where_ext);
+                                " GROUP BY date", colname, colname, colname, where_ext);
+        // clang-format on
         break;
         }
     }
@@ -1415,8 +1416,18 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     guint index = 0;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      const char* sqlite_name = (const char *)sqlite3_column_text(stmt, 0);
-      char *name = sqlite_name == NULL ? g_strdup("") : g_strdup(sqlite_name);
+      char *name;
+      if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
+      {
+        char sdt[DT_DATETIME_EXIF_LENGTH] = {0};
+        dt_datetime_gtimespan_to_exif(sdt, sizeof(sdt), sqlite3_column_int64(stmt, 0));
+        name = g_strdup(sdt);
+      }
+      else
+      {
+        const char* sqlite_name = (const char *)sqlite3_column_text(stmt, 0);
+        name = sqlite_name == NULL ? g_strdup("") : g_strdup(sqlite_name);
+      }
       gchar *collate_key = NULL;
 
       const int count = sqlite3_column_int(stmt, 2);
@@ -1678,8 +1689,10 @@ static void list_view(dt_lib_collect_rule_t *dr)
     {
       case DT_COLLECTION_PROP_CAMERA:; // camera
         int index = 0;
+        // clang-format off
         gchar *makermodel_query = g_strdup_printf("SELECT maker, model, COUNT(*) AS count "
                                                   "FROM main.images AS mi WHERE %s GROUP BY maker, model", where_ext);
+        // clang-format on
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 makermodel_query,
@@ -1708,6 +1721,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
       case DT_COLLECTION_PROP_HISTORY: // History
         // images without history are counted as if they were basic
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT CASE"
                    "       WHEN basic_hash == current_hash THEN '%s'"
@@ -1722,9 +1736,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    " GROUP BY altered"
                    " ORDER BY altered ASC",
                    _("basic"), _("auto applied"), _("altered"), _("basic"), where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_LOCAL_COPY: // local copy, 2 hardcoded alternatives
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT CASE "
                    "         WHEN (flags & %d) THEN '%s'"
@@ -1734,17 +1750,21 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    " WHERE %s"
                    " GROUP BY lcp ORDER BY lcp ASC",
                    DT_IMAGE_LOCAL_COPY, _("copied locally"),  _("not copied locally"), where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio, 3 hardcoded alternatives
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT ROUND(aspect_ratio,1), 1, COUNT(*) AS count"
                    " FROM main.images AS mi "
                    " WHERE %s"
                    " GROUP BY ROUND(aspect_ratio,1)", where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_COLORLABEL: // colorlabels
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT CASE color"
                    "         WHEN 0 THEN '%s'"
@@ -1762,18 +1782,22 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    " GROUP BY color"
                    " ORDER BY color DESC",
                    _("red"), _("yellow"), _("green"), _("blue"), _("purple"), where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_LENS: // lens
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT lens, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY lens"
                    " ORDER BY lens", where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT CAST(focal_length AS INTEGER) AS focal_length, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
@@ -1781,9 +1805,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    " GROUP BY CAST(focal_length AS INTEGER)"
                    " ORDER BY CAST(focal_length AS INTEGER)",
                    where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_ISO: // iso
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT CAST(iso AS INTEGER) AS iso, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
@@ -1791,9 +1817,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    " GROUP BY iso"
                    " ORDER BY iso",
                    where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_APERTURE: // aperture
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT ROUND(aperture,1) AS aperture, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
@@ -1801,9 +1829,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    " GROUP BY aperture"
                    " ORDER BY aperture",
                    where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_EXPOSURE: // exposure
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT CASE"
                    "         WHEN (exposure < 0.4) THEN '1/' || CAST(1/exposure + 0.9 AS INTEGER) "
@@ -1814,18 +1844,22 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    " GROUP BY _exposure"
                    " ORDER BY exposure",
                   where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_FILENAME: // filename
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT filename, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
                    " WHERE %s"
                    " GROUP BY filename"
                    " ORDER BY filename", where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_GROUPING: // Grouping, 2 hardcoded alternatives
+        // clang-format off
         g_snprintf(query, sizeof(query),
                    "SELECT CASE"
                    "         WHEN id = group_id THEN '%s'"
@@ -1836,9 +1870,11 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    " GROUP BY group_leader"
                    " ORDER BY group_leader ASC",
                    _("group leaders"),  _("group followers"), where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_MODULE: // module
+        // clang-format off
         snprintf(query, sizeof(query),
                  "SELECT m.name AS module_name, 1, COUNT(*) AS count"
                  " FROM main.images AS mi"
@@ -1850,6 +1886,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                  " GROUP BY module_name"
                  " ORDER BY module_name",
                  where_ext);
+        // clang-format on
         break;
 
       case DT_COLLECTION_PROP_ORDER: // modules order
@@ -1861,6 +1898,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                                      i, _(dt_iop_order_string(i)));
           }
           orders = dt_util_dstrcat(orders, "ELSE '%s' ", _("none"));
+          // clang-format off
           snprintf(query, sizeof(query),
                    "SELECT CASE %s END as ver, 1, COUNT(*) AS count"
                    " FROM main.images AS mi"
@@ -1870,12 +1908,14 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    " GROUP BY ver"
                    " ORDER BY ver",
                    orders, where_ext);
+          // clang-format on
           g_free(orders);
         }
         break;
 
       case DT_COLLECTION_PROP_RATING: // image rating
         {
+        // clang-format off
           g_snprintf(query, sizeof(query),
                      "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating, 1,"
                      " COUNT(*) AS count"
@@ -1883,6 +1923,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                      " WHERE %s"
                      " GROUP BY rating"
                      " ORDER BY rating", where_ext);
+          // clang-format on
         }
         break;
 
@@ -1897,6 +1938,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
           g_free(setting);
           if(!hidden)
           {
+            // clang-format off
             snprintf(query, sizeof(query),
                      "SELECT"
                      " CASE WHEN value IS NULL THEN '%s' ELSE value END AS value,"
@@ -1909,6 +1951,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                      " GROUP BY value"
                      " ORDER BY force_order, value",
                      _("not defined"), keyid, where_ext);
+            // clang-format on
           }
         }
         else
@@ -1924,6 +1967,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
             else
               order_by = g_strdup("folder");
 
+          // clang-format off
           g_snprintf(query, sizeof(query),
                      "SELECT folder, film_rolls_id, COUNT(*) AS count, status"
                      " FROM main.images AS mi"
@@ -1935,6 +1979,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
                      " WHERE %s"
                      " GROUP BY folder"
                      " ORDER BY %s", where_ext, order_by);
+          // clang-format on
 
           g_free(order_by);
         }
@@ -3315,6 +3360,9 @@ void init(struct dt_lib_module_t *self)
 }
 #endif
 #undef MAX_RULES
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -20,6 +20,7 @@
 #include "common/collection.h"
 #include "common/import_session.h"
 #include "common/utility.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/jobs/image_jobs.h"
 #include "gui/gtk.h"
@@ -231,8 +232,8 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *in_p
                dt_camctl_get_image_file_timestamp(darktable.camctl, in_path, in_filename);
   if(timestamp && imgid >= 0)
   {
-    char dt_txt[DT_DATETIME_LENGTH];
-    dt_metadata_unix_time_to_text(dt_txt, sizeof(dt_txt), &timestamp);
+    char dt_txt[DT_DATETIME_EXIF_LENGTH];
+    dt_datetime_unix_to_exif(dt_txt, sizeof(dt_txt), &timestamp);
     gchar *id = g_strconcat(in_filename, "-", dt_txt, NULL);
     dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
     g_free(id);
@@ -383,6 +384,9 @@ dt_job_t *dt_camera_import_job_create(GList *images, struct dt_camera_t *camera,
   return job;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -1675,7 +1675,7 @@ void gui_update(struct dt_iop_module_t *self)
   show_guiding_controls(self);
   invalidate_luminance_cache(self);
 
-  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -1871,7 +1871,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
 }
 
 
-static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
+static void show_luminance_mask_callback(GtkWidget *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_request_focus(self);
@@ -1884,14 +1884,14 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
   if(self->request_mask_display)
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
-    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
     g->mask_display = 0;
     return;
   }
   else
     g->mask_display = !g->mask_display;
 
-  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
 //  dt_dev_reprocess_center(self->dev);
   dt_iop_refresh_center(self);
 
@@ -2424,7 +2424,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   {
     //lost focus - stop showing mask
     g->mask_display = FALSE;
-    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
     dt_dev_reprocess_center(self->dev);
     dt_collection_hint_message(darktable.collection);
   }
@@ -3072,7 +3072,8 @@ static void _develop_ui_pipe_started_callback(gpointer instance, gpointer user_d
 
   ++darktable.gui->reset;
   dt_iop_gui_enter_critical_section(self);
-  dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), g->mask_display);
   dt_iop_gui_leave_critical_section(self);
   --darktable.gui->reset;
 }
@@ -3282,14 +3283,12 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->notebook), "button-press-event", G_CALLBACK(notebook_button_press), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
 
-  g->show_luminance_mask = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->show_luminance_mask, NULL, N_("display exposure mask"));
-  dt_bauhaus_widget_set_quad_paint(g->show_luminance_mask, dtgtk_cairo_paint_showmask,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->show_luminance_mask, TRUE);
-  gtk_widget_set_tooltip_text(g->show_luminance_mask, _("display exposure mask"));
-  g_signal_connect(G_OBJECT(g->show_luminance_mask), "quad-pressed", G_CALLBACK(show_luminance_mask_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget),  g->show_luminance_mask, TRUE, TRUE, 0);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("display exposure mask")), TRUE, TRUE, 0);
+  g->show_luminance_mask = dt_iop_togglebutton_new(self, NULL, N_("display exposure mask"), NULL, G_CALLBACK(show_luminance_mask_callback),
+                                           FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_luminance_mask), dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   // Force UI redraws when pipe starts/finishes computing and switch cursors
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
@@ -3323,6 +3322,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

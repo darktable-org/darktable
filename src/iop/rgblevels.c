@@ -1471,7 +1471,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                                             &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto cleanup;
 
-  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 1, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_levels, 2, sizeof(int), &width);
@@ -1509,6 +1509,9 @@ cleanup:
 }
 #endif
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

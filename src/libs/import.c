@@ -388,8 +388,8 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
       gchar *basename = g_path_get_basename(file->filename);
-      char dtid[DT_DATETIME_LENGTH];
-      dt_metadata_unix_time_to_text(dtid, sizeof(dtid), &datetime);
+      char dtid[DT_DATETIME_EXIF_LENGTH];
+      dt_datetime_unix_to_exif(dtid, sizeof(dtid), &datetime);
       const gboolean already_imported = dt_metadata_already_imported(basename, dtid);
       g_free(basename);
       GtkTreeIter iter;
@@ -729,8 +729,8 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
           else
           {
             gchar *basename = g_path_get_basename(filename);
-            char dtid[DT_DATETIME_LENGTH];
-            dt_metadata_unix_time_to_text(dtid, sizeof(dtid), &datetime);
+            char dtid[DT_DATETIME_EXIF_LENGTH];
+            dt_datetime_unix_to_exif(dtid, sizeof(dtid), &datetime);
             already_imported = dt_metadata_already_imported(basename, dtid);
             g_free(basename);
           }
@@ -2305,6 +2305,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   return 0;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

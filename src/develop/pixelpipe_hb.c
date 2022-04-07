@@ -1466,7 +1466,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         // cl_mem_input, *cl_mem_output);
 
         // indirectly give gpu some air to breathe (and to do display related stuff)
-        dt_iop_nap(darktable.opencl->micro_nap);
+        dt_iop_nap(dt_opencl_micro_nap(pipe->devid));
 
         // transform to input colorspace
         if(success_opencl)
@@ -1629,7 +1629,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         // indirectly give gpu some air to breathe (and to do display related stuff)
-        dt_iop_nap(darktable.opencl->micro_nap);
+        dt_iop_nap(dt_opencl_micro_nap(pipe->devid));
 
         // transform to module input colorspace
         if(success_opencl)
@@ -2124,8 +2124,11 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   darktable.dtresources.group = 4 * darktable.dtresources.level;
 #ifdef HAVE_OPENCL
-  if((darktable.dtresources.tunecl == 0) && (pipe->devid >= 0) && darktable.opencl->inited)
+  if((darktable.dtresources.tunememory == 0) && (pipe->devid >= 0) && darktable.opencl->inited)
     darktable.opencl->dev[pipe->devid].tuned_available = 0;
+
+  if((darktable.dtresources.tunepinning != 0) && (pipe->devid >= 0) && darktable.opencl->inited)
+    darktable.opencl->dev[pipe->devid].pinned_memory |= DT_OPENCL_PINNING_ON;
 #endif
   int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #ifdef HAVE_OPENCL
@@ -2518,7 +2521,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     {
       wb[0] = wb[1] = wb[2] = 1.0f;
     }
-    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &in);
     dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), &width);
@@ -2530,7 +2533,7 @@ gboolean dt_dev_write_rawdetail_mask_cl(dt_dev_pixelpipe_iop_t *piece, cl_mem in
     if(err != CL_SUCCESS) goto error;
   }
   {
-    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
     const int kernel = darktable.opencl->blendop->kernel_write_scharr_mask;
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), &tmp);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), &out);
@@ -2634,6 +2637,9 @@ float *dt_dev_distort_detail_mask(const dt_dev_pixelpipe_t *pipe, float *src, co
   return resmask;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

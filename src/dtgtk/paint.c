@@ -43,7 +43,7 @@ const GdkRGBA _colorlabels[]
   = { {.red = 0.9, .green = 0.0, .blue = 0.0, .alpha = 1.0 }, // red
       {.red = 0.9, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // yellow
       {.red = 0.0, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // green
-      {.red = 0.0, .green = 0.0, .blue = 0.9, .alpha = 1.0 }, // blue
+      {.red = 0.0, .green = 0.1, .blue = 0.9, .alpha = 1.0 }, // blue (need a little green here to improve contrast of blue label in darker theme especially while being good in other themes)
       {.red = 0.9, .green = 0.0, .blue = 0.9, .alpha = 1.0 }, // purple
     };
 
@@ -1556,6 +1556,18 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   else
   {
     cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, alpha);
+  }
+
+  /* make blue color label icon more visible and well balanced with other colors */
+  if(flags & CPF_DIRECTION_RIGHT)
+  {
+    cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
+  }
+  
+  /* then improve hover effect for same blue icon */
+  if (flags & CPF_PRELIGHT)
+  {
+    cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
   }
 
   if(flags & CPF_USER_DATA_INCLUDE)
@@ -3156,6 +3168,9 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

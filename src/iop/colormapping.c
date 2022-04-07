@@ -670,7 +670,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dev_mapio = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * MAXN, mapio);
     if(dev_mapio == NULL) goto error;
 
-    size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_histogram, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_histogram, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -781,7 +781,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   memcpy(d, p, sizeof(dt_iop_colormapping_params_t));
 #ifdef HAVE_OPENCL
   if(d->equalization > 0.1f)
-    piece->process_cl_ready = (piece->process_cl_ready && !(darktable.opencl->avoid_atomics));
+    piece->process_cl_ready = (piece->process_cl_ready && !dt_opencl_avoid_atomics(pipe->devid));
 #endif
 }
 
@@ -1101,6 +1101,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

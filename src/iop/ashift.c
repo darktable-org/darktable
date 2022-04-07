@@ -3473,7 +3473,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float out_scale = roi_out->scale;
   const float clip[2] = { cx, cy };
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
@@ -4807,6 +4807,9 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     g->straightening = FALSE;
     // adjust the line with possible current angle and flip on this module
     float pts[4] = { x, y, g->lastx, g->lasty };
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe,
+                                      self->iop_order,
+                                      DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
 
     float dx = pts[0] - pts[2];
     float dy = pts[1] - pts[3];
@@ -5867,6 +5870,9 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
                                       _("[%s] unselect all segments from zone"), self->name());
   return lm;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

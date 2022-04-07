@@ -718,11 +718,13 @@ static GList *_get_full_pathname(char *imgs)
 {
   sqlite3_stmt *stmt = NULL;
   GList *list = NULL;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT folder || '" G_DIR_SEPARATOR_S "' || filename FROM "
-                                                             "main.images i, main.film_rolls f "
-                                                             "ON i.film_id = f.id WHERE i.id IN (?1)",
+  // clang-format off
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT DISTINCT folder || '" G_DIR_SEPARATOR_S "' || filename FROM "
+                              "main.images i, main.film_rolls f "
+                              "ON i.film_id = f.id WHERE i.id IN (?1)",
                               -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgs, -1, SQLITE_STATIC);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -2065,6 +2067,13 @@ static int _control_import_image_copy(const char *filename,
     char *basename = g_path_get_basename(filename);
     dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
 
+    if(!exif_time[0])
+    { // if no exif datetime try file datetime
+      struct stat statbuf;
+      if(!stat(filename, &statbuf))
+        dt_datetime_unix_to_exif(exif_time, sizeof(exif_time), &statbuf.st_mtime);
+    }
+
     if(exif_time[0])
       dt_import_session_set_exif_time(session, exif_time);
     dt_import_session_set_filename(session, basename);
@@ -2096,8 +2105,8 @@ static int _control_import_image_copy(const char *filename,
       const char *fn = g_file_info_get_name(info);
       // FIXME set a routine common with import.c
       const time_t datetime = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
-      char dt_txt[DT_DATETIME_LENGTH];
-      dt_metadata_unix_time_to_text(dt_txt, sizeof(dt_txt), &datetime);
+      char dt_txt[DT_DATETIME_EXIF_LENGTH];
+      dt_datetime_unix_to_exif(dt_txt, sizeof(dt_txt), &datetime);
       char *id = g_strconcat(fn, "-", dt_txt, NULL);
       dt_metadata_set(imgid, "Xmp.darktable.image_id", id, FALSE);
       g_free(id);
@@ -2344,6 +2353,9 @@ void dt_control_import(GList *imgs, const char *datetime_override, const gboolea
     g_usleep(100);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

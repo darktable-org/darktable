@@ -1393,7 +1393,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
       goto cleanup;
     }
 
-    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     dt_opencl_set_kernel_arg(devid, kernel_transform, 0, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, kernel_transform, 1, sizeof(cl_mem), (void *)&dev_img_out);
@@ -1602,7 +1602,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
       goto cleanup;
     }
 
-    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
     dt_opencl_set_kernel_arg(devid, kernel_transform, 0, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, kernel_transform, 1, sizeof(cl_mem), (void *)&dev_img_out);
@@ -1683,3 +1683,9 @@ cleanup:
 #endif
 
 #undef DT_IOP_ORDER_PROFILE
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

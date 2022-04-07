@@ -1107,10 +1107,12 @@ static void _lib_history_truncate(gboolean compress)
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT IFNULL(MAX(num)+1, 0)"
                               " FROM main.history"
                               " WHERE imgid=?1", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if (sqlite3_step(stmt) == SQLITE_ROW)
@@ -1245,6 +1247,9 @@ void gui_reset(dt_lib_module_t *self)
   }
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+
