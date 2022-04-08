@@ -68,6 +68,72 @@ static void dt_opencl_apply_scheduling_profile(dt_opencl_scheduling_profile_t pr
 /** set opencl specific synchronization timeout */
 static void dt_opencl_set_synchronization_timeout(int value);
 
+const char *cl_errstr(cl_int error)
+{
+  switch(error)
+  {
+    case CL_SUCCESS: return "CL_SUCCESS";
+    case CL_DEVICE_NOT_FOUND: return "CL_DEVICE_NOT_FOUND";
+    case CL_DEVICE_NOT_AVAILABLE: return "CL_DEVICE_NOT_AVAILABLE";
+    case CL_COMPILER_NOT_AVAILABLE: return "CL_COMPILER_NOT_AVAILABLE";
+    case CL_MEM_OBJECT_ALLOCATION_FAILURE: return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
+    case CL_OUT_OF_RESOURCES: return "CL_OUT_OF_RESOURCES";
+    case CL_OUT_OF_HOST_MEMORY: return "CL_OUT_OF_HOST_MEMORY";
+    case CL_PROFILING_INFO_NOT_AVAILABLE: return "CL_PROFILING_INFO_NOT_AVAILABLE";
+    case CL_MEM_COPY_OVERLAP: return "CL_MEM_COPY_OVERLAP";
+    case CL_IMAGE_FORMAT_MISMATCH: return "CL_IMAGE_FORMAT_MISMATCH";
+    case CL_IMAGE_FORMAT_NOT_SUPPORTED: return "CL_IMAGE_FORMAT_NOT_SUPPORTED";
+    case CL_BUILD_PROGRAM_FAILURE: return "CL_BUILD_PROGRAM_FAILURE";
+    case CL_MAP_FAILURE: return "CL_MAP_FAILURE";
+    case CL_MISALIGNED_SUB_BUFFER_OFFSET: return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
+    case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
+    case CL_COMPILE_PROGRAM_FAILURE: return "CL_COMPILE_PROGRAM_FAILURE";
+    case CL_LINKER_NOT_AVAILABLE: return "CL_LINKER_NOT_AVAILABLE";
+    case CL_LINK_PROGRAM_FAILURE: return "CL_LINK_PROGRAM_FAILURE";
+    case CL_DEVICE_PARTITION_FAILED: return "CL_DEVICE_PARTITION_FAILED";
+    case CL_KERNEL_ARG_INFO_NOT_AVAILABLE: return "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
+    case CL_INVALID_VALUE: return "CL_INVALID_VALUE";
+    case CL_INVALID_DEVICE_TYPE: return "CL_INVALID_DEVICE_TYPE";
+    case CL_INVALID_PLATFORM: return "CL_INVALID_PLATFORM";
+    case CL_INVALID_DEVICE: return "CL_INVALID_DEVICE";
+    case CL_INVALID_CONTEXT: return "CL_INVALID_CONTEXT";
+    case CL_INVALID_QUEUE_PROPERTIES: return "CL_INVALID_QUEUE_PROPERTIES";
+    case CL_INVALID_COMMAND_QUEUE: return "CL_INVALID_COMMAND_QUEUE";
+    case CL_INVALID_HOST_PTR: return "CL_INVALID_HOST_PTR";
+    case CL_INVALID_MEM_OBJECT: return "CL_INVALID_MEM_OBJECT";
+    case CL_INVALID_IMAGE_FORMAT_DESCRIPTOR: return "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
+    case CL_INVALID_IMAGE_SIZE: return "CL_INVALID_IMAGE_SIZE";
+    case CL_INVALID_SAMPLER: return "CL_INVALID_SAMPLER";
+    case CL_INVALID_BINARY: return "CL_INVALID_BINARY";
+    case CL_INVALID_BUILD_OPTIONS: return "CL_INVALID_BUILD_OPTIONS";
+    case CL_INVALID_PROGRAM: return "CL_INVALID_PROGRAM";
+    case CL_INVALID_PROGRAM_EXECUTABLE: return "CL_INVALID_PROGRAM_EXECUTABLE";
+    case CL_INVALID_KERNEL_NAME: return "CL_INVALID_KERNEL_NAME";
+    case CL_INVALID_KERNEL_DEFINITION: return "CL_INVALID_KERNEL_DEFINITION";
+    case CL_INVALID_KERNEL: return "CL_INVALID_KERNEL";
+    case CL_INVALID_ARG_INDEX: return "CL_INVALID_ARG_INDEX";
+    case CL_INVALID_ARG_VALUE: return "CL_INVALID_ARG_VALUE";
+    case CL_INVALID_ARG_SIZE: return "CL_INVALID_ARG_SIZE";
+    case CL_INVALID_KERNEL_ARGS: return "CL_INVALID_KERNEL_ARGS";
+    case CL_INVALID_WORK_DIMENSION: return "CL_INVALID_WORK_DIMENSION";
+    case CL_INVALID_WORK_GROUP_SIZE: return"CL_INVALID_WORK_GROUP_SIZE";    
+    case CL_INVALID_WORK_ITEM_SIZE: return"CL_INVALID_WORK_ITEM_SIZE";    
+    case CL_INVALID_GLOBAL_OFFSET: return"CL_INVALID_GLOBAL_OFFSET";    
+    case CL_INVALID_EVENT_WAIT_LIST: return"CL_INVALID_EVENT_WAIT_LIST";    
+    case CL_INVALID_EVENT: return"CL_INVALID_EVENT";    
+    case CL_INVALID_OPERATION: return"CL_INVALID_OPERATION";    
+    case CL_INVALID_GL_OBJECT: return"CL_INVALID_GL_OBJECT";    
+    case CL_INVALID_BUFFER_SIZE: return"CL_INVALID_BUFFER_SIZE";    
+    case CL_INVALID_MIP_LEVEL: return"CL_INVALID_MIP_LEVEL";    
+    case CL_INVALID_GLOBAL_WORK_SIZE: return"CL_INVALID_GLOBAL_WORK_SIZE";    
+    case CL_INVALID_PROPERTY: return"CL_INVALID_PROPERTY";    
+    case CL_INVALID_IMAGE_DESCRIPTOR: return"CL_INVALID_IMAGE_DESCRIPTOR";    
+    case CL_INVALID_COMPILER_OPTIONS: return"CL_INVALID_COMPILER_OPTIONS";    
+    case CL_INVALID_LINKER_OPTIONS: return"CL_INVALID_LINKER_OPTIONS";    
+    case CL_INVALID_DEVICE_PARTITION_COUNT: return"CL_INVALID_DEVICE_PARTITION_COUNT";    
+    default: return "Unknown OpenCL error";
+  }
+}
 
 int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_info param_name, void **param_value,
                               size_t *param_value_size)
@@ -2119,6 +2185,9 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
   err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel],
                                                         2, NULL, sizes, local, 0, NULL, eventp);
   // if (err == CL_SUCCESS) err = dt_opencl_finish(dev);
+  if(err != CL_SUCCESS)
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_enqueue_kernel_2d_with_local] kernel %i on device %d: %s\n", kernel, dev, cl_errstr(err));
+    
   return err;
 }
 
@@ -2228,7 +2297,7 @@ int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Copy Image (on device)]");
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImage)(
       darktable.opencl->dev[devid].cmd_queue, src, dst, orig_src, orig_dst, region, 0, NULL, eventp);
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image] could not copy image on device %d: %d\n", devid, err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl copy_image] could not copy image on device %d: %s\n", devid, cl_errstr(err));
   return err;
 }
 
@@ -2241,7 +2310,7 @@ int dt_opencl_enqueue_copy_image_to_buffer(const int devid, cl_mem src_image, cl
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyImageToBuffer)(
       darktable.opencl->dev[devid].cmd_queue, src_image, dst_buffer, origin, region, offset, 0, NULL, eventp);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl copy_image_to_buffer] could not copy image on device %d: %d\n", devid, err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl copy_image_to_buffer] could not copy image on device %d: %s\n", devid, cl_errstr(err));
   return err;
 }
 
@@ -2254,7 +2323,7 @@ int dt_opencl_enqueue_copy_buffer_to_image(const int devid, cl_mem src_buffer, c
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueCopyBufferToImage)(
       darktable.opencl->dev[devid].cmd_queue, src_buffer, dst_image, offset, origin, region, 0, NULL, eventp);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer on device %d: %d\n", devid, err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_image] could not copy buffer on device %d: %s\n", devid, cl_errstr(err));
   return err;
 }
 
@@ -2268,7 +2337,7 @@ int dt_opencl_enqueue_copy_buffer_to_buffer(const int devid, cl_mem src_buffer, 
                                                                    src_buffer, dst_buffer, srcoffset,
                                                                    dstoffset, size, 0, NULL, eventp);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_buffer] could not copy buffer on device %d: %d\n", devid, err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl copy_buffer_to_buffer] could not copy buffer on device %d: %s\n", devid, cl_errstr(err));
   return err;
 }
 
@@ -2303,7 +2372,7 @@ void *dt_opencl_copy_host_to_device_constant(const int devid, const size_t size,
       darktable.opencl->dev[devid].context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size, host, &err);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_host_to_device_constant] could not alloc buffer on device %d: %d\n", devid, err);
+             "[opencl copy_host_to_device_constant] could not alloc buffer on device %d: %s\n", devid, cl_errstr(err));
 
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
@@ -2338,7 +2407,7 @@ void *dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const 
       rowpitch, host, &err);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl copy_host_to_device] could not alloc/copy img buffer on device %d: %d\n", devid, err);
+             "[opencl copy_host_to_device] could not alloc/copy img buffer on device %d: %s\n", devid, cl_errstr(err));
 
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
@@ -2368,7 +2437,7 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Map Buffer]");
   ptr = (darktable.opencl->dlocl->symbols->dt_clEnqueueMapBuffer)(
       darktable.opencl->dev[devid].cmd_queue, buffer, blocking, flags, offset, size, 0, NULL, eventp, &err);
-  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer on device %d: %d\n", devid, err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer on device %d: %s\n", devid, cl_errstr(err));
   return ptr;
 }
 
@@ -2380,7 +2449,7 @@ int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_
   err = (darktable.opencl->dlocl->symbols->dt_clEnqueueUnmapMemObject)(
       darktable.opencl->dev[devid].cmd_queue, mem_object, mapped_ptr, 0, NULL, eventp);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl unmap mem object] could not unmap mem object on device %d: %d\n", devid, err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl unmap mem object] could not unmap mem object on device %d: %s\n", devid, cl_errstr(err));
   return err;
 }
 
@@ -2404,8 +2473,8 @@ void *dt_opencl_alloc_device(const int devid, const int width, const int height,
   cl_mem dev = (darktable.opencl->dlocl->symbols->dt_clCreateImage2D)(
       darktable.opencl->dev[devid].context, CL_MEM_READ_WRITE, &fmt, width, height, 0, NULL, &err);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %d\n", devid,
-             err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device] could not alloc img buffer on device %d: %s\n", devid,
+             cl_errstr(err));
 
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
@@ -2435,8 +2504,8 @@ void *dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
       rowpitch, host, &err);
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL,
-             "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %d\n", devid,
-             err);
+             "[opencl alloc_device_use_host_pointer] could not alloc img buffer on device %d: %s\n", devid,
+             cl_errstr(err));
 
   dt_opencl_memory_statistics(devid, dev, OPENCL_MEMORY_ADD);
 
@@ -2452,8 +2521,8 @@ void *dt_opencl_alloc_device_buffer(const int devid, const size_t size)
   cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer)(darktable.opencl->dev[devid].context,
                                                                      CL_MEM_READ_WRITE, size, NULL, &err);
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid,
-             err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %s\n", devid,
+             cl_errstr(err));
 
   dt_opencl_memory_statistics(devid, buf, OPENCL_MEMORY_ADD);
 
@@ -3074,8 +3143,8 @@ void dt_opencl_events_wait_for(const int devid)
   cl_int err = (cl->dlocl->symbols->dt_clWaitForEvents)(*numevents - *eventsconsolidated,
                                            (*eventlist) + *eventsconsolidated);
   if((err != CL_SUCCESS) && (err != CL_INVALID_VALUE))
-    dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_events_wait_for] reported err=%d for device %i\n",
-       err, devid);
+    dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_events_wait_for] reported %s for device %i\n",
+       cl_errstr(err), devid);
 }
 
 
@@ -3117,8 +3186,8 @@ cl_int dt_opencl_events_flush(const int devid, const int reset)
                                                   sizeof(cl_int), retval, NULL);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_events_flush] could not get event info for '%s': %d\n",
-               tag[0] == '\0' ? "<?>" : tag, err);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_events_flush] could not get event info for '%s': %s\n",
+               tag[0] == '\0' ? "<?>" : tag, cl_errstr(err));
     }
     else if(*retval != CL_COMPLETE)
     {
