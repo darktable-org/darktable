@@ -751,7 +751,12 @@ gboolean dt_shortcut_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolea
       GtkWidget *label = gtk_label_new(NULL);
       GtkWidget *vbox = g_object_get_data(G_OBJECT(widget), "iopdes");
 
-      markup_text = dt_util_dstrcat(NULL, "\n%s", description);
+      markup_text = dt_util_dstrcat(NULL, "%s%s%s%s",
+                                    markup_text ? "\n" : "",
+                                    markup_text ? markup_text : "",
+                                    markup_text ? (description ? "\n\n" : "")
+                                                : (description ? "\n" : ""),
+                                    description ? description : "");
       gtk_label_set_markup(GTK_LABEL(label), markup_text);
       gtk_widget_set_halign(label, GTK_ALIGN_START);
 
@@ -4414,4 +4419,3 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_name)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
