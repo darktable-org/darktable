@@ -1508,20 +1508,6 @@ filechooser row:hover .sidebar-icon
 {
   margin-bottom: 0.2em;
 }
-#collect-property,
-#collect-property *
-{
-  background-color: @button_border;
-  padding: 0;
-  color: @button_checked_fg;
-  font-family: sans-serif;
-  font-weight: 500;
-}
-#collect-property:hover,
-#collect-property:hover *
-{
-  background-color: @button_hover_bg;
-}
 #collect-rule-special,
 #collect-rule-special *
 {
