@@ -2723,9 +2723,9 @@ static void _on_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer 
       cairo_t *cr = cairo_create(surface);
 
       // hack to render not transparent
-      dt_util_add_class(module_src->header, "iop_drag_icon");
+      dt_gui_add_class(module_src->header, "iop_drag_icon");
       gtk_widget_draw(module_src->header, cr);
-      dt_util_remove_class(module_src->header, "iop_drag_icon");
+      dt_gui_remove_class(module_src->header, "iop_drag_icon");
 
       // FIXME: this centers the icon on the mouse -- instead translate such that the label doesn't jump when mouse down?
       cairo_surface_set_device_offset(surface, -allocation_w.width * darktable.gui->ppd / 2, -allocation_w.height * darktable.gui->ppd / 2);
@@ -2784,17 +2784,17 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
 
     if(module->expander)
     {
-      dt_util_remove_class(module->expander, "iop_drop_after");
-      dt_util_remove_class(module->expander, "iop_drop_before");
+      dt_gui_remove_class(module->expander, "iop_drop_after");
+      dt_gui_remove_class(module->expander, "iop_drop_before");
     }
   }
 
   if(can_moved)
   {
     if(module_src->iop_order < module_dest->iop_order)
-      dt_util_add_class(module_dest->expander, "iop_drop_after");
+      dt_gui_add_class(module_dest->expander, "iop_drop_after");
     else
-      dt_util_add_class(module_dest->expander, "iop_drop_before");
+      dt_gui_add_class(module_dest->expander, "iop_drop_before");
 
     gdk_drag_status(dc, GDK_ACTION_COPY, time);
     GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
@@ -2856,8 +2856,8 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
 
     if(module->expander)
     {
-      dt_util_remove_class(module->expander, "iop_drop_after");
-      dt_util_remove_class(module->expander, "iop_drop_before");
+      dt_gui_remove_class(module->expander, "iop_drop_after");
+      dt_gui_remove_class(module->expander, "iop_drop_before");
     }
   }
 
@@ -2898,8 +2898,8 @@ static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gp
 
     if(module->expander)
     {
-      dt_util_remove_class(module->expander, "iop_drop_after");
-      dt_util_remove_class(module->expander, "iop_drop_before");
+      dt_gui_remove_class(module->expander, "iop_drop_after");
+      dt_gui_remove_class(module->expander, "iop_drop_before");
     }
   }
 

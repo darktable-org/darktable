@@ -556,7 +556,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Setting up the GUI
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_util_add_class(self->widget, "picker-module");
+  dt_gui_add_class(self->widget, "picker-module");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   // The color patch
@@ -641,7 +641,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Adding the live samples section
   label = dt_ui_section_label_new(_("live samples"));
-  dt_util_add_class(GTK_WIDGET(label), "section_label_top");
+  dt_gui_add_class(GTK_WIDGET(label), "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
 

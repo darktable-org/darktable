@@ -468,7 +468,7 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 
   if(top)
   {
-    dt_util_add_class(GTK_WIDGET(label), "section_label_top");
+    dt_gui_add_class(GTK_WIDGET(label), "section_label_top");
   }
 
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);

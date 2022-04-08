@@ -155,8 +155,8 @@ int position()
 
 static void _set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)
 {
-  if(dimmed) dt_util_add_class(widget, "dt_dimmed");
-  else dt_util_remove_class(widget, "dt_dimmed");
+  if(dimmed) dt_gui_add_class(widget, "dt_dimmed");
+  else dt_gui_remove_class(widget, "dt_dimmed");
   gtk_widget_queue_draw(GTK_WIDGET(widget));
 }
 
@@ -407,7 +407,7 @@ void gui_init(dt_lib_module_t *self)
                                N_("all except rejected"));
   gtk_container_add(GTK_CONTAINER(overlay), d->stars);
   gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
-  dt_util_add_class(hbox, "quick_filter_box");
+  dt_gui_add_class(hbox, "quick_filter_box");
 
   // colorlabels filter
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -430,8 +430,8 @@ void gui_init(dt_lib_module_t *self)
                                               "\nor (∪): images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(d->colors_op), "clicked", G_CALLBACK(_colors_operation_clicked), self);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 2);
-  dt_util_add_class(hbox, "quick_filter_box");
-  dt_util_add_class(hbox, "dt_font_resize_07");
+  dt_gui_add_class(hbox, "quick_filter_box");
+  dt_gui_add_class(hbox, "dt_font_resize_07");
 
   // text filter
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -454,9 +454,9 @@ void gui_init(dt_lib_module_t *self)
                                 "\nstarting or ending with a double quote disables the corresponding wildcard"
           /* xgettext:no-c-format */
                                 "\nis dimmed during the search execution"));
-  dt_util_add_class(d->text, "dt_transparent_background");
+  dt_gui_add_class(d->text, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(hbox), d->text, FALSE, FALSE, 0);
-  dt_util_add_class(hbox, "quick_filter_box");
+  dt_gui_add_class(hbox, "quick_filter_box");
 
   /* sort combobox */
   label = gtk_label_new(_("sort by"));
@@ -470,8 +470,8 @@ void gui_init(dt_lib_module_t *self)
                                          _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
                                          _sort_names);
   gtk_box_pack_start(GTK_BOX(hbox), d->sort, FALSE, FALSE, 0);
-  dt_util_add_class(hbox, "quick_filter_box");
-  dt_util_add_class(hbox, "dt_font_resize_07");
+  dt_gui_add_class(hbox, "quick_filter_box");
+  dt_gui_add_class(hbox, "dt_font_resize_07");
 
   /* reverse order checkbutton */
   d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
@@ -479,7 +479,7 @@ void gui_init(dt_lib_module_t *self)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(d->reverse), dtgtk_cairo_paint_sortby,
                                  CPF_DIRECTION_DOWN, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), d->reverse, FALSE, FALSE, 0);
-  dt_util_add_class(d->reverse, "dt_transparent_background");
+  dt_gui_add_class(d->reverse, "dt_transparent_background");
 
   /* select the last value and connect callback */
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),

@@ -641,7 +641,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       // we add the on-off button
       GtkWidget *btn
           = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, item->module);
-      dt_util_add_class(btn, "dt_module_btn");
+      dt_gui_add_class(btn, "dt_module_btn");
       gtk_widget_set_valign(btn, GTK_ALIGN_CENTER);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
                                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item->module->off)));
@@ -2043,7 +2043,7 @@ static void _manage_editor_basics_update_list(dt_lib_module_t *self)
           if(!d->edit_ro)
           {
             GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-            dt_util_add_class(btn, "dt_module_btn");
+            dt_gui_add_class(btn, "dt_module_btn");
             gtk_widget_set_tooltip_text(btn, _("remove this widget"));
             g_object_set_data(G_OBJECT(btn), "widget_id", item->id);
             g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_basics_remove), self);
@@ -2195,7 +2195,7 @@ static void _manage_editor_module_update_list(dt_lib_module_t *self, dt_lib_modu
         {
           GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
           gtk_widget_set_name(btn, "module-reset-button");
-          dt_util_add_class(btn, "dt_module_btn");
+          dt_gui_add_class(btn, "dt_module_btn");
           gtk_widget_set_tooltip_text(btn, _("remove this module"));
           g_object_set_data(G_OBJECT(btn), "module_name", module->op);
           g_object_set_data(G_OBJECT(btn), "group", gr);

@@ -3056,7 +3056,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
-    dt_util_add_class(w, "dt_transparent_background");
+    dt_gui_add_class(w, "dt_transparent_background");
   }
 
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
