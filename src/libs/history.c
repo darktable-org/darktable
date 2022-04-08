@@ -189,6 +189,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   g_snprintf(numlab, sizeof(numlab), "%2d", num + 1);
   GtkWidget *numwidget = gtk_label_new(numlab);
   gtk_widget_set_name(numwidget, "history-number");
+  dt_gui_add_class(numwidget, "dt_history_items");
 
   GtkWidget *onoff = NULL;
 
@@ -201,6 +202,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   if(always_on)
   {
     onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+    dt_gui_add_class(widget, "dt_transparent_background");
     gtk_widget_set_name(onoff, "history-switch-always-enabled");
     gtk_widget_set_name(widget, "history-button-always-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
@@ -209,6 +211,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   else if(default_enabled)
   {
     onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+    dt_gui_add_class(widget, "dt_transparent_background");
     gtk_widget_set_name(onoff, "history-switch-default-enabled");
     gtk_widget_set_name(widget, "history-button-default-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
@@ -227,9 +230,12 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
       onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
       gtk_widget_set_name(onoff, enabled ? "history-switch-enabled" : "history-switch");
     }
+    dt_gui_add_class(widget, enabled ? "dt_transparent_background" : "dt_transparent_background");
     gtk_widget_set_name(widget, enabled ? "history-button-enabled" : "history-button");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
   }
+  dt_gui_add_class(onoff, "dt_history_switch");
+  dt_gui_add_class(widget, "dt_history_items");
 
   gtk_widget_set_sensitive(onoff, FALSE);
 

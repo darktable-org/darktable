@@ -127,6 +127,19 @@ static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget);
 static void _ui_log_redraw_callback(gpointer instance, GtkWidget *widget);
 static void _ui_toast_redraw_callback(gpointer instance, GtkWidget *widget);
 
+// set class function to add CSS classes with just a simple line call
+void dt_gui_add_class(GtkWidget *widget, const gchar *class_name)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_add_class(context, class_name);
+}
+
+void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name)
+{
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_remove_class(context, class_name);
+}
+
 /*
  * OLD UI API
  */
@@ -812,8 +825,7 @@ void dt_gui_gtk_set_source_rgba(cairo_t *cr, dt_gui_color_t color, float opacity
 void dt_gui_gtk_quit()
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkStyleContext *context = gtk_widget_get_style_context(win);
-  gtk_style_context_add_class(context, "dt_gui_quit");
+  dt_gui_add_class(win, "dt_gui_quit");
   gtk_window_set_title(GTK_WINDOW(win), _("closing darktable..."));
 
   // Write out windows dimension
@@ -1630,7 +1642,7 @@ static void _init_main_table(GtkWidget *container)
   g_signal_connect(G_OBJECT(eb), "button-press-event", G_CALLBACK(_ui_log_button_press_event),
                    darktable.gui->ui->log_msg);
   gtk_label_set_ellipsize(GTK_LABEL(darktable.gui->ui->log_msg), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_widget_set_name(darktable.gui->ui->log_msg, "log-msg");
+  dt_gui_add_class(darktable.gui->ui->log_msg, "dt_messages");
   gtk_container_add(GTK_CONTAINER(eb), darktable.gui->ui->log_msg);
   gtk_widget_set_valign(eb, GTK_ALIGN_END);
   gtk_widget_set_halign(eb, GTK_ALIGN_CENTER);
@@ -1651,7 +1663,7 @@ static void _init_main_table(GtkWidget *container)
   gtk_label_set_attributes(GTK_LABEL(darktable.gui->ui->toast_msg), attrlist);
   pango_attr_list_unref(attrlist);
 
-  gtk_widget_set_name(darktable.gui->ui->toast_msg, "toast-msg");
+  dt_gui_add_class(darktable.gui->ui->toast_msg, "dt_messages");
   gtk_container_add(GTK_CONTAINER(eb), darktable.gui->ui->toast_msg);
   gtk_widget_set_valign(eb, GTK_ALIGN_START);
   gtk_widget_set_halign(eb, GTK_ALIGN_CENTER);
@@ -3357,17 +3369,14 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   GtkWidget *header_evb = gtk_event_box_new();
   GtkWidget *destdisp = dt_ui_section_label_new(label);
   gtk_widget_set_name(destdisp, "collapsible-label");
-  GtkStyleContext *context = gtk_widget_get_style_context(destdisp_head);
-  gtk_style_context_add_class(context, "section-expander");
+  dt_gui_add_class(destdisp_head, "section-expander");
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
 
   cs->toggle = dtgtk_togglebutton_new
     (dtgtk_cairo_paint_solid_arrow,
      CPF_STYLE_BOX | (expanded?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), expanded);
-  gtk_widget_set_name(cs->toggle, "control-button");
-  context = gtk_widget_get_style_context(cs->toggle);
-  gtk_style_context_add_class(context, "dt_transparent_background");
+  dt_gui_add_class(cs->toggle, "dt_transparent_background");
 
   cs->container = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   gtk_widget_set_name(GTK_WIDGET(cs->container), "collapsible");

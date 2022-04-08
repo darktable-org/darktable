@@ -419,10 +419,7 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
   {
     GtkWidget *hb = gtk_grid_new();
     const int imgid = sqlite3_column_int(stmt, 1);
-
-    GtkStyleContext *context = gtk_widget_get_style_context(hb);
-    gtk_style_context_add_class(context, "dt_overlays_always");
-
+    dt_gui_add_class(hb, "dt_overlays_always");
     dt_thumbnail_t *thumb = dt_thumbnail_new(100, 100, IMG_TO_FIT, imgid, -1, DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL,
                                              DT_THUMBNAIL_CONTAINER_LIGHTTABLE, TRUE);
     thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -535,8 +532,7 @@ void gui_init(dt_lib_module_t *self)
   d->preview_height = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkStyleContext *context = gtk_widget_get_style_context(self->widget);
-  gtk_style_context_add_class(context, "duplicate-ui");
+  dt_gui_add_class(self->widget, "duplicate-ui");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   d->duplicate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
