@@ -695,10 +695,7 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new(gint positions)
   gslider = g_object_new(_gradient_slider_get_type(), NULL);
   gslider->positions = positions;
   _gradient_slider_set_defaults(gslider);
-
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(gslider));
-  gtk_style_context_add_class(context, "dt_gslider_multivalue");
-
+  dt_gui_add_class(GTK_WIDGET(gslider), "dt_gslider_multivalue");
   return (GtkWidget *)gslider;
 }
 
@@ -730,10 +727,7 @@ GtkWidget *dtgtk_gradient_slider_multivalue_new_with_color(GdkRGBA start, GdkRGB
   gc->position = 1.0;
   memcpy(&gc->color, &end, sizeof(GdkRGBA));
   gslider->colors = g_list_append(gslider->colors, gc);
-
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(gslider));
-  gtk_style_context_add_class(context, "dt_gslider_multivalue");
-
+  dt_gui_add_class(GTK_WIDGET(gslider), "dt_gslider_multivalue");
   return (GtkWidget *)gslider;
 }
 
@@ -919,10 +913,7 @@ void dtgtk_gradient_slider_multivalue_set_scale_callback(GtkDarktableGradientSli
 GtkWidget *dtgtk_gradient_slider_new()
 {
   GtkWidget *gslider = dtgtk_gradient_slider_multivalue_new(1);
-
-  GtkStyleContext *context = gtk_widget_get_style_context(gslider);
-  gtk_style_context_add_class(context, "dt_gslider");
-
+  dt_gui_add_class(gslider, "dt_gslider");
   return gslider;
 }
 
@@ -937,10 +928,7 @@ GtkWidget *dtgtk_gradient_slider_new_with_name(gchar *name)
 GtkWidget *dtgtk_gradient_slider_new_with_color(GdkRGBA start, GdkRGBA end)
 {
   GtkWidget *gslider = dtgtk_gradient_slider_multivalue_new_with_color(start, end, 1);
-
-  GtkStyleContext *context = gtk_widget_get_style_context(gslider);
-  gtk_style_context_add_class(context, "dt_gslider");
-
+  dt_gui_add_class(gslider, "dt_gslider");
   return gslider;
 }
 

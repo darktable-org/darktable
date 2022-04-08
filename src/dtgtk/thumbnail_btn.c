@@ -118,8 +118,7 @@ GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflag
 {
   GtkDarktableThumbnailBtn *button;
   button = g_object_new(dtgtk_thumbnail_btn_get_type(), NULL);
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(button));
-  gtk_style_context_add_class(context, "dt_thumb_btn");
+  dt_gui_add_class(GTK_WIDGET(button), "dt_thumb_btn");
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;

@@ -1711,11 +1711,11 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
     if(module_cst == DEVELOP_BLEND_CS_LAB)
     {
       mi = gtk_check_menu_item_new_with_label(_("Lab"));
-      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "check-menu-item");
+      dt_gui_add_class(mi, "check-menu-item");
       if(module_blend_cst == DEVELOP_BLEND_CS_LAB)
       {
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-        gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
+        dt_gui_add_class(mi, "active-menu-item");
       }
       g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_LAB), NULL);
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
@@ -1723,22 +1723,22 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
     }
 
     mi = gtk_check_menu_item_new_with_label(_("RGB (display)"));
-    gtk_style_context_add_class(gtk_widget_get_style_context(mi), "check-menu-item");
+    dt_gui_add_class(mi, "check-menu-item");
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_DISPLAY)
     {
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
+      dt_gui_add_class(mi, "active-menu-item");
     }
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_DISPLAY), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     mi = gtk_check_menu_item_new_with_label(_("RGB (scene)"));
-    gtk_style_context_add_class(gtk_widget_get_style_context(mi), "check-menu-item");
+    dt_gui_add_class(mi, "check-menu-item");
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_SCENE)
     {
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
+      dt_gui_add_class(mi, "active-menu-item");
     }
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_SCENE), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
@@ -3124,7 +3124,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl+click to display mask, "
                                                 "shift+click to display channel. hover over parametric mask slider to "
                                                 "select channel for display"));
-    gtk_widget_set_name(bd->showmask, "show_mask_button");
 
     bd->suppress = dt_iop_togglebutton_new(module, "blend`tools", N_("temporarily switch off blend mask"), NULL, G_CALLBACK(_blendop_blendif_suppress_toggled),
                                            FALSE, 0, 0, dtgtk_cairo_paint_eye_toggle, hbox);

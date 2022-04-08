@@ -423,6 +423,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(box), item->button, FALSE, TRUE, 0);
     g_signal_connect(G_OBJECT(item->button), "clicked", G_CALLBACK(_button_pressed), (gpointer)self);
     gtk_widget_set_no_show_all(item->button, TRUE);
+    dt_gui_add_class(GTK_WIDGET(item->button), "dt_transparent_background");
     gtk_widget_set_name(GTK_WIDGET(item->button), "recent-collection-button");
     gtk_widget_set_visible(item->button, FALSE);
   }

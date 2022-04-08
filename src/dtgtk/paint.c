@@ -200,7 +200,7 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
 
 void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.9, 1, 0, 0)
+  PREAMBLE(1, 1, 0, 0)
 
   cairo_move_to(cr, 0.1, 0.05);
   cairo_line_to(cr, 0.1, 0.95);
@@ -1542,7 +1542,7 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   #define CPF_USER_DATA_INCLUDE CPF_USER_DATA
   #define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
-  PREAMBLE(1, 1, 0, 0)
+  PREAMBLE(0.9, 1, 0, 0)
 
   const double r = 0.4;
   const float alpha = flags & CPF_PRELIGHT ? 1.0 : 0.6;
