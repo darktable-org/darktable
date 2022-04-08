@@ -24,11 +24,11 @@
 #define DT_VIEW_RATINGS_MASK 0x7
 // first three bits of dt_view_image_over_t
 
-/** get rating tfor the specified image */
+/** get rating for the specified image */
 int dt_ratings_get(const int imgid);
 
 /** apply rating to the specified image */
-void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean toggle_on,
+void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean single_star_toggle,
                                const gboolean undo_on, const gboolean group_on);
 
 /** apply rating to all images in the list */
