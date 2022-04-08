@@ -2636,7 +2636,7 @@ void dt_shortcuts_load(const gchar *ext, const gboolean clear)
   _shortcuts_load(shortcuts_file, DT_ALL_DEVICES, DT_ALL_DEVICES, clear);
 }
 
-void dt_shortcuts_reinitialise()
+void dt_shortcuts_reinitialise(dt_action_t *action)
 {
   for(GSList *d = darktable.control->input_drivers; d; d = d->next)
   {
@@ -2944,12 +2944,9 @@ static float _process_action(dt_action_t *action, int instance,
     }
   }
 
-  if(action->type == DT_ACTION_TYPE_CLOSURE && action->target && !isnan(move_size))
+  if(action->type == DT_ACTION_TYPE_COMMAND && action->target && !isnan(move_size))
   {
-    typedef gboolean (*accel_callback)(GtkAccelGroup *accel_group, GObject *acceleratable,
-                                       guint keyval, GdkModifierType modifier, gpointer p);
-    ((accel_callback)((GCClosure*)action_target)->callback)(NULL, NULL, _sc.key, _sc.mods,
-                                                            ((GClosure*)action_target)->data);
+    ((dt_action_callback_t*)action->target)(action);
   }
   else if(action->type == DT_ACTION_TYPE_PRESET && owner && !isnan(move_size))
   {
@@ -3750,7 +3747,7 @@ static void _remove_widget_from_hashtable(GtkWidget *widget, gpointer user_data)
 
 static inline gchar *path_without_symbols(const gchar *path)
 {
-  return g_strdelimit(g_strndup(path, strlen(path) - (g_str_has_suffix(path, "...")?3:0)), "=,/.", '-');
+  return g_strdelimit(g_strndup(path, strlen(path) - (g_str_has_suffix(path, "...")?3:0)), "=,/.;", '-');
 }
 
 void dt_action_insert_sorted(dt_action_t *owner, dt_action_t *new_action)
@@ -3831,8 +3828,7 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
 {
   if(owner->type == DT_ACTION_TYPE_IOP_INSTANCE)
   {
-    dt_action_define_iop((dt_iop_module_t *)owner, section, label, widget, action_def);
-    return owner;
+    return dt_action_define_iop((dt_iop_module_t *)owner, section, label, widget, action_def);
   }
 
   dt_action_t *ac = owner;
@@ -3847,9 +3843,6 @@ dt_action_t *dt_action_define(dt_action_t *owner, const gchar *section, const gc
   {
     if(label)
     {
-      if(ac->type == DT_ACTION_TYPE_CLOSURE && ac->target && action_def)
-        g_closure_unref(ac->target);
-
       guint index = 0;
       if(g_ptr_array_find(darktable.control->widget_definitions, action_def, &index))
         ac->type = DT_ACTION_TYPE_WIDGET + index + 1;
@@ -3946,56 +3939,8 @@ void dt_action_define_fallback(dt_action_type_t type, const dt_action_def_t *act
   }
 }
 
-void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, guint element, guint effect, guint accel_key, GdkModifierType mods)
+void dt_shortcut_register(dt_action_t *owner, guint element, guint effect, guint accel_key, GdkModifierType mods)
 {
-  if(path_string)
-  {
-    gchar **split_path = g_strsplit(path_string, "/", 0);
-    gchar **split_trans = g_strsplit(g_dpgettext2(NULL, "accel", path_string), "/", g_strv_length(split_path));
-
-    gchar **path = split_path;
-    gchar **trans = split_trans;
-
-    gchar *clean_path = NULL;
-
-    dt_action_t *action = owner->target;
-    while(*path)
-    {
-      if(!clean_path) clean_path = path_without_symbols(*path);
-
-      if(!action)
-      {
-        dt_action_t *new_action = calloc(1, sizeof(dt_action_t));
-        new_action->id = clean_path;
-        new_action->label = g_strdup(*trans ? *trans : *path);
-        new_action->type = DT_ACTION_TYPE_SECTION;
-        new_action->owner = owner;
-
-        dt_action_insert_sorted(owner, new_action);
-
-        owner = new_action;
-        action = NULL;
-      }
-      else if(!strcmp(action->id, clean_path))
-      {
-        g_free(clean_path);
-        owner = action;
-        action = action->target;
-      }
-      else
-      {
-        action = action->next;
-        continue;
-      }
-      clean_path = NULL; // now owned by action or freed
-      path++;
-      if(*trans) trans++;
-    }
-
-    g_strfreev(split_path);
-    g_strfreev(split_trans);
-  }
-
   if(accel_key != 0)
   {
     GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
@@ -4026,61 +3971,6 @@ void dt_accel_register_shortcut(dt_action_t *owner, const gchar *path_string, gu
 
     g_free(keys);
   }
-}
-
-void dt_accel_connect_shortcut(dt_action_t *owner, const gchar *path_string, GClosure *closure)
-{
-  gchar **split_path = g_strsplit(path_string, "/", 0);
-  gchar **path = split_path;
-
-  while(*path && (owner = owner->target))
-  {
-    gchar *clean_path = path_without_symbols(*path);
-
-    while(owner)
-    {
-      if(!strcmp(owner->id, clean_path))
-        break;
-      else
-        owner = owner->next;
-    }
-
-    g_free(clean_path);
-    path++;
-  }
-
-  if(!*path && owner)
-  {
-    if(owner->type == DT_ACTION_TYPE_CLOSURE && owner->target)
-      g_closure_unref(owner->target);
-
-    owner->type = DT_ACTION_TYPE_CLOSURE;
-    owner->target = closure;
-    g_closure_ref(closure);
-    g_closure_sink(closure);
-  }
-  else
-  {
-    fprintf(stderr, "[dt_accel_connect_shortcut] '%s' not found\n", path_string);
-  }
-
-  g_strfreev(split_path);
-}
-
-void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierType mods)
-{
-  dt_accel_register_shortcut(&darktable.control->actions_global, path, 0, 0, accel_key, mods);
-}
-
-void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
-{
-  dt_accel_register_shortcut(&self->actions, path, 0, 0, accel_key, mods);
-}
-
-void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path, guint accel_key,
-                           GdkModifierType mods)
-{
-  dt_accel_register_shortcut(&so->actions, path, 0, 0, accel_key, mods);
 }
 
 void dt_action_define_preset(dt_action_t *action, const gchar *name)
@@ -4130,9 +4020,6 @@ void dt_action_rename(dt_action_t *action, const gchar *new_name)
         _remove_shortcut(current);
     }
 
-    if(action->type == DT_ACTION_TYPE_CLOSURE)
-      g_closure_unref(action->target);
-
     g_free(action);
   }
 
@@ -4153,102 +4040,6 @@ void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const g
 
     dt_action_rename(p, new_name);
   }
-}
-
-void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods)
-{
-  //register a lib shortcut but place it in the path of a view
-  dt_action_t *a = darktable.control->actions_views.target;
-  while(a)
-  {
-    if(!strcmp(a->id, view_name))
-      break;
-    else
-      a = a->next;
-  }
-  if(a)
-  {
-    dt_accel_register_shortcut(a, path, 0, 0, accel_key, mods);
-  }
-  else
-  {
-    fprintf(stderr, "[dt_accel_register_lib_as_view] '%s' not found\n", view_name);
-  }
-}
-
-void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
-{
-  dt_accel_register_shortcut(&self->actions, path, 0, 0, accel_key, mods);
-}
-
-void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods)
-{
-  dt_accel_register_shortcut(&darktable.control->actions_lua, path, 0, 0, accel_key, mods);
-}
-
-void dt_accel_connect_global(const gchar *path, GClosure *closure)
-{
-  dt_accel_connect_shortcut(&darktable.control->actions_global, path, closure);
-}
-
-void dt_accel_connect_view(dt_view_t *self, const gchar *path, GClosure *closure)
-{
-  dt_accel_connect_shortcut(&self->actions, path, closure);
-}
-
-void dt_accel_connect_lib_as_view(dt_lib_module_t *module, gchar *view_name, const gchar *path, GClosure *closure)
-{
-  dt_action_t *a = darktable.control->actions_views.target;
-  while(a)
-  {
-    if(!strcmp(a->id, view_name))
-      break;
-    else
-      a = a->next;
-  }
-  if(a)
-  {
-    dt_accel_connect_shortcut(a, path, closure);
-  }
-  else
-  {
-    fprintf(stderr, "[dt_accel_register_lib_as_view] '%s' not found\n", view_name);
-  }
-}
-
-void dt_accel_connect_lib_as_global(dt_lib_module_t *module, const gchar *path, GClosure *closure)
-{
-  dt_accel_connect_shortcut(&darktable.control->actions_global, path, closure);
-}
-
-void dt_accel_connect_iop(dt_iop_module_t *module, const gchar *path, GClosure *closure)
-{
-  gchar **split_path = g_strsplit(path, "`", 6);
-  dt_action_t *ac = dt_action_locate(&module->so->actions, split_path, FALSE);
-  g_strfreev(split_path);
-
-  if(ac)
-  {
-    ac->type = DT_ACTION_TYPE_CLOSURE;
-
-    // to support multi-instance, save in and own by per instance widget list
-    dt_action_target_t *const referral = g_malloc0(sizeof(dt_action_target_t));
-    referral->action = ac;
-    referral->target = closure;
-    g_closure_ref(closure);
-    g_closure_sink(closure);
-    module->widget_list = g_slist_prepend(module->widget_list, referral);
-  }
-}
-
-void dt_accel_connect_lib(dt_lib_module_t *module, const gchar *path, GClosure *closure)
-{
-  dt_accel_connect_shortcut(&module->actions, path, closure);
-}
-
-void dt_accel_connect_lua(const gchar *path, GClosure *closure)
-{
-  dt_accel_connect_shortcut(&darktable.control->actions_lua, path, closure);
 }
 
 void dt_action_widget_toast(dt_action_t *action, GtkWidget *widget, const gchar *text)
@@ -4323,6 +4114,7 @@ float dt_accel_get_speed_multiplier(GtkWidget *widget, guint state)
   return multiplier;
 }
 
+// FIXME possibly just find correct widget for each shortcut execution, rather than updating for each focus change etc
 void dt_accel_connect_instance_iop(dt_iop_module_t *module)
 {
   const gboolean focused = darktable.develop->gui_module
@@ -4337,40 +4129,9 @@ void dt_accel_connect_instance_iop(dt_iop_module_t *module)
   }
 }
 
-static void _destroy_referral(gpointer data)
-{
-  dt_action_target_t *const referral = data;
-  if(referral->action && referral->action->type == DT_ACTION_TYPE_CLOSURE)
-  {
-    if(referral->action->target == referral->target)
-      referral->action->target = NULL;
-    g_closure_unref(referral->target);
-  }
-
-  g_free(referral);
-}
-
 void dt_action_cleanup_instance_iop(dt_iop_module_t *module)
 {
-  g_slist_free_full(module->widget_list, _destroy_referral);
-}
-
-void dt_accel_rename_global(const gchar *path, const gchar *new_name)
-{
-  gchar **split_path = g_strsplit(path, "/", 6);
-  dt_action_t *p = dt_action_locate(&darktable.control->actions_global, split_path, FALSE);
-  g_strfreev(split_path);
-
-  if(p) dt_action_rename(p, new_name);
-}
-
-void dt_accel_rename_lua(const gchar *path, const gchar *new_name)
-{
-  gchar **split_path = g_strsplit(path, "/", 6);
-  dt_action_t *p = dt_action_locate(&darktable.control->actions_lua, split_path, FALSE);
-  g_strfreev(split_path);
-
-  if(p) dt_action_rename(p, new_name);
+  g_slist_free_full(module->widget_list, g_free);
 }
 
 GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpointer callback, gpointer data, const gchar *tooltip, guint accel_key, GdkModifierType mods)
@@ -4382,12 +4143,26 @@ GtkWidget *dt_action_button_new(dt_lib_module_t *self, const gchar *label, gpoin
 
   if(self)
   {
-    if(accel_key) dt_accel_register_shortcut(DT_ACTION(self), label, 0, 0, accel_key, mods);
-    dt_action_define(DT_ACTION(self), NULL, label, button, &dt_action_def_button);
+    dt_action_t *ac = dt_action_define(DT_ACTION(self), NULL, label, button, &dt_action_def_button);
+    if(accel_key && (self->actions.type != DT_ACTION_TYPE_IOP_INSTANCE || darktable.control->accel_initialising))
+      dt_shortcut_register(ac, 0, 0, accel_key, mods);
   }
 
   return button;
 };
+
+dt_action_t *dt_action_register(dt_action_t *owner, const gchar *label, dt_action_callback_t callback, guint accel_key, GdkModifierType mods)
+{
+  dt_action_t *ac = dt_action_section(owner, label);
+  if(ac->type == DT_ACTION_TYPE_SECTION)
+  {
+    ac->type = DT_ACTION_TYPE_COMMAND;
+    ac->target = callback;
+    dt_shortcut_register(ac, 0, 0, accel_key, mods);
+  }
+
+  return ac;
+}
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

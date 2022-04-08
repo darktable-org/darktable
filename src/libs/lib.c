@@ -942,14 +942,10 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   return FALSE;
 }
 
-static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-
+static void show_module_callback(dt_lib_module_t *module)
 {
-  dt_lib_module_t *module = (dt_lib_module_t *)data;
-
   /* bail out if module is static */
-  if(!module->expandable(module)) return FALSE;
+  if(!module->expandable(module)) return;
 
   // make gtk scroll to the module once it updated its allocation size
   uint32_t container = module->container(module);
@@ -985,7 +981,6 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
     /* else just toggle */
     dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
   }
-  return TRUE;
 }
 
 static gboolean _header_enter_notify_callback(GtkWidget *eventbox, GdkEventCrossing *event, gpointer user_data)
@@ -1275,7 +1270,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
     switch(element)
     {
     case DT_ACTION_ELEMENT_SHOW:
-      show_module_callback(NULL, NULL, 0, 0, module);
+      show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_RESET:
       if(module->gui_reset) dt_lib_gui_reset_callback(NULL, module);

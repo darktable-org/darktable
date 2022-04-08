@@ -39,10 +39,8 @@
 
 DT_MODULE(1)
 
-static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, dt_lib_module_t *self);
-static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, dt_lib_module_t *self);
+static void _lib_tagging_tag_redo(dt_action_t *action);
+static void _lib_tagging_tag_show(dt_action_t *action);
 
 typedef struct dt_lib_tagging_t
 {
@@ -122,18 +120,6 @@ uint32_t container(dt_lib_module_t *self)
     return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
   else
     return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "tag"), GDK_KEY_t, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "redo last tag"), GDK_KEY_t, GDK_MOD1_MASK);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_connect_lib(self, "tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_show), self, NULL));
-  dt_accel_connect_lib(self, "redo last tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_redo), self, NULL));
 }
 
 static gboolean _is_user_tag(GtkTreeModel *model, GtkTreeIter *iter)
@@ -3282,6 +3268,9 @@ void gui_init(dt_lib_module_t *self)
   _set_keyword(self);
   _init_treeview(self, 1);
   _update_atdetach_buttons(self);
+
+  dt_action_register(DT_ACTION(self), N_("tag"), _lib_tagging_tag_show, GDK_KEY_t, GDK_CONTROL_MASK);
+  dt_action_register(DT_ACTION(self), N_("redo last tag"), _lib_tagging_tag_redo, GDK_KEY_t, GDK_MOD1_MASK);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -3342,9 +3331,9 @@ static gboolean _lib_tagging_tag_destroy(GtkWidget *widget, GdkEvent *event, gpo
   return FALSE;
 }
 
-static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, dt_lib_module_t *self)
+static void _lib_tagging_tag_redo(dt_action_t *action)
 {
+  dt_lib_module_t *self = dt_action_lib(action);
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
   if(d->last_tag)
@@ -3357,17 +3346,16 @@ static gboolean _lib_tagging_tag_redo(GtkAccelGroup *accel_group, GObject *accel
     _init_treeview(self, 1);
     if(res) _raise_signal_tag_changed(self);
   }
-  return TRUE;
 }
 
-static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, dt_lib_module_t *self)
+static void _lib_tagging_tag_show(dt_action_t *action)
 {
+  dt_lib_module_t *self = dt_action_lib(action);
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   if(d->tree_flag)
   {
     dt_control_log(_("tag shortcut is not active with tag tree view. please switch to list view"));
-    return TRUE;  // doesn't work properly with tree treeview
+    return;  // doesn't work properly with tree treeview
   }
 
   d->floating_tag_imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
@@ -3424,8 +3412,6 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   gtk_widget_show_all(d->floating_tag_window);
   gtk_widget_grab_focus(entry);
   gtk_window_present(GTK_WINDOW(d->floating_tag_window));
-
-  return TRUE;
 }
 
 static int _get_recent_tags_list_length()

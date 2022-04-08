@@ -83,27 +83,13 @@ int position()
   return 350;
 }
 
-static gboolean _goto_previous(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, gpointer data)
+static void _goto_previous(dt_action_t *action)
 {
   const char *line = dt_conf_get_string_const("plugins/lighttable/recentcollect/line1");
   if(line)
   {
     dt_collection_deserialize(line);
   }
-  return TRUE;
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "jump back to previous collection"), GDK_KEY_k, GDK_CONTROL_MASK);
-}
-
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  GClosure *closure = g_cclosure_new(G_CALLBACK(_goto_previous), (gpointer)self, NULL);
-  dt_accel_connect_lib(self, "jump back to previous collection", closure);
 }
 
 static void pretty_print(const char *buf, char *out, size_t outsize)
@@ -432,6 +418,7 @@ void gui_init(dt_lib_module_t *self)
   /* connect collection changed signal */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_lib_recentcollection_updated), (gpointer)self);
+  dt_action_register(DT_ACTION(self), N_("jump back to previous collection"), _goto_previous, GDK_KEY_k, GDK_CONTROL_MASK);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

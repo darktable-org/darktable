@@ -136,11 +136,9 @@ static void _ungroup_helper_function(void)
   }
 }
 
-static gboolean _duplicate_virgin(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, gpointer data)
+static void _duplicate_virgin(dt_action_t *action)
 {
   dt_control_duplicate_images(TRUE);
-
-  return TRUE;
 }
 
 static void button_clicked(GtkWidget *widget, gpointer user_data)
@@ -627,6 +625,8 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
+  dt_action_register(DT_ACTION(self), N_("duplicate virgin"), _duplicate_virgin, GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+
   d->imageid = 0;
   _update(self);
   _image_preference_changed(NULL, self); // update delete button label/tooltip
@@ -650,16 +650,6 @@ void gui_cleanup(dt_lib_module_t *self)
 
   free(self->data);
   self->data = NULL;
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "duplicate virgin"), GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_connect_lib(self, "duplicate virgin", g_cclosure_new(G_CALLBACK(_duplicate_virgin), self, NULL));
 }
 
 #ifdef USE_LUA
