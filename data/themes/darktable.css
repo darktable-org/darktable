@@ -70,12 +70,25 @@
   * some classes had been set on darktable, they all began with a dot. Before adding classes or ids, check what exist before
 
   * on those classes, some general ones had been set and should be added to your widget on Gtk code:
-  - dt_transparent_background: use it on a widget to set transparent background (except on hover) and no border
-  - dt_no_hover: don't change css on hover (for dt_module_btn)
-  - dt_module_btn: set for all icons (button widget without text on it)
-  - section_expander: use it for all expanders you could add on a module
-  - search: use it for all search box
-  - dt_bauhaus_alignment: used for some icons related to bauhaus widget (color picker for auto-tune setting in filmic or mask on same module and tone equalizer actually ; could be used so if an icon related to a bauhaus is not aligned by default)
+  - dt_transparent_background:
+      - use it on a widget to set transparent background (except on hover) and no border
+  - dt_no_hover:
+      - don't change css on hover (for dt_module_btn)
+      - ex : colorlabels on header/footer bar
+  - dt_checked_background:
+      - apply a background if the button is checked (toggled)
+      - ex : mode buttons in lighttable footer bar
+  - dt_module_btn:
+      - set for all icons (button widget without text on it)
+      - ex : btn in module header
+      - for toggle button this is combined with a "standard" "toggle" class
+  - section_expander:
+      - use it for all expanders you could add on a module
+  - search:
+      - use it for all search box
+  - dt_bauhaus_alignment:
+      - used for icons that needs to be aligned with bauhaus widgets in libs
+      - ex : color picker for auto-tune setting in filmic or mask on same module and tone equalizer
 
   * the list above is not exhausting. Those are main ones set actually and should be completed if needed. You could see other classes on this file
 ***/
