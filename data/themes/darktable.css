@@ -345,7 +345,6 @@ button
 {
   min-height: 1.2em;
   min-width: 1.2em;
-  padding: 0.14em;
   margin: 0 0.07em;
 }
 
@@ -728,11 +727,7 @@ spinbutton>button
 {
   color: alpha(@button_checked_fg, 0.56);
   background-color: alpha(darker(@button_bg),0.8);
-}
-
-#main-histogram #dt-button:hover
-{
-  color: @button_fg;
+  border: 0.07em solid alpha(@button_bg, 0.33);
 }
 
 /* set channel buttons at inactive state */
@@ -751,7 +746,7 @@ spinbutton>button
   background-color: alpha(@graph_blue, 0.2);
 }
 
-/* set now them to active state */
+/* set now them active state */
 #red-channel-button:checked
 {
   background-color: alpha(@graph_red, 0.66);
@@ -770,13 +765,23 @@ spinbutton>button
 /* set border of all active color channel buttons */
 #main-histogram .toggle:checked
 {
-  border-color: alpha(@button_checked_fg, 0.33);    /* just set a really tight border to better check quickly active state*/
+  border: 0.07em solid alpha(@button_checked_fg, 0.15);    /* just set a really tight border to better check quickly active state*/
 }
 
-#main-histogram #dt-button:disabled,
-#main-histogram .toggle:disabled
+/* set now hover state */
+#red-channel-button:hover
 {
-  opacity: 0.2;
+  background-color: alpha(@graph_red, 0.5);
+}
+
+#green-channel-button:hover
+{
+  background-color: alpha(@graph_green, 0.5);
+}
+
+#blue-channel-button:hover
+{
+  background-color: alpha(@graph_blue, 0.5);
 }
 
 /*------------------
@@ -885,6 +890,11 @@ popover #bauhaus_slider
 #bauhaus_slider
 {
   margin: 0.1em 0;
+}
+
+#bauhaus_slider
+{
+  margin-bottom: 0.14em;
 }
 
 .bauhaus_slider_popup,
@@ -1739,6 +1749,7 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 }
 
 /* Hover states, some needed background only */
+.dt_history_items:hover,
 .dt_transparent_background:hover,
 button:hover:not(.combo),
 filechooser row:hover,
@@ -1748,7 +1759,8 @@ notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #collapsible spinbutton button:hover,
-.dt_history_items:hover,
+#main-histogram #dt-button:hover,
+#non-flat:hover,
 #preferences_box .sidebar :hover,
 #recent-collection-button:hover,
 #view_label:hover,
