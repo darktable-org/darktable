@@ -1521,7 +1521,7 @@ padding: 0.14em;
 
 #dt-map-location
 {
-border-bottom: 0.07em solid @selected_bg_color;
+border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 }
 
 #dt-map-location:hover
