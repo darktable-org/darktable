@@ -413,6 +413,7 @@ void gui_init(dt_lib_module_t *self)
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
     d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, k, NULL);
+    dt_gui_add_class(d->colors[k], "dt_no_hover");
     g_object_set_data(G_OBJECT(d->colors[k]), "colors_index", GINT_TO_POINTER(k));
     gtk_box_pack_start(GTK_BOX(hbox), d->colors[k], FALSE, FALSE, 0);
     gtk_widget_set_tooltip_text(d->colors[k], _("filter by images color label"
@@ -429,6 +430,7 @@ void gui_init(dt_lib_module_t *self)
                                               "\nor (∪): images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(d->colors_op), "clicked", G_CALLBACK(_colors_operation_clicked), self);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 2);
+  gtk_widget_set_name(hbox, "lib-label-colors");
   dt_gui_add_class(hbox, "quick_filter_box");
   dt_gui_add_class(hbox, "dt_font_resize_07");
 

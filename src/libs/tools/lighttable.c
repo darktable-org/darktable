@@ -256,7 +256,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->layout_box, TRUE, TRUE, 0);
 
   d->layout_filemanager = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_grid, 0, NULL);
-  gtk_style_context_add_class(gtk_widget_get_style_context(d->layout_filemanager), "dt_checked_background");
+  dt_gui_add_class(d->layout_filemanager, "dt_checked_background");
   dt_action_define(&darktable.view_manager->proxy.lighttable.view->actions, NULL,
                    "toggle filemanager layout", d->layout_filemanager, NULL);
   dt_gui_add_help_link(d->layout_filemanager, dt_get_help_url("layout_filemanager"));
@@ -266,7 +266,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_filemanager, TRUE, TRUE, 0);
 
   d->layout_zoomable = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_zoom, 0, NULL);
-  gtk_style_context_add_class(gtk_widget_get_style_context(d->layout_zoomable), "dt_checked_background");
+  dt_gui_add_class(d->layout_zoomable, "dt_checked_background");
   dt_action_define(&darktable.view_manager->proxy.lighttable.view->actions, NULL,
                    "toggle zoomable lighttable layout", d->layout_zoomable, NULL);
   dt_gui_add_help_link(d->layout_zoomable, dt_get_help_url("layout_zoomable"));
@@ -276,7 +276,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_zoomable, TRUE, TRUE, 0);
 
   d->layout_culling_fix = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_fixed, 0, NULL);
-  gtk_style_context_add_class(gtk_widget_get_style_context(d->layout_culling_fix), "dt_checked_background");
+  dt_gui_add_class(d->layout_culling_fix, "dt_checked_background");
   dt_action_define(&darktable.view_manager->proxy.lighttable.view->actions, NULL,
                    "toggle culling mode", d->layout_culling_fix, NULL);
   dt_gui_add_help_link(d->layout_culling_fix, dt_get_help_url("layout_culling"));
@@ -285,7 +285,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_culling_fix, TRUE, TRUE, 0);
 
   d->layout_culling_dynamic = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_culling_dynamic, 0, NULL);
-  gtk_style_context_add_class(gtk_widget_get_style_context(d->layout_culling_dynamic), "dt_checked_background");
+  dt_gui_add_class(d->layout_culling_dynamic, "dt_checked_background");
   dt_action_define(&darktable.view_manager->proxy.lighttable.view->actions, NULL,
                    "toggle culling dynamic mode", d->layout_culling_dynamic, NULL);
   dt_gui_add_help_link(d->layout_culling_dynamic, dt_get_help_url("layout_culling"));
@@ -294,7 +294,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_culling_dynamic, TRUE, TRUE, 0);
 
   d->layout_preview = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_fullpreview, 0, NULL);
-  gtk_style_context_add_class(gtk_widget_get_style_context(d->layout_preview), "dt_checked_background");
+  dt_gui_add_class(d->layout_preview, "dt_checked_background");
   dt_action_define(&darktable.view_manager->proxy.lighttable.view->actions, NULL,
                    "toggle sticky preview mode", d->layout_preview, NULL);
   dt_gui_add_help_link(d->layout_preview, dt_get_help_url("layout_preview"));
