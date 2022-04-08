@@ -1602,7 +1602,7 @@ cell:selected
 /* then the switches */
 .dt_history_switch
 {
-  font-size: 0.75em;
+  font-size: 0.7em;
   margin-left: 0.42em;
   border: 0;
 }
@@ -1617,7 +1617,7 @@ cell:selected
 /* then deprecated switch to suit to other icons */
 #left #history-switch-deprecated
 {
-  font-size: 0.65em;
+  font-size: 0.6em;
 }
 
 #history-tooltip,
