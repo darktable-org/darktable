@@ -78,6 +78,7 @@ void gui_init(dt_lib_module_t *self)
   /* create buttons */
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *button;
+  dt_action_t *ac;
   for(int k = 0; k < 6; k++)
   {
     button = dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_LABEL_PURPLE), NULL);
@@ -89,8 +90,14 @@ void gui_init(dt_lib_module_t *self)
                      GINT_TO_POINTER(k));
     g_signal_connect(G_OBJECT(button), "enter-notify-event", G_CALLBACK(_lib_colorlabels_enter_notify_callback),
                      GINT_TO_POINTER(k));
-    dt_action_define(&darktable.control->actions_thumb, NULL, "color label", button, &dt_action_def_color_label);
+    ac = dt_action_define(&darktable.control->actions_thumb, NULL, N_("color label"), button, &dt_action_def_color_label);
   }
+
+  dt_shortcut_register(ac, 1, 0, GDK_KEY_F1, 0);
+  dt_shortcut_register(ac, 2, 0, GDK_KEY_F2, 0);
+  dt_shortcut_register(ac, 3, 0, GDK_KEY_F3, 0);
+  dt_shortcut_register(ac, 4, 0, GDK_KEY_F4, 0);
+  dt_shortcut_register(ac, 5, 0, GDK_KEY_F5, 0);
 
   gtk_widget_set_name(self->widget, "lib-label-colors");
 }

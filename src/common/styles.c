@@ -95,18 +95,11 @@ void dt_style_item_free(gpointer data)
   free(item);
 }
 
-static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                                               guint keyval, GdkModifierType modifier, gpointer data)
+static void _apply_style_shortcut_callback(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
-  dt_styles_apply_to_list(data, imgs, FALSE);
+  dt_styles_apply_to_list(action->label, imgs, FALSE);
   g_list_free(imgs);
-  return TRUE;
-}
-
-static void _destroy_style_shortcut_callback(gpointer data, GClosure *closure)
-{
-  g_free(data);
 }
 
 static int32_t dt_styles_get_id_by_name(const char *name);
@@ -405,26 +398,13 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
   _dt_style_cleanup_multi_instance(id);
 
   /* backup style to disk */
-  char stylesdir[PATH_MAX] = { 0 };
-  dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
-  g_strlcat(stylesdir, "/styles", sizeof(stylesdir));
-  g_mkdir_with_parents(stylesdir, 00755);
-
-  dt_styles_save_to_file(newname, stylesdir, TRUE);
+  dt_styles_save_to_file(newname, NULL, TRUE);
 
   if(g_strcmp0(name, newname))
   {
-    gchar *old_name = g_strdup_printf(C_("accel", "styles/apply %s"), name);
-    gchar *new_name = g_strdup_printf(C_("accel", "apply %s"), newname); // don't include full path
-
-    // change closure first, with full old path
-    GClosure *closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), g_strdup(newname),
-                                       _destroy_style_shortcut_callback);
-    dt_accel_connect_global(old_name, closure);
-
-    dt_accel_rename_global(old_name, new_name);
-    g_free(old_name);
-    g_free(new_name);
+    dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
+                                        (gchar **)(const gchar *[]){"styles", name, NULL}, FALSE);
+    dt_action_rename(old, newname);
   }
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
@@ -500,21 +480,11 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
     _dt_style_cleanup_multi_instance(id);
 
     /* backup style to disk */
-    char stylesdir[PATH_MAX] = { 0 };
-    dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
-    g_strlcat(stylesdir, "/styles", sizeof(stylesdir));
-    g_mkdir_with_parents(stylesdir, 00755);
+    dt_styles_save_to_file(newname, NULL, FALSE);
 
-    dt_styles_save_to_file(newname, stylesdir, FALSE);
+    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
+    dt_action_register(stl, newname, _apply_style_shortcut_callback, 0, 0);
 
-    char tmp_accel[1024];
-    gchar *tmp_name = g_strdup(newname); // freed by _destroy_style_shortcut_callback
-    snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), newname);
-    dt_accel_register_global(tmp_accel, 0, 0);
-    GClosure *closure;
-    closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), tmp_name,
-                             _destroy_style_shortcut_callback);
-    dt_accel_connect_global(tmp_accel, closure);
     dt_control_log(_("style named '%s' successfully created"), newname);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
@@ -587,21 +557,11 @@ gboolean dt_styles_create_from_image(const char *name, const char *description,
     _dt_style_cleanup_multi_instance(id);
 
     /* backup style to disk */
-    char stylesdir[PATH_MAX] = { 0 };
-    dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
-    g_strlcat(stylesdir, "/styles", sizeof(stylesdir));
-    g_mkdir_with_parents(stylesdir, 00755);
+    dt_styles_save_to_file(name, NULL, FALSE);
 
-    dt_styles_save_to_file(name, stylesdir, FALSE);
+    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
+    dt_action_register(stl, name, _apply_style_shortcut_callback, 0, 0);
 
-    char tmp_accel[1024];
-    gchar *tmp_name = g_strdup(name); // freed by _destroy_style_shortcut_callback
-    snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), name);
-    dt_accel_register_global(tmp_accel, 0, 0);
-    GClosure *closure;
-    closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), tmp_name,
-                             _destroy_style_shortcut_callback);
-    dt_accel_connect_global(tmp_accel, closure);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
     return TRUE;
   }
@@ -1015,9 +975,9 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
-    char tmp_accel[1024];
-    snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), name);
-    dt_accel_rename_global(tmp_accel, NULL);
+    dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
+                                        (gchar **)(const gchar *[]){"styles", name, NULL}, FALSE);
+    dt_action_rename(old, NULL);
 
     if(raise)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
@@ -1210,6 +1170,15 @@ static char *dt_style_encode(sqlite3_stmt *stmt, int row)
 
 void dt_styles_save_to_file(const char *style_name, const char *filedir, gboolean overwrite)
 {
+  char stylesdir[PATH_MAX] = { 0 };
+  if(!filedir)
+  {
+    dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
+    g_strlcat(stylesdir, "/styles", sizeof(stylesdir));
+    g_mkdir_with_parents(stylesdir, 00755);
+    filedir = stylesdir;
+  }
+
   int rc = 0;
   char stylename[520];
   sqlite3_stmt *stmt;
@@ -1586,40 +1555,16 @@ static int32_t dt_styles_get_id_by_name(const char *name)
   return id;
 }
 
-void dt_init_styles_key_accels()
+void dt_init_styles_actions()
 {
   GList *result = dt_styles_get_list("");
   if(result)
   {
+    dt_action_t *stl = dt_action_section(&darktable.control->actions_global, N_("styles"));
     for(GList *res_iter = result; res_iter; res_iter = g_list_next(res_iter))
     {
       dt_style_t *style = (dt_style_t *)res_iter->data;
-      gchar* tmp_name = g_strdelimit(g_strdup(style->name), "/", '-');
-      char tmp_accel[1024];
-      snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), tmp_name);
-      g_free(tmp_name);
-      dt_accel_register_global(tmp_accel, 0, 0);
-    }
-    g_list_free_full(result, dt_style_free);
-  }
-}
-
-void dt_connect_styles_key_accels()
-{
-  GList *result = dt_styles_get_list("");
-  if(result)
-  {
-    for(GList *res_iter = result; res_iter; res_iter = g_list_next(res_iter))
-    {
-      GClosure *closure;
-      dt_style_t *style = (dt_style_t *)res_iter->data;
-      closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), g_strdup(style->name),
-                               _destroy_style_shortcut_callback);
-      gchar* tmp_name = g_strdelimit(g_strdup(style->name), "/", '-');
-      char tmp_accel[1024];
-      snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), tmp_name);
-      g_free(tmp_name);
-      dt_accel_connect_global(tmp_accel, closure);
+      dt_action_register(stl, style->name, _apply_style_shortcut_callback, 0, 0);
     }
     g_list_free_full(result, dt_style_free);
   }

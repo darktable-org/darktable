@@ -312,7 +312,7 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
 
   dt_action_t *ac = dt_action_define_iop(self, NULL, label, button, &dt_action_def_button);
   if(darktable.control->accel_initialising)
-    dt_accel_register_shortcut(ac, NULL, 0, 0, accel_key, mods);
+    dt_shortcut_register(ac, 0, 0, accel_key, mods);
 
   if(GTK_IS_BOX(box)) gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
 

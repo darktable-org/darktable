@@ -87,8 +87,6 @@ typedef struct dt_thumbtable_t
   gboolean mouse_inside; // is the mouse pointer inside thumbtable widget ?
   gboolean key_inside;   // is the key move pointer inside thumbtable widget ?
 
-  GSList *accel_closures; // list of associated accels
-
   // when performing a drag, we store the list of items to drag here
   // as this can change during the drag and drop (esp. because of the image_over_id)
   GList *drag_list;
@@ -138,9 +136,6 @@ gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table);
 
 // scrollbar change
 void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y);
-
-// init all accels
-void dt_thumbtable_init_accels(dt_thumbtable_t *table);
 
 // change the type of overlays that should be shown (over or under the image)
 void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overlay_t over);

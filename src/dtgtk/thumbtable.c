@@ -1841,6 +1841,8 @@ static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, gpointer 
   dt_gui_remove_class(table->widget, "dt_thumbtable_reorder");
 }
 
+static void _thumbtable_init_accels();
+
 dt_thumbtable_t *dt_thumbtable_new()
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
@@ -1906,7 +1908,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   g_object_ref(table->widget);
 
   // we init key accels
-  dt_thumbtable_init_accels(table);
+  _thumbtable_init_accels();
 
   return table;
 }
@@ -2254,20 +2256,15 @@ gboolean dt_thumbtable_set_offset_image(dt_thumbtable_t *table, const int imgid,
   return dt_thumbtable_set_offset(table, _thumb_get_rowid(imgid), redraw);
 }
 
-static gboolean _accel_copy(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                            GdkModifierType modifier, gpointer data)
+static void _accel_copy(dt_action_t *action)
 {
   dt_history_copy(dt_act_on_get_main_image());
-  return TRUE;
 }
-static gboolean _accel_copy_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                                  GdkModifierType modifier, gpointer data)
+static void _accel_copy_parts(dt_action_t *action)
 {
   dt_history_copy_parts(dt_act_on_get_main_image());
-  return TRUE;
 }
-static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                             GdkModifierType modifier, gpointer data)
+static void _accel_paste(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
@@ -2280,11 +2277,8 @@ static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable,
     g_list_free(imgs);
 
   dt_dev_undo_end_record(darktable.develop);
-
-  return TRUE;
 }
-static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                                   GdkModifierType modifier, gpointer data)
+static void _accel_paste_parts(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
 
@@ -2297,10 +2291,8 @@ static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *accelera
     g_list_free(imgs);
 
   dt_dev_undo_end_record(darktable.develop);
-  return TRUE;
 }
-static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                                    GdkModifierType modifier, gpointer data)
+static void _accel_hist_discard(dt_action_t *action)
 {
   GList *imgs = dt_act_on_get_images(TRUE, TRUE, FALSE);
   const gboolean ret = dt_history_delete_on_list(imgs, TRUE);
@@ -2308,18 +2300,16 @@ static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceler
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
   else
     g_list_free(imgs);
-  return TRUE;
 }
-static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                                 GdkModifierType modifier, gpointer data)
+static void _accel_duplicate(dt_action_t *action)
 {
   dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
 
   const int32_t sourceid = dt_act_on_get_main_image();
   const int32_t newimgid = dt_image_duplicate(sourceid);
-  if(newimgid <= 0) return FALSE;
+  if(newimgid <= 0) return;
 
-  if(GPOINTER_TO_INT(data))
+  if(strcmp(action->id, "duplicate image"))
     dt_history_delete_on_image(newimgid);
   else
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE);
@@ -2331,110 +2321,49 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-  return TRUE;
 }
-static gboolean _accel_select_all(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                                  GdkModifierType modifier, gpointer data)
+static void _accel_select_all(dt_action_t *action)
 {
   dt_selection_select_all(darktable.selection);
-  return TRUE;
 }
-static gboolean _accel_select_none(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                                   GdkModifierType modifier, gpointer data)
+static void _accel_select_none(dt_action_t *action)
 {
   dt_selection_clear(darktable.selection);
-  return TRUE;
 }
-static gboolean _accel_select_invert(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                                     GdkModifierType modifier, gpointer data)
+static void _accel_select_invert(dt_action_t *action)
 {
   dt_selection_invert(darktable.selection);
-  return TRUE;
 }
-static gboolean _accel_select_film(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                                   GdkModifierType modifier, gpointer data)
+static void _accel_select_film(dt_action_t *action)
 {
   dt_selection_select_filmroll(darktable.selection);
-  return TRUE;
 }
-static gboolean _accel_select_untouched(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
-                                        GdkModifierType modifier, gpointer data)
+static void _accel_select_untouched(dt_action_t *action)
 {
   dt_selection_select_unaltered(darktable.selection);
-  return TRUE;
 }
 
 // init all accels
-void dt_thumbtable_init_accels(dt_thumbtable_t *table)
+static void _thumbtable_init_accels()
 {
   dt_action_t *thumb_actions = &darktable.control->actions_thumb;
 
-  /* setup rating key accelerators */
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 0, 0, GDK_KEY_0, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 1, 0, GDK_KEY_1, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 2, 0, GDK_KEY_2, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 3, 0, GDK_KEY_3, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 4, 0, GDK_KEY_4, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 5, 0, GDK_KEY_5, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "rating"), 6, 0, GDK_KEY_r, 0);
-
   /* setup history key accelerators */
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "copy history"), 0, 0, GDK_KEY_c, GDK_CONTROL_MASK);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "copy history parts"), 0, 0, GDK_KEY_c,
-                           GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "paste history"), 0, 0, GDK_KEY_v, GDK_CONTROL_MASK);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "paste history parts"), 0, 0, GDK_KEY_v,
-                           GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "discard history"), 0, 0, 0, 0);
+  dt_action_register(thumb_actions, N_("copy history"), _accel_copy, GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("copy history parts"), _accel_copy_parts, GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_action_register(thumb_actions, N_("paste history"), _accel_paste, GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("paste history parts"), _accel_paste_parts, GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_action_register(thumb_actions, N_("discard history"), _accel_hist_discard, 0, 0);
 
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "duplicate image"), 0, 0, GDK_KEY_d, GDK_CONTROL_MASK);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "duplicate image virgin"), 0, 0, GDK_KEY_d,
-                           GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-
-  /* setup color label accelerators */
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 1, 0, GDK_KEY_F1, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 2, 0, GDK_KEY_F2, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 3, 0, GDK_KEY_F3, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 4, 0, GDK_KEY_F4, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "color label"), 5, 0, GDK_KEY_F5, 0);
+  dt_action_register(thumb_actions, N_("duplicate image"), _accel_duplicate, GDK_KEY_d, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("duplicate image virgin"), _accel_duplicate, GDK_KEY_d, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 
   /* setup selection accelerators */
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "select all"), 0, 0, GDK_KEY_a, GDK_CONTROL_MASK);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "select none"), 0, 0, GDK_KEY_a,
-                           GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "invert selection"), 0, 0, GDK_KEY_i, GDK_CONTROL_MASK);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "select film roll"), 0, 0, 0, 0);
-  dt_accel_register_shortcut(thumb_actions, NC_("accel", "select untouched"), 0, 0, 0, 0);
-
-  // History key accels
-  // These get filtered from DT_VIEW_LIGHTTABLE in find_views (accelerator.c)
-  dt_accel_connect_shortcut(thumb_actions, "copy history",
-                          g_cclosure_new(G_CALLBACK(_accel_copy), NULL, NULL));
-  dt_accel_connect_shortcut(thumb_actions, "copy history parts",
-                          g_cclosure_new(G_CALLBACK(_accel_copy_parts), NULL, NULL));
-  dt_accel_connect_shortcut(thumb_actions, "paste history",
-                          g_cclosure_new(G_CALLBACK(_accel_paste), NULL, NULL));
-  dt_accel_connect_shortcut(thumb_actions, "paste history parts",
-                          g_cclosure_new(G_CALLBACK(_accel_paste_parts), NULL, NULL));
-  dt_accel_connect_shortcut(thumb_actions, "discard history",
-                          g_cclosure_new(G_CALLBACK(_accel_hist_discard), NULL, NULL));
-
-  dt_accel_connect_shortcut(thumb_actions, "duplicate image",
-                          g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(0), NULL));
-  dt_accel_connect_shortcut(thumb_actions, "duplicate image virgin",
-                          g_cclosure_new(G_CALLBACK(_accel_duplicate), GINT_TO_POINTER(1), NULL));
-
-  // Selection accels
-  dt_accel_connect_shortcut(thumb_actions, "select all",
-                          g_cclosure_new(G_CALLBACK(_accel_select_all), NULL, NULL));
-  dt_accel_connect_shortcut(thumb_actions, "select none",
-                          g_cclosure_new(G_CALLBACK(_accel_select_none), NULL, NULL));
-  dt_accel_connect_shortcut(thumb_actions, "invert selection",
-                          g_cclosure_new(G_CALLBACK(_accel_select_invert), NULL, NULL));
-  dt_accel_connect_shortcut(thumb_actions, "select film roll",
-                          g_cclosure_new(G_CALLBACK(_accel_select_film), NULL, NULL));
-  dt_accel_connect_shortcut(thumb_actions, "select untouched",
-                          g_cclosure_new(G_CALLBACK(_accel_select_untouched), NULL, NULL));
+  dt_action_register(thumb_actions, N_("select all"), _accel_select_all, GDK_KEY_a, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("select none"), _accel_select_none, GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_action_register(thumb_actions, N_("invert selection"), _accel_select_invert, GDK_KEY_i, GDK_CONTROL_MASK);
+  dt_action_register(thumb_actions, N_("select film roll"), _accel_select_film, 0, 0);
+  dt_action_register(thumb_actions, N_("select untouched"), _accel_select_untouched, 0, 0);
 }
 
 static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)

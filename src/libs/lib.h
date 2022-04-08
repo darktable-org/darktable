@@ -73,6 +73,11 @@ typedef struct dt_lib_t
       // FIXME: now that PR #5532 is merged, define this as dt_atomic_int and include "common/atomic.h" and use dt_atomic_set_int() and dt_atomic_get_int()
       gboolean is_linear;
     } histogram;
+
+    struct
+    {
+      struct dt_lib_module_t *module;
+    } navigation;
   } proxy;
 } dt_lib_t;
 

@@ -954,8 +954,9 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const c
   {
     if(!darktable.bauhaus->skip_accel || w->module->type != DT_ACTION_TYPE_IOP_INSTANCE)
     {
-      w->module = dt_action_define(w->module, section, label, widget,
-                                   w->type == DT_BAUHAUS_SLIDER ? &dt_action_def_slider : &dt_action_def_combo);
+      dt_action_t *ac = dt_action_define(w->module, section, label, widget,
+                                         w->type == DT_BAUHAUS_SLIDER ? &dt_action_def_slider : &dt_action_def_combo);
+      if(w->module->type != DT_ACTION_TYPE_IOP_INSTANCE) w->module = ac;
     }
 
     // if new bauhaus widget added to front of widget_list; move it to the back

@@ -359,6 +359,12 @@ static void _colors_operation_clicked(GtkWidget *w, dt_lib_module_t *self)
 #undef CL_ALL_EXCLUDED
 #undef CL_ALL_INCLUDED
 
+static void _reset_filters(dt_action_t *action)
+{
+  _lib_filter_reset(dt_action_lib(action), FALSE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -497,6 +503,7 @@ void gui_init(dt_lib_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE,
                             G_CALLBACK(_lib_filter_images_order_change), self);
+  dt_action_register(DT_ACTION(self), N_("reset filters"), _reset_filters, 0, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -670,24 +677,6 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
   _reset_stars_filter(self, smart_filter);
   _reset_text_filter(self);
   _reset_colors_filter(self);
-}
-
-static gboolean _reset_filters(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, dt_lib_module_t *self)
-{
-  _lib_filter_reset(self, FALSE);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
-  return TRUE;
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "reset filters"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_connect_lib(self, "reset filters", g_cclosure_new(G_CALLBACK(_reset_filters), self, NULL));
 }
 
 #ifdef USE_LUA

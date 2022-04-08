@@ -284,14 +284,6 @@ static int register_lib(lua_State *L)
 
   lua_pop(L,2);
 
-
-
-
-
-  if(lib->gui_reset)
-  {
-    dt_accel_register_lib(lib, NC_("accel", "reset lib parameters"), 0, 0);
-  }
   if(lib->init) lib->init(lib);
 
   lib->gui_init(lib);
