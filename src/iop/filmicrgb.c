@@ -1758,11 +1758,15 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
 
   const int use_output_profile = filmic_v4_prepare_matrices(input_matrix, output_matrix, export_input_matrix,
                                                             export_output_matrix, work_profile, export_profile);
+
+  const float norm_min = exp_tonemapping_v2(0.f, data->grey_source, data->black_source, data->dynamic_range);
+  const float norm_max = exp_tonemapping_v2(1.f, data->grey_source, data->black_source, data->dynamic_range);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                       \
     dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, input_matrix, output_matrix, \
     variant, spline, display_white, display_black, export_input_matrix, export_output_matrix, \
-    use_output_profile)    \
+    use_output_profile, norm_min, norm_max)    \
     schedule(simd :static)
 #endif
   for(size_t k = 0; k < height * width * ch; k += ch)
@@ -1770,7 +1774,11 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
 
-    float norm = fmaxf(get_pixel_norm(pix_in, variant, work_profile), NORM_MIN);
+    // Norm must be clamped early to the valid input range, otherwise it will be clamped
+    // later in log_tonemapping_v2 and the ratios will be then incorrect.
+    // This would result in colorful patches darker than their surrounding in places
+    // where the raw data is clipped.
+    float norm = CLAMPF(get_pixel_norm(pix_in, variant, work_profile), norm_min, norm_max);
 
     // Save the ratios
     dt_aligned_pixel_t ratios = { 0.0f };
@@ -2255,6 +2263,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int use_output_profile = filmic_v4_prepare_matrices(input_matrix, output_matrix, export_input_matrix,
                                                             export_output_matrix, work_profile, export_profile);
 
+  const float norm_min = exp_tonemapping_v2(0.f, d->grey_source, d->black_source, d->dynamic_range);
+  const float norm_max = exp_tonemapping_v2(1.f, d->grey_source, d->black_source, d->dynamic_range);
+
   cl_mem input_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), input_matrix);
   cl_mem output_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 12 * sizeof(float), output_matrix);
   cl_mem export_input_matrix_cl = NULL;
@@ -2464,6 +2475,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 29, sizeof(int), (void *)&use_output_profile);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 30, sizeof(cl_mem), (void *)&export_input_matrix_cl);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 31, sizeof(cl_mem), (void *)&export_output_matrix_cl);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 32, sizeof(float), (void *)&norm_min);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 33, sizeof(float), (void *)&norm_max);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_chroma, sizes);
     if(err != CL_SUCCESS) goto error;

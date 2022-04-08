@@ -516,10 +516,15 @@ static inline float4 filmic_chroma_v4(const float4 i,
                                       constant const float *const matrix_in, constant const float *const matrix_out,
                                       const float display_black, const float display_white,
                                       const int use_output_profile,
-                                      constant const float *const export_matrix_in, constant const float *const export_matrix_out)
+                                      constant const float *const export_matrix_in, constant const float *const export_matrix_out,
+                                      const float norm_min, const float norm_max)
 
 {
-  float norm = fmax(get_pixel_norm(i, variant, profile_info, lut, use_work_profile), NORM_MIN);
+  // Norm must be clamped early to the valid input range, otherwise it will be clamped
+  // later in log_tonemapping_v2 and the ratios will be then incorrect.
+  // This would result in colorful patches darker than their surrounding in places
+  // where the raw data is clipped.
+  float norm = clamp(get_pixel_norm(i, variant, profile_info, lut, use_work_profile), norm_min, norm_max);
 
   // Save the ratios
   float4 ratios = i / (float4)norm;
@@ -844,7 +849,8 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                  constant const float *const matrix_in, constant const float *const matrix_out,
                  const float display_black, const float display_white,
                  const int use_output_profile,
-                 constant const float *const export_matrix_in, constant const float *const export_matrix_out)
+                 constant const float *const export_matrix_in, constant const float *const export_matrix_out,
+                 const float norm_min, const float norm_max)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -883,7 +889,8 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                            sigma_toe, sigma_shoulder, saturation,
                            M1, M2, M3, M4, M5, latitude_min, latitude_max, output_power, variant,
                            color_science, type, matrix_in, matrix_out, display_black, display_white,
-                           use_output_profile, export_matrix_in, export_matrix_out);
+                           use_output_profile, export_matrix_in, export_matrix_out,
+                           norm_min, norm_max);
       break;
     }
   }
