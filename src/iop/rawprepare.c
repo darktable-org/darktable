@@ -231,7 +231,15 @@ void output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixel
                    dt_iop_buffer_dsc_t *dsc)
 {
   default_output_format(self, pipe, piece, dsc);
-  dsc->frames = pipe->image.buf_dsc.frames;
+  // multiframe not needed for subsampled images
+  if(pipe->type == (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
+  {
+    dsc->frames = pipe->image.buf_dsc.frames;
+  }
+  else
+  {
+    dsc->frames = 1;
+  }
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
   dsc->rawprepare.raw_black_level = d->rawprepare.raw_black_level;
@@ -260,6 +268,8 @@ static void convert_uint_float(const uint16_t *const in, float *const out, const
                                const dt_iop_roi_t *const roi_out, int csx, int csy,
                                const dt_iop_rawprepare_data_t *const d)
 {
+  fprintf(stderr,"in:  %p - %p, size %i\n",in, in + (roi_in->height * roi_in->width), (roi_in->height * roi_in->width));
+  fprintf(stderr,"out: %p - %p, size %i\n",out, out + (roi_out->height * roi_out->width),(roi_out->height * roi_out->width));
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
     dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out)          \
@@ -333,10 +343,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
-  // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
-  // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  fprintf(stderr,"frame size in:  %d\n", roi_in->width * roi_in->height);
+  fprintf(stderr,"frame size iout: %d\n", roi_out->width * roi_out->height);
+  fprintf(stderr,"i: %p\n",ivoid);
+  fprintf(stderr,"o: %p\n",ovoid);
 
-  const int csx = compute_proper_crop(piece, roi_in, d->x), csy = compute_proper_crop(piece, roi_in, d->y);
+  const int csx = compute_proper_crop(piece, roi_in, d->x);
+  const int csy = compute_proper_crop(piece, roi_in, d->y);
 
   if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1
      && piece->dsc_in.datatype == TYPE_UINT16)
@@ -345,7 +360,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const uint16_t *const in = (const uint16_t *const)ivoid;
     float *const out = (float *const)ovoid;
 
-    for(size_t f = 0; f < piece->dsc_in.frames; ++f)
+    for(size_t f = 0; f < piece->dsc_out.frames; ++f)
     {
       const uint16_t *const frame_in = in + (f * roi_in->width * roi_in->height);
       float *const frame_out = out + (f * roi_out->width * roi_out->height);
