@@ -70,7 +70,8 @@
   * some classes had been set on darktable, they all began with a dot. Before adding classes or ids, check what exist before
 
   * on those classes, some general ones had been set and should be added to your widget on Gtk code:
-  - dt_transparent_background: use it on a widget to set transparent background and border
+  - dt_transparent_background: use it on a widget to set transparent background (except on hover) and no border
+  - dt_no_hover: don't change css on hover (for dt_module_btn)
   - dt_module_btn: set for all icons (button widget without text on it)
   - section_expander: use it for all expanders you could add on a module
   - search: use it for all search box
@@ -374,6 +375,7 @@ spinbutton *:disabled,
 {
   background-color: transparent;
   border: 0.07em solid shade(@button_border, 0.9);
+  color: @disabled_fg_color;
 }
 
 /* Default extra margin for icons optical alignment */
@@ -461,7 +463,7 @@ spinbutton>button
   font-size: 0.7em;
 }
 
-.dt_module_button,
+.dt_module_btn,
 .dt_ignore_fg_state:checked
 {
   background-color: transparent;
@@ -469,8 +471,7 @@ spinbutton>button
   color: alpha(@button_fg, 0.5);
 }
 
-.dt_toggle_button:checked,
-.dt_button:checked
+.dt_module_btn:checked
 {
   background-color: transparent;
 }
@@ -525,12 +526,12 @@ spinbutton>button
   margin: 12px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
 
-#footer-toolbar #lib-label-colors #dt-button
+#lib-label-colors .dt_module_btn
 {
   opacity: 0.6;
 }
 
-#footer-toolbar #lib-label-colors #dt-button:hover
+#lib-label-colors .dt_module_btn:hover
 {
   opacity: 1;
 }
@@ -736,7 +737,7 @@ spinbutton>button
 }
 
 /* set background color and color of scope/histogram buttons */
-#main-histogram #dt-button
+#main-histogram .dt_module_btn
 {
   color: alpha(@button_checked_fg, 0.56);
   background-color: alpha(darker(@button_bg),0.8);
@@ -1029,33 +1030,33 @@ notebook tabs,
 }
 
 /* set sizes of "buttons" in modules and blending tabs ; and guides lines too */
-#modules-tabs #dt-toggle-button
+#modules-tabs .dt_module_btn
 {
   min-height: 2em;
 }
 
 #blending-tabs .dt_module_btn,
-#guides-line #dt-toggle-button
+#guides-line .dt_module_btn
 {
   min-height: 1.3em;
   padding: 0.28em;
 }
 
-#modules-tabs #dt-toggle-button,   /* This is needed separately to set a minimal width if panel is really narrow */
-#blending-tabs #dt-toggle-button,
-#guides-line #dt-toggle-button
+#modules-tabs .dt_module_btn,   /* This is needed separately to set a minimal width if panel is really narrow */
+#blending-tabs .dt_module_btn,
+#guides-line .dt_module_btn
 {
   min-width: 1.5em;
 }
 
 /* reduce and align now hamburger menu of modules and blending tabs */
-#blending-tabs #dt-button,
-#modules-tabs #dt-button
+#blending-tabs .dt_module_btn,
+#modules-tabs .dt_module_btn
 {
   padding: 0.2em 0.5em;
 }
 
-#blending-tabs #dt-button
+#blending-tabs .dt_module_btn
 {
   font-size: 0.8em;
 }
@@ -1311,7 +1312,7 @@ dialog scrollbar
   font-weight: bold;
 }
 
-#modulegroups-groups-title #dt-button
+#modulegroups-groups-title .dt_module_btn
 {
   margin-left: 0.56em;
 }
@@ -1373,7 +1374,7 @@ box #modulegroups-iop-header:last-child
   background-color: @grey_30;
 }
 
-#modulegroups-icons-popup #dt-button
+#modulegroups-icons-popup .dt_module_btn
 {
   min-width: 1.6em;
   min-height: 1.6em;
@@ -1478,7 +1479,7 @@ filechooser row:hover .sidebar-icon
 #basics-box-labels #basics-link,
 #basics-box-labels #basics-header-box:first-child,
 #basics-box-labels #section_label,
-#modulegroups-header #dt-button,
+#modulegroups-header .dt_module_btn,
 #thumb_localcopy:active
 {
   border: none;
@@ -1568,7 +1569,7 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
   margin: 0.07em 0.28em;
 }
 
-#background_job_eventbox #dt-button
+#background_job_eventbox .dt_module_btn
 {
   border: 0;
 }
@@ -1765,7 +1766,7 @@ messagedialog .default,  /* this show that a button in confirmation action pop-u
 /* Hover states, some needed background only */
 .dt_history_items:hover,
 .dt_transparent_background:hover,
-button:hover:not(.combo),
+button:hover:not(.combo):not(.dt_no_hover),
 filechooser row:hover,
 menuitem:hover,
 menuitem:hover > *:not(check),
@@ -1773,7 +1774,7 @@ notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #collapsible spinbutton button:hover,
-#main-histogram #dt-button:hover,
+#main-histogram .dt_module_btn:hover,
 #non-flat:hover,
 #preferences_box .sidebar :hover,
 #recent-collection-button:hover,
@@ -2584,12 +2585,12 @@ Details :
   margin-right: 0.6em;
 }
 
-#footer-toolbar #dt-toggle-button
+#footer-toolbar .dt_module_btn
 {
   margin: 0 0.2em;
 }
 
-#lighttable_layouts_box #dt-toggle-button
+#lighttable_layouts_box .dt_module_btn
 {
   margin: 0 0.4em;
 }

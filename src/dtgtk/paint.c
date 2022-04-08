@@ -1535,22 +1535,19 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   PREAMBLE(0.9, 1, 0, 0)
 
   const double r = 0.4;
-  const float alpha = flags & CPF_PRELIGHT ? 1.0 : 0.6;
   const dt_colorlabels_enum color = (flags & 7);
 
   if(color < DT_COLORLABELS_LAST)
   {
-    cairo_set_source_rgba(cr, darktable.bauhaus->colorlabels[color].red,
-                          darktable.bauhaus->colorlabels[color].green, darktable.bauhaus->colorlabels[color].blue,
-                          alpha);
+    set_color(cr, darktable.bauhaus->colorlabels[color]);
   }
   else
   {
-    cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, alpha);
+    cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, 1.0);
   }
 
   /* make blue color label icon more visible and well balanced with other colors */
-  if(flags & CPF_DIRECTION_RIGHT)
+  if(flags & CPF_LABEL_BLUE)
   {
     cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
   }

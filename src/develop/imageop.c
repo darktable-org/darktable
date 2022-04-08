@@ -1097,33 +1097,15 @@ void dt_iop_gui_set_enable_button_icon(GtkWidget *w, dt_iop_module_t *module)
   // set on/off icon
   if(module->default_enabled && module->hide_enable_button)
   {
-<<<<<<< HEAD
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
-                                 dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
-  }
-  else if(!module->default_enabled && module->hide_enable_button)
-  {
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
-                                 dtgtk_cairo_paint_switch_off, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
-  }
-  else
-  {
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w),
-                                 dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, module);
-=======
-    gtk_widget_set_name(w, "module-always-enabled-button");
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w), dtgtk_cairo_paint_switch_on, 0, module);
   }
   else if(!module->default_enabled && module->hide_enable_button)
   {
-    gtk_widget_set_name(w, "module-always-disabled-button");
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w), dtgtk_cairo_paint_switch_off, 0, module);
   }
   else
   {
-    gtk_widget_set_name(w, "module-enable-button");
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(w), dtgtk_cairo_paint_switch, 0, module);
->>>>>>> 8b4e68185 (remove unused drawing flags now managed by css)
   }
 }
 
