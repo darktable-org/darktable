@@ -130,7 +130,7 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void
   button->icon_data = paintdata;
   button->canvas = gtk_drawing_area_new();
   gtk_container_add(GTK_CONTAINER(button), button->canvas);
-  dt_util_add_class(GTK_WIDGET(button), "dt_module_btn");
+  dt_gui_add_class(GTK_WIDGET(button), "dt_module_btn");
   gtk_widget_set_name(GTK_WIDGET(button), "dt-button");
   gtk_widget_set_name(GTK_WIDGET(button->canvas), "button-canvas");
   return (GtkWidget *)button;

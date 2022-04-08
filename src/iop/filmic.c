@@ -1730,7 +1730,7 @@ void gui_init(dt_iop_module_t *self)
   g->extra_expander = dtgtk_expander_new(destdisp_head, extra_options);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->extra_expander, FALSE, FALSE, 0);
-  dt_util_add_class(self->widget, "dt_transparent_background");
+  dt_gui_add_class(self->widget, "dt_transparent_background");
 
   g_signal_connect(G_OBJECT(g->extra_toggle), "toggled", G_CALLBACK(_extra_options_button_changed),  (gpointer)self);
 

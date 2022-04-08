@@ -1894,7 +1894,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     // we also remove the focus css class
     GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(out_focus_module));
-    dt_util_remove_class(iop_w, "dt_module_focus");
+    dt_gui_remove_class(iop_w, "dt_module_focus");
 
     // if the module change the image size, we update the final sizes
     if(out_focus_module->modify_roi_out) dt_image_update_final_size(darktable.develop->preview_pipe->output_imgid);
@@ -1916,7 +1916,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     // we also add the focus css class
     GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
-    dt_util_add_class(iop_w, "dt_module_focus");
+    dt_gui_add_class(iop_w, "dt_module_focus");
   }
 
   /* update sticky accels window */
@@ -2328,7 +2328,7 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
   {
     module->mask_indicator = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask,
                                                     CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-    dt_util_add_class(module->mask_indicator, "dt_module_btn");
+    dt_gui_add_class(module->mask_indicator, "dt_module_btn");
     g_signal_connect(G_OBJECT(module->mask_indicator), "toggled",
                      G_CALLBACK(_display_mask_indicator_callback), module);
     g_signal_connect(G_OBJECT(module->mask_indicator), "query-tooltip",
@@ -2422,7 +2422,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
                    module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_INSTANCE));
-  dt_util_add_class(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]), "dt_module_btn");
+  dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]), "dt_module_btn");
 
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
 
@@ -2433,7 +2433,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "button-press-event", G_CALLBACK(_gui_reset_callback), module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
-  dt_util_add_class(GTK_WIDGET(hw[IOP_MODULE_RESET]), "dt_module_btn");
+  dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_RESET]), "dt_module_btn");
 
   /* add preset button if module has implementation */
   hw[IOP_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
@@ -2443,7 +2443,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "clicked", G_CALLBACK(_presets_popup_callback), module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
-  dt_util_add_class(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "dt_module_btn");
+  dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "dt_module_btn");
 
   /* add enabled button */
   hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch,
