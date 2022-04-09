@@ -1592,6 +1592,7 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
                                                     DT_IMPORT_THUMB, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
   GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL);
+  dt_gui_add_class(button, "dt_transparent_background");
   gtk_widget_show(button);
   header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header, _("show/hide thumbnails"));

@@ -2445,6 +2445,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->colorpicker_set_values = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, hbox, IOP_CS_LCH);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(c->colorpicker_set_values),
                                dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
+  dt_gui_add_class(c->colorpicker_set_values, "dt_transparent_background");
   gtk_widget_set_size_request(c->colorpicker_set_values, DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
   gtk_widget_set_tooltip_text(c->colorpicker_set_values, _("create a curve based on an area from the image\n"
                                                            "drag to create a flat curve\n"
@@ -2478,6 +2479,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // display selection
   c->bt_showmask = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_gui_add_class(c->bt_showmask, "dt_transparent_background");
   gtk_widget_set_tooltip_text(c->bt_showmask, _("display selection"));
   g_signal_connect(G_OBJECT(c->bt_showmask), "toggled", G_CALLBACK(_display_mask_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->bt_showmask), FALSE);

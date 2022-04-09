@@ -75,9 +75,9 @@
   - dt_no_hover:
       - don't change css on hover (for dt_module_btn)
       - ex : colorlabels on header/footer bar
-  - dt_checked_background:
-      - apply a background if the button is checked (toggled)
-      - ex : mode buttons in lighttable footer bar
+  - dt_ignore_fg_state
+      - don't change foreground color on state change
+      - ex : polarity buttons in blending ui
   - dt_module_btn:
       - set for all icons (button widget without text on it)
       - ex : btn in module header
@@ -362,17 +362,23 @@ button
   margin: 0 0.07em;
 }
 
+.dt_module_btn,
+.dt_ignore_fg_state:checked
+{
+  color: alpha(@button_fg, 0.5);
+}
+
 /* Precise default buttons margins on side panels */
 #iop-plugin-ui button,
 #lib-plugin-ui button
 {
-  margin: 2px;  /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
+  margin: 2px 2px 2px 0;  /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
 }
 
 /* fix misalignment for specific icons related to bauhaus widgets */
-.dt_bauhaus_alignment
+#iop-plugin-ui .dt_bauhaus_alignment
 {
-  padding: 0.07em;
+  padding: 0.14em;
   min-height: 1.4em;
   min-width: 1.4em;
   margin: 0;
@@ -476,18 +482,6 @@ spinbutton>button
   font-size: 0.7em;
 }
 
-.dt_module_btn,
-.dt_ignore_fg_state:checked
-{
-  background-color: transparent;
-  border: 0;
-  color: alpha(@button_fg, 0.5);
-}
-
-.dt_module_btn:checked
-{
-  background-color: transparent;
-}
 /*------------------------
   - Main header settings -
   ------------------------*/
@@ -590,12 +584,6 @@ spinbutton>button
 {
   border: none;
   font-size: 1.2em;
-}
-
-/* icon buttons in modules main body */
-#lib-plugin-ui-main viewport
-{
-  margin-left: 0.14em;
 }
 
 /* Add some space to aerate if a notebook follows a widget (like for example in filmic rgb module */
@@ -750,7 +738,7 @@ spinbutton>button
 }
 
 /* set background color and color of scope/histogram buttons */
-#main-histogram .dt_module_btn
+#main-histogram .dt_module_btn:not(.toggle)
 {
   color: alpha(@button_checked_fg, 0.56);
   background-color: alpha(darker(@button_bg),0.8);
@@ -1043,44 +1031,31 @@ notebook tabs,
 }
 
 /* set sizes of "buttons" in modules and blending tabs ; and guides lines too */
-#modules-tabs .dt_module_btn
+#modules-tabs .toggle
 {
   min-height: 2em;
 }
 
-#blending-tabs .dt_module_btn,
-#guides-line .dt_module_btn
+#iop-plugin-ui #blending-tabs .dt_module_btn,
+#guides-line .toggle
 {
   min-height: 1.3em;
-  padding: 0.28em;
 }
 
 #modules-tabs .dt_module_btn,   /* This is needed separately to set a minimal width if panel is really narrow */
-#blending-tabs .dt_module_btn,
+#iop-plugin-ui #blending-tabs .dt_module_btn,
 #guides-line .dt_module_btn
 {
+  border-radius: 0;
   min-width: 1.5em;
+  margin: 0;
 }
 
 /* reduce and align now hamburger menu of modules and blending tabs */
-#blending-tabs .dt_module_btn,
+#iop-plugin-ui #blending-tabs .dt_module_btn,
 #modules-tabs .dt_module_btn
 {
-  padding: 0.2em 0.5em;
-}
-
-#blending-tabs .dt_module_btn
-{
-  font-size: 0.8em;
-}
-
-/* do not apply border-radius to group modules icons and masks icons */
-#modules-tabs button,
-#blending-tabs button,
-#guides-line button
-{
-  border-radius: 0;
-  margin: 0;
+  padding: 0.3em;
 }
 
 /* Set notebook tabs */
@@ -1761,8 +1736,7 @@ combobox window *:selected,
 #recent-collection-button:active,
 #recent-collection-button:checked,
 #recent-collection-button:selected,
-messagedialog .default,  /* this show that a button in confirmation action pop-up has the focus (no by default) */
-.dt_checked_background:checked
+messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 {
   background-color: @button_checked_bg;
   color: @button_checked_fg;
@@ -1787,7 +1761,7 @@ notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #collapsible spinbutton button:hover,
-#main-histogram .dt_module_btn:hover,
+#main-histogram .dt_module_btn:hover:not(.toggle),
 #non-flat:hover,
 #preferences_box .sidebar :hover,
 #recent-collection-button:hover,
@@ -1808,11 +1782,6 @@ combobox window *:hover,
 #header-toolbar #bauhaus_combobox:hover
 {
   color: shade(@fg_color, 1.2);
-}
-
-.dt_module_button:hover
-{
-  color: alpha(@button_hover_fg, 0.6);
 }
 
 /* workaround for a macOS quartz GTK backend bug
@@ -2598,12 +2567,12 @@ Details :
   margin-right: 0.6em;
 }
 
-#footer-toolbar .dt_module_btn
+#footer-toolbar .toggle
 {
   margin: 0 0.2em;
 }
 
-#lighttable_layouts_box .dt_module_btn
+#lighttable_layouts_box .toggle
 {
   margin: 0 0.4em;
 }

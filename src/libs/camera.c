@@ -139,6 +139,7 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       g_object_ref_sink(prop->values);
 
       prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL));
+      dt_gui_add_class(GTK_WIDGET(prop->osd), "dt_transparent_background");
       g_object_ref_sink(prop->osd);
       gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
       do
