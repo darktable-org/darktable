@@ -23,6 +23,7 @@
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param);
 
 GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *param);
+GtkWidget *dt_bauhaus_combobox_from_params_enum_interval(dt_iop_module_t *self, const char *param, unsigned begin, unsigned end);
 
 GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *param);
 

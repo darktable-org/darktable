@@ -226,6 +226,70 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
   return combobox;
 }
 
+GtkWidget *dt_bauhaus_combobox_from_params_enum_interval(dt_iop_module_t *self, const char *param, unsigned begin, unsigned end)
+{
+  dt_iop_params_t *p = self->params;
+  dt_introspection_field_t *f = self->so->get_f(param);
+
+  GtkWidget *combobox = dt_bauhaus_combobox_new(self);
+  gchar *str = NULL;
+
+  unsigned i = begin;
+
+  if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM))
+  {
+    dt_bauhaus_widget_set_field(combobox, p + f->header.offset, f->header.type);
+
+    if (*f->header.description)
+    {
+      // we do not want to support a context as it break all translations see #5498
+      // dt_bauhaus_widget_set_label(combobox, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
+      dt_bauhaus_widget_set_label(combobox, NULL, f->header.description);
+    }
+    else
+    {
+      str = dt_util_str_replace(f->header.field_name, "_", " ");
+
+      dt_bauhaus_widget_set_label(combobox,  NULL, str);
+
+      g_free(str);
+    }
+
+    if(begin > f->Enum.entries)
+    {
+      str = g_strdup_printf("begin is higher than number of entries");
+      dt_bauhaus_widget_set_label(combobox, NULL, str);
+    }
+    else
+    {
+      for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values + begin; (iter && iter->name) && (i < end); iter++, i++)
+      {
+        // we do not want to support a context as it break all translations see #5498
+        // dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "introspection description", iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
+        if(*iter->description)
+          dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
+      }
+    }
+
+    dt_action_t *action = dt_action_locate(&self->so->actions, (gchar **)(const gchar *[]){ *f->header.description ? f->header.description : f->header.field_name, NULL}, FALSE);
+    if(action && f->Enum.values)
+      g_hash_table_insert(darktable.control->combo_introspection, action, f->Enum.values);
+  }
+  else
+  {
+    str = g_strdup_printf("'%s' is not an enum parameter", param);
+
+    dt_bauhaus_widget_set_label(combobox, NULL, str);
+
+    g_free(str);
+  }
+
+  if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  gtk_box_pack_start(GTK_BOX(self->widget), combobox, FALSE, FALSE, 0);
+
+  return combobox;
+}
+
 GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *param)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
