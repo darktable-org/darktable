@@ -155,19 +155,6 @@ static float _exposure_proxy_get_black(struct dt_iop_module_t *self);
 static void _paint_hue(dt_iop_module_t *self);
 static void _exposure_set_black(struct dt_iop_module_t *self, const float black);
 
-void connect_key_accels(dt_iop_module_t *self)
-{
-  /* register hooks with current dev so that  histogram
-     can interact with this module.
-  */
-  dt_dev_proxy_exposure_t *instance = &darktable.develop->proxy.exposure;
-  instance->module = self;
-  instance->set_exposure = _exposure_proxy_set_exposure;
-  instance->get_exposure = _exposure_proxy_get_exposure;
-  instance->set_black = _exposure_proxy_set_black;
-  instance->get_black = _exposure_proxy_get_black;
-}
-
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -1144,6 +1131,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_draw), self);
+
+  /* register hooks with current dev so that  histogram
+     can interact with this module.
+  */
+  dt_dev_proxy_exposure_t *instance = &darktable.develop->proxy.exposure;
+  instance->module = self;
+  instance->set_exposure = _exposure_proxy_set_exposure;
+  instance->get_exposure = _exposure_proxy_get_exposure;
+  instance->set_black = _exposure_proxy_set_black;
+  instance->get_black = _exposure_proxy_get_black;
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

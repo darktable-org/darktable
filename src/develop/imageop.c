@@ -1381,11 +1381,8 @@ static void _init_presets(dt_iop_module_so_t *module_so)
   sqlite3_finalize(stmt);
 }
 
-static void _init_key_accels(dt_iop_module_so_t *module)
+static void _init_presets_actions(dt_iop_module_so_t *module)
 {
-  // Calling the accelerator initialization callback, if present
-  if(module->init_key_accels) (module->init_key_accels)(module);
-
   /** load shortcuts for presets **/
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1413,7 +1410,7 @@ static void _init_module_so(void *m)
     dt_action_insert_sorted(&darktable.control->actions_iops, &module->actions);
 
     // Calling the accelerator initialization callback, if present
-    _init_key_accels(module);
+    _init_presets_actions(module);
 
     // create a gui and have the widgets register their accelerators
     dt_iop_module_t *module_instance = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
@@ -2497,9 +2494,6 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
 
   gtk_widget_set_hexpand(module->widget, FALSE);
   gtk_widget_set_vexpand(module->widget, FALSE);
-
-  /* connect accelerators */
-  if(module->connect_key_accels) module->connect_key_accels(module);
 
   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
