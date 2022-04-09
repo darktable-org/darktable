@@ -2273,7 +2273,7 @@ void gui_init(dt_view_t *self)
 
   /* create second window display button */
   dev->second_window.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
-  gtk_style_context_add_class(gtk_widget_get_style_context(dev->second_window.button), "dt_checked_background");
+  dt_gui_add_class(dev->second_window.button, "dt_checked_background");
   dt_action_define(&self->actions, NULL, "second window", dev->second_window.button, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(dev->second_window.button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
                    dev);
@@ -2282,7 +2282,7 @@ void gui_init(dt_view_t *self)
 
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
-  gtk_style_context_add_class(gtk_widget_get_style_context(dev->iso_12646.button), "dt_checked_background");
+  dt_gui_add_class(dev->iso_12646.button, "dt_checked_background");
   dt_action_define(&self->actions, NULL, "color assessment", dev->iso_12646.button, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(dev->iso_12646.button,
                               _("toggle ISO 12646 color assessment conditions"));
@@ -2295,7 +2295,7 @@ void gui_init(dt_view_t *self)
   {
     // the button
     dev->rawoverexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, 0, NULL);
-    gtk_style_context_add_class(gtk_widget_get_style_context(dev->rawoverexposed.button), "dt_checked_background");
+    dt_gui_add_class(dev->rawoverexposed.button, "dt_checked_background");
     dt_action_define(&self->actions, N_("raw overexposed"), N_("toggle"), dev->rawoverexposed.button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
                                 _("toggle raw over exposed indication\nright click for options"));
@@ -2350,7 +2350,7 @@ void gui_init(dt_view_t *self)
   {
     // the button
     dev->overexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, 0, NULL);
-    gtk_style_context_add_class(gtk_widget_get_style_context(dev->overexposed.button), "dt_checked_background");
+    dt_gui_add_class(dev->overexposed.button, "dt_checked_background");
     dt_action_define(DT_ACTION(self), N_("overexposed"), N_("toggle"), dev->overexposed.button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle clipping indication\nright click for options"));
@@ -2416,8 +2416,7 @@ void gui_init(dt_view_t *self)
   {
     // the softproof button
     dev->profile.softproof_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, 0, NULL);
-    gtk_style_context_add_class(gtk_widget_get_style_context(dev->profile.softproof_button),
-                                "dt_checked_background");
+    dt_gui_add_class(dev->profile.softproof_button, "dt_checked_background");
     dt_action_define(&self->actions, NULL, "softproof", dev->profile.softproof_button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright click for profile options"));
@@ -2428,7 +2427,7 @@ void gui_init(dt_view_t *self)
 
     // the gamut check button
     dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, 0, NULL);
-    gtk_style_context_add_class(gtk_widget_get_style_context(dev->profile.gamut_button), "dt_checked_background");
+    dt_gui_add_class(dev->profile.gamut_button, "dt_checked_background");
     dt_action_define(&self->actions, NULL, "gamut check", dev->profile.gamut_button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright click for profile options"));
@@ -2591,8 +2590,7 @@ void gui_init(dt_view_t *self)
   {
     // the button
     darktable.view_manager->guides_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, 0, NULL);
-    gtk_style_context_add_class(gtk_widget_get_style_context(darktable.view_manager->guides_toggle),
-                                "dt_checked_background");
+    dt_gui_add_class(darktable.view_manager->guides_toggle, "dt_checked_background");
     dt_action_define(&self->actions, "guide lines", "toggle", darktable.view_manager->guides_toggle, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
                                 _("toggle guide lines\nright click for guides options"));
