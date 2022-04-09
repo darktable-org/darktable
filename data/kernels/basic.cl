@@ -684,12 +684,12 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
 
   if(x >= width || y >= height) return;
 
-  const float4 alpha = read_imagef(mask, samplerA, (int2)(x, y));
-  const float4 alpha_comp = (float4)1.f - alpha;
+  const float alpha = read_imagef(mask, samplerA, (int2)(x, y)).w;
+  const float alpha_comp = 1.f - alpha;
 
   float4 out;
 
-  if(alpha.w == 0.f) // non-clipped pixel, bypass
+  if(alpha == 0.f) // non-clipped pixel, bypass
   {
     float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
     float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
@@ -709,13 +709,11 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
 
     // fetch non-local pixels and store them locally and contiguously
     float4 neighbour_pixel_HF[9];
-    float4 neighbour_pixel_LF[9];
 
     for(int ii = 0; ii < 3; ii++)
       for(int jj = 0; jj < 3; jj++)
       {
         neighbour_pixel_HF[3 * ii + jj] = read_imagef(HF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
-        neighbour_pixel_LF[3 * ii + jj] = read_imagef(LF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
       }
 
     // Compute the linear fit of the laplacian of chromaticity against the laplacian of the norm
@@ -723,21 +721,17 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
 
     // Get the local average per channel
     float4 means_HF = 0.f;
-    float4 means_LF = 0.f;
 
     for(int k = 0; k < 0; k++)
     {
       means_HF += neighbour_pixel_HF[k] / 9.f;
-      means_LF += neighbour_pixel_LF[k] / 9.f;
     }
 
     // Find the channel most likely to contain details = max( variance(HF) )
     float4 variance_HF = 0.f;
-    float4 variance_LF = 0.f;
     for(int k = 0; k < 9; k++)
     {
       variance_HF += sqf(neighbour_pixel_HF[k] - means_HF) / 9.f;
-      variance_LF += sqf(neighbour_pixel_LF[k] - means_LF) / 9.f;
     }
 
     int guiding_channel_HF = ALPHA;
@@ -751,59 +745,33 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
       }
     }
 
-    // Find the channel most likely to not be clipped = min( LF )
-    int guiding_channel_LF = ALPHA;
-    float guiding_value_LF = 99999.f;
-    for(int c = 0; c < 3; ++c)
-    {
-      const float white_unbalanced_color = ((float *)&neighbour_pixel_LF[4])[c] / wb[c];
-      if(white_unbalanced_color < guiding_value_LF)
-      {
-        // Find the channel least likely to be clipped
-        guiding_value_LF = white_unbalanced_color;
-        guiding_channel_LF = c;
-      }
-    }
-
     // Extract the guiding values for HF and LF now
     // so we can proceed after with vectorized code
     const float means_HF_guide = ((float *)&means_HF)[guiding_channel_HF];
-    const float means_LF_guide = ((float *)&means_LF)[guiding_channel_LF];
 
     float4 guide_HF[9];
-    float4 guide_LF[9];
     for(int k = 0; k < 9; k++)
     {
       guide_HF[k] = ((float *)&neighbour_pixel_HF[k])[guiding_channel_HF];
-      guide_LF[k] = ((float *)&neighbour_pixel_LF[k])[guiding_channel_LF];
     }
 
     // Compute the linear regression channel = f(guide)
     float4 covariance_HF = 0.f;
-    float4 covariance_LF = 0.f;
 
     for(int k = 0; k < 9; k++)
     {
       covariance_HF += (neighbour_pixel_HF[k] - means_HF)
                        * (guide_HF[k] - means_HF_guide) / 9.f;
-
-      covariance_LF += (neighbour_pixel_LF[k] - means_LF)
-                       * (guide_LF[k] - means_LF_guide) / 9.f;
     }
 
     const float4 a_HF = fmax(covariance_HF / ((float *)&variance_HF)[guiding_channel_HF], 0.f);
     const float4 b_HF = means_HF - a_HF * means_HF_guide;
 
-    const float4 a_LF = fmax(covariance_LF / ((float *)&variance_LF)[guiding_channel_LF], 0.f);
-    const float4 b_LF = means_LF - a_LF * means_LF_guide;
-
     // Guide all channels by the norms
-    const float4 low_frequency = alpha * (a_LF * ((float *)&neighbour_pixel_LF[4])[guiding_channel_LF] + b_LF)
-                                + alpha_comp * neighbour_pixel_LF[4];
     const float4 high_frequency = alpha * (a_HF * ((float *)&neighbour_pixel_HF[4])[guiding_channel_HF] + b_HF)
                                 + alpha_comp * neighbour_pixel_HF[4];
 
-    out = low_frequency + high_frequency;
+    out = high_frequency + read_imagef(LF, samplerA, (int2)(x, y));
 
     // Last step of RGB reconstruct : add noise
     if(mult == 1 && salt)
@@ -891,35 +859,16 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
 
     // Convolve the filter to get the laplacian
     float4 laplacian_HF = 0.f;
-    float4 laplacian_LF = 0.f;
     for(int k = 0; k < 9; k++)
     {
-      laplacian_LF += neighbour_pixel_LF[k] * anisotropic_kernel_isophote[k];
       laplacian_HF += neighbour_pixel_HF[k] * anisotropic_kernel_isophote[k];
     }
 
-    // Reset the laplacian of the norm, we will define it if sharpen
-    laplacian_LF.w = 0.f;
-
     // Diffuse
     const float4 multipliers_HF = { 0.3f, 0.3f, 0.3f, 0.f};
-    update += alpha * (multipliers_HF * laplacian_HF);
-
-    // We sharpen the norm in the direction of the gradient
-    if(sharpen)
-    {
-      float anisotropic_kernel_gradient[9];
-      compute_laplace_kernel(neighbour_pixel_LF, DIFFUSE_GRADIENT, anisotropic_kernel_gradient);
-
-      for(int k = 0; k < 9; k++)
-        laplacian_LF.w += neighbour_pixel_LF[k].w * anisotropic_kernel_gradient[k];
-    }
-
-    const float4 multipliers_LF = { 0.5f, 0.5f, 0.5f, -0.5f / current_radius_square };
-    update += alpha * (multipliers_LF * laplacian_LF);
 
     // Diffuse
-    out = fmax(neighbour_pixel_HF[4] + neighbour_pixel_LF[4] + update, 0.f);
+    out = fmax(neighbour_pixel_HF[4] + neighbour_pixel_LF[4] + alpha * (multipliers_HF * laplacian_HF), 0.f);
   }
 
   // ensure RGB ratios are still normalized

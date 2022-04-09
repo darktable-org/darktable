@@ -1154,16 +1154,10 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
       const size_t index = idx * 4;
 
       // fetch the clipping mask opacity : opaque (alpha = 100 %) where clipped
-      const dt_aligned_pixel_t alpha = { clipping_mask[index + RED],
-                                         clipping_mask[index + GREEN],
-                                         clipping_mask[index + BLUE],
-                                         clipping_mask[index + ALPHA] };
-      const dt_aligned_pixel_t alpha_comp = { 1.f - clipping_mask[index + RED],
-                                              1.f - clipping_mask[index + GREEN],
-                                              1.f - clipping_mask[index + BLUE],
-                                              1.f - clipping_mask[index + ALPHA] };
+      const float alpha = clipping_mask[index + ALPHA];
+      const float alpha_comp = 1.f - clipping_mask[index + ALPHA];
 
-      if(alpha[ALPHA] == 0.f) // non-clipped pixel, bypass
+      if(alpha == 0.f) // non-clipped pixel, bypass
       {
         for_four_channels(c, aligned(out, HF, LF : 64))
         {
@@ -1180,16 +1174,14 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 
         // fetch non-local pixels and store them locally and contiguously
         dt_aligned_pixel_t neighbour_pixel_HF[9];
-        dt_aligned_pixel_t neighbour_pixel_LF[9];
 
         for(size_t ii = 0; ii < 3; ii++)
           for(size_t jj = 0; jj < 3; jj++)
           {
             size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
-            for_four_channels(c, aligned(neighbour_pixel_HF, HF, neighbour_pixel_LF, LF : 64))
+            for_four_channels(c, aligned(neighbour_pixel_HF, HF: 64))
             {
               neighbour_pixel_HF[3 * ii + jj][c] = HF[neighbor + c];
-              neighbour_pixel_LF[3 * ii + jj][c] = LF[neighbor + c];
             }
           }
 
@@ -1198,24 +1190,18 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 
         // Get the local average per channel
         dt_aligned_pixel_t means_HF = { 0.f, 0.f, 0.f, 0.f };
-        dt_aligned_pixel_t means_LF = { 0.f, 0.f, 0.f, 0.f };
         for(size_t k = 0; k < 9; k++)
-          for_each_channel(c, aligned(neighbour_pixel_HF, means_HF, \
-                                      neighbour_pixel_LF, means_LF : 64))
+          for_each_channel(c, aligned(neighbour_pixel_HF, means_HF : 64))
           {
             means_HF[c] += neighbour_pixel_HF[k][c] / 9.f;
-            means_LF[c] += neighbour_pixel_LF[k][c] / 9.f;
           }
 
         // Get the local variance per channel
         dt_aligned_pixel_t variance_HF = { 0.f, 0.f, 0.f, 0.f };
-        dt_aligned_pixel_t variance_LF = { 0.f, 0.f, 0.f, 0.f };
         for(size_t k = 0; k < 9; k++)
-          for_each_channel(c, aligned(variance_HF, neighbour_pixel_HF, means_HF, \
-                                      variance_LF, neighbour_pixel_LF, means_LF : 64))
+          for_each_channel(c, aligned(variance_HF, neighbour_pixel_HF, means_HF : 64))
           {
             variance_HF[c] += sqf(neighbour_pixel_HF[k][c] - means_HF[c]) / 9.f;
-            variance_LF[c] += sqf(neighbour_pixel_LF[k][c] - means_LF[c]) / 9.f;
           }
 
         // Find the channel most likely to contain details = max( variance(HF) )
@@ -1230,53 +1216,27 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
           }
         }
 
-        // Find the channel most likely to not be clipped = min( LF )
-        size_t guiding_channel_LF = ALPHA;
-        float guiding_value_LF = 999999.f;
-        for(size_t c = 0; c < 3; ++c)
-        {
-          const float white_unbalanced_color = neighbour_pixel_LF[4][c] / wb[c];
-          if(white_unbalanced_color < guiding_value_LF)
-          {
-            guiding_value_LF = white_unbalanced_color;
-            guiding_channel_LF = c;
-          }
-        }
-
         // Compute the linear regression channel = f(guide)
         dt_aligned_pixel_t covariance_HF = { 0.f, 0.f, 0.f, 0.f };
-        dt_aligned_pixel_t covariance_LF = { 0.f, 0.f, 0.f, 0.f };
         for(size_t k = 0; k < 9; k++)
-          for_each_channel(c, aligned(variance_HF, covariance_HF, neighbour_pixel_HF, means_HF,
-                                      variance_LF, covariance_LF, neighbour_pixel_LF, means_LF : 64))
+          for_each_channel(c, aligned(variance_HF, covariance_HF, neighbour_pixel_HF, means_HF : 64))
           {
             covariance_HF[c] += (neighbour_pixel_HF[k][c] - means_HF[c])
                                 * (neighbour_pixel_HF[k][guiding_channel_HF] - means_HF[guiding_channel_HF]) / 9.f;
-            covariance_LF[c] += (neighbour_pixel_LF[k][c] - means_LF[c])
-                                * (neighbour_pixel_LF[k][guiding_channel_LF] - means_LF[guiding_channel_LF]) / 9.f;
           }
 
-        // Get a and b s.t. y = a * x + b, y = test data, x = guide
-        dt_aligned_pixel_t a_HF, b_HF, a_LF, b_LF;
-        for_each_channel(c, aligned(a_HF, b_HF, covariance_HF, variance_HF, means_HF, \
-                                    a_LF, b_LF, covariance_LF, variance_LF, means_LF : 64))
+        dt_aligned_pixel_t a_HF, b_HF;
+        for_each_channel(c, aligned(out, neighbour_pixel_HF, a_HF, b_HF, covariance_HF, variance_HF, means_HF : 64))
         {
+          // Get a and b s.t. y = a * x + b, y = test data, x = guide
           a_HF[c] = fmaxf(covariance_HF[c] / (variance_HF[guiding_channel_HF]), 0.f);
           b_HF[c] = means_HF[c] - a_HF[c] * means_HF[guiding_channel_HF];
 
-          a_LF[c] = fmaxf(covariance_LF[c] / (variance_LF[guiding_channel_LF]), 0.f);
-          b_LF[c] = means_LF[c] - a_LF[c] * means_LF[guiding_channel_LF];
-        }
+          const float high_frequency = alpha * (a_HF[c] * neighbour_pixel_HF[4][guiding_channel_HF] + b_HF[c])
+                                     + alpha_comp * neighbour_pixel_HF[4][c];
 
-        // Add back HF to reconstruct the scale
-        for_each_channel(c, aligned(out, neighbour_pixel_LF, neighbour_pixel_HF, alpha, alpha_comp,
-                                    a_LF, b_LF, a_HF, b_HF : 64))
-        {
-          const float low_frequency = alpha[c] * (a_LF[c] * neighbour_pixel_LF[4][guiding_channel_LF] + b_LF[c])
-                                    + alpha_comp[c] * neighbour_pixel_LF[4][c];
-          const float high_frequency = alpha[c] * (a_HF[c] * neighbour_pixel_HF[4][guiding_channel_HF] + b_HF[c])
-                                     + alpha_comp[c] * neighbour_pixel_HF[4][c];
-          out[index + c] = low_frequency + high_frequency;
+          // Add back HF to reconstruct the scale
+          out[index + c] = high_frequency + LF[index + c];
         }
 
         // Last step of RGB reconstruct : add noise
@@ -1299,12 +1259,12 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
           dt_noise_generator_simd(DT_NOISE_POISSONIAN, out + index, sigma, flip, state, noise);
 
           // Save the noisy interpolated image
-          for_each_channel(c,aligned(out, noise, alpha, alpha_comp : 64))
+          for_each_channel(c,aligned(out, noise: 64))
           {
             // Ensure the noise only brightens the image, since it's clipped
             noise[c] = out[index + c] + fabsf(noise[c] - out[index + c]);
 
-            out[index + c] = fmaxf(alpha[c] * noise[c] + alpha_comp[c] * out[index + c], 0.f);
+            out[index + c] = fmaxf(alpha * noise[c] + alpha_comp * out[index + c], 0.f);
           }
         }
       }
@@ -1393,46 +1353,28 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
             }
           }
 
-        dt_aligned_pixel_t update = { 0.f, 0.f, 0.f, 0.f };
-
         // Compute the laplacian in the direction parallel to the steepest gradient on the norm
         float anisotropic_kernel_isophote[9];
         compute_laplace_kernel(neighbour_pixel_LF, DIFFUSE_ISOPHOTE, anisotropic_kernel_isophote);
 
         dt_aligned_pixel_t laplacian_HF = { 0.f, 0.f, 0.f, 0.f };
-        dt_aligned_pixel_t laplacian_LF = { 0.f, 0.f, 0.f, 0.f };
 
         for(size_t k = 0; k < 9; k++)
+        {
           for_each_channel(c, aligned(laplacian_HF, neighbour_pixel_HF,
-                                      laplacian_LF, neighbour_pixel_LF,
                                       anisotropic_kernel_isophote: 64))
           {
             laplacian_HF[c] += neighbour_pixel_HF[k][c] * anisotropic_kernel_isophote[k];
-            laplacian_LF[c] += neighbour_pixel_LF[k][c] * anisotropic_kernel_isophote[k];
           }
-
-        // Reset the laplacian of the norm, we will define it if sharpen
-        laplacian_LF[ALPHA] = 0.f;
-
-        const dt_aligned_pixel_t multipliers_HF = { 0.3f, 0.3f, 0.3f, 0.f };
-        for_four_channels(c) update[c] += alpha[c] * (multipliers_HF[c] * laplacian_HF[c]);
-
-        // We sharpen the norm in the direction of the gradient
-        if(sharpen)
-        {
-          float anisotropic_kernel_gradient[9];
-          compute_laplace_kernel(neighbour_pixel_LF, DIFFUSE_GRADIENT, anisotropic_kernel_gradient);
-
-          for(size_t k = 0; k < 9; k++)
-            laplacian_LF[ALPHA] += neighbour_pixel_LF[k][ALPHA] * anisotropic_kernel_gradient[k];
         }
 
-        const dt_aligned_pixel_t multipliers_LF = { 0.5f, 0.5f, 0.5f, -0.5f / current_radius_square };
-        for_four_channels(c) update[c] += alpha[c] * (multipliers_LF[c] * laplacian_LF[c]);
+        const dt_aligned_pixel_t multipliers_HF = { 0.3f, 0.3f, 0.3f, 0.f };
 
         // Diffuse
-        for_four_channels(c, aligned(neighbour_pixel_HF, neighbour_pixel_LF, alpha, out, update))
-          out[index + c] = fmaxf(neighbour_pixel_HF[4][c] + neighbour_pixel_LF[4][c] + update[c], 0.f);
+        for_four_channels(c, aligned(neighbour_pixel_HF, neighbour_pixel_LF, alpha, out))
+        {
+          out[index + c] = fmaxf(neighbour_pixel_HF[4][c] + neighbour_pixel_LF[4][c] + alpha[c] * multipliers_HF[c] * laplacian_HF[c], 0.f);
+        }
       }
 
       // ensure RGB ratios are still normalized
