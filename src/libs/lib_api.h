@@ -91,10 +91,6 @@ OPTIONAL(void, set_preferences, void *menu, struct dt_lib_module_t *self);
 /** check if the module can autoapply presets. Default is FALSE */
 DEFAULT(gboolean, preset_autoapply, struct dt_lib_module_t *self);
 
-/** Optional callbacks for keyboard accelerators */
-OPTIONAL(void, init_key_accels, struct dt_lib_module_t *self);
-OPTIONAL(void, connect_key_accels, struct dt_lib_module_t *self);
-
 #ifdef FULL_API_H
 
 #pragma GCC visibility pop

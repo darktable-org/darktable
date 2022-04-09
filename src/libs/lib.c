@@ -790,9 +790,7 @@ static void dt_lib_init_module(void *m)
   // do not init accelerators if there is no gui
   if(darktable.gui)
   {
-    if(module->init_key_accels) module->init_key_accels(module);
     module->gui_init(module);
-    if(module->connect_key_accels) module->connect_key_accels(module);
     g_object_ref_sink(module->widget);
   }
 }

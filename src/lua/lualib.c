@@ -189,8 +189,6 @@ static dt_lib_module_t ref_lib = {
   .get_params = NULL,
   .set_params = NULL,
   .init_presets = NULL,
-  .init_key_accels = NULL,
-  .connect_key_accels = NULL,
   .reset_button = NULL,
   .presets_button = NULL,
   .view_enter = view_enter_wrapper,
@@ -291,7 +289,6 @@ static int register_lib(lua_State *L)
 
   darktable.lib->plugins = g_list_insert_sorted(darktable.lib->plugins, lib, dt_lib_sort_plugins);
   dt_lib_init_presets(lib);
-  if(darktable.gui && lib->init_key_accels) lib->init_key_accels(lib);
 
   dt_view_manager_switch_by_view(darktable.view_manager, dt_view_manager_get_current_view(darktable.view_manager));
   return 0;

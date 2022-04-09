@@ -61,10 +61,6 @@ OPTIONAL(void, configure, struct dt_view_t *self, int width, int height);
 OPTIONAL(void, scrolled, struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
 OPTIONAL(void, scrollbar_changed, struct dt_view_t *self, double x, double y); // scrollbars changed in view
 
-// keyboard accel callbacks
-OPTIONAL(void, init_key_accels, struct dt_view_t *self);
-OPTIONAL(void, connect_key_accels, struct dt_view_t *self);
-
 // list of mouse actions
 OPTIONAL(GSList *, mouse_actions, const struct dt_view_t *self);
 
