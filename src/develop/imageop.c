@@ -2418,7 +2418,6 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
                    module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_INSTANCE));
-  dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]), "dt_module_btn");
 
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
 
@@ -2429,7 +2428,6 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "button-press-event", G_CALLBACK(_gui_reset_callback), module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
-  dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_RESET]), "dt_module_btn");
 
   /* add preset button if module has implementation */
   hw[IOP_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
@@ -2439,7 +2437,6 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "clicked", G_CALLBACK(_presets_popup_callback), module);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
-  dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "dt_module_btn");
 
   /* add enabled button */
   hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, module);

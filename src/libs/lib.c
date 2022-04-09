@@ -1050,7 +1050,6 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_signal_connect(G_OBJECT(module->presets_button), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
   if(!module->get_params && !module->set_preferences) gtk_widget_set_sensitive(GTK_WIDGET(module->presets_button), FALSE);
-  dt_gui_add_class(module->presets_button, "dt_module_btn");
   dt_action_define(&module->actions, NULL, NULL, module->presets_button, NULL);
   gtk_box_pack_end(GTK_BOX(header), module->presets_button, FALSE, FALSE, 0);
 
@@ -1060,7 +1059,6 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_signal_connect(G_OBJECT(module->reset_button), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
   if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);
-  dt_gui_add_class(module->reset_button, "dt_module_btn");
   dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);
   gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 

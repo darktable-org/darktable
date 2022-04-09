@@ -1722,7 +1722,6 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *destdisp = dt_ui_section_label_new(_("destination/display"));
   g->extra_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
-  gtk_widget_set_name(GTK_WIDGET(g->extra_toggle), "control-button");
   GtkWidget *extra_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(destdisp_head), g->extra_toggle, FALSE, FALSE, 0);

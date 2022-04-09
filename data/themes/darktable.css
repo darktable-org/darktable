@@ -76,7 +76,7 @@
       - don't change css on hover (for dt_module_btn)
       - ex : colorlabels on header/footer bar
   - dt_ignore_fg_state
-      - don't change foreground color on state change
+      - don't change foreground color on state change and don't use bg if checked
       - ex : polarity buttons in blending ui
   - dt_module_btn:
       - set for all icons (button widget without text on it)
@@ -294,6 +294,7 @@ box *
 .dt_module_btn:disabled,
 .dt_transparent_background,
 .dt_transparent_background:checked,
+.dt_ignore_fg_state:checked,
 filechooser .sidebar-button,
 popover #bauhaus_combobox,
 overshoot,

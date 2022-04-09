@@ -2164,7 +2164,6 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     GtkWidget *btn = dt_iop_togglebutton_new(module, "blend`tools", N_("invert all channel's polarities"), NULL,
                                              G_CALLBACK(_blendop_blendif_invert), FALSE, 0, 0,
                                              dtgtk_cairo_paint_invert, header);
-    dt_gui_add_class(btn, "dt_transparent_background");
     dt_gui_add_class(btn, "dt_ignore_fg_state");
 
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
@@ -2180,7 +2179,6 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(slider_box), GTK_WIDGET(sl->slider), TRUE, TRUE, 0);
 
       sl->polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, 0, NULL);
-      dt_gui_add_class(sl->polarity, "dt_transparent_background");
       dt_gui_add_class(sl->polarity, "dt_ignore_fg_state");
       gtk_widget_set_tooltip_text(sl->polarity, _("toggle polarity. best seen by enabling 'display mask'"));
       gtk_box_pack_end(GTK_BOX(slider_box), GTK_WIDGET(sl->polarity), FALSE, FALSE, 0);
@@ -2333,7 +2331,6 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
                                                  FALSE, 0, 0, dtgtk_cairo_paint_plusminus, hbox);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_polarity), dtgtk_cairo_paint_plusminus, 0, NULL);
     dt_gui_add_class(bd->masks_polarity, "dt_ignore_fg_state");
-    dt_gui_add_class(bd->masks_polarity, "dt_transparent_background");
 
     GtkWidget *abox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     bd->masks_edit = dt_iop_togglebutton_new(module, "blend`tools", N_("show and edit mask elements"), N_("show and edit in restricted mode"),
@@ -2509,7 +2506,6 @@ void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->raster_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, 0, NULL);
     dt_gui_add_class(bd->raster_polarity, "dt_ignore_fg_state");
-    dt_gui_add_class(bd->raster_polarity, "dt_transparent_background");
     gtk_widget_set_tooltip_text(bd->raster_polarity, _("toggle polarity of raster mask"));
     g_signal_connect(G_OBJECT(bd->raster_polarity), "toggled", G_CALLBACK(_raster_polarity_callback), module);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_polarity), FALSE);
