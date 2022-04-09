@@ -185,6 +185,11 @@ static inline int FC(const size_t row, const size_t col, const uint32_t filters)
   return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
 }
 
+#define RED 0
+#define GREEN 1
+#define BLUE 2
+#define ALPHA 3
+
 /** Calculate the xtrans pattern color from the row and column **/
 static inline int FCxtrans(const int row, const int col, const dt_iop_roi_t *const roi,
                            const uint8_t (*const xtrans)[6])
