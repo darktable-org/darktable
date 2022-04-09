@@ -976,13 +976,12 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
 
-  const gboolean needs_tiling = (piece->process_tiling_ready &&
-     !dt_tiling_piece_fits_host_memory(MAX(roi_in->width, roi_out->width),
+  const gboolean fitting = dt_tiling_piece_fits_host_memory(MAX(roi_in->width, roi_out->width),
                                        MAX(roi_in->height, roi_out->height), MAX(in_bpp, bpp),
-                                          tiling->factor, tiling->overhead));
+                                          tiling->factor, tiling->overhead);
 
   /* process module on cpu. use tiling if needed and possible. */
-  if(needs_tiling)
+  if(!fitting && piece->process_tiling_ready)
   {
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
@@ -990,6 +989,9 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   }
   else
   {
+    if(!fitting)
+      fprintf(stderr, "[pixelpipe_process_on_CPU] Warning: processes `%s' even if memory requirements are not met\n", module->op); 
+
     module->process(module, piece, input, *output, roi_in, roi_out);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
