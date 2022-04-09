@@ -2,9 +2,53 @@
 
 #include "common/darktable.h"
 #include "common/dwt.h"
+#include "develop/openmp_maths.h"
 
 // B spline filter
 #define BSPLINE_FSIZE 5
+
+// The B spline best approximate a Gaussian of standard deviation :
+// see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/
+#define B_SPLINE_SIGMA 1.0553651328015339f
+
+static inline float normalize_laplacian(const float sigma)
+{
+  // Normalize the wavelet scale to approximate a laplacian
+  // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Scaling-coefficient
+  return 2.f * M_PI_F / (sqrtf(M_PI_F) * sqf(sigma));
+}
+
+// Normalization scaling of the wavelet to approximate a laplacian
+// from the function above for sigma = B_SPLINE_SIGMA as a constant
+#define B_SPLINE_TO_LAPLACIAN 3.182727439285017f
+#define B_SPLINE_TO_LAPLACIAN_2 10.129753952777762f // square
+
+static inline float equivalent_sigma_at_step(const float sigma, const unsigned int s)
+{
+  // If we stack several gaussian blurs of standard deviation sigma on top of each other,
+  // this is the equivalent standard deviation we get at the end (after s steps)
+  // First step is s = 0
+  // see
+  // https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Multi-scale-iterative-scheme
+  if(s == 0)
+    return sigma;
+  else
+    return sqrtf(sqf(equivalent_sigma_at_step(sigma, s - 1)) + sqf(exp2f((float)s) * sigma));
+}
+
+static inline unsigned int num_steps_to_reach_equivalent_sigma(const float sigma_filter, const float sigma_final)
+{
+  // The inverse of the above : compute the number of scales needed to reach the desired equivalent sigma_final
+  // after sequential blurs of constant sigma_filter
+  unsigned int s = 0;
+  float radius = sigma_filter;
+  while(radius < sigma_final)
+  {
+    ++s;
+    radius = sqrtf(sqf(radius) + sqf((float)(1 << s) * sigma_filter));
+  }
+  return s + 1;
+}
 
 
 #ifdef _OPENMP
@@ -121,7 +165,7 @@ inline static void decompose_2D_Bspline(const float *const DT_ALIGNED_PIXEL rest
       const size_t index = 4U * (i * width + j);
       _bspline_horizontal(temp, LF + index, j, width, mult);
       // compute the HF component by subtracting the LF from the original input
-      for_each_channel(c)
+      for_four_channels(c)
         HF[index + c] = in[index + c] - LF[index + c];
     }
   }
