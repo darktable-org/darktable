@@ -3032,7 +3032,6 @@ void gui_init(dt_lib_module_t *self)
   self->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   GtkBox *box, *hbox;
   GtkWidget *button;
@@ -3088,7 +3087,6 @@ void gui_init(dt_lib_module_t *self)
                                                   "\nright-click for other actions on attached tag,"
                                                   "\npress Tab to give the focus to entry,"
                                                   "\nctrl-wheel scroll to resize the window"));
-  dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_attached_key_pressed), (gpointer)self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
@@ -3138,7 +3136,6 @@ void gui_init(dt_lib_module_t *self)
                                    "\npress Enter to create a new tag and attach it on selected images"
                                    "\npress Tab or Down key to go to the first matching tag"
                                    "\npress shift+Tab to select the first attached user tag"));
-  dt_gui_add_help_link(w, dt_get_help_url("tagging"));
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_tag_name_changed), (gpointer)self);
@@ -3206,7 +3203,6 @@ void gui_init(dt_lib_module_t *self)
                                                   "\npress shift+Tab to give the focus to entry,"
                                                   "\nctrl-scroll to resize the window"));
 
-  dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "key-press-event", G_CALLBACK(_dictionary_key_pressed), (gpointer)self);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(d->dictionary_listfilter));
