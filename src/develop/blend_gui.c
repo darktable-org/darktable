@@ -2156,13 +2156,16 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     bd->colorpicker_set_values = dt_color_picker_new(module, DT_COLOR_PICKER_AREA, header);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->colorpicker_set_values),
                                  dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
+    dt_gui_add_class(bd->colorpicker_set_values, "dt_transparent_background");
     gtk_widget_set_tooltip_text(bd->colorpicker_set_values, _("set the range based on an area from the image\n"
                                                               "drag to use the input image\n"
                                                               "ctrl+drag to use the output image"));
 
-    dt_iop_togglebutton_new(module, "blend`tools", N_("invert all channel's polarities"), NULL,
-                            G_CALLBACK(_blendop_blendif_invert), FALSE, 0, 0,
-                            dtgtk_cairo_paint_invert, header);
+    GtkWidget *btn = dt_iop_togglebutton_new(module, "blend`tools", N_("invert all channel's polarities"), NULL,
+                                             G_CALLBACK(_blendop_blendif_invert), FALSE, 0, 0,
+                                             dtgtk_cairo_paint_invert, header);
+    dt_gui_add_class(btn, "dt_transparent_background");
+    dt_gui_add_class(btn, "dt_ignore_fg_state");
 
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
 
@@ -2177,6 +2180,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(slider_box), GTK_WIDGET(sl->slider), TRUE, TRUE, 0);
 
       sl->polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, 0, NULL);
+      dt_gui_add_class(sl->polarity, "dt_transparent_background");
       dt_gui_add_class(sl->polarity, "dt_ignore_fg_state");
       gtk_widget_set_tooltip_text(sl->polarity, _("toggle polarity. best seen by enabling 'display mask'"));
       gtk_box_pack_end(GTK_BOX(slider_box), GTK_WIDGET(sl->polarity), FALSE, FALSE, 0);
@@ -2329,6 +2333,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
                                                  FALSE, 0, 0, dtgtk_cairo_paint_plusminus, hbox);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_polarity), dtgtk_cairo_paint_plusminus, 0, NULL);
     dt_gui_add_class(bd->masks_polarity, "dt_ignore_fg_state");
+    dt_gui_add_class(bd->masks_polarity, "dt_transparent_background");
 
     GtkWidget *abox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     bd->masks_edit = dt_iop_togglebutton_new(module, "blend`tools", N_("show and edit mask elements"), N_("show and edit in restricted mode"),
@@ -2339,31 +2344,26 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     bd->masks_shapes[0] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add gradient"), N_("add multiple gradients"),
                                                   G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_gradient, abox);
-    dt_gui_add_class(bd->masks_shapes[0], "dt_checked_background");
 
     bd->masks_type[4] = DT_MASKS_BRUSH;
     bd->masks_shapes[4] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add brush"), N_("add multiple brush strokes"),
                                                   G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_brush, abox);
-    dt_gui_add_class(bd->masks_shapes[4], "dt_checked_background");
 
     bd->masks_type[1] = DT_MASKS_PATH;
     bd->masks_shapes[1] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add path"), N_("add multiple paths"),
                                                   G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_path, abox);
-    dt_gui_add_class(bd->masks_shapes[1], "dt_checked_background");
 
     bd->masks_type[2] = DT_MASKS_ELLIPSE;
     bd->masks_shapes[2] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add ellipse"), N_("add multiple ellipses"),
                                                   G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_ellipse, abox);
-    dt_gui_add_class(bd->masks_shapes[2], "dt_checked_background");
 
     bd->masks_type[3] = DT_MASKS_CIRCLE;
     bd->masks_shapes[3] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add circle"), N_("add multiple circles"),
                                                   G_CALLBACK(_blendop_masks_add_shape),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_circle, abox);
-    dt_gui_add_class(bd->masks_shapes[3], "dt_checked_background");
 
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(hbox), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(abox), TRUE, TRUE, 0);
@@ -2509,6 +2509,7 @@ void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->raster_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, 0, NULL);
     dt_gui_add_class(bd->raster_polarity, "dt_ignore_fg_state");
+    dt_gui_add_class(bd->raster_polarity, "dt_transparent_background");
     gtk_widget_set_tooltip_text(bd->raster_polarity, _("toggle polarity of raster mask"));
     g_signal_connect(G_OBJECT(bd->raster_polarity), "toggled", G_CALLBACK(_raster_polarity_callback), module);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_polarity), FALSE);
@@ -2975,14 +2976,12 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     // DEVELOP_MASK_DISABLED
     but = dt_iop_togglebutton_new(module, "blend`masks", N_("off"), NULL, G_CALLBACK(_blendop_masks_modes_none_clicked),
                                   FALSE, 0, 0, dtgtk_cairo_paint_cancel, NULL);
-    dt_gui_add_class(but, "dt_checked_background");
     bd->masks_modes = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_DISABLED));
     bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles , GTK_WIDGET(but));
 
     // DEVELOP_MASK_ENABLED
     but = dt_iop_togglebutton_new(module, "blend`masks", N_("uniformly"), NULL, G_CALLBACK(_blendop_masks_modes_uni_toggled),
                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_uniform, NULL);
-    dt_gui_add_class(but, "dt_checked_background");
     bd->masks_modes = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED));
     bd->masks_modes_toggles  = g_list_append(bd->masks_modes_toggles , GTK_WIDGET(but));
 
@@ -2990,7 +2989,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     {
       but = dt_iop_togglebutton_new(module, "blend`masks", N_("drawn mask"), NULL, G_CALLBACK(_blendop_masks_modes_drawn_toggled),
                                     FALSE, 0, 0, dtgtk_cairo_paint_masks_drawn, NULL);
-      dt_gui_add_class(but, "dt_checked_background");
       bd->masks_modes = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK));
       bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles, GTK_WIDGET(but));
     }
@@ -2998,7 +2996,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     {
       but = dt_iop_togglebutton_new(module, "blend`masks", N_("parametric mask"), NULL, G_CALLBACK(_blendop_masks_modes_param_toggled),
                                     FALSE, 0, 0, dtgtk_cairo_paint_masks_parametric, NULL);
-      dt_gui_add_class(but, "dt_checked_background");
       bd->masks_modes
           = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL));
       bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles, GTK_WIDGET(but));
@@ -3008,7 +3005,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     {
       but = dt_iop_togglebutton_new(module, "blend`masks", N_("drawn & parametric mask"), NULL, G_CALLBACK(_blendop_masks_modes_both_toggled),
                                     FALSE, 0, 0, dtgtk_cairo_paint_masks_drawn_and_parametric, NULL);
-      dt_gui_add_class(but, "dt_checked_background");
       bd->masks_modes
           = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK_CONDITIONAL));
       bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles, GTK_WIDGET(but));
@@ -3018,7 +3014,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     {
       but = dt_iop_togglebutton_new(module, "blend`masks", N_("raster mask"), NULL, G_CALLBACK(_blendop_masks_modes_raster_toggled),
                                     FALSE, 0, 0, dtgtk_cairo_paint_masks_raster, NULL);
-      dt_gui_add_class(but, "dt_checked_background");
       bd->masks_modes
           = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_RASTER));
       bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles, GTK_WIDGET(but));
@@ -3134,10 +3129,12 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl+click to display mask, "
                                                 "shift+click to display channel. hover over parametric mask slider to "
                                                 "select channel for display"));
+    dt_gui_add_class(bd->showmask, "dt_transparent_background");
 
     bd->suppress = dt_iop_togglebutton_new(module, "blend`tools", N_("temporarily switch off blend mask"), NULL, G_CALLBACK(_blendop_blendif_suppress_toggled),
                                            FALSE, 0, 0, dtgtk_cairo_paint_eye_toggle, hbox);
     gtk_widget_set_tooltip_text(bd->suppress, _("temporarily switch off blend mask. only for module in focus"));
+    dt_gui_add_class(bd->suppress, "dt_transparent_background");
 
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(box), TRUE, TRUE, 0);

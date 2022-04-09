@@ -337,6 +337,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker
   if(w == NULL || GTK_IS_BOX(w))
   {
     GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
+    dt_gui_add_class(button, "dt_transparent_background");
     _init_picker(color_picker, module, kind, button);
     if(init_cst)
       color_picker->picker_cst = cst;

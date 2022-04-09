@@ -2819,7 +2819,6 @@ void gui_init(dt_lib_module_t *self)
 
   // basic group button
   d->basic_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basics, 0, NULL);
-  dt_gui_add_class(d->basic_btn, "dt_checked_background");
   g_signal_connect(d->basic_btn, "button-press-event", G_CALLBACK(_manage_direct_basic_popup), self);
   g_signal_connect(d->basic_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->basic_btn, _("quick access panel"));
@@ -2830,7 +2829,6 @@ void gui_init(dt_lib_module_t *self)
 
   // active group button
   d->active_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, 0, NULL);
-  dt_gui_add_class(d->active_btn, "dt_checked_background");
   g_signal_connect(d->active_btn, "button-press-event", G_CALLBACK(_manage_direct_active_popup), self);
   g_signal_connect(d->active_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->active_btn, _("show only active modules"));
@@ -2964,7 +2962,6 @@ static void _buttons_update(dt_lib_module_t *self)
   {
     dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
     GtkWidget *bt = dtgtk_togglebutton_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
-    dt_gui_add_class(bt, "dt_checked_background");
     g_object_set_data(G_OBJECT(bt), "group", gr);
     g_signal_connect(bt, "button-press-event", G_CALLBACK(_manage_direct_popup), self);
     g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);

@@ -1362,7 +1362,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   // create focus-peaking button
   darktable.gui->focus_peaking_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_focus_peaking, 0, NULL);
-  dt_gui_add_class(darktable.gui->focus_peaking_button, "dt_checked_background");
   gtk_widget_set_tooltip_text(darktable.gui->focus_peaking_button, _("toggle focus-peaking mode"));
   g_signal_connect(G_OBJECT(darktable.gui->focus_peaking_button), "clicked", G_CALLBACK(_focuspeaking_switch_button_callback), NULL);
   _update_focus_peaking_button();
@@ -3375,6 +3374,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   cs->toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow,
                                       (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), expanded);
+  dt_gui_add_class(cs->toggle, "dt_transparent_background");
   dt_gui_add_class(cs->toggle, "dt_ignore_fg_state");
 
   cs->container = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));

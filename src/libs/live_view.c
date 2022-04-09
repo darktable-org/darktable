@@ -307,6 +307,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL);
+  dt_gui_add_class(lib->live_view, "dt_transparent_background");
   lib->live_view_zoom = dtgtk_button_new(dtgtk_cairo_paint_zoom, 0, NULL); // TODO: see _zoom_live_view_clicked
   lib->rotate_ccw = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
   lib->rotate_cw = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DIRECTION_UP, NULL);

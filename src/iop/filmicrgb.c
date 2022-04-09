@@ -4379,6 +4379,7 @@ void gui_init(dt_iop_module_t *self)
                                            FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_highlight_mask), dtgtk_cairo_paint_showmask, 0, NULL);
   dt_gui_add_class(g->show_highlight_mask, "dt_bauhaus_alignment");
+  dt_gui_add_class(g->show_highlight_mask, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   label = dt_ui_section_label_new(_("balance"));

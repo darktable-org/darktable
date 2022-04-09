@@ -621,6 +621,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
 
   g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
+  dt_gui_add_class(g->bt_select_region, "dt_transparent_background");
   gtk_widget_set_tooltip_text(g->bt_select_region,
                               _("apply auto exposure based on a region defined by the user\n"
                                 "click and drag to draw the area\n"

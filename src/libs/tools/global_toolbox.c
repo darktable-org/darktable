@@ -400,7 +400,6 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the grouping button */
   d->grouping_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_grouping, 0, NULL);
-  dt_gui_add_class(d->grouping_button, "dt_checked_background");
   dt_action_define(&darktable.control->actions_global, NULL, "grouping", d->grouping_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->grouping_button, FALSE, FALSE, 0);
   if(darktable.gui->grouping)
@@ -506,7 +505,6 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the widget help button */
   d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, 0, NULL);
-  dt_gui_add_class(d->help_button, "dt_checked_background");
   gtk_box_pack_start(GTK_BOX(self->widget), d->help_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
   g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
@@ -514,7 +512,6 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the shortcuts button */
   d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, 0, NULL);
-  dt_gui_add_class(d->keymap_button, "dt_checked_background");
   dt_action_define(&darktable.control->actions_global, NULL, "shortcuts", d->keymap_button, &dt_action_def_toggle);
   gtk_box_pack_start(GTK_BOX(self->widget), d->keymap_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->keymap_button, _("define shortcuts\n"
