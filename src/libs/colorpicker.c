@@ -544,7 +544,6 @@ void gui_init(dt_lib_module_t *self)
   // Setting up the GUI
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_class(self->widget, "picker-module");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   // The color patch
   GtkWidget *color_patch_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

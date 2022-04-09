@@ -350,7 +350,6 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_grid_new();
   GtkGrid *grid = GTK_GRID(self->widget);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 

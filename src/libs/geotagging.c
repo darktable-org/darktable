@@ -1717,7 +1717,6 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   d->timezones = _lib_geotagging_get_timezones();
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));

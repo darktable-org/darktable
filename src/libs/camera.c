@@ -418,7 +418,6 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label = dt_ui_section_label_new(_("camera control"));
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(GTK_GRID(self->widget), label, lib->gui.rows++, 0, 2, 1);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("camera_settings"));
 
   GtkWidget *modes_label = gtk_label_new(_("modes"));
   GtkWidget *timer_label = gtk_label_new(_("timer (s)"));
@@ -487,7 +486,6 @@ void gui_init(dt_lib_module_t *self)
   // Camera settings
   label = dt_ui_section_label_new(_("properties"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("camera_settings"));
 
   lib->gui.prop_start = lib->gui.rows -1;
   lib->gui.prop_end = lib->gui.rows;
@@ -496,7 +494,6 @@ void gui_init(dt_lib_module_t *self)
   // user specified properties
   label = dt_ui_section_label_new(_("additional properties"));
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(label), 0, lib->gui.rows++, 2, 1);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("camera_settings"));
 
   label = gtk_label_new(_("label"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);

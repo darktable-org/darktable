@@ -490,7 +490,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->help_button, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
   g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
-  dt_gui_add_help_link(d->help_button, dt_get_help_url("global_toolbox_help"));
 
   /* create the shortcuts button */
   d->keymap_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_shortcut, 0, NULL);
@@ -504,7 +503,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->keymap_button), "clicked", G_CALLBACK(_lib_keymap_button_clicked), d);
   g_signal_connect(G_OBJECT(d->keymap_button), "button-press-event", G_CALLBACK(_lib_keymap_button_press_release), d);
   g_signal_connect(G_OBJECT(d->keymap_button), "button-release-event", G_CALLBACK(_lib_keymap_button_press_release), d);
-  dt_gui_add_help_link(d->keymap_button, dt_get_help_url("global_toolbox_keymap"));
 
   // the rest of these is added in reverse order as they are always put at the end of the container.
   // that's done so that buttons added via Lua will come first.
@@ -516,8 +514,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),
                    NULL);
-  dt_gui_add_help_link(d->preferences_button, dt_get_help_url("global_toolbox_preferences"));
-
 }
 
 void gui_cleanup(dt_lib_module_t *self)

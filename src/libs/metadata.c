@@ -689,7 +689,6 @@ void gui_init(dt_lib_module_t *self)
   self->widget = GTK_WIDGET(grid);
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
 
-  dt_gui_add_help_link(self->widget, dt_get_help_url("metadata"));
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
