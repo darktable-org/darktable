@@ -32,6 +32,7 @@
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
 #include "develop/masks.h"
+#include "develop/tiling.h"
 #include "iop/iop_api.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
@@ -1997,6 +1998,26 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                    dt_dev_pixelpipe_iop_t *piece)
 {
   memcpy(piece->data, params, sizeof(dt_iop_retouch_params_t));
+}
+
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  const float require = 2.0f;
+  const float require_cl = 1.0f  // in_retouch
+                         + 4.0f; // dwt_wavelet_decompose_cl requires 4 buffers and is the worst case  
+  // FIXME the above are worst case values, we might iterate through the dt_iop_retouch_form_data_t to get
+  // the largest bounding box
+
+  tiling->factor = 2.0f + require; // input & output buffers + internal requirements
+  tiling->factor_cl = 2.0f + require_cl;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -4243,7 +4264,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const cl_mem in_retouch = dt_opencl_alloc_device_buffer(devid, sizeof(float) * ch * roi_rt->width * roi_rt->height);
   if(in_retouch == NULL)
   {
-    fprintf(stderr, "process_internal: error allocating memory for wavelet decompose\n");
+    dt_print(DT_DEBUG_OPENCL, "[retouch process_cl] error allocating memory for wavelet decompose on device %d\n", devid);
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -4273,7 +4294,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                          roi_in->scale / piece->iscale);
   if(dwt_p == NULL)
   {
-    fprintf(stderr, "process_internal: error initializing wavelet decompose\n");
+    dt_print(DT_DEBUG_OPENCL, "[retouch process_cl] error initializing wavelet decompose on device %d\n", devid);
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
