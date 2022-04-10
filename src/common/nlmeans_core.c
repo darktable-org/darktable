@@ -994,8 +994,7 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
     err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width,sizes);
     if(err != CL_SUCCESS) break;
 
-    if(!darktable.opencl->async_pixelpipe || params->pipetype == DT_DEV_PIXELPIPE_EXPORT)
-      dt_opencl_finish(devid);
+    dt_opencl_finish_sync_pipe(devid, params->pipetype);
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
     dt_iop_nap(dt_opencl_micro_nap(devid));
@@ -1090,8 +1089,7 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
     err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width,sizes);
     if(err != CL_SUCCESS) break;
 
-    if(!darktable.opencl->async_pixelpipe || params->pipetype == DT_DEV_PIXELPIPE_EXPORT)
-      dt_opencl_finish(devid);
+    dt_opencl_finish_sync_pipe(devid, params->pipetype);
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
     dt_iop_nap(dt_opencl_micro_nap(devid));

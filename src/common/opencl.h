@@ -259,8 +259,11 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
 
+/** both finish functions return TRUE in case of success */
 /** cleans up command queue. */
 int dt_opencl_finish(const int devid);
+/** cleans up command queue if in synchron mode or while exporting */
+int dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
 
 /** enqueues a synchronization point. */
 int dt_opencl_enqueue_barrier(const int devid);
@@ -479,7 +482,11 @@ static inline void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl
 static inline void dt_opencl_cleanup(dt_opencl_t *cl)
 {
 }
-static inline int dt_opencl_finish(const int devid)
+static inline gboolean dt_opencl_finish(const int devid)
+{
+  return -1;
+}
+static inline gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype)
 {
   return -1;
 }

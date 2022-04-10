@@ -1309,11 +1309,10 @@ error:
   return INFINITY;
 }
 
-
-int dt_opencl_finish(const int devid)
+gboolean dt_opencl_finish(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return -1;
+  if(!cl->inited || devid < 0) return FALSE;
 
   cl_int err = (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
 
@@ -1322,6 +1321,20 @@ int dt_opencl_finish(const int devid)
   cl_int success = dt_opencl_events_flush(devid, 0);
 
   return (err == CL_SUCCESS && success == CL_COMPLETE);
+}
+
+gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || devid < 0) return FALSE;
+
+  const gboolean exporting = (pipetype & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT;
+  const gboolean asyncmode = darktable.opencl->async_pixelpipe;
+
+  if(!asyncmode || exporting)
+    return dt_opencl_finish(devid);
+  else
+    return TRUE;
 }
 
 int dt_opencl_enqueue_barrier(const int devid)
@@ -2184,7 +2197,7 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
   cl_event *eventp = dt_opencl_events_get_slot(dev, buf);
   err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel],
                                                         2, NULL, sizes, local, 0, NULL, eventp);
-  // if (err == CL_SUCCESS) err = dt_opencl_finish(dev);
+
   if(err != CL_SUCCESS)
     dt_print(DT_DEBUG_OPENCL, "[dt_opencl_enqueue_kernel_2d_with_local] kernel %i on device %d: %s\n", kernel, dev, cl_errstr(err));
     
