@@ -1517,19 +1517,14 @@ filechooser row:hover .sidebar-icon
 {
   margin-top: 2em;
 }
-#header-sort-box #collect-sort-widget,
-#header-sort-box #dt-toggle-button
+#header-sort-box #collect-sort-widget
 {
   background-color: shade(@button_bg, 0.9);
 }
-#header-sort-box #dt-toggle-button:hover
-{
-  background-color: @button_hover_bg;
-  color: @button_hover_fg;
-}
-#header-sort-box #bauhaus-combobox
+#header-sort-box #bauhaus_combobox
 {
   border: none;
+  background-color: transparent;
 }
 #header-toolbar .search
 {
