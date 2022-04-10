@@ -767,7 +767,7 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
 }
 
 static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, const gboolean title,
-                            GCallback callback, gpointer data, dt_lib_module_t *self)
+                            GCallback callback, gpointer data, dt_lib_module_t *self, const float xalign)
 {
   // we first verify that the filter is defined
   if(callback != G_CALLBACK(_sort_append_sort) && !title && !_filters_get(id)) return;
@@ -776,13 +776,15 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
   if(title)
   {
     gtk_widget_set_name(smt, "collect-popup-title");
+    GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
+    gtk_label_set_xalign(GTK_LABEL(child), xalign);
     gtk_widget_set_sensitive(smt, FALSE);
   }
   else
   {
     gtk_widget_set_name(smt, "collect-popup-item");
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
-    gtk_label_set_xalign(GTK_LABEL(child), 1.0);
+    gtk_label_set_xalign(GTK_LABEL(child), xalign);
     g_object_set_data(G_OBJECT(smt), "collect_id", GINT_TO_POINTER(id));
     if(data) g_object_set_data(G_OBJECT(smt), "collect_data", data);
     g_signal_connect(G_OBJECT(smt), "activate", callback, self);
@@ -793,7 +795,7 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
 static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rule, dt_lib_module_t *self)
 {
 #define ADD_COLLECT_ENTRY(menu, value)                                                                            \
-  _popup_add_item(menu, dt_collection_name(value), value, FALSE, G_CALLBACK(_event_append_rule), rule, self);
+  _popup_add_item(menu, dt_collection_name(value), value, FALSE, G_CALLBACK(_event_append_rule), rule, self, 0.5);
 
   // we show a popup with all the possible rules
   // note that only rules with defined filters will be shown
@@ -802,12 +804,12 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
 
   // the differents categories
-  _popup_add_item(spop, _("files"), 0, TRUE, NULL, NULL, self);
+  _popup_add_item(spop, _("files"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FILMROLL);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FOLDERS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_FILENAME);
 
-  _popup_add_item(spop, _("metadata"), 0, TRUE, NULL, NULL, self);
+  _popup_add_item(spop, _("metadata"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TAG);
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -827,7 +829,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GEOTAGGING);
 
-  _popup_add_item(spop, _("times"), 0, TRUE, NULL, NULL, self);
+  _popup_add_item(spop, _("times"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_DAY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TIME);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
@@ -835,7 +837,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_PRINT_TIMESTAMP);
 
-  _popup_add_item(spop, _("capture details"), 0, TRUE, NULL, NULL, self);
+  _popup_add_item(spop, _("capture details"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_CAMERA);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LENS);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_APERTURE);
@@ -845,7 +847,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ASPECT_RATIO);
 
   /* TO BE restored once the filters will be implemented
-  _popup_add_item(spop, _("darktable"), 0, TRUE, NULL, NULL, self);
+  _popup_add_item(spop, _("darktable"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GROUPING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_HISTORY);
@@ -1171,6 +1173,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
 
     // on-off button
     rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, NULL);
+    dt_gui_add_class(rule->w_off, "dt_transparent_background");
     gtk_widget_set_name(rule->w_off, "module-enable-button");
     g_object_set_data(G_OBJECT(rule->w_off), "rule", rule);
     g_signal_connect(G_OBJECT(rule->w_off), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
@@ -1749,7 +1752,8 @@ static void _sort_show_add_popup(GtkWidget *widget, gpointer user_data)
   gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
 
 #define ADD_SORT_ENTRY(value)                                                                                     \
-  _popup_add_item(spop, dt_collection_sort_name(value), value, FALSE, G_CALLBACK(_sort_append_sort), NULL, self);
+  _popup_add_item(spop, dt_collection_sort_name(value), value, FALSE, G_CALLBACK(_sort_append_sort), NULL, self,  \
+                  0.0);
 
   ADD_SORT_ENTRY(DT_COLLECTION_SORT_FILENAME);
   ADD_SORT_ENTRY(DT_COLLECTION_SORT_DATETIME);
@@ -1866,6 +1870,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  dt_gui_add_class(self->widget, "module_filtering");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   d->nb_rules = 0;

@@ -924,6 +924,10 @@ popover #bauhaus_slider
 {
   padding: 0.14em 0 0.14em 0.42em;
 }
+.bauhaus_popup_no_quad
+{
+  padding-right: 0.42em;
+}
 
 /*---------------------------------------
   - Context menu, tooltips & comboboxes -
