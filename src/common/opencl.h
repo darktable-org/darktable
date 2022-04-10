@@ -167,6 +167,9 @@ typedef struct dt_opencl_device_t
   // opencl_events enabled for the device
   int use_events;
   // async pixelpipe mode for device
+  // if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency.
+  // however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed
+  // instead of only a single module. export pixelpipe will always be run synchronously.
   int asyncmode;
 } dt_opencl_device_t;
 
