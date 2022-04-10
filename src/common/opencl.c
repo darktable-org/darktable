@@ -219,14 +219,15 @@ void dt_opencl_write_device_config(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_v1_", cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %f",
+  g_snprintf(key, 254, "%s%s", "cldevice_v2_", cl->dev[devid].cname);
+  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
     cl->dev[devid].clroundup_wd,
     cl->dev[devid].clroundup_ht,
     cl->dev[devid].event_handles,
+    cl->dev[devid].asyncmode & 1,
     cl->dev[devid].benchmark);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -237,17 +238,18 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(devid < 0) return FALSE;
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_v1_", cl->dev[devid].cname);
+  g_snprintf(key, 254, "%s%s", "cldevice_v2_", cl->dev[devid].cname);
   if(!dt_conf_key_not_empty(key)) return TRUE;
 
   const gchar *dat = dt_conf_get_string_const(key);
-  sscanf(dat, "%i %i %i %i %i %i %f",
+  sscanf(dat, "%i %i %i %i %i %i %i %f",
     &cl->dev[devid].avoid_atomics,
     &cl->dev[devid].micro_nap,
     &cl->dev[devid].pinned_memory,
     &cl->dev[devid].clroundup_wd,
     &cl->dev[devid].clroundup_ht,
     &cl->dev[devid].event_handles,
+    &cl->dev[devid].asyncmode,
     &cl->dev[devid].benchmark);
   // do some safety housekeeping
   cl->dev[devid].avoid_atomics &= 1;
@@ -263,7 +265,7 @@ gboolean dt_opencl_read_device_config(const int devid)
   cl->dev[devid].benchmark = fminf(1e6, fmaxf(0.0f, cl->dev[devid].benchmark));
 
   cl->dev[devid].use_events = (cl->dev[devid].event_handles != 0) ? 1 : 0;
-
+  cl->dev[devid].asyncmode &= 1;
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] found '%s' for '%s'\n", dat, key);
   return FALSE;
 }
@@ -318,6 +320,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].benchmark = 0.0f;
   cl->dev[dev].use_events = 1;
   cl->dev[dev].event_handles = 128;
+  cl->dev[dev].asyncmode = 0;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -519,6 +522,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     fprintf(stderr, "     ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
     fprintf(stderr, "     EVENT HANDLES:            %i\n", cl->dev[dev].event_handles);
     fprintf(stderr, "     PERFORMANCE:              %f\n", cl->dev[dev].benchmark);
+    fprintf(stderr, "     ASYNC PIXELPIPE:          %s\n", (cl->dev[dev].asyncmode) ? "Yes" : "No");
     fprintf(stderr, "     DEVICE_TYPE:              %s%s%s\n",
       ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? "CPU" : "",
       ((type & CL_DEVICE_TYPE_GPU) == CL_DEVICE_TYPE_GPU) ? "GPU" : "",
@@ -739,7 +743,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   char *locale = strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_ALL, "C");
 
-  cl->async_pixelpipe = dt_conf_get_bool("opencl_async_pixelpipe");
   cl->sync_cache = dt_opencl_get_sync_cache();
   cl->crc = 5781;
   cl->dlocl = NULL;
@@ -780,8 +783,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
            dt_conf_get_int("opencl_mandatory_timeout"));
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n",
-           dt_conf_get_bool("opencl_async_pixelpipe"));
   str = dt_conf_get_string_const("opencl_synch_cache");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %s\n", str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_use_cpu_devices: %d\n",
@@ -1329,7 +1330,7 @@ gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype)
   if(!cl->inited || devid < 0) return FALSE;
 
   const gboolean exporting = (pipetype & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT;
-  const gboolean asyncmode = darktable.opencl->async_pixelpipe;
+  const gboolean asyncmode = cl->dev[devid].asyncmode;
 
   if(!asyncmode || exporting)
     return dt_opencl_finish(devid);
