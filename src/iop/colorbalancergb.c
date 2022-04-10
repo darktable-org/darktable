@@ -1702,8 +1702,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
   dt_bauhaus_slider_set_format(g->shadows_weight, "%");
   gtk_widget_set_tooltip_text(g->shadows_weight, _("weight of the shadows over the whole tonal range"));
-  dt_bauhaus_widget_set_quad_paint(g->shadows_weight, dtgtk_cairo_paint_showmask,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->shadows_weight, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->shadows_weight, TRUE);
   g_signal_connect(G_OBJECT(g->shadows_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
 
@@ -1711,8 +1710,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->mask_grey_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->mask_grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->mask_grey_fulcrum, _("position of the middle-gray reference for masking"));
-  dt_bauhaus_widget_set_quad_paint(g->mask_grey_fulcrum, dtgtk_cairo_paint_showmask,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->mask_grey_fulcrum, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->mask_grey_fulcrum, TRUE);
   g_signal_connect(G_OBJECT(g->mask_grey_fulcrum), "quad-pressed", G_CALLBACK(mask_callback), self);
 
@@ -1720,8 +1718,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->highlights_weight, 4);
   dt_bauhaus_slider_set_format(g->highlights_weight, "%");
   gtk_widget_set_tooltip_text(g->highlights_weight, _("weights of highlights over the whole tonal range"));
-  dt_bauhaus_widget_set_quad_paint(g->highlights_weight, dtgtk_cairo_paint_showmask,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->highlights_weight, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->highlights_weight, TRUE);
   g_signal_connect(G_OBJECT(g->highlights_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
 

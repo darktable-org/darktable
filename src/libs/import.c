@@ -1177,12 +1177,12 @@ static void _set_places_list(GtkWidget *places_paned, dt_lib_module_t* self)
   g_free(markup);
   gtk_box_pack_start(GTK_BOX(places_header), places_label, FALSE, FALSE, 0);
 
-  GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+  GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   gtk_widget_set_tooltip_text(places_reset, _("restore all default places you have removed by right-click"));
   g_signal_connect(places_reset, "clicked", G_CALLBACK(_places_reset_callback), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
 
-  GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, CPF_STYLE_FLAT, NULL);
+  GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
   gtk_widget_set_tooltip_text(places_add, _("add a custom place\n\nright-click on a place to remove it"));
   g_signal_connect(places_add, "clicked", G_CALLBACK(_lib_import_select_folder), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_add, FALSE, FALSE, 0);
@@ -1591,7 +1591,8 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   column = gtk_tree_view_column_new_with_attributes("", renderer, "pixbuf",
                                                     DT_IMPORT_THUMB, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
-  GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL);
+  GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL);
+  dt_gui_add_class(button, "dt_transparent_background");
   gtk_widget_show(button);
   header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header, _("show/hide thumbnails"));

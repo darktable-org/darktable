@@ -4248,17 +4248,17 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
 
-  g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_BOX, NULL);
+  g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, 0, NULL);
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_commit), FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->button_commit, _("accept the computed profile and set it in the module"));
   g_signal_connect(G_OBJECT(g->button_commit), "button-press-event", G_CALLBACK(commit_profile_callback), (gpointer)self);
 
-  g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_BOX, NULL);
+  g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
   g_signal_connect(G_OBJECT(g->button_profile), "button-press-event", G_CALLBACK(run_profile_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_profile, _("recompute the profile"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_profile), FALSE, FALSE, 0);
 
-  g->button_validate = dtgtk_button_new(dtgtk_cairo_paint_softproof, CPF_STYLE_BOX, NULL);
+  g->button_validate = dtgtk_button_new(dtgtk_cairo_paint_softproof, 0, NULL);
   g_signal_connect(G_OBJECT(g->button_validate), "button-press-event", G_CALLBACK(run_validation_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_validate, _("check the output delta E"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_validate), FALSE, FALSE, 0);

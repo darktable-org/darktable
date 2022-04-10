@@ -448,8 +448,8 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     g_signal_connect(G_OBJECT(tb), "focus-out-event", G_CALLBACK(_lib_duplicate_caption_out_callback), self);
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
     gtk_widget_set_hexpand(lb, TRUE);
-    bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
-//    gtk_widget_set_halign(bt, GTK_ALIGN_END);
+    bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
+    //    gtk_widget_set_halign(bt, GTK_ALIGN_END);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 

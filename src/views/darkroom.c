@@ -2257,8 +2257,7 @@ void gui_init(dt_view_t *self)
    */
 
   /* create favorite plugin preset popup tool */
-  GtkWidget *favorite_presets
-      = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+  GtkWidget *favorite_presets = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   gtk_widget_set_tooltip_text(favorite_presets, _("quick access to presets"));
   g_signal_connect(G_OBJECT(favorite_presets), "clicked", G_CALLBACK(_darkroom_ui_favorite_presets_popupmenu),
                    NULL);
@@ -2266,15 +2265,14 @@ void gui_init(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager, favorite_presets, DT_VIEW_DARKROOM);
 
   /* create quick styles popup menu tool */
-  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_STYLE_FLAT, NULL);
+  GtkWidget *styles = dtgtk_button_new(dtgtk_cairo_paint_styles, 0, NULL);
   g_signal_connect(G_OBJECT(styles), "clicked", G_CALLBACK(_darkroom_ui_apply_style_popupmenu), NULL);
   gtk_widget_set_tooltip_text(styles, _("quick access for applying any of your styles"));
   dt_gui_add_help_link(styles, dt_get_help_url("bottom_panel_styles"));
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
   /* create second window display button */
-  dev->second_window.button
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, CPF_STYLE_FLAT, NULL);
+  dev->second_window.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, 0, NULL);
   dt_action_define(&self->actions, NULL, "second window", dev->second_window.button, &dt_action_def_toggle);
   g_signal_connect(G_OBJECT(dev->second_window.button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
                    dev);
@@ -2282,8 +2280,7 @@ void gui_init(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
   /* Enable ISO 12646-compliant colour assessment conditions */
-  dev->iso_12646.button
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, CPF_STYLE_FLAT, NULL);
+  dev->iso_12646.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_bulb, 0, NULL);
   dt_action_define(&self->actions, NULL, "color assessment", dev->iso_12646.button, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(dev->iso_12646.button,
                               _("toggle ISO 12646 color assessment conditions"));
@@ -2295,8 +2292,7 @@ void gui_init(dt_view_t *self)
   /* create rawoverexposed popup tool */
   {
     // the button
-    dev->rawoverexposed.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, CPF_STYLE_FLAT, NULL);
+    dev->rawoverexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_rawoverexposed, 0, NULL);
     dt_action_define(&self->actions, N_("raw overexposed"), N_("toggle"), dev->rawoverexposed.button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->rawoverexposed.button,
                                 _("toggle raw over exposed indication\nright click for options"));
@@ -2350,8 +2346,7 @@ void gui_init(dt_view_t *self)
   /* create overexposed popup tool */
   {
     // the button
-    dev->overexposed.button
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT, NULL);
+    dev->overexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, 0, NULL);
     dt_action_define(DT_ACTION(self), N_("overexposed"), N_("toggle"), dev->overexposed.button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->overexposed.button,
                                 _("toggle clipping indication\nright click for options"));
@@ -2416,8 +2411,7 @@ void gui_init(dt_view_t *self)
   /* create profile popup tool & buttons (softproof + gamut) */
   {
     // the softproof button
-    dev->profile.softproof_button =
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT, NULL);
+    dev->profile.softproof_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, 0, NULL);
     dt_action_define(&self->actions, NULL, "softproof", dev->profile.softproof_button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright click for profile options"));
@@ -2427,8 +2421,7 @@ void gui_init(dt_view_t *self)
     dt_gui_add_help_link(dev->profile.softproof_button, dt_get_help_url("softproof"));
 
     // the gamut check button
-    dev->profile.gamut_button =
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT, NULL);
+    dev->profile.gamut_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, 0, NULL);
     dt_action_define(&self->actions, NULL, "gamut check", dev->profile.gamut_button, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright click for profile options"));
@@ -2590,7 +2583,7 @@ void gui_init(dt_view_t *self)
   /* create grid changer popup tool */
   {
     // the button
-    darktable.view_manager->guides_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
+    darktable.view_manager->guides_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_grid, 0, NULL);
     dt_action_define(&self->actions, "guide lines", "toggle", darktable.view_manager->guides_toggle, &dt_action_def_toggle);
     gtk_widget_set_tooltip_text(darktable.view_manager->guides_toggle,
                                 _("toggle guide lines\nright click for guides options"));

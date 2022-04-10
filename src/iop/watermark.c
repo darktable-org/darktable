@@ -1067,7 +1067,7 @@ void gui_init(struct dt_iop_module_t *self)
   char *tooltip = g_strdup_printf(_("SVG watermarks in %s/watermarks or %s/watermarks"), configdir, datadir);
   gtk_widget_set_tooltip_text(g->watermarks, tooltip);
   g_free(tooltip);
-  g->refresh = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT, NULL);
+  g->refresh = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
 
   gtk_grid_attach(grid, label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(grid, g->watermarks, label, GTK_POS_RIGHT, 1, 1);
@@ -1145,7 +1145,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_set_column_spacing(GTK_GRID(bat), DT_PIXEL_APPLY_DPI(3));
   for(int i = 0; i < 9; i++)
   {
-    g->align[i] = dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, CPF_STYLE_FLAT | (CPF_SPECIAL_FLAG << i), NULL);
+    g->align[i] = dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, (CPF_SPECIAL_FLAG << i), NULL);
     gtk_grid_attach(GTK_GRID(bat), GTK_WIDGET(g->align[i]), 1 + i%3, i/3, 1, 1);
     g_signal_connect(G_OBJECT(g->align[i]), "toggled", G_CALLBACK(alignment_callback), self);
   }

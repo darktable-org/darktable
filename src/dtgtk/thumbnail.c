@@ -188,15 +188,15 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
     const int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
     // we reuse CPF_* flags, as we'll pass them to the paint fct after
     if(col == 0)
-      thumb->colorlabels |= CPF_DIRECTION_UP;
+      thumb->colorlabels |= CPF_LABEL_RED;
     else if(col == 1)
-      thumb->colorlabels |= CPF_DIRECTION_DOWN;
+      thumb->colorlabels |= CPF_LABEL_YELLOW;
     else if(col == 2)
-      thumb->colorlabels |= CPF_DIRECTION_LEFT;
+      thumb->colorlabels |= CPF_LABEL_GREEN;
     else if(col == 3)
-      thumb->colorlabels |= CPF_DIRECTION_RIGHT;
+      thumb->colorlabels |= CPF_LABEL_BLUE;
     else if(col == 4)
-      thumb->colorlabels |= CPF_BG_TRANSPARENT;
+      thumb->colorlabels |= CPF_LABEL_PURPLE;
   }
   if(thumb->w_color)
   {
@@ -1380,7 +1380,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     }
 
     // the color labels
-    thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower, thumb->colorlabels, &darktable.bauhaus->colorlabels);
+    thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower, thumb->colorlabels, NULL);
     gtk_widget_set_name(thumb->w_color, "thumb_colorlabels");
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
@@ -1390,7 +1390,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_color);
 
     // the local copy indicator
-    thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, CPF_DO_NOT_USE_BORDER, NULL);
+    thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, 0, NULL);
     gtk_widget_set_name(thumb->w_local_copy, "thumb_localcopy");
     gtk_widget_set_tooltip_text(thumb->w_local_copy, _("local copy"));
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
@@ -1403,7 +1403,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_local_copy);
 
     // the altered icon
-    thumb->w_altered = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_altered, CPF_DO_NOT_USE_BORDER, NULL);
+    thumb->w_altered = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_altered, 0, NULL);
     gtk_widget_set_name(thumb->w_altered, "thumb_altered");
     gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
@@ -1413,7 +1413,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_altered);
 
     // the group bouton
-    thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, CPF_DO_NOT_USE_BORDER, NULL);
+    thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, 0, NULL);
     gtk_widget_set_name(thumb->w_group, "thumb_group");
     g_signal_connect(G_OBJECT(thumb->w_group), "button-release-event", G_CALLBACK(_event_grouping_release), thumb);
     g_signal_connect(G_OBJECT(thumb->w_group), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
@@ -1424,7 +1424,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_group);
 
     // the sound icon
-    thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, CPF_DO_NOT_USE_BORDER, NULL);
+    thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, 0, NULL);
     gtk_widget_set_name(thumb->w_audio, "thumb_audio");
     g_signal_connect(G_OBJECT(thumb->w_audio), "button-release-event", G_CALLBACK(_event_audio_release), thumb);
     g_signal_connect(G_OBJECT(thumb->w_audio), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);

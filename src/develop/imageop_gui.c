@@ -271,7 +271,7 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
                                    GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
                                    DTGTKCairoPaintIconFunc paint, GtkWidget *box)
 {
-  GtkWidget *w = dtgtk_togglebutton_new(paint, CPF_STYLE_FLAT, NULL);
+  GtkWidget *w = dtgtk_togglebutton_new(paint, 0, NULL);
   g_signal_connect(G_OBJECT(w), "button-press-event", callback, self);
 
   if(!ctrl_label)
@@ -299,7 +299,7 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
 
   if(paint)
   {
-    button = dtgtk_button_new(paint, CPF_STYLE_FLAT | paintflags, NULL);
+    button = dtgtk_button_new(paint, paintflags, NULL);
     gtk_widget_set_tooltip_text(button, _(label));
   }
   else

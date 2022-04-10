@@ -2155,15 +2155,16 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->colorpicker_set_values = dt_color_picker_new(module, DT_COLOR_PICKER_AREA, header);
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->colorpicker_set_values),
-                                 dtgtk_cairo_paint_colorpicker_set_values,
-                                 CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+                                 dtgtk_cairo_paint_colorpicker_set_values, 0, NULL);
+    dt_gui_add_class(bd->colorpicker_set_values, "dt_transparent_background");
     gtk_widget_set_tooltip_text(bd->colorpicker_set_values, _("set the range based on an area from the image\n"
                                                               "drag to use the input image\n"
                                                               "ctrl+drag to use the output image"));
 
-    dt_iop_togglebutton_new(module, "blend`tools", N_("invert all channel's polarities"), NULL,
-                            G_CALLBACK(_blendop_blendif_invert), FALSE, 0, 0,
-                            dtgtk_cairo_paint_invert, header);
+    GtkWidget *btn = dt_iop_togglebutton_new(module, "blend`tools", N_("invert all channel's polarities"), NULL,
+                                             G_CALLBACK(_blendop_blendif_invert), FALSE, 0, 0,
+                                             dtgtk_cairo_paint_invert, header);
+    dt_gui_add_class(btn, "dt_ignore_fg_state");
 
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(header), TRUE, FALSE, 0);
 
@@ -2177,8 +2178,8 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
                                                    in_out ? "blend-upper" : "blend-lower"));
       gtk_box_pack_start(GTK_BOX(slider_box), GTK_WIDGET(sl->slider), TRUE, TRUE, 0);
 
-      sl->polarity
-          = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
+      sl->polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, 0, NULL);
+      dt_gui_add_class(sl->polarity, "dt_ignore_fg_state");
       gtk_widget_set_tooltip_text(sl->polarity, _("toggle polarity. best seen by enabling 'display mask'"));
       gtk_box_pack_end(GTK_BOX(slider_box), GTK_WIDGET(sl->polarity), FALSE, FALSE, 0);
 
@@ -2328,8 +2329,8 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     bd->masks_polarity = dt_iop_togglebutton_new(module, "blend`tools", N_("toggle polarity of drawn mask"), NULL,
                                                  G_CALLBACK(_blendop_masks_polarity_callback),
                                                  FALSE, 0, 0, dtgtk_cairo_paint_plusminus, hbox);
-    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_polarity), dtgtk_cairo_paint_plusminus,
-                                 CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
+    dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(bd->masks_polarity), dtgtk_cairo_paint_plusminus, 0, NULL);
+    dt_gui_add_class(bd->masks_polarity, "dt_ignore_fg_state");
 
     GtkWidget *abox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     bd->masks_edit = dt_iop_togglebutton_new(module, "blend`tools", N_("show and edit mask elements"), N_("show and edit in restricted mode"),
@@ -2503,8 +2504,8 @@ void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
     dt_bauhaus_combobox_add_populate_fct(bd->raster_combo, _raster_combo_populate);
     gtk_box_pack_start(GTK_BOX(hbox), bd->raster_combo, TRUE, TRUE, 0);
 
-    bd->raster_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE,
-                                                 NULL);
+    bd->raster_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, 0, NULL);
+    dt_gui_add_class(bd->raster_polarity, "dt_ignore_fg_state");
     gtk_widget_set_tooltip_text(bd->raster_polarity, _("toggle polarity of raster mask"));
     g_signal_connect(G_OBJECT(bd->raster_polarity), "toggled", G_CALLBACK(_raster_polarity_callback), module);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->raster_polarity), FALSE);
@@ -3014,7 +3015,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
       bd->masks_modes_toggles = g_list_append(bd->masks_modes_toggles, GTK_WIDGET(but));
     }
 
-    GtkWidget *presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+    GtkWidget *presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
     gtk_widget_set_tooltip_text(presets_button, _("blending options"));
     if(bd->blendif_support)
     {
@@ -3124,10 +3125,12 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl+click to display mask, "
                                                 "shift+click to display channel. hover over parametric mask slider to "
                                                 "select channel for display"));
+    dt_gui_add_class(bd->showmask, "dt_transparent_background");
 
     bd->suppress = dt_iop_togglebutton_new(module, "blend`tools", N_("temporarily switch off blend mask"), NULL, G_CALLBACK(_blendop_blendif_suppress_toggled),
                                            FALSE, 0, 0, dtgtk_cairo_paint_eye_toggle, hbox);
     gtk_widget_set_tooltip_text(bd->suppress, _("temporarily switch off blend mask. only for module in focus"));
+    dt_gui_add_class(bd->suppress, "dt_transparent_background");
 
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(box), TRUE, TRUE, 0);
