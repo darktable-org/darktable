@@ -92,7 +92,7 @@ typedef struct dt_iop_highlights_params_t
   float blendC; // unused $DEFAULT: 0.0
   float blendh; // unused $DEFAULT: 0.0
   // params of v2
-  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 0.995 $DESCRIPTION: "clipping threshold"
+  float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
   // params of v3
   float noise_level; // $MIN: 0. $MAX: 0.1 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
   int iterations; // $MIN: 1 $MAX: 12 $DEFAULT: 1 $DESCRIPTION: "iterations"
