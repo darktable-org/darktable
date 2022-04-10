@@ -147,7 +147,7 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL,
-             "[dt_opencl_get_device_info] could not query the actual size in bytes of info %d: %d\n", param_name, err);
+             "[dt_opencl_get_device_info] could not query the actual size in bytes of info %d: %s\n", param_name, cl_errstr(err));
     goto error;
   }
 
@@ -168,8 +168,8 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
     if(!ptr)
     {
       dt_print(DT_DEBUG_OPENCL,
-               "[dt_opencl_get_device_info] memory allocation failed! tried to allocate %zu bytes for data %d: %d",
-               *param_value_size, param_name, err);
+               "[dt_opencl_get_device_info] memory allocation failed! tried to allocate %zu bytes for data %d: %s",
+               *param_value_size, param_name, cl_errstr(err));
       err = CL_OUT_OF_HOST_MEMORY;
       goto error;
     }
@@ -182,7 +182,7 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
   err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(device, param_name, *param_value_size, *param_value, NULL);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_get_device_info] could not query info %d: %d\n", param_name, err);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_get_device_info] could not query info %d: %s\n", param_name, cl_errstr(err));
     goto error;
   }
 
@@ -364,7 +364,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VENDOR, (void **)&vendor, &vendor_size);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not get vendor name of device %d: %d\n", k, err);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not get vendor name of device %d: %s\n", k, cl_errstr(err));
     res = -1;
     goto end;
   }
@@ -374,7 +374,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_NAME, (void **)&infostr, &infostr_size);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not get device name of device %d: %d\n", k, err);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not get device name of device %d: %s\n", k, cl_errstr(err));
     res = -1;
     goto end;
   }
@@ -382,7 +382,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   err = dt_opencl_get_device_info(cl, devid, CL_DRIVER_VERSION, (void **)&driverversion, &driverversion_size);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not get driver version of device %d `%s': %d\n", k, infostr, err);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not get driver version of device %d `%s': %s\n", k, infostr, cl_errstr(err));
     res = -1;
     goto end;
   }
@@ -390,7 +390,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_VERSION, (void **)&deviceversion, &deviceversion_size);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not get device version of device %d `%s': %d\n", k, infostr, err);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not get device version of device %d `%s': %s\n", k, infostr, cl_errstr(err));
     res = -1;
     goto end;
   }
@@ -537,7 +537,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].context = (cl->dlocl->symbols->dt_clCreateContext)(0, 1, &devid, NULL, NULL, &err);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context for device %d: %d\n", k, err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context for device %d: %s\n", k, cl_errstr(err));
     res = -1;
     goto end;
   }
@@ -546,7 +546,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
       cl->dev[dev].context, devid, (darktable.unmuted & DT_DEBUG_PERF) ? CL_QUEUE_PROFILING_ENABLE : 0, &err);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %d\n", k, err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %s\n", k, cl_errstr(err));
     res = -1;
     goto end;
   }
@@ -808,7 +808,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get platforms: %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get platforms: %s\n", cl_errstr(err));
     goto finally;
   }
 
@@ -829,7 +829,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     if(err != CL_SUCCESS)
     {
       all_num_devices[n] = 0;
-      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %d\n", err);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %s\n", cl_errstr(err));
     }
     else
     {
@@ -839,7 +839,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
       if(err != CL_SUCCESS)
       {
         all_num_devices[n] = 0;
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get profile: %d\n", err);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get profile: %s\n", cl_errstr(err));
       }
       else
       {
@@ -883,7 +883,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
       if(err != CL_SUCCESS)
       {
         num_devices -= all_num_devices[n];
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %d\n", err);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get devices list: %s\n", cl_errstr(err));
       }
       devs += all_num_devices[n];
     }
@@ -1883,8 +1883,8 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
           if(err != CL_SUCCESS)
           {
             dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_load_program] could not load cached binary program from file '%s' MD5: '%s'! (%d)\n",
-                     binname, md5sum, err);
+                     "[opencl_load_program] could not load cached binary program from file '%s' MD5: '%s'! (%s)\n",
+                     binname, md5sum, cl_errstr(err));
           }
           else
           {
@@ -1924,8 +1924,8 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     free(file);
     if(err != CL_SUCCESS)
     {
-      dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%d)\n",
-               filename, err);
+      dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%s)\n",
+               filename, cl_errstr(err));
       return 0;
     }
     else
@@ -1954,7 +1954,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
   err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &(cl->dev[dev].devid), cl->dev[dev].options, 0, 0);
 
   if(err != CL_SUCCESS)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] could not build program: %d\n", err);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] could not build program: %s\n", cl_errstr(err));
   else
     dt_vprint(DT_DEBUG_OPENCL, "[opencl_build_program] successfully built program\n");
 
@@ -1997,7 +1997,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
                                                       &numdev, NULL);
       if(err != CL_SUCCESS)
       {
-        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_NUM_DEVICES failed: %d\n", err);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_NUM_DEVICES failed: %s\n", cl_errstr(err));
         return CL_SUCCESS;
       }
 
@@ -2006,7 +2006,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
                                                       sizeof(cl_device_id) * numdev, devices, NULL);
       if(err != CL_SUCCESS)
       {
-        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_DEVICES failed: %d\n", err);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_DEVICES failed: %s\n", cl_errstr(err));
         free(devices);
         return CL_SUCCESS;
       }
@@ -2016,7 +2016,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
                                                       sizeof(size_t) * numdev, binary_sizes, NULL);
       if(err != CL_SUCCESS)
       {
-        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARY_SIZES failed: %d\n", err);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARY_SIZES failed: %s\n", cl_errstr(err));
         free(binary_sizes);
         free(devices);
         return CL_SUCCESS;
@@ -2028,7 +2028,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
                                                       sizeof(unsigned char *) * numdev, binaries, NULL);
       if(err != CL_SUCCESS)
       {
-        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARIES failed: %d\n", err);
+        dt_print(DT_DEBUG_OPENCL, "[opencl_build_program] CL_PROGRAM_BINARIES failed: %s\n", cl_errstr(err));
         goto ret;
       }
 
@@ -2091,7 +2091,7 @@ int dt_opencl_create_kernel(const int prog, const char *name)
             = (cl->dlocl->symbols->dt_clCreateKernel)(cl->dev[dev].program[prog], name, &err);
         if(err != CL_SUCCESS)
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_create_kernel] could not create kernel `%s'! (%d)\n", name, err);
+          dt_print(DT_DEBUG_OPENCL, "[opencl_create_kernel] could not create kernel `%s'! (%s)\n", name, cl_errstr(err));
           cl->dev[dev].kernel_used[k] = 0;
           goto error;
         }
