@@ -1492,7 +1492,7 @@ filechooser row:hover .sidebar-icon
 #collect-actions-widget,
 #collect-sort-widget
 {
-  background-color: @button_border;
+  background-color: @collapsible_bg_color;
   margin: 0.3em 0 0.5em 0;
   padding: 0 0.2em;
 }
@@ -1507,11 +1507,6 @@ filechooser row:hover .sidebar-icon
 #collect-treeview
 {
   margin-bottom: 0.2em;
-}
-#collect-rule-special,
-#collect-rule-special *
-{
-  background-color: transparent;
 }
 #collect-rule-special
 {
@@ -1580,7 +1575,7 @@ filechooser row:hover .sidebar-icon
 
 #filter_colors_box
 {
-  background-color: @border_color;
+  background-color: shade(@grey_50, 1.04);
   padding: 0.01em;
   font-size: 1.2em;
 }
