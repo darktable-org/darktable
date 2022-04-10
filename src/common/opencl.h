@@ -259,6 +259,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
 
+const char *cl_errstr(cl_int error);
 /** both finish functions return TRUE in case of success */
 /** cleans up command queue. */
 int dt_opencl_finish(const int devid);
