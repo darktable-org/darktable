@@ -1512,8 +1512,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       output = NULL;
 
       /* block until opencl queue has finished to free all used event handlers */
-      if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
-        dt_opencl_finish(devid);
+      dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
     }
 
   /* copy back final processed_maximum */
@@ -1953,8 +1952,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       output = NULL;
 
       /* block until opencl queue has finished to free all used event handlers */
-      if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
-        dt_opencl_finish(devid);
+      dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
     }
 
   /* copy back final processed_maximum */

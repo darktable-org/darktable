@@ -1582,10 +1582,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         /* synchronization point for opencl pipe */
-        if(success_opencl && (!darktable.opencl->async_pixelpipe
-                              || (pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT))
-          success_opencl = dt_opencl_finish(pipe->devid);
-
+        if(success_opencl)
+          success_opencl = dt_opencl_finish_sync_pipe(pipe->devid, pipe->type);
 
         if(dt_atomic_get_int(&pipe->shutdown))
         {
@@ -1728,9 +1726,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         /* synchronization point for opencl pipe */
-        if(success_opencl && (!darktable.opencl->async_pixelpipe
-                              || (pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT))
-          success_opencl = dt_opencl_finish(pipe->devid);
+        if(success_opencl)
+          success_opencl = dt_opencl_finish_sync_pipe(pipe->devid, pipe->type);
 
         if(dt_atomic_get_int(&pipe->shutdown))
         {
@@ -1848,7 +1845,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             input_format->cst = input_cst_cl;
 
           /* this is a good place to release event handles as we anyhow need to move from gpu to cpu here */
-          (void)dt_opencl_finish(pipe->devid);
+          dt_opencl_finish(pipe->devid);
           dt_opencl_release_mem_object(cl_mem_input);
           valid_input_on_gpu_only = FALSE;
         }
@@ -1894,7 +1891,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           input_format->cst = input_cst_cl;
 
         /* this is a good place to release event handles as we anyhow need to move from gpu to cpu here */
-        (void)dt_opencl_finish(pipe->devid);
+        dt_opencl_finish(pipe->devid);
         dt_opencl_release_mem_object(cl_mem_input);
         valid_input_on_gpu_only = FALSE;
       }
