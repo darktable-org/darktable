@@ -1110,6 +1110,10 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
                                     "successful and %d events lost, max event=%d\n",
             cl->dev[i].name, i, cl->dev[i].totalsuccess, cl->dev[i].totalevents, cl->dev[i].totallost,
             cl->dev[i].maxeventslot);
+          if(cl->dev[i].maxeventslot >= 1024)
+            fprintf(stderr, "Your OpenCl device '%s' had used up to %d events while processing. This might be safe\n"
+                            "but there is currently no correct check implemented. Take care!\n",
+                             cl->dev[i].name, cl->dev[i].maxeventslot); 
         }
         else
         {
