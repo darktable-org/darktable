@@ -366,7 +366,7 @@ button
 .dt_module_btn,
 .dt_ignore_fg_state:checked
 {
-  color: alpha(@button_fg, 0.5);
+  color: alpha(@button_fg, 0.55);
 }
 
 /* Precise default buttons margins on side panels */
