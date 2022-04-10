@@ -166,6 +166,8 @@ typedef struct dt_opencl_device_t
   int event_handles;
   // opencl_events enabled for the device
   int use_events;
+  // async pixelpipe mode for device
+  int asyncmode;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -183,7 +185,6 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
-  int async_pixelpipe;
   int print_statistics;
   dt_opencl_sync_cache_t sync_cache;
   int enabled;
