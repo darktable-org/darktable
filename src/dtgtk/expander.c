@@ -130,11 +130,7 @@ typedef struct _smoothScrollData
 static gboolean _scrolled_window_tick_callback(GtkWidget *scrolled_window, GdkFrameClock *clock, gpointer user_data)
 {
   smoothScrollData *data = (smoothScrollData *)user_data;
-  if(!GTK_IS_ADJUSTMENT(data->adjustment))
-  {
-    free(data);
-    return G_SOURCE_REMOVE;
-  }
+  if(!GTK_IS_ADJUSTMENT(data->adjustment)) return G_SOURCE_REMOVE;
 
   gint64 now = gdk_frame_clock_get_frame_time(clock);
   gdouble current_pos = gtk_adjustment_get_value(data->adjustment);
@@ -155,7 +151,6 @@ static gboolean _scrolled_window_tick_callback(GtkWidget *scrolled_window, GdkFr
   {
     gtk_adjustment_set_value(data->adjustment, data->end);
 
-    free(data);
     return G_SOURCE_REMOVE;
   }
 }
@@ -211,7 +206,8 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   g_return_val_if_fail(GTK_IS_WIDGET(header), NULL);
   g_return_val_if_fail(GTK_IS_WIDGET(body), NULL);
 
-  expander = g_object_new(dtgtk_expander_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, "spacing", 0, NULL);
+  expander
+      = g_object_new(dtgtk_expander_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, "spacing", 0, NULL);
   expander->expanded = -1;
   expander->header = header;
   expander->body = body;
