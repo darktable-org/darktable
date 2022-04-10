@@ -480,7 +480,7 @@ void gui_init(dt_lib_module_t *self)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(d->reverse), dtgtk_cairo_paint_sortby,
                                  CPF_DIRECTION_DOWN, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), d->reverse, FALSE, FALSE, 0);
-  dt_gui_add_class(d->reverse, "dt_transparent_background");
+  dt_gui_add_class(d->reverse, "dt_ignore_fg_state");
 
   /* select the last value and connect callback */
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),
