@@ -31,9 +31,6 @@ typedef struct _widgets_colors_t
   GtkWidget *operator;
 } _widgets_colors_t;
 
-#define CPF_USER_DATA_INCLUDE CPF_USER_DATA
-#define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
-
 static void _colors_synchronise(_widgets_colors_t *source)
 {
   _widgets_colors_t *dest = NULL;
@@ -56,8 +53,8 @@ static void _colors_synchronise(_widgets_colors_t *source)
 
     const gboolean and_op = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(source->operator), "sel_value"));
     g_object_set_data(G_OBJECT(dest->operator), "sel_value", GINT_TO_POINTER(and_op));
-    dtgtk_button_set_paint(DTGTK_BUTTON(dest->operator), and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
-                           CPF_STYLE_FLAT, NULL);
+    dtgtk_button_set_paint(DTGTK_BUTTON(dest->operator), and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0,
+                           NULL);
     gtk_widget_set_sensitive(dest->operator, gtk_widget_get_sensitive(source->operator));
     gtk_widget_queue_draw(dest->operator);
     source->rule->manual_widget_set--;
@@ -83,8 +80,8 @@ static void _colors_changed(GtkWidget *widget, gpointer user_data)
   }
 
   const gboolean and_op = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(colors->operator), "sel_value"));
-  dtgtk_button_set_paint(DTGTK_BUTTON(colors->operator), and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
-                         CPF_STYLE_FLAT, NULL);
+  dtgtk_button_set_paint(DTGTK_BUTTON(colors->operator), and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0,
+                         NULL);
   gtk_widget_set_sensitive(colors->operator, nb> 1);
 
   if(and_op || nb == 1) mask |= 0x80000000;
@@ -114,8 +111,7 @@ static gboolean _colors_clicked(GtkWidget *w, GdkEventButton *e, gpointer user_d
     for(int i = 0; i < DT_COLORLABELS_LAST; i++)
     {
       g_object_set_data(G_OBJECT(colors->colors[i]), "sel_value", GINT_TO_POINTER(sel_value));
-      dtgtk_button_set_paint(DTGTK_BUTTON(colors->colors[i]), dtgtk_cairo_paint_label_sel,
-                             (i | mask | CPF_BG_TRANSPARENT), NULL);
+      dtgtk_button_set_paint(DTGTK_BUTTON(colors->colors[i]), dtgtk_cairo_paint_label_sel, (i | mask), NULL);
       gtk_widget_queue_draw(colors->colors[i]);
     }
   }
@@ -123,7 +119,7 @@ static gboolean _colors_clicked(GtkWidget *w, GdkEventButton *e, gpointer user_d
   {
     g_object_set_data(G_OBJECT(colors->colors[DT_COLORLABELS_LAST]), "sel_value", GINT_TO_POINTER(0));
     g_object_set_data(G_OBJECT(w), "sel_value", GINT_TO_POINTER(sel_value));
-    dtgtk_button_set_paint(DTGTK_BUTTON(w), dtgtk_cairo_paint_label_sel, (k | mask | CPF_BG_TRANSPARENT), NULL);
+    dtgtk_button_set_paint(DTGTK_BUTTON(w), dtgtk_cairo_paint_label_sel, (k | mask), NULL);
     gtk_widget_queue_draw(w);
   }
 
@@ -136,8 +132,7 @@ static void _colors_operator_clicked(GtkWidget *w, _widgets_colors_t *colors)
 {
   const gboolean and_op = !GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
   g_object_set_data(G_OBJECT(w), "sel_value", GINT_TO_POINTER(and_op));
-  dtgtk_button_set_paint(DTGTK_BUTTON(w), and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, CPF_STYLE_FLAT,
-                         NULL);
+  dtgtk_button_set_paint(DTGTK_BUTTON(w), and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0, NULL);
   _colors_changed(w, colors);
   _colors_synchronise(colors);
 }
@@ -147,12 +142,11 @@ static void _colors_reset(_widgets_colors_t *colors)
   for(int i = 0; i < DT_COLORLABELS_LAST; i++)
   {
     g_object_set_data(G_OBJECT(colors->colors[i]), "sel_value", GINT_TO_POINTER(0));
-    dtgtk_button_set_paint(DTGTK_BUTTON(colors->colors[i]), dtgtk_cairo_paint_label_sel, (i | CPF_BG_TRANSPARENT),
-                           NULL);
+    dtgtk_button_set_paint(DTGTK_BUTTON(colors->colors[i]), dtgtk_cairo_paint_label_sel, i, NULL);
     gtk_widget_queue_draw(colors->colors[i]);
   }
   g_object_set_data(G_OBJECT(colors->operator), "sel_value", GINT_TO_POINTER(1));
-  dtgtk_button_set_paint(DTGTK_BUTTON(colors->operator), dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
+  dtgtk_button_set_paint(DTGTK_BUTTON(colors->operator), dtgtk_cairo_paint_and, 0, NULL);
   gtk_widget_set_sensitive(colors->operator, FALSE);
 }
 
@@ -188,28 +182,26 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
     }
 
     g_object_set_data(G_OBJECT(colors->colors[i]), "sel_value", GINT_TO_POINTER(sel_value));
-    dtgtk_button_set_paint(DTGTK_BUTTON(colors->colors[i]), dtgtk_cairo_paint_label_sel,
-                           (i | mask | CPF_BG_TRANSPARENT), NULL);
+    dtgtk_button_set_paint(DTGTK_BUTTON(colors->colors[i]), dtgtk_cairo_paint_label_sel, (i | mask), NULL);
     gtk_widget_queue_draw(colors->colors[i]);
     if(colorstop)
     {
       g_object_set_data(G_OBJECT(colorstop->colors[i]), "sel_value", GINT_TO_POINTER(sel_value));
-      dtgtk_button_set_paint(DTGTK_BUTTON(colorstop->colors[i]), dtgtk_cairo_paint_label_sel,
-                             (i | mask | CPF_BG_TRANSPARENT), NULL);
+      dtgtk_button_set_paint(DTGTK_BUTTON(colorstop->colors[i]), dtgtk_cairo_paint_label_sel, (i | mask), NULL);
       gtk_widget_queue_draw(colorstop->colors[i]);
     }
   }
   // we update the operator
   g_object_set_data(G_OBJECT(colors->operator), "sel_value", GINT_TO_POINTER(op));
-  dtgtk_button_set_paint(DTGTK_BUTTON(colors->operator), op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
-                         CPF_STYLE_FLAT, NULL);
+  dtgtk_button_set_paint(DTGTK_BUTTON(colors->operator), op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0,
+                         NULL);
   gtk_widget_queue_draw(colors->operator);
   gtk_widget_set_sensitive(colors->operator, nb> 1);
   if(colorstop)
   {
     g_object_set_data(G_OBJECT(colorstop->operator), "sel_value", GINT_TO_POINTER(op));
-    dtgtk_button_set_paint(DTGTK_BUTTON(colorstop->operator), op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
-                           CPF_STYLE_FLAT, NULL);
+    dtgtk_button_set_paint(DTGTK_BUTTON(colorstop->operator), op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0,
+                           NULL);
     gtk_widget_queue_draw(colorstop->operator);
     gtk_widget_set_sensitive(colorstop->operator, nb> 1);
   }
@@ -234,7 +226,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   gtk_widget_set_halign(hbox, GTK_ALIGN_CENTER);
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
-    colors->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, (k | CPF_BG_TRANSPARENT), NULL);
+    colors->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, k, NULL);
     g_object_set_data(G_OBJECT(colors->colors[k]), "colors_self", colors);
     gtk_box_pack_start(GTK_BOX(hbox), colors->colors[k], FALSE, FALSE, 0);
     gtk_widget_set_tooltip_text(colors->colors[k], _("filter by images color label"
@@ -244,7 +236,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
     g_signal_connect(G_OBJECT(colors->colors[k]), "button-press-event", G_CALLBACK(_colors_clicked),
                      GINT_TO_POINTER(k));
   }
-  colors->operator= dtgtk_button_new(dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
+  colors->operator= dtgtk_button_new(dtgtk_cairo_paint_and, 0, NULL);
   _colors_reset(colors);
   gtk_box_pack_start(GTK_BOX(hbox), colors->operator, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(colors->operator,

@@ -998,8 +998,7 @@ static void _widget_header_update(dt_lib_filtering_rule_t *rule)
 {
   gtk_widget_set_visible(rule->w_close, !rule->topbar);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(rule->w_off),
-                               (rule->topbar) ? dtgtk_cairo_paint_pin : dtgtk_cairo_paint_switch,
-                               CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+                               (rule->topbar) ? dtgtk_cairo_paint_pin : dtgtk_cairo_paint_switch, 0, NULL);
   if(rule->topbar)
   {
     gtk_widget_set_tooltip_text(rule->w_off, _("this rule is pinned into the top toolbar\nctrl-click to un-pin"));
@@ -1171,7 +1170,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_box_pack_start(GTK_BOX(hbox), rule->w_btn_box, FALSE, FALSE, 0);
 
     // on-off button
-    rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+    rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, NULL);
     gtk_widget_set_name(rule->w_off, "module-enable-button");
     g_object_set_data(G_OBJECT(rule->w_off), "rule", rule);
     g_signal_connect(G_OBJECT(rule->w_off), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
@@ -1179,7 +1178,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
     // remove button
-    rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+    rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
     gtk_widget_set_no_show_all(rule->w_close, TRUE);
     gtk_widget_set_name(GTK_WIDGET(rule->w_close), "basics-link");
     g_object_set_data(G_OBJECT(rule->w_close), "rule", rule);
@@ -1634,9 +1633,9 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     gtk_box_pack_start(GTK_BOX(sort->box), sort->direction, FALSE, TRUE, 0);
     g_signal_connect(G_OBJECT(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
     GtkStyleContext *context = gtk_widget_get_style_context(sort->direction);
-    gtk_style_context_add_class(context, "dt_transparent_background");
+    gtk_style_context_add_class(context, "dt_ignore_fg_state");
 
-    sort->close = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
+    sort->close = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
     gtk_widget_set_no_show_all(sort->close, TRUE);
     gtk_widget_set_name(GTK_WIDGET(sort->close), "basics-link");
     g_object_set_data(G_OBJECT(sort->close), "sort", sort);
