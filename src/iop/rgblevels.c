@@ -1067,7 +1067,8 @@ void gui_init(dt_iop_module_t *self)
   dt_action_define_iop(self, NULL, "auto levels", c->bt_auto_levels, &dt_action_def_button);
   gtk_widget_set_tooltip_text(c->bt_auto_levels, _("apply auto levels"));
 
-  c->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
+  c->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
+  dt_gui_add_class(c->bt_select_region, "dt_transparent_background");
   dt_action_define_iop(self, NULL, "auto region", c->bt_select_region, &dt_action_def_toggle);
   gtk_widget_set_tooltip_text(c->bt_select_region,
                               _("apply auto levels based on a region defined by the user\n"

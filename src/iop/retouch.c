@@ -2261,10 +2261,12 @@ void gui_init(dt_iop_module_t *self)
   g->bt_showmask = dt_iop_togglebutton_new(self, N_("editing"), N_("display masks"), NULL,
                                            G_CALLBACK(rt_showmask_callback), TRUE, 0, 0,
                                            dtgtk_cairo_paint_showmask, hbox_scale);
+  dt_gui_add_class(g->bt_showmask, "dt_transparent_background");
 
   g->bt_suppress = dt_iop_togglebutton_new(self, N_("editing"), N_("temporarily switch off shapes"), NULL,
                                            G_CALLBACK(rt_suppress_callback), TRUE, 0, 0,
                                            dtgtk_cairo_paint_eye_toggle, hbox_scale);
+  dt_gui_add_class(g->bt_suppress, "dt_transparent_background");
 
   gtk_box_pack_end(GTK_BOX(hbox_scale), gtk_grid_new(), TRUE, TRUE, 0);
 
@@ -2283,6 +2285,7 @@ void gui_init(dt_iop_module_t *self)
   g->bt_display_wavelet_scale = dt_iop_togglebutton_new(self, N_("editing"), N_("display wavelet scale"), NULL,
                                                         G_CALLBACK(rt_display_wavelet_scale_callback), TRUE, 0, 0,
                                                         dtgtk_cairo_paint_display_wavelet_scale, hbox_scale);
+  dt_gui_add_class(g->bt_display_wavelet_scale, "dt_transparent_background");
 
   // preview single scale
   g->vbox_preview_scale = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

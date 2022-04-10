@@ -3217,8 +3217,7 @@ void filmic_gui_draw_icon(cairo_t *cr, struct dt_iop_filmicrgb_gui_button_data_t
 
   const float scale = 0.85;
   cairo_scale(cr, scale, scale);
-  button->icon(cr, -scale * button->w / 2., -scale * button->h / 2., scale * button->w, scale * button->h,
-               CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  button->icon(cr, -scale * button->w / 2., -scale * button->h / 2., scale * button->w, scale * button->h, 0, NULL);
   cairo_restore(cr);
 }
 
@@ -4391,8 +4390,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("display highlight reconstruction mask")), TRUE, TRUE, 0);
   g->show_highlight_mask = dt_iop_togglebutton_new(self, NULL, N_("display highlight reconstruction mask"), NULL, G_CALLBACK(show_mask_callback),
                                            FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_highlight_mask), dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->show_highlight_mask), dtgtk_cairo_paint_showmask, 0, NULL);
   dt_gui_add_class(g->show_highlight_mask, "dt_bauhaus_alignment");
+  dt_gui_add_class(g->show_highlight_mask, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   label = dt_ui_section_label_new(_("balance"));

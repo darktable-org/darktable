@@ -293,7 +293,7 @@ static void _update_colors_filter(dt_lib_module_t *self)
   {
     const int i_mask = mask & mask_excluded ? CPF_USER_DATA_EXCLUDE : mask & mask_included ? CPF_USER_DATA_INCLUDE : 0;
     dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
-                          (i | i_mask | CPF_BG_TRANSPARENT), NULL);
+                           (i | i_mask | CPF_LABEL_PURPLE), NULL);
     gtk_widget_queue_draw(d->colors[i]);
     if((mask & mask_excluded) || (mask & mask_included))
       nb++;
@@ -306,8 +306,7 @@ static void _update_colors_filter(dt_lib_module_t *self)
     dt_collection_set_colors_filter(darktable.collection, mask);
   }
   dtgtk_button_set_paint(DTGTK_BUTTON(d->colors_op),
-                         (mask & CL_AND_MASK) ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
-                         CPF_STYLE_FLAT, NULL);
+                         (mask & CL_AND_MASK) ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0, NULL);
   gtk_widget_set_sensitive(d->colors_op, nb > 1);
 }
 
@@ -413,7 +412,8 @@ void gui_init(dt_lib_module_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
-    d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, (k | CPF_BG_TRANSPARENT), NULL);
+    d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, k, NULL);
+    dt_gui_add_class(d->colors[k], "dt_no_hover");
     g_object_set_data(G_OBJECT(d->colors[k]), "colors_index", GINT_TO_POINTER(k));
     gtk_box_pack_start(GTK_BOX(hbox), d->colors[k], FALSE, FALSE, 0);
     gtk_widget_set_tooltip_text(d->colors[k], _("filter by images color label"
@@ -422,7 +422,7 @@ void gui_init(dt_lib_module_t *self)
                                                 "\nthe gray button affects all color labels"));
     g_signal_connect(G_OBJECT(d->colors[k]), "button-press-event", G_CALLBACK(_colorlabel_clicked), self);
   }
-  d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
+  d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_and, 0, NULL);
   _update_colors_filter(self);
   gtk_box_pack_start(GTK_BOX(hbox), d->colors_op, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(d->colors_op, _("filter by images color label"
@@ -430,6 +430,7 @@ void gui_init(dt_lib_module_t *self)
                                               "\nor (∪): images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(d->colors_op), "clicked", G_CALLBACK(_colors_operation_clicked), self);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 2);
+  gtk_widget_set_name(hbox, "lib-label-colors");
   dt_gui_add_class(hbox, "quick_filter_box");
   dt_gui_add_class(hbox, "dt_font_resize_07");
 
@@ -479,7 +480,7 @@ void gui_init(dt_lib_module_t *self)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(d->reverse), dtgtk_cairo_paint_sortby,
                                  CPF_DIRECTION_DOWN, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), d->reverse, FALSE, FALSE, 0);
-  dt_gui_add_class(d->reverse, "dt_transparent_background");
+  dt_gui_add_class(d->reverse, "dt_ignore_fg_state");
 
   /* select the last value and connect callback */
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),

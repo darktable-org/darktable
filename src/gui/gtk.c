@@ -1361,7 +1361,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_control_change_cursor(GDK_LEFT_PTR);
 
   // create focus-peaking button
-  darktable.gui->focus_peaking_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_focus_peaking, CPF_STYLE_FLAT, NULL);
+  darktable.gui->focus_peaking_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_focus_peaking, 0, NULL);
   gtk_widget_set_tooltip_text(darktable.gui->focus_peaking_button, _("toggle focus-peaking mode"));
   g_signal_connect(G_OBJECT(darktable.gui->focus_peaking_button), "clicked", G_CALLBACK(_focuspeaking_switch_button_callback), NULL);
   _update_focus_peaking_button();
@@ -3321,9 +3321,8 @@ static void _coeffs_button_changed(GtkDarktableToggleButton *widget, gpointer us
 
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cs->toggle));
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), active);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(cs->toggle),
-                               dtgtk_cairo_paint_solid_arrow,
-                               CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(cs->toggle), dtgtk_cairo_paint_solid_arrow,
+                               (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
   dt_conf_set_bool(cs->confname, active);
 }
 
@@ -3341,7 +3340,7 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs)
 {
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cs->toggle));
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(cs->toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
+                               (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(cs->expander), active);
 
   if(active)
@@ -3372,11 +3371,10 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   dt_gui_add_class(destdisp_head, "section-expander");
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
 
-  cs->toggle = dtgtk_togglebutton_new
-    (dtgtk_cairo_paint_solid_arrow,
-     CPF_STYLE_BOX | (expanded?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+  cs->toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow,
+                                      (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cs->toggle), expanded);
-  dt_gui_add_class(cs->toggle, "dt_transparent_background");
+  dt_gui_add_class(cs->toggle, "dt_ignore_fg_state");
 
   cs->container = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   gtk_widget_set_name(GTK_WIDGET(cs->container), "collapsible");

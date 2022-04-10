@@ -80,8 +80,9 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button;
   for(int k = 0; k < 6; k++)
   {
-    button = dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_BG_TRANSPARENT), &darktable.bauhaus->colorlabels);
+    button = dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_LABEL_PURPLE), NULL);
     d->buttons[k] = button;
+    dt_gui_add_class(d->buttons[k], "dt_no_hover");
     gtk_widget_set_tooltip_text(button, _("toggle color label of selected images"));
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback),

@@ -195,14 +195,14 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
 
   /* create toggle button */
   GtkWidget *widget = gtk_toggle_button_new_with_label(label);
+  dt_gui_add_class(widget, "dt_transparent_background");
   GtkWidget *lab = gtk_bin_get_child(GTK_BIN(widget));
   gtk_widget_set_halign(lab, GTK_ALIGN_START);
   gtk_label_set_xalign(GTK_LABEL(lab), 0);
   gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_END);
   if(always_on)
   {
-    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-    dt_gui_add_class(widget, "dt_transparent_background");
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, 0, NULL);
     gtk_widget_set_name(onoff, "history-switch-always-enabled");
     gtk_widget_set_name(widget, "history-button-always-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
@@ -210,8 +210,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   }
   else if(default_enabled)
   {
-    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
-    dt_gui_add_class(widget, "dt_transparent_background");
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, 0, NULL);
     gtk_widget_set_name(onoff, "history-switch-default-enabled");
     gtk_widget_set_name(widget, "history-button-default-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
@@ -221,16 +220,15 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   {
     if(deprecated)
     {
-      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated, 0, NULL);
       gtk_widget_set_name(onoff, "history-switch-deprecated");
       gtk_widget_set_tooltip_text(onoff, _("deprecated module"));
     }
     else
     {
-      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, 0, NULL);
       gtk_widget_set_name(onoff, enabled ? "history-switch-enabled" : "history-switch");
     }
-    dt_gui_add_class(widget, enabled ? "dt_transparent_background" : "dt_transparent_background");
     gtk_widget_set_name(widget, enabled ? "history-button-enabled" : "history-button");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
   }
