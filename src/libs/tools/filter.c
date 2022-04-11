@@ -382,7 +382,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
   GtkWidget *overlay = gtk_overlay_new();
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->comparator, self, NULL, NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->comparator, self, NULL, N_("comparator"),
                                _("filter by images rating"),
                                dt_collection_get_rating_comparator(darktable.collection),
                                _lib_filter_comparator_changed, self,
@@ -392,12 +392,13 @@ void gui_init(dt_lib_module_t *self)
                                "≥", // DT_COLLECTION_RATING_COMP_GEQ,
                                ">", // DT_COLLECTION_RATING_COMP_GT,
                                "≠");// DT_COLLECTION_RATING_COMP_NE,
+  dt_bauhaus_widget_set_label(d->comparator, NULL, NULL);
   gtk_widget_set_halign(d->comparator, GTK_ALIGN_START);
   gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->comparator);
   gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), d->comparator, TRUE);
 
   /* create the filter combobox */
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->stars, self, NULL, NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->stars, self, NULL, N_("ratings"),
                                _("filter by images rating"),
                                dt_collection_get_rating(darktable.collection),
                                _lib_filter_combobox_changed, self,
@@ -410,6 +411,7 @@ void gui_init(dt_lib_module_t *self)
                                "★ ★ ★ ★ ★",
                                N_("rejected only"),
                                N_("all except rejected"));
+  dt_bauhaus_widget_set_label(d->stars, NULL, NULL);
   gtk_container_add(GTK_CONTAINER(overlay), d->stars);
   gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
   dt_gui_add_class(hbox, "quick_filter_box");
@@ -466,13 +468,10 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_class(hbox, "quick_filter_box");
 
   /* sort combobox */
-  label = gtk_label_new(_("sort by"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
   const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
-  d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, NULL,
+  d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
                                          _("determine the sort order of shown images"),
                                          _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
                                          _sort_names);
