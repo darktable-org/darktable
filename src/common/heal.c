@@ -317,7 +317,7 @@ static void collect_runs(const int start, const float *const restrict mask, cons
 // Solve the laplace equation for pixels and store the result in-place.
 static void _heal_laplace_loop(float *const restrict red_pixels, float *const restrict black_pixels,
                                const size_t width, const size_t height,
-                               const float *const restrict mask)
+                               const float *const restrict mask, const int max_iter)
 {
   // we start by converting the opacity mask into runs of nonzero positions, handling the 'red' and 'black'
   // checkerboarded pixels separately
@@ -358,7 +358,6 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
    */
   const float w = ((2.0f - 1.0f / (0.1575f * sqrtf(nmask) + 0.8f)) * .25f);
 
-  const int max_iter = 1000;
   const float epsilon = (0.1 / 255);
   const float err_exit = epsilon * epsilon * w * w;
 
@@ -384,7 +383,7 @@ cleanup:
  * http://www.tgeorgiev.net/Photoshop_Healing.pdf
  */
 void dt_heal(const float *const src_buffer, float *dest_buffer, const float *const mask_buffer, const int width,
-             const int height, const int ch)
+             const int height, const int ch, const int max_iter)
 {
   if(ch != 4)
   {
@@ -403,7 +402,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
   /* subtract pattern from image and store the result split by 'red' and 'black' positions  */
   _heal_sub(dest_buffer, src_buffer, red_buffer, black_buffer, width, height);
 
-  _heal_laplace_loop(red_buffer, black_buffer, width, height, mask_buffer);
+  _heal_laplace_loop(red_buffer, black_buffer, width, height, mask_buffer, max_iter);
 
   /* add solution to original image and store in dest */
   _heal_add(red_buffer, black_buffer, src_buffer, dest_buffer, width, height);
@@ -452,7 +451,7 @@ void dt_heal_free_cl(heal_params_cl_t *p)
 }
 
 cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const float *const mask_buffer,
-                  const int width, const int height)
+                  const int width, const int height, const int max_iter)
 {
   cl_int err = CL_SUCCESS;
 
@@ -492,7 +491,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   }
 
   // I couldn't make it run fast on opencl (the reduction takes forever), so just call the cpu version
-  dt_heal(src_buffer, dest_buffer, mask_buffer, width, height, ch);
+  dt_heal(src_buffer, dest_buffer, mask_buffer, width, height, ch, max_iter);
 
   err = dt_opencl_write_buffer_to_device(p->devid, dest_buffer, dev_dest, 0, sizeof(float) * width * height * ch,
                                          TRUE);
@@ -514,4 +513,3 @@ cleanup:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
