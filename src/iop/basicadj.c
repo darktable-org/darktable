@@ -140,7 +140,7 @@ const char *name()
   return _("basic adjustments");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("apply usual image adjustments"),
                                       _("creative"),

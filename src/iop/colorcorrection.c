@@ -71,7 +71,7 @@ const char *name()
   return _("color correction");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct white balance selectively for blacks and whites"),
                                       _("corrective or creative"),

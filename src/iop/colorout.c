@@ -85,7 +85,7 @@ const char *name()
 }
 
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("convert pipeline reference RGB to any display RGB\n"
                                         "using color profiles to remap RGB values"),

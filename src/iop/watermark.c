@@ -291,7 +291,7 @@ const char *name()
   return _("watermark");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("overlay an SVG watermark like a signature on the picture"),
                                       _("creative"),
