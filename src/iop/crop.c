@@ -1181,7 +1181,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->cw, -100.0);
   dt_bauhaus_slider_set_offset(g->cw, 100.0);
   dt_bauhaus_slider_set_format(g->cw, "%");
-  gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap wit(h the left margin"));
+  gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
 
   g->cy = dt_bauhaus_slider_from_params(self, "cy");
   dt_bauhaus_slider_set_digits(g->cy, 4);
@@ -1646,4 +1646,3 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
