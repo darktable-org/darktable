@@ -31,6 +31,7 @@
 #include "control/jobs.h"
 #include "dtgtk/button.h"
 #include "dtgtk/range.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/preferences_dialogs.h"
 #include "libs/collect.h"
@@ -940,10 +941,9 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
   rule->manual_widget_set--;
 }
 
-static gboolean _event_rule_append(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _event_rule_append(GtkWidget *widget, gpointer user_data)
 {
-  _rule_show_popup(widget, NULL, self);
-  return TRUE;
+  _rule_show_popup(widget, NULL, (dt_lib_module_t *)user_data);
 }
 
 static void _topbar_update(dt_lib_module_t *self)
@@ -1417,8 +1417,9 @@ static void _event_history_apply(GtkWidget *widget, dt_lib_module_t *self)
   }
 }
 
-static gboolean _event_history_show(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _event_history_show(GtkWidget *widget, gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
@@ -1448,7 +1449,6 @@ static gboolean _event_history_show(GtkWidget *widget, GdkEventButton *event, dt
   }
 
   dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
-  return TRUE;
 }
 
 // save a sort rule inside the conf
@@ -1740,8 +1740,9 @@ static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)
   }
 }
 
-static gboolean _sort_show_add_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _sort_show_add_popup(GtkWidget *widget, gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the possible sort
   GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_name(GTK_WIDGET(spop), "collect-popup");
@@ -1770,7 +1771,6 @@ static gboolean _sort_show_add_popup(GtkWidget *widget, GdkEventButton *event, d
   dt_gui_menu_popup(GTK_MENU(spop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
 #undef ADD_SORT_ENTRY
 
-  return TRUE;
 }
 
 static void _sort_history_pretty_print(const char *buf, char *out, size_t outsize)
@@ -1827,8 +1827,9 @@ static void _dt_images_order_change(gpointer instance, gpointer order, gpointer 
   }
 }
 
-static gboolean _sort_history_show(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _sort_history_show(GtkWidget *widget, gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
@@ -1857,7 +1858,6 @@ static gboolean _sort_history_show(GtkWidget *widget, GdkEventButton *event, dt_
   }
 
   dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
-  return TRUE;
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1886,11 +1886,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(bhbox, "collect-actions-widget");
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  GtkWidget *btn = dt_ui_button_new(_("new rule"), _("append new rule to collect images"), NULL);
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_rule_append), self);
+  GtkWidget *btn = dt_action_button_new(self, _("new rule"), G_CALLBACK(_event_rule_append), self,
+                                        _("append new rule to collect images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_ui_button_new(_("history"), _("revert to a previous set of rules"), NULL);
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_event_history_show), self);
+  btn = dt_action_button_new(self, _("history"), G_CALLBACK(_event_history_show), self,
+                             _("revert to a previous set of rules"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
 
@@ -1907,11 +1907,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(bhbox, "collect-actions-widget");
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  btn = dt_ui_button_new(_("new sort"), _("append new sort to order images"), NULL);
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_sort_show_add_popup), self);
+  btn = dt_action_button_new(self, _("new sort"), G_CALLBACK(_sort_show_add_popup), self,
+                             _("append new sort to order images"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  btn = dt_ui_button_new(_("history"), _("revert to a previous set of sort orders"), NULL);
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_sort_history_show), self);
+  btn = dt_action_button_new(self, _("history"), G_CALLBACK(_sort_history_show), self,
+                             _("revert to a previous set of sort orders"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
 
