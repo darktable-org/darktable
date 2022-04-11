@@ -206,7 +206,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
           dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
       }
 
-      dt_action_t *action = dt_action_locate(&self->so->actions, (gchar **)(const gchar *[]){ *f->header.description ? f->header.description : f->header.field_name, NULL}, FALSE);
+      dt_action_t *action = dt_action_section(&self->so->actions, *f->header.description ? f->header.description : f->header.field_name);
       if(action && f->Enum.values)
         g_hash_table_insert(darktable.control->combo_introspection, action, f->Enum.values);
     }
@@ -310,14 +310,9 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
 
   g_signal_connect(G_OBJECT(button), "clicked", callback, (gpointer)self);
 
+  dt_action_t *ac = dt_action_define_iop(self, NULL, label, button, &dt_action_def_button);
   if(darktable.control->accel_initialising)
-  {
-    dt_accel_register_iop(self->so, local, label, accel_key, mods);
-  }
-  else
-  {
-    dt_accel_connect_button_iop(self, label, button);
-  }
+    dt_shortcut_register(ac, 0, 0, accel_key, mods);
 
   if(GTK_IS_BOX(box)) gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
 

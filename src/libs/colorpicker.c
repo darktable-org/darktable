@@ -92,19 +92,6 @@ int position()
   return 800;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "pick color"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "add sample"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)self->data;
-  dt_accel_connect_button_lib(self, "pick color", d->picker_button);
-  dt_accel_connect_button_lib(self, "add sample", d->add_sample_button);
-}
-
 // GUI callbacks
 
 static gboolean _sample_draw_callback(GtkWidget *widget, cairo_t *cr, dt_colorpicker_sample_t *sample)
@@ -557,7 +544,6 @@ void gui_init(dt_lib_module_t *self)
   // Setting up the GUI
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_class(self->widget, "picker-module");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   // The color patch
   GtkWidget *color_patch_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -600,6 +586,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(data->picker_button, _("turn on color picker\nctrl+click or right-click to select an area"));
   gtk_widget_set_name(GTK_WIDGET(data->picker_button), "color-picker-button");
   g_signal_connect(G_OBJECT(data->picker_button), "toggled", G_CALLBACK(_picker_button_toggled), data);
+  dt_action_define(DT_ACTION(self), NULL, N_("pick color"), data->picker_button, &dt_action_def_button);
 
   gtk_box_pack_start(GTK_BOX(self->widget), picker_row, TRUE, TRUE, 0);
 
@@ -638,6 +625,7 @@ void gui_init(dt_lib_module_t *self)
   ;
   gtk_widget_set_sensitive(data->add_sample_button, FALSE);
   g_signal_connect(G_OBJECT(data->add_sample_button), "clicked", G_CALLBACK(_add_sample), self);
+  dt_action_define(DT_ACTION(self), NULL, N_("add sample"), data->add_sample_button, &dt_action_def_button);
   gtk_box_pack_end(GTK_BOX(sample_row), data->add_sample_button, FALSE, FALSE, 0);
 
   // Adding the live samples section

@@ -20,6 +20,7 @@
 #include "common/map_locations.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "gui/accelerators.h"
 #include "libs/lib.h"
 
 // map position module uses the tag dictionary with dt_geo_tag_root as a prefix.
@@ -987,10 +988,9 @@ void gui_init(dt_lib_module_t *self)
                               _("select the shape of the location\'s limits on the map, circle or rectangle"
                                 "\nor even polygon if available (select first a polygon place in 'find location' module)"));
 
-  d->new_button = dt_ui_button_new(_("new location"),
-                                   _("add a new location on the center of the visible map"), NULL);
+  d->new_button = dt_action_button_new(self, N_("new location"), _new_button_clicked, self,
+                                       _("add a new location on the center of the visible map"), 0, 0);
   gtk_box_pack_start(hbox, d->new_button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->new_button), "clicked", G_CALLBACK(_new_button_clicked), self);
 
   dt_conf_set_bool("plugins/map/showalllocations", FALSE);
   d->show_all_button = gtk_check_button_new_with_label(_("show all"));

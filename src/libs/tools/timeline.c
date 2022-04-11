@@ -1175,10 +1175,9 @@ static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButt
   return TRUE;
 }
 
-static gboolean _selection_start(GtkAccelGroup *accel_group, GObject *aceeleratable, guint keyval,
-                                 GdkModifierType modifier, gpointer data)
+static void _selection_start(dt_action_t *action)
 {
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)data;
+  dt_lib_timeline_t *strip = dt_action_lib(action)->data;
 
   strip->start_x = strip->current_x;
   dt_datetime_t tt = _time_get_from_pos(strip->current_x, strip);
@@ -1192,12 +1191,10 @@ static gboolean _selection_start(GtkAccelGroup *accel_group, GObject *aceelerata
   strip->has_selection = TRUE;
 
   gtk_widget_queue_draw(strip->timeline);
-  return TRUE;
 }
-static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratable, guint keyval,
-                                GdkModifierType modifier, gpointer data)
+static void _selection_stop(dt_action_t *action)
 {
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)data;
+  dt_lib_timeline_t *strip = dt_action_lib(action)->data;
   dt_datetime_t tt = _time_get_from_pos(strip->current_x, strip);
 
   strip->stop_x = strip->current_x;
@@ -1224,7 +1221,6 @@ static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratab
   strip->selecting = FALSE;
   _selection_collect(strip, DT_LIB_TIMELINE_MODE_AND);
   gtk_widget_queue_draw(strip->timeline);
-  return TRUE;
 }
 
 static gboolean _block_autoscroll(gpointer user_data)
@@ -1383,20 +1379,6 @@ static gboolean _lib_timeline_mouse_leave_callback(GtkWidget *w, GdkEventCrossin
   return TRUE;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "start selection"), GDK_KEY_bracketleft, 0);
-  dt_accel_register_lib(self, NC_("accel", "stop selection"), GDK_KEY_bracketright, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  GClosure *closure = g_cclosure_new(G_CALLBACK(_selection_start), (gpointer)self->data, NULL);
-  dt_accel_connect_lib(self, "start selection", closure);
-  closure = g_cclosure_new(G_CALLBACK(_selection_stop), (gpointer)self->data, NULL);
-  dt_accel_connect_lib(self, "stop selection", closure);
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -1418,7 +1400,6 @@ void gui_init(dt_lib_module_t *self)
   d->time_pos = d->time_mini;
   /* creating drawing area */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   /* creating timeline box*/
   d->timeline = gtk_event_box_new();
@@ -1448,6 +1429,9 @@ void gui_init(dt_lib_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_lib_timeline_collection_changed), (gpointer)self);
+
+  dt_action_register(DT_ACTION(self), N_("start selection"), _selection_start, GDK_KEY_bracketleft, 0);
+  dt_action_register(DT_ACTION(self), N_("stop selection"), _selection_stop, GDK_KEY_bracketright, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

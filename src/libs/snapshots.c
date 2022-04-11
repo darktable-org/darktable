@@ -75,9 +75,6 @@ typedef struct dt_lib_snapshots_t
 /* callback for take snapshot */
 static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer user_data);
-static gboolean _lib_snapshots_toggle_last(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data);
-
 
 const char *name(dt_lib_module_t *self)
 {
@@ -98,23 +95,6 @@ uint32_t container(dt_lib_module_t *self)
 int position()
 {
   return 1000;
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "take snapshot"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "toggle last snapshot"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "take snapshot", d->take_button);
-
-  GClosure *closure;
-  closure = g_cclosure_new(G_CALLBACK(_lib_snapshots_toggle_last), (gpointer)self, NULL);
-  dt_accel_connect_lib(self, "toggle last snapshot", closure);
 }
 
 // draw snapshot sign
@@ -342,6 +322,14 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int 
   return 0;
 }
 
+static void _lib_snapshots_toggle_last(dt_action_t *action)
+{
+  dt_lib_snapshots_t *d = dt_action_lib(action)->data;
+
+  if(d->num_snapshots)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button), !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button)));
+}
+
 void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
@@ -375,14 +363,12 @@ void gui_init(dt_lib_module_t *self)
 
   /* initialize ui containers */
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("snapshots"));
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* create take snapshot button */
-  d->take_button = dt_ui_button_new(_("take snapshot"), _("take snapshot to compare with another image "
-                                      "or the same image at another stage of development"), dt_get_help_url("snapshots"));
-  g_signal_connect(G_OBJECT(d->take_button), "clicked",
-                   G_CALLBACK(_lib_snapshots_add_button_clicked_callback), self);
+  d->take_button = dt_action_button_new(self, N_("take snapshot"), _lib_snapshots_add_button_clicked_callback, self,
+                                        _("take snapshot to compare with another image "
+                                          "or the same image at another stage of development"), 0, 0);
 
   /*
    * initialize snapshots
@@ -421,6 +407,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget),
                      dt_ui_scroll_wrap(d->snapshots_box, 1, "plugins/darkroom/snapshots/windowheight"), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->take_button, TRUE, TRUE, 0);
+
+  dt_action_register(DT_ACTION(self), N_("toggle last snapshot"), _lib_snapshots_toggle_last, 0, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -524,19 +512,6 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
 
   /* redraw center view */
   dt_control_queue_redraw_center();
-}
-
-static gboolean _lib_snapshots_toggle_last(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-
-  if(d->num_snapshots)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button), !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->snapshot[0].button)));
-
-  return TRUE;
-
 }
 
 #ifdef USE_LUA

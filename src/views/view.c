@@ -97,7 +97,6 @@ void dt_view_manager_gui_init(dt_view_manager_t *vm)
   {
     dt_view_t *view = (dt_view_t *)iter->data;
     if(view->gui_init) view->gui_init(view);
-    if(view->connect_key_accels) view->connect_key_accels(view);
   }
 }
 
@@ -178,8 +177,6 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
                                      .owner = &darktable.control->actions_views };
     dt_action_insert_sorted(&darktable.control->actions_views, &module->actions);
   }
-
-  if(darktable.gui && module->init_key_accels) module->init_key_accels(module);
 
   return 0;
 }
@@ -343,8 +340,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       /* try get the module expander  */
       GtkWidget *w = dt_lib_gui_get_expander(plugin);
 
-      if(plugin->connect_key_accels) plugin->connect_key_accels(plugin);
-
       /* if we didn't get an expander let's add the widget */
       if(!w) w = plugin->widget;
 
@@ -399,7 +394,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   /* enter view. crucially, do this before initing the plugins below,
       as e.g. modulegroups requires the dr stuff to be inited. */
   if(new_view->enter) new_view->enter(new_view);
-  if(new_view->connect_key_accels) new_view->connect_key_accels(new_view);
 
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);

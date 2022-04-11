@@ -1381,11 +1381,8 @@ static void _init_presets(dt_iop_module_so_t *module_so)
   sqlite3_finalize(stmt);
 }
 
-static void _init_key_accels(dt_iop_module_so_t *module)
+static void _init_presets_actions(dt_iop_module_so_t *module)
 {
-  // Calling the accelerator initialization callback, if present
-  if(module->init_key_accels) (module->init_key_accels)(module);
-
   /** load shortcuts for presets **/
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1413,7 +1410,7 @@ static void _init_module_so(void *m)
     dt_action_insert_sorted(&darktable.control->actions_iops, &module->actions);
 
     // Calling the accelerator initialization callback, if present
-    _init_key_accels(module);
+    _init_presets_actions(module);
 
     // create a gui and have the widgets register their accelerators
     dt_iop_module_t *module_instance = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
@@ -2498,9 +2495,6 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_widget_set_hexpand(module->widget, FALSE);
   gtk_widget_set_vexpand(module->widget, FALSE);
 
-  /* connect accelerators */
-  if(module->connect_key_accels) module->connect_key_accels(module);
-
   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
   dt_iop_show_hide_header_buttons(module, NULL, FALSE, FALSE);
 }
@@ -2575,12 +2569,8 @@ int dt_iop_get_module_flags(const char *op)
   return 0;
 }
 
-static gboolean _show_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, gpointer data)
-
+static void _show_module_callback(dt_iop_module_t *module)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-
   // Showing the module, if it isn't already visible
   if(module->so->state == IOP_STATE_HIDDEN)
   {
@@ -2605,32 +2595,20 @@ static gboolean _show_module_callback(GtkAccelGroup *accel_group, GObject *accel
   }
 
   dt_iop_connect_accels_multi(module->so);
-
-  return TRUE;
 }
 
-static gboolean _request_module_focus_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                               GdkModifierType modifier, gpointer data)
-
+static void _request_module_focus_callback(dt_iop_module_t * module)
 {
-  dt_iop_module_t * module = (dt_iop_module_t *)data;
   dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
-  return TRUE;
 }
 
-static gboolean _enable_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                        GdkModifierType modifier, gpointer data)
-
+static void _enable_module_callback(dt_iop_module_t *module)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-
   //cannot toggle module if there's no enable button
-  if(module->hide_enable_button) return TRUE;
+  if(module->hide_enable_button) return;
 
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
-
-  return TRUE;
 }
 
 // to be called before issuing any query based on memory.darktable_iop_names
@@ -3174,13 +3152,13 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
     switch(element)
     {
     case DT_ACTION_ELEMENT_FOCUS:
-      _request_module_focus_callback(NULL, NULL, 0, 0, module);
+      _request_module_focus_callback(module);
       break;
     case DT_ACTION_ELEMENT_ENABLE:
-      _enable_module_callback(NULL, NULL, 0, 0, module);
+      _enable_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_SHOW:
-      _show_module_callback(NULL, NULL, 0, 0, module);
+      _show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_INSTANCE:
       if     (effect == DT_ACTION_EFFECT_NEW       && module->multi_show_new  )
