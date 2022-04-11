@@ -136,10 +136,12 @@ const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("simulate directional diffusion of light with heat transfer model\n"
-                                  "to apply an iterative edge-oriented blur, \n"
-                                  "inpaint damaged parts of the image,\n"
+                                  "to apply an iterative edge-oriented blur,\n"
+                                  "inpaint damaged parts of the image,"
                                   "or to remove blur with blind deconvolution."),
-                                _("corrective and creative"), _("linear, RGB, scene-referred"), _("linear, RGB"),
+                                _("corrective and creative"),
+                                _("linear, RGB, scene-referred"),
+                                _("linear, RGB"),
                                 _("linear, RGB, scene-referred"));
 }
 
@@ -1577,4 +1579,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
