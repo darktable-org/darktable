@@ -79,12 +79,6 @@ static GtkWidget *_lib_filter_get_sort_box(dt_lib_module_t *self)
   return d->sort_box;
 }
 
-static void _reset_filters(dt_action_t *action)
-{
-  _lib_filter_reset(dt_action_lib(action), FALSE);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */

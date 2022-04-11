@@ -3033,8 +3033,9 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
   }
 }
 
-static gboolean _history_show(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _history_show(GtkWidget *widget, gpointer user_data)
 {
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
   gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
@@ -3064,30 +3065,15 @@ static gboolean _history_show(GtkWidget *widget, GdkEventButton *event, dt_lib_m
   }
 
   dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
-  return TRUE;
 }
 
-static gboolean _history_previous(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                  GdkModifierType modifier, gpointer data)
+static void _history_previous(dt_action_t *action)
 {
   const char *line = dt_conf_get_string_const("plugins/lighttable/collect/history1");
   if(line && g_strcmp0(line, ""))
   {
     dt_collection_deserialize(line, FALSE);
   }
-  return TRUE;
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "jump back to previous collection"), GDK_KEY_k, GDK_CONTROL_MASK);
-}
-
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  GClosure *closure = g_cclosure_new(G_CALLBACK(_history_previous), (gpointer)self, NULL);
-  dt_accel_connect_lib(self, "jump back to previous collection", closure);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -3190,8 +3176,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
   // dummy widget just to ensure alignment of history button  with those in filtering lib
   gtk_box_pack_start(GTK_BOX(bhbox), gtk_drawing_area_new(), TRUE, TRUE, 0);
-  GtkWidget *btn = dt_ui_button_new(_("history"), _("revert to a previous set of rules"), NULL);
-  g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_history_show), self);
+  GtkWidget *btn = dt_action_button_new(self, _("history"), G_CALLBACK(_history_show), self,
+                                        _("revert to a previous set of rules"), 0, 0);
   gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
   gtk_widget_show_all(bhbox);
 
@@ -3244,6 +3230,9 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_CHANGED, G_CALLBACK(metadata_changed), self);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
+
+  dt_action_register(DT_ACTION(self), N_("jump back to previous collection"), _history_previous, GDK_KEY_k,
+                     GDK_CONTROL_MASK);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
