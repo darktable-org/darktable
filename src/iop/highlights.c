@@ -2035,7 +2035,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     p->mode = DT_IOP_HIGHLIGHTS_CLIP;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
-    dt_control_log(_("highlights: guided laplacian mode not available for XTrans sensors. Falling back to clip."));
+    dt_control_log(_("highlights: guided laplacian mode not available for X-Trans sensors. Falling back to clip."));
   }
 }
 

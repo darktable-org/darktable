@@ -5773,7 +5773,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<9;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
-  gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("xtrans sensor demosaicing method, Markesteijn 3-pass and frequency domain chroma are slow.\ndual demosaicers double processing time."));
+  gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain chroma are slow.\ndual demosaicers double processing time."));
 
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
   dt_bauhaus_slider_set_digits(g->median_thrs, 3);
