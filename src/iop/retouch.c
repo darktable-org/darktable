@@ -2041,9 +2041,10 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   const float require = 2.0f;
   const float require_cl = 1.0f  // in_retouch
-                         + 4.0f; // dwt_wavelet_decompose_cl requires 4 buffers and is the worst case
+     + (p->num_scales > 0) ? 4.0f : 2.0f; // dwt_wavelet_decompose_cl requires 4 buffers, otherwise 2.0f is enough
   // FIXME the above are worst case values, we might iterate through the dt_iop_retouch_form_data_t to get
   // the largest bounding box
 
