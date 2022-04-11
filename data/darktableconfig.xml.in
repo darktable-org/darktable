@@ -232,13 +232,6 @@
     <longdescription>if enabled, cached thumbnails will be color managed so that lighttable and filmstrip can show correct colors. otherwise the results may look wrong once the display profile gets changed.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_async_pixelpipe</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>run OpenCL pixelpipe asynchronously</shortdescription>
-    <longdescription>if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module. export pixelpipe will always be run synchronously.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>opencl_device_priority</name>
     <type>string</type>
     <default>*/!0,*/*/*/!0,*</default>
