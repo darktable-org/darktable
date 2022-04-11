@@ -3022,6 +3022,9 @@ void gui_init(dt_lib_module_t *self)
     d->rule[i].typing = FALSE;
 
     box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+    GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+    gtk_box_set_homogeneous(hbox, TRUE);
+    gtk_box_pack_start(box, GTK_WIDGET(hbox), TRUE, TRUE, 0);
     d->rule[i].hbox = GTK_WIDGET(box);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
     gtk_widget_set_name(GTK_WIDGET(box), "lib-dtbutton");
@@ -3034,7 +3037,7 @@ void gui_init(dt_lib_module_t *self)
     if(_combo_get_active_collection(d->rule[i].combo) == DT_COLLECTION_PROP_MODULE) has_iop_name_rule = TRUE;
 
     g_signal_connect(G_OBJECT(d->rule[i].combo), "value-changed", G_CALLBACK(combo_changed), d->rule + i);
-    gtk_box_pack_start(box, d->rule[i].combo, TRUE, TRUE, 0);
+    gtk_box_pack_start(hbox, d->rule[i].combo, TRUE, TRUE, 0);
 
     w = gtk_entry_new();
     d->rule[i].text = w;
@@ -3046,7 +3049,7 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
     gtk_widget_set_name(GTK_WIDGET(w), "lib-collect-entry");
-    gtk_box_pack_start(box, w, TRUE, TRUE, 0);
+    gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
 
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
