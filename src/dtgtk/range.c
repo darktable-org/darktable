@@ -157,7 +157,11 @@ static gchar *_default_print_func(const double value, const gboolean detailled)
 static gboolean _default_decode_func(const gchar *text, double *value)
 {
   // TODO : verify the value is numeric
+  gchar *locale = strdup(setlocale(LC_ALL, NULL));
+  setlocale(LC_NUMERIC, "C");
   *value = atof(text);
+  setlocale(LC_NUMERIC, locale);
+  g_free(locale);
   return TRUE;
 }
 static gchar *_default_print_date_func(const double value, const gboolean detailled)
@@ -1404,8 +1408,14 @@ static void _dt_pref_changed(gpointer instance, gpointer user_data)
   GtkBorder margin, padding;
   gtk_style_context_get_margin(context, state, &margin);
   gtk_style_context_get_padding(context, state, &padding);
-  if(mw >= 0) mw += margin.left + margin.right + padding.right + padding.left;
-  if(mh >= 0) mh += margin.top + margin.bottom + padding.top + padding.bottom;
+  if(mw > 0)
+    mw += margin.left + margin.right + padding.right + padding.left;
+  else
+    mw = -1;
+  if(mh > 0)
+    mh += margin.top + margin.bottom + padding.top + padding.bottom;
+  else
+    mh = -1;
   gtk_widget_set_size_request(range->band, mw, mh);
 
   dtgtk_range_select_redraw(range);
@@ -1619,7 +1629,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   }
 
   gtk_container_add(GTK_CONTAINER(range), vbox);
-  gtk_widget_set_name(GTK_WIDGET(range), "range_select");
+  gtk_widget_set_name(vbox, "range_select");
 
   if(type == DT_RANGE_TYPE_DATETIME) _popup_date_init(range);
 
@@ -1649,6 +1659,39 @@ GType dtgtk_range_select_get_type()
         = g_type_register_static(GTK_TYPE_BIN, "GtkDarktableRangeSelect", &dtgtk_range_select_info, 0);
   }
   return dtgtk_range_select_type;
+}
+
+gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
+{
+  // get nice text for bounds
+  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all"));
+
+  gchar *txt = NULL;
+  if(range->bounds & DT_RANGE_BOUND_MIN)
+    txt = g_strdup(_("min"));
+  else if(range->bounds & DT_RANGE_BOUND_MIN_RELATIVE)
+    txt = g_strdup_printf("-%04d:%02d:%02d %02d:%02d:%02d", range->select_relative_date_r.year,
+                          range->select_relative_date_r.month, range->select_relative_date_r.day,
+                          range->select_relative_date_r.hour, range->select_relative_date_r.minute,
+                          range->select_relative_date_r.second);
+  else
+    txt = range->print(range->select_min_r, TRUE);
+
+  txt = dt_util_dstrcat(txt, " -> ");
+
+  if(range->bounds & DT_RANGE_BOUND_MAX)
+    txt = dt_util_dstrcat(txt, _("max"));
+  else if(range->bounds & DT_RANGE_BOUND_MAX_RELATIVE)
+    txt = dt_util_dstrcat(txt, "+%04d:%02d:%02d %02d:%02d:%02d", range->select_relative_date_r.year,
+                          range->select_relative_date_r.month, range->select_relative_date_r.day,
+                          range->select_relative_date_r.hour, range->select_relative_date_r.minute,
+                          range->select_relative_date_r.second);
+  else if(range->bounds & DT_RANGE_BOUND_MAX_NOW)
+    txt = dt_util_dstrcat(txt, _("now"));
+  else
+    txt = dt_util_dstrcat(txt, "%s", range->print(range->select_max_r, TRUE));
+
+  return txt;
 }
 
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,

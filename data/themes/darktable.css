@@ -179,10 +179,10 @@
 @define-color timeline_text_bg_color alpha(black, .8);
 @define-color timeline_text_fg_color alpha(white, .9);
 
-@define-color range_graph_color @button_bg;
-@define-color range_bg_color shade(@timeline_bg_color, 1.0);
-@define-color range_cursor_color alpha(black, .8);
-@define-color range_sel_color alpha(@timeline_fg_color, 0.5);
+@define-color range_graph_color alpha(@timeline_fg_color, 0.6);
+@define-color range_bg_color alpha(@bg_color, 0.2);
+@define-color range_cursor_color alpha(@fg_color, .75);
+@define-color range_sel_color alpha(@timeline_fg_color, 0.22);
 @define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.8);
 
 /* Brushes */
@@ -429,10 +429,19 @@ entry selection
 }
 
 /* Filter bar bauhaus-combobox and search box defaults */
-#header-toolbar #bauhaus_combobox
+#header-toolbar #bauhaus_combobox,
+.quick_filter_box#range_select
 {
   background-color: alpha(@fg_color, 0.05);
-  border: none;
+  border: 0.005em solid alpha(@fg_color, 0.025);
+}
+
+.quick_filter_box,
+#filter_sort_box label,
+#header-rule-box label,
+#header-sort-box label
+{
+  margin-right: 0.56em;
 }
 
 .search
@@ -482,11 +491,6 @@ spinbutton>button
   opacity: 0.5;
 }
 
-.dt_font_resize_07
-{
-  font-size: 0.7em;
-}
-
 /*------------------------
   - Main header settings -
   ------------------------*/
@@ -510,13 +514,13 @@ spinbutton>button
 }
 
 /* Set toolbars buttons in lighttable and darkroom */
+.quick_filter_box#range_select,
+#filter_colors_box .dt_module_btn,
 #header-toolbar .dt_module_btn,
 #footer-toolbar .dt_module_btn
 {
-  padding: 0.07em;
-  min-height: 2.4em; /* align toolbox button height on comboboxe's one */
-  min-width: 2.4em;
-  font-size: .75em;
+  min-height: 1.8em; /* align toolbox button height on comboboxe's one */
+  min-width: 1.8em;
 }
 
 /* Rating stars on left footer toolbar on lighttable view */
@@ -533,17 +537,20 @@ spinbutton>button
 #footer-toolbar #button-canvas,
 #module-header #button-canvas,
 #modules-tabs #button-canvas,
-#lib-collect-entry + .dt_module_btn #button-canvas
+#lib-collect-entry + .dt_module_btn #button-canvas,
+#collect-header-box #button-canvas
 {
   margin: 12px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
 
-#lib-label-colors .dt_module_btn
+#lib-label-colors .dt_module_btn,
+#filter_colors_box .dt_module_btn
 {
   opacity: 0.6;
 }
 
-#lib-label-colors .dt_module_btn:hover
+#lib-label-colors .dt_module_btn:hover,
+#filter_colors_box .dt_module_btn:hover
 {
   opacity: 1;
 }
@@ -998,12 +1005,6 @@ combobox label
   margin: 0 0.35em 0 0;
 }
 
-/* Header and footer labels, especially for combobox */
-#header-toolbar label,
-#footer-toolbar label
-{
-  margin: 0 0.5em;
-}
 menu separator,
 popover separator
 {
@@ -1481,35 +1482,26 @@ filechooser row:hover .sidebar-icon
 }
 
 /*--------------------
-  - collect module -
+  - Collect module -
 --------------------*/
-#module_filtering #collect-rule-widget,
-#module_filtering #collect-actions-widget
+#module_filtering #collect-rule-widget
 {
   background-color: @collapsible_bg_color;
   margin: 0.3em 0 0.5em 0;
   padding: 0.07em 0.28em;
+  border-radius: 0.21em;
 }
 
-#module-filtering #collect-sort-widget
-{
-  margin: 0.2em 0;
-}
-#module-filtering #collect-treeview
-{
-  margin-bottom: 0.2em;
-}
-#module-filtering #collect-rule-special
-{
-  margin: 0 0.3em 0.4em 0.3em;
-  padding : 0.2em;
-}
-
-#module_filtering #dt-range-band,
 #range_select #dt-range-band
 {
-  min-height: 2em;                /* band height */
+  min-height: 2.2em;                /* band height */
+}
+
+#module_filtering #range_select #dt-range-band
+{
   background-color: @range_bg_color;
+  border: 0.07em solid alpha(@range_bg_color, 0.8);
+  border-radius: 0.21em;
 }
 
 #module_filtering #dt-range-current
@@ -1529,18 +1521,22 @@ filechooser row:hover .sidebar-icon
   margin-top: 0.8em;
 }
 
-#module-filtering #filter_colors_box,
-#module-filtering #filter_sort_box .dt_module_btn.toggle
-{
-  margin: 0;
-  font-size: 1.2em;
-}
-
 /* then related filters on quick filters box in header toolbar */
 .quick_filter_box #dt-range-band
 {
-  min-height: 1.8em;
-  min-width: 10em;
+  min-width: 9.5em;
+}
+
+#filter_colors_box #button-canvas,
+#collect-sort-widget #button-canvas
+{
+  margin: 1em 0.07em;
+}
+
+#filter_colors_box .dt_module_btn
+{
+  padding: 2px 0;
+  margin: 0;
 }
 
 /*--------------------------------

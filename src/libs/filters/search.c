@@ -76,11 +76,10 @@ static void _search_synchronize(_widgets_search_t *source)
 
 static void _search_set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)
 {
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
   if(dimmed)
-    gtk_style_context_add_class(context, "dt_dimmed");
+    dt_gui_add_class(widget, "dt_dimmed");
   else
-    gtk_style_context_remove_class(context, "dt_dimmed");
+    dt_gui_remove_class(widget, "dt_dimmed");
   gtk_widget_queue_draw(GTK_WIDGET(widget));
 }
 
@@ -186,13 +185,11 @@ static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                 "\nstarting or ending with a double quote disables the corresponding wildcard"
                                 /* xgettext:no-c-format */
                                 "\nis dimmed during the search execution"));
-  GtkStyleContext *context = gtk_widget_get_style_context(search->text);
-  gtk_style_context_add_class(context, "dt_transparent_background");
+  dt_gui_add_class(search->text, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(hbox), search->text, TRUE, TRUE, 0);
   if(top)
   {
-    context = gtk_widget_get_style_context(hbox);
-    gtk_style_context_add_class(context, "quick_filter_box");
+    dt_gui_add_class(hbox, "quick_filter_box");
   }
 
   if(top)

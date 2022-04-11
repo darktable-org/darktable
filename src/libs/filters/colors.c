@@ -222,11 +222,12 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
     rule->w_specific = colors;
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  if(!top) gtk_widget_set_name(hbox, "filter_colors_box");
+  gtk_widget_set_name(hbox, "filter_colors_box");
   gtk_widget_set_halign(hbox, GTK_ALIGN_CENTER);
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
     colors->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, k, NULL);
+    dt_gui_add_class(colors->colors[k], "dt_no_hover");
     g_object_set_data(G_OBJECT(colors->colors[k]), "colors_self", colors);
     gtk_box_pack_start(GTK_BOX(hbox), colors->colors[k], FALSE, FALSE, 0);
     gtk_widget_set_tooltip_text(colors->colors[k], _("filter by images color label"
@@ -247,9 +248,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   if(top)
   {
-    GtkStyleContext *context = gtk_widget_get_style_context(hbox);
-    gtk_style_context_add_class(context, "quick_filter_box");
-    gtk_style_context_add_class(context, "dt_font_resize_07");
+    dt_gui_add_class(hbox, "quick_filter_box");
   }
 
   if(top)

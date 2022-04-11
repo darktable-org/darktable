@@ -171,6 +171,9 @@ void dtgtk_range_select_reset_markers(GtkDarktableRangeSelect *range);
 
 // force the graph redraw
 void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range);
+
+// get a human readable text for bounds
+gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range);
 G_END_DECLS
 
 // clang-format off
