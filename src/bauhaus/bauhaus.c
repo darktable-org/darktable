@@ -644,7 +644,7 @@ void dt_bauhaus_load_theme()
   GtkStyleContext *ctx = gtk_style_context_new();
   GtkWidgetPath *path = gtk_widget_path_new();
   const int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
-  gtk_widget_path_iter_set_name(path, pos, "iop-plugin-ui");
+  gtk_widget_path_iter_add_class(path, pos, "plugin-ui");
   gtk_style_context_set_path(ctx, path);
   gtk_style_context_set_screen (ctx, gtk_widget_get_screen(root_window));
 

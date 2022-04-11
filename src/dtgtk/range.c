@@ -1544,11 +1544,6 @@ static gboolean _event_band_release(GtkWidget *w, GdkEventButton *e, gpointer us
 GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_entries, const dt_range_type_t type)
 {
   GtkDarktableRangeSelect *range = g_object_new(dtgtk_range_select_get_type(), NULL);
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range));
-  gtk_style_context_add_class(context, "dt_range_select");
-  gchar *cl = g_strdup_printf("dt_range_%s", property);
-  gtk_style_context_add_class(context, cl);
-  g_free(cl);
 
   // initialize values
   range->min_r = 0.0;
