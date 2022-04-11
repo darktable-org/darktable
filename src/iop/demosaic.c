@@ -221,7 +221,7 @@ const char *name()
   return _("demosaic");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("reconstruct full RGB pixels from a sensor color filter array reading"),
                                       _("mandatory"),

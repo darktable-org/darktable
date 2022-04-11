@@ -133,7 +133,7 @@ const char *name()
   return _("highlight reconstruction");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("avoid magenta highlights and try to recover highlights colors"),
                                       _("corrective"),

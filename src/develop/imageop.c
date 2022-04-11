@@ -123,9 +123,9 @@ static int default_operation_tags_filter(void)
   return 0;
 }
 
-static const char *default_description(struct dt_iop_module_t *self)
+static const char **default_description(struct dt_iop_module_t *self)
 {
-  return g_strdup("");
+  return NULL;
 }
 
 static const char *default_aliases(void)
@@ -2349,6 +2349,69 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
   }
 }
 
+gboolean _iop_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode,
+                               GtkTooltip *tooltip, gpointer user_data)
+{
+  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+
+  const char **des = module->description(module);
+
+  if(!des) return FALSE;
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_hexpand(grid, FALSE);
+
+  GtkWidget *label = gtk_label_new(des[0]?des[0]:"");
+  // if there is no more description, do not add a separator
+  if(des[1]) gtk_widget_set_name(label, "section_label");
+  gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+
+  const char *icon_purpose = "⟳";
+  const char *icon_input   = "⇥";
+  const char *icon_process = "⟴";
+  const char *icon_output  = "↦";
+
+  const char *icons[4] = {icon_purpose, icon_input, icon_process, icon_output};
+  const char *ilabs[4] = {_("purpose"), _("input"), _("process"), _("output")};
+
+  for(int k=1; k<5; k++)
+  {
+    if(des[k])
+    {
+      label = gtk_label_new(icons[k-1]);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, 0, k, 1, 1);
+
+      label = gtk_label_new(ilabs[k-1]);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, 1, k, 1, 1);
+
+      label = gtk_label_new(":");
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, 2, k, 1, 1);
+
+      label = gtk_label_new(des[k]);
+      gtk_widget_set_halign(label, GTK_ALIGN_START);
+      gtk_grid_attach(GTK_GRID(grid), label, 3, k, 1, 1);
+    }
+  }
+
+  gtk_box_pack_start(GTK_BOX(vbox), grid, FALSE, FALSE, 0);
+
+  gtk_widget_show_all(vbox);
+  gtk_tooltip_set_custom(tooltip, vbox);
+
+  //  Record the vbox into the widget to be able to retrieve it
+  //  for adding the shortcut (see accelerators.c).
+
+  g_object_set_data(G_OBJECT(widget), "iopdes", vbox);
+
+  return FALSE;
+}
+
 void dt_iop_gui_set_expander(dt_iop_module_t *module)
 {
   char tooltip[512];
@@ -2399,9 +2462,8 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(lab, module->deprecated_msg());
   else
   {
-    gchar *description = (char *)module->description(module);
-    gtk_widget_set_tooltip_text(lab, description);
-    g_free(description);
+    gtk_widget_set_name(lab, "iop_description");
+    g_signal_connect(lab, "query-tooltip", G_CALLBACK(_iop_tooltip_callback), module);
   }
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_LABEL]), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_SHOW));
@@ -3027,66 +3089,18 @@ char *dt_iop_warning_message(const char *message)
     return g_strdup(message);
 }
 
-char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
+const char **dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
                              const char *output)
 {
-#define TAB_SIZE 4.0
-#define P_TAB(n) (nb_tab + 1 - (int)ceilf((float)n / TAB_SIZE))
+  static const char *str_out[5] = {NULL, NULL, NULL, NULL, NULL};
 
-  const char *str_purpose = _("purpose");
-  const char *str_input   = _("input");
-  const char *str_process = _("process");
-  const char *str_output  = _("output");
+  str_out[0] = main_text;
+  str_out[1] = purpose;
+  str_out[2] = input;
+  str_out[3] = process;
+  str_out[4] = output;
 
-  const int len_purpose = g_utf8_strlen(str_purpose, -1);
-  const int len_input   = g_utf8_strlen(str_input, -1);
-  const int len_process = g_utf8_strlen(str_process, -1);
-  const int len_output  = g_utf8_strlen(str_output, -1);
-
-  const int max = MAX(len_purpose,
-                      MAX(len_input, MAX(len_process, len_output)));
-  const int nb_tab = ceilf((float)max / TAB_SIZE);
-
-#ifdef _WIN32
-  // TODO: a windows dev is needed to find 4 icons properly rendered
-  const char *icon_purpose = "•";
-  const char *icon_input   = "•";
-  const char *icon_process = "•";
-  const char *icon_output  = "•";
-#else
-  const char *icon_purpose = "⟳";
-  const char *icon_input   = "⇥";
-  const char *icon_process = "⟴";
-  const char *icon_output  = "↦";
-#endif
-
-  /* if the font can't display icons, default to nothing
-  * Unfortunately, getting the font from the font desc is another scavenger hunt
-  * into Gtk useless docs without examples. Good luck.
-  PangoFontDescription *desc = darktable.bauhaus->pango_font_desc;
-  if(!pango_font_has_char(desc->get_font(), g_utf8_to_ucs4(icon_purpose, 1)))
-    icon_purpose = icon_input = icon_process = icon_output = "";
-  */
-
-  // align on tabs
-  const char *tabs = "\t\t\t\t\t\t\t\t\t\t";
-
-  char *str_out = g_strdup_printf
-    ("%s.\n\n"
-     "%s\t%s%.*s:\t%s\n"
-     "%s\t%s%.*s:\t%s\n"
-     "%s\t%s%.*s:\t%s\n"
-     "%s\t%s%.*s:\t%s",
-     main_text,
-     icon_purpose, str_purpose, P_TAB(len_purpose), tabs, purpose,
-     icon_input,   str_input,   P_TAB(len_input),   tabs, input,
-     icon_process, str_process, P_TAB(len_process), tabs, process,
-     icon_output,  str_output,  P_TAB(len_output),  tabs, output);
-
-  return str_out;
-
-#undef P_TAB
-#undef TAB_SIZE
+  return (const char **)str_out;
 }
 
 gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_module_t *const module, const int ch,

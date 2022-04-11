@@ -75,10 +75,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RGB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
-  return g_strdup(_("internal module to setup technical specificities of raw sensor.\n\n"
-                    "you should not touch values here !"));
+  return dt_iop_set_description(self,
+                                _("internal module to setup technical specificities of raw sensor.\n\n"
+                                  "you should not touch values here !"),
+                                NULL, NULL, NULL, NULL);
 }
 
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)

@@ -153,7 +153,7 @@ const char *aliases()
   return _("lift gamma gain|cdl|color grading|contrast|saturation|hue");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("affect color, brightness and contrast"),
                                       _("corrective or creative"),

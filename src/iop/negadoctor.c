@@ -150,7 +150,7 @@ const char *aliases()
   return _("film|invert|negative|scan");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("invert film negative scans and simulate printing on paper"),
                                       _("corrective and creative"),

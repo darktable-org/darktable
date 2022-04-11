@@ -132,7 +132,7 @@ const char *aliases()
   return _("diffusion|deconvolution|blur|sharpening");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("simulate directional diffusion of light with heat transfer model\n"

@@ -131,7 +131,7 @@ const char *deprecated_msg()
   return _("this module is deprecated. please use the color calibration module instead.");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("perform color space corrections\n"
                                         "such as white balance, channels mixing\n"
