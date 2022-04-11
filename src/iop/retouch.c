@@ -3264,8 +3264,8 @@ cleanup:
   if(img_dest) dt_free_align(img_dest);
 }
 
-static void retouch_heal(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                         dt_iop_roi_t *const roi_mask_scaled, const int dx, const int dy, const float opacity)
+static void _retouch_heal(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
+                          dt_iop_roi_t *const roi_mask_scaled, const int dx, const int dy, const float opacity, const int max_iter)
 {
   float *img_src = NULL;
   float *img_dest = NULL;
@@ -3284,7 +3284,7 @@ static void retouch_heal(float *const in, dt_iop_roi_t *const roi_in, float *con
   rt_copy_in_to_out(in, roi_in, img_dest, roi_mask_scaled, 4, 0, 0);
 
   // heal it
-  dt_heal(img_src, img_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, 4, 1000);
+  dt_heal(img_src, img_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, 4, max_iter);
 
   // copy healed (temp) image to destination image
   rt_copy_image_masked(img_dest, in, roi_in, mask_scaled, roi_mask_scaled, opacity);
@@ -3421,7 +3421,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           }
           else if(algo == DT_IOP_RETOUCH_HEAL)
           {
-            retouch_heal(layer, roi_layer, mask_scaled, &roi_mask_scaled, dx, dy, form_opacity);
+            _retouch_heal(layer, roi_layer, mask_scaled, &roi_mask_scaled, dx, dy, form_opacity, p->max_heal_iter);
           }
           else if(algo == DT_IOP_RETOUCH_BLUR)
           {
@@ -4017,9 +4017,9 @@ cleanup:
   return err;
 }
 
-static cl_int retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer, float *mask_scaled,
-                              cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const int dx,
-                              const int dy, const float opacity, dt_iop_retouch_global_data_t *gd)
+static cl_int _retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer, float *mask_scaled,
+                               cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const int dx,
+                               const int dy, const float opacity, dt_iop_retouch_global_data_t *gd, const int max_iter)
 {
   cl_int err = CL_SUCCESS;
 
@@ -4064,7 +4064,7 @@ static cl_int retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
   heal_params_cl_t *hp = dt_heal_init_cl(devid);
   if(hp)
   {
-    err = dt_heal_cl(hp, dev_src, dev_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, 1000);
+    err = dt_heal_cl(hp, dev_src, dev_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, max_iter);
     dt_heal_free_cl(hp);
 
     dt_opencl_release_mem_object(dev_src);
@@ -4234,8 +4234,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
           }
           else if(algo == DT_IOP_RETOUCH_HEAL)
           {
-            err = retouch_heal_cl(devid, dev_layer, roi_layer, mask_scaled, dev_mask_scaled, &roi_mask_scaled, dx,
-                                  dy, form_opacity, gd);
+            err = _retouch_heal_cl(devid, dev_layer, roi_layer, mask_scaled, dev_mask_scaled, &roi_mask_scaled, dx,
+                                   dy, form_opacity, gd, p->max_heal_iter);
           }
           else if(algo == DT_IOP_RETOUCH_BLUR)
           {
