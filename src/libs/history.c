@@ -101,23 +101,6 @@ int position()
   return 900;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "create style from history"), 0, 0);
-//   dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "compress history stack"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_history_t *d = (dt_lib_history_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "create style from history", d->create_button);
-//   dt_accel_connect_button_lib(self, "apply style from popup menu", d->apply_button);
-
-  dt_accel_connect_button_lib(self, "compress history stack", d->compress_button);
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -131,17 +114,15 @@ void gui_init(dt_lib_module_t *self)
   d->previous_iop_order_list = NULL;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_widget_set_name(self->widget, "history-ui");
 
   d->history_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  d->compress_button = dt_ui_button_new(_("compress history stack"),
-                                        _("create a minimal history stack which produces the same image\n"
-                                          "ctrl+click to truncate history to the selected item"), NULL);
-  g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), self);
+  d->compress_button = dt_action_button_new(self, N_("compress history stack"), _lib_history_compress_clicked_callback, self,
+                                            _("create a minimal history stack which produces the same image\n"
+                                              "ctrl+click to truncate history to the selected item"), 0, 0);
   g_signal_connect(G_OBJECT(d->compress_button), "button-press-event", G_CALLBACK(_lib_history_compress_pressed_callback), self);
 
   /* add toolbar button for creating style */
@@ -150,6 +131,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   gtk_widget_set_name(d->create_button, "non-flat");
   gtk_widget_set_tooltip_text(d->create_button, _("create a style from the current history stack"));
+  dt_action_define(DT_ACTION(self), NULL, N_("create style from history"), d->create_button, &dt_action_def_button);
 
   /* add buttons to buttonbox */
   gtk_box_pack_start(GTK_BOX(hhbox), d->compress_button, TRUE, TRUE, 0);

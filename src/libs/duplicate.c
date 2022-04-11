@@ -533,16 +533,15 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_class(self->widget, "duplicate-ui");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   d->duplicate_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *bt = dt_ui_button_new(_("original"), _("create a 'virgin' duplicate of the image without any development"), NULL);
-  g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_new_clicked_callback), self);
+  GtkWidget *bt = dt_action_button_new(NULL, N_("original"), _lib_duplicate_new_clicked_callback, self,
+                            _("create a 'virgin' duplicate of the image without any development"), 0, 0);
   gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
-  bt = dt_ui_button_new(_("duplicate"), _("create a duplicate of the image with same history stack"), (char *)NULL);
-  g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_duplicate_clicked_callback), self);
+  bt = dt_action_button_new(NULL, N_("duplicate"), _lib_duplicate_duplicate_clicked_callback, self,
+                            _("create a duplicate of the image with same history stack"), 0, 0);
   gtk_box_pack_end(GTK_BOX(hb), bt, TRUE, TRUE, 0);
 
   /* add duplicate list and buttonbox to widget */

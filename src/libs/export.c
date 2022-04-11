@@ -1067,12 +1067,10 @@ void gui_init(dt_lib_module_t *self)
   self->timeout_handle = 0;
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   GtkWidget *label = dt_ui_section_label_new(_("storage options"));
   dt_gui_add_class(GTK_WIDGET(label), "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->storage = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->storage, NULL, N_("target storage"));
@@ -1099,7 +1097,6 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("format options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->format = dt_bauhaus_combobox_new_action(DT_ACTION(self));
   dt_bauhaus_widget_set_label(d->format, NULL, N_("file format"));
@@ -1121,7 +1118,6 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("global options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(d->dimensions_type, self, NULL, N_("set size"),
                                _("choose a method for setting the output size"),
@@ -1337,10 +1333,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // Export button
-  d->export_button = GTK_BUTTON(dt_ui_button_new(_("export"), _("export with current settings"), NULL));
+  d->export_button = GTK_BUTTON(dt_action_button_new(self, N_("export"), _export_button_clicked, d,
+                                                     _("export with current settings"), GDK_KEY_e, GDK_CONTROL_MASK));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
 
-  g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(_export_button_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_width), "changed", G_CALLBACK(_print_width_changed), (gpointer)d);
@@ -2043,18 +2039,6 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(ssize) res += smod->set_params(smod, sdata, ssize);
   if(fsize) res += fmod->set_params(fmod, fdata, fsize);
   return res;
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "export"), GDK_KEY_e, GDK_CONTROL_MASK);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  const dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "export", GTK_WIDGET(d->export_button));
 }
 
 // clang-format off
