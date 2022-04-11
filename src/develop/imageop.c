@@ -2365,6 +2365,7 @@ gboolean _iop_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keybo
   gtk_widget_set_hexpand(grid, FALSE);
 
   GtkWidget *label = gtk_label_new(des[0]?des[0]:"");
+  gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
   // if there is no more description, do not add a separator
   if(des[1]) gtk_widget_set_name(label, "section_label");
   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
@@ -3251,4 +3252,3 @@ const dt_action_def_t dt_action_def_iop
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
