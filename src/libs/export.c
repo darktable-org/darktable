@@ -63,6 +63,7 @@ typedef struct dt_lib_export_t
   GtkWidget *storage_extra_container, *format_extra_container;
   GtkWidget *high_quality;
   GtkWidget *export_masks;
+  GtkWidget *metadata_button;
   char *metadata_export;
 } dt_lib_export_t;
 
@@ -1046,19 +1047,11 @@ static void _lib_export_styles_changed_callback(gpointer instance, gpointer user
   g_list_free_full(styles, dt_style_free);
 }
 
-void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
+static void _metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
 {
-  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
   const gboolean ondisk = name && !g_strcmp0(name, _("file on disk")); // FIXME: NO!!!!!one!
   d->metadata_export = dt_lib_export_metadata_configuration_dialog(d->metadata_export, ondisk);
-}
-
-void set_preferences(void *menu, dt_lib_module_t *self)
-{
-  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
-  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1337,12 +1330,18 @@ void gui_init(dt_lib_module_t *self)
                                                      _("export with current settings"), GDK_KEY_e, GDK_CONTROL_MASK));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
 
+  //  Add metadata exportation control
+  d->metadata_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_NONE, NULL);
+  gtk_widget_set_tooltip_text(d->metadata_button, _("edit metadata exportation details"));
+  gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
+
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_width), "changed", G_CALLBACK(_print_width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_height), "changed", G_CALLBACK(_print_height_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_dpi), "changed", G_CALLBACK(_print_dpi_changed), (gpointer)d);
 
+  g_signal_connect(G_OBJECT(d->metadata_button), "clicked", G_CALLBACK(_metadata_export_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
 
@@ -2046,4 +2045,3 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
