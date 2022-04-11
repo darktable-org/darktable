@@ -2754,9 +2754,9 @@ static void _lookup_mapping_widget()
 static gboolean _widget_invisible(GtkWidget *w)
 {
   GtkWidget *p = gtk_widget_get_parent(w);
-  return (!GTK_IS_WIDGET(w) ||
-          !gtk_widget_get_visible(w) ||
-          (g_strcmp0(gtk_widget_get_name(p), "lib-plugin-ui-main") && !gtk_widget_get_visible(p)));
+  GtkStyleContext *context = gtk_widget_get_style_context(p);
+  return (!GTK_IS_WIDGET(w) || !gtk_widget_get_visible(w)
+          || (gtk_style_context_has_class(context, "plugin-ui-main") && !gtk_widget_get_visible(p)));
 }
 
 gboolean _shortcut_closest_match(GSequenceIter **current, dt_shortcut_t *s, gboolean *fully_matched, const dt_action_def_t *def, char **fb_log)

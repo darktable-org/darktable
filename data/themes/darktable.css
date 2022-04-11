@@ -232,8 +232,7 @@
 }
 
 /* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
-#lib-plugin-ui,
-#iop-plugin-ui,
+.plugin_ui,
 #modules-tabs,
 #left,
 #right,
@@ -376,14 +375,13 @@ button
 }
 
 /* Precise default buttons margins on side panels */
-#iop-plugin-ui button,
-#lib-plugin-ui button
+.plugin_ui button
 {
   margin: 2px 2px 2px 0;  /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
 }
 
 /* fix misalignment for specific icons related to bauhaus widgets */
-#iop-plugin-ui .dt_bauhaus_alignment
+.plugin_ui .dt_bauhaus_alignment
 {
   padding: 0.14em;
   min-height: 1.4em;
@@ -555,8 +553,7 @@ spinbutton>button
   ---------------------------*/
 /* Frame around modules boxes */
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
-#lib-plugin-ui,
-#iop-plugin-ui,
+.plugin_ui,
 #basics-box,
 #basics-box-labels
 {
@@ -564,8 +561,7 @@ spinbutton>button
   background-color: @plugin_bg_color;
 }
 
-#iop-plugin-ui-main,
-#lib-plugin-ui-main
+.plugin_ui_main
 {
   padding: 0.28em 0.7em;
 }
@@ -594,7 +590,7 @@ spinbutton>button
 }
 
 /* Add some space to aerate if a notebook follows a widget (like for example in filmic rgb module */
-#iop-plugin-ui-main widget + notebook
+.plugin_ui_main widget + notebook
 {
   margin-top: 0.5em;
 }
@@ -717,7 +713,7 @@ spinbutton>button
 }
 
 /* for the import parameters to be more aligned with the imports buttons */
-#lib-plugin-ui #collapse-block
+.plugin_ui #collapse-block
 {
   margin: 0.42em 0.07em;
 }
@@ -934,8 +930,7 @@ popover #bauhaus_slider
   ---------------------------------------*/
 /*** Basically everything that pops out/over on UI ***/
 combobox button,
-#iop-plugin-ui combobox button,
-#lib-plugin-ui combobox button
+.plugin_ui combobox button
 {
   padding: 0;
   margin: 0;
@@ -1047,14 +1042,14 @@ notebook tabs,
   min-height: 2em;
 }
 
-#iop-plugin-ui #blending-tabs .dt_module_btn,
+.plugin_ui #blending-tabs .dt_module_btn,
 #guides-line .toggle
 {
   min-height: 1.3em;
 }
 
 #modules-tabs .dt_module_btn,   /* This is needed separately to set a minimal width if panel is really narrow */
-#iop-plugin-ui #blending-tabs .dt_module_btn,
+.plugin_ui #blending-tabs .dt_module_btn,
 #guides-line .dt_module_btn
 {
   border-radius: 0;
@@ -1063,7 +1058,7 @@ notebook tabs,
 }
 
 /* reduce and align now hamburger menu of modules and blending tabs */
-#iop-plugin-ui #blending-tabs .dt_module_btn,
+.plugin_ui #blending-tabs .dt_module_btn,
 #modules-tabs .dt_module_btn
 {
   padding: 0.3em;
@@ -1088,8 +1083,7 @@ notebook header /* add space between notebook tabs and options below */
   --------------------------*/
 /*** WARNING : sliders IN modules are bauhaus (from a custom lib in darktable), not standard GTK sliders (see below) ***/
 
-#lib-plugin-ui scrollbar slider,
-#iop-plugin-ui scrollbar slider,
+.plugin_ui scrollbar slider,
 scrollbar slider,
 dialog scrollbar slider
 {
@@ -1123,11 +1117,8 @@ scale contents trough slider
   min-width: 0.5em;
 }
 
+.plugin_ui scrollbar,
 scrollbar,
-dialog scrollbar
-scrollbar,
-#iop-plugin-ui scrollbar,
-#lib-plugin-ui scrollbar,
 dialog scrollbar
 {
   border-color: @scroll_bar_bg;
@@ -1492,102 +1483,64 @@ filechooser row:hover .sidebar-icon
 /*--------------------
   - collect module -
 --------------------*/
-#collect-rule-widget,
-#collect-actions-widget,
-#collect-sort-widget
+#module_filtering #collect-rule-widget,
+#module_filtering #collect-actions-widget
 {
   background-color: @collapsible_bg_color;
   margin: 0.3em 0 0.5em 0;
-  padding: 0 0.2em;
+  padding: 0.07em 0.28em;
 }
-#collect-actions-widget
-{
-  background-color: transparent;
-}
-#collect-sort-widget
+
+#module-filtering #collect-sort-widget
 {
   margin: 0.2em 0;
 }
-#collect-treeview
+#module-filtering #collect-treeview
 {
   margin-bottom: 0.2em;
 }
-#collect-rule-special
+#module-filtering #collect-rule-special
 {
   margin: 0 0.3em 0.4em 0.3em;
   padding : 0.2em;
 }
-#collect-spacer2
-{
-  margin-top: 2em;
-}
-#header-sort-box #collect-sort-widget
-{
-  background-color: shade(@button_bg, 0.9);
-}
-#header-sort-box #bauhaus_combobox
-{
-  border: none;
-  background-color: transparent;
-}
-#header-toolbar .search
-{
-  margin : 0;
-}
-#header-rule-box > box
-{
-  padding : 0.2em;
-}
 
-#dt-range-band
+#module_filtering #dt-range-band,
+#range_select #dt-range-band
 {
-  min-height: 2.5em;                /* band height */
+  min-height: 2em;                /* band height */
   background-color: @range_bg_color;
 }
-.dt_range_rating #dt-range-band
-{
-  min-height: 2em;
-}
-.quick_filter_box #dt-range-band
-{
-  min-height: 1.8em;
-  min-width: 16em;
-}
-.quick_filter_box.dt_range_rating #dt-range-band
-{
-  min-width: 10em;
-}
-#dt-range-current
+
+#module_filtering #dt-range-current
 {
   margin: 0 0.2em;
 }
-#dt-range-current label
+
+#module_filtering #dt-range-current label
 {
   color: @timeline_bg_color;
   background-color: @timeline_fg_color;
   padding: 0 0.2em;
 }
-#dt-range-date-last-line
+
+#module_filtering #dt-range-date-last-line
 {
   margin-top: 0.8em;
 }
 
-#filter_colors_box
-{
-  background-color: shade(@grey_50, 1.04);
-  padding: 0.01em;
-  font-size: 1.2em;
-}
-#filter_colors_box #dt-button
-{
-  font-size: 1em;
-  margin : 0;
-}
-
-#filter_sort_box #dt-toggle-button
+#module-filtering #filter_colors_box,
+#module-filtering #filter_sort_box .dt_module_btn.toggle
 {
   margin: 0;
   font-size: 1.2em;
+}
+
+/* then related filters on quick filters box in header toolbar */
+.quick_filter_box #dt-range-band
+{
+  min-height: 1.8em;
+  min-width: 10em;
 }
 
 /*--------------------------------
@@ -2096,8 +2049,7 @@ entry:checked
 /* Scrollbars hover state */
 scrollbar.horizontal slider:hover,
 scrollbar.vertical slider:hover,
-#iop-plugin-ui scrollbar slider:hover,
-#lib-plugin-ui scrollbar slider:hover,
+.plugin_ui scrollbar slider:hover,
 dialog scrollbar slider:hover,
 scale contents trough slider:hover
 {
