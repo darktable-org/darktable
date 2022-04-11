@@ -2006,7 +2006,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 {
   const float require = 2.0f;
   const float require_cl = 1.0f  // in_retouch
-                         + 4.0f; // dwt_wavelet_decompose_cl requires 4 buffers and is the worst case  
+                         + 4.0f; // dwt_wavelet_decompose_cl requires 4 buffers and is the worst case
   // FIXME the above are worst case values, we might iterate through the dt_iop_retouch_form_data_t to get
   // the largest bounding box
 
@@ -3247,7 +3247,7 @@ static void retouch_heal(float *const in, dt_iop_roi_t *const roi_in, float *con
   rt_copy_in_to_out(in, roi_in, img_dest, roi_mask_scaled, 4, 0, 0);
 
   // heal it
-  dt_heal(img_src, img_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, 4);
+  dt_heal(img_src, img_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, 4, 1000);
 
   // copy healed (temp) image to destination image
   rt_copy_image_masked(img_dest, in, roi_in, mask_scaled, roi_mask_scaled, opacity);
@@ -4027,7 +4027,7 @@ static cl_int retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
   heal_params_cl_t *hp = dt_heal_init_cl(devid);
   if(hp)
   {
-    err = dt_heal_cl(hp, dev_src, dev_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height);
+    err = dt_heal_cl(hp, dev_src, dev_dest, mask_scaled, roi_mask_scaled->width, roi_mask_scaled->height, 1000);
     dt_heal_free_cl(hp);
 
     dt_opencl_release_mem_object(dev_src);
@@ -4410,4 +4410,3 @@ cleanup:
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
