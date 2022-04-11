@@ -285,7 +285,7 @@ static void _image_preference_changed(gpointer instance, gpointer user_data)
                      trash ? _("delete (trash)")
                            : _("delete"));
   gtk_widget_set_tooltip_text(d->delete_button,
-                     trash ? _("physically delete from disk (using trash if possible")
+                     trash ? _("physically delete from disk (using trash if possible)")
                            : _("physically delete from disk immediately"));
 }
 
@@ -846,4 +846,3 @@ void init(struct dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
