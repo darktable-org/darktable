@@ -3142,8 +3142,8 @@ static void rt_copy_mask_to_alpha(float *const img, dt_iop_roi_t *const roi_img,
   }
 }
 
-static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                         dt_iop_roi_t *const roi_mask_scaled, const float opacity, const float *const fill_color)
+static void _retouch_fill(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
+                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const float *const fill_color)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -3169,8 +3169,8 @@ static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, float *con
   }
 }
 
-static void retouch_clone(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                          dt_iop_roi_t *const roi_mask_scaled, const int dx, const int dy, const float opacity)
+static void _retouch_clone(float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
+                           dt_iop_roi_t *const roi_mask_scaled, const int dx, const int dy, const float opacity)
 {
   // alloc temp image to avoid issues when areas self-intersects
   float *img_src = dt_alloc_align_float((size_t)4 * roi_mask_scaled->width * roi_mask_scaled->height);
@@ -3190,9 +3190,9 @@ cleanup:
   if(img_src) dt_free_align(img_src);
 }
 
-static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
-                         dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int blur_type,
-                         const float blur_radius, dt_dev_pixelpipe_iop_t *piece, const int use_sse)
+static void _retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *const roi_in, float *const mask_scaled,
+                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int blur_type,
+                          const float blur_radius, dt_dev_pixelpipe_iop_t *piece, const int use_sse)
 {
   if(fabsf(blur_radius) <= 0.1f) return;
 
@@ -3417,7 +3417,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         {
           if(algo == DT_IOP_RETOUCH_CLONE)
           {
-            retouch_clone(layer, roi_layer, mask_scaled, &roi_mask_scaled, dx, dy, form_opacity);
+            _retouch_clone(layer, roi_layer, mask_scaled, &roi_mask_scaled, dx, dy, form_opacity);
           }
           else if(algo == DT_IOP_RETOUCH_HEAL)
           {
@@ -3425,8 +3425,8 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           }
           else if(algo == DT_IOP_RETOUCH_BLUR)
           {
-            retouch_blur(self, layer, roi_layer, mask_scaled, &roi_mask_scaled, form_opacity,
-                         p->rt_forms[index].blur_type, p->rt_forms[index].blur_radius, piece, wt_p->use_sse);
+            _retouch_blur(self, layer, roi_layer, mask_scaled, &roi_mask_scaled, form_opacity,
+                          p->rt_forms[index].blur_type, p->rt_forms[index].blur_radius, piece, wt_p->use_sse);
           }
           else if(algo == DT_IOP_RETOUCH_FILL)
           {
@@ -3445,7 +3445,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
             }
             fill_color[3] = 0.0f;
 
-            retouch_fill(layer, roi_layer, mask_scaled, &roi_mask_scaled, form_opacity, fill_color);
+            _retouch_fill(layer, roi_layer, mask_scaled, &roi_mask_scaled, form_opacity, fill_color);
           }
           else
             fprintf(stderr, "rt_process_forms: unknown algorithm %i\n", algo);
@@ -3837,9 +3837,9 @@ cleanup:
   return err;
 }
 
-static cl_int retouch_clone_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
-                               cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const int dx,
-                               const int dy, const float opacity, dt_iop_retouch_global_data_t *gd)
+static cl_int _retouch_clone_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
+                                cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const int dx,
+                                const int dy, const float opacity, dt_iop_retouch_global_data_t *gd)
 {
   cl_int err = CL_SUCCESS;
 
@@ -3879,9 +3879,9 @@ cleanup:
   return err;
 }
 
-static cl_int retouch_fill_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
-                              cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const float opacity,
-                              float *color, dt_iop_retouch_global_data_t *gd)
+static cl_int _retouch_fill_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
+                               cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const float opacity,
+                               float *color, dt_iop_retouch_global_data_t *gd)
 {
   cl_int err = CL_SUCCESS;
 
@@ -3917,10 +3917,10 @@ cleanup:
   return err;
 }
 
-static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
-                              cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const float opacity,
-                              const int blur_type, const float blur_radius, dt_dev_pixelpipe_iop_t *piece,
-                              dt_iop_retouch_global_data_t *gd)
+static cl_int _retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *const roi_layer,
+                               cl_mem dev_mask_scaled, dt_iop_roi_t *const roi_mask_scaled, const float opacity,
+                               const int blur_type, const float blur_radius, dt_dev_pixelpipe_iop_t *piece,
+                               dt_iop_retouch_global_data_t *gd)
 {
   cl_int err = CL_SUCCESS;
 
@@ -4229,8 +4229,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         {
           if(algo == DT_IOP_RETOUCH_CLONE)
           {
-            err = retouch_clone_cl(devid, dev_layer, roi_layer, dev_mask_scaled, &roi_mask_scaled, dx, dy,
-                                   form_opacity, gd);
+            err = _retouch_clone_cl(devid, dev_layer, roi_layer, dev_mask_scaled, &roi_mask_scaled, dx, dy,
+                                    form_opacity, gd);
           }
           else if(algo == DT_IOP_RETOUCH_HEAL)
           {
@@ -4239,8 +4239,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
           }
           else if(algo == DT_IOP_RETOUCH_BLUR)
           {
-            err = retouch_blur_cl(devid, dev_layer, roi_layer, dev_mask_scaled, &roi_mask_scaled, form_opacity,
-                                  p->rt_forms[index].blur_type, p->rt_forms[index].blur_radius, piece, gd);
+            err = _retouch_blur_cl(devid, dev_layer, roi_layer, dev_mask_scaled, &roi_mask_scaled, form_opacity,
+                                   p->rt_forms[index].blur_type, p->rt_forms[index].blur_radius, piece, gd);
           }
           else if(algo == DT_IOP_RETOUCH_FILL)
           {
@@ -4258,8 +4258,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
               fill_color[2] = p->rt_forms[index].fill_color[2] + p->rt_forms[index].fill_brightness;
             }
 
-            err = retouch_fill_cl(devid, dev_layer, roi_layer, dev_mask_scaled, &roi_mask_scaled, form_opacity,
-                                  fill_color, gd);
+            err = _retouch_fill_cl(devid, dev_layer, roi_layer, dev_mask_scaled, &roi_mask_scaled, form_opacity,
+                                   fill_color, gd);
           }
           else
             fprintf(stderr, "rt_process_forms: unknown algorithm %i\n", algo);
