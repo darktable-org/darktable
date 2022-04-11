@@ -358,7 +358,7 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
    */
   const float w = ((2.0f - 1.0f / (0.1575f * sqrtf(nmask) + 0.8f)) * .25f);
 
-  const int max_iter = 2000;
+  const int max_iter = 1000;
   const float epsilon = (0.1 / 255);
   const float err_exit = epsilon * epsilon * w * w;
 
