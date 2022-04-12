@@ -1574,14 +1574,8 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
     --darktable.gui->reset;
 
     g->preview_auto_levels = 0;
-
-    dt_iop_gui_leave_critical_section(self);
-
   }
-  else
-  {
-    dt_iop_gui_leave_critical_section(self);
-  }
+  dt_iop_gui_leave_critical_section(self);
 
   // just in case zoom level has changed
   gtk_widget_queue_draw(GTK_WIDGET(g->wd_bar));
@@ -2044,7 +2038,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   const float require = 2.0f;
   const float require_cl = 1.0f  // in_retouch
-     + (p->num_scales > 0) ? 4.0f : 2.0f; // dwt_wavelet_decompose_cl requires 4 buffers, otherwise 2.0f is enough
+     + ((p->num_scales > 0) ? 4.0f : 2.0f); // dwt_wavelet_decompose_cl requires 4 buffers, otherwise 2.0f is enough
   // FIXME the above are worst case values, we might iterate through the dt_iop_retouch_form_data_t to get
   // the largest bounding box
 
@@ -3557,12 +3551,8 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
       dt_iop_gui_enter_critical_section(self);
       g->preview_auto_levels = 2;
-      dt_iop_gui_leave_critical_section(self);
     }
-    else
-    {
-      dt_iop_gui_leave_critical_section(self);
-    }
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // if user wants to preview a detail scale adjust levels
@@ -3620,7 +3610,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }
 
@@ -3634,7 +3624,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   // just call the CPU version for now
   rt_process_stats(self, piece, src_buffer, width, height, ch, levels);
 
-  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
+  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, CL_TRUE);
   if(err != CL_SUCCESS)
   {
     goto cleanup;
@@ -3659,7 +3649,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }
 
@@ -3673,7 +3663,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   // just call the CPU version for now
   rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels);
 
-  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
+  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, CL_TRUE);
   if(err != CL_SUCCESS)
   {
     goto cleanup;
@@ -3752,7 +3742,7 @@ static cl_int rt_build_scaled_mask_cl(const int devid, float *const mask, dt_iop
   }
 
   err = dt_opencl_write_buffer_to_device(devid, *mask_scaled, dev_mask_scaled, 0,
-                                         sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height, TRUE);
+                                         sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height, CL_TRUE);
   if(err != CL_SUCCESS)
   {
     fprintf(stderr, "rt_build_scaled_mask_cl error 4\n");
@@ -4399,12 +4389,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
       dt_iop_gui_enter_critical_section(self);
       g->preview_auto_levels = 2;
-      dt_iop_gui_leave_critical_section(self);
     }
-    else
-    {
-      dt_iop_gui_leave_critical_section(self);
-    }
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // if user wants to preview a detail scale adjust levels
