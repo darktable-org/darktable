@@ -1574,14 +1574,8 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
     --darktable.gui->reset;
 
     g->preview_auto_levels = 0;
-
-    dt_iop_gui_leave_critical_section(self);
-
   }
-  else
-  {
-    dt_iop_gui_leave_critical_section(self);
-  }
+  dt_iop_gui_leave_critical_section(self);
 
   // just in case zoom level has changed
   gtk_widget_queue_draw(GTK_WIDGET(g->wd_bar));
@@ -3557,12 +3551,8 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
       dt_iop_gui_enter_critical_section(self);
       g->preview_auto_levels = 2;
-      dt_iop_gui_leave_critical_section(self);
     }
-    else
-    {
-      dt_iop_gui_leave_critical_section(self);
-    }
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // if user wants to preview a detail scale adjust levels
@@ -4399,12 +4389,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
       dt_iop_gui_enter_critical_section(self);
       g->preview_auto_levels = 2;
-      dt_iop_gui_leave_critical_section(self);
     }
-    else
-    {
-      dt_iop_gui_leave_critical_section(self);
-    }
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // if user wants to preview a detail scale adjust levels
