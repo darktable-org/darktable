@@ -1163,12 +1163,17 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
         const float amount = up ? 1.03f : 0.97f;
+        int pts_number = 0;
         for(GList *l = form->points; l; l = g_list_next(l))
         {
-          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-          const float masks_hardness = point->hardness;
-          point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
-          dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
+          if(gui->point_selected == -1 || gui->point_selected == pts_number)
+          {
+            dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
+            const float masks_hardness = point->hardness;
+            point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+            dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
+          }
+          pts_number++;
         }
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         {
@@ -1187,16 +1192,27 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       {
         const float amount = up ? 1.03f : 0.97f;
         // do not exceed upper limit of 1.0 and lower limit of 0.004
+        int pts_number = 0;
         for(GList *l = form->points; l; l = g_list_next(l))
         {
-          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-          if(amount > 1.0f && (point->border[0] > 1.0f || point->border[1] > 1.0f)) return 1;
+          if(gui->point_selected == -1 || gui->point_selected == pts_number)
+          {
+            dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
+            if(amount > 1.0f && (point->border[0] > 1.0f || point->border[1] > 1.0f))
+              return 1;
+          }
+          pts_number++;
         }
+        pts_number = 0;
         for(GList *l = form->points; l; l = g_list_next(l))
         {
-          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
-          point->border[0] *= amount;
-          point->border[1] *= amount;
+          if(gui->point_selected == -1 || gui->point_selected == pts_number)
+          {
+            dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
+            point->border[0] *= amount;
+            point->border[1] *= amount;
+          }
+          pts_number++;
         }
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         {
@@ -2993,4 +3009,3 @@ const dt_masks_functions_t dt_masks_functions_brush = {
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
