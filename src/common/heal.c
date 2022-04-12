@@ -464,7 +464,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }
 
@@ -472,7 +472,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   if(dest_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }
 
@@ -493,8 +493,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   // I couldn't make it run fast on opencl (the reduction takes forever), so just call the cpu version
   dt_heal(src_buffer, dest_buffer, mask_buffer, width, height, ch, max_iter);
 
-  err = dt_opencl_write_buffer_to_device(p->devid, dest_buffer, dev_dest, 0, sizeof(float) * width * height * ch,
-                                         TRUE);
+  err = dt_opencl_write_buffer_to_device(p->devid, dest_buffer, dev_dest, 0, sizeof(float) * width * height * ch, CL_TRUE);
   if(err != CL_SUCCESS)
   {
     goto cleanup;
