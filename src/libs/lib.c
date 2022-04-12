@@ -495,9 +495,9 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       active_preset = cnt;
       selected_writeprotect = writeprotect;
       mi = gtk_check_menu_item_new_with_label(name);
-      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "check-menu-item");
+      dt_gui_add_class(mi, "check-menu-item");
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
+      dt_gui_add_class(mi, "active-menu-item");
     }
     else
     {
@@ -790,9 +790,7 @@ static void dt_lib_init_module(void *m)
   // do not init accelerators if there is no gui
   if(darktable.gui)
   {
-    if(module->init_key_accels) module->init_key_accels(module);
     module->gui_init(module);
-    if(module->connect_key_accels) module->connect_key_accels(module);
     g_object_ref_sink(module->widget);
   }
 }
@@ -837,7 +835,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
 
   /* update expander arrow state */
-  gint flags = (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_RIGHT) | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
+  gint flags = (expanded ? CPF_DIRECTION_DOWN : CPF_DIRECTION_RIGHT);
   dtgtk_button_set_paint(DTGTK_BUTTON(module->arrow), dtgtk_cairo_paint_solid_arrow, flags, NULL);
 
   /* show / hide plugin widget */
@@ -942,14 +940,10 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   return FALSE;
 }
 
-static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-
+static void show_module_callback(dt_lib_module_t *module)
 {
-  dt_lib_module_t *module = (dt_lib_module_t *)data;
-
   /* bail out if module is static */
-  if(!module->expandable(module)) return FALSE;
+  if(!module->expandable(module)) return;
 
   // make gtk scroll to the module once it updated its allocation size
   uint32_t container = module->container(module);
@@ -985,7 +979,6 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
     /* else just toggle */
     dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
   }
-  return TRUE;
 }
 
 static gboolean _header_enter_notify_callback(GtkWidget *eventbox, GdkEventCrossing *event, gpointer user_data)
@@ -1026,10 +1019,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
    * initialize the header widgets
    */
   /* add the expand indicator icon */
-  module->arrow = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_FLAT, NULL);
+  module->arrow = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, 0, NULL);
   gtk_widget_set_tooltip_text(module->arrow, _("show module"));
   g_signal_connect(G_OBJECT(module->arrow), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press), module);
-  gtk_widget_set_name(module->arrow, "module-collapse-button");
   dt_action_define(&module->actions, NULL, NULL, module->arrow, NULL);
   gtk_box_pack_start(GTK_BOX(header), module->arrow, FALSE, FALSE, 0);
 
@@ -1046,22 +1038,20 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_box_pack_start(GTK_BOX(header), label_evb, FALSE, FALSE, 0);
 
   /* add preset button if module has implementation */
-  module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+  module->presets_button = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
   g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(presets_popup_callback), module);
   g_signal_connect(G_OBJECT(module->presets_button), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_PRESETS));
   if(!module->get_params && !module->set_preferences) gtk_widget_set_sensitive(GTK_WIDGET(module->presets_button), FALSE);
-  gtk_widget_set_name(GTK_WIDGET(module->presets_button), "module-preset-button");
   dt_action_define(&module->actions, NULL, NULL, module->presets_button, NULL);
   gtk_box_pack_end(GTK_BOX(header), module->presets_button, FALSE, FALSE, 0);
 
   /* add reset button if module has implementation */
-  module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+  module->reset_button = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   g_signal_connect(G_OBJECT(module->reset_button), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
   g_signal_connect(G_OBJECT(module->reset_button), "enter-notify-event", G_CALLBACK(_header_enter_notify_callback),
                    GINT_TO_POINTER(DT_ACTION_ELEMENT_RESET));
   if(!module->gui_reset) gtk_widget_set_sensitive(module->reset_button, FALSE);
-  gtk_widget_set_name(module->reset_button, "module-reset-button");
   dt_action_define(&module->actions, NULL, NULL, module->reset_button, NULL);
   gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 
@@ -1278,7 +1268,7 @@ static float _action_process(gpointer target, dt_action_element_t element, dt_ac
     switch(element)
     {
     case DT_ACTION_ELEMENT_SHOW:
-      show_module_callback(NULL, NULL, 0, 0, module);
+      show_module_callback(module);
       break;
     case DT_ACTION_ELEMENT_RESET:
       if(module->gui_reset) dt_lib_gui_reset_callback(NULL, module);

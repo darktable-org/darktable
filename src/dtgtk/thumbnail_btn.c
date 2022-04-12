@@ -78,17 +78,16 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
     else
       flags &= ~CPF_ACTIVE;
 
-    if(flags & CPF_DO_NOT_USE_BORDER)
-    {
-      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0, 0, allocation.width, allocation.height, flags,
-                                        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
-    }
-    else
-    {
-      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0.125 * allocation.width, 0.125 * allocation.height,
-                                        0.75 * allocation.width, 0.75 * allocation.height, flags,
-                                        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
-    }
+    GtkBorder padding;
+    gtk_style_context_get_padding(context, state, &padding);
+    // padding is a percent of the full size
+    const float icon_x = padding.left * allocation.width / 100.0f;
+    const float icon_y = padding.top * allocation.height / 100.0f;
+    const float icon_w = allocation.width - (padding.left + padding.right) * allocation.width / 100.0f;
+    const float icon_h = allocation.height - (padding.top + padding.bottom) * allocation.height / 100.0f;
+    DTGTK_THUMBNAIL_BTN(widget)->icon(
+        cr, icon_x, icon_y, icon_w, icon_h, flags,
+        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
   }
   // and eventually the image border
   cairo_restore(cr);
@@ -118,8 +117,7 @@ GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflag
 {
   GtkDarktableThumbnailBtn *button;
   button = g_object_new(dtgtk_thumbnail_btn_get_type(), NULL);
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(button));
-  gtk_style_context_add_class(context, "dt_thumb_btn");
+  dt_gui_add_class(GTK_WIDGET(button), "dt_thumb_btn");
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;

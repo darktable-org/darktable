@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2011-2020 darktable developers.
+    Copyright (C) 2011-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -76,19 +76,17 @@ static inline int _max(int a, int b)
 
 static inline int _align_up(int n, int a)
 {
-  return n % a != 0 ? (n / a + 1) * a : n;
+  return n + a - (n % a);
 }
-
 static inline int _align_down(int n, int a)
 {
-  return n % a != 0 ? (n / a) * a : n;
+  return n - (n % a);
 }
-
 static inline int _align_close(int n, int a)
 {
   const int off = n % a;
-  if(!off) return n;
-  return (off > a/2) ? a - off : -off;    
+  const int shift = (off > a/2) ? a - off : -off;
+  return n + shift;
 }
 
 /* 
@@ -634,7 +632,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   float available = dt_get_available_mem();
   assert(available >= 500.0f * 1024.0f * 1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
-  available = fmax(available - ((float)roi_out->width * roi_out->height * out_bpp)
+  available = fmaxf(available - ((float)roi_out->width * roi_out->height * out_bpp)
                    - ((float)roi_in->width * roi_in->height * in_bpp) - tiling.overhead,
                    0);
 
@@ -642,9 +640,9 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = dt_get_singlebuffer_mem();
-  const float factor = fmax(tiling.factor, 1.0f);
-  const float maxbuf = fmax(tiling.maxbuf, 1.0f);
-  singlebuffer = fmax(available / factor, singlebuffer);
+  const float factor = fmaxf(tiling.factor, 1.0f);
+  const float maxbuf = fmaxf(tiling.maxbuf, 1.0f);
+  singlebuffer = fmaxf(available / factor, singlebuffer);
 
   int width = roi_in->width;
   int height = roi_in->height;
@@ -870,7 +868,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
 
-  float fullscale = fmax(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
+  float fullscale = fmaxf(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
                                                               / ((float)roi_out->width * roi_out->height)));
 
   /* inaccuracy for roi_in elements in roi_out -> roi_in calculations */
@@ -896,7 +894,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   float available = dt_get_available_mem();
   assert(available >= 500.0f * 1024.0f * 1024.0f);
   /* correct for size of ivoid and ovoid which are needed on top of tiling */
-  available = fmax(available - ((float)roi_out->width * roi_out->height * out_bpp)
+  available = fmaxf(available - ((float)roi_out->width * roi_out->height * out_bpp)
                    - ((float)roi_in->width * roi_in->height * in_bpp) - tiling.overhead,
                    0);
 
@@ -904,9 +902,9 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
      this will mainly allow tiling for modules with high and "unpredictable" memory demand which is
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = dt_get_singlebuffer_mem();
-  const float factor = fmax(tiling.factor, 1.0f);
-  const float maxbuf = fmax(tiling.maxbuf, 1.0f);
-  singlebuffer = fmax(available / factor, singlebuffer);
+  const float factor = fmaxf(tiling.factor, 1.0f);
+  const float maxbuf = fmaxf(tiling.maxbuf, 1.0f);
+  singlebuffer = fmaxf(available / factor, singlebuffer);
 
   int width = _max(roi_in->width, roi_out->width);
   int height = _max(roi_in->height, roi_out->height);
@@ -1231,17 +1229,17 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) != 0);
+  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)
   // avoid problems when pinned buffer size gets too close to max_mem_alloc size
   const float pinned_buffer_slack = use_pinned_memory ? 0.85f : 1.0f;
   const float available = (float)dt_opencl_get_device_available(devid);
-  const float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
-  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
+  const float factor = fmaxf(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
+  const float singlebuffer = fminf(fmaxf((available - tiling.overhead) / factor, 0.0f),
                                   pinned_buffer_slack * (float)(dt_opencl_get_device_memalloc(devid)));
-  const float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
+  const float maxbuf = fmaxf(tiling.maxbuf_cl, 1.0f);
   int width = _min(roi_in->width, darktable.opencl->dev[devid].max_image_width);
   int height = _min(roi_in->height, darktable.opencl->dev[devid].max_image_height);
 
@@ -1318,8 +1316,8 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
     return FALSE;
   }
 
-  dt_print(DT_DEBUG_TILING, "[default_process_tiling_cl_ptp] (%dx%d) tiles with max dimensions %dx%d, good %dx%d and overlap %d\n",
-           tiles_x, tiles_y, width, height, tile_wd, tile_ht, overlap);
+  dt_print(DT_DEBUG_TILING, "[default_process_tiling_cl_ptp] (%dx%d) tiles with max dimensions %dx%d, pinned=%s, good %dx%d and overlap %d\n",
+           tiles_x, tiles_y, width, height, (use_pinned_memory) ? "ON" : "OFF", tile_wd, tile_ht, overlap);
 
   /* store processed_maximum to be re-used and aggregated */
   dt_aligned_pixel_t processed_maximum_saved;
@@ -1334,8 +1332,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
     if(pinned_input == NULL)
     {
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
-               "[default_process_tiling_cl_ptp] could not alloc pinned input buffer for module '%s'\n",
-               self->op);
+               "[default_process_tiling_cl_ptp] could not alloc pinned input buffer for module '%s'\n", self->op);
       use_pinned_memory = FALSE;
     }
   }
@@ -1348,8 +1345,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
     if(input_buffer == NULL)
     {
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING, "[default_process_tiling_cl_ptp] could not map pinned input buffer to host "
-                                "memory for module '%s'\n",
-               self->op);
+                                "memory for module '%s'\n", self->op);
       use_pinned_memory = FALSE;
     }
   }
@@ -1362,8 +1358,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
     if(pinned_output == NULL)
     {
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
-               "[default_process_tiling_cl_ptp] could not alloc pinned output buffer for module '%s'\n",
-               self->op);
+               "[default_process_tiling_cl_ptp] could not alloc pinned output buffer for module '%s'\n", self->op);
       use_pinned_memory = FALSE;
     }
   }
@@ -1376,8 +1371,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
     if(output_buffer == NULL)
     {
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING, "[default_process_tiling_cl_ptp] could not map pinned output buffer to host "
-                                "memory for module '%s'\n",
-               self->op);
+                                "memory for module '%s'\n", self->op);
       use_pinned_memory = FALSE;
     }
   }
@@ -1433,7 +1427,11 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
         /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, origin, region,
                                                  wd * in_bpp, CL_TRUE);
-        if(err != CL_SUCCESS) goto error;
+        if(err != CL_SUCCESS)
+        {
+          use_pinned_memory = FALSE;
+          goto error;
+        }
       }
       else
       {
@@ -1465,7 +1463,11 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
         /* blocking memory transfer: complete opencl/device tile -> pinned host output buffer */
         err = dt_opencl_read_host_from_device_raw(devid, (char *)output_buffer, output, origin, region,
                                                   wd * out_bpp, CL_TRUE);
-        if(err != CL_SUCCESS) goto error;
+        if(err != CL_SUCCESS)
+        {
+          use_pinned_memory = FALSE;
+          goto error;
+        }
       }
 
       /* correct origin and region of tile for overlap.
@@ -1510,8 +1512,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       output = NULL;
 
       /* block until opencl queue has finished to free all used event handlers */
-      if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
-        dt_opencl_finish(devid);
+      dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
     }
 
   /* copy back final processed_maximum */
@@ -1536,8 +1537,11 @@ error:
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
-  dt_print(DT_DEBUG_TILING, "[default_process_tiling_opencl_ptp] couldn't run process_cl() for module '%s' in tiling mode: %d\n",
-      self->op, err);
+  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
+  dt_print(DT_DEBUG_TILING | DT_DEBUG_OPENCL,
+      "[default_process_tiling_opencl_ptp] couldn't run process_cl() for module '%s' in tiling mode:%s %s\n",
+      self->op, (pinning_error) ? " pinning problem" : "", cl_errstr(err));
+  if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
   return FALSE;
 }
 
@@ -1572,7 +1576,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
 
-  const float fullscale = fmax(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
+  const float fullscale = fmaxf(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
                                                               / ((float)roi_out->width * roi_out->height)));
 
   /* inaccuracy for roi_in elements in roi_out -> roi_in calculations */
@@ -1586,17 +1590,17 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) != 0);
+  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)
   // avoid problems when pinned buffer size gets too close to max_mem_alloc size
   const float pinned_buffer_slack = use_pinned_memory ? 0.85f : 1.0f;
   const float available = (float)dt_opencl_get_device_available(devid);
-  const float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
-  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
+  const float factor = fmaxf(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
+  const float singlebuffer = fminf(fmaxf((available - tiling.overhead) / factor, 0.0f),
                                   pinned_buffer_slack * (float)(dt_opencl_get_device_memalloc(devid)));
-  const float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
+  const float maxbuf = fmaxf(tiling.maxbuf_cl, 1.0f);
 
   int width = _min(_max(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
   int height = _min(_max(roi_in->height, roi_out->height), darktable.opencl->dev[devid].max_image_height);
@@ -1685,8 +1689,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       roi_out->height % tiles_y == 0 ? roi_out->height / tiles_y : roi_out->height / tiles_y + 1, xyalign);
 
   dt_print(DT_DEBUG_TILING,
-           "[default_process_tiling_cl_roi] (%dx%d) tiles with max input dimensions %dx%d, good %ix%i\n",
-           tiles_x, tiles_y, width, height, tile_wd, tile_ht);
+           "[default_process_tiling_cl_roi] (%dx%d) tiles with max input dimensions %dx%d, pinned=%s, good %ix%i\n",
+           tiles_x, tiles_y, width, height, (use_pinned_memory) ? "ON" : "OFF", tile_wd, tile_ht);
 
 
   /* store processed_maximum to be re-used and aggregated */
@@ -1702,8 +1706,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
     if(pinned_input == NULL)
     {
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
-               "[default_process_tiling_cl_roi] could not alloc pinned input buffer for module '%s'\n",
-               self->op);
+               "[default_process_tiling_cl_roi] could not alloc pinned input buffer for module '%s'\n", self->op);
       use_pinned_memory = FALSE;
     }
   }
@@ -1716,8 +1719,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
     if(input_buffer == NULL)
     {
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING, "[default_process_tiling_cl_roi] could not map pinned input buffer to host "
-                                "memory for module '%s'\n",
-               self->op);
+                                "memory for module '%s'\n", self->op);
       use_pinned_memory = FALSE;
     }
   }
@@ -1730,8 +1732,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
     if(pinned_output == NULL)
     {
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
-               "[default_process_tiling_cl_roi] could not alloc pinned output buffer for module '%s'\n",
-               self->op);
+               "[default_process_tiling_cl_roi] could not alloc pinned output buffer for module '%s'\n", self->op);
       use_pinned_memory = FALSE;
     }
   }
@@ -1744,8 +1745,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
     if(output_buffer == NULL)
     {
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING, "[default_process_tiling_cl_roi] could not map pinned output buffer to host "
-                                "memory for module '%s'\n",
-               self->op);
+                                "memory for module '%s'\n", self->op);
       use_pinned_memory = FALSE;
     }
   }
@@ -1883,7 +1883,11 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
         /* blocking memory transfer: pinned host input buffer -> opencl/device tile */
         err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, iorigin, iregion,
                                                  (size_t)iroi_full.width * in_bpp, CL_TRUE);
-        if(err != CL_SUCCESS) goto error;
+        if(err != CL_SUCCESS)
+        {
+          use_pinned_memory = FALSE;
+          goto error;
+        }
       }
       else
       {
@@ -1916,8 +1920,11 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
         /* blocking memory transfer: complete opencl/device tile -> pinned host output buffer */
         err = dt_opencl_read_host_from_device_raw(devid, (char *)output_buffer, output, oforigin, ofregion,
                                                   (size_t)oroi_full.width * out_bpp, CL_TRUE);
-        if(err != CL_SUCCESS) goto error;
-
+        if(err != CL_SUCCESS)
+        {
+          use_pinned_memory = FALSE;
+          goto error;
+        }
 /* copy "good" part of tile from pinned output buffer to output image */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -1945,8 +1952,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       output = NULL;
 
       /* block until opencl queue has finished to free all used event handlers */
-      if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
-        dt_opencl_finish(devid);
+      dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
     }
 
   /* copy back final processed_maximum */
@@ -1970,9 +1976,11 @@ error:
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
+  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
-      "[default_process_tiling_opencl_roi] couldn't run process_cl() for module '%s' in tiling mode: %d\n",
-      self->op, err);
+      "[default_process_tiling_opencl_roi] couldn't run process_cl() for module '%s' in tiling mode:%s %s\n",
+      self->op, (pinning_error) ? " pinning problem" : "", cl_errstr(err));
+  if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
   return FALSE;
 }
 
@@ -2015,7 +2023,7 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
       = ((float)roi_out->width * (float)roi_out->height) / ((float)roi_in->width * (float)roi_in->height);
 
   tiling->factor = 1.0f + ioratio;
-  tiling->factor_cl = tiling->factor;  // by default, we need the same memory on host or GPU
+  tiling->factor_cl = fmaxf(2.0f, tiling->factor); // at least have in & output buffer
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = tiling->maxbuf;
   tiling->overhead = 0;

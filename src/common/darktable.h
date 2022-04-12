@@ -156,7 +156,7 @@ typedef unsigned int u_int;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 7
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 9
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -289,7 +289,8 @@ typedef struct dt_sys_resources_t
   int *refresource; // for the debug resource modes we use fixed settings
   int group;
   int level;
-  int tunecl;
+  int tunememory;
+  int tunepinning;
 } dt_sys_resources_t;
 
 typedef struct darktable_t

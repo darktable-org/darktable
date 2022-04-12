@@ -165,7 +165,7 @@ const char *aliases()
   return _("offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|saturation");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("affect color, brightness and contrast"),
                                       _("corrective or creative"),
@@ -576,31 +576,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float chroma_factor = fmaxf(1.f + chroma_boost + vibrance, 0.f);
     Ych[1] *= chroma_factor;
 
-    // Do a test conversion to Yrg
-    Ych_to_Yrg(Ych, Yrg);
+    // clip chroma at constant hue and Y if needed
+    gamut_check_Yrg(Ych);
 
-    // Gamut-clip in Yrg at constant hue and luminance
-    // e.g. find the max chroma value that fits in gamut at the current hue
-    const dt_aligned_pixel_t D65 = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
-    float max_c = Ych[1];
-    const float cos_h = cosf(Ych[2]);
-    const float sin_h = sinf(Ych[2]);
-
-    if(Yrg[1] < 0.f)
-    {
-      max_c = fminf(-D65[0] / cos_h, max_c);
-    }
-    if(Yrg[2] < 0.f)
-    {
-      max_c = fminf(-D65[1] / sin_h, max_c);
-    }
-    if(Yrg[1] + Yrg[2] > 1.f)
-    {
-      max_c = fminf((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
-    }
-
-    // Overwrite chroma with the sanitized value and go to Yrg for real
-    Ych[1] = max_c;
+    // go to Yrg for real
     Ych_to_Yrg(Ych, Yrg);
 
     // Go to LMS
@@ -1723,8 +1702,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
   dt_bauhaus_slider_set_format(g->shadows_weight, "%");
   gtk_widget_set_tooltip_text(g->shadows_weight, _("weight of the shadows over the whole tonal range"));
-  dt_bauhaus_widget_set_quad_paint(g->shadows_weight, dtgtk_cairo_paint_showmask,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->shadows_weight, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->shadows_weight, TRUE);
   g_signal_connect(G_OBJECT(g->shadows_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
 
@@ -1732,8 +1710,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->mask_grey_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->mask_grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->mask_grey_fulcrum, _("position of the middle-gray reference for masking"));
-  dt_bauhaus_widget_set_quad_paint(g->mask_grey_fulcrum, dtgtk_cairo_paint_showmask,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->mask_grey_fulcrum, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->mask_grey_fulcrum, TRUE);
   g_signal_connect(G_OBJECT(g->mask_grey_fulcrum), "quad-pressed", G_CALLBACK(mask_callback), self);
 
@@ -1741,8 +1718,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->highlights_weight, 4);
   dt_bauhaus_slider_set_format(g->highlights_weight, "%");
   gtk_widget_set_tooltip_text(g->highlights_weight, _("weights of highlights over the whole tonal range"));
-  dt_bauhaus_widget_set_quad_paint(g->highlights_weight, dtgtk_cairo_paint_showmask,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_paint(g->highlights_weight, dtgtk_cairo_paint_showmask, 0, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->highlights_weight, TRUE);
   g_signal_connect(G_OBJECT(g->highlights_weight), "quad-pressed", G_CALLBACK(mask_callback), self);
 

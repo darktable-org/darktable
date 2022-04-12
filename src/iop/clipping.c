@@ -314,7 +314,7 @@ const char *aliases()
   return _("reframe|perspective|keystone|distortion");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("change the framing and correct the perspective"),
                                       _("corrective or creative"),
@@ -2045,16 +2045,6 @@ static void key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable
   dt_control_queue_redraw_center();
 }
 
-static gboolean key_commit_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)data;
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  commit_box(self, g, p);
-  return TRUE;
-}
-
 static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 {
   key_swap_callback(NULL, NULL, 0, 0, self);
@@ -3360,16 +3350,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   }
   else
     return 0;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, TRUE, N_("commit"), GDK_KEY_Return, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_accel_connect_iop(self, "commit", g_cclosure_new(G_CALLBACK(key_commit_callback), (gpointer)self, NULL));
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)

@@ -90,13 +90,6 @@
 @define-color graph_grid @grey_20;
 @define-color inset_histogram alpha(@grey_80, 0.50);
 
-/* Adjust color of top shown infos on darkroom */
-#log-msg,
-#toast-msg
-{
-  background-color: rgba(90,90,90,0.6);
-}
-
 /* Set background on thumbnails hover overlays */
 .dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
 .dt_overlays_mixed #thumb_main:hover #thumb_bottom,

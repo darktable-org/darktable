@@ -654,7 +654,7 @@ static void _settings_flip_changed(GtkWidget *w, _guides_settings_t *gw)
 void dt_guides_set_overlay_colors()
 {
   const int overlay_color = dt_conf_get_int("darkroom/ui/overlay_color");
-  
+
   darktable.gui->overlay_contrast = dt_conf_get_float("darkroom/ui/overlay_contrast");
 
   darktable.gui->overlay_red = darktable.gui->overlay_green = darktable.gui->overlay_blue = 0.0f;
@@ -898,7 +898,7 @@ void dt_guides_init_module_widget(GtkWidget *iopw, struct dt_iop_module_t *modul
 
   g_signal_connect(G_OBJECT(cb), "toggled", G_CALLBACK(_settings_autoshow_change2), module);
   gtk_widget_set_tooltip_text(cb, _("show guide overlay when this module has focus"));
-  GtkWidget *ic = dtgtk_button_new(dtgtk_cairo_paint_grid, CPF_STYLE_FLAT, NULL);
+  GtkWidget *ic = dtgtk_button_new(dtgtk_cairo_paint_grid, 0, NULL);
   gtk_widget_set_tooltip_text(ic, _("change global guide settings\nnote that these settings are applied globally "
                                     "and will impact any module that shows guide overlays"));
   g_signal_connect(G_OBJECT(ic), "clicked", G_CALLBACK(_settings_autoshow_menu), module);

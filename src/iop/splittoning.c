@@ -96,7 +96,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RGB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("use two specific colors for shadows and highlights and\n"
                                         "create a linear toning effect between them up to a pivot."),
@@ -468,8 +468,7 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 
   if(top)
   {
-    GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
-    gtk_style_context_add_class(context, "section_label_top");
+    dt_gui_add_class(GTK_WIDGET(label), "section_label_top");
   }
 
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);

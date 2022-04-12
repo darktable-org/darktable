@@ -155,9 +155,8 @@ int position()
 
 static void _set_widget_dimmed(GtkWidget *widget, const gboolean dimmed)
 {
-  GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  if(dimmed) gtk_style_context_add_class(context, "dt_dimmed");
-  else gtk_style_context_remove_class(context, "dt_dimmed");
+  if(dimmed) dt_gui_add_class(widget, "dt_dimmed");
+  else dt_gui_remove_class(widget, "dt_dimmed");
   gtk_widget_queue_draw(GTK_WIDGET(widget));
 }
 
@@ -294,7 +293,7 @@ static void _update_colors_filter(dt_lib_module_t *self)
   {
     const int i_mask = mask & mask_excluded ? CPF_USER_DATA_EXCLUDE : mask & mask_included ? CPF_USER_DATA_INCLUDE : 0;
     dtgtk_button_set_paint(DTGTK_BUTTON(d->colors[i]), dtgtk_cairo_paint_label_sel,
-                          (i | i_mask | CPF_BG_TRANSPARENT), NULL);
+                           (i | i_mask | CPF_LABEL_PURPLE), NULL);
     gtk_widget_queue_draw(d->colors[i]);
     if((mask & mask_excluded) || (mask & mask_included))
       nb++;
@@ -307,8 +306,7 @@ static void _update_colors_filter(dt_lib_module_t *self)
     dt_collection_set_colors_filter(darktable.collection, mask);
   }
   dtgtk_button_set_paint(DTGTK_BUTTON(d->colors_op),
-                         (mask & CL_AND_MASK) ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or,
-                         CPF_STYLE_FLAT, NULL);
+                         (mask & CL_AND_MASK) ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0, NULL);
   gtk_widget_set_sensitive(d->colors_op, nb > 1);
 }
 
@@ -361,6 +359,12 @@ static void _colors_operation_clicked(GtkWidget *w, dt_lib_module_t *self)
 #undef CL_ALL_EXCLUDED
 #undef CL_ALL_INCLUDED
 
+static void _reset_filters(dt_action_t *action)
+{
+  _lib_filter_reset(dt_action_lib(action), FALSE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -378,7 +382,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
   GtkWidget *overlay = gtk_overlay_new();
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->comparator, self, NULL, NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->comparator, self, NULL, N_("comparator"),
                                _("filter by images rating"),
                                dt_collection_get_rating_comparator(darktable.collection),
                                _lib_filter_comparator_changed, self,
@@ -388,12 +392,13 @@ void gui_init(dt_lib_module_t *self)
                                "≥", // DT_COLLECTION_RATING_COMP_GEQ,
                                ">", // DT_COLLECTION_RATING_COMP_GT,
                                "≠");// DT_COLLECTION_RATING_COMP_NE,
+  dt_bauhaus_widget_set_label(d->comparator, NULL, NULL);
   gtk_widget_set_halign(d->comparator, GTK_ALIGN_START);
   gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->comparator);
   gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(overlay), d->comparator, TRUE);
 
   /* create the filter combobox */
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->stars, self, NULL, NULL,
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(d->stars, self, NULL, N_("ratings"),
                                _("filter by images rating"),
                                dt_collection_get_rating(darktable.collection),
                                _lib_filter_combobox_changed, self,
@@ -406,16 +411,17 @@ void gui_init(dt_lib_module_t *self)
                                "★ ★ ★ ★ ★",
                                N_("rejected only"),
                                N_("all except rejected"));
+  dt_bauhaus_widget_set_label(d->stars, NULL, NULL);
   gtk_container_add(GTK_CONTAINER(overlay), d->stars);
   gtk_box_pack_start(GTK_BOX(hbox), overlay, FALSE, FALSE, 0);
-  GtkStyleContext *context = gtk_widget_get_style_context(hbox);
-  gtk_style_context_add_class(context, "quick_filter_box");
+  dt_gui_add_class(hbox, "quick_filter_box");
 
   // colorlabels filter
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {
-    d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, (k | CPF_BG_TRANSPARENT), NULL);
+    d->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, k, NULL);
+    dt_gui_add_class(d->colors[k], "dt_no_hover");
     g_object_set_data(G_OBJECT(d->colors[k]), "colors_index", GINT_TO_POINTER(k));
     gtk_box_pack_start(GTK_BOX(hbox), d->colors[k], FALSE, FALSE, 0);
     gtk_widget_set_tooltip_text(d->colors[k], _("filter by images color label"
@@ -424,7 +430,7 @@ void gui_init(dt_lib_module_t *self)
                                                 "\nthe gray button affects all color labels"));
     g_signal_connect(G_OBJECT(d->colors[k]), "button-press-event", G_CALLBACK(_colorlabel_clicked), self);
   }
-  d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_and, CPF_STYLE_FLAT, NULL);
+  d->colors_op = dtgtk_button_new(dtgtk_cairo_paint_and, 0, NULL);
   _update_colors_filter(self);
   gtk_box_pack_start(GTK_BOX(hbox), d->colors_op, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(d->colors_op, _("filter by images color label"
@@ -432,9 +438,9 @@ void gui_init(dt_lib_module_t *self)
                                               "\nor (∪): images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(d->colors_op), "clicked", G_CALLBACK(_colors_operation_clicked), self);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 2);
-  context = gtk_widget_get_style_context(hbox);
-  gtk_style_context_add_class(context, "quick_filter_box");
-  gtk_style_context_add_class(context, "dt_font_resize_07");
+  gtk_widget_set_name(hbox, "lib-label-colors");
+  dt_gui_add_class(hbox, "quick_filter_box");
+  dt_gui_add_class(hbox, "dt_font_resize_07");
 
   // text filter
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -457,27 +463,21 @@ void gui_init(dt_lib_module_t *self)
                                 "\nstarting or ending with a double quote disables the corresponding wildcard"
           /* xgettext:no-c-format */
                                 "\nis dimmed during the search execution"));
-  context = gtk_widget_get_style_context(d->text);
-  gtk_style_context_add_class(context, "dt_transparent_background");
+  dt_gui_add_class(d->text, "dt_transparent_background");
   gtk_box_pack_start(GTK_BOX(hbox), d->text, FALSE, FALSE, 0);
-  context = gtk_widget_get_style_context(hbox);
-  gtk_style_context_add_class(context, "quick_filter_box");
+  dt_gui_add_class(hbox, "quick_filter_box");
 
   /* sort combobox */
-  label = gtk_label_new(_("sort by"));
-  gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
-
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 4);
   const dt_collection_sort_t sort = dt_collection_get_sort_field(darktable.collection);
-  d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, NULL,
+  d->sort = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("sort by"),
                                          _("determine the sort order of shown images"),
                                          _filter_get_items(sort), _lib_filter_sort_combobox_changed, self,
                                          _sort_names);
   gtk_box_pack_start(GTK_BOX(hbox), d->sort, FALSE, FALSE, 0);
-  context = gtk_widget_get_style_context(hbox);
-  gtk_style_context_add_class(context, "quick_filter_box");
-  gtk_style_context_add_class(context, "dt_font_resize_07");
+  dt_gui_add_class(hbox, "quick_filter_box");
+  dt_gui_add_class(hbox, "dt_font_resize_07");
 
   /* reverse order checkbutton */
   d->reverse = dtgtk_togglebutton_new(dtgtk_cairo_paint_sortby, CPF_DIRECTION_UP, NULL);
@@ -485,8 +485,7 @@ void gui_init(dt_lib_module_t *self)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(d->reverse), dtgtk_cairo_paint_sortby,
                                  CPF_DIRECTION_DOWN, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), d->reverse, FALSE, FALSE, 0);
-  context = gtk_widget_get_style_context(d->reverse);
-  gtk_style_context_add_class(context, "dt_transparent_background");
+  dt_gui_add_class(d->reverse, "dt_ignore_fg_state");
 
   /* select the last value and connect callback */
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),
@@ -503,6 +502,7 @@ void gui_init(dt_lib_module_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE,
                             G_CALLBACK(_lib_filter_images_order_change), self);
+  dt_action_register(DT_ACTION(self), N_("reset filters"), _reset_filters, 0, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -676,24 +676,6 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
   _reset_stars_filter(self, smart_filter);
   _reset_text_filter(self);
   _reset_colors_filter(self);
-}
-
-static gboolean _reset_filters(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, dt_lib_module_t *self)
-{
-  _lib_filter_reset(self, FALSE);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
-  return TRUE;
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "reset filters"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_connect_lib(self, "reset filters", g_cclosure_new(G_CALLBACK(_reset_filters), self, NULL));
 }
 
 #ifdef USE_LUA

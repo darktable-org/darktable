@@ -416,16 +416,6 @@ guint dt_gui_translated_key_state(GdkEventKey *event);
 // return modifier keys currently pressed, independent of any key event
 GdkModifierType dt_key_modifier_state();
 
-// create an ellipsized button with label, tooltip and help link
-static inline GtkWidget *dt_ui_button_new(const gchar *label, const gchar *tooltip, const gchar *help)
-{
-  GtkWidget *button = gtk_button_new_with_label(label);
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
-  if(tooltip) gtk_widget_set_tooltip_text(button, tooltip);
-  if(help) dt_gui_add_help_link(button, help);
-  return button;
-};
-
 GtkWidget *dt_ui_scroll_wrap(GtkWidget *w, gint min_size, char *config_str);
 
 // check whether the given container has any user-added children
@@ -465,6 +455,10 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
 
 // routine to hide the collapsible section
 void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
+
+// call class function to add or remove CSS classes
+void dt_gui_add_class(GtkWidget *widget, const gchar *class_name);
+void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

@@ -38,7 +38,6 @@ typedef enum dt_action_type_t
   DT_ACTION_TYPE_VALUE_FALLBACK,
   // === all widgets below
   DT_ACTION_TYPE_PER_INSTANCE,
-  DT_ACTION_TYPE_CLOSURE,
   DT_ACTION_TYPE_WIDGET,
   // === dynamically assign widget type numbers from here
 } dt_action_type_t;

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2010-2021 darktable developers.
+    Copyright (C) 2010-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,12 +27,15 @@
 #define DT_OPENCL_MAX_KERNELS 512
 #define DT_OPENCL_EVENTLISTSIZE 256
 #define DT_OPENCL_EVENTNAMELENGTH 64
-#define DT_OPENCL_MAX_EVENTS 256
 #define DT_OPENCL_MAX_ERRORS 5
 #define DT_OPENCL_MAX_INCLUDES 7
 #define DT_OPENCL_VENDOR_AMD 4098
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_INTEL 0x8086u
+
+// some pseudo error codes in dt opencl usage
+#define DT_OPENCL_DEFAULT_ERROR -999
+#define DT_OPENCL_SYSMEM_ALLOCATION -998
 
 #include "common/darktable.h"
 
@@ -84,6 +87,20 @@ typedef struct dt_opencl_eventtag_t
   char tag[DT_OPENCL_EVENTNAMELENGTH];
 } dt_opencl_eventtag_t;
 
+typedef enum dt_opencl_tunemode_t
+{
+  DT_OPENCL_TUNE_NOTHING = 0,
+  DT_OPENCL_TUNE_MEMSIZE = 1,
+  DT_OPENCL_TUNE_PINNED  = 2
+} dt_opencl_tunemode_t;
+
+typedef enum dt_opencl_pinmode_t
+{
+  DT_OPENCL_PINNING_OFF = 0,
+  DT_OPENCL_PINNING_ON = 1,
+  DT_OPENCL_PINNING_DISABLED = 2,
+  DT_OPENCL_PINNING_ERROR = 4
+} dt_opencl_pinmode_t;
 
 /**
  * to support multi-gpu and mixed systems with cpu support,
@@ -113,6 +130,7 @@ typedef struct dt_opencl_device_t
   int totalevents;
   int totalsuccess;
   int totallost;
+  int maxeventslot;
   int nvidia_sm_20;
   const char *vendor;
   const char *name;
@@ -136,6 +154,11 @@ typedef struct dt_opencl_device_t
   // this can often be avoided by using indirect transfers via pinned memory.
   // other devices have more efficient direct memory transfer implementations.
   // AMD seems to belong to the first group, nvidia to the second.
+  // this holds a bitmask defined by dt_opencl_pinmode_t
+  // the device specific conf key might hold
+  // 0 -> disabled by default; might be switched on by tune for performance
+  // 1 -> enabled by default
+  // 2 -> disabled under all circumstances. This could/should be used if we give away / ship specific keys for buggy systems 
   int pinned_memory;
   // in OpenCL processing round width/height of global work groups to a multiple of these values.
   // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
@@ -143,6 +166,15 @@ typedef struct dt_opencl_device_t
   int clroundup_ht;
   // A bitfield that identifies the type of OpenCL device
   unsigned int cltype;
+  // how often should dt_opencl_events_get_slot do a dt_opencl_events_flush
+  int event_handles;
+  // opencl_events enabled for the device
+  int use_events;
+  // async pixelpipe mode for device
+  // if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency.
+  // however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed
+  // instead of only a single module. export pixelpipe will always be run synchronously.
+  int asyncmode;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
@@ -160,9 +192,6 @@ typedef struct dt_opencl_t
 {
   dt_pthread_mutex_t lock;
   int inited;
-  int use_events;
-  int async_pixelpipe;
-  int number_event_handles;
   int print_statistics;
   dt_opencl_sync_cache_t sync_cache;
   int enabled;
@@ -238,8 +267,12 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
 /** cleans up the opencl subsystem. */
 void dt_opencl_cleanup(dt_opencl_t *cl);
 
+const char *cl_errstr(cl_int error);
+/** both finish functions return TRUE in case of success */
 /** cleans up command queue. */
 int dt_opencl_finish(const int devid);
+/** cleans up command queue if in synchron mode or while exporting */
+int dt_opencl_finish_sync_pipe(const int devid, const int pipetype);
 
 /** enqueues a synchronization point. */
 int dt_opencl_enqueue_barrier(const int devid);
@@ -296,6 +329,9 @@ int dt_opencl_is_enabled(void);
 
 /** disable opencl */
 void dt_opencl_disable(void);
+
+/** get OpenCL tuning mode flags */
+int dt_opencl_get_tuning_mode(void);
 
 /** update enabled flag and profile with value from preferences, returns enabled flag */
 int dt_opencl_update_settings(void);
@@ -455,7 +491,11 @@ static inline void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl
 static inline void dt_opencl_cleanup(dt_opencl_t *cl)
 {
 }
-static inline int dt_opencl_finish(const int devid)
+static inline gboolean dt_opencl_finish(const int devid)
+{
+  return -1;
+}
+static inline gboolean dt_opencl_finish_sync_pipe(const int devid, const int pipetype)
 {
   return -1;
 }
@@ -522,6 +562,11 @@ static inline int dt_opencl_is_enabled(void)
 }
 static inline void dt_opencl_disable(void)
 {
+}
+/** get OpenCL tuning mode flags */
+static inline int dt_opencl_get_tuning_mode(void)
+{
+  return 0;
 }
 static inline int dt_opencl_update_settings(void)
 {

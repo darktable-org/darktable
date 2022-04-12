@@ -39,14 +39,6 @@
 #define FINISH { cairo_identity_matrix(cr); \
                  cairo_restore(cr); }
 
-const GdkRGBA _colorlabels[]
-  = { {.red = 0.9, .green = 0.0, .blue = 0.0, .alpha = 1.0 }, // red
-      {.red = 0.9, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // yellow
-      {.red = 0.0, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // green
-      {.red = 0.0, .green = 0.1, .blue = 0.9, .alpha = 1.0 }, // blue (need a little green here to improve contrast of blue label in darker theme especially while being good in other themes)
-      {.red = 0.9, .green = 0.0, .blue = 0.9, .alpha = 1.0 }, // purple
-    };
-
 void dtgtk_cairo_paint_empty(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
@@ -200,7 +192,7 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
 
 void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.9, 1, 0, 0)
+  PREAMBLE(1, 1.2, 0, 0)
 
   cairo_move_to(cr, 0.1, 0.05);
   cairo_line_to(cr, 0.1, 0.95);
@@ -1508,9 +1500,7 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
   if(color < DT_COLORLABELS_LAST)
   {
-    const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
-
-    set_color(cr, colorlabels[color]);
+    set_color(cr, darktable.bauhaus->colorlabels[color]);
   }
   else
   {
@@ -1542,28 +1532,26 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   #define CPF_USER_DATA_INCLUDE CPF_USER_DATA
   #define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
-  PREAMBLE(1, 1, 0, 0)
+  PREAMBLE(0.9, 1, 0, 0)
 
   const double r = 0.4;
-  const float alpha = flags & CPF_PRELIGHT ? 1.0 : 0.6;
   const dt_colorlabels_enum color = (flags & 7);
-  const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
 
   if(color < DT_COLORLABELS_LAST)
   {
-    cairo_set_source_rgba(cr, colorlabels[color].red, colorlabels[color].green, colorlabels[color].blue, alpha);
+    set_color(cr, darktable.bauhaus->colorlabels[color]);
   }
   else
   {
-    cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, alpha);
+    cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, 1.0);
   }
 
   /* make blue color label icon more visible and well balanced with other colors */
-  if(flags & CPF_DIRECTION_RIGHT)
+  if(flags & CPF_LABEL_BLUE)
   {
     cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
   }
-  
+
   /* then improve hover effect for same blue icon */
   if (flags & CPF_PRELIGHT)
   {
@@ -1746,42 +1734,40 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
 {
   PREAMBLE(1.1, 1, 0, 0)
 
-  const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
-
   const float r = 0.18;
 
-  if(flags & CPF_DIRECTION_UP)
+  if(flags & CPF_LABEL_RED)
   {
     cairo_arc(cr, r, r, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_RED]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_RED]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_DIRECTION_DOWN)
+  if(flags & CPF_LABEL_YELLOW)
   {
     cairo_arc(cr, 1.0 - r, r, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_YELLOW]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_YELLOW]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_DIRECTION_LEFT)
+  if(flags & CPF_LABEL_GREEN)
   {
     cairo_arc(cr, 0.5, 0.5, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_GREEN]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_GREEN]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_DIRECTION_RIGHT)
+  if(flags & CPF_LABEL_BLUE)
   {
     cairo_arc(cr, r, 1.0 - r, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_BLUE]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_BLUE]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_BG_TRANSPARENT)
+  if(flags & CPF_LABEL_PURPLE)
   {
     cairo_arc(cr, 1.0 - r, 1.0 - r, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_PURPLE]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_PURPLE]);
     cairo_fill(cr);
   }
 
