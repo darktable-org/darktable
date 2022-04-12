@@ -2023,7 +2023,7 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
       = ((float)roi_out->width * (float)roi_out->height) / ((float)roi_in->width * (float)roi_in->height);
 
   tiling->factor = 1.0f + ioratio;
-  tiling->factor_cl = tiling->factor;  // by default, we need the same memory on host or GPU
+  tiling->factor_cl = fmaxf(2.0f, tiling->factor); // at least have in & output buffer
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = tiling->maxbuf;
   tiling->overhead = 0;
