@@ -2828,7 +2828,7 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
   if(!darktable.opencl->inited || devid < 0) return FALSE;
 
   const size_t required  = width * height * bpp;
-  const size_t total = factor * required + overhead;
+  const size_t total = fmaxf(2.0f, factor) * required + overhead;
 
   if((dt_opencl_get_device_memalloc(devid) < required) || (dt_opencl_get_device_available(devid) < total))
     return FALSE;  
