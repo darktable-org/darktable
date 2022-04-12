@@ -603,7 +603,7 @@ static gboolean _draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_dat
 
   switch(which)
   {
-    case DT_UI_PANEL_LEFT:
+    case DT_UI_BORDER_LEFT:
       if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT))
       {
         cairo_move_to(cr, width, height / 2 - width);
@@ -617,7 +617,7 @@ static gboolean _draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_dat
         cairo_rel_line_to(cr, width, -width);
       }
       break;
-    case DT_UI_PANEL_RIGHT:
+    case DT_UI_BORDER_RIGHT:
       if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT))
       {
         cairo_move_to(cr, 0.0, height / 2 - width);
@@ -631,7 +631,7 @@ static gboolean _draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_dat
         cairo_rel_line_to(cr, -width, -width);
       }
       break;
-    case DT_UI_PANEL_TOP:
+    case DT_UI_BORDER_TOP:
       if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP))
       {
         cairo_move_to(cr, width / 2 - height, height);
