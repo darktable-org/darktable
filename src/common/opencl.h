@@ -33,6 +33,10 @@
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_INTEL 0x8086u
 
+// some pseudo error codes in dt opencl usage
+#define DT_OPENCL_DEFAULT_ERROR -999
+#define DT_OPENCL_SYSMEM_ALLOCATION -998
+
 #include "common/darktable.h"
 
 #ifdef HAVE_OPENCL
