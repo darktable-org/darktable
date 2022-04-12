@@ -1944,18 +1944,15 @@ void gui_init(dt_lib_module_t *self)
   // create widgets
   GtkWidget *overlay = gtk_overlay_new();
   dt_action_t *dark = dt_action_section(&darktable.view_manager->proxy.darkroom.view->actions, N_("histogram"));
-  dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
   dt_action_t *ac = NULL;
 
   dt_action_register(dark, N_("cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
-  dt_action_register(teth, N_("cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
 
   // shows the scope, scale, and has draggable areas
   d->scope_draw = gtk_drawing_area_new();
   gtk_widget_set_tooltip_text(d->scope_draw, _("ctrl+scroll to change display height"));
   ac = dt_action_define(dark, NULL, N_("hide histogram"), d->scope_draw, NULL);
   dt_action_register(ac, NULL, _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_action_register(teth, N_("hide histogram"), _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   gtk_widget_set_events(d->scope_draw, GDK_ENTER_NOTIFY_MASK);
 
   // a row of control buttons
@@ -1977,13 +1974,20 @@ void gui_init(dt_lib_module_t *self)
   d->scope_type_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   ac = dt_action_define(dark, NULL, N_("switch histogram mode"), d->scope_type_button, NULL);
   dt_action_register(ac, NULL, _lib_histogram_change_mode_callback, 0, 0);
-  dt_action_register(teth, N_("switch histogram mode"), _lib_histogram_change_mode_callback, 0, 0);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_type_button, FALSE, FALSE, 0);
   d->scope_view_button = dtgtk_button_new(dtgtk_cairo_paint_empty, CPF_NONE, NULL);
   ac = dt_action_define(dark, NULL, N_("switch histogram type"), d->scope_view_button, NULL);
   dt_action_register(ac, NULL, _lib_histogram_change_type_callback, 0, 0);
-  dt_action_register(teth, N_("switch histogram type"), _lib_histogram_change_type_callback, 0, 0);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_view_button, FALSE, FALSE, 0);
+
+  dt_action_t *teth = &darktable.view_manager->proxy.tethering.view->actions;
+  if(teth)
+  {
+    dt_action_register(teth, N_("cycle histogram modes"), _lib_histogram_cycle_mode_callback, 0, 0);
+    dt_action_register(teth, N_("hide histogram"), _lib_histogram_collapse_callback, GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+    dt_action_register(teth, N_("switch histogram mode"), _lib_histogram_change_mode_callback, 0, 0);
+    dt_action_register(teth, N_("switch histogram type"), _lib_histogram_change_type_callback, 0, 0);
+  }
 
   // the red togglebutton turns into colorspace button in vectorscope
   d->button_stack = gtk_stack_new();
