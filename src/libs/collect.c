@@ -1052,7 +1052,7 @@ static void _lib_folders_update_collection(const gchar *filmroll)
   {
     dt_collection_memory_update();
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_NEW_QUERY,
-                                  DT_COLLECTION_PROP_UNDEF, NULL, -1);
+                                  DT_COLLECTION_PROP_UNDEF, (GList *)NULL, -1);
   }
 }
 

@@ -151,7 +151,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->buf = dt_calloc_align_float(b->size_x * b->size_z * b->numslices * b->slicerows);
   if (!b->buf)
   {
-    fprintf(stderr,"[bilateral] unable to allocate buffer for %lux%lux%lu grid\n",b->size_x,b->size_y,b->size_z);
+    fprintf(stderr,"[bilateral] unable to allocate buffer for %zux%zux%zu grid\n",b->size_x,b->size_y,b->size_z);
     free(b);
     return NULL;
   }

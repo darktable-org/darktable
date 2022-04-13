@@ -39,7 +39,7 @@ typedef enum dt_tag_flags_t
   DT_TF_CATEGORY    = 1 << 0, // this tag (or path) is not a keyword to be exported
   DT_TF_PRIVATE     = 1 << 1, // this tag is private. Will be exported only on demand
   DT_TF_ORDER_SET   = 1 << 2, // set if the tag has got an images order
-  DT_TF_DESCENDING  = 1 << 31,
+  DT_TF_DESCENDING  = 1U << 31,
 } dt_tag_flags_t;
 
 #define DT_TF_ALL (DT_TF_CATEGORY | DT_TF_PRIVATE | DT_TF_ORDER_SET)
