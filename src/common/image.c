@@ -2815,7 +2815,7 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
   if(img->camera_missing_sample)
   {
     char *msg = dt_image_camera_missing_sample_message(img, TRUE);
-    dt_control_log (msg, NULL);
+    dt_control_log(msg, (char *)NULL);
     g_free(msg);
   }
 }

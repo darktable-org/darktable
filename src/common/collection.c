@@ -188,7 +188,7 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, 
 {
   const uint32_t tagid = collection->tagid;
   char tag[16] = { 0 };
-  snprintf(tag, sizeof(tag), "%d", tagid);
+  snprintf(tag, sizeof(tag), "%u", tagid);
 
   // clang-format off
   *selq_pre = dt_util_dstrcat(*selq_pre,
@@ -224,7 +224,7 @@ int dt_collection_update(const dt_collection_t *collection)
     /* add default filters */
     if(collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
     {
-      wq = g_strdup_printf("%s (film_id = %d)", and_operator(&and_term), collection->params.film_id);
+      wq = g_strdup_printf("%s (film_id = %u)", and_operator(&and_term), collection->params.film_id);
     }
     // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d",
@@ -503,7 +503,7 @@ int dt_collection_update(const dt_collection_t *collection)
   {
     const uint32_t tagid = collection->tagid;
     char tag[16] = { 0 };
-    snprintf(tag, sizeof(tag), "%d", tagid);
+    snprintf(tag, sizeof(tag), "%u", tagid);
     // clang-format off
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
@@ -523,7 +523,7 @@ int dt_collection_update(const dt_collection_t *collection)
   {
     const uint32_t tagid = collection->tagid;
     char tag[16] = { 0 };
-    snprintf(tag, sizeof(tag), "%d", tagid);
+    snprintf(tag, sizeof(tag), "%u", tagid);
     // clang-format off
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
@@ -2480,7 +2480,7 @@ static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_d
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD,
-                                  DT_COLLECTION_PROP_UNDEF, NULL, -1);
+                                  DT_COLLECTION_PROP_UNDEF, (GList *)NULL, -1);
   }
 }
 

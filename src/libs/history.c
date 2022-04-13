@@ -657,10 +657,10 @@ static void _lib_history_will_change_callback(gpointer instance, GList *history,
   lib->record_history_level += 1;
 }
 
-static gchar *_lib_history_change_text(dt_introspection_field_t *field, const char *d, dt_iop_params_t *params, dt_iop_params_t *oldpar)
+static gchar *_lib_history_change_text(dt_introspection_field_t *field, const char *d, gpointer params, gpointer oldpar)
 {
-  dt_iop_params_t *p = params + field->header.offset;
-  dt_iop_params_t *o = oldpar + field->header.offset;
+  dt_iop_params_t *p = (dt_iop_params_t *)((uint8_t *)params + field->header.offset);
+  dt_iop_params_t *o = (dt_iop_params_t *)((uint8_t *)oldpar + field->header.offset);
 
   switch(field->header.type)
   {
@@ -711,7 +711,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
       for(int i = 0, item_offset = 0; i < field->Array.count; i++, item_offset += field->Array.field->header.size)
       {
         char *description = g_strdup_printf("%s[%d]", d, i);
-        char *element_text = _lib_history_change_text(field->Array.field, description, params + item_offset, oldpar + item_offset);
+        char *element_text = _lib_history_change_text(field->Array.field, description, (uint8_t *)params + item_offset, (uint8_t *)oldpar + item_offset);
         g_free(description);
 
         if(element_text && ++num_parts <= max_elements)
