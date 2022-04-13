@@ -4809,7 +4809,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     float pts[4] = { x, y, g->lastx, g->lasty };
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe,
                                       self->iop_order,
-                                      DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+                                      DT_DEV_TRANSFORM_DIR_FORW_EXCL, pts, 2);
 
     float dx = pts[0] - pts[2];
     float dy = pts[1] - pts[3];
@@ -5875,4 +5875,3 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
