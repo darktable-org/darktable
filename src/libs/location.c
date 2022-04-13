@@ -674,9 +674,9 @@ void *get_params(dt_lib_module_t *self, int *size)
   params_fixed->bbox.lat2 = location->bbox.lat2;
   params_fixed->marker_type = location->marker_type;
 
-  memcpy(params + size_fixed, location->name, size_name);
+  memcpy((uint8_t *)params + size_fixed, location->name, size_name);
 
-  float *points = (float *)(params + size_fixed + size_name);
+  float *points = (float *)((uint8_t *)params + size_fixed + size_name);
   for(GList *iter = location->marker_points; iter; iter = g_list_next(iter), points += 2)
   {
     dt_geo_map_display_point_t *point = (dt_geo_map_display_point_t *)iter->data;
@@ -697,7 +697,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(size < size_fixed) return 1;
 
   const struct params_fixed_t *params_fixed = (struct params_fixed_t *)params;
-  const char *name = (char *)(params + size_fixed);
+  const char *name = (char *)((uint8_t *)params + size_fixed);
   const size_t size_name = strlen(name) + 1;
 
   if(size_fixed + size_name > size) return 1;
@@ -720,7 +720,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   location->name = g_strdup(name);
   location->marker_points = NULL;
 
-  for(const float *points = (float *)(params + size_fixed + size_name); (void *)points < params + size; points += 2)
+  for(const float *points = (float *)((uint8_t *)params + size_fixed + size_name); (uint8_t *)points < (uint8_t *)params + size; points += 2)
   {
     dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)malloc(sizeof(dt_geo_map_display_point_t));
     p->lat = points[0];

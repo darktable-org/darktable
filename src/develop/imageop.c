@@ -233,28 +233,28 @@ void dt_iop_default_init(dt_iop_module_t *module)
     switch(i->header.type)
     {
     case DT_INTROSPECTION_TYPE_FLOAT:
-      *(float*)(module->default_params + i->header.offset) = i->Float.Default;
+      *(float*)((uint8_t *)module->default_params + i->header.offset) = i->Float.Default;
       break;
     case DT_INTROSPECTION_TYPE_INT:
-      *(int*)(module->default_params + i->header.offset) = i->Int.Default;
+      *(int*)((uint8_t *)module->default_params + i->header.offset) = i->Int.Default;
       break;
     case DT_INTROSPECTION_TYPE_UINT:
-      *(unsigned int*)(module->default_params + i->header.offset) = i->UInt.Default;
+      *(unsigned int*)((uint8_t *)module->default_params + i->header.offset) = i->UInt.Default;
       break;
     case DT_INTROSPECTION_TYPE_USHORT:
-      *(unsigned short*)(module->default_params + i->header.offset) = i->UShort.Default;
+      *(unsigned short*)((uint8_t *)module->default_params + i->header.offset) = i->UShort.Default;
       break;
     case DT_INTROSPECTION_TYPE_ENUM:
-      *(int*)(module->default_params + i->header.offset) = i->Enum.Default;
+      *(int*)((uint8_t *)module->default_params + i->header.offset) = i->Enum.Default;
       break;
     case DT_INTROSPECTION_TYPE_BOOL:
-      *(gboolean*)(module->default_params + i->header.offset) = i->Bool.Default;
+      *(gboolean*)((uint8_t *)module->default_params + i->header.offset) = i->Bool.Default;
       break;
     case DT_INTROSPECTION_TYPE_CHAR:
-      *(char*)(module->default_params + i->header.offset) = i->Char.Default;
+      *(char*)((uint8_t *)module->default_params + i->header.offset) = i->Char.Default;
       break;
     case DT_INTROSPECTION_TYPE_OPAQUE:
-      memset(module->default_params + i->header.offset, 0, i->header.size);
+      memset((uint8_t *)module->default_params + i->header.offset, 0, i->header.size);
       break;
     case DT_INTROSPECTION_TYPE_ARRAY:
       {
@@ -263,7 +263,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
         size_t element_size = i->Array.field->header.size;
         if(element_size % sizeof(int))
         {
-          int8_t *p = module->default_params + i->header.offset;
+          int8_t *p = (int8_t *)module->default_params + i->header.offset;
           for (size_t c = element_size; c < i->header.size; c++, p++)
             p[element_size] = *p;
         }
@@ -272,7 +272,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
           element_size /= sizeof(int);
           size_t num_ints = i->header.size / sizeof(int);
 
-          int *p = module->default_params + i->header.offset;
+          int *p = (int *)((uint8_t *)module->default_params + i->header.offset);
           for (size_t c = element_size; c < num_ints; c++, p++)
             p[element_size] = *p;
         }
@@ -1588,9 +1588,9 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module, const dt_develop_blend_
   module->raster_mask.sink.id = 0;
 }
 
-gboolean _iop_validate_params(dt_introspection_field_t *field, dt_iop_params_t *params, gboolean report)
+gboolean _iop_validate_params(dt_introspection_field_t *field, gpointer params, gboolean report)
 {
-  dt_iop_params_t *p = params + field->header.offset;
+  dt_iop_params_t *p = (dt_iop_params_t *)((uint8_t *)params + field->header.offset);
 
   gboolean all_ok = TRUE;
 
@@ -1632,7 +1632,7 @@ gboolean _iop_validate_params(dt_introspection_field_t *field, dt_iop_params_t *
     {
       for(int i = 0, item_offset = 0; i < field->Array.count; i++, item_offset += field->Array.field->header.size)
       {
-        if(!_iop_validate_params(field->Array.field, params + item_offset, report))
+        if(!_iop_validate_params(field->Array.field, (uint8_t *)params + item_offset, report))
         {
           if(report)
             fprintf(stderr, "validation check failed in _iop_validate_params for type \"%s\", for array element \"%d\"\n",

@@ -2848,31 +2848,31 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 
     size_t pos = 0;
     //   char *printer
-    memcpy(new_params + pos, printer, printer_len);
+    memcpy((uint8_t *)new_params + pos, printer, printer_len);
     pos += printer_len;
     //   char *paper
-    memcpy(new_params + pos, paper, paper_len);
+    memcpy((uint8_t *)new_params + pos, paper, paper_len);
     pos += paper_len;
     //   int32_t landscape
-    memcpy(new_params + pos, &landscape, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + pos, &landscape, sizeof(int32_t));
     pos += sizeof(int32_t);
     //   int32_t f_profile_type
-    memcpy(new_params + pos, &profile_type, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + pos, &profile_type, sizeof(int32_t));
     pos += sizeof(int32_t);
     //   char *f_profile
-    memcpy(new_params + pos, profile_filename, new_profile_len);
+    memcpy((uint8_t *)new_params + pos, profile_filename, new_profile_len);
     pos += new_profile_len;
     //   int32_t intent
-    memcpy(new_params + pos, &intent, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + pos, &intent, sizeof(int32_t));
     pos += sizeof(int32_t);
     //   int32_t f_pprofile_type
-    memcpy(new_params + pos, &pprofile_type, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + pos, &pprofile_type, sizeof(int32_t));
     pos += sizeof(int32_t);
     //   char *f_pprofile
-    memcpy(new_params + pos, pprofile_filename, new_pprofile_len);
+    memcpy((uint8_t *)new_params + pos, pprofile_filename, new_pprofile_len);
     pos += new_pprofile_len;
     //   <rest>
-    memcpy(new_params + pos, buf, old_params_size - ((char *)buf - (char *)old_params));
+    memcpy((uint8_t *)new_params + pos, buf, old_params_size - ((char *)buf - (char *)old_params));
 
     *new_size = new_params_size;
     *new_version = 2;
@@ -2903,15 +2903,15 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     // single image box specified (there is no way to create a box on the size
     // of the page at this stage).
     int32_t idx = old_params_size;
-    *(int32_t *)(new_params + idx) = 1;
+    *(int32_t *)((uint8_t *)new_params + idx) = 1;
     idx += sizeof(int32_t);
-    *(float *)(new_params + idx) = 0.05f;
+    *(float *)((uint8_t *)new_params + idx) = 0.05f;
     idx += sizeof(float);
-    *(float *)(new_params + idx) = 0.05f;
+    *(float *)((uint8_t *)new_params + idx) = 0.05f;
     idx += sizeof(float);
-    *(float *)(new_params + idx) = 0.90f;
+    *(float *)((uint8_t *)new_params + idx) = 0.90f;
     idx += sizeof(float);
-    *(float *)(new_params + idx) = 0.90f;
+    *(float *)((uint8_t *)new_params + idx) = 0.90f;
     // idx += sizeof(float);
 
     *new_size = new_params_size;

@@ -1566,23 +1566,23 @@ void init_presets(dt_lib_module_t *self)
         memcpy(new_params, op_params, copy_over_part);
         // next we have fversion, sversion, fsize, ssize, fdata, sdata which is the stuff that might change
         size_t pos = copy_over_part;
-        memcpy(new_params + pos, &new_fversion, sizeof(int32_t));
+        memcpy((uint8_t *)new_params + pos, &new_fversion, sizeof(int32_t));
         pos += sizeof(int32_t);
-        memcpy(new_params + pos, &new_sversion, sizeof(int32_t));
+        memcpy((uint8_t *)new_params + pos, &new_sversion, sizeof(int32_t));
         pos += sizeof(int32_t);
-        memcpy(new_params + pos, &new_fsize, sizeof(int32_t));
+        memcpy((uint8_t *)new_params + pos, &new_fsize, sizeof(int32_t));
         pos += sizeof(int32_t);
-        memcpy(new_params + pos, &new_ssize, sizeof(int32_t));
+        memcpy((uint8_t *)new_params + pos, &new_ssize, sizeof(int32_t));
         pos += sizeof(int32_t);
         if(new_fdata)
-          memcpy(new_params + pos, new_fdata, new_fsize);
+          memcpy((uint8_t *)new_params + pos, new_fdata, new_fsize);
         else
-          memcpy(new_params + pos, fdata, fsize);
+          memcpy((uint8_t *)new_params + pos, fdata, fsize);
         pos += new_fsize;
         if(new_sdata)
-          memcpy(new_params + pos, new_sdata, new_ssize);
+          memcpy((uint8_t *)new_params + pos, new_sdata, new_ssize);
         else
-          memcpy(new_params + pos, sdata, ssize);
+          memcpy((uint8_t *)new_params + pos, sdata, ssize);
 
         // write the updated preset back to db
         fprintf(stderr,
@@ -1662,10 +1662,10 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     // every newer version of the imageio modules should result in a preset that is not going through this code.
     int32_t fversion = 1;
     int32_t sversion = (strcmp(sname, "picasa") == 0 ? 2 : 1);
-    memcpy(new_params + first_half, &fversion, sizeof(int32_t));
-    memcpy(new_params + first_half + sizeof(int32_t), &sversion, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + first_half, &fversion, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + first_half + sizeof(int32_t), &sversion, sizeof(int32_t));
     // copy the rest of the old params over
-    memcpy(new_params + first_half + sizeof(int32_t) * 2, buf, old_params_size - first_half);
+    memcpy((uint8_t *)new_params + first_half + sizeof(int32_t) * 2, buf, old_params_size - first_half);
 
     *new_size = new_params_size;
     *new_version = 2;
@@ -1678,7 +1678,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     void *new_params = calloc(1, new_params_size);
 
     memcpy(new_params, old_params, sizeof(int32_t) * 2);
-    memcpy(new_params + sizeof(int32_t) * 3, old_params + sizeof(int32_t) * 2, old_params_size - sizeof(int32_t) * 2);
+    memcpy((uint8_t *)new_params + sizeof(int32_t) * 3, (uint8_t *)old_params + sizeof(int32_t) * 2, old_params_size - sizeof(int32_t) * 2);
 
     *new_size = new_params_size;
     *new_version = 3;
@@ -1726,12 +1726,12 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     size_t pos = 0;
     memcpy(new_params, old_params, sizeof(int32_t) * 4);
     pos += 4 * sizeof(int32_t);
-    memcpy(new_params + pos, &icctype, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + pos, &icctype, sizeof(int32_t));
     pos += sizeof(int32_t);
-    memcpy(new_params + pos, iccfilename, strlen(iccfilename) + 1);
+    memcpy((uint8_t *)new_params + pos, iccfilename, strlen(iccfilename) + 1);
     pos += strlen(iccfilename) + 1;
     size_t old_pos = 4 * sizeof(int32_t) + strlen(iccprofile) + 1;
-    memcpy(new_params + pos, old_params + old_pos, old_params_size - old_pos);
+    memcpy((uint8_t *)new_params + pos, (uint8_t *)old_params + old_pos, old_params_size - old_pos);
 
     *new_size = new_params_size;
     *new_version = 4;
@@ -1756,7 +1756,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     size_t pos = 0;
     memcpy(new_params, old_params, sizeof(int32_t) * 3);
     pos += 4 * sizeof(int32_t);
-    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - sizeof(int32_t) * 3);
+    memcpy((uint8_t *)new_params + pos, (uint8_t *)old_params + pos - sizeof(int32_t), old_params_size - sizeof(int32_t) * 3);
 
     *new_size = new_params_size;
     *new_version = 5;
@@ -1784,9 +1784,9 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     size_t pos = 0;
     memcpy(new_params, old_params, sizeof(int32_t) * 6);
     pos += 6 * sizeof(int32_t);
-    memcpy(new_params + pos, flags, flags_size);
+    memcpy((uint8_t *)new_params + pos, flags, flags_size);
     pos += flags_size;
-    memcpy(new_params + pos, old_params + pos - flags_size, old_params_size - sizeof(int32_t) * 6);
+    memcpy((uint8_t *)new_params + pos, (uint8_t *)old_params + pos - flags_size, old_params_size - sizeof(int32_t) * 6);
 
     g_free(flags);
     *new_size = new_params_size;
@@ -1810,7 +1810,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     size_t pos = 0;
     memcpy(new_params, old_params, sizeof(int32_t) * 4);
     pos += 5 * sizeof(int32_t);
-    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - sizeof(int32_t) * 4);
+    memcpy((uint8_t *)new_params + pos, (uint8_t *)old_params + pos - sizeof(int32_t), old_params_size - sizeof(int32_t) * 4);
 
     *new_size = new_params_size;
     *new_version = 7;
