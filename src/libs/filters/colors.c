@@ -31,6 +31,41 @@ typedef struct _widgets_colors_t
   GtkWidget *operator;
 } _widgets_colors_t;
 
+static void _colors_update_last_label(_widgets_colors_t *colors)
+{
+  gboolean all_sel = TRUE;
+  gboolean all_unsel = TRUE;
+  for(int i = 0; i < DT_COLORLABELS_LAST; i++)
+  {
+    const int sel_value = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(colors->colors[i]), "sel_value"));
+    if(sel_value == 1)
+    {
+      all_unsel = FALSE;
+    }
+    else if(sel_value == 2)
+    {
+      all_sel = FALSE;
+    }
+    else
+    {
+      all_sel = FALSE;
+      all_unsel = FALSE;
+    }
+  }
+  // we update the last button
+  int mask = DT_COLORLABELS_LAST;
+  if(all_sel)
+    mask |= CPF_USER_DATA_INCLUDE;
+  else if(all_unsel)
+    mask |= CPF_USER_DATA_EXCLUDE;
+
+  const int sel_value = all_sel ? 1 : (all_unsel ? 2 : 0);
+  g_object_set_data(G_OBJECT(colors->colors[DT_COLORLABELS_LAST]), "sel_value", GINT_TO_POINTER(sel_value));
+  dtgtk_button_set_paint(DTGTK_BUTTON(colors->colors[DT_COLORLABELS_LAST]), dtgtk_cairo_paint_label_sel, mask,
+                         NULL);
+  gtk_widget_queue_draw(colors->colors[DT_COLORLABELS_LAST]);
+}
+
 static void _colors_synchronise(_widgets_colors_t *source)
 {
   _widgets_colors_t *dest = NULL;
@@ -50,6 +85,8 @@ static void _colors_synchronise(_widgets_colors_t *source)
       dtgtk_button_set_paint(DTGTK_BUTTON(dest->colors[k]), dtgtk_cairo_paint_label_sel, bt->icon_flags, NULL);
       gtk_widget_queue_draw(dest->colors[k]);
     }
+
+    _colors_update_last_label(dest);
 
     const gboolean and_op = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(source->operator), "sel_value"));
     g_object_set_data(G_OBJECT(dest->operator), "sel_value", GINT_TO_POINTER(and_op));
@@ -84,7 +121,9 @@ static void _colors_changed(GtkWidget *widget, gpointer user_data)
                          NULL);
   gtk_widget_set_sensitive(colors->operator, nb> 1);
 
-  if(and_op || nb == 1) mask |= 0x80000000;
+  _colors_update_last_label(colors);
+
+  if(and_op || nb <= 1) mask |= 0x80000000;
 
   gchar *txt = g_strdup_printf("%d", mask);
   _rule_set_raw_text(colors->rule, txt, TRUE);
@@ -163,7 +202,7 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
   const gboolean op = val & 0x80000000;
   // we update the colors icons
   int nb = 0;
-  for(int i = 0; i < DT_COLORLABELS_LAST + 1; i++)
+  for(int i = 0; i < DT_COLORLABELS_LAST; i++)
   {
     const int id = 1 << i;
     int mask = 0;
@@ -191,6 +230,10 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
       gtk_widget_queue_draw(colorstop->colors[i]);
     }
   }
+  // we update the last button
+  _colors_update_last_label(colors);
+  if(colorstop) _colors_update_last_label(colorstop);
+
   // we update the operator
   g_object_set_data(G_OBJECT(colors->operator), "sel_value", GINT_TO_POINTER(op));
   dtgtk_button_set_paint(DTGTK_BUTTON(colors->operator), op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0,
