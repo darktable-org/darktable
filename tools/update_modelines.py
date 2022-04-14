@@ -74,7 +74,6 @@ class modelines_updater_t:
 			file.write(VIM_MODELINE)
 			file.write(KATE_MODELINE)
 			file.write(CLANG_ON)
-			file.write('\n')
 			
 	def update(self):
 		print('parsing {}'.format(self.filename));
