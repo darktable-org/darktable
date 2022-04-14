@@ -1732,14 +1732,14 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
-  if(old < 9)
+  if(old < 10)
   {
     g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
     g_strlcat(info, _("some global config values relevant for OpenCL performance are not used any longer."), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("instead you will find 'per device' data in 'cldevice_v2_canonical-name'. content is:"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
-    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n", DT_PERF_INFOSIZE);
     g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
