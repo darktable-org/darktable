@@ -145,36 +145,50 @@ typedef struct dt_opencl_device_t
 
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
-  // useful if your OpenCL implementation freezes/crashes on atomics or if they are processed with a bad performance.
+  // useful (only for very old devices) if your OpenCL implementation freezes/crashes on atomics or if
+  // they are processed with a bad performance.
   int avoid_atomics;
+
   // pause OpenCL processing for this number of microseconds from time to time
   int micro_nap;
-  // during tiling huge amounts of memory need to be transferred between host and device.
-  // for some OpenCL implementations direct memory transfers give a drastic performance penalty.
-  // this can often be avoided by using indirect transfers via pinned memory.
+
+  // During tiling huge amounts of memory need to be transferred between host and device.
+  // For some OpenCL implementations direct memory transfers give a drastic performance penalty,
+  // this can often be avoided by using indirect transfers via pinned memory,
   // other devices have more efficient direct memory transfer implementations.
-  // AMD seems to belong to the first group, nvidia to the second.
+  // We can't predict on solid grounds if a device belongs to the first or second group,
+  // also pinned mem transfer requires slightly more ram. 
   // this holds a bitmask defined by dt_opencl_pinmode_t
   // the device specific conf key might hold
   // 0 -> disabled by default; might be switched on by tune for performance
   // 1 -> enabled by default
   // 2 -> disabled under all circumstances. This could/should be used if we give away / ship specific keys for buggy systems 
   int pinned_memory;
+
   // in OpenCL processing round width/height of global work groups to a multiple of these values.
   // reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.
   int clroundup_wd;
   int clroundup_ht;
-  // A bitfield that identifies the type of OpenCL device
+
+  // A bitfield that identifies the type of OpenCL device required to test for on-CPU and more.
   unsigned int cltype;
-  // how often should dt_opencl_events_get_slot do a dt_opencl_events_flush
+
+  // This defines how often should dt_opencl_events_get_slot do a dt_opencl_events_flush.
+  // It should definitely le lower than the number of events that can be handled by the device/driver.
+  // FIXME we should be able to test for that with using >= OpenCl 2.0
   int event_handles;
-  // opencl_events enabled for the device
+
+  // opencl_events enabled for the device, set internally via event_handles
   int use_events;
+
   // async pixelpipe mode for device
   // if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency.
   // however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed
   // instead of only a single module. export pixelpipe will always be run synchronously.
   int asyncmode;
+
+  // a device might be turned off by force by setting this value to 1
+  int disabled; 
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
