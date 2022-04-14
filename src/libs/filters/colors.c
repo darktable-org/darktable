@@ -189,6 +189,62 @@ static void _colors_reset(_widgets_colors_t *colors)
   gtk_widget_set_sensitive(colors->operator, FALSE);
 }
 
+static gchar *_colors_pretty_print(const gchar *raw_txt)
+{
+  gchar *txt = NULL;
+  const int val = atoi(raw_txt);
+  const int colors_set = val & 0xFF;
+  const int colors_unset = (val & 0xFF00) >> 8;
+  // we update the colors icons
+  int nb = 0;
+  for(int i = 0; i < DT_COLORLABELS_LAST; i++)
+  {
+    const int id = 1 << i;
+    gboolean incl = TRUE;
+    if(colors_set & id)
+      incl = TRUE;
+    else if(colors_unset & id)
+      incl = FALSE;
+    else
+      continue;
+
+    nb++;
+    gchar *col = NULL;
+    switch(i)
+    {
+      case DT_COLORLABELS_RED:
+        col = g_strdup(_("R"));
+        break;
+      case DT_COLORLABELS_YELLOW:
+        col = g_strdup(_("Y"));
+        break;
+      case DT_COLORLABELS_GREEN:
+        col = g_strdup(_("G"));
+        break;
+      case DT_COLORLABELS_BLUE:
+        col = g_strdup(_("B"));
+        break;
+      default:
+        col = g_strdup(_("P"));
+        break;
+    }
+    txt = dt_util_dstrcat(txt, "%s%s%s%s", (i == 0) ? "" : " ", (incl) ? "" : "<s>", col, (incl) ? "" : "</s>");
+    g_free(col);
+  }
+  if(nb == 0)
+  {
+    txt = g_strdup(_("all"));
+  }
+  else if(nb > 1)
+  {
+    const gboolean op = val & 0x80000000;
+    gchar *txt2 = g_strdup_printf("%s(%s)", (op) ? "∩" : "∪", txt);
+    g_free(txt);
+    txt = txt2;
+  }
+  return txt;
+}
+
 static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
 {
   if(!rule->w_specific) return FALSE;
