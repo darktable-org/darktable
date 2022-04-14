@@ -243,11 +243,23 @@ void init_presets(dt_lib_module_t *self)
     params.sort[0].order = 0;                                                                                     \
   }
 
-  // based on aspect-ratio
+  // initial preset
+  CLEAR_PARAMS(_PRESET_ALL, DT_COLLECTION_PROP_RATING, DT_COLLECTION_SORT_DATETIME);
+  params.rules = 3;
+  params.rule[0].topbar = 1;
+  params.rule[1].item = DT_COLLECTION_PROP_COLORLABEL;
+  params.rule[1].mode = 0;
+  params.rule[1].off = 0;
+  params.rule[1].topbar = 1;
+  params.rule[2].item = DT_COLLECTION_PROP_TEXTSEARCH;
+  params.rule[2].mode = 0;
+  params.rule[2].off = 0;
+  params.rule[2].topbar = 1;
+  dt_lib_presets_add(_("initial setting"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
+  // based on aspect-ratio
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
   g_strlcpy(params.rule[0].string, "[1;1]", PARAM_STRING_SIZE);
-
   dt_lib_presets_add(_("square"), self->plugin_name, self->version(), &params, sizeof(params), TRUE);
 
   CLEAR_PARAMS(_PRESET_FILTERS, DT_COLLECTION_PROP_ASPECT_RATIO, DT_COLLECTION_SORT_DATETIME);
@@ -407,6 +419,66 @@ static void _filters_update_params(dt_lib_filtering_t *d)
   }
 }
 
+static void _history_save(dt_lib_filtering_t *d, const gboolean sort)
+{
+  // get the string of the rules
+  char buf[4096] = { 0 };
+  if(sort)
+    dt_collection_sort_serialize(buf, sizeof(buf));
+  else
+    dt_collection_serialize(buf, sizeof(buf), TRUE);
+
+  // compare to last saved history
+  char confname[200] = { 0 };
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory0", (sort) ? "sort_" : "");
+  gchar *str = dt_conf_get_string(confname);
+  if(!g_strcmp0(str, buf))
+  {
+    g_free(str);
+    return;
+  }
+  g_free(str);
+
+  // remove all subsequent history that have the same values
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory_max", (sort) ? "sort_" : "");
+  const int nbmax = dt_conf_get_int(confname);
+  int move = 0;
+  for(int i = 1; i < nbmax; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "", i);
+    gchar *string = dt_conf_get_string(confname);
+
+    if(!g_strcmp0(string, buf))
+    {
+      move++;
+      dt_conf_set_string(confname, "");
+    }
+    else if(move > 0)
+    {
+      dt_conf_set_string(confname, "");
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "",
+               i - move);
+      dt_conf_set_string(confname, string);
+    }
+    g_free(string);
+  }
+
+  // move all history entries +1 (and delete the last one)
+  for(int i = nbmax - 2; i >= 0; i--)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "", i);
+    gchar *string = dt_conf_get_string(confname);
+
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "", i + 1);
+    dt_conf_set_string(confname, string);
+    g_free(string);
+  }
+
+  // save current history
+  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory0", (sort) ? "sort_" : "");
+  dt_conf_set_string(confname, buf);
+}
+
 void *get_params(dt_lib_module_t *self, int *size)
 {
   _filters_update_params(self->data);
@@ -492,6 +564,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   /* update internal params */
   _filters_update_params(self->data);
+  _history_save(self->data, TRUE);
+  _history_save(self->data, FALSE);
 
   /* update ui */
   _filters_gui_update(self);
@@ -512,66 +586,6 @@ const char **views(dt_lib_module_t *self)
 uint32_t container(dt_lib_module_t *self)
 {
   return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
-}
-
-static void _history_save(dt_lib_filtering_t *d, const gboolean sort)
-{
-  // get the string of the rules
-  char buf[4096] = { 0 };
-  if(sort)
-    dt_collection_sort_serialize(buf, sizeof(buf));
-  else
-    dt_collection_serialize(buf, sizeof(buf), TRUE);
-
-  // compare to last saved history
-  char confname[200] = { 0 };
-  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory0", (sort) ? "sort_" : "");
-  gchar *str = dt_conf_get_string(confname);
-  if(!g_strcmp0(str, buf))
-  {
-    g_free(str);
-    return;
-  }
-  g_free(str);
-
-  // remove all subsequent history that have the same values
-  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory_max", (sort) ? "sort_" : "");
-  const int nbmax = dt_conf_get_int(confname);
-  int move = 0;
-  for(int i = 1; i < nbmax; i++)
-  {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "", i);
-    gchar *string = dt_conf_get_string(confname);
-
-    if(!g_strcmp0(string, buf))
-    {
-      move++;
-      dt_conf_set_string(confname, "");
-    }
-    else if(move > 0)
-    {
-      dt_conf_set_string(confname, "");
-      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "",
-               i - move);
-      dt_conf_set_string(confname, string);
-    }
-    g_free(string);
-  }
-
-  // move all history entries +1 (and delete the last one)
-  for(int i = nbmax - 2; i >= 0; i--)
-  {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "", i);
-    gchar *string = dt_conf_get_string(confname);
-
-    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory%1d", (sort) ? "sort_" : "", i + 1);
-    dt_conf_set_string(confname, string);
-    g_free(string);
-  }
-
-  // save current history
-  snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory0", (sort) ? "sort_" : "");
-  dt_conf_set_string(confname, buf);
 }
 
 static void _conf_update_rule(dt_lib_filtering_rule_t *rule)
