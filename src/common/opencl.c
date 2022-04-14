@@ -286,8 +286,7 @@ float dt_opencl_device_perfgain(const int devid)
 } 
 
 // returns 0 if all ok or an error if we failed to init this device
-static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *devices, const int k,
-                                 const int opencl_memory_requirement)
+static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *devices, const int k)
 {
   int res;
   cl_int err;
@@ -470,7 +469,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong),
                                            &(cl->dev[dev].max_global_mem), NULL);
-  if(cl->dev[dev].max_global_mem < (uint64_t)opencl_memory_requirement * 1024 * 1024)
+  if(cl->dev[dev].max_global_mem < (uint64_t)512ul * 1024ul * 1024ul)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[dt_opencl_device_init] discarding device %d `%s' due to insufficient global memory (%" PRIu64 "MB).\n", k,
@@ -768,12 +767,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl_platform_id *all_platforms = NULL;
   cl_uint *all_num_devices = NULL;
 
-  // user selectable parameter defines minimum requirement on GPU memory
-  // default is 768MB
-  // values below 200 will be (re)set to 200
-  const int opencl_memory_requirement = MAX(200, dt_conf_get_int("opencl_memory_requirement"));
-  dt_conf_set_int("opencl_memory_requirement", opencl_memory_requirement);
-
   cl->cpubenchmark = dt_conf_get_float("dt_cpubenchmark");
 
   if(exclude_opencl)
@@ -790,8 +783,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   // look for explicit definition of opencl_runtime library in preferences
   const char *library = dt_conf_get_string_const("opencl_library");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", (strlen(library) == 0) ? "default path" : library);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_requirement: %d\n",
-           dt_conf_get_int("opencl_memory_requirement"));
   str = dt_conf_get_string_const("opencl_device_priority");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
@@ -914,13 +905,10 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   int dev = 0;
   for(int k = 0; k < num_devices; k++)
   {
-    const int res = dt_opencl_device_init(cl, dev, devices, k, opencl_memory_requirement);
-
+    const int res = dt_opencl_device_init(cl, dev, devices, k);
     if(res != 0)
       continue;
-
     // increase dev only if dt_opencl_device_init was successful (res == 0)
-
     ++dev;
   }
   free(devices);
