@@ -124,6 +124,7 @@ typedef struct dt_iop_demosaic_params_t
   dt_iop_demosaic_method_t demosaicing_method; // $DEFAULT: DT_IOP_DEMOSAIC_RCD $DESCRIPTION: "demosaicing method"
   dt_iop_demosaic_lmmse_t lmmse_refine; // $DEFAULT: LMMSE_REFINE_1 $DESCRIPTION: "lmmse refine"
   float dual_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.20 $DESCRIPTION: "dual threshold"
+  gboolean pixelshift_enable; // $DEFAULT: 0 $DESCRIPTION: "enable pixelshift"
 } dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
@@ -135,6 +136,10 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *demosaic_method_xtrans;
   GtkWidget *dual_thrs;
   GtkWidget *lmmse_refine;
+  GtkWidget *pixelshift_enable;
+  GtkWidget *pixelshift_select_frame;
+  GtkWidget *pixelshift_motion_correction;
+  GtkWidget *pixelshift_show_motion_mask;
   gboolean visual_mask;
 } dt_iop_demosaic_gui_data_t;
 
@@ -204,6 +209,7 @@ typedef struct dt_iop_demosaic_data_t
   float median_thrs;
   double CAM_to_RGB[3][4];
   float dual_thrs;
+  gboolean pixelshift_enable;
 } dt_iop_demosaic_data_t;
 
 // Implemented on amaze_demosaic_RT.cc
@@ -2936,6 +2942,47 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
 
 #include "dual_demosaic.c"
 
+void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const i, float *const o, const dt_iop_roi_t *const roi_in,
+                        const dt_iop_roi_t *const roi_out)
+{
+  float const * frames_in[4];
+  for(int f = 0; f < 4; ++f)
+  {
+    /// TODO need original size here
+    frames_in[f] = i + (f * roi_in->width * roi_in->height);
+  }
+
+  if(piece->dsc_out.channels != 4)
+  {
+    fprintf(stderr, "unsuported number of output channels, got: %i\n", piece->dsc_out.channels);
+  }
+
+  fprintf(stderr, "demosaic enabled\n");
+  fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+
+  //const size_t row_offset = roi_out->height;
+
+  for(size_t idx = 0; idx < roi_out->width * roi_out->height * piece->dsc_out.channels;
+      idx += piece->dsc_out.channels)
+  {
+    // R
+    o[idx + 0] = frames_in[0][idx/piece->dsc_out.channels];
+    // G
+    o[idx + 1] = frames_in[1][idx/piece->dsc_out.channels];
+    o[idx + 1] += frames_in[2][idx/piece->dsc_out.channels];
+    o[idx + 1] /= 2.0;
+    // B
+    o[idx + 2] = frames_in[3][idx/piece->dsc_out.channels];
+    /*for(size_t c = 0; c < 3; ++c)
+    {
+      o[idx + c] = i[idx / piece->dsc_out.channels];
+    }*/
+  }
+
+}
+
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -2945,6 +2992,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_dev_clear_rawdetail_mask(piece->pipe);
 
+  /*fprintf(stderr, "demosaic, %s\n", dt_pixelpipe_name(piece->pipe->type));
+  fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);*/
   dt_iop_roi_t roi = *roi_in;
   dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
@@ -3018,6 +3068,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans, passes);
       else
         vng_interpolate(tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, xtrans, qual_flags & DEMOSAIC_ONLY_VNG_LINEAR);
+    }
+    else if(data->pixelshift_enable)
+    {
+      process_pixelshift(piece, pixels, tmp, &roi, &roo);
     }
     else
     {
@@ -3132,7 +3186,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     color_smoothing(o, roi_out, data->color_smoothing);
 }
 
-#ifdef HAVE_OPENCL
+#if 0 //#ifdef HAVE_OPENCL
 // color smoothing step by multiple passes of median filtering
 static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in,
                               cl_mem dev_out, const dt_iop_roi_t *const roi_out, const int passes)
@@ -5559,6 +5613,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->median_thrs = p->median_thrs;
   d->dual_thrs = p->dual_thrs;
   d->lmmse_refine = p->lmmse_refine;
+  if(pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
+  {
+    d->pixelshift_enable = (p->pixelshift_enable && (piece->dsc_in.frames == 4));
+    ///TODO this should also change checkbox
+
+    //fprintf(stderr, "demosaic ,commit_params, %s, pixelshift: %i\n", dt_pixelpipe_name(pipe->type), d->pixelshift_enable);
+  }
+  else
+  {
+    d->pixelshift_enable = FALSE;
+  }
+
+
   dt_iop_demosaic_method_t use_method = p->demosaicing_method;
   const gboolean xmethod = use_method & DEMOSAIC_XTRANS;
   const gboolean bayer   = (self->dev->image_storage.buf_dsc.filters != 9u);
@@ -5711,6 +5778,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
                             (use_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
                             (use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
                             (use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
+  ///TODO doesn't take into account previous modules?
+  const gboolean ispixelshift = (self->dev->image_storage.buf_dsc.frames == 4);
 
   gtk_widget_set_visible(g->demosaic_method_bayer, bayer);
   gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
@@ -5724,6 +5793,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->color_smoothing, !passing && !isdual);
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
+  gtk_widget_set_visible(g->pixelshift_enable, bayer && ispixelshift);
+  /*if(!bayer || !ispixelshift)
+  {
+    gtk_set_active(g->pixelshift_enable, FALSE);
+  }*/
+  //gtk_widget_set_visible(g->pixelshift_select_frame, bayer && ispixelshift);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
   int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
@@ -5793,7 +5868,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->median_thrs, 3);
   gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off\n"
                                                 "set to 1.0 to ignore edges"));
-
   g->dual_thrs = dt_bauhaus_slider_from_params(self, "dual_thrs");
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
   gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content\n"
@@ -5811,6 +5885,15 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->greeneq = dt_bauhaus_combobox_from_params(self, "green_eq");
   gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method"));
+
+  g->pixelshift_enable = dt_bauhaus_toggle_from_params(self, "pixelshift_enable");
+
+  /*g->pixelshift_select_frame = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->pixelshift_select_frame,NULL,"input frames");
+  gtk_widget_set_tooltip_text(g->pixelshift_select_frame,"input frames");
+  dt_bauhaus_combobox_add(g->pixelshift_select_frame,"all");
+  dt_bauhaus_combobox_add(g->pixelshift_select_frame,"test");
+  gtk_box_pack_start(GTK_BOX(self->widget), g->pixelshift_select_frame, FALSE, FALSE, 0);*/
 
   // start building top level widget
   self->widget = gtk_stack_new();
