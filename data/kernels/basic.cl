@@ -871,13 +871,6 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     out = fmax(neighbour_pixel_HF[4] + neighbour_pixel_LF[4] + alpha * (multipliers_HF * laplacian_HF), 0.f);
   }
 
-  // ensure RGB ratios are still normalized
-  const float4 out_2 = out * out;
-  const float norm = native_sqrt(out_2.x + out_2.y + out_2.z);
-
-  if(norm != 0.f)
-    out.xyz /= norm;
-
   // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
   // we need it to evaluate the gradient
   if(mult == 1)

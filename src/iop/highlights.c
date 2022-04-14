@@ -1377,13 +1377,6 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         }
       }
 
-      // ensure RGB ratios are still normalized
-      const float norm = sqrtf(sqf(out[index + RED]) + sqf(out[index + GREEN]) + sqf(out[index + BLUE]));
-
-      if(norm != 0.f)
-        for_four_channels(c, aligned(out))
-          out[index + c] /= (c == ALPHA) ? 1.f : norm;
-
       // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
       // we need it to evaluate the gradient
       if(mult == 1)
