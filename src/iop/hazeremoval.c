@@ -677,7 +677,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 2.0f;
+  tiling->factor = 2.5f;  // in + out + two single-channel temp buffers
   tiling->factor_cl = 5.0f;
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
