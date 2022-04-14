@@ -1408,21 +1408,26 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
       while(str[i] != '\0' && str[i] != '$') i++;
       if(str[i] == '$') str[i] = '\0';
 
+      gchar *pretty = NULL;
+      if(item == DT_COLLECTION_PROP_COLORLABEL)
+        pretty = _colors_pretty_print(str);
+      else if(!g_strcmp0(str, "%"))
+        pretty = g_strdup(_("all"));
+      else
+        pretty = g_strdup(str);
+
       if(off)
       {
         c = snprintf(out, outsize, "%s%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
-                     _("(off)"), item == 0 ? dt_image_film_roll_name(str) : str);
-      }
-      else if(top)
-      {
-        c = snprintf(out, outsize, "%s%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
-                     _("(top)"), item == 0 ? dt_image_film_roll_name(str) : str);
+                     _(" (off)"), pretty);
       }
       else
       {
         c = snprintf(out, outsize, "%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
-                     item == 0 ? dt_image_film_roll_name(str) : str);
+                     pretty);
       }
+
+      g_free(pretty);
       out += c;
       outsize -= c;
     }
@@ -1468,7 +1473,8 @@ static void _event_history_show(GtkWidget *widget, gpointer user_data)
       GtkWidget *smt = gtk_menu_item_new_with_label(str);
       gtk_widget_set_name(smt, "collect-popup-item");
       gtk_widget_set_tooltip_text(smt, str);
-      // GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
+      GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
+      gtk_label_set_use_markup(GTK_LABEL(child), TRUE);
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
       g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_event_history_apply), self);
       gtk_menu_shell_append(pop, smt);
