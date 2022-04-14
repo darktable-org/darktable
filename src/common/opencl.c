@@ -221,8 +221,8 @@ void dt_opencl_write_device_config(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_v2_", cl->dev[devid].cname);
-  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %f",
+  g_snprintf(key, 254, "%s%s", "cldevice_v3_", cl->dev[devid].cname);
+  g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
     cl->dev[devid].pinned_memory & (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED),
@@ -230,6 +230,7 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].clroundup_ht,
     cl->dev[devid].event_handles,
     cl->dev[devid].asyncmode & 1,
+    cl->dev[devid].disabled & 1,
     cl->dev[devid].benchmark);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -240,11 +241,11 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(devid < 0) return FALSE;
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_v2_", cl->dev[devid].cname);
+  g_snprintf(key, 254, "%s%s", "cldevice_v3_", cl->dev[devid].cname);
   if(!dt_conf_key_not_empty(key)) return TRUE;
 
   const gchar *dat = dt_conf_get_string_const(key);
-  sscanf(dat, "%i %i %i %i %i %i %i %f",
+  sscanf(dat, "%i %i %i %i %i %i %i %i %f",
     &cl->dev[devid].avoid_atomics,
     &cl->dev[devid].micro_nap,
     &cl->dev[devid].pinned_memory,
@@ -252,6 +253,7 @@ gboolean dt_opencl_read_device_config(const int devid)
     &cl->dev[devid].clroundup_ht,
     &cl->dev[devid].event_handles,
     &cl->dev[devid].asyncmode,
+    &cl->dev[devid].disabled,
     &cl->dev[devid].benchmark);
   // do some safety housekeeping
   cl->dev[devid].avoid_atomics &= 1;
@@ -268,6 +270,7 @@ gboolean dt_opencl_read_device_config(const int devid)
 
   cl->dev[devid].use_events = (cl->dev[devid].event_handles != 0) ? 1 : 0;
   cl->dev[devid].asyncmode &= 1;
+  cl->dev[devid].disabled &= 1;
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] found '%s' for '%s'\n", dat, key);
   return FALSE;
 }
@@ -323,6 +326,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].use_events = 1;
   cl->dev[dev].event_handles = 128;
   cl->dev[dev].asyncmode = 0;
+  cl->dev[dev].disabled = 0;
   cl_device_id devid = cl->dev[dev].devid = devices[k];
 
   char *infostr = NULL;
@@ -487,6 +491,13 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
            k, infostr, cl->dev[dev].max_mem_alloc / 1024 / 1024);
 
   const gboolean newdevice = dt_opencl_read_device_config(dev);
+
+  if(cl->dev[dev].disabled)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] discarding device `%s' because requested by user\n", infostr);
+    res = -1;
+    goto end;
+  }
 
   if(darktable.unmuted & DT_DEBUG_OPENCL)
   {
