@@ -53,7 +53,7 @@ typedef struct dt_action_t
   struct dt_action_t *next;
 } dt_action_t;
 
-#define DT_ACTION(p) ((dt_action_t*)&p->actions)
+#define DT_ACTION(p) (p?(dt_action_t*)&p->actions:NULL)
 
 enum
 {
