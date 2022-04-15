@@ -2472,9 +2472,12 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
   tmp.width += darktable.bauhaus->popup_padding->left + darktable.bauhaus->popup_padding->right;
   tmp.height += darktable.bauhaus->popup_padding->top + darktable.bauhaus->popup_padding->bottom;
 
-  GdkRectangle workarea;
-  gdk_monitor_get_workarea(gdk_display_get_monitor_at_window(gdk_window_get_display(widget_window), widget_window), &workarea);
-  wx = MAX(workarea.x, MIN(wx, workarea.x + workarea.width - tmp.width));
+  if(widget_window)
+  {
+    GdkRectangle workarea;
+    gdk_monitor_get_workarea(gdk_display_get_monitor_at_window(gdk_window_get_display(widget_window), widget_window), &workarea);
+    wx = MAX(workarea.x, MIN(wx, workarea.x + workarea.width - tmp.width));
+  }
 
   // gtk_widget_get_window will return null if not shown yet.
   // it is needed for gdk_window_move, and gtk_window move will
