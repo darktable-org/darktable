@@ -166,11 +166,23 @@ static gboolean _default_decode_func(const gchar *text, double *value)
 }
 static gchar *_default_print_date_func(const double value, const gboolean detailled)
 {
-  char txt[DT_DATETIME_EXIF_LENGTH] = { 0 };
-  if(dt_datetime_gtimespan_to_exif(txt, sizeof(txt), value))
-    return g_strdup(txt);
+  if(!detailled)
+  {
+    char txt[DT_DATETIME_EXIF_LENGTH] = { 0 };
+    if(dt_datetime_gtimespan_to_exif(txt, sizeof(txt), value))
+      return g_strdup(txt);
+    else
+      return g_strdup(_("invalid"));
+  }
   else
-    return g_strdup(_("invalid"));
+  {
+    GDateTime *dt = dt_datetime_gtimespan_to_gdatetime(value);
+    if(!dt) return g_strdup(_("invalid"));
+
+    gchar *txt = g_date_time_format(dt, "%x %X");
+    g_date_time_unref(dt);
+    return txt;
+  }
 }
 static gboolean _default_decode_date_func(const gchar *text, double *value)
 {
