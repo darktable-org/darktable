@@ -286,8 +286,7 @@ float dt_opencl_device_perfgain(const int devid)
 } 
 
 // returns 0 if all ok or an error if we failed to init this device
-static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *devices, const int k,
-                                 const int opencl_memory_requirement)
+static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *devices, const int k)
 {
   int res;
   cl_int err;
@@ -422,15 +421,6 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     // very lame attempt to detect support for atomic float add in global memory.
     // we need compute model sm_20, but let's try for all nvidia devices :(
     cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(infostr);
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] device %d `%s' %s sm_20 support.\n", k, infostr,
-             cl->dev[dev].nvidia_sm_20 ? "has" : "doesn't have");
-  }
-
-  if(((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) && !dt_conf_get_bool("opencl_use_cpu_devices"))
-  {
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] discarding CPU device %d `%s' because it is on-CPU.\n", k, infostr);
-    res = -1;
-    goto end;
   }
 
   // micro_nap can be made less conservative on current systems at least if not on-CPU
@@ -455,8 +445,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   {
     dt_print(DT_DEBUG_OPENCL,
              "[dt_opencl_device_init] discarding device %d `%s' - The OpenCL driver "
-             "doesn't provide image support. See also 'clinfo' output.\n",
-             k, infostr);
+             "doesn't provide image support. See also 'clinfo' output.\n", k, infostr);
     res = -1;
     goto end;
   }
@@ -470,7 +459,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong),
                                            &(cl->dev[dev].max_global_mem), NULL);
-  if(cl->dev[dev].max_global_mem < (uint64_t)opencl_memory_requirement * 1024 * 1024)
+  if(cl->dev[dev].max_global_mem < (uint64_t)512ul * 1024ul * 1024ul)
   {
     dt_print(DT_DEBUG_OPENCL,
              "[dt_opencl_device_init] discarding device %d `%s' due to insufficient global memory (%" PRIu64 "MB).\n", k,
@@ -485,11 +474,6 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
   cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
 
-  dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] device %d `%s' supports image sizes of %zd x %zd\n", k, infostr,
-           cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
-  dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] device %d `%s' allows GPU memory allocations of up to %" PRIu64 "MB\n",
-           k, infostr, cl->dev[dev].max_mem_alloc / 1024 / 1024);
-
   const gboolean newdevice = dt_opencl_read_device_config(dev);
 
   if(cl->dev[dev].disabled)
@@ -503,7 +487,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   {
     fprintf(stderr, "[dt_opencl_device_init] device %d: '%s'%s\n", k, infostr, (newdevice) ? ", so far unknown" : "" );
     fprintf(stderr, "     CANONICAL_NAME:           %s\n", cname);
-    fprintf(stderr, "     GLOBAL_MEM_SIZE:          %.0fMB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
+    fprintf(stderr, "     GLOBAL_MEM_SIZE:          %.0f MB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
     fprintf(stderr, "     MAX_WORK_GROUP_SIZE:      %zu\n", infoint);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(infoint), &infoint, NULL);
@@ -528,14 +512,18 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     fprintf(stderr, "     MICRO_NAP:                %i\n", cl->dev[dev].micro_nap);
     fprintf(stderr, "     AVOID_ATOMICS:            %s\n", (cl->dev[dev].avoid_atomics) ? "TRUE" : "FALSE");
     if(cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_DISABLED)
-    fprintf(stderr, "     PINNED_MEMORY:            DISABLED\n");
+      fprintf(stderr, "     PINNED_MEMORY:            DISABLED\n");
     else
-    fprintf(stderr, "     PINNED_MEMORY DEFAULT:    %s\n", (cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_ON) ? "ON" : "OFF");
+      fprintf(stderr, "     PINNED_MEMORY DEFAULT:    %s\n", (cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_ON) ? "ON" : "OFF");
     fprintf(stderr, "     ROUNDUP WIDTH:            %i\n", cl->dev[dev].clroundup_wd);
     fprintf(stderr, "     ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
-    fprintf(stderr, "     EVENT HANDLES:            %i\n", cl->dev[dev].event_handles);
+    fprintf(stderr, "     CHECK EVENT HANDLES:      %i\n", cl->dev[dev].event_handles);
     fprintf(stderr, "     PERFORMANCE:              %f\n", cl->dev[dev].benchmark);
     fprintf(stderr, "     ASYNC PIXELPIPE:          %s\n", (cl->dev[dev].asyncmode) ? "Yes" : "No");
+    if(!strncasecmp(vendor, "NVIDIA", 6))
+      fprintf(stderr, "     SM_20 SUPPORT:            %s\n", cl->dev[dev].nvidia_sm_20 ? "Yes" : "No");
+    fprintf(stderr, "     MAX IMAGE SIZE:           %zd x %zd\n", cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
+    fprintf(stderr, "     MAX MEM ALLOC:            %.0f MB\n", (double)cl->dev[dev].max_mem_alloc / 1024.0 / 1024.0);
     fprintf(stderr, "     DEVICE_TYPE:              %s%s%s\n",
       ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? "CPU" : "",
       ((type & CL_DEVICE_TYPE_GPU) == CL_DEVICE_TYPE_GPU) ? "GPU" : "",
@@ -550,7 +538,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].context = (cl->dlocl->symbols->dt_clCreateContext)(0, 1, &devid, NULL, NULL, &err);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create context for device %d: %s\n", k, cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not create context for device %d: %s\n", k, cl_errstr(err));
     res = -1;
     goto end;
   }
@@ -559,7 +547,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
       cl->dev[dev].context, devid, (darktable.unmuted & DT_DEBUG_PERF) ? CL_QUEUE_PROFILING_ENABLE : 0, &err);
   if(err != CL_SUCCESS)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not create command queue for device %d: %s\n", k, cl_errstr(err));
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not create command queue for device %d: %s\n", k, cl_errstr(err));
     res = -1;
     goto end;
   }
@@ -582,13 +570,14 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   snprintf(cachedir, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "cached_kernels_for_%s_%s", dtcache, devname, drvversion);
   if(g_mkdir_with_parents(cachedir, 0700) == -1)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] failed to create directory `%s'!\n", cachedir);
     res = -1;
     goto end;
   }
 
   dt_loc_get_kerneldir(kerneldir, sizeof(kerneldir));
-  dt_print(DT_DEBUG_DEV, "kernel directory: %s\n", kerneldir);
+  if(darktable.unmuted & DT_DEBUG_OPENCL)
+    fprintf(stderr, "     KERNEL DIRECTORY:         %s\n", kerneldir);
 
   snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "programs.conf", kerneldir);
 
@@ -622,7 +611,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
   cl->dev[dev].options = strdup(options);
 
-  dt_vprint(DT_DEBUG_OPENCL, "[opencl_init] options for OpenCL compiler: %s\n", options);
+  if(darktable.unmuted & DT_DEBUG_OPENCL)
+    fprintf(stderr, "     COMPILER OPTION:           %s\n", options);
 
   g_free(compile_opt);
   g_free(compile_option_name_cname);
@@ -681,19 +671,19 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
       if(!programname || programname[0] == '\0' || prog < 0)
       {
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] malformed entry in programs.conf `%s'; ignoring it!\n", confentry);
+        dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] malformed entry in programs.conf `%s'; ignoring it!\n", confentry);
         continue;
       }
 
       snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "%s", kerneldir, programname);
       snprintf(binname, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
-      dt_vprint(DT_DEBUG_OPENCL, "[opencl_init] testing program `%s' ..\n", programname);
+      dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_device_init] testing program `%s' ..\n", programname);
       int loaded_cached;
       char md5sum[33];
       if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, includemd5, &loaded_cached)
          && dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached) != CL_SUCCESS)
       {
-        dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
+        dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] failed to compile program `%s'!\n", programname);
         fclose(f);
         g_strfreev(tokens);
         res = -1;
@@ -706,11 +696,11 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     fclose(f);
     tend = dt_get_wtime();
     tdiff = tend - tstart;
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] kernel loading time: %2.4lf \n", tdiff);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] kernel loading time: %2.4lf \n", tdiff);
   }
   else
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not open `%s'!\n", filename);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] could not open `%s'!\n", filename);
     res = -1;
     goto end;
   }
@@ -768,12 +758,6 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl_platform_id *all_platforms = NULL;
   cl_uint *all_num_devices = NULL;
 
-  // user selectable parameter defines minimum requirement on GPU memory
-  // default is 768MB
-  // values below 200 will be (re)set to 200
-  const int opencl_memory_requirement = MAX(200, dt_conf_get_int("opencl_memory_requirement"));
-  dt_conf_set_int("opencl_memory_requirement", opencl_memory_requirement);
-
   cl->cpubenchmark = dt_conf_get_float("dt_cpubenchmark");
 
   if(exclude_opencl)
@@ -790,16 +774,12 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   // look for explicit definition of opencl_runtime library in preferences
   const char *library = dt_conf_get_string_const("opencl_library");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", (strlen(library) == 0) ? "default path" : library);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_requirement: %d\n",
-           dt_conf_get_int("opencl_memory_requirement"));
   str = dt_conf_get_string_const("opencl_device_priority");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_mandatory_timeout: %d\n",
            dt_conf_get_int("opencl_mandatory_timeout"));
   str = dt_conf_get_string_const("opencl_synch_cache");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %s\n", str);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_use_cpu_devices: %d\n",
-           dt_conf_get_bool("opencl_use_cpu_devices"));
 
   // dynamically load opencl runtime
   if((cl->dlocl = dt_dlopencl_init(library)) == NULL)
@@ -914,13 +894,10 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   int dev = 0;
   for(int k = 0; k < num_devices; k++)
   {
-    const int res = dt_opencl_device_init(cl, dev, devices, k, opencl_memory_requirement);
-
+    const int res = dt_opencl_device_init(cl, dev, devices, k);
     if(res != 0)
       continue;
-
     // increase dev only if dt_opencl_device_init was successful (res == 0)
-
     ++dev;
   }
   free(devices);
