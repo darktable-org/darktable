@@ -188,7 +188,7 @@ typedef struct dt_opencl_device_t
   int asyncmode;
 
   // a device might be turned off by force by setting this value to 1
-  int disabled; 
+  // also used for blacklisted drivers 
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
