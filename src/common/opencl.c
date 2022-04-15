@@ -467,10 +467,10 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
 
   const gboolean newdevice = dt_opencl_read_device_config(dev);
-  const gboolean blacklist = dt_opencl_check_driver_blacklist(deviceversion);
+  const gboolean is_blacklisted = dt_opencl_check_driver_blacklist(deviceversion);
 
   // disable device for now if this is the first time detected and blacklisted too.
-  if(newdevice && blacklist)
+  if(newdevice && is_blacklisted)
   {
     // To keep installations we look for the old blacklist conf key
     const gboolean old_blacklist = dt_conf_get_bool("opencl_disable_drivers_blacklist");
@@ -535,7 +535,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
       (type & CL_DEVICE_TYPE_ACCELERATOR)                 ? ", Accelerator" : "" );
     fprintf(stderr, "     DEFAULT DEVICE:           %s\n", (type & CL_DEVICE_TYPE_DEFAULT) ? "Yes" : "No");
     fprintf(stderr, "     DRIVER VERSION:           %s\n", driverversion);
-    fprintf(stderr, "     DEVICE VERSION:           %s%s\n", deviceversion, (blacklist) ? ", blacklist" : "");
+    fprintf(stderr, "     DEVICE VERSION:           %s%s\n", deviceversion, (is_blacklisted) ? ", blacklisted" : "");
   }
 
   dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
