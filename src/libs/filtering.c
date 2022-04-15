@@ -572,7 +572,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   _sort_gui_update(self);
 
   /* update view */
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
   return 0;
 }
 
@@ -625,7 +625,7 @@ static void _event_rule_changed(GtkWidget *entry, dt_lib_filtering_rule_t *rule)
   // update the query without throwing signal everywhere
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, rule->prop, NULL);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
 }
@@ -740,6 +740,7 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
 
   if(mode == rule->prop) return;
 
+  dt_collection_properties_t old = rule->prop;
   rule->prop = mode;
 
   // re-init the special widgets
@@ -755,7 +756,7 @@ static void _event_rule_change_type(GtkWidget *widget, dt_lib_module_t *self)
   // update the query without throwing signal everywhere
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, old, NULL);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_dt_collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
 }
@@ -789,8 +790,7 @@ static void _event_append_rule(GtkWidget *widget, dt_lib_module_t *self)
     dt_conf_set_int("plugins/lighttable/filtering/num_rules", d->nb_rules);
 
     _filters_gui_update(self);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
-                               NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, mode, NULL);
   }
 }
 
@@ -1104,8 +1104,7 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
     }
 
     _filters_gui_update(self);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
-                               NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, rule->prop, NULL);
   }
   else
     return FALSE;
@@ -1336,7 +1335,7 @@ void gui_reset(dt_lib_module_t *self)
   _sort_gui_update(self);
 
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
 int position()
@@ -1610,7 +1609,7 @@ static gboolean _sort_close(GtkWidget *widget, GdkEventButton *event, dt_lib_mod
 
   _history_save(d, TRUE);
   _sort_gui_update(self);
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
 
   return TRUE;
 }
@@ -1768,8 +1767,7 @@ static void _sort_append_sort(GtkWidget *widget, dt_lib_module_t *self)
 
     _history_save(d, TRUE);
     _sort_gui_update(self);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF,
-                               NULL);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_SORT, NULL);
   }
 }
 
