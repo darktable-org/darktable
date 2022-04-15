@@ -246,13 +246,6 @@
     <longdescription>time period (in units of 5ms) after which we give up try-locking an opencl device for mandatory use. defaults to 400 (2 seconds).</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_disable_drivers_blacklist</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>whether to allow some partial opencl implementations to be used or not</shortdescription>
-    <longdescription>not all opencl implementations are fully-functional, there are at least two, which are not production-quality yet: pocl and beignet; therefore at this point in time, it is better to explicitly blacklist them by default. can be changed by setting this configuration option to TRUE (needs a restart).</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>opencl_checksum</name>
     <type>string</type>
     <default></default>
