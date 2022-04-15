@@ -487,7 +487,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   {
     fprintf(stderr, "[dt_opencl_device_init] device %d: '%s'%s\n", k, infostr, (newdevice) ? ", so far unknown" : "" );
     fprintf(stderr, "     CANONICAL_NAME:           %s\n", cname);
-    fprintf(stderr, "     GLOBAL_MEM_SIZE:          %.0fMB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
+    fprintf(stderr, "     GLOBAL_MEM_SIZE:          %.0f MB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
     fprintf(stderr, "     MAX_WORK_GROUP_SIZE:      %zu\n", infoint);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(infoint), &infoint, NULL);
@@ -517,13 +517,13 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
       fprintf(stderr, "     PINNED_MEMORY DEFAULT:    %s\n", (cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_ON) ? "ON" : "OFF");
     fprintf(stderr, "     ROUNDUP WIDTH:            %i\n", cl->dev[dev].clroundup_wd);
     fprintf(stderr, "     ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
-    fprintf(stderr, "     EVENT HANDLES:            %i\n", cl->dev[dev].event_handles);
+    fprintf(stderr, "     CHECK EVENT HANDLES:      %i\n", cl->dev[dev].event_handles);
     fprintf(stderr, "     PERFORMANCE:              %f\n", cl->dev[dev].benchmark);
     fprintf(stderr, "     ASYNC PIXELPIPE:          %s\n", (cl->dev[dev].asyncmode) ? "Yes" : "No");
     if(!strncasecmp(vendor, "NVIDIA", 6))
       fprintf(stderr, "     SM_20 SUPPORT:            %s\n", cl->dev[dev].nvidia_sm_20 ? "Yes" : "No");
     fprintf(stderr, "     MAX IMAGE SIZE:           %zd x %zd\n", cl->dev[dev].max_image_width, cl->dev[dev].max_image_height);
-    fprintf(stderr, "     MAX MEM ALLOC:            %luMB\n", cl->dev[dev].max_mem_alloc / 1024lu / 1024lu);
+    fprintf(stderr, "     MAX MEM ALLOC:            %.0f MB\n", (double)cl->dev[dev].max_mem_alloc / 1024.0 / 1024.0);
     fprintf(stderr, "     DEVICE_TYPE:              %s%s%s\n",
       ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? "CPU" : "",
       ((type & CL_DEVICE_TYPE_GPU) == CL_DEVICE_TYPE_GPU) ? "GPU" : "",
