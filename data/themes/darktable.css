@@ -956,7 +956,8 @@ popover,
 combobox window,
 dialog combobox window,
 #bauhaus_combobox *,
-#bauhaus_slider *
+#bauhaus_slider *,
+#range_current
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
@@ -989,13 +990,15 @@ popover
   padding: 0.42em;
 }
 
-tooltip
+tooltip,
+#range_current
 {
   border: 0.07em solid shade(@tooltip_bg_color, 1.5);
   border-radius: 0;
 }
 
-tooltip label
+tooltip label,
+#range_current label
 {
   color: @tooltip_fg_color;
 }
@@ -1537,6 +1540,11 @@ filechooser row:hover .sidebar-icon
 {
   padding: 2px 0;
   margin: 0;
+}
+
+#range_current
+{
+  padding: 0.2em;
 }
 
 /*--------------------------------

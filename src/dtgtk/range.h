@@ -85,7 +85,6 @@ typedef struct _GtkDarktableRangeSelect
   cairo_surface_t *surface; // cached graph drawing
 
   GtkWidget *entry_min;
-  GtkWidget *current;
   GtkWidget *entry_max;
   GtkWidget *band;
 
@@ -111,6 +110,10 @@ typedef struct _GtkDarktableRangeSelect
   GtkAllocation alloc_padding; // area of the widget without margins and padding (for drawing)
 
   int max_width_px; // maximal width of the widget in pixels
+
+  // window used to show the value under the cursor
+  GtkWidget *cur_window;
+  GtkWidget *cur_label;
 
   struct _range_date_popup *date_popup;
 } GtkDarktableRangeSelect;

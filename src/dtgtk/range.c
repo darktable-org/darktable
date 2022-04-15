@@ -513,6 +513,27 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
   pop->internal_change--;
 }
 
+static void _current_hide_popup(GtkDarktableRangeSelect *range)
+{
+  if(!range->cur_window) return;
+  gtk_widget_destroy(range->cur_window);
+  range->cur_window = NULL;
+}
+
+static void _current_show_popup(GtkDarktableRangeSelect *range)
+{
+  if(range->cur_window) return;
+  range->cur_window = gtk_popover_new(range->band);
+  gtk_widget_set_name(range->cur_window, "range_current");
+  gtk_popover_set_position(GTK_POPOVER(range->cur_window), GTK_POS_TOP);
+  gtk_popover_set_modal(GTK_POPOVER(range->cur_window), FALSE);
+  range->cur_label = gtk_label_new(" ");
+  dt_gui_add_class(range->cur_label, "dt_transparent_background");
+  gtk_container_add(GTK_CONTAINER(range->cur_window), range->cur_label);
+
+  gtk_widget_show_all(range->cur_window);
+}
+
 static void _bound_change(GtkDarktableRangeSelect *range, const gchar *val, const _range_bound bound)
 {
   gchar *txt = g_strstrip(g_utf8_strdown(val, -1));
@@ -1365,17 +1386,9 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     cairo_move_to(cr, posx_px, range->alloc_padding.y);
     cairo_line_to(cr, posx_px, range->alloc_padding.height + range->alloc_padding.y);
     cairo_stroke(cr);
-    if(range->show_entries)
-    {
-      gchar *txt = range->print(current_value_r, TRUE);
-      gtk_label_set_text(GTK_LABEL(range->current), txt);
-      g_free(txt);
-      gtk_widget_set_visible(range->current, TRUE);
-    }
-  }
-  else if(range->show_entries)
-  {
-    gtk_widget_set_visible(range->current, FALSE);
+    gchar *txt = range->print(current_value_r, TRUE);
+    if(range->cur_window && range->cur_label) gtk_label_set_text(GTK_LABEL(range->cur_label), txt);
+    g_free(txt);
   }
 
   return TRUE;
@@ -1432,8 +1445,10 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
   {
     range->mouse_inside = HOVER_OUTSIDE;
     dt_control_change_cursor(GDK_LEFT_PTR);
+    _current_hide_popup(range);
     return TRUE;
   }
+  _current_show_popup(range);
 
   const double smin_r = (range->bounds & DT_RANGE_BOUND_MIN) ? range->min_r : range->select_min_r;
   const double smax_r = (range->bounds & DT_RANGE_BOUND_MAX) ? range->max_r : range->select_max_r;
@@ -1465,6 +1480,7 @@ static gboolean _event_band_leave(GtkWidget *w, GdkEventCrossing *e, gpointer us
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
   range->mouse_inside = HOVER_OUTSIDE;
   dt_control_change_cursor(GDK_LEFT_PTR);
+  _current_hide_popup(range);
 
   gtk_widget_queue_draw(range->band);
   return TRUE;
@@ -1607,15 +1623,6 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
     g_signal_connect(G_OBJECT(range->entry_min), "focus-out-event", G_CALLBACK(_event_entry_focus_out), range);
     g_signal_connect(G_OBJECT(range->entry_min), "button-press-event", G_CALLBACK(_event_entry_press), range);
     gtk_box_pack_start(GTK_BOX(hbox), range->entry_min, TRUE, TRUE, 0);
-
-    GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    range->current = gtk_label_new("");
-    gtk_widget_set_name(hb, "dt-range-current");
-    gtk_widget_set_halign(range->current, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(range->current, GTK_ALIGN_CENTER);
-    gtk_widget_set_no_show_all(range->current, TRUE);
-    gtk_box_pack_start(GTK_BOX(hb), range->current, FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), hb, FALSE, TRUE, 0);
 
     range->entry_max = gtk_entry_new();
     gtk_widget_set_can_default(range->entry_max, TRUE);
