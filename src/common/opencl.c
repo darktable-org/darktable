@@ -426,14 +426,6 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   // micro_nap can be made less conservative on current systems at least if not on-CPU
   cl->dev[dev].micro_nap = ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? 1000 : 250;
 
-  if(dt_opencl_check_driver_blacklist(deviceversion) && !dt_conf_get_bool("opencl_disable_drivers_blacklist"))
-  {
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] discarding device %d `%s' because the driver `%s' is blacklisted.\n",
-             k, infostr, deviceversion);
-    res = -1;
-    goto end;
-  }
-
   if(!device_available)
   {
     dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] discarding device %d `%s' as it is not available.\n", k, infostr);
@@ -475,10 +467,23 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
 
   const gboolean newdevice = dt_opencl_read_device_config(dev);
+  const gboolean blacklist = dt_opencl_check_driver_blacklist(deviceversion);
+
+  // disable device for now if this is the first time detected and blacklisted too.
+  if(newdevice && blacklist)
+  {
+    // To keep installations we look for the old blacklist conf key
+    const gboolean old_blacklist = dt_conf_get_bool("opencl_disable_drivers_blacklist");
+    cl->dev[dev].disabled = (old_blacklist) ? 0 : 1;
+    // write back the conf key data even if the device is not used now to allow user enabling
+    dt_opencl_write_device_config(dev);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] mark device `%s' as disabled because the driver `%s' is blacklisted.\n",
+             infostr, deviceversion);
+  }
 
   if(cl->dev[dev].disabled)
   {
-    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] discarding device `%s' because requested by user\n", infostr);
+    dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] discarding disabled device `%s'\n", infostr);
     res = -1;
     goto end;
   }
@@ -529,8 +534,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
       ((type & CL_DEVICE_TYPE_GPU) == CL_DEVICE_TYPE_GPU) ? "GPU" : "",
       (type & CL_DEVICE_TYPE_ACCELERATOR)                 ? ", Accelerator" : "" );
     fprintf(stderr, "     DEFAULT DEVICE:           %s\n", (type & CL_DEVICE_TYPE_DEFAULT) ? "Yes" : "No");
-    fprintf(stderr, "     DRIVER_VERSION:           %s\n", driverversion);
-    fprintf(stderr, "     DEVICE_VERSION:           %s\n", deviceversion);
+    fprintf(stderr, "     DRIVER VERSION:           %s\n", driverversion);
+    fprintf(stderr, "     DEVICE VERSION:           %s%s\n", deviceversion, (blacklist) ? ", blacklist" : "");
   }
 
   dt_pthread_mutex_init(&cl->dev[dev].lock, NULL);
@@ -612,7 +617,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].options = strdup(options);
 
   if(darktable.unmuted & DT_DEBUG_OPENCL)
-    fprintf(stderr, "     COMPILER OPTION:           %s\n", options);
+    fprintf(stderr, "     CL COMPILER OPTION:       %s\n", options);
 
   g_free(compile_opt);
   g_free(compile_option_name_cname);
