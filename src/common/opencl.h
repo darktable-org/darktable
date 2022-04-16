@@ -57,6 +57,11 @@
 #define ROUNDUPDWD(a, b) dt_opencl_dev_roundup_width(a, b)
 #define ROUNDUPDHT(a, b) dt_opencl_dev_roundup_height(a, b)
 
+#define DT_OPENCL_DEFAULT_COMPILE_INTEL ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE_AMD ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE_NVIDIA ("-cl-fast-relaxed-math")
+#define DT_OPENCL_DEFAULT_COMPILE ("-cl-fast-relaxed-math")
+
 typedef enum dt_opencl_memory_t
 {
   OPENCL_MEMORY_ADD,

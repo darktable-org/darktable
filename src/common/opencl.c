@@ -334,8 +334,6 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   char *cname = NULL;
   size_t cname_size;
 
-  char *options = NULL;
-
   char *vendor = NULL;
   size_t vendor_size;
 
@@ -593,38 +591,39 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  gchar* compile_option_name_id = g_strdup_printf("opencl_building_gpu%d", k);
-  gchar* compile_option_name_cname = g_strdup_printf("opencl_building_gpu%s", cl->dev[dev].cname);
-  gchar* compile_opt = NULL;
+  gchar* compile_option_name_cname = g_strdup_printf("cldevice_v3_%s_building", cl->dev[dev].cname);
+  const char* compile_opt = NULL;
 
-  if(dt_conf_key_exists(compile_option_name_id))
-  {
-    compile_opt = dt_conf_get_string(compile_option_name_id);
-  }
-  else if (dt_conf_key_exists(compile_option_name_cname))
-  {
-    compile_opt = dt_conf_get_string(compile_option_name_cname);
-  }
+  if(dt_conf_key_not_empty(compile_option_name_cname)) // a safer way to check for a valid key, use " " as empty is desired
+    compile_opt = dt_conf_get_string_const(compile_option_name_cname);
   else
   {
-    compile_opt = g_strdup("-cl-fast-relaxed-math");
+    switch(vendor_id)
+    {
+      case DT_OPENCL_VENDOR_AMD:
+        compile_opt = DT_OPENCL_DEFAULT_COMPILE_AMD;
+        break;
+      case DT_OPENCL_VENDOR_NVIDIA:
+        compile_opt = DT_OPENCL_DEFAULT_COMPILE_NVIDIA;
+        break;
+      case DT_OPENCL_VENDOR_INTEL:
+        compile_opt = DT_OPENCL_DEFAULT_COMPILE_INTEL;
+        break;
+      default:
+        compile_opt = DT_OPENCL_DEFAULT_COMPILE;
+    }
   }
 
-  options = g_strdup_printf("-w %s %s -D%s=1 -I%s",
+  cl->dev[dev].options = g_strdup_printf("-w %s %s -D%s=1 -I%s",
                             compile_opt,
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
-  cl->dev[dev].options = strdup(options);
 
   if(darktable.unmuted & DT_DEBUG_OPENCL)
-    fprintf(stderr, "     CL COMPILER OPTION:       %s\n", options);
+    fprintf(stderr, "     CL COMPILER OPTION:       %s\n", compile_opt);
 
-  g_free(compile_opt);
   g_free(compile_option_name_cname);
-  g_free(compile_option_name_id);
 
-  g_free(options);
-  options = NULL;
   g_free(escapedkerneldir);
   escapedkerneldir = NULL;
 
@@ -718,7 +717,6 @@ end:
 
   free(infostr);
   free(cname);
-  free(options);
   free(vendor);
   free(driverversion);
   free(deviceversion);
