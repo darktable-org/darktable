@@ -114,7 +114,8 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz = 13 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz = 14 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz = 15 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3,  //show module's output without processing by later iops
+  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3,     // show module's output without processing by later iops
+  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRUMONO = 17 << 3, // as passthru but in color mode
   DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;

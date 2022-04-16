@@ -2951,12 +2951,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
   const gboolean info = ((darktable.unmuted & (DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF)) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
   const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
-  gboolean showmask = FALSE;
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
-  {
-    dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-    showmask = (g->show_mask);
-  }
+
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
@@ -2964,10 +2959,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int qual_flags = demosaic_qual_flags(piece, img, roi_out);
   int demosaicing_method = data->demosaicing_method;
-  // There might be a module in the pipeline that wants the output displayed as a mask (highlights reconstruction in recovery mode)
-  // for that case we pass as monochrome
-  if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-    demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+
+  gboolean showmask = FALSE;
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  {
+    dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+    showmask = (g->show_mask);
+    // take care of passthru modes
+    if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
+      demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+    else if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRUMONO)
+      demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+  }
 
   if((qual_flags & DEMOSAIC_MEDIUM_QUAL)
   // only overwrite setting if quality << requested and in dr mode and not a special method
@@ -5127,10 +5130,18 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
 
   int demosaicing_method = data->demosaicing_method;
-  // There might be a module in the pipeline that wants the output displayed as a mask (highlights reconstruction in recovery mode)
-  // for that case we pass as monochrome
-  if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-    demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+
+  gboolean showmask = FALSE;
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
+  {
+    dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+    showmask = (g->show_mask);
+    // take care of passthru modes
+    if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
+      demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+    else if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRUMONO)
+      demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+  }
 
   const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
   cl_mem high_image = NULL;
@@ -5226,13 +5237,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   details = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
   low_image = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if((blend == NULL) || (low_image == NULL) || (details == NULL)) goto finish;
-
-  gboolean showmask = FALSE;
-  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
-  {
-    dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-    showmask = (g->show_mask);
-  }
 
   if(info) dt_get_times(&start_time);
   if(process_vng_cl(self, piece, dev_in, low_image, roi_in, roi_in, FALSE, FALSE))
