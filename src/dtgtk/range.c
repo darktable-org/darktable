@@ -1461,6 +1461,13 @@ static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpo
     return TRUE;
   }
   _current_show_popup(range);
+  // point the popup to the current position
+  GdkRectangle rect;
+  rect.x = event->x;
+  rect.width = 2;
+  rect.y = 0;
+  rect.height = 5;
+  gtk_popover_set_pointing_to(GTK_POPOVER(range->cur_window), &rect);
 
   const double smin_r = (range->bounds & DT_RANGE_BOUND_MIN) ? range->min_r : range->select_min_r;
   const double smax_r = (range->bounds & DT_RANGE_BOUND_MAX) ? range->max_r : range->select_max_r;
