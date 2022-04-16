@@ -2161,10 +2161,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold against "
                                          "magenta highlights (you shouldn't ever need to touch this)"));
 
-  g->visualize = dt_iop_togglebutton_new(self, N_("clip"), N_("visualize clipping"), NULL,
-                                           G_CALLBACK(visualize_callback), TRUE, 0, 0,
-                                           dtgtk_cairo_paint_showmask, box_raw);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("visualize clipping")), TRUE, TRUE, 0);
+  g->visualize = dt_iop_togglebutton_new(self, NULL, N_("visualize clipping"), NULL,
+                                           G_CALLBACK(visualize_callback), FALSE, 0, 0,
+                                           dtgtk_cairo_paint_showmask, hbox);
   dt_gui_add_class(g->visualize, "dt_transparent_background");
+  dt_gui_add_class(g->visualize, "dt_bauhaus_alignment");
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
