@@ -1413,7 +1413,7 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
       else if(!g_strcmp0(str, "%"))
         pretty = g_strdup(_("all"));
       else
-        pretty = g_strdup(str);
+        pretty = g_markup_escape_text(str, -1);
 
       if(off)
       {
