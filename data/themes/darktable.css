@@ -413,7 +413,7 @@ entry,
 textview
 {
   font-family: sans;
-  margin: 0.14em 0;
+  margin: 0.07em 0;
   padding: 0.14em;
 }
 
@@ -481,7 +481,7 @@ radiobutton label
   padding: 0.25em;
 }
 
-spinbutton>button
+spinbutton > button
 {
   margin: 0.14em 0.07em;
 }
@@ -847,13 +847,7 @@ dialog filechooser
   margin-left: -0.42em;
 }
 
-/* Set title headerbar and main buttons for some themes and/or desktops environment */
-dialog button
-{
-  padding: 0.14em 0.35em;
-  margin: 0.35em 0.07em;
-}
-
+/* Set title headerbar for some themes and/or desktops environment */
 dialog headerbar
 {
   background-color: @border_color;
@@ -935,19 +929,6 @@ popover #bauhaus_slider
 /*---------------------------------------
   - Context menu, tooltips & comboboxes -
   ---------------------------------------*/
-/*** Basically everything that pops out/over on UI ***/
-combobox button,
-.plugin_ui combobox button
-{
-  padding: 0;
-  margin: 0;
-}
-
-combobox entry
-{
-  margin: 0 0.5em;
-}
-
 context-menu,
 menu,
 menuitem > arrow,
@@ -1161,21 +1142,17 @@ dialog scrollbar
 /*-------------------------------------
   - Preferences dialog window options -
   -------------------------------------*/
-#preferences_notebook *
+#preferences_content,
+#preferences_content .dialog-action-box
 {
   margin: 0; /* reset default dialog margin to all items. And needed to have an hover and selected effect on all width of categories in sidebar */
 }
 
 /* Set preferences margins in main part */
-#preferences_box box grid,
-#preferences_box scrolledwindow
+#preferences_box stack > box,
+#preferences_box stack > scrolledwindow
 {
-  padding: 0.7em 1.05em 0.35em 1.05em;
-}
-
-#preferences_box stack viewport
-{
-  padding-right: 0.35em;
+  padding: 0.7em 1.2em;
 }
 
 /* Edit CSS view on preferences dialog window */
@@ -1183,17 +1160,12 @@ dialog scrollbar
 {
   border: 0.07em inset @border_color;
   background-color: shade(@bg_color, 1.075);
-  margin: 0.7em 1.75em 1.4em 1.75em;
+  margin-top: 0.7em;
   padding: 0.7em;
 }
 
-#usercss_box scrolledwindow
-{
-  padding: 0;
-}
-
-/* Set text */
-#preferences_notebook scrolledwindow label
+/* Set text size */
+#preferences_notebook scrolledwindow label /* label text on main tabs */
 {
   min-height: 1.5em;
 }
@@ -1204,82 +1176,37 @@ dialog scrollbar
   font-weight: bold;
 }
 
-#preferences_notebook scrolledwindow #pref_section :not(:first-child) /* top margin in sub-category title in main content */
-{
-  margin-top: 1.1em;
-}
-
 /* Just add spacing between label settings and setting beside */
 #preferences_notebook stack widget label
 {
   margin-right: 1.75em;
 }
 
-/* This will avoid having too much height on entry items in dialog windows; label and button are needed as they are related */
-#preferences_notebook stack label,
-#preferences_notebook stack entry,
-#preferences_notebook stack textview
-{
-  padding: 0.14em;
-  margin: 0.07em 0;
-}
-
-#preference_non_default
-{
-  font-weight: bolder;
-  margin: 0.07em;
-  min-width: 1em;
-}
-
 #preferences_notebook combobox,
-#preferences_notebook spinbutton
-{
-   min-width: 16em;
-}
-
-#preferences_notebook combobox menuitem
-{
-  padding: 0.2em;
-}
-
-#preferences_notebook button
-{
-  margin-left: 0.07em;
-  padding: 0 0.14em;
-}
-
-/* Set buttons and search field on presets and shortcuts control buttons ; first on shortcuts options to be sure things remains consistent between shortcuts views in preferences window and in standalone shortcuts one */
-#shortcut_controls
-{
-  margin: 0.35em 0 1.05em 0;
-}
-
-#shortcut_controls .search
-{
-  margin-right: 0.35em;
-}
-
+#preferences_notebook spinbutton,
 #preset_controls entry,
 #shortcut_controls entry
 {
-  min-width: 15em;
+   min-width: 15em;
 }
 
-#shortcut_controls button
+/* Set buttons and search field on presets and shortcuts control buttons */
+#shortcut_controls,
+#preset_controls
 {
-  margin-left: 0.21em;
+  margin-top: 0.35em;
 }
 
-#preferences_box #shortcut_controls,
-#preferences_box #preset_controls
+#shortcut_controls button,
+#preset_controls button
 {
-  margin: 0.35em 1.05em 1.05em 1.05em;
+  margin-left: 0.28em;
 }
 
-#preferences_box #preset_controls button,
+#shortcut_controls .search,
 #preferences_box #shortcut_controls check
 {
-  margin-right: 0.21em;
+  margin-right: 0.28em;
 }
 
 /*--------------------------------
