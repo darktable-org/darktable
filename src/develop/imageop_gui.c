@@ -93,7 +93,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       const float min = f->Float.Min;
       const float max = f->Float.Max;
       offset = f->header.offset + param_index * sizeof(float);
-      const float defval = *(float*)(d + offset);
+      const float defval = *(float*)((uint8_t *)d + offset);
 
       const float top = fminf(max-min, fmaxf(fabsf(min), fabsf(max)));
       const int digits = MAX(2, -floorf(log10f(top/100)+.1));
@@ -105,7 +105,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       const int min = f->Int.Min;
       const int max = f->Int.Max;
       offset = f->header.offset + param_index * sizeof(int);
-      const int defval = *(int*)(d + offset);
+      const int defval = *(int*)((uint8_t *)d + offset);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
     }
@@ -114,7 +114,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       const unsigned short min = f->UShort.Min;
       const unsigned short max = f->UShort.Max;
       offset = f->header.offset + param_index * sizeof(unsigned short);
-      const unsigned short defval = *(unsigned short*)(d + offset);
+      const unsigned short defval = *(unsigned short*)((uint8_t *)d + offset);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
     }
@@ -123,7 +123,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
   if(f)
   {
-    dt_bauhaus_widget_set_field(slider, p + offset, f->header.type);
+    dt_bauhaus_widget_set_field(slider, (uint8_t *)p + offset, f->header.type);
 
     if(!skip_label)
     {
@@ -174,7 +174,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
             f->header.type == DT_INTROSPECTION_TYPE_UINT ||
             f->header.type == DT_INTROSPECTION_TYPE_BOOL ))
   {
-    dt_bauhaus_widget_set_field(combobox, p + f->header.offset, f->header.type);
+    dt_bauhaus_widget_set_field(combobox, (uint8_t *)p + f->header.offset, f->header.type);
 
     if (*f->header.description)
     {
@@ -248,7 +248,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     gtk_container_add(GTK_CONTAINER(button), label);
     dt_module_param_t *module_param = (dt_module_param_t *)g_malloc(sizeof(dt_module_param_t));
     module_param->module = self;
-    module_param->param = p + f->header.offset;
+    module_param->param = (uint8_t *)p + f->header.offset;
     g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
 
     dt_action_define_iop(self, NULL, str, button, &dt_action_def_toggle);

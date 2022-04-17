@@ -32,6 +32,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/accelerators.h"
+#include "develop/tiling.h"
 #include "iop/iop_api.h"
 
 DT_MODULE(3)
@@ -418,10 +419,24 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   if(dev_tmp) dt_opencl_release_mem_object(dev_tmp);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_overexposed] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_overexposed] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
+
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 3.0f;  // in + out + temp
+  tiling->factor_cl = 3.0f;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+}
 
 
 void init_global(dt_iop_module_so_t *module)

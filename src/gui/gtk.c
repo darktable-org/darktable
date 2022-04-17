@@ -603,7 +603,7 @@ static gboolean _draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_dat
 
   switch(which)
   {
-    case DT_UI_PANEL_LEFT:
+    case DT_UI_BORDER_LEFT:
       if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT))
       {
         cairo_move_to(cr, width, height / 2 - width);
@@ -617,7 +617,7 @@ static gboolean _draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_dat
         cairo_rel_line_to(cr, width, -width);
       }
       break;
-    case DT_UI_PANEL_RIGHT:
+    case DT_UI_BORDER_RIGHT:
       if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT))
       {
         cairo_move_to(cr, 0.0, height / 2 - width);
@@ -631,7 +631,7 @@ static gboolean _draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_dat
         cairo_rel_line_to(cr, -width, -width);
       }
       break;
-    case DT_UI_PANEL_TOP:
+    case DT_UI_BORDER_TOP:
       if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP))
       {
         cairo_move_to(cr, width / 2 - height, height);
@@ -2716,6 +2716,11 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH] = { "map_count_circle_color_h", { 1.0, 1.0, 0.8, 1.0 } },
     [DT_GUI_COLOR_MAP_LOC_SHAPE_LOW] = { "map_count_circle_color_l", { 0.0, 0.0, 0.0, 1.0 } },
     [DT_GUI_COLOR_MAP_LOC_SHAPE_DEF] = { "map_count_circle_color_d", { 1.0, 0.0, 0.0, 1.0 } },
+    [DT_GUI_COLOR_RANGE_BG] = { "range_bg_color", { 1.0, 0.0, 0.0, 1.0 } },
+    [DT_GUI_COLOR_RANGE_GRAPH] = { "range_graph_color", { 1.0, 0.0, 0.0, 1.0 } },
+    [DT_GUI_COLOR_RANGE_SELECTION] = { "range_sel_color", { 1.0, 0.0, 0.0, 1.0 } },
+    [DT_GUI_COLOR_RANGE_CURSOR] = { "range_cursor_color", { 1.0, 0.0, 0.0, 1.0 } },
+    [DT_GUI_COLOR_RANGE_ICONS] = { "range_icon_color", { 1.0, 0.0, 0.0, 1.0 } },
   };
 
   // starting from 1 as DT_GUI_COLOR_BG is not part of this table

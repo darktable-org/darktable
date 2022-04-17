@@ -806,7 +806,7 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
   dt_image_update_final_size(imgid);
 
   /* update the aspect ratio. recompute only if really needed for performance reasons */
-  if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+  if(darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     dt_image_set_aspect_ratio(dest_imgid, FALSE);
   else
     dt_image_reset_aspect_ratio(dest_imgid, FALSE);
@@ -1812,7 +1812,7 @@ gboolean dt_history_delete_on_list(const GList *list, gboolean undo)
 
     /* update the aspect ratio if the current sorting is based on aspect ratio, otherwise the aspect ratio will be
        recalculated when the mimpap will be recreated */
-    if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+    if(darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
       dt_image_set_aspect_ratio(imgid, FALSE);
   }
 

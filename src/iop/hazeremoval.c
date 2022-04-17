@@ -44,6 +44,7 @@
 #include "develop/imageop_gui.h"
 #include "gui/gtk.h"
 #include "gui/accelerators.h"
+#include "develop/tiling.h"
 #include "iop/iop_api.h"
 
 #ifdef HAVE_OPENCL
@@ -672,6 +673,19 @@ static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_
   return err;
 }
 
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 2.5f;  // in + out + two single-channel temp buffers
+  tiling->factor_cl = 5.0f;
+  tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 0;
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+}
 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem img_in, cl_mem img_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)

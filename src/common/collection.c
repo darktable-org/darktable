@@ -44,15 +44,6 @@
 #define SELECT_QUERY "SELECT DISTINCT * FROM %s"
 #define LIMIT_QUERY "LIMIT ?1, ?2"
 
-static const char *comparators[] = {
-  "<",  // DT_COLLECTION_RATING_COMP_LT = 0,
-  "<=", // DT_COLLECTION_RATING_COMP_LEQ,
-  "=",  // DT_COLLECTION_RATING_COMP_EQ,
-  ">=", // DT_COLLECTION_RATING_COMP_GEQ,
-  ">",  // DT_COLLECTION_RATING_COMP_GT,
-  "!=", // DT_COLLECTION_RATING_COMP_NE,
-};
-
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store(const dt_collection_t *collection, gchar *query, gchar *query_no_group);
 /* Counts the number of images in the current collection */
@@ -188,7 +179,7 @@ static void _dt_collection_set_selq_pre_sort(const dt_collection_t *collection, 
 {
   const uint32_t tagid = collection->tagid;
   char tag[16] = { 0 };
-  snprintf(tag, sizeof(tag), "%d", tagid);
+  snprintf(tag, sizeof(tag), "%u", tagid);
 
   // clang-format off
   *selq_pre = dt_util_dstrcat(*selq_pre,
@@ -218,116 +209,16 @@ int dt_collection_update(const dt_collection_t *collection)
   {
     char *rejected_check = g_strdup_printf("((flags & %d) == %d)", DT_IMAGE_REJECTED, DT_IMAGE_REJECTED);
     int and_term = and_operator_initial();
-    dt_collection_filter_t rating = collection->params.rating;
-    if(rating == DT_COLLECTION_FILTER_NOT_REJECT) rating = DT_COLLECTION_FILTER_STAR_NO;
 
     /* add default filters */
     if(collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
     {
-      wq = g_strdup_printf("%s (film_id = %d)", and_operator(&and_term), collection->params.film_id);
+      wq = g_strdup_printf("%s (film_id = %u)", and_operator(&and_term), collection->params.film_id);
     }
     // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d",
                          and_operator(&and_term), DT_IMAGE_REMOVE,
                          DT_IMAGE_REMOVE);
-
-    if(collection->params.filter_flags & COLLECTION_FILTER_REJECTED)
-      wq = dt_util_dstrcat(wq, " %s %s",
-                           and_operator(&and_term),
-                           rejected_check);
-    else if(collection->params.filter_flags & COLLECTION_FILTER_CUSTOM_COMPARE)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) %s %d AND NOT %s",
-                           and_operator(&and_term),
-                           comparators[collection->params.comparator], rating - 1,
-                           rejected_check);
-    else if(collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d AND NOT %s",
-                           and_operator(&and_term), rating - 1,
-                           rejected_check);
-    else if(collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d AND NOT %s",
-                           and_operator(&and_term), rating - 1,
-                           rejected_check);
-
-    if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      // clang-format off
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE history_hash.imgid=id AND "
-                                           " (basic_hash IS NULL OR current_hash != basic_hash) AND "
-                                           " (auto_hash IS NULL OR current_hash != auto_hash))",
-                           and_operator(&and_term));
-      // clang-format on
-    else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      // clang-format off
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.images, main.history_hash "
-                                           "WHERE history_hash.imgid=id AND "
-                                           " (current_hash == basic_hash OR current_hash == auto_hash))",
-                           and_operator(&and_term));
-      // clang-format on
-
-    /* add text filter if any */
-    if(collection->params.text_filter && collection->params.text_filter[0])
-    {
-      // clang-format off
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
-                                          " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
-                                          "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
-                                          " UNION SELECT id FROM main.images"
-                                          "   WHERE filename LIKE '%s'"
-                                          " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
-                                          "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s')",
-                           and_operator(&and_term), collection->params.text_filter,
-                                                    collection->params.text_filter,
-                                                    collection->params.text_filter,
-                                                    collection->params.text_filter,
-                                                    collection->params.text_filter);
-      // clang-format on
-    }
-
-    /* add colorlabel filter if any */
-    if(collection->params.colors_filter & ~0x80000000)
-    {
-      const int colors_set = collection->params.colors_filter & 0xFFF;
-      const int colors_unset = (collection->params.colors_filter & 0xFFF000) >> 12;
-      const gboolean op = collection->params.colors_filter & 0x80000000;
-      if(op) // AND
-      {
-        if(colors_set)
-          // clang-format off
-          wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) = %d) AND (mask & %d = 0))",
-                               and_operator(&and_term), colors_set, colors_set, colors_unset);
-          // clang-format on
-        else if(colors_unset)
-          // clang-format off
-          wq = dt_util_dstrcat(wq, " %s NOT id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) <> 0))",
-                               and_operator(&and_term), colors_unset);
-          // clang-format on
-      }
-      else  // OR
-      {
-        if(!colors_unset)
-          // clang-format off
-          wq = dt_util_dstrcat(wq, " %s id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) <> 0))",
-                               and_operator(&and_term), colors_set);
-          // clang-format on
-        else
-          // clang-format off
-          wq = dt_util_dstrcat(wq, " %s (id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) <> 0))"
-                                   " OR id NOT IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
-                                              "  FROM main.color_labels GROUP BY imgid)"
-                                              "  WHERE ((mask & %d) = %d)))",
-                               and_operator(&and_term), colors_set, colors_unset, colors_unset);
-          // clang-format on
-      }
-    }
 
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
@@ -365,12 +256,20 @@ int dt_collection_update(const dt_collection_t *collection)
     wq = dt_util_dstrcat(wq, " OR (id = %d)", darktable.gui->expanded_group_id);
   }
 
+  // get all the sort items
+  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
+  for(int i = 0; i < DT_COLLECTION_SORT_LAST; i++) params->sorts[i] = FALSE;
+  const int nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, DT_COLLECTION_MAX_RULES);
+  char confname[200] = { 0 };
+  for(int i = 0; i < nb_sort; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
+    params->sorts[dt_conf_get_int(confname)] = TRUE;
+  }
+
   /* build select part includes where */
   /* COLOR and PATH */
-  if(((collection->params.sort == DT_COLLECTION_SORT_COLOR
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
-       ||(collection->params.sort == DT_COLLECTION_SORT_PATH
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
+  if(collection->params.sorts[DT_COLLECTION_SORT_COLOR] && collection->params.sorts[DT_COLLECTION_SORT_PATH]
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -382,11 +281,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* COLOR and TITLE */
-  else if(((collection->params.sort == DT_COLLECTION_SORT_COLOR
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE)
-       ||(collection->params.sort == DT_COLLECTION_SORT_TITLE
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR] && collection->params.sorts[DT_COLLECTION_SORT_TITLE]
+          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     // clang-format off
@@ -397,11 +293,9 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* COLOR and DESCRIPTION */
-  else if(((collection->params.sort == DT_COLLECTION_SORT_COLOR
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION)
-       ||(collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
+          && collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION]
+          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     // clang-format off
@@ -412,11 +306,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* PATH and TITLE */
-  else if(((collection->params.sort == DT_COLLECTION_SORT_TITLE
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
-       ||(collection->params.sort == DT_COLLECTION_SORT_PATH
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE))
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE] && collection->params.sorts[DT_COLLECTION_SORT_PATH]
+          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     // clang-format off
@@ -425,11 +316,9 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* PATH and DESCRIPTION */
-  else if(((collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
-       ||(collection->params.sort == DT_COLLECTION_SORT_PATH
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION))
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  else if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION]
+          && collection->params.sorts[DT_COLLECTION_SORT_PATH]
+          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     // clang-format off
@@ -440,11 +329,9 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* TITLE and DESCRIPTION */
-  else if(((collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE)
-       ||(collection->params.sort == DT_COLLECTION_SORT_TITLE
-       && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION))
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
+          && collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION]
+          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     // clang-format off
@@ -455,9 +342,8 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* only COLOR */
-  else if((collection->params.sort == DT_COLLECTION_SORT_COLOR
-      ||collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR)
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
+  else if(collection->params.sorts[DT_COLLECTION_SORT_COLOR]
+          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
     // clang-format off
@@ -465,8 +351,7 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* only PATH */
-  else if((collection->params.sort == DT_COLLECTION_SORT_PATH
-          ||collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
+  else if(collection->params.sorts[DT_COLLECTION_SORT_PATH]
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -477,8 +362,7 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* only TITLE */
-  else if((collection->params.sort == DT_COLLECTION_SORT_TITLE
-        ||collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE)
+  else if(collection->params.sorts[DT_COLLECTION_SORT_TITLE]
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -488,8 +372,7 @@ int dt_collection_update(const dt_collection_t *collection)
     // clang-format on
   }
   /* only DESCRIPTION */
-  else if((collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-        ||collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION)
+  else if(collection->params.sorts[DT_COLLECTION_SORT_DESCRIPTION]
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     _dt_collection_set_selq_pre_sort(collection, &selq_pre);
@@ -503,7 +386,7 @@ int dt_collection_update(const dt_collection_t *collection)
   {
     const uint32_t tagid = collection->tagid;
     char tag[16] = { 0 };
-    snprintf(tag, sizeof(tag), "%d", tagid);
+    snprintf(tag, sizeof(tag), "%u", tagid);
     // clang-format off
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
@@ -523,7 +406,7 @@ int dt_collection_update(const dt_collection_t *collection)
   {
     const uint32_t tagid = collection->tagid;
     char tag[16] = { 0 };
-    snprintf(tag, sizeof(tag), "%d", tagid);
+    snprintf(tag, sizeof(tag), "%u", tagid);
     // clang-format off
     selq_pre = dt_util_dstrcat(selq_pre,
                                "SELECT DISTINCT mi.id FROM (SELECT"
@@ -557,11 +440,6 @@ int dt_collection_update(const dt_collection_t *collection)
                         (collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT) ? " " LIMIT_QUERY : "");
   result = _dt_collection_store(collection, query, query_no_group);
 
-#ifdef _DEBUG
-  printf("SQL Collection for 1st:%d and 2nd:%d: %s\n\n",collection->params.sort,collection->params.sort_second_order,query);/*only for debugging*/
-#endif
-
-
   /* free memory used */
   g_free(sq);
   g_free(wq);
@@ -590,19 +468,10 @@ void dt_collection_reset(const dt_collection_t *collection)
   params->query_flags = COLLECTION_QUERY_FULL;
   params->filter_flags = COLLECTION_FILTER_FILM_ID | COLLECTION_FILTER_ATLEAST_RATING;
   params->film_id = 1;
-  params->rating = DT_COLLECTION_FILTER_STAR_NO;
 
   /* apply stored query parameters from previous darktable session */
   params->film_id = dt_conf_get_int("plugins/collection/film_id");
-  params->rating = dt_conf_get_int("plugins/collection/rating");
-  params->comparator = dt_conf_get_int("plugins/collection/rating_comparator");
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
-  g_free(params->text_filter);
-  params->text_filter = dt_conf_get_string("plugins/collection/text_filter");
-  params->colors_filter = strtol(dt_conf_get_string_const("plugins/collection/colors_filter"), NULL, 16);
-  params->sort = dt_conf_get_int("plugins/collection/sort");
-  params->sort_second_order = dt_conf_get_int("plugins/collection/sort_second_order");
-  params->descending = dt_conf_get_bool("plugins/collection/descending");
   dt_collection_update_query(collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
@@ -632,29 +501,6 @@ void dt_collection_set_filter_flags(const dt_collection_t *collection, uint32_t 
   params->filter_flags = flags;
 }
 
-char *dt_collection_get_text_filter(const dt_collection_t *collection)
-{
-  return collection->params.text_filter;
-}
-
-void dt_collection_set_text_filter(const dt_collection_t *collection, char *text_filter)
-{
-  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  g_free(params->text_filter);
-  params->text_filter = text_filter;
-}
-
-int dt_collection_get_colors_filter(const dt_collection_t *collection)
-{
-  return collection->params.colors_filter;
-}
-
-void dt_collection_set_colors_filter(const dt_collection_t *collection, int colors_filter)
-{
-  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  params->colors_filter = colors_filter;
-}
-
 uint32_t dt_collection_get_query_flags(const dt_collection_t *collection)
 {
   return collection->params.query_flags;
@@ -676,14 +522,13 @@ gchar *dt_collection_get_extended_where(const dt_collection_t *collection, int e
     char confname[200];
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", exclude);
     const int mode = dt_conf_get_int(confname);
-    if (mode != 1) // don't limit the collection for OR
+    // we only want collect rules, not filtering ones
+    const int nb_rules = CLAMP(dt_conf_get_int("plugins/lighttable/collect/num_rules"), 1, 10);
+    for(int i = 0; (i < nb_rules && collection->where_ext[i] != NULL); i++)
     {
-      for(int i = 0; collection->where_ext[i] != NULL; i++)
-      {
-        // exclude the one rule from extended where
-        if (i != exclude)
-          complete_string = dt_util_dstrcat(complete_string, "%s", collection->where_ext[i]);
-      }
+      // exclude the one rule from extended where
+      if(i != exclude || mode == 1)
+        complete_string = dt_util_dstrcat(complete_string, "%s", collection->where_ext[i]);
     }
   }
   else
@@ -715,31 +560,6 @@ void dt_collection_set_tag_id(dt_collection_t *collection, const uint32_t tagid)
   collection->tagid = tagid;
 }
 
-void dt_collection_set_rating(const dt_collection_t *collection, uint32_t rating)
-{
-  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  params->rating = rating;
-}
-
-uint32_t dt_collection_get_rating(const dt_collection_t *collection)
-{
-  uint32_t i;
-  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-  i = params->rating;
-  return i;
-}
-
-void dt_collection_set_rating_comparator(const dt_collection_t *collection,
-                                         const dt_collection_rating_comperator_t comparator)
-{
-  ((dt_collection_t *)collection)->params.comparator = comparator;
-}
-
-dt_collection_rating_comperator_t dt_collection_get_rating_comparator(const dt_collection_t *collection)
-{
-  return collection->params.comparator;
-}
-
 static void _collection_update_aspect_ratio(const dt_collection_t *collection)
 {
   dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
@@ -748,7 +568,7 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
   //  images as it could take a long time. The aspect ratio is then updated when needed, and at some
   //  point all aspect ratio for all images will be set and this could won't be really needed.
 
-  if (params->sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+  if(params->sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
   {
     const float MAX_TIME = 7.0;
     const gchar *where_ext = dt_collection_get_extended_where(collection, -1);
@@ -780,61 +600,104 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
   }
 }
 
-void dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t sort, gboolean reverse)
+const char *dt_collection_sort_name(dt_collection_sort_t sort)
 {
-  dt_collection_params_t *params = (dt_collection_params_t *)&collection->params;
-
-  if(sort != DT_COLLECTION_SORT_NONE)
+  switch(sort)
   {
-    if(sort != params->sort)
-      params->sort_second_order = params->sort;/*remember previous sorting criteria if new one is selected*/
-    params->sort = sort;
+    case DT_COLLECTION_SORT_FILENAME:
+      return _("filename");
+    case DT_COLLECTION_SORT_DATETIME:
+      return _("capture time");
+    case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+      return _("import time");
+    case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+      return _("last modification time");
+    case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+      return _("last export time");
+    case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+      return _("last print time");
+    case DT_COLLECTION_SORT_RATING:
+      return _("rating");
+    case DT_COLLECTION_SORT_ID:
+      return _("id");
+    case DT_COLLECTION_SORT_COLOR:
+      return _("color label");
+    case DT_COLLECTION_SORT_GROUP:
+      return _("group");
+    case DT_COLLECTION_SORT_PATH:
+      return _("full path");
+    case DT_COLLECTION_SORT_CUSTOM_ORDER:
+      return _("custom sort");
+    case DT_COLLECTION_SORT_TITLE:
+      return _("title");
+    case DT_COLLECTION_SORT_DESCRIPTION:
+      return _("description");
+    case DT_COLLECTION_SORT_ASPECT_RATIO:
+      return _("aspect ratio");
+    case DT_COLLECTION_SORT_SHUFFLE:
+      return _("shuffle");
+    default:
+      return "";
   }
-  if(reverse != -1) params->descending = reverse;
+};
 
-  _collection_update_aspect_ratio(collection);
-}
-
-dt_collection_sort_t dt_collection_get_sort_field(const dt_collection_t *collection)
-{
-  return collection->params.sort;
-}
-
-gboolean dt_collection_get_sort_descending(const dt_collection_t *collection)
-{
-  return collection->params.descending;
-}
-
-const char *dt_collection_name(dt_collection_properties_t prop)
+const char *dt_collection_name_untranslated(dt_collection_properties_t prop)
 {
   char *col_name = NULL;
   switch(prop)
   {
-    case DT_COLLECTION_PROP_FILMROLL:         return _("film roll");
-    case DT_COLLECTION_PROP_FOLDERS:          return _("folder");
-    case DT_COLLECTION_PROP_CAMERA:           return _("camera");
-    case DT_COLLECTION_PROP_TAG:              return _("tag");
-    case DT_COLLECTION_PROP_DAY:              return _("date taken");
-    case DT_COLLECTION_PROP_TIME:             return _("date-time taken");
-    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: return _("import timestamp");
-    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: return _("change timestamp");
-    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP: return _("export timestamp");
-    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:  return _("print timestamp");
-    case DT_COLLECTION_PROP_HISTORY:          return _("history");
-    case DT_COLLECTION_PROP_COLORLABEL:       return _("color label");
-    case DT_COLLECTION_PROP_LENS:             return _("lens");
-    case DT_COLLECTION_PROP_FOCAL_LENGTH:     return _("focal length");
-    case DT_COLLECTION_PROP_ISO:              return _("ISO");
-    case DT_COLLECTION_PROP_APERTURE:         return _("aperture");
-    case DT_COLLECTION_PROP_EXPOSURE:         return _("exposure");
-    case DT_COLLECTION_PROP_ASPECT_RATIO:     return _("aspect ratio");
-    case DT_COLLECTION_PROP_FILENAME:         return _("filename");
-    case DT_COLLECTION_PROP_GEOTAGGING:       return _("geotagging");
-    case DT_COLLECTION_PROP_GROUPING:         return _("grouping");
-    case DT_COLLECTION_PROP_LOCAL_COPY:       return _("local copy");
-    case DT_COLLECTION_PROP_MODULE:           return _("module");
-    case DT_COLLECTION_PROP_ORDER:            return _("module order");
-    case DT_COLLECTION_PROP_RATING:           return _("rating");
+    case DT_COLLECTION_PROP_FILMROLL:
+      return N_("film roll");
+    case DT_COLLECTION_PROP_FOLDERS:
+      return N_("folder");
+    case DT_COLLECTION_PROP_CAMERA:
+      return N_("camera");
+    case DT_COLLECTION_PROP_TAG:
+      return N_("tag");
+    case DT_COLLECTION_PROP_DAY:
+      return N_("date taken");
+    case DT_COLLECTION_PROP_TIME:
+      return N_("date-time taken");
+    case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
+      return N_("import timestamp");
+    case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
+      return N_("change timestamp");
+    case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
+      return N_("export timestamp");
+    case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
+      return N_("print timestamp");
+    case DT_COLLECTION_PROP_HISTORY:
+      return N_("history");
+    case DT_COLLECTION_PROP_COLORLABEL:
+      return N_("color label");
+    case DT_COLLECTION_PROP_LENS:
+      return N_("lens");
+    case DT_COLLECTION_PROP_FOCAL_LENGTH:
+      return N_("focal length");
+    case DT_COLLECTION_PROP_ISO:
+      return N_("ISO");
+    case DT_COLLECTION_PROP_APERTURE:
+      return N_("aperture");
+    case DT_COLLECTION_PROP_EXPOSURE:
+      return N_("exposure");
+    case DT_COLLECTION_PROP_ASPECT_RATIO:
+      return N_("aspect ratio");
+    case DT_COLLECTION_PROP_FILENAME:
+      return N_("filename");
+    case DT_COLLECTION_PROP_GEOTAGGING:
+      return N_("geotagging");
+    case DT_COLLECTION_PROP_GROUPING:
+      return N_("grouping");
+    case DT_COLLECTION_PROP_LOCAL_COPY:
+      return N_("local copy");
+    case DT_COLLECTION_PROP_MODULE:
+      return N_("module");
+    case DT_COLLECTION_PROP_ORDER:
+      return N_("module order");
+    case DT_COLLECTION_PROP_RATING:
+      return N_("rating");
+    case DT_COLLECTION_PROP_TEXTSEARCH:
+      return N_("search");
     case DT_COLLECTION_PROP_LAST:             return NULL;
     default:
     {
@@ -845,11 +708,11 @@ const char *dt_collection_name(dt_collection_properties_t prop)
         const int type = dt_metadata_get_type_by_display_order(i);
         if(type != DT_METADATA_TYPE_INTERNAL)
         {
-          const char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
+          char *name = (gchar *)dt_metadata_get_name_by_display_order(i);
           char *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
           const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
           free(setting);
-          if(!hidden) col_name = _(name);
+          if(!hidden) col_name = name;
         }
       }
     }
@@ -857,11 +720,16 @@ const char *dt_collection_name(dt_collection_properties_t prop)
   return col_name;
 }
 
-gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
+const char *dt_collection_name(dt_collection_properties_t prop)
 {
-  gchar *second_order = NULL;/*string for previous sorting criteria as second order sorting criteria*/
+  return _(dt_collection_name_untranslated(prop));
+};
 
-  switch(collection->params.sort_second_order)/*build ORDER BY string for second order*/
+static gchar *_dt_collection_get_sort_text(const dt_collection_sort_t sort, const int sortorder)
+{
+  // construct the text query
+  gchar *sq = NULL;
+  switch(sort)
   {
     case DT_COLLECTION_SORT_DATETIME:
     case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
@@ -869,288 +737,133 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
     case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
       {
-        const int local_order = collection->params.sort_second_order;
+        const int local_order = sort;
         char *colname;
 
         switch(local_order)
         {
-          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
-          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
-          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
-          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
-          default: colname = "";
+          case DT_COLLECTION_SORT_DATETIME:
+            colname = "datetime_taken";
+            break;
+          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
+            colname = "import_timestamp";
+            break;
+          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
+            colname = "change_timestamp";
+            break;
+          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
+            colname = "export_timestamp";
+            break;
+          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
+            colname = "print_timestamp";
+            break;
+          default:
+            colname = "";
         }
-      second_order = g_strdup_printf("%s %s", colname, (collection->params.descending ? "DESC" : ""));
-      break;
+        sq = g_strdup_printf("%s%s", colname, (sortorder) ? " DESC" : "");
+        break;
       }
 
     case DT_COLLECTION_SORT_RATING:
-      second_order = g_strdup_printf("CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END %s", (collection->params.descending ? "" : "DESC"));
+      sq = g_strdup_printf("CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_FILENAME:
-      second_order = g_strdup_printf("filename %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("filename%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_ID:
-      second_order = g_strdup_printf("mi.id %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("mi.id%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_COLOR:
-      second_order = g_strdup_printf("color %s", (collection->params.descending ? "" : "DESC"));
+      sq = g_strdup_printf("color%s", (sortorder) ? "" : " DESC");
       break;
 
     case DT_COLLECTION_SORT_GROUP:
-      second_order = g_strdup_printf("group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("group_id%s, mi.id-group_id != 0, mi.id", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_PATH:
-      second_order = g_strdup_printf("folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("folder%s, filename%s", (sortorder) ? " DESC" : "", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_CUSTOM_ORDER:
-      second_order = g_strdup_printf("position %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("position%s", (sortorder) ? " DESC" : "");
       break;
 
-     case DT_COLLECTION_SORT_TITLE:
-     case DT_COLLECTION_SORT_DESCRIPTION:/*same sorting for TITLE and DESCRIPTION -> Fall through*/
-       second_order = g_strdup_printf("m.value %s", (collection->params.descending ? "DESC" : ""));
-       break;
+    case DT_COLLECTION_SORT_TITLE:
+      sq = g_strdup_printf("m.value%s", (sortorder) ? " DESC" : "");
+      break;
+
+    case DT_COLLECTION_SORT_DESCRIPTION:
+      sq = g_strdup_printf("m.value%s", (sortorder) ? " DESC" : "");
+      break;
 
     case DT_COLLECTION_SORT_ASPECT_RATIO:
-      second_order = g_strdup_printf("aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup_printf("aspect_ratio%s", (sortorder) ? " DESC" : "");
       break;
 
     case DT_COLLECTION_SORT_SHUFFLE:
+      sq = g_strdup("RANDOM()"); /* do not consider second order for shuffle */
       /* do not remember shuffle for second order */
-      if(!second_order) second_order = g_strdup_printf("filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
       break;
 
-    case DT_COLLECTION_SORT_NONE:/*fall through for default*/
-    default:
+    case DT_COLLECTION_SORT_NONE:
+    default: /*fall through for default*/
       // shouldn't happen
-      second_order = g_strdup_printf("filename %s", (collection->params.descending ? "DESC" : ""));
+      sq = g_strdup("mi.id");
       break;
   }
-
-
-  gchar *sq = NULL;
-  if(collection->params.descending)
-  {
-    switch(collection->params.sort)
-    {
-      case DT_COLLECTION_SORT_DATETIME:
-      case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
-      case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
-      case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
-      case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
-        {
-        const int local_order = collection->params.sort;
-        char *colname;
-
-        switch(local_order)
-        {
-          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
-          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
-          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
-          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
-          default: colname = "";
-        }
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY %s DESC, %s, filename DESC, version DESC", colname, second_order);
-        // clang-format on
-        break;
-        }
-
-      case DT_COLLECTION_SORT_RATING:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END, %s, filename DESC, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_FILENAME:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY filename DESC, %s, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_ID:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY mi.id DESC"); /* makes no sense to consider second order here since ID is unique ;) */
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_COLOR:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY color, %s, filename DESC, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_GROUP:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY group_id DESC, %s, mi.id-group_id != 0, mi.id DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_PATH:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY folder DESC, filename DESC, %s, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_CUSTOM_ORDER:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY position DESC, %s, filename DESC, version DESC", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_TITLE:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY m.value DESC, filename DESC, version DESC");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_DESCRIPTION:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY m.value DESC, filename DESC, version DESC");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_ASPECT_RATIO:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY aspect_ratio DESC, %s, filename DESC, version DESC", second_order);
-        // clang-format on
-        break;
-
-
-      case DT_COLLECTION_SORT_SHUFFLE:
-        // clang-format off
-        /* do not consider second order for shuffle */
-        /* do not remember shuffle for second order */
-        sq = g_strdup("ORDER BY RANDOM()");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_NONE:
-      default:/*fall through for default*/
-        // shouldn't happen
-        // clang-format off
-        sq = g_strdup("ORDER BY mi.id DESC");
-        // clang-format on
-        break;
-    }
-  }
-  else
-  {
-    switch(collection->params.sort)
-    {
-      case DT_COLLECTION_SORT_DATETIME:
-      case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
-      case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
-      case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
-      case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
-        {
-        const int local_order = collection->params.sort;
-        char *colname;
-
-        switch(local_order)
-        {
-          case DT_COLLECTION_SORT_DATETIME:         colname = "datetime_taken" ; break ;
-          case DT_COLLECTION_SORT_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
-          case DT_COLLECTION_SORT_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
-          case DT_COLLECTION_SORT_EXPORT_TIMESTAMP: colname = "export_timestamp" ; break ;
-          case DT_COLLECTION_SORT_PRINT_TIMESTAMP:  colname = "print_timestamp" ; break ;
-          default: colname = "";
-        }
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY %s, %s, filename, version", colname, second_order);
-        // clang-format on
-        break;
-        }
-
-      case DT_COLLECTION_SORT_RATING:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY CASE WHEN flags & 8 = 8 THEN -1 ELSE flags & 7 END DESC, %s, filename, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_FILENAME:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY filename, %s, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_ID:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY mi.id"); /* makes no sense to consider second order here since ID is unique ;) */
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_COLOR:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY color DESC, %s, filename, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_GROUP:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY group_id, %s, mi.id-group_id != 0, mi.id", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_PATH:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY folder, filename, %s, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_CUSTOM_ORDER:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY position, %s, filename, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_TITLE:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY m.value, filename, version");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_DESCRIPTION:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY m.value, filename, version");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_ASPECT_RATIO:
-        // clang-format off
-        sq = g_strdup_printf("ORDER BY aspect_ratio, %s, filename, version", second_order);
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_SHUFFLE:
-        /* do not consider second order for shuffle */
-        /* do not remember shuffle for second order */
-        // clang-format off
-        sq = g_strdup("ORDER BY RANDOM()");
-        // clang-format on
-        break;
-
-      case DT_COLLECTION_SORT_NONE:
-      default:/*fall through for default*/
-        // shouldn't happen
-        // clang-format off
-        sq = g_strdup("ORDER BY mi.id");
-        // clang-format on
-        break;
-    }
-  }
-
-  g_free(second_order);/*free second order part, it's now part of sq*/
 
   return sq;
+}
+
+gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
+{
+  gboolean filename = FALSE;
+  int first_order = 0;
+  const dt_collection_sort_t lastsort = dt_conf_get_int("plugins/lighttable/filtering/lastsort");
+  const int lastsortorder = dt_conf_get_int("plugins/lighttable/filtering/lastsortorder");
+  gboolean already_last_sort = FALSE;
+  gchar *query = g_strdup("ORDER BY");
+
+  const int nb_sort = CLAMP(dt_conf_get_int("plugins/lighttable/filtering/num_sort"), 0, DT_COLLECTION_MAX_RULES);
+  for(int i = 0; i < nb_sort; i++)
+  {
+    // read the sort value from conf
+    char confname[200] = { 0 };
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
+    const dt_collection_sort_t sort = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", i);
+    const int sortorder = dt_conf_get_int(confname);
+
+    // get the sort query
+    gchar *sq = _dt_collection_get_sort_text(sort, sortorder);
+    query = dt_util_dstrcat(query, "%s %s", (i == 0) ? "" : ",", sq);
+    g_free(sq);
+
+    // set the "already done" values
+    if(sort == DT_COLLECTION_SORT_FILENAME) filename = TRUE;
+    if(i == 0) first_order = sortorder;
+    if(sort == lastsort) already_last_sort = TRUE;
+  }
+
+  // and last sort order set
+  if(!already_last_sort)
+  {
+    gchar *lsq = _dt_collection_get_sort_text(lastsort, lastsortorder);
+    query = dt_util_dstrcat(query, ", %s", lsq);
+    g_free(lsq);
+    if(lastsort == DT_COLLECTION_SORT_FILENAME) filename = TRUE;
+  }
+
+  // complete the query with fallback if needed
+  if(!filename) query = dt_util_dstrcat(query, ", filename%s", (first_order) ? " DESC" : "");
+
+  query = dt_util_dstrcat(query, ", version%s", (first_order) ? " DESC" : "");
+
+  return query;
 }
 
 
@@ -1161,16 +874,7 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query,
   {
     dt_conf_set_int("plugins/collection/query_flags", collection->params.query_flags);
     dt_conf_set_int("plugins/collection/filter_flags", collection->params.filter_flags);
-    dt_conf_set_string("plugins/collection/text_filter", collection->params.text_filter ? collection->params.text_filter : "");
-    char colors_filter[16];
-    sprintf(colors_filter, "%x", collection->params.colors_filter);
-    dt_conf_set_string("plugins/collection/colors_filter", colors_filter);
     dt_conf_set_int("plugins/collection/film_id", collection->params.film_id);
-    dt_conf_set_int("plugins/collection/rating", collection->params.rating);
-    dt_conf_set_int("plugins/collection/rating_comparator", collection->params.comparator);
-    dt_conf_set_int("plugins/collection/sort", collection->params.sort);
-    dt_conf_set_int("plugins/collection/sort_second_order", collection->params.sort_second_order);
-    dt_conf_set_bool("plugins/collection/descending", collection->params.descending);
   }
 
   /* store query in context */
@@ -1367,7 +1071,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 
 static char *_dt_collection_compute_datetime(const char *operator, const char *input)
 {
-  if(strlen(input) < 4) return NULL;
+  if(strlen(input) < 3) return NULL;
 
   char bound[DT_DATETIME_LENGTH];
   gboolean res;
@@ -1397,7 +1101,8 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
 
   // we test the range expression first
   // 2 elements : date-time1 and  date-time2
-  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}[:.\\d\\s]*)\\s*;\\s*(\\d{4}[:.\\d\\s]*)\\s*\\]\\s*$", 0, 0, NULL);
+  regex = g_regex_new("^\\s*\\[\\s*([+-]?\\d{4}[:.\\d\\s]*)\\s*;\\s*((?:now)|[+-]?\\d{4}[:.\\d\\s]*)\\s*\\]\\s*$",
+                      0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
   int match_count = g_match_info_get_match_count(match_info);
 
@@ -1406,8 +1111,23 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
     gchar *txt = g_match_info_fetch(match_info, 1);
     gchar *txt2 = g_match_info_fetch(match_info, 2);
 
-    *number1 = _dt_collection_compute_datetime(">=", txt);
-    *number2 = _dt_collection_compute_datetime("<=", txt2);
+    if(!g_str_has_prefix(txt, "-")) *number1 = _dt_collection_compute_datetime(">=", txt);
+    if(!g_str_has_prefix(txt2, "+")) *number2 = _dt_collection_compute_datetime("<=", txt2);
+
+    // special handle of relative dates
+    if(g_str_has_prefix(txt, "-") && *number2)
+    {
+      dt_datetime_t relative;
+      dt_datetime_exif_to_numbers_raw(&relative, txt + 1);
+      dt_datetime_exif_add_numbers(*number2, relative, FALSE, &(*number1));
+    }
+    else if(g_str_has_prefix(txt2, "+") && *number1)
+    {
+      dt_datetime_t relative;
+      dt_datetime_exif_to_numbers_raw(&relative, txt2 + 1);
+      dt_datetime_exif_add_numbers(*number1, relative, TRUE, &(*number2));
+    }
+
     *operator= g_strdup("[]");
 
     g_free(txt);
@@ -1649,20 +1369,68 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // clang-format on
       else
       {
-        int color = 0;
-        if(strcmp(escaped_text, _("red")) == 0)
-          color = 0;
-        else if(strcmp(escaped_text, _("yellow")) == 0)
-          color = 1;
-        else if(strcmp(escaped_text, _("green")) == 0)
-          color = 2;
-        else if(strcmp(escaped_text, _("blue")) == 0)
-          color = 3;
-        else if(strcmp(escaped_text, _("purple")) == 0)
-          color = 4;
-        // clang-format off
-        query = g_strdup_printf("(id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
-        // clang-format on
+        // test the "integer" case (used by filters)
+        const int val = atoi(escaped_text);
+        if(val != 0 || !g_strcmp0(escaped_text, "0"))
+        {
+          const int colors_set = val & 0xFF;
+          const int colors_unset = (val & 0xFF00) >> 8;
+          const gboolean op = val & 0x80000000;
+          if(op) // AND
+          {
+            if(colors_set)
+              // clang-format off
+              query = g_strdup_printf("(id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) = %d) AND (mask & %d = 0)))",
+                                      colors_set, colors_set, colors_unset);
+              // clang-format on
+            else if(colors_unset)
+              // clang-format off
+              query = g_strdup_printf("(NOT id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) <> 0)))",
+                                      colors_unset);
+              // clang-format on
+          }
+          else // OR
+          {
+            if(!colors_unset)
+              // clang-format off
+              query = g_strdup_printf("(id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) <> 0)))",
+                                      colors_set);
+              // clang-format on
+            else
+              // clang-format off
+              query = g_strdup_printf("((id IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) <> 0))"
+                                      " OR id NOT IN (SELECT id FROM (SELECT imgid AS id, SUM(1 << color) AS mask"
+                                      "  FROM main.color_labels GROUP BY imgid)"
+                                      "  WHERE ((mask & %d) = %d))))",
+                                      colors_set, colors_unset, colors_unset);
+              // clang-format on
+          }
+        }
+        else // fallback to the text version
+        {
+          int color = 0;
+          if(strcmp(escaped_text, _("red")) == 0)
+            color = 0;
+          else if(strcmp(escaped_text, _("yellow")) == 0)
+            color = 1;
+          else if(strcmp(escaped_text, _("green")) == 0)
+            color = 2;
+          else if(strcmp(escaped_text, _("blue")) == 0)
+            color = 3;
+          else if(strcmp(escaped_text, _("purple")) == 0)
+            color = 4;
+          // clang-format off
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
+          // clang-format on
+        }
       }
     }
     break;
@@ -1959,19 +1727,75 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_FILENAME: // filename
     {
-      GList *list = dt_util_str_to_glist(",", escaped_text);
-
-      for (GList *l = list; l; l = g_list_next(l))
+      gchar *subquery = NULL;
+      gchar **elems = g_strsplit(escaped_text, "/", -1);
+      if(g_strv_length(elems) > 0)
       {
-        char *name = (char*)l->data;	// remember the original content of this list node
-        l->data = g_strdup_printf("(filename LIKE '%%%s%%')", name);
-        g_free(name);			// free the original filename
+        // the main part
+        GList *list = dt_util_str_to_glist(",", elems[0]);
+
+        for(GList *l = list; l; l = g_list_next(l))
+        {
+          char *name = (char *)l->data; // remember the original content of this list node
+          l->data = g_strdup_printf("(filename LIKE '%%%s%%')", name);
+          g_free(name); // free the original filename
+        }
+
+        if(g_list_length(list) > 0) subquery = dt_util_glist_to_str(" OR ", list);
+        g_list_free_full(list, g_free); // free the SQL clauses as well as the list
+      }
+      if(g_strv_length(elems) > 1)
+      {
+        GList *list = dt_util_str_to_glist(",", elems[1]);
+
+        for(GList *l = list; l; l = g_list_next(l))
+        {
+          char *name = (char *)l->data; // remember the original content of this list node
+          // special case for keywords
+          if(!g_strcmp0("RAW", name))
+          {
+            l->data = g_strdup_printf("(flags & %d)", DT_IMAGE_RAW);
+          }
+          else if(!g_strcmp0("NOT RAW", name))
+          {
+            l->data = g_strdup_printf("(flags & %d == 0)", DT_IMAGE_RAW);
+          }
+          else if(!g_strcmp0("LDR", name))
+          {
+            l->data = g_strdup_printf("(flags & %d)", DT_IMAGE_LDR);
+          }
+          else if(!g_strcmp0("HDR", name))
+          {
+            l->data = g_strdup_printf("(flags & %d)", DT_IMAGE_HDR);
+          }
+          else
+          {
+            l->data = g_strdup_printf("(filename LIKE '%%%s%s%%')", g_str_has_prefix(name, ".") ? "" : ".", name);
+          }
+          g_free(name); // free the original filename
+        }
+
+        if(g_list_length(list) > 0)
+        {
+          if(subquery)
+          {
+            gchar *s = subquery;
+            subquery = g_strdup_printf("(%s) AND (%s)", subquery, dt_util_glist_to_str(" OR ", list));
+            g_free(s);
+          }
+          else
+            subquery = dt_util_glist_to_str(" OR ", list);
+        }
+        g_list_free_full(list, g_free); // free the SQL clauses as well as the list
       }
 
-      char *subquery = dt_util_glist_to_str(" OR ", list);
-      query = g_strdup_printf("(%s)", subquery);
+      g_strfreev(elems);
+      if(subquery)
+        query = g_strdup_printf("(%s)", subquery);
+      else
+        query = g_strdup("1=1");
+
       g_free(subquery);
-      g_list_free_full(list, g_free);	// free the SQL clauses as well as the list
 
       break;
     }
@@ -2053,7 +1877,22 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       break;
 
-    case DT_COLLECTION_PROP_RATING: // image rating
+      case DT_COLLECTION_PROP_TEXTSEARCH: // text search
+      {
+        // clang-format off
+        query = g_strdup_printf("(id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
+                                " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
+                                "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
+                                " UNION SELECT id FROM main.images"
+                                "   WHERE filename LIKE '%s'"
+                                " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
+                                "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
+                                escaped_text, escaped_text, escaped_text, escaped_text, escaped_text);
+        // clang-format on
+      }
+      break;
+
+      case DT_COLLECTION_PROP_RATING: // image rating
       {
         gchar *operator, *number1, *number2;
         dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);
@@ -2076,7 +1915,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
             }
           }
         }
-        else if(operator && number1)
+        else if(operator&& g_strcmp0(operator, "=") && number1)
         {
           if(g_strcmp0(operator, "<=") == 0 || g_strcmp0(operator, "<") == 0)
           { // all below rating + rejected
@@ -2152,27 +1991,95 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
   return query;
 }
 
-int dt_collection_serialize(char *buf, int bufsize)
+void dt_collection_sort_deserialize(const char *buf)
 {
+  int num_sort = 0;
+  sscanf(buf, "%d", &num_sort);
+  int sortid = 0, sortorder = 0;
+  dt_conf_set_int("plugins/lighttable/filtering/num_sort", num_sort);
+  while(buf[0] != '\0' && buf[0] != ':') buf++;
+  if(buf[0] == ':') buf++;
+  for(int k = 0; k < num_sort; k++)
+  {
+    const int n = sscanf(buf, "%d:%d", &sortid, &sortorder);
+    if(n == 2)
+    {
+      char confname[200];
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", k);
+      dt_conf_set_int(confname, sortid);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", k);
+      dt_conf_set_int(confname, sortorder);
+    }
+    else
+    {
+      dt_conf_set_int("plugins/lighttable/filtering/num_sort", k);
+      break;
+    }
+    while(buf[0] != '$' && buf[0] != '\0') buf++;
+    if(buf[0] == '$') buf++;
+  }
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
+}
+
+void dt_collection_sort_serialize(char *buf, int bufsize)
+{
+  int c;
+  const int num_sort = dt_conf_get_int("plugins/lighttable/filtering/num_sort");
+  c = snprintf(buf, bufsize, "%d:", num_sort);
+  buf += c;
+  bufsize -= c;
+  for(int k = 0; k < num_sort; k++)
+  {
+    char confname[200];
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", k);
+    const int sortid = dt_conf_get_int(confname);
+    c = snprintf(buf, bufsize, "%d:", sortid);
+    buf += c;
+    bufsize -= c;
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sortorder%1d", k);
+    const int sortorder = dt_conf_get_int(confname);
+    c = snprintf(buf, bufsize, "%d$", sortorder);
+    buf += c;
+    bufsize -= c;
+  }
+}
+
+int dt_collection_serialize(char *buf, int bufsize, gboolean filtering)
+{
+  const char *plugin_name = filtering ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
   char confname[200];
   int c;
-  const int num_rules = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+  const int num_rules = dt_conf_get_int(confname);
   c = snprintf(buf, bufsize, "%d:", num_rules);
   buf += c;
   bufsize -= c;
   for(int k = 0; k < num_rules; k++)
   {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
+    snprintf(confname, sizeof(confname), "%s/mode%1d", plugin_name, k);
     const int mode = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", mode);
     buf += c;
     bufsize -= c;
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
+    snprintf(confname, sizeof(confname), "%s/item%1d", plugin_name, k);
     const int item = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", item);
     buf += c;
     bufsize -= c;
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
+    if(filtering)
+    {
+      snprintf(confname, sizeof(confname), "%s/off%1d", plugin_name, k);
+      const int off = dt_conf_get_int(confname);
+      c = snprintf(buf, bufsize, "%d:", off);
+      buf += c;
+      bufsize -= c;
+      snprintf(confname, sizeof(confname), "%s/top%1d", plugin_name, k);
+      const int top = dt_conf_get_int(confname);
+      c = snprintf(buf, bufsize, "%d:", top);
+      buf += c;
+      bufsize -= c;
+    }
+    snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
     const char *str = dt_conf_get_string_const(confname);
     if(str && (str[0] != '\0'))
       c = snprintf(buf, bufsize, "%s$", str);
@@ -2184,49 +2091,66 @@ int dt_collection_serialize(char *buf, int bufsize)
   return 0;
 }
 
-void dt_collection_deserialize(const char *buf)
+void dt_collection_deserialize(const char *buf, gboolean filtering)
 {
+  const char *plugin_name = filtering ? "plugins/lighttable/filtering" : "plugins/lighttable/collect";
+  char confname[200];
   int num_rules = 0;
   sscanf(buf, "%d", &num_rules);
-  if(num_rules == 0)
+  if(num_rules == 0 && !filtering)
   {
-    dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
-    dt_conf_set_int("plugins/lighttable/collect/mode0", 0);
-    dt_conf_set_int("plugins/lighttable/collect/item0", 0);
-    dt_conf_set_string("plugins/lighttable/collect/string0", "%");
+    // we always want at least 1 rule
+    snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+    dt_conf_set_int(confname, 1);
+    snprintf(confname, sizeof(confname), "%s/mode0", plugin_name);
+    dt_conf_set_int(confname, 0);
+    snprintf(confname, sizeof(confname), "%s/item0", plugin_name);
+    dt_conf_set_int(confname, 0);
+    snprintf(confname, sizeof(confname), "%s/string0", plugin_name);
+    dt_conf_set_string(confname, "%");
   }
   else
   {
-    int mode = 0, item = 0;
-    dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
+    int mode = 0, item = 0, off = 0, top = 0;
+    snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+    dt_conf_set_int(confname, num_rules);
     while(buf[0] != '\0' && buf[0] != ':') buf++;
     if(buf[0] == ':') buf++;
-    char str[400], confname[200];
+    char str[400];
     for(int k = 0; k < num_rules; k++)
     {
-      const int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
-      if(n == 3)
+      const int n = (filtering) ? sscanf(buf, "%d:%d:%d:%d:%399[^$]", &mode, &item, &off, &top, str)
+                                : sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
+      if((!filtering && n == 3) || (filtering && n == 5))
       {
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
+        snprintf(confname, sizeof(confname), "%s/mode%1d", plugin_name, k);
         dt_conf_set_int(confname, mode);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
+        snprintf(confname, sizeof(confname), "%s/item%1d", plugin_name, k);
         dt_conf_set_int(confname, item);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
+        if(filtering)
+        {
+          snprintf(confname, sizeof(confname), "%s/off%1d", plugin_name, k);
+          dt_conf_set_int(confname, off);
+          snprintf(confname, sizeof(confname), "%s/top%1d", plugin_name, k);
+          dt_conf_set_int(confname, top);
+        }
+        snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
         dt_conf_set_string(confname, str);
       }
-      else if(num_rules == 1)
+      else if(!filtering && num_rules == 1)
       {
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
+        snprintf(confname, sizeof(confname), "%s/mode%1d", plugin_name, k);
         dt_conf_set_int(confname, 0);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
+        snprintf(confname, sizeof(confname), "%s/item%1d", plugin_name, k);
         dt_conf_set_int(confname, 0);
-        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
+        snprintf(confname, sizeof(confname), "%s/string%1d", plugin_name, k);
         dt_conf_set_string(confname, "%");
         break;
       }
       else
       {
-        dt_conf_set_int("plugins/lighttable/collect/num_rules", k);
+        snprintf(confname, sizeof(confname), "%s/num_rules", plugin_name);
+        dt_conf_set_int(confname, k);
         break;
       }
       while(buf[0] != '$' && buf[0] != '\0') buf++;
@@ -2315,12 +2239,15 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   char confname[200];
 
   const int _n_r = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  const int _n_f = dt_conf_get_int("plugins/lighttable/filtering/num_rules");
   const int num_rules = CLAMP(_n_r, 1, 10);
+  const int num_filters = MIN(_n_f, 10);
   char *conj[] = { "AND", "OR", "AND NOT" };
 
-  gchar **query_parts = g_new (gchar*, num_rules + 1);
-  query_parts[num_rules] =  NULL;
+  gchar **query_parts = g_new(gchar *, num_rules + num_filters + 1);
+  query_parts[num_rules + num_filters] = NULL;
 
+  // the main rules part
   for(int i = 0; i < num_rules; i++)
   {
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
@@ -2342,6 +2269,36 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
       gchar *query = get_query_string(property, text);
 
       query_parts[i] =  g_strdup_printf(" %s %s", conj[mode], query);
+
+      g_free(query);
+    }
+    g_free(text);
+  }
+
+  // the filtering part (same syntax as for collect rules)
+  for(int i = 0; i < num_filters; i++)
+  {
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
+    const int property = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
+    gchar *text = dt_conf_get_string(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
+    const int mode = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/off%1d", i);
+    const int off = dt_conf_get_int(confname);
+
+    if(off || !text || text[0] == '\0')
+    {
+      if(!off && mode == 1) // for OR show all
+        query_parts[i + num_rules] = g_strdup(" OR 1=1");
+      else
+        query_parts[i + num_rules] = g_strdup("");
+    }
+    else
+    {
+      gchar *query = get_query_string(property, text);
+
+      query_parts[i + num_rules] = g_strdup_printf(" %s %s", conj[mode], query);
 
       g_free(query);
     }
@@ -2480,7 +2437,7 @@ static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_d
   {
     if(old_count != collection->count) dt_collection_hint_message(collection);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, DT_COLLECTION_CHANGE_RELOAD,
-                                  DT_COLLECTION_PROP_UNDEF, NULL, -1);
+                                  DT_COLLECTION_PROP_UNDEF, (GList *)NULL, -1);
   }
 }
 
