@@ -332,7 +332,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
     gtk_widget_set_tooltip_text(colors->colors[k], _("filter by images color label"
                                                      "\nclick to toggle the color label selection"
                                                      "\nctrl+click to exclude the color label"
-                                                     "\nthe grey button affects all color labels"));
+                                                     "\nthe gray button affects all color labels"));
     g_signal_connect(G_OBJECT(colors->colors[k]), "button-press-event", G_CALLBACK(_colors_clicked),
                      GINT_TO_POINTER(k));
   }
