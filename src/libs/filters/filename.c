@@ -83,6 +83,8 @@ static void _filename_changed(GtkWidget *widget, gpointer user_data)
 
 static gboolean _filename_focus_out(GtkWidget *entry, GdkEventFocus *event, gpointer user_data)
 {
+  _widgets_filename_t *filename = (_widgets_filename_t *)user_data;
+  if(filename->rule->cleaning) return FALSE;
   _filename_changed(entry, user_data);
   return FALSE;
 }
