@@ -222,7 +222,7 @@ static _filter_t *_filters_get(const dt_collection_properties_t prop)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("filters for collections");
+  return _("collection filters");
 }
 
 void init_presets(dt_lib_module_t *self)
