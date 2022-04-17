@@ -33,7 +33,7 @@
 
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_70;
-@define-color scroll_bar_active @grey_90;
+@define-color scroll_bar_active @grey_80;
 @define-color scroll_bar_bg @grey_40;
 
 /* Modules box (plugins) */

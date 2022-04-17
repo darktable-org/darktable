@@ -646,6 +646,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
                                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item->module->off)));
       g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_basics_on_off_callback), item);
       gtk_widget_show(btn);
+      dt_gui_add_class(btn, "dt_transparent_background");
       gtk_box_pack_start(GTK_BOX(header_box), btn, FALSE, FALSE, 0);
       // we add to the module header the section label and the link to the full iop
       GtkWidget *sect = dt_ui_section_label_new(item->module->name());
@@ -752,6 +753,7 @@ static void _basics_show(dt_lib_module_t *self)
     gtk_widget_set_name(d->vbox_basic, "basics-box-labels");
   else
     gtk_widget_set_name(d->vbox_basic, "basics-box");
+  dt_gui_add_class(d->vbox_basic,"plugin_ui");
 
   dt_lib_modulegroups_basic_item_position_t item_pos = FIRST_MODULE;
   for(GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
