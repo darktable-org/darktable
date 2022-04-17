@@ -388,8 +388,8 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_widget_set_can_default(filename->name, TRUE);
   gtk_entry_set_placeholder_text(GTK_ENTRY(filename->name), _("filename"));
   gtk_widget_set_tooltip_text(filename->name, _("enter filename to search.\n"
-                                                "multiple value can be separated by ','\n"
-                                                "\nright-click to get existing filenames."));
+                                                "multiple values can be separated by ','\n"
+                                                "\nright-click to get existing filenames"));
   gtk_box_pack_start(GTK_BOX(hb), filename->name, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->name), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->name), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
@@ -403,9 +403,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_widget_set_can_default(filename->ext, TRUE);
   gtk_entry_set_placeholder_text(GTK_ENTRY(filename->ext), _("extension"));
   gtk_widget_set_tooltip_text(filename->ext, _("enter extension to search with starting dot.\n"
-                                               "multiple value can be separated by ','\n"
+                                               "multiple values can be separated by ','\n"
                                                "handled keyword : 'RAW' 'NOT RAW' 'LDR' 'HDR'\n"
-                                               "\nright-click to get existing extensions."));
+                                               "\nright-click to get existing extensions"));
   gtk_box_pack_start(GTK_BOX(hb), filename->ext, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->ext), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->ext), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
