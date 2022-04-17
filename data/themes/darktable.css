@@ -179,6 +179,12 @@
 @define-color timeline_text_bg_color alpha(black, .8);
 @define-color timeline_text_fg_color alpha(white, .9);
 
+@define-color range_graph_color alpha(@timeline_fg_color, 0.6);
+@define-color range_bg_color alpha(@bg_color, 0.2);
+@define-color range_cursor_color alpha(@fg_color, .75);
+@define-color range_sel_color alpha(@timeline_bg_color, 0.5);
+@define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.8);
+
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
 @define-color brush_trace alpha(black, .8);
@@ -226,8 +232,7 @@
 }
 
 /* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
-#lib-plugin-ui,
-#iop-plugin-ui,
+.plugin_ui,
 #modules-tabs,
 #left,
 #right,
@@ -370,14 +375,13 @@ button
 }
 
 /* Precise default buttons margins on side panels */
-#iop-plugin-ui button,
-#lib-plugin-ui button
+.plugin_ui button
 {
   margin: 2px 2px 2px 0;  /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
 }
 
 /* fix misalignment for specific icons related to bauhaus widgets */
-#iop-plugin-ui .dt_bauhaus_alignment
+.plugin_ui .dt_bauhaus_alignment
 {
   padding: 0.14em;
   min-height: 1.4em;
@@ -425,10 +429,19 @@ entry selection
 }
 
 /* Filter bar bauhaus-combobox and search box defaults */
-#header-toolbar #bauhaus_combobox
+#header-toolbar #bauhaus_combobox,
+.quick_filter_box#range_select
 {
   background-color: alpha(@fg_color, 0.05);
-  border: none;
+  border: 0.005em solid alpha(@fg_color, 0.025);
+}
+
+.quick_filter_box,
+#filter_sort_box label,
+#header-rule-box label,
+#header-sort-box label
+{
+  margin-right: 0.56em;
 }
 
 .search
@@ -478,11 +491,6 @@ spinbutton>button
   opacity: 0.5;
 }
 
-.dt_font_resize_07
-{
-  font-size: 0.7em;
-}
-
 /*------------------------
   - Main header settings -
   ------------------------*/
@@ -506,13 +514,13 @@ spinbutton>button
 }
 
 /* Set toolbars buttons in lighttable and darkroom */
+.quick_filter_box#range_select,
+#filter_colors_box .dt_module_btn,
 #header-toolbar .dt_module_btn,
 #footer-toolbar .dt_module_btn
 {
-  padding: 0.07em;
-  min-height: 2.4em; /* align toolbox button height on comboboxe's one */
-  min-width: 2.4em;
-  font-size: .75em;
+  min-height: 1.8em; /* align toolbox button height on comboboxe's one */
+  min-width: 1.8em;
 }
 
 /* Rating stars on left footer toolbar on lighttable view */
@@ -529,17 +537,20 @@ spinbutton>button
 #footer-toolbar #button-canvas,
 #module-header #button-canvas,
 #modules-tabs #button-canvas,
-#lib-collect-entry + .dt_module_btn #button-canvas
+#lib-collect-entry + .dt_module_btn #button-canvas,
+#collect-header-box #button-canvas
 {
   margin: 12px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
 
-#lib-label-colors .dt_module_btn
+#lib-label-colors .dt_module_btn,
+#filter_colors_box .dt_module_btn
 {
   opacity: 0.6;
 }
 
-#lib-label-colors .dt_module_btn:hover
+#lib-label-colors .dt_module_btn:hover,
+#filter_colors_box .dt_module_btn:hover
 {
   opacity: 1;
 }
@@ -549,8 +560,7 @@ spinbutton>button
   ---------------------------*/
 /* Frame around modules boxes */
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
-#lib-plugin-ui,
-#iop-plugin-ui,
+.plugin_ui,
 #basics-box,
 #basics-box-labels
 {
@@ -558,8 +568,7 @@ spinbutton>button
   background-color: @plugin_bg_color;
 }
 
-#iop-plugin-ui-main,
-#lib-plugin-ui-main
+.plugin_ui_main
 {
   padding: 0.28em 0.7em;
 }
@@ -588,7 +597,7 @@ spinbutton>button
 }
 
 /* Add some space to aerate if a notebook follows a widget (like for example in filmic rgb module */
-#iop-plugin-ui-main widget + notebook
+.plugin_ui_main widget + notebook
 {
   margin-top: 0.5em;
 }
@@ -711,7 +720,7 @@ spinbutton>button
 }
 
 /* for the import parameters to be more aligned with the imports buttons */
-#lib-plugin-ui #collapse-block
+.plugin_ui #collapse-block
 {
   margin: 0.42em 0.07em;
 }
@@ -918,14 +927,17 @@ popover #bauhaus_slider
 {
   padding: 0.14em 0 0.14em 0.42em;
 }
+.bauhaus_popup_no_quad
+{
+  padding-right: 0.42em;
+}
 
 /*---------------------------------------
   - Context menu, tooltips & comboboxes -
   ---------------------------------------*/
 /*** Basically everything that pops out/over on UI ***/
 combobox button,
-#iop-plugin-ui combobox button,
-#lib-plugin-ui combobox button
+.plugin_ui combobox button
 {
   padding: 0;
   margin: 0;
@@ -944,7 +956,8 @@ popover,
 combobox window,
 dialog combobox window,
 #bauhaus_combobox *,
-#bauhaus_slider *
+#bauhaus_slider *,
+#range_current
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
@@ -977,13 +990,15 @@ popover
   padding: 0.42em;
 }
 
-tooltip
+tooltip,
+#range_current
 {
   border: 0.07em solid shade(@tooltip_bg_color, 1.5);
   border-radius: 0;
 }
 
-tooltip label
+tooltip label,
+#range_current label
 {
   color: @tooltip_fg_color;
 }
@@ -993,12 +1008,6 @@ combobox label
   margin: 0 0.35em 0 0;
 }
 
-/* Header and footer labels, especially for combobox */
-#header-toolbar label,
-#footer-toolbar label
-{
-  margin: 0 0.5em;
-}
 menu separator,
 popover separator
 {
@@ -1037,14 +1046,14 @@ notebook tabs,
   min-height: 2em;
 }
 
-#iop-plugin-ui #blending-tabs .dt_module_btn,
+.plugin_ui #blending-tabs .dt_module_btn,
 #guides-line .toggle
 {
   min-height: 1.3em;
 }
 
 #modules-tabs .dt_module_btn,   /* This is needed separately to set a minimal width if panel is really narrow */
-#iop-plugin-ui #blending-tabs .dt_module_btn,
+.plugin_ui #blending-tabs .dt_module_btn,
 #guides-line .dt_module_btn
 {
   border-radius: 0;
@@ -1053,7 +1062,7 @@ notebook tabs,
 }
 
 /* reduce and align now hamburger menu of modules and blending tabs */
-#iop-plugin-ui #blending-tabs .dt_module_btn,
+.plugin_ui #blending-tabs .dt_module_btn,
 #modules-tabs .dt_module_btn
 {
   padding: 0.3em;
@@ -1078,8 +1087,7 @@ notebook header /* add space between notebook tabs and options below */
   --------------------------*/
 /*** WARNING : sliders IN modules are bauhaus (from a custom lib in darktable), not standard GTK sliders (see below) ***/
 
-#lib-plugin-ui scrollbar slider,
-#iop-plugin-ui scrollbar slider,
+.plugin_ui scrollbar slider,
 scrollbar slider,
 dialog scrollbar slider
 {
@@ -1113,11 +1121,8 @@ scale contents trough slider
   min-width: 0.5em;
 }
 
+.plugin_ui scrollbar,
 scrollbar,
-dialog scrollbar
-scrollbar,
-#iop-plugin-ui scrollbar,
-#lib-plugin-ui scrollbar,
 dialog scrollbar
 {
   border-color: @scroll_bar_bg;
@@ -1477,6 +1482,69 @@ filechooser row:hover .sidebar-icon
 #basics-widget #toneeqgraph
 {
   min-height: 18em;
+}
+
+/*--------------------
+  - Collect module -
+--------------------*/
+#module_filtering #collect-rule-widget
+{
+  background-color: @collapsible_bg_color;
+  margin: 0.3em 0 0.5em 0;
+  padding: 0.07em 0.28em;
+  border-radius: 0.21em;
+}
+
+#range_select #dt-range-band
+{
+  min-height: 2.2em;                /* band height */
+}
+
+#module_filtering #range_select #dt-range-band
+{
+  background-color: @range_bg_color;
+  border: 0.07em solid alpha(@range_bg_color, 0.8);
+  border-radius: 0.21em;
+}
+
+#module_filtering #dt-range-current
+{
+  margin: 0 0.2em;
+}
+
+#module_filtering #dt-range-current label
+{
+  color: @timeline_bg_color;
+  background-color: @timeline_fg_color;
+  padding: 0 0.2em;
+}
+
+#module_filtering #dt-range-date-last-line
+{
+  margin-top: 0.8em;
+}
+
+/* then related filters on quick filters box in header toolbar */
+.quick_filter_box #dt-range-band
+{
+  min-width: 9.5em;
+}
+
+#filter_colors_box #button-canvas,
+#collect-sort-widget #button-canvas
+{
+  margin: 1em 0.07em;
+}
+
+#filter_colors_box .dt_module_btn
+{
+  padding: 2px 0;
+  margin: 0;
+}
+
+#range_current
+{
+  padding: 0.2em;
 }
 
 /*--------------------------------
@@ -1985,8 +2053,7 @@ entry:checked
 /* Scrollbars hover state */
 scrollbar.horizontal slider:hover,
 scrollbar.vertical slider:hover,
-#iop-plugin-ui scrollbar slider:hover,
-#lib-plugin-ui scrollbar slider:hover,
+.plugin_ui scrollbar slider:hover,
 dialog scrollbar slider:hover,
 scale contents trough slider:hover
 {

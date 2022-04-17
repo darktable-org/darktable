@@ -763,7 +763,7 @@ static gboolean _set_location_collection(dt_lib_module_t *self)
     char *collection = g_strdup_printf("1:0:%d:%s|%s$",
                                        DT_COLLECTION_PROP_GEOTAGGING,
                                        _("tagged"), name);
-    dt_collection_deserialize(collection);
+    dt_collection_deserialize(collection, FALSE);
     g_free(collection);
     g_free(name);
     return TRUE;
