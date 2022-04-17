@@ -243,21 +243,24 @@ void dt_confgen_init()
 
 <xsl:template match="longdescription">
   <xsl:variable name="uui" select="../@ui"/>
+  <xsl:variable name="des" select="."/>
 
   <xsl:text>   _insert_longdescription("</xsl:text><xsl:value-of select="../name" />
-  <xsl:if test="not($uui)">
+
+  <xsl:if test="not($uui) or $des = ''">
     <xsl:text>", "</xsl:text>
   </xsl:if>
-  <xsl:if test="$uui = 'yes'">
+
+  <xsl:if test="$uui = 'yes' and $des != ''">
     <xsl:text>", _("</xsl:text>
   </xsl:if>
 
   <xsl:value-of select="."/>
 
-  <xsl:if test="not($uui)">
+  <xsl:if test="not($uui) or $des = ''">
     <xsl:text>");</xsl:text>
   </xsl:if>
-  <xsl:if test="$uui = 'yes'">
+  <xsl:if test="$uui = 'yes' and $des != ''">
     <xsl:text>"));</xsl:text>
   </xsl:if>
 
