@@ -327,6 +327,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   {
     colors->colors[k] = dtgtk_button_new(dtgtk_cairo_paint_label_sel, k, NULL);
     dt_gui_add_class(colors->colors[k], "dt_no_hover");
+    dt_gui_add_class(colors->colors[k], "dt_dimmed");
     g_object_set_data(G_OBJECT(colors->colors[k]), "colors_self", colors);
     gtk_box_pack_start(GTK_BOX(hbox), colors->colors[k], FALSE, FALSE, 0);
     gtk_widget_set_tooltip_text(colors->colors[k], _("filter by images color label"

@@ -75,13 +75,15 @@
   - dt_no_hover:
       - don't change css on hover (for dt_module_btn)
       - ex : colorlabels on header/footer bar
-  - dt_ignore_fg_state
+  - dt_ignore_fg_state:
       - don't change foreground color on state change and don't use bg if checked
       - ex : polarity buttons in blending ui
   - dt_module_btn:
       - set for all icons (button widget without text on it)
       - ex : btn in module header
       - for toggle button this is combined with a "standard" "toggle" class
+  - dt_dimmed:
+      - set all icons that need to be dimmed by default (typed text in search box when checking results and color labels icons)
   - section_expander:
       - use it for all expanders you could add on a module
   - search:
@@ -295,6 +297,7 @@ box *
 
 /* Set no background and no border. And avoid undershoot and overshoot having too much empty space at top/bottom of sidepanels when scrolled */
 .accels_window_box treeview,
+.combo,
 .dt_module_btn,
 .dt_module_btn:disabled,
 .dt_transparent_background,
@@ -303,15 +306,7 @@ box *
 filechooser .sidebar-button,
 popover #bauhaus_combobox,
 overshoot,
-overshoot.top,
-overshoot.bottom,
-overshoot.left,
-overshoot.right,
 undershoot,
-undershoot.top,
-undershoot.bottom,
-undershoot.left,
-undershoot.right,
 #usercss_box textview,
 #view_dropdown .combo
 {
@@ -324,6 +319,12 @@ undershoot.right,
 {
   background-color: @border_color;
   min-width: 1.4em;
+}
+
+/* Allow to resize all windows */
+decoration
+{
+  margin: 0.07em;
 }
 
 /* Default Gtk buttons and other entries */
@@ -353,19 +354,23 @@ textview
 
 /* Set same settings on all those items */
 .combo,
-.combo *,
-button
+.combo *
 {
   min-height: 1em;
   min-width: 1em;
 }
 
 /* Buttons in modules header, near the module name */
-.dt_module_btn
+.dt_module_btn,
+.path-bar button,
+header button,
+.text-button,
+.text-button radio, /* this line and following one are needed to set good margin inside some buttons, especially in header buttons in about dialog window and on radio button and label inside star icon overlay menu */
+.text-button label
 {
   min-height: 1.2em;
   min-width: 1.2em;
-  margin: 0 0.07em;
+  margin: 0.1em 0.07em;
 }
 
 .dt_module_btn,
@@ -374,19 +379,9 @@ button
   color: alpha(@button_fg, 0.55);
 }
 
-/* Precise default buttons margins on side panels */
-.plugin_ui button
+spinbutton > button
 {
-  margin: 2px 2px 2px 0;  /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
-}
-
-/* fix misalignment for specific icons related to bauhaus widgets */
-.plugin_ui .dt_bauhaus_alignment
-{
-  padding: 0.14em;
-  min-height: 1.4em;
-  min-width: 1.4em;
-  margin: 0;
+  margin: 0.07em;
 }
 
 /* set disabled options of above settings */
@@ -406,6 +401,13 @@ spinbutton *:disabled,
 #button-canvas
 {
   margin: 5px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
+}
+
+/* fix misalignment for specific icons related to bauhaus widgets */
+.plugin_ui .dt_bauhaus_alignment,
+.plugin_ui .dt_bauhaus_alignment #button-canvas
+{
+  margin: 0;
 }
 
 /* Default text fields and text boxes */
@@ -467,28 +469,15 @@ separator
   border-left: 0.07em solid transparent;
 }
 
-/* Allow to resize dialog windows */
-decoration
-{
-  margin: 0.07em;
-}
-
-/* Other buttons */
-
-radiobutton radio,
-radiobutton label
-{
-  padding: 0.25em;
-}
-
-spinbutton > button
-{
-  margin: 0.14em 0.07em;
-}
-
+/* set lighter opacity for specific items that need it (ex: color labels icons) */
 .dt_dimmed
 {
-  opacity: 0.5;
+  opacity: 0.6;
+}
+
+.dt_dimmed:hover /* to set full opacity when hovering those items */
+{
+  opacity: 1;
 }
 
 /*------------------------
@@ -513,14 +502,15 @@ spinbutton > button
   padding: 0.14em 0.28em;
 }
 
-/* Set toolbars buttons in lighttable and darkroom */
+/* Set toolbars buttons in lighttable and darkroom views ; and top right button in accels window */
+.accels_window_stick,
 .quick_filter_box#range_select,
 #filter_colors_box .dt_module_btn,
 #header-toolbar .dt_module_btn,
 #footer-toolbar .dt_module_btn
 {
-  min-height: 1.8em; /* align toolbox button height on comboboxe's one */
-  min-width: 1.8em;
+  min-height: 1.7em; /* align toolbox button height on comboboxe's one */
+  min-width: 1.7em;
 }
 
 /* Rating stars on left footer toolbar on lighttable view */
@@ -533,6 +523,7 @@ spinbutton > button
 
 /* Set default button spacing  in toolbars and modules */
 .section-expander #button-canvas,
+#basics-header-box #button-canvas,
 #header-toolbar #button-canvas,
 #footer-toolbar #button-canvas,
 #module-header #button-canvas,
@@ -543,57 +534,28 @@ spinbutton > button
   margin: 12px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
 
-#lib-label-colors .dt_module_btn,
-#filter_colors_box .dt_module_btn
-{
-  opacity: 0.6;
-}
-
-#lib-label-colors .dt_module_btn:hover,
-#filter_colors_box .dt_module_btn:hover
-{
-  opacity: 1;
-}
-
 /*---------------------------
   - Side panels and modules -
   ---------------------------*/
 /* Frame around modules boxes */
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
-.plugin_ui,
-#basics-box,
-#basics-box-labels
+.plugin_ui
 {
   color: @plugin_fg_color;
   background-color: @plugin_bg_color;
 }
 
-.plugin_ui_main
+.plugin_ui_main,
+#blending-box,
+#guides_module_combobox
 {
-  padding: 0.28em 0.7em;
+  padding: 0.14em 0.7em;
 }
 
 /* Frame around blending boxes */
-#blending-box
-{
-  padding: 0 0.77em;
-  margin-bottom: 0.28em;
-}
-
 #blending-tabs + #blending-box /* set top margin below blending tabs */
 {
-  margin-top: 0.42em;
-}
-
-#guides_module_combobox
-{
-  padding: 0.21em 0.84em 0.42em 0.84em;
-}
-
-#guides_module_combobox button
-{
-  border: none;
-  font-size: 1.2em;
+  margin-top: 0.14em;
 }
 
 /* Add some space to aerate if a notebook follows a widget (like for example in filmic rgb module */
@@ -611,19 +573,15 @@ spinbutton > button
 }
 
 /* Set duplicate module space in darkroom */
-#left .duplicate-ui .text-button
+.duplicate-ui grid,
+.duplicate-ui grid > label
 {
-  margin-top: 0.5em;
+  margin: 0.28em 0.14em;
 }
 
-#left .duplicate-ui grid > label
+.duplicate-ui entry
 {
-  margin-top: 1em;
-}
-
-#left .duplicate-ui entry
-{
-  margin: 1.25em 0 1.25em 0.5em;
+  margin: 1em 0 1em 0.5em;
 }
 
 /* Set modules name header */
@@ -739,12 +697,20 @@ spinbutton > button
   -------------------*/
 #main-histogram buttonbox
 {
-  margin-top: 0.5em;   /* spacing between histogram buttons and top of scope */
+  margin: 0.21em;
 }
 
-#main-histogram buttonbox > *
+#main-histogram .dt_module_btn
 {
-  margin-right: 0.5em;  /* spacing between histogram button box widgets, also provides right margin for buttons */
+  min-height: 1em;
+  min-width: 1em;
+}
+
+/* be sure all color icons have (nearly) same size ; needed has red color is in stack widget and this change how the size is rendered */
+#main-histogram #green-channel-button,
+#main-histogram #blue-channel-button
+{
+  min-width: 1.1em;
 }
 
 /* set background color and color of scope/histogram buttons */
@@ -787,12 +753,6 @@ spinbutton > button
   background-color: alpha(@graph_blue, 0.66);
 }
 
-/* set border of all active color channel buttons */
-#main-histogram .toggle:checked
-{
-  border: 0.07em solid alpha(@button_checked_fg, 0.15);    /* just set a really tight border to better check quickly active state*/
-}
-
 /* set now hover state */
 #red-channel-button:hover
 {
@@ -818,10 +778,11 @@ dialog
   background-color: @plugin_bg_color;
   color: @plugin_fg_color;
 }
-
+hh
+.accels_window,
 dialog .dialog-vbox
 {
-  margin: 0.42em 0.56em;
+  margin: 0.42em;
 }
 
 /* set top margin in bottom button bar to be the same as bottom margin applied above for main dialog window */
@@ -841,9 +802,10 @@ dialog .dialog-action-box button:last-child
   margin-right: 0;
 }
 
-/* remove left margin only on dialog filechooser box */
+/* remove left and reduce top margin only on dialog filechooser box */
 dialog filechooser
 {
+  margin-top: -0.21em;
   margin-left: -0.42em;
 }
 
@@ -1052,10 +1014,20 @@ notebook tabs,
 /* Set notebook tabs */
 notebook tab label
 {
-  border-bottom: 0.14em solid transparent;
-  padding: 0.21em;
-  font-weight: normal;
   color: shade(@button_checked_fg, 0.75);
+  padding: 0.28em 0.07em;
+}
+
+notebook tab:hover label
+{
+  border-bottom: 0.1em solid shade(@button_checked_fg, 0.7);
+  color: shade(@button_checked_fg, 0.9);
+}
+
+notebook tab:checked label
+{
+  border-bottom: 0.1em solid @button_checked_fg;
+  color: @button_checked_fg;
 }
 
 notebook header /* add space between notebook tabs and options below */
@@ -1068,9 +1040,7 @@ notebook header /* add space between notebook tabs and options below */
   --------------------------*/
 /*** WARNING : sliders IN modules are bauhaus (from a custom lib in darktable), not standard GTK sliders (see below) ***/
 
-.plugin_ui scrollbar slider,
-scrollbar slider,
-dialog scrollbar slider
+scrollbar slider
 {
   background-color: @scroll_bar_inactive;
   border: 0.14em solid transparent;
@@ -1102,9 +1072,7 @@ scale contents trough slider
   min-width: 0.5em;
 }
 
-.plugin_ui scrollbar,
-scrollbar,
-dialog scrollbar
+scrollbar
 {
   border-color: @scroll_bar_bg;
   background: @scroll_bar_bg;
@@ -1114,29 +1082,37 @@ dialog scrollbar
   margin: 0.07em;
 }
 
-/*--------------------------
-  - Accels window reminder -
-  --------------------------*/
+/* Scrollbars hover state */
+scrollbar slider:hover,
+scale contents trough slider:hover
+{
+  background-color: @scroll_bar_active;
+}
+
+/*----------------------------------------------------------
+  - Tree view (lists and tables) and accel window reminder -
+  --------------------------------------------------------*/
+/* Set treeview header on all windows, including preferences and accels window */
+treeview,
+filechooser widget treeview
+{
+  background-color: @field_bg;
+  color: @field_fg;
+}
+
+treeview header label
+{
+  font-weight: bold;
+  padding: 0.14em;
+}
+
+/* Set main title in top of accel window reminder */
 .accels_window_cat_title
 {
    background-color: transparent;
    font-weight: bold;
    font-size: 1.1em;
    padding: 0.7em 0;
-}
-
-.accels_window_list label
-{
-   font-weight: bold;
-   font-size: 0.9em;
-   padding-top: 0.07em;
-   padding-right: 0.7em;
-}
-
-.accels_window_stick
-{
-  min-width: 1.8em;
-  min-height : 1.8em;
 }
 
 /*-------------------------------------
@@ -1374,33 +1350,17 @@ filechooser row:hover .sidebar-icon
   --------------------*/
 #basics-header-box
 {
-  border-top: 0.049em solid @darkroom_bg_color;
-  padding-top: 0.28em;
+  border-top: 0.07em solid @darkroom_bg_color;
 }
 
-#basics-box-labels
+#basics-header-box,
+#basics-module-hbox > box
 {
-  padding-bottom: 0.14em;
+  padding: 0.21em 0.7em;
 }
 
-#basics-module-hbox
-{
-  padding: 0.28em 0.84em;
-}
-
-#basics-box .dt_module_btn,
-#basics-box-labels .dt_module_btn,
-#basics-link
-{
-  margin: 0 0.56em;
-  padding: 0.42em;
-}
-
-.combo,
-#basics-box-labels #basics-link,
 #basics-box-labels #basics-header-box:first-child,
 #basics-box-labels #section_label,
-#modulegroups-header .dt_module_btn,
 #thumb_localcopy:active
 {
   border: none;
@@ -1472,34 +1432,6 @@ filechooser row:hover .sidebar-icon
 #range_current
 {
   padding: 0.2em;
-}
-
-/*--------------------------------
-  - Tree view (lists and tables) -
-  --------------------------------*/
-/*** Set treeview header on all windows, including preferences and accels window ***/
-treeview,
-filechooser widget treeview
-{
-  background-color: @field_bg;
-  color: @field_fg;
-}
-
-treeview header widget button
-.accels_window_list header button
-{
-  border: 0;
-  border-radius: 0;
-  padding: 0;
-  margin: 0 0.035em 0 0;
-}
-
-treeview header label,
-.accels_window_list header button label
-{
-  font-weight: bold;
-  padding: 0.14em 0.42em;
-  margin: 0;
 }
 
 /*------------
@@ -1594,7 +1526,7 @@ cell:selected
 .dt_history_items
 {
   padding: 0;
-  margin: 0;
+  margin: 0.14em;
 }
 
 /* then the switches */
@@ -1937,27 +1869,6 @@ treeview#delete-dialog:selected
   color: shade(@bauhaus_fg_selected, 1.2);
 }
 
-/* Notebooks states */
-notebook tab:hover
-{
-  border-bottom: 0.14em solid shade(@button_checked_fg, 0.7);
-}
-
-notebook tab:hover label
-{
-  color: shade(@button_checked_fg, 0.9);
-}
-
-notebook tab:checked
-{
-  border-bottom: 0.14em solid @button_checked_fg;
-}
-
-notebook tab:checked label
-{
-  color: @button_checked_fg;
-}
-
 /* Entries states */
 entry:hover
 {
@@ -1975,16 +1886,6 @@ entry:checked
 {
   color: @field_selected_fg;
   background-color: @field_selected_bg;
-}
-
-/* Scrollbars hover state */
-scrollbar.horizontal slider:hover,
-scrollbar.vertical slider:hover,
-.plugin_ui scrollbar slider:hover,
-dialog scrollbar slider:hover,
-scale contents trough slider:hover
-{
-  background-color: @scroll_bar_active;
 }
 
 .iop_drag_icon
