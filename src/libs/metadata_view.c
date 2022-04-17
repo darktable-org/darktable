@@ -1006,7 +1006,7 @@ static void _jump_to()
     dt_image_cache_read_release(darktable.image_cache, img);
     char collect[1024];
     snprintf(collect, sizeof(collect), "1:0:0:%s$", path);
-    dt_collection_deserialize(collect);
+    dt_collection_deserialize(collect, FALSE);
   }
 }
 
@@ -1017,11 +1017,9 @@ static gboolean _filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpoi
   return TRUE;
 }
 
-static gboolean _jump_to_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, gpointer data)
+static void _jump_to_accel(dt_action_t *data)
 {
   _jump_to();
-  return TRUE;
 }
 
 /* callback for the mouse over image change signal */
@@ -1029,17 +1027,6 @@ static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   if(dt_control_running()) _metadata_view_update_values(self);
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "jump to film roll"), GDK_KEY_j, GDK_CONTROL_MASK);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  GClosure *closure = g_cclosure_new(G_CALLBACK(_jump_to_accel), (gpointer)self, NULL);
-  dt_accel_connect_lib(self, "jump to film roll", closure);
 }
 
 static char *_get_current_configuration(dt_lib_module_t *self)
@@ -1357,7 +1344,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
 
   self->widget = dt_ui_scroll_wrap(child_grid_window, 200, "plugins/lighttable/metadata_view/windowheight");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   gtk_widget_show_all(d->grid);
   gtk_widget_set_no_show_all(d->grid, TRUE);
@@ -1390,6 +1376,8 @@ void gui_init(dt_lib_module_t *self)
   /* signup for metadata changes */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_UPDATE,
                             G_CALLBACK(_mouse_over_image_callback), self);
+
+  dt_action_register(DT_ACTION(self), N_("jump to film roll"), _jump_to_accel, GDK_KEY_j, GDK_CONTROL_MASK);
 }
 
 static void _free_metadata_queue(dt_lib_metadata_info_t *m)

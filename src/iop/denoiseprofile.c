@@ -713,10 +713,10 @@ const char *name()
   return _("denoise (profiled)");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
-                                _("denoise using noise statistics profiled on sensors."),
+                                _("denoise using noise statistics profiled on sensors"),
                                 _("corrective"),
                                 _("linear, RGB, scene-referred"),
                                 _("linear, RGB"),
@@ -2066,8 +2066,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_accu, sizes);
       if(err != CL_SUCCESS) goto error;
 
-      if(!darktable.opencl->async_pixelpipe || (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT)
-        dt_opencl_finish(devid);
+      dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
       // indirectly give gpu some air to breathe (and to do display related stuff)
       dt_iop_nap(dt_opencl_micro_nap(devid));
@@ -2579,9 +2578,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     }
   }
 
-  if(!darktable.opencl->async_pixelpipe || (piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT)
-    dt_opencl_finish(devid);
-
+  dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
 
   dt_opencl_release_mem_object(dev_r);
   dt_opencl_release_mem_object(dev_m);
@@ -3762,4 +3759,3 @@ void gui_cleanup(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

@@ -976,13 +976,12 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
 
-  const gboolean needs_tiling = (piece->process_tiling_ready &&
-     !dt_tiling_piece_fits_host_memory(MAX(roi_in->width, roi_out->width),
+  const gboolean fitting = dt_tiling_piece_fits_host_memory(MAX(roi_in->width, roi_out->width),
                                        MAX(roi_in->height, roi_out->height), MAX(in_bpp, bpp),
-                                          tiling->factor, tiling->overhead));
+                                          tiling->factor, tiling->overhead);
 
   /* process module on cpu. use tiling if needed and possible. */
-  if(needs_tiling)
+  if(!fitting && piece->process_tiling_ready)
   {
     module->process_tiling(module, piece, input, *output, roi_in, roi_out, in_bpp);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
@@ -990,6 +989,9 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   }
   else
   {
+    if(!fitting)
+      fprintf(stderr, "[pixelpipe_process_on_CPU] Warning: processes `%s' even if memory requirements are not met\n", module->op); 
+
     module->process(module, piece, input, *output, roi_in, roi_out);
     *pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
     *pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
@@ -1580,10 +1582,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         /* synchronization point for opencl pipe */
-        if(success_opencl && (!darktable.opencl->async_pixelpipe
-                              || (pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT))
-          success_opencl = dt_opencl_finish(pipe->devid);
-
+        if(success_opencl)
+          success_opencl = dt_opencl_finish_sync_pipe(pipe->devid, pipe->type);
 
         if(dt_atomic_get_int(&pipe->shutdown))
         {
@@ -1610,8 +1610,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             /* late opencl error */
             dt_print(
                 DT_DEBUG_OPENCL,
-                "[opencl_pixelpipe (a)] late opencl error detected while copying back to cpu buffer: %d\n",
-                err);
+                "[opencl_pixelpipe (a)] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = 1;
             return 1;
@@ -1726,9 +1725,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         /* synchronization point for opencl pipe */
-        if(success_opencl && (!darktable.opencl->async_pixelpipe
-                              || (pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT))
-          success_opencl = dt_opencl_finish(pipe->devid);
+        if(success_opencl)
+          success_opencl = dt_opencl_finish_sync_pipe(pipe->devid, pipe->type);
 
         if(dt_atomic_get_int(&pipe->shutdown))
         {
@@ -1778,8 +1776,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             {
               /* late opencl error, not likely to happen here */
               dt_print(DT_DEBUG_OPENCL, "[opencl_pixelpipe (e)] late opencl error detected while copying "
-                                        "back to cpu buffer: %d\n",
-                       err);
+                                        "back to cpu buffer: %s\n", cl_errstr(err));
               /* that's all we do here, we later make sure to invalidate cache line */
             }
             else
@@ -1836,8 +1833,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             /* late opencl error */
             dt_print(
                 DT_DEBUG_OPENCL,
-                "[opencl_pixelpipe (b)] late opencl error detected while copying back to cpu buffer: %d\n",
-                err);
+                "[opencl_pixelpipe (b)] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
             dt_opencl_release_mem_object(cl_mem_input);
             pipe->opencl_error = 1;
             return 1;
@@ -1846,7 +1842,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             input_format->cst = input_cst_cl;
 
           /* this is a good place to release event handles as we anyhow need to move from gpu to cpu here */
-          (void)dt_opencl_finish(pipe->devid);
+          dt_opencl_finish(pipe->devid);
           dt_opencl_release_mem_object(cl_mem_input);
           valid_input_on_gpu_only = FALSE;
         }
@@ -1882,8 +1878,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           /* late opencl error */
           dt_print(
               DT_DEBUG_OPENCL,
-              "[opencl_pixelpipe (c)] late opencl error detected while copying back to cpu buffer: %d\n",
-              err);
+              "[opencl_pixelpipe (c)] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
           dt_opencl_release_mem_object(cl_mem_input);
           pipe->opencl_error = 1;
           return 1;
@@ -1892,7 +1887,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           input_format->cst = input_cst_cl;
 
         /* this is a good place to release event handles as we anyhow need to move from gpu to cpu here */
-        (void)dt_opencl_finish(pipe->devid);
+        dt_opencl_finish(pipe->devid);
         dt_opencl_release_mem_object(cl_mem_input);
         valid_input_on_gpu_only = FALSE;
       }
@@ -2153,8 +2148,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
       {
         /* this indicates a opencl problem earlier in the pipeline */
         dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_pixelpipe (d)] late opencl error detected while copying back to cpu buffer: %d\n",
-                 err);
+                 "[opencl_pixelpipe (d)] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
         pipe->opencl_error = 1;
         ret = 1;
       }

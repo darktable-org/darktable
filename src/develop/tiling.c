@@ -1512,8 +1512,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       output = NULL;
 
       /* block until opencl queue has finished to free all used event handlers */
-      if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
-        dt_opencl_finish(devid);
+      dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
     }
 
   /* copy back final processed_maximum */
@@ -1540,8 +1539,8 @@ error:
   piece->pipe->tiling = 0;
   const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
   dt_print(DT_DEBUG_TILING | DT_DEBUG_OPENCL,
-      "[default_process_tiling_opencl_ptp] couldn't run process_cl() for module '%s' in tiling mode:%s %d\n",
-      self->op, (pinning_error) ? " pinning problem" : "", err);
+      "[default_process_tiling_opencl_ptp] couldn't run process_cl() for module '%s' in tiling mode:%s %s\n",
+      self->op, (pinning_error) ? " pinning problem" : "", cl_errstr(err));
   if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
   return FALSE;
 }
@@ -1953,8 +1952,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       output = NULL;
 
       /* block until opencl queue has finished to free all used event handlers */
-      if(!darktable.opencl->async_pixelpipe || piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)
-        dt_opencl_finish(devid);
+      dt_opencl_finish_sync_pipe(devid, piece->pipe->type);
     }
 
   /* copy back final processed_maximum */
@@ -1980,8 +1978,8 @@ error:
   piece->pipe->tiling = 0;
   const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
-      "[default_process_tiling_opencl_roi] couldn't run process_cl() for module '%s' in tiling mode:%s %d\n",
-      self->op, (pinning_error) ? " pinning problem" : "", err);
+      "[default_process_tiling_opencl_roi] couldn't run process_cl() for module '%s' in tiling mode:%s %s\n",
+      self->op, (pinning_error) ? " pinning problem" : "", cl_errstr(err));
   if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
   return FALSE;
 }
@@ -2025,7 +2023,7 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
       = ((float)roi_out->width * (float)roi_out->height) / ((float)roi_in->width * (float)roi_in->height);
 
   tiling->factor = 1.0f + ioratio;
-  tiling->factor_cl = tiling->factor;  // by default, we need the same memory on host or GPU
+  tiling->factor_cl = fmaxf(2.0f, tiling->factor); // at least have in & output buffer
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = tiling->maxbuf;
   tiling->overhead = 0;

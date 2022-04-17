@@ -278,6 +278,17 @@ src/libs/copy_history.c
 src/libs/duplicate.c
 src/libs/export.c
 src/libs/export_metadata.c
+src/libs/filtering.c
+src/libs/filters/aperture.c
+src/libs/filters/colors.c
+src/libs/filters/date.c
+src/libs/filters/exposure.c
+src/libs/filters/filename.c
+src/libs/filters/focal.c
+src/libs/filters/iso.c
+src/libs/filters/rating.c
+src/libs/filters/ratio.c
+src/libs/filters/search.c
 src/libs/geotagging.c
 src/libs/histogram.c
 src/libs/history.c
@@ -295,7 +306,6 @@ src/libs/metadata_view.c
 src/libs/modulegroups.c
 src/libs/navigation.c
 src/libs/print_settings.c
-src/libs/recentcollect.c
 src/libs/select.c
 src/libs/session.c
 src/libs/snapshots.c

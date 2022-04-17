@@ -2505,7 +2505,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(bat, DT_PIXEL_APPLY_DPI(3));
   for(int i=0; i<9; i++)
   {
-    d->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<i), NULL));
+    d->dtba[i]
+        = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, (CPF_SPECIAL_FLAG << i), NULL));
     gtk_grid_attach (GTK_GRID (bat), GTK_WIDGET (d->dtba[i]), (i%3), i/3, 1, 1);
     g_signal_connect (G_OBJECT (d->dtba[i]), "toggled",G_CALLBACK (_alignment_callback), self);
   }
@@ -2527,21 +2528,17 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_homogeneous(fitbut, TRUE);
   gtk_grid_set_row_homogeneous(fitbut, TRUE);
 
-  GtkWidget *bnew = gtk_button_new_with_label(_("new image area"));
-  gtk_widget_set_tooltip_text(bnew, _("add a new image area on the page\n"
-                                      "click and drag on the page to place the area\n"
-                                      "drag&drop image from film strip on it"));
+  GtkWidget *bnew = dt_action_button_new(self, N_("new image area"), _page_new_area_clicked, self,
+                                         _("add a new image area on the page\n"
+                                           "click and drag on the page to place the area\n"
+                                           "drag&drop image from film strip on it"), 0, 0);
 
-  g_signal_connect(G_OBJECT(bnew), "clicked", G_CALLBACK(_page_new_area_clicked), (gpointer)self);
-
-  d->del = gtk_button_new_with_label(_("delete image area"));
-  gtk_widget_set_tooltip_text(d->del, _("delete the currently selected image area"));
-  g_signal_connect(G_OBJECT(d->del), "clicked", G_CALLBACK(_page_delete_area_clicked), (gpointer)self);
+  d->del = dt_action_button_new(self, N_("delete image area"), _page_delete_area_clicked, self,
+                                _("delete the currently selected image area"), 0, 0);
   gtk_widget_set_sensitive(d->del, FALSE);
 
-  GtkWidget *bclear = gtk_button_new_with_label(_("clear layout"));
-  gtk_widget_set_tooltip_text(bclear, _("remove all image area from the page"));
-  g_signal_connect(G_OBJECT(bclear), "clicked", G_CALLBACK(_page_clear_area_clicked), (gpointer)self);
+  GtkWidget *bclear = dt_action_button_new(self, N_("clear layout"), _page_clear_area_clicked, self,
+                                           _("remove all image area from the page"), 0, 0);
 
   gtk_grid_attach(fitbut, GTK_WIDGET(bnew), 0, 0, 2, 1);
   gtk_grid_attach(fitbut, GTK_WIDGET(d->del), 0, 1, 1, 1);
@@ -2725,15 +2722,11 @@ void gui_init(dt_lib_module_t *self)
 
   // Print button
 
-  GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("print")));
-  d->print_button = button;
-  gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("print with current settings"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(button), TRUE, TRUE, 0);
-  dt_gui_add_help_link(GTK_WIDGET(button), dt_get_help_url("print_settings_button"));
-
-  g_signal_connect (G_OBJECT (button), "clicked",
-                    G_CALLBACK (_print_button_clicked),
-                    (gpointer)self);
+  GtkWidget *button = dt_action_button_new(self, N_("print"), _print_button_clicked, self,
+                                           _("print with current settings"), GDK_KEY_p, GDK_CONTROL_MASK);
+  d->print_button = GTK_BUTTON(button);
+  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
+  dt_gui_add_help_link(button, dt_get_help_url("print_settings_button"));
 
   g_free(system_profile_dir);
   g_free(user_profile_dir);
@@ -2855,31 +2848,31 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 
     size_t pos = 0;
     //   char *printer
-    memcpy(new_params + pos, printer, printer_len);
+    memcpy((uint8_t *)new_params + pos, printer, printer_len);
     pos += printer_len;
     //   char *paper
-    memcpy(new_params + pos, paper, paper_len);
+    memcpy((uint8_t *)new_params + pos, paper, paper_len);
     pos += paper_len;
     //   int32_t landscape
-    memcpy(new_params + pos, &landscape, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + pos, &landscape, sizeof(int32_t));
     pos += sizeof(int32_t);
     //   int32_t f_profile_type
-    memcpy(new_params + pos, &profile_type, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + pos, &profile_type, sizeof(int32_t));
     pos += sizeof(int32_t);
     //   char *f_profile
-    memcpy(new_params + pos, profile_filename, new_profile_len);
+    memcpy((uint8_t *)new_params + pos, profile_filename, new_profile_len);
     pos += new_profile_len;
     //   int32_t intent
-    memcpy(new_params + pos, &intent, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + pos, &intent, sizeof(int32_t));
     pos += sizeof(int32_t);
     //   int32_t f_pprofile_type
-    memcpy(new_params + pos, &pprofile_type, sizeof(int32_t));
+    memcpy((uint8_t *)new_params + pos, &pprofile_type, sizeof(int32_t));
     pos += sizeof(int32_t);
     //   char *f_pprofile
-    memcpy(new_params + pos, pprofile_filename, new_pprofile_len);
+    memcpy((uint8_t *)new_params + pos, pprofile_filename, new_pprofile_len);
     pos += new_pprofile_len;
     //   <rest>
-    memcpy(new_params + pos, buf, old_params_size - ((char *)buf - (char *)old_params));
+    memcpy((uint8_t *)new_params + pos, buf, old_params_size - ((char *)buf - (char *)old_params));
 
     *new_size = new_params_size;
     *new_version = 2;
@@ -2910,15 +2903,15 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     // single image box specified (there is no way to create a box on the size
     // of the page at this stage).
     int32_t idx = old_params_size;
-    *(int32_t *)(new_params + idx) = 1;
+    *(int32_t *)((uint8_t *)new_params + idx) = 1;
     idx += sizeof(int32_t);
-    *(float *)(new_params + idx) = 0.05f;
+    *(float *)((uint8_t *)new_params + idx) = 0.05f;
     idx += sizeof(float);
-    *(float *)(new_params + idx) = 0.05f;
+    *(float *)((uint8_t *)new_params + idx) = 0.05f;
     idx += sizeof(float);
-    *(float *)(new_params + idx) = 0.90f;
+    *(float *)((uint8_t *)new_params + idx) = 0.90f;
     idx += sizeof(float);
-    *(float *)(new_params + idx) = 0.90f;
+    *(float *)((uint8_t *)new_params + idx) = 0.90f;
     // idx += sizeof(float);
 
     *new_size = new_params_size;
@@ -3256,18 +3249,6 @@ void gui_reset(dt_lib_module_t *self)
   ps->has_changed = FALSE;
 
   dt_control_queue_redraw_center();
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "print"), GDK_KEY_p, GDK_CONTROL_MASK);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_print_settings_t *d = (dt_lib_print_settings_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "print", GTK_WIDGET(d->print_button));
 }
 
 // clang-format off

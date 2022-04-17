@@ -116,7 +116,7 @@ const char *deprecated_msg()
   return _("this module is deprecated. please use the negadoctor module instead.");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("invert film negatives"),
                                       _("corrective"),
@@ -139,18 +139,6 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return IOP_CS_RAW;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, FALSE, N_("pick color of film material from image"), 0, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_button_iop(self, "pick color of film material from image", GTK_WIDGET(g->colorpicker));
 }
 
 static void gui_update_from_coeffs(dt_iop_module_t *self)
@@ -609,6 +597,7 @@ void gui_init(dt_iop_module_t *self)
 
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   g->colorpicker = gtk_color_button_new_with_rgba(&color);
+  dt_action_define(DT_ACTION(self), NULL, N_("pick color of film material from image"), g->colorpicker, &dt_action_def_button);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpicker), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpicker), _("select color of film material"));
   g_signal_connect(G_OBJECT(g->colorpicker), "color-set", G_CALLBACK(colorpicker_callback), self);

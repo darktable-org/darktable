@@ -144,7 +144,7 @@ const char *name()
   return _("graduated density");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("simulate an optical graduated neutral density filter"),
                                       _("corrective and creative"),
