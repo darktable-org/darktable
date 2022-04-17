@@ -1720,7 +1720,7 @@ gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
   else
     txt = range->print(range->select_min_r, TRUE);
 
-  txt = dt_util_dstrcat(txt, " -> ");
+  txt = dt_util_dstrcat(txt, " → ");
 
   if(range->bounds & DT_RANGE_BOUND_MAX)
     txt = dt_util_dstrcat(txt, _("max"));
