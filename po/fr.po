@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-17 22:04+0200\n"
-"PO-Revision-Date: 2022-04-17 22:04+0200\n"
+"POT-Creation-Date: 2022-04-17 22:14+0200\n"
+"PO-Revision-Date: 2022-04-17 22:15+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5073,7 +5073,7 @@ msgid "print timestamp"
 msgstr "date impression"
 
 #: ../src/common/collection.c:670 ../src/libs/collect.c:3177
-#: ../src/libs/filtering.c:1926 ../src/libs/filtering.c:1948
+#: ../src/libs/filtering.c:1929 ../src/libs/filtering.c:1951
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "historique"
@@ -8491,7 +8491,7 @@ msgstr "défini les bornes de l'étendu avec cette valeur"
 #: ../src/gui/accelerators.c:1988 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
-#: ../src/libs/filtering.c:1415 ../src/libs/filters/colors.c:236
+#: ../src/libs/filtering.c:1418 ../src/libs/filters/colors.c:236
 msgid "all"
 msgstr "tout"
 
@@ -19142,25 +19142,25 @@ msgid "change to: except"
 msgstr "changer en « sauf »"
 
 #. the differents categories
-#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:836
-#: ../src/libs/filtering.c:918
+#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:839
+#: ../src/libs/filtering.c:921
 msgid "files"
 msgstr "fichiers"
 
 #: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:310
-#: ../src/libs/filtering.c:841 ../src/libs/filtering.c:923
+#: ../src/libs/filtering.c:844 ../src/libs/filtering.c:926
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:538 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "métadonnées"
 
-#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:861
-#: ../src/libs/filtering.c:943
+#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:864
+#: ../src/libs/filtering.c:946
 msgid "times"
 msgstr "heures"
 
-#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:869
-#: ../src/libs/filtering.c:951
+#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:872
+#: ../src/libs/filtering.c:954
 msgid "capture details"
 msgstr "détails de prise de vue"
 
@@ -19185,20 +19185,20 @@ msgstr "enregistrer"
 msgid "preferences..."
 msgstr "préférences..."
 
-#: ../src/libs/collect.c:3007 ../src/libs/filtering.c:1391
+#: ../src/libs/collect.c:3007 ../src/libs/filtering.c:1394
 msgid " and "
 msgstr " et "
 
-#: ../src/libs/collect.c:3012 ../src/libs/filtering.c:1396
+#: ../src/libs/collect.c:3012 ../src/libs/filtering.c:1399
 msgid " or "
 msgstr " ou "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3017 ../src/libs/filtering.c:1401
+#: ../src/libs/collect.c:3017 ../src/libs/filtering.c:1404
 msgid " but not "
 msgstr " mais sans "
 
-#: ../src/libs/collect.c:3178 ../src/libs/filtering.c:1927
+#: ../src/libs/collect.c:3178 ../src/libs/filtering.c:1930
 msgid "revert to a previous set of rules"
 msgstr "bascule vers une règle précédente"
 
@@ -19817,7 +19817,15 @@ msgstr "prises: dernières 24h"
 msgid "taken: last 30 days"
 msgstr "prises: 30 derniers jours"
 
-#: ../src/libs/filtering.c:909
+#: ../src/libs/filtering.c:646
+msgid "right-click to set specific values"
+msgstr "clic-droit pour définir une valeur"
+
+#: ../src/libs/filtering.c:647
+msgid "actual selection:"
+msgstr "sélection actuelle :"
+
+#: ../src/libs/filtering.c:912
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
@@ -19827,16 +19835,16 @@ msgstr ""
 "supérieure"
 
 #. otherwise we add all implemented rules
-#: ../src/libs/filtering.c:916
+#: ../src/libs/filtering.c:919
 msgid "rule property"
 msgstr "propriété de la règle"
 
-#: ../src/libs/filtering.c:1009
+#: ../src/libs/filtering.c:1012
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "filtrer"
 
-#: ../src/libs/filtering.c:1035
+#: ../src/libs/filtering.c:1038
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "ctrl-click to un-pin"
@@ -19844,7 +19852,7 @@ msgstr ""
 "cette règle est épinglé dans la barre supérieure\n"
 "ctrl-clic pour dé-épingler"
 
-#: ../src/libs/filtering.c:1040
+#: ../src/libs/filtering.c:1043
 msgid ""
 "disable this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19852,23 +19860,23 @@ msgstr ""
 "désactiver cette règle de collection\n"
 "ctrl-clic pour épingler dans la bar supérieure"
 
-#: ../src/libs/filtering.c:1167
+#: ../src/libs/filtering.c:1170
 msgid "and"
 msgstr "et"
 
-#: ../src/libs/filtering.c:1168
+#: ../src/libs/filtering.c:1171
 msgid "or"
 msgstr "ou"
 
-#: ../src/libs/filtering.c:1169
+#: ../src/libs/filtering.c:1172
 msgid "and not"
 msgstr "et non"
 
-#: ../src/libs/filtering.c:1171
+#: ../src/libs/filtering.c:1174
 msgid "define how this rule should interact with the previous one"
 msgstr "défini comment cette règle interagie avec la précédente"
 
-#: ../src/libs/filtering.c:1215
+#: ../src/libs/filtering.c:1218
 msgid ""
 "remove this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19876,47 +19884,47 @@ msgstr ""
 "supprimer cette règle de collection\n"
 "ctrl-clic pour épingler dans la bar supérieure"
 
-#: ../src/libs/filtering.c:1422
+#: ../src/libs/filtering.c:1425
 msgid " (off)"
 msgstr "(off)"
 
-#: ../src/libs/filtering.c:1637
+#: ../src/libs/filtering.c:1640
 msgid "determine the sort order of shown images"
 msgstr "spécifie l'ordre de tri des images affichées"
 
-#: ../src/libs/filtering.c:1675
+#: ../src/libs/filtering.c:1678
 msgid "remove this sort order"
 msgstr "supprimer ce tri"
 
-#: ../src/libs/filtering.c:1829
+#: ../src/libs/filtering.c:1832
 msgid "DESC"
 msgstr "DES"
 
-#: ../src/libs/filtering.c:1829
+#: ../src/libs/filtering.c:1832
 msgid "ASC"
 msgstr "ASC"
 
-#: ../src/libs/filtering.c:1923
+#: ../src/libs/filtering.c:1926
 msgid "new rule"
 msgstr "nouvelle règle"
 
-#: ../src/libs/filtering.c:1924
+#: ../src/libs/filtering.c:1927
 msgid "append new rule to collect images"
 msgstr "appliquer une nouvelle règle pour collecter des images"
 
-#: ../src/libs/filtering.c:1936 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1939 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "trier par"
 
-#: ../src/libs/filtering.c:1945
+#: ../src/libs/filtering.c:1948
 msgid "new sort"
 msgstr "nouveau tri"
 
-#: ../src/libs/filtering.c:1946
+#: ../src/libs/filtering.c:1949
 msgid "append new sort to order images"
 msgstr "ajouter un nouveau tri pour ordonner les images"
 
-#: ../src/libs/filtering.c:1949
+#: ../src/libs/filtering.c:1952
 msgid "revert to a previous set of sort orders"
 msgstr "bascule vers un tri précédent"
 
@@ -25536,9 +25544,6 @@ msgstr "actions souris"
 
 #~ msgid "ctrl+click to switch between smooth/sharp node"
 #~ msgstr "ctrl-clic pour basculer entre un nœud courbe et aigu"
-
-#~ msgid "right-click to reset curvature"
-#~ msgstr "clic-droit pour réinitialiser la courbure"
 
 #~ msgid ""
 #~ "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
