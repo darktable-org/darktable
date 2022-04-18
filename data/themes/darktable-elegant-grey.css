@@ -115,35 +115,35 @@
 .combo:hover,
 .combo:hover cellview,
 combobox window *:hover,
-#bauhaus_combobox:hover,
-#bauhaus_slider:hover,
+#bauhaus-combobox:hover,
+#bauhaus-slider:hover,
 #collapsible .combo:hover,
-#header-toolbar #bauhaus_combobox:hover
+#header-toolbar #bauhaus-combobox:hover
 {
   color: shade(@fg_color, 0.94);
 }
 
 /* Set background on thumbnails hover overlays */
-.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
-.dt_overlays_mixed #thumb_main:hover #thumb_bottom,
-.dt_overlays_hover #thumb_main:hover #thumb_bottom
+.dt_overlays_hover_extended #thumb-main:hover #thumb-bottom,
+.dt_overlays_mixed #thumb-main:hover #thumb-bottom,
+.dt_overlays_hover #thumb-main:hover #thumb-bottom
 {
   background-image: linear-gradient(rgba(241, 241, 241, 0.7) 0%, rgba(241, 241, 241, 0.7) 90%,rgba(241, 241, 241, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
 }
 
 /* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
-.dt_overlays_always#culling #thumb_bottom,
-.dt_overlays_always_extended#culling #thumb_bottom,
-.dt_overlays_always#preview #thumb_bottom,
-.dt_overlays_always_extended#preview #thumb_bottom
+.dt_overlays_always#culling #thumb-bottom,
+.dt_overlays_always_extended#culling #thumb-bottom,
+.dt_overlays_always#preview #thumb-bottom,
+.dt_overlays_always_extended#preview #thumb-bottom
 {
   background-image: linear-gradient(rgba(226, 226, 226, 0.2) 0%, rgba(226, 226, 226, 0.1) 5%, rgba(226, 226, 226, 0) 100%);
 }
 
-.dt_overlays_always#culling #thumb_main:hover #thumb_bottom,
-.dt_overlays_always_extended#culling #thumb_main:hover #thumb_bottom,
-.dt_overlays_always#preview #thumb_main:hover #thumb_bottom,
-.dt_overlays_always_extended#preview #thumb_main:hover #thumb_bottom
+.dt_overlays_always#culling #thumb-main:hover #thumb-bottom,
+.dt_overlays_always_extended#culling #thumb-main:hover #thumb-bottom,
+.dt_overlays_always#preview #thumb-main:hover #thumb-bottom,
+.dt_overlays_always_extended#preview #thumb-main:hover #thumb-bottom
 {
   background-image: linear-gradient(rgba(246, 246, 246, 0.4) 0%, rgba(246, 246, 246, 0.2) 5%, rgba(226, 226, 226, 0) 100%);
 }

@@ -1650,7 +1650,7 @@ static void _view_map_drag_set_icon(const dt_view_t *self, GdkDragContext *conte
   if(thumb)
   {
     GtkWidget *image = gtk_image_new_from_pixbuf(thumb);
-    gtk_widget_set_name((image), "map_drag_icon");
+    gtk_widget_set_name((image), "map-drag-icon");
     gtk_widget_show(image);
     gtk_drag_set_icon_widget(context, image, lib->start_drag_offset_x,
                              DT_PIXEL_APPLY_DPI(height + image_pin_size + 2 * thumb_border) + lib->start_drag_offset_y);
@@ -1698,7 +1698,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     if(location)
     {
       GtkWidget *image = gtk_image_new_from_pixbuf(location);
-      gtk_widget_set_name(image, "map_drag_icon");
+      gtk_widget_set_name(image, "map-drag-icon");
       gtk_widget_show(image);
       gtk_drag_set_icon_widget(context, image,
                                DT_PIXEL_APPLY_DPI(width),

@@ -1902,7 +1902,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(self->widget, "module_filtering");
+  gtk_widget_set_name(self->widget, "module-filtering");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   d->nb_rules = 0;
@@ -1937,7 +1937,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), spacer, TRUE, TRUE, 0);
   d->sort_box = gtk_grid_new();
   gtk_grid_attach(GTK_GRID(d->sort_box), gtk_label_new(_("sort by")), 0, 0, 1, 1);
-  gtk_widget_set_name(d->sort_box, "filter_sort_box");
+  gtk_widget_set_name(d->sort_box, "filter-sort-box");
   gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, TRUE, TRUE, 0);
 
   // the botton buttons for the sort

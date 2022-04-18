@@ -547,7 +547,7 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
 {
   if(range->cur_window) return;
   range->cur_window = gtk_popover_new(range->band);
-  gtk_widget_set_name(range->cur_window, "range_current");
+  gtk_widget_set_name(range->cur_window, "range-current");
   // we try to guess what is the best position before we show the popup.
   // Anyway this is rechecked on popup resizing
   gint wx, wy;
@@ -1674,7 +1674,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   }
 
   gtk_container_add(GTK_CONTAINER(range), vbox);
-  gtk_widget_set_name(vbox, "range_select");
+  gtk_widget_set_name(vbox, "range-select");
 
   if(type == DT_RANGE_TYPE_DATETIME) _popup_date_init(range);
 

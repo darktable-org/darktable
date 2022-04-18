@@ -495,9 +495,9 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       active_preset = cnt;
       selected_writeprotect = writeprotect;
       mi = gtk_check_menu_item_new_with_label(name);
-      dt_gui_add_class(mi, "check-menu-item");
+      dt_gui_add_class(mi, "check_menu_item");
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-      dt_gui_add_class(mi, "active-menu-item");
+      dt_gui_add_class(mi, "active_menu_item");
     }
     else
     {

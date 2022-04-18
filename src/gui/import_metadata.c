@@ -415,7 +415,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
 
   // grid headers
   GtkWidget *label = gtk_label_new(_("metadata presets"));
-  gtk_widget_set_name(label, "import_presets");
+  gtk_widget_set_name(label, "import-presets");
   GtkWidget *labelev =_set_up_label(label, GTK_ALIGN_START, DT_META_META_HEADER, metadata);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"
                                                    "\ndouble-click on a label to clear the corresponding entry"
@@ -467,7 +467,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
 
   // tags
   label = gtk_label_new(_("tag presets"));
-  gtk_widget_set_name(label, "import_presets");
+  gtk_widget_set_name(label, "import-presets");
   labelev =_set_up_label(label, GTK_ALIGN_START, DT_META_TAGS_HEADER, metadata);
 
   presets = _set_up_combobox(metadata->t_model, DT_META_TAGS_HEADER, metadata);

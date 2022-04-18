@@ -342,7 +342,7 @@ void gui_init(dt_lib_module_t *self)
 
   // create the layouts icon list
   d->layout_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(d->layout_box, "lighttable_layouts_box");
+  gtk_widget_set_name(d->layout_box, "lighttable-layouts-box");
   gtk_box_pack_start(GTK_BOX(self->widget), d->layout_box, TRUE, TRUE, 0);
 
   dt_action_t *ltv = &darktable.view_manager->proxy.lighttable.view->actions;
