@@ -110,7 +110,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *iterations;
   GtkWidget *scales;
   GtkWidget *visualize;
-  int mask_display;
+  gboolean show_visualize;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -1852,7 +1852,8 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
   const float clips[4] = { clip * piece->pipe->dsc.temperature.coeffs[RED],
                            clip * piece->pipe->dsc.temperature.coeffs[GREEN],
                            clip * piece->pipe->dsc.temperature.coeffs[BLUE],
-                           clip * piece->pipe->dsc.temperature.coeffs[GREEN] };  
+                           clip * piece->pipe->dsc.temperature.coeffs[GREEN] };
+
 
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
@@ -1865,7 +1866,8 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
     for(size_t col = 0, i = row*width; col < width; col++, i++)
     {
       const int c = FC(row, col, filters);
-      out[i] = (in[i] < clips[c]) ? 0.0f : 1.0f;
+      const float ival = in[i];
+      out[i] = (ival < clips[c]) ? 0.1f * ival : 1.0f;
     }
   }
 }
@@ -1877,7 +1879,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
 
-  const gboolean visualizing = (g != NULL) ? g->mask_display : FALSE;
+  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
 
   if(visualizing)
   {
@@ -2001,7 +2004,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   memcpy(d, p, sizeof(*p));
 
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  const gboolean visualizing = (g != NULL) ? g->mask_display : FALSE;
+  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
 
   piece->process_cl_ready = 1;
 
@@ -2090,6 +2094,7 @@ void gui_update(struct dt_iop_module_t *self)
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->visualize), FALSE);
+  g->show_visualize = FALSE;
   gui_changed(self, NULL, NULL);
 }
 
@@ -2122,19 +2127,14 @@ void reload_defaults(dt_iop_module_t *module)
   }
 }
 
-static gboolean visualize_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *module)
+static void visualize_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *module)
 {
-  if(darktable.gui->reset) return TRUE;
+  if(darktable.gui->reset) return;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)module->gui_data;
-
-  g->mask_display = !gtk_toggle_button_get_active(togglebutton);
-
-  dt_iop_request_focus(module);
-
-  dt_iop_refresh_center(module);
-
-  gtk_toggle_button_set_active(togglebutton, g->mask_display);
-  return TRUE;
+  g->show_visualize = !gtk_toggle_button_get_active(togglebutton);
+//  dt_iop_request_focus(module);
+  dt_dev_reprocess_center(module->dev);
+  gtk_toggle_button_set_active(togglebutton, g->show_visualize);
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -2143,7 +2143,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->visualize), 0);
-    g->mask_display = 0;
+    g->show_visualize = FALSE;
     dt_dev_reprocess_center(self->dev);
   }
 }
