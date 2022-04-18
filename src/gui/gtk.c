@@ -3244,7 +3244,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   GtkWidget *header_evb = gtk_event_box_new();
   GtkWidget *destdisp = dt_ui_section_label_new(label);
   gtk_widget_set_name(destdisp, "collapsible-label");
-  dt_gui_add_class(destdisp_head, "section-expander");
+  dt_gui_add_class(destdisp_head, "section_expander");
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
 
   cs->toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow,

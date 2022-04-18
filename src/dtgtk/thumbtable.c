@@ -1856,7 +1856,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   table->pref_embedded = dt_mipmap_cache_get_min_mip_from_pref(tx);
 
   // set css name and class
-  gtk_widget_set_name(table->widget, "thumbtable_filemanager");
+  gtk_widget_set_name(table->widget, "thumbtable-filemanager");
   dt_gui_add_class(table->widget, "dt_thumbtable");
   if(dt_conf_get_bool("lighttable/ui/expose_statuses")) dt_gui_add_class(table->widget, "dt_show_overlays");
 
@@ -2164,17 +2164,17 @@ void dt_thumbtable_set_parent(dt_thumbtable_t *table, GtkWidget *new_parent, dt_
     // we change the widget name
     if(mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
-      gtk_widget_set_name(table->widget, "thumbtable_filemanager");
+      gtk_widget_set_name(table->widget, "thumbtable-filemanager");
       dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
     }
     else if(mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
-      gtk_widget_set_name(table->widget, "thumbtable_filmstrip");
+      gtk_widget_set_name(table->widget, "thumbtable-filmstrip");
       dt_gui_add_help_link(table->widget, dt_get_help_url("filmstrip"));
     }
     else if(mode == DT_THUMBTABLE_MODE_ZOOM)
     {
-      gtk_widget_set_name(table->widget, "thumbtable_zoom");
+      gtk_widget_set_name(table->widget, "thumbtable-zoom");
       dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_zoomable"));
     }
 

@@ -321,7 +321,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
     rule->w_specific = colors;
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(hbox, "filter_colors_box");
+  gtk_widget_set_name(hbox, "filter-colors-box");
   gtk_widget_set_halign(hbox, GTK_ALIGN_CENTER);
   for(int k = 0; k < DT_COLORLABELS_LAST + 1; k++)
   {

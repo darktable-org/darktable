@@ -3875,15 +3875,15 @@ static void _manage_show_window(dt_lib_module_t *self)
   // presets settings (search + quick access + full active)
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   d->edit_search_cb = gtk_check_button_new_with_label(_("show search line"));
-  gtk_widget_set_name(d->edit_search_cb, "modulegroups_editor_setting");
+  gtk_widget_set_name(d->edit_search_cb, "modulegroups-editor-setting");
   g_signal_connect(G_OBJECT(d->edit_search_cb), "toggled", G_CALLBACK(_manage_editor_search_toggle), self);
   gtk_box_pack_start(GTK_BOX(vb), d->edit_search_cb, FALSE, TRUE, 0);
   d->basics_chkbox = gtk_check_button_new_with_label(_("show quick access panel"));
-  gtk_widget_set_name(d->basics_chkbox, "modulegroups_editor_setting");
+  gtk_widget_set_name(d->basics_chkbox, "modulegroups-editor-setting");
   g_signal_connect(G_OBJECT(d->basics_chkbox), "toggled", G_CALLBACK(_manage_editor_basics_toggle), self);
   gtk_box_pack_start(GTK_BOX(vb), d->basics_chkbox, FALSE, TRUE, 0);
   d->edit_full_active_cb = gtk_check_button_new_with_label(_("show all history modules in active group"));
-  gtk_widget_set_name(d->edit_full_active_cb, "modulegroups_editor_setting");
+  gtk_widget_set_name(d->edit_full_active_cb, "modulegroups-editor-setting");
   gtk_widget_set_tooltip_text(
       d->edit_full_active_cb,
       _("show modules that are present in the history stack, regardless of whether or not they are currently enabled"));
@@ -3897,7 +3897,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->edit_autoapply_chkbox = gtk_check_button_new_with_label(_("auto-apply this preset"));
   gtk_widget_set_sensitive(d->edit_autoapply_chkbox, FALSE); // always readonly. change are done with the button...
-  gtk_widget_set_name(d->edit_autoapply_chkbox, "modulegroups_editor_setting");
+  gtk_widget_set_name(d->edit_autoapply_chkbox, "modulegroups-editor-setting");
   gtk_box_pack_start(GTK_BOX(hb2), d->edit_autoapply_chkbox, FALSE, TRUE, 0);
   d->edit_autoapply_btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
   g_signal_connect(G_OBJECT(d->edit_autoapply_btn), "clicked", G_CALLBACK(_preset_autoapply_edit), self);
