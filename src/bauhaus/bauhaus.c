@@ -1080,6 +1080,13 @@ void dt_bauhaus_widget_set_quad_active(GtkWidget *widget, int active)
   gtk_widget_queue_draw(GTK_WIDGET(w));
 }
 
+void dt_bauhaus_widget_set_quad_visibility(GtkWidget *widget, const gboolean visible)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  w->show_quad = visible;
+  gtk_widget_queue_draw(GTK_WIDGET(w));
+}
+
 int dt_bauhaus_widget_get_quad_active(GtkWidget *widget)
 {
   const dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -3488,4 +3495,3 @@ const dt_action_def_t dt_action_def_combo
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
