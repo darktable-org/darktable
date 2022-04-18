@@ -109,7 +109,6 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *noise_level;
   GtkWidget *iterations;
   GtkWidget *scales;
-  GtkWidget *visualize;
   gboolean show_visualize;
 } dt_iop_highlights_gui_data_t;
 
@@ -2072,8 +2071,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->noise_level, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
   gtk_widget_set_visible(g->iterations, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
   gtk_widget_set_visible(g->scales, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
-  gtk_widget_set_visible(g->visualize, israw);
 
+  dt_bauhaus_widget_set_quad_visibility(g->clip, israw);
 
   // If guided laplacian mode was copied as part of the history of another pic, sanitize it
   // guided laplacian is not available for XTrans
@@ -2093,7 +2092,7 @@ void gui_update(struct dt_iop_module_t *self)
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->visualize), FALSE);
+  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
   g->show_visualize = FALSE;
   gui_changed(self, NULL, NULL);
 }
@@ -2127,14 +2126,13 @@ void reload_defaults(dt_iop_module_t *module)
   }
 }
 
-static void visualize_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *module)
+static void _visualize_callback(GtkWidget *quad, gpointer user_data)
 {
   if(darktable.gui->reset) return;
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)module->gui_data;
-  g->show_visualize = !gtk_toggle_button_get_active(togglebutton);
-//  dt_iop_request_focus(module);
-  dt_dev_reprocess_center(module->dev);
-  gtk_toggle_button_set_active(togglebutton, g->show_visualize);
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  g->show_visualize = dt_bauhaus_widget_get_quad_active(quad);
+  dt_dev_reprocess_center(self->dev);
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -2142,7 +2140,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(!in)
   {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->visualize), 0);
+    dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
     g->show_visualize = FALSE;
     dt_dev_reprocess_center(self->dev);
   }
@@ -2158,17 +2156,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->clip = dt_bauhaus_slider_from_params(self, "clip");
   dt_bauhaus_slider_set_digits(g->clip, 3);
-  gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold against "
-                                         "magenta highlights (you shouldn't ever need to touch this)"));
-
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("visualize clipping")), TRUE, TRUE, 0);
-  g->visualize = dt_iop_togglebutton_new(self, NULL, N_("visualize clipping"), NULL,
-                                           G_CALLBACK(visualize_callback), FALSE, 0, 0,
-                                           dtgtk_cairo_paint_showmask, hbox);
-  dt_gui_add_class(g->visualize, "dt_transparent_background");
-  dt_gui_add_class(g->visualize, "dt_bauhaus_alignment");
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
+  gtk_widget_set_tooltip_text(g->clip,
+                              _("manually adjust the clipping threshold against "
+                                "magenta highlights\nthe mask icon shows the clipped area\n"
+                                "(you shouldn't ever need to touch this)"));
+  dt_bauhaus_widget_set_quad_paint(g->clip, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->clip, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+  g_signal_connect(G_OBJECT(g->clip), "quad-pressed", G_CALLBACK(_visualize_callback), self);
 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
