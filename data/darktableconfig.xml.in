@@ -3551,7 +3551,7 @@
   <dtconfig prefs="misc" section="interface">
     <name>ui/transition_duration</name>
     <type min="0" max="1000">int</type>
-    <default>250</default>
+    <default>150</default>
     <shortdescription>duration of the ui transitions in ms</shortdescription>
     <longdescription>how long the transitions take (in ms) for toggling modules and other ui elements</longdescription>
   </dtconfig>
