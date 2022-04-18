@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-17 09:30-0300\n"
-"PO-Revision-Date: 2022-04-17 10:20-0300\n"
+"POT-Creation-Date: 2022-04-17 22:22-0300\n"
+"PO-Revision-Date: 2022-04-18 00:16-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -4957,7 +4957,7 @@ msgid "too much time to update aspect ratio for the collection"
 msgstr "tempo demais para ajustar o aspecto da coleção"
 
 #: ../src/common/collection.c:608 ../src/common/collection.c:686
-#: ../src/libs/filters/filename.c:389 ../src/libs/metadata_view.c:126
+#: ../src/libs/filters/filename.c:363 ../src/libs/metadata_view.c:126
 msgid "filename"
 msgstr "nome do arquivo"
 
@@ -5067,7 +5067,7 @@ msgid "print timestamp"
 msgstr "tempo de impressão"
 
 #: ../src/common/collection.c:670 ../src/libs/collect.c:3177
-#: ../src/libs/filtering.c:1925 ../src/libs/filtering.c:1947
+#: ../src/libs/filtering.c:1929 ../src/libs/filtering.c:1951
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "histórico"
@@ -5535,7 +5535,7 @@ msgstr ""
 
 #. the button to close the popup
 #: ../src/common/database.c:2730 ../src/common/database.c:2737
-#: ../src/libs/filters/filename.c:484
+#: ../src/libs/filters/filename.c:458
 msgid "ok"
 msgstr "ok"
 
@@ -8304,6 +8304,177 @@ msgstr "zoom é limitado a %d imagens"
 msgid "no image selected !"
 msgstr "nenhuma imagem selecionada !"
 
+#: ../src/dtgtk/range.c:175 ../src/dtgtk/range.c:180
+msgid "invalid"
+msgstr "inválido"
+
+#: ../src/dtgtk/range.c:288
+#, c-format
+msgid "year %s"
+msgstr "ano %s"
+
+#: ../src/dtgtk/range.c:366
+msgid ""
+"enter the minimal value\n"
+"use 'min' if no bound\n"
+"right-click to select from existing values"
+msgstr ""
+"entre o valor mínimo\n"
+"use 'min' para nenhum limite\n"
+"clique direito para selecionar de valores existentes"
+
+#: ../src/dtgtk/range.c:372
+msgid ""
+"enter the maximal value\n"
+"use 'max' if no bound\n"
+"right-click to select from existing values"
+msgstr ""
+"entre o valor máximo\n"
+"use 'max' para ilimitado\n"
+"clique direito para selecionar de valores existentes"
+
+#: ../src/dtgtk/range.c:378
+msgid ""
+"enter the value\n"
+"right-click to select from existing values"
+msgstr ""
+"entre o valor\n"
+"clique direito para selecionar de valores existentes"
+
+#: ../src/dtgtk/range.c:383
+msgid ""
+"enter the minimal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'min' if no bound\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"entre a data mínima\n"
+"no formato AAAA:MM:DD hh:mm:ss.sss (somente o ano é obrigatório)\n"
+"use 'min' para nenhum limite\n"
+"clique direito para selecionar do calendário ou de valores existentes"
+
+#: ../src/dtgtk/range.c:391
+msgid ""
+"enter the maximal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'max' if no bound\n"
+"'now' keyword is handled\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"entre a data máxima\n"
+"no formato AAAA:MM:DD hh:mm:ss.sss (somente o ano é obrigatório)\n"
+"use 'max' para nenhum limite\n"
+"clique direito para selecionar do calendário ou de valores existentes"
+
+#: ../src/dtgtk/range.c:400
+msgid ""
+"enter the date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"entre a data\n"
+"no formato AAAA:MM:DD hh:mm:ss.sss (somente o ano é obrigatório)\n"
+"clique direito para selecionar do calendário ou de valores existentes"
+
+#: ../src/dtgtk/range.c:422
+msgid "date-time interval to substract from the max value"
+msgstr "intervalo de data-hora para subtrair do valor máximo"
+
+#: ../src/dtgtk/range.c:426
+msgid "date-time interval to add to the min value"
+msgstr "intervalo de data-hora para adicionar ao valor mínimo"
+
+#: ../src/dtgtk/range.c:566 ../src/dtgtk/range.c:1714 ../src/dtgtk/range.c:1765
+#: ../src/libs/colorpicker.c:53
+msgid "min"
+msgstr "mín"
+
+#: ../src/dtgtk/range.c:572 ../src/dtgtk/range.c:1726 ../src/dtgtk/range.c:1777
+#: ../src/libs/colorpicker.c:53
+msgid "max"
+msgstr "máx"
+
+#: ../src/dtgtk/range.c:880
+msgid "date type"
+msgstr "tipo de data"
+
+#: ../src/dtgtk/range.c:881
+msgid "fixed"
+msgstr "fixa"
+
+#: ../src/dtgtk/range.c:882 ../src/iop/colorchecker.c:1382
+msgid "relative"
+msgstr "relativa"
+
+#. the date section
+#: ../src/dtgtk/range.c:894
+msgid "date"
+msgstr "data"
+
+#: ../src/dtgtk/range.c:901
+msgid ""
+"simple click to select date\n"
+"double click to use the date directly"
+msgstr ""
+"clique simples para selecionar a data\n"
+"clique duplo para usar a data diretamente"
+
+#: ../src/dtgtk/range.c:912
+msgid "years: "
+msgstr "anos: "
+
+#: ../src/dtgtk/range.c:920
+msgid "months: "
+msgstr "meses: "
+
+#: ../src/dtgtk/range.c:928
+msgid "days: "
+msgstr "dias: "
+
+#. the time section
+#: ../src/dtgtk/range.c:940
+msgid "time"
+msgstr "tempo"
+
+#: ../src/dtgtk/range.c:967
+msgid ""
+"simple click to select date\n"
+"double click to use the date directly."
+msgstr ""
+"clique simples para selecionar a data\n"
+"clique duplo para entrar a data diretamente."
+
+#: ../src/dtgtk/range.c:993 ../src/dtgtk/range.c:1733
+msgid "now"
+msgstr "agora"
+
+#: ../src/dtgtk/range.c:995
+msgid "set the value to always match current datetime"
+msgstr "determinar o valor para sempre casar com a data-hora corrente"
+
+#. apply button
+#: ../src/dtgtk/range.c:998 ../src/gui/accelerators.c:147
+#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:750
+#: ../src/libs/styles.c:861
+msgid "apply"
+msgstr "aplicar"
+
+#: ../src/dtgtk/range.c:999
+msgid "set the range bound with this value"
+msgstr "determinar o limite da faixa de tempo com este valor"
+
+#. get nice text for bounds
+#. Side-border hide/show
+#: ../src/dtgtk/range.c:1710 ../src/gui/accelerators.c:1909
+#: ../src/gui/accelerators.c:1988 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914
+#: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
+#: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
+#: ../src/libs/filtering.c:1418 ../src/libs/filters/colors.c:236
+msgid "all"
+msgstr "tudo"
+
 #: ../src/dtgtk/resetlabel.c:59
 msgid "double-click to reset"
 msgstr "clique duplo para redefinir"
@@ -8788,12 +8959,6 @@ msgstr "atualizar"
 msgid "preferences"
 msgstr "preferências"
 
-#. apply button
-#: ../src/gui/accelerators.c:147 ../src/iop/colortransfer.c:670
-#: ../src/libs/metadata.c:750 ../src/libs/styles.c:861
-msgid "apply"
-msgstr "aplicar"
-
 #: ../src/gui/accelerators.c:148
 msgid "apply on new instance"
 msgstr "aplicar em nova instância"
@@ -9077,15 +9242,6 @@ msgid ""
 msgstr ""
 "exportar todos os atalhos para um arquivo\n"
 "ou somente para um dispositivo selecionado\n"
-
-#. Side-border hide/show
-#: ../src/gui/accelerators.c:1909 ../src/gui/accelerators.c:1988
-#: ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914 ../src/imageio/format/pdf.c:659
-#: ../src/iop/denoiseprofile.c:3581 ../src/iop/lens.cc:2274
-#: ../src/iop/rawdenoise.c:904 ../src/libs/filtering.c:1414
-#: ../src/libs/filters/colors.c:236
-msgid "all"
-msgstr "tudo"
 
 #: ../src/gui/accelerators.c:1910 ../src/gui/accelerators.c:1989
 msgid "keyboard"
@@ -10558,13 +10714,13 @@ msgid "page orientation"
 msgstr "orientação da página"
 
 #: ../src/imageio/format/pdf.c:608 ../src/iop/borders.c:1042
-#: ../src/libs/filtering.c:271 ../src/libs/filters/ratio.c:122
+#: ../src/libs/filtering.c:272 ../src/libs/filters/ratio.c:122
 #: ../src/libs/print_settings.c:2366
 msgid "portrait"
 msgstr "retrato"
 
 #: ../src/imageio/format/pdf.c:609 ../src/iop/borders.c:1043
-#: ../src/libs/filtering.c:267 ../src/libs/filters/ratio.c:124
+#: ../src/libs/filtering.c:268 ../src/libs/filters/ratio.c:124
 #: ../src/libs/print_settings.c:2367
 msgid "landscape"
 msgstr "paisagem"
@@ -11894,7 +12050,7 @@ msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:970 ../src/iop/clipping.c:2139 ../src/iop/crop.c:1048
-#: ../src/libs/filtering.c:263 ../src/libs/filters/ratio.c:126
+#: ../src/libs/filtering.c:264 ../src/libs/filters/ratio.c:126
 msgid "square"
 msgstr "quadrado"
 
@@ -13759,10 +13915,6 @@ msgstr ""
 "controla a cor alvo dos patches\n"
 "relativo - a cor alvo é relativa à cor original do patch\n"
 "absoluto - a cor alvo é um valor Lab absoluto"
-
-#: ../src/iop/colorchecker.c:1382
-msgid "relative"
-msgstr "relativo"
 
 #: ../src/iop/colorchecker.c:1383
 msgid "absolute"
@@ -18874,25 +19026,25 @@ msgid "change to: except"
 msgstr "muda para: exceto"
 
 #. the differents categories
-#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:835
-#: ../src/libs/filtering.c:917
+#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:839
+#: ../src/libs/filtering.c:921
 msgid "files"
 msgstr "arquivos"
 
 #: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:310
-#: ../src/libs/filtering.c:840 ../src/libs/filtering.c:922
+#: ../src/libs/filtering.c:844 ../src/libs/filtering.c:926
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:538 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "metadados"
 
-#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:860
-#: ../src/libs/filtering.c:942
+#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:864
+#: ../src/libs/filtering.c:946
 msgid "times"
 msgstr "tempo"
 
-#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:868
-#: ../src/libs/filtering.c:950
+#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:872
+#: ../src/libs/filtering.c:954
 msgid "capture details"
 msgstr "detalhes da captura da foto"
 
@@ -18917,20 +19069,20 @@ msgstr "salvar"
 msgid "preferences..."
 msgstr "preferências..."
 
-#: ../src/libs/collect.c:3007 ../src/libs/filtering.c:1390
+#: ../src/libs/collect.c:3007 ../src/libs/filtering.c:1394
 msgid " and "
 msgstr " e "
 
-#: ../src/libs/collect.c:3012 ../src/libs/filtering.c:1395
+#: ../src/libs/collect.c:3012 ../src/libs/filtering.c:1399
 msgid " or "
 msgstr " ou "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3017 ../src/libs/filtering.c:1400
+#: ../src/libs/collect.c:3017 ../src/libs/filtering.c:1404
 msgid " but not "
 msgstr " mas não "
 
-#: ../src/libs/collect.c:3178 ../src/libs/filtering.c:1926
+#: ../src/libs/collect.c:3178 ../src/libs/filtering.c:1930
 msgid "revert to a previous set of rules"
 msgstr "reverter para o conjunto anterior de regras"
 
@@ -18953,14 +19105,6 @@ msgstr "Hex"
 #: ../src/libs/colorpicker.c:53
 msgid "mean"
 msgstr "média"
-
-#: ../src/libs/colorpicker.c:53
-msgid "min"
-msgstr "mín"
-
-#: ../src/libs/colorpicker.c:53
-msgid "max"
-msgstr "máx"
 
 #: ../src/libs/colorpicker.c:71
 msgid "color picker"
@@ -19528,49 +19672,58 @@ msgstr "adicionar uma etiqueta de metadados de saída"
 msgid "delete metadata tag"
 msgstr "excluir etiqueta de metadados"
 
-#: ../src/libs/filtering.c:225
-msgid "filters for collections"
-msgstr "filtros para coleções"
+#: ../src/libs/filtering.c:226
+msgid "collection filters"
+msgstr "filtros de coleções"
 
-#: ../src/libs/filtering.c:258
+#: ../src/libs/filtering.c:259
 msgid "initial setting"
 msgstr "configuração inicial"
 
-#: ../src/libs/filtering.c:277
+#: ../src/libs/filtering.c:278
 msgid "imported: last 24h"
 msgstr "importada: últimas 24h"
 
-#: ../src/libs/filtering.c:282
+#: ../src/libs/filtering.c:283
 msgid "imported: last 30 days"
 msgstr "importada: últimos 30 dias"
 
-#: ../src/libs/filtering.c:288
+#: ../src/libs/filtering.c:289
 msgid "taken: last 24h"
 msgstr "tirada: últimas 24h"
 
-#: ../src/libs/filtering.c:292
+#: ../src/libs/filtering.c:293
 msgid "taken: last 30 days"
 msgstr "tirada: últimos 30 dias"
 
-#: ../src/libs/filtering.c:908
+#: ../src/libs/filtering.c:646
+msgid "right-click to set specific values"
+msgstr "clique direito para determinar valores específicos"
+
+#: ../src/libs/filtering.c:647
+msgid "actual selection:"
+msgstr "seleção atual:"
+
+#: ../src/libs/filtering.c:912
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
 "propriedade da regra\n"
-"isto não pode ser modificado porque a regra está fixada na barra de ferramentas"
+"isto não pode ser modificado porque a regra está fixada na barra de "
+"ferramentas"
 
 #. otherwise we add all implemented rules
-#: ../src/libs/filtering.c:915
+#: ../src/libs/filtering.c:919
 msgid "rule property"
 msgstr "propriedade da regra"
 
-#: ../src/libs/filtering.c:1008
+#: ../src/libs/filtering.c:1012
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "filtro"
 
-#: ../src/libs/filtering.c:1034
+#: ../src/libs/filtering.c:1038
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "ctrl-click to un-pin"
@@ -19578,7 +19731,7 @@ msgstr ""
 "esta regra está fixada na barra de ferramentas superior\n"
 "ctrl-click para remover"
 
-#: ../src/libs/filtering.c:1039
+#: ../src/libs/filtering.c:1043
 msgid ""
 "disable this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19586,23 +19739,23 @@ msgstr ""
 "desabilitar esta regra para coletar\n"
 "ctrl-clique para fixar na barra de ferramentas superior"
 
-#: ../src/libs/filtering.c:1166
+#: ../src/libs/filtering.c:1170
 msgid "and"
 msgstr "e"
 
-#: ../src/libs/filtering.c:1167
+#: ../src/libs/filtering.c:1171
 msgid "or"
 msgstr "ou"
 
-#: ../src/libs/filtering.c:1168
+#: ../src/libs/filtering.c:1172
 msgid "and not"
 msgstr "e não"
 
-#: ../src/libs/filtering.c:1170
+#: ../src/libs/filtering.c:1174
 msgid "define how this rule should interact with the previous one"
 msgstr "definir como esta regra deveria interagir com a anterior"
 
-#: ../src/libs/filtering.c:1214
+#: ../src/libs/filtering.c:1218
 msgid ""
 "remove this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19610,47 +19763,47 @@ msgstr ""
 "remover esta regra para coletar imagens\n"
 "crtl-clique para fixar na barra de ferramentas superior"
 
-#: ../src/libs/filtering.c:1421
+#: ../src/libs/filtering.c:1425
 msgid " (off)"
 msgstr " (desligado)"
 
-#: ../src/libs/filtering.c:1636
+#: ../src/libs/filtering.c:1640
 msgid "determine the sort order of shown images"
 msgstr "determine a ordem em que as imagens são mostradas"
 
-#: ../src/libs/filtering.c:1674
+#: ../src/libs/filtering.c:1678
 msgid "remove this sort order"
 msgstr "remover esta forma de ordenação"
 
-#: ../src/libs/filtering.c:1828
+#: ../src/libs/filtering.c:1832
 msgid "DESC"
 msgstr "DESC"
 
-#: ../src/libs/filtering.c:1828
+#: ../src/libs/filtering.c:1832
 msgid "ASC"
 msgstr "ASC"
 
-#: ../src/libs/filtering.c:1922
+#: ../src/libs/filtering.c:1926
 msgid "new rule"
 msgstr "nova regra"
 
-#: ../src/libs/filtering.c:1923
+#: ../src/libs/filtering.c:1927
 msgid "append new rule to collect images"
 msgstr "adicionar nova regra para coletar imagens"
 
-#: ../src/libs/filtering.c:1935 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1939 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "ordenar por"
 
-#: ../src/libs/filtering.c:1944
+#: ../src/libs/filtering.c:1948
 msgid "new sort"
 msgstr "nova forma de ordenação"
 
-#: ../src/libs/filtering.c:1945
+#: ../src/libs/filtering.c:1949
 msgid "append new sort to order images"
 msgstr "adicionar nova forma de ordenação de imagens"
 
-#: ../src/libs/filtering.c:1948
+#: ../src/libs/filtering.c:1952
 msgid "revert to a previous set of sort orders"
 msgstr "reverter ao conjunto anterior de formas de ordenação"
 
@@ -19667,7 +19820,7 @@ msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
 "ctrl+click to exclude the color label\n"
-"the grey button affects all color labels"
+"the gray button affects all color labels"
 msgstr ""
 "filtrar por cor da etiqueta das imagens\n"
 "clique para alternar seleção da cor da etiqueta\n"
@@ -19684,7 +19837,7 @@ msgstr ""
 "e (n): imagens tendo as mesmas etiquetas de cor\n"
 "ou (u): imagens tendo ao menos uma das etiquetas de cor selecionadas"
 
-#: ../src/libs/filters/filename.c:390
+#: ../src/libs/filters/filename.c:364
 msgid ""
 "enter filename to search.\n"
 "multiple values can be separated by ','\n"
@@ -19696,11 +19849,11 @@ msgstr ""
 "\n"
 "clique-direito para obter nomes de arquivos existentes"
 
-#: ../src/libs/filters/filename.c:404
+#: ../src/libs/filters/filename.c:378
 msgid "extension"
 msgstr "extensão"
 
-#: ../src/libs/filters/filename.c:405
+#: ../src/libs/filters/filename.c:379
 msgid ""
 "enter extension to search with starting dot.\n"
 "multiple values can be separated by ','\n"
@@ -19714,7 +19867,7 @@ msgstr ""
 "\n"
 "clique-direito para obter as extensões existentes"
 
-#: ../src/libs/filters/filename.c:437
+#: ../src/libs/filters/filename.c:411
 msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
@@ -19722,7 +19875,7 @@ msgstr ""
 "clique simples para selecionar o nome de arquivo\n"
 "ctrl-clique para selecionar múltiplos valores"
 
-#: ../src/libs/filters/filename.c:464
+#: ../src/libs/filters/filename.c:438
 msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
@@ -19765,7 +19918,7 @@ msgid "square images"
 msgstr "imagens quadradas"
 
 #: ../src/libs/filters/ratio.c:72 ../src/libs/filters/ratio.c:84
-msgid "landsacpe images"
+msgid "landscape images"
 msgstr "imagens paisagem"
 
 #: ../src/libs/filters/search.c:179
@@ -23197,6 +23350,9 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1336
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "filters for collections"
+#~ msgstr "filtros para coleções"
 
 #~ msgid "imported: today"
 #~ msgstr "importada: hoje"
