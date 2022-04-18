@@ -221,7 +221,7 @@ void dt_opencl_write_device_config(const int devid)
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
   gchar dat[512] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_v3_", cl->dev[devid].cname);
+  g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
   g_snprintf(dat, 510, "%i %i %i %i %i %i %i %i %f",
     cl->dev[devid].avoid_atomics,
     cl->dev[devid].micro_nap,
@@ -232,7 +232,7 @@ void dt_opencl_write_device_config(const int devid)
     cl->dev[devid].asyncmode & 1,
     cl->dev[devid].disabled & 1,
     cl->dev[devid].benchmark);
-  dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing '%s' for '%s'\n", dat, key);
+  dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
 }
 
@@ -241,20 +241,46 @@ gboolean dt_opencl_read_device_config(const int devid)
   if(devid < 0) return FALSE;
   dt_opencl_t *cl = darktable.opencl;
   gchar key[256] = { 0 };
-  g_snprintf(key, 254, "%s%s", "cldevice_v3_", cl->dev[devid].cname);
-  if(!dt_conf_key_not_empty(key)) return TRUE;
+  g_snprintf(key, 254, "%s%s", DT_CLDEVICE_HEAD, cl->dev[devid].cname);
+  
+  const gboolean existing_device = dt_conf_key_not_empty(key);
+  gboolean safety_ok = TRUE;
+  if(existing_device)
+  {
+    const gchar *dat = dt_conf_get_string_const(key);
+    int avoid_atomics;
+    int micro_nap;
+    int pinned_memory;
+    int wd;
+    int ht;
+    int event_handles;
+    int asyncmode;
+    int disabled;
+    float benchmark; 
+    sscanf(dat, "%i %i %i %i %i %i %i %i %f",
+      &avoid_atomics, &micro_nap, &pinned_memory, &wd, &ht, &event_handles, &asyncmode, &disabled, &benchmark);
 
-  const gchar *dat = dt_conf_get_string_const(key);
-  sscanf(dat, "%i %i %i %i %i %i %i %i %f",
-    &cl->dev[devid].avoid_atomics,
-    &cl->dev[devid].micro_nap,
-    &cl->dev[devid].pinned_memory,
-    &cl->dev[devid].clroundup_wd,
-    &cl->dev[devid].clroundup_ht,
-    &cl->dev[devid].event_handles,
-    &cl->dev[devid].asyncmode,
-    &cl->dev[devid].disabled,
-    &cl->dev[devid].benchmark);
+    // some rudimentary safety checking if string seems to be ok
+    safety_ok = (wd > 1) && (wd < 513) && (ht > 1) && (ht < 513);
+
+    if(safety_ok)
+    {
+      cl->dev[devid].avoid_atomics = avoid_atomics;
+      cl->dev[devid].micro_nap = micro_nap;
+      cl->dev[devid].pinned_memory = pinned_memory;
+      cl->dev[devid].clroundup_wd = wd;
+      cl->dev[devid].clroundup_ht = ht;
+      cl->dev[devid].event_handles = event_handles;
+      cl->dev[devid].asyncmode = asyncmode;
+      cl->dev[devid].disabled = disabled;
+      cl->dev[devid].benchmark = benchmark;
+    }
+    else // if there is something wrong with the config disable the device
+    {
+      dt_print(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] malformed data '%s' for '%s'\n", dat, key);
+//      cl->dev[devid].disabled = 1;
+    }
+  }
   // do some safety housekeeping
   cl->dev[devid].avoid_atomics &= 1;
   cl->dev[devid].pinned_memory &= (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED);
@@ -271,8 +297,8 @@ gboolean dt_opencl_read_device_config(const int devid)
   cl->dev[devid].use_events = (cl->dev[devid].event_handles != 0) ? 1 : 0;
   cl->dev[devid].asyncmode &= 1;
   cl->dev[devid].disabled &= 1;
-  dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] found '%s' for '%s'\n", dat, key);
-  return FALSE;
+  dt_opencl_write_device_config(devid);
+  return !existing_device || !safety_ok;
 }
 
 float dt_opencl_device_perfgain(const int devid)
@@ -472,7 +498,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   {
     // To keep installations we look for the old blacklist conf key
     const gboolean old_blacklist = dt_conf_get_bool("opencl_disable_drivers_blacklist");
-    cl->dev[dev].disabled = (old_blacklist) ? 0 : 1;
+    cl->dev[dev].disabled |= (old_blacklist) ? 0 : 1;
     // write back the conf key data even if the device is not used now to allow user enabling
     dt_opencl_write_device_config(dev);
     dt_print(DT_DEBUG_OPENCL, "[dt_opencl_device_init] mark device `%s' as disabled because the driver `%s' is blacklisted.\n",
@@ -591,10 +617,10 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   escapedkerneldir = dt_util_str_replace(kerneldir, " ", "\\ ");
 #endif
 
-  gchar* compile_option_name_cname = g_strdup_printf("cldevice_v3_%s_building", cl->dev[dev].cname);
+  gchar* compile_option_name_cname = g_strdup_printf("%s%s_building", DT_CLDEVICE_HEAD, cl->dev[dev].cname);
   const char* compile_opt = NULL;
 
-  if(dt_conf_key_not_empty(compile_option_name_cname)) // a safer way to check for a valid key, use " " as empty is desired
+  if(dt_conf_key_exists(compile_option_name_cname))
     compile_opt = dt_conf_get_string_const(compile_option_name_cname);
   else
   {
@@ -613,17 +639,19 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
         compile_opt = DT_OPENCL_DEFAULT_COMPILE;
     }
   }
+  gchar *my_option = g_strdup(compile_opt);
+  dt_conf_set_string(compile_option_name_cname, my_option);
 
   cl->dev[dev].options = g_strdup_printf("-w %s %s -D%s=1 -I%s",
-                            compile_opt,
+                            my_option,
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
 
   if(darktable.unmuted & DT_DEBUG_OPENCL)
-    fprintf(stderr, "     CL COMPILER OPTION:       %s\n", compile_opt);
+    fprintf(stderr, "     CL COMPILER OPTION:       %s\n", my_option);
 
   g_free(compile_option_name_cname);
-
+  g_free(my_option);
   g_free(escapedkerneldir);
   escapedkerneldir = NULL;
 
