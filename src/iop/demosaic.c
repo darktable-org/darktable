@@ -2967,9 +2967,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     showmask = (g->show_mask);
     // take care of passthru modes
     if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-      demosaicing_method = DT_IOP_DEMOSAIC_PPG;
-    else if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRUMONO)
-      demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+      demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
   }
 
   if((qual_flags & DEMOSAIC_MEDIUM_QUAL)
@@ -5138,9 +5136,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     showmask = (g->show_mask);
     // take care of passthru modes
     if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
-      demosaicing_method = DT_IOP_DEMOSAIC_PPG;
-    else if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRUMONO)
-      demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
+      demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
   }
 
   const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
