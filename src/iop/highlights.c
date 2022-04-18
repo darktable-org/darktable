@@ -1866,7 +1866,7 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
     {
       const int c = FC(row, col, filters);
       const float ival = in[i];
-      out[i] = (ival < clips[c]) ? 0.1f * ival : 1.0f;
+      out[i] = (ival < clips[c]) ? 0.2f * ival : 1.0f;
     }
   }
 }
