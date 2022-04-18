@@ -1629,7 +1629,7 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   // separator
-  gtk_widget_set_name(GTK_WIDGET(d->from.w), "section_label");
+  dt_gui_add_class(GTK_WIDGET(d->from.w), "section_label");
   // job code
   GtkWidget *import_patterns = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkGrid *grid = GTK_GRID(gtk_grid_new());

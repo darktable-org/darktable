@@ -630,7 +630,6 @@ void gui_init(dt_lib_module_t *self)
 
   // Adding the live samples section
   label = dt_ui_section_label_new(_("live samples"));
-  dt_gui_add_class(GTK_WIDGET(label), "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
 

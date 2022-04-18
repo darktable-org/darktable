@@ -2369,7 +2369,7 @@ gboolean _iop_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keybo
   GtkWidget *label = gtk_label_new(des[0]?des[0]:"");
   gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
   // if there is no more description, do not add a separator
-  if(des[1]) gtk_widget_set_name(label, "section_label");
+  if(des[1]) dt_gui_add_class(label, "section_label");
   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
   const char *icon_purpose = "⟳";
