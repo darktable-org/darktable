@@ -894,7 +894,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 
   // the date section
   GtkWidget *lb = gtk_label_new(_("date"));
-  gtk_widget_set_name(lb, "section_label");
+  dt_gui_add_class(lb, "section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
 
   // the calendar
@@ -940,7 +940,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 
   // the time section
   lb = gtk_label_new(_("time"));
-  gtk_widget_set_name(lb, "section_label");
+  dt_gui_add_class(lb, "section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
 
   GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

@@ -63,6 +63,12 @@
   * create optical margins by aligning content properly, not by using borders.
 ***/
 
+/*** Naming class and ids:
+  - classes should be named with underscores, starting by dt_ then what class does (main function). See below.
+  - ids will be used with hyphens, with so item part name (for exemple: bauhaus-slider)
+Why that? Just because it's a developer choice and most classes use underscore in code and id use hyphens. So make it easy and, more important, consistent to avoid being confused and make mistake that would cause bug just by wrong typing.
+***/
+
 /*** Using classes and ids :
 
   * classes are used to set same settings for multiples and differents widgets in the UI.
@@ -86,6 +92,8 @@
       - set all icons that need to be dimmed by default (typed text in search box when checking results and color labels icons)
   - section_expander:
       - use it for all expanders you could add on a module
+  - section_label:
+      - use it for section label text (titles in modules). This set mainly bold text and bottom-border
   - search:
       - use it for all search box
   - dt_bauhaus_alignment:
@@ -304,7 +312,7 @@ box *
 .dt_transparent_background:checked,
 .dt_ignore_fg_state:checked,
 filechooser .sidebar-button,
-popover #bauhaus_combobox,
+popover #bauhaus-combobox,
 overshoot,
 undershoot,
 #usercss_box textview,
@@ -431,7 +439,7 @@ entry selection
 }
 
 /* Filter bar bauhaus-combobox and search box defaults */
-#header-toolbar #bauhaus_combobox,
+#header-toolbar #bauhaus-combobox,
 .quick_filter_box#range_select
 {
   background-color: alpha(@fg_color, 0.05);
@@ -607,8 +615,8 @@ separator
 }
 
 /* Labels of controls sections in modules */
-#section_label,
-#section_label label
+.section_label,
+#blending-box .section_label label  /* as those sections has icons on same line, we need to apply section_label class on box above label and so separate what we apply on border and what we apply on box above */
 {
   padding: 0;
   color: @section_label;
@@ -616,15 +624,10 @@ separator
   font-weight: 500;
 }
 
-#section_label
+.section_label
 {
   border-bottom: 0.035em solid  @section_label;
-  margin: 0.35em 0;
-}
-
-#section_label.section_label_top
-{
-  margin-top: 0.14em;
+  margin: 0.25em 0;
 }
 
 /* Special modules: image infos, navigation and search ones */
@@ -667,7 +670,7 @@ separator
 }
 
 #collapsible,
-#collapsible #bauhaus_slider
+#collapsible #bauhaus-slider
 {
   background-color: shade(@collapsible_bg_color, 1.04);
 }
@@ -847,33 +850,33 @@ dialog headerbar entry
 /*--------------------------------------------------------
   - Bauhaus controls (sliders and comboboxes in modules) -
   --------------------------------------------------------*/
-#bauhaus_popup
+#bauhaus-popup
 {
   color: @bauhaus_fg;
 }
 
-#bauhaus_popup:selected
+#bauhaus-popup:selected
 {
   color: @bauhaus_fg_selected;
 }
 
-popover #bauhaus_slider
+popover #bauhaus-slider
 {
   background-color: @tooltip_bg_color;
 }
 
-#bauhaus_slider
+#bauhaus-slider
 {
   background-color: @plugin_bg_color;
 }
 
-#bauhaus_combobox,
-#bauhaus_slider
+#bauhaus-combobox,
+#bauhaus-slider
 {
   margin: 0.1em 0;
 }
 
-#bauhaus_slider
+#bauhaus-slider
 {
   margin-bottom: 0.14em;
 }
@@ -898,8 +901,8 @@ tooltip,
 popover,
 combobox window,
 dialog combobox window,
-#bauhaus_combobox *,
-#bauhaus_slider *,
+#bauhaus-combobox *,
+#bauhaus-slider *,
 #range_current
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
@@ -1360,7 +1363,7 @@ filechooser row:hover .sidebar-icon
 }
 
 #basics-box-labels #basics-header-box:first-child,
-#basics-box-labels #section_label,
+#basics-box-labels .section_label,
 #thumb_localcopy:active
 {
   border: none;
@@ -1704,10 +1707,10 @@ treeview:not(#lutname) *:hover:not(check),
 .combo:hover,
 .combo:hover cellview,
 combobox window *:hover,
-#bauhaus_combobox:hover,
-#bauhaus_slider:hover,
+#bauhaus-combobox:hover,
+#bauhaus-slider:hover,
 #collapsible .combo:hover,
-#header-toolbar #bauhaus_combobox:hover
+#header-toolbar #bauhaus-combobox:hover
 {
   color: shade(@fg_color, 1.2);
 }
@@ -1842,29 +1845,29 @@ treeview#delete-dialog:selected
 }
 
 /* Sliders states */
-#bauhaus_popup:hover
+#bauhaus-popup:hover
 {
   color: @bauhaus_fg_hover;
 }
 
-#bauhaus_popup:disabled,
-#bauhaus_combobox:disabled,
-#bauhaus_slider:disabled
+#bauhaus-popup:disabled,
+#bauhaus-combobox:disabled,
+#bauhaus-slider:disabled
 {
   color: @bauhaus_fg_disabled;
 }
 
-#bauhaus_popup:disabled
+#bauhaus-popup:disabled
 {
   color: @plugin_bg;
 }
 
-#bauhaus_combobox *
+#bauhaus-combobox *
 {
   color: shade(@bauhaus_fg, 0.8);
 }
 
-#bauhaus_combobox *:selected
+#bauhaus-combobox *:selected
 {
   color: shade(@bauhaus_fg_selected, 1.2);
 }
