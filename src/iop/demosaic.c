@@ -2942,14 +2942,16 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
 
 #include "dual_demosaic.c"
 
-void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const i, float *const o, const dt_iop_roi_t *const roi_in,
+void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, float *const out, const dt_iop_roi_t *const roi_in,
                         const dt_iop_roi_t *const roi_out)
 {
+  assert(roi_in->width >= roi_out->width);
+  assert(roi_in->height >= roi_out->height);
   float const * frames_in[4];
   for(int f = 0; f < 4; ++f)
   {
     /// TODO need original size here
-    frames_in[f] = i + (f * roi_in->width * roi_in->height);
+    frames_in[f] = in + (f * piece->buf_in.width * piece->buf_in.height);
   }
 
   if(piece->dsc_out.channels != 4)
@@ -2957,29 +2959,47 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const i, flo
     fprintf(stderr, "unsuported number of output channels, got: %i\n", piece->dsc_out.channels);
   }
 
-  fprintf(stderr, "demosaic enabled\n");
+  fprintf(stderr, "pixelshift enabled, pipe type: %s\n", dt_pixelpipe_name(piece->pipe->type));
   fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 
-  //const size_t row_offset = roi_out->height;
+  const size_t ox = roi_in->x;
+  const size_t oy = roi_in->y;
 
-  for(size_t idx = 0; idx < roi_out->width * roi_out->height * piece->dsc_out.channels;
-      idx += piece->dsc_out.channels)
+
+  size_t pout = 0;
+  size_t pin = 0;
+  for(size_t j = 0; j < roi_out->height; j++)
   {
-    // R
-    o[idx + 0] = frames_in[0][idx/piece->dsc_out.channels];
-    // G
-    o[idx + 1] = frames_in[1][idx/piece->dsc_out.channels];
-    o[idx + 1] += frames_in[2][idx/piece->dsc_out.channels];
-    o[idx + 1] /= 2.0;
-    // B
-    o[idx + 2] = frames_in[3][idx/piece->dsc_out.channels];
-    /*for(size_t c = 0; c < 3; ++c)
+    for(size_t i = 0; i < roi_out->width; i++)
     {
-      o[idx + c] = i[idx / piece->dsc_out.channels];
-    }*/
-  }
+      pout = 4 * ((roi_out->width * j) + i);
+      pin = (roi_in->width * (j + oy)) + ox + i;
 
+      for(size_t c=0;c<3;++c)
+      {
+        out[pout+c] = (frames_in[0])[pin];
+      }
+
+      out[pout + 0] = (float) j / (float) roi_out->height;
+      out[pout + 1] = (float) i / (float) roi_out->width;
+      out[pout + 2] = 0.0f;
+      out[pout + 3] = 0.0f;
+
+
+
+      //out[pout + 0] = frames_in[0][pin];
+
+      /*out[pout + 1] = (frames_in[0][pin] + frames_in[0][pin]) / 2.0f;
+
+      out[pout + 2] = frames_in[0][pin];*/
+
+      /*out[pout] = 1.0f;
+      out[pout+1] = 0.0f;
+      out[pout+2] = 0.0f;
+      out[pout+3] = 0.0f;*/
+    }
+  }
 }
 
 
@@ -2992,9 +3012,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_dev_clear_rawdetail_mask(piece->pipe);
 
-  /*fprintf(stderr, "demosaic, %s\n", dt_pixelpipe_name(piece->pipe->type));
+  fprintf(stderr, "demosaic, %s\n", dt_pixelpipe_name(piece->pipe->type));
   fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
-  fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);*/
+  fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
   dt_iop_roi_t roi = *roi_in;
   dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
@@ -3046,6 +3066,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       roo.height = roi_in->height;
       roo.scale = 1.0f;
       tmp = (float *)dt_alloc_align_float((size_t)4 * roo.width * roo.height);
+      fprintf(stderr,"scaled\n");
     }
     if(info) dt_get_times(&start_time);
 
