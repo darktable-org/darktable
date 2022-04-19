@@ -403,6 +403,7 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
   tw->css_text_view= gtk_text_view_new_with_buffer(buffer);
   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(tw->css_text_view), GTK_WRAP_WORD);
+  dt_gui_add_class(tw->css_text_view, "dt_monospace");
   gtk_widget_set_hexpand(tw->css_text_view, TRUE);
   gtk_widget_set_halign(tw->css_text_view, GTK_ALIGN_FILL);
 

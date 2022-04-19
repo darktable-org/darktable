@@ -97,6 +97,8 @@ Why that? Just because it's a developer choice and most classes use underscore i
       - use it for section label text (titles in modules). This set mainly bold text and bottom-border
   - search:
       - use it for all search box
+  - dt_monospace:
+      - set monospace font for some specific items (on some tooltips, history number or colorpicker values...)
   - dt_bauhaus_alignment:
       - used for icons that needs to be aligned with bauhaus widgets in libs
       - ex : color picker for auto-tune setting in filmic or mask on same module and tone equalizer
@@ -369,7 +371,7 @@ textview
   min-width: 1em;
 }
 
-/* Buttons in modules header, near the module name */
+/* Buttons in modules header, path-bar on filechooser dialog window and all text-button and related */
 .dt_module_btn,
 .path-bar button,
 header button,
@@ -398,8 +400,7 @@ button:disabled,
 spinbutton *:disabled,
 #collapsible .combo:disabled,
 #collapsible spinbutton button:disabled,
-#non-flat:disabled,
-#recent-collection-button:disabled
+#non-flat:disabled
 {
   background-color: transparent;
   border: 0.07em solid shade(@button_border, 0.9);
@@ -466,6 +467,11 @@ entry selection
 }
 
 /* Checkbox */
+checkbutton check
+{
+  margin: 0.28em 0.56em 0.28em 0;
+}
+
 checkbutton check:checked
 {
   background-color: @field_selected_bg;
@@ -512,12 +518,11 @@ separator
 
 /* Set toolbars buttons in lighttable and darkroom views ; and top right button in accels window */
 .accels_window_stick,
-.quick_filter_box#range-select,
 #filter-colors-box .dt_module_btn,
 #header-toolbar .dt_module_btn,
 #footer-toolbar .dt_module_btn
 {
-  min-height: 1.7em; /* align toolbox button height on comboboxe's one */
+  min-height: 1.7em;
   min-width: 1.7em;
 }
 
@@ -531,13 +536,14 @@ separator
 
 /* Set default button spacing  in toolbars and modules */
 .section_expander #button-canvas,
+#background-job-eventbox #button-canvas,
 #basics-header-box #button-canvas,
-#header-toolbar #button-canvas,
+#collect-header-box #button-canvas,
 #footer-toolbar #button-canvas,
-#module-header #button-canvas,
-#modules-tabs #button-canvas,
+#header-toolbar #button-canvas,
 #lib-collect-entry + .dt_module_btn #button-canvas,
-#collect-header-box #button-canvas
+#module-header #button-canvas,
+#modules-tabs #button-canvas
 {
   margin: 12px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
@@ -903,6 +909,8 @@ combobox window,
 dialog combobox window,
 #bauhaus-combobox *,
 #bauhaus-slider *,
+#colorpicker-tooltip,
+#history-tooltip,
 #range-current
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
@@ -1386,7 +1394,7 @@ filechooser row:hover .sidebar-icon
 
 #range-select #dt-range-band
 {
-  min-height: 2.2em;                /* band height */
+  min-height: 1.7em;                /* band height */
 }
 
 #module-filtering #range-select #dt-range-band
@@ -1422,7 +1430,7 @@ filechooser row:hover .sidebar-icon
 #filter-colors-box #button-canvas,
 #collect-sort-widget #button-canvas
 {
-  margin: 1em 0.07em;
+  margin: 16px;
 }
 
 #filter-colors-box .dt_module_btn
@@ -1487,20 +1495,14 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
   margin: 0.07em 0.28em;
 }
 
-#background-job-eventbox .dt_module_btn
+progressbar trough
 {
-  border: 0;
-}
-
-progressbar *
-{
-  background-color: @selected_bg_color;
-  border-radius: 0;
+  background-color: @darkroom_preview_bg_color;
 }
 
 progressbar progress
 {
-  background-color: @darkroom_bg_color;
+  background-color: @scroll_bar_active;
   border-radius: 0.28em;
 }
 
@@ -1511,19 +1513,13 @@ progressbar progress
   padding-left: 0.14em;
 }
 
-/* Checkbutton check state */
-checkbutton check
-{
-  margin: 0.35em 0.56em 0.35em 0;
-}
-
 /* Set selected cell */
 cell:selected
 {
   background-color: shade(@selected_bg_color, 1.2);
 }
 
-/* Set below spacing between history items in darkroom */
+/* Set below history items in darkroom */
 /* the label buttons */
 .dt_history_items
 {
@@ -1532,31 +1528,25 @@ cell:selected
 }
 
 /* then the switches */
-.dt_history_switch
+.dt_history_switch:disabled /* state of those switch is always disabled */
 {
-  font-size: 0.7em;
+  color: @plugin_label_color;
+  font-size: 0.75em;
   margin-left: 0.42em;
   border: 0;
 }
 
-/* the history number */
+/* and the history number */
 #history-number
 {
   padding-right: 0.35em;
-  font-family: monospace;
 }
 
-/* then deprecated switch to suit to other icons */
-#left #history-switch-deprecated
+/* Deactivated switch buttons, make them less visible */
+.dt_history_switch_off,
+.dt_history_switch_off:disabled
 {
-  font-size: 0.6em;
-}
-
-#history-tooltip,
-#colorpicker-tooltip
-{
-  font-family: monospace;
-  background-color: @tooltip_bg_color;
+  color: @disabled_fg_color;
 }
 
 /* set deprecated and warning messages */
@@ -1592,8 +1582,7 @@ cell:selected
 }
 
 /* Set some specific fonts */
-#live-sample-data,
-#usercss-box textview
+.dt_monospace
 {
   font-family: monospace;
 }
@@ -1662,10 +1651,6 @@ combobox window *:active,
 combobox window *:selected,
 .dt_history_items:active,
 .dt_history_items:checked,
-.dt_history_items:selected,
-#recent-collection-button:active,
-#recent-collection-button:checked,
-#recent-collection-button:selected,
 messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 {
   background-color: @button_checked_bg;
@@ -1674,8 +1659,7 @@ messagedialog .default  /* this show that a button in confirmation action pop-up
 
 /* History currently selected button */
 .dt_history_items:active *,
-.dt_history_items:checked *,
-.dt_history_items:selected *
+.dt_history_items:checked *
 {
   color: @button_checked_fg;
 }
@@ -1694,7 +1678,6 @@ treeview:not(#lutname) *:hover:not(check),
 #main-histogram .dt_module_btn:hover:not(.toggle),
 #non-flat:hover,
 #preferences-box .sidebar :hover,
-#recent-collection-button:hover,
 #view-label:hover,
 #view-dropdown .combo:hover
 {
@@ -1714,6 +1697,11 @@ combobox window *:hover,
   color: shade(@fg_color, 1.2);
 }
 
+.dt_history_switch_off:hover  /* set specific hover effect for disabled modules in history stack */
+{
+  color: shade(@fg_color, 0.8);
+}
+
 /* workaround for a macOS quartz GTK backend bug
    making combobox list appear behind dialog window:
    color of "button:checked cellview" has to differ from
@@ -1727,33 +1715,6 @@ button:checked cellview
 menuitem > *
 {
     color: @fg_color;
-}
-
-/* Last history needed states */
-#history-button-enabled *
-{
-  color: @plugin_fg_color;
-  background-color: transparent;
-}
-
-#history-button *
-{
-  color: shade(@plugin_fg_color, 0.7);
-  background-color: transparent;
-}
-
-/* Deactivated switch buttons, make them less visible */
-#history-switch:disabled
-{
-  color: shade(@plugin_label_color, .7);
-  background-color: transparent;
-}
-
-/* Deprecated/always-on switch are visible */
-#history-switch-deprecated:disabled,
-.dt_history_switch:disabled
-{
-  color: @plugin_label_color;
 }
 
 /* Treeviews and filechoosers states */

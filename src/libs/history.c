@@ -172,6 +172,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   GtkWidget *numwidget = gtk_label_new(numlab);
   gtk_widget_set_name(numwidget, "history-number");
   dt_gui_add_class(numwidget, "dt_history_items");
+  dt_gui_add_class(numwidget, "dt_monospace");
 
   GtkWidget *onoff = NULL;
 
@@ -185,16 +186,12 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   if(always_on)
   {
     onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, 0, NULL);
-    gtk_widget_set_name(onoff, "history-switch-always-enabled");
-    gtk_widget_set_name(widget, "history-button-always-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
     gtk_widget_set_tooltip_text(onoff, _("always-on module"));
   }
   else if(default_enabled)
   {
     onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, 0, NULL);
-    gtk_widget_set_name(onoff, "history-switch-default-enabled");
-    gtk_widget_set_name(widget, "history-button-default-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
     gtk_widget_set_tooltip_text(onoff, _("default enabled module"));
   }
@@ -203,19 +200,18 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
     if(deprecated)
     {
       onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated, 0, NULL);
-      gtk_widget_set_name(onoff, "history-switch-deprecated");
       gtk_widget_set_tooltip_text(onoff, _("deprecated module"));
     }
     else
     {
       onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, 0, NULL);
-      gtk_widget_set_name(onoff, enabled ? "history-switch-enabled" : "history-switch");
+      dt_gui_add_class(onoff, enabled ? "" : "dt_history_switch_off");
     }
-    gtk_widget_set_name(widget, enabled ? "history-button-enabled" : "history-button");
+    dt_gui_add_class(lab, enabled ? "" : "dt_history_switch_off");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
   }
-  dt_gui_add_class(onoff, "dt_history_switch");
   dt_gui_add_class(widget, "dt_history_items");
+  dt_gui_add_class(onoff, "dt_history_switch");
 
   gtk_widget_set_sensitive(onoff, FALSE);
 
@@ -944,6 +940,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
     {
       view = gtk_text_view_new();
       gtk_widget_set_name(view, "history-tooltip");
+      dt_gui_add_class(view, "dt_monospace");
       g_signal_connect(G_OBJECT(view), "destroy", G_CALLBACK(gtk_widget_destroyed), &view);
     }
 

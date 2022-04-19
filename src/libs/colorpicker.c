@@ -293,6 +293,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
   {
     view = gtk_text_view_new();
     gtk_widget_set_name(view, "colorpicker-tooltip");
+    dt_gui_add_class(view, "dt_monospace");
     g_signal_connect(G_OBJECT(view), "destroy", G_CALLBACK(gtk_widget_destroyed), &view);
   }
 
@@ -465,7 +466,7 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(container), color_patch_wrapper, TRUE, TRUE, 0);
 
   sample->output_label = gtk_label_new("");
-  gtk_widget_set_name(sample->output_label, "live-sample-data");
+  dt_gui_add_class(sample->output_label, "dt_monospace");
   gtk_label_set_ellipsize(GTK_LABEL(sample->output_label), PANGO_ELLIPSIZE_START);
   gtk_label_set_selectable(GTK_LABEL(sample->output_label), TRUE);
   gtk_widget_set_has_tooltip(sample->output_label, TRUE);
@@ -615,7 +616,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_START);
   gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-  gtk_widget_set_name(label, "live-sample-data");
+  dt_gui_add_class(label, "dt_monospace");
   gtk_widget_set_has_tooltip(label, TRUE);
   g_signal_connect(G_OBJECT(label), "query-tooltip", G_CALLBACK(_sample_tooltip_callback), &data->primary_sample);
   g_signal_connect(G_OBJECT(label), "size-allocate", G_CALLBACK(_label_size_allocate_callback), &data->primary_sample);
