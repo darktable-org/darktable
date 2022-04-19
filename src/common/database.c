@@ -49,7 +49,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 35
+#define CURRENT_DATABASE_VERSION_LIBRARY 36
 #define CURRENT_DATABASE_VERSION_DATA     9
 
 // #define USE_NESTED_TRANSACTIONS
@@ -2115,6 +2115,44 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
     new_version = 35;
+  }
+  else if(version == 35)
+  {
+    TRY_EXEC("CREATE TABLE main.images_new (id INTEGER, filename VARCHAR, flags INTEGER)",
+             "[init] can't create new images table\n");
+
+    gchar *query = g_strdup_printf("INSERT INTO `images_new` "
+                                   "SELECT id, filename, flags"
+                                   " FROM images"
+                                   " WHERE (flags & %d == 0)",
+                                   DT_IMAGE_RAW | DT_IMAGE_LDR | DT_IMAGE_HDR);
+    TRY_EXEC(query, "[init] can't copy back from images\n");
+
+    TRY_PREPARE(stmt, "SELECT id, filename, flags FROM `images_new`",
+                "[init] can't prepare selecting images flags\n");
+
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      sqlite3_stmt *stmt2;
+      sqlite3_prepare_v2(db->handle,
+                         "UPDATE `images` SET"
+                         " (flags) = "
+                         " (?2) WHERE id = ?1",
+                         -1, &stmt2, NULL);
+      sqlite3_bind_int(stmt2, 1, sqlite3_column_int(stmt, 0));
+
+      dt_image_flags_t flags = sqlite3_column_int(stmt, 2);
+      gchar *ext = g_strrstr((const char *)sqlite3_column_text(stmt, 1), ".");
+      flags |= dt_imageio_get_type_from_extension(ext);
+      sqlite3_bind_int(stmt2, 2, flags);
+
+      TRY_STEP(stmt2, SQLITE_DONE, "[init] can't update flags\n");
+      sqlite3_finalize(stmt2);
+    }
+    sqlite3_finalize(stmt);
+
+    TRY_EXEC("DROP TABLE `images_new`", "[init] can't drop temp images table\n");
+    new_version = 36;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
