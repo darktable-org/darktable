@@ -19,7 +19,9 @@
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+
 #include <string.h>
+#include <locale.h>
 
 #define SNAP_SIZE 5
 #define BAR_WIDTH 4
