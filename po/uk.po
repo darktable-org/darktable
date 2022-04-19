@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-17 10:34+0200\n"
-"PO-Revision-Date: 2022-04-17 20:38+0300\n"
+"POT-Creation-Date: 2022-04-17 22:14+0200\n"
+"PO-Revision-Date: 2022-04-19 14:25+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -4953,7 +4953,7 @@ msgid "too much time to update aspect ratio for the collection"
 msgstr "занадто довго йде оновлення співвідношення сторін зображень в колекції"
 
 #: ../src/common/collection.c:608 ../src/common/collection.c:686
-#: ../src/libs/filters/filename.c:389 ../src/libs/metadata_view.c:126
+#: ../src/libs/filters/filename.c:363 ../src/libs/metadata_view.c:126
 msgid "filename"
 msgstr "файл"
 
@@ -5063,7 +5063,7 @@ msgid "print timestamp"
 msgstr "час друку"
 
 #: ../src/common/collection.c:670 ../src/libs/collect.c:3177
-#: ../src/libs/filtering.c:1925 ../src/libs/filtering.c:1947
+#: ../src/libs/filtering.c:1929 ../src/libs/filtering.c:1951
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "історія"
@@ -5534,7 +5534,7 @@ msgstr ""
 
 #. the button to close the popup
 #: ../src/common/database.c:2730 ../src/common/database.c:2737
-#: ../src/libs/filters/filename.c:484
+#: ../src/libs/filters/filename.c:458
 msgid "ok"
 msgstr "ok"
 
@@ -8333,6 +8333,180 @@ msgstr "максимальна кількість зображень: %d"
 msgid "no image selected !"
 msgstr "жодне зображення не вибрано!"
 
+#: ../src/dtgtk/range.c:175 ../src/dtgtk/range.c:180
+msgid "invalid"
+msgstr "недійсно"
+
+#: ../src/dtgtk/range.c:288
+#, c-format
+msgid "year %s"
+msgstr "рік %s"
+
+#: ../src/dtgtk/range.c:366
+msgid ""
+"enter the minimal value\n"
+"use 'min' if no bound\n"
+"right-click to select from existing values"
+msgstr ""
+"введіть мінімальне значення\n"
+"використовуйте 'мін', якщо немає обмеження\n"
+"клікніть правою кнопкою миші, щоб вибрати з наявних значень"
+
+#: ../src/dtgtk/range.c:372
+msgid ""
+"enter the maximal value\n"
+"use 'max' if no bound\n"
+"right-click to select from existing values"
+msgstr ""
+"введіть максимальне значення\n"
+"використовуйте 'макс', якщо немає обмеження\n"
+"клікніть правою кнопкою миші, щоб вибрати з наявних значень"
+
+#: ../src/dtgtk/range.c:378
+msgid ""
+"enter the value\n"
+"right-click to select from existing values"
+msgstr ""
+"введіть значення\n"
+"клікніть правою кнопкою миші, щоб вибрати з наявних значень"
+
+#: ../src/dtgtk/range.c:383
+msgid ""
+"enter the minimal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'min' if no bound\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"введіть мінімальну дату\n"
+"в форматі YYYY:MM:DD hh:mm:ss.sss (лише рік є обов'язковим)\n"
+"використовуйте 'мін', якщо немає обмеження\n"
+"використовуйте префікс '-' для відносної дати\n"
+"клікніть правою кнопкою миші для вибору з календаря або наявних значень"
+
+#: ../src/dtgtk/range.c:391
+msgid ""
+"enter the maximal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'max' if no bound\n"
+"'now' keyword is handled\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"введіть максимальну дату\n"
+"в форматі YYYY:MM:DD hh:mm:ss.sss (лише рік є обов'язковим)\n"
+"використовуйте 'макс', якщо немає обмеження\n"
+"використовуйте префікс '-' для відносної дати\n"
+"клікніть правою кнопкою миші для вибору з календаря або наявних значень"
+
+#: ../src/dtgtk/range.c:400
+msgid ""
+"enter the date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"введіть дату\n"
+"в форматі YYYY:MM:DD hh:mm:ss.sss (лише рік є обов'язковим)\n"
+"клікніть правою кнопкою миші для вибору з календаря або наявних значень"
+
+#: ../src/dtgtk/range.c:422
+msgid "date-time interval to substract from the max value"
+msgstr "інтервал дати й часу, щоб відняти від максимального значення"
+
+#: ../src/dtgtk/range.c:426
+msgid "date-time interval to add to the min value"
+msgstr "інтервал дати й часу, щоб додати до мінімального значення"
+
+#: ../src/dtgtk/range.c:566 ../src/dtgtk/range.c:1714 ../src/dtgtk/range.c:1765
+#: ../src/libs/colorpicker.c:53
+msgid "min"
+msgstr "мін"
+
+#: ../src/dtgtk/range.c:572 ../src/dtgtk/range.c:1726 ../src/dtgtk/range.c:1777
+#: ../src/libs/colorpicker.c:53
+msgid "max"
+msgstr "макс"
+
+#: ../src/dtgtk/range.c:880
+msgid "date type"
+msgstr "тип дати"
+
+#: ../src/dtgtk/range.c:881
+msgid "fixed"
+msgstr "фіксовані значення"
+
+#: ../src/dtgtk/range.c:882 ../src/iop/colorchecker.c:1382
+msgid "relative"
+msgstr "відносні значення"
+
+#. the date section
+#: ../src/dtgtk/range.c:894
+msgid "date"
+msgstr "дата"
+
+#: ../src/dtgtk/range.c:901
+msgid ""
+"simple click to select date\n"
+"double click to use the date directly"
+msgstr ""
+"простий клік для вибору дати\n"
+"подвійний клік, щоб використовувати дату безпосередньо"
+
+#: ../src/dtgtk/range.c:912
+msgid "years: "
+msgstr "роки: "
+
+#: ../src/dtgtk/range.c:920
+msgid "months: "
+msgstr "місяці: "
+
+#: ../src/dtgtk/range.c:928
+msgid "days: "
+msgstr "дні: "
+
+#. the time section
+#: ../src/dtgtk/range.c:940
+msgid "time"
+msgstr "час"
+
+#: ../src/dtgtk/range.c:967
+msgid ""
+"simple click to select date\n"
+"double click to use the date directly."
+msgstr ""
+"простий клік для вибору дати\n"
+"подвійний клік, щоб використовувати дату безпосередньо"
+
+#: ../src/dtgtk/range.c:993 ../src/dtgtk/range.c:1733
+msgid "now"
+msgstr "зараз"
+
+#: ../src/dtgtk/range.c:995
+msgid "set the value to always match current datetime"
+msgstr ""
+"встановити значення так, щоб воно завжди відповідало поточній даті і часу"
+
+#. apply button
+#: ../src/dtgtk/range.c:998 ../src/gui/accelerators.c:147
+#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:750
+#: ../src/libs/styles.c:861
+msgid "apply"
+msgstr "застосувати"
+
+#: ../src/dtgtk/range.c:999
+msgid "set the range bound with this value"
+msgstr "встановити межу діапазону в це значення"
+
+#. get nice text for bounds
+#. Side-border hide/show
+#: ../src/dtgtk/range.c:1710 ../src/gui/accelerators.c:1909
+#: ../src/gui/accelerators.c:1988 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914
+#: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
+#: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
+#: ../src/libs/filtering.c:1418 ../src/libs/filters/colors.c:236
+msgid "all"
+msgstr "всі"
+
 #: ../src/dtgtk/resetlabel.c:59
 msgid "double-click to reset"
 msgstr "подвійний клік для скидання"
@@ -8817,12 +8991,6 @@ msgstr "оновити"
 msgid "preferences"
 msgstr "уподобання"
 
-#. apply button
-#: ../src/gui/accelerators.c:147 ../src/iop/colortransfer.c:670
-#: ../src/libs/metadata.c:750 ../src/libs/styles.c:861
-msgid "apply"
-msgstr "застосувати"
-
 #: ../src/gui/accelerators.c:148
 msgid "apply on new instance"
 msgstr "застосувати на новому екземплярі"
@@ -9106,15 +9274,6 @@ msgid ""
 msgstr ""
 "експортувати всі клавіатурні прискорювачі в файл\n"
 "або лише для одного вибраного пристрою\n"
-
-#. Side-border hide/show
-#: ../src/gui/accelerators.c:1909 ../src/gui/accelerators.c:1988
-#: ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914 ../src/imageio/format/pdf.c:659
-#: ../src/iop/denoiseprofile.c:3581 ../src/iop/lens.cc:2274
-#: ../src/iop/rawdenoise.c:904 ../src/libs/filtering.c:1414
-#: ../src/libs/filters/colors.c:236
-msgid "all"
-msgstr "всі"
 
 #: ../src/gui/accelerators.c:1910 ../src/gui/accelerators.c:1989
 msgid "keyboard"
@@ -10586,13 +10745,13 @@ msgid "page orientation"
 msgstr "орієнтація сторінки"
 
 #: ../src/imageio/format/pdf.c:608 ../src/iop/borders.c:1042
-#: ../src/libs/filtering.c:271 ../src/libs/filters/ratio.c:122
+#: ../src/libs/filtering.c:272 ../src/libs/filters/ratio.c:122
 #: ../src/libs/print_settings.c:2366
 msgid "portrait"
 msgstr "портрет"
 
 #: ../src/imageio/format/pdf.c:609 ../src/iop/borders.c:1043
-#: ../src/libs/filtering.c:267 ../src/libs/filters/ratio.c:124
+#: ../src/libs/filtering.c:268 ../src/libs/filters/ratio.c:124
 #: ../src/libs/print_settings.c:2367
 msgid "landscape"
 msgstr "ландшафт"
@@ -11932,7 +12091,7 @@ msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:970 ../src/iop/clipping.c:2139 ../src/iop/crop.c:1048
-#: ../src/libs/filtering.c:263 ../src/libs/filters/ratio.c:126
+#: ../src/libs/filtering.c:264 ../src/libs/filters/ratio.c:126
 msgid "square"
 msgstr "квадрат"
 
@@ -13801,10 +13960,6 @@ msgstr ""
 "відносні значення - цільовий колір є відносним до джерельного кольору "
 "зразка\n"
 "абсолютні значення - цільовий колір є абсолютним значенням Lab"
-
-#: ../src/iop/colorchecker.c:1382
-msgid "relative"
-msgstr "відносні значення"
 
 #: ../src/iop/colorchecker.c:1383
 msgid "absolute"
@@ -18956,25 +19111,25 @@ msgid "change to: except"
 msgstr "змінити на 'КРІМ'"
 
 #. the differents categories
-#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:835
-#: ../src/libs/filtering.c:917
+#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:839
+#: ../src/libs/filtering.c:921
 msgid "files"
 msgstr "файли"
 
 #: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:310
-#: ../src/libs/filtering.c:840 ../src/libs/filtering.c:922
+#: ../src/libs/filtering.c:844 ../src/libs/filtering.c:926
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:538 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "метадані"
 
-#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:860
-#: ../src/libs/filtering.c:942
+#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:864
+#: ../src/libs/filtering.c:946
 msgid "times"
 msgstr "позначки часу"
 
-#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:868
-#: ../src/libs/filtering.c:950
+#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:872
+#: ../src/libs/filtering.c:954
 msgid "capture details"
 msgstr "деталі зйомки"
 
@@ -18999,20 +19154,20 @@ msgstr "зберегти"
 msgid "preferences..."
 msgstr "уподобання..."
 
-#: ../src/libs/collect.c:3007 ../src/libs/filtering.c:1390
+#: ../src/libs/collect.c:3007 ../src/libs/filtering.c:1394
 msgid " and "
 msgstr " і "
 
-#: ../src/libs/collect.c:3012 ../src/libs/filtering.c:1395
+#: ../src/libs/collect.c:3012 ../src/libs/filtering.c:1399
 msgid " or "
 msgstr " або "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3017 ../src/libs/filtering.c:1400
+#: ../src/libs/collect.c:3017 ../src/libs/filtering.c:1404
 msgid " but not "
 msgstr " але не "
 
-#: ../src/libs/collect.c:3178 ../src/libs/filtering.c:1926
+#: ../src/libs/collect.c:3178 ../src/libs/filtering.c:1930
 msgid "revert to a previous set of rules"
 msgstr "повернутися до попереднього набору правил"
 
@@ -19035,14 +19190,6 @@ msgstr "Hex"
 #: ../src/libs/colorpicker.c:53
 msgid "mean"
 msgstr "середнє"
-
-#: ../src/libs/colorpicker.c:53
-msgid "min"
-msgstr "мін"
-
-#: ../src/libs/colorpicker.c:53
-msgid "max"
-msgstr "макс"
 
 #: ../src/libs/colorpicker.c:71
 msgid "color picker"
@@ -19610,49 +19757,57 @@ msgstr "додати тег вихідних метаданих"
 msgid "delete metadata tag"
 msgstr "видалити тег метаданих"
 
-#: ../src/libs/filtering.c:225
-msgid "filters for collections"
+#: ../src/libs/filtering.c:226
+msgid "collection filters"
 msgstr "фільтри для колекцій"
 
-#: ../src/libs/filtering.c:258
+#: ../src/libs/filtering.c:259
 msgid "initial setting"
 msgstr "початкове налаштування"
 
-#: ../src/libs/filtering.c:277
+#: ../src/libs/filtering.c:278
 msgid "imported: last 24h"
 msgstr "імпортовано: останні 24 години"
 
-#: ../src/libs/filtering.c:282
+#: ../src/libs/filtering.c:283
 msgid "imported: last 30 days"
 msgstr "імпортовано: останні 30 днів"
 
-#: ../src/libs/filtering.c:288
+#: ../src/libs/filtering.c:289
 msgid "taken: last 24h"
 msgstr "знято: останні 24 години"
 
-#: ../src/libs/filtering.c:292
+#: ../src/libs/filtering.c:293
 msgid "taken: last 30 days"
 msgstr "знято: останні 30 днів"
 
-#: ../src/libs/filtering.c:908
+#: ../src/libs/filtering.c:646
+msgid "right-click to set specific values"
+msgstr "клікніть правою кнопкою миші, щоб встановити конкретні значення"
+
+#: ../src/libs/filtering.c:647
+msgid "actual selection:"
+msgstr "актуальний вибір:"
+
+#: ../src/libs/filtering.c:912
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
+"тип правила\n"
+"це не можна змінити, оскільки правило закріплено на панелі інструментів"
 
 #. otherwise we add all implemented rules
-#: ../src/libs/filtering.c:915
-#, fuzzy
-#| msgid "property"
+#: ../src/libs/filtering.c:919
 msgid "rule property"
-msgstr "параметр"
+msgstr "тип правила"
 
-#: ../src/libs/filtering.c:1008
+#: ../src/libs/filtering.c:1012
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "фільтр"
 
-#: ../src/libs/filtering.c:1034
+#: ../src/libs/filtering.c:1038
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "ctrl-click to un-pin"
@@ -19660,7 +19815,7 @@ msgstr ""
 "це правило закріплено на верхній панелі інструментів\n"
 "клікніть з утриманням ctrl для відкріплення"
 
-#: ../src/libs/filtering.c:1039
+#: ../src/libs/filtering.c:1043
 msgid ""
 "disable this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19668,23 +19823,23 @@ msgstr ""
 "вимкнути це правило збирання колекції\n"
 "натисніть з утриманням ctrl для закріплення на верхній панелі інструментів"
 
-#: ../src/libs/filtering.c:1166
+#: ../src/libs/filtering.c:1170
 msgid "and"
 msgstr "і"
 
-#: ../src/libs/filtering.c:1167
+#: ../src/libs/filtering.c:1171
 msgid "or"
 msgstr "або"
 
-#: ../src/libs/filtering.c:1168
+#: ../src/libs/filtering.c:1172
 msgid "and not"
 msgstr "і не"
 
-#: ../src/libs/filtering.c:1170
+#: ../src/libs/filtering.c:1174
 msgid "define how this rule should interact with the previous one"
 msgstr "визначає, як це правило має взаємодіяти з попереднім"
 
-#: ../src/libs/filtering.c:1214
+#: ../src/libs/filtering.c:1218
 msgid ""
 "remove this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19692,47 +19847,47 @@ msgstr ""
 "видалити це правило збирання колекції\n"
 "натисніть з утриманням ctrl для закріплення на верхній панелі інструментів"
 
-#: ../src/libs/filtering.c:1421
+#: ../src/libs/filtering.c:1425
 msgid " (off)"
 msgstr " (off)"
 
-#: ../src/libs/filtering.c:1636
+#: ../src/libs/filtering.c:1640
 msgid "determine the sort order of shown images"
 msgstr "визначає порядок сортування показаних зображень"
 
-#: ../src/libs/filtering.c:1674
+#: ../src/libs/filtering.c:1678
 msgid "remove this sort order"
 msgstr "видалити цей порядок сортування"
 
-#: ../src/libs/filtering.c:1828
+#: ../src/libs/filtering.c:1832
 msgid "DESC"
 msgstr "НИЗХ"
 
-#: ../src/libs/filtering.c:1828
+#: ../src/libs/filtering.c:1832
 msgid "ASC"
 msgstr "ВИСХ"
 
-#: ../src/libs/filtering.c:1922
+#: ../src/libs/filtering.c:1926
 msgid "new rule"
 msgstr "нове правило"
 
-#: ../src/libs/filtering.c:1923
+#: ../src/libs/filtering.c:1927
 msgid "append new rule to collect images"
 msgstr "додає нове правило до колекції зображень"
 
-#: ../src/libs/filtering.c:1935 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1939 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "сортування"
 
-#: ../src/libs/filtering.c:1944
+#: ../src/libs/filtering.c:1948
 msgid "new sort"
 msgstr "нове сортування"
 
-#: ../src/libs/filtering.c:1945
+#: ../src/libs/filtering.c:1949
 msgid "append new sort to order images"
 msgstr "додає нове правило до порядку сортування зображень"
 
-#: ../src/libs/filtering.c:1948
+#: ../src/libs/filtering.c:1952
 msgid "revert to a previous set of sort orders"
 msgstr "повернутися до попереднього набору порядків сортування"
 
@@ -19749,7 +19904,7 @@ msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
 "ctrl+click to exclude the color label\n"
-"the grey button affects all color labels"
+"the gray button affects all color labels"
 msgstr ""
 "фільтрувати за кольоровою позначкою зображень\n"
 "клікніть, щоб перемкнути вибір кольорової позначки\n"
@@ -19767,7 +19922,7 @@ msgstr ""
 "оператор \"або\" (∪): зображення з принаймні однією з вибраних кольорових "
 "позначок"
 
-#: ../src/libs/filters/filename.c:390
+#: ../src/libs/filters/filename.c:364
 msgid ""
 "enter filename to search.\n"
 "multiple values can be separated by ','\n"
@@ -19779,11 +19934,11 @@ msgstr ""
 "\n"
 "клікніть правою кнопкою миші, щоб отримати наявні імена файлів"
 
-#: ../src/libs/filters/filename.c:404
+#: ../src/libs/filters/filename.c:378
 msgid "extension"
 msgstr "розширення"
 
-#: ../src/libs/filters/filename.c:405
+#: ../src/libs/filters/filename.c:379
 msgid ""
 "enter extension to search with starting dot.\n"
 "multiple values can be separated by ','\n"
@@ -19797,7 +19952,7 @@ msgstr ""
 "\n"
 "клікніть правою кнопкою миші, щоб отримати наявні розширення"
 
-#: ../src/libs/filters/filename.c:437
+#: ../src/libs/filters/filename.c:411
 msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
@@ -19805,7 +19960,7 @@ msgstr ""
 "простий клік для вибору імені файлу\n"
 "клік з утриманням ctrl для вибору кількох значень"
 
-#: ../src/libs/filters/filename.c:464
+#: ../src/libs/filters/filename.c:438
 msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
@@ -19848,7 +20003,7 @@ msgid "square images"
 msgstr "квадратні зображення"
 
 #: ../src/libs/filters/ratio.c:72 ../src/libs/filters/ratio.c:84
-msgid "landsacpe images"
+msgid "landscape images"
 msgstr "ландшафтні зображення"
 
 #: ../src/libs/filters/search.c:179
@@ -23302,6 +23457,9 @@ msgstr ""
 msgid "mouse actions"
 msgstr "дії за допомогою миші"
 
+#~ msgid "filters for collections"
+#~ msgstr "фільтри для колекцій"
+
 #~ msgid "imported: today"
 #~ msgstr "імпортовано: сьогодні"
 
@@ -24430,9 +24588,6 @@ msgstr "дії за допомогою миші"
 
 #~ msgid "clear all labels of selected images"
 #~ msgstr "очистити всі позначки вибраних зображень"
-
-#~ msgid "time"
-#~ msgstr "час"
 
 #~ msgid ""
 #~ "set the color of lines that overlay the image (drawn masks, crop and "
