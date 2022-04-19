@@ -148,6 +148,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_green_eq_favg_apply;
   int kernel_pre_median;
   int kernel_passthrough_monochrome;
+  int kernel_passthrough_color;
   int kernel_ppg_green;
   int kernel_ppg_redblue;
   int kernel_zoom_half_size;
@@ -3771,6 +3772,20 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_passthrough_monochrome, sizes);
       if(err != CL_SUCCESS) goto error;
     }
+    else if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
+    {
+      size_t sizes[3] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+      dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 1, sizeof(cl_mem), &dev_aux);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 2, sizeof(int), &width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 3, sizeof(int), &height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 4, sizeof(int), (void *)&roi_in->x);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 5, sizeof(int), (void *)&roi_in->y);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_passthrough_color, 6, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
+
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_passthrough_color, sizes);
+      if(err != CL_SUCCESS) goto error;
+    }
     else if(demosaicing_method == DT_IOP_DEMOSAIC_PPG)
     {
       dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
@@ -5151,7 +5166,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(info) dt_get_times(&start_time);
 
-  if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME || demosaicing_method == DT_IOP_DEMOSAIC_PPG)
+  if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
+     demosaicing_method == DT_IOP_DEMOSAIC_PPG ||
+     demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR )
   {
     if(!process_default_cl(self, piece, dev_in, dev_out, roi_in, roi_out, demosaicing_method)) return FALSE;
   }
@@ -5420,6 +5437,7 @@ void init_global(dt_iop_module_so_t *module)
 
   const int other = 14; // from programs.conf
   gd->kernel_passthrough_monochrome = dt_opencl_create_kernel(other, "passthrough_monochrome");
+  gd->kernel_passthrough_color = dt_opencl_create_kernel(other, "passthrough_color");
   gd->kernel_zoom_passthrough_monochrome = dt_opencl_create_kernel(other, "clip_and_zoom_demosaic_passthrough_monochrome");
 
   const int vng = 15; // from programs.conf
@@ -5482,6 +5500,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_border_interpolate);
   dt_opencl_free_kernel(gd->kernel_color_smoothing);
   dt_opencl_free_kernel(gd->kernel_passthrough_monochrome);
+  dt_opencl_free_kernel(gd->kernel_passthrough_color);
   dt_opencl_free_kernel(gd->kernel_zoom_passthrough_monochrome);
   dt_opencl_free_kernel(gd->kernel_vng_border_interpolate);
   dt_opencl_free_kernel(gd->kernel_vng_lin_interpolate);
@@ -5581,7 +5600,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       piece->process_cl_ready = 1;
       break;
     case DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR:
-      piece->process_cl_ready = 0;
+      piece->process_cl_ready = 1;
       break;
     case DT_IOP_DEMOSAIC_RCD:
       piece->process_cl_ready = 1;
