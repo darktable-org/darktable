@@ -2973,18 +2973,34 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
   {
     for(size_t i = 0; i < roi_out->width; i++)
     {
-      pout = 4 * ((roi_out->width * j) + i);
+      pout = (size_t)4 * ((roi_out->width * j) + i);
       pin = (roi_in->width * (j + oy)) + ox + i;
+
+      if(pin >= 24000000)
+      {
+        fprintf(stderr,"input overflow\n");
+      }
+
+      if(pin >= 24000000)
+      {
+        fprintf(stderr,"input overflow\n");
+      }
+
+      if(pout >= ((size_t)4*roi_out->height*roi_out->width))
+      {
+        fprintf(stderr,"output overflow\n");
+      }
 
       for(size_t c=0;c<3;++c)
       {
         out[pout+c] = (frames_in[0])[pin];
+        //out[pout+c] = (float) pin / ((float) roi_out->height * roi_out->width);
       }
 
-      out[pout + 0] = (float) j / (float) roi_out->height;
+      /*out[pout + 0] = (float) j / (float) roi_out->height;
       out[pout + 1] = (float) i / (float) roi_out->width;
       out[pout + 2] = 0.0f;
-      out[pout + 3] = 0.0f;
+      out[pout + 3] = 0.0f;*/
 
 
 
@@ -3000,6 +3016,7 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
       out[pout+3] = 0.0f;*/
     }
   }
+  fprintf(stderr,"pout: %lu\n", pout+4);
 }
 
 

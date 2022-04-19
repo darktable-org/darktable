@@ -284,6 +284,7 @@ static void convert_uint_float(const uint16_t *const in, float *const out, const
 
       const int id = BL(roi_out, d, j, i);
       out[pout] = (in[pin] - d->sub[id]) / d->div[id];
+      //out[pout] = ((j/10)%2)?1.0f:0.0f;
     }
   }
 }
