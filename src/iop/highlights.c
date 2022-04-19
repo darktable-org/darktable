@@ -126,6 +126,7 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_diffuse_color;
   int kernel_highlights_box_blur;
   int kernel_wavelets_decompose;
+  int kernel_highlights_false_color;
 } dt_iop_highlights_global_data_t;
 
 
@@ -199,20 +200,54 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
 
-  cl_int err = -999;
-  cl_mem dev_xtrans = NULL;
-
+  const uint32_t filters = piece->pipe->dsc.filters;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
+  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+
+  cl_int err = -999;
+
+  // this works for bayer and X-Trans sensors
+  if(visualizing)
+  {
+    float clips[4] = { d->clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[RED]),
+                       d->clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[GREEN]),
+                       d->clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[BLUE]),
+                       d->clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[GREEN]) };
+    cl_mem dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
+    if(dev_clips == NULL) goto error;
+
+    // bayer sensor raws with LCH mode
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 4, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 5, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 6, sizeof(int), (void *)&filters);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 7, sizeof(cl_mem), (void *)&dev_clips);
+
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_false_color, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
+    dt_opencl_release_mem_object(dev_clips);
+    return TRUE;
+  }
+
+  cl_mem dev_xtrans = NULL;
+
   const float clip = d->clip
                      * fminf(piece->pipe->dsc.processed_maximum[0],
                              fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
-
-  const uint32_t filters = piece->pipe->dsc.filters;
 
   if(!filters)
   {
@@ -1848,10 +1883,10 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
   const size_t width = roi_out->width;
   const size_t height = roi_out->height;
   const float clip = data->clip;
-  const float clips[4] = { clip * piece->pipe->dsc.temperature.coeffs[RED],
-                           clip * piece->pipe->dsc.temperature.coeffs[GREEN],
-                           clip * piece->pipe->dsc.temperature.coeffs[BLUE],
-                           clip * piece->pipe->dsc.temperature.coeffs[GREEN] };
+  const float clips[4] = { clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[RED]),
+                           clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[GREEN]),
+                           clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[BLUE]),
+                           clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[GREEN]) };
 
 
 #ifdef _OPENMP
@@ -2002,15 +2037,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   memcpy(d, p, sizeof(*p));
 
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
-  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
-
-  piece->process_cl_ready = 1;
-
-  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT and visualizing mode yet.
-  if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT || visualizing)
-    piece->process_cl_ready = 0;
+  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT
+  piece->process_cl_ready = (d->mode == DT_IOP_HIGHLIGHTS_INPAINT) ? 0 : 1;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -2029,6 +2057,8 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_wavelets_decompose = dt_opencl_create_kernel(program, "diffuse_blur_bspline");
   gd->kernel_highlights_guide_laplacians = dt_opencl_create_kernel(program, "guide_laplacians");
   gd->kernel_highlights_diffuse_color = dt_opencl_create_kernel(program, "diffuse_color");
+  gd->kernel_highlights_false_color = dt_opencl_create_kernel(program, "highlights_false_color");
+
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -2044,6 +2074,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_wavelets_decompose);
   dt_opencl_free_kernel(gd->kernel_highlights_guide_laplacians);
   dt_opencl_free_kernel(gd->kernel_highlights_diffuse_color);
+  dt_opencl_free_kernel(gd->kernel_highlights_false_color);
   free(module->data);
   module->data = NULL;
 }
