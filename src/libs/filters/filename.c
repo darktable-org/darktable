@@ -173,13 +173,13 @@ void _filename_tree_update(_widgets_filename_t *filename)
                      TREE_COL_COUNT, 0, -1);
   gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
   gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "HDR", TREE_COL_TOOLTIP,
-                     "hight dynamic range files", TREE_COL_PATH, "HDR", TREE_COL_COUNT, nb_hdr, -1);
+                     "high dynamic range files", TREE_COL_PATH, "HDR", TREE_COL_COUNT, nb_hdr, -1);
   gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
   gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "LDR", TREE_COL_TOOLTIP,
                      "low dynamic range files", TREE_COL_PATH, "LDR", TREE_COL_COUNT, nb_ldr, -1);
   gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
   gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "NOT RAW", TREE_COL_TOOLTIP,
-                     "all expect RAW files", TREE_COL_PATH, "NOT RAW", TREE_COL_COUNT, nb_not_raw, -1);
+                     "all except RAW files", TREE_COL_PATH, "NOT RAW", TREE_COL_COUNT, nb_not_raw, -1);
   gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
   gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "RAW", TREE_COL_TOOLTIP, "RAW files",
                      TREE_COL_PATH, "RAW", TREE_COL_COUNT, nb_raw, -1);
