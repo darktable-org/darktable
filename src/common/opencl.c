@@ -460,8 +460,19 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(infostr);
   }
 
+  const gboolean is_cpu_device = (type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
+
   // micro_nap can be made less conservative on current systems at least if not on-CPU
-  cl->dev[dev].micro_nap = ((type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU) ? 1000 : 250;
+  cl->dev[dev].micro_nap = (is_cpu_device) ? 1000 : 250;
+
+  if(is_cpu_device)
+  {
+    dt_print(DT_DEBUG_OPENCL,
+             "[dt_opencl_device_init] discarding device %d `%s' - OpenCL is emulated by CPU.\n", k, infostr);
+    res = -1;
+    cl->dev[dev].disabled |= 1;
+    goto end;
+  }
 
   if(!device_available)
   {
@@ -1149,8 +1160,8 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
             cl->dev[i].name, i, cl->dev[i].totalsuccess, cl->dev[i].totalevents, cl->dev[i].totallost,
             cl->dev[i].maxeventslot);
           if(cl->dev[i].maxeventslot >= 1024)
-            fprintf(stderr, "Your OpenCl device '%s' had used up to %d events while processing. This might be safe\n"
-                            "but there is currently no correct check implemented. Take care!\n",
+            dt_print(DT_DEBUG_OPENCL, "Your OpenCl device '%s' had used up to %d events while processing. This might be safe\n"
+                            "  on myny devices but there is currently no correct check implemented. Take care!\n",
                              cl->dev[i].name, cl->dev[i].maxeventslot); 
         }
         else
@@ -2799,8 +2810,8 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   }
   const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
   const gboolean tuned = darktable.dtresources.tunememory && (level > 0);
-  const gboolean board = darktable.opencl->dev[devid].cltype & CL_DEVICE_TYPE_CPU;
-  if(tuned && !board)
+  const gboolean oncpu = (darktable.opencl->dev[devid].cltype & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
+  if(tuned)
   {
     // we always leave a safety margin, 128MB for level large, 100MB + 1/16 of graphics memory for default.
     const size_t unused = MAX(0, dt_opencl_get_unused_device_mem(devid) - 128lu * 1024lu * 1024lu);
@@ -2816,7 +2827,7 @@ cl_ulong dt_opencl_get_device_available(const int devid)
 
   if(mod)
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tunemem=%s, cpudevice=%s) as available on device %i\n",
-       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (board) ? "yes" : "no", devid);
+       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (oncpu) ? "yes" : "no", devid);
   return available;
 }
 
