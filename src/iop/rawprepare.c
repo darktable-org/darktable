@@ -284,7 +284,6 @@ static void convert_uint_float(const uint16_t *const in, float *const out, const
 
       const int id = BL(roi_out, d, j, i);
       out[pout] = (in[pin] - d->sub[id]) / d->div[id];
-      //out[pout] = ((j/10)%2)?1.0f:0.0f;
     }
   }
 }
@@ -344,6 +343,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
+  //fprintf(stderr,"rawprepare %s\n", dt_pixelpipe_name(piece->pipe->type));
   /*fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
   fprintf(stderr,"frame size in:  %d\n", roi_in->width * roi_in->height);

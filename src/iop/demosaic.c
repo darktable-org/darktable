@@ -2963,57 +2963,34 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
   fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 
-  const size_t ox = roi_in->x;
-  const size_t oy = roi_in->y;
+  /*__asan_describe_address((void*)in);
+  fflush(stdout);
+  fflush(stderr);*/
 
+  //const size_t ox = roi_in->x;
+  //const size_t oy = roi_in->y;
 
   size_t pout = 0;
-  size_t pin = 0;
+  //size_t pin = 0;
+  size_t pin3 = 0;
   for(size_t j = 0; j < roi_out->height; j++)
   {
     for(size_t i = 0; i < roi_out->width; i++)
     {
-      pout = (size_t)4 * ((roi_out->width * j) + i);
-      pin = (roi_in->width * (j + oy)) + ox + i;
+      pout = (size_t)4 * (((size_t)roi_out->width * j) + i);
+      //pin = (roi_in->width * (j + oy)) + ox + i;
+      ///TODO why do i ignore offset of input roi?
+      pin3 = (roi_in->width * j) + i;
 
-      if(pin >= 24000000)
-      {
-        fprintf(stderr,"input overflow\n");
-      }
-
-      if(pin >= 24000000)
-      {
-        fprintf(stderr,"input overflow\n");
-      }
-
-      if(pout >= ((size_t)4*roi_out->height*roi_out->width))
+      if(pout+3 >= ((size_t)4*((size_t)roi_out->height*roi_out->width)))
       {
         fprintf(stderr,"output overflow\n");
       }
 
       for(size_t c=0;c<3;++c)
       {
-        out[pout+c] = (frames_in[0])[pin];
-        //out[pout+c] = (float) pin / ((float) roi_out->height * roi_out->width);
+        out[pout+c] = (frames_in[1])[pin3];
       }
-
-      /*out[pout + 0] = (float) j / (float) roi_out->height;
-      out[pout + 1] = (float) i / (float) roi_out->width;
-      out[pout + 2] = 0.0f;
-      out[pout + 3] = 0.0f;*/
-
-
-
-      //out[pout + 0] = frames_in[0][pin];
-
-      /*out[pout + 1] = (frames_in[0][pin] + frames_in[0][pin]) / 2.0f;
-
-      out[pout + 2] = frames_in[0][pin];*/
-
-      /*out[pout] = 1.0f;
-      out[pout+1] = 0.0f;
-      out[pout+2] = 0.0f;
-      out[pout+3] = 0.0f;*/
     }
   }
   fprintf(stderr,"pout: %lu\n", pout+4);

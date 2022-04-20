@@ -515,7 +515,7 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
       const size_t bufSize_mipmap = (size_t)img->width * img->height * img->buf_dsc.frames * r.get(0)->getBpp();
       const size_t bufSize_rawspeed = (size_t)r.get(0)->pitch * dimUncropped.y * r.size();
       const size_t frame_size = bufSize_mipmap / r.size();
-      printf("size mipmap: %lu\n size raw: %lu\nsize frame: %lu\n",bufSize_mipmap,bufSize_rawspeed,frame_size);
+      fprintf(stderr,"[rawspeed] size mipmap: %lu, size raw: %lu, size frame: %lu\n",bufSize_mipmap,bufSize_rawspeed,frame_size);
       for(size_t i = 0; i < r.size(); ++i)
       {
         dt_imageio_flip_buffers(((char *)buf) + (i * frame_size), (char *)r.get(i)->getDataUncropped(0, 0),

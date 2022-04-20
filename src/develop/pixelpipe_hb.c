@@ -43,7 +43,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-//#define DEBUG_PIXELPIPE
+#define DEBUG_PIXELPIPE
 
 typedef enum dt_pixelpipe_flow_t
 {
@@ -112,6 +112,11 @@ static char *_pipe_type_to_str(int pipe_type)
 #ifdef DEBUG_PIXELPIPE
 static void save_debug_bitmap(dt_dev_pixelpipe_t *pipe, const char *name, void *out, const dt_iop_roi_t *roi_out)
 {
+  /*if(pipe->type != DT_DEV_PIXELPIPE_FULL)
+  {
+    return;
+  }*/
+
   char filename[128];
   snprintf(filename, 128, "save_debug_bitmap_%s_%s.pfm", name, _pipe_type_to_str(pipe->type));
   for(int i = 0; i < 128; ++i)
@@ -1227,6 +1232,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           const int in_y = MAX(roi_in.y, 0);
           const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
+          const int frames = pipe->dsc.frames;
 
           if (cp_width > 0)
           {
@@ -1236,7 +1242,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           shared(pipe, roi_out, roi_in, output) \
           schedule(static)
 #endif
-            for(int j = 0; j < cp_height; j++)
+            for(int j = 0; j < cp_height * frames; j++)
               memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
                      ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),
                      (size_t)bpp * cp_width);
