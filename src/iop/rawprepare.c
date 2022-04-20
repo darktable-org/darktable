@@ -212,14 +212,6 @@ void modify_roi_out(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, dt_iop
   const float scale = roi_in->scale / piece->iscale;
   roi_out->width -= (int)roundf((float)x * scale);
   roi_out->height -= (int)roundf((float)y * scale);
-
-  if(piece->pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
-  {
-    if(piece->pipe->image.buf_dsc.frames > 1)
-    {
-      roi_out->frame_offset = roi_out->width * roi_out->height;
-    }
-  }
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -283,7 +275,7 @@ static void convert_uint_float(const uint16_t *const in, float *const out, const
     dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out)          \
     schedule(static) collapse(2)
 #endif
-  for(int j = 0; j < roi_out->height; j++)
+  for(int j = 0; j < roi_out->height-100; j++)
   {
     for(int i = 0; i < roi_out->width; i++)
     {
@@ -292,6 +284,18 @@ static void convert_uint_float(const uint16_t *const in, float *const out, const
 
       const int id = BL(roi_out, d, j, i);
       out[pout] = (in[pin] - d->sub[id]) / d->div[id];
+    }
+  }
+
+  for(int j = roi_out->height-100; j < roi_out->height; j++)
+  {
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      //const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
+      const size_t pout = (size_t)j * roi_out->width + i;
+
+
+      out[pout] = 0.0f;
     }
   }
 }
@@ -374,6 +378,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const uint16_t *const frame_in = in + (f * roi_in->width * roi_in->height);
       float *const frame_out = out + (f * roi_out->width * roi_out->height);
       convert_uint_float(frame_in, frame_out, roi_in, roi_out, csx, csy, d);
+      fprintf(stderr, "frame %lu: %p\n", f, frame_in);
+      /*for(size_t i=0;i<roi_out->width * roi_out->height;++i)
+      {
+        frame_out[i] = (float)f / (float)piece->dsc_out.frames;
+      }*/
     }
 
     piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);

@@ -112,10 +112,10 @@ static char *_pipe_type_to_str(int pipe_type)
 #ifdef DEBUG_PIXELPIPE
 static void save_debug_bitmap(dt_dev_pixelpipe_t *pipe, const char *name, void *out, const dt_iop_roi_t *roi_out)
 {
-  /*if(pipe->type != DT_DEV_PIXELPIPE_FULL)
+  if(pipe->type != DT_DEV_PIXELPIPE_FULL)
   {
     return;
-  }*/
+  }
 
   char filename[128];
   snprintf(filename, 128, "save_debug_bitmap_%s_%s.pfm", name, _pipe_type_to_str(pipe->type));
@@ -150,7 +150,18 @@ static void save_debug_bitmap(dt_dev_pixelpipe_t *pipe, const char *name, void *
   float *ptr = (float *)out;
   if((pipe->dsc.channels == 1) || (pipe->dsc.channels == 3))
   {
-    fwrite(ptr, sizeof(float), roi_out->height * roi_out->width * pipe->dsc.channels * pipe->dsc.frames, file);
+    for(size_t f = 0; f < pipe->dsc.frames; ++f)
+    {
+      float *tmp = ptr + (f * roi_out->width * roi_out->height);
+      for(size_t i = 0; i < roi_out->width; ++i)
+      {
+        for(size_t j = 0; j < roi_out->height; ++j)
+        {
+          const size_t pout = j + (roi_out->height * (i));
+          fwrite(tmp + pout, sizeof(float) * pipe->dsc.channels, 1, file);
+        }
+      }
+    }
   }
   else
   {

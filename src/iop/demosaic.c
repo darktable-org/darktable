@@ -2951,6 +2951,7 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
   for(int f = 0; f < 4; ++f)
   {
     frames_in[f] = in + (f * roi_in->width * roi_in->height);
+    fprintf(stderr, "frame %i: %p\n", f, frames_in[f]);
   }
 
   if(piece->dsc_out.channels != 4)
@@ -2990,7 +2991,7 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
 
       for(size_t c=0;c<3;++c)
       {
-        out[pout+c] = (frames_in[0])[pin3];
+        out[pout+c] = (frames_in[2])[pin3];
       }
     }
   }

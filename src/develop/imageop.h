@@ -28,7 +28,6 @@ typedef struct dt_iop_roi_t
 {
   int x, y, width, height;
   float scale;
-  int frame_offset;
 } dt_iop_roi_t;
 
 #include "common/darktable.h"
