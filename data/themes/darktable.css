@@ -126,8 +126,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_20;
-@define-color plugin_fg_color @fg_color;
-@define-color section_label shade(@plugin_fg_color, 0.95);
+@define-color section_label shade(@fg_color, 0.95);
 @define-color plugin_label_color @grey_60;
 @define-color collapsible_bg_color @grey_25;
 
@@ -335,7 +334,7 @@ undershoot,
 /* Allow to resize all windows */
 decoration
 {
-  margin: 0.07em;
+  margin: 1px; /* need to remains as px as just minimum size needed, no need to be scalable */
 }
 
 /* Default Gtk buttons and other entries */
@@ -555,7 +554,6 @@ separator
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
 .plugin_ui
 {
-  color: @plugin_fg_color;
   background-color: @plugin_bg_color;
 }
 
@@ -785,7 +783,6 @@ separator
 dialog
 {
   background-color: @plugin_bg_color;
-  color: @plugin_fg_color;
 }
 
 .accels_window,
@@ -1056,7 +1053,7 @@ scrollbar slider
   background-color: @scroll_bar_inactive;
   border: 0.14em solid transparent;
   min-width: 0.42em;
-  min-height: 0.42em;
+  min-height: 1em;
 }
 
 scale contents trough
@@ -1130,9 +1127,10 @@ treeview header label
   - Preferences dialog window options -
   -------------------------------------*/
 #preferences-content,
-#preferences-content .dialog-action-box
+#preferences-content .dialog-action-box,
+#quick-presets-manager box  /* set same setting on quick preset manager dialog window ; accessible to bottom left button on footer bar in darkroom view */
 {
-  margin: 0; /* reset default dialog margin to all items. And needed to have an hover and selected effect on all width of categories in sidebar */
+  margin: 0; /* reset default dialog margin to main items. And needed to have an hover and selected effect on all width of categories in sidebar */
 }
 
 /* Set preferences margins in main part */
@@ -1200,93 +1198,84 @@ treeview header label
   - Module layouts manager dialog -
   --------------------------------*/
 /* set top box header */
-#modulegroups_editor_setting
+#modulegroups-top-boxes
 {
-  padding-left: 3.5em;
-}
-
-/* set main padding */
-#modulegroups_top_box,
-#modulegroups-iop-header,
-#modulegroups-groupbox
-{
-  padding: 0.5em;
+  margin-right: 6em;
 }
 
 /* set main group modules title */
-#modulegroups-groups-title
+#modulegroups-groups-title label
 {
   font-size: 1.1em;
-  font-weight: bold;
 }
 
-#modulegroups-groups-title .dt_module_btn
+#modulegroups-groups-title label,
+#modulegroups-header-center entry
 {
-  margin-left: 0.56em;
+  font-weight: bold;
+  margin-right: 0.28em;
+}
+
+#modulegroups-groups-title,
+#modulegroups-groups-box
+{
+  margin-top: 0.42em;
 }
 
 #modulegroups-groups-box
 {
   border-top: 0.035em solid  @section_label;
+  padding-top: 0.5em;
 }
 
-/* set groups part */
-#modulegroups-iop-header,
-#modulegroups-header-center
+/* set groups part, starting by setting same margin around top part and group boxes */
+#modulegroups-topbox,
+#modulegroups-groupbox
 {
-  background-color: @bg_color;
-  padding: 0.35em;
+  margin: 0 0.5em;
 }
 
+#modulegroups-header-center,
+#modulegroups-iop-header
+{
+  background-color: shade(@bg_color, 1.05);
+  padding: 0.28em;
+}
+
+/* now set borders around group header and group list */
 #modulegroups-header-center
 {
-  border: 0.07em solid @button_bg;
-  border-radius: 0.42em 0.42em 0 0;
+  border: 0.07em solid @bg_color;
+  border-radius: 0.5em 0.5em 0 0;
+  margin-bottom: 0.14em;
+}
+
+#modulegroups-iop-header:first-child
+{
+  border-top: 0.07em solid @bg_color;
+  border-radius: 0;
+  margin-top: 0.14em;
 }
 
 #modulegroups-iop-header
 {
-  border-left: 0.07em solid @button_bg;
-  border-right: 0.07em solid @button_bg;
+  border-left: 0.07em solid @bg_color;
+  border-right: 0.07em solid @bg_color;
 }
 
-box #modulegroups-iop-header:first-child
+#modulegroups-iop-header:last-child
 {
-  border-top: 0.07em solid @button_bg;
+  border-bottom: 0.07em solid @bg_color;
+  border-radius: 0 0 0.5em 0.5em;
 }
 
-
-box #modulegroups-iop-header:last-child
-{
-  border-bottom: 0.07em solid @button_bg;
-  border-radius: 0 0 0.42em 0.42em;
-}
-
-#modulegroups-group-icon
-{
-  min-height: 2em;
-  min-width: 2em;
-  margin: 0 0.63em 0 0.07em;
-  padding: 0.07em;
-}
-
-#modulegroups-header-center entry
-{
-  font-weight: bold;
-  border: 0;
-}
-
-#modulegroups-icons-popup
-{
-  padding: 0.5em;
-  background-color: @grey_30;
-}
-
+/* set group icons */
+#modulegroups-group-icon,
 #modulegroups-icons-popup .dt_module_btn
 {
-  min-width: 1.6em;
-  min-height: 1.6em;
-  border: 0;
+  min-height: 1.8em;
+  min-width: 1.8em;
+  margin: 0 0.7em 0 0.07em;
 }
 
 /*---------------------------------------------------------------
@@ -1550,9 +1539,7 @@ cell:selected
 }
 
 /* set deprecated and warning messages */
-
-#modulegroups-deprecated-msg,
-#iop-plugin-deprecated,
+.dt_deprecated_msg,
 #iop-plugin-warning
 {
   background-color: #852A2A;
@@ -1585,11 +1572,6 @@ cell:selected
 .dt_monospace
 {
   font-family: monospace;
-}
-
-#quick-presets-manager box
-{
-  margin: 0;
 }
 
 /*---------------------
