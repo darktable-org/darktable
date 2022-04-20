@@ -2539,7 +2539,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
     GtkWidget *lb = gtk_label_new(module->deprecated_msg());
     gtk_label_set_line_wrap(GTK_LABEL(lb), TRUE);
     gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
-    gtk_widget_set_name(lb, "iop-plugin-deprecated");
+    dt_gui_add_class(lb, "dt_deprecated_msg");
     gtk_box_pack_start(GTK_BOX(iopw), lb, TRUE, TRUE, 0);
     gtk_widget_show(lb);
   }
