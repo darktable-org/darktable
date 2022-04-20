@@ -212,6 +212,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
 
   cl_int err = -999;
+  cl_mem dev_xtrans = NULL;
 
   // this works for bayer and X-Trans sensors
   if(visualizing)
@@ -242,8 +243,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_release_mem_object(dev_clips);
     return TRUE;
   }
-
-  cl_mem dev_xtrans = NULL;
 
   const float clip = d->clip
                      * fminf(piece->pipe->dsc.processed_maximum[0],
