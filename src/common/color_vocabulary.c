@@ -201,7 +201,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
 
   if(is_skin) return out;
 
-  // Reference for color names : https://chromatone.center/theory/color/models/perceptual.html
+  // Reference for color names : https://chromatone.center/theory/color/models/perceptual/
   // Though we ignore them sometimes when they get too lyrical for some more down-to-earth names
   // Color are read for chroma = [80 - 100].
   const float h = color[2] * 360.f; // °
