@@ -2950,8 +2950,7 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
   float const * frames_in[4];
   for(int f = 0; f < 4; ++f)
   {
-    /// TODO need original size here
-    frames_in[f] = in + (f * piece->buf_in.width * piece->buf_in.height);
+    frames_in[f] = in + (f * roi_in->width * roi_in->height);
   }
 
   if(piece->dsc_out.channels != 4)
@@ -2962,6 +2961,8 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
   fprintf(stderr, "pixelshift enabled, pipe type: %s\n", dt_pixelpipe_name(piece->pipe->type));
   fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  fprintf(stderr, "i: %p\n",in);
+  fprintf(stderr, "o: %p\n",out);
 
   /*__asan_describe_address((void*)in);
   fflush(stdout);
@@ -2989,7 +2990,7 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
 
       for(size_t c=0;c<3;++c)
       {
-        out[pout+c] = (frames_in[1])[pin3];
+        out[pout+c] = (frames_in[0])[pin3];
       }
     }
   }
