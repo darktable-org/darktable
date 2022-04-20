@@ -641,10 +641,11 @@ static void _range_set_tooltip(_widgets_range_t *special)
 {
   // we recreate the tooltip
   gchar *val = dtgtk_range_select_get_bounds_pretty(DTGTK_RANGE_SELECT(special->range_select));
-  gchar *txt = g_strdup_printf("<b>%s</b>\n%s\n%s\n%s",
+  gchar *txt = g_strdup_printf("<b>%s</b>\n%s\n%s\n%s%s",
                                dt_collection_name(special->rule->prop),
-                               _("right-click to set specific values"),
-                               _("actual selection:"),
+                               _("click or click&#38;drag to select one or multiple values"),
+                               _("right-click opens a menu to select the available values"),
+                               _("<b><i>actual selection: </i></b>"),
                                val);
   gtk_widget_set_tooltip_markup(special->range_select, txt);
   g_free(txt);
