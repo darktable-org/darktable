@@ -421,7 +421,7 @@ static void _popup_date_update_widget_visibility(GtkDarktableRangeSelect *range)
     // set the label
     if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_min)
     {
-      gtk_label_set_text(GTK_LABEL(pop->relative_label), _("date-time interval to substract from the max value"));
+      gtk_label_set_text(GTK_LABEL(pop->relative_label), _("date-time interval to subtract from the max value"));
     }
     else
     {
