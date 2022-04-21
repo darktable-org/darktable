@@ -218,7 +218,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
   {
     // 0° - pinkish red
     if(step_L == 0) return _("deep purple");    // L = 10 %
-    if(step_L == 1) return _("fuschia");        // L = 30 %
+    if(step_L == 1) return _("fuchsia");        // L = 30 %
     if(step_L == 2) return _("medium magenta"); // L = 50 %
     if(step_L == 3) return _("violet pink");    // L = 70 %
     if(step_L == 4) return _("plum violet");    // L = 90 %
