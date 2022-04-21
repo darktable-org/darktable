@@ -2951,7 +2951,7 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
   for(int f = 0; f < 4; ++f)
   {
     frames_in[f] = in + (f * roi_in->width * roi_in->height);
-    fprintf(stderr, "frame %i: %p\n", f, frames_in[f]);
+    //fprintf(stderr, "frame %i: %p\n", f, frames_in[f]);
   }
 
   if(piece->dsc_out.channels != 4)
@@ -2972,30 +2972,33 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
   //const size_t ox = roi_in->x;
   //const size_t oy = roi_in->y;
 
+  const size_t col_offset = 1;
+  const size_t row_offset = roi_out->width;
+
   size_t pout = 0;
   //size_t pin = 0;
   size_t pin3 = 0;
-  for(size_t j = 0; j < roi_out->height; j++)
+  for(size_t j = 1; j < roi_out->height-1; j++)
   {
-    for(size_t i = 0; i < roi_out->width; i++)
+    for(size_t i = 1; i < roi_out->width-1; i++)
     {
       pout = (size_t)4 * (((size_t)roi_out->width * j) + i);
       //pin = (roi_in->width * (j + oy)) + ox + i;
       ///TODO why do i ignore offset of input roi?
       pin3 = (roi_in->width * j) + i;
 
-      if(pout+3 >= ((size_t)4*((size_t)roi_out->height*roi_out->width)))
       {
-        fprintf(stderr,"output overflow\n");
+        out[pout+0] = frames_in[0][pin3];
+        out[pout+1] = (frames_in[1][pin3-col_offset] + frames_in[2][pin3-col_offset-row_offset])/2.0f;
+        out[pout+2] = frames_in[3][pin3-row_offset];
       }
 
-      for(size_t c=0;c<3;++c)
+      /*for(size_t c=0;c<3;++c)
       {
-        out[pout+c] = (frames_in[2])[pin3];
-      }
+        out[pout+c] = (frames_in[c])[pin3];
+      }*/
     }
   }
-  //fprintf(stderr,"pout: %lu\n", pout+4);
 }
 
 

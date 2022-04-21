@@ -1318,7 +1318,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-          dt_omp_firstprivate(bpp, cp_height, cp_width, in_x, in_y) \
+          dt_omp_firstprivate(bpp, cp_height, cp_width, in_x, in_y, frames) \
           shared(pipe, roi_out, roi_in, output) \
           schedule(static)
 #endif
