@@ -2983,9 +2983,21 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
       size_t pin = (roi_in->width * j) + i;
 
       {
-        out[pout+0] = frames_in[0][pin];
-        out[pout+1] = (frames_in[1][pin-col_offset] + frames_in[2][pin-col_offset-row_offset])/2.0f;
-        out[pout+2] = frames_in[3][pin-row_offset];
+        const uint32_t ch[4] = { FC(j + 0 + roi_out->y, i + 0 + roi_out->x, piece->pipe->dsc.filters),
+                                 FC(j + 1 + roi_out->y, i + 0 + roi_out->x, piece->pipe->dsc.filters),
+                                 FC(j + 1 + roi_out->y, i + 1 + roi_out->x, piece->pipe->dsc.filters),
+                                 FC(j + 0 + roi_out->y, i + 1 + roi_out->x, piece->pipe->dsc.filters) };
+        for(int k = 0; k < 4; ++k)
+        {
+          out[pout + k] = 0.0f;
+        }
+
+        out[pout + ch[0]] += frames_in[0][pin];
+        out[pout + ch[1]] += frames_in[1][pin + row_offset];
+        out[pout + ch[2]] += frames_in[2][pin + col_offset + row_offset];
+        out[pout + ch[3]] += frames_in[3][pin + col_offset];
+
+        out[pout + 1] /= 2.0f;
       }
 
       /*for(size_t c=0;c<3;++c)
@@ -5633,7 +5645,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     d->pixelshift_enable = (p->pixelshift_enable && (piece->dsc_in.frames == 4));
     ///TODO this should also change checkbox
 
-    //fprintf(stderr, "demosaic ,commit_params, %s, pixelshift: %i\n", dt_pixelpipe_name(pipe->type), d->pixelshift_enable);
+    fprintf(stderr, "demosaic ,commit_params, %s, pixelshift: %i\n", dt_pixelpipe_name(pipe->type), d->pixelshift_enable);
   }
   else
   {
