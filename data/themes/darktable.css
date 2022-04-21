@@ -114,7 +114,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color selected_bg_color @grey_35; /* legacy stuff */
 @define-color border_color @grey_10;      /* border, when used */
 @define-color bg_color @grey_15;          /* general background */
-@define-color fg_color @grey_70;          /* general text */
+@define-color fg_color @grey_75;          /* general text */
 @define-color base_color @fg_color;       /* legacy stuff */
 @define-color text_color @grey_05;        /* same */
 @define-color disabled_fg_color @grey_40; /* disabled controls */
@@ -145,19 +145,16 @@ Why that? Just because it's a developer choice and most classes use underscore i
 /* GTK Buttons and tabs */
 @define-color button_bg @grey_25;
 @define-color button_border shade(@button_bg, 1.04);
-@define-color button_fg @fg_color;
-@define-color button_checked_bg @grey_45;
-@define-color button_checked_fg @grey_85;
 @define-color button_hover_bg @grey_50;
 @define-color button_hover_fg @grey_15;
 
 /* text fields */
 @define-color field_bg @grey_15;
-@define-color field_fg @button_fg;
+@define-color field_fg @fg_color;
 @define-color field_active_bg @grey_30;
 @define-color field_active_fg @grey_80;
 @define-color field_selected_bg @grey_45;
-@define-color field_selected_fg @button_checked_fg;
+@define-color field_selected_fg @grey_85;
 @define-color field_hover_bg @grey_55;
 @define-color field_hover_fg @grey_95;
 
@@ -186,15 +183,15 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color thumbnail_hover_bg_color @grey_85;
 @define-color thumbnail_hover_fg_color @grey_90;
 @define-color filmstrip_bg_color @darkroom_bg_color;
-@define-color timeline_bg_color shade(@filmstrip_bg_color, 0.9);
+@define-color timeline_bg_color shade(@darkroom_bg_color, 0.9);
 @define-color timeline_fg_color @text_color;
 @define-color timeline_text_bg_color alpha(black, .8);
 @define-color timeline_text_fg_color alpha(white, .9);
 
-@define-color range_graph_color alpha(@timeline_fg_color, 0.6);
-@define-color range_bg_color alpha(@bg_color, 0.2);
-@define-color range_cursor_color alpha(@fg_color, .75);
-@define-color range_sel_color alpha(@timeline_bg_color, 0.5);
+@define-color range_graph_color alpha(@timeline_fg_color, 0.65);
+@define-color range_bg_color alpha(@fg_color, 0.14);
+@define-color range_cursor_color alpha(@fg_color, 0.75);
+@define-color range_sel_color alpha(@timeline_bg_color, 0.7);
 @define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.8);
 
 /* Brushes */
@@ -244,10 +241,6 @@ Why that? Just because it's a developer choice and most classes use underscore i
 }
 
 /* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
-.plugin_ui,
-#modules-tabs,
-#left,
-#right,
 combobox,
 combobox *,
 togglebutton,
@@ -348,7 +341,6 @@ textview,
   border: 0.07em solid @button_border;
   border-radius: 0.21em;
   background-color: @button_bg;
-  color: @button_fg;
   font-weight: normal;
   font-family: sans-serif;
 }
@@ -386,7 +378,7 @@ header button,
 .dt_module_btn,
 .dt_ignore_fg_state:checked
 {
-  color: alpha(@button_fg, 0.55);
+  color: alpha(@fg_color, 0.55);
 }
 
 spinbutton > button
@@ -439,42 +431,10 @@ entry selection
   background-color: shade(@field_selected_bg, 1.1);
 }
 
-/* Filter bar bauhaus-combobox and search box defaults */
-#header-toolbar #bauhaus-combobox,
-.quick_filter_box#range-select
-{
-  background-color: alpha(@fg_color, 0.05);
-  border: 0.005em solid alpha(@fg_color, 0.025);
-}
-
-.quick_filter_box,
-#filter-sort-box label,
-#header-rule-box label,
-#header-sort-box label
-{
-  margin-right: 0.56em;
-}
-
-.search
-{
-  background-color: alpha(@fg_color, 0.12);
-}
-
-.search image:disabled
-{
-  color: shade(@fg_color, 0.75);
-}
-
 /* Checkbox */
 checkbutton check
 {
   margin: 0.28em 0.56em 0.28em 0;
-}
-
-checkbutton check:checked
-{
-  background-color: @field_selected_bg;
-  color: @field_selected_fg;
 }
 
 /* Separator */
@@ -503,7 +463,7 @@ separator
 {
   font-size: 1.5em;
   border-radius: 0.14em;
-  color: @button_checked_bg;
+  color: @field_selected_bg;
 }
 
 /*------------------------------
@@ -537,7 +497,8 @@ separator
 .section_expander #button-canvas,
 #background-job-eventbox #button-canvas,
 #basics-header-box #button-canvas,
-#collect-header-box #button-canvas,
+#module-filtering #button-canvas,
+#filter-colors-box #button-canvas
 #footer-toolbar #button-canvas,
 #header-toolbar #button-canvas,
 #lib-collect-entry + .dt_module_btn #button-canvas,
@@ -723,7 +684,7 @@ separator
 /* set background color and color of scope/histogram buttons */
 #main-histogram .dt_module_btn:not(.toggle)
 {
-  color: alpha(@button_checked_fg, 0.56);
+  color: alpha(@field_selected_fg, 0.56);
   background-color: alpha(darker(@button_bg),0.8);
   border: 0.07em solid alpha(@button_bg, 0.33);
 }
@@ -980,7 +941,6 @@ notebook tabs,
 #blending-tabs,
 #guides-line
 {
-  color: @button_fg;
   font-family: sans-serif;
 }
 
@@ -1022,20 +982,20 @@ notebook tabs,
 /* Set notebook tabs */
 notebook tab label
 {
-  color: shade(@button_checked_fg, 0.75);
+  color: shade(@field_selected_fg, 0.75);
   padding: 0.28em 0.07em;
 }
 
 notebook tab:hover label
 {
-  border-bottom: 0.1em solid shade(@button_checked_fg, 0.7);
-  color: shade(@button_checked_fg, 0.9);
+  border-bottom: 0.1em solid shade(@field_selected_fg, 0.7);
+  color: shade(@field_selected_fg, 0.9);
 }
 
 notebook tab:checked label
 {
-  border-bottom: 0.1em solid @button_checked_fg;
-  color: @button_checked_fg;
+  border-bottom: 0.1em solid @field_selected_fg;
+  color: @field_selected_fg;
 }
 
 notebook header /* add space between notebook tabs and options below */
@@ -1105,7 +1065,6 @@ treeview,
 filechooser widget treeview
 {
   background-color: @field_bg;
-  color: @field_fg;
 }
 
 treeview header label
@@ -1317,7 +1276,6 @@ filechooser .sidebar row:selected:hover .sidebar-label,
 #preferences-box .sidebar row:selected,
 #preferences-box .sidebar row:selected:hover label
 {
-  color: @fg_color;
   background-color: @plugin_bg_color;
 }
 
@@ -1370,10 +1328,21 @@ filechooser row:hover .sidebar-icon
   min-height: 18em;
 }
 
-/*--------------------
-  - Collect module -
---------------------*/
-#module-filtering #collect-rule-widget
+/*--------------------------------------------------
+  - Collect module and quick filters on header bar -
+--------------------------------------------------*/
+/* set main settings and module part */
+#range-select #dt-range-band
+{
+  border: 0.07em solid alpha(@range_bg_color, 0.9);
+  border-radius: 0.21em;
+  min-height: 1.6em;    /* band height */
+  min-width: 9em;
+  margin: 0.1em 0;      /* be sure it's set same margin as bauhaus-combobox to have same height in quick filters box with sortby combobox */
+  padding: 0.07em;
+}
+
+#module-filtering #collect-rule-widget   /* set filter widget box */
 {
   background-color: @collapsible_bg_color;
   margin: 0.3em 0 0.5em 0;
@@ -1381,45 +1350,51 @@ filechooser row:hover .sidebar-icon
   border-radius: 0.21em;
 }
 
-#range-select #dt-range-band
+#module-filtering #filter-sort-box
 {
-  min-height: 1.7em;                /* band height */
+  padding: 0.28em 0;
 }
 
-#module-filtering #range-select #dt-range-band
+/* set spacing around date bottom popup when right-clicking dates widgets */
+#dt-range-date-popup box:last-child
+{
+  margin-top: 0.35em;
+}
+
+#dt-range-date-popup treeview,
+#dt-range-date-popup box:last-child button
+{
+  margin-left: 0.35em;
+}
+
+#dt-range-date-popup .text-button,
+#dt-range-date-popup entry,
+#dt-range-date-popup treeview
+{
+  background-color: alpha(@bauhaus_fg, 0.14);
+  border-color: alpha(@bauhaus_fg, 0.09);;
+}
+
+/* set range parts and quick filter box in header toolbar */
+#range-select #dt-range-band,
+#header-toolbar #bauhaus-combobox,
+.search
 {
   background-color: @range_bg_color;
-  border: 0.07em solid alpha(@range_bg_color, 0.8);
-  border-radius: 0.21em;
 }
 
-#module-filtering #dt-range-current
+.search image:disabled
 {
-  margin: 0 0.2em;
+  color: shade(@fg_color, 0.75);
 }
 
-#module-filtering #dt-range-current label
+/* and adjust label and color buttons, especially in header bar */
+.quick_filter_box,
+#filter-sort-box label,
+#header-rule-box label,
+#header-sort-box label
 {
-  color: @timeline_bg_color;
-  background-color: @timeline_fg_color;
-  padding: 0 0.2em;
-}
-
-#module-filtering #dt-range-date-last-line
-{
-  margin-top: 0.8em;
-}
-
-/* then related filters on quick filters box in header toolbar */
-.quick_filter_box #dt-range-band
-{
-  min-width: 9.5em;
-}
-
-#filter-colors-box #button-canvas,
-#collect-sort-widget #button-canvas
-{
-  margin: 16px;
+  margin-right: 0.56em;
 }
 
 #filter-colors-box .dt_module_btn
@@ -1428,7 +1403,7 @@ filechooser row:hover .sidebar-icon
   margin: 0;
 }
 
-#range-current
+#range_current
 {
   padding: 0.2em;
 }
@@ -1436,7 +1411,6 @@ filechooser row:hover .sidebar-icon
 /*------------
   - Map view -
   ------------*/
-
 /* Set how to display result list on find location module */
 #dt-map-location > *
 {
@@ -1624,26 +1598,31 @@ cell:selected
 /*** All states options are designed below, active, hover, selected, disabled and check states ***/
 
 /* Main states */
+.dt_history_items:active,
+.dt_history_items:checked,
 button:active,
 button:checked,
 button:selected,
-menuitem:active,
-menuitem:selected,
+checkbutton check:checked,
 combobox window *:active,
 combobox window *:selected,
-.dt_history_items:active,
-.dt_history_items:checked,
-messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
+entry:checked,
+filechooser *:selected,
+menuitem:active,
+menuitem:selected,
+messagedialog .default,  /* this show that a button in confirmation action pop-up has the focus (no by default) */
+treeview *:selected:not(check),
+treeview *:checked:not(check)
 {
-  background-color: @button_checked_bg;
-  color: @button_checked_fg;
+  background-color: @field_selected_bg;
+  color: @field_selected_fg;
 }
 
 /* History currently selected button */
 .dt_history_items:active *,
 .dt_history_items:checked *
 {
-  color: @button_checked_fg;
+  color: @field_selected_fg;
 }
 
 /* Hover states, some needed background only */
@@ -1657,6 +1636,7 @@ notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #collapsible spinbutton button:hover,
+#dt-range-date-popup .text-button:hover,
 #main-histogram .dt_module_btn:hover:not(.toggle),
 #non-flat:hover,
 #preferences-box .sidebar :hover,
@@ -1712,14 +1692,6 @@ filechooser *:active
 {
   background-color: @field_active_bg;
   color: @field_active_fg;
-}
-
-treeview *:selected:not(check),
-treeview *:checked:not(check),
-filechooser *:selected
-{
-  background-color: @field_selected_bg;
-  color: @field_selected_fg;
 }
 
 treeview check:selected
@@ -1778,7 +1750,7 @@ treeview#delete-dialog:selected
 #view-label:selected,
 #view-label:hover
 {
-  color: @button_fg;
+  color: @fg_color;
 }
 
 #view-label:disabled
@@ -1825,12 +1797,6 @@ entry:active
 {
   color: @field_active_fg;
   background-color: @field_active_bg;
-}
-
-entry:checked
-{
-  color: @field_selected_fg;
-  background-color: @field_selected_bg;
 }
 
 .iop_drag_icon

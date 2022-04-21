@@ -870,6 +870,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   range->date_popup = pop;
   pop->popup = gtk_popover_new(range->band);
   GtkWidget *vbox0 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(vbox0, "dt-range-date-popup");
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(hbox), TRUE);
   gtk_box_pack_start(GTK_BOX(vbox0), hbox, FALSE, TRUE, 0);
@@ -986,7 +987,6 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 
   // the select line
   hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(hbox2, "dt-range-date-last-line");
   gtk_box_pack_start(GTK_BOX(vbox0), hbox2, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new("current date : "), FALSE, TRUE, 0);
   pop->selection = gtk_entry_new();
@@ -1030,7 +1030,6 @@ static void _popup_item_activate(GtkWidget *w, gpointer user_data)
 static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWidget *w)
 {
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(pop), "range-popup");
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
 
   // we first show all the predefined items
