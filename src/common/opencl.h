@@ -61,6 +61,7 @@
 #define DT_OPENCL_DEFAULT_COMPILE_AMD ("-cl-fast-relaxed-math")
 #define DT_OPENCL_DEFAULT_COMPILE_NVIDIA ("-cl-fast-relaxed-math")
 #define DT_OPENCL_DEFAULT_COMPILE ("-cl-fast-relaxed-math")
+#define DT_CLDEVICE_HEAD ("cldevice_v4_")
 
 typedef enum dt_opencl_memory_t
 {
