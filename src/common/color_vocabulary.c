@@ -298,7 +298,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
   else if(step_h == 9)
   {
     // 216° - medium blue
-    if(step_L == 0) return _("marine blue");
+    if(step_L == 0) return _("navy blue");
     if(step_L == 1) return _("teal");
     if(step_L == 2) return _("dark cyan");
     if(step_L == 3) return _("deep sky blue");
