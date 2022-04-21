@@ -616,6 +616,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_show(header_box);
     gtk_widget_set_name(header_box, "basics-header-box");
+    dt_gui_add_class(header_box, "dt_big_btn_canvas");
     gtk_box_pack_start(GTK_BOX(d->vbox_basic), header_box, FALSE, FALSE, 0);
 
     // we create the module box structure
@@ -2805,6 +2806,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(self->widget, "modules-tabs");
+  dt_gui_add_class(self->widget, "dt_big_btn_canvas");
 
   d->hbox_buttons = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->hbox_search_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2845,7 +2847,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), d->text_entry, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, _("clear text"));
-  gtk_widget_set_name(GTK_WIDGET(d->hbox_search_box), "search-box");
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_buttons, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);

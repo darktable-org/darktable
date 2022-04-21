@@ -79,7 +79,7 @@
 @define-color thumbnail_hover_fg_color @grey_95;
 @define-color thumbnail_localcopy_color @grey_80;
 
-@define-color range_bg_color alpha(@fg_color, 0.12);
+@define-color range_bg_color alpha(@fg_color, 0.1);
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_25;
