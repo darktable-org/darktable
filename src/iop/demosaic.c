@@ -2995,7 +2995,7 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
       }
     }
   }
-  fprintf(stderr,"pout: %lu\n", pout+4);
+  //fprintf(stderr,"pout: %lu\n", pout+4);
 }
 
 

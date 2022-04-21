@@ -275,7 +275,7 @@ static void convert_uint_float(const uint16_t *const in, float *const out, const
     dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out)          \
     schedule(static) collapse(2)
 #endif
-  for(int j = 0; j < roi_out->height-100; j++)
+  for(int j = 0; j < roi_out->height; j++)
   {
     for(int i = 0; i < roi_out->width; i++)
     {
@@ -287,7 +287,7 @@ static void convert_uint_float(const uint16_t *const in, float *const out, const
     }
   }
 
-  for(int j = roi_out->height-100; j < roi_out->height; j++)
+  /*for(int j = roi_out->height-100; j < roi_out->height; j++)
   {
     for(int i = 0; i < roi_out->width; i++)
     {
@@ -297,7 +297,7 @@ static void convert_uint_float(const uint16_t *const in, float *const out, const
 
       out[pout] = 0.0f;
     }
-  }
+  }*/
 }
 
 static void convert_float_float(const float *const in, float *const out, const dt_iop_roi_t *const roi_in,
@@ -355,13 +355,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
-  fprintf(stderr,"rawprepare %s\n", dt_pixelpipe_name(piece->pipe->type));
-  fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
-  fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  //fprintf(stderr,"rawprepare %s\n", dt_pixelpipe_name(piece->pipe->type));
+  //fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  //fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
   /*fprintf(stderr,"frame size in:  %d\n", roi_in->width * roi_in->height);
   fprintf(stderr,"frame size iout: %d\n", roi_out->width * roi_out->height);*/
-  fprintf(stderr,"i: %p\n",ivoid);
-  fprintf(stderr,"o: %p\n",ovoid);
+  //fprintf(stderr,"i: %p\n",ivoid);
+  //fprintf(stderr,"o: %p\n",ovoid);
 
   const int csx = compute_proper_crop(piece, roi_in, d->x);
   const int csy = compute_proper_crop(piece, roi_in, d->y);
@@ -378,11 +378,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const uint16_t *const frame_in = in + (f * roi_in->width * roi_in->height);
       float *const frame_out = out + (f * roi_out->width * roi_out->height);
       convert_uint_float(frame_in, frame_out, roi_in, roi_out, csx, csy, d);
-      fprintf(stderr, "frame %lu: %p\n", f, frame_in);
-      /*for(size_t i=0;i<roi_out->width * roi_out->height;++i)
-      {
-        frame_out[i] = (float)f / (float)piece->dsc_out.frames;
-      }*/
+      //fprintf(stderr, "frame %lu: %p\n", f, frame_in);
     }
 
     piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);

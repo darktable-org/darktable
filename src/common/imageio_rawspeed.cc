@@ -512,6 +512,19 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
      */
     if(isMultiFrame)
     {
+      /*for(size_t f = 0; f < r.size(); ++f)
+      {
+        char *ptr = (char *)r.get(f)->getDataUncropped(0, 0);
+        int value = (((float)f+1) / ((float)(r.size()+2))) * img->raw_white_point;
+        for(int j = 0; j < dimUncropped.y; ++j)
+        {
+          uint16_t * start = (uint16_t*)(ptr + (j * r.get(f)->pitch));
+          for(int i=0;i<dimUncropped.x;++i)
+          {
+            start[i] = value;
+          }
+        }
+      }*/
       const size_t bufSize_mipmap = (size_t)img->width * img->height * img->buf_dsc.frames * r.get(0)->getBpp();
       const size_t bufSize_rawspeed = (size_t)r.get(0)->pitch * dimUncropped.y * r.size();
       const size_t frame_size = bufSize_mipmap / r.size();
