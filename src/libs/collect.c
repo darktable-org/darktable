@@ -3119,12 +3119,11 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
-    gtk_widget_set_name(GTK_WIDGET(w), "lib-collect-entry");
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 5);
 
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
-
+    dt_gui_add_class(GTK_WIDGET(w), "dt_big_btn_canvas");
     d->rule[i].button = w;
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);

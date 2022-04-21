@@ -89,6 +89,8 @@ Why that? Just because it's a developer choice and most classes use underscore i
       - set for all icons (button widget without text on it)
       - ex : btn in module header
       - for toggle button this is combined with a "standard" "toggle" class
+  - dt_big_btn_canvas:
+      - use it for some buttons that need to have bigger margin on button-canvas
   - dt_dimmed:
       - set all icons that need to be dimmed by default (typed text in search box when checking results and color labels icons)
   - section_expander:
@@ -188,10 +190,10 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color timeline_text_bg_color alpha(black, .8);
 @define-color timeline_text_fg_color alpha(white, .9);
 
-@define-color range_graph_color alpha(@timeline_fg_color, 0.65);
-@define-color range_bg_color alpha(@fg_color, 0.14);
+@define-color range_graph_color alpha(@timeline_fg_color, 0.75);
+@define-color range_bg_color alpha(@fg_color, 0.12);
 @define-color range_cursor_color alpha(@fg_color, 0.75);
-@define-color range_sel_color alpha(@timeline_bg_color, 0.7);
+@define-color range_sel_color alpha(@timeline_bg_color, 0.6);
 @define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.8);
 
 /* Brushes */
@@ -301,6 +303,7 @@ box *
 /* Set no background and no border. And avoid undershoot and overshoot having too much empty space at top/bottom of sidepanels when scrolled */
 .accels_window_box treeview,
 .combo,
+.combo:disabled,
 .dt_module_btn,
 .dt_module_btn:disabled,
 .dt_transparent_background,
@@ -389,7 +392,6 @@ spinbutton > button
 /* set disabled options of above settings */
 button:disabled,
 spinbutton *:disabled,
-#collapsible .combo:disabled,
 #collapsible spinbutton button:disabled,
 #non-flat:disabled
 {
@@ -493,17 +495,10 @@ separator
   margin-right: 1em;
 }
 
-/* Set default button spacing  in toolbars and modules */
+/* Set default button spacing  for specific buttons */
 .section_expander #button-canvas,
-#background-job-eventbox #button-canvas,
-#basics-header-box #button-canvas,
-#module-filtering #button-canvas,
-#filter-colors-box #button-canvas
-#footer-toolbar #button-canvas,
-#header-toolbar #button-canvas,
-#lib-collect-entry + .dt_module_btn #button-canvas,
-#module-header #button-canvas,
-#modules-tabs #button-canvas
+.dt_big_btn_canvas #button-canvas,
+#module-header #button-canvas
 {
   margin: 12px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
@@ -522,7 +517,7 @@ separator
 #blending-box,
 #guides-module-combobox
 {
-  padding: 0.14em 0.7em;
+  padding: 0.28em 0.65em;
 }
 
 /* Frame around blending boxes */
@@ -598,7 +593,7 @@ separator
 /* Special modules: image infos, navigation and search ones */
 #image-info /* in darkroom footerbar */
 {
-  font-size: 1.05em;
+  font-size: 1.1em;
 }
 
 #navigation-module
@@ -606,32 +601,17 @@ separator
   background-color: @graph_bg;
 }
 
-#search-box
-{
-  margin: 0.25em 0.5em;
-}
-
-#search-box label
-{
-  margin-right: 0.5em;
-}
-
-.search image.left
-{
-  padding: 0 0.35em 0 0.21em;
-}
-
 /* Collapsible sections on lib & iop modules */
 #collapse-block
 {
-  margin: 0.14em 0;
+  margin-top: 0.21em;
 }
 
 #collapsible
 {
-  padding: 0.14em 0.28em 0.28em 0.42em;
   border: 0.07em solid shade(@collapsible_bg_color, 1.05);
-  border-top: 0;
+  border-top: none;
+  padding: 0.28em;
 }
 
 #collapsible,
@@ -640,19 +620,8 @@ separator
   background-color: shade(@collapsible_bg_color, 1.04);
 }
 
-#import-metadata #collapsible
-{
-  background-color: @collapsible_bg_color;
-}
-
-/* for the import parameters to be more aligned with the imports buttons */
-.plugin_ui #collapse-block
-{
-  margin: 0.42em 0.07em;
-}
-
-#collapse-block .section_expander,
-#collapsible-label
+.section_expander,
+.section_expander label
 {
   background-color: shade(@collapsible_bg_color, 0.96);
   border: none;
@@ -789,11 +758,6 @@ dialog headerbar entry
 }
 
 /* Set specific content */
-#import-metadata grid label
-{
-  margin: 0.2em 0;
-}
-
 #import-presets,
 #modulegroups-ro
 {
@@ -1383,11 +1347,6 @@ filechooser row:hover .sidebar-icon
   background-color: @range_bg_color;
 }
 
-.search image:disabled
-{
-  color: shade(@fg_color, 0.75);
-}
-
 /* and adjust label and color buttons, especially in header bar */
 .quick_filter_box,
 #filter-sort-box label,
@@ -1446,6 +1405,26 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
   - Other stuff -
   ---------------*/
 /*** Some tags below inherit from properties above ; so avoid moving that part ***/
+/* search boxes (background color is set on collect module part above ; to be the same as other filters in quick filter bar) */
+#right .search
+{
+  margin: 0.14em 0.28em;
+}
+
+.search label
+{
+  margin-right: 0.5em;
+}
+
+.search image.left
+{
+  padding: 0 0.21em;
+}
+
+.search image:disabled
+{
+  color: shade(@fg_color, 0.75);
+}
 
 /* Progress bar on bottom left side when exporting, importing, etc... */
 #background-job-eventbox /* background of export progress bar */

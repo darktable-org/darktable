@@ -849,9 +849,6 @@ static void _expander_create(dt_gui_collapsible_section_t *cs,
      pref_key,
      label,
      parent);
-
-  GtkWidget *expander_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(cs->expander));
-  gtk_widget_set_name(expander_frame, "import-metadata");
 }
 
 static void _resize_dialog(GtkWidget *widget, dt_lib_module_t* self)
