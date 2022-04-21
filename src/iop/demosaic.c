@@ -2975,22 +2975,17 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
   const size_t col_offset = 1;
   const size_t row_offset = roi_out->width;
 
-  size_t pout = 0;
-  //size_t pin = 0;
-  size_t pin3 = 0;
   for(size_t j = 1; j < roi_out->height-1; j++)
   {
     for(size_t i = 1; i < roi_out->width-1; i++)
     {
-      pout = (size_t)4 * (((size_t)roi_out->width * j) + i);
-      //pin = (roi_in->width * (j + oy)) + ox + i;
-      ///TODO why do i ignore offset of input roi?
-      pin3 = (roi_in->width * j) + i;
+      size_t pout = (size_t)4 * (((size_t)roi_out->width * j) + i);
+      size_t pin = (roi_in->width * j) + i;
 
       {
-        out[pout+0] = frames_in[0][pin3];
-        out[pout+1] = (frames_in[1][pin3-col_offset] + frames_in[2][pin3-col_offset-row_offset])/2.0f;
-        out[pout+2] = frames_in[3][pin3-row_offset];
+        out[pout+0] = frames_in[0][pin];
+        out[pout+1] = (frames_in[1][pin-col_offset] + frames_in[2][pin-col_offset-row_offset])/2.0f;
+        out[pout+2] = frames_in[3][pin-row_offset];
       }
 
       /*for(size_t c=0;c<3;++c)
