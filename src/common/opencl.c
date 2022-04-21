@@ -1161,7 +1161,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
             cl->dev[i].maxeventslot);
           if(cl->dev[i].maxeventslot >= 1024)
             dt_print(DT_DEBUG_OPENCL, "Your OpenCl device '%s' had used up to %d events while processing. This might be safe\n"
-                            "  on myny devices but there is currently no correct check implemented. Take care!\n",
+                            "  on many devices but there is currently no correct check implemented. Take care!\n",
                              cl->dev[i].name, cl->dev[i].maxeventslot); 
         }
         else
