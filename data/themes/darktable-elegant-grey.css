@@ -27,7 +27,6 @@
 @define-color border_color @grey_40; /* border, when used */
 @define-color bg_color @grey_45; /* general background */
 @define-color fg_color @grey_95; /* general text */
-@define-color base_color @fg_color; /* legacy stuff */
 @define-color text_color @grey_35; /* same */
 @define-color disabled_fg_color @grey_65; /* disabled controls */
 
@@ -53,17 +52,15 @@
 
 /* GTK Buttons and tabs */
 @define-color button_bg @grey_55;
-@define-color button_checked_bg @grey_65;
-@define-color button_checked_fg @grey_100;
 @define-color button_hover_bg @grey_70;
 @define-color button_hover_fg @grey_30;
 
 /* text fields */
 @define-color field_bg @grey_45;
-@define-color field_fg @grey_95;
 @define-color field_active_bg @grey_55;
 @define-color field_active_fg @grey_95;
 @define-color field_selected_bg @grey_65;
+@define-color field_selected_fg @grey_100;
 @define-color field_hover_bg @grey_75;
 @define-color field_hover_fg @grey_35;
 
@@ -85,6 +82,8 @@
 @define-color thumbnail_hover_bg_color @grey_95;
 @define-color thumbnail_hover_fg_color @grey_100;
 @define-color thumbnail_localcopy_color @grey_90;
+
+@define-color range_bg_color alpha(@fg_color, 0.06);
 
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_40;
