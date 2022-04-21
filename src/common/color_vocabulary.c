@@ -264,7 +264,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
     // 120° - green
     if(step_L == 0) return _("dark green");
     if(step_L == 1) return _("forest green");
-    if(step_L == 2) return _("olivedrab");
+    if(step_L == 2) return _("olive drab");
     if(step_L == 3) return _("yellow green");
     if(step_L == 4) return _("pale green");
   }
