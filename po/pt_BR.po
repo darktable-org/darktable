@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-19 14:33-0300\n"
-"PO-Revision-Date: 2022-04-19 14:34-0300\n"
+"POT-Creation-Date: 2022-04-21 23:11-0300\n"
+"PO-Revision-Date: 2022-04-21 23:14-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -4983,7 +4983,7 @@ msgstr "tempo da última impressão"
 
 #: ../src/common/collection.c:620 ../src/common/collection.c:698
 #: ../src/common/ratings.c:321 ../src/develop/lightroom.c:1525
-#: ../src/libs/tools/ratings.c:110
+#: ../src/libs/tools/ratings.c:111
 msgid "rating"
 msgstr "classificação"
 
@@ -5402,11 +5402,9 @@ msgstr ""
 
 #: ../src/common/darktable.c:1740
 msgid ""
-"instead you will find 'per device' data in 'cldevice_v2_canonical-name'. "
+"instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
-msgstr ""
-"ao invés disso você encontrará dados 'por dispositivo' em "
-"'cldevice_v2_canonical-name'. o conteúdo é:"
+msgstr "ao invés disso você encontrará dados 'por dispositivo' em 'cl_device_v4_canonical-name'. o conteúdo é:"
 
 #: ../src/common/darktable.c:1742
 msgid ""
@@ -5976,25 +5974,25 @@ msgstr "distribuição de Poisson genérica"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "perfil de controle de ruído `%s' não é válido"
 
-#: ../src/common/opencl.c:998
+#: ../src/common/opencl.c:1054
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr "devido a baixa aceleração de hardware da GPU o opencl foi desativado."
 
-#: ../src/common/opencl.c:1005
+#: ../src/common/opencl.c:1061
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "detectadas múltiplas GPUs - o perfil de escalonamento foi ajustado de acordo."
 
-#: ../src/common/opencl.c:1012
+#: ../src/common/opencl.c:1068
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU muito rápida detectada - o perfil de escalonamento foi ajustado de "
 "acordo."
 
-#: ../src/common/opencl.c:1019
+#: ../src/common/opencl.c:1075
 msgid "opencl scheduling profile set to default"
 msgstr "perfil de escalonamento OpenCL ajustado para padrão."
 
@@ -8379,7 +8377,7 @@ msgstr ""
 "clique direito para selecionar do calendário ou de valores existentes"
 
 #: ../src/dtgtk/range.c:424
-msgid "date-time interval to substract from the max value"
+msgid "date-time interval to subtract from the max value"
 msgstr "intervalo de data-hora para subtrair do valor máximo"
 
 #: ../src/dtgtk/range.c:428
@@ -22638,6 +22636,11 @@ msgstr "sair da disposição atual"
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
 msgstr "módulo ferramentas"
+
+#. connect callbacks
+#: ../src/libs/tools/ratings.c:98
+msgid "set star rating for selected images"
+msgstr "escrever classificação em estrelas para imagens selecionadas"
 
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
