@@ -1968,13 +1968,13 @@ static void _brush_size_up_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
 }
 static void _brush_size_down_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
 }
 
 static void _brush_hardness_up_callback(dt_action_t *action)
