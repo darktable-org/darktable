@@ -1650,7 +1650,7 @@ static void _view_map_drag_set_icon(const dt_view_t *self, GdkDragContext *conte
   if(thumb)
   {
     GtkWidget *image = gtk_image_new_from_pixbuf(thumb);
-    gtk_widget_set_name((image), "map-drag-icon");
+    dt_gui_add_class(image, "dt_transparent_background");
     gtk_widget_show(image);
     gtk_drag_set_icon_widget(context, image, lib->start_drag_offset_x,
                              DT_PIXEL_APPLY_DPI(height + image_pin_size + 2 * thumb_border) + lib->start_drag_offset_y);

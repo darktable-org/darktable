@@ -41,7 +41,6 @@
 @define-color collapsible_bg_color @grey_55;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_fg shade(@fg_color, 0.95);
 @define-color bauhaus_indicator_border @grey_50;
 @define-color bauhaus_fill @grey_70;
 @define-color bauhaus_bg_hover @grey_80;
@@ -109,6 +108,12 @@ combobox window *:hover,
 #header-toolbar #bauhaus-combobox:hover
 {
   color: shade(@fg_color, 0.94);
+}
+
+/* set default text, items that can be selected : items inside categories titles set above */
+.dt_bauhaus_popup
+{
+  color: shade(@fg_color, 0.75);
 }
 
 /* Set background on thumbnails hover overlays */

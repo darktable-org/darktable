@@ -1219,8 +1219,6 @@ void dt_gui_favorite_presets_menu_show()
                                 );
   // clang-format on
 
-  gtk_widget_set_name(GTK_WIDGET(menu), "quick-presets-menu");
-
   gboolean retrieve_list = FALSE;
   gchar *config = NULL;
 
