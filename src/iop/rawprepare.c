@@ -104,9 +104,10 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RAW;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor.\n\ntouch with great care!"),
+  return dt_iop_set_description(self, _("sets technical specificities of the raw sensor.\n"
+                                        "touch with great care!"),
                                       _("mandatory"),
                                       _("linear, raw, scene-referred"),
                                       _("linear, raw"),
@@ -689,4 +690,3 @@ void gui_init(dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

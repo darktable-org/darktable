@@ -934,7 +934,7 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, const float aspect_ratio,
     /* store but don't save xmp*/
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
 
-    if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+    if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                                  DT_COLLECTION_PROP_ASPECT_RATIO, g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
   }
@@ -958,7 +958,7 @@ void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float asp
     else
       dt_image_cache_read_release(darktable.image_cache, image);
 
-    if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+    if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                                  DT_COLLECTION_PROP_ASPECT_RATIO, g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
   }
@@ -975,7 +975,7 @@ void dt_image_reset_aspect_ratio(const int32_t imgid, const gboolean raise)
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 
-  if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+  if(raise && darktable.collection->params.sorts[DT_COLLECTION_SORT_ASPECT_RATIO])
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_ASPECT_RATIO,
                                g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
 }
@@ -2815,7 +2815,7 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img)
   if(img->camera_missing_sample)
   {
     char *msg = dt_image_camera_missing_sample_message(img, TRUE);
-    dt_control_log (msg, NULL);
+    dt_control_log(msg, (char *)NULL);
     g_free(msg);
   }
 }

@@ -193,7 +193,7 @@ const char *name()
   return C_("modulename", "white balance");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("scale raw RGB channels to balance white and help demosaicing"),
                                       _("corrective"),
@@ -1917,7 +1917,8 @@ void gui_init(struct dt_iop_module_t *self)
   // actual kind of data we are using in the GUI (it is part of the pipeline).
   g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, NULL, IOP_CS_NONE);
   dt_action_define_iop(self, N_("settings"), N_("from image area"), g->colorpicker, &dt_action_def_toggle);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, 0, NULL);
+  dt_gui_add_class(g->colorpicker, "dt_transparent_background");
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
 
   g->btn_user = dt_iop_togglebutton_new(self, N_("settings"), N_("user modified"), NULL,
@@ -1932,6 +1933,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->btn_d65, _("set white balance to camera reference point\nin most cases it should be D65"));
 
   g->buttonbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0); // put buttons at top. fill later.
+  dt_gui_add_class(g->buttonbar, "dt_iop_toggle");
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_d65, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->btn_user, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(g->buttonbar), g->colorpicker, TRUE, TRUE, 0);
@@ -1959,8 +1961,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *temp_label_box = gtk_event_box_new();
   g->temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
   gtk_widget_set_tooltip_text(g->temp_label, _("click to cycle color mode on sliders"));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(g->temp_label));
-  gtk_style_context_add_class(context, "section_label_top");
+  dt_gui_add_class(GTK_WIDGET(g->temp_label), "section_label_top");
   gtk_container_add(GTK_CONTAINER(temp_label_box), g->temp_label);
 
   g_signal_connect(G_OBJECT(temp_label_box), "button-release-event", G_CALLBACK(temp_label_click), self);

@@ -132,14 +132,16 @@ const char *aliases()
   return _("diffusion|deconvolution|blur|sharpening");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self,
                                 _("simulate directional diffusion of light with heat transfer model\n"
-                                  "to apply an iterative edge-oriented blur, \n"
-                                  "inpaint damaged parts of the image,\n"
+                                  "to apply an iterative edge-oriented blur,\n"
+                                  "inpaint damaged parts of the image,"
                                   "or to remove blur with blind deconvolution."),
-                                _("corrective and creative"), _("linear, RGB, scene-referred"), _("linear, RGB"),
+                                _("corrective and creative"),
+                                _("linear, RGB, scene-referred"),
+                                _("linear, RGB"),
                                 _("linear, RGB, scene-referred"));
 }
 
@@ -477,44 +479,6 @@ void init_presets(dt_iop_module_so_t *self)
   p.iterations = 1;
   dt_gui_presets_add_generic(_("fast local contrast"), self->op, self->version(), &p, sizeof(p), 1,
                              DEVELOP_BLEND_CS_RGB_SCENE);
-}
-
-// The B spline best approximate a Gaussian of standard deviation :
-// see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/
-#define B_SPLINE_SIGMA 1.0553651328015339f
-
-static inline float normalize_laplacian(const float sigma)
-{
-  // Normalize the wavelet scale to approximate a laplacian
-  // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Scaling-coefficient
-  return 2.f * M_PI_F / (sqrtf(M_PI_F) * sqf(sigma));
-}
-
-static inline float equivalent_sigma_at_step(const float sigma, const unsigned int s)
-{
-  // If we stack several gaussian blurs of standard deviation sigma on top of each other,
-  // this is the equivalent standard deviation we get at the end (after s steps)
-  // First step is s = 0
-  // see
-  // https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Multi-scale-iterative-scheme
-  if(s == 0)
-    return sigma;
-  else
-    return sqrtf(sqf(equivalent_sigma_at_step(sigma, s - 1)) + sqf(exp2f((float)s) * sigma));
-}
-
-static inline unsigned int num_steps_to_reach_equivalent_sigma(const float sigma_filter, const float sigma_final)
-{
-  // The inverse of the above : compute the number of scales needed to reach the desired equivalent sigma_final
-  // after sequential blurs of constant sigma_filter
-  unsigned int s = 0;
-  float radius = sigma_filter;
-  while(radius < sigma_final)
-  {
-    ++s;
-    radius = sqrtf(sqf(radius) + sqf((float)(1 << s) * sigma_filter));
-  }
-  return s + 1;
 }
 
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -1615,4 +1579,3 @@ void gui_init(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
