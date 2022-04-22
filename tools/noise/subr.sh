@@ -446,7 +446,7 @@ export_large_jpeg() {
 	input=$1
 	output=$2
 	xmp="$input.xmp"
-        xmp_profiling="$scriptdir/profiling-shot.xmp"
+	xmp_profiling="$scriptdir/profiling-shot.xmp"
 	
 	tool_installed darktable-cli
 
