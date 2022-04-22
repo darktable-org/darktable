@@ -1332,7 +1332,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             }
 
 #ifdef DEBUG_PIXELPIPE
-            save_debug_bitmap(pipe,"load",*output,roi_out);
+            //save_debug_bitmap(pipe,"load",*output,roi_out);
 #endif
           }
         }

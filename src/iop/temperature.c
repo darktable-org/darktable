@@ -221,6 +221,14 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RAW;
 }
 
+void output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
+                   dt_iop_buffer_dsc_t *dsc)
+{
+  default_output_format(self, pipe, piece, dsc);
+  ///TODO is this correct?
+  dsc->frames = pipe->dsc.frames;
+}
+
 /*
  * Spectral power distribution functions
  * https://en.wikipedia.org/wiki/Spectral_power_distribution
@@ -466,6 +474,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const out = (float *const)ovoid;
   const float *const d_coeffs = d->coeffs;
 
+  fprintf(stderr, "temperature, %s\n", dt_pixelpipe_name(piece->pipe->type));
+
   if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
@@ -503,39 +513,55 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else if(filters)
   { // bayer float mosaiced
-    const int width = roi_out->width;
+    for(int f=0;f<piece->dsc_in.frames;++f)
+    {
+      float const *const frame_in = in + (f * roi_in->width * roi_in->height);
+      float *const frame_out = out + (f * roi_out->width * roi_out->height);
+      fprintf(stderr,"frame in  %p\n", frame_in);
+      fprintf(stderr,"frame out %p\n", frame_out);
+      const int width = roi_out->width;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(d_coeffs, filters, in, out, roi_out, width)       \
-    schedule(static)
+      dt_omp_firstprivate(d_coeffs, filters, frame_in, frame_out, roi_out, width)       \
+      schedule(static)
 #endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      int i = 0;
-      const int alignment = ((4 - (j * width & (4 - 1))) & (4 - 1));
-      const int offset_j = j + roi_out->y;
+      for(int j = 0; j < roi_out->height; j++)
+      {
+#if 0
+// this optimization does not work for multiframe
+        int i = 0;
+        const int alignment = ((4 - (j * width & (4 - 1))) & (4 - 1));
+        const int offset_j = j + roi_out->y;
 
-      // process the unaligned sensels at the start of the row (when width is not a multiple of 4)
-      for( ; i < alignment; i++)
-      {
-        const size_t p = (size_t)j * width + i;
-        out[p] = in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
-      }
-      const dt_aligned_pixel_t coeffs = { d_coeffs[FC(offset_j, i + roi_out->x, filters)],
-                                          d_coeffs[FC(offset_j, i + roi_out->x + 1,filters)],
-                                          d_coeffs[FC(offset_j, i + roi_out->x + 2, filters)],
-                                          d_coeffs[FC(offset_j, i + roi_out->x + 3, filters)] };
-      // process sensels four at a time
-      for(; i < (width & ~3); i += 4)
-      {
-        const size_t p = (size_t)j * width + i;
-        scaled_copy_4wide(out + p,in + p, coeffs);
-      }
-      // process the leftover sensels
-      for(i = width & ~3; i < width; i++)
-      {
-        const size_t p = (size_t)j * width + i;
-        out[p] = in[p] * d_coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
+        // process the unaligned sensels at the start of the row (when width is not a multiple of 4)
+        for( ; i < alignment; i++)
+        {
+          const size_t p = (size_t)j * width + i;
+          frame_out[p] = frame_in[p] * d_coeffs[FC(offset_j, i + roi_out->x, filters)];
+        }
+        const dt_aligned_pixel_t coeffs = { d_coeffs[FC(offset_j, i + roi_out->x, filters)],
+                                            d_coeffs[FC(offset_j, i + roi_out->x + 1,filters)],
+                                            d_coeffs[FC(offset_j, i + roi_out->x + 2, filters)],
+                                            d_coeffs[FC(offset_j, i + roi_out->x + 3, filters)] };
+        // process sensels four at a time
+        for(; i < (width & ~3); i += 4)
+        {
+          const size_t p = (size_t)j * width + i;
+          scaled_copy_4wide(frame_out + p,frame_in + p, coeffs);
+        }
+        // process the leftover sensels
+        for(i = width & ~3; i < width; i++)
+        {
+          const size_t p = (size_t)j * width + i;
+          frame_out[p] = frame_in[p] * d_coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
+        }
+#endif
+        for(int i = 0; i < roi_out->width; i++)
+        {
+          const size_t p = (size_t)j * width + i;
+          frame_out[p] = frame_in[p] * d_coeffs[FC(j + roi_out->y, i + roi_out->x, filters)];
+        }
+
       }
     }
   }
@@ -571,6 +597,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
+#if 0
 #if defined(__SSE__)
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -621,7 +648,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
 }
 #endif
+#endif
 
+#if 0
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -693,6 +722,7 @@ error:
   dt_print(DT_DEBUG_OPENCL, "[opencl_white_balance] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
+#endif
 #endif
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
