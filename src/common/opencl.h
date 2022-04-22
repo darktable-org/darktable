@@ -32,6 +32,7 @@
 #define DT_OPENCL_VENDOR_AMD 4098
 #define DT_OPENCL_VENDOR_NVIDIA 4318
 #define DT_OPENCL_VENDOR_INTEL 0x8086u
+#define DT_OPENCL_CBUFFSIZE 1024
 
 // some pseudo error codes in dt opencl usage
 #define DT_OPENCL_DEFAULT_ERROR -999
