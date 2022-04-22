@@ -376,11 +376,14 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl_bool device_available = 0;
   cl_uint vendor_id = 0;
   cl_bool little_endian = 0;
+  cl_platform_id platform_id = 0;
 
   char *dtcache = calloc(PATH_MAX, sizeof(char));
   char *cachedir = calloc(PATH_MAX, sizeof(char));
-  char *devname = calloc(1024, sizeof(char));
-  char *drvversion = calloc(1024, sizeof(char));
+  char *devname = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
+  char *drvversion = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
+  char *platform_name = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
+  char *platform_vendor = calloc(DT_OPENCL_CBUFFSIZE, sizeof(char));
 
   char kerneldir[PATH_MAX] = { 0 };
   char *filename = calloc(PATH_MAX, sizeof(char));
@@ -414,6 +417,35 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   _ascii_str_canonical(infostr, cname, cname_size);
   cl->dev[dev].name = strdup(infostr);
   cl->dev[dev].cname = strdup(cname);
+
+  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform_id, NULL);
+  if(err != CL_SUCCESS)
+  {
+    g_strlcpy(platform_vendor, "no platform id", DT_OPENCL_CBUFFSIZE);
+    g_strlcpy(platform_name, "no platform id", DT_OPENCL_CBUFFSIZE);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get platform id for device `%s' : %s\n", cl->dev[dev].name, cl_errstr(err));
+  }
+  else
+  {
+    err = (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform_id, CL_PLATFORM_NAME, DT_OPENCL_CBUFFSIZE, platform_name, NULL);
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get platform name for device `%s' : %s\n", cl->dev[dev].name, cl_errstr(err));
+      g_strlcpy(platform_name, "???", DT_OPENCL_CBUFFSIZE);
+    }
+    else
+      dt_vprint(DT_DEBUG_OPENCL, "[opencl_init] found platform name `%s' for device `%s'\n", platform_name, cl->dev[dev].name);
+
+    err = (cl->dlocl->symbols->dt_clGetPlatformInfo)(platform_id, CL_PLATFORM_VENDOR, DT_OPENCL_CBUFFSIZE, platform_vendor, NULL);
+    if(err != CL_SUCCESS)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not get platform vendor for device `%s' : %s\n", cl->dev[dev].name, cl_errstr(err));
+      g_strlcpy(platform_vendor, "???", DT_OPENCL_CBUFFSIZE);
+    }
+    else
+      dt_vprint(DT_DEBUG_OPENCL, "[opencl_init] found platform vendor `%s' for device `%s'\n", platform_vendor, cl->dev[dev].name);
+  }
+
   const gboolean newdevice = dt_opencl_read_device_config(dev);
   if(cl->dev[dev].disabled)
   {
@@ -583,6 +615,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
       ((type & CL_DEVICE_TYPE_GPU) == CL_DEVICE_TYPE_GPU) ? "GPU" : "",
       (type & CL_DEVICE_TYPE_ACCELERATOR)                 ? ", Accelerator" : "" );
     fprintf(stderr, "     DEFAULT DEVICE:           %s\n", (type & CL_DEVICE_TYPE_DEFAULT) ? "Yes" : "No");
+    fprintf(stderr, "     PLATFORM NAME & VENDOR:   %s, %s\n", platform_name, platform_vendor);
     fprintf(stderr, "     DRIVER VERSION:           %s\n", driverversion);
     fprintf(stderr, "     DEVICE VERSION:           %s%s\n", deviceversion, (is_blacklisted) ? ", blacklisted" : "");
   }
@@ -778,6 +811,8 @@ end:
   free(cachedir);
   free(devname);
   free(drvversion);
+  free(platform_name);
+  free(platform_vendor);
 
   free(filename);
   free(confentry);
