@@ -217,10 +217,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // this works for bayer and X-Trans sensors
   if(visualizing)
   {
-    float clips[4] = { d->clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[RED]),
-                       d->clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[GREEN]),
-                       d->clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[BLUE]),
-                       d->clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[GREEN]) };
+    const gboolean unset = piece->pipe->dsc.temperature.coeffs[0] <= 0.0f;
+    float clips[4] = { d->clip * (unset ? 1.0f : piece->pipe->dsc.temperature.coeffs[RED]),
+                       d->clip * (unset ? 1.0f : piece->pipe->dsc.temperature.coeffs[GREEN]),
+                       d->clip * (unset ? 1.0f : piece->pipe->dsc.temperature.coeffs[BLUE]),
+                       d->clip * (unset ? 1.0f : piece->pipe->dsc.temperature.coeffs[GREEN]) };
+
     cl_mem dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
     if(dev_clips == NULL) goto error;
 
@@ -1882,11 +1884,11 @@ static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const i
   const size_t width = roi_out->width;
   const size_t height = roi_out->height;
   const float clip = data->clip;
-  const float clips[4] = { clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[RED]),
-                           clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[GREEN]),
-                           clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[BLUE]),
-                           clip * fmaxf(1.0f, piece->pipe->dsc.temperature.coeffs[GREEN]) };
-
+  const gboolean unset = piece->pipe->dsc.temperature.coeffs[0] <= 0.0f;
+  const float clips[4] = { clip * (unset ? 1.0f : piece->pipe->dsc.temperature.coeffs[RED]),
+                           clip * (unset ? 1.0f : piece->pipe->dsc.temperature.coeffs[GREEN]),
+                           clip * (unset ? 1.0f : piece->pipe->dsc.temperature.coeffs[BLUE]),
+                           clip * (unset ? 1.0f : piece->pipe->dsc.temperature.coeffs[GREEN]) };
 
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
