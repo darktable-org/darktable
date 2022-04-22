@@ -723,7 +723,6 @@ void dt_bauhaus_init()
   darktable.bauhaus->keys_cnt = 0;
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
-  gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
   darktable.bauhaus->pango_font_desc = NULL;
 
   dt_bauhaus_load_theme();
@@ -2452,29 +2451,14 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
   // we update the popup padding defined in css
   if(!darktable.bauhaus->popup_padding) darktable.bauhaus->popup_padding = gtk_border_new();
   GtkStyleContext *context = gtk_widget_get_style_context(darktable.bauhaus->popup_area);
+  gtk_style_context_add_class(context, "dt_bauhaus_popup");
   // let's update the css class depending on the source widget type
   // this allow to set different padding for example
   if(w->show_quad)
     gtk_style_context_remove_class(context, "bauhaus-popup-no-quad");
   else
     gtk_style_context_add_class(context, "bauhaus-popup-no-quad");
-  switch(darktable.bauhaus->current->type)
-  {
-    case DT_BAUHAUS_SLIDER:
-    {
-      gtk_style_context_remove_class(context, "bauhaus-combo_popup");
-      gtk_style_context_add_class(context, "bauhaus-slider_popup");
-      break;
-    }
-    case DT_BAUHAUS_COMBOBOX:
-    {
-      gtk_style_context_remove_class(context, "bauhaus-slider_popup");
-      gtk_style_context_add_class(context, "bauhaus-combo_popup");
-      break;
-    }
-    default:
-      break;
-  }
+
   const GtkStateFlags state = gtk_widget_get_state_flags(darktable.bauhaus->popup_area);
   gtk_style_context_get_padding(context, state, darktable.bauhaus->popup_padding);
   // and now we extent the popup to take account of its own padding

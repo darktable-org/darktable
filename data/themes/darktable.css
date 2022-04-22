@@ -134,15 +134,14 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg shade(@bg_color, 1.06);
-@define-color bauhaus_fg @fg_color;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
 @define-color bauhaus_bg_hover @grey_60;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
-@define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.4);
-@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.4);
+@define-color bauhaus_fg_disabled alpha(@fg_color, 0.4);
+@define-color bauhaus_fg_insensitive alpha(@fg_color, 0.4);
 
 /* GTK Buttons and tabs */
 @define-color button_bg @grey_25;
@@ -310,6 +309,7 @@ box *
 .dt_transparent_background:checked,
 .dt_ignore_fg_state:checked,
 filechooser .sidebar-button,
+menuitem:hover arrow,
 popover #bauhaus-combobox,
 overshoot,
 undershoot,
@@ -348,7 +348,7 @@ textview,
   font-family: sans-serif;
 }
 
-/* then set specific background color for all text zones and combo */
+/* then set specific settings for all text zones and combo */
 .combo,
 entry,
 spinbutton button,
@@ -357,8 +357,6 @@ textview
   background-color: alpha(@fg_color, 0.09);
 }
 
-/* Set same settings on all those items */
-.combo,
 .combo *
 {
   min-height: 1em;
@@ -590,17 +588,6 @@ separator
   margin: 0.25em 0;
 }
 
-/* Special modules: image infos, navigation and search ones */
-#image-info /* in darkroom footerbar */
-{
-  font-size: 1.1em;
-}
-
-#navigation-module
-{
-  background-color: @graph_bg;
-}
-
 /* Collapsible sections on lib & iop modules */
 #collapse-block
 {
@@ -775,95 +762,68 @@ dialog headerbar entry
   padding: 0.14em;
 }
 
-/*--------------------------------------------------------
-  - Bauhaus controls (sliders and comboboxes in modules) -
-  --------------------------------------------------------*/
-#bauhaus-popup
-{
-  color: @bauhaus_fg;
-}
-
-#bauhaus-popup:selected
-{
-  color: @bauhaus_fg_selected;
-}
-
-popover #bauhaus-slider
-{
-  background-color: @tooltip_bg_color;
-}
-
-#bauhaus-slider
-{
-  background-color: @plugin_bg_color;
-}
-
-#bauhaus-combobox,
-#bauhaus-slider
-{
-  margin: 0.1em 0;
-}
-
-#bauhaus-slider
-{
-  margin-bottom: 0.14em;
-}
-
-.bauhaus_slider_popup,
-.bauhaus_combo_popup
-{
-  padding: 0.14em 0 0.14em 0.42em;
-}
-.bauhaus_popup_no_quad
-{
-  padding-right: 0.42em;
-}
-
-/*---------------------------------------
-  - Context menu, tooltips & comboboxes -
-  ---------------------------------------*/
+/*------------------------------------------------
+  - Context menu, bauhaus, tooltips & comboboxes -
+  ----------------------------------------------*/
+/*** so nearly everything that pop out */
+.popup,
 context-menu,
 menu,
 menuitem > arrow,
 tooltip,
 popover,
-combobox window,
-dialog combobox window,
-#bauhaus-combobox *,
-#bauhaus-slider *,
-#colorpicker-tooltip,
-#history-tooltip,
+#bauhaus-combobox window,
+#bauhaus-slider window,
 #range-current
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
   border-radius: 0.14em;
-  border: 0.07em solid @button_border;
   min-height: 0.4em;
   min-width: 0.4em;
-  padding: 0.5em 0.07em;
+}
+
+menu
+{
+  padding: 0.14em 0;
+}
+
+combobox cellview
+{
+  padding-left: 0.14em;
+}
+
+.popup,
+popover
+{
+  padding: 0.42em;
+}
+
+.dt_bauhaus_popup  /* set default settings on bauhaus popup, items that can be selected : items inside categories titles set above */
+{
+  color: shade(@fg_color, 0.9);
+  padding: 0.42em 0 0 0.42em;   /* set only padding on top and left margin due to some default hardcoded spacing on right and bottom */
 }
 
 /* fix for menuitem in bottom toolbar mainly */
 menuitem > arrow
 {
   padding-right: 0.42em;
-  border: 0;
+}
+
+#bauhaus-combobox,
+#bauhaus-slider
+{
+  margin: 0.14em 0;
 }
 
 /* and set menuitem related to sort of combobox like metadata presets in import module */
-#gtk-combobox-popup-menu menuitem,
 #view-dropdown button,
 #view-dropdown menuitem,
 #view-label
 {
   padding: 0.07em 0.42em;
   margin: 0;
-}
-
-popover
-{
-  padding: 0.42em;
 }
 
 tooltip,
@@ -971,7 +931,6 @@ notebook header /* add space between notebook tabs and options below */
   - GTK sliders and scales -
   --------------------------*/
 /*** WARNING : sliders IN modules are bauhaus (from a custom lib in darktable), not standard GTK sliders (see below) ***/
-
 scrollbar slider
 {
   background-color: @scroll_bar_inactive;
@@ -1335,8 +1294,8 @@ filechooser row:hover .sidebar-icon
 #dt-range-date-popup entry,
 #dt-range-date-popup treeview
 {
-  background-color: alpha(@bauhaus_fg, 0.14);
-  border-color: alpha(@bauhaus_fg, 0.09);;
+  background-color: alpha(@fg_color, 0.14);
+  border-color: alpha(@fg_color, 0.09);
 }
 
 /* set range parts and quick filter box in header toolbar */
@@ -1362,7 +1321,7 @@ filechooser row:hover .sidebar-icon
   margin: 0;
 }
 
-#range_current
+#range-current
 {
   padding: 0.2em;
 }
@@ -1396,15 +1355,21 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
   color: @field_hover_fg;
 }
 
-#map-drag-icon
-{
-  background: transparent;
-}
-
 /*---------------
   - Other stuff -
   ---------------*/
 /*** Some tags below inherit from properties above ; so avoid moving that part ***/
+/* Special modules: image infos, navigation and search ones */
+#image-info /* in darkroom footerbar */
+{
+  font-size: 1.1em;
+}
+
+#navigation-module
+{
+  background-color: @graph_bg;
+}
+
 /* search boxes (background color is set on collect module part above ; to be the same as other filters in quick filter bar) */
 #right .search
 {
@@ -1461,36 +1426,6 @@ cell:selected
   background-color: shade(@selected_bg_color, 1.2);
 }
 
-/* Set below history items in darkroom */
-/* the label buttons */
-.dt_history_items
-{
-  padding: 0;
-  margin: 0.14em;
-}
-
-/* then the switches */
-.dt_history_switch:disabled /* state of those switch is always disabled */
-{
-  color: @plugin_label_color;
-  font-size: 0.75em;
-  margin-left: 0.42em;
-  border: 0;
-}
-
-/* and the history number */
-#history-number
-{
-  padding-right: 0.35em;
-}
-
-/* Deactivated switch buttons, make them less visible */
-.dt_history_switch_off,
-.dt_history_switch_off:disabled
-{
-  color: @disabled_fg_color;
-}
-
 /* set deprecated and warning messages */
 .dt_deprecated_msg,
 #iop-plugin-warning
@@ -1525,6 +1460,36 @@ cell:selected
 .dt_monospace
 {
   font-family: monospace;
+}
+
+/* Set below history items in darkroom */
+/* the label buttons */
+.dt_history_items
+{
+  padding: 0;
+  margin: 0.14em;
+}
+
+/* then the switches */
+.dt_history_switch:disabled /* state of those switch is always disabled */
+{
+  color: @plugin_label_color;
+  font-size: 0.75em;
+  margin-left: 0.42em;
+  border: 0;
+}
+
+/* and the history number */
+#history-number
+{
+  padding-right: 0.35em;
+}
+
+/* deactivated switch buttons, make them less visible */
+.dt_history_switch_off,
+.dt_history_switch_off:disabled
+{
+  color: @disabled_fg_color;
 }
 
 /*---------------------
@@ -1610,7 +1575,6 @@ treeview *:checked:not(check)
 button:hover:not(.combo):not(.dt_no_hover),
 filechooser row:hover,
 menuitem:hover,
-menuitem:hover > *:not(check),
 notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
@@ -1630,6 +1594,7 @@ treeview:not(#lutname) *:hover:not(check),
 .combo:hover,
 .combo:hover cellview,
 combobox window *:hover,
+menuitem:hover > arrow,
 #bauhaus-combobox:hover,
 #bauhaus-slider:hover,
 #collapsible .combo:hover,
@@ -1652,10 +1617,17 @@ button:checked cellview
   color: shade(@button_hover_fg, 0.99);
 }
 
-/* Set submenus */
-menuitem > *
+/* Views links states in header */
+#view-dropdown *:selected,
+#view-label:selected,
+#view-label:hover
 {
-    color: @fg_color;
+  color: @fg_color;
+}
+
+#view-label:disabled
+{
+  color: @tooltip_bg_color;
 }
 
 /* Treeviews and filechoosers states */
@@ -1664,6 +1636,22 @@ menuitem check
 {
   background-color: @field_active_bg;
   border-color: @border_color;
+}
+
+/* Adjust check menuitems */
+menuitem check,
+menuitem check:selected
+{
+  border-radius: 0.14em;
+  min-width: 0.7em;
+  min-height: 0.7em;
+  margin: 0 0.3em;
+}
+
+  /* set active menu items: needed for some Pango issues not rendering synthetic bold for all OS */
+.active_menu_item label
+{
+  font-weight: bold;
 }
 
 treeview *:active,
@@ -1679,41 +1667,19 @@ treeview check:selected
   border-color: @plugin_bg_color;
 }
 
-filechooser checkbutton:checked
-{
-  background-color: transparent;
-}
-
-/* Adjust check menuitems */
-menuitem check,
-menuitem check:selected
-{
-  border-radius: 0.14em;
-  min-width: 0.7em;
-  min-height: 0.7em;
-  margin: 0 0.3em;
-}
-
 treeview check:hover,
 menuitem check:hover
 {
   color: @bauhaus_fg_hover;
 }
 
-  /* set active menu items: needed for some Pango issues not rendering synthetic bold for all OS */
-.active_menu_item label
-{
-  font-weight: bold;
-}
-
-  /* set preset and blend menu items */
+/* set preset and blend menu items */
 .check_menu_item check,
 .check_menu_item check:selected
 {
   background-color: transparent;
   padding: 0 0.14em;
 }
-
 
 /* Adjust delete folder dialog window */
 treeview#delete-dialog,
@@ -1724,45 +1690,26 @@ treeview#delete-dialog:selected
   padding-left: 1em;
 }
 
-/* Views links states in header */
-#view-dropdown *:selected,
-#view-label:selected,
-#view-label:hover
-{
-  color: @fg_color;
-}
-
-#view-label:disabled
-{
-  color: @tooltip_bg_color;
-}
-
-/* Sliders states */
-#bauhaus-popup:hover
-{
-  color: @bauhaus_fg_hover;
-}
-
-#bauhaus-popup:disabled,
+/* Bauhaus states */
 #bauhaus-combobox:disabled,
 #bauhaus-slider:disabled
 {
   color: @bauhaus_fg_disabled;
 }
 
-#bauhaus-popup:disabled
+.dt_bauhaus_popup:disabled /* set categories titles in bauhaus combobox popup ; for example in collections module */ 
 {
-  color: @plugin_bg;
+  color: white;
 }
 
-#bauhaus-combobox *
+.dt_bauhaus_popup:selected
 {
-  color: shade(@bauhaus_fg, 0.8);
+  color: @fg_color;
 }
 
-#bauhaus-combobox *:selected
+.dt_bauhaus_popup:hover
 {
-  color: shade(@bauhaus_fg_selected, 1.2);
+  color: @bauhaus_fg_hover;
 }
 
 /* Entries states */
@@ -2348,12 +2295,9 @@ Details :
 
 /* Lighttable toolbox */
 #lighttable_layouts_box,
-#footer-toolbar entry
+#footer-toolbar .toggle,
+#footer-toolbar entry,
+#footer-toolbar scale
 {
-  margin-right: 0.6em;
-}
-
-#footer-toolbar .toggle
-{
-  margin: 0 0.4em;
+  margin: 0.07em 0.4em;
 }

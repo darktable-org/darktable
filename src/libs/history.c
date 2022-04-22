@@ -939,7 +939,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
     if(!view)
     {
       view = gtk_text_view_new();
-      gtk_widget_set_name(view, "history-tooltip");
+      dt_gui_add_class(view, "dt_transparent_background");
       dt_gui_add_class(view, "dt_monospace");
       g_signal_connect(G_OBJECT(view), "destroy", G_CALLBACK(gtk_widget_destroyed), &view);
     }

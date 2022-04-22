@@ -383,11 +383,11 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   g_signal_connect(G_OBJECT(filename->ext), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->ext), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
   g_signal_connect(G_OBJECT(filename->ext), "button-press-event", G_CALLBACK(_filename_press), filename);
-  dt_gui_add_add_class(filename->ext, "dt_transparent_background");
-  dt_gui_add_add_class(filename->ext, "search");
+  dt_gui_add_class(filename->ext, "dt_transparent_background");
+  dt_gui_add_class(filename->ext, "search");
   if(top)
   {
-    dt_gui_add_add_class(hb, "quick_filter_box");
+    dt_gui_add_class(hb, "quick_filter_box");
   }
 
   // the popup
