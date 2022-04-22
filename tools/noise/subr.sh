@@ -446,11 +446,12 @@ export_large_jpeg() {
 	input=$1
 	output=$2
 	xmp="$input.xmp"
-
+	xmp_profiling="$scriptdir/profiling-shot.xmp"
+	
 	tool_installed darktable-cli
 
 	rm -f "$output" "$xmp"
-	darktable-cli "$input" "$output" &> /tmp/dt_output.log  || echo $(cat /tmp/dt_output.log); exit 1
+	darktable-cli "$input" "$xmp_profiling" "$output" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none --apply-custom-presets false
 	rm -f "$xmp"
 }
 
