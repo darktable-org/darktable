@@ -137,9 +137,9 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *dual_thrs;
   GtkWidget *lmmse_refine;
   GtkWidget *pixelshift_enable;
-  GtkWidget *pixelshift_select_frame;
-  GtkWidget *pixelshift_motion_correction;
-  GtkWidget *pixelshift_show_motion_mask;
+  //GtkWidget *pixelshift_select_frame;
+  //GtkWidget *pixelshift_motion_correction;
+  //GtkWidget *pixelshift_show_motion_mask;
   gboolean visual_mask;
 } dt_iop_demosaic_gui_data_t;
 
@@ -254,7 +254,18 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  typedef struct dt_iop_demosaic_params_t dt_iop_demosaic_params_v4_t;
+  typedef struct dt_iop_demosaic_params_t dt_iop_demosaic_params_v5_t;
+
+  typedef struct dt_iop_demosaic_params_v4_t
+  {
+    dt_iop_demosaic_greeneq_t green_eq;
+    float median_thrs;
+    dt_iop_demosaic_smooth_t color_smoothing;
+    dt_iop_demosaic_method_t demosaicing_method;
+    dt_iop_demosaic_lmmse_t lmmse_refine;
+    float dual_thrs;
+  } dt_iop_demosaic_params_v4_t;
+
   typedef struct dt_iop_demosaic_params_v3_t
   {
     dt_iop_demosaic_greeneq_t green_eq;
@@ -263,6 +274,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_demosaic_method_t demosaicing_method;
     dt_iop_demosaic_lmmse_t lmmse_refine;
   } dt_iop_demosaic_params_v3_t;
+
+  if(old_version == 4 && new_version == 5)
+  {
+    dt_iop_demosaic_params_v4_t *o = (dt_iop_demosaic_params_v4_t *)old_params;
+    dt_iop_demosaic_params_v5_t *n = (dt_iop_demosaic_params_v5_t *)new_params;
+    memcpy(n, o, sizeof *o);
+    n->pixelshift_enable = 0;
+    return 0;
+  }
 
   if(old_version == 3 && new_version == 4)
   {
@@ -5728,6 +5748,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       break;
     default:
       piece->process_cl_ready = 0;
+  }
+
+  ///TODO make this better
+  if(d->pixelshift_enable)
+  {
+    piece->process_cl_ready = 0;
   }
 
   // green-equilibrate over full image excludes tiling
