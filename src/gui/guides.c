@@ -699,7 +699,7 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
   // title
   GtkWidget *lb = gtk_label_new(_("global guide overlay settings"));
   gtk_label_set_justify(GTK_LABEL(lb), GTK_JUSTIFY_CENTER);
-  gtk_widget_set_name(lb, "guides-menu-title");
+  dt_gui_add_class(lb, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, TRUE, TRUE, 0);
 
   // global guides section

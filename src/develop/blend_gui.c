@@ -1711,7 +1711,7 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
     if(module_cst == DEVELOP_BLEND_CS_LAB)
     {
       mi = gtk_check_menu_item_new_with_label(_("Lab"));
-      dt_gui_add_class(mi, "check_menu_item");
+      dt_gui_add_class(mi, "dt_transparent_background");
       if(module_blend_cst == DEVELOP_BLEND_CS_LAB)
       {
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
@@ -1723,7 +1723,7 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
     }
 
     mi = gtk_check_menu_item_new_with_label(_("RGB (display)"));
-    dt_gui_add_class(mi, "check_menu_item");
+    dt_gui_add_class(mi, "dt_transparent_background");
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_DISPLAY)
     {
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
@@ -1734,7 +1734,7 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     mi = gtk_check_menu_item_new_with_label(_("RGB (scene)"));
-    dt_gui_add_class(mi, "check_menu_item");
+    dt_gui_add_class(mi, "dt_transparent_background");
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_SCENE)
     {
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
@@ -2127,7 +2127,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     GtkWidget *section = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     gtk_box_pack_start(GTK_BOX(section), dt_ui_label_new(_("parametric mask")), TRUE, TRUE, 0);
-    dt_gui_add_class(section, "section_label");
+    dt_gui_add_class(section, "dt_section_label");
 
     dt_iop_togglebutton_new(module, "blend`tools", N_("reset blend mask settings"), NULL,
                             G_CALLBACK(_blendop_blendif_reset), FALSE, 0, 0,
@@ -2314,7 +2314,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     bd->masks_shown = DT_MASKS_EDIT_OFF;
 
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    dt_gui_add_class(hbox, "section_label"); // make the combo look like a section label
+    dt_gui_add_class(hbox, "dt_section_label"); // make the combo look like a section label
 
     bd->masks_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->masks_combo, N_("blend"), N_("drawn mask"));
@@ -3118,7 +3118,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(hbox), dt_ui_label_new(_("mask refinement")), TRUE, TRUE, 0);
-    dt_gui_add_class(hbox, "section_label");
+    dt_gui_add_class(hbox, "dt_section_label");
 
     bd->showmask = dt_iop_togglebutton_new(module, "blend`tools", N_("display mask and/or color channel"), NULL, G_CALLBACK(_blendop_blendif_showmask_clicked),
                                            FALSE, 0, 0, dtgtk_cairo_paint_showmask, hbox);
