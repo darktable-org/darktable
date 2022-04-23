@@ -690,7 +690,7 @@ void dt_bauhaus_load_theme()
     pango_font_description_free(darktable.bauhaus->pango_sec_font_desc);
 
   // now get the font for the section labels
-  gtk_widget_path_iter_add_class(path, pos, "section_label");
+  gtk_widget_path_iter_add_class(path, pos, "dt_section_label");
   gtk_style_context_set_path(ctx, path);
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
   darktable.bauhaus->pango_sec_font_desc = pfont;

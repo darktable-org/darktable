@@ -46,7 +46,6 @@
 @define-color bauhaus_bg_hover @grey_80;
 @define-color bauhaus_fg_hover @grey_100;
 @define-color bauhaus_fg_selected @grey_75;
-@define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.5);
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
 
 /* GTK Buttons and tabs */
