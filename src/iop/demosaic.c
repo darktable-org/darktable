@@ -3087,7 +3087,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       roo.height = roi_in->height;
       roo.scale = 1.0f;
       tmp = (float *)dt_alloc_align_float((size_t)4 * roo.width * roo.height);
-      fprintf(stderr,"scaled\n");
     }
     if(info) dt_get_times(&start_time);
 
@@ -5825,27 +5824,35 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
                             (use_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
                             (use_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
   ///TODO doesn't take into account previous modules?
-  const gboolean ispixelshift = (self->dev->image_storage.buf_dsc.frames == 4);
+  const gboolean ispixelshift = bayer && (self->dev->image_storage.buf_dsc.frames == 4);
 
-  gtk_widget_set_visible(g->demosaic_method_bayer, bayer);
+  gtk_widget_set_visible(g->pixelshift_enable, bayer && ispixelshift);
+
+  if(!bayer || !ispixelshift)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pixelshift_enable), FALSE);
+    p->pixelshift_enable = FALSE;
+  }
+  else
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pixelshift_enable),
+                                 p->pixelshift_enable && bayer && ispixelshift);
+  }
+
+  //gtk_widget_set_visible(g->pixelshift_select_frame, bayer && ispixelshift);
+
+  gtk_widget_set_visible(g->demosaic_method_bayer, bayer && !p->pixelshift_enable);
   gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
   if(bayer)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, p->demosaicing_method);
   else
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, p->demosaicing_method);
 
-  gtk_widget_set_visible(g->median_thrs, bayer && isppg);
-  gtk_widget_set_visible(g->greeneq, !passing);
+  gtk_widget_set_visible(g->median_thrs, bayer && isppg && !p->pixelshift_enable);
+  gtk_widget_set_visible(g->greeneq, !passing && !p->pixelshift_enable);
   gtk_widget_set_visible(g->color_smoothing, !passing && !isdual);
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
-  gtk_widget_set_visible(g->pixelshift_enable, bayer && ispixelshift);
-  if(!bayer || !ispixelshift)
-  {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pixelshift_enable), FALSE);
-  }
-  //gtk_widget_set_visible(g->pixelshift_select_frame, bayer && ispixelshift);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pixelshift_enable), p->pixelshift_enable && bayer && ispixelshift);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
   int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
@@ -5903,6 +5910,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
+  g->pixelshift_enable = dt_bauhaus_toggle_from_params(self, "pixelshift_enable");
+
   g->demosaic_method_bayer = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, 9);
   gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are slow.\nLMMSE is suited best for high ISO images.\ndual demosaicers double processing time."));
@@ -5932,8 +5941,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->greeneq = dt_bauhaus_combobox_from_params(self, "green_eq");
   gtk_widget_set_tooltip_text(g->greeneq, _("green channels matching method"));
-
-  g->pixelshift_enable = dt_bauhaus_toggle_from_params(self, "pixelshift_enable");
 
   /*g->pixelshift_select_frame = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->pixelshift_select_frame,NULL,"input frames");

@@ -517,8 +517,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       float const *const frame_in = in + (f * roi_in->width * roi_in->height);
       float *const frame_out = out + (f * roi_out->width * roi_out->height);
-      fprintf(stderr,"frame in  %p\n", frame_in);
-      fprintf(stderr,"frame out %p\n", frame_out);
+      //fprintf(stderr,"frame in  %p\n", frame_in);
+      //fprintf(stderr,"frame out %p\n", frame_out);
       const int width = roi_out->width;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
