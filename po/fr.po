@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-17 22:14+0200\n"
-"PO-Revision-Date: 2022-04-17 22:15+0200\n"
+"POT-Creation-Date: 2022-04-23 10:56+0200\n"
+"PO-Revision-Date: 2022-04-23 11:00+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3429,8 +3429,8 @@ msgstr "raffinement lmmse"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
-msgid "switch dual threshold"
-msgstr "active le seuil double"
+msgid "dual threshold"
+msgstr "seuil dématriçage double"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:197
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:204
@@ -4707,40 +4707,40 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer vos images"
 
-#: ../src/bauhaus/bauhaus.c:3282
+#: ../src/bauhaus/bauhaus.c:3289
 msgid "button on"
 msgstr "bouton actif"
 
-#: ../src/bauhaus/bauhaus.c:3282
+#: ../src/bauhaus/bauhaus.c:3289
 msgid "button off"
 msgstr "bouton inactif"
 
-#: ../src/bauhaus/bauhaus.c:3451 ../src/gui/accelerators.c:268
+#: ../src/bauhaus/bauhaus.c:3458 ../src/gui/accelerators.c:268
 msgid "value"
 msgstr "valeur"
 
-#: ../src/bauhaus/bauhaus.c:3452 ../src/bauhaus/bauhaus.c:3458
+#: ../src/bauhaus/bauhaus.c:3459 ../src/bauhaus/bauhaus.c:3465
 #: ../src/gui/accelerators.c:251
 msgid "button"
 msgstr "bouton"
 
-#: ../src/bauhaus/bauhaus.c:3453
+#: ../src/bauhaus/bauhaus.c:3460
 msgid "force"
 msgstr "force"
 
-#: ../src/bauhaus/bauhaus.c:3454
+#: ../src/bauhaus/bauhaus.c:3461
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3457
+#: ../src/bauhaus/bauhaus.c:3464
 msgid "selection"
 msgstr "sélection"
 
-#: ../src/bauhaus/bauhaus.c:3476
+#: ../src/bauhaus/bauhaus.c:3483
 msgid "slider"
 msgstr "réglette"
 
-#: ../src/bauhaus/bauhaus.c:3481
+#: ../src/bauhaus/bauhaus.c:3488
 msgid "dropdown"
 msgstr "menu déroulant"
 
@@ -4989,7 +4989,7 @@ msgstr "date impression"
 
 #: ../src/common/collection.c:620 ../src/common/collection.c:698
 #: ../src/common/ratings.c:321 ../src/develop/lightroom.c:1525
-#: ../src/libs/tools/ratings.c:110
+#: ../src/libs/tools/ratings.c:111
 msgid "rating"
 msgstr "étoile"
 
@@ -5408,11 +5408,11 @@ msgstr ""
 
 #: ../src/common/darktable.c:1740
 msgid ""
-"instead you will find 'per device' data in 'cldevice_v2_canonical-name'. "
+"instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
 "à la place vous trouverez les données par périphérique dans « "
-"cldevice_v2_canonical-name ». le contenu est :"
+"cldevice_v4_canonical-name ». le contenu est :"
 
 #: ../src/common/darktable.c:1742
 msgid ""
@@ -5725,12 +5725,12 @@ msgstr "darktable - maintenance"
 msgid "later"
 msgstr "plus tard"
 
-#: ../src/common/exif.cc:4290
+#: ../src/common/exif.cc:4299
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "impossible de lire le fichier xmp « %s » : « %s »"
 
-#: ../src/common/exif.cc:4342
+#: ../src/common/exif.cc:4351
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "impossible d'écrire le fichier xmp « %s » : « %s »"
@@ -5987,26 +5987,26 @@ msgstr "distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "le profil de gestion du bruit « %s » n'est pas valide"
 
-#: ../src/common/opencl.c:998
+#: ../src/common/opencl.c:1090
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
 
-#: ../src/common/opencl.c:1005
+#: ../src/common/opencl.c:1097
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU multiples détectés - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:1012
+#: ../src/common/opencl.c:1104
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU très rapide détecté - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:1019
+#: ../src/common/opencl.c:1111
 msgid "opencl scheduling profile set to default"
 msgstr "profil de planification opencl par défaut positionné"
 
@@ -8321,16 +8321,16 @@ msgstr "le zoom est limité à %d images"
 msgid "no image selected !"
 msgstr "aucune image sélectionnée !"
 
-#: ../src/dtgtk/range.c:175 ../src/dtgtk/range.c:180
+#: ../src/dtgtk/range.c:177 ../src/dtgtk/range.c:182
 msgid "invalid"
 msgstr "invalide"
 
-#: ../src/dtgtk/range.c:288
+#: ../src/dtgtk/range.c:290
 #, c-format
 msgid "year %s"
 msgstr "année %s"
 
-#: ../src/dtgtk/range.c:366
+#: ../src/dtgtk/range.c:368
 msgid ""
 "enter the minimal value\n"
 "use 'min' if no bound\n"
@@ -8340,7 +8340,7 @@ msgstr ""
 "utiliser « min » si pas de borne\n"
 "clic-droit pour sélectionner depuis les valeurs existantes"
 
-#: ../src/dtgtk/range.c:372
+#: ../src/dtgtk/range.c:374
 msgid ""
 "enter the maximal value\n"
 "use 'max' if no bound\n"
@@ -8350,7 +8350,7 @@ msgstr ""
 "utiliser « max » si pas de borne\n"
 "clic-droit pour sélectionner depuis les valeurs existantes"
 
-#: ../src/dtgtk/range.c:378
+#: ../src/dtgtk/range.c:380
 msgid ""
 "enter the value\n"
 "right-click to select from existing values"
@@ -8358,7 +8358,7 @@ msgstr ""
 "entrer la valeur\n"
 "clic-droit pour sélectionner depuis les valeurs existantes"
 
-#: ../src/dtgtk/range.c:383
+#: ../src/dtgtk/range.c:385
 msgid ""
 "enter the minimal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8372,7 +8372,7 @@ msgstr ""
 "utiliser le préfixe « - » pour une date relative\n"
 "clic-droit pour sélectionner depuis un calendrier ou les valeurs existantes"
 
-#: ../src/dtgtk/range.c:391
+#: ../src/dtgtk/range.c:393
 msgid ""
 "enter the maximal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8388,7 +8388,7 @@ msgstr ""
 "utiliser le préfixe « - » pour une date relative\n"
 "clic-droit pour sélectionner depuis un calendrier ou les valeurs existantes"
 
-#: ../src/dtgtk/range.c:400
+#: ../src/dtgtk/range.c:402
 msgid ""
 "enter the date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8398,42 +8398,42 @@ msgstr ""
 "de la forme AAAA:MM:JJ hh:mm:ss.sss (seulement l'année est obligatoire)\n"
 "clic-droit pour sélectionner depuis un calendrier ou les valeurs existantes"
 
-#: ../src/dtgtk/range.c:422
-msgid "date-time interval to substract from the max value"
+#: ../src/dtgtk/range.c:424
+msgid "date-time interval to subtract from the max value"
 msgstr "intervalle date-heure à soustraire à la valeur maximale"
 
-#: ../src/dtgtk/range.c:426
+#: ../src/dtgtk/range.c:428
 msgid "date-time interval to add to the min value"
 msgstr "intervalle date-heure à ajouter à la valeur minimale"
 
-#: ../src/dtgtk/range.c:566 ../src/dtgtk/range.c:1714 ../src/dtgtk/range.c:1765
+#: ../src/dtgtk/range.c:568 ../src/dtgtk/range.c:1716 ../src/dtgtk/range.c:1767
 #: ../src/libs/colorpicker.c:53
 msgid "min"
 msgstr "min"
 
-#: ../src/dtgtk/range.c:572 ../src/dtgtk/range.c:1726 ../src/dtgtk/range.c:1777
+#: ../src/dtgtk/range.c:574 ../src/dtgtk/range.c:1728 ../src/dtgtk/range.c:1779
 #: ../src/libs/colorpicker.c:53
 msgid "max"
 msgstr "max"
 
-#: ../src/dtgtk/range.c:880
+#: ../src/dtgtk/range.c:882
 msgid "date type"
 msgstr "type de date"
 
-#: ../src/dtgtk/range.c:881
+#: ../src/dtgtk/range.c:883
 msgid "fixed"
 msgstr "fixé"
 
-#: ../src/dtgtk/range.c:882 ../src/iop/colorchecker.c:1382
+#: ../src/dtgtk/range.c:884 ../src/iop/colorchecker.c:1382
 msgid "relative"
 msgstr "relative"
 
 #. the date section
-#: ../src/dtgtk/range.c:894
+#: ../src/dtgtk/range.c:896
 msgid "date"
 msgstr "date"
 
-#: ../src/dtgtk/range.c:901
+#: ../src/dtgtk/range.c:903
 msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
@@ -8441,24 +8441,24 @@ msgstr ""
 "clic simple pour sélectionner une date\n"
 "double+clic pour utiliser la date directement"
 
-#: ../src/dtgtk/range.c:912
+#: ../src/dtgtk/range.c:914
 msgid "years: "
 msgstr "années : "
 
-#: ../src/dtgtk/range.c:920
+#: ../src/dtgtk/range.c:922
 msgid "months: "
 msgstr "mois : "
 
-#: ../src/dtgtk/range.c:928
+#: ../src/dtgtk/range.c:930
 msgid "days: "
 msgstr "jours : "
 
 #. the time section
-#: ../src/dtgtk/range.c:940
+#: ../src/dtgtk/range.c:942
 msgid "time"
 msgstr "date/heure"
 
-#: ../src/dtgtk/range.c:967
+#: ../src/dtgtk/range.c:969
 msgid ""
 "simple click to select date\n"
 "double click to use the date directly."
@@ -8466,28 +8466,28 @@ msgstr ""
 "clic simple pour sélectionner une date\n"
 "double+clic pour utiliser la date directement"
 
-#: ../src/dtgtk/range.c:993 ../src/dtgtk/range.c:1733
+#: ../src/dtgtk/range.c:995 ../src/dtgtk/range.c:1735
 msgid "now"
 msgstr "maintenant"
 
-#: ../src/dtgtk/range.c:995
+#: ../src/dtgtk/range.c:997
 msgid "set the value to always match current datetime"
 msgstr "défini la valeur pour toujours correspondre à la date/heure actuelle"
 
 #. apply button
-#: ../src/dtgtk/range.c:998 ../src/gui/accelerators.c:147
+#: ../src/dtgtk/range.c:1000 ../src/gui/accelerators.c:147
 #: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:750
 #: ../src/libs/styles.c:861
 msgid "apply"
 msgstr "appliquer"
 
-#: ../src/dtgtk/range.c:999
+#: ../src/dtgtk/range.c:1001
 msgid "set the range bound with this value"
 msgstr "défini les bornes de l'étendu avec cette valeur"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1710 ../src/gui/accelerators.c:1909
+#: ../src/dtgtk/range.c:1712 ../src/gui/accelerators.c:1909
 #: ../src/gui/accelerators.c:1988 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
@@ -11704,7 +11704,7 @@ msgstr ""
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/colorreconstruction.c:135
 #: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:720
 #: ../src/iop/dither.c:103 ../src/iop/flip.c:105 ../src/iop/hazeremoval.c:112
-#: ../src/iop/highlights.c:139 ../src/iop/hotpixels.c:73
+#: ../src/iop/highlights.c:141 ../src/iop/hotpixels.c:73
 #: ../src/iop/invert.c:122 ../src/iop/lens.cc:159 ../src/iop/nlmeans.c:99
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rawdenoise.c:130
 #: ../src/iop/retouch.c:209 ../src/iop/sharpen.c:94 ../src/iop/spots.c:67
@@ -12219,8 +12219,8 @@ msgstr ""
 
 #: ../src/iop/cacorrect.c:89 ../src/iop/cacorrect.c:91
 #: ../src/iop/cacorrectrgb.c:168 ../src/iop/cacorrectrgb.c:170
-#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:140
-#: ../src/iop/highlights.c:142 ../src/iop/hotpixels.c:74
+#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:142
+#: ../src/iop/highlights.c:144 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
 #: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:112
 #: ../src/iop/rawprepare.c:114 ../src/iop/temperature.c:200
@@ -14292,12 +14292,12 @@ msgstr "faut-il donner la priorité à une couleur de remplacement spécifique"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "la teinte à laquelle on donne priorité sur les autres teintes"
 
-#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5806
-#: ../src/iop/highlights.c:2099
+#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5819
+#: ../src/iop/highlights.c:2212
 msgid "not applicable"
 msgstr "non applicable"
 
-#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2100
+#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2213
 msgid "no highlights reconstruction for monochrome images"
 msgstr "pas de reconstruction des hautes lumières pour les images monochromes"
 
@@ -14548,16 +14548,16 @@ msgstr ""
 "reconstruit des pixels RVB complets à partir de la lecture d'un capteur à "
 "grille de filtres colorés"
 
-#: ../src/iop/demosaic.c:5268
+#: ../src/iop/demosaic.c:5288
 msgid "[dual demosaic_cl] internal problem"
 msgstr "[dual dématriçage opencl] problème interne"
 
-#: ../src/iop/demosaic.c:5639
+#: ../src/iop/demosaic.c:5661
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "matrice couleur « %s » non trouvée pour une image de bayer!"
 
-#: ../src/iop/demosaic.c:5772
+#: ../src/iop/demosaic.c:5786
 msgid ""
 "bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -14569,7 +14569,7 @@ msgstr ""
 "LMMSE est adapté pour les images à haut ISO.\n"
 "un double dématriçage double le temps de traitement."
 
-#: ../src/iop/demosaic.c:5776
+#: ../src/iop/demosaic.c:5790
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -14579,7 +14579,7 @@ msgstr ""
 "chroma domaine fréquentiel sont lent.\n"
 "un double dématriçage double le temps de traitement."
 
-#: ../src/iop/demosaic.c:5780
+#: ../src/iop/demosaic.c:5794
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -14589,21 +14589,18 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:5784
+#: ../src/iop/demosaic.c:5799
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
-"set to 1.0 for flat content"
+"set to 1.0 for flat content\n"
+"toggle to visualize the mask"
 msgstr ""
 "seuil de contraste pour le dématriçage double.\n"
 "utiliser 0.0 pour favoriser les hautes-fréquences (détails)\n"
 "utiliser 1.0 pour favoriser les basses-fréquences (aplats)"
 
-#: ../src/iop/demosaic.c:5787
-msgid "display blending mask"
-msgstr "affiche masque de fusion"
-
-#: ../src/iop/demosaic.c:5794
+#: ../src/iop/demosaic.c:5807
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -14611,15 +14608,15 @@ msgstr ""
 "pas de raffinement LMMSE, le pas médian fait la moyenne de la sortie\n"
 "le raffinement ajoute des calculs des canaux rouges & bleus"
 
-#: ../src/iop/demosaic.c:5797
+#: ../src/iop/demosaic.c:5810
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:5800
+#: ../src/iop/demosaic.c:5813
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:5807
+#: ../src/iop/demosaic.c:5820
 msgid "demosaicing is only used for color raw images"
 msgstr "dématriçage est uniquement utilisé pour les images raw"
 
@@ -16197,21 +16194,21 @@ msgstr "distance"
 msgid "limit haze removal up to a specific spatial depth"
 msgstr "limiter la profondeur spatiale maximum de suppression de la brume"
 
-#: ../src/iop/highlights.c:133
+#: ../src/iop/highlights.c:135
 msgid "highlight reconstruction"
 msgstr "reconstruire hautes lumières"
 
-#: ../src/iop/highlights.c:138
+#: ../src/iop/highlights.c:140
 msgid "avoid magenta highlights and try to recover highlights colors"
 msgstr ""
 "éviter les hautes lumières magenta et essayer de recouvrer les couleurs des "
 "hautes lumières"
 
-#: ../src/iop/highlights.c:141 ../src/iop/hotpixels.c:75
+#: ../src/iop/highlights.c:143 ../src/iop/hotpixels.c:75
 msgid "reconstruction, raw"
 msgstr "reconstruire, raw"
 
-#: ../src/iop/highlights.c:2031
+#: ../src/iop/highlights.c:2115
 msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. Falling "
 "back to clip."
@@ -16219,23 +16216,25 @@ msgstr ""
 "reconstruction hautes lumières: laplacien guidé non disponible pour les "
 "capteurs X-Trans. Repli sur tronquer."
 
-#: ../src/iop/highlights.c:2066
+#: ../src/iop/highlights.c:2153
 msgid "guided laplacians"
 msgstr "laplaciens guidés"
 
-#: ../src/iop/highlights.c:2080
+#: ../src/iop/highlights.c:2187
 msgid "highlight reconstruction method"
 msgstr "méthode de reconstruction des hautes lumières"
 
-#: ../src/iop/highlights.c:2084
+#: ../src/iop/highlights.c:2192
 msgid ""
-"manually adjust the clipping threshold against magenta highlights (you "
-"shouldn't ever need to touch this)"
+"manually adjust the clipping threshold against magenta highlights\n"
+"the mask icon shows the clipped area\n"
+"(you shouldn't ever need to touch this)"
 msgstr ""
-"ajuste le seuil de troncature pour éviter les hautes lumières magenta (vous "
-"ne devriez jamais avoir à modifier ce réglage)"
+"ajuste le seuil de troncature pour éviter les hautes lumières magenta\n"
+"l’icône masque permet de monter les zones tronquées\n"
+"(vous ne devriez jamais avoir à modifier ce réglage)"
 
-#: ../src/iop/highlights.c:2088
+#: ../src/iop/highlights.c:2201
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. Useful at high ISO."
@@ -16243,7 +16242,7 @@ msgstr ""
 "ajoute du bruit pour fusionner visuellement les zones reconstruites\n"
 "dans le reste de l'image bruitées. Utile pour les hauts ISO."
 
-#: ../src/iop/highlights.c:2092
+#: ../src/iop/highlights.c:2205
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16251,7 +16250,7 @@ msgstr ""
 "augmenter si le magenta des hautes lumières n'est pas complètement corrigé\n"
 "chaque nouvelle itération ajoute une pénalité de temps."
 
-#: ../src/iop/highlights.c:2096
+#: ../src/iop/highlights.c:2209
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -22816,6 +22815,11 @@ msgstr "quitter la vue courante"
 msgid "module toolbox"
 msgstr "boîte à outils de module"
 
+#. connect callbacks
+#: ../src/libs/tools/ratings.c:98
+msgid "set star rating for selected images"
+msgstr "défini la note pour les images sélectionnées"
+
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
 msgstr "chronologie"
@@ -23528,6 +23532,12 @@ msgstr "créer une fenêtre flottante persistante"
 #: ../src/views/view.c:1336
 msgid "mouse actions"
 msgstr "actions souris"
+
+#~ msgid "switch dual threshold"
+#~ msgstr "active le seuil double"
+
+#~ msgid "display blending mask"
+#~ msgstr "affiche masque de fusion"
 
 #~ msgid "filters for collections"
 #~ msgstr "filtres pour les collections"
@@ -28347,10 +28357,6 @@ msgstr "actions souris"
 
 #~ msgid "5:4"
 #~ msgstr "5:4"
-
-#~ msgctxt "accel"
-#~ msgid "luma threshold"
-#~ msgstr "seuil de luminosité"
 
 #~ msgctxt "accel"
 #~ msgid "spatial blur"
