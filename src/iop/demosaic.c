@@ -5657,9 +5657,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->lmmse_refine = p->lmmse_refine;
   if(pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
   {
-    d->pixelshift_enable = (p->pixelshift_enable && (piece->dsc_in.frames == 4));
-    ///TODO this should also change checkbox
-
+    d->pixelshift_enable = p->pixelshift_enable;
     fprintf(stderr, "demosaic ,commit_params, %s, pixelshift in: %i out: %i\n", dt_pixelpipe_name(pipe->type), p->pixelshift_enable, d->pixelshift_enable);
   }
   else
@@ -5842,11 +5840,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
   gtk_widget_set_visible(g->pixelshift_enable, bayer && ispixelshift);
-  /*if(!bayer || !ispixelshift)
+  if(!bayer || !ispixelshift)
   {
-    gtk_set_active(g->pixelshift_enable, FALSE);
-  }*/
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pixelshift_enable), FALSE);
+  }
   //gtk_widget_set_visible(g->pixelshift_select_frame, bayer && ispixelshift);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->pixelshift_enable), p->pixelshift_enable && bayer && ispixelshift);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
   int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
