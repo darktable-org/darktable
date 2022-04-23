@@ -94,6 +94,7 @@ src/chart/main.c
 src/cli/main.c
 src/common/camera_control.c
 src/common/collection.c
+src/common/color_vocabulary.c
 src/common/colorspaces.c
 src/common/cups_print.c
 src/common/darktable.c
