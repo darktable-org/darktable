@@ -296,8 +296,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
     DT_DEBUG_SQLITE3_BIND_INT64(stmt, 28, img->import_timestamp);
   if(img->change_timestamp)
     DT_DEBUG_SQLITE3_BIND_INT64(stmt, 29, img->change_timestamp);
-  if(img->import_timestamp)
-    DT_DEBUG_SQLITE3_BIND_INT64(stmt, 30, img->import_timestamp);
+  if(img->export_timestamp)
+    DT_DEBUG_SQLITE3_BIND_INT64(stmt, 30, img->export_timestamp);
   if(img->print_timestamp)
     DT_DEBUG_SQLITE3_BIND_INT64(stmt, 31, img->print_timestamp);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 32, img->final_width);
@@ -396,4 +396,3 @@ void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const int32_t i
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

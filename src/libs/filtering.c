@@ -94,6 +94,7 @@ typedef struct dt_lib_filtering_rule_t
   GtkWidget *w_special_box_top;
   void *w_specific_top;  // structure which contains all the widgets specific to the rule type
   int manual_widget_set; // when we update manually the widget, we don't want events to be handled
+  gboolean cleaning;     // if we have started a gui_cleanup (we don't want certain event to occurs)
 
   gboolean topbar;
 
@@ -640,8 +641,11 @@ static void _range_set_tooltip(_widgets_range_t *special)
 {
   // we recreate the tooltip
   gchar *val = dtgtk_range_select_get_bounds_pretty(DTGTK_RANGE_SELECT(special->range_select));
-  gchar *txt = g_strdup_printf("<b>%s</b>\nright-click to set specific values.\nactual selection :\n%s",
-                               dt_collection_name(special->rule->prop), val);
+  gchar *txt = g_strdup_printf("<b>%s</b>\n%s\n%s\n%s",
+                               dt_collection_name(special->rule->prop),
+                               _("right-click to set specific values"),
+                               _("actual selection:"),
+                               val);
   gtk_widget_set_tooltip_markup(special->range_select, txt);
   g_free(txt);
   g_free(val);
@@ -1969,6 +1973,11 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+
+  for(int i = 0; i < DT_COLLECTION_MAX_RULES; i++)
+  {
+    d->rule[i].cleaning = TRUE;
+  }
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_collection_updated), self);
   darktable.view_manager->proxy.module_filtering.module = NULL;

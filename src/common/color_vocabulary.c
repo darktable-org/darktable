@@ -201,7 +201,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
 
   if(is_skin) return out;
 
-  // Reference for color names : https://chromatone.center/theory/color/models/perceptual.html
+  // Reference for color names : https://chromatone.center/theory/color/models/perceptual/
   // Though we ignore them sometimes when they get too lyrical for some more down-to-earth names
   // Color are read for chroma = [80 - 100].
   const float h = color[2] * 360.f; // °
@@ -218,7 +218,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
   {
     // 0° - pinkish red
     if(step_L == 0) return _("deep purple");    // L = 10 %
-    if(step_L == 1) return _("fuschia");        // L = 30 %
+    if(step_L == 1) return _("fuchsia");        // L = 30 %
     if(step_L == 2) return _("medium magenta"); // L = 50 %
     if(step_L == 3) return _("violet pink");    // L = 70 %
     if(step_L == 4) return _("plum violet");    // L = 90 %
@@ -264,7 +264,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
     // 120° - green
     if(step_L == 0) return _("dark green");
     if(step_L == 1) return _("forest green");
-    if(step_L == 2) return _("olivedrab");
+    if(step_L == 2) return _("olive drab");
     if(step_L == 3) return _("yellow green");
     if(step_L == 4) return _("pale green");
   }
@@ -298,7 +298,7 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
   else if(step_h == 9)
   {
     // 216° - medium blue
-    if(step_L == 0) return _("marine blue");
+    if(step_L == 0) return _("navy blue");
     if(step_L == 1) return _("teal");
     if(step_L == 2) return _("dark cyan");
     if(step_L == 3) return _("deep sky blue");
