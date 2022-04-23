@@ -123,7 +123,7 @@ typedef struct dt_iop_demosaic_params_t
   dt_iop_demosaic_smooth_t color_smoothing; // $DEFAULT: DEMOSAIC_SMOOTH_OFF $DESCRIPTION: "color smoothing"
   dt_iop_demosaic_method_t demosaicing_method; // $DEFAULT: DT_IOP_DEMOSAIC_RCD $DESCRIPTION: "demosaicing method"
   dt_iop_demosaic_lmmse_t lmmse_refine; // $DEFAULT: LMMSE_REFINE_1 $DESCRIPTION: "lmmse refine"
-  float dual_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.20 $DESCRIPTION: "switch dual threshold"
+  float dual_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.20 $DESCRIPTION: "dual threshold"
 } dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
@@ -134,9 +134,8 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *demosaic_method_bayer;
   GtkWidget *demosaic_method_xtrans;
   GtkWidget *dual_thrs;
-  GtkWidget *dual_mask;
   GtkWidget *lmmse_refine;
-  gint show_mask;
+  gboolean visual_mask;
 } dt_iop_demosaic_gui_data_t;
 
 typedef struct dt_iop_demosaic_global_data_t
@@ -2965,10 +2964,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-    showmask = (g->show_mask);
+    showmask = (g->visual_mask);
     // take care of passthru modes
     if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
       demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
+    else if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU_MONO)
+      demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
   }
 
   if((qual_flags & DEMOSAIC_MEDIUM_QUAL)
@@ -5148,10 +5149,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-    showmask = (g->show_mask);
+    showmask = (g->visual_mask);
     // take care of passthru modes
     if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU)
       demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_RCD : DT_IOP_DEMOSAIC_MARKESTEIJN;
+    else if(piece->pipe->mask_display == DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU_MONO)
+      demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
   }
 
   const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
@@ -5719,7 +5722,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
   gtk_widget_set_visible(g->greeneq, !passing);
   gtk_widget_set_visible(g->color_smoothing, !passing && !isdual);
-  gtk_widget_set_visible(g->dual_mask, isdual);
   gtk_widget_set_visible(g->dual_thrs, isdual);
   gtk_widget_set_visible(g->lmmse_refine, islmmse);
 
@@ -5744,26 +5746,21 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+  dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
 
+  g->visual_mask = FALSE;
   gui_changed(self, NULL, NULL);
-
-  g->show_mask = FALSE;
-  dt_bauhaus_widget_set_quad_active(g->dual_mask, g->show_mask);
-  dt_bauhaus_widget_set_quad_toggle(g->dual_mask, g->show_mask);
 
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
-static void show_mask_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
+static void _visualize_callback(GtkWidget *quad, gpointer user_data)
 {
   if(darktable.gui->reset) return;
-  dt_iop_request_focus(self);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
 
-  g->show_mask = !(g->show_mask);
-  dt_bauhaus_widget_set_quad_active(g->dual_mask, g->show_mask);
+  g->visual_mask = dt_bauhaus_widget_get_quad_active(quad);
   dt_dev_reprocess_center(self->dev);
 }
 
@@ -5772,17 +5769,15 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   if(!in)
   {
-    const gboolean was_mask = g->show_mask;
-    g->show_mask = FALSE;
-    dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->dual_mask), FALSE);
-    if(was_mask) dt_dev_reprocess_center(self->dev);
+    dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
+    g->visual_mask = FALSE;
+    dt_dev_reprocess_center(self->dev);
   }
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = IOP_GUI_ALLOC(demosaic);
-  g->show_mask = FALSE;
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -5798,16 +5793,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->median_thrs, 3);
   gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off\n"
                                                 "set to 1.0 to ignore edges"));
+
   g->dual_thrs = dt_bauhaus_slider_from_params(self, "dual_thrs");
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
   gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content\n"
-                                                "set to 1.0 for flat content"));
-  g->dual_mask = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->dual_mask, NULL, N_("display blending mask"));
-  dt_bauhaus_widget_set_quad_paint(g->dual_mask, dtgtk_cairo_paint_showmask, 0, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->dual_mask, TRUE);
-  g_signal_connect(G_OBJECT(g->dual_mask), "quad-pressed", G_CALLBACK(show_mask_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->dual_mask, FALSE, FALSE, 0);
+                                                "set to 1.0 for flat content\ntoggle to visualize the mask"));
+  dt_bauhaus_widget_set_quad_paint(g->dual_thrs, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->dual_thrs, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
+  g_signal_connect(G_OBJECT(g->dual_thrs), "quad-pressed", G_CALLBACK(_visualize_callback), self);
 
   g->lmmse_refine = dt_bauhaus_combobox_from_params(self, "lmmse_refine");
   gtk_widget_set_tooltip_text(g->lmmse_refine, _("LMMSE refinement steps. the median steps average the output,\nrefine adds some recalculation of red & blue channels"));
