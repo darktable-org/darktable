@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-17 22:14+0200\n"
-"PO-Revision-Date: 2022-04-19 14:25+0300\n"
+"POT-Creation-Date: 2022-04-23 10:56+0200\n"
+"PO-Revision-Date: 2022-04-23 15:26+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -3432,7 +3432,7 @@ msgstr "уточнення lmmse"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
-msgid "switch dual threshold"
+msgid "dual threshold"
 msgstr "поріг контрасту для подвійної демозаїки"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:197
@@ -4709,40 +4709,40 @@ msgstr "Показ зображень на мапі"
 msgid "Print your images"
 msgstr "Друк зображень"
 
-#: ../src/bauhaus/bauhaus.c:3282
+#: ../src/bauhaus/bauhaus.c:3289
 msgid "button on"
 msgstr "кнопка on"
 
-#: ../src/bauhaus/bauhaus.c:3282
+#: ../src/bauhaus/bauhaus.c:3289
 msgid "button off"
 msgstr "кнопка off"
 
-#: ../src/bauhaus/bauhaus.c:3451 ../src/gui/accelerators.c:268
+#: ../src/bauhaus/bauhaus.c:3458 ../src/gui/accelerators.c:268
 msgid "value"
 msgstr "значення"
 
-#: ../src/bauhaus/bauhaus.c:3452 ../src/bauhaus/bauhaus.c:3458
+#: ../src/bauhaus/bauhaus.c:3459 ../src/bauhaus/bauhaus.c:3465
 #: ../src/gui/accelerators.c:251
 msgid "button"
 msgstr "кнопка"
 
-#: ../src/bauhaus/bauhaus.c:3453
+#: ../src/bauhaus/bauhaus.c:3460
 msgid "force"
 msgstr "необмежено"
 
-#: ../src/bauhaus/bauhaus.c:3454
+#: ../src/bauhaus/bauhaus.c:3461
 msgid "zoom"
 msgstr "масштаб"
 
-#: ../src/bauhaus/bauhaus.c:3457
+#: ../src/bauhaus/bauhaus.c:3464
 msgid "selection"
 msgstr "вибір"
 
-#: ../src/bauhaus/bauhaus.c:3476
+#: ../src/bauhaus/bauhaus.c:3483
 msgid "slider"
 msgstr "повзунок"
 
-#: ../src/bauhaus/bauhaus.c:3481
+#: ../src/bauhaus/bauhaus.c:3488
 msgid "dropdown"
 msgstr "спадне меню"
 
@@ -4979,7 +4979,7 @@ msgstr "час останнього друку"
 
 #: ../src/common/collection.c:620 ../src/common/collection.c:698
 #: ../src/common/ratings.c:321 ../src/develop/lightroom.c:1525
-#: ../src/libs/tools/ratings.c:110
+#: ../src/libs/tools/ratings.c:111
 msgid "rating"
 msgstr "рейтинг"
 
@@ -5401,10 +5401,10 @@ msgstr ""
 
 #: ../src/common/darktable.c:1740
 msgid ""
-"instead you will find 'per device' data in 'cldevice_v2_canonical-name'. "
+"instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
-"замість цього ви знайдете окремі дані для пристроїв у 'cldevice_v2_canonical-"
+"замість цього ви знайдете окремі дані для пристроїв у 'cldevice_v4_canonical-"
 "name'. зміст:"
 
 #: ../src/common/darktable.c:1742
@@ -5713,12 +5713,12 @@ msgstr "darktable - технічне обслуговування схеми"
 msgid "later"
 msgstr "пізніше"
 
-#: ../src/common/exif.cc:4290
+#: ../src/common/exif.cc:4299
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "не вдається прочитати файл xmp '%s': '%s'"
 
-#: ../src/common/exif.cc:4342
+#: ../src/common/exif.cc:4351
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "не вдається записати в файл xmp '%s': '%s'"
@@ -5969,27 +5969,27 @@ msgstr "загальний пуассонівський"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "файл профілю шуму `%s' недійсний"
 
-#: ../src/common/opencl.c:998
+#: ../src/common/opencl.c:1090
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "через повільний GPU апаратне прискорення за допомогою opencl було "
 "деактивовано"
 
-#: ../src/common/opencl.c:1005
+#: ../src/common/opencl.c:1097
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "виявлено кілька GPU - профіль планування opencl було встановлено відповідно"
 
-#: ../src/common/opencl.c:1012
+#: ../src/common/opencl.c:1104
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "виявлено дуже швидкий GPU - профіль планування opencl було встановлено "
 "відповідно"
 
-#: ../src/common/opencl.c:1019
+#: ../src/common/opencl.c:1111
 msgid "opencl scheduling profile set to default"
 msgstr "профіль планування opencl встановлено за замовчуванням"
 
@@ -8333,16 +8333,16 @@ msgstr "максимальна кількість зображень: %d"
 msgid "no image selected !"
 msgstr "жодне зображення не вибрано!"
 
-#: ../src/dtgtk/range.c:175 ../src/dtgtk/range.c:180
+#: ../src/dtgtk/range.c:177 ../src/dtgtk/range.c:182
 msgid "invalid"
 msgstr "недійсно"
 
-#: ../src/dtgtk/range.c:288
+#: ../src/dtgtk/range.c:290
 #, c-format
 msgid "year %s"
 msgstr "рік %s"
 
-#: ../src/dtgtk/range.c:366
+#: ../src/dtgtk/range.c:368
 msgid ""
 "enter the minimal value\n"
 "use 'min' if no bound\n"
@@ -8352,7 +8352,7 @@ msgstr ""
 "використовуйте 'мін', якщо немає обмеження\n"
 "клікніть правою кнопкою миші, щоб вибрати з наявних значень"
 
-#: ../src/dtgtk/range.c:372
+#: ../src/dtgtk/range.c:374
 msgid ""
 "enter the maximal value\n"
 "use 'max' if no bound\n"
@@ -8362,7 +8362,7 @@ msgstr ""
 "використовуйте 'макс', якщо немає обмеження\n"
 "клікніть правою кнопкою миші, щоб вибрати з наявних значень"
 
-#: ../src/dtgtk/range.c:378
+#: ../src/dtgtk/range.c:380
 msgid ""
 "enter the value\n"
 "right-click to select from existing values"
@@ -8370,7 +8370,7 @@ msgstr ""
 "введіть значення\n"
 "клікніть правою кнопкою миші, щоб вибрати з наявних значень"
 
-#: ../src/dtgtk/range.c:383
+#: ../src/dtgtk/range.c:385
 msgid ""
 "enter the minimal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8384,7 +8384,7 @@ msgstr ""
 "використовуйте префікс '-' для відносної дати\n"
 "клікніть правою кнопкою миші для вибору з календаря або наявних значень"
 
-#: ../src/dtgtk/range.c:391
+#: ../src/dtgtk/range.c:393
 msgid ""
 "enter the maximal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8399,7 +8399,7 @@ msgstr ""
 "використовуйте префікс '-' для відносної дати\n"
 "клікніть правою кнопкою миші для вибору з календаря або наявних значень"
 
-#: ../src/dtgtk/range.c:400
+#: ../src/dtgtk/range.c:402
 msgid ""
 "enter the date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8409,42 +8409,42 @@ msgstr ""
 "в форматі YYYY:MM:DD hh:mm:ss.sss (лише рік є обов'язковим)\n"
 "клікніть правою кнопкою миші для вибору з календаря або наявних значень"
 
-#: ../src/dtgtk/range.c:422
-msgid "date-time interval to substract from the max value"
+#: ../src/dtgtk/range.c:424
+msgid "date-time interval to subtract from the max value"
 msgstr "інтервал дати й часу, щоб відняти від максимального значення"
 
-#: ../src/dtgtk/range.c:426
+#: ../src/dtgtk/range.c:428
 msgid "date-time interval to add to the min value"
 msgstr "інтервал дати й часу, щоб додати до мінімального значення"
 
-#: ../src/dtgtk/range.c:566 ../src/dtgtk/range.c:1714 ../src/dtgtk/range.c:1765
+#: ../src/dtgtk/range.c:568 ../src/dtgtk/range.c:1716 ../src/dtgtk/range.c:1767
 #: ../src/libs/colorpicker.c:53
 msgid "min"
 msgstr "мін"
 
-#: ../src/dtgtk/range.c:572 ../src/dtgtk/range.c:1726 ../src/dtgtk/range.c:1777
+#: ../src/dtgtk/range.c:574 ../src/dtgtk/range.c:1728 ../src/dtgtk/range.c:1779
 #: ../src/libs/colorpicker.c:53
 msgid "max"
 msgstr "макс"
 
-#: ../src/dtgtk/range.c:880
+#: ../src/dtgtk/range.c:882
 msgid "date type"
 msgstr "тип дати"
 
-#: ../src/dtgtk/range.c:881
+#: ../src/dtgtk/range.c:883
 msgid "fixed"
 msgstr "фіксовані значення"
 
-#: ../src/dtgtk/range.c:882 ../src/iop/colorchecker.c:1382
+#: ../src/dtgtk/range.c:884 ../src/iop/colorchecker.c:1382
 msgid "relative"
 msgstr "відносні значення"
 
 #. the date section
-#: ../src/dtgtk/range.c:894
+#: ../src/dtgtk/range.c:896
 msgid "date"
 msgstr "дата"
 
-#: ../src/dtgtk/range.c:901
+#: ../src/dtgtk/range.c:903
 msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
@@ -8452,24 +8452,24 @@ msgstr ""
 "простий клік для вибору дати\n"
 "подвійний клік, щоб використовувати дату безпосередньо"
 
-#: ../src/dtgtk/range.c:912
+#: ../src/dtgtk/range.c:914
 msgid "years: "
 msgstr "роки: "
 
-#: ../src/dtgtk/range.c:920
+#: ../src/dtgtk/range.c:922
 msgid "months: "
 msgstr "місяці: "
 
-#: ../src/dtgtk/range.c:928
+#: ../src/dtgtk/range.c:930
 msgid "days: "
 msgstr "дні: "
 
 #. the time section
-#: ../src/dtgtk/range.c:940
+#: ../src/dtgtk/range.c:942
 msgid "time"
 msgstr "час"
 
-#: ../src/dtgtk/range.c:967
+#: ../src/dtgtk/range.c:969
 msgid ""
 "simple click to select date\n"
 "double click to use the date directly."
@@ -8477,29 +8477,29 @@ msgstr ""
 "простий клік для вибору дати\n"
 "подвійний клік, щоб використовувати дату безпосередньо"
 
-#: ../src/dtgtk/range.c:993 ../src/dtgtk/range.c:1733
+#: ../src/dtgtk/range.c:995 ../src/dtgtk/range.c:1735
 msgid "now"
 msgstr "зараз"
 
-#: ../src/dtgtk/range.c:995
+#: ../src/dtgtk/range.c:997
 msgid "set the value to always match current datetime"
 msgstr ""
 "встановити значення так, щоб воно завжди відповідало поточній даті і часу"
 
 #. apply button
-#: ../src/dtgtk/range.c:998 ../src/gui/accelerators.c:147
+#: ../src/dtgtk/range.c:1000 ../src/gui/accelerators.c:147
 #: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:750
 #: ../src/libs/styles.c:861
 msgid "apply"
 msgstr "застосувати"
 
-#: ../src/dtgtk/range.c:999
+#: ../src/dtgtk/range.c:1001
 msgid "set the range bound with this value"
 msgstr "встановити межу діапазону в це значення"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1710 ../src/gui/accelerators.c:1909
+#: ../src/dtgtk/range.c:1712 ../src/gui/accelerators.c:1909
 #: ../src/gui/accelerators.c:1988 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
@@ -11712,7 +11712,7 @@ msgstr ""
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/colorreconstruction.c:135
 #: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:720
 #: ../src/iop/dither.c:103 ../src/iop/flip.c:105 ../src/iop/hazeremoval.c:112
-#: ../src/iop/highlights.c:139 ../src/iop/hotpixels.c:73
+#: ../src/iop/highlights.c:141 ../src/iop/hotpixels.c:73
 #: ../src/iop/invert.c:122 ../src/iop/lens.cc:159 ../src/iop/nlmeans.c:99
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rawdenoise.c:130
 #: ../src/iop/retouch.c:209 ../src/iop/sharpen.c:94 ../src/iop/spots.c:67
@@ -12220,8 +12220,8 @@ msgstr "коригувати хроматичні аберації для сен
 
 #: ../src/iop/cacorrect.c:89 ../src/iop/cacorrect.c:91
 #: ../src/iop/cacorrectrgb.c:168 ../src/iop/cacorrectrgb.c:170
-#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:140
-#: ../src/iop/highlights.c:142 ../src/iop/hotpixels.c:74
+#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:142
+#: ../src/iop/highlights.c:144 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
 #: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:112
 #: ../src/iop/rawprepare.c:114 ../src/iop/temperature.c:200
@@ -14283,12 +14283,12 @@ msgstr "коли і як давати пріоритет певним кольо
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "тон відтінку, якому слід надавати перевагу над іншими відтінками"
 
-#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5806
-#: ../src/iop/highlights.c:2099
+#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5819
+#: ../src/iop/highlights.c:2212
 msgid "not applicable"
 msgstr "не застосовується"
 
-#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2100
+#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2213
 msgid "no highlights reconstruction for monochrome images"
 msgstr ""
 "для монохромних зображень відновлення переекспонованих ділянок не "
@@ -14535,16 +14535,16 @@ msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "реконструювати повні RGB-пікселі з даних масиву кольорових фільтрів сенсора"
 
-#: ../src/iop/demosaic.c:5268
+#: ../src/iop/demosaic.c:5288
 msgid "[dual demosaic_cl] internal problem"
 msgstr "[dual demosaic_cl] внутрішня проблема"
 
-#: ../src/iop/demosaic.c:5639
+#: ../src/iop/demosaic.c:5661
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "матрицю кольорів `%s' не знайдено для Quad Bayer зображення!"
 
-#: ../src/iop/demosaic.c:5772
+#: ../src/iop/demosaic.c:5786
 msgid ""
 "bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -14556,7 +14556,7 @@ msgstr ""
 "LMMSE найкраще підходить для зображень з високим значенням ISO.\n"
 "подвійні демозаїки подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:5776
+#: ../src/iop/demosaic.c:5790
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -14566,7 +14566,7 @@ msgstr ""
 "domain chroma повільні.\n"
 "подвійні демозаїки подвоюють час обробки."
 
-#: ../src/iop/demosaic.c:5780
+#: ../src/iop/demosaic.c:5794
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -14576,21 +14576,19 @@ msgstr ""
 "0.0 - вимикає медіанну фільтрацію\n"
 "1.0 - ігнорувати контури"
 
-#: ../src/iop/demosaic.c:5784
+#: ../src/iop/demosaic.c:5799
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
-"set to 1.0 for flat content"
+"set to 1.0 for flat content\n"
+"toggle to visualize the mask"
 msgstr ""
 "поріг контрасту для подвійної демозаїки.\n"
 "0.0 - для високочастотного вмісту\n"
-"1.0 - для плоского вмісту"
+"1.0 - для плоского вмісту\n"
+"перемикач візуалізує маску"
 
-#: ../src/iop/demosaic.c:5787
-msgid "display blending mask"
-msgstr "показати маску змішування"
-
-#: ../src/iop/demosaic.c:5794
+#: ../src/iop/demosaic.c:5807
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -14598,16 +14596,16 @@ msgstr ""
 "кроки уточнення LMMSE. медіанні кроки усереднюють вихід,\n"
 "уточнення додає певний перерахунок червоних та синіх каналів"
 
-#: ../src/iop/demosaic.c:5797
+#: ../src/iop/demosaic.c:5810
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 "кількість медіанних проходів згладжування кольорів після демозаїкізації"
 
-#: ../src/iop/demosaic.c:5800
+#: ../src/iop/demosaic.c:5813
 msgid "green channels matching method"
 msgstr "метод вирівнювання зелених каналів"
 
-#: ../src/iop/demosaic.c:5807
+#: ../src/iop/demosaic.c:5820
 msgid "demosaicing is only used for color raw images"
 msgstr "демозаїкізація використовується лише для кольорових raw зображень"
 
@@ -16182,20 +16180,20 @@ msgstr "відстань"
 msgid "limit haze removal up to a specific spatial depth"
 msgstr "обмежити видалення серпанку до певної просторової глибини"
 
-#: ../src/iop/highlights.c:133
+#: ../src/iop/highlights.c:135
 msgid "highlight reconstruction"
 msgstr "відновлення переекспонованих ділянок"
 
-#: ../src/iop/highlights.c:138
+#: ../src/iop/highlights.c:140
 msgid "avoid magenta highlights and try to recover highlights colors"
 msgstr ""
 "уникнення мадженти та спроба відновити кольори в переекспонованих ділянках"
 
-#: ../src/iop/highlights.c:141 ../src/iop/hotpixels.c:75
+#: ../src/iop/highlights.c:143 ../src/iop/hotpixels.c:75
 msgid "reconstruction, raw"
 msgstr "відновлювальна, raw"
 
-#: ../src/iop/highlights.c:2031
+#: ../src/iop/highlights.c:2115
 msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. Falling "
 "back to clip."
@@ -16203,23 +16201,26 @@ msgstr ""
 "режим керованих лапласіанів недоступний для сенсорів X-Trans. повертаємось "
 "до обрізання."
 
-#: ../src/iop/highlights.c:2066
+#: ../src/iop/highlights.c:2153
 msgid "guided laplacians"
 msgstr "керовані лапласіани"
 
-#: ../src/iop/highlights.c:2080
+#: ../src/iop/highlights.c:2187
 msgid "highlight reconstruction method"
 msgstr "метод відновлення переекспонованих ділянок"
 
-#: ../src/iop/highlights.c:2084
+#: ../src/iop/highlights.c:2192
 msgid ""
-"manually adjust the clipping threshold against magenta highlights (you "
-"shouldn't ever need to touch this)"
+"manually adjust the clipping threshold against magenta highlights\n"
+"the mask icon shows the clipped area\n"
+"(you shouldn't ever need to touch this)"
 msgstr ""
 "ручне регулювання порогу обрізання для боротьби з маджентою в "
-"переекспонованих ділянках (але регулювати це не варто)"
+"переекспонованих ділянках\n"
+"піктограма маски показує обрізану область\n"
+"(але регулювати це не варто)"
 
-#: ../src/iop/highlights.c:2088
+#: ../src/iop/highlights.c:2201
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. Useful at high ISO."
@@ -16227,7 +16228,7 @@ msgstr ""
 "додайте шум, щоб візуально змішати реконструйовані області\n"
 "з рештою шумного зображення. корисно при високих ISO."
 
-#: ../src/iop/highlights.c:2092
+#: ../src/iop/highlights.c:2205
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16235,7 +16236,7 @@ msgstr ""
 "збільште, якщо маджентові ділянки не повністю виправлені\n"
 "кожна нова ітерація призводить до зниження продуктивності."
 
-#: ../src/iop/highlights.c:2096
+#: ../src/iop/highlights.c:2209
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -22738,6 +22739,11 @@ msgstr "вийти з поточної розкладки"
 msgid "module toolbox"
 msgstr "набір інструментів модуля"
 
+#. connect callbacks
+#: ../src/libs/tools/ratings.c:98
+msgid "set star rating for selected images"
+msgstr "установити зірковий рейтинг для вибраних зображень"
+
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
 msgstr "шкала часу"
@@ -23456,6 +23462,12 @@ msgstr ""
 #: ../src/views/view.c:1336
 msgid "mouse actions"
 msgstr "дії за допомогою миші"
+
+#~ msgid "switch dual threshold"
+#~ msgstr "поріг контрасту для подвійної демозаїки"
+
+#~ msgid "display blending mask"
+#~ msgstr "показати маску змішування"
 
 #~ msgid "filters for collections"
 #~ msgstr "фільтри для колекцій"
