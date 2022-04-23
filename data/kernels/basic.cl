@@ -200,6 +200,22 @@ highlights_1f_clip (read_only image2d_t in, write_only image2d_t out, const int 
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+kernel void
+highlights_false_color (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                    const int rx, const int ry, const int filters, global const float *clips)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+  
+  const float ival = read_imagef(in, sampleri, (int2)(x, y)).x;
+  const int c = FC(y + ry, x + rx, filters);
+  float oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
+
+  write_imagef (out, (int2)(x, y), oval);
+}
+
 #define SQRT3 1.7320508075688772935274463415058723669f
 #define SQRT12 3.4641016151377545870548926830117447339f // 2*SQRT3
 kernel void
