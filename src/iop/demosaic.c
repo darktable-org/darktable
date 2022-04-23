@@ -5911,6 +5911,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->pixelshift_enable = dt_bauhaus_toggle_from_params(self, "pixelshift_enable");
+  gtk_widget_set_tooltip_text(g->pixelshift_enable, _("Enable Pentax PixelShift.\nThis feature is beta stage might not work correctly.\nThis also doesn't support motion correction yet."));
 
   g->demosaic_method_bayer = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
   for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, 9);
