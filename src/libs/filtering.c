@@ -1629,7 +1629,13 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     sort->lib = d;
     sort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_hexpand(sort->box, TRUE);
-    sort->sort = dt_bauhaus_combobox_new(NULL);
+    // we only allow shortcut for the first sort order, always visible
+    if(num == 0)
+      sort->sort = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    else
+      sort->sort = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(sort->sort, NULL, _("sort order"));
+    DT_BAUHAUS_WIDGET(sort->sort)->show_label = FALSE;
     gtk_widget_set_tooltip_text(sort->sort, _("determine the sort order of shown images"));
     g_signal_connect(G_OBJECT(sort->sort), "value-changed", G_CALLBACK(_sort_combobox_changed), sort);
 
@@ -1664,6 +1670,11 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     gtk_box_pack_start(GTK_BOX(sort->box), sort->direction, FALSE, TRUE, 0);
     g_signal_connect(G_OBJECT(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
     dt_gui_add_class(sort->direction, "dt_ignore_fg_state");
+    if(num == 0)
+    {
+      dt_action_t *toggle = dt_action_section(DT_ACTION(self), N_("toggle"));
+      dt_action_define(toggle, NULL, _("sort direction"), sort->direction, &dt_action_def_toggle);
+    }
 
     sort->close = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
     gtk_widget_set_no_show_all(sort->close, TRUE);
