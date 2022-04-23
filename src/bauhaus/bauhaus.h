@@ -151,6 +151,7 @@ typedef struct dt_bauhaus_widget_t
 
   // label text, short
   char label[256];
+  gboolean show_label;
   // section, short
   gchar *section;
   gboolean show_extended_label;
@@ -171,6 +172,9 @@ typedef struct dt_bauhaus_widget_t
   GtkBorder *margin, *padding;
   // gap to add to the top padding due to the vertical centering
   int top_gap;
+
+  // is the popup not attached to the main widget (shortcuts)
+  gboolean detached_popup;
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
