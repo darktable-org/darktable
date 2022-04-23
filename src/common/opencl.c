@@ -285,7 +285,7 @@ gboolean dt_opencl_read_device_config(const int devid)
   cl->dev[devid].avoid_atomics &= 1;
   cl->dev[devid].pinned_memory &= (DT_OPENCL_PINNING_ON | DT_OPENCL_PINNING_DISABLED);
   if((cl->dev[devid].micro_nap < 0) || (cl->dev[devid].micro_nap > 1000000))
-    cl->dev[devid].micro_nap = 1000;
+    cl->dev[devid].micro_nap = 250;
   if((cl->dev[devid].clroundup_wd < 2) || (cl->dev[devid].clroundup_wd > 512))
     cl->dev[devid].clroundup_wd = 16;
   if((cl->dev[devid].clroundup_ht < 2) || (cl->dev[devid].clroundup_ht > 512))
@@ -343,7 +343,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].tuned_available = 0;
   // setting sane/conservative defaults at first
   cl->dev[dev].avoid_atomics = 0;
-  cl->dev[dev].micro_nap = 1000;
+  cl->dev[dev].micro_nap = 250;
   cl->dev[dev].pinned_memory = DT_OPENCL_PINNING_OFF;
   cl->dev[dev].clroundup_wd = 16;
   cl->dev[dev].clroundup_ht = 16;
@@ -495,7 +495,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   const gboolean is_cpu_device = (type & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
 
   // micro_nap can be made less conservative on current systems at least if not on-CPU
-  cl->dev[dev].micro_nap = (is_cpu_device) ? 1000 : 250;
+  if(newdevice)
+    cl->dev[dev].micro_nap = (is_cpu_device) ? 1000 : 250;
 
   if(is_cpu_device)
   {
