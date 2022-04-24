@@ -396,8 +396,13 @@ spinbutton *:disabled,
 #non-flat:disabled
 {
   background-color: transparent;
-  border: 0.07em solid shade(@button_border, 0.9);
+  border: 0.07em solid alpha(@button_border, 0.35);
   color: @disabled_fg_color;
+}
+
+popover spinbutton  /* needed to set some margin on overlay popover between it and label */
+{
+  margin-left: 0.35em;
 }
 
 /* Default extra margin for icons optical alignment */
