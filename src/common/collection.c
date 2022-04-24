@@ -266,6 +266,8 @@ int dt_collection_update(const dt_collection_t *collection)
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort%1d", i);
     params->sorts[dt_conf_get_int(confname)] = TRUE;
   }
+  // and we also take account of the last sort
+  params->sorts[dt_conf_get_int("plugins/lighttable/filtering/lastsort")] = TRUE;
 
   /* build select part includes where */
   /* COLOR and PATH */
