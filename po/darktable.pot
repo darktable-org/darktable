@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-23 10:56+0200\n"
+"POT-Creation-Date: 2022-04-24 17:55+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2083,7 +2083,7 @@ msgstr ""
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:676 ../src/gui/preferences.c:819
+#: ../src/common/collection.c:678 ../src/gui/preferences.c:819
 #: ../src/gui/presets.c:600 ../src/libs/camera.c:551
 #: ../src/libs/metadata_view.c:143
 msgid "focal length"
@@ -2330,7 +2330,7 @@ msgid "offset"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:674 ../src/gui/preferences.c:803
+#: ../src/common/collection.c:676 ../src/gui/preferences.c:803
 #: ../src/gui/presets.c:551 ../src/libs/metadata_view.c:139
 msgid "lens"
 msgstr ""
@@ -2349,7 +2349,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:110
 #: ../build/lib/darktable/plugins/introspection_borders.c:251
-#: ../src/common/collection.c:636 ../src/common/collection.c:684
+#: ../src/common/collection.c:638 ../src/common/collection.c:686
 msgid "aspect ratio"
 msgstr ""
 
@@ -2455,35 +2455,36 @@ msgid "very large chromatic aberration"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1420 ../src/develop/blend_gui.c:1989
-#: ../src/develop/blend_gui.c:2016 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:2915 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
-#: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
-#: ../src/iop/channelmixerrgb.c:4179 ../src/iop/colorzones.c:2302
-#: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1993
-#: ../src/libs/collect.c:1700
+#: ../src/common/collection.c:1422 ../src/common/color_vocabulary.c:230
+#: ../src/develop/blend_gui.c:1989 ../src/develop/blend_gui.c:2016
+#: ../src/develop/lightroom.c:834 ../src/gui/gtk.c:2915 ../src/gui/guides.c:730
+#: ../src/iop/bilateral.cc:305 ../src/iop/channelmixer.c:625
+#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:4179
+#: ../src/iop/colorzones.c:2302 ../src/iop/temperature.c:1819
+#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1700
 msgid "red"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1424 ../src/develop/blend_gui.c:1992
-#: ../src/develop/blend_gui.c:2019 ../src/develop/lightroom.c:838
-#: ../src/gui/gtk.c:2916 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
-#: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
-#: ../src/iop/channelmixerrgb.c:4180 ../src/iop/colorzones.c:2305
-#: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
-#: ../src/iop/temperature.c:1994 ../src/libs/collect.c:1700
+#: ../src/common/collection.c:1426 ../src/common/color_vocabulary.c:275
+#: ../src/develop/blend_gui.c:1992 ../src/develop/blend_gui.c:2019
+#: ../src/develop/lightroom.c:838 ../src/gui/gtk.c:2916 ../src/gui/guides.c:731
+#: ../src/iop/bilateral.cc:310 ../src/iop/channelmixer.c:626
+#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:4180
+#: ../src/iop/colorzones.c:2305 ../src/iop/temperature.c:1803
+#: ../src/iop/temperature.c:1821 ../src/iop/temperature.c:1994
+#: ../src/libs/collect.c:1700
 msgid "green"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1426 ../src/develop/blend_gui.c:1995
-#: ../src/develop/blend_gui.c:2022 ../src/develop/lightroom.c:840
-#: ../src/gui/gtk.c:2917 ../src/iop/bilateral.cc:315
-#: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
-#: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2307
-#: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1995
-#: ../src/libs/collect.c:1700
+#: ../src/common/collection.c:1428 ../src/common/color_vocabulary.c:322
+#: ../src/develop/blend_gui.c:1995 ../src/develop/blend_gui.c:2022
+#: ../src/develop/lightroom.c:840 ../src/gui/gtk.c:2917
+#: ../src/iop/bilateral.cc:315 ../src/iop/channelmixer.c:627
+#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:4181
+#: ../src/iop/colorzones.c:2307 ../src/iop/temperature.c:1823
+#: ../src/iop/temperature.c:1995 ../src/libs/collect.c:1700
 msgid "blue"
 msgstr ""
 
@@ -3236,7 +3237,7 @@ msgid "Markesteijn 3-pass + VNG"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1446 ../src/common/collection.c:1454
+#: ../src/common/collection.c:1448 ../src/common/collection.c:1456
 #: ../src/libs/collect.c:1654
 msgid "basic"
 msgstr ""
@@ -4030,7 +4031,7 @@ msgstr ""
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:682 ../src/gui/preferences.c:811
+#: ../src/common/collection.c:684 ../src/gui/preferences.c:811
 #: ../src/gui/presets.c:570 ../src/iop/basicadj.c:598 ../src/iop/exposure.c:123
 #: ../src/iop/exposure.c:1025 ../src/libs/metadata_view.c:141
 msgid "exposure"
@@ -4649,227 +4650,554 @@ msgid ""
 "make sure it allows access and is not mounted otherwise"
 msgstr ""
 
-#: ../src/common/collection.c:594
+#: ../src/common/collection.c:596
 msgid "too much time to update aspect ratio for the collection"
 msgstr ""
 
-#: ../src/common/collection.c:608 ../src/common/collection.c:686
+#: ../src/common/collection.c:610 ../src/common/collection.c:688
 #: ../src/libs/filters/filename.c:363 ../src/libs/metadata_view.c:126
 msgid "filename"
 msgstr ""
 
-#: ../src/common/collection.c:610
+#: ../src/common/collection.c:612
 msgid "capture time"
 msgstr ""
 
-#: ../src/common/collection.c:612
+#: ../src/common/collection.c:614
 msgid "import time"
 msgstr ""
 
-#: ../src/common/collection.c:614
+#: ../src/common/collection.c:616
 msgid "last modification time"
 msgstr ""
 
-#: ../src/common/collection.c:616
+#: ../src/common/collection.c:618
 msgid "last export time"
 msgstr ""
 
-#: ../src/common/collection.c:618
+#: ../src/common/collection.c:620
 msgid "last print time"
 msgstr ""
 
-#: ../src/common/collection.c:620 ../src/common/collection.c:698
+#: ../src/common/collection.c:622 ../src/common/collection.c:700
 #: ../src/common/ratings.c:321 ../src/develop/lightroom.c:1525
 #: ../src/libs/tools/ratings.c:111
 msgid "rating"
 msgstr ""
 
-#: ../src/common/collection.c:622 ../src/libs/live_view.c:313
+#: ../src/common/collection.c:624 ../src/libs/live_view.c:313
 msgid "id"
 msgstr ""
 
-#: ../src/common/collection.c:624 ../src/common/collection.c:672
+#: ../src/common/collection.c:626 ../src/common/collection.c:674
 #: ../src/develop/lightroom.c:1550 ../src/dtgtk/thumbnail.c:1384
 #: ../src/libs/tools/colorlabels.c:93
 msgid "color label"
 msgstr ""
 
-#: ../src/common/collection.c:626 ../src/libs/image.c:528
+#: ../src/common/collection.c:628 ../src/libs/image.c:528
 msgid "group"
 msgstr ""
 
-#: ../src/common/collection.c:628 ../src/libs/metadata_view.c:128
+#: ../src/common/collection.c:630 ../src/libs/metadata_view.c:128
 msgid "full path"
 msgstr ""
 
-#: ../src/common/collection.c:630
+#: ../src/common/collection.c:632
 msgid "custom sort"
 msgstr ""
 
 #. title
-#: ../src/common/collection.c:632 ../src/common/metadata.c:48
+#: ../src/common/collection.c:634 ../src/common/metadata.c:48
 #: ../src/imageio/format/pdf.c:573 ../src/imageio/storage/gallery.c:178
 #: ../src/imageio/storage/latex.c:178 ../src/imageio/storage/piwigo.c:893
 msgid "title"
 msgstr ""
 
-#: ../src/common/collection.c:634 ../src/common/metadata.c:49
+#: ../src/common/collection.c:636 ../src/common/metadata.c:49
 #: ../src/gui/styles_dialog.c:451
 msgid "description"
 msgstr ""
 
-#: ../src/common/collection.c:638
+#: ../src/common/collection.c:640
 msgid "shuffle"
 msgstr ""
 
-#: ../src/common/collection.c:650
+#: ../src/common/collection.c:652
 msgid "film roll"
 msgstr ""
 
-#: ../src/common/collection.c:652
+#: ../src/common/collection.c:654
 msgid "folder"
 msgstr ""
 
-#: ../src/common/collection.c:654
+#: ../src/common/collection.c:656
 msgid "camera"
 msgstr ""
 
-#: ../src/common/collection.c:656 ../src/libs/export_metadata.c:189
+#: ../src/common/collection.c:658 ../src/libs/export_metadata.c:189
 #: ../src/libs/tagging.c:3268
 msgid "tag"
 msgstr ""
 
-#: ../src/common/collection.c:658
+#: ../src/common/collection.c:660
 msgid "date taken"
 msgstr ""
 
-#: ../src/common/collection.c:660
+#: ../src/common/collection.c:662
 msgid "date-time taken"
 msgstr ""
 
-#: ../src/common/collection.c:662 ../src/libs/metadata_view.c:130
+#: ../src/common/collection.c:664 ../src/libs/metadata_view.c:130
 msgid "import timestamp"
 msgstr ""
 
-#: ../src/common/collection.c:664 ../src/libs/metadata_view.c:131
+#: ../src/common/collection.c:666 ../src/libs/metadata_view.c:131
 msgid "change timestamp"
 msgstr ""
 
-#: ../src/common/collection.c:666 ../src/libs/metadata_view.c:132
+#: ../src/common/collection.c:668 ../src/libs/metadata_view.c:132
 msgid "export timestamp"
 msgstr ""
 
-#: ../src/common/collection.c:668 ../src/libs/metadata_view.c:133
+#: ../src/common/collection.c:670 ../src/libs/metadata_view.c:133
 msgid "print timestamp"
 msgstr ""
 
-#: ../src/common/collection.c:670 ../src/libs/collect.c:3177
+#: ../src/common/collection.c:672 ../src/libs/collect.c:3177
 #: ../src/libs/filtering.c:1929 ../src/libs/filtering.c:1951
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr ""
 
 #. iso
-#: ../src/common/collection.c:678 ../src/gui/preferences.c:807
+#: ../src/common/collection.c:680 ../src/gui/preferences.c:807
 #: ../src/gui/presets.c:557 ../src/libs/camera.c:559
 #: ../src/libs/metadata_view.c:145
 msgid "ISO"
 msgstr ""
 
 #. aperture
-#: ../src/common/collection.c:680 ../src/gui/preferences.c:815
+#: ../src/common/collection.c:682 ../src/gui/preferences.c:815
 #: ../src/gui/presets.c:585 ../src/libs/camera.c:546 ../src/libs/camera.c:548
 #: ../src/libs/metadata_view.c:140
 msgid "aperture"
 msgstr ""
 
-#: ../src/common/collection.c:688 ../src/develop/lightroom.c:1541
+#: ../src/common/collection.c:690 ../src/develop/lightroom.c:1541
 #: ../src/libs/geotagging.c:141
 msgid "geotagging"
 msgstr ""
 
-#: ../src/common/collection.c:690 ../src/libs/tools/global_toolbox.c:396
+#: ../src/common/collection.c:692 ../src/libs/tools/global_toolbox.c:396
 msgid "grouping"
 msgstr ""
 
-#: ../src/common/collection.c:692 ../src/dtgtk/thumbnail.c:1396
+#: ../src/common/collection.c:694 ../src/dtgtk/thumbnail.c:1396
 #: ../src/libs/metadata_view.c:129 ../src/libs/metadata_view.c:338
 msgid "local copy"
 msgstr ""
 
-#: ../src/common/collection.c:694 ../src/gui/preferences.c:783
+#: ../src/common/collection.c:696 ../src/gui/preferences.c:783
 msgid "module"
 msgstr ""
 
-#: ../src/common/collection.c:696 ../src/gui/hist_dialog.c:280
+#: ../src/common/collection.c:698 ../src/gui/hist_dialog.c:280
 #: ../src/gui/styles_dialog.c:566 ../src/gui/styles_dialog.c:610
 #: ../src/libs/ioporder.c:40
 msgid "module order"
 msgstr ""
 
-#: ../src/common/collection.c:700
+#: ../src/common/collection.c:702
 msgid "search"
 msgstr ""
 
-#: ../src/common/collection.c:1422 ../src/develop/lightroom.c:836
+#: ../src/common/collection.c:1424 ../src/develop/lightroom.c:836
 #: ../src/gui/guides.c:732 ../src/iop/colorzones.c:2304
 #: ../src/iop/temperature.c:1809 ../src/libs/collect.c:1700
 msgid "yellow"
 msgstr ""
 
-#: ../src/common/collection.c:1428 ../src/iop/colorzones.c:2308
-#: ../src/libs/collect.c:1700
+#: ../src/common/collection.c:1430 ../src/common/color_vocabulary.c:337
+#: ../src/iop/colorzones.c:2308 ../src/libs/collect.c:1700
 msgid "purple"
 msgstr ""
 
-#: ../src/common/collection.c:1448 ../src/libs/collect.c:1654
+#: ../src/common/collection.c:1450 ../src/libs/collect.c:1654
 msgid "auto applied"
 msgstr ""
 
-#: ../src/common/collection.c:1450 ../src/libs/collect.c:1654
+#: ../src/common/collection.c:1452 ../src/libs/collect.c:1654
 msgid "altered"
 msgstr ""
 
-#: ../src/common/collection.c:1463 ../src/common/collection.c:1552
+#: ../src/common/collection.c:1465 ../src/common/collection.c:1554
 #: ../src/libs/collect.c:1127 ../src/libs/collect.c:1266
 #: ../src/libs/collect.c:1290 ../src/libs/collect.c:1400
 #: ../src/libs/collect.c:2409
 msgid "not tagged"
 msgstr ""
 
-#: ../src/common/collection.c:1464 ../src/libs/collect.c:1290
+#: ../src/common/collection.c:1466 ../src/libs/collect.c:1290
 #: ../src/libs/map_locations.c:765
 msgid "tagged"
 msgstr ""
 
-#: ../src/common/collection.c:1465
+#: ../src/common/collection.c:1467
 msgid "tagged*"
 msgstr ""
 
-#: ../src/common/collection.c:1500 ../src/libs/collect.c:1668
+#: ../src/common/collection.c:1502 ../src/libs/collect.c:1668
 msgid "not copied locally"
 msgstr ""
 
 #. grouping
-#: ../src/common/collection.c:1849 ../src/libs/collect.c:1788
+#: ../src/common/collection.c:1851 ../src/libs/collect.c:1788
 msgid "group leaders"
 msgstr ""
 
-#: ../src/common/collection.c:1972 ../src/libs/collect.c:1868
+#: ../src/common/collection.c:1974 ../src/libs/collect.c:1868
 msgid "not defined"
 msgstr ""
 
-#: ../src/common/collection.c:2380
+#: ../src/common/collection.c:2382
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr ""
 
-#: ../src/common/collection.c:2386
+#: ../src/common/collection.c:2388
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] ""
 msgstr[1] ""
+
+#: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:1986
+#: ../src/develop/blend_gui.c:2013 ../src/gui/guides.c:729
+#: ../src/iop/channelmixerrgb.c:4185 ../src/iop/levels.c:667
+#: ../src/iop/rgblevels.c:947
+msgid "gray"
+msgstr ""
+
+#. Human skin tones database
+#. This is a racially-charged matter, tread with it carefully.
+#. Usable data are : tabulated avg ± std (P < 0.05) models on skin color measurements
+#. on more than 80 individuals under D65 illuminant.
+#. Notice all these data are valid only under D65 illuminant and errors up to delta E = 6 have
+#. been measured for A illuminant. Proper camera profiling and chromatic adaptation needs to be performed
+#. or all the following is meaningless.
+#. We use ranges of avg ± 2 std, giving 95 % of confidence in the prediction.
+#. We use CIE Lab instead of Lch coordinates, because a and b parameters are physiologically meaningful :
+#. - a (redness) is linked to blood flow and health,
+#. - b (yellowness) is linked to melanine and sun tan.
+#. Reference :
+#. XIAO, Kaida, YATES, Julian M., ZARDAWI, Faraedon, et al.
+#. Characterising the variations in ethnic skin colours: a new calibrated data base for human skin.
+#. Skin Research and Technology, 2017, vol. 23, no 1, p. 21-29.
+#. https://onlinelibrary.wiley.com/doi/pdf/10.1111/srt.12295
+#.
+#. Sample : 187 caucasian, 202 chinese, 145 kurdish and 426 thai.
+#.
+#. DE RIGAL, Jean, DES MAZIS, Isabelle, DIRIDOLLOU, Stephane, et al.
+#. The effect of age on skin color and color heterogeneity in four ethnic groups.
+#. Skin Research and Technology, 2010, vol. 16, no 2, p. 168-178.
+#. https://pubmed.ncbi.nlm.nih.gov/20456097/
+#.
+#. Sample : 121 african-american, 64 mexican.
+#. Note : the data have been read on the graph and are inaccurate and std is majorated.
+#. The original authors have been contacted to get the tabulated, accurate data,
+#. but the main author is retired, co-authors have changed jobs, and the L'Oréal head of R&D
+#. did not respond. So the values here are given for what it's worth.
+#.
+#. "Forearm" is the ventral forearm skin. It is the least sun-tanned part of skin.
+#. Sun tan will depend the most on lifestyle, therefore the ventral forearm
+#. is the least socially-biased skin color metric.
+#. "Forehead" is the most sun-tanned part of skin. This translates to high b coordinate.
+#. "Cheek" is the most redish part of skin. This translates to high a coordinate.
+#. L decreases with age in all ethnicities and with b/yellowness/melanine/tan.
+#: ../src/common/color_vocabulary.c:91
+msgid "Chinese"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:92
+msgid "Thai"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:93
+msgid "Kurdish"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:94
+msgid "Caucasian"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:95
+msgid "African-american"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:98 ../src/common/color_vocabulary.c:103
+#: ../src/common/color_vocabulary.c:108 ../src/common/color_vocabulary.c:113
+msgid "forearm"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:118 ../src/common/color_vocabulary.c:123
+#: ../src/common/color_vocabulary.c:128 ../src/common/color_vocabulary.c:133
+#: ../src/common/color_vocabulary.c:138 ../src/common/color_vocabulary.c:143
+msgid "forehead"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:148 ../src/common/color_vocabulary.c:153
+#: ../src/common/color_vocabulary.c:158 ../src/common/color_vocabulary.c:163
+#: ../src/common/color_vocabulary.c:168 ../src/common/color_vocabulary.c:173
+msgid "cheek"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:200
+#, c-format
+msgid "average %s skin tone\n"
+msgstr ""
+
+#. 0° - pinkish red
+#: ../src/common/color_vocabulary.c:220
+msgid "deep purple"
+msgstr ""
+
+#. L = 10 %
+#: ../src/common/color_vocabulary.c:221
+msgid "fuchsia"
+msgstr ""
+
+#. L = 30 %
+#: ../src/common/color_vocabulary.c:222
+msgid "medium magenta"
+msgstr ""
+
+#. L = 50 %
+#: ../src/common/color_vocabulary.c:223
+msgid "violet pink"
+msgstr ""
+
+#. L = 70 %
+#: ../src/common/color_vocabulary.c:224
+msgid "plum violet"
+msgstr ""
+
+#. 24° - red
+#: ../src/common/color_vocabulary.c:229
+msgid "dark red"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:231
+msgid "crimson"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:232
+msgid "salmon"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:233
+msgid "pink"
+msgstr ""
+
+#. 48° - orangy red
+#: ../src/common/color_vocabulary.c:238
+msgid "maroon"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:239
+msgid "dark orange red"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:240
+msgid "orange red"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:241
+msgid "coral"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:242 ../src/common/color_vocabulary.c:259
+msgid "khaki"
+msgstr ""
+
+#. 72° - orange
+#: ../src/common/color_vocabulary.c:247
+msgid "brown"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:248
+msgid "chocolate"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:249
+msgid "dark gold"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:250
+msgid "gold"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:251
+msgid "sandy brown"
+msgstr ""
+
+#. 96° - yellow olive
+#. 120° - green
+#. 144° - blueish green
+#: ../src/common/color_vocabulary.c:256 ../src/common/color_vocabulary.c:265
+#: ../src/common/color_vocabulary.c:274
+msgid "dark green"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:257
+msgid "dark olive green"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:258
+msgid "olive"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:260
+msgid "beige"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:266 ../src/common/color_vocabulary.c:276
+msgid "forest green"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:267
+msgid "olive drab"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:268
+msgid "yellow green"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:269 ../src/common/color_vocabulary.c:278
+msgid "pale green"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:277
+msgid "lime green"
+msgstr ""
+
+#. 168° - greenish cyian
+#: ../src/common/color_vocabulary.c:283
+msgid "dark sea green"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:284
+msgid "sea green"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:285 ../src/common/color_vocabulary.c:302
+msgid "teal"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:286
+msgid "light sea green"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:287
+msgid "turquoise"
+msgstr ""
+
+#. 192° - cyan
+#: ../src/common/color_vocabulary.c:292
+msgid "dark slate gray"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:293
+msgid "light slate gray"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:294 ../src/common/color_vocabulary.c:303
+msgid "dark cyan"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:295 ../src/common/color_vocabulary.c:315
+#: ../src/iop/colorzones.c:2306
+msgid "aqua"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:296 ../src/gui/guides.c:733
+#: ../src/iop/temperature.c:1807
+msgid "cyan"
+msgstr ""
+
+#. 216° - medium blue
+#: ../src/common/color_vocabulary.c:301
+msgid "navy blue"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:304 ../src/common/color_vocabulary.c:314
+msgid "deep sky blue"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:305
+msgid "aquamarine blue"
+msgstr ""
+
+#. 240° - blue and 264° - bluer than blue
+#. these are collapsed because CIE Lab 1976 sucks for blues
+#. 288° - more blue
+#: ../src/common/color_vocabulary.c:311 ../src/common/color_vocabulary.c:320
+msgid "dark blue"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:312 ../src/common/color_vocabulary.c:321
+msgid "medium blue"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:313
+msgid "azure blue"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:323
+msgid "light sky blue"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:324
+msgid "light blue"
+msgstr ""
+
+#. 312° - violet
+#: ../src/common/color_vocabulary.c:329
+msgid "indigo"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:330
+msgid "dark violet"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:331
+msgid "blue violet"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:332 ../src/common/color_vocabulary.c:340
+msgid "violet"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:333
+msgid "plum"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:338
+msgid "dark magenta"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:339 ../src/gui/guides.c:734
+#: ../src/iop/colorzones.c:2309 ../src/iop/temperature.c:1805
+msgid "magenta"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:341
+msgid "lavender"
+msgstr ""
+
+#: ../src/common/color_vocabulary.c:344
+msgid "color not found"
+msgstr ""
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:1400 ../src/common/colorspaces.c:1689
@@ -6820,12 +7148,6 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1984 ../src/develop/blend_gui.c:2011
 msgid "sliders for gray value"
-msgstr ""
-
-#: ../src/develop/blend_gui.c:1986 ../src/develop/blend_gui.c:2013
-#: ../src/gui/guides.c:729 ../src/iop/channelmixerrgb.c:4185
-#: ../src/iop/levels.c:667 ../src/iop/rgblevels.c:947
-msgid "gray"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1987 ../src/develop/blend_gui.c:2014
@@ -9322,15 +9644,6 @@ msgstr ""
 
 #: ../src/gui/guides.c:727
 msgid "set overlay color"
-msgstr ""
-
-#: ../src/gui/guides.c:733 ../src/iop/temperature.c:1807
-msgid "cyan"
-msgstr ""
-
-#: ../src/gui/guides.c:734 ../src/iop/colorzones.c:2309
-#: ../src/iop/temperature.c:1805
-msgid "magenta"
 msgstr ""
 
 #: ../src/gui/guides.c:739
@@ -13376,10 +13689,6 @@ msgstr ""
 
 #: ../src/iop/colorzones.c:2303
 msgid "orange"
-msgstr ""
-
-#: ../src/iop/colorzones.c:2306
-msgid "aqua"
 msgstr ""
 
 #: ../src/iop/colorzones.c:2450 ../src/iop/rgbcurve.c:1385
