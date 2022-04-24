@@ -29,6 +29,36 @@ _scripts_install.event_registered = false
 
 _scripts_install.dt = require 'darktable'
 
+-- download the lua-scripts repo as zip file, uncompress it and move its contents to the dt configuration dir
+-- TODO: make it work for Linux (I can test), maybe MacOs (I cannot test)
+-- TODO: make repo url and name as parameter to use reuse it in script manager
+-- TODO: find out if downloaded master branch is 'master' or 'main' (needed to move contents)
+-- TODO: Remember somewhere that the download wasn't done via git but via zip to enable updates
+--       (maybe not necessary because zip downloaded 'repo' doesn't have a .git subdir)
+local function download_without_git()
+  local reponame = "lua-scripts"
+  local repourl = "https://github.com/darktable-org/"
+  local localzip = _scripts_install.dt.configuration.tmp_dir..'\\'..reponame..'.zip'
+  local branchname = "master" -- check if it is main (or something else...)
+  local targetdir  = _scripts_install.dt.configuration.config_dir .. "/lua"
+  local exe_wget   = 'powershell.exe -command "wget '..repourl..'/'..reponame..'/archive/refs/heads/master.zip -OutFile "'..localzip..'"'
+  local exe_unzip  = 'powershell.exe -command Expand-Archive -Path "'..localzip..'" -DestinationPath "'.._scripts_install.dt.configuration.tmp_dir..'\\'..reponame..'_unpack\\\\"'
+  local exe_newdir = 'powershell.exe -command New-Item -Force -Path "' .. _scripts_install.dt.configuration.config_dir .. '" -Name "lua" -ItemType "directory"'
+  local exe_move   = 'powershell.exe -command Copy-Item -Recurse -Path "'.._scripts_install.dt.configuration.tmp_dir..'\\'..reponame..'_unpack\\'..reponame..'-'..branchname..'\\*" -Destination "'..targetdir..'"'
+  local exe_clean  = 'powershell.exe -command rm -Recurse "'.._scripts_install.dt.configuration.tmp_dir..'\\'..reponame..'_unpack"'
+  local exe_rmzip  = 'powershell.exe -command rm "'..localzip..'"'
+  local result = true
+  if result then result = os.execute( exe_wget  ) end
+  if result then result = os.execute( exe_unzip ) end
+  if result then result = os.execute( exe_newdir ) end
+  if result then result = os.execute( exe_move  ) end
+  os.execute( exe_clean ) -- cleanup even if command failed
+  os.execute( exe_rmzip )
+
+  return result
+end
+
+
 -- check for gui so that we don't hang darktable-cli
 
 if _scripts_install.dt.configuration.has_gui  then
@@ -60,7 +90,7 @@ if _scripts_install.dt.configuration.has_gui  then
     _scripts_install.not_installed = true
     --_scripts_install.dt.print_log("checking for lua directory")
 
-    -- check for lua scripts directory 
+    -- check for lua scripts directory
     if _scripts_install.dt.configuration.running_os == "windows" then
       _scripts_install.dir_cmd = "dir /b "
       _scripts_install.which_cmd = "where "
@@ -73,7 +103,7 @@ if _scripts_install.dt.configuration.has_gui  then
     -- _scripts_install.dt.print_log("checking for scripts")
 
     _scripts_install.p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
-    for line in _scripts_install.p:lines() do 
+    for line in _scripts_install.p:lines() do
       -- _scripts_install.dt.print_log("line is " .. line)
       if string.match(line, "^lua$") then
         _scripts_install.not_installed = false
@@ -95,7 +125,7 @@ if _scripts_install.dt.configuration.has_gui  then
         -- check for a luarc file and move it
       function _scripts_install.backup_luarc()
         local p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
-        for line in p:lines() do 
+        for line in p:lines() do
           if string.match(line, "^luarc$") then
             if _scripts_install.dt.configuration.running_os == "windows" then
               os.execute("rename " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
@@ -114,7 +144,7 @@ if _scripts_install.dt.configuration.has_gui  then
 
       function _scripts_install.installer()
        -- _scripts_install.dt.print_log("running installer")
-
+        local install_without_git = false -- by default, try to use git
         if _scripts_install.widgets.choice.value == _("don't show again") then
           _scripts_install.dt.preferences.write("_scripts_install", "dont_show", "bool", true)
           _scripts_install.dt.preferences.write("_scripts_install", "remind", "bool", false)
@@ -144,7 +174,7 @@ if _scripts_install.dt.configuration.has_gui  then
           -- _scripts_install.dt.print_log("with command " .. _scripts_install.which_cmd .. _scripts_install.git_cmd)
 
           _scripts_install.p = io.popen(_scripts_install.which_cmd .. _scripts_install.git_cmd)
-          for line in _scripts_install.p:lines() do 
+          for line in _scripts_install.p:lines() do
             if string.match(line, _scripts_install.git_cmd) then
               -- _scripts_install.dt.print_log("got a match")
               _scripts_install.git_bin = line
@@ -154,18 +184,22 @@ if _scripts_install.dt.configuration.has_gui  then
           _scripts_install.p:close()
 
           if not _scripts_install.git_bin then
-            _scripts_install.dt.print(_("Please install git and make sure it is in your path"))
-            return
+            --_scripts_install.dt.print(_("Please install git and make sure it is in your path"))
+            install_without_git = true -- fall back to zip download
           end
 
           _scripts_install.require_string = "require \"tools/script_manager\""
           if _scripts_install.dt.configuration.running_os ~= "windows" then
             _scripts_install.require_string = "'" .. _scripts_install.require_string .. "'"
           end
-          
+
           _scripts_install.backup_luarc()
           _scripts_install.dt.print(_("lua scripts installing"))
-          os.execute("\"" .. _scripts_install.git_bin .. "\" " .. "clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.dt.configuration.config_dir .. "/lua")
+          if install_without_git then
+            download_without_git() -- TODO: check result, abort with message about installing git if other method fails
+          else
+            os.execute("\"" .. _scripts_install.git_bin .. "\" " .. "clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.dt.configuration.config_dir .. "/lua")
+          end
           os.execute("echo " .. _scripts_install.require_string .. " > " .. _scripts_install.dt.configuration.config_dir .. "/luarc")
           _scripts_install.dt.print(_("lua scripts are installed"))
           require "tools/script_manager"
@@ -204,7 +238,7 @@ if _scripts_install.dt.configuration.has_gui  then
       if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
 
         _scripts_install.widgets["message"] = _scripts_install.dt.new_widget("text_view"){
-          text = _("Choose an action below.\n\n'install scripts' installs the lua scripts from\nthe darktable ") .. 
+          text = _("Choose an action below.\n\n'install scripts' installs the lua scripts from\nthe darktable ") ..
           _("lua-scripts repository\n\n'remind me later' will cause this module to\nreappear every 5th ") ..
           _("darktable is restarted\n\n'dont show again' will cause this module to\nnot be shown again ") ..
           _("for those who do\nnot wish to install the scripts\n\n"),
@@ -217,8 +251,8 @@ if _scripts_install.dt.configuration.has_gui  then
         label = _("select action"),
         tooltip = _("select action to perform"),
         selected = 1,
-        _("install scripts"), 
-        _("remind me later"), 
+        _("install scripts"),
+        _("remind me later"),
         _("don't show again"),
       }
       table.insert(_scripts_install.display_widgets, _scripts_install.widgets["choice"])
