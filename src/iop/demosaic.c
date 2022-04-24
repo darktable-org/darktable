@@ -2853,9 +2853,15 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   const gboolean passthrough = (method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
                                (method == DT_IOP_DEMOSAIC_PASSTHR_MONOX);
 
-  // set position to closest sensor pattern snap
-  if(!passthrough)
+  if(data->pixelshift_enable)
   {
+    //pixelshift requires 1px margin
+    roi_in->width = MIN(roi_in->width + 1, piece->pipe->image.width);
+    roi_in->height = MIN(roi_in->height + 1, piece->pipe->image.height);
+  }
+  else if(!passthrough)
+  {
+    // set position to closest sensor pattern snap
     const int aligner = (piece->pipe->dsc.filters != 9u) ? BAYER_SNAPPER : XTRANS_SNAPPER;
     const int dx = roi_in->x % aligner;
     const int dy = roi_in->y % aligner;
@@ -2995,9 +3001,9 @@ void process_pixelshift(dt_dev_pixelpipe_iop_t *piece, const float *const in, fl
   const size_t col_offset = 1;
   const size_t row_offset = roi_out->width;
 
-  for(size_t j = 1; j < roi_out->height-1; j++)
+  for(size_t j = 0; j < roi_out->height-1; j++)
   {
-    for(size_t i = 1; i < roi_out->width-1; i++)
+    for(size_t i = 0; i < roi_out->width-1; i++)
     {
       size_t pout = (size_t)4 * (((size_t)roi_out->width * j) + i);
       size_t pin = (roi_in->width * j) + i;
@@ -3034,8 +3040,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_dev_clear_rawdetail_mask(piece->pipe);
 
   fprintf(stderr, "demosaic, %s\n", dt_pixelpipe_name(piece->pipe->type));
-  //fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
-  //fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
   dt_iop_roi_t roi = *roi_in;
   dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
