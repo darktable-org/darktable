@@ -1079,7 +1079,7 @@ finally:
           tgpumin = fminf(cl->dev[n].benchmark, tgpumin);
       }
 
-      if(!manually)
+      if(!manually && newcheck)
       {      
         if(tcpu <= 1.5f * tgpumin)
         {
