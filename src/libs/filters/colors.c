@@ -348,7 +348,7 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   if(top)
   {
-    dt_gui_add_class(hbox, "quick_filter_box");
+    dt_gui_add_class(hbox, "dt_quick_filter");
   }
 
   if(top)

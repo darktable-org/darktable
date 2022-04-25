@@ -754,7 +754,7 @@ static void _basics_show(dt_lib_module_t *self)
     gtk_widget_set_name(d->vbox_basic, "basics-box-labels");
   else
     gtk_widget_set_name(d->vbox_basic, "basics-box");
-  dt_gui_add_class(d->vbox_basic,"plugin_ui");
+  dt_gui_add_class(d->vbox_basic,"dt_plugin_ui");
 
   dt_lib_modulegroups_basic_item_position_t item_pos = FIRST_MODULE;
   for(GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))

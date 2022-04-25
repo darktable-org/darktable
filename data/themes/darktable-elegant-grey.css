@@ -100,11 +100,8 @@
 /* hover effect on combo and bauhaus */
 .combo:hover,
 .combo:hover cellview,
-combobox window *:hover,
-#bauhaus-combobox:hover,
-#bauhaus-slider:hover,
-#collapsible .combo:hover,
-#header-toolbar #bauhaus-combobox:hover
+.dt_bauhaus:hover,
+combobox window *:hover
 {
   color: shade(@fg_color, 0.94);
 }

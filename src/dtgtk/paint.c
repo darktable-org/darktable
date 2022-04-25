@@ -914,13 +914,13 @@ void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.18, 0, 2 * M_PI);
-  cairo_stroke(cr);
+  cairo_arc(cr, 0.5, 0.5, 0.16, 0, 2 * M_PI);
+  cairo_fill(cr);
 
-  cairo_translate(cr, 0, 0.18);
+  cairo_translate(cr, 0, 0.22);
   cairo_save(cr);
-  cairo_scale(cr, 1.0, 0.65);
-  cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
+  cairo_scale(cr, 1.0, 0.55);
+  cairo_arc(cr, 0.5, 0.5, 0.45, 0, 2 * M_PI);
   cairo_restore(cr);
   cairo_stroke(cr);
 

@@ -691,7 +691,7 @@ static void _range_widget_add_to_rule(dt_lib_filtering_rule_t *rule, _widgets_ra
   g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
   if(top)
   {
-    dt_gui_add_class(gtk_bin_get_child(GTK_BIN(special->range_select)), "quick_filter_box");
+    dt_gui_add_class(gtk_bin_get_child(GTK_BIN(special->range_select)), "dt_quick_filter");
   }
 
   if(top)

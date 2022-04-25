@@ -189,7 +189,7 @@ static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   gtk_box_pack_start(GTK_BOX(hbox), search->text, TRUE, TRUE, 0);
   if(top)
   {
-    dt_gui_add_class(hbox, "quick_filter_box");
+    dt_gui_add_class(hbox, "dt_quick_filter");
   }
 
   if(top)

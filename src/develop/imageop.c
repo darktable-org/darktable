@@ -2429,7 +2429,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   GtkWidget *body_evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
 
-  dt_gui_add_class(pluginui_frame, "plugin_ui");
+  dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
 
   module->header = header;
 
@@ -2548,7 +2548,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_guides_init_module_widget(iopw, module);
   dt_iop_gui_init_blending(iopw, module);
-  dt_gui_add_class(module->widget, "plugin_ui_main");
+  dt_gui_add_class(module->widget, "dt_plugin_ui_main");
   dt_gui_add_help_link(module->widget, dt_get_help_url(module->op));
   gtk_widget_hide(iopw);
 

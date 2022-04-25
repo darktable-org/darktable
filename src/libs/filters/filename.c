@@ -368,8 +368,6 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   g_signal_connect(G_OBJECT(filename->name), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->name), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
   g_signal_connect(G_OBJECT(filename->name), "button-press-event", G_CALLBACK(_filename_press), filename);
-  dt_gui_add_class(filename->name, "dt_transparent_background");
-  dt_gui_add_class(filename->name, "search");
 
   filename->ext = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(filename->ext), (top) ? 5 : 0);
@@ -383,11 +381,9 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   g_signal_connect(G_OBJECT(filename->ext), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->ext), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
   g_signal_connect(G_OBJECT(filename->ext), "button-press-event", G_CALLBACK(_filename_press), filename);
-  dt_gui_add_class(filename->ext, "dt_transparent_background");
-  dt_gui_add_class(filename->ext, "search");
   if(top)
   {
-    dt_gui_add_class(hb, "quick_filter_box");
+    dt_gui_add_class(hb, "dt_quick_filter");
   }
 
   // the popup

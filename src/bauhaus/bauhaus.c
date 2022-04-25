@@ -817,6 +817,7 @@ static void _bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self)
                                        | darktable.gui->scroll_mask);
 
   gtk_widget_set_can_focus(GTK_WIDGET(w), TRUE);
+  dt_gui_add_class(GTK_WIDGET(w), "dt_bauhaus");
 }
 
 void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def)
