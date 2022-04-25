@@ -49,3 +49,8 @@ hdiutil detach ${device}
 DMG="${PROGN}-$(git describe --tags | sed 's/^release-//;s/-/+/;s/-/~/;s/rc/~rc/')-$(arch)"
 hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o "${DMG}"
 rm -f pack.temp.dmg
+
+# Sign dmg image when a certificate has been provided
+if [ -n "$CODECERT" ]; then
+    codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" "${DMG}".dmg
+fi
