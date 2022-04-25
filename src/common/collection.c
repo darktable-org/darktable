@@ -602,45 +602,50 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
   }
 }
 
-const char *dt_collection_sort_name(dt_collection_sort_t sort)
+const char *dt_collection_sort_name_untranslated(dt_collection_sort_t sort)
 {
   switch(sort)
   {
     case DT_COLLECTION_SORT_FILENAME:
-      return _("filename");
+      return N_("filename");
     case DT_COLLECTION_SORT_DATETIME:
-      return _("capture time");
+      return N_("capture time");
     case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
-      return _("import time");
+      return N_("import time");
     case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
-      return _("last modification time");
+      return N_("last modification time");
     case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
-      return _("last export time");
+      return N_("last export time");
     case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
-      return _("last print time");
+      return N_("last print time");
     case DT_COLLECTION_SORT_RATING:
-      return _("rating");
+      return N_("rating");
     case DT_COLLECTION_SORT_ID:
-      return _("id");
+      return N_("id");
     case DT_COLLECTION_SORT_COLOR:
-      return _("color label");
+      return N_("color label");
     case DT_COLLECTION_SORT_GROUP:
-      return _("group");
+      return N_("group");
     case DT_COLLECTION_SORT_PATH:
-      return _("full path");
+      return N_("full path");
     case DT_COLLECTION_SORT_CUSTOM_ORDER:
-      return _("custom sort");
+      return N_("custom sort");
     case DT_COLLECTION_SORT_TITLE:
-      return _("title");
+      return N_("title");
     case DT_COLLECTION_SORT_DESCRIPTION:
-      return _("description");
+      return N_("description");
     case DT_COLLECTION_SORT_ASPECT_RATIO:
-      return _("aspect ratio");
+      return N_("aspect ratio");
     case DT_COLLECTION_SORT_SHUFFLE:
-      return _("shuffle");
+      return N_("shuffle");
     default:
       return "";
   }
+};
+
+const char *dt_collection_sort_name(dt_collection_sort_t sort)
+{
+  return _(dt_collection_sort_name_untranslated(sort));
 };
 
 const char *dt_collection_name_untranslated(dt_collection_properties_t prop)

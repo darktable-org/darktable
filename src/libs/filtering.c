@@ -1612,6 +1612,8 @@ static gboolean _sort_close(GtkWidget *widget, GdkEventButton *event, dt_lib_mod
   return TRUE;
 }
 
+static char **_sort_names = NULL;
+
 static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sortid, const int sortorder,
                            const int num, dt_lib_module_t *self)
 {
@@ -1643,6 +1645,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
   dt_bauhaus_combobox_add_full(sort->sort, dt_collection_sort_name(value), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,       \
                                GUINT_TO_POINTER(value), NULL, TRUE)
 
+    // as the setting rely on ids, the orders of items can be changed if needed
     ADD_SORT_ENTRY(DT_COLLECTION_SORT_FILENAME);
     ADD_SORT_ENTRY(DT_COLLECTION_SORT_DATETIME);
     ADD_SORT_ENTRY(DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
@@ -1662,6 +1665,25 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
 
 #undef ADD_SORT_ENTRY
 
+    if(num == 0)
+    {
+      if(!_sort_names)
+      {
+        // we insert untranslated sort name in the array + NULL at the end
+        _sort_names = g_malloc0_n(dt_bauhaus_combobox_length(sort->sort) + 1, sizeof(char *));
+        for(int i = 0; i < dt_bauhaus_combobox_length(sort->sort); i++)
+        {
+          // we recover the sort enum value from the bauhaus combobox.
+          // this is needed because combobox can have a items order different than the enum one
+          const dt_bauhaus_combobox_data_t *cbd = &DT_BAUHAUS_WIDGET(sort->sort)->data.combobox;
+          if(!cbd) continue;
+          const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(cbd->entries, i);
+          _sort_names[i] = g_strdup(dt_collection_sort_name_untranslated(GPOINTER_TO_INT(entry->data)));
+        }
+      }
+      g_hash_table_insert(darktable.control->combo_list, (dt_action_t *)(DT_BAUHAUS_WIDGET(sort->sort)->module),
+                          _sort_names);
+    }
     gtk_box_pack_start(GTK_BOX(sort->box), sort->sort, TRUE, TRUE, 0);
 
     /* reverse order checkbutton */
