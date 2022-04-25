@@ -376,7 +376,7 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   gtk_entry_set_width_chars(GTK_ENTRY(filename->ext), (top) ? 5 : 0);
   gtk_widget_set_can_default(filename->ext, TRUE);
   gtk_entry_set_placeholder_text(GTK_ENTRY(filename->ext), _("extension"));
-  gtk_widget_set_tooltip_text(filename->ext, _("enter extension to search with starting dot.\n"
+  gtk_widget_set_tooltip_text(filename->ext, _("enter extension to search with starting dot\n"
                                                "multiple values can be separated by ','\n"
                                                "handled keywords: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
                                                "\nright-click to get existing extensions"));
