@@ -101,11 +101,15 @@ Why that? Just because it's a developer choice and most classes use underscore i
       - set monospace font for some specific items (on some tooltips, history number or colorpicker values...)
   - dt_warning:
       - set all warnings messages inside panels, like deprecated modules messages or warning we could see when having white balance applied twice with color calibration and white balance modules
+  - dt_bauhaus:
+      - use it to set same settings on all bauhaus (sliders and combobox)
   - dt_bauhaus_alignment:
       - used for icons that needs to be aligned with bauhaus widgets in libs
       - ex : color picker for auto-tune setting in filmic or mask on same module and tone equalizer
   - dt_bauhaus_popup:
       - used for all bauhaus popup
+  - dt_spacing_sw:
+      - use it if spacing needed around some treeview (actually used in collections and tagging modules to have spacing on top and bottom margin regarding buttons/entries around
 
   * the list above is not exhausting. Those are main ones set actually and should be completed if needed. You could see other classes on this file
 ***/
@@ -301,7 +305,7 @@ box *
 }
 
 /* Set no background and no border. And avoid undershoot and overshoot having too much empty space at top/bottom of sidepanels when scrolled */
-.accels_window_box treeview,
+.dt_accels_box treeview,
 .combo,
 .combo:disabled,
 .dt_module_btn,
@@ -412,8 +416,8 @@ popover spinbutton  /* needed to set some margin on overlay popover between it a
 }
 
 /* fix misalignment for specific icons related to bauhaus widgets */
-.plugin_ui .dt_bauhaus_alignment,
-.plugin_ui .dt_bauhaus_alignment #button-canvas
+.dt_plugin_ui .dt_bauhaus_alignment,
+.dt_plugin_ui .dt_bauhaus_alignment #button-canvas
 {
   margin: 0;
 }
@@ -483,7 +487,7 @@ separator
 }
 
 /* Set toolbars buttons in lighttable and darkroom views ; and top right button in accels window */
-.accels_window_stick,
+.dt_accels_stick,
 #filter-colors-box .dt_module_btn,
 #header-toolbar .dt_module_btn,
 #footer-toolbar .dt_module_btn
@@ -513,12 +517,17 @@ separator
   ---------------------------*/
 /* Frame around modules boxes */
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
-.plugin_ui
+.dt_plugin_ui,
+dialog,  /* dialog window background */
+dialog .sidebar row:selected,   /* .sidebar lines here allow to select same settings for sidebar in preferences and filechooser */
+dialog .sidebar row:selected:hover label,
+#bauhaus-slider,  /* be sure there's some visible "spacing" around arrow on sliders by setting specific background on bauhaus-slider */
+#background-job-eventbox  /* background of export progress bar */
 {
   background-color: @plugin_bg_color;
 }
 
-.plugin_ui_main,
+.dt_plugin_ui_main,
 #blending-box,
 #guides-module-combobox
 {
@@ -532,7 +541,7 @@ separator
 }
 
 /* Add some space to aerate if a notebook follows a widget (like for example in filmic rgb module */
-.plugin_ui_main widget + notebook
+.dt_plugin_ui_main widget + notebook
 {
   margin-top: 0.5em;
 }
@@ -546,13 +555,13 @@ separator
 }
 
 /* Set duplicate module space in darkroom */
-.duplicate-ui grid,
-.duplicate-ui grid > label
+.dt_duplicate_ui grid,
+.dt_duplicate_ui grid > label
 {
   margin: 0.28em 0.14em;
 }
 
-.duplicate-ui entry
+.dt_duplicate_ui entry
 {
   margin: 1em 0 1em 0.5em;
 }
@@ -704,12 +713,7 @@ separator
   - Dialog windows -
   ------------------*/
 /* Set default settings */
-dialog
-{
-  background-color: @plugin_bg_color;
-}
-
-.accels_window,
+.dt_accels_window,
 dialog .dialog-vbox
 {
   margin: 0.42em;
@@ -755,14 +759,13 @@ dialog headerbar entry
   - Context menu, bauhaus, tooltips & comboboxes -
   ----------------------------------------------*/
 /*** so nearly everything that pop out */
+.dt_bauhaus window,
 .popup,
 context-menu,
 menu,
 menuitem > arrow,
 tooltip,
 popover,
-#bauhaus-combobox window,
-#bauhaus-slider window,
 #range-current
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
@@ -811,8 +814,7 @@ menuitem > arrow
 }
 
 /* then spacing around bauhaus widgets */
-#bauhaus-combobox,
-#bauhaus-slider
+.dt_bauhaus
 {
   margin: 0.14em 0;
 }
@@ -881,14 +883,14 @@ notebook tabs,
   min-height: 2em;
 }
 
-.plugin_ui #blending-tabs .dt_module_btn,
+.dt_plugin_ui #blending-tabs .dt_module_btn,
 #guides-line .toggle
 {
   min-height: 1.3em;
 }
 
 #modules-tabs .dt_module_btn,   /* This is needed separately to set a minimal width if panel is really narrow */
-.plugin_ui #blending-tabs .dt_module_btn,
+.dt_plugin_ui #blending-tabs .dt_module_btn,
 #guides-line .dt_module_btn
 {
   border-radius: 0;
@@ -897,7 +899,7 @@ notebook tabs,
 }
 
 /* reduce and align now hamburger menu of modules and blending tabs */
-.plugin_ui #blending-tabs .dt_module_btn,
+.dt_plugin_ui #blending-tabs .dt_module_btn,
 #modules-tabs .dt_module_btn
 {
   padding: 0.3em;
@@ -996,8 +998,14 @@ treeview header label
   padding: 0.14em;
 }
 
+/* set margin around treeview (need to be applied on scrolledwindow which is a direct parent) */
+.dt_spacing_sw scrolledwindow
+{
+  margin: 0.21em 0;
+}
+
 /* Set main title in top of accel window reminder */
-.accels_window_cat_title
+.dt_accels_cat_title
 {
    background-color: transparent;
    font-weight: bold;
@@ -1194,14 +1202,6 @@ filechooser row
   margin-top: -0.28em; /* be sure to not have empty space on top of row for hover and selected effects */
 }
 
-filechooser .sidebar row:selected,
-filechooser .sidebar row:selected:hover .sidebar-label,
-#preferences-box .sidebar row:selected,
-#preferences-box .sidebar row:selected:hover label
-{
-  background-color: @plugin_bg_color;
-}
-
 #preferences-box .sidebar row,
 #preferences-box .sidebar row:selected
 {
@@ -1299,15 +1299,15 @@ filechooser row:hover .sidebar-icon
 }
 
 /* set range parts and quick filter box in header toolbar */
+.search,
 #range-select #dt-range-band,
-#header-toolbar #bauhaus-combobox,
-.search
+#header-toolbar #bauhaus-combobox
 {
   background-color: @range_bg_color;
 }
 
 /* and adjust label and color buttons, especially in header bar */
-.quick_filter_box,
+.dt_quick_filter,
 #filter-sort-box label,
 #header-rule-box label,
 #header-sort-box label
@@ -1410,11 +1410,6 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
 }
 
 /* Progress bar on bottom left side when exporting, importing, etc... */
-#background-job-eventbox /* background of export progress bar */
-{
-  background-color: @plugin_bg_color;
-}
-
 #background-job-eventbox label
 {
   margin: 0.07em 0.28em;
@@ -1583,16 +1578,14 @@ treeview *:checked:not(check)
 .dt_history_items:hover,
 .dt_transparent_background:hover,
 button:hover:not(.combo):not(.dt_no_hover),
-filechooser row:hover,
+dialog .sidebar :hover,
 menuitem:hover,
 notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
-#collapsible spinbutton button:hover,
 #dt-range-date-popup .text-button:hover,
 #main-histogram .dt_module_btn:hover:not(.toggle),
 #non-flat:hover,
-#preferences-box .sidebar :hover,
 #view-label:hover,
 #view-dropdown .combo:hover
 {
@@ -1603,12 +1596,9 @@ treeview:not(#lutname) *:hover:not(check),
 
 .combo:hover,
 .combo:hover cellview,
+.dt_bauhaus:hover,
 combobox window *:hover,
-menuitem:hover > arrow,
-#bauhaus-combobox:hover,
-#bauhaus-slider:hover,
-#collapsible .combo:hover,
-#header-toolbar #bauhaus-combobox:hover
+menuitem:hover > arrow
 {
   color: shade(@fg_color, 1.2);
 }
@@ -2145,12 +2135,12 @@ Details :
 .dt_overlays_always_extended#preview #thumb-altered,
 .dt_overlays_always_extended#preview #thumb-audio,
 .dt_overlays_always_extended#preview #thumb-group,
-.duplicate-ui #thumb-main:hover #thumb-group,
-.duplicate-ui #thumb-main:hover #thumb-altered,
-.duplicate-ui #thumb-main:hover #thumb-audio,
-.duplicate-ui #thumb-altered,
-.duplicate-ui #thumb-audio,
-.duplicate-ui #thumb-group
+.dt_duplicate_ui #thumb-main:hover #thumb-group,
+.dt_duplicate_ui #thumb-main:hover #thumb-altered,
+.dt_duplicate_ui #thumb-main:hover #thumb-audio,
+.dt_duplicate_ui #thumb-altered,
+.dt_duplicate_ui #thumb-audio,
+.dt_duplicate_ui #thumb-group
 {
   color: transparent;
 }

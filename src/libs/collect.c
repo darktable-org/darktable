@@ -3080,6 +3080,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  dt_gui_add_class(self->widget, "dt_spacing_sw");
 
   d->active_rule = 0;
   d->nb_rules = 0;
@@ -3164,7 +3165,7 @@ void gui_init(dt_lib_module_t *self)
                      dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
                      TRUE, 0);
 
-  // the botton buttons for the rules
+  // the bottom buttons for the rules
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);

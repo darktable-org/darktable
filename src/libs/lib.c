@@ -1058,8 +1058,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 
   gtk_widget_show_all(module->widget);
-  dt_gui_add_class(module->widget, "plugin_ui_main");
-  dt_gui_add_class(pluginui_frame, "plugin_ui");
+  dt_gui_add_class(module->widget, "dt_plugin_ui_main");
+  dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
   module->expander = expander;
 
   gtk_widget_set_hexpand(module->widget, FALSE);
