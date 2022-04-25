@@ -1029,8 +1029,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   GtkWidget *label = gtk_label_new("");
   GtkWidget *label_evb = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(label_evb), label);
-  gtk_label_set_markup(GTK_LABEL(label), module->name(module));
-  gtk_widget_set_tooltip_text(label_evb, module->name(module));
+  gchar *mname = g_markup_escape_text(module->name(module), -1);
+  gtk_label_set_markup(GTK_LABEL(label), mname);
+  gtk_widget_set_tooltip_text(label_evb, mname);
+  g_free(mname);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "halign", GTK_ALIGN_START, "xalign", 0.0, (gchar *)0);
   gtk_widget_set_name(label, "lib-panel-label");
@@ -1315,4 +1317,3 @@ gboolean dt_handle_dialog_enter(GtkWidget *widget, GdkEventKey *event, gpointer 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
