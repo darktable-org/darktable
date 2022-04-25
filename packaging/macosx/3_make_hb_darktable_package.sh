@@ -115,9 +115,6 @@ function reset_exec_path {
         # Set correct library id
         install_name_tool -id "@executable_path/../Resources/lib/$libraryOrigFile" "$1"
     fi
-
-    # Re-sign current executable as we have modified it
-    codesign --force --deep --preserve-metadata=entitlements,requirements,flags,runtime -i org.darktable --sign - "$1"
 }
 
 # Search and install any translation files
@@ -267,6 +264,6 @@ cp open.desktop "$dtResourcesDir"/share/applications/
 
 # Sign app bundle when a certificate has been provided
 if [ -n "$CODECERT" ]; then
-    find package/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i org.darktable -s "${CODECERT}" \{} \;
-    codesign --deep --verbose --force --options runtime -i org.darktable -s "${CODECERT}" package/darktable.app
+    find package/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" \{} \;
+    codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" package/darktable.app
 fi
