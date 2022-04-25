@@ -21,12 +21,13 @@
 /* This has been tested with GTK 3.24 on Gnome */
 
 /* General */
-@define-color selected_bg_color @grey_50; /* legacy stuff */
-@define-color border_color @grey_25; /* border, when used */
-@define-color bg_color @grey_30; /* general background */
-@define-color fg_color @grey_80; /* general text */
-@define-color text_color @grey_20; /* same */
-@define-color disabled_fg_color @grey_55; /* disabled controls */
+@define-color selected_bg_color @grey_50;       /* legacy stuff */
+@define-color border_color @grey_25;            /* border, when used */
+@define-color bg_color @grey_30;                /* general background */
+@define-color fg_color @grey_80;                /* general text */
+@define-color text_color @grey_20;              /* same */
+@define-color placeholder_text_color @grey_60;  /* placeholder text color (text on search background fields) */
+@define-color disabled_fg_color @grey_55;       /* disabled controls */
 
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_55;
