@@ -218,9 +218,9 @@ icc_end:
 
   Imf::PixelType pixel_type = (Imf::PixelType)exr->pixel_type;
 
-  header.channels().insert("R", Imf::Channel(pixel_type));
-  header.channels().insert("G", Imf::Channel(pixel_type));
-  header.channels().insert("B", Imf::Channel(pixel_type));
+  header.channels().insert("R", Imf::Channel(pixel_type, 1, 1, true));
+  header.channels().insert("G", Imf::Channel(pixel_type, 1, 1, true));
+  header.channels().insert("B", Imf::Channel(pixel_type, 1, 1, true));
 
   Imf::OutputFile file(filename, header);
 
@@ -521,4 +521,3 @@ void gui_reset(dt_imageio_module_format_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
