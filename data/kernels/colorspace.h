@@ -555,10 +555,13 @@ static inline float4 Yrg_to_LMS(const float4 Yrg)
 
 static inline float4 Yrg_to_Ych(const float4 Yrg)
 {
-  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
   const float Y = Yrg.x;
-  const float r = Yrg.y - D65[0];
-  const float g = Yrg.z - D65[1];
+  // Subtract white point. These are the r, g coordinates of
+  // sRGB (D50 adapted) (1, 1, 1) taken through
+  // XYZ D50 -> CAT16 D50->D65 adaptation -> LMS 2006
+  // -> grading RGB conversion.
+  const float r = Yrg.y - 0.21902143f;
+  const float g = Yrg.z - 0.54371398f;
   const float c = hypot(g, r);
   const float h = atan2(g, r);
   return (float4)(Y, c, h, Yrg.w);
@@ -567,12 +570,11 @@ static inline float4 Yrg_to_Ych(const float4 Yrg)
 
 static inline float4 Ych_to_Yrg(const float4 Ych)
 {
-  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
   const float Y = Ych.x;
   const float c = Ych.y;
   const float h = Ych.z;
-  const float r = c * native_cos(h) + D65[0];
-  const float g = c * native_sin(h) + D65[1];
+  const float r = c * native_cos(h) + 0.21902143f;
+  const float g = c * native_sin(h) + 0.54371398f;
   return (float4)(Y, r, g, Ych.w);
 }
 
@@ -722,22 +724,23 @@ static inline float4 gamut_check_Yrg(float4 Ych)
 
   // Gamut-clip in Yrg at constant hue and luminance
   // e.g. find the max chroma value that fits in gamut at the current hue
-  const float D65[4] = { 0.21962576f, 0.54487092f, 0.23550333f, 0.f };
+  const float D65_r = 0.21902143f;
+  const float D65_g = 0.54371398f;
   float max_c = Ych.y;
   const float cos_h = native_cos(Ych.z);
   const float sin_h = native_sin(Ych.z);
 
   if(Yrg.y < 0.f)
   {
-    max_c = fmin(-D65[0] / cos_h, max_c);
+    max_c = fmin(-D65_r / cos_h, max_c);
   }
   if(Yrg.z < 0.f)
   {
-    max_c = fmin(-D65[1] / sin_h, max_c);
+    max_c = fmin(-D65_g / sin_h, max_c);
   }
   if(Yrg.y + Yrg.z > 1.f)
   {
-    max_c = fmin((1.f - D65[0] - D65[1]) / (cos_h + sin_h), max_c);
+    max_c = fmin((1.f - D65_r - D65_g) / (cos_h + sin_h), max_c);
   }
 
   // Overwrite chroma with the sanitized value and
