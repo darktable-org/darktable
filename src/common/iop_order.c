@@ -467,6 +467,7 @@ GList *dt_ioppr_get_iop_order_rules()
     { .op_prev = "demosaic",    .op_next = "colorin"     },
     { .op_prev = "colorin",     .op_next = "colorout"    },
     { .op_prev = "colorout",    .op_next = "gamma"       },
+    { .op_prev = "flip",        .op_next = "crop"        }, // crop GUI broken if flip is done on top
     { .op_prev = "flip",        .op_next = "clipping"    }, // clipping GUI broken if flip is done on top
     { .op_prev = "ashift",      .op_next = "clipping"    }, // clipping GUI broken if ashift is done on top
     { .op_prev = "colorin",     .op_next = "channelmixerrgb"},
@@ -2207,4 +2208,3 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf, size_t size)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
