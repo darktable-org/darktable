@@ -1075,10 +1075,8 @@ static void _iop_panel_label(dt_iop_module_t *module)
     g_free(saved_old_name);
   }
 
-  gchar *mname = g_markup_escape_text(module_name, -1);
-  gtk_label_set_markup(GTK_LABEL(lab), mname);
+  gtk_label_set_markup(GTK_LABEL(lab), module_name);
   g_free(module_name);
-  g_free(mname);
 
   gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
   g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
