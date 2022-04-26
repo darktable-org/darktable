@@ -11,7 +11,7 @@ init_printing(use_unicode=True)
 Y, c, ch, sh = symbols('Y c ch sh')
 
 # Go from polar coordinates to Yrg
-Yrg = Matrix([[Y, c * ch + 0.21962576, c * sh + 0.54487092]]).transpose()
+Yrg = Matrix([[Y, c * ch + 0.21902143, c * sh + 0.54371398]]).transpose()
 
 # Form normalized rgb
 r = Yrg[1, 0]
