@@ -1079,7 +1079,7 @@ finally:
           tgpumin = fminf(cl->dev[n].benchmark, tgpumin);
       }
 
-      if(!manually)
+      if(!manually && newcheck)
       {      
         if(tcpu <= 1.5f * tgpumin)
         {
@@ -2829,7 +2829,8 @@ size_t dt_opencl_get_unused_device_mem(const int devid)
 */
 cl_ulong dt_opencl_get_device_available(const int devid)
 {
-  if(!darktable.opencl->inited || devid < 0) return 0;
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || devid < 0) return 0;
   const int level = darktable.dtresources.level;
   static int oldlevel = -999;
   const gboolean mod = (oldlevel != level);
@@ -2844,9 +2845,9 @@ cl_ulong dt_opencl_get_device_available(const int devid)
          level, available / 1024lu / 1024lu, devid);
     return available;
   }
-  const size_t allmem = darktable.opencl->dev[devid].max_global_mem;
+  const size_t allmem = cl->dev[devid].max_global_mem;
   const gboolean tuned = darktable.dtresources.tunememory && (level > 0);
-  const gboolean oncpu = (darktable.opencl->dev[devid].cltype & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
+  const gboolean oncpu = (cl->dev[devid].cltype & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
   if(tuned)
   {
     // we always leave a safety margin, 128MB for level large, 100MB + 1/16 of graphics memory for default.
@@ -2867,57 +2868,57 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   return available;
 }
 
-cl_ulong dt_opencl_get_device_memalloc(const int devid)
+static cl_ulong _opencl_get_device_memalloc(const int devid)
 {
-  if(!darktable.opencl->inited || devid < 0) return 0;
   return darktable.opencl->dev[devid].max_mem_alloc;
 }
 
-static gboolean _cl_test_available(const int devid, const size_t required)
+cl_ulong dt_opencl_get_device_memalloc(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return _opencl_get_device_memalloc(devid);
+}
+
+static gboolean _cl_test_available_buff(const int devid, const size_t required)
 {
   float *tmp = dt_calloc_align_float(4);
-  int checked = 0;
-  cl_mem tbuf[32];
-  size_t remaining = required;
+  cl_mem tmpcl;
   cl_int err = CL_SUCCESS;
   dt_opencl_t *cl = darktable.opencl;
-  while((remaining > 0) && (checked < 32) && (err == CL_SUCCESS))
-  {
-    size_t now = MIN(cl->dev[devid].max_mem_alloc, remaining);
-    remaining = remaining - now;  
-    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, now, NULL, &err);
-    if(err == CL_SUCCESS)
-    {
-      err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
-      checked++;
-    }
-  }
+
+  tmpcl = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, required, NULL, &err);
+  if(err == CL_SUCCESS)
+    err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tmpcl, CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
+
   const gboolean success = (err == CL_SUCCESS);
 
-  for(int i = 0; i < checked; i++)
-    if(tbuf[i]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
-
-  if(!success)
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[_cl_test_available] had no success for %luMB on device %i\n",
-      required / 1024lu / 1024lu, devid); 
-
+  if(tmpcl) (cl->dlocl->symbols->dt_clReleaseMemObject)(tmpcl);
   dt_free_align(tmp); 
+
+  dt_print(DT_DEBUG_OPENCL, "[_cl_test_available_buff] (slow test) had %s success for %luMB on device '%s'\n",
+      success ? "" : "NO",  required / 1024lu / 1024lu, cl->dev[devid].name); 
+
   return success;
 }
 
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead)
 {
-  if(!darktable.opencl->inited || devid < 0) return FALSE;
+  dt_opencl_t *cl = darktable.opencl;
+  if(!cl->inited || devid < 0) return FALSE;
 
   const size_t required  = width * height * bpp;
   const size_t total = fmaxf(2.0f, factor) * required + overhead;
 
-  if((dt_opencl_get_device_memalloc(devid) < required) || (dt_opencl_get_device_available(devid) < total))
-    return FALSE;  
-  if(darktable.opencl->dev[devid].max_image_width < width || darktable.opencl->dev[devid].max_image_height < height)
+  if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
     return FALSE;
-  return _cl_test_available(devid, total);
+
+  if(_opencl_get_device_memalloc(devid) < required)      return FALSE; 
+  if(dt_opencl_get_device_available(devid) < total)      return FALSE;  
+  // We won't test the hard way per required buffer if sufficiently small
+  if(_opencl_get_device_memalloc(devid) > (required *2)) return TRUE; 
+
+  return _cl_test_available_buff(devid, required);
 }
 
 /** check if buffer fits into limits given by OpenCL runtime */
@@ -2925,8 +2926,12 @@ gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
 {
   if(!darktable.opencl->inited || devid < 0) return FALSE;
 
-  if((dt_opencl_get_device_memalloc(devid) < required) || (dt_opencl_get_device_available(devid) < required)) return FALSE; 
-  return _cl_test_available(devid, required);
+  if(_opencl_get_device_memalloc(devid) < required)      return FALSE; 
+  if(dt_opencl_get_device_available(devid) < required)   return FALSE; 
+  // We won't test the hard way if required if sufficiently small
+  if(_opencl_get_device_memalloc(devid) > (required *2)) return TRUE; 
+
+  return _cl_test_available_buff(devid, required);
 }
 
 /** round size to a multiple of the value given in the device specifig config parameter clroundup_wd/ht */
@@ -2968,21 +2973,22 @@ void dt_opencl_disable(void)
 /** update enabled flag and profile with value from preferences, returns enabled flag */
 int dt_opencl_update_settings(void)
 {
+  dt_opencl_t *cl = darktable.opencl;
   // FIXME: This pulls in prefs every time the pixelpipe runs. Instead have a callback for DT_SIGNAL_PREFERENCES_CHANGE?
-  if(!darktable.opencl->inited) return FALSE;
+  if(!cl->inited) return FALSE;
   const int prefs = dt_conf_get_bool("opencl");
 
-  if(darktable.opencl->enabled != prefs)
+  if(cl->enabled != prefs)
   {
-    darktable.opencl->enabled = prefs;
-    darktable.opencl->stopped = 0;
-    darktable.opencl->error_count = 0;
+    cl->enabled = prefs;
+    cl->stopped = 0;
+    cl->error_count = 0;
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");
   }
 
   dt_opencl_scheduling_profile_t profile = dt_opencl_get_scheduling_profile();
 
-  if(darktable.opencl->scheduling_profile != profile)
+  if(cl->scheduling_profile != profile)
   {
     const char *pstr = dt_conf_get_string_const("opencl_scheduling_profile");
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_scheduling_profile] scheduling profile set to %s\n", pstr);
@@ -2991,14 +2997,14 @@ int dt_opencl_update_settings(void)
 
   dt_opencl_sync_cache_t sync = dt_opencl_get_sync_cache();
 
-  if(darktable.opencl->sync_cache != sync)
+  if(cl->sync_cache != sync)
   {
     const char *pstr = dt_conf_get_string_const("opencl_synch_cache");
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_synch_cache] sync cache set to %s\n", pstr);
-    darktable.opencl->sync_cache = sync;
+    cl->sync_cache = sync;
   }
 
-  return (darktable.opencl->enabled && !darktable.opencl->stopped);
+  return (cl->enabled && !cl->stopped);
 }
 
 /** read scheduling profile for config variables */
