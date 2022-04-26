@@ -363,6 +363,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 void dt_get_sysresource_level();
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
+void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 void dt_vprint(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 int dt_worker_threads();
 size_t dt_get_available_mem();
