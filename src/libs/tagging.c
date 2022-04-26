@@ -3147,6 +3147,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_clear_entry_button_callback), (gpointer)self);
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
+  dt_gui_add_class(GTK_WIDGET(box), "dt_spacing_sw");
   d->clear_button = button;
   dt_action_define(DT_ACTION(self), NULL, N_("clear entry"), button, &dt_action_def_button);
 

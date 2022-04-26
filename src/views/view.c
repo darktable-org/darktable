@@ -1224,7 +1224,7 @@ static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_v
 
   // creating new window
   GtkWindow *win = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-  dt_gui_add_class(GTK_WIDGET(win), "accels_window");
+  dt_gui_add_class(GTK_WIDGET(win), "dt_accels_window");
   gtk_window_set_title(win, _("darktable - accels window"));
   GtkAllocation alloc;
   gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
@@ -1258,15 +1258,14 @@ void dt_view_accels_show(dt_view_manager_t *vm)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(vm->accels_window.window);
 #endif
-  dt_gui_add_class(vm->accels_window.window, "accels_window");
+  dt_gui_add_class(vm->accels_window.window, "dt_accels_window");
 
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  dt_gui_add_class(sw, "accels_window_scroll");
 
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
   vm->accels_window.flow_box = gtk_flow_box_new();
-  dt_gui_add_class(vm->accels_window.flow_box, "accels_window_box");
+  dt_gui_add_class(vm->accels_window.flow_box, "dt_accels_box");
   gtk_orientable_set_orientation(GTK_ORIENTABLE(vm->accels_window.flow_box), GTK_ORIENTATION_HORIZONTAL);
 
   gtk_box_pack_start(GTK_BOX(hb), vm->accels_window.flow_box, TRUE, TRUE, 0);
@@ -1277,7 +1276,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
                _("switch to a classic window which will stay open after key release"), (char *)NULL);
   g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "button-press-event", G_CALLBACK(_accels_window_sticky),
                    vm);
-  dt_gui_add_class(vm->accels_window.sticky_btn, "accels_window_stick");
+  dt_gui_add_class(vm->accels_window.sticky_btn, "dt_accels_stick");
   gtk_box_pack_start(GTK_BOX(vb), vm->accels_window.sticky_btn, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 0);
 
@@ -1362,7 +1361,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     // the title
     GtkWidget *lb = gtk_label_new(category->label);
-    dt_gui_add_class(lb, "accels_window_cat_title");
+    dt_gui_add_class(lb, "dt_accels_cat_title");
     gtk_box_pack_start(GTK_BOX(box), lb, FALSE, FALSE, 0);
 
     // the list of accels
@@ -1371,7 +1370,6 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
     {
       GtkWidget *list = gtk_tree_view_new_with_model(model);
       g_object_unref(model);
-      dt_gui_add_class(list, "accels_window_list");
       GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
       GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("shortcut"), renderer, "text", 0, NULL);
       gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);

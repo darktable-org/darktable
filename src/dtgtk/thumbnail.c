@@ -1215,7 +1215,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 {
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
-  gtk_widget_set_name(thumb->w_main, "thumb_main");
+  gtk_widget_set_name(thumb->w_main, "thumb-main");
   _thumb_update_rating_class(thumb);
   gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
@@ -1248,7 +1248,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_widget_set_events(thumb->w_back, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                              | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                              | GDK_POINTER_MOTION_MASK);
-    gtk_widget_set_name(thumb->w_back, "thumb_back");
+    gtk_widget_set_name(thumb->w_back, "thumb-back");
     g_signal_connect(G_OBJECT(thumb->w_back), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
     g_signal_connect(G_OBJECT(thumb->w_back), "leave-notify-event", G_CALLBACK(_event_main_leave), thumb);
     gtk_widget_show(thumb->w_back);
@@ -1256,7 +1256,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the file extension label
     thumb->w_ext = gtk_label_new("");
-    gtk_widget_set_name(thumb->w_ext, "thumb_ext");
+    gtk_widget_set_name(thumb->w_ext, "thumb-ext");
     gtk_widget_set_valign(thumb->w_ext, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_ext, GTK_ALIGN_START);
     gtk_label_set_justify(GTK_LABEL(thumb->w_ext), GTK_JUSTIFY_CENTER);
@@ -1266,7 +1266,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the image drawing area
     thumb->w_image_box = gtk_overlay_new();
-    gtk_widget_set_name(thumb->w_image_box, "thumb_image");
+    gtk_widget_set_name(thumb->w_image_box, "thumb-image");
     gtk_widget_set_size_request(thumb->w_image_box, thumb->width, thumb->height);
     gtk_widget_set_valign(thumb->w_image_box, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_image_box, GTK_ALIGN_START);
@@ -1289,7 +1289,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
       dt_gui_add_class(thumb->w_image, "dt_preview_thumb_image");
     else if(thumb->container == DT_THUMBNAIL_CONTAINER_CULLING)
       dt_gui_add_class(thumb->w_image, "dt_culling_thumb_image");
-    gtk_widget_set_name(thumb->w_image, "thumb_image");
+    gtk_widget_set_name(thumb->w_image, "thumb-image");
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
     // the size will be defined at the end, inside dt_thumbnail_resize
@@ -1307,7 +1307,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // triangle to indicate current image(s) in filmstrip
     thumb->w_cursor = gtk_drawing_area_new();
-    gtk_widget_set_name(thumb->w_cursor, "thumb_cursor");
+    gtk_widget_set_name(thumb->w_cursor, "thumb-cursor");
     gtk_widget_set_valign(thumb->w_cursor, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_cursor, GTK_ALIGN_CENTER);
     g_signal_connect(G_OBJECT(thumb->w_cursor), "draw", G_CALLBACK(_event_cursor_draw), thumb);
@@ -1319,7 +1319,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the infos background
     thumb->w_bottom_eb = gtk_event_box_new();
-    gtk_widget_set_name(thumb->w_bottom_eb, "thumb_bottom");
+    gtk_widget_set_name(thumb->w_bottom_eb, "thumb-bottom");
     g_signal_connect(G_OBJECT(thumb->w_bottom_eb), "enter-notify-event", G_CALLBACK(_event_box_enter_leave),
                      thumb);
     g_signal_connect(G_OBJECT(thumb->w_bottom_eb), "leave-notify-event", G_CALLBACK(_event_box_enter_leave),
@@ -1342,7 +1342,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
       thumb->w_bottom = gtk_label_new(NULL);
       gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), "");
     }
-    gtk_widget_set_name(thumb->w_bottom, "thumb_bottom_label");
+    gtk_widget_set_name(thumb->w_bottom, "thumb-bottom-label");
     gtk_widget_show(thumb->w_bottom);
     gtk_label_set_yalign(GTK_LABEL(thumb->w_bottom), 0.05);
     gtk_label_set_ellipsize(GTK_LABEL(thumb->w_bottom), PANGO_ELLIPSIZE_MIDDLE);
@@ -1351,7 +1351,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the reject icon
     thumb->w_reject = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_reject, 0, NULL);
-    gtk_widget_set_name(thumb->w_reject, "thumb_reject");
+    gtk_widget_set_name(thumb->w_reject, "thumb-reject");
     dt_action_define(&darktable.control->actions_thumb, NULL, "rating", thumb->w_reject, &dt_action_def_rating);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_reject, GTK_ALIGN_START);
@@ -1371,7 +1371,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-press-event", G_CALLBACK(_event_rating_press), thumb);
       g_signal_connect(G_OBJECT(thumb->w_stars[i]), "button-release-event", G_CALLBACK(_event_rating_release),
                        thumb);
-      gtk_widget_set_name(thumb->w_stars[i], "thumb_star");
+      gtk_widget_set_name(thumb->w_stars[i], "thumb-star");
       dt_action_define(&darktable.control->actions_thumb, NULL, "rating", thumb->w_stars[i], &dt_action_def_rating);
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_END);
       gtk_widget_set_halign(thumb->w_stars[i], GTK_ALIGN_START);
@@ -1382,7 +1382,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     // the color labels
     thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower, thumb->colorlabels, NULL);
     dt_action_define(&darktable.control->actions_thumb, NULL, N_("color label"), thumb->w_color, &dt_action_def_color_label);
-    gtk_widget_set_name(thumb->w_color, "thumb_colorlabels");
+    gtk_widget_set_name(thumb->w_color, "thumb-colorlabels");
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_color, TRUE);
@@ -1392,7 +1392,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the local copy indicator
     thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, 0, NULL);
-    gtk_widget_set_name(thumb->w_local_copy, "thumb_localcopy");
+    gtk_widget_set_name(thumb->w_local_copy, "thumb-localcopy");
     gtk_widget_set_tooltip_text(thumb->w_local_copy, _("local copy"));
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
@@ -1405,7 +1405,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the altered icon
     thumb->w_altered = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_altered, 0, NULL);
-    gtk_widget_set_name(thumb->w_altered, "thumb_altered");
+    gtk_widget_set_name(thumb->w_altered, "thumb-altered");
     gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
     gtk_widget_set_no_show_all(thumb->w_altered, TRUE);
@@ -1415,7 +1415,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the group bouton
     thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, 0, NULL);
-    gtk_widget_set_name(thumb->w_group, "thumb_group");
+    gtk_widget_set_name(thumb->w_group, "thumb-group");
     g_signal_connect(G_OBJECT(thumb->w_group), "button-release-event", G_CALLBACK(_event_grouping_release), thumb);
     g_signal_connect(G_OBJECT(thumb->w_group), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
     g_signal_connect(G_OBJECT(thumb->w_group), "leave-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
@@ -1426,7 +1426,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 
     // the sound icon
     thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, 0, NULL);
-    gtk_widget_set_name(thumb->w_audio, "thumb_audio");
+    gtk_widget_set_name(thumb->w_audio, "thumb-audio");
     g_signal_connect(G_OBJECT(thumb->w_audio), "button-release-event", G_CALLBACK(_event_audio_release), thumb);
     g_signal_connect(G_OBJECT(thumb->w_audio), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
     g_signal_connect(G_OBJECT(thumb->w_audio), "leave-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
@@ -1438,14 +1438,14 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     // the zoom indicator
     thumb->w_zoom_eb = gtk_event_box_new();
     g_signal_connect(G_OBJECT(thumb->w_zoom_eb), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
-    gtk_widget_set_name(thumb->w_zoom_eb, "thumb_zoom");
+    gtk_widget_set_name(thumb->w_zoom_eb, "thumb-zoom");
     gtk_widget_set_valign(thumb->w_zoom_eb, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_zoom_eb, GTK_ALIGN_START);
     if(zoom_ratio == IMG_TO_FIT)
       thumb->w_zoom = gtk_label_new(_("fit"));
     else
       thumb->w_zoom = gtk_label_new("mini");
-    gtk_widget_set_name(thumb->w_zoom, "thumb_zoom_label");
+    gtk_widget_set_name(thumb->w_zoom, "thumb-zoom-label");
     gtk_widget_show(thumb->w_zoom);
     gtk_container_add(GTK_CONTAINER(thumb->w_zoom_eb), thumb->w_zoom);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_zoom_eb);

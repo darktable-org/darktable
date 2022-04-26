@@ -430,7 +430,7 @@ void gui_init(dt_lib_module_t *self)
   d->thumbnails_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   d->over_label = gtk_label_new(_("overlay mode for size"));
-  gtk_widget_set_name(d->over_label, "overlays_label");
+  dt_gui_add_class(d->over_label, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(d->thumbnails_box), d->over_label, TRUE, TRUE, 0);
 
   dt_action_t *ac = dt_action_section(&darktable.control->actions_global, N_("thumbnail overlays"));
@@ -459,7 +459,7 @@ void gui_init(dt_lib_module_t *self)
   d->culling_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   d->over_culling_label = gtk_label_new(_("overlay mode for size"));
-  gtk_widget_set_name(d->over_culling_label, "overlays_label");
+  dt_gui_add_class(d->over_culling_label, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(d->culling_box), d->over_culling_label, TRUE, TRUE, 0);
 
   ac = dt_action_section(&darktable.control->actions_global, N_("culling overlays"));

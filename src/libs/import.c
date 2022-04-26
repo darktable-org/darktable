@@ -849,9 +849,6 @@ static void _expander_create(dt_gui_collapsible_section_t *cs,
      pref_key,
      label,
      parent);
-
-  GtkWidget *expander_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(cs->expander));
-  gtk_widget_set_name(expander_frame, "import_metadata");
 }
 
 static void _resize_dialog(GtkWidget *widget, dt_lib_module_t* self)
@@ -1629,7 +1626,7 @@ static void _set_expander_content(GtkWidget *rbox, dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   // separator
-  gtk_widget_set_name(GTK_WIDGET(d->from.w), "section_label");
+  dt_gui_add_class(GTK_WIDGET(d->from.w), "dt_section_label");
   // job code
   GtkWidget *import_patterns = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkGrid *grid = GTK_GRID(gtk_grid_new());

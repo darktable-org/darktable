@@ -641,10 +641,11 @@ static void _range_set_tooltip(_widgets_range_t *special)
 {
   // we recreate the tooltip
   gchar *val = dtgtk_range_select_get_bounds_pretty(DTGTK_RANGE_SELECT(special->range_select));
-  gchar *txt = g_strdup_printf("<b>%s</b>\n%s\n%s\n%s",
+  gchar *txt = g_strdup_printf("<b>%s</b>\n%s\n%s\n%s%s",
                                dt_collection_name(special->rule->prop),
-                               _("right-click to set specific values"),
-                               _("actual selection:"),
+                               _("click or click&#38;drag to select one or multiple values"),
+                               _("right-click opens a menu to select the available values"),
+                               _("<b><i>actual selection: </i></b>"),
                                val);
   gtk_widget_set_tooltip_markup(special->range_select, txt);
   g_free(txt);
@@ -690,7 +691,7 @@ static void _range_widget_add_to_rule(dt_lib_filtering_rule_t *rule, _widgets_ra
   g_signal_connect(G_OBJECT(special->range_select), "value-changed", G_CALLBACK(_range_changed), special);
   if(top)
   {
-    dt_gui_add_class(gtk_bin_get_child(GTK_BIN(special->range_select)), "quick_filter_box");
+    dt_gui_add_class(gtk_bin_get_child(GTK_BIN(special->range_select)), "dt_quick_filter");
   }
 
   if(top)
@@ -721,7 +722,6 @@ static gboolean _widget_init_special(dt_lib_filtering_rule_t *rule, const gchar 
   else
     rule->w_special_box_top = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *special_box = (top) ? rule->w_special_box_top : rule->w_special_box;
-  if(!top) gtk_widget_set_name(special_box, "collect-rule-special");
   if(!top)
     gtk_box_pack_start(GTK_BOX(rule->w_widget_box), rule->w_special_box, TRUE, TRUE, 0);
   else
@@ -807,14 +807,12 @@ static void _popup_add_item(GtkMenuShell *pop, const gchar *name, const int id, 
   GtkWidget *smt = gtk_menu_item_new_with_label(name);
   if(title)
   {
-    gtk_widget_set_name(smt, "collect-popup-title");
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
     gtk_label_set_xalign(GTK_LABEL(child), xalign);
     gtk_widget_set_sensitive(smt, FALSE);
   }
   else
   {
-    gtk_widget_set_name(smt, "collect-popup-item");
     GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
     gtk_label_set_xalign(GTK_LABEL(child), xalign);
     g_object_set_data(G_OBJECT(smt), "collect_id", GINT_TO_POINTER(id));
@@ -832,7 +830,6 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   // we show a popup with all the possible rules
   // note that only rules with defined filters will be shown
   GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(spop), "collect-popup");
   gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
 
   // the differents categories
@@ -1231,7 +1228,6 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     // the second line
     rule->w_widget_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(rule->w_main), rule->w_widget_box, TRUE, TRUE, 0);
-    gtk_widget_set_name(rule->w_widget_box, "collect-module-hbox");
   }
 
   _rule_set_raw_text(rule, text, FALSE);
@@ -1459,7 +1455,6 @@ static void _event_history_show(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
 
   const int maxitems = dt_conf_get_int("plugins/lighttable/filtering/history_max");
@@ -1474,7 +1469,6 @@ static void _event_history_show(GtkWidget *widget, gpointer user_data)
       char str[2048] = { 0 };
       _history_pretty_print(line, str, sizeof(str));
       GtkWidget *smt = gtk_menu_item_new_with_label(str);
-      gtk_widget_set_name(smt, "collect-popup-item");
       gtk_widget_set_tooltip_text(smt, str);
       GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
       gtk_label_set_use_markup(GTK_LABEL(child), TRUE);
@@ -1635,7 +1629,6 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     sort->lib = d;
     sort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_hexpand(sort->box, TRUE);
-    gtk_widget_set_name(sort->box, "collect-sort-widget");
     sort->sort = dt_bauhaus_combobox_new(NULL);
     gtk_widget_set_tooltip_text(sort->sort, _("determine the sort order of shown images"));
     g_signal_connect(G_OBJECT(sort->sort), "value-changed", G_CALLBACK(_sort_combobox_changed), sort);
@@ -1780,7 +1773,6 @@ static void _sort_show_add_popup(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the possible sort
   GtkMenuShell *spop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(spop), "collect-popup");
   gtk_widget_set_size_request(GTK_WIDGET(spop), 200, -1);
 
 #define ADD_SORT_ENTRY(value)                                                                                     \
@@ -1868,7 +1860,6 @@ static void _sort_history_show(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
 
   const int maxitems = dt_conf_get_int("plugins/lighttable/filtering/sort_history_max");
@@ -1883,7 +1874,6 @@ static void _sort_history_show(GtkWidget *widget, gpointer user_data)
       char str[2048] = { 0 };
       _sort_history_pretty_print(line, str, sizeof(str));
       GtkWidget *smt = gtk_menu_item_new_with_label(str);
-      gtk_widget_set_name(smt, "collect-popup-item");
       gtk_widget_set_tooltip_text(smt, str);
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
       g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_sort_history_apply), self);
@@ -1902,7 +1892,8 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_widget_set_name(self->widget, "module_filtering");
+  gtk_widget_set_name(self->widget, "module-filtering");
+  dt_gui_add_class(self->widget, "dt_big_btn_canvas");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   d->nb_rules = 0;
@@ -1920,7 +1911,6 @@ void gui_init(dt_lib_module_t *self)
 
   // the botton buttons for the rules
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(bhbox, "collect-actions-widget");
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
   GtkWidget *btn = dt_action_button_new(self, _("new rule"), G_CALLBACK(_event_rule_append), self,
@@ -1933,16 +1923,14 @@ void gui_init(dt_lib_module_t *self)
 
   // the sorting part
   GtkWidget *spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(spacer, "collect-spacer2");
   gtk_box_pack_start(GTK_BOX(self->widget), spacer, TRUE, TRUE, 0);
   d->sort_box = gtk_grid_new();
   gtk_grid_attach(GTK_GRID(d->sort_box), gtk_label_new(_("sort by")), 0, 0, 1, 1);
-  gtk_widget_set_name(d->sort_box, "filter_sort_box");
+  gtk_widget_set_name(d->sort_box, "filter-sort-box");
   gtk_box_pack_start(GTK_BOX(self->widget), d->sort_box, TRUE, TRUE, 0);
 
   // the botton buttons for the sort
   bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(bhbox, "collect-actions-widget");
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
   btn = dt_action_button_new(self, _("new sort"), G_CALLBACK(_sort_show_add_popup), self,

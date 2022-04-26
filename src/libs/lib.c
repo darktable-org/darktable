@@ -495,9 +495,9 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       active_preset = cnt;
       selected_writeprotect = writeprotect;
       mi = gtk_check_menu_item_new_with_label(name);
-      dt_gui_add_class(mi, "check-menu-item");
+      dt_gui_add_class(mi, "dt_transparent_background");
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-      dt_gui_add_class(mi, "active-menu-item");
+      dt_gui_add_class(mi, "active_menu_item");
     }
     else
     {
@@ -1058,8 +1058,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 
   gtk_widget_show_all(module->widget);
-  dt_gui_add_class(module->widget, "plugin_ui_main");
-  dt_gui_add_class(pluginui_frame, "plugin_ui");
+  dt_gui_add_class(module->widget, "dt_plugin_ui_main");
+  dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
   module->expander = expander;
 
   gtk_widget_set_hexpand(module->widget, FALSE);

@@ -276,7 +276,7 @@ static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEvent
 static void _lib_darktable_show_about_dialog()
 {
   GtkWidget *dialog = gtk_about_dialog_new();
-  gtk_widget_set_name (dialog, "about_dialog");
+  gtk_widget_set_name (dialog, "about-dialog");
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif

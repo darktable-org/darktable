@@ -23,17 +23,17 @@
 /* Perceptually uniform grey gradient */
 
 /* General */
-@define-color selected_bg_color @grey_55; /* legacy stuff */
-@define-color border_color @grey_40; /* border, when used */
-@define-color bg_color @grey_45; /* general background */
-@define-color fg_color @grey_95; /* general text */
-@define-color base_color @fg_color; /* legacy stuff */
-@define-color text_color @grey_35; /* same */
-@define-color disabled_fg_color @grey_65; /* disabled controls */
+@define-color selected_bg_color @grey_55;       /* legacy stuff */
+@define-color border_color @grey_40;            /* border, when used */
+@define-color bg_color @grey_45;                /* general background */
+@define-color fg_color @grey_95;                /* general text */
+@define-color text_color @grey_35;              /* same */
+@define-color placeholder_text_color @grey_70;  /* placeholder text color (text on search background fields) */
+@define-color disabled_fg_color @grey_65;       /* disabled controls */
 
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_70;
-@define-color scroll_bar_active @grey_90;
+@define-color scroll_bar_active @grey_80;
 @define-color scroll_bar_bg @grey_40;
 
 /* Modules box (plugins) */
@@ -42,28 +42,24 @@
 @define-color collapsible_bg_color @grey_55;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_fg shade(@fg_color, 0.95);
 @define-color bauhaus_indicator_border @grey_50;
 @define-color bauhaus_fill @grey_70;
 @define-color bauhaus_bg_hover @grey_80;
 @define-color bauhaus_fg_hover @grey_100;
 @define-color bauhaus_fg_selected @grey_75;
-@define-color bauhaus_fg_disabled alpha(@bauhaus_fg, 0.5);
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
 
 /* GTK Buttons and tabs */
 @define-color button_bg @grey_55;
-@define-color button_checked_bg @grey_65;
-@define-color button_checked_fg @grey_100;
 @define-color button_hover_bg @grey_70;
 @define-color button_hover_fg @grey_30;
 
 /* text fields */
 @define-color field_bg @grey_45;
-@define-color field_fg @grey_95;
 @define-color field_active_bg @grey_55;
 @define-color field_active_fg @grey_95;
 @define-color field_selected_bg @grey_65;
+@define-color field_selected_fg @grey_100;
 @define-color field_hover_bg @grey_75;
 @define-color field_hover_fg @grey_35;
 
@@ -86,6 +82,8 @@
 @define-color thumbnail_hover_fg_color @grey_100;
 @define-color thumbnail_localcopy_color @grey_90;
 
+@define-color range_bg_color alpha(@fg_color, 0.05);
+
 /* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_40;
 @define-color graph_border @grey_15;
@@ -100,50 +98,42 @@
   color: @grey_70;
 }
 
-/* Deactivated switch buttons, make them less visible */
-#history-switch:disabled
-{
-    color: shade(@plugin_label_color, .9);
-}
-
-#history-button *
-{
-  color: shade(@plugin_fg_color, 0.8);
-}
-
 /* hover effect on combo and bauhaus */
 .combo:hover,
 .combo:hover cellview,
-combobox window *:hover,
-#bauhaus_combobox:hover,
-#bauhaus_slider:hover,
-#collapsible .combo:hover,
-#header-toolbar #bauhaus_combobox:hover
+.dt_bauhaus:hover,
+combobox window *:hover
 {
   color: shade(@fg_color, 0.94);
 }
 
+/* set default text, items that can be selected : items inside categories titles set above */
+.dt_bauhaus_popup
+{
+  color: shade(@fg_color, 0.75);
+}
+
 /* Set background on thumbnails hover overlays */
-.dt_overlays_hover_extended #thumb_main:hover #thumb_bottom,
-.dt_overlays_mixed #thumb_main:hover #thumb_bottom,
-.dt_overlays_hover #thumb_main:hover #thumb_bottom
+.dt_overlays_hover_extended #thumb-main:hover #thumb-bottom,
+.dt_overlays_mixed #thumb-main:hover #thumb-bottom,
+.dt_overlays_hover #thumb-main:hover #thumb-bottom
 {
   background-image: linear-gradient(rgba(241, 241, 241, 0.7) 0%, rgba(241, 241, 241, 0.7) 90%,rgba(241, 241, 241, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
 }
 
 /* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
-.dt_overlays_always#culling #thumb_bottom,
-.dt_overlays_always_extended#culling #thumb_bottom,
-.dt_overlays_always#preview #thumb_bottom,
-.dt_overlays_always_extended#preview #thumb_bottom
+.dt_overlays_always#culling #thumb-bottom,
+.dt_overlays_always_extended#culling #thumb-bottom,
+.dt_overlays_always#preview #thumb-bottom,
+.dt_overlays_always_extended#preview #thumb-bottom
 {
   background-image: linear-gradient(rgba(226, 226, 226, 0.2) 0%, rgba(226, 226, 226, 0.1) 5%, rgba(226, 226, 226, 0) 100%);
 }
 
-.dt_overlays_always#culling #thumb_main:hover #thumb_bottom,
-.dt_overlays_always_extended#culling #thumb_main:hover #thumb_bottom,
-.dt_overlays_always#preview #thumb_main:hover #thumb_bottom,
-.dt_overlays_always_extended#preview #thumb_main:hover #thumb_bottom
+.dt_overlays_always#culling #thumb-main:hover #thumb-bottom,
+.dt_overlays_always_extended#culling #thumb-main:hover #thumb-bottom,
+.dt_overlays_always#preview #thumb-main:hover #thumb-bottom,
+.dt_overlays_always_extended#preview #thumb-main:hover #thumb-bottom
 {
   background-image: linear-gradient(rgba(246, 246, 246, 0.4) 0%, rgba(246, 246, 246, 0.2) 5%, rgba(226, 226, 226, 0) 100%);
 }
