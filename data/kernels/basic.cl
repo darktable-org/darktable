@@ -480,7 +480,7 @@ interpolate_and_mask(read_only image2d_t input,
     // Also we remosaic the image at the end, so only the relevant channel gets picked.
     // Finally, it's unlikely that the borders of the image get clipped due to vignetting.
     const float center = read_imagef(input, sampleri, (int2)(j, i)).x;
-    R = G = B = center / wb[c];
+    R = G = B = center;
     R_clipped = G_clipped = B_clipped = (center > clips[c]);
   }
   else
@@ -505,19 +505,19 @@ interpolate_and_mask(read_only image2d_t input,
 
     if(c == GREEN) // green pixel
     {
-      G = *center / wb[GREEN];
+      G = *center;
       G_clipped = (*center > clips[GREEN]);
     }
     else // non-green pixel
     {
       // interpolate inside an X/Y cross
-      G = (*north + *south + *east + *west) / 4.f / wb[GREEN];
+      G = (*north + *south + *east + *west) / 4.f;
       G_clipped = (*north > clips[GREEN] || *south > clips[GREEN] || *east > clips[GREEN] || *west > clips[GREEN]);
     }
 
     if(c == RED ) // red pixel
     {
-      R = *center / wb[RED];
+      R = *center;
       R_clipped = (*center > clips[RED]);
     }
     else // non-red pixel
@@ -525,19 +525,19 @@ interpolate_and_mask(read_only image2d_t input,
       if(FC(i - 1, j, filters) == RED && FC(i + 1, j, filters) == RED)
       {
         // we are on a red column, so interpolate column-wise
-        R = (*north + *south) / 2.f / wb[RED];
+        R = (*north + *south) / 2.f;
         R_clipped = (*north > clips[RED] || *south > clips[RED]);
       }
       else if(FC(i, j - 1, filters) == RED && FC(i, j + 1, filters) == RED)
       {
         // we are on a red row, so interpolate row-wise
-        R = (*west + *east) / 2.f / wb[RED];
+        R = (*west + *east) / 2.f;
         R_clipped = (*west > clips[RED] || *east > clips[RED]);
       }
       else
       {
         // we are on a blue row, so interpolate inside a square
-        R = (*north_west + *north_east + *south_east + *south_west) / 4.f / wb[RED];
+        R = (*north_west + *north_east + *south_east + *south_west) / 4.f;
         R_clipped = (*north_west > clips[RED] || *north_east > clips[RED] || *south_west > clips[RED]
                       || *south_east > clips[RED]);
       }
@@ -545,7 +545,7 @@ interpolate_and_mask(read_only image2d_t input,
 
     if(c == BLUE ) // blue pixel
     {
-      B = *center / wb[BLUE];
+      B = *center;
       B_clipped = (*center > clips[BLUE]);
     }
     else // non-blue pixel
@@ -553,19 +553,19 @@ interpolate_and_mask(read_only image2d_t input,
       if(FC(i - 1, j, filters) == BLUE && FC(i + 1, j, filters) == BLUE)
       {
         // we are on a blue column, so interpolate column-wise
-        B = (*north + *south) / 2.f / wb[BLUE];
+        B = (*north + *south) / 2.f;
         B_clipped = (*north > clips[BLUE] || *south > clips[BLUE]);
       }
       else if(FC(i, j - 1, filters) == BLUE && FC(i, j + 1, filters) == BLUE)
       {
         // we are on a red row, so interpolate row-wise
-        B = (*west + *east) / 2.f / wb[BLUE];
+        B = (*west + *east) / 2.f;
         B_clipped = (*west > clips[BLUE] || *east > clips[BLUE]);
       }
       else
       {
         // we are on a red row, so interpolate inside a square
-        B = (*north_west + *north_east + *south_east + *south_west) / 4.f / wb[BLUE];
+        B = (*north_west + *north_east + *south_east + *south_west) / 4.f;
 
         B_clipped = (*north_west > clips[BLUE] || *north_east > clips[BLUE] || *south_west > clips[BLUE]
                     || *south_east > clips[BLUE]);
@@ -575,7 +575,7 @@ interpolate_and_mask(read_only image2d_t input,
 
   float4 RGB = {R, G, B, native_sqrt(R * R + G * G + B * B) };
   float4 clipped = { R_clipped, G_clipped, B_clipped, (R_clipped || G_clipped || B_clipped) };
-  write_imagef(interpolated, (int2)(j, i), RGB);
+  write_imagef(interpolated, (int2)(j, i), RGB / (float4) *wb);
   write_imagef(clipping_mask, (int2)(j, i), clipped);
 }
 
@@ -638,7 +638,7 @@ static inline void compute_laplace_kernel(const float4 neighbour_pixel_LF[9],
   const float gradient[2] = { (neighbour_pixel_LF[7].w - neighbour_pixel_LF[1].w) / 2.f,
                               (neighbour_pixel_LF[5].w - neighbour_pixel_LF[3].w) / 2.f };
   const float magnitude_grad = hypot(gradient[0], gradient[1]);
-  const float c2 = native_exp(-magnitude_grad);
+  const float c2 = native_exp(-magnitude_grad / 6.f);
 
   // direction of the gradient. NB : force arg(grad) = 0 if hypot == 0
   const float cos_grad = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad : 1.f; // cos(0)

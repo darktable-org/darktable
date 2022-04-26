@@ -95,7 +95,7 @@ typedef struct dt_iop_highlights_params_t
   float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
   // params of v3
   float noise_level; // $MIN: 0. $MAX: 0.1 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
-  int iterations; // $MIN: 1 $MAX: 32 $DEFAULT: 1 $DESCRIPTION: "iterations"
+  int iterations; // $MIN: 1 $MAX: 64 $DEFAULT: 1 $DESCRIPTION: "iterations"
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
   float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast balance"
   float combine;           // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
@@ -971,7 +971,7 @@ static void _interpolate_and_mask(const float *const restrict input,
         // because we are dealing with local averages anyway, later on.
         // Also we remosaic the image at the end, so only the relevant channel gets picked.
         // Finally, it's unlikely that the borders of the image get clipped due to vignetting.
-        R = G = B = center / wb[c];
+        R = G = B = center;
         R_clipped = G_clipped = B_clipped = (center > clips[c]);
       }
       else
@@ -993,19 +993,19 @@ static void _interpolate_and_mask(const float *const restrict input,
 
         if(c == GREEN) // green pixel
         {
-          G = center / wb[GREEN];
+          G = center;
           G_clipped = (center > clips[GREEN]);
         }
         else // non-green pixel
         {
           // interpolate inside an X/Y cross
-          G = (north + south + east + west) / 4.f / wb[GREEN];
+          G = (north + south + east + west) / 4.f;
           G_clipped = (north > clips[GREEN] || south > clips[GREEN] || east > clips[GREEN] || west > clips[GREEN]);
         }
 
         if(c == RED ) // red pixel
         {
-          R = center / wb[RED];
+          R = center;
           R_clipped = (center > clips[RED]);
         }
         else // non-red pixel
@@ -1013,19 +1013,19 @@ static void _interpolate_and_mask(const float *const restrict input,
           if(FC(i - 1, j, filters) == RED && FC(i + 1, j, filters) == RED)
           {
             // we are on a red column, so interpolate column-wise
-            R = (north + south) / 2.f / wb[RED];
+            R = (north + south) / 2.f;
             R_clipped = (north > clips[RED] || south > clips[RED]);
           }
           else if(FC(i, j - 1, filters) == RED && FC(i, j + 1, filters) == RED)
           {
             // we are on a red row, so interpolate row-wise
-            R = (west + east) / 2.f / wb[RED];
+            R = (west + east) / 2.f;
             R_clipped = (west > clips[RED] || east > clips[RED]);
           }
           else
           {
             // we are on a blue row, so interpolate inside a square
-            R = (north_west + north_east + south_east + south_west) / 4.f / wb[RED];
+            R = (north_west + north_east + south_east + south_west) / 4.f;
             R_clipped = (north_west > clips[RED] || north_east > clips[RED] || south_west > clips[RED]
                           || south_east > clips[RED]);
           }
@@ -1033,7 +1033,7 @@ static void _interpolate_and_mask(const float *const restrict input,
 
         if(c == BLUE ) // blue pixel
         {
-          B = center / wb[BLUE];
+          B = center;
           B_clipped = (center > clips[BLUE]);
         }
         else // non-blue pixel
@@ -1041,19 +1041,19 @@ static void _interpolate_and_mask(const float *const restrict input,
           if(FC(i - 1, j, filters) == BLUE && FC(i + 1, j, filters) == BLUE)
           {
             // we are on a blue column, so interpolate column-wise
-            B = (north + south) / 2.f / wb[BLUE];
+            B = (north + south) / 2.f;
             B_clipped = (north > clips[BLUE] || south > clips[BLUE]);
           }
           else if(FC(i, j - 1, filters) == BLUE && FC(i, j + 1, filters) == BLUE)
           {
             // we are on a red row, so interpolate row-wise
-            B = (west + east) / 2.f / wb[BLUE];
+            B = (west + east) / 2.f;
             B_clipped = (west > clips[BLUE] || east > clips[BLUE]);
           }
           else
           {
             // we are on a red row, so interpolate inside a square
-            B = (north_west + north_east + south_east + south_west) / 4.f / wb[BLUE];
+            B = (north_west + north_east + south_east + south_west) / 4.f;
 
             B_clipped = (north_west > clips[BLUE] || north_east > clips[BLUE] || south_west > clips[BLUE]
                         || south_east > clips[BLUE]);
@@ -1064,9 +1064,9 @@ static void _interpolate_and_mask(const float *const restrict input,
       dt_aligned_pixel_t RGB = { R, G, B, sqrtf(sqf(R) + sqf(G) + sqf(B)) };
       dt_aligned_pixel_t clipped = { R_clipped, G_clipped, B_clipped, (R_clipped || G_clipped || B_clipped) };
 
-      for_each_channel(k, aligned(RGB, interpolated, clipping_mask, clipped))
+      for_each_channel(k, aligned(RGB, interpolated, clipping_mask, clipped, wb))
       {
-        interpolated[(i * width + j) * 4 + k] = fmaxf(RGB[k], 0.f);
+        interpolated[(i * width + j) * 4 + k] = fmaxf(RGB[k] / wb[c], 0.f);
         clipping_mask[(i * width + j) * 4 + k] = clipped[k];
       }
     }
@@ -1116,7 +1116,7 @@ static inline void compute_laplace_kernel(const dt_aligned_pixel_t neighbour_pix
   const float gradient[2] = { (neighbour_pixel_LF[7][ALPHA] - neighbour_pixel_LF[1][ALPHA]) / 2.f,
                               (neighbour_pixel_LF[5][ALPHA] - neighbour_pixel_LF[3][ALPHA]) / 2.f };
   const float magnitude_grad = hypotf(gradient[0], gradient[1]);
-  const float c2 = expf(-magnitude_grad);
+  const float c2 = expf(-magnitude_grad / 6.f);
 
   // direction of the gradient. NB : force arg(grad) = 0 if hypot == 0
   const float cos_grad = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad : 1.f; // cos(0)
