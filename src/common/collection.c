@@ -613,11 +613,11 @@ const char *dt_collection_sort_name_untranslated(dt_collection_sort_t sort)
     case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
       return N_("import time");
     case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
-      return N_("last modification time");
+      return N_("modification time");
     case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
-      return N_("last export time");
+      return N_("export time");
     case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
-      return N_("last print time");
+      return N_("print time");
     case DT_COLLECTION_SORT_RATING:
       return N_("rating");
     case DT_COLLECTION_SORT_ID:
@@ -662,17 +662,17 @@ const char *dt_collection_name_untranslated(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_TAG:
       return N_("tag");
     case DT_COLLECTION_PROP_DAY:
-      return N_("date taken");
+      return N_("capture date");
     case DT_COLLECTION_PROP_TIME:
-      return N_("date-time taken");
+      return N_("capture time");
     case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
-      return N_("import timestamp");
+      return N_("import time");
     case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
-      return N_("change timestamp");
+      return N_("modification time");
     case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
-      return N_("export timestamp");
+      return N_("export time");
     case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
-      return N_("print timestamp");
+      return N_("print time");
     case DT_COLLECTION_PROP_HISTORY:
       return N_("history");
     case DT_COLLECTION_PROP_COLORLABEL:
