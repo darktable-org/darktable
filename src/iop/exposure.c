@@ -123,14 +123,15 @@ const char *name()
   return _("exposure");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char** description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("redo the exposure of the shot as if you were still in-camera\n"
-                                        "using a color-safe brightening similar to increasing ISO setting"),
-                                      _("corrective and creative"),
-                                      _("linear, RGB, scene-referred"),
-                                      _("linear, RGB"),
-                                      _("linear, RGB, scene-referred"));
+  return dt_iop_set_description(self,
+                                _("redo the exposure of the shot as if you were still in-camera\n"
+                                  "using a color-safe brightening similar to increasing ISO setting"),
+                                _("corrective and creative"),
+                                _("linear, RGB, scene-referred"),
+                                _("linear, RGB"),
+                                _("linear, RGB, scene-referred"));
 }
 
 int default_group()
@@ -154,19 +155,6 @@ static void _exposure_proxy_set_black(struct dt_iop_module_t *self, const float 
 static float _exposure_proxy_get_black(struct dt_iop_module_t *self);
 static void _paint_hue(dt_iop_module_t *self);
 static void _exposure_set_black(struct dt_iop_module_t *self, const float black);
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  /* register hooks with current dev so that  histogram
-     can interact with this module.
-  */
-  dt_dev_proxy_exposure_t *instance = &darktable.develop->proxy.exposure;
-  instance->module = self;
-  instance->set_exposure = _exposure_proxy_set_exposure;
-  instance->get_exposure = _exposure_proxy_get_exposure;
-  instance->set_black = _exposure_proxy_set_black;
-  instance->get_black = _exposure_proxy_get_black;
-}
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -442,7 +430,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
@@ -894,7 +882,7 @@ static gboolean _target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer use
 
   // Margins
   const double INNER_PADDING = 4.0;
-  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(1.5);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
@@ -938,7 +926,7 @@ static gboolean _origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer use
 
   // Margins
   const double INNER_PADDING = 4.0;
-  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(1.5);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
@@ -1133,7 +1121,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., 100., 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->lightness_spot, NULL, _("lightness"));
+  dt_bauhaus_widget_set_label(g->lightness_spot, NULL, N_("lightness"));
   dt_bauhaus_slider_set_format(g->lightness_spot, "%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
@@ -1144,6 +1132,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->cs.container), GTK_WIDGET(hhbox), FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_draw), self);
+
+  /* register hooks with current dev so that  histogram
+     can interact with this module.
+  */
+  dt_dev_proxy_exposure_t *instance = &darktable.develop->proxy.exposure;
+  instance->module = self;
+  instance->set_exposure = _exposure_proxy_set_exposure;
+  instance->get_exposure = _exposure_proxy_get_exposure;
+  instance->set_black = _exposure_proxy_set_black;
+  instance->get_black = _exposure_proxy_get_black;
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1159,6 +1157,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

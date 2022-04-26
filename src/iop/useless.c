@@ -201,7 +201,9 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 }
 
 #if 0
-/** optional, only needed if tiling is permitted by setting IOP_FLAGS_ALLOW_TILING */
+/** optional, always needed if tiling is permitted by setting IOP_FLAGS_ALLOW_TILING
+    Also define this if the module uses more memory on the OpenCl device than the in& output buffers. 
+*/
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                      struct dt_develop_tiling_t *tiling)
@@ -637,6 +639,9 @@ GSList *mouse_actions(dt_iop_module_t *self)
 }
 #endif
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -297,10 +297,10 @@ static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_mo
   }
 }
 
-static void _metadata_update_timestamp(const int i, const time_t *value, dt_lib_module_t *self)
+static void _metadata_update_timestamp(const int i, const GTimeSpan gts, dt_lib_module_t *self)
 {
   char datetime[200];
-  const gboolean valid = dt_datetime_unix_lt_to_local(datetime, sizeof(datetime), value);
+  const gboolean valid = gts ? dt_datetime_gtimespan_to_local(datetime, sizeof(datetime), gts, FALSE, TRUE) : FALSE;
   _metadata_update_value(i, valid ? datetime : NODATA_STRING, self);
 }
 
@@ -481,10 +481,12 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       images = dt_act_on_get_query(FALSE);
       sqlite3_stmt *stmt;
+      // clang-format off
       gchar *query = g_strdup_printf("SELECT id, COUNT(id) "
                                      "FROM main.images "
                                      "WHERE id IN (%s)",
                                      images);
+      // clang-format on
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW)
       {
@@ -512,6 +514,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     if(!images) images = dt_act_on_get_query(FALSE);
     sqlite3_stmt *stmt = NULL;
+    // clang-format off
     gchar *query = g_strdup_printf("SELECT COUNT(DISTINCT film_id), "
                                          "2, " //id always different
                                          "COUNT(DISTINCT group_id), "
@@ -551,15 +554,18 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                          "FROM main.images "
                                          "WHERE id IN (%s)",
                                    images, images, images, images, images, images, images, images);
+    // clang-format on
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
     sqlite3_stmt *stmt_tags = NULL;
+    // clang-format off
     gchar *tag_query = g_strdup_printf("SELECT flags, COUNT(DISTINCT imgid) "
                                        "FROM main.tagged_images "
                                        "JOIN data.tags "
                                        "ON data.tags.id = main.tagged_images.tagid AND name NOT LIKE 'darktable|%%' "
                                        "WHERE imgid in (%s) GROUP BY tagid", images);
+    // clang-format on
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), tag_query, -1, &stmt_tags, NULL);
     g_free(tag_query);
     g_free(query);
@@ -674,31 +680,19 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         break;
 
       case md_internal_import_timestamp:
-        if (img->import_timestamp >= 0)
-          _metadata_update_timestamp(md_internal_import_timestamp, &img->import_timestamp, self);
-        else
-          _metadata_update_value(md_internal_import_timestamp, NODATA_STRING, self);
+        _metadata_update_timestamp(md_internal_import_timestamp, img->import_timestamp, self);
         break;
 
       case md_internal_change_timestamp:
-        if (img->change_timestamp >=0)
-          _metadata_update_timestamp(md_internal_change_timestamp, &img->change_timestamp, self);
-        else
-          _metadata_update_value(md_internal_change_timestamp, NODATA_STRING, self);
+        _metadata_update_timestamp(md_internal_change_timestamp, img->change_timestamp, self);
         break;
 
       case md_internal_export_timestamp:
-        if (img->export_timestamp >=0)
-          _metadata_update_timestamp(md_internal_export_timestamp, &img->export_timestamp, self);
-        else
-          _metadata_update_value(md_internal_export_timestamp, NODATA_STRING, self);
+        _metadata_update_timestamp(md_internal_export_timestamp, img->export_timestamp, self);
         break;
 
       case md_internal_print_timestamp:
-        if (img->print_timestamp >=0)
-          _metadata_update_timestamp(md_internal_print_timestamp, &img->print_timestamp, self);
-        else
-          _metadata_update_value(md_internal_print_timestamp, NODATA_STRING, self);
+        _metadata_update_timestamp(md_internal_print_timestamp, img->print_timestamp, self);
         break;
 
       case md_internal_flags:
@@ -1012,7 +1006,7 @@ static void _jump_to()
     dt_image_cache_read_release(darktable.image_cache, img);
     char collect[1024];
     snprintf(collect, sizeof(collect), "1:0:0:%s$", path);
-    dt_collection_deserialize(collect);
+    dt_collection_deserialize(collect, FALSE);
   }
 }
 
@@ -1023,11 +1017,9 @@ static gboolean _filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpoi
   return TRUE;
 }
 
-static gboolean _jump_to_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, gpointer data)
+static void _jump_to_accel(dt_action_t *data)
 {
   _jump_to();
-  return TRUE;
 }
 
 /* callback for the mouse over image change signal */
@@ -1035,17 +1027,6 @@ static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   if(dt_control_running()) _metadata_view_update_values(self);
-}
-
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "jump to film roll"), GDK_KEY_j, GDK_CONTROL_MASK);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  GClosure *closure = g_cclosure_new(G_CALLBACK(_jump_to_accel), (gpointer)self, NULL);
-  dt_accel_connect_lib(self, "jump to film roll", closure);
 }
 
 static char *_get_current_configuration(dt_lib_module_t *self)
@@ -1363,7 +1344,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
 
   self->widget = dt_ui_scroll_wrap(child_grid_window, 200, "plugins/lighttable/metadata_view/windowheight");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   gtk_widget_show_all(d->grid);
   gtk_widget_set_no_show_all(d->grid, TRUE);
@@ -1396,6 +1376,8 @@ void gui_init(dt_lib_module_t *self)
   /* signup for metadata changes */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_UPDATE,
                             G_CALLBACK(_mouse_over_image_callback), self);
+
+  dt_action_register(DT_ACTION(self), N_("jump to film roll"), _jump_to_accel, GDK_KEY_j, GDK_CONTROL_MASK);
 }
 
 static void _free_metadata_queue(dt_lib_metadata_info_t *m)
@@ -1650,6 +1632,9 @@ void init(struct dt_lib_module_t *self)
   lua_pop(L, 2);
 }
 #endif
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

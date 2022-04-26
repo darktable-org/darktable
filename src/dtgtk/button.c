@@ -74,17 +74,8 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   int cwidth = width - margin.left - margin.right;
   int cheight = height - margin.top - margin.bottom;
 
-  /* draw standard button background if not transparent */
-  if(flags & CPF_STYLE_FLAT)
-  {
-    if(flags & CPF_PRELIGHT)
-      gtk_render_background(context, cr, startx, starty, cwidth, cheight);
-    else if (!(flags & CPF_ACTIVE))
-      fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
-  }
-  else if(!(flags & CPF_BG_TRANSPARENT))
-    gtk_render_background(context, cr, startx, starty, cwidth, cheight);
-
+  /* draw standard button background and borders */
+  gtk_render_background(context, cr, startx, starty, cwidth, cheight);
   gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
   gdk_cairo_set_source_rgba(cr, &fg_color);
 
@@ -130,7 +121,7 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void
   button->icon_data = paintdata;
   button->canvas = gtk_drawing_area_new();
   gtk_container_add(GTK_CONTAINER(button), button->canvas);
-  gtk_widget_set_name(GTK_WIDGET(button), "dt-button");
+  dt_gui_add_class(GTK_WIDGET(button), "dt_module_btn");
   gtk_widget_set_name(GTK_WIDGET(button->canvas), "button-canvas");
   return (GtkWidget *)button;
 }
@@ -169,30 +160,9 @@ void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active)
     button->icon_flags &= ~CPF_ACTIVE;
 }
 
-void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color)
-{
-  g_return_if_fail(button != NULL);
-  if(color)
-  {
-    button->fg = *color;
-    button->icon_flags |= CPF_CUSTOM_FG;
-  }
-  else
-    button->icon_flags &= ~CPF_CUSTOM_FG;
-}
-
-void dtgtk_button_override_background_color(GtkDarktableButton *button, GdkRGBA *color)
-{
-  g_return_if_fail(button != NULL);
-  if(color)
-  {
-    button->bg = *color;
-    button->icon_flags |= CPF_CUSTOM_BG;
-  }
-  else
-    button->icon_flags &= ~CPF_CUSTOM_BG;
-}
-
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

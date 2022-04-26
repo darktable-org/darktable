@@ -39,14 +39,6 @@
 #define FINISH { cairo_identity_matrix(cr); \
                  cairo_restore(cr); }
 
-const GdkRGBA _colorlabels[]
-  = { {.red = 0.9, .green = 0.0, .blue = 0.0, .alpha = 1.0 }, // red
-      {.red = 0.9, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // yellow
-      {.red = 0.0, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // green
-      {.red = 0.0, .green = 0.0, .blue = 0.9, .alpha = 1.0 }, // blue
-      {.red = 0.9, .green = 0.0, .blue = 0.9, .alpha = 1.0 }, // purple
-    };
-
 void dtgtk_cairo_paint_empty(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)
@@ -200,13 +192,12 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
 
 void dtgtk_cairo_paint_sortby(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.8, 0.8, 0, 0)
+  PREAMBLE(1, 1.2, 0, 0)
 
   cairo_move_to(cr, 0.1, 0.05);
   cairo_line_to(cr, 0.1, 0.95);
   cairo_move_to(cr, 0.0, 0.80);
   cairo_line_to(cr, 0.1, 0.95);
-  cairo_move_to(cr, 0.1, 0.95);
   cairo_line_to(cr, 0.2, 0.80);
   cairo_stroke(cr);
 
@@ -1509,9 +1500,7 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
   if(color < DT_COLORLABELS_LAST)
   {
-    const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
-
-    set_color(cr, colorlabels[color]);
+    set_color(cr, darktable.bauhaus->colorlabels[color]);
   }
   else
   {
@@ -1543,20 +1532,30 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   #define CPF_USER_DATA_INCLUDE CPF_USER_DATA
   #define CPF_USER_DATA_EXCLUDE CPF_USER_DATA << 1
-  PREAMBLE(1, 1, 0, 0)
+  PREAMBLE(0.9, 1, 0, 0)
 
   const double r = 0.4;
-  const float alpha = flags & CPF_PRELIGHT ? 1.0 : 0.6;
   const dt_colorlabels_enum color = (flags & 7);
-  const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
 
   if(color < DT_COLORLABELS_LAST)
   {
-    cairo_set_source_rgba(cr, colorlabels[color].red, colorlabels[color].green, colorlabels[color].blue, alpha);
+    set_color(cr, darktable.bauhaus->colorlabels[color]);
   }
   else
   {
-    cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, alpha);
+    cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, 1.0);
+  }
+
+  /* make blue color label icon more visible and well balanced with other colors */
+  if(flags & CPF_LABEL_BLUE)
+  {
+    cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
+  }
+
+  /* then improve hover effect for same blue icon */
+  if (flags & CPF_PRELIGHT)
+  {
+    cairo_set_line_width(cr, 1.2 * cairo_get_line_width(cr));
   }
 
   if(flags & CPF_USER_DATA_INCLUDE)
@@ -1735,42 +1734,40 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
 {
   PREAMBLE(1.1, 1, 0, 0)
 
-  const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
-
   const float r = 0.18;
 
-  if(flags & CPF_DIRECTION_UP)
+  if(flags & CPF_LABEL_RED)
   {
     cairo_arc(cr, r, r, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_RED]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_RED]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_DIRECTION_DOWN)
+  if(flags & CPF_LABEL_YELLOW)
   {
     cairo_arc(cr, 1.0 - r, r, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_YELLOW]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_YELLOW]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_DIRECTION_LEFT)
+  if(flags & CPF_LABEL_GREEN)
   {
     cairo_arc(cr, 0.5, 0.5, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_GREEN]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_GREEN]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_DIRECTION_RIGHT)
+  if(flags & CPF_LABEL_BLUE)
   {
     cairo_arc(cr, r, 1.0 - r, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_BLUE]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_BLUE]);
     cairo_fill(cr);
   }
 
-  if(flags & CPF_BG_TRANSPARENT)
+  if(flags & CPF_LABEL_PURPLE)
   {
     cairo_arc(cr, 1.0 - r, 1.0 - r, r, 0, 2.0f * M_PI);
-    set_color(cr, colorlabels[DT_COLORLABELS_PURPLE]);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_PURPLE]);
     cairo_fill(cr);
   }
 
@@ -1917,11 +1914,9 @@ void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gin
 
   cairo_move_to(cr, 0.30, 0.15);
   cairo_line_to(cr, 0.95, 0.15);
-  cairo_move_to(cr, 0.95, 0.15);
   cairo_line_to(cr, 0.95, 0.65);
   cairo_move_to(cr, 0.20, 0.25);
   cairo_line_to(cr, 0.85, 0.25);
-  cairo_move_to(cr, 0.85, 0.25);
   cairo_line_to(cr, 0.85, 0.75);
   cairo_stroke(cr);
   if(flags & CPF_ACTIVE)
@@ -3159,6 +3154,33 @@ void dtgtk_cairo_paint_shortcut(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   FINISH
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+void dtgtk_cairo_paint_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  // the needle
+  cairo_move_to(cr, 0.5, 0.5);
+  cairo_line_to(cr, 0, 1.0);
+  cairo_stroke(cr);
+
+  // the main part
+  cairo_move_to(cr, 0.13, 0.45);
+  cairo_line_to(cr, 0.57, 0.88);
+  cairo_line_to(cr, 0.67, 0.34);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+  cairo_move_to(cr, 0.61, 0);
+  cairo_line_to(cr, 1.0, 0.4);
+  cairo_line_to(cr, 0.34, 0.66);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+
+  FINISH
+}
+
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -477,9 +477,9 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *module,
                                        const char *stderr_message);
 
 // format modules description going in tooltips
-char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
-                             const char *purpose, const char *input,
-                             const char *process, const char *output);
+const char **dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
+                                    const char *purpose, const char *input,
+                                    const char *process, const char *output);
 
 static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
 {
@@ -509,6 +509,9 @@ void dt_iop_gui_rename_module(dt_iop_module_t *module);
 
 void dt_iop_gui_changed(dt_action_t *action, GtkWidget *widget, gpointer data);
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

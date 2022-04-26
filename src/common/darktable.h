@@ -156,7 +156,7 @@ typedef unsigned int u_int;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 5
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 11
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -269,7 +269,9 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_SIGNAL         = 1 << 20,
   DT_DEBUG_PARAMS         = 1 << 21,
   DT_DEBUG_DEMOSAIC       = 1 << 22,
-  DT_DEBUG_ACT_ON         = 1 << 23
+  DT_DEBUG_ACT_ON         = 1 << 23,
+  DT_DEBUG_TILING         = 1 << 24,
+  DT_DEBUG_VERBOSE        = 1 << 25
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -287,7 +289,8 @@ typedef struct dt_sys_resources_t
   int *refresource; // for the debug resource modes we use fixed settings
   int group;
   int level;
-  int tunecl;
+  int tunememory;
+  int tunepinning;
 } dt_sys_resources_t;
 
 typedef struct darktable_t
@@ -344,6 +347,7 @@ typedef struct darktable_t
   int32_t unmuted_signal_dbg_acts;
   gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
   GTimeZone *utc_tz;
+  GDateTime *origin_gdt;
   struct dt_sys_resources_t dtresources;
 } darktable_t;
 
@@ -359,6 +363,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 void dt_get_sysresource_level();
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
+void dt_vprint(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 int dt_worker_threads();
 size_t dt_get_available_mem();
 size_t dt_get_singlebuffer_mem();
@@ -655,6 +660,9 @@ static inline void dt_unreachable_codepath_with_caller(const char *description, 
  */
 #define DT_MAX_PATH_FOR_PARAMS 4096
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -314,7 +314,7 @@ const char *aliases()
   return _("reframe|perspective|keystone|distortion");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("change the framing and correct the perspective"),
                                       _("corrective or creative"),
@@ -1107,8 +1107,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     size_t sizes[3];
 
-    sizes[0] = ROUNDUPWD(width);
-    sizes[1] = ROUNDUPHT(height);
+    sizes[0] = ROUNDUPDWD(width, devid);
+    sizes[1] = ROUNDUPDHT(height, devid);
     sizes[2] = 1;
     dt_opencl_set_kernel_arg(devid, crkernel, 0, sizeof(cl_mem), &dev_in);
     dt_opencl_set_kernel_arg(devid, crkernel, 1, sizeof(cl_mem), &dev_out);
@@ -2043,16 +2043,6 @@ static void key_swap_callback(GtkAccelGroup *accel_group, GObject *acceleratable
   p->ratio_d = -p->ratio_d;
   apply_box_aspect(self, GRAB_HORIZONTAL);
   dt_control_queue_redraw_center();
-}
-
-static gboolean key_commit_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)data;
-  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
-  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  commit_box(self, g, p);
-  return TRUE;
 }
 
 static void aspect_flip(GtkWidget *button, dt_iop_module_t *self)
@@ -3362,16 +3352,6 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     return 0;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, TRUE, N_("commit"), GDK_KEY_Return, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_accel_connect_iop(self, "commit", g_cclosure_new(G_CALLBACK(key_commit_callback), (gpointer)self, NULL));
-}
-
 GSList *mouse_actions(struct dt_iop_module_t *self)
 {
   GSList *lm = NULL;
@@ -3385,6 +3365,9 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 #undef PHI
 #undef INVPHI
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

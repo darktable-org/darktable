@@ -186,11 +186,13 @@ static void _update(dt_lib_module_t *self)
   if(images)
   {
     sqlite3_stmt *stmt;
+    // clang-format off
     gchar *query = g_strdup_printf(
                             "SELECT key, value, COUNT(id) AS ct FROM main.meta_data"
                             " WHERE id IN (%s)"
                             " GROUP BY key, value ORDER BY value",
                             images);
+    // clang-format on
     g_free(images);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -632,18 +634,6 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "apply"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "apply", d->apply_button);
-}
-
 void _menu_line_activated(GtkMenuItem *menuitem, GtkTextView *textview)
 {
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
@@ -699,7 +689,6 @@ void gui_init(dt_lib_module_t *self)
   self->widget = GTK_WIDGET(grid);
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
 
-  dt_gui_add_help_link(self->widget, dt_get_help_url("metadata"));
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
 
@@ -758,8 +747,8 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // apply button
-  d->apply_button = dt_ui_button_new(_("apply"), _("write metadata for selected images"), NULL);
-  g_signal_connect(G_OBJECT(d->apply_button), "clicked", G_CALLBACK(_apply_button_clicked), self);
+  d->apply_button = dt_action_button_new(self, N_("apply"), _apply_button_clicked, self,
+                                         _("write metadata for selected images"), 0, 0);
 
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(d->apply_button), 0, DT_METADATA_NUMBER, 2, 1);
 
@@ -968,6 +957,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   _update(self);
   return 0;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

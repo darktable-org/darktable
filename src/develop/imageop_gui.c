@@ -93,7 +93,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       const float min = f->Float.Min;
       const float max = f->Float.Max;
       offset = f->header.offset + param_index * sizeof(float);
-      const float defval = *(float*)(d + offset);
+      const float defval = *(float*)((uint8_t *)d + offset);
 
       const float top = fminf(max-min, fmaxf(fabsf(min), fabsf(max)));
       const int digits = MAX(2, -floorf(log10f(top/100)+.1));
@@ -105,7 +105,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       const int min = f->Int.Min;
       const int max = f->Int.Max;
       offset = f->header.offset + param_index * sizeof(int);
-      const int defval = *(int*)(d + offset);
+      const int defval = *(int*)((uint8_t *)d + offset);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
     }
@@ -114,7 +114,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
       const unsigned short min = f->UShort.Min;
       const unsigned short max = f->UShort.Max;
       offset = f->header.offset + param_index * sizeof(unsigned short);
-      const unsigned short defval = *(unsigned short*)(d + offset);
+      const unsigned short defval = *(unsigned short*)((uint8_t *)d + offset);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
     }
@@ -123,7 +123,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
   if(f)
   {
-    dt_bauhaus_widget_set_field(slider, p + offset, f->header.type);
+    dt_bauhaus_widget_set_field(slider, (uint8_t *)p + offset, f->header.type);
 
     if(!skip_label)
     {
@@ -174,7 +174,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
             f->header.type == DT_INTROSPECTION_TYPE_UINT ||
             f->header.type == DT_INTROSPECTION_TYPE_BOOL ))
   {
-    dt_bauhaus_widget_set_field(combobox, p + f->header.offset, f->header.type);
+    dt_bauhaus_widget_set_field(combobox, (uint8_t *)p + f->header.offset, f->header.type);
 
     if (*f->header.description)
     {
@@ -206,7 +206,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
           dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
       }
 
-      dt_action_t *action = dt_action_locate(&self->so->actions, (gchar **)(const gchar *[]){ *f->header.description ? f->header.description : f->header.field_name, NULL}, FALSE);
+      dt_action_t *action = dt_action_section(&self->so->actions, *f->header.description ? f->header.description : f->header.field_name);
       if(action && f->Enum.values)
         g_hash_table_insert(darktable.control->combo_introspection, action, f->Enum.values);
     }
@@ -248,7 +248,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     gtk_container_add(GTK_CONTAINER(button), label);
     dt_module_param_t *module_param = (dt_module_param_t *)g_malloc(sizeof(dt_module_param_t));
     module_param->module = self;
-    module_param->param = p + f->header.offset;
+    module_param->param = (uint8_t *)p + f->header.offset;
     g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
 
     dt_action_define_iop(self, NULL, str, button, &dt_action_def_toggle);
@@ -271,7 +271,7 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
                                    GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
                                    DTGTKCairoPaintIconFunc paint, GtkWidget *box)
 {
-  GtkWidget *w = dtgtk_togglebutton_new(paint, CPF_STYLE_FLAT, NULL);
+  GtkWidget *w = dtgtk_togglebutton_new(paint, 0, NULL);
   g_signal_connect(G_OBJECT(w), "button-press-event", callback, self);
 
   if(!ctrl_label)
@@ -299,7 +299,7 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
 
   if(paint)
   {
-    button = dtgtk_button_new(paint, CPF_STYLE_FLAT | paintflags, NULL);
+    button = dtgtk_button_new(paint, paintflags, NULL);
     gtk_widget_set_tooltip_text(button, _(label));
   }
   else
@@ -310,14 +310,9 @@ GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
 
   g_signal_connect(G_OBJECT(button), "clicked", callback, (gpointer)self);
 
+  dt_action_t *ac = dt_action_define_iop(self, NULL, label, button, &dt_action_def_button);
   if(darktable.control->accel_initialising)
-  {
-    dt_accel_register_iop(self->so, local, label, accel_key, mods);
-  }
-  else
-  {
-    dt_accel_connect_button_iop(self, label, button);
-  }
+    dt_shortcut_register(ac, 0, 0, accel_key, mods);
 
   if(GTK_IS_BOX(box)) gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
 
@@ -330,6 +325,9 @@ gboolean dt_mask_scroll_increases(int up)
   return up ? !mask_down : mask_down;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

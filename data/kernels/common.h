@@ -30,6 +30,10 @@ constant sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP  
 #endif
 
 #define ICLAMP(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define RED 0
+#define GREEN 1
+#define BLUE 2
+#define ALPHA 3
 
 
 static inline int

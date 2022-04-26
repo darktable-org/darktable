@@ -39,7 +39,7 @@ typedef enum dt_tag_flags_t
   DT_TF_CATEGORY    = 1 << 0, // this tag (or path) is not a keyword to be exported
   DT_TF_PRIVATE     = 1 << 1, // this tag is private. Will be exported only on demand
   DT_TF_ORDER_SET   = 1 << 2, // set if the tag has got an images order
-  DT_TF_DESCENDING  = 1 << 31,
+  DT_TF_DESCENDING  = 1U << 31,
 } dt_tag_flags_t;
 
 #define DT_TF_ALL (DT_TF_CATEGORY | DT_TF_PRIVATE | DT_TF_ORDER_SET)
@@ -209,6 +209,9 @@ uint32_t dt_tag_get_tag_id_by_name(const char * const name);
 /** init the darktable tags table */
 void dt_set_darktable_tags();
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

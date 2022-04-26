@@ -101,23 +101,6 @@ int position()
   return 900;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "create style from history"), 0, 0);
-//   dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "compress history stack"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_history_t *d = (dt_lib_history_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "create style from history", d->create_button);
-//   dt_accel_connect_button_lib(self, "apply style from popup menu", d->apply_button);
-
-  dt_accel_connect_button_lib(self, "compress history stack", d->compress_button);
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
@@ -131,17 +114,15 @@ void gui_init(dt_lib_module_t *self)
   d->previous_iop_order_list = NULL;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_widget_set_name(self->widget, "history-ui");
 
   d->history_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  d->compress_button = dt_ui_button_new(_("compress history stack"),
-                                        _("create a minimal history stack which produces the same image\n"
-                                          "ctrl+click to truncate history to the selected item"), NULL);
-  g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(_lib_history_compress_clicked_callback), self);
+  d->compress_button = dt_action_button_new(self, N_("compress history stack"), _lib_history_compress_clicked_callback, self,
+                                            _("create a minimal history stack which produces the same image\n"
+                                              "ctrl+click to truncate history to the selected item"), 0, 0);
   g_signal_connect(G_OBJECT(d->compress_button), "button-press-event", G_CALLBACK(_lib_history_compress_pressed_callback), self);
 
   /* add toolbar button for creating style */
@@ -150,6 +131,7 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   gtk_widget_set_name(d->create_button, "non-flat");
   gtk_widget_set_tooltip_text(d->create_button, _("create a style from the current history stack"));
+  dt_action_define(DT_ACTION(self), NULL, N_("create style from history"), d->create_button, &dt_action_def_button);
 
   /* add buttons to buttonbox */
   gtk_box_pack_start(GTK_BOX(hhbox), d->compress_button, TRUE, TRUE, 0);
@@ -189,18 +171,20 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   g_snprintf(numlab, sizeof(numlab), "%2d", num + 1);
   GtkWidget *numwidget = gtk_label_new(numlab);
   gtk_widget_set_name(numwidget, "history-number");
+  dt_gui_add_class(numwidget, "dt_history_items");
 
   GtkWidget *onoff = NULL;
 
   /* create toggle button */
   GtkWidget *widget = gtk_toggle_button_new_with_label(label);
+  dt_gui_add_class(widget, "dt_transparent_background");
   GtkWidget *lab = gtk_bin_get_child(GTK_BIN(widget));
   gtk_widget_set_halign(lab, GTK_ALIGN_START);
   gtk_label_set_xalign(GTK_LABEL(lab), 0);
   gtk_label_set_ellipsize(GTK_LABEL(lab), PANGO_ELLIPSIZE_END);
   if(always_on)
   {
-    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_on, 0, NULL);
     gtk_widget_set_name(onoff, "history-switch-always-enabled");
     gtk_widget_set_name(widget, "history-button-always-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), TRUE);
@@ -208,7 +192,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   }
   else if(default_enabled)
   {
-    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+    onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, 0, NULL);
     gtk_widget_set_name(onoff, "history-switch-default-enabled");
     gtk_widget_set_name(widget, "history-button-default-enabled");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
@@ -218,18 +202,20 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   {
     if(deprecated)
     {
-      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch_deprecated, 0, NULL);
       gtk_widget_set_name(onoff, "history-switch-deprecated");
       gtk_widget_set_tooltip_text(onoff, _("deprecated module"));
     }
     else
     {
-      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+      onoff = dtgtk_button_new(dtgtk_cairo_paint_switch, 0, NULL);
       gtk_widget_set_name(onoff, enabled ? "history-switch-enabled" : "history-switch");
     }
     gtk_widget_set_name(widget, enabled ? "history-button-enabled" : "history-button");
     dtgtk_button_set_active(DTGTK_BUTTON(onoff), enabled);
   }
+  dt_gui_add_class(onoff, "dt_history_switch");
+  dt_gui_add_class(widget, "dt_history_items");
 
   gtk_widget_set_sensitive(onoff, FALSE);
 
@@ -671,10 +657,10 @@ static void _lib_history_will_change_callback(gpointer instance, GList *history,
   lib->record_history_level += 1;
 }
 
-static gchar *_lib_history_change_text(dt_introspection_field_t *field, const char *d, dt_iop_params_t *params, dt_iop_params_t *oldpar)
+static gchar *_lib_history_change_text(dt_introspection_field_t *field, const char *d, gpointer params, gpointer oldpar)
 {
-  dt_iop_params_t *p = params + field->header.offset;
-  dt_iop_params_t *o = oldpar + field->header.offset;
+  dt_iop_params_t *p = (dt_iop_params_t *)((uint8_t *)params + field->header.offset);
+  dt_iop_params_t *o = (dt_iop_params_t *)((uint8_t *)oldpar + field->header.offset);
 
   switch(field->header.type)
   {
@@ -725,7 +711,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
       for(int i = 0, item_offset = 0; i < field->Array.count; i++, item_offset += field->Array.field->header.size)
       {
         char *description = g_strdup_printf("%s[%d]", d, i);
-        char *element_text = _lib_history_change_text(field->Array.field, description, params + item_offset, oldpar + item_offset);
+        char *element_text = _lib_history_change_text(field->Array.field, description, (uint8_t *)params + item_offset, (uint8_t *)oldpar + item_offset);
         g_free(description);
 
         if(element_text && ++num_parts <= max_elements)
@@ -1107,10 +1093,12 @@ static void _lib_history_truncate(gboolean compress)
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT IFNULL(MAX(num)+1, 0)"
                               " FROM main.history"
                               " WHERE imgid=?1", -1, &stmt, NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if (sqlite3_step(stmt) == SQLITE_ROW)
@@ -1245,6 +1233,9 @@ void gui_reset(dt_lib_module_t *self)
   }
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

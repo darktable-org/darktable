@@ -28,6 +28,9 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 // this routines takes as input an image of 8 or 16 bpp but always return a 8 bpp result. It is indeed better to
 // apply the profile to a 16bit input but we do not need this for printing.
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

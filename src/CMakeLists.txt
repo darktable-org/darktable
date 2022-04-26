@@ -131,6 +131,7 @@ FILE(GLOB SOURCE_FILES
   "dtgtk/gradientslider.c"
   "dtgtk/icon.c"
   "dtgtk/paint.c"
+  "dtgtk/range.c"
   "dtgtk/resetlabel.c"
   "dtgtk/sidepanel.c"
   "dtgtk/thumbnail.c"
@@ -519,10 +520,6 @@ if(USE_GRAPHICSMAGICK)
     set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} gif jpc jp2 bmp dcm jng miff mng pbm pnm ppm pgm CACHE INTERNAL "")
     include_directories(SYSTEM ${GraphicsMagick_INCLUDE_DIRS})
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
-    # CPack ignores variables you define in your CMakeLists.txt file,
-    # and only variables ${CPACK_*} are correctly used.
-    # so this needs to be saved by adding another variable with a name beginning with CPACK
-    set(CPACK_NSIS_GRAPHICSMAGICK_VERSION ${GraphicsMagick_PKGCONF_VERSION} CACHE STRING "GM version string")
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
 
@@ -531,10 +528,10 @@ if(USE_IMAGEMAGICK AND NOT GraphicsMagick_FOUND)
   find_package(PkgConfig)
   pkg_check_modules(ImageMagick MagickWand QUIET)
   if(ImageMagick_FOUND)
-    add_definitions(-DHAVE_IMAGEMAGICK ${ImageMagick_CFLAGS_OTHER})
     if(NOT ImageMagick_VERSION VERSION_GREATER 7)
-      message(FATAL "ImageMagick version must be >= 7")
+      message(FATAL_ERROR "ImageMagick version must be >= 7")
     endif(NOT ImageMagick_VERSION VERSION_GREATER 7)
+    add_definitions(-DHAVE_IMAGEMAGICK ${ImageMagick_CFLAGS_OTHER})
     include_directories(SYSTEM ${ImageMagick_INCLUDE_DIRS})
     find_library(ImageMagick_LIBRARY ${ImageMagick_LIBRARIES} HINTS ${ImageMagick_LIBDIR})
     list(APPEND LIBS ${ImageMagick_LIBRARY})

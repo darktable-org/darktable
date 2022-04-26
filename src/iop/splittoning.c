@@ -96,7 +96,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return IOP_CS_RGB;
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("use two specific colors for shadows and highlights and\n"
                                         "create a linear toning effect between them up to a pivot."),
@@ -223,7 +223,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float highlight_hue = d->highlight_hue;
   const float highlight_saturation = d->highlight_saturation;
 
-  size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
+  size_t sizes[2] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 1, sizeof(cl_mem), &dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_splittoning, 2, sizeof(int), &width);
@@ -468,8 +468,7 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 
   if(top)
   {
-    GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
-    gtk_style_context_add_class(context, "section_label_top");
+    dt_gui_add_class(GTK_WIDGET(label), "section_label_top");
   }
 
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
@@ -544,6 +543,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve mid-tones"));
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

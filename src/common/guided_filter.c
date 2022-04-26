@@ -378,7 +378,7 @@ static int cl_split_rgb(const int devid, const int width, const int height, cl_m
   dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(imgg_g), &imgg_g);
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(imgg_b), &imgg_b);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(guide_weight), &guide_weight);
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 
@@ -392,7 +392,7 @@ static int cl_box_mean(const int devid, const int width, const int height, const
   dt_opencl_set_kernel_arg(devid, kernel_x, 2, sizeof(in), &in);
   dt_opencl_set_kernel_arg(devid, kernel_x, 3, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_x, 4, sizeof(w), &w);
-  const size_t sizes_x[] = { 1, ROUNDUPWD(height) };
+  const size_t sizes_x[] = { 1, ROUNDUPDHT(height, devid) };
   const int err = dt_opencl_enqueue_kernel_2d(devid, kernel_x, sizes_x);
   if(err != CL_SUCCESS) return err;
 
@@ -402,7 +402,7 @@ static int cl_box_mean(const int devid, const int width, const int height, const
   dt_opencl_set_kernel_arg(devid, kernel_y, 2, sizeof(temp), &temp);
   dt_opencl_set_kernel_arg(devid, kernel_y, 3, sizeof(out), &out);
   dt_opencl_set_kernel_arg(devid, kernel_y, 4, sizeof(w), &w);
-  const size_t sizes_y[] = { ROUNDUPWD(width), 1 };
+  const size_t sizes_y[] = { ROUNDUPDWD(width, devid), 1 };
   return dt_opencl_enqueue_kernel_2d(devid, kernel_y, sizes_y);
 }
 
@@ -420,7 +420,7 @@ static int cl_covariances(const int devid, const int width, const int height, cl
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cov_imgg_img_g), &cov_imgg_img_g);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cov_imgg_img_b), &cov_imgg_img_b);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(guide_weight), &guide_weight);
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 
@@ -440,7 +440,7 @@ static int cl_variances(const int devid, const int width, const int height, cl_m
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(var_imgg_gb), &var_imgg_gb);
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(var_imgg_bb), &var_imgg_bb);
   dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(guide_weight), &guide_weight);
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 
@@ -456,7 +456,7 @@ static int cl_update_covariance(const int devid, const int width, const int heig
   dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(a), &a);
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(b), &b);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(eps), &eps);
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 
@@ -487,7 +487,7 @@ static int cl_solve(const int devid, const int width, const int height, cl_mem i
   dt_opencl_set_kernel_arg(devid, kernel, 16, sizeof(a_g), &a_g);
   dt_opencl_set_kernel_arg(devid, kernel, 17, sizeof(a_b), &a_b);
   dt_opencl_set_kernel_arg(devid, kernel, 18, sizeof(b), &b);
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 
@@ -508,7 +508,7 @@ static int cl_generate_result(const int devid, const int width, const int height
   dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(guide_weight), &guide_weight);
   dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(min), &min);
   dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(max), &max);
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPWD(height) };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid) };
   return dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
 }
 
@@ -694,10 +694,10 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
   assert(w >= 1);
 
   // estimate required memory for OpenCL code path with a safety factor of 5/4
-  // avoid checking for available memory by headroom and used memory as unsafe.
-  // instead use safer version
-  const size_t required = (size_t)width * height * sizeof(float) * 18 * 5 / 4;
-  const gboolean fits = dt_opencl_buffer_fits_device(devid, required);
+  const size_t singlebuf = (size_t)width * height * sizeof(float);
+  const size_t required  = singlebuf * 18 * 5 / 4;
+  const gboolean fits = (dt_opencl_buffer_fits_device(devid, singlebuf) &&
+                         (dt_opencl_get_device_available(devid) > required));
 
   int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(fits)
@@ -710,3 +710,9 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
 }
 
 #endif
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

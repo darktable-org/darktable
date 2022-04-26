@@ -197,6 +197,12 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       COMPONENT DTApplication
       PATTERN "*.a" EXCLUDE)
 
+  # Add glib-networking modules
+  install(DIRECTORY
+      "${MINGW_PATH}/../lib/gio/modules/"
+      DESTINATION lib/gio/modules/
+      COMPONENT DTApplication)
+
   # Add adwaita-icon-theme files
   install(DIRECTORY
       "${MINGW_PATH}/../share/icons/adwaita/"
@@ -250,8 +256,8 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
   # Add GraphicsMagick libraries
   if(GraphicsMagick_FOUND)
     install(DIRECTORY
-        "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/coders"
-        DESTINATION lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/
+        "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q16/coders"
+        DESTINATION lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q16/
         COMPONENT DTApplication
         FILES_MATCHING PATTERN "*"
         PATTERN "*.a" EXCLUDE

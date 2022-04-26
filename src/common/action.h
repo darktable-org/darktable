@@ -38,7 +38,6 @@ typedef enum dt_action_type_t
   DT_ACTION_TYPE_VALUE_FALLBACK,
   // === all widgets below
   DT_ACTION_TYPE_PER_INSTANCE,
-  DT_ACTION_TYPE_CLOSURE,
   DT_ACTION_TYPE_WIDGET,
   // === dynamically assign widget type numbers from here
 } dt_action_type_t;
@@ -54,7 +53,7 @@ typedef struct dt_action_t
   struct dt_action_t *next;
 } dt_action_t;
 
-#define DT_ACTION(p) ((dt_action_t*)&p->actions)
+#define DT_ACTION(p) (p?(dt_action_t*)&p->actions:NULL)
 
 enum
 {
@@ -103,6 +102,9 @@ enum
 };
 typedef gint dt_action_effect_t;
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

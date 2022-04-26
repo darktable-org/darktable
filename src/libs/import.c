@@ -189,28 +189,6 @@ int position()
   return 999;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "copy & import from camera"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "tethered shoot"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "add to library"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "copy & import"), GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "mount camera"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "unmount camera"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "add to library", GTK_WIDGET(d->import_inplace));
-  dt_accel_connect_button_lib(self, "copy & import", GTK_WIDGET(d->import_copy));
-  if(d->tethered_shoot) dt_accel_connect_button_lib(self, "tethered shoot", GTK_WIDGET(d->tethered_shoot));
-  if(d->import_camera) dt_accel_connect_button_lib(self, "copy & import from camera", GTK_WIDGET(d->import_camera));
-  if(d->mount_camera) dt_accel_connect_button_lib(self, "mount camera", GTK_WIDGET(d->mount_camera));
-  if(d->unmount_camera) dt_accel_connect_button_lib(self, "unmount camera", GTK_WIDGET(d->unmount_camera));
-}
-
 #ifdef HAVE_GPHOTO2
 
 /* show import from camera dialog */
@@ -297,30 +275,22 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
                            FALSE, 0);
         gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(ib))), PANGO_ELLIPSIZE_END);
         d->import_camera = GTK_BUTTON(ib);
-      }
-      if(camera->can_tether == TRUE)
-      {
-        gtk_box_pack_start(GTK_BOX(vbx), (tb = gtk_button_new_with_label(_("tethered shoot"))), FALSE, FALSE, 0);
-        d->tethered_shoot = GTK_BUTTON(tb);
-      }
-
-      gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmount camera"))), FALSE, FALSE, 0);
-      d->unmount_camera = GTK_BUTTON(um);
-
-      if(ib)
-      {
         d->camera = camera;
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), self);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(ib, dt_get_help_url("import_camera"));
       }
-      if(tb)
+      if(camera->can_tether == TRUE)
       {
+        gtk_box_pack_start(GTK_BOX(vbx), (tb = gtk_button_new_with_label(_("tethered shoot"))), FALSE, FALSE, 0);
+        d->tethered_shoot = GTK_BUTTON(tb);
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(tb, dt_get_help_url("import_camera"));
       }
 
+      gtk_box_pack_start(GTK_BOX(vbx), (um = gtk_button_new_with_label(_("unmount camera"))), FALSE, FALSE, 0);
+      d->unmount_camera = GTK_BUTTON(um);
       g_signal_connect(G_OBJECT(um), "clicked", G_CALLBACK(_lib_import_unmount_callback), camera);
       gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(um)), GTK_ALIGN_CENTER);
       dt_gui_add_help_link(um, dt_get_help_url("mount_camera"));
@@ -361,6 +331,11 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   }
   dt_pthread_mutex_unlock(&camctl->lock);
   gtk_widget_show_all(GTK_WIDGET(d->devices));
+
+  dt_action_define(DT_ACTION(self), NULL, N_("copy & import from camera"), GTK_WIDGET(d->import_camera), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("mount camera"), GTK_WIDGET(d->mount_camera), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("tethered shoot"), GTK_WIDGET(d->tethered_shoot), &dt_action_def_button);
+  dt_action_define(DT_ACTION(self), NULL, N_("unmount camera"), GTK_WIDGET(d->unmount_camera), &dt_action_def_button);
 }
 
 static void _free_camera_files(gpointer data)
@@ -388,8 +363,8 @@ static guint _import_from_camera_set_file_list(dt_lib_module_t *self)
       GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
       gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
       gchar *basename = g_path_get_basename(file->filename);
-      char dtid[DT_DATETIME_LENGTH];
-      dt_metadata_unix_time_to_text(dtid, sizeof(dtid), &datetime);
+      char dtid[DT_DATETIME_EXIF_LENGTH];
+      dt_datetime_unix_to_exif(dtid, sizeof(dtid), &datetime);
       const gboolean already_imported = dt_metadata_already_imported(basename, dtid);
       g_free(basename);
       GtkTreeIter iter;
@@ -729,8 +704,8 @@ static guint _import_set_file_list(const gchar *folder, const int folder_lgth,
           else
           {
             gchar *basename = g_path_get_basename(filename);
-            char dtid[DT_DATETIME_LENGTH];
-            dt_metadata_unix_time_to_text(dtid, sizeof(dtid), &datetime);
+            char dtid[DT_DATETIME_EXIF_LENGTH];
+            dt_datetime_unix_to_exif(dtid, sizeof(dtid), &datetime);
             already_imported = dt_metadata_already_imported(basename, dtid);
             g_free(basename);
           }
@@ -1177,12 +1152,12 @@ static void _set_places_list(GtkWidget *places_paned, dt_lib_module_t* self)
   g_free(markup);
   gtk_box_pack_start(GTK_BOX(places_header), places_label, FALSE, FALSE, 0);
 
-  GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+  GtkWidget *places_reset = dtgtk_button_new(dtgtk_cairo_paint_reset, 0, NULL);
   gtk_widget_set_tooltip_text(places_reset, _("restore all default places you have removed by right-click"));
   g_signal_connect(places_reset, "clicked", G_CALLBACK(_places_reset_callback), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_reset, FALSE, FALSE, 0);
 
-  GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, CPF_STYLE_FLAT, NULL);
+  GtkWidget *places_add = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, 0, NULL);
   gtk_widget_set_tooltip_text(places_add, _("add a custom place\n\nright-click on a place to remove it"));
   g_signal_connect(places_add, "clicked", G_CALLBACK(_lib_import_select_folder), self);
   gtk_box_pack_end(GTK_BOX(places_header), places_add, FALSE, FALSE, 0);
@@ -1591,7 +1566,8 @@ static void _set_files_list(GtkWidget *rbox, dt_lib_module_t* self)
   column = gtk_tree_view_column_new_with_attributes("", renderer, "pixbuf",
                                                     DT_IMPORT_THUMB, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
-  GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL);
+  GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, 0, NULL);
+  dt_gui_add_class(button, "dt_transparent_background");
   gtk_widget_show(button);
   header = gtk_tree_view_column_get_button(column);
   gtk_widget_set_tooltip_text(header, _("show/hide thumbnails"));
@@ -1883,7 +1859,7 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
   while(gtk_dialog_run(GTK_DIALOG(d->from.dialog)) == GTK_RESPONSE_ACCEPT)
   {
     // reset filter so that view isn't empty
-    dt_view_filter_reset(darktable.view_manager, TRUE);
+    dt_view_filtering_reset(darktable.view_manager, TRUE);
     GList *imgs = NULL;
     GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
@@ -2010,27 +1986,26 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_import_t *d = (dt_lib_import_t *)g_malloc0(sizeof(dt_lib_import_t));
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("import"));
 
   // add import buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *widget = dt_ui_button_new(_("add to library..."),
-                                       _("add existing images to the library"),
-                                       "module-reference/utility-modules/lighttable/import");
+
+  GtkWidget *widget = dt_action_button_new(self, N_("add to library..."), _lib_import_from_callback, self,
+                                           _("add existing images to the library"), 0, 0);
   d->import_inplace = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_from_callback), self);
-  widget = dt_ui_button_new(_("copy & import..."),
-                            _("copy and optionally rename images before adding them to the library"
-                              "\npatterns can be defined to rename the images and specify the destination folders"),
-                            "module-reference/utility-modules/lighttable/import");
+
+  widget = dt_action_button_new(self, N_("copy & import..."), _lib_import_from_callback, self,
+                                _("copy and optionally rename images before adding them to the library"
+                                  "\npatterns can be defined to rename the images and specify the destination folders"),
+                                GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   d->import_copy = GTK_BUTTON(widget);
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_from_callback), self);
+
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
 #ifdef HAVE_GPHOTO2
@@ -2305,6 +2280,9 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   return 0;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

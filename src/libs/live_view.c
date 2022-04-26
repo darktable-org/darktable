@@ -127,34 +127,6 @@ int position()
   return 998;
 }
 
-void init_key_accels(dt_lib_module_t *self)
-{
-  dt_accel_register_lib(self, NC_("accel", "toggle live view"), GDK_KEY_v, 0);
-  dt_accel_register_lib(self, NC_("accel", "zoom live view"), GDK_KEY_w, 0);
-  dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CCW"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CW"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "flip horizontally"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "move focus point in (big steps)"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "move focus point in (small steps)"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "move focus point out (small steps)"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "move focus point out (big steps)"), 0, 0);
-}
-
-void connect_key_accels(dt_lib_module_t *self)
-{
-  dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
-
-  dt_accel_connect_button_lib(self, "toggle live view", GTK_WIDGET(lib->live_view));
-  dt_accel_connect_button_lib(self, "zoom live view", GTK_WIDGET(lib->live_view_zoom));
-  dt_accel_connect_button_lib(self, "rotate 90 degrees CCW", GTK_WIDGET(lib->rotate_ccw));
-  dt_accel_connect_button_lib(self, "rotate 90 degrees CW", GTK_WIDGET(lib->rotate_cw));
-  dt_accel_connect_button_lib(self, "flip horizontally", GTK_WIDGET(lib->flip));
-  dt_accel_connect_button_lib(self, "move focus point in (big steps)", GTK_WIDGET(lib->focus_in_big));
-  dt_accel_connect_button_lib(self, "move focus point in (small steps)", GTK_WIDGET(lib->focus_in_small));
-  dt_accel_connect_button_lib(self, "move focus point out (small steps)", GTK_WIDGET(lib->focus_out_small));
-  dt_accel_connect_button_lib(self, "move focus point out (big steps)", GTK_WIDGET(lib->focus_out_big));
-}
-
 static void _rotate_ccw(GtkWidget *widget, gpointer user_data)
 {
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
@@ -303,73 +275,35 @@ void gui_init(dt_lib_module_t *self)
 
   // Setup gui
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, dt_get_help_url("tethering_live_view"));
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-  lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL);
-  lib->live_view_zoom = dtgtk_button_new(
-      dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT, NULL); // TODO: see _zoom_live_view_clicked
-  lib->rotate_ccw = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT, NULL);
-  lib->rotate_cw = dtgtk_button_new(dtgtk_cairo_paint_refresh,
-                                    CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
-  lib->flip = dtgtk_togglebutton_new(dtgtk_cairo_paint_flip,
-                                     CPF_STYLE_FLAT | CPF_DIRECTION_UP, NULL);
 
-  gtk_box_pack_start(GTK_BOX(box), lib->live_view, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), lib->live_view_zoom, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), lib->rotate_ccw, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), lib->rotate_cw, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), lib->flip, TRUE, TRUE, 0);
+  GtkWidget *button;
+#define NEW_BUTTON(type, paint, direction, callback, data, action)           \
+  button = dtgtk_##type##button_new(paint, direction, NULL);                 \
+  gtk_widget_set_tooltip_text(button, action);                               \
+  gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);                   \
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(callback), data); \
+  dt_action_define(DT_ACTION(self), NULL, action, button, *(#type)?&dt_action_def_toggle:&dt_action_def_button);
 
-  gtk_widget_set_tooltip_text(lib->live_view, _("toggle live view"));
-  gtk_widget_set_tooltip_text(lib->live_view_zoom, _("zoom live view"));
-  gtk_widget_set_tooltip_text(lib->rotate_ccw, _("rotate 90 degrees ccw"));
-  gtk_widget_set_tooltip_text(lib->rotate_cw, _("rotate 90 degrees cw"));
-  gtk_widget_set_tooltip_text(lib->flip, _("flip live view horizontally"));
-
-  g_signal_connect(G_OBJECT(lib->live_view), "clicked", G_CALLBACK(_toggle_live_view_clicked), lib);
-  g_signal_connect(G_OBJECT(lib->live_view_zoom), "clicked", G_CALLBACK(_zoom_live_view_clicked), lib);
-  g_signal_connect(G_OBJECT(lib->rotate_ccw), "clicked", G_CALLBACK(_rotate_ccw), lib);
-  g_signal_connect(G_OBJECT(lib->rotate_cw), "clicked", G_CALLBACK(_rotate_cw), lib);
-  g_signal_connect(G_OBJECT(lib->flip), "clicked", G_CALLBACK(_toggle_flip_clicked), lib);
+  lib->live_view = NEW_BUTTON(toggle, dtgtk_cairo_paint_eye, 0, _toggle_live_view_clicked, lib, N_("toggle live view"));
+  dt_shortcut_register(dt_action_section(DT_ACTION(self), "toggle live view"), 0, 0, GDK_KEY_v, 0);
+  lib->live_view_zoom = NEW_BUTTON(, dtgtk_cairo_paint_zoom, 0, _zoom_live_view_clicked, lib, N_("zoom live view")); // TODO: see _zoom_live_view_clicked
+  dt_shortcut_register(dt_action_section(DT_ACTION(self), "zoom live view"), 0, 0, GDK_KEY_w, 0);
+  lib->rotate_ccw = NEW_BUTTON(, dtgtk_cairo_paint_refresh, 0, _rotate_ccw, lib, N_("rotate 90 degrees ccw"));
+  lib->rotate_cw = NEW_BUTTON(,dtgtk_cairo_paint_refresh, CPF_DIRECTION_UP, _rotate_cw, lib, N_("rotate 90 degrees cw"));
+  lib->flip = NEW_BUTTON(toggle, dtgtk_cairo_paint_flip, CPF_DIRECTION_UP, _toggle_flip_clicked, lib, N_("flip live view horizontally"));
 
   // focus buttons
   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
-  lib->focus_in_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
-                                       CPF_STYLE_FLAT | CPF_DIRECTION_LEFT, NULL);
-  lib->focus_in_small
-      = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT
-                                                  | CPF_DIRECTION_LEFT, NULL); // TODO icon not centered
-  lib->auto_focus = dtgtk_button_new(dtgtk_cairo_paint_lock, CPF_STYLE_FLAT, NULL);
-  lib->focus_out_small = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT
-                                                                   | CPF_DIRECTION_RIGHT, NULL); // TODO same here
-  lib->focus_out_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
-                                        CPF_STYLE_FLAT | CPF_DIRECTION_RIGHT, NULL);
 
-  gtk_box_pack_start(GTK_BOX(box), lib->focus_in_big, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), lib->focus_in_small, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), lib->auto_focus, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), lib->focus_out_small, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), lib->focus_out_big, TRUE, TRUE, 0);
-
-  gtk_widget_set_tooltip_text(lib->focus_in_big, _("move focus point in (big steps)"));
-  gtk_widget_set_tooltip_text(lib->focus_in_small, _("move focus point in (small steps)"));
-  gtk_widget_set_tooltip_text(lib->auto_focus, _("run autofocus"));
-  gtk_widget_set_tooltip_text(lib->focus_out_small, _("move focus point out (small steps)"));
-  gtk_widget_set_tooltip_text(lib->focus_out_big, _("move focus point out (big steps)"));
-
-
-  g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked",
-                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_NEARER));
-  g_signal_connect(G_OBJECT(lib->focus_in_small), "clicked",
-                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_NEAR));
-  g_signal_connect(G_OBJECT(lib->auto_focus), "clicked",
-                   G_CALLBACK(_auto_focus_button_clicked), GINT_TO_POINTER(1));
-  g_signal_connect(G_OBJECT(lib->focus_out_small), "clicked",
-                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_FAR));
-  g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked",
-                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_FARTHER));
+  lib->focus_in_big = NEW_BUTTON(,dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_LEFT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_NEARER), N_("move focus point in (big steps)"));
+  lib->focus_in_small = NEW_BUTTON(,dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_NEAR), N_("move focus point in (small steps)"));// TODO icon not centered
+  lib->auto_focus = NEW_BUTTON(,dtgtk_cairo_paint_lock, 0, _auto_focus_button_clicked, GINT_TO_POINTER(1), N_("run autofocus"));
+  lib->focus_out_small = NEW_BUTTON(,dtgtk_cairo_paint_arrow, CPF_DIRECTION_RIGHT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_FAR), N_("move focus point out (small steps)")); // TODO same here
+  lib->focus_out_big = NEW_BUTTON(,dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_RIGHT, _focus_button_clicked, GINT_TO_POINTER(DT_FOCUS_FARTHER), N_("move focus point out (big steps)"));
+#undef NEW_BUTTON
 
   lib->overlay = dt_bauhaus_combobox_new_action(DT_ACTION(self));
 
@@ -767,6 +701,9 @@ int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int 
 
   return result;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

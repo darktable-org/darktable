@@ -220,21 +220,25 @@ static float _heal_laplace_iteration(float *const restrict active_pixels,
         }
         continue;
       }
+      dt_aligned_pixel_t left;
+      copy_pixel(left, neighbor_pixels + index - 4 + lroffset);
       for(size_t j = 0; j < count; j++)
       {
         const size_t pixidx = index + 4*j;
         dt_aligned_pixel_t diff;
+        dt_aligned_pixel_t right;
         for_each_channel(c, aligned(active_pixels,neighbor_pixels))
         {
+          right[c] = neighbor_pixels[pixidx + lroffset + c];
           diff[c] = w * (a * active_pixels[pixidx+c]
                          - (neighbor_pixels[pixidx - vert_offset + c] + neighbor_pixels[pixidx + vert_offset + c]
-                            + neighbor_pixels[pixidx - 4 + lroffset + c] + neighbor_pixels[pixidx + lroffset + c]));
+                            + left[c] + right[c]));
           active_pixels[pixidx + c] -= diff[c];
           err.v[c] += (diff[c] * diff[c]);
+          left[c] = right[c];
         }
       }
     }
-
   return err.v[0] + err.v[1] + err.v[2];
 }
 
@@ -250,7 +254,7 @@ static size_t _collect_color_runs(const float *const restrict mask, const size_t
   // non-negligible)
   if(start == 0 && mask[start])
   {
-    runs[2*count] = start_index /* + start/2 */;
+    runs[2*count] = start_index;
     runs[2*count+1] = 1;
     count++;
     masked++;
@@ -298,18 +302,22 @@ static size_t _collect_color_runs(const float *const restrict mask, const size_t
 }
 
 // convert one row of the opacity mask into a set of runs of opaque pixels of the form (start_index, count)
-static void _collect_runs(const float *const restrict mask, const size_t start_index, const size_t width,
-                          unsigned *const restrict runs1, size_t *count1,
-                          unsigned *const restrict runs2, size_t *count2, size_t *nmask)
+static void collect_runs(const int start, const float *const restrict mask, const size_t width, const size_t height,
+                         const size_t subwidth, unsigned *const restrict runs, size_t *count, size_t *nmask)
 {
-  *count1 = _collect_color_runs(mask, start_index, 0, width, runs1, *count1, nmask);
-  *count2 = _collect_color_runs(mask, start_index, 1, width, runs2, *count2, nmask);
+  for(size_t row = 0; row < height; row++)
+  {
+    const int parity = start ^ (row & 1);
+    const size_t index = (row + 1) * subwidth;
+    const size_t mask_index = row * width;
+    *count = _collect_color_runs(mask + mask_index, index, parity, width, runs, *count, nmask);
+  }
 }
 
 // Solve the laplace equation for pixels and store the result in-place.
 static void _heal_laplace_loop(float *const restrict red_pixels, float *const restrict black_pixels,
                                const size_t width, const size_t height,
-                               const float *const restrict mask)
+                               const float *const restrict mask, const int max_iter)
 {
   // we start by converting the opacity mask into runs of nonzero positions, handling the 'red' and 'black'
   // checkerboarded pixels separately
@@ -329,22 +337,20 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
 
   size_t num_red = 0;
   size_t num_black = 0;
-  size_t nmask = 0;
+  size_t nmask_red = 0;
+  size_t nmask_black = 0;
 
-  for(size_t row = 0; row < height; row++)
+#ifdef _OPENMP
+#pragma omp parallel sections
+#endif
   {
-    const int parity = (row & 1);
-    const size_t index = (row + 1) * subwidth; // each color only has half as many, and we've padded a row on top
-    const size_t mask_index = row * width;
-    if(parity)
-    {
-      _collect_runs(mask + mask_index, index, width, red_runs, &num_red, black_runs, &num_black, &nmask);
-    }
-    else
-    {
-      _collect_runs(mask + mask_index, index, width, black_runs, &num_black, red_runs, &num_red, &nmask);
-    }
+    collect_runs(1, mask, width, height, subwidth, red_runs, &num_red, &nmask_red);
+    #ifdef _OPENMP
+    #pragma omp section
+    #endif
+    collect_runs(0, mask, width, height, subwidth, black_runs, &num_black, &nmask_black);
   }
+  const size_t nmask = nmask_red + nmask_black;
 
   /* Empirically optimal over-relaxation factor. (Benchmarked on
    * round brushes, at least. I don't know whether aspect ratio
@@ -352,7 +358,6 @@ static void _heal_laplace_loop(float *const restrict red_pixels, float *const re
    */
   const float w = ((2.0f - 1.0f / (0.1575f * sqrtf(nmask) + 0.8f)) * .25f);
 
-  const int max_iter = 1000;
   const float epsilon = (0.1 / 255);
   const float err_exit = epsilon * epsilon * w * w;
 
@@ -378,7 +383,7 @@ cleanup:
  * http://www.tgeorgiev.net/Photoshop_Healing.pdf
  */
 void dt_heal(const float *const src_buffer, float *dest_buffer, const float *const mask_buffer, const int width,
-             const int height, const int ch)
+             const int height, const int ch, const int max_iter)
 {
   if(ch != 4)
   {
@@ -397,7 +402,7 @@ void dt_heal(const float *const src_buffer, float *dest_buffer, const float *con
   /* subtract pattern from image and store the result split by 'red' and 'black' positions  */
   _heal_sub(dest_buffer, src_buffer, red_buffer, black_buffer, width, height);
 
-  _heal_laplace_loop(red_buffer, black_buffer, width, height, mask_buffer);
+  _heal_laplace_loop(red_buffer, black_buffer, width, height, mask_buffer, max_iter);
 
   /* add solution to original image and store in dest */
   _heal_add(red_buffer, black_buffer, src_buffer, dest_buffer, width, height);
@@ -446,7 +451,7 @@ void dt_heal_free_cl(heal_params_cl_t *p)
 }
 
 cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const float *const mask_buffer,
-                  const int width, const int height)
+                  const int width, const int height, const int max_iter)
 {
   cl_int err = CL_SUCCESS;
 
@@ -459,7 +464,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }
 
@@ -467,7 +472,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   if(dest_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    err = DT_OPENCL_SYSMEM_ALLOCATION;
     goto cleanup;
   }
 
@@ -486,10 +491,9 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   }
 
   // I couldn't make it run fast on opencl (the reduction takes forever), so just call the cpu version
-  dt_heal(src_buffer, dest_buffer, mask_buffer, width, height, ch);
+  dt_heal(src_buffer, dest_buffer, mask_buffer, width, height, ch, max_iter);
 
-  err = dt_opencl_write_buffer_to_device(p->devid, dest_buffer, dev_dest, 0, sizeof(float) * width * height * ch,
-                                         TRUE);
+  err = dt_opencl_write_buffer_to_device(p->devid, dest_buffer, dev_dest, 0, sizeof(float) * width * height * ch, CL_TRUE);
   if(err != CL_SUCCESS)
   {
     goto cleanup;
@@ -503,3 +507,8 @@ cleanup:
 }
 
 #endif
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

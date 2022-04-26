@@ -290,7 +290,7 @@ const char *name()
   return _("liquify");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("distort parts of the image"),
                                       _("creative"),
@@ -1598,7 +1598,7 @@ static cl_int_t apply_global_distortion_map_cl(struct dt_iop_module_t *module,
   dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 6, sizeof(cl_mem), &dev_kdesc);
   dt_opencl_set_kernel_arg(devid, gd->warp_kernel, 7, sizeof(cl_mem), &dev_kernel);
 
-  const size_t sizes[] = { ROUNDUPWD(map_extent->width), ROUNDUPHT(map_extent->height) };
+  const size_t sizes[] = { ROUNDUPDWD(map_extent->width, devid), ROUNDUPDHT(map_extent->height, devid) };
   err = dt_opencl_enqueue_kernel_2d(devid, gd->warp_kernel, sizes);
 
 error:
@@ -3776,6 +3776,9 @@ static void _liquify_cairo_paint_node_tool(cairo_t *cr, const gint x, const gint
   POSTAMBLE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

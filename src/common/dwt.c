@@ -603,7 +603,7 @@ static cl_int dwt_subtract_layer_cl(cl_mem bl, cl_mem bh, dwt_params_cl_t *const
   const int devid = p->devid;
   const int kernel = p->global->kernel_dwt_subtract_layer;
 
-  size_t sizes[] = { ROUNDUPWD(p->width), ROUNDUPHT(p->height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
 
   const float lpass_mult = (1.f / 16.f);
   const int width = p->width;
@@ -626,7 +626,7 @@ static cl_int dwt_add_layer_cl(cl_mem img, cl_mem layers, dwt_params_cl_t *const
   const int devid = p->devid;
   const int kernel = p->global->kernel_dwt_add_img_to_layer;
 
-  size_t sizes[] = { ROUNDUPWD(p->width), ROUNDUPHT(p->height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
 
   const int width = p->width;
   const int height = p->height;
@@ -695,7 +695,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   {
     const int kernel = p->global->kernel_dwt_init_buffer;
 
-    size_t sizes[] = { ROUNDUPWD(p->width), ROUNDUPHT(p->height), 1 };
+    size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
     const int width = p->width;
     const int height = p->height;
 
@@ -719,7 +719,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
     {
       const int kernel = p->global->kernel_dwt_init_buffer;
 
-      size_t sizes[] = { ROUNDUPWD(p->width), ROUNDUPHT(p->height), 1 };
+      size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
       const int width = p->width;
       const int height = p->height;
 
@@ -756,7 +756,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
       sc = (int)(sc * p->preview_scale);
       if(sc > p->width) sc = p->width;
 
-      size_t sizes[] = { ROUNDUPWD(p->width), ROUNDUPHT(p->height), 1 };
+      size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
 
       dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&temp);
       dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&(buffer[hpass]));
@@ -776,7 +776,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
       if(sc > p->height) sc = p->height;
       const float lpass_mult = (1.f / 16.f);
 
-      size_t sizes[] = { ROUNDUPWD(p->width), ROUNDUPHT(p->height), 1 };
+      size_t sizes[] = { ROUNDUPDWD(p->width, devid), ROUNDUPDHT(p->height, devid), 1 };
 
       dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&temp);
       dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&(p->width));
@@ -940,3 +940,9 @@ cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func)
 }
 
 #endif
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

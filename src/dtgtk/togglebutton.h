@@ -34,7 +34,7 @@ typedef struct _GtkDarktableToggleButton
   DTGTKCairoPaintIconFunc icon;
   gint icon_flags;
   void *icon_data;
-  GdkRGBA bg, fg;
+  GdkRGBA bg;
   GtkWidget *canvas;
 } GtkDarktableToggleButton;
 
@@ -51,13 +51,12 @@ GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflag,
 /** Set the paint function and paint flags */
 void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPaintIconFunc paint,
                                   gint paintflags, void *paintdata);
-/** overwrite the foreground color, or NULL to reset it */
-void dtgtk_togglebutton_override_color(GtkDarktableToggleButton *button, GdkRGBA *color);
-/** overwrite the background color, or NULL to reset it */
-void dtgtk_togglebutton_override_background_color(GtkDarktableToggleButton *button, GdkRGBA *color);
 
 G_END_DECLS
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

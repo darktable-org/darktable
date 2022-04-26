@@ -225,7 +225,7 @@ const char *aliases()
   return _("channel mixer|white balance|monochrome");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("perform color space corrections\n"
                                         "such as white balance, channels mixing\n"
@@ -2061,7 +2061,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
@@ -3188,7 +3188,7 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   // Margins
   const double INNER_PADDING = 4.0;
-  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(1.5);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
@@ -3228,7 +3228,7 @@ static gboolean target_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user
 
   // Margins
   const double INNER_PADDING = 4.0;
-  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(1.5);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
@@ -3271,7 +3271,7 @@ static gboolean origin_color_draw(GtkWidget *widget, cairo_t *crf, gpointer user
 
   // Margins
   const double INNER_PADDING = 4.0;
-  const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
+  const float margin = 2. * DT_PIXEL_APPLY_DPI(1.5);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
 
@@ -4048,13 +4048,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->temperature, " K");
 
   g->illum_x = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., ILLUM_X_MAX, 0, 0, 1, 0);
-  dt_bauhaus_widget_set_label(g->illum_x, NULL, _("hue"));
+  dt_bauhaus_widget_set_label(g->illum_x, NULL, N_("hue"));
   dt_bauhaus_slider_set_format(g->illum_x, "°");
   g_signal_connect(G_OBJECT(g->illum_x), "value-changed", G_CALLBACK(illum_xy_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_x), FALSE, FALSE, 0);
 
   g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 100., 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->illum_y, NULL, _("chroma"));
+  dt_bauhaus_widget_set_label(g->illum_y, NULL, N_("chroma"));
   dt_bauhaus_slider_set_format(g->illum_y, "%");
   dt_bauhaus_slider_set_hard_max(g->illum_y, ILLUM_Y_MAX);
   g_signal_connect(G_OBJECT(g->illum_y), "value-changed", G_CALLBACK(illum_xy_callback), self);
@@ -4131,21 +4131,21 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vvbox), g->target_spot, TRUE, TRUE, 0);
 
   g->lightness_spot = dt_bauhaus_slider_new_with_range(self, 0., LIGHTNESS_MAX, 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->lightness_spot, NULL, _("lightness"));
+  dt_bauhaus_widget_set_label(g->lightness_spot, NULL, N_("lightness"));
   dt_bauhaus_slider_set_format(g->lightness_spot, "%");
   dt_bauhaus_slider_set_default(g->lightness_spot, 50.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->lightness_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->lightness_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->hue_spot = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., HUE_MAX, 0, 0, 1, 0);
-  dt_bauhaus_widget_set_label(g->hue_spot, NULL, _("hue"));
+  dt_bauhaus_widget_set_label(g->hue_spot, NULL, N_("hue"));
   dt_bauhaus_slider_set_format(g->hue_spot, "°");
   dt_bauhaus_slider_set_default(g->hue_spot, 0.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->hue_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->hue_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
 
   g->chroma_spot = dt_bauhaus_slider_new_with_range(self, 0., CHROMA_MAX, 0, 0, 1);
-  dt_bauhaus_widget_set_label(g->chroma_spot, NULL, _("chroma"));
+  dt_bauhaus_widget_set_label(g->chroma_spot, NULL, N_("chroma"));
   dt_bauhaus_slider_set_default(g->chroma_spot, 0.f);
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->chroma_spot), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->chroma_spot), "value-changed", G_CALLBACK(_spot_settings_changed_callback), self);
@@ -4235,7 +4235,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(collapsible), GTK_WIDGET(g->optimize), TRUE, TRUE, 0);
 
   g->safety = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 1., 0, 0.5, 3, TRUE);
-  dt_bauhaus_widget_set_label(g->safety, NULL, _("patch scale"));
+  dt_bauhaus_widget_set_label(g->safety, NULL, N_("patch scale"));
   gtk_widget_set_tooltip_text(g->safety, _("reduce the radius of the patches to select the more or less central part.\n"
                                            "useful when the perspective correction is sloppy or\n"
                                            "the patches frame cast a shadows on the edges of the patch." ));
@@ -4248,17 +4248,17 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
 
-  g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_BOX, NULL);
+  g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, 0, NULL);
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_commit), FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->button_commit, _("accept the computed profile and set it in the module"));
   g_signal_connect(G_OBJECT(g->button_commit), "button-press-event", G_CALLBACK(commit_profile_callback), (gpointer)self);
 
-  g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_BOX, NULL);
+  g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0, NULL);
   g_signal_connect(G_OBJECT(g->button_profile), "button-press-event", G_CALLBACK(run_profile_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_profile, _("recompute the profile"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_profile), FALSE, FALSE, 0);
 
-  g->button_validate = dtgtk_button_new(dtgtk_cairo_paint_softproof, CPF_STYLE_BOX, NULL);
+  g->button_validate = dtgtk_button_new(dtgtk_cairo_paint_softproof, 0, NULL);
   g_signal_connect(G_OBJECT(g->button_validate), "button-press-event", G_CALLBACK(run_validation_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_validate, _("check the output delta E"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_validate), FALSE, FALSE, 0);
@@ -4287,6 +4287,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

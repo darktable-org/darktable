@@ -151,7 +151,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->buf = dt_calloc_align_float(b->size_x * b->size_z * b->numslices * b->slicerows);
   if (!b->buf)
   {
-    fprintf(stderr,"[bilateral] unable to allocate buffer for %lux%lux%lu grid\n",b->size_x,b->size_y,b->size_z);
+    fprintf(stderr,"[bilateral] unable to allocate buffer for %zux%zux%zu grid\n",b->size_x,b->size_y,b->size_z);
     free(b);
     return NULL;
   }
@@ -458,6 +458,9 @@ void dt_bilateral_free(dt_bilateral_t *b)
 #undef DT_COMMON_BILATERAL_MAX_RES_S
 #undef DT_COMMON_BILATERAL_MAX_RES_R
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

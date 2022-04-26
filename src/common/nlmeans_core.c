@@ -872,7 +872,7 @@ static void get_blocksizes(int *h, int *v, const int radius, const int devid,
 static inline cl_int nlmeans_cl_init(const int devid, const int kernel, cl_mem dev_out, const int height,
                                      const int width)
 {
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&height);
@@ -886,7 +886,7 @@ static inline cl_int nlmeans_cl_horiz(const int devid, const int kernel, cl_mem 
                                       const int P, const int q[2], const int height, const int width,
                                       const int bwidth, const int hblocksize)
 {
-  const size_t sizesl[3] = { bwidth, ROUNDUPHT(height), 1 };
+  const size_t sizesl[3] = { bwidth, ROUNDUPDHT(height, devid), 1 };
   const size_t local[3] = { hblocksize, 1, 1 };
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_U4);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_U4_t);
@@ -950,7 +950,7 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   for(int p = 0; p < num_patches; p++)
   {
@@ -975,7 +975,7 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
     if(err != CL_SUCCESS) break;
 
     // add together the column sums and compute the weighting of the current patch for each pixel
-    const size_t sizesl[3] = { ROUNDUPWD(width), bheight, 1 };
+    const size_t sizesl[3] = { ROUNDUPDWD(width, devid), bheight, 1 };
     const size_t local[3] = { 1, vblocksize, 1 };
     const float sharpness = params->sharpness;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -994,11 +994,10 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
     err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width,sizes);
     if(err != CL_SUCCESS) break;
 
-    if(!darktable.opencl->async_pixelpipe || params->pipetype == DT_DEV_PIXELPIPE_EXPORT)
-      dt_opencl_finish(devid);
+    dt_opencl_finish_sync_pipe(devid, params->pipetype);
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_iop_nap(dt_opencl_micro_nap(devid));
   }
 
 error:
@@ -1046,7 +1045,7 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
 
   const size_t bwidth = ROUNDUP(width, hblocksize);
   const size_t bheight = ROUNDUP(height, vblocksize);
-  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  const size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   for(int p = 0; p < num_patches; p++)
   {
@@ -1069,7 +1068,7 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
     if(err != CL_SUCCESS) break;
 
     // add together the column sums and compute the weighting of the current patch for each pixel
-    const size_t sizesl[3] = { ROUNDUPWD(width), bheight, 1 };
+    const size_t sizesl[3] = { ROUNDUPDWD(width, devid), bheight, 1 };
     const size_t local[3] = { 1, vblocksize, 1 };
     const float central_pixel_weight = params->center_weight;
     cl_mem dev_U4_tt = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -1090,11 +1089,10 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
     err = nlmeans_cl_accu(devid,params->kernel_accu,dev_in,dev_U4_tt,dev_out,q,height,width,sizes);
     if(err != CL_SUCCESS) break;
 
-    if(!darktable.opencl->async_pixelpipe || params->pipetype == DT_DEV_PIXELPIPE_EXPORT)
-      dt_opencl_finish(devid);
+    dt_opencl_finish_sync_pipe(devid, params->pipetype);
 
     // indirectly give gpu some air to breathe (and to do display related stuff)
-    dt_iop_nap(darktable.opencl->micro_nap);
+    dt_iop_nap(dt_opencl_micro_nap(devid));
   }
 
 error:
@@ -1107,3 +1105,9 @@ error:
   return err;
 }
 #endif /* HAVE_OPENCL */
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

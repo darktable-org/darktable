@@ -62,3 +62,9 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
 void dt_local_laplacian_free_cl(dt_local_laplacian_cl_t *g);
 cl_int dt_local_laplacian_cl(dt_local_laplacian_cl_t *g, cl_mem input, cl_mem output);
 #endif
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

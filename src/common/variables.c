@@ -394,6 +394,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
     sqlite3_stmt *stmt;
 
     // count duplicates
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT COUNT(1)"
                                 " FROM images AS i1"
@@ -402,6 +403,7 @@ static char *_get_base_value(dt_variables_params_t *params, char **variable)
                                 "               AND    i1.film_id = i2.film_id"
                                 "               AND    i1.filename = i2.filename)",
                                 -1, &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, params->imgid);
 
     if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1076,6 +1078,9 @@ void dt_variables_set_tags_flags(dt_variables_params_t *params, uint32_t flags)
 
 
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -392,9 +392,11 @@ GList *dt_metadata_get(const int id, const char *key, uint32_t *count)
     {
       if(id == -1)
       {
+        // clang-format off
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT flags FROM main.images WHERE id IN "
                                                                    "(SELECT imgid FROM main.selected_images)",
                                     -1, &stmt, NULL);
+        // clang-format on
       }
       else // single image under mouse cursor
       {
@@ -415,18 +417,22 @@ GList *dt_metadata_get(const int id, const char *key, uint32_t *count)
     {
       if(id == -1)
       {
+        // clang-format off
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "SELECT name FROM data.tags t JOIN main.tagged_images i ON "
                                     "i.tagid = t.id WHERE imgid IN "
                                     "(SELECT imgid FROM main.selected_images)",
                                     -1, &stmt, NULL);
+        // clang-format on
       }
       else // single image under mouse cursor
       {
+        // clang-format off
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "SELECT name FROM data.tags t JOIN main.tagged_images i ON "
                                     "i.tagid = t.id WHERE imgid = ?1",
                                     -1, &stmt, NULL);
+        // clang-format on
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
       }
       while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -440,10 +446,12 @@ GList *dt_metadata_get(const int id, const char *key, uint32_t *count)
     {
       if(id == -1)
       {
+        // clang-format off
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "SELECT color FROM main.color_labels WHERE imgid IN "
                                     "(SELECT imgid FROM main.selected_images)",
                                     -1, &stmt, NULL);
+        // clang-format on
       }
       else // single image under mouse cursor
       {
@@ -466,10 +474,12 @@ GList *dt_metadata_get(const int id, const char *key, uint32_t *count)
   // So we got this far -- it has to be a generic key-value entry from meta_data
   if(id == -1)
   {
+    // clang-format off
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT value FROM main.meta_data WHERE id IN "
                                 "(SELECT imgid FROM main.selected_images) AND key = ?1 ORDER BY value",
                                 -1, &stmt, NULL);
+    // clang-format on
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, keyid);
   }
   else // single image under mouse cursor
@@ -775,13 +785,9 @@ gboolean dt_metadata_already_imported(const char *filename, const char *datetime
   return res;
 }
 
-void dt_metadata_unix_time_to_text(char *exif, const size_t exif_len, const time_t *unix)
-{
-  struct tm tt;
-  (void)localtime_r(unix, &tt);
-  strftime(exif, exif_len, "%Y:%m:%d %H:%M:%S", &tt);
-}
-
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

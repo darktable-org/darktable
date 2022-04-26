@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2021 darktable developers.
+    Copyright (C) 2009-2022 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/datetime.h"
 #include "common/exif.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/selection.h"
@@ -116,7 +117,7 @@ static int usage(const char *argv0)
 #ifdef _WIN32
   char *logfile = g_build_filename(g_get_user_cache_dir(), "darktable", "darktable-log.txt", NULL);
 #endif
-
+  // clang-format off
   printf("usage: %s [options] [IMG_1234.{RAW,..}|image_folder/]\n", argv0);
   printf("\n");
   printf("options:\n");
@@ -126,9 +127,10 @@ static int usage(const char *argv0)
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n");
   printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,demosaic\n");
-  printf("      pwstorage,print,signal,sql,undo,act_on}\n");
+  printf("      pwstorage,print,signal,sql,undo,act_on,tiling,verbose}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
+  // clang-format on
 #ifdef DT_HAVE_SIGNAL_TRACE
   printf(",print-trace");
 #endif
@@ -637,7 +639,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(argv[k][1] == 'd' && argc > k + 1)
       {
         if(!strcmp(argv[k + 1], "all"))
-          darktable.unmuted = 0xffffffff; // enable all debug information
+          darktable.unmuted = 0xffffffff & ~DT_DEBUG_VERBOSE; // enable all debug information except verbose
         else if(!strcmp(argv[k + 1], "cache"))
           darktable.unmuted |= DT_DEBUG_CACHE; // enable debugging for lib/film/cache module
         else if(!strcmp(argv[k + 1], "control"))
@@ -684,6 +686,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_DEMOSAIC;
         else if(!strcmp(argv[k + 1], "act_on"))
           darktable.unmuted |= DT_DEBUG_ACT_ON;
+        else if(!strcmp(argv[k + 1], "tiling"))
+          darktable.unmuted |= DT_DEBUG_TILING;
+        else if(!strcmp(argv[k + 1], "verbose"))
+          darktable.unmuted |= DT_DEBUG_VERBOSE;
         else
           return usage(argv[0]);
         k++;
@@ -978,6 +984,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // get the list of color profiles
   darktable.color_profiles = dt_colorspaces_init();
 
+  // initialize datetime data
+  dt_datetime_init();
+
   // initialize the database
   darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
   if(darktable.db == NULL)
@@ -1027,9 +1036,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // init darktable tags table
   dt_set_darktable_tags();
 
-  // init utc timezone
-  darktable.utc_tz =  g_time_zone_new_utc();
-
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
@@ -1076,8 +1082,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   */
   static int ref_resources[12] = {
       8192,  32,  512, 2048,   // reference
-      1024,   2,  128,  400,   // mini system
-      4096,  32,  512,  400,   // simple notebook with integrated graphics
+      1024,   2,  128,  200,   // mini system
+      4096,  32,  512,  200,   // simple notebook with integrated graphics
   };
 
   /* This is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed.
@@ -1219,8 +1225,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     // Save the default shortcuts
     dt_shortcuts_save(".defaults", FALSE);
 
-    // Then load any shortcuts if available
-    dt_shortcuts_load(NULL, FALSE); //
+    // Then load any shortcuts if available (wipe defaults first if requested)
+    dt_shortcuts_load(NULL, !dt_conf_get_bool("accel/load_defaults"));
 
     // Save the shortcuts including defaults
     dt_shortcuts_save(NULL, TRUE);
@@ -1312,7 +1318,7 @@ void dt_get_sysresource_level()
   static int oldlevel = -999;
   static int oldtunecl = -999;
 
-  const int tunecl = dt_conf_get_bool("tuneopencl");
+  const int tunecl = dt_opencl_get_tuning_mode();
   int level = 1;
   const char *config = dt_conf_get_string_const("resourcelevel");
   /** These levels must correspond with preferences in xml.in
@@ -1335,18 +1341,27 @@ void dt_get_sysresource_level()
   }
   const gboolean mod = ((level != oldlevel) || (oldtunecl != tunecl));
   darktable.dtresources.level = oldlevel = level;
-  darktable.dtresources.tunecl = oldtunecl = tunecl;
-
+  oldtunecl = tunecl;
+#ifdef HAVE_OPENCL
+  darktable.dtresources.tunememory  = (tunecl & DT_OPENCL_TUNE_MEMSIZE) ? 1 : 0;
+  darktable.dtresources.tunepinning = (tunecl & DT_OPENCL_TUNE_PINNED) ? 1 : 0;
+#else
+  darktable.dtresources.tunememory  = 0;
+  darktable.dtresources.tunepinning = 0;
+#endif
   if(mod && (darktable.unmuted & DT_DEBUG_MEMORY))
   {
     const int oldgrp = darktable.dtresources.group;
     darktable.dtresources.group = 4 * level;
     fprintf(stderr,"[dt_get_sysresource_level] switched to %i as `%s'\n", level, config);
-    fprintf(stderr,"  total mem:     %luMB\n", darktable.dtresources.total_memory / 1024lu / 1024lu);
-    fprintf(stderr,"  mipmap cache:  %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
-    fprintf(stderr,"  available mem: %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
-    fprintf(stderr,"  singlebuff:    %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
-    fprintf(stderr,"  OpenCL tuning: %s\n", (tunecl && (level >= 0)) ? "ON" : "OFF");
+    fprintf(stderr,"  total mem:       %luMB\n", darktable.dtresources.total_memory / 1024lu / 1024lu);
+    fprintf(stderr,"  mipmap cache:    %luMB\n", _get_mipmap_size() / 1024lu / 1024lu);
+    fprintf(stderr,"  available mem:   %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
+    fprintf(stderr,"  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
+#ifdef HAVE_OPENCL
+    fprintf(stderr,"  OpenCL tune mem: %s\n", ((darktable.dtresources.tunememory) && (level >= 0)) ? "ON" : "OFF");
+    fprintf(stderr,"  OpenCL pinned:   %s\n", ((darktable.dtresources.tunepinning) && (level >= 0)) ? "ON" : "OFF");
+#endif
     darktable.dtresources.group = oldgrp;
   }
 }
@@ -1494,6 +1509,19 @@ void dt_cleanup()
 void dt_print(dt_debug_thread_t thread, const char *msg, ...)
 {
   if(darktable.unmuted & thread)
+  {
+    printf("%f ", dt_get_wtime() - darktable.start_wtime);
+    va_list ap;
+    va_start(ap, msg);
+    vprintf(msg, ap);
+    va_end(ap);
+    fflush(stdout);
+  }
+}
+
+void dt_vprint(dt_debug_thread_t thread, const char *msg, ...)
+{
+  if((darktable.unmuted & DT_DEBUG_VERBOSE) && (darktable.unmuted & thread))
   {
     printf("%f ", dt_get_wtime() - darktable.start_wtime);
     va_list ap;
@@ -1704,6 +1732,19 @@ void dt_configure_runtime_performance(const int old, char *info)
     g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
   }
 
+  if(old < 11)
+  {
+    g_strlcat(info, INFO_HEADER, DT_PERF_INFOSIZE);
+    g_strlcat(info, _("some global config values relevant for OpenCL performance are not used any longer."), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("instead you will find 'per device' data in 'cl_device_v4_canonical-name'. content is:"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n  ", DT_PERF_INFOSIZE);
+    g_strlcat(info, _(" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' 'eventhandles' 'async' 'disable' 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n", DT_PERF_INFOSIZE);
+    g_strlcat(info, _("you may tune as before except 'magic'"), DT_PERF_INFOSIZE);
+    g_strlcat(info, "\n\n", DT_PERF_INFOSIZE);
+  }
+
   #undef INFO_HEADER
 }
 
@@ -1834,6 +1875,8 @@ void dt_print_mem_usage()
 #endif
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

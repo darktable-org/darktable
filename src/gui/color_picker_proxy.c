@@ -336,7 +336,8 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker
 
   if(w == NULL || GTK_IS_BOX(w))
   {
-    GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+    GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, 0, NULL);
+    dt_gui_add_class(button, "dt_transparent_background");
     _init_picker(color_picker, module, kind, button);
     if(init_cst)
       color_picker->picker_cst = cst;
@@ -348,7 +349,7 @@ static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker
   }
   else
   {
-    dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
+    dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_colorpicker, 0, NULL);
     dt_bauhaus_widget_set_quad_toggle(w, TRUE);
     _init_picker(color_picker, module, kind, w);
     if(init_cst)
@@ -371,6 +372,9 @@ GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_pi
   return _color_picker_new(module, kind, w, TRUE, cst);
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -55,13 +55,12 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void
 void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata);
 /** set the active state of the button icon */
 void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active);
-/** overwrite the foreground color, or NULL to reset it */
-void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color);
-/** overwrite the background color, or NULL to reset it */
-void dtgtk_button_override_background_color(GtkDarktableButton *button, GdkRGBA *color);
 
 G_END_DECLS
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

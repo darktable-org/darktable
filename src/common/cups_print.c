@@ -556,7 +556,8 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
       num_options = cupsAddOption("Borderless", "true", num_options, &options);
     }
 
-    num_options = cupsAddOption("landscape", pinfo->page.landscape ? "true" : "false", num_options, &options);
+    // as cups-filter pdftopdf will autorotate the page, there is no
+    // need to set an option in the case of landscape mode images
   }
 
   // print lp options
@@ -668,6 +669,9 @@ void dt_get_print_layout(const dt_print_info_t *prt,
   *aheight = bb - by;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

@@ -567,22 +567,15 @@ int dt_lua_init_early_events(lua_State *L)
  * shortcut events
  * keyed event with a tuned registration to handle shortcuts
  */
-static gboolean shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                  GdkModifierType modifier, gpointer p)
+static void shortcut_callback(dt_action_t *action)
 {
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
       0, NULL, NULL,
       LUA_ASYNC_TYPENAME,"const char*","shortcut",
-      LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(p),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
+      LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(action->label),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
       LUA_ASYNC_DONE);
-  return TRUE;
 }
 
-
-static void closure_destroy(gpointer data, GClosure *closure)
-{
-  free(data);
-}
 
 static int register_shortcut_event(lua_State *L)
 {
@@ -599,11 +592,8 @@ static int register_shortcut_event(lua_State *L)
   // register the event
   int result = dt_lua_event_keyed_register(L); // will raise an error in case of duplicate key
 
-  // register the accelerator in the lua shortcuts
-  dt_accel_register_lua(tmp, 0, 0);
-
   // set up the accelerator path
-  dt_accel_connect_lua(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback), tmp, closure_destroy));
+  dt_action_register(&darktable.control->actions_lua, tmp, shortcut_callback,  0, 0);
 
   return result;
 }
@@ -628,7 +618,8 @@ static int destroy_shortcut_event(lua_State *L)
   int result = dt_lua_event_keyed_destroy(L); // will raise an error in case of duplicate key
 
   // remove the accelerator from the lua shortcuts
-  dt_accel_rename_lua(tmp, NULL);
+  dt_action_t *ac = dt_action_section(&darktable.control->actions_lua, tmp);
+  dt_action_rename(ac, NULL);
 
   // free temporary buffer
   free(tmp);
@@ -667,6 +658,9 @@ int dt_lua_init_events(lua_State *L)
 
   return 0;
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

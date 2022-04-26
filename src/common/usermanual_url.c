@@ -37,9 +37,8 @@ dt_help_url urls_db[] =
   {"select",                     "module-reference/utility-modules/lighttable/select/"},
   {"image",                      "module-reference/utility-modules/lighttable/selected-image/"},
   {"copy_history",               "module-reference/utility-modules/lighttable/history-stack/"},
-  {"styles",                     "module-reference/utility-modules/lighttable/styles/"},
+  {"styles",                     "module-reference/utility-modules/lighttable/styles/#module-controls"},
   {"timeline",                   "module-reference/utility-modules/lighttable/timeline/"},
-  {"styles_usage",               "module-reference/utility-modules/lighttable/styles/#module-controls"},
   {"metadata",                   "module-reference/utility-modules/shared/metadata-editor/"},
   {"tagging",                    "module-reference/utility-modules/shared/tagging/"},
   {"geotagging",                 "module-reference/utility-modules/shared/geotagging/"},
@@ -69,19 +68,17 @@ dt_help_url urls_db[] =
   {"print_settings_page"         "module-reference/utility-modules/print/print-settings/#page"},
   {"print_settings_button"       "module-reference/utility-modules/print/print-settings/#print-button"},
   {"print_overview",             "print/overview/"},
-  {"camera_settings",            "module-reference/utility-modules/tethering/camera-settings/"},
+  {"camera",                     "module-reference/utility-modules/tethering/camera-settings/"},
   {"import_camera",              "overview/workflow/import-rate-tag/"},
   {"import_fr",                  "overview/workflow/import-rate-tag/"},
-  {"global_toolbox",             NULL},
-  {"global_toolbox_preferences", "overview/user-interface/top-panel/#on-the-right-hand-side"},
-  {"global_toolbox_help",        "overview/user-interface/top-panel/#on-the-right-hand-side"},
+  {"global_toolbox",             "overview/user-interface/top-panel/#on-the-right-hand-side"},
   {"lighttable_mode",            "lighttable/overview/"},
   {"lighttable_filemanager",     "lighttable/lighttable-modes/filemanager/"},
   {"lighttable_zoomable",        "lighttable/lighttable-modes/zoomable-lighttable/"},
   {"darkroom_bottom_panel",      "darkroom/darkroom-view-layout/#bottom-panel"},
   {"module_header",              "darkroom/processing-modules/module-header/"},
-  {"tethering_session",          "module-reference/utility-modules/tethering/session/"},
-  {"tethering_live_view",        "module-reference/utility-modules/tethering/live-view/"},
+  {"session",                    "module-reference/utility-modules/tethering/session/"},
+  {"live_view",                  "module-reference/utility-modules/tethering/live-view/"},
   {"module_toolbox",             NULL},
   {"view_toolbox",               NULL},
   {"backgroundjobs",             NULL},
@@ -185,3 +182,9 @@ char *dt_get_help_url(char *name)
 
   return NULL;
 }
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

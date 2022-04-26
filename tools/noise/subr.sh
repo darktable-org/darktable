@@ -446,11 +446,12 @@ export_large_jpeg() {
 	input=$1
 	output=$2
 	xmp="$input.xmp"
-
+	xmp_profiling="$scriptdir/profiling-shot.xmp"
+	
 	tool_installed darktable-cli
 
 	rm -f "$output" "$xmp"
-	darktable-cli "$input" "$output" 1>/dev/null 2>&1
+	darktable-cli "$input" "$xmp_profiling" "$output" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none --apply-custom-presets false
 	rm -f "$xmp"
 }
 
@@ -480,11 +481,11 @@ check_exposure() {
 	convert_flags_gm="-process analyze= -format %[BrightnessMean] info:-"
 
 	if convert -version | grep ImageMagick &>/dev/null; then
-		over=$(convert -threshold 99% "$input" $convert_flags_im)
-		under=$(convert -negate -threshold 99% "$input" $convert_flags_im)
+		over=$(convert -threshold 99% "$input" $convert_flags_im | awk '{ print int($1) }')
+		under=$(convert -negate -threshold 99% "$input" $convert_flags_im | awk '{ print int($1) }')
 	else
-		over=$(convert -threshold 99% "$input" $convert_flags_gm)
-		under=$(convert -negate -threshold 99% "$input" $convert_flags_gm)
+		over=$(convert -threshold 99% "$input" $convert_flags_gm | awk '{ print int($1) }')
+		under=$(convert -negate -threshold 99% "$input" $convert_flags_gm | awk '{ print int($1) }')
 	fi
 
 	if [ "$over" ] && [ "$over" -lt $pixel_percentile ]; then

@@ -99,11 +99,13 @@ static void _image_update_group_tooltip(dt_thumbnail_t *thumb)
 
   // and the other images
   sqlite3_stmt *stmt;
+  // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id, version, filename"
                               " FROM main.images"
                               " WHERE group_id = ?1", -1, &stmt,
                               NULL);
+  // clang-format on
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, thumb->groupid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -137,14 +139,13 @@ static void _thumb_update_rating_class(dt_thumbnail_t *thumb)
 {
   if(!thumb->w_main) return;
 
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_main);
   for(int i = DT_VIEW_DESERT; i <= DT_VIEW_REJECT; i++)
   {
     gchar *cn = g_strdup_printf("dt_thumbnail_rating_%d", i);
     if(thumb->rating == i)
-      gtk_style_context_add_class(context, cn);
+      dt_gui_add_class(thumb->w_main, cn);
     else
-      gtk_style_context_remove_class(context, cn);
+      dt_gui_remove_class(thumb->w_main, cn);
     g_free(cn);
   }
 }
@@ -187,15 +188,15 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
     const int col = sqlite3_column_int(darktable.view_manager->statements.get_color, 0);
     // we reuse CPF_* flags, as we'll pass them to the paint fct after
     if(col == 0)
-      thumb->colorlabels |= CPF_DIRECTION_UP;
+      thumb->colorlabels |= CPF_LABEL_RED;
     else if(col == 1)
-      thumb->colorlabels |= CPF_DIRECTION_DOWN;
+      thumb->colorlabels |= CPF_LABEL_YELLOW;
     else if(col == 2)
-      thumb->colorlabels |= CPF_DIRECTION_LEFT;
+      thumb->colorlabels |= CPF_LABEL_GREEN;
     else if(col == 3)
-      thumb->colorlabels |= CPF_DIRECTION_RIGHT;
+      thumb->colorlabels |= CPF_LABEL_BLUE;
     else if(col == 4)
-      thumb->colorlabels |= CPF_BG_TRANSPARENT;
+      thumb->colorlabels |= CPF_LABEL_PURPLE;
   }
   if(thumb->w_color)
   {
@@ -1128,7 +1129,7 @@ static gboolean _event_btn_enter_leave(GtkWidget *widget, GdkEventCrossing *even
 {
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
 
-  if(event->type == GDK_ENTER_NOTIFY && widget == thumb->w_reject) darktable.control->element = DT_VIEW_REJECT;
+  darktable.control->element = event->type == GDK_ENTER_NOTIFY && widget == thumb->w_reject ? DT_VIEW_REJECT : -1;
 
   // if we leave for ancestor, that means we leave for blank thumbtable area
   if(event->type == GDK_LEAVE_NOTIFY && event->detail == GDK_NOTIFY_ANCESTOR) dt_control_set_mouse_over_id(-1);
@@ -1284,11 +1285,10 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_widget_show(evt_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), evt_image);
     thumb->w_image = gtk_drawing_area_new();
-    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
     if(thumb->container == DT_THUMBNAIL_CONTAINER_PREVIEW)
-      gtk_style_context_add_class(context, "dt_preview_thumb_image");
+      dt_gui_add_class(thumb->w_image, "dt_preview_thumb_image");
     else if(thumb->container == DT_THUMBNAIL_CONTAINER_CULLING)
-      gtk_style_context_add_class(context, "dt_culling_thumb_image");
+      dt_gui_add_class(thumb->w_image, "dt_culling_thumb_image");
     gtk_widget_set_name(thumb->w_image, "thumb_image");
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
@@ -1380,7 +1380,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     }
 
     // the color labels
-    thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower, thumb->colorlabels, &darktable.bauhaus->colorlabels);
+    thumb->w_color = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_label_flower, thumb->colorlabels, NULL);
+    dt_action_define(&darktable.control->actions_thumb, NULL, N_("color label"), thumb->w_color, &dt_action_def_color_label);
     gtk_widget_set_name(thumb->w_color, "thumb_colorlabels");
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_END);
@@ -1390,7 +1391,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_color);
 
     // the local copy indicator
-    thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, CPF_DO_NOT_USE_BORDER, NULL);
+    thumb->w_local_copy = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_local_copy, 0, NULL);
     gtk_widget_set_name(thumb->w_local_copy, "thumb_localcopy");
     gtk_widget_set_tooltip_text(thumb->w_local_copy, _("local copy"));
     gtk_widget_set_valign(thumb->w_local_copy, GTK_ALIGN_START);
@@ -1403,7 +1404,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_local_copy);
 
     // the altered icon
-    thumb->w_altered = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_altered, CPF_DO_NOT_USE_BORDER, NULL);
+    thumb->w_altered = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_altered, 0, NULL);
     gtk_widget_set_name(thumb->w_altered, "thumb_altered");
     gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
@@ -1413,7 +1414,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_altered);
 
     // the group bouton
-    thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, CPF_DO_NOT_USE_BORDER, NULL);
+    thumb->w_group = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_grouping, 0, NULL);
     gtk_widget_set_name(thumb->w_group, "thumb_group");
     g_signal_connect(G_OBJECT(thumb->w_group), "button-release-event", G_CALLBACK(_event_grouping_release), thumb);
     g_signal_connect(G_OBJECT(thumb->w_group), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
@@ -1424,7 +1425,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_group);
 
     // the sound icon
-    thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, CPF_DO_NOT_USE_BORDER, NULL);
+    thumb->w_audio = dtgtk_thumbnail_btn_new(dtgtk_cairo_paint_audio, 0, NULL);
     gtk_widget_set_name(thumb->w_audio, "thumb_audio");
     g_signal_connect(G_OBJECT(thumb->w_audio), "button-release-event", G_CALLBACK(_event_audio_release), thumb);
     g_signal_connect(G_OBJECT(thumb->w_audio), "enter-notify-event", G_CALLBACK(_event_btn_enter_leave), thumb);
@@ -1862,24 +1863,23 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
 
 void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border)
 {
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_main);
   if(border == DT_THUMBNAIL_BORDER_NONE)
   {
-    gtk_style_context_remove_class(context, "dt_group_left");
-    gtk_style_context_remove_class(context, "dt_group_top");
-    gtk_style_context_remove_class(context, "dt_group_right");
-    gtk_style_context_remove_class(context, "dt_group_bottom");
+    dt_gui_remove_class(thumb->w_main, "dt_group_left");
+    dt_gui_remove_class(thumb->w_main, "dt_group_top");
+    dt_gui_remove_class(thumb->w_main, "dt_group_right");
+    dt_gui_remove_class(thumb->w_main, "dt_group_bottom");
     thumb->group_borders = DT_THUMBNAIL_BORDER_NONE;
     return;
   }
   else if(border & DT_THUMBNAIL_BORDER_LEFT)
-    gtk_style_context_add_class(context, "dt_group_left");
+    dt_gui_add_class(thumb->w_main, "dt_group_left");
   else if(border & DT_THUMBNAIL_BORDER_TOP)
-    gtk_style_context_add_class(context, "dt_group_top");
+    dt_gui_add_class(thumb->w_main, "dt_group_top");
   else if(border & DT_THUMBNAIL_BORDER_RIGHT)
-    gtk_style_context_add_class(context, "dt_group_right");
+    dt_gui_add_class(thumb->w_main, "dt_group_right");
   else if(border & DT_THUMBNAIL_BORDER_BOTTOM)
-    gtk_style_context_add_class(context, "dt_group_bottom");
+    dt_gui_add_class(thumb->w_main, "dt_group_bottom");
 
   thumb->group_borders |= border;
 }
@@ -2052,6 +2052,9 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
   gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), lb);
   g_free(lb);
 }
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

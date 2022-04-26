@@ -663,7 +663,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   if(err != CL_SUCCESS) return err;
 
   // first blur step: column by column with dev_temp1 -> dev_temp2
-  sizes[0] = ROUNDUPWD(width);
+  sizes[0] = ROUNDUPDWD(width, devid);
   sizes[1] = 1;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
@@ -699,7 +699,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
 
   // second blur step: column by column of transposed image with dev_temp1 -> dev_temp2 (!! height <-> width
   // !!)
-  sizes[0] = ROUNDUPWD(height);
+  sizes[0] = ROUNDUPDHT(height, devid);
   sizes[1] = 1;
   sizes[2] = 1;
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 0, sizeof(cl_mem), (void *)&dev_temp1);
@@ -753,6 +753,9 @@ void dt_gaussian_free_cl_global(dt_gaussian_cl_global_t *g)
 }
 
 #endif
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+

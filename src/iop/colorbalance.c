@@ -153,7 +153,7 @@ const char *aliases()
   return _("lift gamma gain|cdl|color grading|contrast|saturation|hue");
 }
 
-const char *description(struct dt_iop_module_t *self)
+const char **description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("affect color, brightness and contrast"),
                                       _("corrective or creative"),
@@ -757,7 +757,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+  size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
 
   switch (d->mode)
   {
@@ -1779,7 +1779,7 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
       for(int i=0; i<3; i++)
       {
         gtk_widget_set_name(label[i], "section_label");
-        gtk_style_context_add_class(gtk_widget_get_style_context(label[i]), "section_label_top");
+        dt_gui_add_class(label[i], "section_label_top");
 
         gtk_container_add(GTK_CONTAINER(new_container), label[i]);
         if(old_container) gtk_widget_show(label[i]);
@@ -2086,6 +2086,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   IOP_GUI_FREE;
 }
 
-// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on
+
