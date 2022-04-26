@@ -727,9 +727,6 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 
   dev->first_load = FALSE;
 
-  // Loading an image means we do some developing and so remove the darktable|problem|history-compress tag
-  dt_history_set_compress_problem(imgid, FALSE);
-
   dt_unlock_image(imgid);
 }
 
