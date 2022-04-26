@@ -687,13 +687,21 @@ static inline void compute_laplace_kernel(const float4 neighbour_pixel_LF[9],
   anisotropic_kernel[8] = b11;
 }
 
+enum wavelets_scale_t
+{
+  ANY_SCALE   = 1 << 0, // any wavelets scale   : reconstruct += HF
+  FIRST_SCALE = 1 << 1, // first wavelets scale : reconstruct = 0
+  LAST_SCALE  = 1 << 2, // last wavelets scale  : reconstruct += residual
+};
+
+
 kernel void
 guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
                  read_only image2d_t mask,
-                 write_only image2d_t output,
-                 const int width, const int height,
-                 const float current_radius_square, const int mult,
-                 const float noise_level, constant float *wb, const int salt)
+                 read_only image2d_t output_r, write_only image2d_t output_w,
+                 const int width, const int height, const int mult,
+                 const float noise_level, constant float *wb, const int salt,
+                 const unsigned char scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -703,15 +711,11 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
   const float alpha = read_imagef(mask, samplerA, (int2)(x, y)).w;
   const float alpha_comp = 1.f - alpha;
 
+  float4 high_frequency = read_imagef(HF, samplerA, (int2)(x, y));
+
   float4 out;
 
-  if(alpha == 0.f) // non-clipped pixel, bypass
-  {
-    float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
-    float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
-    out = hf + lf;
-  }
-  else // reconstruct
+  if(alpha > 0.f) // reconstruct
   {
     // non-local neighbours coordinates
     const int j_neighbours[3] = {
@@ -737,7 +741,6 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
 
     // Get the local average per channel
     float4 means_HF = 0.f;
-
     for(int k = 0; k < 0; k++)
     {
       means_HF += neighbour_pixel_HF[k] / 9.f;
@@ -784,33 +787,48 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
     const float4 b_HF = means_HF - a_HF * means_HF_guide;
 
     // Guide all channels by the norms
-    const float4 high_frequency = alpha * (a_HF * ((float *)&neighbour_pixel_HF[4])[guiding_channel_HF] + b_HF)
-                                + alpha_comp * neighbour_pixel_HF[4];
+    high_frequency = alpha * (a_HF * ((float *)&high_frequency)[guiding_channel_HF] + b_HF)
+                   + alpha_comp * high_frequency;
 
-    out = high_frequency + read_imagef(LF, samplerA, (int2)(x, y));
-
-    // Last step of RGB reconstruct : add noise
-    if(mult == 1 && salt)
-    {
-      // Init random number generator
-      unsigned int state[4] = { splitmix32(x + 1), splitmix32((x + 1) * (y + 3)), splitmix32(1337), splitmix32(666) };
-      xoshiro128plus(state);
-      xoshiro128plus(state);
-      xoshiro128plus(state);
-      xoshiro128plus(state);
-
-      // Model noise on the max RGB
-      const float4 sigma = out * noise_level;
-      float4 noise = dt_noise_generator_simd(DT_NOISE_POISSONIAN, out, sigma, state);
-
-      // Ensure the noise only brightens the image, since it's clipped
-      noise = out + fabs(noise - out);
-
-      out = fmax(alpha * noise + alpha_comp * out, 0.f);
-    }
   }
 
-  if(mult == 1)
+  if((scale & FIRST_SCALE))
+  {
+    // out is not inited yet
+    out = high_frequency;
+  }
+  else
+  {
+    // just accumulate HF
+    out = read_imagef(output_r, samplerA, (int2)(x, y)) + high_frequency;
+  }
+
+  if((scale & LAST_SCALE))
+  {
+    // add the residual and clamp
+    out = fmax(out + read_imagef(LF, samplerA, (int2)(x, y)), (float4)0.f);
+  }
+
+  // Last step of RGB reconstruct : add noise
+  if((scale & LAST_SCALE) && salt && alpha > 0.f)
+  {
+    // Init random number generator
+    unsigned int state[4] = { splitmix32(x + 1), splitmix32((x + 1) * (y + 3)), splitmix32(1337), splitmix32(666) };
+    xoshiro128plus(state);
+    xoshiro128plus(state);
+    xoshiro128plus(state);
+    xoshiro128plus(state);
+
+    // Model noise on the max RGB
+    const float4 sigma = out * noise_level;
+    float4 noise = dt_noise_generator_simd(DT_NOISE_POISSONIAN, out, sigma, state);
+
+    // Ensure the noise only brightens the image, since it's clipped
+    noise = out + fabs(noise - out);
+    out = fmax(alpha * noise + alpha_comp * out, 0.f);
+  }
+
+  if((scale & LAST_SCALE))
   {
     // Break the RGB channels into ratios/norm for the next step of reconstruction
     const float4 out_2 = out * out;
@@ -819,15 +837,15 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
     out.w = norm;
   }
 
-  write_imagef(output, (int2)(x, y), out);
+  write_imagef(output_w, (int2)(x, y), out);
 }
 
 kernel void
 diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
               read_only image2d_t mask,
-              write_only image2d_t output,
+              read_only image2d_t output_r, write_only image2d_t output_w,
               const int width, const int height,
-              const float current_radius_square, const int mult, const int sharpen)
+              const int mult, const unsigned char scale)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -836,15 +854,11 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
 
   const float4 alpha = read_imagef(mask, samplerA, (int2)(x, y));
 
+  float4 high_frequency = read_imagef(HF, samplerA, (int2)(x, y));
+
   float4 out;
 
-  if(alpha.w == 0.f) // non-clipped pixel, bypass
-  {
-    float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
-    float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
-    out = hf + lf;
-  }
-  else // reconstruct
+  if(alpha.w > 0.f) // reconstruct
   {
     // non-local neighbours coordinates
     const int j_neighbours[3] = {
@@ -881,18 +895,32 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     }
 
     // Diffuse
-    const float4 multipliers_HF = { 0.3f, 0.3f, 0.3f, 0.f};
-
-    // Diffuse
-    out = fmax(neighbour_pixel_HF[4] + neighbour_pixel_LF[4] + alpha * (multipliers_HF * laplacian_HF), 0.f);
+    const float4 multipliers_HF = { 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 0.f };
+    high_frequency += alpha * multipliers_HF * laplacian_HF;
   }
 
-  // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
-  // we need it to evaluate the gradient
-  if(mult == 1)
-    out.xyz *= out.w;
+  if((scale & FIRST_SCALE))
+  {
+    // out is not inited yet
+    out = high_frequency;
+  }
+  else
+  {
+    // just accumulate HF
+    out = read_imagef(output_r, samplerA, (int2)(x, y)) + high_frequency;
+  }
 
-  write_imagef(output, (int2)(x, y), out);
+  if((scale & LAST_SCALE))
+  {
+    // add the residual and clamp
+    out = fmax(out + read_imagef(LF, samplerA, (int2)(x, y)), (float4)0.f);
+
+    // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
+    // we need it to evaluate the gradient
+    out.xyz *= out.w;
+  }
+
+  write_imagef(output_w, (int2)(x, y), out);
 }
 
 float

@@ -24,6 +24,13 @@ const sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE |
                            CLK_ADDRESS_NONE            |
                            CLK_FILTER_NEAREST;
 
+
+// Normalization scaling of the wavelet to approximate a laplacian
+// from the function above for sigma = B_SPLINE_SIGMA as a constant
+#define B_SPLINE_TO_LAPLACIAN 3.182727439285017f
+#define B_SPLINE_TO_LAPLACIAN_2 10.129753952777762f // square
+
+
 typedef enum dt_isotropy_t
 {
   DT_ISOTROPY_ISOTROPE = 0, // diffuse in all directions with same intensity
@@ -65,12 +72,24 @@ diffuse_blur_bspline(read_only image2d_t in,
       { 0.015625f  , 0.0625f    , 0.09375f   , 0.0625f    , 0.015625f   },
       { 0.00390625f, 0.015625f  , 0.0234375f , 0.015625f  , 0.00390625f } };
 
-  for(int ii = -2; ii < 3; ++ii)
-    for(int jj = -2; jj < 3; ++jj)
+  const int j_neighbours[5] = {
+    clamp((x - 2 * mult), 0, width - 1),
+    clamp((x - mult), 0, width - 1),
+    x,
+    clamp((x + mult), 0, width - 1),
+    clamp((x + 2 * mult), 0, width - 1) };
+
+  const int i_neighbours[3] = {
+    clamp((y - 2 * mult), 0, height - 1),
+    clamp((y - mult), 0, height - 1),
+    y,
+    clamp((y + mult), 0, height - 1),
+    clamp((y + 2 * mult), 0, height - 1) };
+
+  for(int ii = 0; ii < 5; ++ii)
+    for(int jj = 0; jj < 5; ++jj)
     {
-      const int row = clamp(y + mult * ii, 0, height - 1);
-      const int col = clamp(x + mult * jj, 0, width - 1);
-      acc += filter[ii + 2][jj + 2] * read_imagef(in, samplerA, (int2)(col, row));
+      acc += filter[ii][jj] * read_imagef(in, samplerA, (int2)(j_neighbours[jj], i_neighbours[ii]));
     }
 
   write_imagef(LF, (int2)(x, y), acc);
