@@ -79,7 +79,7 @@ diffuse_blur_bspline(read_only image2d_t in,
     clamp((x + mult), 0, width - 1),
     clamp((x + 2 * mult), 0, width - 1) };
 
-  const int i_neighbours[3] = {
+  const int i_neighbours[5] = {
     clamp((y - 2 * mult), 0, height - 1),
     clamp((y - mult), 0, height - 1),
     y,
