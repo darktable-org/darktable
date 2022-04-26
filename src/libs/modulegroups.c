@@ -616,6 +616,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_show(header_box);
     gtk_widget_set_name(header_box, "basics-header-box");
+    dt_gui_add_class(header_box, "dt_big_btn_canvas");
     gtk_box_pack_start(GTK_BOX(d->vbox_basic), header_box, FALSE, FALSE, 0);
 
     // we create the module box structure
@@ -646,6 +647,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
                                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item->module->off)));
       g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_basics_on_off_callback), item);
       gtk_widget_show(btn);
+      dt_gui_add_class(btn, "dt_transparent_background");
       gtk_box_pack_start(GTK_BOX(header_box), btn, FALSE, FALSE, 0);
       // we add to the module header the section label and the link to the full iop
       GtkWidget *sect = dt_ui_section_label_new(item->module->name());
@@ -752,6 +754,7 @@ static void _basics_show(dt_lib_module_t *self)
     gtk_widget_set_name(d->vbox_basic, "basics-box-labels");
   else
     gtk_widget_set_name(d->vbox_basic, "basics-box");
+  dt_gui_add_class(d->vbox_basic,"dt_plugin_ui");
 
   dt_lib_modulegroups_basic_item_position_t item_pos = FIRST_MODULE;
   for(GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
@@ -2803,6 +2806,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(self->widget, "modules-tabs");
+  dt_gui_add_class(self->widget, "dt_big_btn_canvas");
 
   d->hbox_buttons = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->hbox_search_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2843,7 +2847,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), d->text_entry, TRUE, TRUE, 0);
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, _("clear text"));
-  gtk_widget_set_name(GTK_WIDGET(d->hbox_search_box), "search-box");
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_buttons, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);
@@ -2853,7 +2856,7 @@ void gui_init(dt_lib_module_t *self)
       = gtk_label_new(_("the following modules are deprecated because they have internal design mistakes"
                         " which can't be solved and alternative modules which solve them.\nthey will be removed for"
                         " new edits in the next release."));
-  gtk_widget_set_name(d->deprecated, "modulegroups-deprecated-msg");
+  dt_gui_add_class(d->deprecated, "dt_warning");
   gtk_label_set_line_wrap(GTK_LABEL(d->deprecated), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->deprecated, TRUE, TRUE, 0);
 
@@ -3838,7 +3841,7 @@ static void _manage_show_window(dt_lib_module_t *self)
 #endif
   gtk_window_set_default_size(GTK_WINDOW(d->dialog), dt_conf_get_int("ui_last/modulegroups_dialog_width"),
                               dt_conf_get_int("ui_last/modulegroups_dialog_height"));
-  gtk_widget_set_name(d->dialog, "modulegroups_manager");
+  gtk_widget_set_name(d->dialog, "modulegroups-manager");
   gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage module layouts"));
   g_signal_connect(d->dialog, "check-resize", G_CALLBACK(_manage_editor_resize_dialog), self);
 
@@ -3849,8 +3852,9 @@ static void _manage_show_window(dt_lib_module_t *self)
   GtkWidget *vb_main = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0); // main box
   // preset combobox
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(hb, "modulegroups_top_box");
+  gtk_widget_set_name(hb, "modulegroups-topbox");
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(vb, "modulegroups-top-boxes");
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("preset : ")), FALSE, TRUE, 2);
   d->presets_combo = gtk_combo_box_text_new();
@@ -3872,16 +3876,14 @@ static void _manage_show_window(dt_lib_module_t *self)
 
   // presets settings (search + quick access + full active)
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(vb, "modulegroups-top-boxes");
   d->edit_search_cb = gtk_check_button_new_with_label(_("show search line"));
-  gtk_widget_set_name(d->edit_search_cb, "modulegroups_editor_setting");
   g_signal_connect(G_OBJECT(d->edit_search_cb), "toggled", G_CALLBACK(_manage_editor_search_toggle), self);
   gtk_box_pack_start(GTK_BOX(vb), d->edit_search_cb, FALSE, TRUE, 0);
   d->basics_chkbox = gtk_check_button_new_with_label(_("show quick access panel"));
-  gtk_widget_set_name(d->basics_chkbox, "modulegroups_editor_setting");
   g_signal_connect(G_OBJECT(d->basics_chkbox), "toggled", G_CALLBACK(_manage_editor_basics_toggle), self);
   gtk_box_pack_start(GTK_BOX(vb), d->basics_chkbox, FALSE, TRUE, 0);
   d->edit_full_active_cb = gtk_check_button_new_with_label(_("show all history modules in active group"));
-  gtk_widget_set_name(d->edit_full_active_cb, "modulegroups_editor_setting");
   gtk_widget_set_tooltip_text(
       d->edit_full_active_cb,
       _("show modules that are present in the history stack, regardless of whether or not they are currently enabled"));
@@ -3895,7 +3897,6 @@ static void _manage_show_window(dt_lib_module_t *self)
   hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->edit_autoapply_chkbox = gtk_check_button_new_with_label(_("auto-apply this preset"));
   gtk_widget_set_sensitive(d->edit_autoapply_chkbox, FALSE); // always readonly. change are done with the button...
-  gtk_widget_set_name(d->edit_autoapply_chkbox, "modulegroups_editor_setting");
   gtk_box_pack_start(GTK_BOX(hb2), d->edit_autoapply_chkbox, FALSE, TRUE, 0);
   d->edit_autoapply_btn = dtgtk_button_new(dtgtk_cairo_paint_preferences, 0, NULL);
   g_signal_connect(G_OBJECT(d->edit_autoapply_btn), "clicked", G_CALLBACK(_preset_autoapply_edit), self);
@@ -3933,7 +3934,6 @@ static void _manage_show_window(dt_lib_module_t *self)
   // reset button
   hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->preset_reset_btn = gtk_button_new_with_label(_("reset"));
-  gtk_widget_set_name(d->preset_reset_btn, "modulegroups-reset");
   g_signal_connect(G_OBJECT(d->preset_reset_btn), "button-press-event", G_CALLBACK(_manage_editor_reset), self);
   gtk_box_pack_end(GTK_BOX(hb2), d->preset_reset_btn, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vb_main), hb2, FALSE, TRUE, 0);

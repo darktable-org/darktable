@@ -230,6 +230,7 @@ void _display_module_trouble_message_callback(gpointer instance,
         gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
         gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
         gtk_widget_set_name(label_widget, "iop-plugin-warning");
+        dt_gui_add_class(label_widget, "dt_warning");
 
         GtkWidget *iopw = gtk_widget_get_parent(module->widget);
         gtk_box_pack_start(GTK_BOX(iopw), label_widget, TRUE, TRUE, 0);

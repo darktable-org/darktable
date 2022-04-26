@@ -194,6 +194,10 @@ static inline GdkPixbuf *dt_gdk_pixbuf_new_from_file_at_size(const char *filenam
   return gdk_pixbuf_new_from_file_at_size(filename, width * darktable.gui->ppd, height * darktable.gui->ppd, error);
 }
 
+// call class function to add or remove CSS classes (need to be set on top of this file as first function is used in this file)
+void dt_gui_add_class(GtkWidget *widget, const gchar *class_name);
+void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name);
+
 int dt_gui_gtk_init(dt_gui_gtk_t *gui);
 void dt_gui_gtk_run(dt_gui_gtk_t *gui);
 void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui);
@@ -367,7 +371,7 @@ static inline void dt_ui_section_label_set(GtkWidget *label)
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
   gtk_label_set_xalign (GTK_LABEL(label), 0.5f);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END); // ellipsize labels
-  gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
+  dt_gui_add_class(label, "dt_section_label"); // make sure that we can style these easily
 }
 
 static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
@@ -460,10 +464,6 @@ void dt_gui_update_collapsible_section(dt_gui_collapsible_section_t *cs);
 
 // routine to hide the collapsible section
 void dt_gui_hide_collapsible_section(dt_gui_collapsible_section_t *cs);
-
-// call class function to add or remove CSS classes
-void dt_gui_add_class(GtkWidget *widget, const gchar *class_name);
-void dt_gui_remove_class(GtkWidget *widget, const gchar *class_name);
 
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py

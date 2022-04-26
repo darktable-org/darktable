@@ -466,11 +466,6 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 {
   GtkWidget *label = dt_ui_section_label_new(_(section));
 
-  if(top)
-  {
-    dt_gui_add_class(GTK_WIDGET(label), "section_label_top");
-  }
-
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
   dt_bauhaus_widget_set_label(hue, section, N_("hue"));
