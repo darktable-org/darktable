@@ -374,51 +374,108 @@ static inline float4 filmic_desaturate_v4(const float4 Ych_original, float4 Ych_
 
 // Pipeline and ICC luminance is CIE Y 1931
 // Kirk Ych/Yrg uses CIE Y 2006
-// 1 CIE Y 1931 = 1.0578615402627207 CIE Y 2006, so we need to adjust that
-// Warning: only applies to achromatic XYZ i.e. those aligned with
-// D50 white point. CAT16 chromatic adaptation from D50 to D65 white point
-// has been taken in account in the calculation.
-#define CIE_Y_1931_to_CIE_Y_2006(x) 1.0578615402627207f * x
+// 1 CIE Y 1931 = 1.05785528 CIE Y 2006, so we need to adjust that.
+// This also accounts for the CAT16 D50->D65 adaptation that has to be done
+// to go from RGB to CIE LMS 2006.
+// Warning: only applies to achromatic pixels.
+#define CIE_Y_1931_to_CIE_Y_2006(x) (1.05785528f * (x))
 
 
-static inline float clip_chroma_one_channel(constant const float *const coeffs, const float target_rgb,
-                                            const float Y, const float cos_h, const float sin_h)
+static inline float clip_chroma_white_raw(constant const float *const coeffs, const float target_white, const float Y,
+                                          const float cos_h, const float sin_h)
 {
+  const float denominator_Y_coeff = coeffs[0] * (0.979381443298969f * cos_h + 0.391752577319588f * sin_h)
+                                    + coeffs[1] * (0.0206185567010309f * cos_h + 0.608247422680412f * sin_h)
+                                    - coeffs[2] * (cos_h + sin_h);
+  const float denominator_target_term = target_white * (0.68285981628866f * cos_h + 0.482137060515464f * sin_h);
+
+  // this channel won't limit the chroma
+  if(denominator_Y_coeff == 0.f) return FLT_MAX;
+  
+  // The equation for max chroma has an asymptote at this point (zero of denominator).
+  // Any Y below that value won't give us sensible results for the upper bound
+  // and we should consider the lower bound instead.
+  const float Y_asymptote = denominator_target_term / denominator_Y_coeff;
+  if(Y <= Y_asymptote) return FLT_MAX;
+
   // Get chroma that brings one component of target RGB to the given target_rgb value.
   // coeffs are the transformation coeffs to get one components (R, G or B) from input LMS.
   // i.e. it is a row of the LMS -> RGB transformation matrix.
   // See tools/derive_filmic_v6_gamut_mapping.py for derivation of these equations.
-  const float denominator = Y
-                                * (coeffs[0] * (0.979381443298969f * cos_h + 0.391752577319588f * sin_h)
-                                   + coeffs[1] * (0.0206185567010309f * cos_h + 0.608247422680412f * sin_h)
-                                   - coeffs[2] * (cos_h + sin_h))
-                            - target_rgb * (0.68285981628866f * cos_h + 0.482137060515464f * sin_h);
+  const float denominator = Y * denominator_Y_coeff - denominator_target_term;
+  const float numerator = -0.427506877216495f
+                          * (Y * (coeffs[0] + 0.856492345150334f * coeffs[1] + 0.554995960637719f * coeffs[2])
+                             - 0.988237752433297f * target_white);
 
-  // this channel won't limit chroma
-  if(denominator == 0.f) return FLT_MAX;
-
-  const float numerator = -0.428551981030928f
-                          * (Y * (coeffs[0] + 0.856074759328069f * coeffs[1] + 0.549532683137927f * coeffs[2])
-                             - 0.988092298150448f * target_rgb);
-
-  const float max_chroma = numerator / denominator;
-  // If the chroma is negative, that would mean crossing the neutral point and that would be invalid
-  // because it would become the opponent color. It also means that this component won't limit the
-  // max chroma.
-  if(max_chroma < 0.f)
-    return FLT_MAX;
-
-  return max_chroma;
+  return numerator / denominator;
 }
 
 
-static inline float clip_chroma(constant const float *const matrix_out, const float target_rgb, const float Y,
-                                const float cos_h, const float sin_h)
+static inline float clip_chroma_white(constant const float *const coeffs, const float target_white, const float Y,
+                                      const float cos_h, const float sin_h)
 {
-  const float chroma_R = clip_chroma_one_channel(&matrix_out[0], target_rgb, Y, cos_h, sin_h);
-  const float chroma_G = clip_chroma_one_channel(&matrix_out[4], target_rgb, Y, cos_h, sin_h);
-  const float chroma_B = clip_chroma_one_channel(&matrix_out[8], target_rgb, Y, cos_h, sin_h);
-  return fmin(fmin(chroma_R, chroma_G), chroma_B);
+  // Due to slight numerical inaccuracies in color matrices,
+  // the chroma clipping curves for each RGB channel may be
+  // slightly at the max luminance. Thus we linearly interpolate
+  // each clipping line to zero chroma near max luminance.
+  const float eps = 1e-3f;
+  const float max_Y = CIE_Y_1931_to_CIE_Y_2006(target_white);
+  const float delta_Y = fmax(max_Y - Y, 0.f);
+  float max_chroma;
+  if(delta_Y < eps)
+  {
+    max_chroma = delta_Y / (eps * max_Y) * clip_chroma_white_raw(coeffs, target_white, (1.f - eps) * max_Y, cos_h, sin_h);
+  }
+  else
+  {
+    max_chroma = clip_chroma_white_raw(coeffs, target_white, Y, cos_h, sin_h);
+  }
+  return max_chroma >= 0.f ? max_chroma : FLT_MAX;
+}
+
+
+static inline float clip_chroma_black(constant const float *const coeffs, const float cos_h, const float sin_h)
+{
+  // N.B. this is the same as clip_chroma_white_raw() but with target value = 0.
+  // This allows eliminating some computation.
+
+  // Get chroma that brings one component of target RGB to zero.
+  // coeffs are the transformation coeffs to get one components (R, G or B) from input LMS.
+  // i.e. it is a row of the LMS -> RGB transformation matrix.
+  // See tools/derive_filmic_v6_gamut_mapping.py for derivation of these equations.
+  const float denominator = coeffs[0] * (0.979381443298969f * cos_h + 0.391752577319588f * sin_h)
+                            + coeffs[1] * (0.0206185567010309f * cos_h + 0.608247422680412f * sin_h)
+                            - coeffs[2] * (cos_h + sin_h);
+
+  // this channel won't limit the chroma
+  if(denominator == 0.f) return FLT_MAX;
+
+  const float numerator = -0.427506877216495f * (coeffs[0] + 0.856492345150334f * coeffs[1] + 0.554995960637719f * coeffs[2]);
+  const float max_chroma = numerator / denominator;
+  return max_chroma >= 0.f ? max_chroma : FLT_MAX;
+}
+
+
+static inline float clip_chroma(constant const float *const matrix_out, const float target_white, const float Y,
+                                const float cos_h, const float sin_h, const float chroma)
+{
+  // Note: ideally we should figure out in advance which channel is going to clip first
+  // (either go negative or over maximum allowed value) and calculate chroma clipping
+  // curves only for those channels. That would avoid some ambiguities
+  // (what do negative chroma values mean etc.) and reduce computation. However this
+  // "brute-force" approach seems to work fine for now.
+
+  const float chroma_R_white = clip_chroma_white(&matrix_out[0], target_white, Y, cos_h, sin_h);
+  const float chroma_G_white = clip_chroma_white(&matrix_out[4], target_white, Y, cos_h, sin_h);
+  const float chroma_B_white = clip_chroma_white(&matrix_out[8], target_white, Y, cos_h, sin_h);
+  const float max_chroma_white = fmin(fmin(chroma_R_white, chroma_G_white), chroma_B_white);
+
+  const float chroma_R_black = clip_chroma_black(&matrix_out[0], cos_h, sin_h);
+  const float chroma_G_black = clip_chroma_black(&matrix_out[4], cos_h, sin_h);
+  const float chroma_B_black = clip_chroma_black(&matrix_out[8], cos_h, sin_h);
+  const float max_chroma_black = fmin(fmin(chroma_R_black, chroma_G_black), chroma_B_black);
+
+  return fmin(fmin(chroma, max_chroma_black), max_chroma_white);
 }
 
 
@@ -443,13 +500,7 @@ static inline float4 gamut_check_RGB(constant const float *const matrix_in, cons
   // Precompute sin and cos of hue for reuse
   const float cos_h = native_cos(Ych_in.z);
   const float sin_h = native_sin(Ych_in.z);
-
-  // First calculate the maximum chroma where RGB components still stay below white point
-  const float chroma_clipped_to_white = clip_chroma(matrix_out, display_white, Y, cos_h, sin_h);
-  // Calculate the maximum chroma where RGB components still stay above black point
-  const float chroma_clipped_to_black = clip_chroma(matrix_out, 0.f, Y, cos_h, sin_h);
-  // Take the smallest of current chroma, white limit chroma and black limit chroma.
-  const float new_chroma = fmin(fmin(Ych_in.y, chroma_clipped_to_white), chroma_clipped_to_black);
+  const float new_chroma = clip_chroma(matrix_out, display_white, Y, cos_h, sin_h, Ych_in.y);
 
   // Go to RGB, using existing luminance and hue and the new chroma
   const float4 Ych = (float4)(Y, new_chroma, Ych_in.z, 0.f);
