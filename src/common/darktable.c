@@ -1519,6 +1519,18 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
   }
 }
 
+void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...)
+{
+  if(darktable.unmuted & thread)
+  {
+    va_list ap;
+    va_start(ap, msg);
+    vprintf(msg, ap);
+    va_end(ap);
+    fflush(stdout);
+  }
+}
+
 void dt_vprint(dt_debug_thread_t thread, const char *msg, ...)
 {
   if((darktable.unmuted & DT_DEBUG_VERBOSE) && (darktable.unmuted & thread))
