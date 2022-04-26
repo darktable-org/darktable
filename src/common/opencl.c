@@ -572,11 +572,11 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   err = dt_opencl_get_device_info(cl, devid, CL_DEVICE_MAX_WORK_ITEM_SIZES, (void **)&infointtab, &infointtab_size);
   if(err == CL_SUCCESS)
   {
-    fprintf(stderr, "   MAX WORK ITEM SIZES:      [ ");
-    for(size_t i = 0; i < infoint; i++) fprintf(stderr, "%zu ", infointtab[i]);
+    dt_print_nts(DT_DEBUG_OPENCL, "   MAX WORK ITEM SIZES:      [ ");
+    for(size_t i = 0; i < infoint; i++) dt_print_nts(DT_DEBUG_OPENCL, "%zu ", infointtab[i]);
     free(infointtab);
     infointtab = NULL;
-    fprintf(stderr, "]\n");
+    dt_print_nts(DT_DEBUG_OPENCL, "]\n");
   }
   else
   {
