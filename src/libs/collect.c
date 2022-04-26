@@ -3036,7 +3036,6 @@ static void _history_show(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
 
   const int maxitems = dt_conf_get_int("plugins/lighttable/collect/history_max");
@@ -3051,7 +3050,6 @@ static void _history_show(GtkWidget *widget, gpointer user_data)
       char str[2048] = { 0 };
       _history_pretty_print(line, str, sizeof(str));
       GtkWidget *smt = gtk_menu_item_new_with_label(str);
-      gtk_widget_set_name(smt, "collect-popup-item");
       gtk_widget_set_tooltip_text(smt, str);
       // GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
@@ -3080,6 +3078,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  dt_gui_add_class(self->widget, "dt_spacing_sw");
 
   d->active_rule = 0;
   d->nb_rules = 0;
@@ -3119,12 +3118,11 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
-    gtk_widget_set_name(GTK_WIDGET(w), "lib-collect-entry");
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 5);
 
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
-
+    dt_gui_add_class(GTK_WIDGET(w), "dt_big_btn_canvas");
     d->rule[i].button = w;
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);
@@ -3165,9 +3163,8 @@ void gui_init(dt_lib_module_t *self)
                      dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
                      TRUE, 0);
 
-  // the botton buttons for the rules
+  // the bottom buttons for the rules
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(bhbox, "collect-actions-widget");
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
   // dummy widget just to ensure alignment of history button  with those in filtering lib
