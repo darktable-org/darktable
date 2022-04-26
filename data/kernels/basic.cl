@@ -450,7 +450,9 @@ kernel void
 interpolate_and_mask(read_only image2d_t input,
                      write_only image2d_t interpolated,
                      write_only image2d_t clipping_mask,
-                     constant float *clips, const int filters,
+                     constant float *clips,
+                     constant float *wb,
+                     const int filters,
                      const int width, const int height)
 {
   // Bilinear interpolation
@@ -478,7 +480,7 @@ interpolate_and_mask(read_only image2d_t input,
     // Also we remosaic the image at the end, so only the relevant channel gets picked.
     // Finally, it's unlikely that the borders of the image get clipped due to vignetting.
     const float center = read_imagef(input, sampleri, (int2)(j, i)).x;
-    R = G = B = center;
+    R = G = B = center / wb[c];
     R_clipped = G_clipped = B_clipped = (center > clips[c]);
   }
   else
@@ -503,19 +505,19 @@ interpolate_and_mask(read_only image2d_t input,
 
     if(c == GREEN) // green pixel
     {
-      G = *center;
+      G = *center / wb[GREEN];
       G_clipped = (*center > clips[GREEN]);
     }
     else // non-green pixel
     {
       // interpolate inside an X/Y cross
-      G = (*north + *south + *east + *west) / 4.f;
+      G = (*north + *south + *east + *west) / 4.f / wb[GREEN];
       G_clipped = (*north > clips[GREEN] || *south > clips[GREEN] || *east > clips[GREEN] || *west > clips[GREEN]);
     }
 
     if(c == RED ) // red pixel
     {
-      R = *center;
+      R = *center / wb[RED];
       R_clipped = (*center > clips[RED]);
     }
     else // non-red pixel
@@ -523,19 +525,19 @@ interpolate_and_mask(read_only image2d_t input,
       if(FC(i - 1, j, filters) == RED && FC(i + 1, j, filters) == RED)
       {
         // we are on a red column, so interpolate column-wise
-        R = (*north + *south) / 2.f;
+        R = (*north + *south) / 2.f / wb[RED];
         R_clipped = (*north > clips[RED] || *south > clips[RED]);
       }
       else if(FC(i, j - 1, filters) == RED && FC(i, j + 1, filters) == RED)
       {
         // we are on a red row, so interpolate row-wise
-        R = (*west + *east) / 2.f;
+        R = (*west + *east) / 2.f / wb[RED];
         R_clipped = (*west > clips[RED] || *east > clips[RED]);
       }
       else
       {
         // we are on a blue row, so interpolate inside a square
-        R = (*north_west + *north_east + *south_east + *south_west) / 4.f;
+        R = (*north_west + *north_east + *south_east + *south_west) / 4.f / wb[RED];
         R_clipped = (*north_west > clips[RED] || *north_east > clips[RED] || *south_west > clips[RED]
                       || *south_east > clips[RED]);
       }
@@ -543,7 +545,7 @@ interpolate_and_mask(read_only image2d_t input,
 
     if(c == BLUE ) // blue pixel
     {
-      B = *center;
+      B = *center / wb[BLUE];
       B_clipped = (*center > clips[BLUE]);
     }
     else // non-blue pixel
@@ -551,19 +553,19 @@ interpolate_and_mask(read_only image2d_t input,
       if(FC(i - 1, j, filters) == BLUE && FC(i + 1, j, filters) == BLUE)
       {
         // we are on a blue column, so interpolate column-wise
-        B = (*north + *south) / 2.f;
+        B = (*north + *south) / 2.f / wb[BLUE];
         B_clipped = (*north > clips[BLUE] || *south > clips[BLUE]);
       }
       else if(FC(i, j - 1, filters) == BLUE && FC(i, j + 1, filters) == BLUE)
       {
         // we are on a red row, so interpolate row-wise
-        B = (*west + *east) / 2.f;
+        B = (*west + *east) / 2.f / wb[BLUE];
         B_clipped = (*west > clips[BLUE] || *east > clips[BLUE]);
       }
       else
       {
         // we are on a red row, so interpolate inside a square
-        B = (*north_west + *north_east + *south_east + *south_west) / 4.f;
+        B = (*north_west + *north_east + *south_east + *south_west) / 4.f / wb[BLUE];
 
         B_clipped = (*north_west > clips[BLUE] || *north_east > clips[BLUE] || *south_west > clips[BLUE]
                     || *south_east > clips[BLUE]);
@@ -581,6 +583,7 @@ interpolate_and_mask(read_only image2d_t input,
 kernel void
 remosaic_and_replace(read_only image2d_t interpolated,
                      write_only image2d_t output,
+                     constant float *wb,
                      const int filters,
                      const int width, const int height)
 {
@@ -594,7 +597,7 @@ remosaic_and_replace(read_only image2d_t interpolated,
   const float4 center = read_imagef(interpolated, sampleri, (int2)(j, i));
   float *rgb = (float *)&center;
 
-  write_imagef(output, (int2)(j, i), fmax(rgb[c], 0.f));
+  write_imagef(output, (int2)(j, i), fmax(rgb[c] * wb[c], 0.f));
 }
 
 kernel void
@@ -700,7 +703,7 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
                  read_only image2d_t mask,
                  read_only image2d_t output_r, write_only image2d_t output_w,
                  const int width, const int height, const int mult,
-                 const float noise_level, constant float *wb, const int salt,
+                 const float noise_level, const int salt,
                  const unsigned char scale)
 {
   const int x = get_global_id(0);

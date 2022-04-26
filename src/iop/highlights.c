@@ -936,14 +936,16 @@ static void process_lch_xtrans(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 static void _interpolate_and_mask(const float *const restrict input,
                                   float *const restrict interpolated,
                                   float *const restrict clipping_mask,
-                                  const dt_aligned_pixel_t clips, const uint32_t filters,
+                                  const dt_aligned_pixel_t clips,
+                                  const dt_aligned_pixel_t wb,
+                                  const uint32_t filters,
                                   const size_t width, const size_t height)
 {
   // Bilinear interpolation
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
     dt_omp_firstprivate(width, height, clips, filters)  \
-    dt_omp_sharedconst(input, interpolated, clipping_mask) \
+    dt_omp_sharedconst(input, interpolated, clipping_mask, wb) \
     schedule(static)
   #endif
   for(size_t i = 0; i < height; i++)
@@ -969,7 +971,7 @@ static void _interpolate_and_mask(const float *const restrict input,
         // because we are dealing with local averages anyway, later on.
         // Also we remosaic the image at the end, so only the relevant channel gets picked.
         // Finally, it's unlikely that the borders of the image get clipped due to vignetting.
-        R = G = B = center;
+        R = G = B = center / wb[c];
         R_clipped = G_clipped = B_clipped = (center > clips[c]);
       }
       else
@@ -991,19 +993,19 @@ static void _interpolate_and_mask(const float *const restrict input,
 
         if(c == GREEN) // green pixel
         {
-          G = center;
+          G = center / wb[GREEN];
           G_clipped = (center > clips[GREEN]);
         }
         else // non-green pixel
         {
           // interpolate inside an X/Y cross
-          G = (north + south + east + west) / 4.f;
+          G = (north + south + east + west) / 4.f / wb[GREEN];
           G_clipped = (north > clips[GREEN] || south > clips[GREEN] || east > clips[GREEN] || west > clips[GREEN]);
         }
 
         if(c == RED ) // red pixel
         {
-          R = center;
+          R = center / wb[RED];
           R_clipped = (center > clips[RED]);
         }
         else // non-red pixel
@@ -1011,19 +1013,19 @@ static void _interpolate_and_mask(const float *const restrict input,
           if(FC(i - 1, j, filters) == RED && FC(i + 1, j, filters) == RED)
           {
             // we are on a red column, so interpolate column-wise
-            R = (north + south) / 2.f;
+            R = (north + south) / 2.f / wb[RED];
             R_clipped = (north > clips[RED] || south > clips[RED]);
           }
           else if(FC(i, j - 1, filters) == RED && FC(i, j + 1, filters) == RED)
           {
             // we are on a red row, so interpolate row-wise
-            R = (west + east) / 2.f;
+            R = (west + east) / 2.f / wb[RED];
             R_clipped = (west > clips[RED] || east > clips[RED]);
           }
           else
           {
             // we are on a blue row, so interpolate inside a square
-            R = (north_west + north_east + south_east + south_west) / 4.f;
+            R = (north_west + north_east + south_east + south_west) / 4.f / wb[RED];
             R_clipped = (north_west > clips[RED] || north_east > clips[RED] || south_west > clips[RED]
                           || south_east > clips[RED]);
           }
@@ -1031,7 +1033,7 @@ static void _interpolate_and_mask(const float *const restrict input,
 
         if(c == BLUE ) // blue pixel
         {
-          B = center;
+          B = center / wb[BLUE];
           B_clipped = (center > clips[BLUE]);
         }
         else // non-blue pixel
@@ -1039,19 +1041,19 @@ static void _interpolate_and_mask(const float *const restrict input,
           if(FC(i - 1, j, filters) == BLUE && FC(i + 1, j, filters) == BLUE)
           {
             // we are on a blue column, so interpolate column-wise
-            B = (north + south) / 2.f;
+            B = (north + south) / 2.f / wb[BLUE];
             B_clipped = (north > clips[BLUE] || south > clips[BLUE]);
           }
           else if(FC(i, j - 1, filters) == BLUE && FC(i, j + 1, filters) == BLUE)
           {
             // we are on a red row, so interpolate row-wise
-            B = (west + east) / 2.f;
+            B = (west + east) / 2.f / wb[BLUE];
             B_clipped = (west > clips[BLUE] || east > clips[BLUE]);
           }
           else
           {
             // we are on a red row, so interpolate inside a square
-            B = (north_west + north_east + south_east + south_west) / 4.f;
+            B = (north_west + north_east + south_east + south_west) / 4.f / wb[BLUE];
 
             B_clipped = (north_west > clips[BLUE] || north_east > clips[BLUE] || south_west > clips[BLUE]
                         || south_east > clips[BLUE]);
@@ -1072,6 +1074,7 @@ static void _interpolate_and_mask(const float *const restrict input,
 
 static void _remosaic_and_replace(const float *const restrict interpolated,
                                   float *const restrict output,
+                                  const dt_aligned_pixel_t wb,
                                   const uint32_t filters,
                                   const size_t width, const size_t height)
 {
@@ -1079,7 +1082,7 @@ static void _remosaic_and_replace(const float *const restrict interpolated,
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
     dt_omp_firstprivate(width, height, filters)  \
-    dt_omp_sharedconst(output, interpolated) \
+    dt_omp_sharedconst(output, interpolated, wb) \
     schedule(static)
   #endif
   for(size_t i = 0; i < height; i++)
@@ -1088,7 +1091,7 @@ static void _remosaic_and_replace(const float *const restrict interpolated,
       const size_t c = FC(i, j, filters);
       const size_t idx = i * width + j;
       const size_t index = idx * 4;
-      output[idx] = fmaxf(interpolated[index + c], 0.f);
+      output[idx] = fmaxf(interpolated[index + c] * wb[c], 0.f);
     }
 }
 
@@ -1186,7 +1189,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
                                     const float *const restrict clipping_mask,
                                     float *const restrict output,
                                     const size_t width, const size_t height, const int mult,
-                                    const float noise_level, const dt_aligned_pixel_t wb, const int salt,
+                                    const float noise_level, const int salt,
                                     const uint8_t scale)
 {
   float *const restrict out = DT_IS_ALIGNED(output);
@@ -1195,7 +1198,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, noise_level, wb, salt, scale) \
+    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, noise_level, salt, scale) \
     schedule(static)
 #endif
   for(size_t row = 0; row < height; ++row)
@@ -1474,7 +1477,7 @@ static inline gint wavelets_process(const float *const restrict in, float
                                     float *const restrict LF_odd,
                                     float *const restrict LF_even,
                                     const diffuse_reconstruct_variant_t variant,
-                                    const float noise_level, const dt_aligned_pixel_t wb,
+                                    const float noise_level,
                                     const int salt)
 {
   gint success = TRUE;
@@ -1515,7 +1518,7 @@ static inline gint wavelets_process(const float *const restrict in, float
     uint8_t current_scale_type = scale_type(s, scales);
 
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
-      guide_laplacians(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, noise_level, wb, salt, current_scale_type);
+      guide_laplacians(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, noise_level, salt, current_scale_type);
     else
       heat_PDE_diffusion(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, current_scale_type);
 
@@ -1575,19 +1578,19 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self, dt_dev_pixelpi
   const float *const restrict input = (const float *const restrict)ivoid;
   float *const restrict output = (float *const restrict)ovoid;
 
-  _interpolate_and_mask(input, interpolated, clipping_mask, clips, filters, width, height);
+  _interpolate_and_mask(input, interpolated, clipping_mask, clips, wb, filters, width, height);
   dt_box_mean(clipping_mask, height, width, 4, 2, 1);
 
   for(int i = 0; i < data->iterations; i++)
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
     wavelets_process(interpolated, temp, clipping_mask, width, height, scales, HF, LF_odd,
-                     LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, wb, salt);
+                     LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt);
     wavelets_process(temp, interpolated, clipping_mask, width, height, scales, HF, LF_odd,
-                    LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, wb, salt);
+                    LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt);
   }
 
-  _remosaic_and_replace(interpolated, output, filters, width, height);
+  _remosaic_and_replace(interpolated, output, wb, filters, width, height);
 
 #if DEBUG_DUMP_PFM
   dump_PFM("/tmp/interpolated.pfm", interpolated, width, height);
@@ -1613,7 +1616,7 @@ static inline cl_int wavelets_process_cl(const int devid,
                                          cl_mem LF_odd,
                                          cl_mem LF_even,
                                          const diffuse_reconstruct_variant_t variant,
-                                         const float noise_level, cl_mem wb,
+                                         const float noise_level,
                                          const int salt)
 {
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
@@ -1623,7 +1626,7 @@ static inline cl_int wavelets_process_cl(const int devid,
   // the wavelets decomposition here is the same as the equalizer/atrous module,
   for(int s = 0; s < scales; ++s)
   {
-    fprintf(stderr, "GPU Wavelet decompose : scale %i\n", s);
+    //fprintf(stderr, "GPU Wavelet decompose : scale %i\n", s);
     const int mult = 1 << s;
 
     cl_mem buffer_in;
@@ -1668,9 +1671,8 @@ static inline cl_int wavelets_process_cl(const int devid,
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 6, sizeof(int), (void *)&height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 7, sizeof(int), (void *)&mult);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 8, sizeof(float), (void *)&noise_level);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 9, sizeof(cl_mem), (void *)&wb);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 10, sizeof(int), (void *)&salt);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 11, sizeof(uint8_t), (void *)&current_scale_type);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 9, sizeof(int), (void *)&salt);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 10, sizeof(uint8_t), (void *)&current_scale_type);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_guide_laplacians, sizes);
       if(err != CL_SUCCESS) return err;
     }
@@ -1746,9 +1748,10 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pi
   dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 1, sizeof(cl_mem), (void *)&interpolated);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 2, sizeof(cl_mem), (void *)&temp);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 3, sizeof(cl_mem), (void *)&clips_cl);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 4, sizeof(int), (void *)&filters);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 5, sizeof(int), (void *)&roi_out->width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 6, sizeof(int),
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 4, sizeof(cl_mem), (void *)&wb_cl);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 5, sizeof(int), (void *)&filters);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 6, sizeof(int), (void *)&roi_out->width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_bilinear_and_mask, 7, sizeof(int),
                            (void *)&roi_out->height);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_bilinear_and_mask, sizes);
   dt_opencl_release_mem_object(clips_cl);
@@ -1765,20 +1768,20 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pi
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
     err = wavelets_process_cl(devid, interpolated, temp, clipping_mask, sizes, width, height, gd, scales, HF,
-                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, wb_cl, salt);
+                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt);
     if(err != CL_SUCCESS) goto error;
 
-    wb_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), (float*)wb);
     err = wavelets_process_cl(devid, temp, interpolated, clipping_mask, sizes, width, height, gd, scales, HF,
-                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, wb_cl, salt);
+                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt);
     if(err != CL_SUCCESS) goto error;
   }
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_remosaic_and_replace, 0, sizeof(cl_mem), (void *)&interpolated);
   dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_remosaic_and_replace, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_remosaic_and_replace, 2, sizeof(int), (void *)&filters);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_remosaic_and_replace, 3, sizeof(int), (void *)&roi_out->width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_remosaic_and_replace, 4, sizeof(int), (void *)&roi_out->height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_remosaic_and_replace, 2, sizeof(cl_mem), (void *)&wb_cl);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_remosaic_and_replace, 3, sizeof(int), (void *)&filters);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_remosaic_and_replace, 4, sizeof(int), (void *)&roi_out->width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_remosaic_and_replace, 5, sizeof(int), (void *)&roi_out->height);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_remosaic_and_replace, sizes);
   if(err != CL_SUCCESS) goto error;
 
