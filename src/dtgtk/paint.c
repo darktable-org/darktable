@@ -907,7 +907,7 @@ void dtgtk_cairo_paint_masks_used(cairo_t *cr, gint x, gint y, gint w, gint h, g
 
 void dtgtk_cairo_paint_eye(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  dtgtk_cairo_paint_eye_toggle(cr, x, y, w, h, flags || CPF_ACTIVE, data);
+  dtgtk_cairo_paint_eye_toggle(cr, x, y, w, h, flags | CPF_ACTIVE, data);
 }
 
 void dtgtk_cairo_paint_eye_toggle(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
@@ -3170,4 +3170,3 @@ void dtgtk_cairo_paint_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
