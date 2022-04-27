@@ -1547,6 +1547,13 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
       range->select_min_r = range->select_max_r + 0.0001;
       range->select_max_r = pos_r;
     }
+    else if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
+    {
+      // if we have shift pressed, we only want to set the second bound which is done in release
+      range->bounds &= ~DT_RANGE_BOUND_FIXED;
+      range->bounds &= ~DT_RANGE_BOUND_MAX;
+      range->bounds |= DT_RANGE_BOUND_RANGE;
+    }
     else
     {
       range->select_min_r = pos_r;
