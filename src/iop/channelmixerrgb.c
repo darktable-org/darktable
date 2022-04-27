@@ -3464,7 +3464,7 @@ void gui_update(struct dt_iop_module_t *self)
   g->is_profiling_started = FALSE;
 
   dt_gui_hide_collapsible_section(&g->cs);
-  dt_gui_hide_collapsible_section(&g->csspot);
+  dt_gui_update_collapsible_section(&g->csspot);
 
   g->spot_RGB[0] = 0.f;
   g->spot_RGB[1] = 0.f;

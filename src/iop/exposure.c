@@ -598,7 +598,7 @@ void gui_update(struct dt_iop_module_t *self)
       break;
   }
 
-  dt_gui_hide_collapsible_section(&g->cs);
+  dt_gui_update_collapsible_section(&g->cs);
 }
 
 void init_global(dt_iop_module_so_t *module)
