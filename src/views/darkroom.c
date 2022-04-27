@@ -1982,26 +1982,26 @@ static void _brush_hardness_up_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_SHIFT_MASK);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_SHIFT_MASK);
 }
 static void _brush_hardness_down_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_SHIFT_MASK);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_SHIFT_MASK);
 }
 
 static void _brush_opacity_up_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_CONTROL_MASK);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_CONTROL_MASK);
 }
 static void _brush_opacity_down_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_CONTROL_MASK);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_CONTROL_MASK);
 }
 
 static void _overlay_cycle_callback(dt_action_t *action)
