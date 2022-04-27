@@ -2538,7 +2538,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_sensitive(d->del, FALSE);
 
   GtkWidget *bclear = dt_action_button_new(self, N_("clear layout"), _page_clear_area_clicked, self,
-                                           _("remove all image area from the page"), 0, 0);
+                                           _("remove all image areas from the page"), 0, 0);
 
   gtk_grid_attach(fitbut, GTK_WIDGET(bnew), 0, 0, 2, 1);
   gtk_grid_attach(fitbut, GTK_WIDGET(d->del), 0, 1, 1, 1);
