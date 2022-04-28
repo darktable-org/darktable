@@ -2046,7 +2046,7 @@
     <name>lighttable/ui/scroll_to_module</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>scroll to utility modules when expanded/collapsed</shortdescription>
+    <shortdescription>scroll utility modules to the top when expanded</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
   <dtconfig>
@@ -2123,7 +2123,7 @@
     <name>darkroom/ui/scroll_to_module</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>scroll to processing modules when expanded/collapsed</shortdescription>
+    <shortdescription>scroll processing modules to the top when expanded</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
