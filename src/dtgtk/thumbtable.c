@@ -1921,42 +1921,29 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y)
   {
     const int first_offset = (table->offset - 1) % table->thumbs_per_row;
     int new_offset = table->offset;
+    const int line = floorf(y);
     if(first_offset == 0)
     {
       // first line is full, so it's counted
-      new_offset = 1 + y * table->thumbs_per_row;
+      new_offset = 1 + line * table->thumbs_per_row;
     }
-    else if(y == 0)
+    else if(line == 0)
     {
       new_offset = 1;
     }
     else
     {
-      new_offset = first_offset + (y - 1) * table->thumbs_per_row;
+      new_offset = first_offset + (line - 1) * table->thumbs_per_row;
     }
 
-    if(new_offset != table->offset)
-    {
-      table->offset = new_offset;
-      dt_thumbtable_full_redraw(table, TRUE);
-      // To enable smooth scrolling move the thumbnails
-      // by the floating point amount of the scrollbar
-      // so if the scrollbar is in 13.28 position move the thumbs by 0.28 * thumb_size
-      const float thumbs_area_offset_y = ((y - floor(y)) * (float)table->thumb_size);
-      _move(table, 0, -thumbs_area_offset_y, FALSE);
-    }
-  }
-  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
-  {
-    // we get the actual root position
-    int lbefore = (table->offset - 1) / table->thumbs_per_row;
-    if((table->offset - 1) % table->thumbs_per_row) lbefore++;
-    const int abs_posy
-        = lbefore * table->thumb_size + table->view_height - table->thumb_size * 0.5 - table->thumbs_area.y;
-    const int abs_posx = table->view_width - table->thumb_size * 0.5 - table->thumbs_area.x;
+    table->offset = new_offset;
+    dt_thumbtable_full_redraw(table, TRUE);
 
-    // and we move
-    _move(table, abs_posx - x, abs_posy - y, FALSE);
+    // To enable smooth scrolling move the thumbnails
+    // by the floating point amount of the scrollbar
+    // so if the scrollbar is in 13.28 position move the thumbs by 0.28 * thumb_size
+    const float thumbs_area_offset_y = ((y - line) * (float)table->thumb_size);
+    _move(table, 0, -thumbs_area_offset_y, FALSE);
   }
 }
 
