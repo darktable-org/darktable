@@ -598,7 +598,7 @@ void gui_update(struct dt_iop_module_t *self)
       break;
   }
 
-  dt_gui_hide_collapsible_section(&g->cs);
+  dt_gui_update_collapsible_section(&g->cs);
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -982,9 +982,7 @@ static void _spot_settings_changed_callback(GtkWidget *slider, dt_iop_module_t *
 
   dt_aligned_pixel_t Lch_target = { 0.f };
 
-  dt_iop_gui_enter_critical_section(self);
   Lch_target[0] = dt_bauhaus_slider_get(g->lightness_spot);
-  dt_iop_gui_leave_critical_section(self);
 
   // Save the color on change
   dt_conf_set_float("darkroom/modules/exposure/lightness", Lch_target[0]);

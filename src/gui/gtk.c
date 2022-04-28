@@ -2268,6 +2268,7 @@ static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
   /* create the panel box */
   ui->panels[DT_UI_PANEL_CENTER_TOP] = widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(widget, "header-toolbar");
+  dt_gui_add_class(widget, "dt_big_btn_canvas");
 
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
@@ -2294,6 +2295,7 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
   /* create the panel box */
   ui->panels[DT_UI_PANEL_CENTER_BOTTOM] = widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(widget, "footer-toolbar");
+  dt_gui_add_class(widget, "dt_big_btn_canvas");
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
   /* adding the center bottom left toolbox */
@@ -3243,8 +3245,7 @@ void dt_gui_new_collapsible_section(dt_gui_collapsible_section_t *cs,
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *header_evb = gtk_event_box_new();
   GtkWidget *destdisp = dt_ui_section_label_new(label);
-  gtk_widget_set_name(destdisp, "collapsible-label");
-  dt_gui_add_class(destdisp_head, "section-expander");
+  dt_gui_add_class(destdisp_head, "dt_section_expander");
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
 
   cs->toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow,

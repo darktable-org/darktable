@@ -583,7 +583,7 @@ void gui_init(dt_lib_module_t *self)
 
   dt_lib_module_t *meta = (dt_lib_module_t *) dt_action_section(DT_ACTION(self), N_("metadata"));
   d->copy_metadata_button = dt_action_button_new(meta, N_("copy"), copy_metadata_callback, self,
-                                                 _("set the (first) selected image as source of metadata"), 0, 0);
+                                                 _("set the selected image as source of metadata"), 0, 0);
   gtk_grid_attach(grid, d->copy_metadata_button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->copy_metadata_button), "clicked", G_CALLBACK(copy_metadata_callback), self);
 
