@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-26 18:13+0200\n"
+"POT-Creation-Date: 2022-04-28 18:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2130,7 +2130,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
-#: ../src/develop/blend_gui.c:2973 ../src/develop/develop.c:2251
+#: ../src/develop/blend_gui.c:2973 ../src/develop/develop.c:2248
 #: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:825
 #: ../src/imageio/format/j2k.c:673 ../src/libs/live_view.c:361
@@ -3064,7 +3064,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:1966 ../src/iop/channelmixer.c:624
 #: ../src/iop/channelmixerrgb.c:4134 ../src/iop/colorchecker.c:1358
 #: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2431
-#: ../src/iop/exposure.c:1124
+#: ../src/iop/exposure.c:1122
 msgid "lightness"
 msgstr ""
 
@@ -3671,7 +3671,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:66
 #: ../build/lib/darktable/plugins/introspection_globaltonemap.c:129
-#: ../src/iop/channelmixerrgb.c:4122 ../src/iop/exposure.c:1112
+#: ../src/iop/channelmixerrgb.c:4122 ../src/iop/exposure.c:1110
 msgid "target"
 msgstr ""
 
@@ -3806,9 +3806,9 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/iop/bilat.c:427 ../src/iop/colorbalance.c:1857
-#: ../src/iop/denoiseprofile.c:3665 ../src/iop/exposure.c:1060
+#: ../src/iop/denoiseprofile.c:3665 ../src/iop/exposure.c:1058
 #: ../src/iop/levels.c:680 ../src/iop/profile_gamma.c:676
-#: ../src/libs/copy_history.c:386 ../src/libs/export.c:1302
+#: ../src/libs/copy_history.c:373 ../src/libs/export.c:1302
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2707
 #: ../src/libs/styles.c:827 ../src/views/darkroom.c:2307
 msgid "mode"
@@ -4033,7 +4033,7 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
 #: ../src/common/collection.c:684 ../src/gui/preferences.c:812
 #: ../src/gui/presets.c:570 ../src/iop/basicadj.c:598 ../src/iop/exposure.c:123
-#: ../src/iop/exposure.c:1025 ../src/libs/metadata_view.c:141
+#: ../src/iop/exposure.c:1023 ../src/libs/metadata_view.c:141
 msgid "exposure"
 msgstr ""
 
@@ -5379,55 +5379,55 @@ msgstr ""
 msgid "understood"
 msgstr ""
 
-#: ../src/common/darktable.c:1717
+#: ../src/common/darktable.c:1729
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
 msgstr ""
 
-#: ../src/common/darktable.c:1719
+#: ../src/common/darktable.c:1731
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
 msgstr ""
 
-#: ../src/common/darktable.c:1725
+#: ../src/common/darktable.c:1737
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
 msgstr ""
 
-#: ../src/common/darktable.c:1727
+#: ../src/common/darktable.c:1739
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
 
-#: ../src/common/darktable.c:1729
+#: ../src/common/darktable.c:1741
 msgid "1) darktable resources"
 msgstr ""
 
-#: ../src/common/darktable.c:1731
+#: ../src/common/darktable.c:1743
 msgid "2) tune OpenCL performance"
 msgstr ""
 
-#: ../src/common/darktable.c:1738
+#: ../src/common/darktable.c:1750
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
 msgstr ""
 
-#: ../src/common/darktable.c:1740
+#: ../src/common/darktable.c:1752
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
 
-#: ../src/common/darktable.c:1742
+#: ../src/common/darktable.c:1754
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 msgstr ""
 
-#: ../src/common/darktable.c:1744
+#: ../src/common/darktable.c:1756
 msgid "you may tune as before except 'magic'"
 msgstr ""
 
@@ -5895,22 +5895,22 @@ msgstr ""
 msgid "noiseprofile file `%s' is not valid"
 msgstr ""
 
-#: ../src/common/opencl.c:1090
+#: ../src/common/opencl.c:1073
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 
-#: ../src/common/opencl.c:1097
+#: ../src/common/opencl.c:1080
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 
-#: ../src/common/opencl.c:1104
+#: ../src/common/opencl.c:1087
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 
-#: ../src/common/opencl.c:1111
+#: ../src/common/opencl.c:1094
 msgid "opencl scheduling profile set to default"
 msgstr ""
 
@@ -6727,7 +6727,7 @@ msgstr ""
 msgid "time offset"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2042 ../src/libs/copy_history.c:398
+#: ../src/control/jobs/control_jobs.c:2042 ../src/libs/copy_history.c:385
 msgid "write sidecar files"
 msgstr ""
 
@@ -7055,7 +7055,7 @@ msgstr ""
 msgid "input after blur"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2251
+#: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2248
 #: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:129
 #: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:823
 #: ../src/libs/live_view.c:362
@@ -7064,7 +7064,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2189
 #: ../src/develop/imageop.c:2379 ../src/iop/channelmixerrgb.c:4102
-#: ../src/iop/exposure.c:1092
+#: ../src/iop/exposure.c:1090
 msgid "input"
 msgstr ""
 
@@ -7296,7 +7296,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2227 ../src/develop/blend_gui.c:3055
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:1729
-#: ../src/iop/exposure.c:1028 ../src/iop/exposure.c:1041
+#: ../src/iop/exposure.c:1026 ../src/iop/exposure.c:1039
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
 #: ../src/iop/filmicrgb.c:4326 ../src/iop/filmicrgb.c:4336
 #: ../src/iop/filmicrgb.c:4371 ../src/iop/filmicrgb.c:4381
@@ -7580,19 +7580,19 @@ msgstr ""
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 
-#: ../src/develop/develop.c:1524 ../src/gui/presets.c:960
+#: ../src/develop/develop.c:1521 ../src/gui/presets.c:960
 msgid "display-referred default"
 msgstr ""
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1526 ../src/gui/presets.c:962
+#: ../src/develop/develop.c:1523 ../src/gui/presets.c:962
 #: ../src/iop/exposure.c:278 ../src/iop/exposure.c:287
 msgid "scene-referred default"
 msgstr ""
 
-#: ../src/develop/develop.c:2005
+#: ../src/develop/develop.c:2002
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr ""
@@ -8171,12 +8171,12 @@ msgstr ""
 msgid "date-time interval to add to the min value"
 msgstr ""
 
-#: ../src/dtgtk/range.c:568 ../src/dtgtk/range.c:1715 ../src/dtgtk/range.c:1766
+#: ../src/dtgtk/range.c:568 ../src/dtgtk/range.c:1722 ../src/dtgtk/range.c:1773
 #: ../src/libs/colorpicker.c:53
 msgid "min"
 msgstr ""
 
-#: ../src/dtgtk/range.c:574 ../src/dtgtk/range.c:1727 ../src/dtgtk/range.c:1778
+#: ../src/dtgtk/range.c:574 ../src/dtgtk/range.c:1734 ../src/dtgtk/range.c:1785
 #: ../src/libs/colorpicker.c:53
 msgid "max"
 msgstr ""
@@ -8227,7 +8227,7 @@ msgid ""
 "double click to use the date directly."
 msgstr ""
 
-#: ../src/dtgtk/range.c:995 ../src/dtgtk/range.c:1734
+#: ../src/dtgtk/range.c:995 ../src/dtgtk/range.c:1741
 msgid "now"
 msgstr ""
 
@@ -8248,7 +8248,7 @@ msgstr ""
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1711 ../src/gui/accelerators.c:1978
+#: ../src/dtgtk/range.c:1718 ../src/gui/accelerators.c:1978
 #: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2916
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
@@ -8362,7 +8362,7 @@ msgstr ""
 msgid "paste history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2356 ../src/libs/copy_history.c:382
+#: ../src/dtgtk/thumbtable.c:2356 ../src/libs/copy_history.c:369
 msgid "discard history"
 msgstr ""
 
@@ -8553,9 +8553,9 @@ msgstr ""
 msgid ""
 "warning: disk backend for full preview cache is disabled "
 "(cache_disk_backend_full)\n"
-"if you want to pre-generate full preview and for darktable to use them, you "
+"if you want to pre-generate full previews and for darktable to use them, you "
 "need to enable disk backend for full preview cache\n"
-"no thumbnails to be generated, done.\n"
+"no full previews to be generated, done.\n"
 msgstr ""
 
 #: ../src/generate-cache/main.c:248
@@ -10227,7 +10227,7 @@ msgid ""
 "     5% -  80% -> YUV420\n"
 msgstr ""
 
-#: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:361
+#: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:348
 #: ../src/libs/image.c:585
 msgid "copy"
 msgstr ""
@@ -10587,7 +10587,7 @@ msgstr ""
 msgid "create unique filename"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:195 ../src/libs/copy_history.c:390
+#: ../src/imageio/storage/disk.c:195 ../src/libs/copy_history.c:377
 #: ../src/libs/image.c:601 ../src/libs/styles.c:425 ../src/libs/styles.c:608
 #: ../src/libs/styles.c:829
 msgid "overwrite"
@@ -11387,7 +11387,7 @@ msgid ""
 "by pushing RGB values into negatives"
 msgstr ""
 
-#: ../src/iop/basicadj.c:601 ../src/iop/exposure.c:1026
+#: ../src/iop/basicadj.c:601 ../src/iop/exposure.c:1024
 msgid "adjust the exposure correction"
 msgstr ""
 
@@ -12300,7 +12300,7 @@ msgstr ""
 msgid "use a color checker target to autoset CAT and channels"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4078 ../src/iop/exposure.c:1078
+#: ../src/iop/channelmixerrgb.c:4078 ../src/iop/exposure.c:1076
 msgid "spot mode"
 msgstr ""
 
@@ -12312,11 +12312,11 @@ msgid ""
 "and can be used to sample a target."
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4084 ../src/iop/exposure.c:1084
+#: ../src/iop/channelmixerrgb.c:4084 ../src/iop/exposure.c:1082
 msgid "correction"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4085 ../src/iop/exposure.c:1085
+#: ../src/iop/channelmixerrgb.c:4085 ../src/iop/exposure.c:1083
 msgid "measure"
 msgstr ""
 
@@ -12330,7 +12330,7 @@ msgid ""
 "if disabled, only the CAT is considered."
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4108 ../src/iop/exposure.c:1098
+#: ../src/iop/channelmixerrgb.c:4108 ../src/iop/exposure.c:1096
 msgid "the input color that should be mapped to the target"
 msgstr ""
 
@@ -12341,7 +12341,7 @@ msgid ""
 "c : \tN/A"
 msgstr ""
 
-#: ../src/iop/channelmixerrgb.c:4115 ../src/iop/exposure.c:1105
+#: ../src/iop/channelmixerrgb.c:4115 ../src/iop/exposure.c:1103
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 msgstr ""
 
@@ -14364,32 +14364,32 @@ msgstr ""
 msgid "%.2f EV"
 msgstr ""
 
-#: ../src/iop/exposure.c:1021
+#: ../src/iop/exposure.c:1019
 msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
 msgstr ""
 
-#: ../src/iop/exposure.c:1038
+#: ../src/iop/exposure.c:1036
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
 
-#: ../src/iop/exposure.c:1043
+#: ../src/iop/exposure.c:1041
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
 
-#: ../src/iop/exposure.c:1046
+#: ../src/iop/exposure.c:1044
 msgid "computed EC: "
 msgstr ""
 
 #. This gets filled in by process
-#: ../src/iop/exposure.c:1048
+#: ../src/iop/exposure.c:1046
 msgid "what exposure correction has actually been used"
 msgstr ""
 
-#: ../src/iop/exposure.c:1065
+#: ../src/iop/exposure.c:1063
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -14397,11 +14397,11 @@ msgid ""
 "by pushing RGB values into negatives."
 msgstr ""
 
-#: ../src/iop/exposure.c:1075
+#: ../src/iop/exposure.c:1073
 msgid "spot exposure mapping"
 msgstr ""
 
-#: ../src/iop/exposure.c:1079
+#: ../src/iop/exposure.c:1077
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -14410,11 +14410,11 @@ msgid ""
 "and can be used to define a target."
 msgstr ""
 
-#: ../src/iop/exposure.c:1103
+#: ../src/iop/exposure.c:1101
 msgid "L : \tN/A"
 msgstr ""
 
-#: ../src/iop/exposure.c:1118
+#: ../src/iop/exposure.c:1116
 msgid "the desired target exposure after mapping"
 msgstr ""
 
@@ -17972,99 +17972,89 @@ msgstr ""
 msgid "error loading file '%s'"
 msgstr ""
 
-#: ../src/libs/copy_history.c:195
+#: ../src/libs/copy_history.c:191
 #, c-format
-msgid ""
-"no history compression of 1 image.\n"
-"see tag: darktable|problem|history-compress"
-msgid_plural ""
-"no history compression of %d images.\n"
-"see tag: darktable|problem|history-compress"
-msgstr[0] ""
-msgstr[1] ""
-
-#: ../src/libs/copy_history.c:201
-msgid "history compression warning"
+msgid "no history compression of %d image%s"
 msgstr ""
 
-#: ../src/libs/copy_history.c:247
+#: ../src/libs/copy_history.c:234
 #, c-format
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/libs/copy_history.c:253
+#: ../src/libs/copy_history.c:240
 msgid "delete images' history?"
 msgstr ""
 
-#: ../src/libs/copy_history.c:356
+#: ../src/libs/copy_history.c:343
 msgid "selective copy..."
 msgstr ""
 
-#: ../src/libs/copy_history.c:357
+#: ../src/libs/copy_history.c:344
 msgid "choose which modules to copy from the source image"
 msgstr ""
 
-#: ../src/libs/copy_history.c:362
+#: ../src/libs/copy_history.c:349
 msgid ""
 "copy history stack of\n"
 "first selected image"
 msgstr ""
 
-#: ../src/libs/copy_history.c:366
+#: ../src/libs/copy_history.c:353
 msgid "selective paste..."
 msgstr ""
 
-#: ../src/libs/copy_history.c:367
+#: ../src/libs/copy_history.c:354
 msgid "choose which modules to paste to the target image(s)"
 msgstr ""
 
-#: ../src/libs/copy_history.c:372 ../src/libs/image.c:590
+#: ../src/libs/copy_history.c:359 ../src/libs/image.c:590
 msgid "paste"
 msgstr ""
 
-#: ../src/libs/copy_history.c:373
+#: ../src/libs/copy_history.c:360
 msgid ""
 "paste history stack to\n"
 "all selected images"
 msgstr ""
 
-#: ../src/libs/copy_history.c:378
+#: ../src/libs/copy_history.c:365
 msgid "compress history"
 msgstr ""
 
-#: ../src/libs/copy_history.c:379
+#: ../src/libs/copy_history.c:366
 msgid ""
 "compress history stack of\n"
 "all selected images"
 msgstr ""
 
-#: ../src/libs/copy_history.c:383
+#: ../src/libs/copy_history.c:370
 msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
 
-#: ../src/libs/copy_history.c:387 ../src/libs/styles.c:830
+#: ../src/libs/copy_history.c:374 ../src/libs/styles.c:830
 msgid "how to handle existing history"
 msgstr ""
 
-#: ../src/libs/copy_history.c:390 ../src/libs/styles.c:828
+#: ../src/libs/copy_history.c:377 ../src/libs/styles.c:828
 msgid "append"
 msgstr ""
 
-#: ../src/libs/copy_history.c:394
+#: ../src/libs/copy_history.c:381
 msgid "load sidecar file..."
 msgstr ""
 
-#: ../src/libs/copy_history.c:395
+#: ../src/libs/copy_history.c:382
 msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
 msgstr ""
 
-#: ../src/libs/copy_history.c:399
+#: ../src/libs/copy_history.c:386
 msgid "write history stack and tags to XMP sidecar files"
 msgstr ""
 
@@ -19114,7 +19104,7 @@ msgid "select dt metadata (from metadata editor module)"
 msgstr ""
 
 #: ../src/libs/image.c:586
-msgid "set the (first) selected image as source of metadata"
+msgid "set the selected image as source of metadata"
 msgstr ""
 
 #: ../src/libs/image.c:591
@@ -20418,7 +20408,7 @@ msgid "clear layout"
 msgstr ""
 
 #: ../src/libs/print_settings.c:2541
-msgid "remove all image area from the page"
+msgid "remove all image areas from the page"
 msgstr ""
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
