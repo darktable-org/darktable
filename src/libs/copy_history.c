@@ -188,7 +188,8 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_UNDEF, imgs);
   dt_control_queue_redraw_center();
   if(missing)
-    dt_control_log(_("no history compression of %d image%s"), missing, (missing == 1) ? "" : "s");
+    dt_control_log(ngettext("no history compression of %d image",
+                            "no history compression of %d images", missing), missing);
 }
 
 
@@ -412,4 +413,3 @@ void gui_cleanup(dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
