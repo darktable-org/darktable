@@ -263,15 +263,14 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_INPUT          = 1 << 14,
   DT_DEBUG_PRINT          = 1 << 15,
   DT_DEBUG_CAMERA_SUPPORT = 1 << 16,
-  DT_DEBUG_IOPORDER       = 1 << 17,
-  DT_DEBUG_IMAGEIO        = 1 << 18,
-  DT_DEBUG_UNDO           = 1 << 19,
-  DT_DEBUG_SIGNAL         = 1 << 20,
-  DT_DEBUG_PARAMS         = 1 << 21,
-  DT_DEBUG_DEMOSAIC       = 1 << 22,
-  DT_DEBUG_ACT_ON         = 1 << 23,
-  DT_DEBUG_TILING         = 1 << 24,
-  DT_DEBUG_VERBOSE        = 1 << 25
+  DT_DEBUG_IMAGEIO        = 1 << 17,
+  DT_DEBUG_UNDO           = 1 << 18,
+  DT_DEBUG_SIGNAL         = 1 << 19,
+  DT_DEBUG_PARAMS         = 1 << 20,
+  DT_DEBUG_DEMOSAIC       = 1 << 21,
+  DT_DEBUG_ACT_ON         = 1 << 22,
+  DT_DEBUG_TILING         = 1 << 23,
+  DT_DEBUG_VERBOSE        = 1 << 24
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t

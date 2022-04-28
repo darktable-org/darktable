@@ -55,7 +55,6 @@ DT_MODULE(1)
 // if a preset cannot be loaded or the current preset deleted, this is the fallback preset
 
 #define PADDING 2
-#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 #include "modulegroups.h"
 
@@ -825,9 +824,6 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
-  if (DT_IOP_ORDER_INFO)
-    fprintf(stderr,"\n^^^^^ modulegroups");
-
   // update basic button selection too
   g_signal_handlers_block_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), d->current == DT_MODULEGROUP_BASICS);
@@ -862,12 +858,6 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
      */
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
     GtkWidget *w = module->expander;
-
-    if((DT_IOP_ORDER_INFO) && (module->enabled))
-    {
-      fprintf(stderr, "\n%20s %d", module->op, module->iop_order);
-      if(dt_iop_is_hidden(module)) fprintf(stderr, ", hidden");
-    }
 
       /* skip modules without an gui */
       if(dt_iop_is_hidden(module)) continue;
@@ -974,7 +964,6 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
   }
-  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
   // now that visibility has been updated set multi-show
   dt_dev_modules_update_multishow(darktable.develop);
 

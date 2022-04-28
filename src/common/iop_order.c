@@ -32,8 +32,6 @@
 
 #define DT_IOP_ORDER_VERSION 5
 
-#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
-
 static void _ioppr_reset_iop_order(GList *iop_order_list);
 
 /** Note :
@@ -2201,8 +2199,6 @@ GList *dt_ioppr_deserialize_iop_order_list(const char *buf, size_t size)
   g_list_free_full(iop_order_list, free);
   return NULL;
 }
-
-#undef DT_IOP_ORDER_INFO
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

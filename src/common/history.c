@@ -34,8 +34,6 @@
 #include "develop/masks.h"
 #include "gui/hist_dialog.h"
 
-#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
-
 void dt_history_item_free(gpointer data)
 {
   dt_history_item_t *item = (dt_history_item_t *)data;
@@ -511,7 +509,6 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
 
   if(ops)
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr," selected ops");
     // copy only selected history entries
     for(const GList *l = g_list_last(ops); l; l = g_list_previous(l))
     {
@@ -523,9 +520,6 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       {
         if (!dt_iop_is_hidden(hist->module))
         {
-          if (DT_IOP_ORDER_INFO)
-            fprintf(stderr,"\n  module %20s, multiprio %i",  hist->module->op, hist->module->multi_priority);
-
           mod_list = g_list_prepend(mod_list, hist->module);
         }
       }
@@ -533,7 +527,6 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   }
   else
   {
-    if (DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
     // we will copy all modules
     for(GList *modules_src = dev_src->iop; modules_src; modules_src = g_list_next(modules_src))
     {
@@ -551,7 +544,6 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       }
     }
   }
-  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
 
   mod_list = g_list_reverse(mod_list);   // list was built in reverse order, so un-reverse it
 
@@ -1803,8 +1795,6 @@ gboolean dt_history_delete_on_list(const GList *list, gboolean undo)
   if(undo) dt_undo_end_group(darktable.undo);
   return TRUE;
 }
-
-#undef DT_IOP_ORDER_INFO
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

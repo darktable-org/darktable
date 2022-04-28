@@ -126,7 +126,7 @@ static int usage(const char *argv0)
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n");
-  printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,demosaic\n");
+  printf("      lighttable,lua,masks,memory,nan,opencl,params,perf,demosaic\n");
   printf("      pwstorage,print,signal,sql,undo,act_on,tiling,verbose}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
@@ -672,8 +672,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_PRINT; // print errors are reported on console
         else if(!strcmp(argv[k + 1], "camsupport"))
           darktable.unmuted |= DT_DEBUG_CAMERA_SUPPORT; // camera support warnings are reported on console
-        else if(!strcmp(argv[k + 1], "ioporder"))
-          darktable.unmuted |= DT_DEBUG_IOPORDER; // iop order information are reported on console
         else if(!strcmp(argv[k + 1], "imageio"))
           darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting messages on console
         else if(!strcmp(argv[k + 1], "undo"))
