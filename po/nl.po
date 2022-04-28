@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-26 19:32+0200\n"
-"PO-Revision-Date: 2022-04-26 19:14+0200\n"
+"POT-Creation-Date: 2022-04-26 18:13+0200\n"
+"PO-Revision-Date: 2022-04-27 16:01+0200\n"
 "Last-Translator: Nick Alderweireldt>\n"
 "Language-Team: Nick Alderweireldt\n"
 "Language: nl_NL\n"
@@ -229,7 +229,7 @@ msgstr "bepaalt of schuifbalken worden getoond"
 
 #: ../build/bin/preferences_gen.h:4189
 msgid "show image time with milliseconds"
-msgstr ""
+msgstr "afbeelding tijd weergeven met milliseconden"
 
 #: ../build/bin/preferences_gen.h:4203
 msgid "defines whether time should be displayed with milliseconds"
@@ -995,8 +995,8 @@ msgid ""
 "one if there is one available (needs a restart).\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
-"to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
-"defaults\" should be set to \"none\""
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
+"\" should be set to \"none\""
 msgstr ""
 "gebruik standaard de basiscurve per camera in plaats van de generieke van de "
 "fabrikant als die beschikbaar is (darktable moet opnieuw opstarten).\n"
@@ -1074,7 +1074,7 @@ msgstr "groot"
 #: ../build/bin/preferences_gen.h:6250 ../build/bin/conf_gen.h:289
 msgctxt "preferences"
 msgid "unrestricted"
-msgstr ""
+msgstr "onbeperkt"
 
 #: ../build/bin/preferences_gen.h:6272
 #, c-format
@@ -1092,6 +1092,17 @@ msgid ""
 "swapping and unexpected performance drops. use with caution and not "
 "recommended for general use!"
 msgstr ""
+"definieert hoeveel Darktable van de systeembronnen mag gebruiken.\n"
+"-standaard: Darktable gebruikt ~50%% van jouw systeembronnen en geeft "
+"Darktable genoeg  om efficiënt te zijn.\n"
+"-klein: te gebruiken als je gelijktijdig programma's gebruikt die veel "
+"systeem geheugen gebruiken of opencl/gl applicaties zoals spellen of hugin.\n"
+"-groot: is de beste optie als je alleen Darktable gebruikt en het de meeste "
+"systeembronnen mag gebruiken voor beste prestatie.\n"
+"-onbeperkt: moet alleen gebruikt worden voor het bewerken van extreem "
+"grootte afbeeldingen waar Darktable all je systeembronnen gebruikt en "
+"daardoor kan leiden tot onverwachte prestatie vermindering. gebruik met "
+"voorzichtigheid en is niet aanbevolen voor algemeen gebruik!"
 
 #: ../build/bin/preferences_gen.h:6294
 msgid "prefer performance over quality"
@@ -1200,7 +1211,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6515
 msgid "tune OpenCL performance"
-msgstr ""
+msgstr "instellen OpenCL prestatie"
 
 #: ../build/bin/preferences_gen.h:6526 ../build/bin/preferences_gen.h:6560
 #: ../build/bin/conf_gen.h:403
@@ -1221,7 +1232,7 @@ msgstr "geheugen overdracht"
 #: ../build/bin/preferences_gen.h:6541 ../build/bin/conf_gen.h:406
 msgctxt "preferences"
 msgid "memory size and transfer"
-msgstr ""
+msgstr "geheugen grootte en overdracht"
 
 #: ../build/bin/preferences_gen.h:6563
 msgid ""
@@ -1229,6 +1240,9 @@ msgid ""
 "graphics ram, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
 msgstr ""
+"toestaan van looptijd instellen van OpenCL apparaten. 'geheugen grootte van "
+"beschikbare grafische ram, 'heugen overdracht' probeert een snellere "
+"geheugen toegangs mode (vastgezet geheugen) gebruikt voor tiling."
 
 #: ../build/bin/preferences_gen.h:6597
 msgid "security"
@@ -1279,7 +1293,8 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6764
 msgid "ask before moving images from film roll folder"
-msgstr "vraag om bevestiging voordat afbeeldingen uit mappen worden gehaald"
+msgstr ""
+"vraag om bevestiging voordat afbeeldingen uit film rol map worden gehaald"
 
 #: ../build/bin/preferences_gen.h:6778
 msgid "always ask the user before any image file is moved."
@@ -1288,7 +1303,9 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6800
 msgid "ask before copying images to new film roll folder"
-msgstr "vraag om bevestiging voordat afbeeldingen worden gekopieerd"
+msgstr ""
+"vraag om bevestiging voordat afbeeldingen naar nieuwe film rol worden "
+"gekopieerd"
 
 #: ../build/bin/preferences_gen.h:6814
 msgid "always ask the user before any image file is copied."
@@ -1581,14 +1598,16 @@ msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
 msgstr ""
+"laad standaard snelkoppelingen voor de gebuikers instellingen. schakel uit "
+"om te voorkomen dat verwijderde standaarden terug komen"
 
 #: ../build/bin/preferences_gen.h:7652
 msgid "scale slider step with min/max"
-msgstr ""
+msgstr "schaal schuif stap met min/max"
 
 #: ../build/bin/preferences_gen.h:7666
 msgid "vary bauhaus slider step size with min/max range"
-msgstr ""
+msgstr "varieer bauhaus schuif stap grootte met min/max bereik"
 
 #: ../build/bin/preferences_gen.h:7688
 msgid "sort built-in presets first"
@@ -1676,7 +1695,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:7921
 msgid "order or exclude midi devices"
-msgstr ""
+msgstr "toestaan of uitsluiten midi apparaten"
 
 #: ../build/bin/preferences_gen.h:7939
 msgid ""
@@ -1684,6 +1703,10 @@ msgid ""
 "device at id given by location in list or if preceded by - prevent matching "
 "devices from loading. add encoding and number of knobs like 'BeatStep:63:16'"
 msgstr ""
+"komma gescheiden lijst van apparaat naam fragmenten die, wanneer "
+"overeenkomen, midi apparaten op id laden die gegeven zijn op locatie in "
+"lijst of vooraf gaan aan - voorkom laden van overeenkomstige appraten. voeg "
+"codering en aantal knopen toe zoals 'BeatStep:63:16'"
 
 #. tags
 #: ../build/bin/preferences_gen.h:7955 ../src/develop/lightroom.c:1516
@@ -1723,15 +1746,18 @@ msgstr ""
 "sneltoetsen worden toegepast"
 
 #: ../build/bin/preferences_gen.h:8020
-#, fuzzy
 msgid "prefer focused instance"
-msgstr "verkies ontmaskerde instanties"
+msgstr "voorkeur gefocusde instantie"
 
 #: ../build/bin/preferences_gen.h:8034
 msgid ""
 "if an instance of the module has focus, apply shortcut to that instance\n"
 "note: blending shortcuts always apply to the focused instance"
 msgstr ""
+"als een instantie van de module focus heeft, gebruik snelkoppeling voor die "
+"instantie\n"
+"notitie: samenvoegen van snelkoppelingen is altijd van toepassing op de "
+"instantie in focus"
 
 #: ../build/bin/preferences_gen.h:8056
 msgid "prefer expanded instances"
@@ -1918,12 +1944,12 @@ msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr ""
-"het aantal te vertonen mappen bij de fotoreeksen, te beginnen vanaf de "
+"het aantal map niveau's om weer te geven in film rol, te beginnen vanaf de "
 "rechterkant"
 
 #: ../build/bin/preferences_gen.h:8744
 msgid "sort film rolls by"
-msgstr "sorteer filmstrip op"
+msgstr "sorteer film rol op"
 
 #: ../build/bin/preferences_gen.h:8755 ../build/bin/preferences_gen.h:8779
 #: ../build/bin/conf_gen.h:696
@@ -1934,11 +1960,11 @@ msgstr "id"
 #: ../build/bin/preferences_gen.h:8760 ../build/bin/conf_gen.h:697
 msgctxt "preferences"
 msgid "folder"
-msgstr "folder"
+msgstr "map"
 
 #: ../build/bin/preferences_gen.h:8782
 msgid "sets the collections-list order for film rolls"
-msgstr "stelt de volgorde van de collectielijsten voor filmrollen in"
+msgstr "stelt de volgorde van de collectielijsten voor film rollen in"
 
 #: ../build/bin/preferences_gen.h:8804
 msgid "sort collection descending"
@@ -1949,12 +1975,12 @@ msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
 "'folder', 'times' (e.g. 'date taken')"
 msgstr ""
-"sorteer de volgende collecties in aflopende volgorde: ‘filmrol’ op map, "
+"sorteer de volgende collecties in aflopende volgorde: ‘film rol’ op map, "
 "‘map’, ‘tijden’ (bijv. ‘opnamedatum’)"
 
 #: ../build/bin/preferences_gen.h:8888
 msgid "suggested tags level of confidence"
-msgstr ""
+msgstr "voorgestelde label niveau van vertrouwen"
 
 #: ../build/bin/preferences_gen.h:8912
 #, c-format
@@ -1963,6 +1989,10 @@ msgid ""
 "associated tags, 99: 99%% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
+"niveau van vertrouwen om de label toe te voegen in de voorgestelde lijst. 0: "
+"alle geassocieerde labels, 99: 99%% overeenkomstige geassocieerde labels, "
+"100: geen overeenkomstige labels weer te geven alleen recente labels "
+"(sneller)"
 
 #: ../build/bin/preferences_gen.h:8934
 msgid "number of recently attached tags"
@@ -1973,6 +2003,8 @@ msgid ""
 "number of recently attached tags which are included in the suggestions list. "
 "the value `-1' disables the recent list"
 msgstr ""
+"aantal recentelijk toegevoegde labels die zijn toegevoegd aan de suggestie "
+"lijst. de waarde '-1' schakelt recent lijst uit"
 
 #: ../build/bin/conf_gen.h:414
 msgctxt "preferences"
@@ -2119,17 +2151,16 @@ msgid "override today's date"
 msgstr "overschrijf de datum van vandaag"
 
 #: ../build/bin/conf_gen.h:1007
-#, fuzzy
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "let the field empty otherwise"
 msgstr ""
-"voer een geldige datum / tijd in (JJJJ-MM-DD [Thh: mm: ss] formaat) als je "
-"de huidige datum / tijd die wordt gebruikt bij het uitbreiden van variabelen "
-"wilt overschrijven:\n"
-"$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\n"
+"voer een datum in het veld: YYYY:MM:DD[ hh:mm:ss[.sss]]  als je de huidige "
+"datum/tijd die wordt gebruikt bij het uitbreiden van variabelen wilt "
+"overschrijven:\n"
+"$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "laat het veld anders leeg"
 
 #: ../build/bin/conf_gen.h:1012
@@ -3968,9 +3999,8 @@ msgstr "diameter van reconstructie"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:149
 #: ../build/lib/darktable/plugins/introspection_highlights.c:236
-#, fuzzy
 msgid "cast balance"
-msgstr "witbalans"
+msgstr "schaduwen kleurenzweem"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:155
 #: ../build/lib/darktable/plugins/introspection_highlights.c:240
@@ -3990,51 +4020,48 @@ msgid "reconstruct color"
 msgstr "reconstrueer kleur"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:261
-#, fuzzy
 msgid "guided laplacians (AI)"
-msgstr "hulplijnen"
+msgstr "gestuurde laplace-operatoren (AI)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:265
 msgid "4 px"
-msgstr ""
+msgstr "4 px"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:266
 msgid "8 px"
-msgstr ""
+msgstr "8 px"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:267
 msgid "16 px"
-msgstr ""
+msgstr "16 px"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:268
 msgid "32 px"
-msgstr ""
+msgstr "32 px"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:269
 msgid "64 px"
-msgstr ""
+msgstr "64 px"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:270
 msgid "128 px"
-msgstr ""
+msgstr "128 px"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:271
-#, fuzzy
 msgid "256 px (slow)"
-msgstr "VNG (langzaam)"
+msgstr "256 px (langzaam)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:272
-#, fuzzy
 msgid "512 px (slow)"
-msgstr "VNG (langzaam)"
+msgstr "512 px (langzaam)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:273
 msgid "1024 px (very slow)"
-msgstr ""
+msgstr "1024 px (erg langzaam)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:274
 msgid "2048 px (insanely slow)"
-msgstr ""
+msgstr "2048 px (enorm langzaam)"
 
 #: ../build/lib/darktable/plugins/introspection_highpass.c:44
 #: ../build/lib/darktable/plugins/introspection_highpass.c:91
@@ -4306,7 +4333,7 @@ msgstr "helderheid"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:291
 #: ../build/lib/darktable/plugins/introspection_retouch.c:430
 msgid "max_iter"
-msgstr ""
+msgstr "max-iter"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:444
 #: ../src/libs/metadata_view.c:330
@@ -4833,7 +4860,7 @@ msgstr "dit bestand bestaat al, het krijgt een andere naam"
 #: ../src/cli/main.c:532
 #, c-format
 msgid "error: can't open folder %s"
-msgstr "fout: openen bestand %s mislukt"
+msgstr "fout: kan map niet openen %s"
 
 #: ../src/cli/main.c:549
 #, c-format
@@ -5010,11 +5037,11 @@ msgstr "schuiven"
 
 #: ../src/common/collection.c:652
 msgid "film roll"
-msgstr "map"
+msgstr "film rol"
 
 #: ../src/common/collection.c:654
 msgid "folder"
-msgstr "folder"
+msgstr "map"
 
 #: ../src/common/collection.c:656
 msgid "camera"
@@ -5201,103 +5228,97 @@ msgstr "grijs"
 #. "Cheek" is the most redish part of skin. This translates to high a coordinate.
 #. L decreases with age in all ethnicities and with b/yellowness/melanine/tan.
 #: ../src/common/color_vocabulary.c:91
-#, fuzzy
 msgid "Chinese"
-msgstr "lijnen"
+msgstr "Chinees"
 
 #: ../src/common/color_vocabulary.c:92
 msgid "Thai"
-msgstr ""
+msgstr "Thais"
 
 #: ../src/common/color_vocabulary.c:93
 msgid "Kurdish"
-msgstr ""
+msgstr "Koerdisch"
 
 #: ../src/common/color_vocabulary.c:94
-#, fuzzy
 msgid "Caucasian"
-msgstr "gaussian"
+msgstr "Kaukasisch"
 
 #: ../src/common/color_vocabulary.c:95
 msgid "African-american"
-msgstr ""
+msgstr "Afro-Amerikaans"
 
 #: ../src/common/color_vocabulary.c:98 ../src/common/color_vocabulary.c:103
 #: ../src/common/color_vocabulary.c:108 ../src/common/color_vocabulary.c:113
 msgid "forearm"
-msgstr ""
+msgstr "onderarm"
 
 #: ../src/common/color_vocabulary.c:118 ../src/common/color_vocabulary.c:123
 #: ../src/common/color_vocabulary.c:128 ../src/common/color_vocabulary.c:133
 #: ../src/common/color_vocabulary.c:138 ../src/common/color_vocabulary.c:143
 msgid "forehead"
-msgstr ""
+msgstr "voorhoofd"
 
 #: ../src/common/color_vocabulary.c:148 ../src/common/color_vocabulary.c:153
 #: ../src/common/color_vocabulary.c:158 ../src/common/color_vocabulary.c:163
 #: ../src/common/color_vocabulary.c:168 ../src/common/color_vocabulary.c:173
 msgid "cheek"
-msgstr ""
+msgstr "wang"
 
 #: ../src/common/color_vocabulary.c:200
-#, fuzzy, c-format
+#, c-format
 msgid "average %s skin tone\n"
-msgstr "natuurlijke huidskleuren"
+msgstr "gemiddelde %s huidskleur\n"
 
 #. 0° - pinkish red
 #: ../src/common/color_vocabulary.c:220
-#, fuzzy
 msgid "deep purple"
-msgstr "paars"
+msgstr "diep paars"
 
 #. L = 10 %
 #: ../src/common/color_vocabulary.c:221
 msgid "fuchsia"
-msgstr ""
+msgstr "fuchsia"
 
 #. L = 30 %
 #: ../src/common/color_vocabulary.c:222
-#, fuzzy
 msgid "medium magenta"
-msgstr "magenta"
+msgstr "middel magenta"
 
 #. L = 50 %
 #: ../src/common/color_vocabulary.c:223
 msgid "violet pink"
-msgstr ""
+msgstr "paars roze"
 
 #. L = 70 %
 #: ../src/common/color_vocabulary.c:224
 msgid "plum violet"
-msgstr ""
+msgstr "pruim paars"
 
 #. 24° - red
 #: ../src/common/color_vocabulary.c:229
-#, fuzzy
 msgid "dark red"
-msgstr "verdonkeren"
+msgstr "donker rood"
 
 #: ../src/common/color_vocabulary.c:231
 msgid "crimson"
-msgstr ""
+msgstr "karmozijnrood"
 
 #: ../src/common/color_vocabulary.c:232
 msgid "salmon"
-msgstr ""
+msgstr "zalm"
 
 #: ../src/common/color_vocabulary.c:233
 msgid "pink"
-msgstr ""
+msgstr "roze"
 
 #. 48° - orangy red
 #: ../src/common/color_vocabulary.c:238
 msgid "maroon"
-msgstr ""
+msgstr "kastanjebruin"
 
 #: ../src/common/color_vocabulary.c:239
-#, fuzzy
 msgid "dark orange red"
-msgstr "variantie rood: "
+msgstr "donker oranje rood"
 
 #: ../src/common/color_vocabulary.c:240
 msgid "orange red"
@@ -5305,120 +5326,106 @@ msgstr "oranje rood"
 
 #: ../src/common/color_vocabulary.c:241
 msgid "coral"
-msgstr ""
+msgstr "koraal"
 
 #: ../src/common/color_vocabulary.c:242 ../src/common/color_vocabulary.c:259
 msgid "khaki"
-msgstr ""
+msgstr "khaki"
 
 #. 72° - orange
 #: ../src/common/color_vocabulary.c:247
 msgid "brown"
-msgstr ""
+msgstr "bruin"
 
 #: ../src/common/color_vocabulary.c:248
-#, fuzzy
 msgid "chocolate"
-msgstr "chocoladebruin"
+msgstr "chocolade"
 
 #: ../src/common/color_vocabulary.c:249
-#, fuzzy
 msgid "dark gold"
-msgstr "enkel verdonkeren"
+msgstr "donker goud"
 
 #: ../src/common/color_vocabulary.c:250
 msgid "gold"
-msgstr ""
+msgstr "goud"
 
 #: ../src/common/color_vocabulary.c:251
 msgid "sandy brown"
-msgstr ""
+msgstr "zandbruin"
 
 #. 96° - yellow olive
 #. 120° - green
 #. 144° - blueish green
 #: ../src/common/color_vocabulary.c:256 ../src/common/color_vocabulary.c:265
 #: ../src/common/color_vocabulary.c:274
-#, fuzzy
 msgid "dark green"
-msgstr "verdonkeren"
+msgstr "donker groen"
 
 #: ../src/common/color_vocabulary.c:257
-#, fuzzy
 msgid "dark olive green"
-msgstr "variantie groen: "
+msgstr "donker olijf groen"
 
 #: ../src/common/color_vocabulary.c:258
 msgid "olive"
-msgstr ""
+msgstr "olijf"
 
 #: ../src/common/color_vocabulary.c:260
 msgid "beige"
-msgstr ""
+msgstr "beige"
 
 #: ../src/common/color_vocabulary.c:266 ../src/common/color_vocabulary.c:276
-#, fuzzy
 msgid "forest green"
-msgstr "kleur groen"
+msgstr "bos groen"
 
 #: ../src/common/color_vocabulary.c:267
 msgid "olive drab"
-msgstr ""
+msgstr "olijf olie"
 
 #: ../src/common/color_vocabulary.c:268
-#, fuzzy
 msgid "yellow green"
-msgstr "geel groen :B4"
+msgstr "geel groen"
 
 #: ../src/common/color_vocabulary.c:269 ../src/common/color_vocabulary.c:278
-#, fuzzy
 msgid "pale green"
-msgstr "paars en groen"
+msgstr "lichtgroen"
 
 #: ../src/common/color_vocabulary.c:277
-#, fuzzy
 msgid "lime green"
-msgstr "paars en groen"
+msgstr "limoen groen"
 
 #. 168° - greenish cyian
 #: ../src/common/color_vocabulary.c:283
-#, fuzzy
 msgid "dark sea green"
-msgstr "variantie groen: "
+msgstr "donker zeegroen"
 
 #: ../src/common/color_vocabulary.c:284
-#, fuzzy
 msgid "sea green"
-msgstr "groen"
+msgstr "zeegroen"
 
 #: ../src/common/color_vocabulary.c:285 ../src/common/color_vocabulary.c:302
 msgid "teal"
-msgstr ""
+msgstr "groenblauw"
 
 #: ../src/common/color_vocabulary.c:286
-#, fuzzy
 msgid "light sea green"
-msgstr "night street"
+msgstr "licht zeegroen"
 
 #: ../src/common/color_vocabulary.c:287
 msgid "turquoise"
-msgstr ""
+msgstr "turkoois"
 
 #. 192° - cyan
 #: ../src/common/color_vocabulary.c:292
-#, fuzzy
 msgid "dark slate gray"
-msgstr "middengrijs"
+msgstr "donker leigrijs"
 
 #: ../src/common/color_vocabulary.c:293
-#, fuzzy
 msgid "light slate gray"
-msgstr "night street donker"
+msgstr "licht leigrijs"
 
 #: ../src/common/color_vocabulary.c:294 ../src/common/color_vocabulary.c:303
-#, fuzzy
 msgid "dark cyan"
-msgstr "verdonkeren"
+msgstr "donker cyaan"
 
 #: ../src/common/color_vocabulary.c:295 ../src/common/color_vocabulary.c:315
 #: ../src/iop/colorzones.c:2306
@@ -5432,76 +5439,64 @@ msgstr "cyaan"
 
 #. 216° - medium blue
 #: ../src/common/color_vocabulary.c:301
-#, fuzzy
 msgid "navy blue"
-msgstr "tca blauw"
+msgstr "marine blauw"
 
 #: ../src/common/color_vocabulary.c:304 ../src/common/color_vocabulary.c:314
-#, fuzzy
 msgid "deep sky blue"
-msgstr "rood en blauw"
+msgstr "diep hemelsblauw"
 
 #: ../src/common/color_vocabulary.c:305
-#, fuzzy
 msgid "aquamarine blue"
-msgstr "variantie blauw: "
+msgstr "aquamarijn blauw"
 
 #. 240° - blue and 264° - bluer than blue
 #. these are collapsed because CIE Lab 1976 sucks for blues
 #. 288° - more blue
 #: ../src/common/color_vocabulary.c:311 ../src/common/color_vocabulary.c:320
-#, fuzzy
 msgid "dark blue"
-msgstr "darktable"
+msgstr "donker blauw"
 
 #: ../src/common/color_vocabulary.c:312 ../src/common/color_vocabulary.c:321
-#, fuzzy
 msgid "medium blue"
-msgstr "gemiddeld"
+msgstr "gemiddeld blauw"
 
 #: ../src/common/color_vocabulary.c:313
-#, fuzzy
 msgid "azure blue"
-msgstr "rood en blauw"
+msgstr "azuur blauw"
 
 #: ../src/common/color_vocabulary.c:323
-#, fuzzy
 msgid "light sky blue"
-msgstr "bibliotheek"
+msgstr "licht hemelsblauw"
 
 #: ../src/common/color_vocabulary.c:324
-#, fuzzy
 msgid "light blue"
-msgstr "bibliotheek"
+msgstr "licht blauw"
 
 #. 312° - violet
 #: ../src/common/color_vocabulary.c:329
-#, fuzzy
 msgid "indigo"
-msgstr "koppeling"
+msgstr "indigo"
 
 #: ../src/common/color_vocabulary.c:330
-#, fuzzy
 msgid "dark violet"
-msgstr "weergave ontwikkelen"
+msgstr "donker paars"
 
 #: ../src/common/color_vocabulary.c:331
-#, fuzzy
 msgid "blue violet"
-msgstr "blauw verleggen"
+msgstr "blauw paars"
 
 #: ../src/common/color_vocabulary.c:332 ../src/common/color_vocabulary.c:340
 msgid "violet"
-msgstr ""
+msgstr "paars"
 
 #: ../src/common/color_vocabulary.c:333
 msgid "plum"
-msgstr ""
+msgstr "pruim"
 
 #: ../src/common/color_vocabulary.c:338
-#, fuzzy
 msgid "dark magenta"
-msgstr "magenta"
+msgstr "donker magenta"
 
 #: ../src/common/color_vocabulary.c:339 ../src/gui/guides.c:734
 #: ../src/iop/colorzones.c:2309 ../src/iop/temperature.c:1805
@@ -5510,12 +5505,11 @@ msgstr "magenta"
 
 #: ../src/common/color_vocabulary.c:341
 msgid "lavender"
-msgstr ""
+msgstr "lavendel"
 
 #: ../src/common/color_vocabulary.c:344
-#, fuzzy
 msgid "color not found"
-msgstr "`%s' kleuren matrix is niet gevonden!"
+msgstr "kleuren niet gevonden"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:1400 ../src/common/colorspaces.c:1689
@@ -5687,73 +5681,81 @@ msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
 
 #: ../src/common/darktable.c:1295
-#, fuzzy
 msgid "configuration information"
-msgstr "informatie"
+msgstr "configuratie informatie"
 
 #: ../src/common/darktable.c:1297
-#, fuzzy
 msgid "show this information again"
-msgstr "positie van de afbeeldingsinformatielijn"
+msgstr "laat informatie opnieuw zien"
 
 #: ../src/common/darktable.c:1297
-#, fuzzy
 msgid "understood"
-msgstr "onderwater"
+msgstr "begrepen"
 
 #: ../src/common/darktable.c:1717
 msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
 msgstr ""
+"de RCD demosaicer is als standaard ingesteld in plaats van PPG om zijn "
+"verbeterede kwaliteit en prestatie."
 
 #: ../src/common/darktable.c:1719
-#, fuzzy
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
-msgstr "demosaicing in  uitgezoomde modus ontwikkelen"
+msgstr ""
+"zie voorkeuren/ontwikkelen/demosaicing voor uitgezoomde ontwikkelen mode"
 
 #: ../src/common/darktable.c:1725
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
 msgstr ""
+"de gebruikers interface en de onderliggende binnenwerk, voor het afstemmen "
+"van de Darktable prestatie, zijn aangepast."
 
 #: ../src/common/darktable.c:1727
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
+"hoofdkamer en vrienden vindt je niet meer terug, inplaats van voorkeuren/"
+"verwerking gebruik:"
 
 #: ../src/common/darktable.c:1729
-#, fuzzy
 msgid "1) darktable resources"
-msgstr "darktable voorkeuren"
+msgstr "1) Darktable bronnen"
 
 #: ../src/common/darktable.c:1731
 msgid "2) tune OpenCL performance"
-msgstr ""
+msgstr "2) instellen OpenCL prestatie"
 
 #: ../src/common/darktable.c:1738
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
 msgstr ""
+"sommige globale configuratie waarden voor OpenCL prestatie worden niet meer "
+"toegepast."
 
 #: ../src/common/darktable.c:1740
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
+"in plaats daarvan vindt je 'per apparaat' data in 'cl_device_v4_conanical-"
+"name'. inhoud is:"
 
 #: ../src/common/darktable.c:1742
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 msgstr ""
+"  'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
+"'eventhandles' 'async' 'disable' 'magic'"
 
 #: ../src/common/darktable.c:1744
 msgid "you may tune as before except 'magic'"
-msgstr ""
+msgstr "je kan afstellen zoals hiervoor behalve 'magisch'"
 
 #: ../src/common/database.c:2684
 #, c-format
@@ -6089,7 +6091,7 @@ msgstr "bestandsnaam"
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
-"verwijderen van een map is niet mogelijk wanneer lokale kopieën bestaan "
+"verwijderen van film rol is niet mogelijk wanneer lokale kopieën bestaan "
 "waarvan het origineel niet toegankelijk is"
 
 #: ../src/common/history.c:755
@@ -6582,7 +6584,7 @@ msgid "working..."
 msgstr "bezig..."
 
 #: ../src/control/crawler.c:359
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
 msgstr "FOUT: %s NIET gesynchroniseerd XMP → DB"
 
@@ -6596,14 +6598,14 @@ msgstr ""
 "alleen-lezen zijn."
 
 #: ../src/control/crawler.c:365
-#, fuzzy, c-format
+#, c-format
 msgid "SUCCESS: %s synced XMP → DB"
 msgstr "SUCCES: %s gesynchroniseerd XMP → DB"
 
 #: ../src/control/crawler.c:382
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: %s NOT synced DB → XMP"
-msgstr "FOUT: %s NIET gesynchroniseerde DB → XMP"
+msgstr "FOUT: %s NIET gesynchroniseerd DB → XMP"
 
 #: ../src/control/crawler.c:383 ../src/control/crawler.c:426
 #: ../src/control/crawler.c:477
@@ -6616,52 +6618,52 @@ msgstr ""
 "de bestemming kan vol, offline of alleen-lezen zijn."
 
 #: ../src/control/crawler.c:388
-#, fuzzy, c-format
+#, c-format
 msgid "SUCCESS: %s synced DB → XMP"
-msgstr "SUCCES: %s gesynchroniseerde database → XMP"
+msgstr "SUCCES: %s gesynchroniseerd DB → XMP"
 
 #: ../src/control/crawler.c:410
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
 msgstr "FOUT: %s NIET gesynchroniseerd nieuw (XMP) → oud (DB)"
 
 #: ../src/control/crawler.c:415
-#, fuzzy, c-format
+#, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
 msgstr "SUCCES: %s gesynchroniseerd nieuw (XMP) → oud (DB)"
 
 #: ../src/control/crawler.c:425
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
 msgstr "FOUT: %s NIET gesynchroniseerd nieuw (DB) → oud (XMP)"
 
 #: ../src/control/crawler.c:430
-#, fuzzy, c-format
+#, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
 msgstr "SUCCES: %s gesynchroniseerd nieuw (DB) → oud (XMP)"
 
 #: ../src/control/crawler.c:438 ../src/control/crawler.c:489
-#, fuzzy, c-format
+#, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
 msgstr "UITZONDERING: %s heeft inconsistente tijdstempels"
 
 #: ../src/control/crawler.c:462
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
 msgstr "FOUT: %s NIET gesynchroniseerd oud (XMP) → nieuw (DB)"
 
 #: ../src/control/crawler.c:467
-#, fuzzy, c-format
+#, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
 msgstr "SUCCES: %s gesynchroniseerd oud (XMP) → nieuw (DB)"
 
 #: ../src/control/crawler.c:476
-#, fuzzy, c-format
+#, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
 msgstr "FOUT: %s NIET gesynchroniseerd oud (DB) → nieuw (XMP)"
 
 #: ../src/control/crawler.c:481
-#, fuzzy, c-format
+#, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
 msgstr "SUCCES: %s gesynchroniseerd oud (DB) → nieuw (XMP)"
 
@@ -6778,7 +6780,8 @@ msgstr "importeer afbeeldingen vanaf de camera"
 
 #: ../src/control/jobs/control_jobs.c:144
 msgid "failed to create film roll for destination directory, aborting move.."
-msgstr "aanmaak map voor uitvoer mislukt, verplaatsing geannuleerd."
+msgstr ""
+"aanmaak film rol voor bestemmings map mislukt, verplaatsing geannuleerd."
 
 #: ../src/control/jobs/control_jobs.c:377
 msgid "exposure bracketing only works on raw images."
@@ -6947,9 +6950,8 @@ msgstr[0] "exporteer %d afbeelding..."
 msgstr[1] "exporteren %d afbeeldingen..."
 
 #: ../src/control/jobs/control_jobs.c:1364
-#, fuzzy
 msgid "no image to export"
-msgstr "niets te exporteren, afbreken\n"
+msgstr "geen afbeelding om te exporteren"
 
 #: ../src/control/jobs/control_jobs.c:1396
 #, c-format
@@ -7739,15 +7741,16 @@ msgstr ""
 "masker omkeren, meest duidelijk zichtbaar na inschakeling 'toon masker'"
 
 #: ../src/develop/blend_gui.c:2210
-#, fuzzy
 msgid ""
 "double-click to reset.\n"
 "press 'a' to toggle available slider modes.\n"
 "press 'c' to toggle view of channel data.\n"
 "press 'm' to toggle mask view."
 msgstr ""
-"reset met een dubbelklik, 'a' schakelt tussen beschikbare schuifmodussen.\n"
-"'C' schakelt kanaal data in/uit, 'm' schakelt maskerweergave in/uit."
+"dubbelklik om te resetten.\n"
+"druk op 'a' om door beschikbare schuif modes te bladeren\n"
+"druk op 'c' om door weergave van kanaal data te bladeren\n"
+"druk op 'm' om door masker weergave te bladeren."
 
 #: ../src/develop/blend_gui.c:2227 ../src/develop/blend_gui.c:3055
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:1729
@@ -7764,9 +7767,8 @@ msgstr ""
 #: ../src/iop/toneequal.c:3152 ../src/iop/toneequal.c:3155
 #: ../src/iop/toneequal.c:3249 ../src/iop/toneequal.c:3256
 #: ../src/iop/toneequal.c:3266 ../src/views/darkroom.c:2378
-#, fuzzy
 msgid " EV"
-msgstr "-8 EV"
+msgstr " EV"
 
 #: ../src/develop/blend_gui.c:2228 ../src/develop/blend_gui.c:2320
 #: ../src/develop/blend_gui.c:2500 ../src/develop/blend_gui.c:2563
@@ -8385,8 +8387,8 @@ msgstr "<b> roteren </b>: ctrl + slepen"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
-"ctrl+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
+"+scroll (%d%%)"
 msgstr ""
 "<b> doezelaarmodus </b>: shift + klik, <b> roteren </b>: ctrl + slepen\n"
 "<b> grootte </b>: scroll, <b> doezelaar grootte </b>: shift + scroll, <b> "
@@ -8530,8 +8532,8 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>knooppunt toevoegen</b>: klik, <b>scherp knooppunt toevoegen</b>:"
-"ctrl+klik\n"
+"<b>knooppunt toevoegen</b>: klik, <b>scherp knooppunt toevoegen</b>:ctrl"
+"+klik\n"
 "<b>annuleren</b>: rechts klikken"
 
 #: ../src/develop/masks/path.c:3164
@@ -8539,8 +8541,8 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>knooppunt toevoegen</b>: klik, <b>voeg scherp knooppunt toe</b>:"
-"ctrl+klik\n"
+"<b>knooppunt toevoegen</b>: klik, <b>voeg scherp knooppunt toe</b>:ctrl"
+"+klik\n"
 "<b>beëindig pad</b>: rechts klikken"
 
 #: ../src/develop/masks/path.c:3167
@@ -8641,7 +8643,7 @@ msgstr "ongeldig"
 #: ../src/dtgtk/range.c:290
 #, c-format
 msgid "year %s"
-msgstr ""
+msgstr "jaar %s"
 
 #: ../src/dtgtk/range.c:368
 msgid ""
@@ -8649,6 +8651,9 @@ msgid ""
 "use 'min' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
+"voer minimale waarde in\n"
+"gebruik 'min' bij geen grens\n"
+"rechtermuisknop om te selecteren uit bestaande waarden"
 
 #: ../src/dtgtk/range.c:374
 msgid ""
@@ -8656,12 +8661,17 @@ msgid ""
 "use 'max' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
+"vul maximale waarde in\n"
+"gebruik 'max' als er geen grens is\n"
+"rechtermuisknop om van een bestaande waarde te selecteren"
 
 #: ../src/dtgtk/range.c:380
 msgid ""
 "enter the value\n"
 "right-click to select from existing values"
 msgstr ""
+"voor de waarde in\n"
+"rechtermuisknop om te selecteren uit bestaande waarden"
 
 #: ../src/dtgtk/range.c:385
 msgid ""
@@ -8671,6 +8681,11 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"vul de minimale datum in\n"
+"in het veld YYYY:MM:DD hh:mm:ss.sss (alleen de jaar is verplicht)\n"
+"gebruik 'min' als er geen grens is\n"
+"gebruik '-' prefix voor relatieve datum\n"
+"rechtermuisknop om te selecteren ui kalender of bestaande waarden"
 
 #: ../src/dtgtk/range.c:393
 msgid ""
@@ -8681,6 +8696,12 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"vul de uiterste datum in\n"
+"in het veld YYYY:MM:DD hh:mm:ss.sss (alleen het jaar is verplicht)\n"
+"gebruik 'max' als er geen grens is\n"
+"'nu' trefwoord kan gebruikt worden\n"
+"gebruik '-' prefix voor relative datum\n"
+"rechtermuisknop om te selecteren van kalender of bestaande waarden"
 
 #: ../src/dtgtk/range.c:402
 msgid ""
@@ -8688,14 +8709,17 @@ msgid ""
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"vul datum in\n"
+"in het veld YYYY:MM:DD hh:mm:ss.sss (alleen het jaar is verplicht)\n"
+"rechtermuisknop om te selecteren uit kalender of bestaande waarden"
 
 #: ../src/dtgtk/range.c:424
 msgid "date-time interval to subtract from the max value"
-msgstr ""
+msgstr "datum-tijd interval om af te trekken van max waarde"
 
 #: ../src/dtgtk/range.c:428
 msgid "date-time interval to add to the min value"
-msgstr ""
+msgstr "datum-tijd interval om toe te voegen aan min waarde"
 
 #: ../src/dtgtk/range.c:568 ../src/dtgtk/range.c:1715 ../src/dtgtk/range.c:1766
 #: ../src/libs/colorpicker.c:53
@@ -8712,9 +8736,8 @@ msgid "date type"
 msgstr "datum type"
 
 #: ../src/dtgtk/range.c:884
-#, fuzzy
 msgid "fixed"
-msgstr "vastgestelde inzoom"
+msgstr "vast"
 
 #: ../src/dtgtk/range.c:885 ../src/iop/colorchecker.c:1382
 msgid "relative"
@@ -8730,18 +8753,20 @@ msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
 msgstr ""
+"enkele kliksimple click to select date\n"
+"double click to use the date directly"
 
 #: ../src/dtgtk/range.c:915
 msgid "years: "
-msgstr ""
+msgstr "jaren: "
 
 #: ../src/dtgtk/range.c:923
 msgid "months: "
-msgstr ""
+msgstr "maanden: "
 
 #: ../src/dtgtk/range.c:931
 msgid "days: "
-msgstr ""
+msgstr "dagen: "
 
 #. the time section
 #: ../src/dtgtk/range.c:943
@@ -8753,6 +8778,8 @@ msgid ""
 "simple click to select date\n"
 "double click to use the date directly."
 msgstr ""
+"enkele klik om datum te selecteren\n"
+"dubbele klik om datum gelijk te gebruiken."
 
 #: ../src/dtgtk/range.c:995 ../src/dtgtk/range.c:1734
 msgid "now"
@@ -8760,7 +8787,7 @@ msgstr "nu"
 
 #: ../src/dtgtk/range.c:997
 msgid "set the value to always match current datetime"
-msgstr ""
+msgstr "stel altijd dezelfde waarde in als huidige datumtijd"
 
 #. apply button
 #: ../src/dtgtk/range.c:1000 ../src/gui/accelerators.c:149
@@ -8771,7 +8798,7 @@ msgstr "toepassen"
 
 #: ../src/dtgtk/range.c:1001
 msgid "set the range bound with this value"
-msgstr ""
+msgstr "stel grens van het bereik in op deze waarde"
 
 #. get nice text for bounds
 #. Side-border hide/show
@@ -8800,6 +8827,8 @@ msgid ""
 "\n"
 "click here to set this image as group leader\n"
 msgstr ""
+"\n"
+"klik hier om deze afbeelding in te stellen als leider \n"
 
 #. and the number of grouped images
 #: ../src/dtgtk/thumbnail.c:130
@@ -8886,22 +8915,18 @@ msgstr "ongeldigverklaring van miniaturen in de cache"
 
 #. setup history key accelerators
 #: ../src/dtgtk/thumbtable.c:2352
-#, fuzzy
 msgid "copy history"
 msgstr "kopieer geschiedenis"
 
 #: ../src/dtgtk/thumbtable.c:2353
-#, fuzzy
 msgid "copy history parts"
 msgstr "kopieer geschiedenisdelen"
 
 #: ../src/dtgtk/thumbtable.c:2354
-#, fuzzy
 msgid "paste history"
 msgstr "plak geschiedenis"
 
 #: ../src/dtgtk/thumbtable.c:2355
-#, fuzzy
 msgid "paste history parts"
 msgstr "plak geschiedenisdelen"
 
@@ -8919,7 +8944,7 @@ msgstr "dupliceer oorspronkelijke afbeelding"
 
 #: ../src/dtgtk/thumbtable.c:2365 ../src/libs/select.c:145
 msgid "select film roll"
-msgstr "selecteer map"
+msgstr "selecteer film rol"
 
 #: ../src/dtgtk/thumbtable.c:2366 ../src/libs/select.c:149
 msgid "select untouched"
@@ -9279,9 +9304,8 @@ msgid "apply on new instance"
 msgstr "toepassen op nieuwe instantie"
 
 #: ../src/gui/accelerators.c:457
-#, fuzzy
 msgid "tablet button"
-msgstr "op één na laatste"
+msgstr "tablet knop"
 
 #: ../src/gui/accelerators.c:466
 msgid "unknown driver"
@@ -9292,14 +9316,12 @@ msgid "long"
 msgstr "lang"
 
 #: ../src/gui/accelerators.c:534
-#, fuzzy
 msgid "double-press"
-msgstr "dubbel"
+msgstr "dubbel drukken"
 
 #: ../src/gui/accelerators.c:535
-#, fuzzy
 msgid "triple-press"
-msgstr "trippel"
+msgstr "driemaal drukken"
 
 #: ../src/gui/accelerators.c:536
 msgid "press"
@@ -9326,16 +9348,14 @@ msgid "long"
 msgstr "lang"
 
 #: ../src/gui/accelerators.c:544
-#, fuzzy
 msgctxt "accel"
 msgid "double-click"
-msgstr "links dubbelklikken"
+msgstr "dubbelklikken"
 
 #: ../src/gui/accelerators.c:545
-#, fuzzy
 msgctxt "accel"
 msgid "triple-click"
-msgstr "rechts dubbelklikken"
+msgstr "driemaal klikken"
 
 #: ../src/gui/accelerators.c:546
 msgid "click"
@@ -9359,7 +9379,6 @@ msgid "speed"
 msgstr "snelheid"
 
 #: ../src/gui/accelerators.c:664
-#, fuzzy
 msgid ""
 "press Del to delete selected shortcut\n"
 "double-click to add new shortcut\n"
@@ -9367,26 +9386,26 @@ msgid ""
 msgstr ""
 "druk op Del om de geselecteerde snelkoppeling te verwijderen\n"
 "dubbelklik om een nieuwe snelkoppeling toe te voegen\n"
-"begin te typen voor incrementeel zoeken"
+"begin te typen voor toenemend te zoeken"
 
 #: ../src/gui/accelerators.c:680
-#, fuzzy
 msgid "click to filter shortcut list\n"
-msgstr "klik om snelkoppelingsconfiguratie te openen"
+msgstr ""
+"klik om snelkoppelinglijst te filteren\n"
+"\n"
 
 #: ../src/gui/accelerators.c:681
 msgid "right click to show action of selected shortcut\n"
 msgstr ""
+"rechtermuisknop om actie weer te geven van geselecteerde snelkoppeling\n"
 
 #: ../src/gui/accelerators.c:682
-#, fuzzy
 msgid ""
 "double-click to define new shortcut\n"
 "start typing for incremental search"
 msgstr ""
-"klik om de lijst met snelkoppelingen te filteren\n"
 "dubbelklik om een nieuwe snelkoppeling te definiëren\n"
-"begin te typen voor incrementeel zoeken"
+"begin te typen voor toenemend te zoeken"
 
 #: ../src/gui/accelerators.c:701
 msgid ""
@@ -9409,9 +9428,8 @@ msgid "ctrl+click to remove from quick access panel\n"
 msgstr "widget toevoegen aan het paneel voor snelle toegang\n"
 
 #: ../src/gui/accelerators.c:705
-#, fuzzy
 msgid "scroll to change default speed"
-msgstr "ctrl+scroll om schermhoogte te wijzigen"
+msgstr "scroll om standaard snelheid te wijzigen"
 
 #: ../src/gui/accelerators.c:706
 msgid "right click to exit mapping mode"
@@ -9440,7 +9458,7 @@ msgstr "aparte snelkoppelingen maken voor omhoog en omlaag bewegen?"
 #: ../src/gui/accelerators.c:1052
 #, c-format
 msgid "%s, speed reset"
-msgstr ""
+msgstr "%s, snelheid reset"
 
 #: ../src/gui/accelerators.c:1061
 msgid "shortcut exists with different settings"
@@ -9756,14 +9774,12 @@ msgstr "panelen"
 
 #. an action that does nothing - used for overriding/removing default shortcuts
 #: ../src/gui/gtk.c:1172
-#, fuzzy
 msgid "no-op"
 msgstr "no-op"
 
 #: ../src/gui/gtk.c:1174
-#, fuzzy
 msgid "switch views"
-msgstr "wissel weergave/kaart"
+msgstr "wissel weergaven"
 
 #: ../src/gui/gtk.c:1175 ../src/views/tethering.c:102
 msgid "tethering"
@@ -9784,59 +9800,48 @@ msgstr "afdrukken"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:1186
-#, fuzzy
 msgid "quit"
 msgstr "verlaat"
 
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
 #: ../src/gui/gtk.c:1189
-#, fuzzy
 msgid "fullscreen"
 msgstr "volledig scherm"
 
 #: ../src/gui/gtk.c:1193
-#, fuzzy
 msgid "collapsing controls"
-msgstr "panelen/samenvouwen bedieningpanelen"
+msgstr "inklappen bediening"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1195
-#, fuzzy
 msgid "header"
-msgstr "leider"
+msgstr "koptekst"
 
 #: ../src/gui/gtk.c:1196
-#, fuzzy
 msgid "filmstrip and timeline"
-msgstr "panelen/filmstrip en tijdslijn"
+msgstr "filmstrip en tijdlijn"
 
 #: ../src/gui/gtk.c:1197
-#, fuzzy
 msgid "top toolbar"
-msgstr "panelen/top werkbalk"
+msgstr "boven paneel"
 
 #: ../src/gui/gtk.c:1198
-#, fuzzy
 msgid "bottom toolbar"
-msgstr "panelen/onderste werkbalk"
+msgstr "onder paneel"
 
 #: ../src/gui/gtk.c:1199
-#, fuzzy
 msgid "all top"
-msgstr "panelen/alles bovenaan"
+msgstr "allen boven"
 
 #: ../src/gui/gtk.c:1200
-#, fuzzy
 msgid "all bottom"
-msgstr "bodem"
+msgstr "allen onder"
 
 #: ../src/gui/gtk.c:1202
-#, fuzzy
 msgid "toggle tooltip visibility"
-msgstr "schakel de zichtbaarheid van tooltip in"
+msgstr "schakel zichtbaarheid van tooltip in"
 
 #: ../src/gui/gtk.c:1203
-#, fuzzy
 msgid "reinitialise input devices"
 msgstr "herinitialiseer invoerapparaten"
 
@@ -9846,7 +9851,6 @@ msgstr "focus piek modus aan/uit"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1246
-#, fuzzy
 msgid "toggle focus peaking"
 msgstr "focus piek aan/uit"
 
@@ -9867,100 +9871,84 @@ msgid "tabs"
 msgstr "tabs"
 
 #: ../src/gui/gtkentry.c:172
-#, fuzzy
 msgid "$(ROLL.NAME) - roll of the input image"
-msgstr "$(ROLL_NAME) - map van de ingevoerde afbeelding"
+msgstr "$(ROLL.NAME) - map van de ingevoerde afbeelding"
 
 #: ../src/gui/gtkentry.c:173
-#, fuzzy
 msgid "$(FILE.FOLDER) - folder containing the input image"
-msgstr "$(FILE_FOLDER) - map gelijk aan de bronafbeelding"
+msgstr "$(FILE.FOLDER) - map gelijk aan de bronafbeelding"
 
 #: ../src/gui/gtkentry.c:174
-#, fuzzy
 msgid "$(FILE.NAME) - basename of the input image"
-msgstr "$(FILE_NAME) - basisnaam van de bronafbeelding"
+msgstr "$(FILE.NAME) - basisnaam van de bronafbeelding"
 
 #: ../src/gui/gtkentry.c:175
-#, fuzzy
 msgid "$(FILE.EXTENSION) - extension of the input image"
-msgstr "$(FILE_EXTENSION) - extensie van de bronafbeelding"
+msgstr "$(FILE.EXTENSION) - extensie van de bronafbeelding"
 
 #: ../src/gui/gtkentry.c:176
 msgid "$(VERSION) - duplicate version"
 msgstr "$(VERSION) - dubbele uitvoering"
 
 #: ../src/gui/gtkentry.c:177
-#, fuzzy
 msgid ""
 "$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
 "exists"
 msgstr ""
-"$(VERSION_IF_MULTI) - hetzelfde als $(VERSION) maar een lege string als "
+"$(VERSION.IF.MULTI) - hetzelfde als $(VERSION) maar een lege string als "
 "slechts een versie bestaat"
 
 #: ../src/gui/gtkentry.c:178
-#, fuzzy
 msgid "$(VERSION.NAME) - version name from metadata"
-msgstr "$(VERSION_NAME)) - naam versie van metadata"
+msgstr "$(VERSION.NAME)) - versie naam van metadata"
 
 #: ../src/gui/gtkentry.c:179
 msgid "$(JOBCODE) - job code for import"
-msgstr ""
+msgstr "$(JOBCODE) - taak omschrijving voor importeren"
 
 #: ../src/gui/gtkentry.c:180
 msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) - volgnummer"
 
 #: ../src/gui/gtkentry.c:181
-#, fuzzy
 msgid "$(WIDTH.MAX) - maximum image export width"
-msgstr "$(MAX_WIDTH) - maximale afbeeldings exporteer breedte"
+msgstr "$(WIDTH.MAX) - maximale afbeeldings exporteer breedte"
 
 #: ../src/gui/gtkentry.c:182
-#, fuzzy
 msgid "$(WIDTH.SENSOR) - image sensor width"
-msgstr "$(SENSOR_WIDTH) - breedte beeldsensor"
+msgstr "$(WIDTH.SENSOR) - breedte beeldsensor"
 
 #: ../src/gui/gtkentry.c:183
-#, fuzzy
 msgid "$(WIDTH.RAW) - RAW image width"
-msgstr "$(RAW_WIDTH) - Breedte RAW-beeld"
+msgstr "$(WIDTH.RAW) - RAW afbeelding breedte"
 
 #: ../src/gui/gtkentry.c:184
-#, fuzzy
 msgid "$(WIDTH.CROP) - image width after crop"
-msgstr "$(CROP_WIDTH) - afbeeldingsbreedte na uitsnijden"
+msgstr "$(WIDTH.CROP) - afbeeldingsbreedte na uitsnijden"
 
 #: ../src/gui/gtkentry.c:185
-#, fuzzy
 msgid "$(WIDTH.EXPORT) - exported image width"
-msgstr "$(EXPORT_WIDTH) - breedte van geëxporteerde afbeelding"
+msgstr "$(WIDTH.EXPORT) - breedte van geëxporteerde afbeelding"
 
 #: ../src/gui/gtkentry.c:186
-#, fuzzy
 msgid "$(HEIGHT.MAX) - maximum image export height"
-msgstr "$(MAX_HEIGHT) - maximale afbeeldings exporteer hoogte"
+msgstr "$(HEIGHT.MAX) - maximale afbeeldings exporteer hoogte"
 
 #: ../src/gui/gtkentry.c:187
-#, fuzzy
 msgid "$(HEIGHT.SENSOR) - image sensor height"
-msgstr "$ (MAX_HEIGHT) - Maximale exporthoogte voor afbeeldingen"
+msgstr "$ (HEIGHT.SENSOR) - afbeelding sensor hoogte"
 
 #: ../src/gui/gtkentry.c:188
-#, fuzzy
 msgid "$(HEIGHT.RAW) - RAW image height"
-msgstr "$ (MAX_HEIGHT) - Maximale exporthoogte voor afbeeldingen"
+msgstr "$ (HEIGHT.RAW) - RAW afbeeldingshoogte"
 
 #: ../src/gui/gtkentry.c:189
-#, fuzzy
 msgid "$(HEIGHT.CROP) - image height after crop"
-msgstr "$(CROP_HEIGHT) - afbeeldingshoogte na uitsnijden"
+msgstr "$(HEIGHT.CROP) - afbeeldingshoogte na uitsnijden"
 
 #: ../src/gui/gtkentry.c:190
-#, fuzzy
 msgid "$(HEIGHT.EXPORT) - exported image height"
-msgstr "$(EXPORT_HEIGHT) - hoogte van geëxporteerde afbeelding"
+msgstr "$(HEIGHT.EXPORT) - hoogte van geëxporteerde afbeelding"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(YEAR) - year"
@@ -9968,7 +9956,7 @@ msgstr "$(YEAR) - jaar"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(YEAR.SHORT) - year without century"
-msgstr ""
+msgstr "$(YEAR.SHORT) - jaar zonder year without century eeuw"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MONTH) - month"
@@ -9976,11 +9964,11 @@ msgstr "$(MONTH) - maand"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
-msgstr ""
+msgstr "$(MONTH.SHORT) - afgekorte maand naam volgens huidige lokaal"
 
 #: ../src/gui/gtkentry.c:195
 msgid "$(MONTH.LONG) - full month name according to the current locale"
-msgstr ""
+msgstr "$(MONTH.LONG) - volledige maand naam volgens huidige lokaal"
 
 #: ../src/gui/gtkentry.c:196
 msgid "$(DAY) - day"
@@ -9992,7 +9980,7 @@ msgstr "$(HOUR) - uur"
 
 #: ../src/gui/gtkentry.c:198
 msgid "$(HOUR.AMPM) - hour, 12-hour clock"
-msgstr ""
+msgstr "$(HOUR.AMPM) - uur, 12-uurs klok"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(MINUTE) - minute"
@@ -10003,146 +9991,123 @@ msgid "$(SECOND) - second"
 msgstr "$(SECOND) - seconde"
 
 #: ../src/gui/gtkentry.c:201
-#, fuzzy
 msgid "$(MSEC) - millisecond"
-msgstr "$(SECOND) - seconde"
+msgstr "$(MSEC) - milliseconde"
 
 #: ../src/gui/gtkentry.c:202
-#, fuzzy
 msgid "$(EXIF.YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) - EXIF jaar"
+msgstr "$(EXIF.YEAR) - EXIF jaar"
 
 #: ../src/gui/gtkentry.c:203
-#, fuzzy
 msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
-msgstr "$(EXIF_YEAR) - EXIF jaar"
+msgstr "$(EXIF.YEAR.SHORT) - EXIF jaar zonder eeuw"
 
 #: ../src/gui/gtkentry.c:204
-#, fuzzy
 msgid "$(EXIF.MONTH) - EXIF month"
-msgstr "$(EXIF_MONTH) - EXIF maand"
+msgstr "$(EXIF.MONTH) - EXIF maand"
 
 #: ../src/gui/gtkentry.c:205
 msgid ""
 "$(EXIF.MONTH.SHORT) - abbreviated exif month name according to the current "
 "locale"
-msgstr ""
+msgstr "$(EXIF.MONTH.SHORT) - afgekorte exif maand naam volgens huidige lokaal"
 
 #: ../src/gui/gtkentry.c:206
 msgid ""
 "$(EXIF.MONTH.LONG) - full exif month name according to the current locale"
-msgstr ""
+msgstr "$(EXIF.MONTH.LONG) - volledige exif maand naam volgens huidige lokaal"
 
 #: ../src/gui/gtkentry.c:207
-#, fuzzy
 msgid "$(EXIF.DAY) - EXIF day"
-msgstr "$(EXIF_DAY) - EXIF dag"
+msgstr "$(EXIF.DAY) - EXIF dag"
 
 #: ../src/gui/gtkentry.c:208
-#, fuzzy
 msgid "$(EXIF.HOUR) - EXIF hour"
-msgstr "$(EXIF_HOUR) - EXIF uur"
+msgstr "$(EXIF.HOUR) - EXIF uur"
 
 #: ../src/gui/gtkentry.c:209
-#, fuzzy
 msgid "$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock"
-msgstr "$(EXIF_HOUR) - EXIF uur"
+msgstr "$(EXIF.HOUR.AMPM) - EXIF uur, 12-uurs klok"
 
 #: ../src/gui/gtkentry.c:210
-#, fuzzy
 msgid "$(EXIF.MINUTE) - EXIF minute"
-msgstr "$(EXIF_MINUTE) - EXIF minuut"
+msgstr "$(EXIF.MINUTE) - EXIF minuut"
 
 #: ../src/gui/gtkentry.c:211
-#, fuzzy
 msgid "$(EXIF.SECOND) - EXIF second"
-msgstr "$(EXIF_SECOND) - EXIF seconde"
+msgstr "$(EXIF.SECOND) - EXIF seconde"
 
 #: ../src/gui/gtkentry.c:212
-#, fuzzy
 msgid "$(EXIF.MSEC) - EXIF millisecond"
-msgstr "$(EXIF_SECOND) - EXIF seconde"
+msgstr "$(EXIF.MSEC) - EXIF milliseconde"
 
 #: ../src/gui/gtkentry.c:213
-#, fuzzy
 msgid "$(EXIF.ISO) - ISO value"
-msgstr "$(EXIF_HOUR) - ISO waarde"
+msgstr "$(EXIF.ISO) - ISO waarde"
 
 #: ../src/gui/gtkentry.c:214
-#, fuzzy
 msgid "$(EXIF.EXPOSURE) - EXIF exposure"
-msgstr "$(EXIF_EXPOSURE) - EXIF exposure"
+msgstr "$(EXIF.EXPOSURE) - EXIF belichting"
 
 #: ../src/gui/gtkentry.c:215
-#, fuzzy
 msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
-msgstr "$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias"
+msgstr "$(EXIF.EXPOSURE.BIAS) - EXIF belichtings voorkeur"
 
 #: ../src/gui/gtkentry.c:216
-#, fuzzy
 msgid "$(EXIF.APERTURE) - EXIF aperture"
-msgstr "$(EXIF_APERTURE) - EXIF aperture"
+msgstr "$(EXIF.APERTURE) - EXIF diafragma"
 
 #: ../src/gui/gtkentry.c:217
-#, fuzzy
 msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
-msgstr "$(EXIF_FOCAL_LENGTH) - EXIF focal length"
+msgstr "$(EXIF.FOCAL.LENGTH) - EXIF brandpuntsafstand"
 
 #: ../src/gui/gtkentry.c:218
-#, fuzzy
 msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
-msgstr "$(EXIF_FOCUS_DISTANCE) - EXIF focal distance"
+msgstr "$(EXIF.FOCUS.DISTANCE) - EXIF focus afstand"
 
 #: ../src/gui/gtkentry.c:219
-#, fuzzy
 msgid "$(EXIF.MAKER) - camera maker"
-msgstr "$(MAKER) - cameramerk"
+msgstr "$(EXIF.MAKER) - camera merk"
 
 #: ../src/gui/gtkentry.c:220
-#, fuzzy
 msgid "$(EXIF.MODEL) - camera model"
-msgstr "$(MODEL) - cameramodel"
+msgstr "$(EXIF.MODEL) - camera model"
 
 #: ../src/gui/gtkentry.c:221
-#, fuzzy
 msgid "$(EXIF.LENS) - lens"
-msgstr "$(LENS) - lens"
+msgstr "$(EXIF.LENS) - lens"
 
 #: ../src/gui/gtkentry.c:222
 msgid "$(LONGITUDE) - longitude"
-msgstr "$(LONGITUDE) - longitude"
+msgstr "$(LONGITUDE) - lengtegraad"
 
 #: ../src/gui/gtkentry.c:223
 msgid "$(LATITUDE) - latitude"
-msgstr "$(LATITUDE) - latitude"
+msgstr "$(LATITUDE) - breedtegraad"
 
 #: ../src/gui/gtkentry.c:224
 msgid "$(ELEVATION) - elevation"
-msgstr "$(ELEVATION) - elevation"
+msgstr "$(ELEVATION) - elevatie"
 
 #: ../src/gui/gtkentry.c:225
-#, fuzzy
 msgid "$(STARS) - star rating as number (-1 for rejected)"
-msgstr "$(STARS) - ster classificatie"
+msgstr "$(STARS) - ster waardering als nummer (-1 voor weigeren)"
 
 #: ../src/gui/gtkentry.c:226
 msgid "$(RATING.ICONS) - star/reject rating in icon form"
-msgstr ""
+msgstr "$(RATING.ICONS) - ster/weigeren waardering in icoon formulier"
 
 #: ../src/gui/gtkentry.c:227
-#, fuzzy
 msgid "$(LABELS) - color labels as text"
-msgstr "$(LABELS) - kleurlabels"
+msgstr "$(LABELS) - kleur labels als tekst"
 
 #: ../src/gui/gtkentry.c:228
-#, fuzzy
 msgid "$(LABELS.ICONS) - color labels as icons"
-msgstr "$(LABELS) - kleurlabels"
+msgstr "$(LABELS.ICONS) - kleur labels als iconen"
 
 #: ../src/gui/gtkentry.c:229
-#, fuzzy
 msgid "$(ID) - image ID"
-msgstr "$(RAW_WIDTH) - Breedte RAW-beeld"
+msgstr "$(ID) - Afbeelding ID"
 
 #: ../src/gui/gtkentry.c:230
 msgid "$(TITLE) - title from metadata"
@@ -10150,7 +10115,7 @@ msgstr "$(TITLE) - titel volgens metadata"
 
 #: ../src/gui/gtkentry.c:231
 msgid "$(DESCRIPTION) - description from metadata"
-msgstr "$(CREATOR) - omschrijving van metadata"
+msgstr "$(DESCRIPTION) - omschrijving van metadata"
 
 #: ../src/gui/gtkentry.c:232
 msgid "$(CREATOR) - creator from metadata"
@@ -10166,27 +10131,23 @@ msgstr "$(RIGHTS) - rechten volgens metadata"
 
 #: ../src/gui/gtkentry.c:235
 msgid "$(USERNAME) - login name"
-msgstr ""
+msgstr "$(USERNAME) - inlog naam"
 
 #: ../src/gui/gtkentry.c:236
-#, fuzzy
 msgid "$(FOLDER.PICTURES) - pictures folder"
-msgstr "$(PICTURES_FOLDER) - afbeeldingsmap"
+msgstr "$(PICTURES.FOLDER) - afbeeldingsmap"
 
 #: ../src/gui/gtkentry.c:237
-#, fuzzy
 msgid "$(FOLDER.HOME) - home folder"
-msgstr "$(HOME) - persoonlijk map"
+msgstr "$(FOLDER.HOME) - persoonlijk map"
 
 #: ../src/gui/gtkentry.c:238
-#, fuzzy
 msgid "$(FOLDER.DESKTOP) - desktop folder"
-msgstr "$(DESKTOP) - bureaublad"
+msgstr "$(FOLDER.DESKTOP) - bureaublad map"
 
 #: ../src/gui/gtkentry.c:239
-#, fuzzy
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
-msgstr "$(OPENCL_ACTIVATED) - of OpenCL is geactiveerd"
+msgstr "$(OPENCL.ACTIVATED) - of OpenCL is geactiveerd"
 
 #: ../src/gui/gtkentry.c:240
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
@@ -10197,14 +10158,12 @@ msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) - labels zoals geconfigureerd in de metadata instellingen"
 
 #: ../src/gui/gtkentry.c:242
-#, fuzzy
 msgid "$(DARKTABLE.NAME) - darktable name"
-msgstr "$(DARKTABLE_VERSION) - huidige darktable-versie"
+msgstr "$(DARKTABLE.NAME) - darktable naam"
 
 #: ../src/gui/gtkentry.c:243
-#, fuzzy
 msgid "$(DARKTABLE.VERSION) - current darktable version"
-msgstr "$(DARKTABLE_VERSION) - huidige darktable-versie"
+msgstr "$(DARKTABLE.VERSION) - huidige darktable versie"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:263
 msgid "grid"
@@ -10317,6 +10276,8 @@ msgstr "kies overlay kleur"
 msgid ""
 "set the contrast between the lightest and darkest part of the guide overlays"
 msgstr ""
+"stel het contrast in tussen het lichtste en donkerste deel van de overlay "
+"hulplijnen"
 
 #: ../src/gui/guides.c:845 ../src/gui/guides.c:891
 msgid "show guides"
@@ -10414,9 +10375,8 @@ msgid "interface language"
 msgstr "interfacetaal"
 
 #: ../src/gui/preferences.c:290
-#, fuzzy
 msgid "double-click to reset to the system language"
-msgstr "dubbelklik om te resetten naar de systeemtaal"
+msgstr "dubbelklik om naar de systeem taal te resetten"
 
 #: ../src/gui/preferences.c:292
 msgid ""
@@ -10959,9 +10919,8 @@ msgid "the selected output profile doesn't work well with exr"
 msgstr "geselecteerd uitgaand profiel werkt niet goed voor exr"
 
 #: ../src/imageio/format/exr.cc:446
-#, fuzzy
 msgid "OpenEXR (16/32-bit float)"
-msgstr "OpenEXR (float)"
+msgstr "OpenEXR (16/32-bit float)"
 
 #: ../src/imageio/format/exr.cc:474 ../src/imageio/format/pdf.c:80
 #: ../src/imageio/format/png.c:527 ../src/imageio/format/tiff.c:804
@@ -10969,9 +10928,8 @@ msgid "16 bit"
 msgstr "16 bit"
 
 #: ../src/imageio/format/exr.cc:475
-#, fuzzy
 msgid "32 bit"
-msgstr "12 bit"
+msgstr "32 bit"
 
 #: ../src/imageio/format/exr.cc:484 ../src/imageio/format/pdf.c:698
 #: ../src/imageio/format/png.c:544 ../src/imageio/format/tiff.c:817
@@ -10997,27 +10955,27 @@ msgstr "ZIP"
 
 #: ../src/imageio/format/exr.cc:490
 msgid "PIZ"
-msgstr ""
+msgstr "PIZ"
 
 #: ../src/imageio/format/exr.cc:491
 msgid "PXR24"
-msgstr ""
+msgstr "PXR24"
 
 #: ../src/imageio/format/exr.cc:492
 msgid "B44"
-msgstr ""
+msgstr "B44"
 
 #: ../src/imageio/format/exr.cc:493
 msgid "B44A"
-msgstr ""
+msgstr "B44A"
 
 #: ../src/imageio/format/exr.cc:494
 msgid "DWAA"
-msgstr ""
+msgstr "DWAA"
 
 #: ../src/imageio/format/exr.cc:495
 msgid "DWAB"
-msgstr ""
+msgstr "DWAB"
 
 #: ../src/imageio/format/j2k.c:619
 msgid "JPEG 2000 (12-bit)"
@@ -11311,15 +11269,14 @@ msgstr "lokale map"
 
 #: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/gallery.c:166
 #: ../src/imageio/storage/latex.c:165
-#, fuzzy
 msgid ""
 "enter the path where to put exported images\n"
 "variables support bash like string manipulation\n"
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
-"benoem het pad waarnaar afbeeldingen worden geëxporteerd\n"
-"variabelen steunen bash zoals string manipulatie\n"
-"erkende variabelen zijn:"
+"vul het pad in waarnaar afbeeldingen worden geëxporteerd\n"
+"variabelen ondersteunen bash zoals string manipulatie\n"
+"typ '$(' om de afronden te activeren en de lijst met variabelen te zien"
 
 #: ../src/imageio/storage/disk.c:193
 msgid "on conflict"
@@ -11621,9 +11578,8 @@ msgid "lens shift (%s)"
 msgstr "lensverschuiving (%s)"
 
 #: ../src/iop/ashift.c:5704
-#, fuzzy
 msgid "manual perspective"
-msgstr "perspectief"
+msgstr "handmatige perspectief"
 
 #: ../src/iop/ashift.c:5754 ../src/iop/ashift.c:5838 ../src/iop/ashift.c:5839
 #: ../src/iop/ashift.c:5840
@@ -13140,6 +13096,9 @@ msgid ""
 "h : \t%.1f °\n"
 "c : \t%.1f"
 msgstr ""
+"L : \t%.1f %%\n"
+"h : \t%.1f °\n"
+"c : \t%.1f"
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4002 ../src/iop/clipping.c:2105
@@ -13194,9 +13153,8 @@ msgstr ""
 "deze kleur zal door de aanpassing in zuiver wit veranderen."
 
 #: ../src/iop/channelmixerrgb.c:4034
-#, fuzzy
 msgid "picker"
-msgstr "kleurkiezer"
+msgstr "kiezer"
 
 #: ../src/iop/channelmixerrgb.c:4035 ../src/iop/temperature.c:1922
 msgid "set white balance to detected from area"
@@ -13211,9 +13169,8 @@ msgid "temperature"
 msgstr "temperatuur"
 
 #: ../src/iop/channelmixerrgb.c:4073
-#, fuzzy
 msgid "spot color mapping"
-msgstr "kleurenkaart"
+msgstr "spot kleurenkaart"
 
 #: ../src/iop/channelmixerrgb.c:4076 ../src/iop/channelmixerrgb.c:4204
 msgid "use a color checker target to autoset CAT and channels"
@@ -13221,9 +13178,8 @@ msgstr ""
 "gebruik een kleurcontroledoel om CAT en kanalen automatisch in te stellen"
 
 #: ../src/iop/channelmixerrgb.c:4078 ../src/iop/exposure.c:1078
-#, fuzzy
 msgid "spot mode"
-msgstr "dcp modus"
+msgstr "spot modus"
 
 #: ../src/iop/channelmixerrgb.c:4079
 msgid ""
@@ -13232,30 +13188,34 @@ msgid ""
 "\"measure\" simply shows how an input color is mapped by the CAT\n"
 "and can be used to sample a target."
 msgstr ""
+"\"correctie\" pas helderheid automatisch aan\n"
+"zodat de bron kleur wordt toegewezen aan het doel\n"
+"\"meten\" laat zien hoe een bron kleur is toegewezen door de CAT\n"
+"en kan gebruikt worden om een sample te nemen van een doel."
 
 #: ../src/iop/channelmixerrgb.c:4084 ../src/iop/exposure.c:1084
-#, fuzzy
 msgid "correction"
-msgstr "correcties"
+msgstr "correctie"
 
 #: ../src/iop/channelmixerrgb.c:4085 ../src/iop/exposure.c:1085
-#, fuzzy
 msgid "measure"
-msgstr "belichting"
+msgstr "meet"
 
 #: ../src/iop/channelmixerrgb.c:4089
 msgid "take channel mixing into account"
-msgstr ""
+msgstr "houd rekening met kanaal menging"
 
 #: ../src/iop/channelmixerrgb.c:4094
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
 msgstr ""
+"bereken het doel door rekening te houden met de kanaal mixer.\n"
+"wanneer uitgeschakeld, alleen rekening gehouden met CAT."
 
 #: ../src/iop/channelmixerrgb.c:4108 ../src/iop/exposure.c:1098
 msgid "the input color that should be mapped to the target"
-msgstr ""
+msgstr "de bron kleur die niet toegewezen moet worden aan het doel"
 
 #: ../src/iop/channelmixerrgb.c:4113
 msgid ""
@@ -13263,15 +13223,17 @@ msgid ""
 "h : \tN/A\n"
 "c : \tN/A"
 msgstr ""
+"L : \tN/A \n"
+"h : \tN/A\n"
+"c : \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4115 ../src/iop/exposure.c:1105
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
-msgstr ""
+msgstr "de LCh coördinaten worden berekent uit de CIE Lab 1976 coördinaten"
 
 #: ../src/iop/channelmixerrgb.c:4128
-#, fuzzy
 msgid "the desired target color after mapping"
-msgstr "bepaal de beïnvloeding van overeenkomstige kleurmappen"
+msgstr "de gewenste doel kleur na mapping"
 
 #: ../src/iop/channelmixerrgb.c:4163
 msgid "input R"
@@ -13410,9 +13372,8 @@ msgstr ""
 "het frame van de patches een schaduw werpen op de randen van de patch."
 
 #: ../src/iop/channelmixerrgb.c:4247
-#, fuzzy
 msgid "the delta E is using the CIE 2000 formula"
-msgstr "de delta E gebruikt de CIE 2000-formule."
+msgstr "de delta E gebruikt de CIE 2000 formule"
 
 #: ../src/iop/channelmixerrgb.c:4253
 msgid "accept the computed profile and set it in the module"
@@ -13630,17 +13591,16 @@ msgid "the bottom margin cannot overlap with the top margin"
 msgstr "de bodem marge mag niet de top marge overlappen"
 
 #: ../src/iop/clipping.c:3037
-#, fuzzy
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
-msgstr "<b>vastleggen</b>: dubbelklikken, <b>rechttrekken</b>: rechts slepen"
+msgstr "<b>vastleggen</b>: dubbelklikken, <b>rechttrekken</b>: rechts-slepen"
 
 #: ../src/iop/clipping.c:3041
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>formaat wijzigen</b>: slepen, <b>beeldverhouding behouden</b>: "
-"shift+slepen\n"
+"<b>formaat wijzigen</b>: slepen, <b>beeldverhouding behouden</b>: shift"
+"+slepen\n"
 "<b>rechttrekken</b>: sleep naar rechts"
 
 #: ../src/iop/clipping.c:3084
@@ -13663,7 +13623,6 @@ msgstr ""
 "<b>lijn/controlepunt verplaatsen</b>: slepen"
 
 #: ../src/iop/clipping.c:3101
-#, fuzzy
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag\n"
@@ -13914,13 +13873,12 @@ msgid "color balance rgb"
 msgstr "kleurenbalans rgb"
 
 #: ../src/iop/colorbalancergb.c:165
-#, fuzzy
 msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
 "saturation"
 msgstr ""
-"offset vermogenshelling | cdl | kleurcorrectie | contrast | "
-"chroma_highlights | tint | levendigheid"
+"offset vermogen slope|cdl|kleurcorrectie|contrast|chroma_hooglichten|tint|"
+"levendigheid|verzadiging"
 
 #: ../src/iop/colorbalancergb.c:368
 msgid "add basic colorfulness"
@@ -14221,7 +14179,7 @@ msgid "patch #%d"
 msgstr "patch #%d"
 
 #: ../src/iop/colorchecker.c:1208
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
 "altered patches are marked with an outline\n"
@@ -14231,11 +14189,11 @@ msgid ""
 "shift+click while color picking to replace patch"
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
-"gewijzigde patronen zijn gemarkeerd door een contour\n"
+"gewijzigde patches zijn gemarkeerd door een contour\n"
 "klik om te selecteren\n"
-"reset met dubbelklik\n"
-"verwijder patch met rechtermuisknop\n"
-"vervang patch met shift-klik tijdens de kleuropname"
+"dubbelklik om te resetten\n"
+"rechtermuisknop om patch te verwijderen\n"
+"Shift+klik tijdens kleuropname om patch te vervangen"
 
 #: ../src/iop/colorchecker.c:1345
 msgid "patch"
@@ -14638,9 +14596,8 @@ msgid "not applicable"
 msgstr "niet toepasbaar"
 
 #: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2213
-#, fuzzy
 msgid "no highlights reconstruction for monochrome images"
-msgstr "reconstrueer hooglichten"
+msgstr "geen hooglicht recontructie voor monochroom afbeeldingen"
 
 #: ../src/iop/colortransfer.c:103
 msgid "color transfer"
@@ -14811,15 +14768,14 @@ msgid "commit"
 msgstr "toevertrouwen"
 
 #: ../src/iop/crop.c:1162
-#, fuzzy
 msgid "commit changes"
-msgstr "kanalen normaliseren"
+msgstr "gebruik wijzigingen"
 
 #: ../src/iop/crop.c:1521
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>formaat wijzigen</b>: slepen, <b>beeldverhouding behouden</b>: "
-"shift+slepen"
+"<b>formaat wijzigen</b>: slepen, <b>beeldverhouding behouden</b>: shift"
+"+slepen"
 
 #: ../src/iop/crop.c:1528
 msgid ""
@@ -14906,13 +14862,12 @@ msgstr ""
 "dubbele demozaïekers verdubbelen de verwerkingstijd."
 
 #: ../src/iop/demosaic.c:5790
-#, fuzzy
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
 "dual demosaicers double processing time."
 msgstr ""
-"xtrans sensor demosaicing methode, Markesteijn 3-pass en frequentiedomein "
+"X-Trans sensor demosaicing methode, Markesteijn 3-pass en frequentie domein "
 "chroma zijn traag.\n"
 "dubbele demosaicers verdubbelen de verwerkingstijd."
 
@@ -14927,7 +14882,6 @@ msgstr ""
 "kies 1.0 om de randen te negeren"
 
 #: ../src/iop/demosaic.c:5799
-#, fuzzy
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -14936,7 +14890,8 @@ msgid ""
 msgstr ""
 "contrastdrempel voor dubbele demozaïek.\n"
 "kies 0,0 voor inhoud met hoge frequentie.\n"
-"kies op 1,0 voor platte inhoud"
+"kies 1,0 voor vlakke inhoud\n"
+"schakel om het masker te visualiseren"
 
 #: ../src/iop/demosaic.c:5807
 msgid ""
@@ -14967,10 +14922,9 @@ msgid "denoise (profiled)"
 msgstr "ruisreductie (profiled)"
 
 #: ../src/iop/denoiseprofile.c:719
-#, fuzzy
 msgid "denoise using noise statistics profiled on sensors"
 msgstr ""
-"ontruis met behulp van geluidsstatistieken die op sensoren zijn geprofileerd."
+"ontruis met behulp van geluidsstatistieken die op sensoren zijn geprofileerd"
 
 #: ../src/iop/denoiseprofile.c:2714
 #, c-format
@@ -15218,7 +15172,6 @@ msgid "diffusion|deconvolution|blur|sharpening"
 msgstr "diffusie|deconvolutie|vervaging|verscherping"
 
 #: ../src/iop/diffuse.c:138
-#, fuzzy
 msgid ""
 "simulate directional diffusion of light with heat transfer model\n"
 "to apply an iterative edge-oriented blur,\n"
@@ -15227,8 +15180,8 @@ msgid ""
 msgstr ""
 "simuleer directionele diffusie van licht met warmteoverdrachtsmodel\n"
 "om een iteratieve randgerichte vervaging toe te passen,\n"
-"inpaint beschadigde delen van het beeld,\n"
-"of om onscherpte te verwijderen met blinde deconvolutie."
+"inpaint beschadigde delen van de afbeelding, of om onscherpte te verwijderen "
+"met blinde deconvolutie."
 
 #: ../src/iop/diffuse.c:231
 msgid "lens deblur: soft"
@@ -15550,7 +15503,7 @@ msgstr "camera-belichting compenseren (% +. 1f EV)"
 #: ../src/iop/exposure.c:737
 #, c-format
 msgid "L : \t%.1f %%"
-msgstr ""
+msgstr "L : \t%.1f %%"
 
 #: ../src/iop/exposure.c:858 ../src/libs/history.c:861
 #, c-format
@@ -15602,9 +15555,8 @@ msgstr ""
 "door RGB waarden in het negatieve te drukken."
 
 #: ../src/iop/exposure.c:1075
-#, fuzzy
 msgid "spot exposure mapping"
-msgstr "toon masker belichting"
+msgstr "spot belichting mapping"
 
 #: ../src/iop/exposure.c:1079
 msgid ""
@@ -15614,14 +15566,19 @@ msgid ""
 "compensation\n"
 "and can be used to define a target."
 msgstr ""
+"\"correctie\" belichting automatisch aangepast\n"
+"door de bron licht toe te wijzen aan het doel.\n"
+"\"meten\" laat alleen zien hoe de bron kleur is toegewezen aan het doel door "
+"belichtings compensatie\n"
+"en kan gebruikt worden om een doel te definiëren."
 
 #: ../src/iop/exposure.c:1103
 msgid "L : \tN/A"
-msgstr ""
+msgstr "L : \tnvt"
 
 #: ../src/iop/exposure.c:1118
 msgid "the desired target exposure after mapping"
-msgstr ""
+msgstr "de gewenste doel belichting na mapping"
 
 #: ../src/iop/filmic.c:179
 msgid "this module is deprecated. better use filmic rgb module instead."
@@ -15990,16 +15947,15 @@ msgid "toggle axis labels and values display"
 msgstr "schakel aslabels en waarden weergeven in/uit"
 
 #: ../src/iop/filmicrgb.c:4239
-#, fuzzy
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
 "right click: cycle backward.\n"
 "double-click: reset to look view."
 msgstr ""
-"door grafiekweergaven bladeren.\n"
+"door grafiek weergaven bladeren.\n"
 "linkermuisknop: vooruit bladeren.\n"
-"klik met de rechtermuisknop: achteruit bladeren.\n"
+"rechtermuisknop: achteruit bladeren.\n"
 "dubbelklik: reset om de weergave te bekijken."
 
 #: ../src/iop/filmicrgb.c:4318
@@ -16278,15 +16234,14 @@ msgid "mid-tones saturation"
 msgstr "middentonen verzadiging"
 
 #: ../src/iop/filmicrgb.c:4618
-#, fuzzy
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
 "increase if midtones are under-saturated."
 msgstr ""
 "verlaagt de uitgangsverzadiging van de module\n"
-"met name bij extreme luminanties\n"
-"verhoog dit als schaduwen en/of hooglichten onderverzadigd zijn."
+"met name bij gemiddelde luminanties\n"
+"verhoog dit als midden tonen onderverzadigd zijn."
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
@@ -16547,43 +16502,50 @@ msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. Falling "
 "back to clip."
 msgstr ""
+"hooglichten: gestuurde laplacian mode niet beschikbaar voor X-Trans "
+"sensoren. Valt terug naar clip."
 
 #: ../src/iop/highlights.c:2153
-#, fuzzy
 msgid "guided laplacians"
-msgstr "hulplijnen"
+msgstr "gestuurde laplacians"
 
 #: ../src/iop/highlights.c:2187
 msgid "highlight reconstruction method"
 msgstr "reconstrueer hooglichten"
 
 #: ../src/iop/highlights.c:2192
-#, fuzzy
 msgid ""
 "manually adjust the clipping threshold against magenta highlights\n"
 "the mask icon shows the clipped area\n"
 "(you shouldn't ever need to touch this)"
 msgstr ""
-"drempel voor clipping handmatig bijstellen t.o.v. magenta hooglichten "
-"(eigenlijk zou dit niet nodig moeten zijn)"
+"drempel voor clipping handmatig aanpassen t.o.v. magenta hooglichten\n"
+"het masker icoon laat de clipping gebied zien\n"
+" (het zal niet nodig zijn deze ooit te wijzigen)"
 
 #: ../src/iop/highlights.c:2201
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. Useful at high ISO."
 msgstr ""
+"voeg ruis toe om het gereconstrueerd gebied visueel te mengen\n"
+"in de rest van de al bestaande ruis in de afbeelding. Bruikbaar bij hoge ISO."
 
 #: ../src/iop/highlights.c:2205
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 msgstr ""
+"verhoog als magenta hooglichten niet volledig worden gecorrigeerd\n"
+"elk nieuwe iteratie geeft een prestatie vermindering."
 
 #: ../src/iop/highlights.c:2209
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
 msgstr ""
+"verhogen om een groter geclipt gebied te corrigeren.\n"
+"grote waarden zorgen voor prestatie verlies"
 
 #: ../src/iop/highpass.c:75
 msgid "highpass"
@@ -17750,14 +17712,12 @@ msgid "raw black/white point"
 msgstr "raw zwart/witpunt"
 
 #: ../src/iop/rawprepare.c:109
-#, fuzzy
 msgid ""
 "sets technical specificities of the raw sensor.\n"
 "touch with great care!"
 msgstr ""
 "stelt technische specificiteiten van de RAW-sensor in.\n"
-"\n"
-"Wees voorzichtig om dit te wijzigen!"
+"wees voorzichtig om dit te wijzigen!"
 
 #: ../src/iop/rawprepare.c:121
 msgid "passthrough"
@@ -19012,9 +18972,8 @@ msgid "lomo"
 msgstr "lomo"
 
 #: ../src/iop/vignette.c:985
-#, fuzzy
 msgid "position / form"
-msgstr "positie"
+msgstr "positie / veld"
 
 #: ../src/iop/vignette.c:1003
 msgid "the radii scale of vignette for start of fall-off"
@@ -19145,9 +19104,8 @@ msgid "pick color from image"
 msgstr "neem kleur uit afbeelding"
 
 #: ../src/iop/watermark.c:1124
-#, fuzzy
 msgid "placement"
-msgstr "element"
+msgstr "plaatsing"
 
 #: ../src/iop/watermark.c:1137
 msgid "size is relative to"
@@ -19369,7 +19327,6 @@ msgstr ""
 "afgewezen afbeeldingen: -1"
 
 #: ../src/libs/collect.c:2056
-#, fuzzy
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
@@ -19519,10 +19476,9 @@ msgstr " maar niet "
 
 #: ../src/libs/collect.c:3173 ../src/libs/filtering.c:1920
 msgid "revert to a previous set of rules"
-msgstr ""
+msgstr "ga terug naar vorige instellig van regels"
 
 #: ../src/libs/collect.c:3227
-#, fuzzy
 msgid "jump back to previous collection"
 msgstr "keer terug naar vorige collectie"
 
@@ -19582,12 +19538,10 @@ msgstr ""
 "selecteer een gebied met ctrl+klik of rechts-klik"
 
 #: ../src/libs/colorpicker.c:590
-#, fuzzy
 msgid "pick color"
 msgstr "kies kleur"
 
 #: ../src/libs/colorpicker.c:629
-#, fuzzy
 msgid "add sample"
 msgstr "voorbeeld toevoegen"
 
@@ -19738,7 +19692,7 @@ msgstr "duplo beheerder"
 #: ../src/libs/duplicate.c:263
 #, no-c-format
 msgid "preview is only possible for zoom lower than 200%%"
-msgstr "voorweergave is alleen mogelijk voor zoom lager dan 200 %% "
+msgstr "voorweergave is alleen mogelijk voor zoom lager dan 200 %%"
 
 #: ../src/libs/duplicate.c:540 ../src/libs/history.c:998
 #: ../src/libs/snapshots.c:447
@@ -20081,7 +20035,6 @@ msgid "formula"
 msgstr "formule"
 
 #: ../src/libs/export_metadata.c:383
-#, fuzzy
 msgid ""
 "list of calculated metadata\n"
 "click on '+' button to select and add new metadata\n"
@@ -20101,7 +20054,8 @@ msgstr ""
 "exif-gegevens zijn uitgeschakeld\n"
 "anders worden de bijbehorende metagegevens berekend en toegevoegd aan het "
 "geëxporteerde bestand\n"
-"klik op formule cel om te bewerken erkende variabelen\n"
+"klik op formule cel om te bewerken\n"
+"typ '$(' om de overronding te activeren en de lijst van variabelen te zien"
 
 #: ../src/libs/export_metadata.c:440
 msgid "add an output metadata tag"
@@ -20112,14 +20066,12 @@ msgid "delete metadata tag"
 msgstr "verwijder metadata label"
 
 #: ../src/libs/filtering.c:226
-#, fuzzy
 msgid "collection filters"
-msgstr "collecties"
+msgstr "collectie filters"
 
 #: ../src/libs/filtering.c:259
-#, fuzzy
 msgid "initial setting"
-msgstr "initiële beoordeling"
+msgstr "initiële instelling"
 
 #: ../src/libs/filtering.c:278
 msgid "imported: last 24h"
@@ -20139,30 +20091,30 @@ msgstr "genomen: laatste 30 dagen"
 
 #: ../src/libs/filtering.c:646
 msgid "click or click&#38;drag to select one or multiple values"
-msgstr ""
+msgstr "klik of klik&#38;sleep om een of meerdere waarden te selecteren"
 
 #: ../src/libs/filtering.c:647
 msgid "right-click opens a menu to select the available values"
-msgstr ""
+msgstr "rechtermuisknop opent menu met beschikbare waarden"
 
 #: ../src/libs/filtering.c:648
 msgid "<b><i>actual selection: </i></b>"
-msgstr ""
+msgstr "<b><i>werkelijke selectie: </i></b>"
 
 #: ../src/libs/filtering.c:909
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
+"regel instellingen\n"
+"deze kunnen niet gewijzigd worden omdat deze zijn vast gepind in het paneel"
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:916
-#, fuzzy
 msgid "rule property"
-msgstr "eigenschap"
+msgstr "regel eigenschap"
 
 #: ../src/libs/filtering.c:1009
-#, fuzzy
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "filter"
@@ -20172,95 +20124,92 @@ msgid ""
 "this rule is pinned into the top toolbar\n"
 "ctrl-click to un-pin"
 msgstr ""
+"deze regel is vastgepind in het boven paneel\n"
+"ctrl-klik om los te maken"
 
 #: ../src/libs/filtering.c:1040
 msgid ""
 "disable this collect rule\n"
 "ctrl-click to pin into the top toolbar"
 msgstr ""
+"schakel deze verzamel regel uit\n"
+"ctrl-klik om deze in het boven paneel vast te pinnen"
 
 #: ../src/libs/filtering.c:1167
-#, fuzzy
 msgid "and"
-msgstr " en "
+msgstr "en"
 
 #: ../src/libs/filtering.c:1168
-#, fuzzy
 msgid "or"
-msgstr "xor"
+msgstr "of"
 
 #: ../src/libs/filtering.c:1169
-#, fuzzy
 msgid "and not"
-msgstr " en "
+msgstr "en niet"
 
 #: ../src/libs/filtering.c:1171
 msgid "define how this rule should interact with the previous one"
-msgstr ""
+msgstr "definieer hoe deze regel samenwerkt met de vorige"
 
 #: ../src/libs/filtering.c:1215
 msgid ""
 "remove this collect rule\n"
 "ctrl-click to pin into the top toolbar"
 msgstr ""
+"verwijder deze verzamel regel\n"
+"ctrl-klik om vast te pinnen aan boven paneel"
 
 #: ../src/libs/filtering.c:1421
 msgid " (off)"
-msgstr ""
+msgstr " (uit)"
 
 #: ../src/libs/filtering.c:1633
 msgid "determine the sort order of shown images"
 msgstr "de sorteervolgorde van de getoonde afbeeldingen bepalen"
 
 #: ../src/libs/filtering.c:1671
-#, fuzzy
 msgid "remove this sort order"
-msgstr "verwijder deze module"
+msgstr "verwijder deze sorteervolgorde"
 
 #: ../src/libs/filtering.c:1824
 msgid "DESC"
-msgstr ""
+msgstr "DESC"
 
 #: ../src/libs/filtering.c:1824
 msgid "ASC"
-msgstr ""
+msgstr "ASC"
 
 #: ../src/libs/filtering.c:1916
-#, fuzzy
 msgid "new rule"
-msgstr "nieuwe voorkeur"
+msgstr "nieuwe regel"
 
 #: ../src/libs/filtering.c:1917
-#, fuzzy
 msgid "append new rule to collect images"
-msgstr "pas compensatie toe op geselecteerde afbeeldingen"
+msgstr "toevoegen nieuwe regel om afbeeldingen te verzamelen"
 
 #: ../src/libs/filtering.c:1928 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "sorteer op"
 
 #: ../src/libs/filtering.c:1936
-#, fuzzy
 msgid "new sort"
-msgstr "nieuwe voorkeur"
+msgstr "nieuwe sortering"
 
 #: ../src/libs/filtering.c:1937
-#, fuzzy
 msgid "append new sort to order images"
-msgstr "tijdsverschil toegepast op %d afbeeldingen"
+msgstr "toevoegen nieuwe sortering om afbeeldingen te sorteren"
 
 #: ../src/libs/filtering.c:1940
 msgid "revert to a previous set of sort orders"
-msgstr ""
+msgstr "ga terug naar vorige instelling van sorteer opdracht"
 
 #: ../src/libs/filters/colors.c:219
-#, fuzzy
 msgid "Y"
-msgstr "Y0"
+msgstr "Y"
 
 #: ../src/libs/filters/colors.c:228
 msgid "P"
-msgstr ""
+msgstr "P"
 
 #: ../src/libs/filters/colors.c:333
 msgid ""
@@ -20269,6 +20218,10 @@ msgid ""
 "ctrl+click to exclude the color label\n"
 "the gray button affects all color labels"
 msgstr ""
+"filter op afbeelding kleuren label\n"
+"klik om de kleuren label selectie te wisselen\n"
+"Ctrl+klik om de kleuren label uit te sluiten\n"
+"de grijs knop heeft invloed op alle kleuren labels"
 
 #: ../src/libs/filters/colors.c:344
 msgid ""
@@ -20276,6 +20229,9 @@ msgid ""
 "and (∩): images having all selected color labels\n"
 "or (∪): images with at least one of the selected color labels"
 msgstr ""
+"filter op afbeelding kleuren label\n"
+"en (∩): afbeeldingen hebben alle geselecteerde kleuren labels\n"
+"of (∪): afbeeldingen met tenminste een van de geselecteerde kleuren labels"
 
 #: ../src/libs/filters/filename.c:364
 msgid ""
@@ -20284,11 +20240,14 @@ msgid ""
 "\n"
 "right-click to get existing filenames"
 msgstr ""
+"vul bestandsnaam in om te zoeken.\n"
+"meerdere waarden kunnen gescheiden worden door ','\n"
+"\n"
+"rechtermuisknop om de bestaande bestandsnamen te krijgen"
 
 #: ../src/libs/filters/filename.c:375
-#, fuzzy
 msgid "extension"
-msgstr "uitsluiten"
+msgstr "extensie"
 
 #: ../src/libs/filters/filename.c:376
 msgid ""
@@ -20298,35 +20257,41 @@ msgid ""
 "\n"
 "right-click to get existing extensions"
 msgstr ""
+"vul extensie in om te zoeken startend met een punt\n"
+"meerdere waarden kunnen gescheiden worden door ','\n"
+"te gebruiken trefwoorden: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
+"\n"
+"rechtermuisknop om bestaande extensies te krijgen"
 
 #: ../src/libs/filters/filename.c:404
 msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
 msgstr ""
+"enkele klik om bestandsnaam te selecteren\n"
+"ctrl-klik om meerdere waarden te selecteren"
 
 #: ../src/libs/filters/filename.c:431
 msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
 msgstr ""
+"enkele klik om extensie te selecteren\n"
+"ctrl-klik om meerdere waarden te selecteren"
 
 #: ../src/libs/filters/rating.c:45
-#, fuzzy
 msgid "rejected"
 msgstr "weigeren"
 
 #: ../src/libs/filters/rating.c:47
-#, fuzzy
 msgid "not rated"
-msgstr "niet gelabeld"
+msgstr "geen waardering"
 
 #. predefined selections
 #: ../src/libs/filters/rating.c:128 ../src/libs/filters/ratio.c:68
 #: ../src/libs/filters/ratio.c:81
-#, fuzzy
 msgid "all images"
-msgstr "max afbeeldingen"
+msgstr "alle afbeeldingen"
 
 #: ../src/libs/filters/rating.c:130
 msgid "all except rejected"
@@ -20337,24 +20302,20 @@ msgid "rejected only"
 msgstr "alleen afgekeurde"
 
 #: ../src/libs/filters/rating.c:133
-#, fuzzy
 msgid "unstared only"
 msgstr "alleen zonder ster"
 
 #: ../src/libs/filters/ratio.c:70 ../src/libs/filters/ratio.c:82
-#, fuzzy
 msgid "portrait images"
-msgstr "exporteer afbeeldingen"
+msgstr "portret afbeeldingen"
 
 #: ../src/libs/filters/ratio.c:71 ../src/libs/filters/ratio.c:83
-#, fuzzy
 msgid "square images"
-msgstr "ondersteunde afbeeldingen"
+msgstr "vierkante afbeeldingen"
 
 #: ../src/libs/filters/ratio.c:72 ../src/libs/filters/ratio.c:84
-#, fuzzy
 msgid "landscape images"
-msgstr "maak foto"
+msgstr "landschap afbeeldingen"
 
 #: ../src/libs/filters/search.c:179
 #, no-c-format
@@ -20365,6 +20326,12 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
+"filter op tekst uit afbeeldings metadata, labels, bestands pad en naam\n"
+"'%' is de wildcard karakter\n"
+"als standaard start en einde wildcards worden automatisch gebruikt\n"
+"starten of eindigen met een dubbele aanhalingsteken schakelt de "
+"desbetreffende wildcard uit\n"
+"is gedimd tijdens het uitvoeren van de zoekactie"
 
 #: ../src/libs/geotagging.c:369
 msgid "apply offset and geo-location"
@@ -20426,12 +20393,11 @@ msgid "date/time"
 msgstr "datum / tijd"
 
 #: ../src/libs/geotagging.c:1727
-#, fuzzy
 msgid ""
 "enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "key in the new numbers or scroll over the cell"
 msgstr ""
-"voer de nieuwe datum tijd in (yyyy:mm:dd hh:mm:ss)\n"
+"voer de nieuwe datum/tijd in (yyyy:mm:dd hh:mm:ss[.sss])\n"
 "toets de nieuwe cijfers in of scroll over de cel"
 
 #: ../src/libs/geotagging.c:1733
@@ -20443,9 +20409,8 @@ msgid "date/time offset"
 msgstr "datum / tijd offset"
 
 #: ../src/libs/geotagging.c:1741
-#, fuzzy
 msgid "offset or difference ([-]dd hh:mm:ss[.sss])"
-msgstr "offset of verschil ([-]dd hh:mm:ss)"
+msgstr "offset of verschil ([-]dd hh:mm:ss[.sss])"
 
 #: ../src/libs/geotagging.c:1744
 msgid "lock date/time offset value to apply it onto another selection"
@@ -20475,6 +20440,9 @@ msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
 "press enter to confirm, so that the asterisk * disappears"
 msgstr ""
+"start met typen om de lijst met toegestane waarden te zien en selecteer je "
+"tijdzone.\n"
+"druk op enter om te bevestigen, zodat de asterik * verdwijnt"
 
 #. gpx
 #: ../src/libs/geotagging.c:1810
@@ -20532,7 +20500,7 @@ msgstr "aantal overeenkomende afbeeldingen versus geselecteerde afbeeldingen"
 
 #: ../src/libs/histogram.c:151
 msgid "scopes"
-msgstr ""
+msgstr "scopes"
 
 #: ../src/libs/histogram.c:1304 ../src/libs/histogram.c:1953
 msgid "ctrl+scroll to change display height"
@@ -20637,47 +20605,41 @@ msgid "histogram"
 msgstr "histogram"
 
 #: ../src/libs/histogram.c:1949 ../src/libs/histogram.c:1986
-#, fuzzy
 msgid "cycle histogram modes"
-msgstr "blader door histogramknooppunten"
+msgstr "blader door histogram modes"
 
 #: ../src/libs/histogram.c:1954 ../src/libs/histogram.c:1987
-#, fuzzy
 msgid "hide histogram"
 msgstr "verberg histogram"
 
 #: ../src/libs/histogram.c:1975 ../src/libs/histogram.c:1988
-#, fuzzy
 msgid "switch histogram mode"
-msgstr "wissel histogrammodus"
+msgstr "wissel histogram modus"
 
 #: ../src/libs/histogram.c:1979 ../src/libs/histogram.c:1989
-#, fuzzy
 msgid "switch histogram type"
-msgstr "wissel histogramtype"
+msgstr "wissel histogram type"
 
 #: ../src/libs/history.c:123
 msgid "compress history stack"
 msgstr "comprimeer bewerkingsstappen"
 
 #: ../src/libs/history.c:124
-#, fuzzy
 msgid ""
 "create a minimal history stack which produces the same image\n"
 "ctrl+click to truncate history to the selected item"
 msgstr ""
-"creëren een minimaal aantal bewerkingsstappen die hetzelfde resultaat "
+"creëer een minimaal aantal bewerkingsstappen die hetzelfde resultaat "
 "leveren\n"
-"ctrl-click om de werkingsstappen af te kappen bij het selecteerde item"
+"Ctrl-click om de werkingsstappen af te kappen bij de geselecteerde item"
 
 #: ../src/libs/history.c:133
 msgid "create a style from the current history stack"
 msgstr "creëer stijl van bewerkingsstappen"
 
 #: ../src/libs/history.c:134
-#, fuzzy
 msgid "create style from history"
-msgstr "creëer stijl uit de geschiedenis"
+msgstr "creëer stijl uit geschiedenis"
 
 #: ../src/libs/history.c:190
 msgid "always-on module"
@@ -20786,7 +20748,7 @@ msgstr "verplaats ..."
 
 #: ../src/libs/image.c:486
 msgid "move to other folder"
-msgstr "afbeelding(en) verplaatsen"
+msgstr "verplaats naar andere map"
 
 #: ../src/libs/image.c:489
 msgid "copy..."
@@ -20794,7 +20756,7 @@ msgstr "kopiëren ..."
 
 #: ../src/libs/image.c:490
 msgid "copy to other folder"
-msgstr "afbeelding(en) kopiëren"
+msgstr "kopieer naar andere map"
 
 #: ../src/libs/image.c:493
 msgid "create HDR"
@@ -20930,7 +20892,6 @@ msgid "set selection as color images"
 msgstr "stel de selectie in als kleurafbeeldingen"
 
 #: ../src/libs/image.c:628
-#, fuzzy
 msgid "duplicate virgin"
 msgstr "kloon origineel"
 
@@ -20982,7 +20943,7 @@ msgstr "je kunt de geselecteerde plaats niet verwijderen"
 
 #: ../src/libs/import.c:1144
 msgid "choose the root of the folder tree below"
-msgstr "kies de root van de mappenboom hieronder"
+msgstr "kies de root van de map boom hieronder"
 
 #: ../src/libs/import.c:1147
 msgid "places"
@@ -21014,7 +20975,7 @@ msgstr "selecteer een map om de inhoud te zien"
 
 #: ../src/libs/import.c:1193
 msgid "folders"
-msgstr "folders"
+msgstr "mappen"
 
 #: ../src/libs/import.c:1263
 msgid "home"
@@ -21065,7 +21026,7 @@ msgstr ""
 
 #: ../src/libs/import.c:1887
 msgid "invalid override date/time format"
-msgstr ""
+msgstr "ongeldige overschrijf datum/tijd format"
 
 #: ../src/libs/import.c:1990
 msgid "add to library..."
@@ -21642,12 +21603,12 @@ msgid "<various values>"
 msgstr "<verschillende waarden>"
 
 #: ../src/libs/metadata_view.c:644
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "double-click to jump to film roll\n"
 "%s"
 msgstr ""
-"dubbelklikken en ga naar map\n"
+"dubbelklikken en ga naar film rol\n"
 "%s"
 
 #: ../src/libs/metadata_view.c:736
@@ -21671,9 +21632,8 @@ msgstr ""
 "gebruik voorinstellingen als er andere instellingen nodig zijn"
 
 #: ../src/libs/metadata_view.c:1380
-#, fuzzy
 msgid "jump to film roll"
-msgstr "ga naar map"
+msgstr "ga naar film rol"
 
 #: ../src/libs/modulegroups.c:42
 msgid "modules: default"
@@ -22058,9 +22018,8 @@ msgid "navigation"
 msgstr "navigeer"
 
 #: ../src/libs/navigation.c:134
-#, fuzzy
 msgid "hide navigation thumbnail"
-msgstr "verberg navigatie miniaturen"
+msgstr "verberg navigatie miniatuur"
 
 #: ../src/libs/navigation.c:509
 msgid "small"
@@ -22179,7 +22138,7 @@ msgstr "activeer zwartpuntcompensatie bij toepassing printerprofiel"
 
 #: ../src/libs/print_settings.c:2375
 msgid "measurement units"
-msgstr ""
+msgstr "meet eenheden"
 
 #: ../src/libs/print_settings.c:2383
 msgid "image width/height"
@@ -22339,8 +22298,8 @@ msgid ""
 "select all images which are in the same\n"
 "film roll as the selected images"
 msgstr ""
-"selecteer alle afbeeldingen \n"
-"in de map met geselecteerde afbeeldingen"
+"selecteer alle afbeeldingen die in dezelfde \n"
+"film rol zitten als de geselecteerde afbeeldingen"
 
 #: ../src/libs/select.c:150
 msgid ""
@@ -22383,7 +22342,6 @@ msgstr ""
 "vergelijken"
 
 #: ../src/libs/snapshots.c:411
-#, fuzzy
 msgid "toggle last snapshot"
 msgstr "schakel laatste momentopname"
 
@@ -22692,7 +22650,6 @@ msgid "drop to root"
 msgstr "verplaats naar root"
 
 #: ../src/libs/tagging.c:3085
-#, fuzzy
 msgid ""
 "attached tags,\n"
 "press Delete or double-click to detach\n"
@@ -22700,10 +22657,11 @@ msgid ""
 "press Tab to give the focus to entry,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
-"verbonden labels\n"
-"dubbel klik om te ontbinden\n"
-"rechtermuis klik voor andere opties\n"
-"ctrl-wiel scroll om venster te vergroten/te verkleinen"
+"gekoppelde labels\n"
+"druk op Delete of dubbelklik om te ontkoppelen\n"
+"rechtermuisknop voor andere acties op gekoppelde label\n"
+"druk op Tab om de focus op het veld te leggen\n"
+"Ctrl-scroll om venstergrootte aan te passen"
 
 #: ../src/libs/tagging.c:3097
 msgid "attach"
@@ -22726,25 +22684,22 @@ msgid "toggle list with / without hierarchy"
 msgstr "wissel lijst met/zonder hiërarchie"
 
 #: ../src/libs/tagging.c:3115
-#, fuzzy
 msgid "hide"
-msgstr "verberg %s"
+msgstr "verberg"
 
 #: ../src/libs/tagging.c:3117
 msgid "toggle sort by name or by count"
 msgstr "wissel sortering op naam of aantal"
 
 #: ../src/libs/tagging.c:3117
-#, fuzzy
 msgid "sort"
-msgstr "sorteer op"
+msgstr "sorteer"
 
 #: ../src/libs/tagging.c:3119
 msgid "toggle show or not darktable tags"
 msgstr "wissel weergave labels/alles"
 
 #: ../src/libs/tagging.c:3119
-#, fuzzy
 msgid "dttags"
 msgstr "labels"
 
@@ -22755,6 +22710,11 @@ msgid ""
 "press Tab or Down key to go to the first matching tag\n"
 "press shift+Tab to select the first attached user tag"
 msgstr ""
+"vul label naam in\n"
+"druk op Enter om een nieuwe label te creëren en deze toe te koppelen aan de "
+"afbeelding\n"
+"druk op Tab of pijl omlaag om naar de eerstvolgende passende label te gaan\n"
+"druk op Shift+Tab om de eerst gekoppelde gebruikers label te selecteren"
 
 #: ../src/libs/tagging.c:3146 ../src/libs/tagging.c:3152
 msgid "clear entry"
@@ -22770,6 +22730,14 @@ msgid ""
 "press shift+Tab to give the focus to entry,\n"
 "ctrl-scroll to resize the window"
 msgstr ""
+"label map,\n"
+"druk op Enter of dubbel-klik om geselecteerde label aan geselecteerde "
+"afbeelding te koppelen,\n"
+"idem voor Shift+Enter plus geeft de focus op de invoer,\n"
+"Shift+klik om de geselecteerde label volledig uit te klappen,\n"
+"rechtermuisknop voor andere acties op geselecteerde label,\n"
+"druk Shift+Tab om de focus op de invoer te leggen,\n"
+"ctrl-scroll om het formaat van het scherm te wijzigen"
 
 #: ../src/libs/tagging.c:3235
 msgid ""
@@ -22793,19 +22761,17 @@ msgstr "wissel lijst/boom weergave"
 
 #: ../src/libs/tagging.c:3245
 msgid "tree"
-msgstr ""
+msgstr "boom"
 
 #: ../src/libs/tagging.c:3247
 msgid "toggle list with / without suggestion"
 msgstr "wissel lijst met/zonder suggestie"
 
 #: ../src/libs/tagging.c:3247
-#, fuzzy
 msgid "suggestion"
-msgstr "selecteren"
+msgstr "suggestie"
 
 #: ../src/libs/tagging.c:3270
-#, fuzzy
 msgid "redo last tag"
 msgstr "geef laatste label opnieuw"
 
@@ -22817,9 +22783,8 @@ msgstr ""
 "schakel over naar lijstweergave"
 
 #: ../src/libs/tagging.c:3458
-#, fuzzy
 msgid "tagging settings"
-msgstr "afbeeldingsinstellingen"
+msgstr "label instellingen"
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -22887,7 +22852,7 @@ msgstr "time-out alleen beschikbaar voor blokoverlay"
 #: ../src/libs/tools/global_toolbox.c:279
 #: ../src/libs/tools/global_toolbox.c:465
 msgid "culling overlays"
-msgstr "overlays ruimen"
+msgstr "vergelijk overlays"
 
 #: ../src/libs/tools/global_toolbox.c:281
 msgid "preview overlays"
@@ -22908,9 +22873,8 @@ msgid "collapse grouped images"
 msgstr "sluit gegroepeerde afbeeldingen"
 
 #: ../src/libs/tools/global_toolbox.c:408
-#, fuzzy
 msgid "thumbnail overlays options"
-msgstr "miniaturenoverlay opties"
+msgstr "miniatuur overlay opties"
 
 #: ../src/libs/tools/global_toolbox.c:409
 msgid "click to change the type of overlays shown on thumbnails"
@@ -22922,9 +22886,8 @@ msgid "overlay mode for size"
 msgstr "overlay modus voor maat"
 
 #: ../src/libs/tools/global_toolbox.c:436
-#, fuzzy
 msgid "thumbnail overlays"
-msgstr "miniaturenoverlay opties"
+msgstr "miniatuur overlays"
 
 #: ../src/libs/tools/global_toolbox.c:438
 #: ../src/libs/tools/global_toolbox.c:467
@@ -22955,14 +22918,13 @@ msgstr "permanente uitgebreide overlays bij muisaanwijzer"
 
 #: ../src/libs/tools/global_toolbox.c:445
 #: ../src/libs/tools/global_toolbox.c:471
-#, fuzzy
 msgid "overlays block on mouse hover"
 msgstr "overlays blokkeren bij gebruik muisaanwijzer"
 
 #: ../src/libs/tools/global_toolbox.c:446
 #: ../src/libs/tools/global_toolbox.c:472
 msgid "during (s)"
-msgstr ""
+msgstr "tijdens"
 
 #: ../src/libs/tools/global_toolbox.c:451
 #: ../src/libs/tools/global_toolbox.c:477
@@ -22971,7 +22933,7 @@ msgstr "toon gereedschapstip"
 
 #: ../src/libs/tools/global_toolbox.c:489
 msgid "help"
-msgstr ""
+msgstr "help"
 
 #: ../src/libs/tools/global_toolbox.c:491
 msgid "enable this, then click on a control element to see its online help"
@@ -22980,7 +22942,6 @@ msgstr ""
 "help"
 
 #: ../src/libs/tools/global_toolbox.c:498
-#, fuzzy
 msgid ""
 "define shortcuts\n"
 "ctrl+click to switch off overwrite confirmations\n"
@@ -22992,6 +22953,8 @@ msgid ""
 "configuration"
 msgstr ""
 "snelkoppelingen definiëren\n"
+"Ctrl+klik om overschrijf bevestiging uit te schakelen\n"
+"\n"
 "zweef over een widget en druk op toetsen met muisklik en scroll of verplaats "
 "combinaties\n"
 "herhaal dezelfde combinatie nogmaals om de toewijzing te verwijderen\n"
@@ -23041,18 +23004,17 @@ msgstr "klik om de volledige voorbeeldlay-out te openen."
 
 #: ../src/libs/tools/lighttable.c:122
 msgid "click to enter culling layout in fixed mode."
-msgstr "klik om de ruimingslay-out in vaste modus te openen."
+msgstr "klik om de vegelijk layout in vaste modus te openen."
 
 #: ../src/libs/tools/lighttable.c:124 ../src/libs/tools/lighttable.c:129
 msgid "click to exit culling layout."
-msgstr "klik om het overlays ruimen te verlaten."
+msgstr "klik om het vegelijk layout te verlaten."
 
 #: ../src/libs/tools/lighttable.c:127
 msgid "click to enter culling layout in dynamic mode."
-msgstr "klik om het overlays ruimen in dynamische modus te starten."
+msgstr "klik om vegelijk layout in dynamische modus te starten."
 
 #: ../src/libs/tools/lighttable.c:352
-#, fuzzy
 msgid "toggle filemanager layout"
 msgstr "schakel naar lay-out voor bestandsmanager"
 
@@ -23061,43 +23023,36 @@ msgid "click to enter filemanager layout."
 msgstr "klik om de indeling van de bestandsbeheerder te openen."
 
 #: ../src/libs/tools/lighttable.c:361
-#, fuzzy
 msgid "toggle zoomable lighttable layout"
-msgstr "schakel naar zoombare bibliotheeklay-out"
+msgstr "schakel naar zoombare bibliotheek layout"
 
 #: ../src/libs/tools/lighttable.c:364
 msgid "click to enter zoomable lighttable layout."
 msgstr "klik om zoombare bibliotheeklay-out te gebruiken."
 
 #: ../src/libs/tools/lighttable.c:370
-#, fuzzy
 msgid "toggle culling mode"
-msgstr "selectie modus aan/uit"
+msgstr "wissel vergelijk mode"
 
 #: ../src/libs/tools/lighttable.c:378
-#, fuzzy
 msgid "toggle culling dynamic mode"
-msgstr "dynamische selectie modus aan/uit"
+msgstr "wissel dynamische vergelijk modus"
 
 #: ../src/libs/tools/lighttable.c:386
-#, fuzzy
 msgid "toggle sticky preview mode"
-msgstr "schakel naar sticky-voorbeeld"
+msgstr "schakel naar sticky-voorbeeld mode"
 
 #: ../src/libs/tools/lighttable.c:427
-#, fuzzy
 msgid "toggle culling zoom mode"
-msgstr "wissel zoom selectie modus"
+msgstr "wissel vergelijk zoom mode"
 
 #: ../src/libs/tools/lighttable.c:429
-#, fuzzy
 msgid "toggle sticky preview mode with focus detection"
-msgstr "schakel naar sticky-voorbeeld met focus detectie"
+msgstr "schakel naar sticky voorbeeld mode met focus detectie"
 
 #: ../src/libs/tools/lighttable.c:431
-#, fuzzy
 msgid "exit current layout"
-msgstr "verlaat de huidige lay-out"
+msgstr "verlaat de huidige layout"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -23105,21 +23060,18 @@ msgstr "moduletoolbox"
 
 #. connect callbacks
 #: ../src/libs/tools/ratings.c:98
-#, fuzzy
 msgid "set star rating for selected images"
-msgstr "metadata toevoegen aan geselecteerde afbeelding(en)"
+msgstr "stel ster waardering in voor geselecteerde afbeeldingen"
 
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
 msgstr "tijdlijn"
 
 #: ../src/libs/tools/timeline.c:1433
-#, fuzzy
 msgid "start selection"
 msgstr "start selectie"
 
 #: ../src/libs/tools/timeline.c:1434
-#, fuzzy
 msgid "stop selection"
 msgstr "stop selectie"
 
@@ -23133,16 +23085,16 @@ msgstr "schermwisselaar"
 
 #: ../src/lua/preferences.c:655 ../src/lua/preferences.c:670
 #: ../src/lua/preferences.c:694 ../src/lua/preferences.c:774
-#, fuzzy, c-format
+#, c-format
 msgid "double-click to reset to `%s'"
-msgstr "dubbelklikken is resetten naar `%s'"
+msgstr "dubbelklikken om te resetten naar `%s'"
 
 #: ../src/lua/preferences.c:680
 msgid "select file"
 msgstr "selecteer bestand"
 
 #: ../src/lua/preferences.c:733
-#, fuzzy, c-format
+#, c-format
 msgid "double-click to reset to `%d'"
 msgstr "dubbelklik om te resetten naar `%d'"
 
@@ -23220,7 +23172,6 @@ msgid "quick access for applying any of your styles"
 msgstr "snelle toegang om een stijl toe te passen"
 
 #: ../src/views/darkroom.c:2268
-#, fuzzy
 msgid "second window"
 msgstr "tweede venster"
 
@@ -23229,9 +23180,8 @@ msgid "display a second darkroom image window"
 msgstr "toon een tweede scherm module ontwikkelen"
 
 #: ../src/views/darkroom.c:2276
-#, fuzzy
 msgid "color assessment"
-msgstr "kleurbeoordeling"
+msgstr "kleur beoordeling"
 
 #: ../src/views/darkroom.c:2279
 msgid "toggle ISO 12646 color assessment conditions"
@@ -23389,9 +23339,8 @@ msgstr ""
 "100% is de gemiddelde piekhelderheid."
 
 #: ../src/views/darkroom.c:2410
-#, fuzzy
 msgid "softproof"
-msgstr "soft proof"
+msgstr "softproof"
 
 #: ../src/views/darkroom.c:2413
 msgid ""
@@ -23461,52 +23410,43 @@ msgstr ""
 
 #. Fullscreen preview key
 #: ../src/views/darkroom.c:2604
-#, fuzzy
 msgid "full preview"
-msgstr "volledige voorbeeld"
+msgstr "volledige weergave"
 
 #. add an option to allow skip mouse events while editing masks
 #: ../src/views/darkroom.c:2608
-#, fuzzy
 msgid "allow to pan & zoom while editing masks"
 msgstr "sta tijdens het bewerken van maskers herschalen en zoomen toe"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:2620
-#, fuzzy
 msgid "zoom close-up"
 msgstr "maximaal inzoomen"
 
 #: ../src/views/darkroom.c:2621
-#, fuzzy
 msgid "zoom fill"
 msgstr "zoom vullen"
 
 #: ../src/views/darkroom.c:2622
-#, fuzzy
 msgid "zoom fit"
 msgstr "zoom passend"
 
 #. zoom in/out
 #. zoom in/out/min/max
 #: ../src/views/darkroom.c:2625 ../src/views/lighttable.c:1275
-#, fuzzy
 msgid "zoom in"
 msgstr "inzoomen"
 
 #: ../src/views/darkroom.c:2626 ../src/views/lighttable.c:1277
-#, fuzzy
 msgid "zoom out"
 msgstr "uitzoomen"
 
 #. Shortcut to skip images
 #: ../src/views/darkroom.c:2629
-#, fuzzy
 msgid "image forward"
 msgstr "volgende afbeelding"
 
 #: ../src/views/darkroom.c:2630
-#, fuzzy
 msgid "image back"
 msgstr "vorige afbeelding"
 
@@ -23517,69 +23457,58 @@ msgstr "wissel overlay kleuren"
 
 #. toggle visibility of drawn masks for current gui module
 #: ../src/views/darkroom.c:2636
-#, fuzzy
 msgid "show drawn masks"
 msgstr "toon getekende maskers"
 
 #. brush size +/-
 #: ../src/views/darkroom.c:2639
-#, fuzzy
 msgid "increase brush size"
-msgstr "verhoog penseeldikte"
+msgstr "vergroot penseeldikte"
 
 # Eventueel kan ook gebruikt worden:
 # 'penseeldikte verminderen' (geldt voor alle penseel-combinaties, bv 'penseelhardheid verminderen')
 #: ../src/views/darkroom.c:2640
-#, fuzzy
 msgid "decrease brush size"
-msgstr "verminder penseeldikte"
+msgstr "verklein penseeldikte"
 
 #. brush hardness +/-
 #: ../src/views/darkroom.c:2643
-#, fuzzy
 msgid "increase brush hardness"
 msgstr "verhoog penseelhardheid"
 
 #: ../src/views/darkroom.c:2644
-#, fuzzy
 msgid "decrease brush hardness"
-msgstr "verminder penseelhardheid"
+msgstr "verlaag penseelhardheid"
 
 #. brush opacity +/-
 #: ../src/views/darkroom.c:2647
-#, fuzzy
 msgid "increase brush opacity"
 msgstr "verhoog penseeldekking"
 
 #: ../src/views/darkroom.c:2648
-#, fuzzy
 msgid "decrease brush opacity"
-msgstr "verminder penseeldekking"
+msgstr "verlaag penseeldekking"
 
 #. undo/redo
 #: ../src/views/darkroom.c:2651 ../src/views/lighttable.c:1267
 #: ../src/views/map.c:2115
-#, fuzzy
 msgid "undo"
 msgstr "herstel"
 
 #: ../src/views/darkroom.c:2652 ../src/views/lighttable.c:1268
 #: ../src/views/map.c:2116
-#, fuzzy
 msgid "redo"
 msgstr "opnieuw"
 
 #. set focus to the search modules text box
 #: ../src/views/darkroom.c:2655
-#, fuzzy
 msgid "search modules"
 msgstr "zoek modules"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
 #: ../src/views/darkroom.c:2658
-#, fuzzy
 msgid "change keyboard shortcut slider precision"
-msgstr "de precisie van de schuifregelaar van de sneltoets wijzigen"
+msgstr "wijzig de keyboard sneltoets schuif precisie"
 
 #: ../src/views/darkroom.c:3840
 msgid "keyboard shortcut slider precision: fine"
@@ -23689,21 +23618,19 @@ msgstr "geheel"
 
 #: ../src/views/lighttable.c:1253
 msgid "leave"
-msgstr ""
+msgstr "verlaat"
 
 #: ../src/views/lighttable.c:1261
 msgid "align images to grid"
 msgstr "afbeeldingen uitlijnen op raster"
 
 #: ../src/views/lighttable.c:1262
-#, fuzzy
 msgid "reset first image offset"
-msgstr "reset eerste beeldverschuiving"
+msgstr "reset eerste afbeelding offset"
 
 #: ../src/views/lighttable.c:1263
-#, fuzzy
 msgid "select toggle image"
-msgstr "omkeren afbeelding"
+msgstr "selecteer omschakelen afbeelding"
 
 #: ../src/views/lighttable.c:1264
 msgid "select single image"
