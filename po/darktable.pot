@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-28 18:02+0200\n"
+"POT-Creation-Date: 2022-04-28 18:12+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3808,7 +3808,7 @@ msgstr ""
 #: ../src/iop/bilat.c:427 ../src/iop/colorbalance.c:1857
 #: ../src/iop/denoiseprofile.c:3665 ../src/iop/exposure.c:1058
 #: ../src/iop/levels.c:680 ../src/iop/profile_gamma.c:676
-#: ../src/libs/copy_history.c:373 ../src/libs/export.c:1302
+#: ../src/libs/copy_history.c:374 ../src/libs/export.c:1302
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2707
 #: ../src/libs/styles.c:827 ../src/views/darkroom.c:2307
 msgid "mode"
@@ -6727,7 +6727,7 @@ msgstr ""
 msgid "time offset"
 msgstr ""
 
-#: ../src/control/jobs/control_jobs.c:2042 ../src/libs/copy_history.c:385
+#: ../src/control/jobs/control_jobs.c:2042 ../src/libs/copy_history.c:386
 msgid "write sidecar files"
 msgstr ""
 
@@ -8362,7 +8362,7 @@ msgstr ""
 msgid "paste history parts"
 msgstr ""
 
-#: ../src/dtgtk/thumbtable.c:2356 ../src/libs/copy_history.c:369
+#: ../src/dtgtk/thumbtable.c:2356 ../src/libs/copy_history.c:370
 msgid "discard history"
 msgstr ""
 
@@ -10227,7 +10227,7 @@ msgid ""
 "     5% -  80% -> YUV420\n"
 msgstr ""
 
-#: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:348
+#: ../src/imageio/format/copy.c:109 ../src/libs/copy_history.c:349
 #: ../src/libs/image.c:585
 msgid "copy"
 msgstr ""
@@ -10587,7 +10587,7 @@ msgstr ""
 msgid "create unique filename"
 msgstr ""
 
-#: ../src/imageio/storage/disk.c:195 ../src/libs/copy_history.c:377
+#: ../src/imageio/storage/disk.c:195 ../src/libs/copy_history.c:378
 #: ../src/libs/image.c:601 ../src/libs/styles.c:425 ../src/libs/styles.c:608
 #: ../src/libs/styles.c:829
 msgid "overwrite"
@@ -17974,87 +17974,89 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:191
 #, c-format
-msgid "no history compression of %d image%s"
-msgstr ""
+msgid "no history compression of %d image"
+msgid_plural "no history compression of %d images"
+msgstr[0] ""
+msgstr[1] ""
 
-#: ../src/libs/copy_history.c:234
+#: ../src/libs/copy_history.c:235
 #, c-format
 msgid "do you really want to clear history of %d selected image?"
 msgid_plural "do you really want to clear history of %d selected images?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/libs/copy_history.c:240
+#: ../src/libs/copy_history.c:241
 msgid "delete images' history?"
 msgstr ""
 
-#: ../src/libs/copy_history.c:343
+#: ../src/libs/copy_history.c:344
 msgid "selective copy..."
 msgstr ""
 
-#: ../src/libs/copy_history.c:344
+#: ../src/libs/copy_history.c:345
 msgid "choose which modules to copy from the source image"
 msgstr ""
 
-#: ../src/libs/copy_history.c:349
+#: ../src/libs/copy_history.c:350
 msgid ""
 "copy history stack of\n"
 "first selected image"
 msgstr ""
 
-#: ../src/libs/copy_history.c:353
+#: ../src/libs/copy_history.c:354
 msgid "selective paste..."
 msgstr ""
 
-#: ../src/libs/copy_history.c:354
+#: ../src/libs/copy_history.c:355
 msgid "choose which modules to paste to the target image(s)"
 msgstr ""
 
-#: ../src/libs/copy_history.c:359 ../src/libs/image.c:590
+#: ../src/libs/copy_history.c:360 ../src/libs/image.c:590
 msgid "paste"
 msgstr ""
 
-#: ../src/libs/copy_history.c:360
+#: ../src/libs/copy_history.c:361
 msgid ""
 "paste history stack to\n"
 "all selected images"
 msgstr ""
 
-#: ../src/libs/copy_history.c:365
+#: ../src/libs/copy_history.c:366
 msgid "compress history"
 msgstr ""
 
-#: ../src/libs/copy_history.c:366
+#: ../src/libs/copy_history.c:367
 msgid ""
 "compress history stack of\n"
 "all selected images"
 msgstr ""
 
-#: ../src/libs/copy_history.c:370
+#: ../src/libs/copy_history.c:371
 msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
 
-#: ../src/libs/copy_history.c:374 ../src/libs/styles.c:830
+#: ../src/libs/copy_history.c:375 ../src/libs/styles.c:830
 msgid "how to handle existing history"
 msgstr ""
 
-#: ../src/libs/copy_history.c:377 ../src/libs/styles.c:828
+#: ../src/libs/copy_history.c:378 ../src/libs/styles.c:828
 msgid "append"
 msgstr ""
 
-#: ../src/libs/copy_history.c:381
+#: ../src/libs/copy_history.c:382
 msgid "load sidecar file..."
 msgstr ""
 
-#: ../src/libs/copy_history.c:382
+#: ../src/libs/copy_history.c:383
 msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
 msgstr ""
 
-#: ../src/libs/copy_history.c:386
+#: ../src/libs/copy_history.c:387
 msgid "write history stack and tags to XMP sidecar files"
 msgstr ""
 
