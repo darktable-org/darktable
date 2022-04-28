@@ -398,9 +398,7 @@ static gboolean _compute_sizes(dt_thumbtable_t *table, gboolean force)
 // return their visibility state
 static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
 {
-  if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER
-     && table->mode != DT_THUMBTABLE_MODE_ZOOM)
-    return FALSE;
+  if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER) return FALSE;
   if(!table->scrollbars) return FALSE;
 
   table->code_scrolling = TRUE;
@@ -415,54 +413,36 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
   sqlite3_finalize(stmt);
 
   // the number of line before
-  int lbefore = (table->offset - 1) / table->thumbs_per_row;
+  float lbefore = (table->offset - 1) / table->thumbs_per_row;
   if((table->offset - 1) % table->thumbs_per_row) lbefore++;
+
+  // if scrollbars are used, we can have partial row shown
+  if(table->thumbs_area.y != 0)
+  {
+    lbefore += -table->thumbs_area.y / (float)table->thumb_size;
+  }
 
   // the number of line after (including the current one)
   int lafter = (nbid - table->offset) / table->thumbs_per_row;
   if((nbid - table->offset) % table->thumbs_per_row) lafter++;
 
-
-  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+  // if the scrollbar is currently visible and we want to hide it
+  // we first ensure that with the width without the scrollbar, we won't need a scrollbar
+  if(gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar) && lbefore + lafter <= table->rows - 1)
   {
-    // if the scrollbar is currently visible and we want to hide it
-    // we first ensure that with the width without the scrollbar, we won't need a scrollbar
-    if(gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar)
-       && lbefore + lafter <= table->rows - 1)
+    const int nw = table->view_width + gtk_widget_get_allocated_width(darktable.gui->scrollbars.vscrollbar);
+    if((lbefore + lafter) * nw / table->thumbs_per_row >= table->view_height)
     {
-      const int nw = table->view_width + gtk_widget_get_allocated_width(darktable.gui->scrollbars.vscrollbar);
-      if((lbefore + lafter) * nw / table->thumbs_per_row >= table->view_height)
-      {
-        dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter + 1,
-                              table->rows - 1);
-        return TRUE;
-      }
+      dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter + 1,
+                            table->rows - 1);
+      return TRUE;
     }
-    // in filemanager, no horizontal bar, and vertical bar reference is 1 thumb.
-    dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter,
-                          table->rows - 1);
-    table->code_scrolling = FALSE;
-    return (lbefore + lafter > table->rows - 1);
   }
-  else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
-  {
-    const int total_height
-        = (lbefore + lafter) * table->thumb_size + 2 * (table->view_height - table->thumb_size * 0.5);
-    const int pos_h
-        = lbefore * table->thumb_size + table->view_height - table->thumb_size * 0.5 - table->thumbs_area.y;
-
-    const int total_width
-        = DT_ZOOMABLE_NB_PER_ROW * table->thumb_size + 2 * (table->view_width - table->thumb_size * 0.5);
-    const int pos_w = table->view_width - table->thumb_size * 0.5 - table->thumbs_area.x;
-
-    dt_view_set_scrollbar(darktable.view_manager->current_view, pos_w, 0, total_width, table->view_width, pos_h, 0,
-                          total_height, table->view_height);
-
-    table->code_scrolling = FALSE;
-    return TRUE;
-  }
+  // in filemanager, no horizontal bar, and vertical bar reference is 1 thumb.
+  dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter,
+                        table->rows - 1);
   table->code_scrolling = FALSE;
-  return FALSE;
+  return (lbefore + lafter > table->rows - 1);
 }
 
 // remove all unneeded thumbnails from the list and the widget
@@ -667,7 +647,8 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       else
       {
         // we stop when last image is fully shown (that means empty space at the bottom)
-        if(last->y + table->thumb_size < table->view_height && posy < 0) return FALSE;
+        // we just need to then ensure that the top row is fully shown
+        if(last->y + table->thumb_size < table->view_height && posy < 0 && table->thumbs_area.y == 0) return FALSE;
       }
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
@@ -709,6 +690,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
   }
 
   // we update the thumbs_area
+  const int old_areay = table->thumbs_area.y;
   table->thumbs_area.x += posx;
   table->thumbs_area.y += posy;
 
@@ -724,7 +706,8 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
   // we update the offset
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
-    table->offset = MAX(1, table->offset - (posy / table->thumb_size) * table->thumbs_per_row);
+    // we need to take account of the previous area move if needed
+    table->offset = MAX(1, table->offset - ((posy + old_areay) / table->thumb_size) * table->thumbs_per_row);
     table->offset_imgid = _thumb_get_imgid(table->offset);
   }
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
@@ -929,12 +912,13 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
             || table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
       // for filemanger and filmstrip, scrolled = move
+      // for filemangager we ensure to fallback to show full row (can be half shown if scrollbar used)
       if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-        _move(table, 0, table->thumb_size, TRUE);
+        _move(table, 0, (table->thumbs_area.y == 0) ? table->thumb_size : -table->thumbs_area.y, TRUE);
       else if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         _move(table, table->thumb_size, 0, TRUE);
       if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
-        _move(table, 0, -table->thumb_size, TRUE);
+        _move(table, 0, -table->thumb_size - table->thumbs_area.y, TRUE);
       else if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         _move(table, -table->thumb_size, 0, TRUE);
 
