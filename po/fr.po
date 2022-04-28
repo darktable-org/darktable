@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-28 18:12+0200\n"
-"PO-Revision-Date: 2022-04-28 18:12+0200\n"
+"POT-Creation-Date: 2022-04-28 18:17+0200\n"
+"PO-Revision-Date: 2022-04-28 18:18+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -180,8 +180,9 @@ msgstr ""
 "cette option change le comportement du shift-clic de la table lumineuse"
 
 #: ../build/bin/preferences_gen.h:4081
-msgid "scroll to utility modules when expanded/collapsed"
-msgstr "positionne les modules utilitaires lorsque qu'ils sont dépliés/repliés"
+msgid "scroll utility modules to the top when expanded"
+msgstr ""
+"re-positionne les modules utilitaires en haut lorsque qu'ils sont dépliés"
 
 #: ../build/bin/preferences_gen.h:4095 ../build/bin/preferences_gen.h:5390
 msgid ""
@@ -674,9 +675,9 @@ msgstr ""
 "activé ou désactivé."
 
 #: ../build/bin/preferences_gen.h:5376
-msgid "scroll to processing modules when expanded/collapsed"
+msgid "scroll processing modules to the top when expanded"
 msgstr ""
-"positionne les modules de développement lorsqu'ils sont dépliés/repliés"
+"re-positionne les modules de développement en haut lorsqu'ils sont dépliés"
 
 #: ../build/bin/preferences_gen.h:5412
 msgid "white balance slider colors"
