@@ -208,7 +208,7 @@ highlights_false_color (read_only image2d_t in, write_only image2d_t out, const 
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
-  
+
   const float ival = read_imagef(in, sampleri, (int2)(x, y)).x;
   const int c = FC(y + ry, x + rx, filters);
   float oval = (ival < clips[c]) ? 0.2f * ival : 1.0f;
@@ -575,7 +575,8 @@ interpolate_and_mask(read_only image2d_t input,
 
   float4 RGB = {R, G, B, native_sqrt(R * R + G * G + B * B) };
   float4 clipped = { R_clipped, G_clipped, B_clipped, (R_clipped || G_clipped || B_clipped) };
-  write_imagef(interpolated, (int2)(j, i), RGB / (float4) *wb);
+  const float4 WB4 = { wb[0], wb[1], wb[2], wb[3] };
+  write_imagef(interpolated, (int2)(j, i), RGB / WB4);
   write_imagef(clipping_mask, (int2)(j, i), clipped);
 }
 
