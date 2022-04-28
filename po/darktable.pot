@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-28 18:12+0200\n"
+"POT-Creation-Date: 2022-04-28 18:17+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -179,7 +179,7 @@ msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4081
-msgid "scroll to utility modules when expanded/collapsed"
+msgid "scroll utility modules to the top when expanded"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4095 ../build/bin/preferences_gen.h:5390
@@ -625,7 +625,7 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5376
-msgid "scroll to processing modules when expanded/collapsed"
+msgid "scroll processing modules to the top when expanded"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:5412
