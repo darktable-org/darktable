@@ -2313,6 +2313,7 @@ void gui_init(struct dt_iop_module_t *self)
   modifier->pos = ++pos;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+    gtk_widget_set_name(self->widget, "lens-module");
 
   // camera selector
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2321,7 +2322,8 @@ void gui_init(struct dt_iop_module_t *self)
                                       NULL, 0, hbox);
   g->find_camera_button = dt_iop_button_new(self, N_("find camera"),
                                             G_CALLBACK(camera_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
-                                            dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN, NULL);
+                                            dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
+  dt_gui_add_class(g->find_camera_button, "dt_big_btn_canvas");
   gtk_box_pack_start(GTK_BOX(hbox), g->find_camera_button, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
@@ -2332,7 +2334,8 @@ void gui_init(struct dt_iop_module_t *self)
                                     NULL, 0, hbox);
   g->find_lens_button = dt_iop_button_new(self, N_("find lens"),
                                           G_CALLBACK(lens_autosearch_clicked), FALSE, 0, (GdkModifierType)0,
-                                          dtgtk_cairo_paint_solid_triangle, CPF_DIRECTION_DOWN, NULL);
+                                          dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_DOWN, NULL);
+  dt_gui_add_class(g->find_lens_button, "dt_big_btn_canvas");
   gtk_box_pack_start(GTK_BOX(hbox), g->find_lens_button, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
