@@ -196,6 +196,7 @@ static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop
     dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
     if(piece)
     {
+      if(piece->buf_out.width < 1 || piece->buf_out.height < 1) return;
       p->cx = points[0] / (float)piece->buf_out.width;
       p->cy = points[1] / (float)piece->buf_out.height;
       p->cw = points[2] / (float)piece->buf_out.width;
