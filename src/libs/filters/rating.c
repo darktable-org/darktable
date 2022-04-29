@@ -39,6 +39,8 @@ static gchar *_rating_print_func(const double value, const gboolean detailled)
 {
   if(detailled)
   {
+    darktable.control->element = value + 1;
+
     switch((int)floor(value))
     {
       case -1:
@@ -77,6 +79,108 @@ static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   // then we draw the regular icon
   dtgtk_cairo_paint_star(cr, x, y, w, h, flags, my_data);
 }
+
+enum
+{
+  // DT_ACTION_EFFECT_TOGGLE = DT_ACTION_EFFECT_DEFAULT_KEY,
+  _ACTION_EFFECT_BETTER = DT_ACTION_EFFECT_DEFAULT_UP,
+  _ACTION_EFFECT_WORSE = DT_ACTION_EFFECT_DEFAULT_DOWN,
+  _ACTION_EFFECT_CAP,
+  _ACTION_EFFECT_HIGHER,
+  _ACTION_EFFECT_LOWER,
+};
+
+static float _action_process_ratings(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  if(!target) return NAN;
+
+  double new_value = element - 1.0;
+  GtkDarktableRangeSelect *range = target;
+  double min = range->select_min_r;
+  double max = range->select_max_r;
+  dt_range_bounds_t bounds = range->bounds;
+
+  if(!isnan(move_size))
+  {
+    switch(effect)
+    {
+    case DT_ACTION_EFFECT_TOGGLE:
+      if(min != new_value || bounds & DT_RANGE_BOUND_MIN)
+      {
+        if(max == min) max = new_value;
+        min = new_value;
+        if(min > max) max = min;
+        bounds &= ~DT_RANGE_BOUND_MIN;
+      }
+      else
+        bounds ^= DT_RANGE_BOUND_MAX;
+      break;
+    case _ACTION_EFFECT_BETTER:
+      if(min < 5) min++;
+      if(min > max) max = min;
+      bounds &= ~DT_RANGE_BOUND_MIN;
+      break;
+    case _ACTION_EFFECT_WORSE:
+      if(min > -1)
+      {
+        if(max == min) max = min - 1;
+        min--;
+      }
+      bounds &= ~DT_RANGE_BOUND_MIN;
+      break;
+    case _ACTION_EFFECT_CAP:
+      if(max != new_value || bounds & DT_RANGE_BOUND_MAX)
+      {
+        max = new_value;
+        if(min > max) min = max;
+        bounds &= ~DT_RANGE_BOUND_MAX;
+      }
+      else
+        bounds ^= DT_RANGE_BOUND_MIN;
+      break;
+    case _ACTION_EFFECT_HIGHER:
+      if(max < 5) max++;
+      bounds &= ~DT_RANGE_BOUND_MAX;
+      break;
+    case _ACTION_EFFECT_LOWER:
+      if(max > -1) max--;
+      if(min > max) min = max;
+      bounds &= ~DT_RANGE_BOUND_MAX;
+      break;
+    }
+    dtgtk_range_select_set_selection(range, bounds, min, max, TRUE, FALSE);
+    gchar *txt = dtgtk_range_select_get_bounds_pretty(range);
+    dt_action_widget_toast(NULL, target, txt);
+    g_free(txt);
+  }
+
+  const gboolean is_active = (new_value >= min || bounds & DT_RANGE_BOUND_MIN) && (new_value <= max || bounds & DT_RANGE_BOUND_MAX);
+  return - min - 2 + (is_active ? DT_VALUE_PATTERN_ACTIVE : 0);
+}
+
+const gchar *dt_action_effect_rating[]
+  = { [DT_ACTION_EFFECT_TOGGLE] = N_("toggle"),
+      [_ACTION_EFFECT_BETTER  ] = N_("better"),
+      [_ACTION_EFFECT_WORSE   ] = N_("worse"),
+      [_ACTION_EFFECT_CAP     ] = N_("cap"),
+      [_ACTION_EFFECT_HIGHER  ] = N_("higher"),
+      [_ACTION_EFFECT_LOWER   ] = N_("lower"),
+      NULL };
+
+const dt_action_element_def_t _action_elements_ratings[]
+  = { { N_("rejected"  ), dt_action_effect_rating },
+      { N_("not rated" ), dt_action_effect_rating },
+      { N_("one"       ), dt_action_effect_rating },
+      { N_("two"       ), dt_action_effect_rating },
+      { N_("three"     ), dt_action_effect_rating },
+      { N_("four"      ), dt_action_effect_rating },
+      { N_("five"      ), dt_action_effect_rating },
+      { NULL } };
+
+const dt_action_def_t dt_action_def_ratings_rule
+  = { N_("rating filter"),
+      _action_process_ratings,
+      _action_elements_ratings };
 
 static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                 const gchar *text, dt_lib_module_t *self, const gboolean top)
@@ -141,6 +245,20 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   range->max_r = 5.999;
 
   _range_widget_add_to_rule(rule, special, top);
+
+  dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("rules"), dt_collection_name_untranslated(prop),
+                                     special->range_select, &dt_action_def_ratings_rule);
+
+  if(darktable.control->accel_initialising)
+  {
+    dt_shortcut_register(ac, 0    , DT_ACTION_EFFECT_TOGGLE, GDK_KEY_r, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, 0 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_0, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, 1 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_1, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, 2 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_2, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, 3 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_3, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, 4 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_4, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, 5 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_5, GDK_SHIFT_MASK);
+  }
 }
 
 // clang-format off

@@ -64,7 +64,7 @@ typedef enum dt_range_type_t
 
 typedef struct _GtkDarktableRangeSelect
 {
-  GtkBin widget;
+  GtkEventBox widget;
 
   dt_range_type_t type;
 
@@ -120,7 +120,7 @@ typedef struct _GtkDarktableRangeSelect
 
 typedef struct _GtkDarktableRangeSelectClass
 {
-  GtkBoxClass parent_class;
+  GtkEventBoxClass parent_class;
 } GtkDarktableRangeSelectClass;
 
 GType dtgtk_range_select_get_type(void);
