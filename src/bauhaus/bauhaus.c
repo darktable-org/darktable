@@ -3034,6 +3034,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
   gtk_widget_get_allocation(widget, &allocation);
   const int w3 = allocation.width - w->margin->left - w->padding->left - w->margin->right - w->padding->right;
   const double ex = event->x - w->margin->left - w->padding->left;
+  const double ey = event->y - w->margin->top - w->padding->top;
   if(event->x > allocation.width - _widget_get_quad_width(w) - w->margin->right - w->padding->right)
   {
     dt_bauhaus_widget_press_quad(widget);
@@ -3065,7 +3066,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
         darktable.bauhaus->mouse_x = ex;
         d->is_dragging = 1;
       }
-      else
+      else if(ey > darktable.bauhaus->line_height / 2.0f)
       {
         const float r = slider_right_pos((float)w3, w);
         dt_bauhaus_slider_set_normalized(w, (ex / w3) / r);
