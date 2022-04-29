@@ -310,6 +310,54 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
   return TRUE;
 }
 
+static gboolean _colors_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  darktable.control->element = GPOINTER_TO_INT(user_data) + 1;
+  return FALSE;
+}
+
+static float _action_process_colors(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
+{
+  if(!target) return NAN;
+
+  _widgets_colors_t *colors = g_object_get_data(G_OBJECT(target), "colors_self");
+  GtkWidget *w = element ? colors->colors[element - 1] : colors->operator;
+  int sel_value = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
+
+  if(!isnan(move_size))
+  {
+    GdkEventButton e = { .state = effect == DT_ACTION_EFFECT_TOGGLE_CTRL ? GDK_CONTROL_MASK : 0 };
+
+    if((!sel_value || (effect != DT_ACTION_EFFECT_ON && effect != DT_ACTION_EFFECT_ON_CTRL))
+       && (sel_value || effect != DT_ACTION_EFFECT_OFF))
+    {
+      if(element)
+        _colors_clicked(w, &e, GINT_TO_POINTER(element - 1));
+      else
+        _colors_operator_clicked(w, colors);
+    }
+
+    sel_value = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
+  }
+
+  return sel_value != 0;
+}
+
+const dt_action_element_def_t _action_elements_colors[]
+  = { { N_("operator"), dt_action_effect_toggle },
+      { N_("red"     ), dt_action_effect_toggle },
+      { N_("yellow"  ), dt_action_effect_toggle },
+      { N_("green"   ), dt_action_effect_toggle },
+      { N_("blue"    ), dt_action_effect_toggle },
+      { N_("purple"  ), dt_action_effect_toggle },
+      { N_("all"     ), dt_action_effect_toggle },
+      { NULL } };
+
+const dt_action_def_t dt_action_def_colors_rule
+  = { N_("color filter"),
+      _action_process_colors,
+      _action_elements_colors };
+
 static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
                                 const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
@@ -336,6 +384,9 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                                      "\nthe gray button affects all color labels"));
     g_signal_connect(G_OBJECT(colors->colors[k]), "button-press-event", G_CALLBACK(_colors_clicked),
                      GINT_TO_POINTER(k));
+    g_signal_connect(G_OBJECT(colors->colors[k]), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
+                     GINT_TO_POINTER(k));
+    dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->colors[k], &dt_action_def_colors_rule);
   }
   colors->operator= dtgtk_button_new(dtgtk_cairo_paint_and, 0, NULL);
   _colors_reset(colors);
@@ -345,6 +396,18 @@ static void _colors_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
                                 "\nand (∩): images having all selected color labels"
                                 "\nor (∪): images with at least one of the selected color labels"));
   g_signal_connect(G_OBJECT(colors->operator), "clicked", G_CALLBACK(_colors_operator_clicked), colors);
+  g_signal_connect(G_OBJECT(colors->operator), "enter-notify-event", G_CALLBACK(_colors_enter_notify),
+                   GINT_TO_POINTER(-1));
+  dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("rules"), N_("color label"), colors->operator, &dt_action_def_colors_rule);
+
+  if(darktable.control->accel_initialising)
+  {
+    dt_shortcut_register(ac, DT_COLORLABELS_RED    + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F1, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, DT_COLORLABELS_YELLOW + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F2, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, DT_COLORLABELS_GREEN  + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F3, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, DT_COLORLABELS_BLUE   + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F4, GDK_SHIFT_MASK);
+    dt_shortcut_register(ac, DT_COLORLABELS_PURPLE + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_F5, GDK_SHIFT_MASK);
+  }
 
   if(top)
   {
