@@ -2777,9 +2777,9 @@ size_t dt_opencl_get_unused_device_mem(const int devid)
   if(timing) dt_get_times(&end_time);
 
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-     "[dt_opencl_get_unused_device_mem] took %.4f secs, %luMB available, %luMB of %luMB on device %i already used\n",
-     end_time.clock - start_time.clock,
-     available / 1024lu / 1024lu, (allmem - available) / 1024lu / 1024lu, allmem / 1024lu / 1024lu, devid);
+     "[dt_opencl_get_unused_device_mem] took %.4f secs on `%s` id=%i, %luMB available, %luMB of %luMB already used\n",
+     end_time.clock - start_time.clock, cl->dev[devid].name, devid,
+     available / 1024lu / 1024lu, (allmem - available) / 1024lu / 1024lu, allmem / 1024lu / 1024lu);
 
   cl->dev[devid].tuned_available = available;
   dt_free_align(tmp);
@@ -2805,8 +2805,9 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   {
     available = darktable.dtresources.refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
     if(mod)
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] reference mode %i, use %luMB as available on device %i\n",
-         level, available / 1024lu / 1024lu, devid);
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
+         "[dt_opencl_get_device_available] reference mode %i, use %luMB as available on device `%s' id=%i\n",
+         level, available / 1024lu / 1024lu, cl->dev[devid].name, devid);
     return available;
   }
   const size_t allmem = cl->dev[devid].max_global_mem;
@@ -2827,8 +2828,9 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   }
 
   if(mod)
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tunemem=%s, cpudevice=%s) as available on device %i\n",
-       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (oncpu) ? "yes" : "no", devid);
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
+       "[dt_opencl_get_device_available] use %luMB (tunemem=%s, cpudevice=%s) as available on device `%s' id=%i\n",
+       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (oncpu) ? "yes" : "no", cl->dev[devid].name, devid);
   return available;
 }
 
@@ -2859,8 +2861,8 @@ static gboolean _cl_test_available_buff(const int devid, const size_t required)
   if(tmpcl) (cl->dlocl->symbols->dt_clReleaseMemObject)(tmpcl);
   dt_free_align(tmp); 
 
-  dt_print(DT_DEBUG_OPENCL, "[_cl_test_available_buff] (slow test) had %s success for %luMB on device '%s'\n",
-      success ? "" : "NO",  required / 1024lu / 1024lu, cl->dev[devid].name); 
+  dt_print(DT_DEBUG_OPENCL, "[_cl_test_available_buff] (slow test) had %s success for %luMB on device '%s' id=%i\n",
+      success ? "" : "NO",  required / 1024lu / 1024lu, cl->dev[devid].name, devid); 
 
   return success;
 }
