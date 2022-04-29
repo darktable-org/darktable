@@ -2717,7 +2717,6 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
    clCreateBuffer does not tell an error condition if there is no memory available (this
    is according to standard), to make sure the buffer is really allocated in graphics mem we
    force a small memory access.
-   precision is 64MB as in s_buff so the algorithm may underestimate by max 64MB 
 */
 size_t dt_opencl_get_unused_device_mem(const int devid)
 {
@@ -2726,69 +2725,61 @@ size_t dt_opencl_get_unused_device_mem(const int devid)
     return cl->dev[devid].tuned_available;
 
   size_t available = 0;
+  size_t x_buff = dt_opencl_get_device_memalloc(devid);
   const size_t allmem = cl->dev[devid].max_global_mem;
-  const size_t l_buff = dt_opencl_get_device_memalloc(devid);
-  const size_t m_buff = MIN(l_buff / 4, 256lu * 1024lu * 1024lu);
-  const size_t s_buff = 64lu * 1024lu * 1024lu;
+  const size_t low_limit = 32lu * 1024lu * 1024lu;
   int checked = 0;
   float *tmp = dt_calloc_align_float(4);
+
+  dt_times_t start_time = { 0 }, end_time = { 0 };
+  const gboolean timing = darktable.unmuted & (DT_DEBUG_OPENCL | DT_DEBUG_MEMORY);
+  if(timing) dt_get_times(&start_time);
 
   cl_mem tbuf[128];
   cl_int err = CL_SUCCESS;
 
-  while((available <= (allmem - l_buff)) && (checked < 128) && (err == CL_SUCCESS))
+  while((available < (allmem - x_buff)) && (checked < 128) && (err == CL_SUCCESS))
   {
-    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, l_buff, NULL, &err);
+    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
     if(err == CL_SUCCESS)
     {
       err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
       if(err == CL_SUCCESS)
       {
         checked++;
-        available += l_buff;
+        available += x_buff;
       }
       else
         if(tbuf[checked]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
     }
   }
 
-  err = CL_SUCCESS;
-  while((available <= (allmem - m_buff)) && (checked < 128) && (err == CL_SUCCESS))
+  while((available <= (allmem - low_limit)) && (checked < 128) && (x_buff >= low_limit))
   {
-    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, m_buff, NULL, &err);
+    x_buff /= 2;      
+    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
     if(err == CL_SUCCESS)
     {
       err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
       if(err == CL_SUCCESS)
       {
         checked++;
-        available += m_buff;
+        available += x_buff;
       }
       else
         if(tbuf[checked]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
-    }
-  }
-
-  if(m_buff > s_buff)
-  {
-    err = CL_SUCCESS;
-    while((available <= (allmem - s_buff)) && (checked < 128) && (err == CL_SUCCESS))
-    {
-      tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, s_buff, NULL, &err);
-      if(err == CL_SUCCESS)
-      {
-        err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
-        if(err == CL_SUCCESS) available += s_buff;
-        checked++;
-      }
     }
   }
  
   for(int i = 0; i < checked; i++)
     if(tbuf[i]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[i]);
 
-  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_unused_device_mem] %luMB available, %luMB of %luMB on device %i already used\n",
-     available / 1024lu / 1024lu, (allmem - available) / 1024lu / 1024lu, allmem / 1024lu / 1024lu, devid);
+  if(timing) dt_get_times(&end_time);
+
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
+     "[dt_opencl_get_unused_device_mem] took %.4f secs on `%s` id=%i, %luMB available, %luMB of %luMB already used\n",
+     end_time.clock - start_time.clock, cl->dev[devid].name, devid,
+     available / 1024lu / 1024lu, (allmem - available) / 1024lu / 1024lu, allmem / 1024lu / 1024lu);
 
   cl->dev[devid].tuned_available = available;
   dt_free_align(tmp);
@@ -2814,8 +2805,9 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   {
     available = darktable.dtresources.refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
     if(mod)
-      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] reference mode %i, use %luMB as available on device %i\n",
-         level, available / 1024lu / 1024lu, devid);
+      dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
+         "[dt_opencl_get_device_available] reference mode %i, use %luMB as available on device `%s' id=%i\n",
+         level, available / 1024lu / 1024lu, cl->dev[devid].name, devid);
     return available;
   }
   const size_t allmem = cl->dev[devid].max_global_mem;
@@ -2836,8 +2828,9 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   }
 
   if(mod)
-    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY, "[dt_opencl_get_device_available] use %luMB (tunemem=%s, cpudevice=%s) as available on device %i\n",
-       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (oncpu) ? "yes" : "no", devid);
+    dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
+       "[dt_opencl_get_device_available] use %luMB (tunemem=%s, cpudevice=%s) as available on device `%s' id=%i\n",
+       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (oncpu) ? "yes" : "no", cl->dev[devid].name, devid);
   return available;
 }
 
@@ -2868,8 +2861,8 @@ static gboolean _cl_test_available_buff(const int devid, const size_t required)
   if(tmpcl) (cl->dlocl->symbols->dt_clReleaseMemObject)(tmpcl);
   dt_free_align(tmp); 
 
-  dt_print(DT_DEBUG_OPENCL, "[_cl_test_available_buff] (slow test) had %s success for %luMB on device '%s'\n",
-      success ? "" : "NO",  required / 1024lu / 1024lu, cl->dev[devid].name); 
+  dt_print(DT_DEBUG_OPENCL, "[_cl_test_available_buff] (slow test) had %s success for %luMB on device '%s' id=%i\n",
+      success ? "" : "NO",  required / 1024lu / 1024lu, cl->dev[devid].name, devid); 
 
   return success;
 }
