@@ -49,7 +49,6 @@ static void _rounded_rectangle(cairo_t *cr)  // create rounded rectangle to use 
   cairo_arc (cr, 0.1, 0.9, 0.1, 90 * degrees, 180 * degrees);
   cairo_arc (cr, 0.1, 0.1, 0.1, 180 * degrees, 270 * degrees);
   cairo_close_path (cr);
-  cairo_stroke(cr);
 }
 
 void dtgtk_cairo_paint_empty(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
@@ -184,6 +183,30 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
   cairo_move_to(cr, 0.2, 0.1);
   cairo_line_to(cr, 0.9, 0.5);
   cairo_line_to(cr, 0.2, 0.9);
+  cairo_fill(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_line_arrow(cairo_t *cr, gint x, int y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  cairo_move_to(cr, 0.1, 0.5);
+  cairo_line_to(cr, 0.9, 0.5);
+  cairo_stroke(cr);
+
+  /* initialize flip matrices */
+  cairo_matrix_t hflip_matrix;
+  cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
+
+  /* scale and transform*/
+  if(flags & CPF_DIRECTION_LEFT) // Flip x transformation
+    cairo_transform(cr, &hflip_matrix);
+
+  cairo_move_to(cr, 0.4, 0.1);
+  cairo_line_to(cr, 0.0, 0.5);
+  cairo_line_to(cr, 0.4, 0.9);
   cairo_fill(cr);
 
   FINISH
@@ -400,6 +423,23 @@ void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   }
 
   cairo_identity_matrix(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_square_plus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 1, 0, 0)
+
+  _rounded_rectangle(cr);
+  cairo_fill(cr);
+
+  cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
+  cairo_move_to(cr, 0.5, 0.25);
+  cairo_line_to(cr, 0.5, 0.75);
+  cairo_move_to(cr, 0.25, 0.5);
+  cairo_line_to(cr, 0.75, 0.5);
+  cairo_stroke(cr);
 
   FINISH
 }
@@ -1304,15 +1344,21 @@ void dtgtk_cairo_paint_directory(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 {
   PREAMBLE(1, 1, 0, 0);
 
-  cairo_scale(cr, 0.8, 0.8);
-  cairo_translate(cr, 0.1, 0.1);
+  const double degrees = M_PI / 180.0;
 
-  cairo_rectangle(cr, 0., 0., 1., 1.);
+  cairo_new_sub_path (cr);
+  cairo_arc (cr, 0.85, 0.35, 0.1, -90 * degrees, 0 * degrees);
+  cairo_arc (cr, 0.8, 0.75, 0.1, 0 * degrees, 90 * degrees);
+  cairo_arc (cr, 0.2, 0.75, 0.1, 90 * degrees, 180 * degrees);
+  cairo_arc (cr, 0.15, 0.35, 0.1, 180 * degrees, 270 * degrees);
+  cairo_close_path (cr);
   cairo_stroke(cr);
-  cairo_move_to(cr, 0., .2);
-  cairo_line_to(cr, .5, .2);
-  cairo_line_to(cr, .6, 0.);
-  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.1, 0.3);
+  cairo_arc (cr, 0.2, 0.15, 0.1, 180 * degrees, 270 * degrees);
+  cairo_arc (cr, 0.45, 0.15, 0.1, -90 * degrees, 0 * degrees);
+  cairo_curve_to(cr, 0.6, 0.15, 0.75, 0.25, 0.9, 0.25);
+  cairo_fill(cr);
 
   FINISH
 }
@@ -1420,11 +1466,15 @@ void dtgtk_cairo_paint_cancel(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 {
   PREAMBLE(1.05, 1, 0, 0)
 
-  cairo_move_to(cr, 0.9, 0.1);
-  cairo_line_to(cr, 0.1, 0.9);
+  cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
+  cairo_fill(cr);
+
+  cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 0.7);
+  cairo_move_to(cr, 0.65, 0.35);
+  cairo_line_to(cr, 0.35, 0.65);
   cairo_stroke(cr);
-  cairo_move_to(cr, 0.9, 0.9);
-  cairo_line_to(cr, 0.1, 0.1);
+  cairo_move_to(cr, 0.65, 0.65);
+  cairo_line_to(cr, 0.35, 0.35);
   cairo_stroke(cr);
 
   FINISH
@@ -2106,6 +2156,7 @@ void dtgtk_cairo_paint_overexposed(cairo_t *cr, gint x, gint y, gint w, gint h, 
 
   /* outer rect */
   _rounded_rectangle(cr);
+  cairo_stroke(cr);
 
   FINISH
 }
@@ -2175,6 +2226,7 @@ void dtgtk_cairo_paint_rawoverexposed(cairo_t *cr, gint x, gint y, gint w, gint 
 
   /* outer rect */
   _rounded_rectangle(cr);
+  cairo_stroke(cr);
 
   FINISH
 }
