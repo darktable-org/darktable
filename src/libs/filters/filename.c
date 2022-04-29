@@ -173,13 +173,13 @@ void _filename_tree_update(_widgets_filename_t *filename)
                      TREE_COL_COUNT, 0, -1);
   gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
   gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "HDR", TREE_COL_TOOLTIP,
-                     "hight dynamic range files", TREE_COL_PATH, "HDR", TREE_COL_COUNT, nb_hdr, -1);
+                     "high dynamic range files", TREE_COL_PATH, "HDR", TREE_COL_COUNT, nb_hdr, -1);
   gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
   gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "LDR", TREE_COL_TOOLTIP,
                      "low dynamic range files", TREE_COL_PATH, "LDR", TREE_COL_COUNT, nb_ldr, -1);
   gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
   gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "NOT RAW", TREE_COL_TOOLTIP,
-                     "all expect RAW files", TREE_COL_PATH, "NOT RAW", TREE_COL_COUNT, nb_not_raw, -1);
+                     "all except RAW files", TREE_COL_PATH, "NOT RAW", TREE_COL_COUNT, nb_not_raw, -1);
   gtk_list_store_insert(GTK_LIST_STORE(ext_model), &iter, 0);
   gtk_list_store_set(GTK_LIST_STORE(ext_model), &iter, TREE_COL_TEXT, "RAW", TREE_COL_TOOLTIP, "RAW files",
                      TREE_COL_PATH, "RAW", TREE_COL_COUNT, nb_raw, -1);
@@ -368,29 +368,22 @@ static void _filename_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
   g_signal_connect(G_OBJECT(filename->name), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->name), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
   g_signal_connect(G_OBJECT(filename->name), "button-press-event", G_CALLBACK(_filename_press), filename);
-  GtkStyleContext *context = gtk_widget_get_style_context(filename->name);
-  gtk_style_context_add_class(context, "dt_transparent_background");
-  gtk_style_context_add_class(context, "search");
 
   filename->ext = gtk_entry_new();
   gtk_entry_set_width_chars(GTK_ENTRY(filename->ext), (top) ? 5 : 0);
   gtk_widget_set_can_default(filename->ext, TRUE);
   gtk_entry_set_placeholder_text(GTK_ENTRY(filename->ext), _("extension"));
-  gtk_widget_set_tooltip_text(filename->ext, _("enter extension to search with starting dot.\n"
+  gtk_widget_set_tooltip_text(filename->ext, _("enter extension to search with starting dot\n"
                                                "multiple values can be separated by ','\n"
-                                               "handled keyword : 'RAW' 'NOT RAW' 'LDR' 'HDR'\n"
+                                               "handled keywords: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
                                                "\nright-click to get existing extensions"));
   gtk_box_pack_start(GTK_BOX(hb), filename->ext, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(filename->ext), "activate", G_CALLBACK(_filename_changed), filename);
   g_signal_connect(G_OBJECT(filename->ext), "focus-out-event", G_CALLBACK(_filename_focus_out), filename);
   g_signal_connect(G_OBJECT(filename->ext), "button-press-event", G_CALLBACK(_filename_press), filename);
-  context = gtk_widget_get_style_context(filename->ext);
-  gtk_style_context_add_class(context, "dt_transparent_background");
-  gtk_style_context_add_class(context, "search");
   if(top)
   {
-    context = gtk_widget_get_style_context(hb);
-    gtk_style_context_add_class(context, "quick_filter_box");
+    dt_gui_add_class(hb, "dt_quick_filter");
   }
 
   // the popup

@@ -155,7 +155,8 @@ static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progr
   instance->widget = gtk_event_box_new();
 
   /* initialize the ui elements for job */
-  gtk_widget_set_name(GTK_WIDGET(instance->widget), "background_job_eventbox");
+  gtk_widget_set_name(GTK_WIDGET(instance->widget), "background-job-eventbox");
+  dt_gui_add_class(GTK_WIDGET(instance->widget), "dt_big_btn_canvas");
   GtkBox *vbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   instance->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_add(GTK_CONTAINER(instance->widget), GTK_WIDGET(vbox));

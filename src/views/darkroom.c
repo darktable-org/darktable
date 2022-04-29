@@ -230,6 +230,7 @@ void _display_module_trouble_message_callback(gpointer instance,
         gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
         gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
         gtk_widget_set_name(label_widget, "iop-plugin-warning");
+        dt_gui_add_class(label_widget, "dt_warning");
 
         GtkWidget *iopw = gtk_widget_get_parent(module->widget);
         gtk_box_pack_start(GTK_BOX(iopw), label_widget, TRUE, TRUE, 0);
@@ -1968,39 +1969,39 @@ static void _brush_size_up_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
 }
 static void _brush_size_down_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, 0);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, 0);
 }
 
 static void _brush_hardness_up_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_SHIFT_MASK);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_SHIFT_MASK);
 }
 static void _brush_hardness_down_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_SHIFT_MASK);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_SHIFT_MASK);
 }
 
 static void _brush_opacity_up_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_CONTROL_MASK);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_CONTROL_MASK);
 }
 static void _brush_opacity_down_callback(dt_action_t *action)
 {
   dt_develop_t *dev = dt_action_view(action)->data;
 
-  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 1, GDK_CONTROL_MASK);
+  if(dev->form_visible) dt_masks_events_mouse_scrolled(dev->gui_module, 0, 0, 0, GDK_CONTROL_MASK);
 }
 
 static void _overlay_cycle_callback(dt_action_t *action)

@@ -2367,7 +2367,7 @@ gboolean _iop_tooltip_callback(GtkWidget *widget, gint x, gint y, gboolean keybo
   GtkWidget *label = gtk_label_new(des[0]?des[0]:"");
   gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
   // if there is no more description, do not add a separator
-  if(des[1]) gtk_widget_set_name(label, "section_label");
+  if(des[1]) dt_gui_add_class(label, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
   const char *icon_purpose = "⟳";
@@ -2427,7 +2427,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   GtkWidget *body_evb = dtgtk_expander_get_body_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
 
-  dt_gui_add_class(pluginui_frame, "plugin_ui");
+  dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
 
   module->header = header;
 
@@ -2537,7 +2537,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
     GtkWidget *lb = gtk_label_new(module->deprecated_msg());
     gtk_label_set_line_wrap(GTK_LABEL(lb), TRUE);
     gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
-    gtk_widget_set_name(lb, "iop-plugin-deprecated");
+    dt_gui_add_class(lb, "dt_warning");
     gtk_box_pack_start(GTK_BOX(iopw), lb, TRUE, TRUE, 0);
     gtk_widget_show(lb);
   }
@@ -2546,7 +2546,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_guides_init_module_widget(iopw, module);
   dt_iop_gui_init_blending(iopw, module);
-  dt_gui_add_class(module->widget, "plugin_ui_main");
+  dt_gui_add_class(module->widget, "dt_plugin_ui_main");
   dt_gui_add_help_link(module->widget, dt_get_help_url(module->op));
   gtk_widget_hide(iopw);
 

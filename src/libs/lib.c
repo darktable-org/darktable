@@ -495,9 +495,9 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       active_preset = cnt;
       selected_writeprotect = writeprotect;
       mi = gtk_check_menu_item_new_with_label(name);
-      dt_gui_add_class(mi, "check-menu-item");
+      dt_gui_add_class(mi, "dt_transparent_background");
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
-      dt_gui_add_class(mi, "active-menu-item");
+      dt_gui_add_class(mi, "active_menu_item");
     }
     else
     {
@@ -1029,8 +1029,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   GtkWidget *label = gtk_label_new("");
   GtkWidget *label_evb = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(label_evb), label);
-  gtk_label_set_markup(GTK_LABEL(label), module->name(module));
-  gtk_widget_set_tooltip_text(label_evb, module->name(module));
+  gchar *mname = g_markup_escape_text(module->name(module), -1);
+  gtk_label_set_markup(GTK_LABEL(label), mname);
+  gtk_widget_set_tooltip_text(label_evb, mname);
+  g_free(mname);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   g_object_set(G_OBJECT(label), "halign", GTK_ALIGN_START, "xalign", 0.0, (gchar *)0);
   gtk_widget_set_name(label, "lib-panel-label");
@@ -1056,8 +1058,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_box_pack_end(GTK_BOX(header), module->reset_button, FALSE, FALSE, 0);
 
   gtk_widget_show_all(module->widget);
-  dt_gui_add_class(module->widget, "plugin_ui_main");
-  dt_gui_add_class(pluginui_frame, "plugin_ui");
+  dt_gui_add_class(module->widget, "dt_plugin_ui_main");
+  dt_gui_add_class(pluginui_frame, "dt_plugin_ui");
   module->expander = expander;
 
   gtk_widget_set_hexpand(module->widget, FALSE);
@@ -1315,4 +1317,3 @@ gboolean dt_handle_dialog_enter(GtkWidget *widget, GdkEventKey *event, gpointer 
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

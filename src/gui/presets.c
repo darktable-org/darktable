@@ -1101,7 +1101,7 @@ static void _menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
-  gtk_widget_set_name(dialog, "quick-presets_manager");
+  gtk_widget_set_name(dialog, "quick-presets-manager");
   gtk_window_set_title(GTK_WINDOW(dialog), _("manage quick presets"));
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -1218,8 +1218,6 @@ void dt_gui_favorite_presets_menu_show()
                                  default_first ? "DESC" : "ASC"
                                 );
   // clang-format on
-
-  gtk_widget_set_name(GTK_WIDGET(menu), "quick-presets-menu");
 
   gboolean retrieve_list = FALSE;
   gchar *config = NULL;
@@ -1415,7 +1413,7 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t
     else
       label = g_strdup(name);
     mi = gtk_check_menu_item_new_with_label(label);
-    dt_gui_add_class(mi, "check-menu-item");
+    dt_gui_add_class(mi, "dt_transparent_background");
     g_free(label);
 
     if(module
@@ -1425,7 +1423,7 @@ static void _gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t
     {
       active_preset = cnt;
       writeprotect = sqlite3_column_int(stmt, 2);
-      dt_gui_add_class(mi, "active-menu-item");
+      dt_gui_add_class(mi, "active_menu_item");
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(mi), TRUE);
     }
 

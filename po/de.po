@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-17 10:34+0200\n"
-"PO-Revision-Date: 2022-04-17 18:30+0200\n"
+"POT-Creation-Date: 2022-04-23 10:56+0200\n"
+"PO-Revision-Date: 2022-04-23 19:53+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -2159,8 +2159,8 @@ msgstr "Bewertung beim Import"
 #: ../build/bin/conf_gen.h:989
 msgid "initial star rating for all images when importing a filmroll"
 msgstr ""
-"initiale Bewertung (Anzahl von Sternen) aller Bilder in einer neu "
-"importierten Filmrolle"
+"initiale Bewertung (Anzahl Sterne) aller Bilder in einer neu importierten "
+"Filmrolle"
 
 #: ../build/bin/conf_gen.h:994
 msgid "ignore exif rating"
@@ -3477,8 +3477,8 @@ msgstr "LMMSE verfeinern"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
-msgid "switch dual threshold"
-msgstr "Schwellwert für Wechsel"
+msgid "dual threshold"
+msgstr "Schwellwert"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:197
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:204
@@ -4763,40 +4763,40 @@ msgstr "Zeige Bilder auf der Karte an"
 msgid "Print your images"
 msgstr "Drucke deine Bilder"
 
-#: ../src/bauhaus/bauhaus.c:3282
+#: ../src/bauhaus/bauhaus.c:3289
 msgid "button on"
 msgstr "Schaltfläche gedrückt"
 
-#: ../src/bauhaus/bauhaus.c:3282
+#: ../src/bauhaus/bauhaus.c:3289
 msgid "button off"
 msgstr "Schaltfläche nicht gedrückt"
 
-#: ../src/bauhaus/bauhaus.c:3451 ../src/gui/accelerators.c:268
+#: ../src/bauhaus/bauhaus.c:3458 ../src/gui/accelerators.c:268
 msgid "value"
 msgstr "Wert"
 
-#: ../src/bauhaus/bauhaus.c:3452 ../src/bauhaus/bauhaus.c:3458
+#: ../src/bauhaus/bauhaus.c:3459 ../src/bauhaus/bauhaus.c:3465
 #: ../src/gui/accelerators.c:251
 msgid "button"
 msgstr "Schaltfläche"
 
-#: ../src/bauhaus/bauhaus.c:3453
+#: ../src/bauhaus/bauhaus.c:3460
 msgid "force"
 msgstr "Stärke"
 
-#: ../src/bauhaus/bauhaus.c:3454
+#: ../src/bauhaus/bauhaus.c:3461
 msgid "zoom"
 msgstr "Zoom"
 
-#: ../src/bauhaus/bauhaus.c:3457
+#: ../src/bauhaus/bauhaus.c:3464
 msgid "selection"
 msgstr "Auswahl"
 
-#: ../src/bauhaus/bauhaus.c:3476
+#: ../src/bauhaus/bauhaus.c:3483
 msgid "slider"
 msgstr "Regler"
 
-#: ../src/bauhaus/bauhaus.c:3481
+#: ../src/bauhaus/bauhaus.c:3488
 msgid "dropdown"
 msgstr "Dropdown"
 
@@ -5015,7 +5015,7 @@ msgid "too much time to update aspect ratio for the collection"
 msgstr "zu viel Zeit um Seitenverhältnis der Sammlung zu aktualisieren"
 
 #: ../src/common/collection.c:608 ../src/common/collection.c:686
-#: ../src/libs/filters/filename.c:389 ../src/libs/metadata_view.c:126
+#: ../src/libs/filters/filename.c:363 ../src/libs/metadata_view.c:126
 msgid "filename"
 msgstr "Dateiname"
 
@@ -5041,7 +5041,7 @@ msgstr "letzter Druck"
 
 #: ../src/common/collection.c:620 ../src/common/collection.c:698
 #: ../src/common/ratings.c:321 ../src/develop/lightroom.c:1525
-#: ../src/libs/tools/ratings.c:110
+#: ../src/libs/tools/ratings.c:111
 msgid "rating"
 msgstr "Bewertung"
 
@@ -5065,7 +5065,7 @@ msgstr "voller Pfad"
 
 #: ../src/common/collection.c:630
 msgid "custom sort"
-msgstr "benutzerdefinierte Sortierung"
+msgstr "benutzerdefiniert"
 
 #. title
 #: ../src/common/collection.c:632 ../src/common/metadata.c:48
@@ -5125,7 +5125,7 @@ msgid "print timestamp"
 msgstr "Druckzeitstempel"
 
 #: ../src/common/collection.c:670 ../src/libs/collect.c:3177
-#: ../src/libs/filtering.c:1925 ../src/libs/filtering.c:1947
+#: ../src/libs/filtering.c:1929 ../src/libs/filtering.c:1951
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "Verlauf"
@@ -5463,10 +5463,10 @@ msgstr ""
 
 #: ../src/common/darktable.c:1740
 msgid ""
-"instead you will find 'per device' data in 'cldevice_v2_canonical-name'. "
+"instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
-"Stattdessen stehen die gerätespezifischen Daten in 'cldevice_v2_canonical-"
+"Stattdessen stehen die gerätespezifischen Daten in 'cldevice_v4_canonical-"
 "name'. Inhalte sind:"
 
 #: ../src/common/darktable.c:1742
@@ -5594,7 +5594,7 @@ msgstr ""
 
 #. the button to close the popup
 #: ../src/common/database.c:2730 ../src/common/database.c:2737
-#: ../src/libs/filters/filename.c:484
+#: ../src/libs/filters/filename.c:458
 msgid "ok"
 msgstr "OK"
 
@@ -5776,12 +5776,12 @@ msgstr "darktable - Datenbank Wartung"
 msgid "later"
 msgstr "später"
 
-#: ../src/common/exif.cc:4290
+#: ../src/common/exif.cc:4299
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "konnte xmp Datei „%s“ nicht lesen: „%s“"
 
-#: ../src/common/exif.cc:4342
+#: ../src/common/exif.cc:4351
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "konnte xmp Datei „%s“ nicht schreiben: „%s“"
@@ -6040,26 +6040,26 @@ msgstr "generische Poisson-Verteilung"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Rauschprofildatei „%s“ ist defekt"
 
-#: ../src/common/opencl.c:998
+#: ../src/common/opencl.c:1090
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "OpenCL-Hardware-Beschleunigung wurde aufgrund einer langsamen GPU deaktiviert"
 
-#: ../src/common/opencl.c:1005
+#: ../src/common/opencl.c:1097
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "mehrere GPUs gefunden – OpenCL-Scheduler-Profil wurde entsprechend gesetzt"
 
-#: ../src/common/opencl.c:1012
+#: ../src/common/opencl.c:1104
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "Sehr schnelle GPU gefunden – OpenCL-Scheduler-Profil wurde entsprechend "
 "gesetzt"
 
-#: ../src/common/opencl.c:1019
+#: ../src/common/opencl.c:1111
 msgid "opencl scheduling profile set to default"
 msgstr "OpenCL-Scheduler-Profil wurde auf den Standardwert gesetzt"
 
@@ -8380,6 +8380,181 @@ msgstr "Zoom ist auf %d Bilder beschränkt"
 msgid "no image selected !"
 msgstr "Kein Bild ausgewählt!"
 
+#: ../src/dtgtk/range.c:177 ../src/dtgtk/range.c:182
+msgid "invalid"
+msgstr "ungültig"
+
+#: ../src/dtgtk/range.c:290
+#, c-format
+msgid "year %s"
+msgstr "Jahr %s"
+
+#: ../src/dtgtk/range.c:368
+msgid ""
+"enter the minimal value\n"
+"use 'min' if no bound\n"
+"right-click to select from existing values"
+msgstr ""
+"den Minimalwert eingeben\n"
+"'min' verwenden, sofern keine Begrenzung\n"
+"Rechtsklick zur Auswahl aus vorhandenen Werten"
+
+#: ../src/dtgtk/range.c:374
+msgid ""
+"enter the maximal value\n"
+"use 'max' if no bound\n"
+"right-click to select from existing values"
+msgstr ""
+"den Maximalwert eingeben\n"
+"‘max’ verwenden, sofern keine Begrenzung\n"
+"Rechtsklick zur Auswahl aus vorhandenen Werten"
+
+#: ../src/dtgtk/range.c:380
+msgid ""
+"enter the value\n"
+"right-click to select from existing values"
+msgstr ""
+"den Wert eingeben\n"
+"Rechtsklick zur Auswahl aus vorhandenen Werten"
+
+#: ../src/dtgtk/range.c:385
+msgid ""
+"enter the minimal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'min' if no bound\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"Minimaldatum eingeben\n"
+"in der Form JJJJ:MM:TT hh:mm:ss.sss (nur das Jahr ist obligatorisch)\n"
+"'min' verwenden, sofern keine Begrenzung\n"
+"Präfix '-' für relatives Datum verwenden\n"
+"Rechtsklick zur Auswahl aus dem Kalender oder vorhandenen Werten"
+
+#: ../src/dtgtk/range.c:393
+msgid ""
+"enter the maximal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'max' if no bound\n"
+"'now' keyword is handled\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"Maximaldatum eingeben\n"
+"in der Form JJJJ:MM:TT hh:mm:ss.sss (nur das Jahr ist obligatorisch)\n"
+"'ma’x verwenden, sofern keine Begrenzung\n"
+"‚jetzt‘-Schlüsselwort wird berücksichtigt\n"
+"Präfix '-' für relatives Datum verwenden\n"
+"Rechtsklick zur Auswahl aus dem Kalender oder vorhandenen Werten"
+
+#: ../src/dtgtk/range.c:402
+msgid ""
+"enter the date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"Datum eingeben\n"
+"in der Form JJJJ:MM:TT hh:mm:ss.sss (nur das Jahr ist obligatorisch)\n"
+"Rechtsklick zur Auswahl aus dem Kalender oder vorhandenen Werten"
+
+#: ../src/dtgtk/range.c:424
+msgid "date-time interval to subtract from the max value"
+msgstr "Vom max Wert abzuziehendes Intervall"
+
+#: ../src/dtgtk/range.c:428
+msgid "date-time interval to add to the min value"
+msgstr "zum min Wert zu addierendes Intervall "
+
+#: ../src/dtgtk/range.c:568 ../src/dtgtk/range.c:1716 ../src/dtgtk/range.c:1767
+#: ../src/libs/colorpicker.c:53
+msgid "min"
+msgstr "Minimum"
+
+#: ../src/dtgtk/range.c:574 ../src/dtgtk/range.c:1728 ../src/dtgtk/range.c:1779
+#: ../src/libs/colorpicker.c:53
+msgid "max"
+msgstr "Maximum"
+
+#: ../src/dtgtk/range.c:882
+msgid "date type"
+msgstr "Datumsbereich"
+
+#: ../src/dtgtk/range.c:883
+msgid "fixed"
+msgstr "absolut"
+
+#: ../src/dtgtk/range.c:884 ../src/iop/colorchecker.c:1382
+msgid "relative"
+msgstr "relativ"
+
+#. the date section
+#: ../src/dtgtk/range.c:896
+msgid "date"
+msgstr "Datum"
+
+#: ../src/dtgtk/range.c:903
+msgid ""
+"simple click to select date\n"
+"double click to use the date directly"
+msgstr ""
+"Mausklick zur Datumsauswahl\n"
+"Doppelklick zur direkten Verwendung des Datums"
+
+#: ../src/dtgtk/range.c:914
+msgid "years: "
+msgstr "Jahre: "
+
+#: ../src/dtgtk/range.c:922
+msgid "months: "
+msgstr "Monate: "
+
+#: ../src/dtgtk/range.c:930
+msgid "days: "
+msgstr "Tage: "
+
+#. the time section
+#: ../src/dtgtk/range.c:942
+msgid "time"
+msgstr "Datum/Uhrzeit"
+
+#: ../src/dtgtk/range.c:969
+msgid ""
+"simple click to select date\n"
+"double click to use the date directly."
+msgstr ""
+"Mausklick zur Datumsauswahl\n"
+"Doppelklick zur direkten Verwendung des Datums"
+
+#: ../src/dtgtk/range.c:995 ../src/dtgtk/range.c:1735
+msgid "now"
+msgstr "Jetzt"
+
+#: ../src/dtgtk/range.c:997
+msgid "set the value to always match current datetime"
+msgstr ""
+"den Wert so einstellen, dass er immer mit dem aktuellen Datum übereinstimmt"
+
+#. apply button
+#: ../src/dtgtk/range.c:1000 ../src/gui/accelerators.c:147
+#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:750
+#: ../src/libs/styles.c:861
+msgid "apply"
+msgstr "anwenden"
+
+#: ../src/dtgtk/range.c:1001
+msgid "set the range bound with this value"
+msgstr "Bereich mit diesem Wert festlegen"
+
+#. get nice text for bounds
+#. Side-border hide/show
+#: ../src/dtgtk/range.c:1712 ../src/gui/accelerators.c:1909
+#: ../src/gui/accelerators.c:1988 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914
+#: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
+#: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
+#: ../src/libs/filtering.c:1418 ../src/libs/filters/colors.c:236
+msgid "all"
+msgstr "alles"
+
 #: ../src/dtgtk/resetlabel.c:59
 msgid "double-click to reset"
 msgstr "Doppelklick zum Zurücksetzen"
@@ -8868,12 +9043,6 @@ msgstr "aktualisieren"
 msgid "preferences"
 msgstr "Voreinstellungen"
 
-#. apply button
-#: ../src/gui/accelerators.c:147 ../src/iop/colortransfer.c:670
-#: ../src/libs/metadata.c:750 ../src/libs/styles.c:861
-msgid "apply"
-msgstr "anwenden"
-
 #: ../src/gui/accelerators.c:148
 msgid "apply on new instance"
 msgstr "auf neue Instanz anwenden"
@@ -9158,15 +9327,6 @@ msgid ""
 msgstr ""
 "alle Shortcuts in eine Datei exportieren\n"
 "oder nur für ein ausgewähltes Gerät\n"
-
-#. Side-border hide/show
-#: ../src/gui/accelerators.c:1909 ../src/gui/accelerators.c:1988
-#: ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914 ../src/imageio/format/pdf.c:659
-#: ../src/iop/denoiseprofile.c:3581 ../src/iop/lens.cc:2274
-#: ../src/iop/rawdenoise.c:904 ../src/libs/filtering.c:1414
-#: ../src/libs/filters/colors.c:236
-msgid "all"
-msgstr "alles"
 
 #: ../src/gui/accelerators.c:1910 ../src/gui/accelerators.c:1989
 msgid "keyboard"
@@ -10644,13 +10804,13 @@ msgid "page orientation"
 msgstr "Seitenausrichtung"
 
 #: ../src/imageio/format/pdf.c:608 ../src/iop/borders.c:1042
-#: ../src/libs/filtering.c:271 ../src/libs/filters/ratio.c:122
+#: ../src/libs/filtering.c:272 ../src/libs/filters/ratio.c:122
 #: ../src/libs/print_settings.c:2366
 msgid "portrait"
 msgstr "Hochformat"
 
 #: ../src/imageio/format/pdf.c:609 ../src/iop/borders.c:1043
-#: ../src/libs/filtering.c:267 ../src/libs/filters/ratio.c:124
+#: ../src/libs/filtering.c:268 ../src/libs/filters/ratio.c:124
 #: ../src/libs/print_settings.c:2367
 msgid "landscape"
 msgstr "Querformat"
@@ -11613,7 +11773,7 @@ msgstr ""
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/colorreconstruction.c:135
 #: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:720
 #: ../src/iop/dither.c:103 ../src/iop/flip.c:105 ../src/iop/hazeremoval.c:112
-#: ../src/iop/highlights.c:139 ../src/iop/hotpixels.c:73
+#: ../src/iop/highlights.c:141 ../src/iop/hotpixels.c:73
 #: ../src/iop/invert.c:122 ../src/iop/lens.cc:159 ../src/iop/nlmeans.c:99
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rawdenoise.c:130
 #: ../src/iop/retouch.c:209 ../src/iop/sharpen.c:94 ../src/iop/spots.c:67
@@ -11994,7 +12154,7 @@ msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:970 ../src/iop/clipping.c:2139 ../src/iop/crop.c:1048
-#: ../src/libs/filtering.c:263 ../src/libs/filters/ratio.c:126
+#: ../src/libs/filtering.c:264 ../src/libs/filters/ratio.c:126
 msgid "square"
 msgstr "quadratisch"
 
@@ -12121,8 +12281,8 @@ msgstr "Korrektur der chromatischen Aberration für Bayer Sensoren"
 
 #: ../src/iop/cacorrect.c:89 ../src/iop/cacorrect.c:91
 #: ../src/iop/cacorrectrgb.c:168 ../src/iop/cacorrectrgb.c:170
-#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:140
-#: ../src/iop/highlights.c:142 ../src/iop/hotpixels.c:74
+#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:142
+#: ../src/iop/highlights.c:144 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
 #: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:112
 #: ../src/iop/rawprepare.c:114 ../src/iop/temperature.c:200
@@ -13861,10 +14021,6 @@ msgstr ""
 "relativ - Zielfarbe ist relativ zur Originalfarbe des Feldes\n"
 "absolut - Zielfarbe ist der absolute Lab-Wert"
 
-#: ../src/iop/colorchecker.c:1382
-msgid "relative"
-msgstr "relativ"
-
 #: ../src/iop/colorchecker.c:1383
 msgid "absolute"
 msgstr "absolut"
@@ -14186,12 +14342,12 @@ msgstr "ob und wie Ersatzfarben bevorzugt werden"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "der Farbton, der gegenüber anderen bevorzugt werden soll"
 
-#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5806
-#: ../src/iop/highlights.c:2099
+#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5819
+#: ../src/iop/highlights.c:2212
 msgid "not applicable"
 msgstr "nicht anwendbar"
 
-#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2100
+#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2213
 msgid "no highlights reconstruction for monochrome images"
 msgstr "keine Spitzlichtrekonstruktion bei monochromen Bildern"
 
@@ -14439,16 +14595,16 @@ msgstr ""
 "Rekonstruktion der RGB Pixel aus Helligkeitswerten eines Sensors mit "
 "Farbfiltermatrix"
 
-#: ../src/iop/demosaic.c:5268
+#: ../src/iop/demosaic.c:5288
 msgid "[dual demosaic_cl] internal problem"
 msgstr "[dual demosaic_cl] internal problem"
 
-#: ../src/iop/demosaic.c:5639
+#: ../src/iop/demosaic.c:5661
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "„%s” Farbmatrix für 4-Bayer-Bild nicht gefunden!"
 
-#: ../src/iop/demosaic.c:5772
+#: ../src/iop/demosaic.c:5786
 msgid ""
 "bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -14459,7 +14615,7 @@ msgstr ""
 "PPG und RCD sind schnell, AMaZE und LMMSE ist langsam.\n"
 "Dual-Demosaic verdoppelt die Verarbeitungszeit."
 
-#: ../src/iop/demosaic.c:5776
+#: ../src/iop/demosaic.c:5790
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -14472,7 +14628,7 @@ msgstr ""
 # WTF? Wer bitte soll das verstehen?
 # stimmt - wo kommt das vor?
 # wo ist der Vorschlag für bessere Übersetzung?
-#: ../src/iop/demosaic.c:5780
+#: ../src/iop/demosaic.c:5794
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -14482,21 +14638,19 @@ msgstr ""
 "Auf 0.0 setzen zum Ausschalten.\n"
 "Auf 1.0 setzen, um Kanten zu ignorieren."
 
-#: ../src/iop/demosaic.c:5784
+#: ../src/iop/demosaic.c:5799
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
-"set to 1.0 for flat content"
+"set to 1.0 for flat content\n"
+"toggle to visualize the mask"
 msgstr ""
 "Kontrastschwelle für Dual-Demosaic\n"
 "0.0 für hochfrequente Inhalte\n"
-"1.0 für gleichmäßige Inhalte"
+"1.0 für gleichmäßige Inhalte\n"
+"umschalten, um die Maske zu visualisieren"
 
-#: ../src/iop/demosaic.c:5787
-msgid "display blending mask"
-msgstr "Überblendemaske anzeigen"
-
-#: ../src/iop/demosaic.c:5794
+#: ../src/iop/demosaic.c:5807
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -14505,15 +14659,15 @@ msgstr ""
 "Ausgabe,\n"
 "Verfeinerung fügt einige Neuberechnungen der roten und blauen Kanäle hinzu"
 
-#: ../src/iop/demosaic.c:5797
+#: ../src/iop/demosaic.c:5810
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "wie viele Median-Schritte zur Fabrglättung nach dem Entrastern"
 
-#: ../src/iop/demosaic.c:5800
+#: ../src/iop/demosaic.c:5813
 msgid "green channels matching method"
 msgstr "Methode zum Abgleichen des Grünkanals"
 
-#: ../src/iop/demosaic.c:5807
+#: ../src/iop/demosaic.c:5820
 msgid "demosaicing is only used for color raw images"
 msgstr "Entrastern funktioniert nur mit Raw-Bildern."
 
@@ -16100,20 +16254,20 @@ msgstr "Distanz"
 msgid "limit haze removal up to a specific spatial depth"
 msgstr "Dunstentfernung auf eine bestimmte räumliche Tiefe beschränken"
 
-#: ../src/iop/highlights.c:133
+#: ../src/iop/highlights.c:135
 msgid "highlight reconstruction"
 msgstr "Spitzlicht-Rekonstruktion"
 
-#: ../src/iop/highlights.c:138
+#: ../src/iop/highlights.c:140
 msgid "avoid magenta highlights and try to recover highlights colors"
 msgstr ""
 "Vermeidung magentafarbener Spitzlichter und Wiederherstellung von Farbtönen"
 
-#: ../src/iop/highlights.c:141 ../src/iop/hotpixels.c:75
+#: ../src/iop/highlights.c:143 ../src/iop/hotpixels.c:75
 msgid "reconstruction, raw"
 msgstr "Rekonstruktion, RAW"
 
-#: ../src/iop/highlights.c:2031
+#: ../src/iop/highlights.c:2115
 msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. Falling "
 "back to clip."
@@ -16121,23 +16275,25 @@ msgstr ""
 "Highlights: Der geführte Laplacian-Modus ist für X-Trans-Sensoren nicht "
 "verfügbar. Fallback auf Spitzlichter abschneiden."
 
-#: ../src/iop/highlights.c:2066
+#: ../src/iop/highlights.c:2153
 msgid "guided laplacians"
 msgstr "Geführter Laplacian-Modus"
 
-#: ../src/iop/highlights.c:2080
+#: ../src/iop/highlights.c:2187
 msgid "highlight reconstruction method"
 msgstr "Methode zur Rekonstruktion der Spitzlichter"
 
-#: ../src/iop/highlights.c:2084
+#: ../src/iop/highlights.c:2192
 msgid ""
-"manually adjust the clipping threshold against magenta highlights (you "
-"shouldn't ever need to touch this)"
+"manually adjust the clipping threshold against magenta highlights\n"
+"the mask icon shows the clipped area\n"
+"(you shouldn't ever need to touch this)"
 msgstr ""
-"Abschneide-Schwellwert gegen magenta Spitzlichter manuell anpassen (es "
-"sollte niemals nötig sein, diesen Wert zu ändern)"
+"Abschneide-Schwellwert bei magentafarbenen Spitzlichtern manuell anpassen\n"
+"Das Maskensymbol zeigt den beschnittenen Bereich an\n"
+"(es sollte nicht nötig sein, diesen Wert jemals zu ändern)"
 
-#: ../src/iop/highlights.c:2088
+#: ../src/iop/highlights.c:2201
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. Useful at high ISO."
@@ -16145,7 +16301,7 @@ msgstr ""
 "Rauschen hinzufügen, um die rekonstruierten Bereiche visuellmit dem Rest\n"
 "des verrauschten Bildes zu verschmelzen. Nützlich bei hohen ISO-Werten."
 
-#: ../src/iop/highlights.c:2092
+#: ../src/iop/highlights.c:2205
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16154,7 +16310,7 @@ msgstr ""
 "werden\n"
 "jede neue Iteration bringt einen Leistungsverlust mit sich."
 
-#: ../src/iop/highlights.c:2096
+#: ../src/iop/highlights.c:2209
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -19047,25 +19203,25 @@ msgid "change to: except"
 msgstr "ändere zu: AUSSER"
 
 #. the differents categories
-#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:835
-#: ../src/libs/filtering.c:917
+#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:839
+#: ../src/libs/filtering.c:921
 msgid "files"
 msgstr "Dateien"
 
 #: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:310
-#: ../src/libs/filtering.c:840 ../src/libs/filtering.c:922
+#: ../src/libs/filtering.c:844 ../src/libs/filtering.c:926
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:538 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "Metadaten"
 
-#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:860
-#: ../src/libs/filtering.c:942
+#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:864
+#: ../src/libs/filtering.c:946
 msgid "times"
 msgstr "Datum/Uhrzeit"
 
-#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:868
-#: ../src/libs/filtering.c:950
+#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:872
+#: ../src/libs/filtering.c:954
 msgid "capture details"
 msgstr "Aufnahmeparameter"
 
@@ -19090,20 +19246,20 @@ msgstr "Speichern"
 msgid "preferences..."
 msgstr "Voreinstellungen"
 
-#: ../src/libs/collect.c:3007 ../src/libs/filtering.c:1390
+#: ../src/libs/collect.c:3007 ../src/libs/filtering.c:1394
 msgid " and "
 msgstr " UND "
 
-#: ../src/libs/collect.c:3012 ../src/libs/filtering.c:1395
+#: ../src/libs/collect.c:3012 ../src/libs/filtering.c:1399
 msgid " or "
 msgstr " ODER "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3017 ../src/libs/filtering.c:1400
+#: ../src/libs/collect.c:3017 ../src/libs/filtering.c:1404
 msgid " but not "
 msgstr " ABER NICHT "
 
-#: ../src/libs/collect.c:3178 ../src/libs/filtering.c:1926
+#: ../src/libs/collect.c:3178 ../src/libs/filtering.c:1930
 msgid "revert to a previous set of rules"
 msgstr "zu einem früheren Satz von Filterregeln zurückkehren"
 
@@ -19126,14 +19282,6 @@ msgstr "Hex"
 #: ../src/libs/colorpicker.c:53
 msgid "mean"
 msgstr "Mittel"
-
-#: ../src/libs/colorpicker.c:53
-msgid "min"
-msgstr "Minimum"
-
-#: ../src/libs/colorpicker.c:53
-msgid "max"
-msgstr "Maximum"
 
 #: ../src/libs/colorpicker.c:71
 msgid "color picker"
@@ -19693,31 +19841,39 @@ msgstr "Hinzufügen eines Ausgabe Metadaten Tags"
 msgid "delete metadata tag"
 msgstr "Metadaten Tag löschen"
 
-#: ../src/libs/filtering.c:225
-msgid "filters for collections"
+#: ../src/libs/filtering.c:226
+msgid "collection filters"
 msgstr "Filter- und Sortierung"
 
-#: ../src/libs/filtering.c:258
+#: ../src/libs/filtering.c:259
 msgid "initial setting"
 msgstr "initiale Einstellung"
 
-#: ../src/libs/filtering.c:277
+#: ../src/libs/filtering.c:278
 msgid "imported: last 24h"
 msgstr "importiert: letzte 24 Stunden"
 
-#: ../src/libs/filtering.c:282
+#: ../src/libs/filtering.c:283
 msgid "imported: last 30 days"
 msgstr "importiert: letzte 30 Tage"
 
-#: ../src/libs/filtering.c:288
+#: ../src/libs/filtering.c:289
 msgid "taken: last 24h"
 msgstr "aufgenommen: letzte 24 Stunden"
 
-#: ../src/libs/filtering.c:292
+#: ../src/libs/filtering.c:293
 msgid "taken: last 30 days"
 msgstr "aufgenommen: letzte 30 Tage"
 
-#: ../src/libs/filtering.c:908
+#: ../src/libs/filtering.c:646
+msgid "right-click to set specific values"
+msgstr "Rechtsklick zum Einstellen der gewünschten Werte"
+
+#: ../src/libs/filtering.c:647
+msgid "actual selection:"
+msgstr "aktuelle Auswahl:"
+
+#: ../src/libs/filtering.c:912
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
@@ -19727,16 +19883,16 @@ msgstr ""
 "ist"
 
 #. otherwise we add all implemented rules
-#: ../src/libs/filtering.c:915
+#: ../src/libs/filtering.c:919
 msgid "rule property"
 msgstr "Filterregel Eigenschaft"
 
-#: ../src/libs/filtering.c:1008
+#: ../src/libs/filtering.c:1012
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "Filter"
 
-#: ../src/libs/filtering.c:1034
+#: ../src/libs/filtering.c:1038
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "ctrl-click to un-pin"
@@ -19744,7 +19900,7 @@ msgstr ""
 "diese Filterregel ist an die obere Symbolleiste angeheftet\n"
 "Strg-Klick zum Entfernen"
 
-#: ../src/libs/filtering.c:1039
+#: ../src/libs/filtering.c:1043
 msgid ""
 "disable this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19752,23 +19908,23 @@ msgstr ""
 "diese Filterregel deaktivieren\n"
 "Strg-Klick zum Anheften in der oberen Symbolleiste"
 
-#: ../src/libs/filtering.c:1166
+#: ../src/libs/filtering.c:1170
 msgid "and"
 msgstr "und"
 
-#: ../src/libs/filtering.c:1167
+#: ../src/libs/filtering.c:1171
 msgid "or"
 msgstr "oder"
 
-#: ../src/libs/filtering.c:1168
+#: ../src/libs/filtering.c:1172
 msgid "and not"
 msgstr "und nicht"
 
-#: ../src/libs/filtering.c:1170
+#: ../src/libs/filtering.c:1174
 msgid "define how this rule should interact with the previous one"
 msgstr "festlegen, wie diese Filteregel mit der vorherigen zusammenwirken soll"
 
-#: ../src/libs/filtering.c:1214
+#: ../src/libs/filtering.c:1218
 msgid ""
 "remove this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19776,52 +19932,51 @@ msgstr ""
 "diese Filterregel entfernen\n"
 "Strg-Klick zum Anheften in der oberen Symbolleiste"
 
-#: ../src/libs/filtering.c:1421
+#: ../src/libs/filtering.c:1425
 msgid " (off)"
 msgstr " (aus)"
 
-#: ../src/libs/filtering.c:1636
+#: ../src/libs/filtering.c:1640
 msgid "determine the sort order of shown images"
 msgstr "die Sortierreihenfolge der angezeigten Bilder festlegen"
 
-#: ../src/libs/filtering.c:1674
+#: ../src/libs/filtering.c:1678
 msgid "remove this sort order"
 msgstr "diese Sortierung entfernen"
 
-#: ../src/libs/filtering.c:1828
+#: ../src/libs/filtering.c:1832
 msgid "DESC"
 msgstr "absteigend"
 
-#: ../src/libs/filtering.c:1828
+#: ../src/libs/filtering.c:1832
 msgid "ASC"
 msgstr "aufsteigend"
 
-#: ../src/libs/filtering.c:1922
+#: ../src/libs/filtering.c:1926
 msgid "new rule"
 msgstr "neue Filterregel"
 
-#: ../src/libs/filtering.c:1923
+#: ../src/libs/filtering.c:1927
 msgid "append new rule to collect images"
 msgstr "neue Filterregel anhängen"
 
-#: ../src/libs/filtering.c:1935 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1939 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "sortieren nach"
 
-#: ../src/libs/filtering.c:1944
+#: ../src/libs/filtering.c:1948
 msgid "new sort"
 msgstr "neue Sortierregel"
 
-#: ../src/libs/filtering.c:1945
+#: ../src/libs/filtering.c:1949
 msgid "append new sort to order images"
 msgstr "neue Sortierung anhängen"
 
-#: ../src/libs/filtering.c:1948
+#: ../src/libs/filtering.c:1952
 msgid "revert to a previous set of sort orders"
 msgstr "zu einem früheren Satz von Sortierungen  zurückkehren"
 
 #: ../src/libs/filters/colors.c:219
-#| msgid "Y0"
 msgid "Y"
 msgstr "Y"
 
@@ -19834,7 +19989,7 @@ msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
 "ctrl+click to exclude the color label\n"
-"the grey button affects all color labels"
+"the gray button affects all color labels"
 msgstr ""
 "Bilder nach Farbmarkierung filtern\n"
 "Klicken, um die Auswahl der Farbmarkierung umzuschalten\n"
@@ -19851,7 +20006,7 @@ msgstr ""
 "und (∩): Bilder mit allen ausgewählten Farbmarkierungen\n"
 "oder (∪): Bilder mit mindestens einer der ausgewählten Farbmarkierungen"
 
-#: ../src/libs/filters/filename.c:390
+#: ../src/libs/filters/filename.c:364
 msgid ""
 "enter filename to search.\n"
 "multiple values can be separated by ','\n"
@@ -19863,11 +20018,11 @@ msgstr ""
 "\n"
 "Rechtsklick, um vorhandene Dateinamen zu erhalten"
 
-#: ../src/libs/filters/filename.c:404
+#: ../src/libs/filters/filename.c:378
 msgid "extension"
 msgstr "Erweiterung"
 
-#: ../src/libs/filters/filename.c:405
+#: ../src/libs/filters/filename.c:379
 msgid ""
 "enter extension to search with starting dot.\n"
 "multiple values can be separated by ','\n"
@@ -19881,7 +20036,7 @@ msgstr ""
 "\n"
 "Rechtsklick, um vorhandene Erweiterungen zu erhalten"
 
-#: ../src/libs/filters/filename.c:437
+#: ../src/libs/filters/filename.c:411
 msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
@@ -19889,7 +20044,7 @@ msgstr ""
 "Mausklick zur Auswahl des Dateinamens\n"
 "Strg-Klick, um mehrere Werte auszuwählen"
 
-#: ../src/libs/filters/filename.c:464
+#: ../src/libs/filters/filename.c:438
 msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
@@ -19932,7 +20087,7 @@ msgid "square images"
 msgstr "Quadratisch"
 
 #: ../src/libs/filters/ratio.c:72 ../src/libs/filters/ratio.c:84
-msgid "landsacpe images"
+msgid "landscape images"
 msgstr "Querformat"
 
 #: ../src/libs/filters/search.c:179
@@ -22675,6 +22830,11 @@ msgstr "aktuelle Sicht verlassen"
 msgid "module toolbox"
 msgstr "Modul-Toolbox"
 
+#. connect callbacks
+#: ../src/libs/tools/ratings.c:98
+msgid "set star rating for selected images"
+msgstr "Bewertung (Anzahl Sterne) für ausgewählte Bilder festlegen"
+
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
 msgstr "Zeitleiste"
@@ -23397,6 +23557,15 @@ msgstr ""
 #: ../src/views/view.c:1336
 msgid "mouse actions"
 msgstr "Mausaktionen"
+
+#~ msgid "switch dual threshold"
+#~ msgstr "Schwellwert für Wechsel"
+
+#~ msgid "display blending mask"
+#~ msgstr "Überblendemaske anzeigen"
+
+#~ msgid "filters for collections"
+#~ msgstr "Filter- und Sortierung"
 
 #~ msgid "imported: today"
 #~ msgstr "importiert: heute"
@@ -24331,9 +24500,6 @@ msgstr "Mausaktionen"
 #~ msgid "set view to waveform"
 #~ msgstr "zum Waveform-Histogramm wechseln"
 
-#~ msgid "time"
-#~ msgstr "Datum/Uhrzeit"
-
 #~ msgid "do not show april 1st game"
 #~ msgstr "1.-April-Spiel nicht starten"
 
@@ -25115,9 +25281,6 @@ msgstr "Mausaktionen"
 #~ "füge einen bestimmten Teil des kopierten Verlaufsstapels in allen "
 #~ "ausgewählten Bildern ein"
 
-#~ msgid "date time"
-#~ msgstr "Datum/Uhrzeit"
-
 #~ msgid "show on map images to be geotagged"
 #~ msgstr ""
 #~ "auf der Karte Bilder anzeigen, die mit Geotags versehen werden sollen"
@@ -25304,9 +25467,6 @@ msgstr "Mausaktionen"
 #~ msgid "ctrl+click to switch between smooth/sharp node"
 #~ msgstr "Strg+Klick schaltet um glatten und spitzen Knoten um."
 
-#~ msgid "right-click to reset curvature"
-#~ msgstr "Rechtsklick setzt die Krümmung zurück."
-
 #, c-format
 #~ msgid ""
 #~ "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
@@ -25419,9 +25579,6 @@ msgstr "Mausaktionen"
 
 #~ msgid "culling"
 #~ msgstr "Sichten"
-
-#~ msgid "fixed zoom"
-#~ msgstr "manuelle Sortierung"
 
 #~ msgid "dynamic zoom"
 #~ msgstr "Dynamischer Zoom"
@@ -26810,9 +26967,6 @@ msgstr "Mausaktionen"
 #~ msgid "use a basecurve by default (needs a restart)"
 #~ msgstr "Benutze immer eine Basiskurve. Bei Änderung Neustart erforderlich."
 
-#~ msgid "date"
-#~ msgstr "Datum"
-
 #~ msgid "lift/gamma/gain controls as seen in video editors"
 #~ msgstr ""
 #~ "Lift-/Gamma-/Gain-Einstellungen wie sie aus Videobearbeitungsprogrammen "
@@ -27630,11 +27784,6 @@ msgstr "Mausaktionen"
 #~ msgctxt "accel"
 #~ msgid "toggle gamutcheck"
 #~ msgstr "Gamut-Überprüfung umschalten"
-
-#, fuzzy
-#~ msgctxt "accel"
-#~ msgid "luma threshold"
-#~ msgstr "Schwellwert"
 
 #, fuzzy
 #~ msgctxt "accel"

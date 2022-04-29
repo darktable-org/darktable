@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 3.9\n"
+"Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-17 10:34+0200\n"
-"PO-Revision-Date: 2022-04-17 20:47+0300\n"
+"POT-Creation-Date: 2022-04-26 18:13+0200\n"
+"PO-Revision-Date: 2022-04-28 17:52+0300\n"
 "Last-Translator: Serkan ÖNDER <serkanonder@outlook.com>\n"
 "Language-Team: \n"
 "Language: tr\n"
@@ -75,7 +75,7 @@ msgid "this setting has been modified"
 msgstr "bu ayar değiştirildi"
 
 #: ../build/bin/preferences_gen.h:3950 ../src/gui/gtk.c:1176
-#: ../src/gui/preferences.c:537 ../src/libs/tools/lighttable.c:68
+#: ../src/gui/preferences.c:538 ../src/libs/tools/lighttable.c:68
 #: ../src/views/lighttable.c:88
 msgid "lighttable"
 msgstr "ışık masası"
@@ -375,7 +375,7 @@ msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "küçük resim ipucu için desen (devre dışı bırakmak için boş)"
 
 #: ../build/bin/preferences_gen.h:4555 ../src/gui/gtk.c:1177
-#: ../src/gui/preferences.c:537 ../src/views/darkroom.c:88
+#: ../src/gui/preferences.c:538 ../src/views/darkroom.c:88
 msgid "darkroom"
 msgstr "karanlık oda"
 
@@ -914,12 +914,12 @@ msgid "3D lut root folder"
 msgstr "3B lut kök klasörü"
 
 #: ../build/bin/preferences_gen.h:5909 ../src/control/jobs/control_jobs.c:1679
-#: ../src/control/jobs/control_jobs.c:1741 ../src/gui/preferences.c:1034
+#: ../src/control/jobs/control_jobs.c:1741 ../src/gui/preferences.c:1035
 #: ../src/gui/presets.c:375 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/disk.c:188 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/gallery.c:172 ../src/imageio/storage/latex.c:107
-#: ../src/imageio/storage/latex.c:171 ../src/libs/import.c:1500
-#: ../src/libs/import.c:1604 ../src/libs/import.c:1658 ../src/libs/styles.c:376
+#: ../src/imageio/storage/latex.c:171 ../src/libs/import.c:1497
+#: ../src/libs/import.c:1601 ../src/libs/import.c:1655 ../src/libs/styles.c:376
 #: ../src/lua/preferences.c:667
 msgid "select directory"
 msgstr "dizini seç"
@@ -2355,7 +2355,7 @@ msgstr "kırpma"
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:148
 #: ../build/lib/darktable/plugins/introspection_ashift.c:291
-#: ../src/common/collection.c:676 ../src/gui/preferences.c:819
+#: ../src/common/collection.c:678 ../src/gui/preferences.c:820
 #: ../src/gui/presets.c:600 ../src/libs/camera.c:551
 #: ../src/libs/metadata_view.c:143
 msgid "focal length"
@@ -2403,8 +2403,8 @@ msgstr "özel"
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
 #: ../src/develop/blend_gui.c:2973 ../src/develop/develop.c:2251
-#: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:128
-#: ../src/gui/accelerators.c:196 ../src/imageio/format/avif.c:825
+#: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:130
+#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:825
 #: ../src/imageio/format/j2k.c:673 ../src/libs/live_view.c:361
 msgid "off"
 msgstr "kapalı"
@@ -2455,7 +2455,7 @@ msgstr "renkleri koru"
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2082
 #: ../src/iop/channelmixerrgb.c:4227 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2111 ../src/iop/clipping.c:2126
-#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1816
+#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1814
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1036
 #: ../src/libs/live_view.c:311 ../src/libs/print_settings.c:2668
 msgid "none"
@@ -2602,7 +2602,7 @@ msgid "offset"
 msgstr "ofset"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
-#: ../src/common/collection.c:674 ../src/gui/preferences.c:803
+#: ../src/common/collection.c:676 ../src/gui/preferences.c:804
 #: ../src/gui/presets.c:551 ../src/libs/metadata_view.c:139
 msgid "lens"
 msgstr "mercek"
@@ -2621,7 +2621,7 @@ msgstr "gaussian"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:110
 #: ../build/lib/darktable/plugins/introspection_borders.c:251
-#: ../src/common/collection.c:636 ../src/common/collection.c:684
+#: ../src/common/collection.c:638 ../src/common/collection.c:686
 msgid "aspect ratio"
 msgstr "en boy oranı"
 
@@ -2727,35 +2727,36 @@ msgid "very large chromatic aberration"
 msgstr "çok büyük renk sapması"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1420 ../src/develop/blend_gui.c:1989
-#: ../src/develop/blend_gui.c:2016 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:2915 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
-#: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
-#: ../src/iop/channelmixerrgb.c:4179 ../src/iop/colorzones.c:2302
-#: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1993
-#: ../src/libs/collect.c:1700
+#: ../src/common/collection.c:1422 ../src/common/color_vocabulary.c:230
+#: ../src/develop/blend_gui.c:1989 ../src/develop/blend_gui.c:2016
+#: ../src/develop/lightroom.c:834 ../src/gui/gtk.c:2917 ../src/gui/guides.c:730
+#: ../src/iop/bilateral.cc:305 ../src/iop/channelmixer.c:625
+#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:4179
+#: ../src/iop/colorzones.c:2302 ../src/iop/temperature.c:1819
+#: ../src/iop/temperature.c:1992 ../src/libs/collect.c:1698
 msgid "red"
 msgstr "kırmızı"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1424 ../src/develop/blend_gui.c:1992
-#: ../src/develop/blend_gui.c:2019 ../src/develop/lightroom.c:838
-#: ../src/gui/gtk.c:2916 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
-#: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
-#: ../src/iop/channelmixerrgb.c:4180 ../src/iop/colorzones.c:2305
-#: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
-#: ../src/iop/temperature.c:1994 ../src/libs/collect.c:1700
+#: ../src/common/collection.c:1426 ../src/common/color_vocabulary.c:275
+#: ../src/develop/blend_gui.c:1992 ../src/develop/blend_gui.c:2019
+#: ../src/develop/lightroom.c:838 ../src/gui/gtk.c:2918 ../src/gui/guides.c:731
+#: ../src/iop/bilateral.cc:310 ../src/iop/channelmixer.c:626
+#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:4180
+#: ../src/iop/colorzones.c:2305 ../src/iop/temperature.c:1803
+#: ../src/iop/temperature.c:1821 ../src/iop/temperature.c:1993
+#: ../src/libs/collect.c:1698
 msgid "green"
 msgstr "yeşil"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1426 ../src/develop/blend_gui.c:1995
-#: ../src/develop/blend_gui.c:2022 ../src/develop/lightroom.c:840
-#: ../src/gui/gtk.c:2917 ../src/iop/bilateral.cc:315
-#: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
-#: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2307
-#: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1995
-#: ../src/libs/collect.c:1700
+#: ../src/common/collection.c:1428 ../src/common/color_vocabulary.c:322
+#: ../src/develop/blend_gui.c:1995 ../src/develop/blend_gui.c:2022
+#: ../src/develop/lightroom.c:840 ../src/gui/gtk.c:2919
+#: ../src/iop/bilateral.cc:315 ../src/iop/channelmixer.c:627
+#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:4181
+#: ../src/iop/colorzones.c:2307 ../src/iop/temperature.c:1823
+#: ../src/iop/temperature.c:1994 ../src/libs/collect.c:1698
 msgid "blue"
 msgstr "mavi"
 
@@ -3007,7 +3008,7 @@ msgstr "sol"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
-#: ../src/gui/accelerators.c:104 ../src/gui/gtk.c:1143
+#: ../src/gui/accelerators.c:106 ../src/gui/gtk.c:1143
 msgid "top"
 msgstr "üst"
 
@@ -3023,7 +3024,7 @@ msgstr "sağ"
 #: ../build/lib/darktable/plugins/introspection_clipping.c:315
 #: ../build/lib/darktable/plugins/introspection_crop.c:79
 #: ../build/lib/darktable/plugins/introspection_crop.c:146
-#: ../src/gui/accelerators.c:105 ../src/gui/gtk.c:1150
+#: ../src/gui/accelerators.c:107 ../src/gui/gtk.c:1150
 msgid "bottom"
 msgstr "alt"
 
@@ -3212,16 +3213,16 @@ msgstr "kontrast gri dayanak noktası"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:405
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:572
 #: ../src/gui/guides.c:738 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
-#: ../src/iop/colisa.c:305 ../src/iop/colorbalance.c:1896
-#: ../src/iop/colorbalance.c:1902 ../src/iop/filmic.c:1649
-#: ../src/iop/filmicrgb.c:4438 ../src/iop/lowpass.c:573
+#: ../src/iop/colisa.c:305 ../src/iop/colorbalance.c:1895
+#: ../src/iop/colorbalance.c:1901 ../src/iop/filmic.c:1649
+#: ../src/iop/filmicrgb.c:4437 ../src/iop/lowpass.c:573
 msgid "contrast"
 msgstr "kontrast"
 
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:54
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:121
 msgid "green-magenta contrast"
-msgstr "yeşil-macenta kontrastı"
+msgstr "yeşil-eflatun kontrastı"
 
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:66
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:129
@@ -3304,11 +3305,11 @@ msgstr "doygun renkler"
 #: ../src/develop/blend_gui.c:1980 ../src/develop/blend_gui.c:1999
 #: ../src/develop/blend_gui.c:2034 ../src/iop/channelmixer.c:622
 #: ../src/iop/channelmixerrgb.c:4051 ../src/iop/channelmixerrgb.c:4141
-#: ../src/iop/colorbalance.c:1991 ../src/iop/colorbalancergb.c:1764
+#: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:1764
 #: ../src/iop/colorbalancergb.c:1765 ../src/iop/colorbalancergb.c:1766
 #: ../src/iop/colorbalancergb.c:1767 ../src/iop/colorize.c:344
 #: ../src/iop/colorreconstruction.c:1288 ../src/iop/colorzones.c:2433
-#: ../src/iop/splittoning.c:476
+#: ../src/iop/splittoning.c:471
 msgid "hue"
 msgstr "ton"
 
@@ -3348,12 +3349,12 @@ msgstr "hafiflik"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:1976 ../src/iop/basicadj.c:624
 #: ../src/iop/channelmixer.c:623 ../src/iop/colisa.c:307
-#: ../src/iop/colorbalance.c:2008 ../src/iop/colorbalancergb.c:1782
+#: ../src/iop/colorbalance.c:2007 ../src/iop/colorbalancergb.c:1782
 #: ../src/iop/colorbalancergb.c:1783 ../src/iop/colorbalancergb.c:1784
 #: ../src/iop/colorchecker.c:1376 ../src/iop/colorcontrast.c:94
 #: ../src/iop/colorcorrection.c:283 ../src/iop/colorize.c:357
 #: ../src/iop/colorzones.c:2432 ../src/iop/lowpass.c:575
-#: ../src/iop/soften.c:399 ../src/iop/splittoning.c:488 ../src/iop/velvia.c:84
+#: ../src/iop/soften.c:399 ../src/iop/splittoning.c:483 ../src/iop/velvia.c:84
 #: ../src/iop/vibrance.c:72 ../src/iop/vignette.c:982
 msgid "saturation"
 msgstr "doygunluk"
@@ -3429,8 +3430,8 @@ msgstr "lmmse rafine"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
-msgid "switch dual threshold"
-msgstr "çift eşiği değiştir"
+msgid "dual threshold"
+msgstr "çift eşik"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:197
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:204
@@ -3508,8 +3509,8 @@ msgid "Markesteijn 3-pass + VNG"
 msgstr "Markesteijn 3-geçişli + VNG"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1446 ../src/common/collection.c:1454
-#: ../src/libs/collect.c:1654
+#: ../src/common/collection.c:1448 ../src/common/collection.c:1456
+#: ../src/libs/collect.c:1652
 msgid "basic"
 msgstr "temel"
 
@@ -3583,7 +3584,7 @@ msgstr "profilli dönüşümü yükselt"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:800 ../src/libs/colorpicker.c:576
+#: ../src/imageio/format/avif.c:800 ../src/libs/colorpicker.c:577
 msgid "color mode"
 msgstr "renk modu"
 
@@ -3795,7 +3796,7 @@ msgstr "sertlik"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:296
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4611
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4610
 msgid "extreme luminance saturation"
 msgstr "aşırı parlaklık doygunluğu"
 
@@ -3863,8 +3864,8 @@ msgstr "spline işleme"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2713 ../src/common/variables.c:592
 #: ../src/develop/imageop_gui.c:196 ../src/imageio/format/pdf.c:647
-#: ../src/imageio/format/pdf.c:672 ../src/libs/export.c:1209
-#: ../src/libs/export.c:1215 ../src/libs/export.c:1222
+#: ../src/imageio/format/pdf.c:672 ../src/libs/export.c:1208
+#: ../src/libs/export.c:1214 ../src/libs/export.c:1221
 #: ../src/libs/metadata_view.c:678
 msgid "no"
 msgstr "hayır"
@@ -3979,7 +3980,7 @@ msgstr "orta tonlar eğilim"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:125
 #: ../build/lib/darktable/plugins/introspection_highlights.c:220
-#: ../src/views/darkroom.c:2330
+#: ../src/views/darkroom.c:2331
 msgid "clipping threshold"
 msgstr "kırpma eşiği"
 
@@ -4076,12 +4077,12 @@ msgstr "3 komşu tarafından tespit"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:219
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
-#: ../src/iop/bilat.c:427 ../src/iop/colorbalance.c:1858
+#: ../src/iop/bilat.c:427 ../src/iop/colorbalance.c:1857
 #: ../src/iop/denoiseprofile.c:3665 ../src/iop/exposure.c:1060
 #: ../src/iop/levels.c:680 ../src/iop/profile_gamma.c:676
-#: ../src/libs/copy_history.c:386 ../src/libs/export.c:1303
+#: ../src/libs/copy_history.c:386 ../src/libs/export.c:1302
 #: ../src/libs/image.c:599 ../src/libs/print_settings.c:2707
-#: ../src/libs/styles.c:827 ../src/views/darkroom.c:2306
+#: ../src/libs/styles.c:827 ../src/views/darkroom.c:2307
 msgid "mode"
 msgstr "mod"
 
@@ -4112,8 +4113,8 @@ msgstr "geçersiz"
 
 #. move left/right/up/down
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
-#: ../src/views/darkroom.c:2205 ../src/views/darkroom.c:2611
-#: ../src/views/darkroom.c:2614 ../src/views/lighttable.c:760
+#: ../src/views/darkroom.c:2206 ../src/views/darkroom.c:2612
+#: ../src/views/darkroom.c:2615 ../src/views/lighttable.c:760
 #: ../src/views/lighttable.c:769 ../src/views/lighttable.c:1237
 #: ../src/views/lighttable.c:1241 ../src/views/lighttable.c:1245
 #: ../src/views/lighttable.c:1249 ../src/views/lighttable.c:1253
@@ -4302,7 +4303,7 @@ msgstr "beyaz nokta"
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
 #: ../build/lib/darktable/plugins/introspection_relight.c:98
-#: ../src/common/collection.c:682 ../src/gui/preferences.c:811
+#: ../src/common/collection.c:684 ../src/gui/preferences.c:812
 #: ../src/gui/presets.c:570 ../src/iop/basicadj.c:598 ../src/iop/exposure.c:123
 #: ../src/iop/exposure.c:1025 ../src/libs/metadata_view.c:141
 msgid "exposure"
@@ -4317,7 +4318,7 @@ msgstr "dolgu modu"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:426
 #: ../src/iop/basicadj.c:620 ../src/iop/channelmixerrgb.c:4184
 #: ../src/iop/colisa.c:306 ../src/iop/lowpass.c:574 ../src/iop/soften.c:403
-#: ../src/iop/vignette.c:981 ../src/libs/history.c:872
+#: ../src/iop/vignette.c:981 ../src/libs/history.c:868
 msgid "brightness"
 msgstr "parlaklık"
 
@@ -4360,7 +4361,7 @@ msgstr "silme"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
 #: ../src/gui/presets.c:59 ../src/iop/watermark.c:1106
 #: ../src/libs/colorpicker.c:285 ../src/libs/image.c:615
-#: ../src/libs/modulegroups.c:2406
+#: ../src/libs/modulegroups.c:2409
 msgid "color"
 msgstr "renk"
 
@@ -4431,10 +4432,10 @@ msgstr "derin gölgeler"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:156
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:297
-#: ../src/iop/bilat.c:459 ../src/iop/colorbalance.c:2048
+#: ../src/iop/bilat.c:459 ../src/iop/colorbalance.c:2047
 #: ../src/iop/colorbalancergb.c:1780 ../src/iop/colorbalancergb.c:1784
 #: ../src/iop/colorbalancergb.c:1788 ../src/iop/shadhi.c:680
-#: ../src/iop/splittoning.c:525
+#: ../src/iop/splittoning.c:520
 msgid "shadows"
 msgstr "gölgeler"
 
@@ -4445,7 +4446,7 @@ msgstr "hafif gölgeler"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:168
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
-#: ../src/iop/colorbalance.c:2049 ../src/iop/colorbalancergb.c:1779
+#: ../src/iop/colorbalance.c:2048 ../src/iop/colorbalancergb.c:1779
 #: ../src/iop/colorbalancergb.c:1783 ../src/iop/colorbalancergb.c:1787
 msgid "mid-tones"
 msgstr "orta tonlar"
@@ -4457,10 +4458,10 @@ msgstr "karanlık vurgular"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:180
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:313
-#: ../src/iop/bilat.c:454 ../src/iop/colorbalance.c:2050
+#: ../src/iop/bilat.c:454 ../src/iop/colorbalance.c:2049
 #: ../src/iop/colorbalancergb.c:1778 ../src/iop/colorbalancergb.c:1782
 #: ../src/iop/colorbalancergb.c:1786 ../src/iop/monochrome.c:576
-#: ../src/iop/shadhi.c:681 ../src/iop/splittoning.c:527
+#: ../src/iop/shadhi.c:681 ../src/iop/splittoning.c:522
 msgid "highlights"
 msgstr "vurgular"
 
@@ -4706,60 +4707,60 @@ msgstr "Görüntüleri haritada göster"
 msgid "Print your images"
 msgstr "Görüntüleri yazdırın"
 
-#: ../src/bauhaus/bauhaus.c:3282
+#: ../src/bauhaus/bauhaus.c:3274
 msgid "button on"
 msgstr "düğme açık"
 
-#: ../src/bauhaus/bauhaus.c:3282
+#: ../src/bauhaus/bauhaus.c:3274
 msgid "button off"
 msgstr "düğme kapalı"
 
-#: ../src/bauhaus/bauhaus.c:3451 ../src/gui/accelerators.c:268
+#: ../src/bauhaus/bauhaus.c:3443 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "değer"
 
-#: ../src/bauhaus/bauhaus.c:3452 ../src/bauhaus/bauhaus.c:3458
-#: ../src/gui/accelerators.c:251
+#: ../src/bauhaus/bauhaus.c:3444 ../src/bauhaus/bauhaus.c:3450
+#: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "düğme"
 
-#: ../src/bauhaus/bauhaus.c:3453
+#: ../src/bauhaus/bauhaus.c:3445
 msgid "force"
 msgstr "kuvvet"
 
-#: ../src/bauhaus/bauhaus.c:3454
+#: ../src/bauhaus/bauhaus.c:3446
 msgid "zoom"
 msgstr "yakınlaştırma"
 
-#: ../src/bauhaus/bauhaus.c:3457
+#: ../src/bauhaus/bauhaus.c:3449
 msgid "selection"
 msgstr "seçim"
 
-#: ../src/bauhaus/bauhaus.c:3476
+#: ../src/bauhaus/bauhaus.c:3468
 msgid "slider"
 msgstr "kaydırıcı"
 
-#: ../src/bauhaus/bauhaus.c:3481
+#: ../src/bauhaus/bauhaus.c:3473
 msgid "dropdown"
 msgstr "aşağı sürükleme"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1680
-#: ../src/control/jobs/control_jobs.c:1742 ../src/gui/accelerators.c:1822
-#: ../src/gui/accelerators.c:1898 ../src/gui/accelerators.c:1949
-#: ../src/gui/accelerators.c:1977 ../src/gui/accelerators.c:2036
-#: ../src/gui/hist_dialog.c:195 ../src/gui/preferences.c:996
-#: ../src/gui/preferences.c:1035 ../src/gui/presets.c:376
+#: ../src/control/jobs/control_jobs.c:1742 ../src/gui/accelerators.c:1891
+#: ../src/gui/accelerators.c:1967 ../src/gui/accelerators.c:2018
+#: ../src/gui/accelerators.c:2046 ../src/gui/accelerators.c:2105
+#: ../src/gui/hist_dialog.c:195 ../src/gui/preferences.c:997
+#: ../src/gui/preferences.c:1036 ../src/gui/presets.c:376
 #: ../src/gui/presets.c:476 ../src/gui/styles_dialog.c:420
 #: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1557
 #: ../src/libs/collect.c:394 ../src/libs/copy_history.c:107
-#: ../src/libs/geotagging.c:929 ../src/libs/import.c:1500
-#: ../src/libs/import.c:1604 ../src/libs/styles.c:377 ../src/libs/styles.c:512
+#: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
+#: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
 #: ../src/libs/tagging.c:2471 ../src/libs/tagging.c:2507
 msgid "_cancel"
 msgstr "_vazgeç"
 
-#: ../src/chart/main.c:504 ../src/gui/preferences.c:1035
+#: ../src/chart/main.c:504 ../src/gui/preferences.c:1036
 #: ../src/gui/styles_dialog.c:423 ../src/libs/styles.c:377
 msgid "_save"
 msgstr "_kaydet"
@@ -4952,227 +4953,554 @@ msgstr ""
 "'%s' bağlantı noktasındaki '%s' kamerasının yeniden takılması gerekiyor\n"
 "erişime izin verdiğinden ve başka şekilde bağlı olmadığından emin olun"
 
-#: ../src/common/collection.c:594
+#: ../src/common/collection.c:596
 msgid "too much time to update aspect ratio for the collection"
 msgstr "koleksiyon için en boy oranını güncellemek için çok fazla zaman"
 
-#: ../src/common/collection.c:608 ../src/common/collection.c:686
-#: ../src/libs/filters/filename.c:389 ../src/libs/metadata_view.c:126
+#: ../src/common/collection.c:610 ../src/common/collection.c:688
+#: ../src/libs/filters/filename.c:363 ../src/libs/metadata_view.c:126
 msgid "filename"
 msgstr "dosya adı"
 
-#: ../src/common/collection.c:610
+#: ../src/common/collection.c:612
 msgid "capture time"
 msgstr "yakalama zamanı"
 
-#: ../src/common/collection.c:612
+#: ../src/common/collection.c:614
 msgid "import time"
 msgstr "içe aktarma zamanı"
 
-#: ../src/common/collection.c:614
+#: ../src/common/collection.c:616
 msgid "last modification time"
 msgstr "son değişiklik zamanı"
 
-#: ../src/common/collection.c:616
+#: ../src/common/collection.c:618
 msgid "last export time"
 msgstr "son dışa aktarma zamanı"
 
-#: ../src/common/collection.c:618
+#: ../src/common/collection.c:620
 msgid "last print time"
 msgstr "son baskı zamanı"
 
-#: ../src/common/collection.c:620 ../src/common/collection.c:698
+#: ../src/common/collection.c:622 ../src/common/collection.c:700
 #: ../src/common/ratings.c:321 ../src/develop/lightroom.c:1525
-#: ../src/libs/tools/ratings.c:110
+#: ../src/libs/tools/ratings.c:111
 msgid "rating"
 msgstr "değerlendirme"
 
-#: ../src/common/collection.c:622 ../src/libs/live_view.c:313
+#: ../src/common/collection.c:624 ../src/libs/live_view.c:313
 msgid "id"
 msgstr "kimlik"
 
-#: ../src/common/collection.c:624 ../src/common/collection.c:672
+#: ../src/common/collection.c:626 ../src/common/collection.c:674
 #: ../src/develop/lightroom.c:1550 ../src/dtgtk/thumbnail.c:1384
-#: ../src/libs/tools/colorlabels.c:93
+#: ../src/libs/tools/colorlabels.c:94
 msgid "color label"
 msgstr "renk etiketi"
 
-#: ../src/common/collection.c:626 ../src/libs/image.c:528
+#: ../src/common/collection.c:628 ../src/libs/image.c:528
 msgid "group"
 msgstr "grup"
 
-#: ../src/common/collection.c:628 ../src/libs/metadata_view.c:128
+#: ../src/common/collection.c:630 ../src/libs/metadata_view.c:128
 msgid "full path"
 msgstr "tam yol"
 
-#: ../src/common/collection.c:630
+#: ../src/common/collection.c:632
 msgid "custom sort"
 msgstr "özel sıralama"
 
 #. title
-#: ../src/common/collection.c:632 ../src/common/metadata.c:48
+#: ../src/common/collection.c:634 ../src/common/metadata.c:48
 #: ../src/imageio/format/pdf.c:573 ../src/imageio/storage/gallery.c:178
 #: ../src/imageio/storage/latex.c:178 ../src/imageio/storage/piwigo.c:893
 msgid "title"
 msgstr "başlık"
 
-#: ../src/common/collection.c:634 ../src/common/metadata.c:49
+#: ../src/common/collection.c:636 ../src/common/metadata.c:49
 #: ../src/gui/styles_dialog.c:451
 msgid "description"
 msgstr "açıklama"
 
-#: ../src/common/collection.c:638
+#: ../src/common/collection.c:640
 msgid "shuffle"
 msgstr "karıştır"
 
-#: ../src/common/collection.c:650
+#: ../src/common/collection.c:652
 msgid "film roll"
 msgstr "film rulosu"
 
-#: ../src/common/collection.c:652
+#: ../src/common/collection.c:654
 msgid "folder"
 msgstr "klasör"
 
-#: ../src/common/collection.c:654
+#: ../src/common/collection.c:656
 msgid "camera"
 msgstr "kamera"
 
-#: ../src/common/collection.c:656 ../src/libs/export_metadata.c:189
-#: ../src/libs/tagging.c:3268
+#: ../src/common/collection.c:658 ../src/libs/export_metadata.c:189
+#: ../src/libs/tagging.c:3269
 msgid "tag"
 msgstr "etiket"
 
-#: ../src/common/collection.c:658
+#: ../src/common/collection.c:660
 msgid "date taken"
 msgstr "alındığı tarih"
 
-#: ../src/common/collection.c:660
+#: ../src/common/collection.c:662
 msgid "date-time taken"
 msgstr "alınan tarih-saat"
 
-#: ../src/common/collection.c:662 ../src/libs/metadata_view.c:130
+#: ../src/common/collection.c:664 ../src/libs/metadata_view.c:130
 msgid "import timestamp"
 msgstr "zaman damgasını içe aktar"
 
-#: ../src/common/collection.c:664 ../src/libs/metadata_view.c:131
+#: ../src/common/collection.c:666 ../src/libs/metadata_view.c:131
 msgid "change timestamp"
 msgstr "zaman damgasını değiştir"
 
-#: ../src/common/collection.c:666 ../src/libs/metadata_view.c:132
+#: ../src/common/collection.c:668 ../src/libs/metadata_view.c:132
 msgid "export timestamp"
 msgstr "zaman damgasını dışa aktar"
 
-#: ../src/common/collection.c:668 ../src/libs/metadata_view.c:133
+#: ../src/common/collection.c:670 ../src/libs/metadata_view.c:133
 msgid "print timestamp"
 msgstr "zaman damgasını yazdır"
 
-#: ../src/common/collection.c:670 ../src/libs/collect.c:3177
-#: ../src/libs/filtering.c:1925 ../src/libs/filtering.c:1947
+#: ../src/common/collection.c:672 ../src/libs/collect.c:3172
+#: ../src/libs/filtering.c:1919 ../src/libs/filtering.c:1939
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "geçmiş"
 
 #. iso
-#: ../src/common/collection.c:678 ../src/gui/preferences.c:807
+#: ../src/common/collection.c:680 ../src/gui/preferences.c:808
 #: ../src/gui/presets.c:557 ../src/libs/camera.c:559
 #: ../src/libs/metadata_view.c:145
 msgid "ISO"
 msgstr "ISO"
 
 #. aperture
-#: ../src/common/collection.c:680 ../src/gui/preferences.c:815
+#: ../src/common/collection.c:682 ../src/gui/preferences.c:816
 #: ../src/gui/presets.c:585 ../src/libs/camera.c:546 ../src/libs/camera.c:548
 #: ../src/libs/metadata_view.c:140
 msgid "aperture"
 msgstr "diyafram açıklığı"
 
-#: ../src/common/collection.c:688 ../src/develop/lightroom.c:1541
+#: ../src/common/collection.c:690 ../src/develop/lightroom.c:1541
 #: ../src/libs/geotagging.c:141
 msgid "geotagging"
 msgstr "coğrafi etiketleme"
 
-#: ../src/common/collection.c:690 ../src/libs/tools/global_toolbox.c:396
+#: ../src/common/collection.c:692 ../src/libs/tools/global_toolbox.c:396
 msgid "grouping"
 msgstr "gruplama"
 
-#: ../src/common/collection.c:692 ../src/dtgtk/thumbnail.c:1396
+#: ../src/common/collection.c:694 ../src/dtgtk/thumbnail.c:1396
 #: ../src/libs/metadata_view.c:129 ../src/libs/metadata_view.c:338
 msgid "local copy"
 msgstr "yerel kopya"
 
-#: ../src/common/collection.c:694 ../src/gui/preferences.c:783
+#: ../src/common/collection.c:696 ../src/gui/preferences.c:784
 msgid "module"
 msgstr "modül"
 
-#: ../src/common/collection.c:696 ../src/gui/hist_dialog.c:280
+#: ../src/common/collection.c:698 ../src/gui/hist_dialog.c:280
 #: ../src/gui/styles_dialog.c:566 ../src/gui/styles_dialog.c:610
 #: ../src/libs/ioporder.c:40
 msgid "module order"
 msgstr "modül siparişi"
 
-#: ../src/common/collection.c:700
+#: ../src/common/collection.c:702
 msgid "search"
 msgstr "ara"
 
-#: ../src/common/collection.c:1422 ../src/develop/lightroom.c:836
+#: ../src/common/collection.c:1424 ../src/develop/lightroom.c:836
 #: ../src/gui/guides.c:732 ../src/iop/colorzones.c:2304
-#: ../src/iop/temperature.c:1809 ../src/libs/collect.c:1700
+#: ../src/iop/temperature.c:1809 ../src/libs/collect.c:1698
 msgid "yellow"
 msgstr "sarı"
 
-#: ../src/common/collection.c:1428 ../src/iop/colorzones.c:2308
-#: ../src/libs/collect.c:1700
+#: ../src/common/collection.c:1430 ../src/common/color_vocabulary.c:337
+#: ../src/iop/colorzones.c:2308 ../src/libs/collect.c:1698
 msgid "purple"
 msgstr "mor"
 
-#: ../src/common/collection.c:1448 ../src/libs/collect.c:1654
+#: ../src/common/collection.c:1450 ../src/libs/collect.c:1652
 msgid "auto applied"
 msgstr "otomatik uygulanan"
 
-#: ../src/common/collection.c:1450 ../src/libs/collect.c:1654
+#: ../src/common/collection.c:1452 ../src/libs/collect.c:1652
 msgid "altered"
 msgstr "değiştirilmiş"
 
-#: ../src/common/collection.c:1463 ../src/common/collection.c:1552
-#: ../src/libs/collect.c:1127 ../src/libs/collect.c:1266
-#: ../src/libs/collect.c:1290 ../src/libs/collect.c:1400
-#: ../src/libs/collect.c:2409
+#: ../src/common/collection.c:1465 ../src/common/collection.c:1554
+#: ../src/libs/collect.c:1125 ../src/libs/collect.c:1264
+#: ../src/libs/collect.c:1288 ../src/libs/collect.c:1398
+#: ../src/libs/collect.c:2407
 msgid "not tagged"
 msgstr "etiketlenmedi"
 
-#: ../src/common/collection.c:1464 ../src/libs/collect.c:1290
+#: ../src/common/collection.c:1466 ../src/libs/collect.c:1288
 #: ../src/libs/map_locations.c:765
 msgid "tagged"
 msgstr "etiketli"
 
-#: ../src/common/collection.c:1465
+#: ../src/common/collection.c:1467
 msgid "tagged*"
 msgstr "etiketli*"
 
-#: ../src/common/collection.c:1500 ../src/libs/collect.c:1668
+#: ../src/common/collection.c:1502 ../src/libs/collect.c:1666
 msgid "not copied locally"
 msgstr "yerel olarak kopyalanmadı"
 
 #. grouping
-#: ../src/common/collection.c:1849 ../src/libs/collect.c:1788
+#: ../src/common/collection.c:1851 ../src/libs/collect.c:1786
 msgid "group leaders"
 msgstr "grup liderleri"
 
-#: ../src/common/collection.c:1972 ../src/libs/collect.c:1868
+#: ../src/common/collection.c:1974 ../src/libs/collect.c:1866
 msgid "not defined"
 msgstr "tanımlanmamış"
 
-#: ../src/common/collection.c:2380
+#: ../src/common/collection.c:2382
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "geçerli koleksiyondaki %d (#%d) için %d görüntüsü seçildi"
 
-#: ../src/common/collection.c:2386
+#: ../src/common/collection.c:2388
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "geçerli koleksiyondaki %d'nin %d görüntüsü seçildi"
 msgstr[1] "geçerli koleksiyondaki %d'nin %d görüntüleri seçildi"
+
+#: ../src/common/color_vocabulary.c:38 ../src/develop/blend_gui.c:1986
+#: ../src/develop/blend_gui.c:2013 ../src/gui/guides.c:729
+#: ../src/iop/channelmixerrgb.c:4185 ../src/iop/levels.c:667
+#: ../src/iop/rgblevels.c:947
+msgid "gray"
+msgstr "gri"
+
+#. Human skin tones database
+#. This is a racially-charged matter, tread with it carefully.
+#. Usable data are : tabulated avg ± std (P < 0.05) models on skin color measurements
+#. on more than 80 individuals under D65 illuminant.
+#. Notice all these data are valid only under D65 illuminant and errors up to delta E = 6 have
+#. been measured for A illuminant. Proper camera profiling and chromatic adaptation needs to be performed
+#. or all the following is meaningless.
+#. We use ranges of avg ± 2 std, giving 95 % of confidence in the prediction.
+#. We use CIE Lab instead of Lch coordinates, because a and b parameters are physiologically meaningful :
+#. - a (redness) is linked to blood flow and health,
+#. - b (yellowness) is linked to melanine and sun tan.
+#. Reference :
+#. XIAO, Kaida, YATES, Julian M., ZARDAWI, Faraedon, et al.
+#. Characterising the variations in ethnic skin colours: a new calibrated data base for human skin.
+#. Skin Research and Technology, 2017, vol. 23, no 1, p. 21-29.
+#. https://onlinelibrary.wiley.com/doi/pdf/10.1111/srt.12295
+#.
+#. Sample : 187 caucasian, 202 chinese, 145 kurdish and 426 thai.
+#.
+#. DE RIGAL, Jean, DES MAZIS, Isabelle, DIRIDOLLOU, Stephane, et al.
+#. The effect of age on skin color and color heterogeneity in four ethnic groups.
+#. Skin Research and Technology, 2010, vol. 16, no 2, p. 168-178.
+#. https://pubmed.ncbi.nlm.nih.gov/20456097/
+#.
+#. Sample : 121 african-american, 64 mexican.
+#. Note : the data have been read on the graph and are inaccurate and std is majorated.
+#. The original authors have been contacted to get the tabulated, accurate data,
+#. but the main author is retired, co-authors have changed jobs, and the L'Oréal head of R&D
+#. did not respond. So the values here are given for what it's worth.
+#.
+#. "Forearm" is the ventral forearm skin. It is the least sun-tanned part of skin.
+#. Sun tan will depend the most on lifestyle, therefore the ventral forearm
+#. is the least socially-biased skin color metric.
+#. "Forehead" is the most sun-tanned part of skin. This translates to high b coordinate.
+#. "Cheek" is the most redish part of skin. This translates to high a coordinate.
+#. L decreases with age in all ethnicities and with b/yellowness/melanine/tan.
+#: ../src/common/color_vocabulary.c:91
+msgid "Chinese"
+msgstr "çinli"
+
+#: ../src/common/color_vocabulary.c:92
+msgid "Thai"
+msgstr "Thai"
+
+#: ../src/common/color_vocabulary.c:93
+msgid "Kurdish"
+msgstr "Kürt"
+
+#: ../src/common/color_vocabulary.c:94
+msgid "Caucasian"
+msgstr "kafkas"
+
+#: ../src/common/color_vocabulary.c:95
+msgid "African-american"
+msgstr "Afro-amerikan"
+
+#: ../src/common/color_vocabulary.c:98 ../src/common/color_vocabulary.c:103
+#: ../src/common/color_vocabulary.c:108 ../src/common/color_vocabulary.c:113
+msgid "forearm"
+msgstr "kolun ön kısmı"
+
+#: ../src/common/color_vocabulary.c:118 ../src/common/color_vocabulary.c:123
+#: ../src/common/color_vocabulary.c:128 ../src/common/color_vocabulary.c:133
+#: ../src/common/color_vocabulary.c:138 ../src/common/color_vocabulary.c:143
+msgid "forehead"
+msgstr "alın"
+
+#: ../src/common/color_vocabulary.c:148 ../src/common/color_vocabulary.c:153
+#: ../src/common/color_vocabulary.c:158 ../src/common/color_vocabulary.c:163
+#: ../src/common/color_vocabulary.c:168 ../src/common/color_vocabulary.c:173
+msgid "cheek"
+msgstr "yanak"
+
+#: ../src/common/color_vocabulary.c:200
+#, c-format
+msgid "average %s skin tone\n"
+msgstr "ortalama %s cilt tonu\n"
+
+#. 0° - pinkish red
+#: ../src/common/color_vocabulary.c:220
+msgid "deep purple"
+msgstr "koyu mor"
+
+#. L = 10 %
+#: ../src/common/color_vocabulary.c:221
+msgid "fuchsia"
+msgstr "küpe çiçeği"
+
+#. L = 30 %
+#: ../src/common/color_vocabulary.c:222
+msgid "medium magenta"
+msgstr "orta eflatun"
+
+#. L = 50 %
+#: ../src/common/color_vocabulary.c:223
+msgid "violet pink"
+msgstr "menekşe pembesi"
+
+#. L = 70 %
+#: ../src/common/color_vocabulary.c:224
+msgid "plum violet"
+msgstr "erik menekşesi"
+
+#. 24° - red
+#: ../src/common/color_vocabulary.c:229
+msgid "dark red"
+msgstr "koyu Kırmızı"
+
+#: ../src/common/color_vocabulary.c:231
+msgid "crimson"
+msgstr "kıpkırmızı"
+
+#: ../src/common/color_vocabulary.c:232
+msgid "salmon"
+msgstr "somon"
+
+#: ../src/common/color_vocabulary.c:233
+msgid "pink"
+msgstr "pembe"
+
+#. 48° - orangy red
+#: ../src/common/color_vocabulary.c:238
+msgid "maroon"
+msgstr "bordo"
+
+#: ../src/common/color_vocabulary.c:239
+msgid "dark orange red"
+msgstr "koyu turuncu kırmızı"
+
+#: ../src/common/color_vocabulary.c:240
+msgid "orange red"
+msgstr "turuncu kırmızı"
+
+#: ../src/common/color_vocabulary.c:241
+msgid "coral"
+msgstr "mercan"
+
+#: ../src/common/color_vocabulary.c:242 ../src/common/color_vocabulary.c:259
+msgid "khaki"
+msgstr "haki"
+
+#. 72° - orange
+#: ../src/common/color_vocabulary.c:247
+msgid "brown"
+msgstr "kahverengi"
+
+#: ../src/common/color_vocabulary.c:248
+msgid "chocolate"
+msgstr "çikolata"
+
+#: ../src/common/color_vocabulary.c:249
+msgid "dark gold"
+msgstr "koyu altın"
+
+#: ../src/common/color_vocabulary.c:250
+msgid "gold"
+msgstr "altın"
+
+#: ../src/common/color_vocabulary.c:251
+msgid "sandy brown"
+msgstr "kumlu kahverengi"
+
+#. 96° - yellow olive
+#. 120° - green
+#. 144° - blueish green
+#: ../src/common/color_vocabulary.c:256 ../src/common/color_vocabulary.c:265
+#: ../src/common/color_vocabulary.c:274
+msgid "dark green"
+msgstr "koyu yeşil"
+
+#: ../src/common/color_vocabulary.c:257
+msgid "dark olive green"
+msgstr "koyu zeytin yeşili"
+
+#: ../src/common/color_vocabulary.c:258
+msgid "olive"
+msgstr "zeytin"
+
+#: ../src/common/color_vocabulary.c:260
+msgid "beige"
+msgstr "bej"
+
+#: ../src/common/color_vocabulary.c:266 ../src/common/color_vocabulary.c:276
+msgid "forest green"
+msgstr "orman yeşili"
+
+#: ../src/common/color_vocabulary.c:267
+msgid "olive drab"
+msgstr "zeytin yeşili"
+
+#: ../src/common/color_vocabulary.c:268
+msgid "yellow green"
+msgstr "sarı yeşil"
+
+#: ../src/common/color_vocabulary.c:269 ../src/common/color_vocabulary.c:278
+msgid "pale green"
+msgstr "soluk yeşil"
+
+#: ../src/common/color_vocabulary.c:277
+msgid "lime green"
+msgstr "limon yeşili"
+
+#. 168° - greenish cyian
+#: ../src/common/color_vocabulary.c:283
+msgid "dark sea green"
+msgstr "koyu deniz yeşili"
+
+#: ../src/common/color_vocabulary.c:284
+msgid "sea green"
+msgstr "deniz yeşili"
+
+#: ../src/common/color_vocabulary.c:285 ../src/common/color_vocabulary.c:302
+msgid "teal"
+msgstr "deniz mavisi"
+
+#: ../src/common/color_vocabulary.c:286
+msgid "light sea green"
+msgstr "açık deniz yeşili"
+
+#: ../src/common/color_vocabulary.c:287
+msgid "turquoise"
+msgstr "turkuaz"
+
+#. 192° - cyan
+#: ../src/common/color_vocabulary.c:292
+msgid "dark slate gray"
+msgstr "koyu arduvaz grisi"
+
+#: ../src/common/color_vocabulary.c:293
+msgid "light slate gray"
+msgstr "açık arduvaz grisi"
+
+#: ../src/common/color_vocabulary.c:294 ../src/common/color_vocabulary.c:303
+msgid "dark cyan"
+msgstr "koyu camgöbeği"
+
+#: ../src/common/color_vocabulary.c:295 ../src/common/color_vocabulary.c:315
+#: ../src/iop/colorzones.c:2306
+msgid "aqua"
+msgstr "su"
+
+#: ../src/common/color_vocabulary.c:296 ../src/gui/guides.c:733
+#: ../src/iop/temperature.c:1807
+msgid "cyan"
+msgstr "cam göbeği"
+
+#. 216° - medium blue
+#: ../src/common/color_vocabulary.c:301
+msgid "navy blue"
+msgstr "lacivert"
+
+#: ../src/common/color_vocabulary.c:304 ../src/common/color_vocabulary.c:314
+msgid "deep sky blue"
+msgstr "derin gök mavisi"
+
+#: ../src/common/color_vocabulary.c:305
+msgid "aquamarine blue"
+msgstr "akuamarin mavisi"
+
+#. 240° - blue and 264° - bluer than blue
+#. these are collapsed because CIE Lab 1976 sucks for blues
+#. 288° - more blue
+#: ../src/common/color_vocabulary.c:311 ../src/common/color_vocabulary.c:320
+msgid "dark blue"
+msgstr "koyu mavi"
+
+#: ../src/common/color_vocabulary.c:312 ../src/common/color_vocabulary.c:321
+msgid "medium blue"
+msgstr "orta mavi"
+
+#: ../src/common/color_vocabulary.c:313
+msgid "azure blue"
+msgstr "gök mavisi"
+
+#: ../src/common/color_vocabulary.c:323
+msgid "light sky blue"
+msgstr "açık gök mavisi"
+
+#: ../src/common/color_vocabulary.c:324
+msgid "light blue"
+msgstr "açık mavi"
+
+#. 312° - violet
+#: ../src/common/color_vocabulary.c:329
+msgid "indigo"
+msgstr "çivit"
+
+#: ../src/common/color_vocabulary.c:330
+msgid "dark violet"
+msgstr "koyu menekşe"
+
+#: ../src/common/color_vocabulary.c:331
+msgid "blue violet"
+msgstr "mavi menekşe"
+
+#: ../src/common/color_vocabulary.c:332 ../src/common/color_vocabulary.c:340
+msgid "violet"
+msgstr "menekşe"
+
+#: ../src/common/color_vocabulary.c:333
+msgid "plum"
+msgstr "erik"
+
+#: ../src/common/color_vocabulary.c:338
+msgid "dark magenta"
+msgstr "koyu eflatun"
+
+#: ../src/common/color_vocabulary.c:339 ../src/gui/guides.c:734
+#: ../src/iop/colorzones.c:2309 ../src/iop/temperature.c:1805
+msgid "magenta"
+msgstr "eflatun"
+
+#: ../src/common/color_vocabulary.c:341
+msgid "lavender"
+msgstr "lavanta"
+
+#: ../src/common/color_vocabulary.c:344
+msgid "color not found"
+msgstr "renk bulunamadı"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:1400 ../src/common/colorspaces.c:1689
@@ -5185,7 +5513,7 @@ msgid "export profile"
 msgstr "dışa aktarma profili"
 
 #: ../src/common/colorspaces.c:1407 ../src/common/colorspaces.c:1687
-#: ../src/views/darkroom.c:2474
+#: ../src/views/darkroom.c:2475
 msgid "softproof profile"
 msgstr "yumuşak prova profili"
 
@@ -5403,10 +5731,10 @@ msgstr ""
 
 #: ../src/common/darktable.c:1740
 msgid ""
-"instead you will find 'per device' data in 'cldevice_v2_canonical-name'. "
+"instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
-"bunun yerine 'cihaz başına' verileri 'cldevice_v2_canonical-name' içinde "
+"bunun yerine, 'cihaz başına' verilerini 'cl_devıce_v4_canonıcal-name' içinde "
 "bulacaksınız. içerik şu şekildedir:"
 
 #: ../src/common/darktable.c:1742
@@ -5484,14 +5812,14 @@ msgstr ""
 msgid "error starting darktable"
 msgstr "darktable başlatma hatası"
 
-#: ../src/common/database.c:2706 ../src/libs/collect.c:2915
-#: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1696
+#: ../src/common/database.c:2706 ../src/libs/collect.c:2913
+#: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
-#: ../src/libs/modulegroups.c:3504 ../src/libs/styles.c:423
+#: ../src/libs/modulegroups.c:3507 ../src/libs/styles.c:423
 #: ../src/libs/styles.c:606 ../src/libs/tagging.c:1466
 #: ../src/libs/tagging.c:1554 ../src/libs/tagging.c:1635
 #: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
-#: ../src/libs/tagging.c:3459
+#: ../src/libs/tagging.c:3460
 msgid "cancel"
 msgstr "vazgeç"
 
@@ -5514,8 +5842,8 @@ msgstr ""
 #: ../src/common/database.c:2713 ../src/common/database.c:3773
 #: ../src/common/variables.c:590 ../src/develop/imageop_gui.c:197
 #: ../src/imageio/format/pdf.c:648 ../src/imageio/format/pdf.c:673
-#: ../src/libs/export.c:1210 ../src/libs/export.c:1216
-#: ../src/libs/export.c:1223 ../src/libs/metadata_view.c:678
+#: ../src/libs/export.c:1209 ../src/libs/export.c:1215
+#: ../src/libs/export.c:1222 ../src/libs/metadata_view.c:678
 msgid "yes"
 msgstr "evet"
 
@@ -5536,7 +5864,7 @@ msgstr ""
 
 #. the button to close the popup
 #: ../src/common/database.c:2730 ../src/common/database.c:2737
-#: ../src/libs/filters/filename.c:484
+#: ../src/libs/filters/filename.c:451
 msgid "ok"
 msgstr "tamam"
 
@@ -5619,7 +5947,7 @@ msgid ""
 "%s \n"
 msgstr ""
 "hızlı_kontrol dedi ki:\n"
-"%s\n"
+"%s \n"
 
 #: ../src/common/database.c:3221 ../src/common/database.c:3239
 #: ../src/common/database.c:3401 ../src/common/database.c:3419
@@ -5716,12 +6044,12 @@ msgstr "darktable - şema bakımı"
 msgid "later"
 msgstr "sonra"
 
-#: ../src/common/exif.cc:4290
+#: ../src/common/exif.cc:4299
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "xmp dosyası '%s' okunamıyor: '%s'"
 
-#: ../src/common/exif.cc:4342
+#: ../src/common/exif.cc:4351
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "xmp dosyası '%s' yazılamıyor: '%s'"
@@ -5742,9 +6070,9 @@ msgid_plural "remove empty directories?"
 msgstr[0] "boş dizini kaldır?"
 msgstr[1] "boş dizinleri kaldır?"
 
-#: ../src/common/film.c:368 ../src/gui/preferences.c:791
+#: ../src/common/film.c:368 ../src/gui/preferences.c:792
 #: ../src/gui/styles_dialog.c:447 ../src/libs/geotagging.c:830
-#: ../src/libs/import.c:1545
+#: ../src/libs/import.c:1542
 msgid "name"
 msgstr "isim"
 
@@ -5967,25 +6295,25 @@ msgstr "genel zehir"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "gürültü profili dosyası `%s' geçerli değil"
 
-#: ../src/common/opencl.c:998
+#: ../src/common/opencl.c:1090
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "opencl aracılığıyla yavaş GPU donanım hızlandırması nedeniyle devre dışı "
 "bırakıldı"
 
-#: ../src/common/opencl.c:1005
+#: ../src/common/opencl.c:1097
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "birden fazla GPU algılandı - opencl zamanlama profili buna göre ayarlandı"
 
-#: ../src/common/opencl.c:1012
+#: ../src/common/opencl.c:1104
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr "çok hızlı GPU algılandı - opencl zamanlama profili buna göre ayarlandı"
 
-#: ../src/common/opencl.c:1019
+#: ../src/common/opencl.c:1111
 msgid "opencl scheduling profile set to default"
 msgstr "opencl zamanlama profili varsayılana ayarlandı"
 
@@ -5994,7 +6322,7 @@ msgstr "opencl zamanlama profili varsayılana ayarlandı"
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:533 ../src/libs/export.c:1165
+#: ../src/common/pdf.h:89 ../src/libs/export.c:533 ../src/libs/export.c:1164
 #: ../src/libs/print_settings.c:83
 msgid "cm"
 msgstr "cm"
@@ -6059,7 +6387,7 @@ msgstr "0 yıldızla derecelendirilen resim"
 msgid "image rated to %s"
 msgstr "görüntü %s olarak derecelendirildi"
 
-#: ../src/common/ratings.c:283 ../src/libs/history.c:767
+#: ../src/common/ratings.c:283 ../src/libs/history.c:763
 #: ../src/libs/snapshots.c:455
 msgid "unknown"
 msgstr "bilinmeyen"
@@ -6182,8 +6510,8 @@ msgstr "deniz seviyesinin altında"
 msgid "m"
 msgstr "m"
 
-#: ../src/control/control.c:66 ../src/gui/accelerators.c:126
-#: ../src/views/darkroom.c:2091
+#: ../src/control/control.c:66 ../src/gui/accelerators.c:128
+#: ../src/views/darkroom.c:2092
 msgid "hold"
 msgstr "tut"
 
@@ -6359,12 +6687,12 @@ msgstr "kapa_t"
 #. setup selection accelerators
 #. action-box
 #: ../src/control/crawler.c:671 ../src/dtgtk/thumbtable.c:2362
-#: ../src/libs/import.c:1715 ../src/libs/select.c:133
+#: ../src/libs/import.c:1712 ../src/libs/select.c:133
 msgid "select all"
 msgstr "hepsini seç"
 
 #: ../src/control/crawler.c:672 ../src/dtgtk/thumbtable.c:2363
-#: ../src/libs/import.c:1719 ../src/libs/select.c:137
+#: ../src/libs/import.c:1716 ../src/libs/select.c:137
 msgid "select none"
 msgstr "hiçbirini seçme"
 
@@ -6613,7 +6941,7 @@ msgstr "dışa aktarılacak görüntü yok"
 msgid "exporting %d / %d to %s"
 msgstr "%d / %d, %s'ye dışa aktarılıyor"
 
-#: ../src/control/jobs/control_jobs.c:1417 ../src/views/darkroom.c:814
+#: ../src/control/jobs/control_jobs.c:1417 ../src/views/darkroom.c:815
 #: ../src/views/print.c:337
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -7108,7 +7436,7 @@ msgstr "tekdüze"
 msgid "drawn mask"
 msgstr "çizilmiş maske"
 
-#: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2130
+#: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2129
 #: ../src/develop/blend_gui.c:2993 ../src/develop/imageop.c:2274
 msgid "parametric mask"
 msgstr "parametrik maske"
@@ -7155,8 +7483,8 @@ msgid "input after blur"
 msgstr "bulanıklıktan sonra girdi"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2251
-#: ../src/gui/accelerators.c:118 ../src/gui/accelerators.c:127
-#: ../src/gui/accelerators.c:196 ../src/imageio/format/avif.c:823
+#: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:129
+#: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:823
 #: ../src/libs/live_view.c:362
 msgid "on"
 msgstr "açık"
@@ -7248,12 +7576,6 @@ msgstr "g"
 #: ../src/develop/blend_gui.c:1984 ../src/develop/blend_gui.c:2011
 msgid "sliders for gray value"
 msgstr "gri değer için kaydırıcılar"
-
-#: ../src/develop/blend_gui.c:1986 ../src/develop/blend_gui.c:2013
-#: ../src/gui/guides.c:729 ../src/iop/channelmixerrgb.c:4185
-#: ../src/iop/levels.c:667 ../src/iop/rgblevels.c:947
-msgid "gray"
-msgstr "gri"
 
 #: ../src/develop/blend_gui.c:1987 ../src/develop/blend_gui.c:2014
 #: ../src/iop/channelmixerrgb.c:4179 ../src/iop/denoiseprofile.c:3582
@@ -7423,7 +7745,7 @@ msgstr ""
 #: ../src/iop/exposure.c:1028 ../src/iop/exposure.c:1041
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
 #: ../src/iop/filmicrgb.c:4326 ../src/iop/filmicrgb.c:4336
-#: ../src/iop/filmicrgb.c:4372 ../src/iop/filmicrgb.c:4382
+#: ../src/iop/filmicrgb.c:4371 ../src/iop/filmicrgb.c:4381
 #: ../src/iop/graduatednd.c:1098 ../src/iop/negadoctor.c:983
 #: ../src/iop/profile_gamma.c:651 ../src/iop/profile_gamma.c:657
 #: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3131
@@ -7432,7 +7754,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3146 ../src/iop/toneequal.c:3149
 #: ../src/iop/toneequal.c:3152 ../src/iop/toneequal.c:3155
 #: ../src/iop/toneequal.c:3249 ../src/iop/toneequal.c:3256
-#: ../src/iop/toneequal.c:3266 ../src/views/darkroom.c:2377
+#: ../src/iop/toneequal.c:3266 ../src/views/darkroom.c:2378
 msgid " EV"
 msgstr " EV"
 
@@ -7570,7 +7892,7 @@ msgstr "kullanımdan kaldırılan modlar"
 msgid "blending options"
 msgstr "karıştırma seçenekleri"
 
-#: ../src/develop/blend_gui.c:3037 ../src/libs/history.c:863
+#: ../src/develop/blend_gui.c:3037 ../src/libs/history.c:859
 msgid "blend mode"
 msgstr "karıştırma modu"
 
@@ -7592,7 +7914,7 @@ msgstr ""
 "varsayılan olarak çıktı, girdinin üzerine karıştırılacaktır,\n"
 "simgeye tıklanarak sıralama tersine çevrilebilir (girdi çıktının üstünde)"
 
-#: ../src/develop/blend_gui.c:3054 ../src/libs/history.c:865
+#: ../src/develop/blend_gui.c:3054 ../src/libs/history.c:861
 msgid "blend fulcrum"
 msgstr "dayanak noktası harmanlamak"
 
@@ -7610,7 +7932,7 @@ msgstr "opaklık"
 msgid "set the opacity of the blending"
 msgstr "karıştırmanın saydamlığını ayarla"
 
-#: ../src/develop/blend_gui.c:3068 ../src/libs/history.c:867
+#: ../src/develop/blend_gui.c:3068 ../src/libs/history.c:863
 msgid "combine masks"
 msgstr "maskeleri birleştir"
 
@@ -7622,7 +7944,7 @@ msgstr ""
 "bireysel çizilmiş maske ve farklı parametrik maske kanalları nasıl "
 "birleştirilir"
 
-#: ../src/develop/blend_gui.c:3074 ../src/libs/history.c:875
+#: ../src/develop/blend_gui.c:3074 ../src/libs/history.c:871
 msgid "invert mask"
 msgstr "maskeyi ters çevir"
 
@@ -7644,7 +7966,7 @@ msgstr ""
 "pozitif değerler, güçlü ayrıntılara sahip alanları seçer, \n"
 "negatif değerler düz alanları seçer"
 
-#: ../src/develop/blend_gui.c:3087 ../src/libs/history.c:869
+#: ../src/develop/blend_gui.c:3087 ../src/libs/history.c:865
 msgid "feathering guide"
 msgstr "geçiş yumuşatma kılavuzu"
 
@@ -7656,7 +7978,7 @@ msgstr ""
 "maskeyi giriş veya çıkış görüntüsüne göre yönlendirmeyi seçin ve\n"
 "maske bulanıklığından önce veya sonra geçiş yumuşatma uygulamayı seçin"
 
-#: ../src/develop/blend_gui.c:3094 ../src/libs/history.c:868
+#: ../src/develop/blend_gui.c:3094 ../src/libs/history.c:864
 msgid "feathering radius"
 msgstr "geçiş yumuşatma yarıçapı"
 
@@ -7673,7 +7995,7 @@ msgid "radius for gaussian blur of blend mask"
 msgstr "karışım maskesinin gauss bulanıklığı yarıçapı"
 
 #: ../src/develop/blend_gui.c:3106 ../src/iop/retouch.c:2411
-#: ../src/libs/history.c:866
+#: ../src/libs/history.c:862
 msgid "mask opacity"
 msgstr "maske opaklığı"
 
@@ -7685,7 +8007,7 @@ msgstr ""
 "tamamen saydam/tamamen opak bölgeleri etkilemeden parlaklığını ayarlamak "
 "için karışım maskesinin ton eğrisini kaydırır ve yatırır"
 
-#: ../src/develop/blend_gui.c:3114 ../src/libs/history.c:871
+#: ../src/develop/blend_gui.c:3114 ../src/libs/history.c:867
 msgid "mask contrast"
 msgstr "maske kontrastı"
 
@@ -7696,7 +8018,7 @@ msgstr ""
 "kontrastını ayarlamak için karışım maskesinin ton eğrisine s benzeri bir "
 "şekil verir"
 
-#: ../src/develop/blend_gui.c:3121
+#: ../src/develop/blend_gui.c:3120
 msgid "mask refinement"
 msgstr "maske iyileştirme"
 
@@ -7761,14 +8083,14 @@ msgstr "aşağı taşı"
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
 #: ../src/develop/imageop.c:951 ../src/develop/imageop.c:3222
-#: ../src/gui/accelerators.c:141 ../src/gui/presets.c:477
+#: ../src/gui/accelerators.c:143 ../src/gui/presets.c:477
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/masks.c:1055
 #: ../src/libs/tagging.c:1466 ../src/libs/tagging.c:1554
 msgid "delete"
 msgstr "sil"
 
 #: ../src/develop/imageop.c:958 ../src/develop/imageop.c:3223
-#: ../src/libs/modulegroups.c:3504 ../src/libs/modulegroups.c:3866
+#: ../src/libs/modulegroups.c:3507 ../src/libs/modulegroups.c:3870
 msgid "rename"
 msgstr "yeniden adlandır"
 
@@ -7857,18 +8179,18 @@ msgstr ""
 "gereksinimler."
 
 #: ../src/develop/imageop.c:3218 ../src/develop/imageop.c:3228
-#: ../src/gui/accelerators.c:137 ../src/libs/lib.c:1286
+#: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1288
 msgid "show"
 msgstr "göster"
 
-#: ../src/develop/imageop.c:3221 ../src/libs/modulegroups.c:3350
-#: ../src/libs/modulegroups.c:3476 ../src/libs/modulegroups.c:3868
-#: ../src/libs/tagging.c:3234
+#: ../src/develop/imageop.c:3221 ../src/libs/modulegroups.c:3353
+#: ../src/libs/modulegroups.c:3479 ../src/libs/modulegroups.c:3872
+#: ../src/libs/tagging.c:3235
 msgid "new"
 msgstr "yeni"
 
 #: ../src/develop/imageop.c:3224 ../src/libs/duplicate.c:543
-#: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3864
+#: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3868
 msgid "duplicate"
 msgstr "çoğalt"
 
@@ -7880,19 +8202,19 @@ msgstr "etkin"
 msgid "focus"
 msgstr "odak"
 
-#: ../src/develop/imageop.c:3231 ../src/gui/accelerators.c:2159
+#: ../src/develop/imageop.c:3231 ../src/gui/accelerators.c:2228
 msgid "instance"
 msgstr "misal"
 
-#: ../src/develop/imageop.c:3232 ../src/gui/accelerators.c:103
-#: ../src/gui/accelerators.c:112 ../src/iop/atrous.c:1581
-#: ../src/libs/lib.c:1287 ../src/libs/modulegroups.c:3935
+#: ../src/develop/imageop.c:3232 ../src/gui/accelerators.c:105
+#: ../src/gui/accelerators.c:114 ../src/iop/atrous.c:1581
+#: ../src/libs/lib.c:1289 ../src/libs/modulegroups.c:3936
 msgid "reset"
 msgstr "sıfırla"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3233 ../src/gui/preferences.c:773
-#: ../src/libs/lib.c:1288
+#: ../src/develop/imageop.c:3233 ../src/gui/preferences.c:774
+#: ../src/libs/lib.c:1290
 msgid "presets"
 msgstr "önayarlar"
 
@@ -8294,6 +8616,180 @@ msgstr "yakınlaştırma %d görüntü ile sınırlıdır"
 msgid "no image selected !"
 msgstr "görüntü seçilmedi !"
 
+#: ../src/dtgtk/range.c:177 ../src/dtgtk/range.c:182
+msgid "invalid"
+msgstr "geçersiz"
+
+#: ../src/dtgtk/range.c:290
+#, c-format
+msgid "year %s"
+msgstr "yıl %s"
+
+#: ../src/dtgtk/range.c:368
+msgid ""
+"enter the minimal value\n"
+"use 'min' if no bound\n"
+"right-click to select from existing values"
+msgstr ""
+"asgari değeri girin\n"
+"sınır yoksa 'asg' kullanın\n"
+"mevcut değerlerden seçim yapmak için sağ tıklayın"
+
+#: ../src/dtgtk/range.c:374
+msgid ""
+"enter the maximal value\n"
+"use 'max' if no bound\n"
+"right-click to select from existing values"
+msgstr ""
+"azami değeri girin\n"
+"sınır yoksa 'azm' kullanın\n"
+"mevcut değerlerden seçim yapmak için sağ tıklayın"
+
+#: ../src/dtgtk/range.c:380
+msgid ""
+"enter the value\n"
+"right-click to select from existing values"
+msgstr ""
+"değeri girin\n"
+"mevcut değerlerden seçim yapmak için sağ tıklayın"
+
+#: ../src/dtgtk/range.c:385
+msgid ""
+"enter the minimal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'min' if no bound\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"minimum tarihi girin\n"
+"YYYY:AA:GG ss:dd:ss.sss biçiminde (yalnızca yıl zorunludur)\n"
+"sınır yoksa 'asg' kullanın\n"
+"göreli tarih için '-' önekini kullanın\n"
+"takvimden veya mevcut değerlerden seçim yapmak için sağ tıklayın"
+
+#: ../src/dtgtk/range.c:393
+msgid ""
+"enter the maximal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'max' if no bound\n"
+"'now' keyword is handled\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"azami tarihi girin\n"
+"YYYY:AA:GG ss:dd:ss.sss biçiminde (yalnızca yıl zorunludur)\n"
+"sınır yoksa 'azm' kullanın\n"
+"'şimdi' anahtar kelimesi işlenir\n"
+"göreli tarih için '-' önekini kullanın\n"
+"takvimden veya mevcut değerlerden seçim yapmak için sağ tıklayın"
+
+#: ../src/dtgtk/range.c:402
+msgid ""
+"enter the date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"right-click to select from calendar or existing values"
+msgstr ""
+"tarihi girin\n"
+"YYYY:AA:GG ss:dd:ss.sss şeklinde (sadece yıl zorunludur)\n"
+"takvim veya mevcut değerler arasından seçim yapmak için sağ tıklayın"
+
+#: ../src/dtgtk/range.c:424
+msgid "date-time interval to subtract from the max value"
+msgstr "azami değerden çıkarılacak tarih-saat aralığı"
+
+#: ../src/dtgtk/range.c:428
+msgid "date-time interval to add to the min value"
+msgstr "asg değerine eklenecek tarih-saat aralığı"
+
+#: ../src/dtgtk/range.c:568 ../src/dtgtk/range.c:1715 ../src/dtgtk/range.c:1766
+#: ../src/libs/colorpicker.c:53
+msgid "min"
+msgstr "asg"
+
+#: ../src/dtgtk/range.c:574 ../src/dtgtk/range.c:1727 ../src/dtgtk/range.c:1778
+#: ../src/libs/colorpicker.c:53
+msgid "max"
+msgstr "azm"
+
+#: ../src/dtgtk/range.c:883
+msgid "date type"
+msgstr "tarih tipi"
+
+#: ../src/dtgtk/range.c:884
+msgid "fixed"
+msgstr "onarıldı"
+
+#: ../src/dtgtk/range.c:885 ../src/iop/colorchecker.c:1382
+msgid "relative"
+msgstr "göreceli"
+
+#. the date section
+#: ../src/dtgtk/range.c:897
+msgid "date"
+msgstr "tarih"
+
+#: ../src/dtgtk/range.c:904
+msgid ""
+"simple click to select date\n"
+"double click to use the date directly"
+msgstr ""
+"tarih seçmek için basit bir tıklama\n"
+"verileri doğrudan kullanmak için çift tıklayın"
+
+#: ../src/dtgtk/range.c:915
+msgid "years: "
+msgstr "yıllar: "
+
+#: ../src/dtgtk/range.c:923
+msgid "months: "
+msgstr "aylar: "
+
+#: ../src/dtgtk/range.c:931
+msgid "days: "
+msgstr "günler: "
+
+#. the time section
+#: ../src/dtgtk/range.c:943
+msgid "time"
+msgstr "zaman"
+
+#: ../src/dtgtk/range.c:970
+msgid ""
+"simple click to select date\n"
+"double click to use the date directly."
+msgstr ""
+"tarih seçmek için basit bir tıklama\n"
+"verileri doğrudan kullanmak için çift tıklatın."
+
+#: ../src/dtgtk/range.c:995 ../src/dtgtk/range.c:1734
+msgid "now"
+msgstr "şimdi"
+
+#: ../src/dtgtk/range.c:997
+msgid "set the value to always match current datetime"
+msgstr "değeri her zaman geçerli tarih saatiyle eşleşecek şekilde ayarlayın"
+
+#. apply button
+#: ../src/dtgtk/range.c:1000 ../src/gui/accelerators.c:149
+#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:750
+#: ../src/libs/styles.c:861
+msgid "apply"
+msgstr "uygula"
+
+#: ../src/dtgtk/range.c:1001
+msgid "set the range bound with this value"
+msgstr "bu değere bağlı aralığı ayarlama"
+
+#. get nice text for bounds
+#. Side-border hide/show
+#: ../src/dtgtk/range.c:1711 ../src/gui/accelerators.c:1978
+#: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2916
+#: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
+#: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
+#: ../src/libs/filtering.c:1414 ../src/libs/filters/colors.c:236
+msgid "all"
+msgstr "tümü"
+
 #: ../src/dtgtk/resetlabel.c:59
 msgid "double-click to reset"
 msgstr "çift tıklamayla sıfırla"
@@ -8546,7 +9042,7 @@ msgstr "akşam Güneşi"
 msgid "underwater"
 msgstr "su altı"
 
-#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2371
+#: ../src/external/wb_presets.c:77 ../src/views/darkroom.c:2372
 msgid "black & white"
 msgstr "siyah & beyaz"
 
@@ -8644,7 +9140,7 @@ msgstr "pan"
 #: ../src/iop/ashift.c:5424 ../src/iop/ashift.c:5526 ../src/iop/ashift.c:5527
 #: ../src/iop/ashift.c:5836 ../src/iop/clipping.c:1920
 #: ../src/iop/clipping.c:2112 ../src/iop/clipping.c:2128
-#: ../src/views/darkroom.c:2611 ../src/views/lighttable.c:1241
+#: ../src/views/darkroom.c:2612 ../src/views/lighttable.c:1241
 msgid "horizontal"
 msgstr "yatay"
 
@@ -8652,7 +9148,7 @@ msgstr "yatay"
 #: ../src/iop/ashift.c:5424 ../src/iop/ashift.c:5526 ../src/iop/ashift.c:5527
 #: ../src/iop/ashift.c:5835 ../src/iop/clipping.c:1919
 #: ../src/iop/clipping.c:2113 ../src/iop/clipping.c:2127
-#: ../src/views/darkroom.c:2614 ../src/views/lighttable.c:1245
+#: ../src/views/darkroom.c:2615 ../src/views/lighttable.c:1245
 msgid "vertical"
 msgstr "dikey"
 
@@ -8696,179 +9192,173 @@ msgstr "cmd"
 msgid "altgr"
 msgstr "altgr"
 
-#: ../src/gui/accelerators.c:100 ../src/gui/accelerators.c:142
+#: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:144
 #: ../src/libs/tagging.c:1764
 msgid "edit"
 msgstr "düzenle"
 
-#: ../src/gui/accelerators.c:101 ../src/gui/accelerators.c:550
+#: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:552
 msgid "up"
 msgstr "yukarı"
 
-#: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:550
+#: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:552
 msgid "down"
 msgstr "aşağı"
 
-#: ../src/gui/accelerators.c:106
+#: ../src/gui/accelerators.c:108
 msgid "set"
 msgstr "ayarla"
 
-#: ../src/gui/accelerators.c:109
+#: ../src/gui/accelerators.c:111
 msgid "popup"
 msgstr "açılır menü"
 
-#: ../src/gui/accelerators.c:110 ../src/gui/accelerators.c:139
-#: ../src/gui/gtk.c:2842 ../src/views/lighttable.c:755
+#: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
+#: ../src/gui/gtk.c:2844 ../src/views/lighttable.c:755
 msgid "next"
 msgstr "sonraki"
 
-#: ../src/gui/accelerators.c:111 ../src/gui/accelerators.c:138
-#: ../src/gui/gtk.c:2843 ../src/views/lighttable.c:756
+#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
+#: ../src/gui/gtk.c:2845 ../src/views/lighttable.c:756
 msgid "previous"
 msgstr "önceki"
 
-#: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:1143
+#: ../src/gui/accelerators.c:115 ../src/gui/accelerators.c:1148
 msgid "last"
 msgstr "son"
 
-#: ../src/gui/accelerators.c:114 ../src/gui/accelerators.c:1142
+#: ../src/gui/accelerators.c:116 ../src/gui/accelerators.c:1147
 msgid "first"
 msgstr "ilk"
 
-#: ../src/gui/accelerators.c:117 ../src/gui/accelerators.c:129
-#: ../src/gui/accelerators.c:239 ../src/libs/tagging.c:3105
-#: ../src/views/darkroom.c:2288 ../src/views/darkroom.c:2343
-#: ../src/views/darkroom.c:2583
+#: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
+#: ../src/gui/accelerators.c:241 ../src/libs/tagging.c:3105
+#: ../src/views/darkroom.c:2289 ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2584
 msgid "toggle"
 msgstr "geçiş"
 
-#: ../src/gui/accelerators.c:120
+#: ../src/gui/accelerators.c:122
 msgid "ctrl-toggle"
 msgstr "ctrl-geçiş"
 
-#: ../src/gui/accelerators.c:121
+#: ../src/gui/accelerators.c:123
 msgid "ctrl-on"
 msgstr "ctrl-açık"
 
-#: ../src/gui/accelerators.c:122
+#: ../src/gui/accelerators.c:124
 msgid "right-toggle"
 msgstr "sağ-geçiş"
 
-#: ../src/gui/accelerators.c:123
+#: ../src/gui/accelerators.c:125
 msgid "right-on"
 msgstr "sağ-açık"
 
-#: ../src/gui/accelerators.c:132 ../src/gui/gtk.c:2841
+#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2843
 msgid "activate"
 msgstr "etkinleştir"
 
-#: ../src/gui/accelerators.c:133
+#: ../src/gui/accelerators.c:135
 msgid "ctrl-activate"
 msgstr "ctrl-etkinleştirildi"
 
-#: ../src/gui/accelerators.c:134
+#: ../src/gui/accelerators.c:136
 msgid "right-activate"
 msgstr "sağ-etkinleştirildi"
 
-#: ../src/gui/accelerators.c:140
+#: ../src/gui/accelerators.c:142
 msgid "store"
 msgstr "depo"
 
-#: ../src/gui/accelerators.c:143 ../src/gui/styles_dialog.c:509
+#: ../src/gui/accelerators.c:145 ../src/gui/styles_dialog.c:509
 msgid "update"
 msgstr "güncelleme"
 
-#: ../src/gui/accelerators.c:144 ../src/libs/tools/global_toolbox.c:61
+#: ../src/gui/accelerators.c:146 ../src/libs/tools/global_toolbox.c:61
 #: ../src/libs/tools/global_toolbox.c:512
 msgid "preferences"
 msgstr "tercihler"
 
-#. apply button
-#: ../src/gui/accelerators.c:147 ../src/iop/colortransfer.c:670
-#: ../src/libs/metadata.c:750 ../src/libs/styles.c:861
-msgid "apply"
-msgstr "uygula"
-
-#: ../src/gui/accelerators.c:148
+#: ../src/gui/accelerators.c:150
 msgid "apply on new instance"
 msgstr "yeni örneğe uygula"
 
-#: ../src/gui/accelerators.c:455
+#: ../src/gui/accelerators.c:457
 msgid "tablet button"
 msgstr "tablet düğmesi"
 
-#: ../src/gui/accelerators.c:464
+#: ../src/gui/accelerators.c:466
 msgid "unknown driver"
 msgstr "bilinmeyen sürücü"
 
-#: ../src/gui/accelerators.c:531
+#: ../src/gui/accelerators.c:533
 msgid "long"
 msgstr "uzun"
 
-#: ../src/gui/accelerators.c:532
+#: ../src/gui/accelerators.c:534
 msgid "double-press"
 msgstr "çift bas"
 
-#: ../src/gui/accelerators.c:533
+#: ../src/gui/accelerators.c:535
 msgid "triple-press"
 msgstr "üçlü bas"
 
-#: ../src/gui/accelerators.c:534
+#: ../src/gui/accelerators.c:536
 msgid "press"
 msgstr "bas"
 
-#: ../src/gui/accelerators.c:538
+#: ../src/gui/accelerators.c:540
 msgctxt "accel"
 msgid "left"
 msgstr "sol"
 
-#: ../src/gui/accelerators.c:539
+#: ../src/gui/accelerators.c:541
 msgctxt "accel"
 msgid "right"
 msgstr "sağ"
 
-#: ../src/gui/accelerators.c:540
+#: ../src/gui/accelerators.c:542
 msgctxt "accel"
 msgid "middle"
 msgstr "orta"
 
-#: ../src/gui/accelerators.c:541
+#: ../src/gui/accelerators.c:543
 msgctxt "accel"
 msgid "long"
 msgstr "uzun"
 
-#: ../src/gui/accelerators.c:542
+#: ../src/gui/accelerators.c:544
 msgctxt "accel"
 msgid "double-click"
 msgstr "çift tıkla"
 
-#: ../src/gui/accelerators.c:543
+#: ../src/gui/accelerators.c:545
 msgctxt "accel"
 msgid "triple-click"
 msgstr "üç tıklama"
 
-#: ../src/gui/accelerators.c:544
+#: ../src/gui/accelerators.c:546
 msgid "click"
 msgstr "tıkla"
 
-#: ../src/gui/accelerators.c:572
+#: ../src/gui/accelerators.c:574
 msgid "first instance"
 msgstr "ilk örnek"
 
-#: ../src/gui/accelerators.c:574
+#: ../src/gui/accelerators.c:576
 msgid "last instance"
 msgstr "son örnek"
 
-#: ../src/gui/accelerators.c:576
+#: ../src/gui/accelerators.c:578
 msgid "relative instance"
 msgstr "göreli örnek"
 
-#: ../src/gui/accelerators.c:603 ../src/gui/accelerators.c:873
-#: ../src/gui/accelerators.c:2149 ../src/gui/accelerators.c:3016
+#: ../src/gui/accelerators.c:605 ../src/gui/accelerators.c:878
+#: ../src/gui/accelerators.c:2218 ../src/gui/accelerators.c:3088
 msgid "speed"
 msgstr "hız"
 
-#: ../src/gui/accelerators.c:662
+#: ../src/gui/accelerators.c:664
 msgid ""
 "press Del to delete selected shortcut\n"
 "double-click to add new shortcut\n"
@@ -8878,17 +9368,23 @@ msgstr ""
 "yeni kısayol eklemek için çift tıklayın\n"
 "artımlı arama için yazmaya başlayın"
 
-#: ../src/gui/accelerators.c:677
+#: ../src/gui/accelerators.c:680
+msgid "click to filter shortcut list\n"
+msgstr "kısayol listesini filtrelemek için tıklayın\n"
+
+#: ../src/gui/accelerators.c:681
+msgid "right click to show action of selected shortcut\n"
+msgstr "seçilen kısayolun eylemini göstermek için sağ tıklayın\n"
+
+#: ../src/gui/accelerators.c:682
 msgid ""
-"click to filter shortcut list\n"
 "double-click to define new shortcut\n"
 "start typing for incremental search"
 msgstr ""
-"kısayol listesini filtrelemek için tıklayın\n"
 "yeni kısayol tanımlamak için çift tıklayın\n"
 "artımlı arama için yazmaya başlayın"
 
-#: ../src/gui/accelerators.c:696
+#: ../src/gui/accelerators.c:701
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
@@ -8896,94 +9392,94 @@ msgstr ""
 "fare tıklamasıyla tuşlara basın ve kısayol oluşturmak için kombinasyonları "
 "kaydırın veya taşıyın"
 
-#: ../src/gui/accelerators.c:697
+#: ../src/gui/accelerators.c:702
 msgid "click to open shortcut configuration"
 msgstr "kısayol yapılandırmasını açmak için tıklayın"
 
-#: ../src/gui/accelerators.c:698
+#: ../src/gui/accelerators.c:703
 msgid "ctrl+click to add to quick access panel\n"
 msgstr "hızlı erişim paneline eklemek için ctrl+tıklayın\n"
 
-#: ../src/gui/accelerators.c:699
+#: ../src/gui/accelerators.c:704
 msgid "ctrl+click to remove from quick access panel\n"
 msgstr "hızlı erişim panelinden kaldırmak için ctrl+tıklayın\n"
 
-#: ../src/gui/accelerators.c:700
+#: ../src/gui/accelerators.c:705
 msgid "scroll to change default speed"
 msgstr "varsayılan hızı değiştirmek için kaydırın"
 
-#: ../src/gui/accelerators.c:701
+#: ../src/gui/accelerators.c:706
 msgid "right click to exit mapping mode"
 msgstr "eşleme modundan çıkmak için sağ tıklayın"
 
-#: ../src/gui/accelerators.c:870
+#: ../src/gui/accelerators.c:875
 msgid "active view"
 msgstr "etkin görünüm"
 
-#: ../src/gui/accelerators.c:871
+#: ../src/gui/accelerators.c:876
 msgid "other views"
 msgstr "diğer görünümler"
 
-#: ../src/gui/accelerators.c:872
+#: ../src/gui/accelerators.c:877
 msgid "fallbacks"
 msgstr "geri dönüşler"
 
-#: ../src/gui/accelerators.c:1023
+#: ../src/gui/accelerators.c:1028
 msgid "shortcut for move exists with single effect"
 msgstr "tek efektle hareket kısayolu var"
 
-#: ../src/gui/accelerators.c:1024
+#: ../src/gui/accelerators.c:1029
 msgid "create separate shortcuts for up and down move?"
 msgstr "yukarı ve aşağı hareket için ayrı kısayollar oluştur?"
 
-#: ../src/gui/accelerators.c:1047
+#: ../src/gui/accelerators.c:1052
 #, c-format
 msgid "%s, speed reset"
 msgstr "%s, hız sıfırlama"
 
-#: ../src/gui/accelerators.c:1056
+#: ../src/gui/accelerators.c:1061
 msgid "shortcut exists with different settings"
 msgstr "kısayol farklı ayarlarla var"
 
-#: ../src/gui/accelerators.c:1057
+#: ../src/gui/accelerators.c:1062
 msgid "reset the settings of the shortcut?"
 msgstr "kısayolun ayarları sıfırlansın mı?"
 
-#: ../src/gui/accelerators.c:1068
+#: ../src/gui/accelerators.c:1073
 msgid "shortcut already exists"
 msgstr "kısayol zaten var"
 
-#: ../src/gui/accelerators.c:1069
+#: ../src/gui/accelerators.c:1074
 msgid "remove the shortcut?"
 msgstr "kısayolu kaldır?"
 
-#: ../src/gui/accelerators.c:1102
+#: ../src/gui/accelerators.c:1107
 msgid "remove these existing shortcuts?"
 msgstr "bu mevcut kısayollar kaldırılsın mı?"
 
-#: ../src/gui/accelerators.c:1104
+#: ../src/gui/accelerators.c:1109
 msgid "clashing shortcuts exist"
 msgstr "çakışan kısayollar var"
 
 #. or 3, but change char relative[] = "-2" to "-1"
 #. NUM_INSTANCES
-#: ../src/gui/accelerators.c:1141
+#: ../src/gui/accelerators.c:1146
 msgid "preferred"
 msgstr "tercihli"
 
-#: ../src/gui/accelerators.c:1144
+#: ../src/gui/accelerators.c:1149
 msgid "second"
 msgstr "saniye"
 
-#: ../src/gui/accelerators.c:1145
+#: ../src/gui/accelerators.c:1150
 msgid "last but one"
 msgstr "son fakat tek"
 
-#: ../src/gui/accelerators.c:1287 ../src/gui/accelerators.c:1341
+#: ../src/gui/accelerators.c:1292 ../src/gui/accelerators.c:1346
 msgid "(unchanged)"
 msgstr "(değişmedi)"
 
-#: ../src/gui/accelerators.c:1436
+#: ../src/gui/accelerators.c:1441
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -9008,31 +9504,31 @@ msgstr ""
 "\n"
 "iptal etmek için sağ tıklayın"
 
-#: ../src/gui/accelerators.c:1483
+#: ../src/gui/accelerators.c:1488
 msgid "removing shortcut"
 msgstr "kısayolu kaldırma"
 
-#: ../src/gui/accelerators.c:1484
+#: ../src/gui/accelerators.c:1489
 msgid "remove the selected shortcut?"
 msgstr "seçilen kısayol kaldırılsın mı?"
 
-#: ../src/gui/accelerators.c:1819
+#: ../src/gui/accelerators.c:1888
 msgid "restore shortcuts"
 msgstr "kısayolları geri yükle"
 
-#: ../src/gui/accelerators.c:1823
+#: ../src/gui/accelerators.c:1892
 msgid "_defaults"
 msgstr "_öntanımlılar"
 
-#: ../src/gui/accelerators.c:1824
+#: ../src/gui/accelerators.c:1893
 msgid "_startup"
 msgstr "_başlangıç"
 
-#: ../src/gui/accelerators.c:1825
+#: ../src/gui/accelerators.c:1894
 msgid "_edits"
 msgstr "d_üzenlemeler"
 
-#: ../src/gui/accelerators.c:1830
+#: ../src/gui/accelerators.c:1899
 msgid ""
 "restore default shortcuts\n"
 "  or as at startup\n"
@@ -9042,7 +9538,7 @@ msgstr ""
 "  veya başlangıçta olduğu gibi\n"
 "  veya yapılandırma iletişim kutusu açıldığında\n"
 
-#: ../src/gui/accelerators.c:1833
+#: ../src/gui/accelerators.c:1902
 msgid ""
 "clear all newer shortcuts\n"
 "(instead of just restoring changed ones)"
@@ -9050,22 +9546,22 @@ msgstr ""
 "tüm yeni kısayolları temizle\n"
 "(sadece değiştirilenleri geri yüklemek yerine)"
 
-#: ../src/gui/accelerators.c:1887 ../src/gui/preferences.c:876
+#: ../src/gui/accelerators.c:1956 ../src/gui/preferences.c:877
 #: ../src/libs/tools/global_toolbox.c:496
 #: ../src/libs/tools/global_toolbox.c:819
 msgid "shortcuts"
 msgstr "kısayollar"
 
-#: ../src/gui/accelerators.c:1896
+#: ../src/gui/accelerators.c:1965
 msgid "export shortcuts"
 msgstr "kısayolları dışa aktar"
 
-#: ../src/gui/accelerators.c:1899 ../src/gui/accelerators.c:1978
+#: ../src/gui/accelerators.c:1968 ../src/gui/accelerators.c:2047
 #: ../src/gui/hist_dialog.c:198 ../src/gui/presets.c:477
 msgid "_ok"
 msgstr "ta_mam"
 
-#: ../src/gui/accelerators.c:1904
+#: ../src/gui/accelerators.c:1973
 msgid ""
 "export all shortcuts to a file\n"
 "or just for one selected device\n"
@@ -9073,36 +9569,27 @@ msgstr ""
 "tüm kısayolları bir dosyaya aktar\n"
 "veya sadece seçilen bir cihaz için\n"
 
-#. Side-border hide/show
-#: ../src/gui/accelerators.c:1909 ../src/gui/accelerators.c:1988
-#: ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2914 ../src/imageio/format/pdf.c:659
-#: ../src/iop/denoiseprofile.c:3581 ../src/iop/lens.cc:2274
-#: ../src/iop/rawdenoise.c:904 ../src/libs/filtering.c:1414
-#: ../src/libs/filters/colors.c:236
-msgid "all"
-msgstr "tümü"
-
-#: ../src/gui/accelerators.c:1910 ../src/gui/accelerators.c:1989
+#: ../src/gui/accelerators.c:1979 ../src/gui/accelerators.c:2058
 msgid "keyboard"
 msgstr "klavye"
 
-#: ../src/gui/accelerators.c:1922
+#: ../src/gui/accelerators.c:1991
 msgid "device id"
 msgstr "cihaz kimliği"
 
-#: ../src/gui/accelerators.c:1948
+#: ../src/gui/accelerators.c:2017
 msgid "select file to export"
 msgstr "dışa aktarılacak dosyayı seçin"
 
-#: ../src/gui/accelerators.c:1949 ../src/libs/tagging.c:2507
+#: ../src/gui/accelerators.c:2018 ../src/libs/tagging.c:2507
 msgid "_export"
 msgstr "_dışa aktar"
 
-#: ../src/gui/accelerators.c:1975
+#: ../src/gui/accelerators.c:2044
 msgid "import shortcuts"
 msgstr "kısayolları içe aktar"
 
-#: ../src/gui/accelerators.c:1983
+#: ../src/gui/accelerators.c:2052
 msgid ""
 "import all shortcuts from a file\n"
 "or just for one selected device\n"
@@ -9110,31 +9597,31 @@ msgstr ""
 "bir dosyadan tüm kısayolları içe aktar\n"
 "veya sadece seçilen bir cihaz için\n"
 
-#: ../src/gui/accelerators.c:2001
+#: ../src/gui/accelerators.c:2070
 msgid "id in file"
 msgstr "dosyadaki kimlik"
 
-#: ../src/gui/accelerators.c:2007
+#: ../src/gui/accelerators.c:2076
 msgid "id when loaded"
 msgstr "yüklendiğinde kimlik"
 
-#: ../src/gui/accelerators.c:2011
+#: ../src/gui/accelerators.c:2080
 msgid "clear device first"
 msgstr "önce cihazı temizle"
 
-#: ../src/gui/accelerators.c:2035
+#: ../src/gui/accelerators.c:2104
 msgid "select file to import"
 msgstr "içe aktarılacak dosyayı seçin"
 
-#: ../src/gui/accelerators.c:2036 ../src/libs/tagging.c:2471
+#: ../src/gui/accelerators.c:2105 ../src/libs/tagging.c:2471
 msgid "_import"
 msgstr "_içe aktar"
 
-#: ../src/gui/accelerators.c:2109
+#: ../src/gui/accelerators.c:2178
 msgid "search shortcuts list"
 msgstr "arama kısayolları listesi"
 
-#: ../src/gui/accelerators.c:2110
+#: ../src/gui/accelerators.c:2179
 msgid ""
 "incrementally search the list of shortcuts\n"
 "press up or down keys to cycle through matches"
@@ -9143,28 +9630,28 @@ msgstr ""
 "eşleşmeler arasında geçiş yapmak için yukarı veya aşağı tuşlarına basın"
 
 #. Setting up the cell renderers
-#: ../src/gui/accelerators.c:2125 ../src/views/view.c:1376
+#: ../src/gui/accelerators.c:2194 ../src/views/view.c:1374
 msgid "shortcut"
 msgstr "kısayol"
 
-#: ../src/gui/accelerators.c:2127 ../src/gui/accelerators.c:2215
-#: ../src/views/view.c:1378
+#: ../src/gui/accelerators.c:2196 ../src/gui/accelerators.c:2287
+#: ../src/views/view.c:1376
 msgid "action"
 msgstr "eylem"
 
-#: ../src/gui/accelerators.c:2136
+#: ../src/gui/accelerators.c:2205
 msgid "element"
 msgstr "öğe"
 
-#: ../src/gui/accelerators.c:2143
+#: ../src/gui/accelerators.c:2212
 msgid "effect"
 msgstr "etki"
 
-#: ../src/gui/accelerators.c:2200
+#: ../src/gui/accelerators.c:2269
 msgid "search actions list"
 msgstr "arama eylemleri listesi"
 
-#: ../src/gui/accelerators.c:2201
+#: ../src/gui/accelerators.c:2270
 msgid ""
 "incrementally search the list of actions\n"
 "press up or down keys to cycle through matches"
@@ -9172,16 +9659,16 @@ msgstr ""
 "eylemler listesini aşamalı olarak ara\n"
 "eşleşmeler arasında geçiş yapmak için yukarı veya aşağı tuşlarına basın"
 
-#: ../src/gui/accelerators.c:2221 ../src/gui/guides.c:719
+#: ../src/gui/accelerators.c:2293 ../src/gui/guides.c:719
 #: ../src/libs/export_metadata.c:192
 msgid "type"
 msgstr "tür"
 
-#: ../src/gui/accelerators.c:2256
+#: ../src/gui/accelerators.c:2328
 msgid "enable fallbacks"
 msgstr "yedekleri etkinleştir"
 
-#: ../src/gui/accelerators.c:2257
+#: ../src/gui/accelerators.c:2329
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -9190,53 +9677,53 @@ msgstr ""
 "etkinleştirir\n"
 "bir temel kısayol ile birlikte kullanıldığında"
 
-#: ../src/gui/accelerators.c:2263
+#: ../src/gui/accelerators.c:2335
 msgid "restore..."
 msgstr "geri yükle..."
 
-#: ../src/gui/accelerators.c:2264
+#: ../src/gui/accelerators.c:2336
 msgid "restore default shortcuts or previous state"
 msgstr "varsayılan kısayolları veya önceki durumu geri yükle"
 
 #. import button
-#: ../src/gui/accelerators.c:2268 ../src/libs/styles.c:853
-#: ../src/libs/tagging.c:3237
+#: ../src/gui/accelerators.c:2340 ../src/libs/styles.c:853
+#: ../src/libs/tagging.c:3238
 msgid "import..."
 msgstr "içe aktar..."
 
-#: ../src/gui/accelerators.c:2269
+#: ../src/gui/accelerators.c:2341
 msgid "fully or partially import shortcuts from file"
 msgstr "dosyadan kısayolları tamamen veya kısmen içe aktar"
 
 #. export button
-#: ../src/gui/accelerators.c:2273 ../src/libs/styles.c:857
-#: ../src/libs/tagging.c:3240
+#: ../src/gui/accelerators.c:2345 ../src/libs/styles.c:857
+#: ../src/libs/tagging.c:3241
 msgid "export..."
 msgstr "dışa aktar..."
 
-#: ../src/gui/accelerators.c:2274
+#: ../src/gui/accelerators.c:2346
 msgid "fully or partially export shortcuts to file"
 msgstr "kısayolları tamamen veya kısmen dosyaya aktar"
 
-#: ../src/gui/accelerators.c:2684
+#: ../src/gui/accelerators.c:2756
 msgid "input devices reinitialised"
 msgstr "girdi cihazları yeniden başlatıldı"
 
-#: ../src/gui/accelerators.c:2899
+#: ../src/gui/accelerators.c:2971
 msgid "fallback to move"
 msgstr "hareket etmek için geri dönüş"
 
-#: ../src/gui/accelerators.c:3088
+#: ../src/gui/accelerators.c:3160
 #, c-format
 msgid "%s not assigned"
 msgstr "%s atanmadı"
 
-#: ../src/gui/accelerators.c:3240
+#: ../src/gui/accelerators.c:3312
 #, c-format
 msgid "%s assigned to %s"
 msgstr "%s, %s'e atandı"
 
-#: ../src/gui/gtk.c:171 ../src/views/darkroom.c:4511
+#: ../src/gui/gtk.c:171 ../src/views/darkroom.c:4512
 msgid "darktable - darkroom preview"
 msgstr "darktable - karanlık oda önizlemesi"
 
@@ -9348,17 +9835,17 @@ msgstr "odak zirvesi aç/kapat"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:2587
+#: ../src/gui/gtk.c:2589
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:2589
+#: ../src/gui/gtk.c:2591
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:2921 ../src/gui/gtk.c:2926 ../src/gui/gtk.c:2931
+#: ../src/gui/gtk.c:2923 ../src/gui/gtk.c:2928 ../src/gui/gtk.c:2933
 msgid "tabs"
 msgstr "sekme"
 
@@ -9727,7 +10214,7 @@ msgid "global guide overlay settings"
 msgstr "genel kılavuz yer paylaşımı ayarları"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:738 ../src/views/darkroom.c:2583
+#: ../src/gui/guides.c:738 ../src/views/darkroom.c:2584
 msgid "guide lines"
 msgstr "kılavuz çizgiler"
 
@@ -9748,7 +10235,7 @@ msgid "vertically"
 msgstr "dikey olarak"
 
 #: ../src/gui/guides.c:715 ../src/iop/ashift.c:5837 ../src/iop/clipping.c:2114
-#: ../src/iop/colorbalance.c:1866
+#: ../src/iop/colorbalance.c:1865
 msgid "both"
 msgstr "ikisi birden"
 
@@ -9763,15 +10250,6 @@ msgstr "kaplama rengi"
 #: ../src/gui/guides.c:727
 msgid "set overlay color"
 msgstr "kaplama rengini ayarla"
-
-#: ../src/gui/guides.c:733 ../src/iop/temperature.c:1807
-msgid "cyan"
-msgstr "cam göbeği"
-
-#: ../src/gui/guides.c:734 ../src/iop/colorzones.c:2309
-#: ../src/iop/temperature.c:1805
-msgid "magenta"
-msgstr "magenta"
 
 #: ../src/gui/guides.c:739
 msgid ""
@@ -9933,58 +10411,58 @@ msgstr ""
 "temayı aşağıda anahtarlanan CSS ile değiştirin (user.css dosyasına "
 "kaydedilir)"
 
-#: ../src/gui/preferences.c:414
+#: ../src/gui/preferences.c:415
 msgctxt "usercss"
 msgid "save CSS and apply"
 msgstr "CSS'yi kaydedin ve uygulayın"
 
-#: ../src/gui/preferences.c:420
+#: ../src/gui/preferences.c:421
 msgid "click to save and apply the CSS tweaks entered in this editor"
 msgstr ""
 "bu düzenleyicide girilen CSS ince ayarlarını kaydetmek ve uygulamak için "
 "tıklayın"
 
 #. load default text with some pointers
-#: ../src/gui/preferences.c:438
+#: ../src/gui/preferences.c:439
 msgid "ERROR Loading user.css"
 msgstr "HATA user.css yükleniyor"
 
 #. load default text
-#: ../src/gui/preferences.c:447
+#: ../src/gui/preferences.c:448
 msgid "Enter CSS theme tweaks here"
 msgstr "CSS tema ayarlarını buraya girin"
 
-#: ../src/gui/preferences.c:483
+#: ../src/gui/preferences.c:484
 msgid "darktable preferences"
 msgstr "darktable tercihleri"
 
-#: ../src/gui/preferences.c:556
+#: ../src/gui/preferences.c:557
 msgid "darktable needs to be restarted for settings to take effect"
 msgstr ""
 "ayarların etkili olması için darktable`nin yeniden başlatılması gerekiyor"
 
 #. exif
-#: ../src/gui/preferences.c:795 ../src/gui/presets.c:535
+#: ../src/gui/preferences.c:796 ../src/gui/presets.c:535
 #: ../src/libs/metadata_view.c:137
 msgid "model"
 msgstr "model"
 
-#: ../src/gui/preferences.c:799 ../src/gui/presets.c:543
+#: ../src/gui/preferences.c:800 ../src/gui/presets.c:543
 #: ../src/libs/metadata_view.c:138
 msgid "maker"
 msgstr "üretici"
 
-#: ../src/gui/preferences.c:824 ../src/iop/ashift.c:5840
+#: ../src/gui/preferences.c:825 ../src/iop/ashift.c:5840
 #: ../src/iop/basicadj.c:632 ../src/iop/borders.c:1041 ../src/iop/levels.c:637
 #: ../src/iop/rgblevels.c:1066
 msgid "auto"
 msgstr "otomatik"
 
-#: ../src/gui/preferences.c:836
+#: ../src/gui/preferences.c:837
 msgid "search presets list"
 msgstr "ön ayar listesini ara"
 
-#: ../src/gui/preferences.c:837
+#: ../src/gui/preferences.c:838
 msgid ""
 "incrementally search the list of presets\n"
 "press up or down keys to cycle through matches"
@@ -9992,36 +10470,36 @@ msgstr ""
 "ön ayar listesini aşamalı olarak ara\n"
 "eşleşmeler arasında geçiş yapmak için yukarı veya aşağı tuşlarına basın"
 
-#: ../src/gui/preferences.c:843
+#: ../src/gui/preferences.c:844
 msgctxt "preferences"
 msgid "import..."
 msgstr "içe aktar..."
 
-#: ../src/gui/preferences.c:847
+#: ../src/gui/preferences.c:848
 msgctxt "preferences"
 msgid "export..."
 msgstr "dışa aktar..."
 
-#: ../src/gui/preferences.c:984
+#: ../src/gui/preferences.c:985
 #, c-format
 msgid "failed to import preset %s"
 msgstr "%s ön ayarı içe aktarılamadı"
 
-#: ../src/gui/preferences.c:995
+#: ../src/gui/preferences.c:996
 msgid "select preset(s) to import"
 msgstr "içe aktarılacak ön ayar(lar)ı seçin"
 
-#: ../src/gui/preferences.c:996 ../src/libs/collect.c:394
+#: ../src/gui/preferences.c:997 ../src/libs/collect.c:394
 #: ../src/libs/copy_history.c:107 ../src/libs/geotagging.c:930
-#: ../src/libs/import.c:1500 ../src/libs/import.c:1604 ../src/libs/styles.c:512
+#: ../src/libs/import.c:1497 ../src/libs/import.c:1601 ../src/libs/styles.c:512
 msgid "_open"
 msgstr "_aç"
 
-#: ../src/gui/preferences.c:1005
+#: ../src/gui/preferences.c:1006
 msgid "darktable preset files"
 msgstr "darktable ön ayar dosyaları"
 
-#: ../src/gui/preferences.c:1010 ../src/iop/lut3d.c:1588
+#: ../src/gui/preferences.c:1011 ../src/iop/lut3d.c:1588
 #: ../src/libs/copy_history.c:144 ../src/libs/geotagging.c:946
 #: ../src/libs/styles.c:526
 msgid "all files"
@@ -10050,13 +10528,13 @@ msgid "preset `%s' is write-protected, can't delete!"
 msgstr "`%s' ön ayarı yazmaya karşı korumalıdır, silinemez!"
 
 #: ../src/gui/presets.c:177 ../src/gui/presets.c:413 ../src/libs/lib.c:248
-#: ../src/libs/modulegroups.c:3745
+#: ../src/libs/modulegroups.c:3748
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "`%s' ön ayarını gerçekten silmek istiyor musunuz?"
 
 #: ../src/gui/presets.c:181 ../src/gui/presets.c:418 ../src/libs/lib.c:252
-#: ../src/libs/modulegroups.c:3749
+#: ../src/libs/modulegroups.c:3752
 msgid "delete preset?"
 msgstr "ön ayar silinsin mi?"
 
@@ -10203,8 +10681,8 @@ msgstr "`%s' ön ayarını gerçekten güncellemek istiyor musunuz?"
 msgid "update preset?"
 msgstr "ön ayar güncellensin mi?"
 
-#: ../src/gui/presets.c:1097 ../src/libs/modulegroups.c:3833
-#: ../src/libs/modulegroups.c:3842
+#: ../src/gui/presets.c:1097 ../src/libs/modulegroups.c:3836
+#: ../src/libs/modulegroups.c:3845
 msgid "manage module layouts"
 msgstr "modül düzenlerini yönet"
 
@@ -10212,31 +10690,31 @@ msgstr "modül düzenlerini yönet"
 msgid "manage quick presets"
 msgstr "hızlı ön ayarları yönet"
 
-#: ../src/gui/presets.c:1279
+#: ../src/gui/presets.c:1277
 msgid "manage quick presets list..."
 msgstr "hızlı ön ayar listesini yönet..."
 
-#: ../src/gui/presets.c:1414
+#: ../src/gui/presets.c:1412
 msgid "(default)"
 msgstr "(öntanımlı)"
 
-#: ../src/gui/presets.c:1435
+#: ../src/gui/presets.c:1433
 msgid "disabled: wrong module version"
 msgstr "devre dışı: yanlış modül sürümü"
 
-#: ../src/gui/presets.c:1460 ../src/libs/lib.c:531
+#: ../src/gui/presets.c:1458 ../src/libs/lib.c:531
 msgid "edit this preset.."
 msgstr "bu ön ayarı düzenle.."
 
-#: ../src/gui/presets.c:1464 ../src/libs/lib.c:535
+#: ../src/gui/presets.c:1462 ../src/libs/lib.c:535
 msgid "delete this preset"
 msgstr "bu ön ayarı sil"
 
-#: ../src/gui/presets.c:1470 ../src/libs/lib.c:543
+#: ../src/gui/presets.c:1468 ../src/libs/lib.c:543
 msgid "store new preset.."
 msgstr "yeni ön ayarı kaydet.."
 
-#: ../src/gui/presets.c:1476 ../src/libs/lib.c:555
+#: ../src/gui/presets.c:1474 ../src/libs/lib.c:555
 msgid "update preset"
 msgstr "ön ayarı güncelle"
 
@@ -10547,13 +11025,13 @@ msgid "page orientation"
 msgstr "sayfa yönlendirmesi"
 
 #: ../src/imageio/format/pdf.c:608 ../src/iop/borders.c:1042
-#: ../src/libs/filtering.c:271 ../src/libs/filters/ratio.c:122
+#: ../src/libs/filtering.c:272 ../src/libs/filters/ratio.c:122
 #: ../src/libs/print_settings.c:2366
 msgid "portrait"
 msgstr "dikey"
 
 #: ../src/imageio/format/pdf.c:609 ../src/iop/borders.c:1043
-#: ../src/libs/filtering.c:267 ../src/libs/filters/ratio.c:124
+#: ../src/libs/filtering.c:268 ../src/libs/filters/ratio.c:124
 #: ../src/libs/print_settings.c:2367
 msgid "landscape"
 msgstr "yatay"
@@ -10578,7 +11056,7 @@ msgstr ""
 "örnekler: 10 mm, 1 inç"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:635 ../src/libs/export.c:1170
+#: ../src/imageio/format/pdf.c:635 ../src/libs/export.c:1169
 msgid "dpi"
 msgstr "dpi"
 
@@ -11375,7 +11853,7 @@ msgstr "daha ince"
 msgid "finest"
 msgstr "en iyi"
 
-#: ../src/iop/atrous.c:1655 ../src/libs/export.c:1163 ../src/libs/export.c:1178
+#: ../src/iop/atrous.c:1655 ../src/libs/export.c:1162 ../src/libs/export.c:1177
 msgid "x"
 msgstr "x"
 
@@ -11506,7 +11984,7 @@ msgstr ""
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/colorreconstruction.c:135
 #: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:720
 #: ../src/iop/dither.c:103 ../src/iop/flip.c:105 ../src/iop/hazeremoval.c:112
-#: ../src/iop/highlights.c:139 ../src/iop/hotpixels.c:73
+#: ../src/iop/highlights.c:141 ../src/iop/hotpixels.c:73
 #: ../src/iop/invert.c:122 ../src/iop/lens.cc:159 ../src/iop/nlmeans.c:99
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rawdenoise.c:130
 #: ../src/iop/retouch.c:209 ../src/iop/sharpen.c:94 ../src/iop/spots.c:67
@@ -11881,7 +12359,7 @@ msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:970 ../src/iop/clipping.c:2139 ../src/iop/crop.c:1048
-#: ../src/libs/filtering.c:263 ../src/libs/filters/ratio.c:126
+#: ../src/libs/filtering.c:264 ../src/libs/filters/ratio.c:126
 msgid "square"
 msgstr "kare"
 
@@ -12008,8 +12486,8 @@ msgstr "Bayer sensörleri için doğru renk sapmaları"
 
 #: ../src/iop/cacorrect.c:89 ../src/iop/cacorrect.c:91
 #: ../src/iop/cacorrectrgb.c:168 ../src/iop/cacorrectrgb.c:170
-#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:140
-#: ../src/iop/highlights.c:142 ../src/iop/hotpixels.c:74
+#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:142
+#: ../src/iop/highlights.c:144 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
 #: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:112
 #: ../src/iop/rawprepare.c:114 ../src/iop/temperature.c:200
@@ -12644,7 +13122,7 @@ msgstr "beyaz dengesini alandan algılanacak şekilde ayarla"
 msgid "illuminant"
 msgstr "aydınlatıcı"
 
-#: ../src/iop/channelmixerrgb.c:4045 ../src/iop/temperature.c:1975
+#: ../src/iop/channelmixerrgb.c:4045 ../src/iop/temperature.c:1974
 msgid "temperature"
 msgstr "sıcaklık"
 
@@ -13179,7 +13657,7 @@ msgstr "Kodachrome'a benzer"
 msgid "optimize luma from patches"
 msgstr "parlatma'yı yamalardan optimize edin"
 
-#: ../src/iop/colorbalance.c:945 ../src/iop/colorbalance.c:2059
+#: ../src/iop/colorbalance.c:945 ../src/iop/colorbalance.c:2058
 msgid "optimize luma"
 msgstr "parlatmayı optimize et"
 
@@ -13187,7 +13665,7 @@ msgstr "parlatmayı optimize et"
 msgid "neutralize colors from patches"
 msgstr "yamalardaki renkleri nötralize et"
 
-#: ../src/iop/colorbalance.c:951 ../src/iop/colorbalance.c:2065
+#: ../src/iop/colorbalance.c:951 ../src/iop/colorbalance.c:2064
 msgid "neutralize colors"
 msgstr "renkleri nötralize etme"
 
@@ -13237,113 +13715,113 @@ msgstr "öne çıkanlar: kazanç / eğim"
 msgid "shadows / mid-tones / highlights"
 msgstr "gölgeler / orta tonlar / vurgular"
 
-#: ../src/iop/colorbalance.c:1859 ../src/iop/colorbalance.c:1868
+#: ../src/iop/colorbalance.c:1858 ../src/iop/colorbalance.c:1867
 msgid "color-grading mapping method"
 msgstr "renk derecelendirme eşleme yöntemi"
 
-#: ../src/iop/colorbalance.c:1863
+#: ../src/iop/colorbalance.c:1862
 msgid "color control sliders"
 msgstr "renk kontrol kaydırıcıları"
 
-#: ../src/iop/colorbalance.c:1864 ../src/libs/colorpicker.c:51
+#: ../src/iop/colorbalance.c:1863 ../src/libs/colorpicker.c:51
 msgid "HSL"
 msgstr "HSL"
 
-#: ../src/iop/colorbalance.c:1865
+#: ../src/iop/colorbalance.c:1864
 msgid "RGBL"
 msgstr "RGBL"
 
 #. Page master
-#: ../src/iop/colorbalance.c:1877 ../src/iop/colorbalancergb.c:1511
+#: ../src/iop/colorbalance.c:1876 ../src/iop/colorbalancergb.c:1511
 msgid "master"
 msgstr "usta"
 
-#: ../src/iop/colorbalance.c:1883
+#: ../src/iop/colorbalance.c:1882
 msgid "saturation correction before the color balance"
 msgstr "renk dengesinden önce doygunluk düzeltmesi"
 
-#: ../src/iop/colorbalance.c:1889
+#: ../src/iop/colorbalance.c:1888
 msgid "saturation correction after the color balance"
 msgstr "renk dengesinden sonra doygunluk düzeltmesi"
 
-#: ../src/iop/colorbalance.c:1894
+#: ../src/iop/colorbalance.c:1893
 msgid "adjust to match a neutral tone"
 msgstr "nötr bir tona uyacak şekilde ayarlayın"
 
 #. is set in _configure_slider_blocks
-#: ../src/iop/colorbalance.c:1952
+#: ../src/iop/colorbalance.c:1951
 msgid "click to cycle layout"
 msgstr "düzeni döndürmek için tıklayın"
 
-#: ../src/iop/colorbalance.c:1986
+#: ../src/iop/colorbalance.c:1985
 msgid "factor"
 msgstr "etken"
 
-#: ../src/iop/colorbalance.c:2000
+#: ../src/iop/colorbalance.c:1999
 msgid "select the hue"
 msgstr "tonu seç"
 
-#: ../src/iop/colorbalance.c:2012
+#: ../src/iop/colorbalance.c:2011
 msgid "select the saturation"
 msgstr "doygunluğu seç"
 
-#: ../src/iop/colorbalance.c:2031
+#: ../src/iop/colorbalance.c:2030
 msgid "factor of lift/offset"
 msgstr "kaldırma/kaydırma etkeni"
 
-#: ../src/iop/colorbalance.c:2032
+#: ../src/iop/colorbalance.c:2031
 msgid "factor of red for lift/offset"
 msgstr "kaldırma/kaydırma için kırmızı etkeni"
 
-#: ../src/iop/colorbalance.c:2033
+#: ../src/iop/colorbalance.c:2032
 msgid "factor of green for lift/offset"
 msgstr "kaldırma/kaydırma için yeşil etkeni"
 
-#: ../src/iop/colorbalance.c:2034
+#: ../src/iop/colorbalance.c:2033
 msgid "factor of blue for lift/offset"
 msgstr "kaldırma/ofset için mavi etkeni"
 
-#: ../src/iop/colorbalance.c:2037
+#: ../src/iop/colorbalance.c:2036
 msgid "factor of gamma/power"
 msgstr "gama/güç etkeni"
 
-#: ../src/iop/colorbalance.c:2038
+#: ../src/iop/colorbalance.c:2037
 msgid "factor of red for gamma/power"
 msgstr "gama/güç için kırmızı etkeni"
 
-#: ../src/iop/colorbalance.c:2039
+#: ../src/iop/colorbalance.c:2038
 msgid "factor of green for gamma/power"
 msgstr "gama/güç için yeşil etkeni"
 
-#: ../src/iop/colorbalance.c:2040
+#: ../src/iop/colorbalance.c:2039
 msgid "factor of blue for gamma/power"
 msgstr "gama/güç için mavi etkeni"
 
-#: ../src/iop/colorbalance.c:2043
+#: ../src/iop/colorbalance.c:2042
 msgid "factor of gain/slope"
 msgstr "kazanç/eğim etkeni"
 
-#: ../src/iop/colorbalance.c:2044
+#: ../src/iop/colorbalance.c:2043
 msgid "factor of red for gain/slope"
 msgstr "kazanç/eğim için kırmızı etkeni"
 
-#: ../src/iop/colorbalance.c:2045
+#: ../src/iop/colorbalance.c:2044
 msgid "factor of green for gain/slope"
 msgstr "kazanç/eğim için yeşil etkeni"
 
-#: ../src/iop/colorbalance.c:2046
+#: ../src/iop/colorbalance.c:2045
 msgid "factor of blue for gain/slope"
 msgstr "kazanç/eğim için mavi etkeni"
 
-#: ../src/iop/colorbalance.c:2055
+#: ../src/iop/colorbalance.c:2054
 msgid "auto optimizers"
 msgstr "otomatik optimize ediciler"
 
-#: ../src/iop/colorbalance.c:2060
+#: ../src/iop/colorbalance.c:2059
 msgid "fit the whole histogram and center the average luma"
 msgstr "tüm histogramı sığdır ve ortalama parlaklığı ortala"
 
-#: ../src/iop/colorbalance.c:2066
+#: ../src/iop/colorbalance.c:2065
 msgid "optimize the RGB curves to remove color casts"
 msgstr "renk tonlarını ortadan kaldırmak için RGB eğrilerini optimize edin"
 
@@ -13694,11 +14172,11 @@ msgid ""
 msgstr ""
 "hedef rengi ayarla Lab 'a' kanalı\n"
 "daha düşük değerler, hedef rengi yeşillere doğru kaydırırken, daha yüksek "
-"değerler macentalara doğru kayar"
+"değerler eflatuna doğru kayar"
 
 #: ../src/iop/colorchecker.c:1362
 msgid "green-magenta offset"
-msgstr "yeşil-macenta ofset"
+msgstr "yeşil-eflatun ofset"
 
 #: ../src/iop/colorchecker.c:1368
 msgid ""
@@ -13740,10 +14218,6 @@ msgstr ""
 "göreceli - hedef renk, yamanın orijinal renginden görecelidir\n"
 "mutlak - hedef renk mutlak Lab değeridir"
 
-#: ../src/iop/colorchecker.c:1382
-msgid "relative"
-msgstr "göreceli"
-
 #: ../src/iop/colorchecker.c:1383
 msgid "absolute"
 msgstr "mutlak"
@@ -13766,7 +14240,7 @@ msgid ""
 "lower values desaturate greens and magenta while higher saturate them"
 msgstr ""
 "Lab'deki a* eğrisinin dikliği\n"
-"daha düşük değerler yeşilleri ve macentaları solgunlaştırırken, daha yüksek "
+"daha düşük değerler yeşilleri ve eflatunu solgunlaştırırken, daha yüksek "
 "değerler onları doyurur"
 
 #: ../src/iop/colorcontrast.c:354
@@ -13877,7 +14351,7 @@ msgstr "renklendir"
 msgid "overlay a solid color on the image"
 msgstr "resmin üzerine düz bir renk bindir"
 
-#: ../src/iop/colorize.c:355 ../src/iop/splittoning.c:485
+#: ../src/iop/colorize.c:355 ../src/iop/splittoning.c:480
 msgid "select the hue tone"
 msgstr "ton tonunu seç"
 
@@ -13976,31 +14450,31 @@ msgstr "desteklenmeyen çıktı profili sRGB ile değiştirildi!"
 msgid "output intent"
 msgstr "çıktı amacı"
 
-#: ../src/iop/colorout.c:867 ../src/libs/export.c:1260
+#: ../src/iop/colorout.c:867 ../src/libs/export.c:1259
 #: ../src/libs/print_settings.c:2325 ../src/libs/print_settings.c:2653
-#: ../src/views/darkroom.c:2447 ../src/views/darkroom.c:2454
+#: ../src/views/darkroom.c:2448 ../src/views/darkroom.c:2455
 #: ../src/views/lighttable.c:1161 ../src/views/lighttable.c:1168
 msgid "perceptual"
 msgstr "algısal"
 
-#: ../src/iop/colorout.c:868 ../src/libs/export.c:1261
+#: ../src/iop/colorout.c:868 ../src/libs/export.c:1260
 #: ../src/libs/print_settings.c:2326 ../src/libs/print_settings.c:2654
-#: ../src/views/darkroom.c:2448 ../src/views/darkroom.c:2455
+#: ../src/views/darkroom.c:2449 ../src/views/darkroom.c:2456
 #: ../src/views/lighttable.c:1162 ../src/views/lighttable.c:1169
 msgid "relative colorimetric"
 msgstr "bağıl kolorimetrik"
 
-#: ../src/iop/colorout.c:869 ../src/libs/export.c:1262
+#: ../src/iop/colorout.c:869 ../src/libs/export.c:1261
 #: ../src/libs/print_settings.c:2327 ../src/libs/print_settings.c:2655
-#: ../src/views/darkroom.c:2449 ../src/views/darkroom.c:2456
+#: ../src/views/darkroom.c:2450 ../src/views/darkroom.c:2457
 #: ../src/views/lighttable.c:1163 ../src/views/lighttable.c:1170
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "doygunluk"
 
-#: ../src/iop/colorout.c:870 ../src/libs/export.c:1263
+#: ../src/iop/colorout.c:870 ../src/libs/export.c:1262
 #: ../src/libs/print_settings.c:2328 ../src/libs/print_settings.c:2656
-#: ../src/views/darkroom.c:2450 ../src/views/darkroom.c:2457
+#: ../src/views/darkroom.c:2451 ../src/views/darkroom.c:2458
 #: ../src/views/lighttable.c:1164 ../src/views/lighttable.c:1171
 msgid "absolute colorimetric"
 msgstr "mutlak kolorimetrik"
@@ -14060,12 +14534,12 @@ msgstr "belirli değiştirme renklerine öncelik verilmesi durumunda ve nasıl"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "diğer ton tonlarına göre öncelik verilmesi gereken ton tonu"
 
-#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5806
-#: ../src/iop/highlights.c:2099
+#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5819
+#: ../src/iop/highlights.c:2212
 msgid "not applicable"
 msgstr "uygulanamaz"
 
-#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2100
+#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2213
 msgid "no highlights reconstruction for monochrome images"
 msgstr "tek renkli görüntüler için parlak nokta rekonstrüksiyonu yok"
 
@@ -14151,10 +14625,6 @@ msgstr "HSL temel ayarı"
 #: ../src/iop/colorzones.c:2303
 msgid "orange"
 msgstr "turuncu"
-
-#: ../src/iop/colorzones.c:2306
-msgid "aqua"
-msgstr "su"
 
 #: ../src/iop/colorzones.c:2450 ../src/iop/rgbcurve.c:1385
 msgid ""
@@ -14311,16 +14781,16 @@ msgstr ""
 "bir sensör renk filtresi dizisi okumasından tam RGB piksellerini yeniden "
 "oluşturun"
 
-#: ../src/iop/demosaic.c:5268
+#: ../src/iop/demosaic.c:5288
 msgid "[dual demosaic_cl] internal problem"
 msgstr "[dual demosaic_cl] dahili sorun"
 
-#: ../src/iop/demosaic.c:5639
+#: ../src/iop/demosaic.c:5661
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "4bayer görüntüsü için `%s' renk matrisi bulunamadı!"
 
-#: ../src/iop/demosaic.c:5772
+#: ../src/iop/demosaic.c:5786
 msgid ""
 "bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -14331,7 +14801,7 @@ msgstr ""
 "LMMSE, yüksek ISO görüntüleri için en uygunudur.\n"
 "çift demosaicers çift işlem süresi."
 
-#: ../src/iop/demosaic.c:5776
+#: ../src/iop/demosaic.c:5790
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -14341,7 +14811,7 @@ msgstr ""
 "kroma yavaştır.\n"
 "çift demosaicers çift işlem süresi."
 
-#: ../src/iop/demosaic.c:5780
+#: ../src/iop/demosaic.c:5794
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -14351,21 +14821,19 @@ msgstr ""
 "kapatmak için 0.0'a ayarlayın\n"
 "kenarları yok saymak için 1.0'a ayarlayın"
 
-#: ../src/iop/demosaic.c:5784
+#: ../src/iop/demosaic.c:5799
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
-"set to 1.0 for flat content"
+"set to 1.0 for flat content\n"
+"toggle to visualize the mask"
 msgstr ""
 "ikili demosaik için kontrast eşiği.\n"
-"yüksek frekans içeriği için 0.0'a ayarlayın\n"
-"düz içerik için 1.0 olarak ayarlayın"
+"yüksek frekans içeriği için 0.0 olarak ayarlayın\n"
+"düz içerik için 1.0 olarak ayarlayın\n"
+"maskeyi görselleştirmek için geçiş yap"
 
-#: ../src/iop/demosaic.c:5787
-msgid "display blending mask"
-msgstr "karıştırma maskesini göster"
-
-#: ../src/iop/demosaic.c:5794
+#: ../src/iop/demosaic.c:5807
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -14373,15 +14841,15 @@ msgstr ""
 "LMMSE iyileştirme adımları. medyan adımlar çıktının ortalamasını alır,\n"
 "rafine, kırmızı ve mavi kanalların bazı yeniden hesaplanmasını ekler"
 
-#: ../src/iop/demosaic.c:5797
+#: ../src/iop/demosaic.c:5810
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "demosaicing'den sonra kaç renk yumuşatma medyan adımı"
 
-#: ../src/iop/demosaic.c:5800
+#: ../src/iop/demosaic.c:5813
 msgid "green channels matching method"
 msgstr "yeşil kanallar eşleştirme yöntemi"
 
-#: ../src/iop/demosaic.c:5807
+#: ../src/iop/demosaic.c:5820
 msgid "demosaicing is only used for color raw images"
 msgstr "demosaicing yalnızca renkli ham görüntüler için kullanılır"
 
@@ -14457,7 +14925,7 @@ msgstr "varyans mavisi: "
 msgid "variance computed on the blue channel"
 msgstr "mavi kanalda hesaplanan varyans"
 
-#: ../src/iop/denoiseprofile.c:3658 ../src/libs/export.c:1235
+#: ../src/iop/denoiseprofile.c:3658 ../src/libs/export.c:1234
 #: ../src/libs/print_settings.c:2273 ../src/libs/print_settings.c:2604
 msgid "profile"
 msgstr "profil"
@@ -14974,7 +15442,7 @@ msgstr "kamera pozlamasını telafi et (%+.1f EV)"
 msgid "L : \t%.1f %%"
 msgstr "L : \t%.1f %%"
 
-#: ../src/iop/exposure.c:858 ../src/libs/history.c:865
+#: ../src/iop/exposure.c:858 ../src/libs/history.c:861
 #, c-format
 msgid "%.2f EV"
 msgstr "%.2f EV"
@@ -15157,7 +15625,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "filmsel S eğrisi"
 
-#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4441
+#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4440
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -15166,7 +15634,7 @@ msgstr ""
 "çoğunlukla orta tonları etkiler"
 
 #. geotagging
-#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4450
+#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4449
 #: ../src/libs/metadata_view.c:157
 msgid "latitude"
 msgstr "enlem"
@@ -15185,7 +15653,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr "gölgeler/vurgular dengesi"
 
-#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4461
+#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4460
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -15217,9 +15685,9 @@ msgstr ""
 "özellikle aşırı parlaklıklarda.\n"
 "gölgeler ve/veya vurgular aşırı doygunsa azaltın."
 
-#: ../src/iop/filmic.c:1701 ../src/libs/export.c:1258
+#: ../src/iop/filmic.c:1701 ../src/libs/export.c:1257
 #: ../src/libs/print_settings.c:2324 ../src/libs/print_settings.c:2650
-#: ../src/views/darkroom.c:2446 ../src/views/lighttable.c:1160
+#: ../src/views/darkroom.c:2447 ../src/views/lighttable.c:1160
 #: ../src/views/lighttable.c:1167
 msgid "intent"
 msgstr "amaç"
@@ -15266,7 +15734,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "hedef/ekran"
 
-#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4480
+#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4479
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -15274,7 +15742,7 @@ msgstr ""
 "saf siyah çıktının parlaklığı, bu %0 olmalıdır\n"
 "soluk bir görünüm istiyorsanız hariç"
 
-#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4487
+#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4486
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -15282,7 +15750,7 @@ msgstr ""
 "hedef görüntüsünün veya renk uzayının orta gri değeri.\n"
 "ne yaptığınızı bilmiyorsanız buna asla dokunmamalısınız."
 
-#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4494
+#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4493
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -15375,7 +15843,7 @@ msgid "% camera"
 msgstr "% Kamera"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3773 ../src/iop/filmicrgb.c:4474
+#: ../src/iop/filmicrgb.c:3773 ../src/iop/filmicrgb.c:4473
 msgid "display"
 msgstr "ekran"
 
@@ -15465,7 +15933,7 @@ msgstr "yeniden inşa etmek"
 msgid "highlights clipping"
 msgstr "kırpmayı vurgular"
 
-#: ../src/iop/filmicrgb.c:4374
+#: ../src/iop/filmicrgb.c:4373
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -15481,7 +15949,7 @@ msgstr ""
 "daha fazla alanı içerecek şekilde azaltmak,\n"
 "daha fazla alanı hariç tutmak için artırın."
 
-#: ../src/iop/filmicrgb.c:4384
+#: ../src/iop/filmicrgb.c:4383
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -15491,15 +15959,15 @@ msgstr ""
 "geçişi daha sert ve keskin hale getirmek için azaltın,\n"
 "geçişi daha yumuşak ve bulanık hale getirmek için artırın."
 
-#: ../src/iop/filmicrgb.c:4390 ../src/iop/filmicrgb.c:4391
+#: ../src/iop/filmicrgb.c:4389 ../src/iop/filmicrgb.c:4390
 msgid "display highlight reconstruction mask"
 msgstr "vurgulanan yeniden yapılandırma maskesini göster"
 
-#: ../src/iop/filmicrgb.c:4398 ../src/iop/splittoning.c:532
+#: ../src/iop/filmicrgb.c:4397 ../src/iop/splittoning.c:527
 msgid "balance"
 msgstr "denge"
 
-#: ../src/iop/filmicrgb.c:4405
+#: ../src/iop/filmicrgb.c:4404
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -15516,7 +15984,7 @@ msgstr ""
 "en az bir RGB kanalı kırpılmamışsa artırın.\n"
 "tüm RGB kanalları geniş alanlarda kırpılırsa azalır."
 
-#: ../src/iop/filmicrgb.c:4416
+#: ../src/iop/filmicrgb.c:4415
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -15533,7 +16001,7 @@ msgstr ""
 "daha fazla ayrıntı istiyorsanız artırın.\n"
 "daha fazla bulanıklık istiyorsanız azaltın."
 
-#: ../src/iop/filmicrgb.c:4428
+#: ../src/iop/filmicrgb.c:4427
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -15548,14 +16016,14 @@ msgstr ""
 "veya renkli olayları kurtarmaya çalışmak.\n"
 "%0 her ikisinin de eşit karışımıdır.\n"
 "Daha fazla renk istiyorsanız artırın.\n"
-"macenta veya gamut dışı vurgular görürseniz azaltın."
+"eflatun veya gamut dışı vurgular görürseniz azaltın."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4436
+#: ../src/iop/filmicrgb.c:4435
 msgid "look"
 msgstr "bak"
 
-#: ../src/iop/filmicrgb.c:4446
+#: ../src/iop/filmicrgb.c:4445
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -15565,7 +16033,7 @@ msgstr ""
 "vurguları daha parlak ve daha az sıkıştırılmış hale getirmek için artırın.\n"
 "vurguları kapatmak için azaltın."
 
-#: ../src/iop/filmicrgb.c:4454
+#: ../src/iop/filmicrgb.c:4453
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -15578,7 +16046,7 @@ msgstr ""
 "başka türlü azaltın. enlem aralığında desatürasyon olmaz.\n"
 "bunun orta tonlar üzerinde hiçbir etkisi yoktur."
 
-#: ../src/iop/filmicrgb.c:4469 ../src/iop/filmicrgb.c:4612
+#: ../src/iop/filmicrgb.c:4468 ../src/iop/filmicrgb.c:4611
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -15589,11 +16057,11 @@ msgstr ""
 "gölgeler ve/veya vurgular yeterince doygun değilse artırın."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:4498
+#: ../src/iop/filmicrgb.c:4497
 msgid "options"
 msgstr "seçenekler"
 
-#: ../src/iop/filmicrgb.c:4503
+#: ../src/iop/filmicrgb.c:4502
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -15602,7 +16070,7 @@ msgstr ""
 "v4, ışığın spektral saflığına dayanan daha yeni bir doygunlaştırma "
 "yöntemidir."
 
-#: ../src/iop/filmicrgb.c:4507
+#: ../src/iop/filmicrgb.c:4506
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -15613,7 +16081,7 @@ msgstr ""
 "bu nedenle, başka bir yerde düzgün bir şekilde düzeltildiklerinden emin "
 "olun.\n"
 
-#: ../src/iop/filmicrgb.c:4513
+#: ../src/iop/filmicrgb.c:4512
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -15624,7 +16092,7 @@ msgstr ""
 "kullanır.\n"
 "yumuşak, daha az ton sıkıştırmasıyla sonuçlanan düşük bir eğrilik kullanır."
 
-#: ../src/iop/filmicrgb.c:4518
+#: ../src/iop/filmicrgb.c:4517
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -15635,7 +16103,7 @@ msgstr ""
 "kullanır.\n"
 "yumuşak, daha az ton sıkıştırmasıyla sonuçlanan düşük bir eğrilik kullanır."
 
-#: ../src/iop/filmicrgb.c:4523
+#: ../src/iop/filmicrgb.c:4522
 #, c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -15648,7 +16116,7 @@ msgstr ""
 "bunun yerine global pozlamayı pozlama modülünde düzeltin.\n"
 "standart %% 18.45 orta griyi kullanmayı devre dışı bırakın."
 
-#: ../src/iop/filmicrgb.c:4530
+#: ../src/iop/filmicrgb.c:4529
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -15660,7 +16128,7 @@ msgstr ""
 "bu, orta griyi kimlik çizgisinde tutar ve hızlı ayarlamayı geliştirir.\n"
 "elle kontrol istiyorsanız devre dışı bırakın."
 
-#: ../src/iop/filmicrgb.c:4536
+#: ../src/iop/filmicrgb.c:4535
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -15670,9 +16138,9 @@ msgstr ""
 "fazladan renklilik rekonstrüksiyonu geçişleri çalıştırın.\n"
 "daha fazla yineleme, çevreden daha fazla renk yayılımı anlamına gelir.\n"
 "bu daha yavaş olacak, ancak daha tarafsız vurgular sağlayacaktır.\n"
-"ayrıca zor macenta vurgulama durumlarında da yardımcı olur."
+"ayrıca zor eflatun vurgulama durumlarında da yardımcı olur."
 
-#: ../src/iop/filmicrgb.c:4543
+#: ../src/iop/filmicrgb.c:4542
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -15684,7 +16152,7 @@ msgstr ""
 "resim genel olarak gürültülü olduğunda,\n"
 "böylece resmin geri kalanıyla karışırlar."
 
-#: ../src/iop/filmicrgb.c:4550
+#: ../src/iop/filmicrgb.c:4549
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -15692,11 +16160,11 @@ msgstr ""
 "gürültünün istatistiksel dağılımını seçin.\n"
 "bu, doğal sensör gürültü düzenini eşleştirmek için kullanışlıdır.\n"
 
-#: ../src/iop/filmicrgb.c:4618
+#: ../src/iop/filmicrgb.c:4617
 msgid "mid-tones saturation"
 msgstr "orta ton doygunluğu"
 
-#: ../src/iop/filmicrgb.c:4619
+#: ../src/iop/filmicrgb.c:4618
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -15948,19 +16416,19 @@ msgstr "mesafe"
 msgid "limit haze removal up to a specific spatial depth"
 msgstr "belirli bir uzaysal derinliğe kadar pus gidermeyi sınırlayın"
 
-#: ../src/iop/highlights.c:133
+#: ../src/iop/highlights.c:135
 msgid "highlight reconstruction"
 msgstr "yeniden yapılandırmayı vurgula"
 
-#: ../src/iop/highlights.c:138
+#: ../src/iop/highlights.c:140
 msgid "avoid magenta highlights and try to recover highlights colors"
-msgstr "macenta vurgularından kaçının ve vurgu renklerini kurtarmaya çalışın"
+msgstr "eflatun vurgularından kaçının ve vurgu renklerini kurtarmaya çalışın"
 
-#: ../src/iop/highlights.c:141 ../src/iop/hotpixels.c:75
+#: ../src/iop/highlights.c:143 ../src/iop/hotpixels.c:75
 msgid "reconstruction, raw"
 msgstr "yeniden yapılanma, ham"
 
-#: ../src/iop/highlights.c:2031
+#: ../src/iop/highlights.c:2115
 msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. Falling "
 "back to clip."
@@ -15968,23 +16436,25 @@ msgstr ""
 "önemli noktalar: X-Trans sensörleri için kılavuzlu laplace modu mevcut "
 "değildir. Klip'e geri dönüyorum."
 
-#: ../src/iop/highlights.c:2066
+#: ../src/iop/highlights.c:2153
 msgid "guided laplacians"
 msgstr "güdümlü laplasiyenler"
 
-#: ../src/iop/highlights.c:2080
+#: ../src/iop/highlights.c:2187
 msgid "highlight reconstruction method"
 msgstr "yeniden yapılandırma yöntemini vurgulayın"
 
-#: ../src/iop/highlights.c:2084
+#: ../src/iop/highlights.c:2192
 msgid ""
-"manually adjust the clipping threshold against magenta highlights (you "
-"shouldn't ever need to touch this)"
+"manually adjust the clipping threshold against magenta highlights\n"
+"the mask icon shows the clipped area\n"
+"(you shouldn't ever need to touch this)"
 msgstr ""
-"kırpma eşiğini macenta vurgularına göre elle ayarlayın (buna hiçbir zaman "
-"dokunmanız gerekmez)"
+"kırpma eşiğini eflatun vurgularına göre elle ayarlayın\n"
+"maske simgesi kırpılan alanı gösterir\n"
+"(buna hiç dokunmanıza gerek yok)"
 
-#: ../src/iop/highlights.c:2088
+#: ../src/iop/highlights.c:2201
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. Useful at high ISO."
@@ -15993,15 +16463,15 @@ msgstr ""
 "ekleyin\n"
 "gürültülü görüntünün geri kalanına. Yüksek ISO'da kullanışlıdır."
 
-#: ../src/iop/highlights.c:2092
+#: ../src/iop/highlights.c:2205
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 msgstr ""
-"macenta vurguları tam olarak düzeltilmezse artır\n"
+"eflatun vurguları tam olarak düzeltilmezse artır\n"
 "her yeni yineleme bir performans kaybı getirir."
 
-#: ../src/iop/highlights.c:2096
+#: ../src/iop/highlights.c:2209
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -16283,7 +16753,7 @@ msgstr "ölçek"
 msgid "auto scale"
 msgstr "otomatik ölçek"
 
-#: ../src/iop/lens.cc:2402 ../src/libs/modulegroups.c:2407
+#: ../src/iop/lens.cc:2402 ../src/libs/modulegroups.c:2410
 msgid "correct"
 msgstr "uygun"
 
@@ -17051,9 +17521,9 @@ msgstr "renkleri yumuşatmak ne kadar"
 #. * let's fill the encapsulating widgets
 #. preview mode
 #. color scheme
-#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2343
-#: ../src/views/darkroom.c:2361 ../src/views/darkroom.c:2368
-#: ../src/views/darkroom.c:2378 ../src/views/darkroom.c:2395
+#: ../src/iop/overexposed.c:73 ../src/views/darkroom.c:2344
+#: ../src/views/darkroom.c:2362 ../src/views/darkroom.c:2369
+#: ../src/views/darkroom.c:2379 ../src/views/darkroom.c:2396
 msgid "overexposed"
 msgstr "aşırı pozlanmış"
 
@@ -17160,9 +17630,9 @@ msgstr ""
 
 #. * let's fill the encapsulating widgets
 #. mode of operation
-#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2288
-#: ../src/views/darkroom.c:2306 ../src/views/darkroom.c:2315
-#: ../src/views/darkroom.c:2330
+#: ../src/iop/rawoverexposed.c:69 ../src/views/darkroom.c:2289
+#: ../src/views/darkroom.c:2307 ../src/views/darkroom.c:2316
+#: ../src/views/darkroom.c:2331
 msgid "raw overexposed"
 msgstr "ham aşırı maruz kalmış"
 
@@ -17630,7 +18100,7 @@ msgstr ""
 "gölgelerin ve vurguların ton aralığını değiştirin\n"
 "yerel kontrastı artırarak bir görüntünün."
 
-#: ../src/iop/shadhi.c:685 ../src/iop/splittoning.c:541
+#: ../src/iop/shadhi.c:685 ../src/iop/splittoning.c:536
 msgid "compress"
 msgstr "sıkıştır"
 
@@ -17756,25 +18226,25 @@ msgstr "otantik platin tipi"
 msgid "chocolate brown"
 msgstr "çikolata kahverengi"
 
-#: ../src/iop/splittoning.c:491
+#: ../src/iop/splittoning.c:486
 msgid "select the saturation tone"
 msgstr "doygunluk tonunu seçin"
 
-#: ../src/iop/splittoning.c:495
+#: ../src/iop/splittoning.c:490
 msgid "select tone color"
 msgstr "ton rengini seç"
 
 #. Additional parameters
 #. Camera settings
-#: ../src/iop/splittoning.c:530 ../src/libs/camera.c:487
+#: ../src/iop/splittoning.c:525 ../src/libs/camera.c:487
 msgid "properties"
 msgstr "özellikler"
 
-#: ../src/iop/splittoning.c:539
+#: ../src/iop/splittoning.c:534
 msgid "the balance of center of split-toning"
 msgstr "bölünmüş tonlama merkezi dengesi"
 
-#: ../src/iop/splittoning.c:543
+#: ../src/iop/splittoning.c:538
 msgid ""
 "compress the effect on highlights/shadows and\n"
 "preserve mid-tones"
@@ -17888,7 +18358,7 @@ msgstr "yeşil kanal katsayısı"
 
 #: ../src/iop/temperature.c:1806
 msgid "magenta channel coefficient"
-msgstr "macenta kanal katsayısı"
+msgstr "eflatun kanal katsayısı"
 
 #: ../src/iop/temperature.c:1808
 msgid "cyan channel coefficient"
@@ -17969,23 +18439,23 @@ msgstr "sahne aydınlatma sıcaklığı"
 msgid "click to cycle color mode on sliders"
 msgstr "kaydırıcılarda renk modunu değiştirmek için tıklayın"
 
-#: ../src/iop/temperature.c:1976
+#: ../src/iop/temperature.c:1975
 msgid "color temperature (in Kelvin)"
 msgstr "renk sıcaklığı (Kelvin cinsinden)"
 
-#: ../src/iop/temperature.c:1981
+#: ../src/iop/temperature.c:1980
 msgid "tint"
 msgstr "renk tonu"
 
-#: ../src/iop/temperature.c:1982
+#: ../src/iop/temperature.c:1981
 msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
-msgstr "görüntünün renk tonu, macentadan (değer < 1) yeşile (değer > 1)"
+msgstr "görüntünün renk tonu, eflatundan (değer < 1) yeşile (değer > 1)"
 
-#: ../src/iop/temperature.c:1988
+#: ../src/iop/temperature.c:1987
 msgid "channel coefficients"
 msgstr "kanal katsayıları"
 
-#: ../src/iop/temperature.c:2018
+#: ../src/iop/temperature.c:2017
 msgid "white balance disabled for camera"
 msgstr "kamera için beyaz dengesi devre dışı"
 
@@ -18747,23 +19217,23 @@ msgstr "film rulosu ara..."
 msgid "remove..."
 msgstr "kaldır..."
 
-#: ../src/libs/collect.c:1161
+#: ../src/libs/collect.c:1159
 msgid "uncategorized"
 msgstr "kategorisiz"
 
-#: ../src/libs/collect.c:1668
+#: ../src/libs/collect.c:1666
 msgid "copied locally"
 msgstr "yerel olarak kopyalandı"
 
-#: ../src/libs/collect.c:1788
+#: ../src/libs/collect.c:1786
 msgid "group followers"
 msgstr "grup takipçileri"
 
-#: ../src/libs/collect.c:2047
+#: ../src/libs/collect.c:2045
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "işleç olarak <, <=, >, >=, <>, =, [;] kullanın"
 
-#: ../src/libs/collect.c:2051
+#: ../src/libs/collect.c:2049
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
@@ -18773,7 +19243,7 @@ msgstr ""
 "yıldız oranı: 0-5\n"
 "reddedilen görüntüler: -1"
 
-#: ../src/libs/collect.c:2058
+#: ../src/libs/collect.c:2056
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
@@ -18781,12 +19251,12 @@ msgstr ""
 "işleç olarak <, <=, >, >=, <>, =, [;] kullanın\n"
 "tarihleri şu biçimde yazın: YYYY:AA:GG ss:dd:ss.sss (yalnızca yıl zorunludur)"
 
-#: ../src/libs/collect.c:2065
+#: ../src/libs/collect.c:2063
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "joker karakter olarak `%' ve değerleri ayırmak için `,' kullanın"
 
-#: ../src/libs/collect.c:2071
+#: ../src/libs/collect.c:2069
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -18799,7 +19269,7 @@ msgstr ""
 "yalnızca geçerli hiyerarşiyi dahil etmek için shift+tıklayın (sonek yok)\n"
 "Yalnızca alt hiyerarşileri dahil etmek için ctrl+tıklayın (`|%' soneki)"
 
-#: ../src/libs/collect.c:2083
+#: ../src/libs/collect.c:2081
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -18812,7 +19282,7 @@ msgstr ""
 "yalnızca geçerli konumu dahil etmek için shift+tıklayın (son ek yok)\n"
 "Yalnızca alt konumları dahil etmek için ctrl+tıklayın (`|%' soneki)"
 
-#: ../src/libs/collect.c:2095
+#: ../src/libs/collect.c:2093
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -18825,106 +19295,106 @@ msgstr ""
 "yalnızca geçerli klasörü dahil etmek için shift+tıklayın (sonek yok)\n"
 "Yalnızca alt klasörleri dahil etmek için ctrl+tıklayın (`|%' soneki)"
 
-#: ../src/libs/collect.c:2106
+#: ../src/libs/collect.c:2104
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "joker karakter olarak `%' kullanın"
 
-#: ../src/libs/collect.c:2159 ../src/libs/collect.c:2173
-#: ../src/libs/collect.c:2800
+#: ../src/libs/collect.c:2157 ../src/libs/collect.c:2171
+#: ../src/libs/collect.c:2798
 msgid "clear this rule"
 msgstr "bu kuralı temizle"
 
-#: ../src/libs/collect.c:2163
+#: ../src/libs/collect.c:2161
 msgid "clear this rule or add new rules"
 msgstr "bu kuralı temizleyin veya yeni kurallar ekleyin"
 
-#: ../src/libs/collect.c:2806
+#: ../src/libs/collect.c:2804
 msgid "narrow down search"
 msgstr "aramayı daralt"
 
-#: ../src/libs/collect.c:2811
+#: ../src/libs/collect.c:2809
 msgid "add more images"
 msgstr "daha fazla görüntü ekle"
 
-#: ../src/libs/collect.c:2816
+#: ../src/libs/collect.c:2814
 msgid "exclude images"
 msgstr "görüntüleri hariç tut"
 
-#: ../src/libs/collect.c:2823
+#: ../src/libs/collect.c:2821
 msgid "change to: and"
 msgstr "olarak değiştir: ve"
 
-#: ../src/libs/collect.c:2828
+#: ../src/libs/collect.c:2826
 msgid "change to: or"
 msgstr "olarak değiştir: veya"
 
-#: ../src/libs/collect.c:2833
+#: ../src/libs/collect.c:2831
 msgid "change to: except"
 msgstr "şu şekilde değiştir: hariç"
 
 #. the differents categories
-#: ../src/libs/collect.c:2859 ../src/libs/filtering.c:835
-#: ../src/libs/filtering.c:917
+#: ../src/libs/collect.c:2857 ../src/libs/filtering.c:836
+#: ../src/libs/filtering.c:918
 msgid "files"
 msgstr "dosyalar"
 
-#: ../src/libs/collect.c:2864 ../src/libs/export_metadata.c:310
-#: ../src/libs/filtering.c:840 ../src/libs/filtering.c:922
+#: ../src/libs/collect.c:2862 ../src/libs/export_metadata.c:310
+#: ../src/libs/filtering.c:841 ../src/libs/filtering.c:923
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:538 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "üst veri"
 
-#: ../src/libs/collect.c:2883 ../src/libs/filtering.c:860
-#: ../src/libs/filtering.c:942
+#: ../src/libs/collect.c:2881 ../src/libs/filtering.c:861
+#: ../src/libs/filtering.c:943
 msgid "times"
 msgstr "kez"
 
-#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:868
-#: ../src/libs/filtering.c:950
+#: ../src/libs/collect.c:2889 ../src/libs/filtering.c:869
+#: ../src/libs/filtering.c:951
 msgid "capture details"
 msgstr "yakalama ayrıntıları"
 
-#: ../src/libs/collect.c:2900 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2898 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2913
+#: ../src/libs/collect.c:2911
 msgid "collections settings"
 msgstr "koleksiyon ayarları"
 
-#: ../src/libs/collect.c:2916 ../src/libs/export_metadata.c:288
+#: ../src/libs/collect.c:2914 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
 #: ../src/libs/tagging.c:1635 ../src/libs/tagging.c:1765
-#: ../src/libs/tagging.c:2039 ../src/libs/tagging.c:3460
+#: ../src/libs/tagging.c:2039 ../src/libs/tagging.c:3461
 msgid "save"
 msgstr "kaydet"
 
-#: ../src/libs/collect.c:2931 ../src/libs/export.c:1059
+#: ../src/libs/collect.c:2929 ../src/libs/export.c:1059
 #: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1298
-#: ../src/libs/tagging.c:3482
+#: ../src/libs/tagging.c:3483
 msgid "preferences..."
 msgstr "tercihler..."
 
-#: ../src/libs/collect.c:3007 ../src/libs/filtering.c:1390
+#: ../src/libs/collect.c:3005 ../src/libs/filtering.c:1390
 msgid " and "
 msgstr " ve "
 
-#: ../src/libs/collect.c:3012 ../src/libs/filtering.c:1395
+#: ../src/libs/collect.c:3010 ../src/libs/filtering.c:1395
 msgid " or "
 msgstr " veya "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3017 ../src/libs/filtering.c:1400
+#: ../src/libs/collect.c:3015 ../src/libs/filtering.c:1400
 msgid " but not "
 msgstr " ama değil "
 
-#: ../src/libs/collect.c:3178 ../src/libs/filtering.c:1926
+#: ../src/libs/collect.c:3173 ../src/libs/filtering.c:1920
 msgid "revert to a previous set of rules"
 msgstr "önceki bir dizi kurala geri dön"
 
-#: ../src/libs/collect.c:3232
+#: ../src/libs/collect.c:3227
 msgid "jump back to previous collection"
 msgstr "önceki koleksiyona geri dön"
 
@@ -18944,19 +19414,11 @@ msgstr "Hex"
 msgid "mean"
 msgstr "ortalama"
 
-#: ../src/libs/colorpicker.c:53
-msgid "min"
-msgstr "asg"
-
-#: ../src/libs/colorpicker.c:53
-msgid "max"
-msgstr "azm"
-
 #: ../src/libs/colorpicker.c:71
 msgid "color picker"
 msgstr "renk seçici"
 
-#: ../src/libs/colorpicker.c:456
+#: ../src/libs/colorpicker.c:457
 msgid ""
 "hover to highlight sample on canvas,\n"
 "click to lock sample,\n"
@@ -18966,23 +19428,23 @@ msgstr ""
 "örneği kilitlemek için tıklayın,\n"
 "örnek alanı aktif renk seçiciye yüklemek için sağ tıklayın"
 
-#: ../src/libs/colorpicker.c:553 ../src/libs/colorpicker.c:604
+#: ../src/libs/colorpicker.c:554 ../src/libs/colorpicker.c:605
 msgid "click to (un)hide large color patch"
 msgstr "büyük renk yamasını gizlemek (çözmek) için tıklayın"
 
-#: ../src/libs/colorpicker.c:567
+#: ../src/libs/colorpicker.c:568
 msgid "statistic"
 msgstr "istatistik"
 
-#: ../src/libs/colorpicker.c:568
+#: ../src/libs/colorpicker.c:569
 msgid "select which statistic to show"
 msgstr "hangi istatistiğin gösterileceğini seçin"
 
-#: ../src/libs/colorpicker.c:577
+#: ../src/libs/colorpicker.c:578
 msgid "select which color mode to use"
 msgstr "hangi renk modunun kullanılacağını seçin"
 
-#: ../src/libs/colorpicker.c:586
+#: ../src/libs/colorpicker.c:587
 msgid ""
 "turn on color picker\n"
 "ctrl+click or right-click to select an area"
@@ -18990,16 +19452,16 @@ msgstr ""
 "renk seçiciyi aç\n"
 "bir alan seçmek için ctrl+tıklayın veya sağ tıklayın"
 
-#: ../src/libs/colorpicker.c:589
+#: ../src/libs/colorpicker.c:590
 msgid "pick color"
 msgstr "renk seç"
 
-#: ../src/libs/colorpicker.c:628
+#: ../src/libs/colorpicker.c:629
 msgid "add sample"
 msgstr "örnek ekle"
 
 #. Adding the live samples section
-#: ../src/libs/colorpicker.c:632
+#: ../src/libs/colorpicker.c:633
 msgid "live samples"
 msgstr "canlı örnekler"
 
@@ -19149,7 +19611,7 @@ msgstr "çiftleme yöneticisi"
 msgid "preview is only possible for zoom lower than 200%%"
 msgstr "önizleme yalnızca %%200'den daha düşük yakınlaştırma için mümkündür"
 
-#: ../src/libs/duplicate.c:540 ../src/libs/history.c:1001
+#: ../src/libs/duplicate.c:540 ../src/libs/history.c:998
 #: ../src/libs/snapshots.c:447
 msgid "original"
 msgstr "özgün"
@@ -19165,7 +19627,7 @@ msgid "create a duplicate of the image with same history stack"
 msgstr "aynı geçmiş yığınıyla görüntünün bir kopyasını oluşturun"
 
 #. Export button
-#: ../src/libs/export.c:154 ../src/libs/export.c:1336
+#: ../src/libs/export.c:154 ../src/libs/export.c:1335
 msgid "export"
 msgstr "dışa aktar"
 
@@ -19187,47 +19649,47 @@ msgstr "olarak"
 msgid "storage options"
 msgstr "depolama seçenekleri"
 
-#: ../src/libs/export.c:1076
+#: ../src/libs/export.c:1075
 msgid "target storage"
 msgstr "hedef depolama"
 
-#: ../src/libs/export.c:1098
+#: ../src/libs/export.c:1097
 msgid "format options"
 msgstr "biçim seçenekleri"
 
-#: ../src/libs/export.c:1102
+#: ../src/libs/export.c:1101
 msgid "file format"
 msgstr "dosya biçimi"
 
-#: ../src/libs/export.c:1119
+#: ../src/libs/export.c:1118
 msgid "global options"
 msgstr "genel seçenekler"
 
-#: ../src/libs/export.c:1122
+#: ../src/libs/export.c:1121
 msgid "set size"
 msgstr "boyutu ayarla"
 
-#: ../src/libs/export.c:1123
+#: ../src/libs/export.c:1122
 msgid "choose a method for setting the output size"
 msgstr "çıktı boyutunu ayarlamak için bir yöntem seçin"
 
-#: ../src/libs/export.c:1126
+#: ../src/libs/export.c:1125
 msgid "in pixels (for file)"
 msgstr "piksel cinsinden (dosya için)"
 
-#: ../src/libs/export.c:1127
+#: ../src/libs/export.c:1126
 msgid "in cm (for print)"
 msgstr "cm cinsinden (baskı için)"
 
-#: ../src/libs/export.c:1128
+#: ../src/libs/export.c:1127
 msgid "in inch (for print)"
 msgstr "inç cinsinden (baskı için)"
 
-#: ../src/libs/export.c:1129
+#: ../src/libs/export.c:1128
 msgid "by scale (for file)"
 msgstr "ölçeğe göre (dosya için)"
 
-#: ../src/libs/export.c:1132 ../src/libs/export.c:1147
+#: ../src/libs/export.c:1131 ../src/libs/export.c:1146
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
@@ -19235,7 +19697,7 @@ msgstr ""
 "azami çıktı genişliği sınırı.\n"
 "0'a sıfırlamak için orta fare düğmesini tıklayın."
 
-#: ../src/libs/export.c:1136 ../src/libs/export.c:1151
+#: ../src/libs/export.c:1135 ../src/libs/export.c:1150
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
@@ -19243,19 +19705,19 @@ msgstr ""
 "azami çıktı yüksekliği sınırı.\n"
 "0'a sıfırlamak için orta fare düğmesini tıklayın."
 
-#: ../src/libs/export.c:1140
+#: ../src/libs/export.c:1139
 msgid "resolution in dot per inch"
 msgstr "inç başına nokta olarak çözünürlük"
 
-#: ../src/libs/export.c:1168
+#: ../src/libs/export.c:1167
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1181 ../src/libs/tools/global_toolbox.c:219
+#: ../src/libs/export.c:1180 ../src/libs/tools/global_toolbox.c:219
 msgid "px"
 msgstr "px"
 
-#: ../src/libs/export.c:1188
+#: ../src/libs/export.c:1187
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -19265,39 +19727,39 @@ msgstr ""
 "sıfır veya boş değerler 1'e eşittir.\n"
 "1'e sıfırlamak için orta fare düğmesini tıklayın."
 
-#: ../src/libs/export.c:1208
+#: ../src/libs/export.c:1207
 msgid "allow upscaling"
 msgstr "yükseltmeye izin ver"
 
-#: ../src/libs/export.c:1214
+#: ../src/libs/export.c:1213
 msgid "high quality resampling"
 msgstr "yüksek kaliteli yeniden örnekleme"
 
-#: ../src/libs/export.c:1217
+#: ../src/libs/export.c:1216
 msgid "do high quality resampling during export"
 msgstr "dışa aktarma sırasında yüksek kalitede yeniden örnekleme yapın"
 
-#: ../src/libs/export.c:1221
+#: ../src/libs/export.c:1220
 msgid "store masks"
 msgstr "maskeleri saklama"
 
-#: ../src/libs/export.c:1224
+#: ../src/libs/export.c:1223
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "maskeleri dışa aktarılan görüntülerde katmanlar olarak saklayın. yalnızca "
 "bazı biçimler için çalışır."
 
-#: ../src/libs/export.c:1237 ../src/libs/export.c:1259
+#: ../src/libs/export.c:1236 ../src/libs/export.c:1258
 #: ../src/libs/print_settings.c:2607 ../src/libs/print_settings.c:2652
 msgid "image settings"
 msgstr "görüntü ayarları"
 
-#: ../src/libs/export.c:1249 ../src/libs/print_settings.c:2641
+#: ../src/libs/export.c:1248 ../src/libs/print_settings.c:2641
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "ICC profillerini %s veya %s olarak çıkar"
 
-#: ../src/libs/export.c:1266
+#: ../src/libs/export.c:1265
 #, c-format
 msgid ""
 "• perceptual : smoothly moves out-of-gamut colors into gamut,preserving "
@@ -19329,30 +19791,30 @@ msgstr ""
 "noktasına uyarlayın ve başka hiçbir şey yapmayın. esas olarak renkleri prova "
 "ederken kullanılır. (fotoğrafçılık için uygun değildir)."
 
-#: ../src/libs/export.c:1295 ../src/libs/print_settings.c:2666
+#: ../src/libs/export.c:1294 ../src/libs/print_settings.c:2666
 msgid "style"
 msgstr "tarz"
 
-#: ../src/libs/export.c:1298
+#: ../src/libs/export.c:1297
 msgid "temporary style to use while exporting"
 msgstr "dışa aktarırken kullanılacak geçici tarz"
 
-#: ../src/libs/export.c:1307 ../src/libs/print_settings.c:2709
+#: ../src/libs/export.c:1306 ../src/libs/print_settings.c:2709
 msgid "replace history"
 msgstr "geçmişi değiştir"
 
-#: ../src/libs/export.c:1308 ../src/libs/print_settings.c:2710
+#: ../src/libs/export.c:1307 ../src/libs/print_settings.c:2710
 msgid "append history"
 msgstr "geçmişe ekle"
 
-#: ../src/libs/export.c:1313 ../src/libs/print_settings.c:2717
+#: ../src/libs/export.c:1312 ../src/libs/print_settings.c:2717
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "tarz öğelerinin tarihe eklenip eklenmeyeceği veya geçmişi değiştirip "
 "değiştirmeyeceği"
 
-#: ../src/libs/export.c:1337
+#: ../src/libs/export.c:1336
 msgid "export with current settings"
 msgstr "mevcut ayarlarla dışa aktar"
 
@@ -19518,31 +19980,44 @@ msgstr "bir çıktı üst veri etiketi ekleyin"
 msgid "delete metadata tag"
 msgstr "üst veri etiketini sil"
 
-#: ../src/libs/filtering.c:225
-msgid "filters for collections"
-msgstr "koleksiyonlar için filtreler"
+#: ../src/libs/filtering.c:226
+msgid "collection filters"
+msgstr "koleksiyon filtreleri"
 
-#: ../src/libs/filtering.c:258
+#: ../src/libs/filtering.c:259
 msgid "initial setting"
 msgstr "ilk ayarlar"
 
-#: ../src/libs/filtering.c:277
+#: ../src/libs/filtering.c:278
 msgid "imported: last 24h"
 msgstr "içe aktarılan: son 24 saat"
 
-#: ../src/libs/filtering.c:282
+#: ../src/libs/filtering.c:283
 msgid "imported: last 30 days"
 msgstr "içe aktarılan: son 30 gün"
 
-#: ../src/libs/filtering.c:288
+#: ../src/libs/filtering.c:289
 msgid "taken: last 24h"
 msgstr "alınan: son 24 saat"
 
-#: ../src/libs/filtering.c:292
+#: ../src/libs/filtering.c:293
 msgid "taken: last 30 days"
 msgstr "alınan: son 30 gün"
 
-#: ../src/libs/filtering.c:908
+#: ../src/libs/filtering.c:646
+msgid "click or click&#38;drag to select one or multiple values"
+msgstr ""
+"bir veya birden çok değer seçmek için tıklayın veya sürükleyip&#38;tıklayın"
+
+#: ../src/libs/filtering.c:647
+msgid "right-click opens a menu to select the available values"
+msgstr "sağ tıklama mevcut değerleri seçmek için bir menü açar"
+
+#: ../src/libs/filtering.c:648
+msgid "<b><i>actual selection: </i></b>"
+msgstr "<b><i>güncel seçim: </i></b>"
+
+#: ../src/libs/filtering.c:909
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
@@ -19551,16 +20026,16 @@ msgstr ""
 "kural araç çubuğuna sabitlendiğinden bu değiştirilemez"
 
 #. otherwise we add all implemented rules
-#: ../src/libs/filtering.c:915
+#: ../src/libs/filtering.c:916
 msgid "rule property"
 msgstr "kural özelliği"
 
-#: ../src/libs/filtering.c:1008
+#: ../src/libs/filtering.c:1009
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "filtre"
 
-#: ../src/libs/filtering.c:1034
+#: ../src/libs/filtering.c:1035
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "ctrl-click to un-pin"
@@ -19568,7 +20043,7 @@ msgstr ""
 "bu kural üst araç çubuğuna sabitlendi\n"
 "sabitlemeyi kaldırmak için ctrl-tıklayın"
 
-#: ../src/libs/filtering.c:1039
+#: ../src/libs/filtering.c:1040
 msgid ""
 "disable this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19576,24 +20051,24 @@ msgstr ""
 "bu toplama kuralını devre dışı bırak\n"
 "üst araç çubuğuna sabitlemek için ctrl-tıklayın"
 
-#: ../src/libs/filtering.c:1166
+#: ../src/libs/filtering.c:1167
 msgid "and"
 msgstr "ve"
 
-#: ../src/libs/filtering.c:1167
+#: ../src/libs/filtering.c:1168
 msgid "or"
 msgstr "veya"
 
-#: ../src/libs/filtering.c:1168
+#: ../src/libs/filtering.c:1169
 msgid "and not"
 msgstr "ve yok"
 
-#: ../src/libs/filtering.c:1170
+#: ../src/libs/filtering.c:1171
 msgid "define how this rule should interact with the previous one"
 msgstr ""
 "bu kuralın bir öncekiyle nasıl etkileşime girmesi gerektiğini tanımlayın"
 
-#: ../src/libs/filtering.c:1214
+#: ../src/libs/filtering.c:1215
 msgid ""
 "remove this collect rule\n"
 "ctrl-click to pin into the top toolbar"
@@ -19605,43 +20080,43 @@ msgstr ""
 msgid " (off)"
 msgstr " (kapalı)"
 
-#: ../src/libs/filtering.c:1636
+#: ../src/libs/filtering.c:1633
 msgid "determine the sort order of shown images"
 msgstr "gösterilen görüntülerin sıralama düzenini belirleyin"
 
-#: ../src/libs/filtering.c:1674
+#: ../src/libs/filtering.c:1671
 msgid "remove this sort order"
 msgstr "bu sıralama düzenini kaldır"
 
-#: ../src/libs/filtering.c:1828
+#: ../src/libs/filtering.c:1824
 msgid "DESC"
 msgstr "AZALAN"
 
-#: ../src/libs/filtering.c:1828
+#: ../src/libs/filtering.c:1824
 msgid "ASC"
 msgstr "ARTAN"
 
-#: ../src/libs/filtering.c:1922
+#: ../src/libs/filtering.c:1916
 msgid "new rule"
 msgstr "yeni kural"
 
-#: ../src/libs/filtering.c:1923
+#: ../src/libs/filtering.c:1917
 msgid "append new rule to collect images"
 msgstr "görüntüleri toplamak için yeni kural ekle"
 
-#: ../src/libs/filtering.c:1935 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1928 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "göre sırala"
 
-#: ../src/libs/filtering.c:1944
+#: ../src/libs/filtering.c:1936
 msgid "new sort"
 msgstr "yeni sıralama"
 
-#: ../src/libs/filtering.c:1945
+#: ../src/libs/filtering.c:1937
 msgid "append new sort to order images"
 msgstr "görüntüleri sipariş etmek için yeni sıralama ekle"
 
-#: ../src/libs/filtering.c:1948
+#: ../src/libs/filtering.c:1940
 msgid "revert to a previous set of sort orders"
 msgstr "önceki bir sıralama düzeni grubuna geri dön"
 
@@ -19653,19 +20128,19 @@ msgstr "Y"
 msgid "P"
 msgstr "P"
 
-#: ../src/libs/filters/colors.c:332
+#: ../src/libs/filters/colors.c:333
 msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
 "ctrl+click to exclude the color label\n"
-"the grey button affects all color labels"
+"the gray button affects all color labels"
 msgstr ""
 "görüntüleri renk etiketine göre filtrele\n"
 "renk etiketi seçimini değiştirmek için tıklayın\n"
 "renk etiketini hariç tutmak için ctrl+tıklayın\n"
 "gri düğme tüm renkli etiketleri etkiler"
 
-#: ../src/libs/filters/colors.c:343
+#: ../src/libs/filters/colors.c:344
 msgid ""
 "filter by images color label\n"
 "and (∩): images having all selected color labels\n"
@@ -19675,7 +20150,7 @@ msgstr ""
 "ve (∩): seçilen tüm renk etiketlerine sahip görüntüler\n"
 "veya (∪): seçilen renk etiketlerinden en az birine sahip görüntüler"
 
-#: ../src/libs/filters/filename.c:390
+#: ../src/libs/filters/filename.c:364
 msgid ""
 "enter filename to search.\n"
 "multiple values can be separated by ','\n"
@@ -19687,15 +20162,15 @@ msgstr ""
 "\n"
 "mevcut dosya adlarını almak için sağ tıklayın"
 
-#: ../src/libs/filters/filename.c:404
+#: ../src/libs/filters/filename.c:375
 msgid "extension"
 msgstr "uzantı"
 
-#: ../src/libs/filters/filename.c:405
+#: ../src/libs/filters/filename.c:376
 msgid ""
-"enter extension to search with starting dot.\n"
+"enter extension to search with starting dot\n"
 "multiple values can be separated by ','\n"
-"handled keyword : 'RAW' 'NOT RAW' 'LDR' 'HDR'\n"
+"handled keywords: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
 "\n"
 "right-click to get existing extensions"
 msgstr ""
@@ -19705,7 +20180,7 @@ msgstr ""
 "\n"
 "mevcut uzantıları almak için sağ tıklayın"
 
-#: ../src/libs/filters/filename.c:437
+#: ../src/libs/filters/filename.c:404
 msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
@@ -19713,7 +20188,7 @@ msgstr ""
 "dosya adını seçmek için basit tıklama\n"
 "birden çok değer seçmek için ctrl-tıklayın"
 
-#: ../src/libs/filters/filename.c:464
+#: ../src/libs/filters/filename.c:431
 msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
@@ -19756,7 +20231,7 @@ msgid "square images"
 msgstr "kare görüntüler"
 
 #: ../src/libs/filters/ratio.c:72 ../src/libs/filters/ratio.c:84
-msgid "landsacpe images"
+msgid "landscape images"
 msgstr "yatay görüntüler"
 
 #: ../src/libs/filters/search.c:179
@@ -19822,7 +20297,7 @@ msgid "open GPX file"
 msgstr "GPX dosyasını aç"
 
 #. Preview key
-#: ../src/libs/geotagging.c:928 ../src/views/darkroom.c:2158
+#: ../src/libs/geotagging.c:928 ../src/views/darkroom.c:2159
 #: ../src/views/lighttable.c:652 ../src/views/lighttable.c:1257
 msgid "preview"
 msgstr "ön izleme"
@@ -20081,74 +20556,74 @@ msgstr "mevcut geçmiş yığınından bir tarz oluşturun"
 msgid "create style from history"
 msgstr "geçmişten tarz yarat"
 
-#: ../src/libs/history.c:191
+#: ../src/libs/history.c:190
 msgid "always-on module"
 msgstr "her zaman açık modül"
 
-#: ../src/libs/history.c:199
+#: ../src/libs/history.c:196
 msgid "default enabled module"
 msgstr "varsayılan etkin modül"
 
-#: ../src/libs/history.c:207
+#: ../src/libs/history.c:203
 msgid "deprecated module"
 msgstr "kullanımdan kaldırılmış modül"
 
-#: ../src/libs/history.c:861
+#: ../src/libs/history.c:857
 msgid "colorspace"
 msgstr "renk alanı"
 
-#: ../src/libs/history.c:862
+#: ../src/libs/history.c:858
 msgid "mask mode"
 msgstr "maske modu"
 
-#: ../src/libs/history.c:864
+#: ../src/libs/history.c:860
 msgid "blend operation"
 msgstr "harmanlama işlemi"
 
-#: ../src/libs/history.c:870
+#: ../src/libs/history.c:866
 msgid "mask blur"
 msgstr "maske bulanıklığı"
 
-#: ../src/libs/history.c:873
+#: ../src/libs/history.c:869
 msgid "raster mask instance"
 msgstr "raster maske örneği"
 
-#: ../src/libs/history.c:874
+#: ../src/libs/history.c:870
 msgid "raster mask id"
 msgstr "raster maske kimliği"
 
-#: ../src/libs/history.c:877
+#: ../src/libs/history.c:873
 msgid "drawn mask polarity"
 msgstr "çizilmiş maske polaritesi"
 
-#: ../src/libs/history.c:881
+#: ../src/libs/history.c:877
 #, c-format
 msgid "a drawn mask was added"
 msgstr "çizilmiş bir maske eklendi"
 
-#: ../src/libs/history.c:883
+#: ../src/libs/history.c:879
 #, c-format
 msgid "the drawn mask was removed"
 msgstr "çizilmiş maske kaldırıldı"
 
-#: ../src/libs/history.c:884
+#: ../src/libs/history.c:880
 #, c-format
 msgid "the drawn mask was changed"
 msgstr "çizilmiş maske değiştirildi"
 
-#: ../src/libs/history.c:914
+#: ../src/libs/history.c:910
 msgid "parametric output mask:"
 msgstr "parametrik çıktı maskesi:"
 
-#: ../src/libs/history.c:914
+#: ../src/libs/history.c:910
 msgid "parametric input mask:"
 msgstr "parametrik girdi maskesi:"
 
-#: ../src/libs/history.c:1212
+#: ../src/libs/history.c:1209
 msgid "do you really want to clear history of current image?"
 msgstr "gerçekten mevcut görüntünün geçmişini temizlemek istiyor musunuz?"
 
-#: ../src/libs/history.c:1217
+#: ../src/libs/history.c:1214
 msgid "delete image's history?"
 msgstr "görüntünün geçmişi silinsin mi?"
 
@@ -20169,7 +20644,7 @@ msgid "physically delete from disk immediately"
 msgstr "hemen diskten fiziksel olarak sil"
 
 #. delete
-#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3862
+#: ../src/libs/image.c:476 ../src/libs/modulegroups.c:3866
 #: ../src/libs/styles.c:849
 msgid "remove"
 msgstr "kaldır"
@@ -20328,7 +20803,7 @@ msgstr "ellenmemiş çoğaltma"
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "\"%s\" aygıtı \"%s\" bağlantı noktasına bağlı."
 
-#: ../src/libs/import.c:274 ../src/libs/import.c:335 ../src/libs/import.c:1686
+#: ../src/libs/import.c:274 ../src/libs/import.c:335 ../src/libs/import.c:1683
 msgid "copy & import from camera"
 msgstr "kameradan kopyala & içe aktar"
 
@@ -20365,23 +20840,23 @@ msgid_plural "%d images out of %d selected"
 msgstr[0] "%d görüntüden %d tanesi seçildi"
 msgstr[1] "%d görüntülerden %d tanesi seçildi"
 
-#: ../src/libs/import.c:1033
+#: ../src/libs/import.c:1030
 msgid "you can't delete the selected place"
 msgstr "seçilen yeri silemezsiniz"
 
-#: ../src/libs/import.c:1147
+#: ../src/libs/import.c:1144
 msgid "choose the root of the folder tree below"
 msgstr "aşağıdaki klasör ağacının kökünü seçin"
 
-#: ../src/libs/import.c:1150
+#: ../src/libs/import.c:1147
 msgid "places"
 msgstr "yerler"
 
-#: ../src/libs/import.c:1156
+#: ../src/libs/import.c:1153
 msgid "restore all default places you have removed by right-click"
 msgstr "sağ tıkla kaldırdığınız tüm varsayılan yerleri geri yükleyin"
 
-#: ../src/libs/import.c:1161
+#: ../src/libs/import.c:1158
 msgid ""
 "add a custom place\n"
 "\n"
@@ -20391,80 +20866,80 @@ msgstr ""
 "\n"
 "kaldırmak için bir yere sağ tıklayın"
 
-#: ../src/libs/import.c:1168
+#: ../src/libs/import.c:1165
 msgid "you can add custom places using the plus icon"
 msgstr "artı simgesini kullanarak özel yerler ekleyebilirsiniz"
 
-#: ../src/libs/import.c:1193
+#: ../src/libs/import.c:1190
 msgid "select a folder to see the content"
 msgstr "içeriği görmek için bir klasör seçin"
 
-#: ../src/libs/import.c:1196
+#: ../src/libs/import.c:1193
 msgid "folders"
 msgstr "klasörler"
 
-#: ../src/libs/import.c:1266
+#: ../src/libs/import.c:1263
 msgid "home"
 msgstr "ev"
 
-#: ../src/libs/import.c:1278
+#: ../src/libs/import.c:1275
 msgid "pictures"
 msgstr "resimler"
 
-#: ../src/libs/import.c:1542
+#: ../src/libs/import.c:1539
 msgid "mark already imported pictures"
 msgstr "zaten içe aktarılan resimleri işaretle"
 
-#: ../src/libs/import.c:1556
+#: ../src/libs/import.c:1553
 msgid "modified"
 msgstr "değiştirilmiş"
 
-#: ../src/libs/import.c:1561
+#: ../src/libs/import.c:1558
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
 "'değiştirilen tarih/saat' dosyası, 'Exif tarihi/saati'nden farklı olabilir"
 
-#: ../src/libs/import.c:1573
+#: ../src/libs/import.c:1570
 msgid "show/hide thumbnails"
 msgstr "küçük resimleri göster/gizle"
 
-#: ../src/libs/import.c:1643
+#: ../src/libs/import.c:1640
 msgid "naming rules"
 msgstr "adlandırma kuralları"
 
-#: ../src/libs/import.c:1684
+#: ../src/libs/import.c:1681
 msgid "add to library"
 msgstr "kütüphaneye ekle"
 
-#: ../src/libs/import.c:1685
+#: ../src/libs/import.c:1682
 msgid "copy & import"
 msgstr "kopyala & içe aktar"
 
-#: ../src/libs/import.c:1723
+#: ../src/libs/import.c:1720
 msgid "select new"
 msgstr "yeni seç"
 
-#: ../src/libs/import.c:1766
+#: ../src/libs/import.c:1763
 msgid "please wait while prefetching the list of images from camera..."
 msgstr "kameradan görüntülerin listesini önceden getirirken lütfen bekleyin..."
 
-#: ../src/libs/import.c:1890
+#: ../src/libs/import.c:1887
 msgid "invalid override date/time format"
 msgstr "geçersiz geçersiz kılma tarih/saat biçimi"
 
-#: ../src/libs/import.c:1993
+#: ../src/libs/import.c:1990
 msgid "add to library..."
 msgstr "kütüphaneye ekle..."
 
-#: ../src/libs/import.c:1994
+#: ../src/libs/import.c:1991
 msgid "add existing images to the library"
 msgstr "mevcut görüntüleri kütüphaneye ekle"
 
-#: ../src/libs/import.c:2000
+#: ../src/libs/import.c:1997
 msgid "copy & import..."
 msgstr "kopyala & içe aktar..."
 
-#: ../src/libs/import.c:2001
+#: ../src/libs/import.c:1998
 msgid ""
 "copy and optionally rename images before adding them to the library\n"
 "patterns can be defined to rename the images and specify the destination "
@@ -20476,7 +20951,7 @@ msgstr ""
 "tanımlanabilir"
 
 #. collapsible section
-#: ../src/libs/import.c:2024
+#: ../src/libs/import.c:2021
 msgid "parameters"
 msgstr "parametreler"
 
@@ -20508,7 +20983,7 @@ msgstr "kaydedilecek bir şey yok"
 msgid "show module"
 msgstr "modülü göster"
 
-#: ../src/libs/lib.c:1298
+#: ../src/libs/lib.c:1300
 msgid "utility module"
 msgstr "yardımcı modül"
 
@@ -21071,7 +21546,7 @@ msgstr "modül grupları"
 #. FIXME don't check here if on/off is enabled, because it depends on image (reload_defaults)
 #. respond later to image changed signal
 #: ../src/libs/modulegroups.c:314 ../src/libs/modulegroups.c:326
-#: ../src/libs/modulegroups.c:2509 ../src/libs/modulegroups.c:2511
+#: ../src/libs/modulegroups.c:2512 ../src/libs/modulegroups.c:2514
 msgid "on-off"
 msgstr "aç/kapat"
 
@@ -21096,154 +21571,154 @@ msgstr ""
 msgid "(some features may only be available in the full module interface)"
 msgstr "(bazı özellikler yalnızca tam modül arayüzünde mevcut olabilir)"
 
-#: ../src/libs/modulegroups.c:632
+#: ../src/libs/modulegroups.c:633
 #, c-format
 msgid "go to the full version of the %s module"
 msgstr "%s modülünün tam sürümüne gidin"
 
-#: ../src/libs/modulegroups.c:1576 ../src/libs/modulegroups.c:1660
-#: ../src/libs/modulegroups.c:1696 ../src/libs/modulegroups.c:1746
-#: ../src/libs/modulegroups.c:1911
+#: ../src/libs/modulegroups.c:1579 ../src/libs/modulegroups.c:1663
+#: ../src/libs/modulegroups.c:1699 ../src/libs/modulegroups.c:1749
+#: ../src/libs/modulegroups.c:1914
 msgctxt "modulegroup"
 msgid "base"
 msgstr "temel"
 
-#: ../src/libs/modulegroups.c:1595
+#: ../src/libs/modulegroups.c:1598
 msgctxt "modulegroup"
 msgid "tone"
 msgstr "ton"
 
-#: ../src/libs/modulegroups.c:1603 ../src/libs/modulegroups.c:1710
-#: ../src/libs/modulegroups.c:1756
+#: ../src/libs/modulegroups.c:1606 ../src/libs/modulegroups.c:1713
+#: ../src/libs/modulegroups.c:1759
 msgctxt "modulegroup"
 msgid "color"
 msgstr "renk"
 
-#: ../src/libs/modulegroups.c:1618 ../src/libs/modulegroups.c:1718
-#: ../src/libs/modulegroups.c:1761
+#: ../src/libs/modulegroups.c:1621 ../src/libs/modulegroups.c:1721
+#: ../src/libs/modulegroups.c:1764
 msgctxt "modulegroup"
 msgid "correct"
 msgstr "uygun"
 
-#: ../src/libs/modulegroups.c:1636 ../src/libs/modulegroups.c:1730
-#: ../src/libs/modulegroups.c:1773 ../src/libs/modulegroups.c:2410
+#: ../src/libs/modulegroups.c:1639 ../src/libs/modulegroups.c:1733
+#: ../src/libs/modulegroups.c:1776 ../src/libs/modulegroups.c:2413
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "etki"
 
-#: ../src/libs/modulegroups.c:1654
+#: ../src/libs/modulegroups.c:1657
 msgid "modules: all"
 msgstr "modüller: tümü"
 
-#: ../src/libs/modulegroups.c:1675 ../src/libs/modulegroups.c:1822
+#: ../src/libs/modulegroups.c:1678 ../src/libs/modulegroups.c:1825
 msgctxt "modulegroup"
 msgid "grading"
 msgstr "sınıflandırma"
 
-#: ../src/libs/modulegroups.c:1683 ../src/libs/modulegroups.c:1840
-#: ../src/libs/modulegroups.c:2414
+#: ../src/libs/modulegroups.c:1686 ../src/libs/modulegroups.c:1843
+#: ../src/libs/modulegroups.c:2417
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "etkiler"
 
-#: ../src/libs/modulegroups.c:1691
+#: ../src/libs/modulegroups.c:1694
 msgid "workflow: beginner"
 msgstr "iş akışı: başlangıç"
 
-#: ../src/libs/modulegroups.c:1740
+#: ../src/libs/modulegroups.c:1743
 msgid "workflow: display-referred"
 msgstr "iş akışı: ekran yönlendirmeli"
 
-#: ../src/libs/modulegroups.c:1783
+#: ../src/libs/modulegroups.c:1786
 msgid "workflow: scene-referred"
 msgstr "iş akışı: sahne referansı"
 
-#: ../src/libs/modulegroups.c:1789
+#: ../src/libs/modulegroups.c:1792
 msgctxt "modulegroup"
 msgid "technical"
 msgstr "teknik"
 
-#: ../src/libs/modulegroups.c:1865
+#: ../src/libs/modulegroups.c:1868
 msgid "search only"
 msgstr "sadece ara"
 
-#: ../src/libs/modulegroups.c:1871 ../src/libs/modulegroups.c:2179
-#: ../src/libs/modulegroups.c:2662
+#: ../src/libs/modulegroups.c:1874 ../src/libs/modulegroups.c:2182
+#: ../src/libs/modulegroups.c:2665
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "kullanımdan kaldırıldı"
 
-#: ../src/libs/modulegroups.c:1886
+#: ../src/libs/modulegroups.c:1889
 msgid "previous config"
 msgstr "önceki yapılandırma"
 
-#: ../src/libs/modulegroups.c:1887
+#: ../src/libs/modulegroups.c:1890
 msgid "previous layout"
 msgstr "önceki düzen"
 
-#: ../src/libs/modulegroups.c:1891
+#: ../src/libs/modulegroups.c:1894
 msgid "previous config with new layout"
 msgstr "yeni düzen ile önceki yapılandırma"
 
-#: ../src/libs/modulegroups.c:2046 ../src/libs/modulegroups.c:2562
+#: ../src/libs/modulegroups.c:2049 ../src/libs/modulegroups.c:2565
 msgid "remove this widget"
 msgstr "bu araç`ı kaldır"
 
-#: ../src/libs/modulegroups.c:2196 ../src/libs/modulegroups.c:2436
+#: ../src/libs/modulegroups.c:2199 ../src/libs/modulegroups.c:2439
 msgid "remove this module"
 msgstr "bu modülü kaldır"
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2405
+#: ../src/libs/modulegroups.c:2408
 msgid "base"
 msgstr "temel"
 
-#: ../src/libs/modulegroups.c:2408
+#: ../src/libs/modulegroups.c:2411
 msgid "tone"
 msgstr "ton"
 
-#: ../src/libs/modulegroups.c:2411
+#: ../src/libs/modulegroups.c:2414
 msgid "technical"
 msgstr "teknik"
 
-#: ../src/libs/modulegroups.c:2412
+#: ../src/libs/modulegroups.c:2415
 msgid "grading"
 msgstr "sınıflandırma"
 
-#: ../src/libs/modulegroups.c:2418 ../src/libs/modulegroups.c:2426
+#: ../src/libs/modulegroups.c:2421 ../src/libs/modulegroups.c:2429
 msgid "add this module"
 msgstr "bu modülü ekle"
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2448 ../src/libs/modulegroups.c:2622
+#: ../src/libs/modulegroups.c:2451 ../src/libs/modulegroups.c:2625
 msgid "all available modules"
 msgstr "tüm kullanılabilir modüller"
 
-#: ../src/libs/modulegroups.c:2456
+#: ../src/libs/modulegroups.c:2459
 msgid "add module"
 msgstr "modül ekle"
 
-#: ../src/libs/modulegroups.c:2461
+#: ../src/libs/modulegroups.c:2464
 msgid "remove module"
 msgstr "modülü kaldır"
 
-#: ../src/libs/modulegroups.c:2571 ../src/libs/modulegroups.c:2578
+#: ../src/libs/modulegroups.c:2574 ../src/libs/modulegroups.c:2581
 msgid "add this widget"
 msgstr "bu araç'ı ekle"
 
-#: ../src/libs/modulegroups.c:2606
+#: ../src/libs/modulegroups.c:2609
 msgid "add widget"
 msgstr "araç ekle"
 
-#: ../src/libs/modulegroups.c:2611
+#: ../src/libs/modulegroups.c:2614
 msgid "remove widget"
 msgstr "araç`ı kaldır"
 
-#: ../src/libs/modulegroups.c:2697
+#: ../src/libs/modulegroups.c:2700
 msgid "show all history modules"
 msgstr "tüm geçmiş modüllerini göster"
 
-#: ../src/libs/modulegroups.c:2700 ../src/libs/modulegroups.c:3887
+#: ../src/libs/modulegroups.c:2703 ../src/libs/modulegroups.c:3889
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
@@ -21251,7 +21726,7 @@ msgstr ""
 "şu anda etkin olup olmadıklarına bakılmaksızın geçmiş yığınında bulunan "
 "modülleri göster"
 
-#: ../src/libs/modulegroups.c:2791
+#: ../src/libs/modulegroups.c:2794
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes which can't be solved and alternative modules which solve them.\n"
@@ -21261,15 +21736,15 @@ msgstr ""
 "alternatif modüllere sahip oldukları için kullanımdan kaldırılmıştır.\n"
 " bir sonraki sürümde yeni düzenlemeler için kaldırılacaklar."
 
-#: ../src/libs/modulegroups.c:2818
+#: ../src/libs/modulegroups.c:2822
 msgid "quick access panel"
 msgstr "hızlı erişim paneli"
 
-#: ../src/libs/modulegroups.c:2828
+#: ../src/libs/modulegroups.c:2832
 msgid "show only active modules"
 msgstr "yalnızca etkin modülleri göster"
 
-#: ../src/libs/modulegroups.c:2833
+#: ../src/libs/modulegroups.c:2837
 msgid ""
 "presets\n"
 "ctrl+click to manage"
@@ -21277,15 +21752,15 @@ msgstr ""
 "ön ayarlar\n"
 "yönetmek için ctrl+tıkla"
 
-#: ../src/libs/modulegroups.c:2840
+#: ../src/libs/modulegroups.c:2844
 msgid "search modules by name or tag"
 msgstr "ada veya etikete göre modülleri ara"
 
-#: ../src/libs/modulegroups.c:2845
+#: ../src/libs/modulegroups.c:2849
 msgid "clear text"
 msgstr "metni temizle"
 
-#: ../src/libs/modulegroups.c:2853
+#: ../src/libs/modulegroups.c:2856
 msgid ""
 "the following modules are deprecated because they have internal design "
 "mistakes which can't be solved and alternative modules which solve them.\n"
@@ -21295,131 +21770,131 @@ msgstr ""
 "alternatif modüller olduğu için kullanımdan kaldırılmıştır.\n"
 "sonraki sürümde yeni düzenlemeler için kaldırılacaklar."
 
-#: ../src/libs/modulegroups.c:3091
+#: ../src/libs/modulegroups.c:3094
 msgid "basic icon"
 msgstr "temel simge"
 
-#: ../src/libs/modulegroups.c:3101
+#: ../src/libs/modulegroups.c:3104
 msgid "active icon"
 msgstr "etkin simge"
 
-#: ../src/libs/modulegroups.c:3111
+#: ../src/libs/modulegroups.c:3114
 msgid "color icon"
 msgstr "renk simgesi"
 
-#: ../src/libs/modulegroups.c:3121
+#: ../src/libs/modulegroups.c:3124
 msgid "correct icon"
 msgstr "uygun simgesi"
 
-#: ../src/libs/modulegroups.c:3131
+#: ../src/libs/modulegroups.c:3134
 msgid "effect icon"
 msgstr "etki simgesi"
 
-#: ../src/libs/modulegroups.c:3141
+#: ../src/libs/modulegroups.c:3144
 msgid "favorites icon"
 msgstr "favoriler simgesi"
 
-#: ../src/libs/modulegroups.c:3151
+#: ../src/libs/modulegroups.c:3154
 msgid "tone icon"
 msgstr "ton simgesi"
 
-#: ../src/libs/modulegroups.c:3161
+#: ../src/libs/modulegroups.c:3164
 msgid "grading icon"
 msgstr "sınıflandırma simgesi"
 
-#: ../src/libs/modulegroups.c:3171
+#: ../src/libs/modulegroups.c:3174
 msgid "technical icon"
 msgstr "teknik simgesi"
 
-#: ../src/libs/modulegroups.c:3204
+#: ../src/libs/modulegroups.c:3207
 msgid "quick access panel widgets"
 msgstr "hızlı erişim paneli araç'ı"
 
-#: ../src/libs/modulegroups.c:3206
+#: ../src/libs/modulegroups.c:3209
 msgid "quick access"
 msgstr "hızlı erişim"
 
-#: ../src/libs/modulegroups.c:3226
+#: ../src/libs/modulegroups.c:3229
 msgid "add widget to the quick access panel"
 msgstr "hızlı erişim paneline araç ekle"
 
-#: ../src/libs/modulegroups.c:3258
+#: ../src/libs/modulegroups.c:3261
 msgid "group icon"
 msgstr "grup simgesi"
 
-#: ../src/libs/modulegroups.c:3267
+#: ../src/libs/modulegroups.c:3270
 msgid "group name"
 msgstr "grup ismi"
 
-#: ../src/libs/modulegroups.c:3278
+#: ../src/libs/modulegroups.c:3281
 msgid "remove group"
 msgstr "grubu kaldır"
 
-#: ../src/libs/modulegroups.c:3304
+#: ../src/libs/modulegroups.c:3307
 msgid "move group to the left"
 msgstr "grubu sola taşı"
 
-#: ../src/libs/modulegroups.c:3312
+#: ../src/libs/modulegroups.c:3315
 msgid "add module to the group"
 msgstr "gruba modül ekle"
 
-#: ../src/libs/modulegroups.c:3323
+#: ../src/libs/modulegroups.c:3326
 msgid "move group to the right"
 msgstr "grubu sağa kaydır"
 
-#: ../src/libs/modulegroups.c:3503
+#: ../src/libs/modulegroups.c:3506
 msgid "rename preset"
 msgstr "ön ayarı yeniden adlandır"
 
-#: ../src/libs/modulegroups.c:3510
+#: ../src/libs/modulegroups.c:3513
 msgid "new preset name :"
 msgstr "yeni ön ayar adı:"
 
-#: ../src/libs/modulegroups.c:3511
+#: ../src/libs/modulegroups.c:3514
 msgid "a preset with this name already exists !"
 msgstr "bu ada sahip bir ön ayar zaten var !"
 
-#: ../src/libs/modulegroups.c:3855
+#: ../src/libs/modulegroups.c:3859
 msgid "preset : "
 msgstr "ön ayar: "
 
-#: ../src/libs/modulegroups.c:3862
+#: ../src/libs/modulegroups.c:3866
 msgid "remove the preset"
 msgstr "ön ayarı kaldır"
 
-#: ../src/libs/modulegroups.c:3864
+#: ../src/libs/modulegroups.c:3868
 msgid "duplicate the preset"
 msgstr "ön ayarı çoğalt"
 
-#: ../src/libs/modulegroups.c:3866
+#: ../src/libs/modulegroups.c:3870
 msgid "rename the preset"
 msgstr "ön ayarı yeniden adlandır"
 
-#: ../src/libs/modulegroups.c:3868
+#: ../src/libs/modulegroups.c:3872
 msgid "create a new empty preset"
 msgstr "yeni bir boş ön ayar oluştur"
 
-#: ../src/libs/modulegroups.c:3875
+#: ../src/libs/modulegroups.c:3880
 msgid "show search line"
 msgstr "arama satırını göster"
 
-#: ../src/libs/modulegroups.c:3879
+#: ../src/libs/modulegroups.c:3883
 msgid "show quick access panel"
 msgstr "hızlı erişim panelini göster"
 
-#: ../src/libs/modulegroups.c:3883
+#: ../src/libs/modulegroups.c:3886
 msgid "show all history modules in active group"
 msgstr "etkin gruptaki tüm geçmiş modüllerini göster"
 
-#: ../src/libs/modulegroups.c:3896
+#: ../src/libs/modulegroups.c:3898
 msgid "auto-apply this preset"
 msgstr "bu ön ayarı otomatik olarak uygula"
 
-#: ../src/libs/modulegroups.c:3912
+#: ../src/libs/modulegroups.c:3913
 msgid "module groups"
 msgstr "modül grupları"
 
-#: ../src/libs/modulegroups.c:3929
+#: ../src/libs/modulegroups.c:3930
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
@@ -22129,11 +22604,11 @@ msgstr ""
 "ilk eşleşen etikete gitmek için Sekme veya Aşağı tuşuna basın\n"
 "eklenen ilk kullanıcı etiketini seçmek için shift+Tab tuşlarına basın"
 
-#: ../src/libs/tagging.c:3146 ../src/libs/tagging.c:3151
+#: ../src/libs/tagging.c:3146 ../src/libs/tagging.c:3152
 msgid "clear entry"
 msgstr "girdiyi temizle"
 
-#: ../src/libs/tagging.c:3198
+#: ../src/libs/tagging.c:3199
 msgid ""
 "tag dictionary,\n"
 "press Enter or double-click to attach selected tag on selected images,\n"
@@ -22152,7 +22627,7 @@ msgstr ""
 "odağı girişe vermek için shift+Tab tuşlarına basın,\n"
 "pencereyi yeniden boyutlandırmak için ctrl-scroll"
 
-#: ../src/libs/tagging.c:3234
+#: ../src/libs/tagging.c:3235
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -22160,42 +22635,42 @@ msgstr ""
 "ile yeni bir etiket oluşturun\n"
 "girdiğin isim"
 
-#: ../src/libs/tagging.c:3237
+#: ../src/libs/tagging.c:3238
 msgid "import tags from a Lightroom keyword file"
 msgstr "etiketleri bir Lightroom anahtar kelime dosyasından içe aktarın"
 
-#: ../src/libs/tagging.c:3240
+#: ../src/libs/tagging.c:3241
 msgid "export all tags to a Lightroom keyword file"
 msgstr "tüm etiketleri bir Lightroom anahtar kelime dosyasına aktarın"
 
-#: ../src/libs/tagging.c:3244
+#: ../src/libs/tagging.c:3245
 msgid "toggle list / tree view"
 msgstr "liste / ağaç görünümü arasında geçiş yap"
 
-#: ../src/libs/tagging.c:3244
+#: ../src/libs/tagging.c:3245
 msgid "tree"
 msgstr "ağaç"
 
-#: ../src/libs/tagging.c:3246
+#: ../src/libs/tagging.c:3247
 msgid "toggle list with / without suggestion"
 msgstr "önerili / önerisiz geçiş listesi"
 
-#: ../src/libs/tagging.c:3246
+#: ../src/libs/tagging.c:3247
 msgid "suggestion"
 msgstr "öneri"
 
-#: ../src/libs/tagging.c:3269
+#: ../src/libs/tagging.c:3270
 msgid "redo last tag"
 msgstr "son etiketi yeniden yap"
 
-#: ../src/libs/tagging.c:3353
+#: ../src/libs/tagging.c:3354
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
 "etiket ağacı görünümünde etiket kısayolu etkin değil. lütfen liste "
 "görünümüne geçin"
 
-#: ../src/libs/tagging.c:3457
+#: ../src/libs/tagging.c:3458
 msgid "tagging settings"
 msgstr "etiketleme ayarları"
 
@@ -22208,7 +22683,7 @@ msgstr "pil göstergesi"
 msgid "colorlabels"
 msgstr "renk etiketleri"
 
-#: ../src/libs/tools/colorlabels.c:87
+#: ../src/libs/tools/colorlabels.c:88
 msgid "toggle color label of selected images"
 msgstr "seçilen resimlerin renk etiketini aç/kapat"
 
@@ -22472,6 +22947,11 @@ msgstr "mevcut düzenden çık"
 msgid "module toolbox"
 msgstr "modül araç kutusu"
 
+#. connect callbacks
+#: ../src/libs/tools/ratings.c:98
+msgid "set star rating for selected images"
+msgstr "seçilen görüntüler için yıldız derecelendirmesi ayarla"
+
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
 msgstr "zaman çizelgesi"
@@ -22516,7 +22996,7 @@ msgstr "`%f' olarak sıfırlamak için çift tıklayın"
 msgid "lua options"
 msgstr "lua seçenekleri"
 
-#: ../src/views/darkroom.c:620
+#: ../src/views/darkroom.c:621
 #, c-format
 msgid ""
 "darktable could not load `%s', switching to lighttable now.\n"
@@ -22539,63 +23019,63 @@ msgstr ""
 "düşünün\n"
 "https://github.com/darktable-org/darktable adresinde"
 
-#: ../src/views/darkroom.c:637
+#: ../src/views/darkroom.c:638
 #, c-format
 msgctxt "darkroom"
 msgid "loading `%s' ..."
 msgstr "`%s' yükleniyor..."
 
-#: ../src/views/darkroom.c:763 ../src/views/darkroom.c:2420
+#: ../src/views/darkroom.c:764 ../src/views/darkroom.c:2421
 msgid "gamut check"
 msgstr "gamut kontrolü"
 
-#: ../src/views/darkroom.c:763
+#: ../src/views/darkroom.c:764
 msgid "soft proof"
 msgstr "yumuşak prova"
 
 #. fail :(
-#: ../src/views/darkroom.c:801 ../src/views/print.c:324
+#: ../src/views/darkroom.c:802 ../src/views/print.c:324
 msgid "no image to open !"
 msgstr "açılacak görüntü yok !"
 
-#: ../src/views/darkroom.c:1305
+#: ../src/views/darkroom.c:1306
 msgid "no userdefined presets for favorite modules were found"
 msgstr "favori modüller için kullanıcı tanımlı ön ayar bulunamadı"
 
-#: ../src/views/darkroom.c:1310
+#: ../src/views/darkroom.c:1311
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "geçerli görüntüye uygulanan tarz `%s'"
 
-#: ../src/views/darkroom.c:1435
+#: ../src/views/darkroom.c:1436
 msgid "no styles have been created yet"
 msgstr "henüz tarz oluşturulmadı"
 
-#: ../src/views/darkroom.c:2252
+#: ../src/views/darkroom.c:2253
 msgid "quick access to presets"
 msgstr "ön ayarlara hızlı erişim"
 
-#: ../src/views/darkroom.c:2261
+#: ../src/views/darkroom.c:2262
 msgid "quick access for applying any of your styles"
 msgstr "tarzlarınız`dan herhangi birini uygulamak için hızlı erişim"
 
-#: ../src/views/darkroom.c:2267
+#: ../src/views/darkroom.c:2268
 msgid "second window"
 msgstr "ikinci pencere"
 
-#: ../src/views/darkroom.c:2270
+#: ../src/views/darkroom.c:2271
 msgid "display a second darkroom image window"
 msgstr "ikinci bir karanlık oda görüntü penceresi göster"
 
-#: ../src/views/darkroom.c:2275
+#: ../src/views/darkroom.c:2276
 msgid "color assessment"
 msgstr "renk değerlendirmesi"
 
-#: ../src/views/darkroom.c:2278
+#: ../src/views/darkroom.c:2279
 msgid "toggle ISO 12646 color assessment conditions"
 msgstr "ISO 12646 renk değerlendirme koşullarını değiştir"
 
-#: ../src/views/darkroom.c:2291
+#: ../src/views/darkroom.c:2292
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -22603,47 +23083,47 @@ msgstr ""
 "açık gösterge üzerinde raw geçiş yap\n"
 "seçenekler için sağ tıklayın"
 
-#: ../src/views/darkroom.c:2307
+#: ../src/views/darkroom.c:2308
 msgid "select how to mark the clipped pixels"
 msgstr "kırpılan piksellerin nasıl işaretleneceğini seçin"
 
-#: ../src/views/darkroom.c:2309
+#: ../src/views/darkroom.c:2310
 msgid "mark with CFA color"
 msgstr "CFA rengiyle işaretleyin"
 
-#: ../src/views/darkroom.c:2309
+#: ../src/views/darkroom.c:2310
 msgid "mark with solid color"
 msgstr "düz renkle işaretle"
 
-#: ../src/views/darkroom.c:2309
+#: ../src/views/darkroom.c:2310
 msgid "false color"
 msgstr "yanlış renk"
 
-#: ../src/views/darkroom.c:2315 ../src/views/darkroom.c:2368
+#: ../src/views/darkroom.c:2316 ../src/views/darkroom.c:2369
 msgid "color scheme"
 msgstr "renk şeması"
 
-#: ../src/views/darkroom.c:2316
+#: ../src/views/darkroom.c:2317
 msgctxt "solidcolor"
 msgid "red"
 msgstr "kırmızı"
 
-#: ../src/views/darkroom.c:2317
+#: ../src/views/darkroom.c:2318
 msgctxt "solidcolor"
 msgid "green"
 msgstr "yeşil"
 
-#: ../src/views/darkroom.c:2318
+#: ../src/views/darkroom.c:2319
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "mavi"
 
-#: ../src/views/darkroom.c:2319
+#: ../src/views/darkroom.c:2320
 msgctxt "solidcolor"
 msgid "black"
 msgstr "siyah"
 
-#: ../src/views/darkroom.c:2323
+#: ../src/views/darkroom.c:2324
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -22651,7 +23131,7 @@ msgstr ""
 "aşırı pozlamayı belirtmek için düz rengi seçin.\n"
 "yalnızca mod = düz renkle işaretlediğinde kullanılacaktır"
 
-#: ../src/views/darkroom.c:2332
+#: ../src/views/darkroom.c:2333
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -22661,7 +23141,7 @@ msgstr ""
 "1.0 - beyaz seviyesi\n"
 "0.0 - siyah seviye"
 
-#: ../src/views/darkroom.c:2346
+#: ../src/views/darkroom.c:2347
 msgid ""
 "toggle clipping indication\n"
 "right click for options"
@@ -22669,11 +23149,11 @@ msgstr ""
 "kırpma göstergesi aç/kapat\n"
 "seçenekler için sağ tıklayın"
 
-#: ../src/views/darkroom.c:2361
+#: ../src/views/darkroom.c:2362
 msgid "clipping preview mode"
 msgstr "kırpma önizleme modu"
 
-#: ../src/views/darkroom.c:2362
+#: ../src/views/darkroom.c:2363
 msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes"
@@ -22681,39 +23161,39 @@ msgstr ""
 "önizlemek istediğiniz metriği seçin\n"
 "tam gamut, diğer tüm modların birleşimidir"
 
-#: ../src/views/darkroom.c:2364
+#: ../src/views/darkroom.c:2365
 msgid "full gamut"
 msgstr "tam gamut"
 
-#: ../src/views/darkroom.c:2364
+#: ../src/views/darkroom.c:2365
 msgid "any RGB channel"
 msgstr "herhangi bir RGB kanalı"
 
-#: ../src/views/darkroom.c:2364
+#: ../src/views/darkroom.c:2365
 msgid "luminance only"
 msgstr "sadece parlaklık"
 
-#: ../src/views/darkroom.c:2364
+#: ../src/views/darkroom.c:2365
 msgid "saturation only"
 msgstr "sadece doygunluk"
 
-#: ../src/views/darkroom.c:2369
+#: ../src/views/darkroom.c:2370
 msgid "select colors to indicate clipping"
 msgstr "kırpmayı belirtmek için renkleri seçin"
 
-#: ../src/views/darkroom.c:2371
+#: ../src/views/darkroom.c:2372
 msgid "red & blue"
 msgstr "kırmızı & mavi"
 
-#: ../src/views/darkroom.c:2371
+#: ../src/views/darkroom.c:2372
 msgid "purple & green"
 msgstr "mor & yeşil"
 
-#: ../src/views/darkroom.c:2378
+#: ../src/views/darkroom.c:2379
 msgid "lower threshold"
 msgstr "alt eşik"
 
-#: ../src/views/darkroom.c:2379
+#: ../src/views/darkroom.c:2380
 msgid ""
 "clipping threshold for the black point,\n"
 "in EV, relatively to white (0 EV).\n"
@@ -22733,11 +23213,11 @@ msgstr ""
 "tipik renkli parlak baskılar -8.00 EV'de siyah üretir,\n"
 "tipik siyah beyaz parlak baskılar -9.00 EV'de siyah üretir."
 
-#: ../src/views/darkroom.c:2395
+#: ../src/views/darkroom.c:2396
 msgid "upper threshold"
 msgstr "üst eşik"
 
-#: ../src/views/darkroom.c:2397
+#: ../src/views/darkroom.c:2398
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
@@ -22746,11 +23226,11 @@ msgstr ""
 "beyaz nokta için kırpma eşiği.\n"
 "%100 en yüksek orta parlaklıktır."
 
-#: ../src/views/darkroom.c:2409
+#: ../src/views/darkroom.c:2410
 msgid "softproof"
 msgstr "yumuşak prova"
 
-#: ../src/views/darkroom.c:2412
+#: ../src/views/darkroom.c:2413
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -22758,7 +23238,7 @@ msgstr ""
 "yumuşak prova aç kapat\n"
 "profil seçenekleri için sağ tıklayın"
 
-#: ../src/views/darkroom.c:2423
+#: ../src/views/darkroom.c:2424
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -22766,49 +23246,49 @@ msgstr ""
 "gamut kontrolünü aç/kapat\n"
 "profil seçenekleri için sağ tıklayın"
 
-#: ../src/views/darkroom.c:2446 ../src/views/darkroom.c:2453
-#: ../src/views/darkroom.c:2472 ../src/views/darkroom.c:2473
-#: ../src/views/darkroom.c:2474 ../src/views/darkroom.c:2475
+#: ../src/views/darkroom.c:2447 ../src/views/darkroom.c:2454
+#: ../src/views/darkroom.c:2473 ../src/views/darkroom.c:2474
+#: ../src/views/darkroom.c:2475 ../src/views/darkroom.c:2476
 msgid "profiles"
 msgstr "profiller"
 
-#: ../src/views/darkroom.c:2453
+#: ../src/views/darkroom.c:2454
 msgid "preview intent"
 msgstr "önizleme amacı"
 
-#: ../src/views/darkroom.c:2472 ../src/views/lighttable.c:1174
+#: ../src/views/darkroom.c:2473 ../src/views/lighttable.c:1174
 msgid "display profile"
 msgstr "görüntüleme profili"
 
-#: ../src/views/darkroom.c:2473 ../src/views/lighttable.c:1177
+#: ../src/views/darkroom.c:2474 ../src/views/lighttable.c:1177
 msgid "preview display profile"
 msgstr "görüntüleme profilini önizle"
 
-#: ../src/views/darkroom.c:2475
+#: ../src/views/darkroom.c:2476
 msgid "histogram profile"
 msgstr "histogram profili"
 
-#: ../src/views/darkroom.c:2539 ../src/views/lighttable.c:1213
+#: ../src/views/darkroom.c:2540 ../src/views/lighttable.c:1213
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "ICC profillerini %s veya %s olarak göster"
 
-#: ../src/views/darkroom.c:2542 ../src/views/lighttable.c:1216
+#: ../src/views/darkroom.c:2543 ../src/views/lighttable.c:1216
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "ön izleme ICC profillerini %s veya %s olarak göster"
 
-#: ../src/views/darkroom.c:2545
+#: ../src/views/darkroom.c:2546
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "%s veya %s olarak yumuşak prova ICC profilleri"
 
-#: ../src/views/darkroom.c:2548
+#: ../src/views/darkroom.c:2549
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "%s veya %s olarak histogram ve renk seçici ICC profilleri"
 
-#: ../src/views/darkroom.c:2586
+#: ../src/views/darkroom.c:2587
 msgid ""
 "toggle guide lines\n"
 "right click for guides options"
@@ -22817,138 +23297,138 @@ msgstr ""
 "kılavuz seçenekleri için sağ tıklayın"
 
 #. Fullscreen preview key
-#: ../src/views/darkroom.c:2603
+#: ../src/views/darkroom.c:2604
 msgid "full preview"
 msgstr "tam önizleme"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2607
+#: ../src/views/darkroom.c:2608
 msgid "allow to pan & zoom while editing masks"
 msgstr "maskeleri düzenlerken kaydırmaya ve yakınlaştırmaya izin ver"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2619
+#: ../src/views/darkroom.c:2620
 msgid "zoom close-up"
 msgstr "yakınlaştırmayı kapat"
 
-#: ../src/views/darkroom.c:2620
+#: ../src/views/darkroom.c:2621
 msgid "zoom fill"
 msgstr "yakınlaştırma dolgusu"
 
-#: ../src/views/darkroom.c:2621
+#: ../src/views/darkroom.c:2622
 msgid "zoom fit"
 msgstr "yakınlaştırma sığdır"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:2624 ../src/views/lighttable.c:1275
+#: ../src/views/darkroom.c:2625 ../src/views/lighttable.c:1275
 msgid "zoom in"
 msgstr "yakınlaştır"
 
-#: ../src/views/darkroom.c:2625 ../src/views/lighttable.c:1277
+#: ../src/views/darkroom.c:2626 ../src/views/lighttable.c:1277
 msgid "zoom out"
 msgstr "uzaklaştır"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2628
+#: ../src/views/darkroom.c:2629
 msgid "image forward"
 msgstr "görüntü ileri"
 
-#: ../src/views/darkroom.c:2629
+#: ../src/views/darkroom.c:2630
 msgid "image back"
 msgstr "görüntü geri"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:2632
+#: ../src/views/darkroom.c:2633
 msgid "cycle overlay colors"
 msgstr "döngü bindirme renkleri"
 
 #. toggle visibility of drawn masks for current gui module
-#: ../src/views/darkroom.c:2635
+#: ../src/views/darkroom.c:2636
 msgid "show drawn masks"
 msgstr "çizilmiş maskeleri göster"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2638
+#: ../src/views/darkroom.c:2639
 msgid "increase brush size"
 msgstr "fırça boyutunu artır"
 
-#: ../src/views/darkroom.c:2639
+#: ../src/views/darkroom.c:2640
 msgid "decrease brush size"
 msgstr "fırça boyutunu küçült"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2642
+#: ../src/views/darkroom.c:2643
 msgid "increase brush hardness"
 msgstr "fırça sertliğini arttır"
 
-#: ../src/views/darkroom.c:2643
+#: ../src/views/darkroom.c:2644
 msgid "decrease brush hardness"
 msgstr "fırça sertliğini azalt"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2646
+#: ../src/views/darkroom.c:2647
 msgid "increase brush opacity"
 msgstr "fırça opaklığını artır"
 
-#: ../src/views/darkroom.c:2647
+#: ../src/views/darkroom.c:2648
 msgid "decrease brush opacity"
 msgstr "fırça opaklığını azalt"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2650 ../src/views/lighttable.c:1267
+#: ../src/views/darkroom.c:2651 ../src/views/lighttable.c:1267
 #: ../src/views/map.c:2115
 msgid "undo"
 msgstr "geri al"
 
-#: ../src/views/darkroom.c:2651 ../src/views/lighttable.c:1268
+#: ../src/views/darkroom.c:2652 ../src/views/lighttable.c:1268
 #: ../src/views/map.c:2116
 msgid "redo"
 msgstr "ileri al"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:2654
+#: ../src/views/darkroom.c:2655
 msgid "search modules"
 msgstr "arama modülleri"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:2657
+#: ../src/views/darkroom.c:2658
 msgid "change keyboard shortcut slider precision"
 msgstr "klavye kısayolu kaydırıcı hassasiyetini değiştir"
 
-#: ../src/views/darkroom.c:3839
+#: ../src/views/darkroom.c:3840
 msgid "keyboard shortcut slider precision: fine"
 msgstr "klavye kısayolu kaydırıcı hassasiyeti: iyi"
 
-#: ../src/views/darkroom.c:3841
+#: ../src/views/darkroom.c:3842
 msgid "keyboard shortcut slider precision: normal"
 msgstr "klavye kısayolu kaydırıcı hassasiyeti: normal"
 
-#: ../src/views/darkroom.c:3843
+#: ../src/views/darkroom.c:3844
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "klavye kısayolu kaydırıcı hassasiyeti: kaba"
 
-#: ../src/views/darkroom.c:3858
+#: ../src/views/darkroom.c:3859
 msgid "switch to lighttable"
 msgstr "ışıklı masaya geç"
 
-#: ../src/views/darkroom.c:3859 ../src/views/lighttable.c:877
+#: ../src/views/darkroom.c:3860 ../src/views/lighttable.c:877
 msgid "zoom in the image"
 msgstr "görüntüyü yakınlaştır"
 
-#: ../src/views/darkroom.c:3860
+#: ../src/views/darkroom.c:3861
 msgid "unbounded zoom in the image"
 msgstr "görüntüde sınırsız yakınlaştırma"
 
-#: ../src/views/darkroom.c:3861
+#: ../src/views/darkroom.c:3862
 msgid "zoom to 100% 200% and back"
 msgstr "%100'e %200'e yakınlaştırın ve geri dönün"
 
-#: ../src/views/darkroom.c:3863
+#: ../src/views/darkroom.c:3864
 msgid "[modules] expand module without closing others"
 msgstr "[modüller] diğerlerini kapatmadan modülü genişlet"
 
-#: ../src/views/darkroom.c:3865
+#: ../src/views/darkroom.c:3866
 msgid "[modules] change module position in pipe"
 msgstr "[modüller] borudaki modül konumunu değiştir"
 
@@ -23178,14 +23658,23 @@ msgstr "sağ tıklama+sürükle"
 msgid "darktable - accels window"
 msgstr "darktable - pencereyi açar"
 
-#: ../src/views/view.c:1277
+#: ../src/views/view.c:1276
 msgid "switch to a classic window which will stay open after key release"
 msgstr "anahtar bırakıldıktan sonra açık kalacak klasik bir pencereye geçin"
 
 #. we add the mouse actions too
-#: ../src/views/view.c:1336
+#: ../src/views/view.c:1335
 msgid "mouse actions"
 msgstr "fare eylemleri"
+
+#~ msgid "switch dual threshold"
+#~ msgstr "çift eşiği değiştir"
+
+#~ msgid "display blending mask"
+#~ msgstr "karıştırma maskesini göster"
+
+#~ msgid "filters for collections"
+#~ msgstr "koleksiyonlar için filtreler"
 
 #~ msgctxt "accel"
 #~ msgid "styles/apply %s"

@@ -727,9 +727,6 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 
   dev->first_load = FALSE;
 
-  // Loading an image means we do some developing and so remove the darktable|problem|history-compress tag
-  dt_history_set_compress_problem(imgid, FALSE);
-
   dt_unlock_image(imgid);
 }
 
@@ -2625,7 +2622,7 @@ gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
   gchar *label;
   /* create a history button and add to box */
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup(module->name());
+    label = g_markup_escape_text(module->name(), -1);
   else
     label = g_markup_printf_escaped("%s <span size=\"smaller\">%s</span>", module->name(), module->multi_name);
   return label;
@@ -3146,4 +3143,3 @@ void dt_dev_undo_end_record(dt_develop_t *dev)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

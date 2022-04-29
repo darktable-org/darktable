@@ -19,7 +19,9 @@
 #include "bauhaus/bauhaus.h"
 #include "control/control.h"
 #include "gui/gtk.h"
+
 #include <string.h>
+#include <locale.h>
 
 #define SNAP_SIZE 5
 #define BAR_WIDTH 4
@@ -419,7 +421,7 @@ static void _popup_date_update_widget_visibility(GtkDarktableRangeSelect *range)
     // set the label
     if(gtk_popover_get_default_widget(GTK_POPOVER(pop->popup)) == range->entry_min)
     {
-      gtk_label_set_text(GTK_LABEL(pop->relative_label), _("date-time interval to substract from the max value"));
+      gtk_label_set_text(GTK_LABEL(pop->relative_label), _("date-time interval to subtract from the max value"));
     }
     else
     {
@@ -545,7 +547,7 @@ static void _current_show_popup(GtkDarktableRangeSelect *range)
 {
   if(range->cur_window) return;
   range->cur_window = gtk_popover_new(range->band);
-  gtk_widget_set_name(range->cur_window, "range_current");
+  gtk_widget_set_name(range->cur_window, "range-current");
   // we try to guess what is the best position before we show the popup.
   // Anyway this is rechecked on popup resizing
   gint wx, wy;
@@ -868,6 +870,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   range->date_popup = pop;
   pop->popup = gtk_popover_new(range->band);
   GtkWidget *vbox0 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(vbox0, "dt-range-date-popup");
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_set_homogeneous(GTK_BOX(hbox), TRUE);
   gtk_box_pack_start(GTK_BOX(vbox0), hbox, FALSE, TRUE, 0);
@@ -892,7 +895,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 
   // the date section
   GtkWidget *lb = gtk_label_new(_("date"));
-  gtk_widget_set_name(lb, "section_label");
+  dt_gui_add_class(lb, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
 
   // the calendar
@@ -938,7 +941,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 
   // the time section
   lb = gtk_label_new(_("time"));
-  gtk_widget_set_name(lb, "section_label");
+  dt_gui_add_class(lb, "dt_section_label");
   gtk_box_pack_start(GTK_BOX(vbox), lb, FALSE, TRUE, 0);
 
   GtkWidget *hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -984,7 +987,6 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
 
   // the select line
   hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(hbox2, "dt-range-date-last-line");
   gtk_box_pack_start(GTK_BOX(vbox0), hbox2, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new("current date : "), FALSE, TRUE, 0);
   pop->selection = gtk_entry_new();
@@ -1028,7 +1030,6 @@ static void _popup_item_activate(GtkWidget *w, gpointer user_data)
 static GtkWidget *_popup_get_numeric_menu(GtkDarktableRangeSelect *range, GtkWidget *w)
 {
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(pop), "range-popup");
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
 
   // we first show all the predefined items
@@ -1546,6 +1547,13 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
       range->select_min_r = range->select_max_r + 0.0001;
       range->select_max_r = pos_r;
     }
+    else if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
+    {
+      // if we have shift pressed, we only want to set the second bound which is done in release
+      range->bounds &= ~DT_RANGE_BOUND_FIXED;
+      range->bounds &= ~DT_RANGE_BOUND_MAX;
+      range->bounds |= DT_RANGE_BOUND_RANGE;
+    }
     else
     {
       range->select_min_r = pos_r;
@@ -1672,7 +1680,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   }
 
   gtk_container_add(GTK_CONTAINER(range), vbox);
-  gtk_widget_set_name(vbox, "range_select");
+  gtk_widget_set_name(vbox, "range-select");
 
   if(type == DT_RANGE_TYPE_DATETIME) _popup_date_init(range);
 

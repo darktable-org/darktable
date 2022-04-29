@@ -95,6 +95,7 @@ void gui_init(dt_lib_module_t *self)
                                | GDK_STRUCTURE_MASK);
 
   /* connect callbacks */
+  gtk_widget_set_tooltip_text(drawing, _("set star rating for selected images"));
   gtk_widget_set_app_paintable(drawing, TRUE);
   g_signal_connect(G_OBJECT(drawing), "draw", G_CALLBACK(_lib_ratings_draw_callback), self);
   g_signal_connect(G_OBJECT(drawing), "button-press-event", G_CALLBACK(_lib_ratings_button_press_callback), self);

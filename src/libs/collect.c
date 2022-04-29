@@ -553,11 +553,12 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
 {
   /* Get tree path for row that was clicked */
   GtkTreePath *path = NULL;
-  int get_path = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL);
+  const gboolean get_path = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y,
+                                                          &path, NULL, NULL, NULL);
 
-  if(event->type == GDK_DOUBLE_BUTTON_PRESS)
+  if(event->type == GDK_DOUBLE_BUTTON_PRESS || d->singleclick)
   {
-    if(event->state == last_state)
+    if(event->state == last_state && path)
     {
       if(gtk_tree_view_row_expanded(GTK_TREE_VIEW(treeview), path))
         gtk_tree_view_collapse_row(GTK_TREE_VIEW(treeview), path);
@@ -567,66 +568,63 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
     last_state = event->state;
   }
 
-  if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
-      && event->type == GDK_BUTTON_PRESS && event->button == 3)
-     || (!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
-     || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1)
-     || ((d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
-         && (event->type == GDK_BUTTON_PRESS && event->button == 1
-             && (dt_modifier_is(event->state, GDK_SHIFT_MASK) || dt_modifier_is(event->state, GDK_CONTROL_MASK)))))
+  // case of a range selection
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  if(get_path && dt_modifier_is(event->state, GDK_SHIFT_MASK)
+     && gtk_tree_selection_count_selected_rows(selection) > 0
+     && (d->view_rule == DT_COLLECTION_PROP_DAY || is_time_property(d->view_rule)
+         || d->view_rule == DT_COLLECTION_PROP_APERTURE || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
+         || d->view_rule == DT_COLLECTION_PROP_ISO || d->view_rule == DT_COLLECTION_PROP_EXPOSURE
+         || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO || d->view_rule == DT_COLLECTION_PROP_RATING))
   {
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-
-    if(get_path)
-    {
-      if(d->singleclick && dt_modifier_is(event->state, GDK_SHIFT_MASK)
-         && gtk_tree_selection_count_selected_rows(selection) > 0
-         && (d->view_rule == DT_COLLECTION_PROP_DAY || is_time_property(d->view_rule)
-             || d->view_rule == DT_COLLECTION_PROP_APERTURE || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
-             || d->view_rule == DT_COLLECTION_PROP_ISO || d->view_rule == DT_COLLECTION_PROP_EXPOSURE
-             || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO || d->view_rule == DT_COLLECTION_PROP_RATING))
-      {
-        // range selection
-        GList *sels = gtk_tree_selection_get_selected_rows(selection, NULL);
-        GtkTreePath *path2 = (GtkTreePath *)sels->data;
-        gtk_tree_selection_unselect_all(selection);
-        if(gtk_tree_path_compare(path, path2) > 0)
-          gtk_tree_selection_select_range(selection, path, path2);
-        else
-          gtk_tree_selection_select_range(selection, path2, path);
-        g_list_free_full(sels, (GDestroyNotify)gtk_tree_path_free);
-      }
-      else
-      {
-        gtk_tree_selection_unselect_all(selection);
-        gtk_tree_selection_select_path(selection, path);
-      }
-    }
-
-    /* single click on folder with the right mouse button? */
-    if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS) || (d->view_rule == DT_COLLECTION_PROP_FILMROLL))
-       && (event->type == GDK_BUTTON_PRESS && event->button == 3)
-       && !(dt_modifier_is(event->state, GDK_SHIFT_MASK) || dt_modifier_is(event->state, GDK_CONTROL_MASK)))
-    {
-      row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
-      view_popup_menu(treeview, event, d);
-    }
+    // range selection
+    GList *sels = gtk_tree_selection_get_selected_rows(selection, NULL);
+    GtkTreePath *path2 = (GtkTreePath *)sels->data;
+    gtk_tree_selection_unselect_all(selection);
+    if(gtk_tree_path_compare(path, path2) > 0)
+      gtk_tree_selection_select_range(selection, path, path2);
     else
-    {
-      row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
-    }
+      gtk_tree_selection_select_range(selection, path2, path);
+    g_list_free_full(sels, (GDestroyNotify)gtk_tree_path_free);
+
+    row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
 
     gtk_tree_path_free(path);
-
-    if((d->view_rule == DT_COLLECTION_PROP_DAY || is_time_property(d->view_rule)
-        || d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_TAG
-        || d->view_rule == DT_COLLECTION_PROP_GEOTAGGING)
-       && !dt_modifier_is(event->state, GDK_SHIFT_MASK))
-      return FALSE; /* we allow propagation (expand/collapse row) */
-    else
-      return TRUE; /* we stop propagation */
+    return TRUE;
   }
-  return FALSE; /* we did not handle this */
+
+  if(path)
+  {
+    gtk_tree_selection_unselect_all(selection);
+    gtk_tree_selection_select_path(selection, path);
+  }
+
+  // case of a context-menu (folder/filmroll)
+  if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS) || (d->view_rule == DT_COLLECTION_PROP_FILMROLL))
+     && (event->type == GDK_BUTTON_PRESS && event->button == 3)
+     && !(dt_modifier_is(event->state, GDK_SHIFT_MASK) || dt_modifier_is(event->state, GDK_CONTROL_MASK)))
+  {
+    row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
+    view_popup_menu(treeview, event, d);
+
+    if(path) gtk_tree_path_free(path);
+    return TRUE;
+  }
+
+  // case of a activation
+  if((!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
+     || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1)
+     || (!d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1
+         && (dt_modifier_is(event->state, GDK_SHIFT_MASK) || dt_modifier_is(event->state, GDK_CONTROL_MASK))))
+  {
+    row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
+
+    if(path) gtk_tree_path_free(path);
+    return TRUE;
+  }
+
+  if(path) gtk_tree_path_free(path);
+  return FALSE;
 }
 
 static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
@@ -3038,7 +3036,6 @@ static void _history_show(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   // we show a popup with all the history entries
   GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_name(GTK_WIDGET(pop), "collect-popup");
   gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
 
   const int maxitems = dt_conf_get_int("plugins/lighttable/collect/history_max");
@@ -3053,7 +3050,6 @@ static void _history_show(GtkWidget *widget, gpointer user_data)
       char str[2048] = { 0 };
       _history_pretty_print(line, str, sizeof(str));
       GtkWidget *smt = gtk_menu_item_new_with_label(str);
-      gtk_widget_set_name(smt, "collect-popup-item");
       gtk_widget_set_tooltip_text(smt, str);
       // GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
@@ -3082,6 +3078,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  dt_gui_add_class(self->widget, "dt_spacing_sw");
 
   d->active_rule = 0;
   d->nb_rules = 0;
@@ -3121,12 +3118,11 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(entry_changed), d->rule + i);
     g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), d->rule + i);
-    gtk_widget_set_name(GTK_WIDGET(w), "lib-collect-entry");
     gtk_box_pack_start(box, w, TRUE, TRUE, 0);
     gtk_entry_set_width_chars(GTK_ENTRY(w), 5);
 
     w = dtgtk_button_new(dtgtk_cairo_paint_presets, 0, NULL);
-
+    dt_gui_add_class(GTK_WIDGET(w), "dt_big_btn_canvas");
     d->rule[i].button = w;
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);
@@ -3167,9 +3163,8 @@ void gui_init(dt_lib_module_t *self)
                      dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
                      TRUE, 0);
 
-  // the botton buttons for the rules
+  // the bottom buttons for the rules
   GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(bhbox, "collect-actions-widget");
   gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
   // dummy widget just to ensure alignment of history button  with those in filtering lib

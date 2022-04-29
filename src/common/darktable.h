@@ -156,7 +156,7 @@ typedef unsigned int u_int;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 10
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 11
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
@@ -363,6 +363,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 void dt_get_sysresource_level();
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
+/* same as above but without time stamp : nts = no time stamp */
+void dt_print_nts(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
+/* same as above but requires additional DT_DEBUG_VERBOSE flag to be true */
 void dt_vprint(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 int dt_worker_threads();
 size_t dt_get_available_mem();

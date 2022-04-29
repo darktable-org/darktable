@@ -99,7 +99,7 @@ typedef struct dt_iop_highlights_params_t
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
   float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast balance"
   float combine;           // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
-  float synthesis;
+  int debugmode;
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -109,6 +109,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *noise_level;
   GtkWidget *iterations;
   GtkWidget *scales;
+  gboolean show_visualize;
 } dt_iop_highlights_gui_data_t;
 
 typedef dt_iop_highlights_params_t dt_iop_highlights_data_t;
@@ -125,6 +126,7 @@ typedef struct dt_iop_highlights_global_data_t
   int kernel_highlights_diffuse_color;
   int kernel_highlights_box_blur;
   int kernel_wavelets_decompose;
+  int kernel_highlights_false_color;
 } dt_iop_highlights_global_data_t;
 
 
@@ -168,7 +170,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.0f;
     n->reconstructing = 0.4f;
     n->combine = 2.f;
-    n->synthesis = 0.f;
+    n->debugmode = 0;
     n->iterations = 1;
     n->scales = 5;
     return 0;
@@ -180,7 +182,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->noise_level = 0.0f;
     n->reconstructing = 0.4f;
     n->combine = 2.f;
-    n->synthesis = 0.f;
+    n->debugmode = 0;
     n->iterations = 1;
     n->scales = 5;
     return 0;
@@ -198,20 +200,55 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
 
-  cl_int err = -999;
-  cl_mem dev_xtrans = NULL;
-
+  const uint32_t filters = piece->pipe->dsc.filters;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
 
+  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
+  cl_mem dev_xtrans = NULL;
+
+  // this works for bayer and X-Trans sensors
+  if(visualizing)
+  {
+    const float *c = piece->pipe->dsc.temperature.coeffs;
+    float clips[4] = { d->clip * (c[RED]   <= 0.0f ? 1.0f : c[RED]),
+                       d->clip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]),
+                       d->clip * (c[BLUE]  <= 0.0f ? 1.0f : c[BLUE]),
+                       d->clip * (c[GREEN] <= 0.0f ? 1.0f : c[GREEN]) };
+
+    cl_mem dev_clips = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), clips);
+    if(dev_clips == NULL) goto error;
+
+    // bayer sensor raws with LCH mode
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 4, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 5, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 6, sizeof(int), (void *)&filters);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_false_color, 7, sizeof(cl_mem), (void *)&dev_clips);
+
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_false_color, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
+    dt_opencl_release_mem_object(dev_clips);
+    return TRUE;
+  }
+
   const float clip = d->clip
                      * fminf(piece->pipe->dsc.processed_maximum[0],
                              fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
-
-  const uint32_t filters = piece->pipe->dsc.filters;
 
   if(!filters)
   {
@@ -313,7 +350,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
 error:
   dt_opencl_release_mem_object(dev_xtrans);
-  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return FALSE;
 }
 #endif
@@ -1580,7 +1617,7 @@ static inline cl_int wavelets_process_cl(const int devid,
                                          const float noise_level, cl_mem wb,
                                          const int salt, const int sharpen)
 {
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   // À trous wavelet decompose
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
@@ -1698,7 +1735,7 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pi
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
   dt_iop_highlights_global_data_t *gd = (dt_iop_highlights_global_data_t *)self->global_data;
 
-  cl_int err = -999;
+  cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -1798,7 +1835,7 @@ error:
   if(LF_odd) dt_opencl_release_mem_object(LF_odd);
   for(int s = 0; s < scales; s++) if(HF[s]) dt_opencl_release_mem_object(HF[s]);
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %d\n", err);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_highlights] couldn't enqueue kernel! %s\n", cl_errstr(err));
   return err;
 }
 #endif
@@ -1838,16 +1875,59 @@ static void process_clip(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
   }
 }
 
+static void process_visualize(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
+                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                         const uint32_t filters, dt_iop_highlights_data_t *data)
+{
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
+  const size_t width = roi_out->width;
+  const size_t height = roi_out->height;
+  const float clip = data->clip;
+  const float *cf = piece->pipe->dsc.temperature.coeffs;
+  const float clips[4] = { clip * (cf[RED]   <= 0.0f ? 1.0f : cf[RED]),
+                           clip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]),
+                           clip * (cf[BLUE]  <= 0.0f ? 1.0f : cf[BLUE]),
+                           clip * (cf[GREEN] <= 0.0f ? 1.0f : cf[GREEN]) };
+
+#ifdef _OPENMP
+  #pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, out) \
+  dt_omp_sharedconst(height, width, filters, clips) \
+  schedule(simd:static) aligned(in, out : 64)
+#endif
+  for(size_t row = 0; row < height; row++)
+  {
+    for(size_t col = 0, i = row*width; col < width; col++, i++)
+    {
+      const int c = FC(row, col, filters);
+      const float ival = in[i];
+      out[i] = (ival < clips[c]) ? 0.2f * ival : 1.0f;
+    }
+  }
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const uint32_t filters = piece->pipe->dsc.filters;
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+
+  const gboolean fullpipe = (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL;
+  const gboolean visualizing = (g != NULL) ? g->show_visualize && fullpipe : FALSE;
+
+  if(visualizing)
+  {
+    process_visualize(piece, ivoid, ovoid, roi_in, roi_out, filters, data);
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
+    piece->pipe->type |= DT_DEV_PIXELPIPE_FAST;
+    return;
+  }
 
   const float clip
       = data->clip * fminf(piece->pipe->dsc.processed_maximum[0],
                            fminf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
-  // const int ch = piece->colors;
 
   if(!filters)
   {
@@ -1955,12 +2035,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)p1;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
+
   memcpy(d, p, sizeof(*p));
 
-  piece->process_cl_ready = 1;
-
-  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
-  if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT) piece->process_cl_ready = 0;
+  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT
+  piece->process_cl_ready = (d->mode == DT_IOP_HIGHLIGHTS_INPAINT) ? 0 : 1;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1979,6 +2058,8 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_wavelets_decompose = dt_opencl_create_kernel(program, "diffuse_blur_bspline");
   gd->kernel_highlights_guide_laplacians = dt_opencl_create_kernel(program, "guide_laplacians");
   gd->kernel_highlights_diffuse_color = dt_opencl_create_kernel(program, "diffuse_color");
+  gd->kernel_highlights_false_color = dt_opencl_create_kernel(program, "highlights_false_color");
+
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1994,6 +2075,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_wavelets_decompose);
   dt_opencl_free_kernel(gd->kernel_highlights_guide_laplacians);
   dt_opencl_free_kernel(gd->kernel_highlights_diffuse_color);
+  dt_opencl_free_kernel(gd->kernel_highlights_false_color);
   free(module->data);
   module->data = NULL;
 }
@@ -2015,12 +2097,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
+  const gboolean israw = (self->dev->image_storage.buf_dsc.filters != 0);
   dt_iop_highlights_mode_t mode = p->mode;
 
   gtk_widget_set_visible(g->noise_level, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
   gtk_widget_set_visible(g->iterations, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
   gtk_widget_set_visible(g->scales, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
 
+  dt_bauhaus_widget_set_quad_visibility(g->clip, israw);
 
   // If guided laplacian mode was copied as part of the history of another pic, sanitize it
   // guided laplacian is not available for XTrans
@@ -2034,11 +2118,14 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(struct dt_iop_module_t *self)
 {
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   const gboolean monochrome = dt_image_is_monochrome(&self->dev->image_storage);
   // enable this per default if raw or sraw if not real monochrome
   self->default_enabled = dt_image_is_rawprepare_supported(&self->dev->image_storage) && !monochrome;
   self->hide_enable_button = monochrome;
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "default" : "monochrome");
+  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+  g->show_visualize = FALSE;
   gui_changed(self, NULL, NULL);
 }
 
@@ -2071,6 +2158,26 @@ void reload_defaults(dt_iop_module_t *module)
   }
 }
 
+static void _visualize_callback(GtkWidget *quad, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  g->show_visualize = dt_bauhaus_widget_get_quad_active(quad);
+  dt_dev_reprocess_center(self->dev);
+}
+
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  if(!in)
+  {
+    dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+    g->show_visualize = FALSE;
+    dt_dev_reprocess_center(self->dev);
+  }
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_highlights_gui_data_t *g = IOP_GUI_ALLOC(highlights);
@@ -2081,8 +2188,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->clip = dt_bauhaus_slider_from_params(self, "clip");
   dt_bauhaus_slider_set_digits(g->clip, 3);
-  gtk_widget_set_tooltip_text(g->clip, _("manually adjust the clipping threshold against "
-                                         "magenta highlights (you shouldn't ever need to touch this)"));
+  gtk_widget_set_tooltip_text(g->clip,
+                              _("manually adjust the clipping threshold against "
+                                "magenta highlights\nthe mask icon shows the clipped area\n"
+                                "(you shouldn't ever need to touch this)"));
+  dt_bauhaus_widget_set_quad_paint(g->clip, dtgtk_cairo_paint_showmask, 0, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->clip, TRUE);
+  dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
+  g_signal_connect(G_OBJECT(g->clip), "quad-pressed", G_CALLBACK(_visualize_callback), self);
 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
