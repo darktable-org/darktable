@@ -706,8 +706,28 @@ static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
   return TRUE;
 }
 
+static char *_piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *img)
+{
+  GList *args = NULL;
+
+  args = _piwigo_query_add_arguments(args, "method", "pwg.images.exist");
+  args = _piwigo_query_add_arguments(args, "filename_list", img->filename);
+
+  _piwigo_api_post(p->api, args, NULL, TRUE);
+
+  g_list_free(args);
+
+  if(p->api->response && !p->api->error_occured)
+  {
+    JsonObject *result = json_node_get_object(json_object_get_member(p->api->response, "result"));
+    return (char *) json_object_get_string_member(result, img->filename);
+  }
+
+  return NULL;
+}
+
 static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *fname,
-                                         gchar *author, gchar *caption, gchar *description)
+                                         gchar *author, gchar *caption, gchar *description, gchar *pwg_image_id)
 {
   GList *args = NULL;
   char cat[10];
@@ -734,6 +754,9 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *f
 
   if(p->tags && strlen(p->tags)>0)
     args = _piwigo_query_add_arguments(args, "tags", p->tags);
+
+  if(pwg_image_id)
+    args = _piwigo_query_add_arguments(args, "image_id", pwg_image_id);
 
   _piwigo_api_post(p->api, args, fname, FALSE);
 
@@ -951,32 +974,18 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   gint result = 0;
 
-  const char *ext = format->extension(fdata);
-
   // Let's upload image...
-
-  /* construct a temporary file name */
-  char fname[PATH_MAX] = { 0 };
-  dt_loc_get_tmp_dir(fname, sizeof(fname));
-  g_strlcat(fname, "/darktable.XXXXXX.", sizeof(fname));
-  g_strlcat(fname, ext, sizeof(fname));
 
   char *caption = NULL;
   char *description = NULL;
   char *author = NULL;
 
-  gint fd = g_mkstemp(fname);
-  if(fd == -1)
-  {
-    dt_control_log("failed to create temporary image for piwigo export");
-    fprintf(stderr, "failed to create tempfile: %s\n", fname);
-    return 1;
-  }
-  close(fd);
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+
+  gchar *fname = g_strconcat(darktable.tmpdir, "/", img->filename, NULL);
 
   if((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   // If title is not existing, then use the filename without extension. If not, then use title instead
     GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
     if(title != NULL)
@@ -1034,7 +1043,9 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
     if(status)
     {
-      status = _piwigo_api_upload_photo(p, fname, author, caption, description);
+      char *pwg_image_id = _piwigo_api_get_image_id(p, img);
+
+      status = _piwigo_api_upload_photo(p, fname, author, caption, description, pwg_image_id);
       if(!status)
       {
         fprintf(stderr, "[imageio_storage_piwigo] could not upload to piwigo!\n");
