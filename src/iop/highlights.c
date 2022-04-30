@@ -2112,7 +2112,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     p->mode = DT_IOP_HIGHLIGHTS_CLIP;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
-    dt_control_log(_("highlights: guided laplacian mode not available for X-Trans sensors. Falling back to clip."));
+    dt_control_log(_("highlights: guided laplacian mode not available for X-Trans sensors. falling back to clip."));
   }
 }
 
@@ -2199,7 +2199,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->noise_level = dt_bauhaus_slider_from_params(self, "noise_level");
   gtk_widget_set_tooltip_text(g->noise_level, _("add noise to visually blend the reconstructed areas\n"
-                                                "into the rest of the noisy image. Useful at high ISO."));
+                                                "into the rest of the noisy image. useful at high ISO."));
 
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
   gtk_widget_set_tooltip_text(g->iterations, _("increase if magenta highlights don't get fully corrected\n"
