@@ -383,12 +383,10 @@ void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, gint x, gint y, gint w, gi
 {
   PREAMBLE(1, 1, 0, 0)
 
-  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-  cairo_move_to(cr, 0, 0);
-  cairo_line_to(cr, 1, 1);
-
-  cairo_move_to(cr, 0, 1);
-  cairo_line_to(cr, 1, 0);
+  cairo_move_to(cr, 0.1, 0.1);
+  cairo_line_to(cr, 0.9, 0.9);
+  cairo_move_to(cr, 0.1, 0.9);
+  cairo_line_to(cr, 0.9, 0.1);
   cairo_stroke(cr);
 
   FINISH
@@ -1464,17 +1462,12 @@ void dtgtk_cairo_paint_draw_structure(cairo_t *cr, gint x, gint y, gint w, gint 
 
 void dtgtk_cairo_paint_cancel(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1.05, 1, 0, 0)
+  PREAMBLE(1, 1, 0, 0)
 
-  cairo_arc(cr, 0.5, 0.5, 0.5, 0, 2 * M_PI);
-  cairo_fill(cr);
-
-  cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 0.7);
-  cairo_move_to(cr, 0.65, 0.35);
-  cairo_line_to(cr, 0.35, 0.65);
-  cairo_stroke(cr);
-  cairo_move_to(cr, 0.65, 0.65);
-  cairo_line_to(cr, 0.35, 0.35);
+  cairo_move_to(cr, 0.85, 0.15);
+  cairo_line_to(cr, 0.15, 0.85);
+  cairo_move_to(cr, 0.15, 0.15);
+  cairo_line_to(cr, 0.85, 0.85);
   cairo_stroke(cr);
 
   FINISH
@@ -1625,7 +1618,7 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 
 void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(0.9, 1, 0, 0)
+  PREAMBLE(0.95, 1, 0, 0)
 
   // the reject icon
   cairo_arc(cr, 0.5, 0.5, 0.5, 0.0, 2.0 * M_PI);
