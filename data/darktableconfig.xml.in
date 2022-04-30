@@ -102,6 +102,13 @@
     <shortdescription></shortdescription>
     <longdescription></longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>storage/piwigo/overwrite</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription></shortdescription>
+    <longdescription></longdescription>
+  </dtconfig>
   <dtconfig prefs="storage" section="database">
     <name>database/maintenance_check</name>
     <type>
