@@ -1046,8 +1046,9 @@ finally:
     {
       if(!manually) dt_conf_set_string("opencl_checksum", checksum);
 
-      // get best benchmarking value of all detected OpenCL devices
+      // check benchmarking values of all detected OpenCL devices
       float tgpumin = INFINITY;
+      float tgpumax = -INFINITY;
       for(int n = 0; n < cl->num_devs; n++)
       {
         // only do the benchmark is no given performance is available and device is enbled
@@ -1059,7 +1060,10 @@ finally:
         }
         // take valid benchmarks into account
         if((cl->dev[n].benchmark > 0.0f) && (cl->dev[n].disabled == 0))
+        {
           tgpumin = fminf(cl->dev[n].benchmark, tgpumin);
+          tgpumax = fminf(cl->dev[n].benchmark, tgpumax);
+        }
       }
 
       if(!manually && newcheck)
@@ -1072,16 +1076,16 @@ finally:
           dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
           dt_control_log(_("due to a slow GPU hardware acceleration via opencl has been de-activated"));
         }
-        else if(cl->num_devs >= 2)
+        else if((cl->num_devs >= 2) && ((tgpumax / tgpumin) < 1.1f))
         {
-          // set scheduling profile to "multiple GPUs" if more than one device has been found
+          // set scheduling profile to "multiple GPUs" if more than one device has been found and they are equally fast
           dt_conf_set_string("opencl_scheduling_profile", "multiple GPUs");
           dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for multiple GPUs.\n");
           dt_control_log(_("multiple GPUs detected - opencl scheduling profile has been set accordingly"));
         }
-        else if(tcpu >= 6.0f * tgpumin)
+        else if((tcpu >= 6.0f * tgpumin) && (cl->num_devs == 1))
         {
-          // set scheduling profile to "very fast GPU" if CPU is way too slow
+          // set scheduling profile to "very fast GPU" if CPU is way too slow and there is just one device
           dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
           dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
           dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly"));
