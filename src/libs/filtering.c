@@ -1208,7 +1208,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
     // remove button
-    rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
+    rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_reject, 0, NULL);
     gtk_widget_set_no_show_all(rule->w_close, TRUE);
     g_object_set_data(G_OBJECT(rule->w_close), "rule", rule);
     gtk_widget_set_tooltip_text(rule->w_close,
@@ -1665,7 +1665,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     g_signal_connect(G_OBJECT(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
     dt_gui_add_class(sort->direction, "dt_ignore_fg_state");
 
-    sort->close = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
+    sort->close = dtgtk_button_new(dtgtk_cairo_paint_reject, 0, NULL);
     gtk_widget_set_no_show_all(sort->close, TRUE);
     g_object_set_data(G_OBJECT(sort->close), "sort", sort);
     gtk_widget_set_tooltip_text(sort->close, _("remove this sort order"));

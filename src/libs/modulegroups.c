@@ -2044,7 +2044,7 @@ static void _manage_editor_basics_update_list(dt_lib_module_t *self)
           gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, TRUE, 0);
           if(!d->edit_ro)
           {
-            GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
+            GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_reject, 0, NULL);
 
             gtk_widget_set_tooltip_text(btn, _("remove this widget"));
             g_object_set_data(G_OBJECT(btn), "widget_id", item->id);
@@ -2195,7 +2195,7 @@ static void _manage_editor_module_update_list(dt_lib_module_t *self, dt_lib_modu
         gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, TRUE, 0);
         if(!d->edit_ro)
         {
-          GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
+          GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_reject, 0, NULL);
           gtk_widget_set_tooltip_text(btn, _("remove this module"));
           g_object_set_data(G_OBJECT(btn), "module_name", module->op);
           g_object_set_data(G_OBJECT(btn), "group", gr);
@@ -3277,7 +3277,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   // remove button
   if(!d->edit_ro)
   {
-    btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, 0, NULL);
+    btn = dtgtk_button_new(dtgtk_cairo_paint_reject, 0, NULL);
     gtk_widget_set_tooltip_text(btn, _("remove group"));
     g_object_set_data(G_OBJECT(btn), "group", gr);
     g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_group_remove), self);
