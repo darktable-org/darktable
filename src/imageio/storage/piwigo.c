@@ -86,6 +86,7 @@ typedef struct dt_storage_piwigo_gui_data_t
   GtkBox *create_box;                               // Create album options...
   GtkWidget *permission_list;
   GtkWidget *album_list, *parent_album_list;
+  GtkWidget *conflict_action;
   GtkWidget *account_list;
 
   GList *albums;
@@ -793,6 +794,11 @@ const char *name(const struct dt_imageio_module_storage_t *self)
   return _("piwigo");
 }
 
+static void onsave_action_toggle_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_conf_set_int("storage/piwigo/overwrite", dt_bauhaus_combobox_get(widget));
+}
+
 void gui_init(dt_imageio_module_storage_t *self)
 {
   self->gui_data = (dt_storage_piwigo_gui_data_t *)g_malloc0(sizeof(dt_storage_piwigo_gui_data_t));
@@ -925,6 +931,15 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(ui->create_box, ui->parent_album_list, TRUE, TRUE, 0);
 
   _piwigo_set_status(ui, _("click login button to start"), "#ffffff");
+
+  // action on conflict
+  ui->conflict_action = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(ui->conflict_action, NULL, N_("on conflict"));
+  dt_bauhaus_combobox_add(ui->conflict_action, _("overwrite"));
+  dt_bauhaus_combobox_add(ui->conflict_action, _("skip"));
+  gtk_box_pack_start(GTK_BOX(self->widget), ui->conflict_action, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed", G_CALLBACK(onsave_action_toggle_callback), self);
+  dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/overwrite"));
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
@@ -973,6 +988,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
 
   gint result = 0;
+  gint skipped = 0;
 
   // Let's upload image...
 
@@ -1045,18 +1061,25 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     {
       char *pwg_image_id = _piwigo_api_get_image_id(p, img);
 
-      status = _piwigo_api_upload_photo(p, fname, author, caption, description, pwg_image_id);
-      if(!status)
+      if(pwg_image_id && dt_bauhaus_combobox_get(ui->conflict_action)==1)
       {
-        fprintf(stderr, "[imageio_storage_piwigo] could not upload to piwigo!\n");
-        dt_control_log(_("could not upload to piwigo!"));
-        result = 1;
+        skipped = 1;
       }
-      else if(p->new_album)
+      else
       {
-        // we do not want to create more albums when multiple upload
-        p->new_album = FALSE;
-        _piwigo_refresh_albums(ui, p->album);
+        status = _piwigo_api_upload_photo(p, fname, author, caption, description, pwg_image_id);
+        if(!status)
+        {
+          fprintf(stderr, "[imageio_storage_piwigo] could not upload to piwigo!\n");
+          dt_control_log(_("could not upload to piwigo!"));
+          result = 1;
+        }
+        else if(p->new_album)
+        {
+          // we do not want to create more albums when multiple upload
+          p->new_album = FALSE;
+          _piwigo_refresh_albums(ui, p->album);
+        }
       }
     }
     if(p->tags)
@@ -1075,7 +1098,11 @@ cleanup:
   g_free(description);
   g_free(author);
 
-  if(!result)
+  if(skipped)
+  {
+    dt_control_log(_("%d/%d skipped (already exists)"), num, total);
+  }
+  else if(!result && !skipped)
   {
     // this makes sense only if the export was successful
     dt_control_log(ngettext("%d/%d exported to piwigo webalbum", "%d/%d exported to piwigo webalbum", num),
