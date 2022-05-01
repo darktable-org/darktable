@@ -140,7 +140,8 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color collapsible_bg_color @grey_25;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_bg shade(@bg_color, 1.06);
+@define-color bauhaus_bg alpha(@bg_color, 0.55);
+@define-color bauhaus_fg @fg_color;       /* needed to correctly display color pickers in all states, even if they inherit @fg_color by default */
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
@@ -608,7 +609,7 @@ dialog .sidebar row:selected:hover label,
 /* Collapsible sections on lib & iop modules */
 #collapse-block
 {
-  margin-top: 0.21em;
+  margin: 0.21em 0;
 }
 
 #collapsible
@@ -627,7 +628,7 @@ dialog .sidebar row:selected:hover label,
 .dt_section_expander,
 .dt_section_expander label
 {
-  background-color: shade(@collapsible_bg_color, 0.96);
+  background-color: @collapsible_bg_color;
   border: none;
   margin-top: 0.14em;
   padding: 0.07em 0;
@@ -1410,6 +1411,13 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
   color: shade(@fg_color, 0.75);
 }
 
+/* set "buttons" combo in lens correction module */
+#lens-module .text-button
+{
+  background-color: alpha(@fg_color, 0.06);
+  min-height: 1em;
+}
+
 /* Progress bar on bottom left side when exporting, importing, etc... */
 #background-job-eventbox label
 {
@@ -1585,6 +1593,7 @@ notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #dt-range-date-popup .text-button:hover,
+#lens-module .text-button:hover,
 #main-histogram .dt_module_btn:hover:not(.toggle),
 #non-flat:hover,
 #view-label:hover,
