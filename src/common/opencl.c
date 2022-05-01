@@ -2819,6 +2819,21 @@ cl_ulong dt_opencl_get_device_available(const int devid)
   return available;
 }
 
+static cl_ulong _untuned_available(const int devid)
+{
+  dt_opencl_t *cl = darktable.opencl;
+  const int level = darktable.dtresources.level;
+
+  if(level < 0)
+    return darktable.dtresources.refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
+
+  const size_t allmem = cl->dev[devid].max_global_mem;
+  // calculate data from fractions
+  const size_t disposable = allmem - 400ul * 1024ul * 1024ul;
+  const int fraction = MIN(1024lu, MAX(0, darktable.dtresources.fractions[darktable.dtresources.group + 3]));
+  return MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction);
+}
+
 static cl_ulong _opencl_get_device_memalloc(const int devid)
 {
   return darktable.opencl->dev[devid].max_mem_alloc;
@@ -2864,24 +2879,13 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
   if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
     return FALSE;
 
-  if(_opencl_get_device_memalloc(devid) < required)      return FALSE; 
-  if(dt_opencl_get_device_available(devid) < total)      return FALSE;  
-  // We won't test the hard way per required buffer if sufficiently small
-  if(_opencl_get_device_memalloc(devid) > (required *2)) return TRUE; 
+  if(_opencl_get_device_memalloc(devid) < required) return FALSE;
+  if(cl->dev[devid].max_global_mem < total)         return FALSE;
 
-  return _cl_test_available_buff(devid, required);
-}
-
-/** check if buffer fits into limits given by OpenCL runtime */
-gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
-{
-  if(!darktable.opencl->inited || devid < 0) return FALSE;
-
-  if(_opencl_get_device_memalloc(devid) < required)      return FALSE; 
-  if(dt_opencl_get_device_available(devid) < required)   return FALSE; 
-  // We won't test the hard way if required if sufficiently small
-  if(_opencl_get_device_memalloc(devid) > (required *2)) return TRUE; 
-
+  const gboolean totalfit  = (_untuned_available(devid) > total) ? TRUE : (dt_opencl_get_device_available(devid) > total);
+  const gboolean singlefit = _opencl_get_device_memalloc(devid) > (required *2);
+  if(totalfit && singlefit) return TRUE;
+  if(!totalfit)             return FALSE;
   return _cl_test_available_buff(devid, required);
 }
 

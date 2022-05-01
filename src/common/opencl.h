@@ -451,8 +451,6 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
 /** check if image size fit into limits given by OpenCL runtime */
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead);
-/** check if buffer fits into limits given by OpenCL runtime */
-gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required);
 
 /** get available memory for the device */
 cl_ulong dt_opencl_get_device_available(const int devid);
@@ -596,10 +594,6 @@ static inline int dt_opencl_update_settings(void)
 }
 static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height,
                                               const unsigned bpp, const float factor, const size_t overhead)
-{
-  return FALSE;
-}
-static inline gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
 {
   return FALSE;
 }
