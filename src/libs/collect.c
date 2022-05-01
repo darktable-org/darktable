@@ -2975,7 +2975,26 @@ static void _history_apply(GtkWidget *widget, dt_lib_module_t *self)
   const char *line = dt_conf_get_string_const(confname);
   if(line && line[0] != '\0')
   {
+    const int prev_property = dt_conf_get_int("plugins/lighttable/collect/item0");
     dt_collection_deserialize(line, FALSE);
+
+    // for the tag propertyn we need to adjust the order accordingly
+    const int new_property = dt_conf_get_int("plugins/lighttable/collect/item0");
+    gchar *order = NULL;
+    if(prev_property != DT_COLLECTION_PROP_TAG && new_property == DT_COLLECTION_PROP_TAG)
+    {
+      // save global order
+      char buf[4096] = { 0 };
+      dt_collection_sort_serialize(buf, sizeof(buf));
+      dt_conf_set_string("plugins/lighttable/collect/lastorder", buf);
+    }
+    else if(prev_property == DT_COLLECTION_PROP_TAG && new_property != DT_COLLECTION_PROP_TAG)
+    {
+      // restore global order
+      order = dt_conf_get_string("plugins/lighttable/collect/lastorder");
+      dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
+    }
+    if(order) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
   }
 }
 
