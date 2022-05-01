@@ -1637,6 +1637,24 @@ void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
+void dtgtk_cairo_paint_remove(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(0.95, 1, 0, 0)
+
+  // the reject icon
+  _rounded_rectangle(cr);
+  cairo_fill(cr);
+
+  cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 0.8);
+  cairo_move_to(cr, 0.7, 0.3);
+  cairo_line_to(cr, 0.3, 0.7);
+  cairo_move_to(cr, 0.3, 0.3);
+  cairo_line_to(cr, 0.7, 0.7);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 1, 0, 0)

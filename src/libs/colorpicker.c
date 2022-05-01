@@ -474,7 +474,7 @@ static void _add_sample(GtkButton *widget, dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(sample->output_label), "size-allocate", G_CALLBACK(_label_size_allocate_callback), sample);
   gtk_box_pack_start(GTK_BOX(container), sample->output_label, TRUE, TRUE, 0);
 
-  GtkWidget *delete_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_reject, 0, NULL);
+  GtkWidget *delete_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_remove, 0, NULL);
   g_signal_connect(G_OBJECT(delete_button), "clicked", G_CALLBACK(_remove_sample_cb), sample);
   gtk_box_pack_start(GTK_BOX(container), delete_button, FALSE, FALSE, 0);
 

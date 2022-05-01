@@ -127,6 +127,8 @@ void dtgtk_cairo_paint_label_sel(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 void dtgtk_cairo_paint_local_copy(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint the reject icon on thumbs */
 void dtgtk_cairo_paint_reject(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint the remove icon */
+void dtgtk_cairo_paint_remove(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a rating icon on thumbs */
 void dtgtk_cairo_paint_star(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint an icon for unrating star on thumbs */
