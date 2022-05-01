@@ -80,8 +80,8 @@ box *
 }
 
 button,
-.section_label,
-.section_label *
+.dt_section_label,
+.dt_section_label *
 {
     font-family: "Roboto Medium", "Roboto",
                  "Segoe UI Semibold", "Segoe UI",
