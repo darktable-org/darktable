@@ -2845,28 +2845,6 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid)
   return _opencl_get_device_memalloc(devid);
 }
 
-static gboolean _cl_test_available_buff(const int devid, const size_t required)
-{
-  float *tmp = dt_calloc_align_float(4);
-  cl_mem tmpcl;
-  cl_int err = CL_SUCCESS;
-  dt_opencl_t *cl = darktable.opencl;
-
-  tmpcl = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, required, NULL, &err);
-  if(err == CL_SUCCESS)
-    err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tmpcl, CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
-
-  const gboolean success = (err == CL_SUCCESS);
-
-  if(tmpcl) (cl->dlocl->symbols->dt_clReleaseMemObject)(tmpcl);
-  dt_free_align(tmp); 
-
-  dt_print(DT_DEBUG_OPENCL, "[_cl_test_available_buff] (slow test) had %s success for %luMB on device '%s' id=%i\n",
-      success ? "" : "NO",  required / 1024lu / 1024lu, cl->dev[devid].name, devid); 
-
-  return success;
-}
-
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead)
 {
@@ -2881,12 +2859,9 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
 
   if(_opencl_get_device_memalloc(devid) < required) return FALSE;
   if(cl->dev[devid].max_global_mem < total)         return FALSE;
-
-  const gboolean totalfit  = (_untuned_available(devid) > total) ? TRUE : (dt_opencl_get_device_available(devid) > total);
-  const gboolean singlefit = _opencl_get_device_memalloc(devid) > (required *2);
-  if(totalfit && singlefit) return TRUE;
-  if(!totalfit)             return FALSE;
-  return _cl_test_available_buff(devid, required);
+  if(_untuned_available(devid) > total)             return TRUE;
+  if(dt_opencl_get_device_available(devid) > total) return TRUE;
+  return FALSE;   
 }
 
 /** round size to a multiple of the value given in the device specifig config parameter clroundup_wd/ht */
