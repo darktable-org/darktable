@@ -86,8 +86,11 @@ enum
   _ACTION_EFFECT_BETTER = DT_ACTION_EFFECT_DEFAULT_UP,
   _ACTION_EFFECT_WORSE = DT_ACTION_EFFECT_DEFAULT_DOWN,
   _ACTION_EFFECT_CAP,
-  _ACTION_EFFECT_HIGHER,
-  _ACTION_EFFECT_LOWER,
+};
+
+enum
+{
+  _ACTION_ELEMENT_MAX = 5 + 1 + 1,
 };
 
 static float _action_process_ratings(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
@@ -105,7 +108,7 @@ static float _action_process_ratings(gpointer target, dt_action_element_t elemen
     switch(effect)
     {
     case DT_ACTION_EFFECT_TOGGLE:
-      if(min != new_value || bounds & DT_RANGE_BOUND_MIN)
+      if(element != _ACTION_ELEMENT_MAX && (min != new_value || bounds & DT_RANGE_BOUND_MIN))
       {
         if(max == min) max = new_value;
         min = new_value;
@@ -116,20 +119,37 @@ static float _action_process_ratings(gpointer target, dt_action_element_t elemen
         bounds ^= DT_RANGE_BOUND_MAX;
       break;
     case _ACTION_EFFECT_BETTER:
-      if(min < 5) min++;
-      if(min > max) max = min;
-      bounds &= ~DT_RANGE_BOUND_MIN;
+      if(element != _ACTION_ELEMENT_MAX)
+      {
+        if(min < 5) min++;
+        if(min > max) max = min;
+        bounds &= ~DT_RANGE_BOUND_MIN;
+      }
+      else
+      {
+        if(max < 5) max++;
+        bounds &= ~DT_RANGE_BOUND_MAX;
+      }
       break;
     case _ACTION_EFFECT_WORSE:
-      if(min > -1)
+      if(element != _ACTION_ELEMENT_MAX)
       {
-        if(max == min) max = min - 1;
-        min--;
+        if(min > -1)
+        {
+          if(max == min) max = min - 1;
+          min--;
+        }
+        bounds &= ~DT_RANGE_BOUND_MIN;
       }
-      bounds &= ~DT_RANGE_BOUND_MIN;
+      else
+      {
+        if(max > -1) max--;
+        if(min > max) min = max;
+        bounds &= ~DT_RANGE_BOUND_MAX;
+      }
       break;
     case _ACTION_EFFECT_CAP:
-      if(max != new_value || bounds & DT_RANGE_BOUND_MAX)
+      if(element != _ACTION_ELEMENT_MAX && (max != new_value || bounds & DT_RANGE_BOUND_MAX))
       {
         max = new_value;
         if(min > max) min = max;
@@ -137,15 +157,6 @@ static float _action_process_ratings(gpointer target, dt_action_element_t elemen
       }
       else
         bounds ^= DT_RANGE_BOUND_MIN;
-      break;
-    case _ACTION_EFFECT_HIGHER:
-      if(max < 5) max++;
-      bounds &= ~DT_RANGE_BOUND_MAX;
-      break;
-    case _ACTION_EFFECT_LOWER:
-      if(max > -1) max--;
-      if(min > max) min = max;
-      bounds &= ~DT_RANGE_BOUND_MAX;
       break;
     }
     dtgtk_range_select_set_selection(range, bounds, min, max, TRUE, FALSE);
@@ -163,8 +174,6 @@ const gchar *dt_action_effect_rating[]
       [_ACTION_EFFECT_BETTER  ] = N_("better"),
       [_ACTION_EFFECT_WORSE   ] = N_("worse"),
       [_ACTION_EFFECT_CAP     ] = N_("cap"),
-      [_ACTION_EFFECT_HIGHER  ] = N_("higher"),
-      [_ACTION_EFFECT_LOWER   ] = N_("lower"),
       NULL };
 
 const dt_action_element_def_t _action_elements_ratings[]
@@ -175,6 +184,7 @@ const dt_action_element_def_t _action_elements_ratings[]
       { N_("three"     ), dt_action_effect_rating },
       { N_("four"      ), dt_action_effect_rating },
       { N_("five"      ), dt_action_effect_rating },
+      { N_("max"       ), dt_action_effect_rating },
       { NULL } };
 
 const dt_action_def_t dt_action_def_ratings_rule
@@ -246,19 +256,8 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
 
   _range_widget_add_to_rule(rule, special, top);
 
-  dt_action_t *ac = dt_action_define(DT_ACTION(self), N_("rules"), dt_collection_name_untranslated(prop),
-                                     special->range_select, &dt_action_def_ratings_rule);
-
-  if(darktable.control->accel_initialising)
-  {
-    dt_shortcut_register(ac, 0    , DT_ACTION_EFFECT_TOGGLE, GDK_KEY_r, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, 0 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_0, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, 1 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_1, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, 2 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_2, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, 3 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_3, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, 4 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_4, GDK_SHIFT_MASK);
-    dt_shortcut_register(ac, 5 + 1, DT_ACTION_EFFECT_TOGGLE, GDK_KEY_5, GDK_SHIFT_MASK);
-  }
+  dt_action_define(DT_ACTION(self), N_("rules"), dt_collection_name_untranslated(prop),
+                   special->range_select, &dt_action_def_ratings_rule);
 }
 
 // clang-format off

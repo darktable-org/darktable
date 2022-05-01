@@ -172,6 +172,7 @@ static void _colors_operator_clicked(GtkWidget *w, _widgets_colors_t *colors)
   const gboolean and_op = !GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "sel_value"));
   g_object_set_data(G_OBJECT(w), "sel_value", GINT_TO_POINTER(and_op));
   dtgtk_button_set_paint(DTGTK_BUTTON(w), and_op ? dtgtk_cairo_paint_and : dtgtk_cairo_paint_or, 0, NULL);
+  gtk_widget_queue_draw(w);
   _colors_changed(w, colors);
   _colors_synchronise(colors);
 }
