@@ -604,7 +604,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(pastemode, dt_conf_get_int("plugins/lighttable/copy_metadata/pastemode"));
   g_signal_connect(G_OBJECT(pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), self);
 
-  d->refresh_button = dt_action_button_new(self, N_("refresh exif"), button_clicked, GINT_TO_POINTER(14),
+  d->refresh_button = dt_action_button_new(self, N_("refresh EXIF"), button_clicked, GINT_TO_POINTER(14),
                                            _("update image information to match changes to file"), 0, 0);
   gtk_grid_attach(grid, d->refresh_button, 0, line++, 6, 1);
 
