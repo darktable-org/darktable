@@ -1641,8 +1641,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   // the graph band
   range->band = gtk_drawing_area_new();
   gtk_widget_set_events(range->band, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                         | GDK_POINTER_MOTION_MASK);
+                                         | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(range->band), "draw", G_CALLBACK(_event_band_draw), range);
   g_signal_connect(G_OBJECT(range->band), "button-press-event", G_CALLBACK(_event_band_press), range);
   g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
@@ -1707,7 +1706,7 @@ GType dtgtk_range_select_get_type()
       (GInstanceInitFunc)_range_select_init,
     };
     dtgtk_range_select_type
-        = g_type_register_static(GTK_TYPE_BIN, "GtkDarktableRangeSelect", &dtgtk_range_select_info, 0);
+        = g_type_register_static(GTK_TYPE_EVENT_BOX, "GtkDarktableRangeSelect", &dtgtk_range_select_info, 0);
   }
   return dtgtk_range_select_type;
 }
