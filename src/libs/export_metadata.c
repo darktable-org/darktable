@@ -304,8 +304,8 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), vbox2, FALSE, TRUE, 0);
 
-  GtkWidget *exiftag = gtk_check_button_new_with_label(_("exif data"));
-  gtk_widget_set_tooltip_text(exiftag, _("export exif metadata"));
+  GtkWidget *exiftag = gtk_check_button_new_with_label(_("EXIF data"));
+  gtk_widget_set_tooltip_text(exiftag, _("export EXIF metadata"));
   gtk_box_pack_start(GTK_BOX(vbox2), exiftag, FALSE, TRUE, 0);
   GtkWidget *dtmetadata = gtk_check_button_new_with_label(_("metadata"));
   gtk_widget_set_tooltip_text(dtmetadata, _("export dt xmp metadata (from metadata editor module)"));
@@ -383,7 +383,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
                 _("list of calculated metadata\n"
                 "click on '+' button to select and add new metadata\n"
                 "if formula is empty, the corresponding metadata is removed from exported file,\n"
-                "if formula is \'=\', the exif metadata is exported even if exif data are disabled\n"
+                "if formula is \'=\', the EXIF metadata is exported even if EXIF data are disabled\n"
                 "otherwise the corresponding metadata is calculated and added to exported file\n"
                 "click on formula cell to edit\n"
                 "type '$(' to activate the completion and see the list of variables"));

@@ -1019,8 +1019,8 @@
     <name>ui_last/ignore_exif_rating</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>ignore exif rating</shortdescription>
-    <longdescription>ignore exif rating. if not set and exif rating is found, it overrides 'initial rating'</longdescription>
+    <shortdescription>ignore EXIF rating</shortdescription>
+    <longdescription>ignore EXIF rating. if not set and EXIF rating is found, it overrides 'initial rating'</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
     <name>ui_last/import_jobcode</name>
@@ -3237,7 +3237,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>detect monochrome previews</shortdescription>
-    <longdescription>many monochrome images can be identified via exif and preview data. beware: this slows down imports and reading exif data</longdescription>
+    <longdescription>many monochrome images can be identified via EXIF and preview data. beware: this slows down imports and reading of EXIF data</longdescription>
  </dtconfig>
  <dtconfig prefs="processing" section="general">
     <name>plugins/darkroom/show_warnings</name>
