@@ -2726,7 +2726,8 @@ void _opencl_get_unused_device_mem(const int devid)
   cl_mem tbuf[128];
   cl_int err = CL_SUCCESS;
 
-  while((available < (allmem - x_buff)) && (checked < 128) && (err == CL_SUCCESS))
+  // check for all memory except a safety margin that might be used by the driver itself.
+  while((available < (allmem - x_buff - 200lu * 1024lu * 1024lu)) && (checked < 128) && (err == CL_SUCCESS))
   {
     tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
     if(err == CL_SUCCESS)
