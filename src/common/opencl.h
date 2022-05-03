@@ -605,7 +605,7 @@ static inline size_t dt_opencl_get_device_available(const int devid)
 }
 static inline void dt_opencl_check_device_available(const int devid)
 {
-  return 0;
+  return;
 }
 static inline size_t dt_opencl_get_device_memalloc(const int devid)
 {
