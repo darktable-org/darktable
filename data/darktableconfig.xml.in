@@ -369,7 +369,7 @@
     <name>ask_before_remove</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>ask before removing image information from the library</shortdescription>
+    <shortdescription>ask before removing images from the library</shortdescription>
     <longdescription>always ask the user before removing image information from the library</longdescription>
   </dtconfig>
   <dtconfig prefs="security" section="general">
