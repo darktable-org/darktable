@@ -981,60 +981,6 @@ kernel void init_reconstruct(read_only image2d_t in, read_only image2d_t mask, w
 }
 
 
-// B spline filter
-#define FSIZE 5
-#define FSTART (FSIZE - 1) / 2
-
-kernel void blur_2D_Bspline_vertical(read_only image2d_t in, write_only image2d_t out,
-                                     const int width, const int height, const int mult)
-{
-  // À-trous B-spline interpolation/blur shifted by mult
-  // Convolve B-spline filter over lines
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-
-  const float4 filter[FSIZE] = { (float4)1.0f / 16.0f,
-                                 (float4)4.0f / 16.0f,
-                                 (float4)6.0f / 16.0f,
-                                 (float4)4.0f / 16.0f,
-                                 (float4)1.0f / 16.0f };
-
-  float4 accumulator = (float4)0.f;
-  for(int jj = 0; jj < FSIZE; ++jj)
-  {
-    const int yy = mult * (jj - FSTART) + y;
-    accumulator += filter[jj] * read_imagef(in, sampleri, (int2)(x, clamp(yy, 0, height - 1)));
-  }
-
-  write_imagef(out, (int2)(x, y), fmax(accumulator, 0.f));
-}
-
-kernel void blur_2D_Bspline_horizontal(read_only image2d_t in, write_only image2d_t out,
-                                       const int width, const int height, const int mult)
-{
-  // À-trous B-spline interpolation/blur shifted by mult
-  // Convolve B-spline filter over columns
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-
-  const float4 filter[FSIZE] = { (float4)1.0f / 16.0f,
-                                 (float4)4.0f / 16.0f,
-                                 (float4)6.0f / 16.0f,
-                                 (float4)4.0f / 16.0f,
-                                 (float4)1.0f / 16.0f };
-
-  float4 accumulator = (float4)0.f;
-  for(int ii = 0; ii < FSIZE; ++ii)
-  {
-    const int xx = mult * (ii - FSTART) + x;
-    accumulator += filter[ii] * read_imagef(in, sampleri, (int2)(clamp(xx, 0, width - 1), y));
-  }
-
-  write_imagef(out, (int2)(x, y), fmax(accumulator, 0.f));
-}
-
 static inline float fmaxabsf(const float a, const float b)
 {
   // Find the max in absolute value and return it with its sign
@@ -1049,26 +995,6 @@ static inline float fminabsf(const float a, const float b)
                                           (isnan(b)) ? 0.f : b;
 }
 
-kernel void wavelets_detail_level(read_only image2d_t detail, read_only image2d_t LF,
-                                      write_only image2d_t HF, write_only image2d_t texture,
-                                      const int width, const int height, dt_iop_filmicrgb_reconstruction_type_t variant)
-{
-  /*
-  * we pack the ratios and RGB methods in the same kernels since they differ by 1 line
-  * and avoiding kernels proliferation is a good thing since each kernel creates overhead
-  * when initialized
-  */
-  const int x = get_global_id(0);
-  const int y = get_global_id(1);
-  if(x >= width || y >= height) return;
-
-  const float4 d = read_imagef(detail, sampleri, (int2)(x, y));
-  const float4 lf = read_imagef(LF, sampleri, (int2)(x, y));
-  const float4 hf = d - lf;
-
-  write_imagef(HF, (int2)(x, y), hf);
-  write_imagef(texture, (int2)(x, y), hf);
-}
 
 kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF, read_only image2d_t texture,
                                  read_only image2d_t mask,

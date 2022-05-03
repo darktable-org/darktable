@@ -87,7 +87,10 @@ typedef struct dt_iop_diffuse_gui_data_t
 
 typedef struct dt_iop_diffuse_global_data_t
 {
-  int kernel_wavelets_decompose;
+  int kernel_filmic_bspline_vertical;
+  int kernel_filmic_bspline_horizontal;
+  int kernel_filmic_wavelets_detail;
+
   int kernel_diffuse_build_mask;
   int kernel_diffuse_inpaint_mask;
   int kernel_diffuse_pde;
@@ -1214,13 +1217,31 @@ static inline cl_int wavelets_process_cl(const int devid, cl_mem in, cl_mem reco
       buffer_out = LF_odd;
     }
 
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 0, sizeof(cl_mem), (void *)&buffer_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 1, sizeof(cl_mem), (void *)&HF[s]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 2, sizeof(cl_mem), (void *)&buffer_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 3, sizeof(int), (void *)&mult);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 4, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_wavelets_decompose, 5, sizeof(int), (void *)&height);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_wavelets_decompose, sizes);
+    // Compute wavelets low-frequency scales
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 0, sizeof(cl_mem), (void *)&buffer_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 1, sizeof(cl_mem), (void *)&HF[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 4, sizeof(int), (void *)&mult);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_horizontal, sizes);
+    if(err != CL_SUCCESS) return err;
+
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 0, sizeof(cl_mem), (void *)&HF[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 1, sizeof(cl_mem), (void *)&buffer_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 4, sizeof(int), (void *)&mult);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_vertical, sizes);
+    if(err != CL_SUCCESS) return err;
+
+    // Compute wavelets high-frequency scales and backup the maximum of texture over the RGB channels
+    // Note : HF = detail - LF
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 0, sizeof(cl_mem), (void *)&buffer_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 1, sizeof(cl_mem), (void *)&buffer_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 2, sizeof(cl_mem), (void *)&HF[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 3, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_wavelets_detail, 4, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_wavelets_detail, sizes);
     if(err != CL_SUCCESS) return err;
 
     residual = buffer_out;
@@ -1420,8 +1441,12 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_diffuse_build_mask = dt_opencl_create_kernel(program, "build_mask");
   gd->kernel_diffuse_inpaint_mask = dt_opencl_create_kernel(program, "inpaint_mask");
-  gd->kernel_wavelets_decompose = dt_opencl_create_kernel(program, "diffuse_blur_bspline");
   gd->kernel_diffuse_pde = dt_opencl_create_kernel(program, "diffuse_pde");
+
+  const int wavelets = 35; // bspline.cl, from programs.conf
+  gd->kernel_filmic_bspline_horizontal = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_horizontal");
+  gd->kernel_filmic_bspline_vertical = dt_opencl_create_kernel(wavelets, "blur_2D_Bspline_vertical");
+  gd->kernel_filmic_wavelets_detail = dt_opencl_create_kernel(wavelets, "wavelets_detail_level");
 }
 
 
@@ -1430,8 +1455,11 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_diffuse_global_data_t *gd = (dt_iop_diffuse_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_diffuse_build_mask);
   dt_opencl_free_kernel(gd->kernel_diffuse_inpaint_mask);
-  dt_opencl_free_kernel(gd->kernel_wavelets_decompose);
   dt_opencl_free_kernel(gd->kernel_diffuse_pde);
+
+  dt_opencl_free_kernel(gd->kernel_filmic_bspline_vertical);
+  dt_opencl_free_kernel(gd->kernel_filmic_bspline_horizontal);
+  dt_opencl_free_kernel(gd->kernel_filmic_wavelets_detail);
   free(module->data);
   module->data = NULL;
 }
