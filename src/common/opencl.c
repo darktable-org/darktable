@@ -1231,6 +1231,9 @@ static const char *dt_opencl_get_vendor_by_id(unsigned int id)
   return vendor;
 }
 
+// FIXME this benchmark simply doesn't reflect the power of a cl device in a meaningful way resulting in
+// - the config setting for very-fast GPU often misses a proper setting
+// - at the moment we can't use a cpu vs gpu performance ratio to decide if tiled-gpu might be worse than untiled-cpu 
 static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const size_t height, const int count, const float sigma)
 {
   const int bpp = 4 * sizeof(float);
@@ -2830,28 +2833,6 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid)
   return _opencl_get_device_memalloc(devid);
 }
 
-static gboolean _cl_test_available_buff(const int devid, const size_t required)
-{
-  float *tmp = dt_calloc_align_float(4);
-  cl_mem tmpcl;
-  cl_int err = CL_SUCCESS;
-  dt_opencl_t *cl = darktable.opencl;
-
-  tmpcl = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, required, NULL, &err);
-  if(err == CL_SUCCESS)
-    err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tmpcl, CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
-
-  const gboolean success = (err == CL_SUCCESS);
-
-  if(tmpcl) (cl->dlocl->symbols->dt_clReleaseMemObject)(tmpcl);
-  dt_free_align(tmp); 
-
-  dt_print(DT_DEBUG_OPENCL, "[_cl_test_available_buff] (slow test) had %s success for %luMB on device '%s' id=%i\n",
-      success ? "" : "NO",  required / 1024lu / 1024lu, cl->dev[devid].name, devid); 
-
-  return success;
-}
-
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead)
 {
@@ -2866,23 +2847,8 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
 
   if(_opencl_get_device_memalloc(devid) < required)      return FALSE; 
   if(dt_opencl_get_device_available(devid) < total)      return FALSE;  
-  // We won't test the hard way per required buffer if sufficiently small
-  if(_opencl_get_device_memalloc(devid) > (required *2)) return TRUE; 
-
-  return _cl_test_available_buff(devid, required);
-}
-
-/** check if buffer fits into limits given by OpenCL runtime */
-gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
-{
-  if(!darktable.opencl->inited || devid < 0) return FALSE;
-
-  if(_opencl_get_device_memalloc(devid) < required)      return FALSE; 
-  if(dt_opencl_get_device_available(devid) < required)   return FALSE; 
-  // We won't test the hard way if required if sufficiently small
-  if(_opencl_get_device_memalloc(devid) > (required *2)) return TRUE; 
-
-  return _cl_test_available_buff(devid, required);
+  // We know here that total memory fits and if so the buffersize will also fit as there is a factor of >=2
+  return TRUE; 
 }
 
 /** round size to a multiple of the value given in the device specifig config parameter clroundup_wd/ht */
