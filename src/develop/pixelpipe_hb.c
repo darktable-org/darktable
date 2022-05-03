@@ -2119,11 +2119,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   darktable.dtresources.group = 4 * darktable.dtresources.level;
 #ifdef HAVE_OPENCL
-  if((darktable.dtresources.tunememory == 0) && (pipe->devid >= 0) && darktable.opencl->inited)
-    darktable.opencl->dev[pipe->devid].tuned_available = 0;
-
-  if((darktable.dtresources.tunepinning != 0) && (pipe->devid >= 0) && darktable.opencl->inited)
-    darktable.opencl->dev[pipe->devid].pinned_memory |= DT_OPENCL_PINNING_ON;
+  dt_opencl_check_device_available(pipe->devid);
 #endif
   int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #ifdef HAVE_OPENCL
@@ -2148,7 +2144,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
       {
         /* this indicates a opencl problem earlier in the pipeline */
         dt_print(DT_DEBUG_OPENCL,
-                 "[opencl_pixelpipe (d)] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
+                 "[dt_dev_pixelpipe_process_rec_and_backcopy] late opencl error detected while copying back to cpu buffer: %s\n", cl_errstr(err));
         pipe->opencl_error = 1;
         ret = 1;
       }
