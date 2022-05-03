@@ -115,12 +115,41 @@ typedef enum _range_signal
 } _range_signal;
 static guint _signals[LAST_SIGNAL] = { 0 };
 
+static void _dt_pref_changed(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  int mh = -1;
+  int mw = -1;
+  gtk_style_context_get(context, state, "min-height", &mh, NULL);
+  gtk_style_context_get(context, state, "min-width", &mw, NULL);
+  GtkBorder margin, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_padding(context, state, &padding);
+  if(mw > 0)
+    mw += margin.left + margin.right + padding.right + padding.left;
+  else
+    mw = -1;
+  if(mh > 0)
+    mh += margin.top + margin.bottom + padding.top + padding.bottom;
+  else
+    mh = -1;
+  gtk_widget_set_size_request(range->band, mw, mh);
+
+  dtgtk_range_select_redraw(range);
+}
+
 // cleanup everything when the widget is destroyed
 static void _range_select_destroy(GtkWidget *widget)
 {
   g_return_if_fail(DTGTK_IS_RANGE_SELECT(widget));
 
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(widget);
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_pref_changed), range);
 
   if(range->markers) g_list_free_full(range->markers, g_free);
   range->markers = NULL;
@@ -1432,33 +1461,6 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
   range->alloc_main.width = 0;
   // redraw the band
   gtk_widget_queue_draw(range->band);
-}
-
-static void _dt_pref_changed(gpointer instance, gpointer user_data)
-{
-  if(!user_data) return;
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
-  int mh = -1;
-  int mw = -1;
-  gtk_style_context_get(context, state, "min-height", &mh, NULL);
-  gtk_style_context_get(context, state, "min-width", &mw, NULL);
-  GtkBorder margin, padding;
-  gtk_style_context_get_margin(context, state, &margin);
-  gtk_style_context_get_padding(context, state, &padding);
-  if(mw > 0)
-    mw += margin.left + margin.right + padding.right + padding.left;
-  else
-    mw = -1;
-  if(mh > 0)
-    mh += margin.top + margin.bottom + padding.top + padding.bottom;
-  else
-    mh = -1;
-  gtk_widget_set_size_request(range->band, mw, mh);
-
-  dtgtk_range_select_redraw(range);
 }
 
 static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
