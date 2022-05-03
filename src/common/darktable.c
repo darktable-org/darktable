@@ -1083,7 +1083,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   static int ref_resources[12] = {
       8192,  32,  512, 2048,   // reference
       1024,   2,  128,  200,   // mini system
-      4096,  32,  512,  200,   // simple notebook with integrated graphics
+      4096,  32,  512, 1024,   // simple notebook with integrated graphics
   };
 
   /* This is where the sync is to be done if the enum for pref resourcelevel in darktableconfig.xml.in is changed.
