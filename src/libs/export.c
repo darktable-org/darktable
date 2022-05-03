@@ -181,9 +181,9 @@ static void _update(dt_lib_module_t *self)
 
   const gboolean has_act_on = (dt_act_on_get_images_nb(TRUE, FALSE) > 0);
 
-  const char *format_name = dt_conf_get_string_const(CONFIG_PREFIX "format_name");
   const char *storage_name = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
-  const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
+  dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
+  const int format_index = storage->format_index;
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->export_button), has_act_on && format_index != -1 && storage_index != -1);
@@ -285,9 +285,9 @@ static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
 
   // get the format_name and storage_name settings which are plug-ins name and not necessary what is displayed on the combobox.
   // note that we cannot take directly the combobox entry index as depending on the storage some format are not listed.
-  const char *format_name = dt_conf_get_string_const(CONFIG_PREFIX "format_name");
   const char *storage_name = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
-  const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
+  dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
+  const int format_index = storage->format_index;
   const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
 
   if(format_index == -1)
@@ -633,8 +633,17 @@ static void set_format_by_name(dt_lib_export_t *d, const char *name)
     gtk_widget_hide(d->format_extra_container);
   }
 
-  // Store the new format
-  dt_conf_set_string(CONFIG_PREFIX "format_name", module->plugin_name);
+  // Store the new format into the structure
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
+  mstorage->format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(module->plugin_name));
+
+  // Store the new format to the config file
+  const char *storage_name = &(*mstorage->plugin_name);
+  const char *format_name = &(*(dt_imageio_get_format_by_index(mstorage->format_index))->plugin_name);
+  gchar *parameter_name = g_strdup_printf("%s%s%s", CONFIG_PREFIX, "storage_and_formats/", storage_name);
+  dt_conf_set_string(parameter_name, format_name);
+  g_free(parameter_name);
+
 
   if(dt_bauhaus_combobox_set_from_text(d->format, module->name()) == FALSE)
     dt_bauhaus_combobox_set(d->format, 0);
@@ -676,8 +685,8 @@ static void _get_max_output_dimension(dt_lib_export_t *d, uint32_t *width, uint3
   const char *storage_name = dt_conf_get_string_const(CONFIG_PREFIX "storage_name");
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
 
-  const char *format_name = dt_conf_get_string_const(CONFIG_PREFIX "format_name");
-  dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
+  const char format_index = storage->format_index;
+  dt_imageio_module_format_t *format = dt_imageio_get_format_by_index(format_index);
 
   if(storage && format)
   {
@@ -772,8 +781,12 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   // Let's update formats combobox with supported formats of selected storage module...
   _update_formats_combobox(d);
 
-  // Lets try to set selected format if fail select first in list..
-  const char *format_name = dt_conf_get_string_const(CONFIG_PREFIX "format_name");
+  // Lets try to set saved format; if fail select first in list
+  // Get the saved format from the config file...
+  gchar *parameter_name = g_strdup_printf("%s%s%s", CONFIG_PREFIX, "storage_and_formats/", module->plugin_name);
+  const char *format_name = dt_conf_get_string_const(parameter_name);
+  g_free(parameter_name);
+  // ... and set it
   const dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
 
   if(format == NULL

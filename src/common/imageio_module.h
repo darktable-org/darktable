@@ -103,6 +103,9 @@ typedef struct dt_imageio_module_storage_t
   // data for you to initialize
   void *gui_data;
 
+  // saved format
+  int format_index;
+
   luaA_Type parameter_lua_type;
 } dt_imageio_module_storage_t;
 
