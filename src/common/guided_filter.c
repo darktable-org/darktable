@@ -693,11 +693,8 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
   assert(ch >= 3);
   assert(w >= 1);
 
-  // estimate required memory for OpenCL code path with a safety factor of 5/4
-  const size_t singlebuf = (size_t)width * height * sizeof(float);
-  const size_t required  = singlebuf * 18 * 5 / 4;
-  const gboolean fits = (dt_opencl_buffer_fits_device(devid, singlebuf) &&
-                         (dt_opencl_get_device_available(devid) > required));
+  // estimate required memory for OpenCL code path with a safety factor of 1.25
+  const gboolean fits = dt_opencl_image_fits_device(devid, width, height, sizeof(float), 18.0f * 1.25f, 0);
 
   int err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
   if(fits)
