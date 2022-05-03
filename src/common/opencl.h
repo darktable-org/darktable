@@ -149,6 +149,7 @@ typedef struct dt_opencl_device_t
   size_t memory_in_use;
   size_t peak_memory;
   size_t tuned_available;
+  size_t used_available;
 
   // if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral).
   // pixelpipe processing will be done on CPU for the affected modules.
@@ -453,6 +454,8 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
                                 const float factor, const size_t overhead);
 /** get available memory for the device */
 cl_ulong dt_opencl_get_device_available(const int devid);
+/** check available memory for the device */
+void dt_opencl_check_device_available(const int devid);
 
 /** get size of allocatable single buffer */
 cl_ulong dt_opencl_get_device_memalloc(const int devid);
@@ -597,6 +600,10 @@ static inline gboolean dt_opencl_image_fits_device(const int devid, const size_t
   return FALSE;
 }
 static inline size_t dt_opencl_get_device_available(const int devid)
+{
+  return 0;
+}
+static inline void dt_opencl_check_device_available(const int devid)
 {
   return 0;
 }
