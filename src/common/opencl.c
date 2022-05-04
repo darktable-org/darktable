@@ -2744,23 +2744,21 @@ void _opencl_get_unused_device_mem(const int devid)
     }
   }
 
+  x_buff = maxmem - available; // check only what is left
   while((available <= (maxmem - low_limit)) && (checked < 128) && (x_buff >= low_limit))
   {
     x_buff /= 2;      
-    if((available + x_buff) < maxmem)
+    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
+    if(err == CL_SUCCESS)
     {
-      tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
+      err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
       if(err == CL_SUCCESS)
       {
-        err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
-        if(err == CL_SUCCESS)
-        {
-          checked++;
-          available += x_buff;
-        }
-        else
-          if(tbuf[checked]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
+        checked++;
+        available += x_buff;
       }
+      else
+        if(tbuf[checked]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
     }
   }
  
@@ -2770,7 +2768,7 @@ void _opencl_get_unused_device_mem(const int devid)
   if(timing) dt_get_times(&end_time);
 
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-     "[_opencl_get_unused_device_mem] took %.4f secs on `%s` id=%i, %luMB available, %luMB of %luMB already used\n",
+     "[_opencl_get_unused_device_mem] took %.4f secs on `%s` id=%i, %luMB available, %luMB of %luMB reserved\n",
      end_time.clock - start_time.clock, cl->dev[devid].name, devid,
      available / 1024lu / 1024lu, (allmem - available) / 1024lu / 1024lu, allmem / 1024lu / 1024lu);
 
