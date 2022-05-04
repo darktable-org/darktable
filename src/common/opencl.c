@@ -2848,7 +2848,7 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
   if(!cl->inited || devid < 0) return FALSE;
 
   const size_t required  = width * height * bpp;
-  const size_t total = fmaxf(2.0f, factor) * required + overhead;
+  const size_t total = factor * required + overhead;
 
   if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
     return FALSE;
