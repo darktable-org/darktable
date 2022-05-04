@@ -51,8 +51,13 @@
 #define DEG_TO_RAD(x) ((x + ANGLE_SHIFT) * M_PI / 180.f)
 #define RAD_TO_DEG(x) (x * 180.f / M_PI - ANGLE_SHIFT)
 
-DT_MODULE_INTROSPECTION(4, dt_iop_colorbalancergb_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_colorbalancergb_params_t)
 
+typedef enum dt_iop_colorbalancrgb_saturation_t
+{
+  DT_COLORBALANCE_SATURATION_JZAZBZ = 0, // $DESCRIPTION: "JzAzBz (2021)"
+  DT_COLORBALANCE_SATURATION_DTUCS = 1   // $DESCRIPTION: "darktable UCS (2022)"
+} dt_iop_colorbalancrgb_saturation_t;
 
 typedef struct dt_iop_colorbalancergb_params_t
 {
@@ -96,6 +101,9 @@ typedef struct dt_iop_colorbalancergb_params_t
   float grey_fulcrum;     // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "contrast gray fulcrum"
   float contrast;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0. $DESCRIPTION: "contrast"
 
+  /* params of v5 */
+  dt_iop_colorbalancrgb_saturation_t saturation_formula; // $DEFAULT: 1 $DESCRIPTION: "saturation formula"
+
   /* add future params after this so the legacy params import can use a blind memcpy */
 } dt_iop_colorbalancergb_params_t;
 
@@ -119,6 +127,7 @@ typedef struct dt_iop_colorbalancergb_gui_data_t
   GtkWidget *contrast, *grey_fulcrum, *white_fulcrum;
   GtkWidget *saturation_global, *saturation_highlights, *saturation_midtones, *saturation_shadows;
   GtkWidget *brilliance_global, *brilliance_highlights, *brilliance_midtones, *brilliance_shadows;
+  GtkWidget *saturation_formula;
   GtkWidget *hue_angle;
   GtkDrawingArea *area;
   GtkNotebook *notebook;
@@ -142,8 +151,10 @@ typedef struct dt_iop_colorbalancergb_data_t
   float shadows_weight, highlights_weight, midtones_weight, mask_grey_fulcrum;
   float white_fulcrum, grey_fulcrum;
   float *gamut_LUT;
+  float *chroma_LUT;
   float max_chroma;
   float checker_color_1[4], checker_color_2[4];
+  dt_iop_colorbalancrgb_saturation_t saturation_formula;
   size_t checker_size;
   gboolean lut_inited;
   struct dt_iop_order_iccprofile_info_t *work_profile;
@@ -192,7 +203,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
                   const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     typedef struct dt_iop_colorbalancergb_params_v1_t
     {
@@ -234,11 +245,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->vibrance = 0.f;
     n->grey_fulcrum = 0.1845f;
     n->contrast = 0.f;
+    n->saturation_formula = DT_COLORBALANCE_SATURATION_JZAZBZ;
 
     return 0;
   }
 
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2 && new_version == 5)
   {
     typedef struct dt_iop_colorbalancergb_params_v2_t
     {
@@ -287,10 +299,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->vibrance = 0.f;
     n->grey_fulcrum = 0.1845f;
     n->contrast = 0.f;
+    n->saturation_formula = DT_COLORBALANCE_SATURATION_JZAZBZ;
 
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3 && new_version == 5)
   {
     typedef struct dt_iop_colorbalancergb_params_v3_t
     {
@@ -341,6 +354,67 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->vibrance = 0.f;
     n->grey_fulcrum = 0.1845f;
     n->contrast = 0.f;
+    n->saturation_formula = DT_COLORBALANCE_SATURATION_JZAZBZ;
+
+    return 0;
+  }
+  if(old_version == 4 && new_version == 5)
+  {
+    typedef struct dt_iop_colorbalancergb_params_v4_t
+    {
+      /* params of v1 */
+      float shadows_Y;             // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "lift luminance"
+      float shadows_C;             // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "lift chroma"
+      float shadows_H;             // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "lift hue"
+      float midtones_Y;            // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "power luminance"
+      float midtones_C;            // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "power chroma"
+      float midtones_H;            // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "power hue"
+      float highlights_Y;          // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "gain luminance"
+      float highlights_C;          // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "gain chroma"
+      float highlights_H;          // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "gain hue"
+      float global_Y;              // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "offset luminance"
+      float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "offset chroma"
+      float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "offset hue"
+      float shadows_weight;        // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "shadows fall-off"
+      float white_fulcrum;         // $MIN: -16.0 $MAX: 16.0 $DEFAULT: 0.0 $DESCRIPTION: "white fulcrum"
+      float highlights_weight;     // $MIN:  0.0 $MAX:   3.0 $DEFAULT: 1.0 $DESCRIPTION: "highlights fall-off"
+      float chroma_shadows;        // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma shadows"
+      float chroma_highlights;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma highlights"
+      float chroma_global;         // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma global"
+      float chroma_midtones;       // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma mid-tones"
+      float saturation_global;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation global"
+      float saturation_highlights; // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation highlights"
+      float saturation_midtones;   // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation mid-tones"
+      float saturation_shadows;    // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation shadows"
+      float hue_angle;             // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
+
+      /* params of v2 */
+      float brilliance_global;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "brilliance global"
+      float brilliance_highlights; // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "brilliance highlights"
+      float brilliance_midtones;   // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "brilliance mid-tones"
+      float brilliance_shadows;    // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "brilliance shadows"
+
+      /* params of v3 */
+      float mask_grey_fulcrum;     // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "mask middle-gray fulcrum"
+
+      /* params of v4 */
+      float vibrance;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0 $DESCRIPTION: "global vibrance"
+      float grey_fulcrum;     // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.1845 $DESCRIPTION: "contrast gray fulcrum"
+      float contrast;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0. $DESCRIPTION: "contrast"
+
+    } dt_iop_colorbalancergb_params_v4_t;
+
+    // Init params with defaults
+    memcpy(new_params, self->default_params, sizeof(dt_iop_colorbalancergb_params_t));
+
+    // Copy the common part of the params struct
+    memcpy(new_params, old_params, sizeof(dt_iop_colorbalancergb_params_v4_t));
+
+    dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
+    n->vibrance = 0.f;
+    n->grey_fulcrum = 0.1845f;
+    n->contrast = 0.f;
+    n->saturation_formula = DT_COLORBALANCE_SATURATION_JZAZBZ;
 
     return 0;
   }
@@ -358,6 +432,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.highlights_weight = 1.f;     // DEFAULT: 1.0 DESCRIPTION: "highlights fall-off"
   p.mask_grey_fulcrum = 0.1845f; // DEFAULT: 0.1845 DESCRIPTION: "mask middle-gray fulcrum"
   p.grey_fulcrum = 0.1845f;      // DEFAULT: 0.1845 DESCRIPTION: "contrast gray fulcrum"
+  p.saturation_formula = DT_COLORBALANCE_SATURATION_DTUCS;
 
   // preset
   p.chroma_global = 0.2f;
@@ -617,86 +692,133 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     LMS_to_XYZ(LMS, XYZ_D65);
 
     // Perceptual color adjustments
-    dt_aligned_pixel_t Jab = { 0.f };
-    dt_XYZ_2_JzAzBz(XYZ_D65, Jab);
+    if(d->saturation_formula == DT_COLORBALANCE_SATURATION_JZAZBZ)
+    {
+      dt_aligned_pixel_t Jab = { 0.f };
+      dt_XYZ_2_JzAzBz(XYZ_D65, Jab);
 
-    // Convert to JCh
-    float JC[2] = { Jab[0], dt_fast_hypotf(Jab[1], Jab[2]) };   // brightness/chroma vector
-    const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
+      // Convert to JCh
+      float JC[2] = { Jab[0], dt_fast_hypotf(Jab[1], Jab[2]) };   // brightness/chroma vector
+      const float h = atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
 
-    // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
-    // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
-    // so we add the chroma projected along the orthogonal axis to get some control value
-    const float T = atan2f(JC[1], JC[0]); // angle of the eigenvector over the hue plane
-    const float sin_T = sinf(T);
-    const float cos_T = cosf(T);
-    const float DT_ALIGNED_PIXEL M_rot_dir[2][2] = { {  cos_T,  sin_T },
-                                                     { -sin_T,  cos_T } };
-    const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { {  cos_T, -sin_T },
-                                                     {  sin_T,  cos_T } };
-    float SO[2];
+      // Project JC onto S, the saturation eigenvector, with orthogonal vector O.
+      // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
+      // so we add the chroma projected along the orthogonal axis to get some control value
+      const float T = atan2f(JC[1], JC[0]); // angle of the eigenvector over the hue plane
+      const float sin_T = sinf(T);
+      const float cos_T = cosf(T);
+      const float DT_ALIGNED_PIXEL M_rot_dir[2][2] = { {  cos_T,  sin_T },
+                                                      { -sin_T,  cos_T } };
+      const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { {  cos_T, -sin_T },
+                                                      {  sin_T,  cos_T } };
+      float SO[2];
 
-    // brilliance & Saturation : mix of chroma and luminance
-    const float boosts[2] = { 1.f + d->brilliance_global + scalar_product(opacities, brilliance),     // move in S direction
-                              d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
+      // brilliance & Saturation : mix of chroma and luminance
+      const float boosts[2] = { 1.f + d->brilliance_global + scalar_product(opacities, brilliance),     // move in S direction
+                                d->saturation_global + scalar_product(opacities, saturation) }; // move in O direction
 
-    SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
-    SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
-    SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
+      SO[0] = JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1];
+      SO[1] = SO[0] * fminf(fmaxf(T * boosts[1], -T), DT_M_PI_F / 2.f - T);
+      SO[0] = fmaxf(SO[0] * boosts[0], 0.f);
 
-    // Project back to JCh, that is rotate back of -T angle
-    JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
-    JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
+      // Project back to JCh, that is rotate back of -T angle
+      JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
+      JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
-    // Gamut mapping
-    const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
-    // if JC[0] == 0.f, the saturation / luminance ratio is infinite - assign the largest practical value we have
-    const float sat = (JC[0] > 0.f) ? soft_clip(JC[1] / JC[0], 0.8f * out_max_sat_h, out_max_sat_h)
-                                    : out_max_sat_h;
-    const float max_C_at_sat = JC[0] * sat;
-    // if sat == 0.f, the chroma is zero - assign the original luminance because there's no need to gamut map
-    const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : JC[0];
-    JC[0] = (JC[0] + max_J_at_sat) / 2.f;
-    JC[1] = (JC[1] + max_C_at_sat) / 2.f;
+      // Gamut mapping
+      const float out_max_sat_h = lookup_gamut(gamut_LUT, h);
+      // if JC[0] == 0.f, the saturation / luminance ratio is infinite - assign the largest practical value we have
+      const float sat = (JC[0] > 0.f) ? soft_clip(JC[1] / JC[0], 0.8f * out_max_sat_h, out_max_sat_h)
+                                      : out_max_sat_h;
+      const float max_C_at_sat = JC[0] * sat;
+      // if sat == 0.f, the chroma is zero - assign the original luminance because there's no need to gamut map
+      const float max_J_at_sat = (sat > 0.f) ? JC[1] / sat : JC[0];
+      JC[0] = (JC[0] + max_J_at_sat) / 2.f;
+      JC[1] = (JC[1] + max_C_at_sat) / 2.f;
 
-    // Gamut-clip in Jch at constant hue and lightness,
-    // e.g. find the max chroma available at current hue that doesn't
-    // yield negative L'M'S' values, which will need to be clipped during conversion
-    const float cos_H = cosf(h);
-    const float sin_H = sinf(h);
+      // Gamut-clip in Jch at constant hue and lightness,
+      // e.g. find the max chroma available at current hue that doesn't
+      // yield negative L'M'S' values, which will need to be clipped during conversion
+      const float cos_H = cosf(h);
+      const float sin_H = sinf(h);
 
-    const float d0 = 1.6295499532821566e-11f;
-    const float dd = -0.56f;
-    float Iz = JC[0] + d0;
-    Iz /= (1.f + dd - dd * Iz);
-    Iz = fmaxf(Iz, 0.f);
+      const float d0 = 1.6295499532821566e-11f;
+      const float dd = -0.56f;
+      float Iz = JC[0] + d0;
+      Iz /= (1.f + dd - dd * Iz);
+      Iz = fmaxf(Iz, 0.f);
 
-    const dt_colormatrix_t AI
-        = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
-            {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
-            {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
+      const dt_colormatrix_t AI
+          = { {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
+              {  1.0f, -0.1386050432715393f, -0.0580473161561189f, 0.0f },
+              {  1.0f, -0.0960192420263190f, -0.8118918960560390f, 0.0f } };
 
-    // Do a test conversion to L'M'S'
-    const dt_aligned_pixel_t IzAzBz = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
-    dot_product(IzAzBz, AI, LMS);
+      // Do a test conversion to L'M'S'
+      const dt_aligned_pixel_t IzAzBz = { Iz, JC[1] * cos_H, JC[1] * sin_H, 0.f };
+      dot_product(IzAzBz, AI, LMS);
 
-    // Clip chroma
-    float max_C = JC[1];
-    if(LMS[0] < 0.f)
-      max_C = fmin(-Iz / (AI[0][1] * cos_H + AI[0][2] * sin_H), max_C);
+      // Clip chroma
+      float max_C = JC[1];
+      if(LMS[0] < 0.f)
+        max_C = fmin(-Iz / (AI[0][1] * cos_H + AI[0][2] * sin_H), max_C);
 
-    if(LMS[1] < 0.f)
-      max_C = fmin(-Iz / (AI[1][1] * cos_H + AI[1][2] * sin_H), max_C);
+      if(LMS[1] < 0.f)
+        max_C = fmin(-Iz / (AI[1][1] * cos_H + AI[1][2] * sin_H), max_C);
 
-    if(LMS[2] < 0.f)
-      max_C = fmin(-Iz / (AI[2][1] * cos_H + AI[2][2] * sin_H), max_C);
+      if(LMS[2] < 0.f)
+        max_C = fmin(-Iz / (AI[2][1] * cos_H + AI[2][2] * sin_H), max_C);
 
-    // Project back to JzAzBz for real
-    Jab[0] = JC[0];
-    Jab[1] = max_C * cos_H;
-    Jab[2] = max_C * sin_H;
+      // Project back to JzAzBz for real
+      Jab[0] = JC[0];
+      Jab[1] = max_C * cos_H;
+      Jab[2] = max_C * sin_H;
 
-    dt_JzAzBz_2_XYZ(Jab, XYZ_D65);
+      dt_JzAzBz_2_XYZ(Jab, XYZ_D65);
+    }
+    else
+    {
+      const float L_white = Y_to_dt_UCS_L_star(d->white_fulcrum);
+      dt_aligned_pixel_t xyY, JCH, HCB;
+      dt_XYZ_to_xyY(XYZ_D65, xyY);
+      xyY_to_dt_UCS_JCH(xyY, L_white, JCH);
+      dt_UCS_JCH_to_HCB(JCH, HCB);
+
+      const float radius = hypotf(HCB[1], HCB[2]);
+      const float sin_T = (radius > 0.f) ? HCB[1] / radius : 0.f;
+      const float cos_T = (radius > 0.f) ? HCB[2] / radius : 0.f;
+      const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { { cos_T,  sin_T }, { -sin_T, cos_T } };
+      // This would be the full matrice of direct rotation if we didn't need only its last row
+      //const float DT_ALIGNED_PIXEL M_rot_dir[2][2] = { { cos_T, -sin_T }, {  sin_T, cos_T } };
+
+      float P = HCB[1];
+      float W = sin_T * HCB[1] + cos_T * HCB[2];
+
+      const float a = 1.f + d->saturation_global + scalar_product(opacities, saturation);
+      const float b = 1.f + d->brilliance_global + scalar_product(opacities, brilliance);
+
+      float P_prime = (a - 1.f) * P;
+      float W_prime = sqrtf(fmaxf(0.f, sqf(P) * (1.f - sqf(a)) + sqf(W))) * b;
+
+      HCB[1] = M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime;
+      HCB[2] = M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime;
+
+      dt_UCS_HCB_to_JCH(HCB, JCH);
+
+      // Gamut mapping
+      const float max_colorfulness = lookup_gamut(gamut_LUT, JCH[2]); // WARNING : this is M²
+      const float max_chroma = 15.932993652962535f * powf(JCH[0] * L_white, 0.6523997524738018f) * powf(max_colorfulness, 0.6007557017508491f) / L_white;
+      const dt_aligned_pixel_t JCH_gamut_boundary = { JCH[0], max_chroma, JCH[2], 0.f };
+      dt_aligned_pixel_t HSB_gamut_boundary;
+      dt_UCS_JCH_to_HSB(JCH_gamut_boundary, HSB_gamut_boundary);
+
+      // Clip saturation at constant brightness
+      dt_aligned_pixel_t HSB = { HCB[0], (HCB[2] > 0.f) ? HCB[1] / HCB[2] : 0.f, HCB[2], 0.f };
+      HSB[1] = soft_clip(HSB[1], 0.8f * HSB_gamut_boundary[1], HSB_gamut_boundary[1]);
+
+      dt_UCS_HSB_to_JCH(HSB, JCH);
+      dt_UCS_JCH_to_xyY(JCH, L_white, xyY);
+      dt_xyY_to_XYZ(xyY, XYZ_D65);
+    }
 
     // Project back to D50 pipeline RGB
     dot_product(XYZ_D65, output_matrix, pix_out);
@@ -899,6 +1021,18 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 #endif
 
+
+static inline float Delta_H(const float h_1, const float h_2)
+{
+  // Compute the difference between 2 angles
+  // and force the result in [-pi; pi] radians
+  float diff = h_1 - h_2;
+  diff += (diff < -M_PI_F) ? 2.f * M_PI_F : 0.f;
+  diff -= (diff > M_PI_F) ? 2.f * M_PI_F : 0.f;
+  return diff;
+}
+
+
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -981,6 +1115,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->mask_grey_fulcrum = powf(p->mask_grey_fulcrum, 0.4101205819200422f);
   }
 
+  if(p->saturation_formula != d->saturation_formula) d->lut_inited = FALSE;
+  d->saturation_formula = p->saturation_formula;
+
   // Check if the RGB working profile has changed in pipe
   // WARNING: this function is not triggered upon working profile change,
   // so the gamut boundaries are wrong until we change some param in this module
@@ -994,12 +1131,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // find the maximum chroma allowed by the current working gamut in conjunction to hue
   // this will be used to prevent users to mess up their images by pushing chroma out of gamut
-  if(!d->lut_inited && d->gamut_LUT)
+  if(!d->lut_inited)
   {
-    float *const restrict LUT = dt_alloc_align_float(LUT_ELEM);
+    float *const restrict LUT_saturation = dt_alloc_align_float(LUT_ELEM);
 
     // init the LUT between -pi and pi by increments of 1°
-    for(size_t k = 0; k < LUT_ELEM; k++) LUT[k] = 0.f;
+    for(size_t k = 0; k < LUT_ELEM; k++) LUT_saturation[k] = 0.f;
 
     // Premultiply both matrices to go from D50 pipeline RGB to D65 XYZ in a single matrix dot product
     // instead of D50 pipeline to D50 XYZ (work_profile->matrix_in) and then D50 XYZ to D65 XYZ
@@ -1007,55 +1144,145 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     dt_colormatrix_mul(input_matrix, XYZ_D50_to_D65_CAT16, work_profile->matrix_in);
 
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(input_matrix) schedule(static) dt_omp_sharedconst(LUT) \
-      collapse(3)
-#endif
-    for(size_t r = 0; r < STEPS; r++)
-      for(size_t g = 0; g < STEPS; g++)
-        for(size_t b = 0; b < STEPS; b++)
+    if(p->saturation_formula == DT_COLORBALANCE_SATURATION_JZAZBZ)
+    {
+      #ifdef _OPENMP
+      #pragma omp parallel for default(none) \
+            dt_omp_firstprivate(input_matrix, p) schedule(static) dt_omp_sharedconst(LUT_saturation) \
+            collapse(3)
+      #endif
+      for(size_t r = 0; r < STEPS; r++)
+        for(size_t g = 0; g < STEPS; g++)
+          for(size_t b = 0; b < STEPS; b++)
+          {
+            const dt_aligned_pixel_t rgb = { (float)r / (float)(STEPS - 1), (float)g / (float)(STEPS - 1),
+                                            (float)b / (float)(STEPS - 1), 0.f };
+            dt_aligned_pixel_t XYZ = { 0.f };
+            float saturation = 0.f;
+            float hue = 0.f;
+
+            dot_product(rgb, input_matrix, XYZ); // Go from D50 pipeline RGB to D65 XYZ in one step
+
+            dt_aligned_pixel_t Jab, Jch;
+            dt_XYZ_2_JzAzBz(XYZ, Jab);           // this one expects D65 XYZ
+
+            Jch[0] = Jab[0];
+            Jch[1] = dt_fast_hypotf(Jab[2], Jab[1]);
+            Jch[2] = atan2f(Jab[2], Jab[1]);
+
+            saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
+            hue = Jch[2];
+
+            const size_t index = roundf((LUT_ELEM - 1) * (hue + M_PI_F) / (2.f * M_PI_F));
+            LUT_saturation[index] = fmaxf(saturation, LUT_saturation[index]);
+          }
+
+      // anti-aliasing on the LUT (simple 5-taps 1D box average)
+      for(size_t k = 2; k < LUT_ELEM - 2; k++)
+        d->gamut_LUT[k] = (LUT_saturation[k - 2] + LUT_saturation[k - 1] + LUT_saturation[k] + LUT_saturation[k + 1] + LUT_saturation[k + 2]) / 5.f;
+
+      // handle bounds
+      d->gamut_LUT[0] = (LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2]) / 5.f;
+      d->gamut_LUT[1] = (LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2] + LUT_saturation[3]) / 5.f;
+      d->gamut_LUT[LUT_ELEM - 1] = (LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1]) / 5.f;
+      d->gamut_LUT[LUT_ELEM - 2] = (LUT_saturation[LUT_ELEM - 4] + LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0]) / 5.f;
+    }
+    else if(p->saturation_formula == DT_COLORBALANCE_SATURATION_DTUCS)
+    {
+      dt_aligned_pixel_t D65_xyY = { 0.31269999999999992f,  0.32899999999999996f ,  1.f, 0.f };
+
+      // Compute the RGB space primaries in xyY
+      dt_aligned_pixel_t RGB_red   = { 1.f, 0.f, 0.f, 0.f };
+      dt_aligned_pixel_t RGB_green = { 0.f, 1.f, 0.f, 0.f };
+      dt_aligned_pixel_t RGB_blue =  { 0.f, 0.f, 1.f, 0.f };
+
+      dt_aligned_pixel_t XYZ_red, XYZ_green, XYZ_blue;
+      dot_product(RGB_red, input_matrix, XYZ_red);
+      dot_product(RGB_green, input_matrix, XYZ_green);
+      dot_product(RGB_blue, input_matrix, XYZ_blue);
+
+      dt_aligned_pixel_t xyY_red, xyY_green, xyY_blue;
+      dt_XYZ_to_xyY(XYZ_red, xyY_red);
+      dt_XYZ_to_xyY(XYZ_green, xyY_green);
+      dt_XYZ_to_xyY(XYZ_blue, xyY_blue);
+
+      // Get the "hue" angles of the primaries in xy compared to D65
+      const float h_red   = atan2f(xyY_red[1] - D65_xyY[1], xyY_red[0] - D65_xyY[0]);
+      const float h_green = atan2f(xyY_green[1] - D65_xyY[1], xyY_green[0] - D65_xyY[0]);
+      const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
+
+      // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
+      #ifdef _OPENMP
+        #pragma omp parallel for default(none) \
+              dt_omp_firstprivate(input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY, stdout) \
+              schedule(static) dt_omp_sharedconst(d)
+      #endif
+      for(int i = 0; i < 50 * 360; i++)
+      {
+        const float angle = -M_PI_F + ((float)i) / (50.f * 360.f) * 2.f * M_PI_F;
+        const float tan_angle = tanf(angle);
+
+        const float t_1 = Delta_H(angle, h_blue)  / Delta_H(h_red, h_blue);
+        const float t_2 = Delta_H(angle, h_red)   / Delta_H(h_green, h_red);
+        const float t_3 = Delta_H(angle, h_green) / Delta_H(h_blue, h_green);
+
+        float x_t = 0;
+        float y_t = 0;
+
+        if(t_1 == CLAMP(t_1, 0, 1))
         {
-          const dt_aligned_pixel_t rgb = { (float)r / (float)(STEPS - 1), (float)g / (float)(STEPS - 1),
-                                           (float)b / (float)(STEPS - 1), 0.f };
-          dt_aligned_pixel_t XYZ = { 0.f };
-          dt_aligned_pixel_t Jab = { 0.f };
-          dt_aligned_pixel_t Jch = { 0.f };
-
-          dot_product(rgb, input_matrix, XYZ); // Go to D50 pipeline RGB to D65 XYZ in one step
-          dt_XYZ_2_JzAzBz(XYZ, Jab);           // this one expects D65 XYZ
-          Jch[0] = Jab[0];
-          Jch[1] = dt_fast_hypotf(Jab[2], Jab[1]);
-          Jch[2] = atan2f(Jab[2], Jab[1]);
-
-          const size_t index = roundf((LUT_ELEM - 1) * (Jch[2] + M_PI_F) / (2.f * M_PI_F));
-          const float saturation = (Jch[0] > 0.f) ? Jch[1] / Jch[0] : 0.f;
-          LUT[index] = fmaxf(saturation, LUT[index]);
+          float t = (D65_xyY[1] - xyY_blue[1] + tan_angle * (xyY_blue[0] - D65_xyY[0]))
+                    / (xyY_red[1] - xyY_blue[1] + tan_angle * (xyY_blue[0] - xyY_red[0]));
+          x_t = xyY_blue[0] + t * (xyY_red[0] - xyY_blue[0]);
+          y_t = xyY_blue[1] + t * (xyY_red[1] - xyY_blue[1]);
+        }
+        else if(t_2 == CLAMP(t_2, 0, 1))
+        {
+          float t = (D65_xyY[1] - xyY_red[1] + tan_angle * (xyY_red[0] - D65_xyY[0]))
+                    / (xyY_green[1] - xyY_red[1] + tan_angle * (xyY_red[0] - xyY_green[0]));
+          x_t = xyY_red[0] + t * (xyY_green[0] - xyY_red[0]);
+          y_t = xyY_red[1] + t * (xyY_green[1] - xyY_red[1]);
+        }
+        else if(t_3 == CLAMP(t_3, 0, 1))
+        {
+          float t = (D65_xyY[1] - xyY_green[1] + tan_angle * (xyY_green[0] - D65_xyY[0]))
+                    / (xyY_blue[1] - xyY_green[1] + tan_angle * (xyY_green[0] - xyY_blue[0]));
+          x_t = xyY_green[0] + t * (xyY_blue[0] - xyY_green[0]);
+          y_t = xyY_green[1] + t * (xyY_blue[1] - xyY_green[1]);
         }
 
-    // anti-aliasing on the LUT (simple 5-taps 1D box average)
-    for(size_t k = 2; k < LUT_ELEM - 2; k++)
-    {
-      d->gamut_LUT[k] = (LUT[k - 2] + LUT[k - 1] + LUT[k] + LUT[k + 1] + LUT[k + 2]) / 5.f;
+        // Convert to darktable UCS
+        dt_aligned_pixel_t xyY = { x_t, y_t, 1.f, 0.f };
+        float UV_star_prime[2];
+        xyY_to_dt_UCS_UV(xyY, UV_star_prime);
+
+        // Get the hue angle in darktable UCS
+        const float H = atan2f(UV_star_prime[1], UV_star_prime[0]) * 180.f / M_PI_F;
+        const float H_round = roundf(H);
+        if(fabsf(H - H_round) < 0.02f)
+        {
+          int index = (int)(H_round + 180);
+          index += (index < 0) ? 360 : 0;
+          index -= (index > 359) ? 360 : 0;
+          // Warning: we store M², the square of the colorfulness
+          d->gamut_LUT[index] = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
+        }
+      }
     }
 
-    // handle bounds
-    d->gamut_LUT[0] = (LUT[LUT_ELEM - 2] + LUT[LUT_ELEM - 1] + LUT[0] + LUT[1] + LUT[2]) / 5.f;
-    d->gamut_LUT[1] = (LUT[LUT_ELEM - 1] + LUT[0] + LUT[1] + LUT[2] + LUT[3]) / 5.f;
-    d->gamut_LUT[LUT_ELEM - 1] = (LUT[LUT_ELEM - 3] + LUT[LUT_ELEM - 2] + LUT[LUT_ELEM - 1] + LUT[0] + LUT[1]) / 5.f;
-    d->gamut_LUT[LUT_ELEM - 2] = (LUT[LUT_ELEM - 4] + LUT[LUT_ELEM - 3] + LUT[LUT_ELEM - 2] + LUT[LUT_ELEM - 1] + LUT[0]) / 5.f;
-
-    dt_free_align(LUT);
+    dt_free_align(LUT_saturation);
     d->lut_inited = TRUE;
   }
+
+  // TODO: write darktable UCS OpenCL
+  piece->process_cl_ready = FALSE;
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_colorbalancergb_data_t));
   dt_iop_colorbalancergb_data_t *d = (dt_iop_colorbalancergb_data_t *)(piece->data);
-  d->gamut_LUT = NULL;
-  d->gamut_LUT = dt_alloc_sse_ps(LUT_ELEM);
+  d->gamut_LUT = dt_alloc_align_float(LUT_ELEM);
   d->lut_inited = FALSE;
   d->work_profile = NULL;
 }
@@ -1440,6 +1667,49 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
+  dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
+
+  dt_bauhaus_slider_set(g->hue_angle, p->hue_angle);
+  dt_bauhaus_slider_set(g->vibrance, p->vibrance);
+  dt_bauhaus_slider_set(g->contrast, p->contrast);
+
+  dt_bauhaus_slider_set(g->chroma_global, p->chroma_global);
+  dt_bauhaus_slider_set(g->chroma_highlights, p->chroma_highlights);
+  dt_bauhaus_slider_set(g->chroma_midtones, p->chroma_midtones);
+  dt_bauhaus_slider_set(g->chroma_shadows, p->chroma_shadows);
+
+  dt_bauhaus_slider_set(g->saturation_global, p->saturation_global);
+  dt_bauhaus_slider_set(g->saturation_highlights, p->saturation_highlights);
+  dt_bauhaus_slider_set(g->saturation_midtones, p->saturation_midtones);
+  dt_bauhaus_slider_set(g->saturation_shadows, p->saturation_shadows);
+
+  dt_bauhaus_slider_set(g->brilliance_global, p->brilliance_global);
+  dt_bauhaus_slider_set(g->brilliance_highlights, p->brilliance_highlights);
+  dt_bauhaus_slider_set(g->brilliance_midtones, p->brilliance_midtones);
+  dt_bauhaus_slider_set(g->brilliance_shadows, p->brilliance_shadows);
+
+  dt_bauhaus_slider_set(g->global_C, p->global_C);
+  dt_bauhaus_slider_set(g->global_H, p->global_H);
+  dt_bauhaus_slider_set(g->global_Y, p->global_Y);
+
+  dt_bauhaus_slider_set(g->shadows_C, p->shadows_C);
+  dt_bauhaus_slider_set(g->shadows_H, p->shadows_H);
+  dt_bauhaus_slider_set(g->shadows_Y, p->shadows_Y);
+  dt_bauhaus_slider_set(g->shadows_weight, p->shadows_weight);
+
+  dt_bauhaus_slider_set(g->midtones_C, p->midtones_C);
+  dt_bauhaus_slider_set(g->midtones_H, p->midtones_H);
+  dt_bauhaus_slider_set(g->midtones_Y, p->midtones_Y);
+  dt_bauhaus_slider_set(g->white_fulcrum, p->white_fulcrum);
+
+  dt_bauhaus_slider_set(g->highlights_C, p->highlights_C);
+  dt_bauhaus_slider_set(g->highlights_H, p->highlights_H);
+  dt_bauhaus_slider_set(g->highlights_Y, p->highlights_Y);
+  dt_bauhaus_slider_set(g->highlights_weight, p->highlights_weight);
+
+  dt_bauhaus_slider_set(g->mask_grey_fulcrum, p->mask_grey_fulcrum);
+  dt_bauhaus_slider_set(g->grey_fulcrum, p->grey_fulcrum);
+  dt_bauhaus_combobox_set(g->saturation_formula, p->saturation_formula);
 
   gui_changed(self, NULL, NULL);
   dt_iop_color_picker_reset(self, TRUE);
@@ -1735,6 +2005,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak gray luminance value used to normalize the power function"));
 
+  g->saturation_formula = dt_bauhaus_combobox_from_params(self, "saturation_formula");
+
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask preview settings")), FALSE, FALSE, 0);
 
   GtkWidget *row1 = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -1844,4 +2116,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
