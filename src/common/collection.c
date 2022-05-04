@@ -1853,7 +1853,39 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     }
 
     case DT_COLLECTION_PROP_GROUPING: // grouping
-      query = g_strdup_printf("(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
+      if(!g_strcmp0(escaped_text, "$NO_GROUP"))
+      {
+        query = g_strdup("(id = group_id AND "
+                         "NOT EXISTS(SELECT 1 AS group_count FROM main.images AS gc WHERE gc.group_id = "
+                         "mi.group_id AND gc.id != mi.id))");
+      }
+      else if(!g_strcmp0(escaped_text, "$GROUP"))
+      {
+        query = g_strdup(
+            "(EXISTS(SELECT 1 FROM main.images AS gc WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
+      }
+      else if(!g_strcmp0(escaped_text, "$LEADER"))
+      {
+        query = g_strdup(
+            "(mi.id = mi.group_id AND "
+            "EXISTS(SELECT 1 FROM main.images AS gc WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
+      }
+      else if(!g_strcmp0(escaped_text, "$FOLLOWER"))
+      {
+        query = g_strdup("(id != group_id)");
+      }
+      else if(!g_strcmp0(escaped_text, _("group leaders"))) // used in collect.c
+      {
+        query = g_strdup("(id = group_id)");
+      }
+      else if(!g_strcmp0(escaped_text, _("group followers"))) // used in collect.c
+      {
+        query = g_strdup("(id != group_id)");
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
+      }
       break;
 
     case DT_COLLECTION_PROP_MODULE: // dev module
