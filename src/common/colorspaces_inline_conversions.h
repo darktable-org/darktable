@@ -1276,6 +1276,177 @@ static inline void gamut_check_Yrg(dt_aligned_pixel_t Ych)
   Ych[1] = max_c;
 }
 
+/** The following is darktable Uniform Color Space 2022
+ * © Aurélien Pierre
+ * https://eng.aurelienpierre.com/2022/02/color-saturation-control-for-the-21th-century/
+ *
+ * Use this space for color-grading in a perceptual framework.
+ * The CAM terms have been removed for performance.
+ **/
+
+static inline float Y_to_dt_UCS_L_star(const float Y)
+{
+  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
+  const float Y_hat = powf(Y, 0.631651345306265f);
+  return 2.098883786377f * Y_hat / (Y_hat + 1.12426773749357f);
+}
+
+static inline float dt_UCS_L_star_to_Y(const float L_star)
+{
+  // WARNING: L_star needs to be < 2.098883786377, meaning Y needs to be < 3.875766378407574e+19
+  return powf((1.12426773749357f * L_star / (2.098883786377f - L_star)), 1.5831518565279648f);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY: 16)
+#endif
+static inline void xyY_to_dt_UCS_UV(const dt_aligned_pixel_t xyY, float UV_star_prime[2])
+{
+
+  const dt_aligned_pixel_t x_factors = { -0.783941002840055f,  0.745273540913283f, 0.318707282433486f, 0.f };
+  const dt_aligned_pixel_t y_factors = {  0.277512987809202f, -0.205375866083878f, 2.16743692732158f,  0.f };
+  const dt_aligned_pixel_t offsets   = {  0.153836578598858f, -0.165478376301988f, 0.291320554395942f, 0.f };
+
+  dt_aligned_pixel_t UVD = { 0.f };
+  for_each_channel(c, aligned(xyY, UVD, x_factors, y_factors, offsets))
+    UVD[c] = x_factors[c] * xyY[0] + y_factors[c] * xyY[1] + offsets[c];
+
+  UVD[0] /= UVD[2];
+  UVD[1] /= UVD[2];
+
+  float UV_star[2] = { 0.f };
+  const float factors[2]     = { 1.39656225667f, 1.4513954287f };
+  const float half_values[2] = { 1.49217352929f, 1.52488637914f };
+  for(int c = 0; c < 2; c++)
+    UV_star[c] = factors[c] * UVD[c] / (fabsf(UVD[c]) + half_values[c]);
+
+  // The following is equivalent to a 2D matrix product
+  UV_star_prime[0] = -1.124983854323892f * UV_star[0] - 0.980483721769325f * UV_star[1];
+  UV_star_prime[1] =  1.86323315098672f  * UV_star[0] + 1.971853092390862f * UV_star[1];
+
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, JCH: 16)
+#endif
+static inline void xyY_to_dt_UCS_JCH(const dt_aligned_pixel_t xyY, const float L_white, dt_aligned_pixel_t JCH)
+{
+  /*
+    input :
+      * xyY in normalized CIE XYZ for the 2° 1931 observer adapted for D65
+      * L_white the lightness of white as dt UCS L* lightness
+      * cz = 1 for standard pre-print proofing conditions with average surround and n = 20 %
+              (background = middle grey, white = perfect diffuse white)
+    range : xy in [0; 1], Y normalized for perfect diffuse white = 1
+  */
+
+  float UV_star_prime[2];
+  xyY_to_dt_UCS_UV(xyY, UV_star_prime);
+
+  const float L_star = Y_to_dt_UCS_L_star(xyY[2]);
+  const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
+
+  // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
+  JCH[0] = L_star / L_white;
+  JCH[1] = 15.932993652962535f * powf(L_star, 0.6523997524738018f) * powf(M2, 0.6007557017508491f) / L_white;
+  JCH[2] = atan2f(UV_star_prime[1], UV_star_prime[0]);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, JCH: 16)
+#endif
+static inline void dt_UCS_JCH_to_xyY(const dt_aligned_pixel_t JCH, const float L_white, dt_aligned_pixel_t xyY)
+{
+  /*
+    input :
+      * xyY in normalized CIE XYZ for the 2° 1931 observer adapted for D65
+      * L_white the lightness of white as dt UCS L* lightness
+      * cz = 1 for standard pre-print proofing conditions with average surround and n = 20 %
+              (background = middle grey, white = perfect diffuse white)
+    range : xy in [0; 1], Y normalized for perfect diffuse white = 1
+  */
+
+  // should be L_star = powf(JCH[0], 1.f / cz) * L_white but we treat only the case where cz = 1
+  const float L_star = JCH[0] * L_white;
+  const float M = powf(JCH[1] * L_white / (15.932993652962535 * powf(L_star, 0.6523997524738018f)), 0.8322850678616855f);
+
+  const float U_star_prime = M * cosf(JCH[2]);
+  const float V_star_prime = M * sinf(JCH[2]);
+
+  // The following is equivalent to a 2D matrix product
+  const float UV_star[2] = { -5.037522385190711f * U_star_prime - 2.504856328185843f * V_star_prime,
+                              4.760029407436461f * U_star_prime + 2.874012963239247f * V_star_prime };
+
+  float UV[2] = { 0.f };
+  const float factors[2]     = { 1.39656225667f, 1.4513954287f };
+  const float half_values[2] = { 1.49217352929f, 1.52488637914f };
+  for(int c = 0; c < 2; c++)
+    UV[c] = -half_values[c] * UV_star[c] / (fabsf(UV_star[c]) - factors[c]);
+
+  const dt_aligned_pixel_t U_factors = {  0.167171472114775f,   -0.150959086409163f,    0.940254742367256f,  0.f };
+  const dt_aligned_pixel_t V_factors = {  0.141299802443708f,   -0.155185060382272f,    1.000000000000000f,  0.f };
+  const dt_aligned_pixel_t offsets   = { -0.00801531300850582f, -0.00843312433578007f, -0.0256325967652889f, 0.f };
+
+  dt_aligned_pixel_t xyD = { 0.f };
+  for_each_channel(c, aligned(xyD, UV, U_factors, V_factors, offsets))
+    xyD[c] = U_factors[c] * UV[0] + V_factors[c] * UV[1] + offsets[c];
+
+  xyY[0] = xyD[0] / xyD[2];
+  xyY[1] = xyD[1] / xyD[2];
+  xyY[2] = dt_UCS_L_star_to_Y(L_star);
+}
+
+
+static inline void dt_UCS_JCH_to_HSB(const dt_aligned_pixel_t JCH, dt_aligned_pixel_t HSB)
+{
+  HSB[2] = JCH[0] * (powf(JCH[1], 1.33654221029386f) + 1.f);
+  HSB[1] = (HSB[2] > 0.f) ? JCH[1] / HSB[2] : 0.f;
+  HSB[0] = JCH[2];
+}
+
+
+static inline void dt_UCS_HSB_to_JCH(const dt_aligned_pixel_t HSB, dt_aligned_pixel_t JCH)
+{
+  JCH[2] = HSB[0];
+  JCH[1] = HSB[1] * HSB[2];
+  JCH[0] = HSB[2] / (powf(JCH[1], 1.33654221029386f) + 1.f);
+}
+
+
+static inline void dt_UCS_JCH_to_HCB(const dt_aligned_pixel_t JCH, dt_aligned_pixel_t HCB)
+{
+  HCB[2] = JCH[0] * (powf(JCH[1], 1.33654221029386f) + 1.f);
+  HCB[1] = JCH[1];
+  HCB[0] = JCH[2];
+}
+
+
+static inline void dt_UCS_HCB_to_JCH(const dt_aligned_pixel_t HCB, dt_aligned_pixel_t JCH)
+{
+  JCH[2] = HCB[0];
+  JCH[1] = HCB[1];
+  JCH[0] = HCB[2] / (powf(HCB[1], 1.33654221029386f) + 1.f);
+}
+
+
+static inline void dt_UCS_HSB_to_HPW(const dt_aligned_pixel_t HSB, dt_aligned_pixel_t HPW)
+{
+  HPW[2] = sqrtf(HSB[1] * HSB[1] + HSB[2] * HSB[2]);
+  HPW[1] = (HPW[2] > 0.f) ? HSB[1] / HPW[2] : 0.f;
+  HPW[0] = HSB[0];
+}
+
+
+static inline void dt_UCS_HPW_to_HSB(const dt_aligned_pixel_t HPW, dt_aligned_pixel_t HSB)
+{
+  HSB[0] = HPW[0];
+  HSB[1] = HPW[1] * HPW[2];
+  HSB[2] = fmaxf(sqrtf(HPW[2] * HPW[2] - HSB[1] * HSB[1]), 0.f);
+}
+
 #undef DT_RESTRICT
 
 // clang-format off
@@ -1283,4 +1454,3 @@ static inline void gamut_check_Yrg(dt_aligned_pixel_t Ych)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
