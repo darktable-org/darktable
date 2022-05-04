@@ -948,7 +948,8 @@ static void _interpolate_and_mask(const float *const restrict input,
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
     dt_omp_firstprivate(width, height, clips, filters)  \
-    dt_omp_sharedconst(input, interpolated, clipping_mask, wb) \
+    dt_omp_sharedconst(input, interpolated, clipping_mask) \
+    shared(wb) \
     schedule(static)
   #endif
   for(size_t i = 0; i < height; i++)
@@ -1086,7 +1087,8 @@ static void _remosaic_and_replace(const float *const restrict interpolated,
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
     dt_omp_firstprivate(width, height, filters)  \
-    dt_omp_sharedconst(output, interpolated, wb) \
+    dt_omp_sharedconst(output, interpolated) \
+    shared(wb) \
     schedule(static)
   #endif
   for(size_t i = 0; i < height; i++)
