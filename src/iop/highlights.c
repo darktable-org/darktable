@@ -1239,7 +1239,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
         for(size_t ii = 0; ii < 3; ii++)
           for(size_t jj = 0; jj < 3; jj++)
           {
-            size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
+            const size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
             for_four_channels(c, aligned(neighbour_pixel_HF, HF: 64))
             {
               neighbour_pixel_HF[3 * ii + jj][c] = HF[neighbor + c];
@@ -1417,11 +1417,12 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         for(size_t ii = 0; ii < 3; ii++)
           for(size_t jj = 0; jj < 3; jj++)
           {
-            size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
+            const size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
+            const size_t nidx = 3 * ii + jj;
             for_four_channels(c, aligned(neighbour_pixel_HF, HF, neighbour_pixel_LF, LF : 64))
             {
-              neighbour_pixel_HF[3 * ii + jj][c] = HF[neighbor + c];
-              neighbour_pixel_LF[3 * ii + jj][c] = LF[neighbor + c];
+              neighbour_pixel_HF[nidx][c] = HF[neighbor + c];
+              neighbour_pixel_LF[nidx][c] = LF[neighbor + c];
             }
           }
 
@@ -1442,7 +1443,6 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         for_each_channel(c, aligned(high_frequency, multipliers_HF, laplacian_HF, alpha))
           high_frequency[c] += alpha[c] * multipliers_HF[c] * laplacian_HF[c];
       }
-
 
       if((scale & FIRST_SCALE))
       {
