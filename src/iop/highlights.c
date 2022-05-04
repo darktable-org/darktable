@@ -1069,8 +1069,9 @@ static void _interpolate_and_mask(const float *const restrict input,
 
       for_each_channel(k, aligned(RGB, interpolated, clipping_mask, clipped, wb))
       {
-        interpolated[(i * width + j) * 4 + k] = fmaxf(RGB[k] / wb[c], 0.f);
-        clipping_mask[(i * width + j) * 4 + k] = clipped[k];
+        const size_t idx = (i * width + j) * 4 + k;
+        interpolated[idx] = fmaxf(RGB[k] / wb[c], 0.f);
+        clipping_mask[idx] = clipped[k];
       }
     }
 }
