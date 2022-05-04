@@ -1361,16 +1361,17 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   /* do we have opencl at all? did user tell us to use it? did we get a resource? */
   if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0)
   {
-    int success_opencl = TRUE;
+    gboolean success_opencl = TRUE;
     dt_iop_colorspace_type_t input_cst_cl = input_format->cst;
 
     /* if input is on gpu memory only, remember this fact to later take appropriate action */
-    int valid_input_on_gpu_only = (cl_mem_input != NULL);
+    gboolean valid_input_on_gpu_only = (cl_mem_input != NULL);
 
+    const float required_factor_cl = fmaxf(1.0f, (valid_input_on_gpu_only) ? tiling.factor_cl - 1.0f : tiling.factor_cl);
     /* pre-check if there is enough space on device for non-tiled processing */
     const gboolean fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
                                                                 MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
-                                                                tiling.factor_cl, tiling.overhead);
+                                                                required_factor_cl, tiling.overhead);
 
     /* general remark: in case of opencl errors within modules or out-of-memory on GPU, we transparently
        fall back to the respective cpu module and continue in pixelpipe. If we encounter errors we set
@@ -1388,7 +1389,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     if(possible_cl && !fits_on_device)
     {
-      const float cl_px = dt_opencl_get_device_available(pipe->devid) / (sizeof(float) * MAX(in_bpp, bpp) * ceilf(tiling.factor_cl));
+      const float cl_px = dt_opencl_get_device_available(pipe->devid) / (sizeof(float) * MAX(in_bpp, bpp) * ceilf(required_factor_cl));
       const float dx = MAX(roi_in.width, roi_out->width);
       const float dy = MAX(roi_in.height, roi_out->height);
       const float border = tiling.overlap + 1;
