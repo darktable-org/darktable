@@ -2715,6 +2715,7 @@ void _opencl_get_unused_device_mem(const int devid)
   size_t available = 0;
   size_t x_buff = dt_opencl_get_device_memalloc(devid);
   const size_t allmem = cl->dev[devid].max_global_mem;
+  const size_t maxmem = allmem - 200lu * 1024lu * 1024lu;
   const size_t low_limit = 32lu * 1024lu * 1024lu;
   int checked = 0;
   float *tmp = dt_calloc_align_float(4);
@@ -2727,7 +2728,7 @@ void _opencl_get_unused_device_mem(const int devid)
   cl_int err = CL_SUCCESS;
 
   // check for all memory except a safety margin that might be used by the driver itself.
-  while((available < (allmem - x_buff - 200lu * 1024lu * 1024lu)) && (checked < 128) && (err == CL_SUCCESS))
+  while((available < (maxmem - x_buff)) && (checked < 128) && (err == CL_SUCCESS))
   {
     tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
     if(err == CL_SUCCESS)
@@ -2743,20 +2744,23 @@ void _opencl_get_unused_device_mem(const int devid)
     }
   }
 
-  while((available <= (allmem - low_limit)) && (checked < 128) && (x_buff >= low_limit))
+  while((available <= (maxmem - low_limit)) && (checked < 128) && (x_buff >= low_limit))
   {
     x_buff /= 2;      
-    tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
-    if(err == CL_SUCCESS)
+    if((available + x_buff) < maxmem)
     {
-      err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
+      tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
       if(err == CL_SUCCESS)
       {
-        checked++;
-        available += x_buff;
+        err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tbuf[checked], CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
+        if(err == CL_SUCCESS)
+        {
+          checked++;
+          available += x_buff;
+        }
+        else
+          if(tbuf[checked]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
       }
-      else
-        if(tbuf[checked]) (cl->dlocl->symbols->dt_clReleaseMemObject)(tbuf[checked]);
     }
   }
  
