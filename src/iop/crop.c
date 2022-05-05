@@ -176,10 +176,11 @@ static int _gui_has_focus(struct dt_iop_module_t *self)
 static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop_crop_params_t *p)
 {
   if(darktable.gui->reset) return;
+  if(self->dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
+
   g->cropping = 0;
   const dt_boundingbox_t old = { p->cx, p->cy, p->cw, p->ch };
   const float eps = 1e-6f; // threshold to avoid rounding errors
-
   if(!self->enabled)
   {
     // first time crop, if any data is stored in p, it's obsolete:
@@ -196,6 +197,7 @@ static void _commit_box(dt_iop_module_t *self, dt_iop_crop_gui_data_t *g, dt_iop
     dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
     if(piece)
     {
+      if(piece->buf_out.width < 1 || piece->buf_out.height < 1) return;
       p->cx = points[0] / (float)piece->buf_out.width;
       p->cy = points[1] / (float)piece->buf_out.height;
       p->cw = points[2] / (float)piece->buf_out.width;
@@ -218,6 +220,7 @@ static int _set_max_clip(struct dt_iop_module_t *self)
   dt_iop_crop_params_t *p = (dt_iop_crop_params_t *)self->params;
 
   if(g->clip_max_pipe_hash == self->dev->preview_pipe->backbuf_hash) return 1;
+  if(self->dev->preview_status != DT_DEV_PIXELPIPE_VALID) return 1;
 
   // we want to know the size of the actual buffer
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
@@ -387,11 +390,11 @@ static void _event_preview_updated_callback(gpointer instance, dt_iop_module_t *
   dt_iop_crop_gui_data_t *g = (dt_iop_crop_gui_data_t *)self->gui_data;
   if(!g) return; // seems that sometimes, g can be undefined for some reason...
   g->preview_ready = TRUE;
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
   if(self->dev->gui_module != self)
   {
     dt_image_update_final_size(self->dev->preview_pipe->output_imgid);
   }
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_event_preview_updated_callback), self);
   // force max size to be recomputed
   g->clip_max_pipe_hash = 0;
 }
@@ -415,7 +418,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       g->clip_h = CLAMPF(p->ch - p->cy, 0.1f, 1.0f - g->clip_y);
       g->preview_ready = FALSE;
     }
-    else
+    else if(g->preview_ready)
     {
       // hack : commit_box use distort_transform routines with gui values to get params
       // but this values are accurate only if crop is the gui_module...

@@ -1800,7 +1800,7 @@ void dt_control_reset_local_copy_images()
 void dt_control_refresh_exif()
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_generic_images_job_create(&dt_control_refresh_exif_run, N_("refresh exif"), 0,
+                     dt_control_generic_images_job_create(&dt_control_refresh_exif_run, N_("refresh EXIF"), 0,
                                                           NULL, PROGRESS_CANCELLABLE, FALSE));
 }
 
