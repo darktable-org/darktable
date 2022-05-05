@@ -727,6 +727,24 @@ static char *_piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t 
   return NULL;
 }
 
+static gboolean _piwigo_api_set_info(dt_storage_piwigo_params_t *p, gchar *author, gchar *caption, gchar *description, gchar *pwg_image_id)
+{
+  GList *args = NULL;
+
+  args = _piwigo_query_add_arguments(args, "method", "pwg.images.setInfo");
+  args = _piwigo_query_add_arguments(args, "image_id", pwg_image_id);
+  args = _piwigo_query_add_arguments(args, "single_value_mode", "replace");
+  args = _piwigo_query_add_arguments(args, "author", author);
+  args = _piwigo_query_add_arguments(args, "name", caption);
+  args = _piwigo_query_add_arguments(args, "comment", description);
+
+  _piwigo_api_post(p->api, args, NULL, TRUE);
+
+  g_list_free(args);
+
+  return !p->api->error_occured;
+}
+
 static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *fname,
                                          gchar *author, gchar *caption, gchar *description, gchar *pwg_image_id)
 {
@@ -937,6 +955,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_widget_set_label(ui->conflict_action, NULL, N_("on conflict"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("overwrite"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("skip"));
+  dt_bauhaus_combobox_add(ui->conflict_action, _("update metadata"));
   gtk_box_pack_start(GTK_BOX(self->widget), ui->conflict_action, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed", G_CALLBACK(onsave_action_toggle_callback), self);
   dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/overwrite"));
@@ -1061,7 +1080,17 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     {
       char *pwg_image_id = _piwigo_api_get_image_id(p, img);
 
-      if(pwg_image_id && dt_bauhaus_combobox_get(ui->conflict_action)==1)
+      if(dt_bauhaus_combobox_get(ui->conflict_action)==2)
+      {
+        status = _piwigo_api_set_info(p, author, caption, description, pwg_image_id);
+        if(!status)
+        {
+          fprintf(stderr, "[imageio_storage_piwigo] could not update to piwigo!\n");
+          dt_control_log(_("could not update to piwigo!"));
+          result = 1;
+        }
+      }
+      else if(pwg_image_id && dt_bauhaus_combobox_get(ui->conflict_action)==1)
       {
         skipped = 1;
       }
