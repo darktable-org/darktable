@@ -1502,11 +1502,18 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
-      // clang-format off
-      query = g_strdup_printf("(id %s IN (SELECT id AS imgid FROM main.images WHERE (flags & %d))) ",
-                              (strcmp(escaped_text, _("not copied locally")) == 0) ? "not" : "",
-                              DT_IMAGE_LOCAL_COPY);
-      // clang-format on
+      if(!g_strcmp0(escaped_text, _("not copied locally")) || !g_strcmp0(escaped_text, "$NO_LOCAL_COPY"))
+      {
+        query = g_strdup_printf("(flags & %d = 0) ", DT_IMAGE_LOCAL_COPY);
+      }
+      else if(!g_strcmp0(escaped_text, _("copied locally")) || !g_strcmp0(escaped_text, "$LOCAL_COPY"))
+      {
+        query = g_strdup_printf("(flags & %d) ", DT_IMAGE_LOCAL_COPY);
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
+      }
       break;
 
     case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio
