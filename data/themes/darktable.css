@@ -1484,6 +1484,10 @@ progressbar progress
   margin: 0.14em;
 }
 
+.dt_history_items label {
+    padding: 0em .21em 0em .21em; 
+}
+
 /* then the switches */
 .dt_history_switch:disabled /* state of those switch is always disabled */
 {
