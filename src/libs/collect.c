@@ -2850,57 +2850,57 @@ static void view_set_click(gpointer instance, gpointer user_data)
 
 static void _populate_collect_combo(GtkWidget *w)
 {
-#define ADD_COLLECT_ENTRY(value)                                                              \
-  dt_bauhaus_combobox_add_full(w, dt_collection_name(value), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, \
+#define ADD_COLLECT_ENTRY(value)                                                                                  \
+  dt_bauhaus_combobox_add_full(w, dt_collection_name(value), DT_BAUHAUS_COMBOBOX_ALIGN_MIDDLE,                    \
                                GUINT_TO_POINTER(value + 1), NULL, TRUE)
 
-    dt_bauhaus_combobox_add_section(w, _("files"));
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILMROLL);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOLDERS);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILENAME);
+  dt_bauhaus_combobox_add_section(w, _("files"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILMROLL);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOLDERS);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FILENAME);
 
-    dt_bauhaus_combobox_add_section(w, _("metadata"));
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  dt_bauhaus_combobox_add_section(w, _("metadata"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+  {
+    const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+    const gchar *name = dt_metadata_get_name(keyid);
+    gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
+    const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+    g_free(setting);
+    const int meta_type = dt_metadata_get_type(keyid);
+    if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
     {
-      const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-      const gchar *name = dt_metadata_get_name(keyid);
-      gchar *setting = g_strdup_printf("plugins/lighttable/metadata/%s_flag", name);
-      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-      g_free(setting);
-      const int meta_type = dt_metadata_get_type(keyid);
-      if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
-      {
-        ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
-      }
+      ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
     }
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
+  }
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
 
-    dt_bauhaus_combobox_add_section(w, _("times"));
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);
+  dt_bauhaus_combobox_add_section(w, _("times"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_DAY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TIME);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CHANGE_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_PRINT_TIMESTAMP);
 
-    dt_bauhaus_combobox_add_section(w, _("capture details"));
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
+  dt_bauhaus_combobox_add_section(w, _("capture details"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_CAMERA);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LENS);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_APERTURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_EXPOSURE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_FOCAL_LENGTH);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
 
-    dt_bauhaus_combobox_add_section(w, _("darktable"));
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
+  dt_bauhaus_combobox_add_section(w, _("darktable"));
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
 
 #undef ADD_COLLECT_ENTRY
 }
