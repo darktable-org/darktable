@@ -98,6 +98,37 @@ static gboolean _history_update(dt_lib_filtering_rule_t *rule)
 
   rule->manual_widget_set++;
   _widgets_history_t *history = (_widgets_history_t *)rule->w_specific;
+  char query[1024] = { 0 };
+  // clang-format off
+  g_snprintf(query, sizeof(query),
+                   "SELECT CASE"
+                   "       WHEN basic_hash == current_hash THEN 1"
+                   "       WHEN auto_hash == current_hash THEN 2"
+                   "       WHEN current_hash IS NOT NULL THEN 3"
+                   "       ELSE 1"
+                   "     END as altered, COUNT(*) AS count"
+                   " FROM main.images AS mi"
+                   " LEFT JOIN (SELECT DISTINCT imgid, basic_hash, auto_hash, current_hash"
+                   "            FROM main.history_hash) ON id = imgid"
+                   " WHERE %s"
+                   " GROUP BY altered"
+                   " ORDER BY altered ASC",
+                   rule->lib->last_where_ext);
+  // clang-format on
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int i = sqlite3_column_int(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+    const gchar *name = (i == 1) ? _("basic") : (i == 2) ? _("auto applied") : _("altered");
+    gchar *item = g_strdup_printf("%s (%d)", name, count);
+
+    dt_bauhaus_combobox_set_entry_label(history->combo, i, item);
+    g_free(item);
+  }
+  sqlite3_finalize(stmt);
+
   dt_bauhaus_combobox_set(history->combo, val);
   rule->manual_widget_set--;
 

@@ -118,7 +118,6 @@ static gboolean _local_copy_update(dt_lib_filtering_rule_t *rule)
   }
   sqlite3_finalize(stmt);
 
-
   dt_bauhaus_combobox_set(local_copy->combo, val);
   rule->manual_widget_set--;
 
