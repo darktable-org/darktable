@@ -104,6 +104,53 @@ static gboolean _grouping_update(dt_lib_filtering_rule_t *rule)
 
   rule->manual_widget_set++;
   _widgets_grouping_t *grouping = (_widgets_grouping_t *)rule->w_specific;
+  char query[1024] = { 0 };
+  // clang-format off
+  g_snprintf(query, sizeof(query),
+                   "SELECT gr_count, COUNT(gr_count) "
+                   " FROM (SELECT COUNT(*) AS gr_count "
+                   "        FROM main.images "
+                   "        WHERE %s "
+                   "        GROUP BY group_id)"
+                   " GROUP BY gr_count "
+                   " ORDER BY gr_count",
+                   rule->lib->last_where_ext);
+  // clang-format on
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  int nb_no_group = 0;
+  int nb_group = 0;
+  int nb_leader = 0;
+  int nb_follower = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int items = sqlite3_column_int(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+
+    if(items == 1)
+      nb_no_group += count;
+    else if(items > 1)
+    {
+      nb_group += count * items;
+      nb_leader += count;
+      nb_follower += count * (items - 1);
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  gchar *item = g_strdup_printf("%s (%d)", _("orphan images"), nb_no_group);
+  dt_bauhaus_combobox_set_entry_label(grouping->combo, 1, item);
+  g_free(item);
+  item = g_strdup_printf("%s (%d)", _("images in a group"), nb_group);
+  dt_bauhaus_combobox_set_entry_label(grouping->combo, 2, item);
+  g_free(item);
+  item = g_strdup_printf("%s (%d)", _("group leaders"), nb_leader);
+  dt_bauhaus_combobox_set_entry_label(grouping->combo, 3, item);
+  g_free(item);
+  item = g_strdup_printf("%s (%d)", _("group followers"), nb_follower);
+  dt_bauhaus_combobox_set_entry_label(grouping->combo, 4, item);
+  g_free(item);
+
   dt_bauhaus_combobox_set(grouping->combo, val);
   rule->manual_widget_set--;
 
