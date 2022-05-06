@@ -30,12 +30,325 @@ Since darktable 3.8:
 
 ## The Big Ones
 
+- Color and exposure mapping
+
+  A new GUI feature in exposure and color calibration modules allows to
+  define and save a target color for the color-pickers, in order to
+  match any source object in the image against an arbitrary target
+  color. This can be used for example to perform white balance
+  (chromatic adaptation) against non-grey objects of known color, or to
+  ensure the color constancy of an object across a series of pictures. A
+  "sampling" mode lets users pick a reference color in the image,
+  recording the output color after the current exposure and color
+  calibration respectively. This value is stored indefinitely in
+  darktable's preferences. Then, the "correction" mode computes the
+  relevant exposure and color calibration settings as to match the color
+  selected from the color-picker against the target acquired from the
+  sample. The target can also be manually defined by direct input of the
+  CIE Lab 1976 color coordinates.
+
+  This feature was developed because copy-pasting an editing history
+  over a series of pictures shot in the same conditions does not
+  necessarily ensure an uniform color rendition and still needs some
+  manual adjustment, since lighting may still slightly vary. From a
+  single reference edit, it ensures that the parameters scale properly
+  to the rest of the series. Note that this color matching will still
+  not be enough to ensure a completely similar perceptual sensation
+  across images, since perception is also dependent on the distribution
+  of lightness in the image: a landscape with 1/3 of bright sky and 2/3
+  of dark ground will not yield a color perception similar to a
+  landscape with inverted sky/ground proportions, even though the color
+  grading is the same and a colorimeter records the same values.
+
+- Filmic v6
+
+  Filmic gets a new color science. It removes the mandatory desaturation
+  close to medium white and black and replaces it with a true gamut
+  mapping against the output (or export) color space. The gamut mapping
+  is done following the ICC "relative colorimetric" intent, where we
+  clip chroma to the maximum allowed in the output space at constant
+  lightness and hue. This will allow more saturated colors, noticeably
+  in blue skies.
+
+  For users who still prefer the "desaturated highlights" look, the
+  variant without chroma preservation (processing independent RGB
+  channels) will allow it, but the v6 adds a hue handcuff that prevents
+  the traditional hue shift coming with this method (where saturated
+  blue skies degrade to cyan and saturated red to yellow).
+
+  Out-of-gamut colors typically result from colors that have a
+  saturation too high for their luminance level, and therefore cannot be
+  digitally encoded in bounded integer RGB spaces nor physically
+  displayed on output media. This piece of gamut sanitization is the 3rd
+  and last in darktable, which has now a fully sanitized color pipeline,
+  from input (color calibration) to output (filmic v6), through artistic
+  changes (color balance RGB). Users can now color-grade pictures in all
+  safety, knowing that invalid input colors can be recovered in the
+  least destructive fashion possible early in the pipeline, and valid
+  colors can't be pushed out of gamut along the pipeline.
+
+  Note that, if modules are applied after filmic in the pipeline, they
+  don't benefit from the gamut mapping and rely on LittleCMS2 (if
+  enabled) at the final export stage, which does not gamut map as it
+  should, and probably never did.
+
+- Guided laplacian
+
+  The guided laplacian reconstruction method is a spin off of the
+  diffuse or sharpen module introduced in darktable 3.8. It uses the
+  same iterative and multi-scale wavelets scheme to extract the valid
+  details from the non-clipped RGB channel(s) if any, use these valid
+  details to guide the reconstruction of clipped channels, and finally
+  propagates the color gradients from neighboring valid regions, using
+  edge-aware color diffusion (anisotropic and in the isophote direction)
+  that limits color bleeding through edges (preventing green leaves to
+  bleed color in the reconstruction of clipped blue sky, for
+  example). It has the benefit of not relying on any perceptual
+  definition of color and of being immune to white balance. It proves to
+  yield smooth reconstructions.
+
+  A noise setting allows to add Poisson noise (the natural type of noise
+  affecting photons collecting) into reconstructed highlights, to help
+  blending them into noisy high-ISO images where smooth color gradients
+  would immediately detone.
+
+  As any reconstruction method, trying to infer the damaged content from
+  neighborhood analysis, it comes with assumptions and trade-offs. The
+  first caveat is its computational price, that will need a GPU to run
+  in reasonable times, and increases with the radius of
+  reconstruction. The defaults setting assume fairly small radii for
+  this reason, meaning large blown areas will not be reconstructed
+  properly until you adjust these settings manually. The second is this
+  method does not use a perceptual framework, since it works before any
+  color profiling or calibration, and even before demosaicing, so it
+  cannot rely on a definition of white that would allow to simply
+  desaturate highlights to avoid magenta. For this reason, other methods
+  may work better for very large areas, and the filmic highlights
+  reconstruction may be needed to force a desaturation to
+  white. Finally, since it inpaints the damaged parts, it will make the
+  sun disc disappear into the rest of the sky for sunset scenes, because
+  it enforces a smooth reconstruction. Masking may be needed to exclude
+  the sun or the moon from vanishing into the sky.
+
+  Finally, the method is only available for Bayer sensors and is not
+  possible to adapt directly to X-Trans sensors.
+
+- Another full revamp of the GUI to adjust many details that at the
+  end make the GUI more streamlined and consistent. The padding,
+  margins, color, contrast, alignment, icons have been reworked in many
+  if not all places.
+
+  The collapsible sections have also been reworked to better visualize
+  them when opened and especially when two of them are next to each
+  others. Collapsible sections have been added to avoid
+  cluttering the default module's UI in:
+
+     - Channel Mixer RGB
+     - Exposure
+     - Color Calibration
+
+  The vignette module has been added a section for clarity as it
+  contains a long set of controls.
+
+  Top most module' sections have been removed to gain spaces when
+  it felt superfluous:
+
+     - Crop
+     - White Balance
+
+  Add support for new font IPAPGothic.
+
+  The module's description tooltips have been reworked to ensure
+  proper layout.
+
+- Rework of the performance and OpenCL support.
+
+  A mostly complete and full rewrite of the performance and OpenCL
+  pixel path support has been conducted. Many optimizations have been
+  done and the preferences have been simplified.
+
+  All configurations are now per-device which allows to tuned each
+  OpenCL hardware separately.
+
+  The performance configuration is done at runtime and does not
+  require restarting darktable.
+
+  Some modules had wrong or conservative tilling factor which made
+  darktable unnecessary slow as the tilling was used when a fast not
+  tiling path could have been used:
+
+     - demosaic (X-Trans)
+     - retouch
 
 ## Other New Features And Changes
 
+- Color glossary in color picker tool
+
+  The global color picker, in the darkroom's left sidebar, now displays
+  the name of the picked color in the tooltip. This feature was
+  requested by several color-disabled photographers, to assert the
+  perceptual validity of their editing regarding colors they don't see
+  for an average observer.
+
+  The color vocabulary contains 76 entries: 15 hues × 5 lightnesses +
+  neutral (grey). It does not separate across the chroma axis, so all
+  colors are registred the same no matter their colorfulness.
+
+  Additionally, the vocabulary contains average skin colors for 3 body
+  parts (forearm, forehead and cheek) of 6 ethnicities (Chinese, Thai,
+  Kurdish, Mexican, Caucasian, African-American). These values come from
+  the academic databases of cosmetology and dermatology available at the
+  time of programming, they are only valid for an illuminant D65 and for
+  an exposure setting anchoring diffuse white at 92 % relative
+  luminance. Note that the skin type is returned at 95% confidence, and
+  there is a significant overlap in skin color between ethnicities, so
+  this tool is meant to ensure that a source color matches an average
+  human skin ± 2 standard deviations, but does not infer the most
+  probable ethnicity of someone.
+
+- Highlights reconstruction
+
+  The highlights reconstruction was still the pain point of darktable,
+  made even more obvious by the scene-referred workflow and the chroma
+  preservation.
+
+- Make two new colors (black and white) available for the overlays and
+  use better contrast for better visibility of the lines over images.
+
+- A new collection filters module replacing the old recent collection
+  one has been implemented. This new module allows to filter and
+  sort. The usage has been redesign to be easier to use than the
+  current filtering in the collections module.
+
+  The sorting can be done using many properties and multi-layers sort
+  is supported.
+
+  Each filtering or sorting rules can be pinned in which case the
+  corresponding control is duplicated on the tool bar (on top) for
+  fast access.
+
+  The filtering section has an history button which corresponds to the
+  previous recent collection module.
+
+  A new text and colors filters have been implemented.
+
+- The processing module's user-defined name is also used when
+  searching for a module.
+
+- Add support for EXR 16-bit (half) float export.
+
+- Rework all places where date/time where used to better support
+  time-zone, different operating system and add support for
+  milliseconds.
+
+- All tone equalizer presets have been updated to the scene
+  referred blending modes.
+
+- The new input system introduced in version 3.8 now handles
+  simultaneous shortcut presses and the responsiveness has been
+  improved a lot.
+
+  The midi configuration parameters are now specified in darktable
+  resources files.
+
+  The slider step size have been standardize and allowing them to be
+  configured individually.
+
+  We treat extra pen tablet button clicks as key presses to be able to
+  use them in shortcuts.
+
+  Add support for game-pad triggers as buttons allowing them to be
+  used as shortcuts.
+
+- Modifiers (<kbd>ctrl</kbd>/<kbd>shift</kbd>/<kbd>ctrl+shift</kbd>)
+  can now be used when dragging sliders.
+
+- The copy and move directories are not remembered independently.
+
+- It is now possible to scroll over the notebook header to change pages.
+
+- Improve monochrome images support.
+
+  True monochrome images like those from Leica and images from cameras
+  that have the color matrix filter in front of the sensor removed
+  should be treated the same in the user interface as much as possible.
+
+- Improve the tagging suggestion mode.
+
+- Better overlay layout on the print view.
+
+- Increase retouch's heal iteration limit for new edits.
+
+- Allow to edit a single node on a brush path. It is then possible to
+  change the size, opacity and hardness of each individual node for
+  better control of the mask in the scene.
+
+- A a new mask control in the highlight module to better visualize the
+  clipped pixels.
+
+- Show actual sensor clipping in raw overexposure which is better
+  suited to the now default scene-referred workflow.
+
+- Allow to send shortcuts to the current focused processing module
+  instance instead of the currently expanded one.
+
+- Improve control of the lightable using keys by ensuring the up/down
+  and left/righ keys have more expected actions.
 
 ## Bug Fixes
 
+- Make the check for total memory on Linux more portable.
+
+- Ensure MIDI button with light status are properly updated.
+
+- Show the shortcut tooltips for tab labels rather than the notebook
+  itself.
+
+- Fix path mask alignements between source and target and avoid jumpy
+  moves when handling nodes or segments.
+
+- Improve culling start when no pictures are selected and/or over the
+  mouse.
+
+- Fix local-copy status icon position in block overlay.
+
+- Fix crop handles position when using fast movements.
+
+- Fix RCD OpenCL tiling.
+
+- Fix filmstrip update when crop is left open and moving to next
+  image.
+
+- Fix the collection module update at import time.
+
+- Fix print landscape/portrait handling due to recent CUPS change. We
+  now rely on the CUPS filter for the proper orientation.
+
+- Fix possible PDF corruption in export and print module due to
+  duplicate written byte count.
+
+- Fix a possible race conditions in retouch and color reconstruction
+  OpenCL code making darktable crash.
+
+- Properly transform points for the rotation computation in
+  perspective correction. This fixes and issue when the image is
+  flipped making it impossible to use the rotation control.
+
+- Remove RatingPercent in EXIF data as not standardized and confusing
+  Windows image viewer.
+
+- Fix rating behavior when multiple images are selected.
+
+  If you select multiple images (some of them are rejected and others
+  are not) and click the reject button, it will now correctly reject
+  all selected images. If you press it again, it will then un-reject
+  all images.
+
+- Fix white balance preset lookup in White Balance module.
+
+- Fix some possible missing refresh of the metadata editor.
+
+- Fix possible translation issue on Windows.
 
 ## Lua
 
@@ -45,6 +358,7 @@ Since darktable 3.8:
 
 ## Changed Dependencies
 
+N/A
 
 ## RawSpeed changes
 
@@ -110,3 +424,5 @@ No samples on raw.pixls.us
 - ST Micro STV680
 
 ## Translations
+
+- Turkish (New)
