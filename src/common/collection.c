@@ -1443,25 +1443,28 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
+      if(!g_strcmp0(escaped_text, _("basic")) || !g_strcmp0(escaped_text, "$BASIC"))
+      {
+        // images without history and basic together
+        query = g_strdup("(id not IN (SELECT imgid FROM main.history_hash WHERE (basic_hash IS NULL OR "
+                         "current_hash != basic_hash)))");
+      }
+      else if(!g_strcmp0(escaped_text, _("auto applied")) || !g_strcmp0(escaped_text, "$AUTO_APPLIED"))
+      {
+        query = g_strdup("(id IN (SELECT imgid FROM main.history_hash WHERE current_hash == auto_hash))");
+      }
+      else if(!g_strcmp0(escaped_text, _("altered")) || !g_strcmp0(escaped_text, "$ALTERED"))
       {
         // clang-format off
-        // three groups
-        // - images without history and basic together
-        // - auto applied
-        // - altered
-        const char *condition =
-            (strcmp(escaped_text, _("basic")) == 0) ?
-              "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
-            : (strcmp(escaped_text, _("auto applied")) == 0) ?
-              "WHERE current_hash == auto_hash "
-            : (strcmp(escaped_text, _("altered")) == 0) ?
-              "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
-              "AND (auto_hash IS NULL OR current_hash != auto_hash) "
-            : "";
-        const char *condition2 = (strcmp(escaped_text, _("basic")) == 0) ? "not" : "";
-        query = g_strdup_printf("(id %s IN (SELECT imgid FROM main.history_hash %s)) ",
-                                condition2, condition);
+        query = g_strdup("(id IN (SELECT imgid "
+                                  "FROM main.history_hash "
+                                  "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
+                                  "AND (auto_hash IS NULL OR current_hash != auto_hash) ))");
         // clang-format on
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
       }
       break;
 
