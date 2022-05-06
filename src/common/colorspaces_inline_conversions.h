@@ -1371,7 +1371,7 @@ static inline void dt_UCS_JCH_to_xyY(const dt_aligned_pixel_t JCH, const float L
 
   // should be L_star = powf(JCH[0], 1.f / cz) * L_white but we treat only the case where cz = 1
   const float L_star = JCH[0] * L_white;
-  const float M = powf(JCH[1] * L_white / (15.932993652962535 * powf(L_star, 0.6523997524738018f)), 0.8322850678616855f);
+  const float M = powf(JCH[1] * L_white / (15.932993652962535f * powf(L_star, 0.6523997524738018f)), 0.8322850678616855f);
 
   const float U_star_prime = M * cosf(JCH[2]);
   const float V_star_prime = M * sinf(JCH[2]);
