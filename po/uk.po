@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-04 23:17+0200\n"
-"PO-Revision-Date: 2022-05-05 16:03+0300\n"
+"POT-Creation-Date: 2022-05-06 19:11+0200\n"
+"PO-Revision-Date: 2022-05-06 23:27+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1979,7 +1979,7 @@ msgstr "сортувати у низхідному порядку"
 #: ../build/bin/preferences_gen.h:8818
 msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
-"'folder', 'times' (e.g. 'date taken')"
+"'folder', 'times' (e.g. 'capture date')"
 msgstr ""
 "сортувати наступні колекції у низхідному порядку: 'плівка' за каталогом, "
 "'каталог', 'за часом' (як-от: 'дата зйомки')"
@@ -3220,7 +3220,7 @@ msgstr "опорна точка контрасту сірого"
 #: ../src/gui/guides.c:738 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
 #: ../src/iop/colisa.c:305 ../src/iop/colorbalance.c:1895
 #: ../src/iop/colorbalance.c:1901 ../src/iop/filmic.c:1649
-#: ../src/iop/filmicrgb.c:4442 ../src/iop/lowpass.c:573
+#: ../src/iop/filmicrgb.c:4494 ../src/iop/lowpass.c:573
 msgid "contrast"
 msgstr "контраст"
 
@@ -3801,7 +3801,7 @@ msgstr "жорсткість"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:296
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4615
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4667
 msgid "extreme luminance saturation"
 msgstr "насиченість екстремальних яскравостей"
 
@@ -3867,7 +3867,7 @@ msgstr "обробка сплайнів"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:533
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/database.c:2713 ../src/common/variables.c:592
+#: ../src/common/database.c:2751 ../src/common/variables.c:592
 #: ../src/develop/imageop_gui.c:196 ../src/imageio/format/pdf.c:647
 #: ../src/imageio/format/pdf.c:672 ../src/libs/export.c:1208
 #: ../src/libs/export.c:1214 ../src/libs/export.c:1221
@@ -4017,8 +4017,9 @@ msgid "reconstruct color"
 msgstr "відновлення кольору"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:261
-msgid "guided laplacians (AI)"
-msgstr "керовані лапласіани (AI)"
+#: ../src/iop/highlights.c:2153
+msgid "guided laplacians"
+msgstr "керовані лапласіани"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:265
 msgid "4 px"
@@ -5732,7 +5733,7 @@ msgstr ""
 msgid "you may tune as before except 'magic'"
 msgstr "ви можете регулювати ці параметри, як і раніше, за винятком 'magic'"
 
-#: ../src/common/database.c:2684
+#: ../src/common/database.c:2722
 #, c-format
 msgid ""
 "\n"
@@ -5791,11 +5792,11 @@ msgstr ""
 "даних.</i>\n"
 
 #. clang-format on
-#: ../src/common/database.c:2705
+#: ../src/common/database.c:2743
 msgid "error starting darktable"
 msgstr "помилка запуску darktable"
 
-#: ../src/common/database.c:2706 ../src/libs/collect.c:2913
+#: ../src/common/database.c:2744 ../src/libs/collect.c:2913
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
 #: ../src/libs/modulegroups.c:3507 ../src/libs/styles.c:423
@@ -5806,15 +5807,15 @@ msgstr "помилка запуску darktable"
 msgid "cancel"
 msgstr "скасувати"
 
-#: ../src/common/database.c:2706
+#: ../src/common/database.c:2744
 msgid "delete database lock files"
 msgstr "видалити файли блокування бази даних"
 
-#: ../src/common/database.c:2712
+#: ../src/common/database.c:2750
 msgid "are you sure?"
 msgstr "ви впевнені?"
 
-#: ../src/common/database.c:2713
+#: ../src/common/database.c:2751
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -5822,7 +5823,7 @@ msgstr ""
 "\n"
 "ви дійсно хочете видалити файли блокування?\n"
 
-#: ../src/common/database.c:2713 ../src/common/database.c:3773
+#: ../src/common/database.c:2751 ../src/common/database.c:3811
 #: ../src/common/variables.c:590 ../src/develop/imageop_gui.c:197
 #: ../src/imageio/format/pdf.c:648 ../src/imageio/format/pdf.c:673
 #: ../src/libs/export.c:1209 ../src/libs/export.c:1215
@@ -5830,12 +5831,12 @@ msgstr ""
 msgid "yes"
 msgstr "так"
 
-#: ../src/common/database.c:2728 ../src/libs/export_metadata.c:164
+#: ../src/common/database.c:2766 ../src/libs/export_metadata.c:164
 #: ../src/libs/geotagging.c:812
 msgid "done"
 msgstr "зроблено"
 
-#: ../src/common/database.c:2729
+#: ../src/common/database.c:2767
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -5846,16 +5847,16 @@ msgstr ""
 "тепер ви можете перезапустити darktable\n"
 
 #. the button to close the popup
-#: ../src/common/database.c:2730 ../src/common/database.c:2737
+#: ../src/common/database.c:2768 ../src/common/database.c:2775
 #: ../src/libs/filters/filename.c:451
 msgid "ok"
 msgstr "ok"
 
-#: ../src/common/database.c:2733 ../src/iop/cacorrect.c:1336
+#: ../src/common/database.c:2771 ../src/iop/cacorrect.c:1336
 msgid "error"
 msgstr "помилка"
 
-#: ../src/common/database.c:2734
+#: ../src/common/database.c:2772
 #, c-format
 msgid ""
 "\n"
@@ -5870,7 +5871,7 @@ msgstr ""
 "db.lock</i>\n"
 "в каталозі <a href=\"file:///%s\">%s</a>.\n"
 
-#: ../src/common/database.c:2851
+#: ../src/common/database.c:2889
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -5879,18 +5880,18 @@ msgstr ""
 "файл блокування бази даних містить pid, який, здається, є живим у вашій "
 "системі: %d"
 
-#: ../src/common/database.c:2857
+#: ../src/common/database.c:2895
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "файл блокування бази даних здається порожнім"
 
-#: ../src/common/database.c:2865
+#: ../src/common/database.c:2903
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "помилка відкриття файлу блокування бази даних для читання: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2902
+#: ../src/common/database.c:2940
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -5909,21 +5910,21 @@ msgstr ""
 "\n"
 "хочете продовжити чи вийти зараз, щоб зробити резервну копію?\n"
 
-#: ../src/common/database.c:2910
+#: ../src/common/database.c:2948
 msgid "darktable - schema migration"
 msgstr "darktable - міграція схеми бази даних"
 
-#: ../src/common/database.c:2911 ../src/common/database.c:3224
-#: ../src/common/database.c:3242 ../src/common/database.c:3404
-#: ../src/common/database.c:3422
+#: ../src/common/database.c:2949 ../src/common/database.c:3262
+#: ../src/common/database.c:3280 ../src/common/database.c:3442
+#: ../src/common/database.c:3460
 msgid "close darktable"
 msgstr "закрити darktable"
 
-#: ../src/common/database.c:2911
+#: ../src/common/database.c:2949
 msgid "upgrade database"
 msgstr "оновити базу даних"
 
-#: ../src/common/database.c:3204 ../src/common/database.c:3384
+#: ../src/common/database.c:3242 ../src/common/database.c:3422
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -5932,21 +5933,21 @@ msgstr ""
 "повідомлення quick_check:\n"
 "%s \n"
 
-#: ../src/common/database.c:3221 ../src/common/database.c:3239
-#: ../src/common/database.c:3401 ../src/common/database.c:3419
+#: ../src/common/database.c:3259 ../src/common/database.c:3277
+#: ../src/common/database.c:3439 ../src/common/database.c:3457
 msgid "darktable - error opening database"
 msgstr "darktable - помилка відкриття бази даних"
 
-#: ../src/common/database.c:3226 ../src/common/database.c:3406
+#: ../src/common/database.c:3264 ../src/common/database.c:3444
 msgid "attempt restore"
 msgstr "спробувати відновити"
 
-#: ../src/common/database.c:3228 ../src/common/database.c:3244
-#: ../src/common/database.c:3408 ../src/common/database.c:3424
+#: ../src/common/database.c:3266 ../src/common/database.c:3282
+#: ../src/common/database.c:3446 ../src/common/database.c:3462
 msgid "delete database"
 msgstr "видалити базу даних"
 
-#: ../src/common/database.c:3232 ../src/common/database.c:3412
+#: ../src/common/database.c:3270 ../src/common/database.c:3450
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -5958,7 +5959,7 @@ msgstr ""
 "з останнього знімка бази або видалити пошкоджену базу даних\n"
 "і почати з новою?"
 
-#: ../src/common/database.c:3248 ../src/common/database.c:3428
+#: ../src/common/database.c:3286 ../src/common/database.c:3466
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -5968,7 +5969,7 @@ msgstr ""
 "базу даних із резервної копії чи видалити пошкоджену базу даних\n"
 "і почати з новою?"
 
-#: ../src/common/database.c:3255 ../src/common/database.c:3433
+#: ../src/common/database.c:3293 ../src/common/database.c:3471
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -5985,19 +5986,19 @@ msgstr ""
 "здається, що база даних пошкоджена.\n"
 "%s%s"
 
-#: ../src/common/database.c:3751
+#: ../src/common/database.c:3789
 msgid "click later to be asked on next startup"
 msgstr "натисніть 'пізніше' і наступне запитання буде при наступному запуску"
 
-#: ../src/common/database.c:3755
+#: ../src/common/database.c:3793
 msgid "click later to be asked when closing darktable"
 msgstr "натисніть 'пізніше' і наступне запитання буде при закритті darktable"
 
-#: ../src/common/database.c:3759
+#: ../src/common/database.c:3797
 msgid "click later to be asked next time when closing darktable"
 msgstr "натисніть 'пізніше' і наступне запитання буде при закритті darktable"
 
-#: ../src/common/database.c:3762
+#: ../src/common/database.c:3800
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -6018,11 +6019,11 @@ msgstr ""
 "%s\n"
 "ви завжди можете змінити параметри обслуговування в налаштуваннях"
 
-#: ../src/common/database.c:3772
+#: ../src/common/database.c:3810
 msgid "darktable - schema maintenance"
 msgstr "darktable - технічне обслуговування схеми"
 
-#: ../src/common/database.c:3773
+#: ../src/common/database.c:3811
 msgid "later"
 msgstr "пізніше"
 
@@ -6114,49 +6115,49 @@ msgstr "дату/час скасовано. зображень: %d"
 msgid "date/time re-applied to %d images"
 msgstr "дату/час повторно застосовано. зображень: %d"
 
-#: ../src/common/image.c:1988
+#: ../src/common/image.c:1991
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "не вдається отримати доступ до локальної копії `%s'"
 
-#: ../src/common/image.c:1995
+#: ../src/common/image.c:1998
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "не вдається записати локальну копію `%s'"
 
-#: ../src/common/image.c:2002
+#: ../src/common/image.c:2005
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "помилка переміщення локальної копії `%s' -> `%s'"
 
-#: ../src/common/image.c:2018
+#: ../src/common/image.c:2021
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "помилка переміщення `%s': файл не знайдено"
 
-#: ../src/common/image.c:2028
+#: ../src/common/image.c:2031
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "помилка переміщення `%s' -> `%s': файл існує"
 
-#: ../src/common/image.c:2032
+#: ../src/common/image.c:2035
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "помилка переміщення `%s' -> `%s'"
 
-#: ../src/common/image.c:2346
+#: ../src/common/image.c:2349
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "неможливо створити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2360
+#: ../src/common/image.c:2363
 msgid "cannot create local copy."
 msgstr "неможливо створити локальну копію."
 
-#: ../src/common/image.c:2434 ../src/control/jobs/control_jobs.c:768
+#: ../src/common/image.c:2437 ../src/control/jobs/control_jobs.c:768
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "неможливо видалити локальну копію, коли оригінал недоступний."
 
-#: ../src/common/image.c:2599
+#: ../src/common/image.c:2602
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -6164,11 +6165,11 @@ msgstr[0] "%d локальну копію синхронізовано"
 msgstr[1] "%d локальні копії синхронізовано"
 msgstr[2] "%d локальних копій синхронізовано"
 
-#: ../src/common/image.c:2788
+#: ../src/common/image.c:2791
 msgid "<b>WARNING</b> : camera is missing samples!"
 msgstr "<b>ПОПЕРЕДЖЕННЯ</b> : відсутні зразки зображень з цієї моделі камери!"
 
-#: ../src/common/image.c:2789
+#: ../src/common/image.c:2792
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6176,7 +6177,7 @@ msgstr ""
 "Вам слід надати такі зразки, завантаживши їх на сайт <a href='https://raw."
 "pixls.us/'>https://raw.pixls.us/</a>"
 
-#: ../src/common/image.c:2790
+#: ../src/common/image.c:2793
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6185,16 +6186,16 @@ msgstr ""
 "для `%s' `%s'\n"
 "у якомога більшій кількості форматів/варіантів стиснення/глибин кольору"
 
-#: ../src/common/image.c:2793
+#: ../src/common/image.c:2796
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "інакше <b>RAW не буде читатися</b> у наступній версії darktable."
 
-#: ../src/common/imageio.c:701 ../src/common/mipmap_cache.c:1074
+#: ../src/common/imageio.c:740 ../src/common/mipmap_cache.c:1074
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "зображення `%s' недоступне!"
 
-#: ../src/common/imageio.c:719
+#: ../src/common/imageio.c:758
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -6203,17 +6204,17 @@ msgstr ""
 "не вдалося виділити пам'ять для %s, будь ласка, зменште кількість потоків, "
 "що використовуються для експорту, або придбайте більше пам'яті."
 
-#: ../src/common/imageio.c:720
+#: ../src/common/imageio.c:759
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "експорт мініатюр"
 
-#: ../src/common/imageio.c:720
+#: ../src/common/imageio.c:759
 msgctxt "noun"
 msgid "export"
 msgstr "експорт"
 
-#: ../src/common/imageio.c:732
+#: ../src/common/imageio.c:771
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "не вдається знайти стиль '%s', який застосовується при експорті."
@@ -6282,27 +6283,27 @@ msgstr "загальний пуассонівський"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "файл профілю шуму `%s' недійсний"
 
-#: ../src/common/opencl.c:1072
+#: ../src/common/opencl.c:1073
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "через повільний GPU апаратне прискорення за допомогою opencl було "
 "деактивовано"
 
-#: ../src/common/opencl.c:1079
+#: ../src/common/opencl.c:1080
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "виявлено кілька GPU - профіль планування opencl було встановлено відповідно"
 
-#: ../src/common/opencl.c:1086
+#: ../src/common/opencl.c:1087
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "виявлено дуже швидкий GPU - профіль планування opencl було встановлено "
 "відповідно"
 
-#: ../src/common/opencl.c:1093
+#: ../src/common/opencl.c:1094
 msgid "opencl scheduling profile set to default"
 msgstr "профіль планування opencl встановлено за замовчуванням"
 
@@ -7768,8 +7769,8 @@ msgstr ""
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:1729
 #: ../src/iop/exposure.c:1026 ../src/iop/exposure.c:1039
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
-#: ../src/iop/filmicrgb.c:4331 ../src/iop/filmicrgb.c:4341
-#: ../src/iop/filmicrgb.c:4376 ../src/iop/filmicrgb.c:4386
+#: ../src/iop/filmicrgb.c:4383 ../src/iop/filmicrgb.c:4393
+#: ../src/iop/filmicrgb.c:4428 ../src/iop/filmicrgb.c:4438
 #: ../src/iop/graduatednd.c:1098 ../src/iop/negadoctor.c:983
 #: ../src/iop/profile_gamma.c:651 ../src/iop/profile_gamma.c:657
 #: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3131
@@ -8602,7 +8603,7 @@ msgstr ""
 "зображень.\n"
 "ймовірно, причиною є застосування пресету, стилю, або копіювання історії"
 
-#: ../src/develop/pixelpipe_hb.c:2244
+#: ../src/develop/pixelpipe_hb.c:2241
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -11909,7 +11910,7 @@ msgstr ""
 "впливає лише на результати вкладок \"яскравість\" і \"кольоровість\""
 
 #: ../src/iop/atrous.c:1755 ../src/iop/colorbalancergb.c:1695
-#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4298
+#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4350
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:932
 #: ../src/iop/toneequal.c:3176
 msgid "graph"
@@ -13096,7 +13097,7 @@ msgstr ""
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4002 ../src/iop/clipping.c:2105
-#: ../src/iop/colorbalancergb.c:1508 ../src/iop/filmicrgb.c:4313
+#: ../src/iop/colorbalancergb.c:1508 ../src/iop/filmicrgb.c:4365
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3124
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2351
 #: ../src/views/lighttable.c:1240
@@ -15474,8 +15475,8 @@ msgstr ""
 msgid "magic lantern defaults"
 msgstr "замовчування magic lantern"
 
-#: ../src/iop/exposure.c:305 ../src/iop/rawoverexposed.c:173
-#: ../src/iop/rawoverexposed.c:292
+#: ../src/iop/exposure.c:305 ../src/iop/rawoverexposed.c:135
+#: ../src/iop/rawoverexposed.c:254
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "не вдалося отримати raw буфер із зображення `%s'"
@@ -15625,7 +15626,7 @@ msgstr ""
 "відрегулюйте відповідно до середньої яскравості об'єкта.\n"
 "крім ситуацій зі світлом в сторону об'єктива, це має бути близько 18%."
 
-#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4333
+#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4385
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15635,7 +15636,7 @@ msgstr ""
 "це показання, яке експонометр дав би вам для цієї сцени.\n"
 "відрегулюйте, щоб уникнути кліппінгу найсвітліших тонів"
 
-#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4343
+#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4395
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15655,8 +15656,8 @@ msgstr ""
 "збільшити або зменшити обчислений динамічний діапазон.\n"
 "корисно у поєднанні з \"автоналаштуванням рівнів\"."
 
-#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4356
-#: ../src/iop/filmicrgb.c:4359 ../src/iop/profile_gamma.c:667
+#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4408
+#: ../src/iop/filmicrgb.c:4411 ../src/iop/profile_gamma.c:667
 msgid "auto tune levels"
 msgstr "автоналаштування рівнів"
 
@@ -15676,7 +15677,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "S-крива filmic"
 
-#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4445
+#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4497
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -15685,7 +15686,7 @@ msgstr ""
 "впливає переважно на середні тони"
 
 #. geotagging
-#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4454
+#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4506
 #: ../src/libs/metadata_view.c:157
 msgid "latitude"
 msgstr "широта"
@@ -15704,7 +15705,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr "баланс тіней та світлих ділянок"
 
-#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4465
+#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4517
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -15787,7 +15788,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "призначення/дисплей"
 
-#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4484
+#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4536
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -15795,7 +15796,7 @@ msgstr ""
 "яскравість вихідного чистого чорного, вона має бути 0%\n"
 "крім випадків, коли ви хочете вицвілого вигляду"
 
-#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4491
+#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4543
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -15803,7 +15804,7 @@ msgstr ""
 "значення середньо-сірого цільового дисплея або кольорового простору.\n"
 "ніколи не слід змінювати це, якщо не знаєте, що робите."
 
-#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4498
+#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4550
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -15852,72 +15853,72 @@ msgstr ""
 "не вдалося виділити пам'ять для відновлення переекспонованого в filmic, "
 "перевірте налаштування оперативної пам'яті"
 
-#: ../src/iop/filmicrgb.c:1949 ../src/iop/filmicrgb.c:2238
+#: ../src/iop/filmicrgb.c:2001 ../src/iop/filmicrgb.c:2290
 msgid "filmic works only on RGB input"
 msgstr "filmic працює лише з RGB входом"
 
-#: ../src/iop/filmicrgb.c:2093
+#: ../src/iop/filmicrgb.c:2145
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 "не вдалося виділити пам'ять в GPU для відновлення переекспонованого в filmic"
 
-#: ../src/iop/filmicrgb.c:3337
+#: ../src/iop/filmicrgb.c:3389
 msgid "look only"
 msgstr "лише крива"
 
-#: ../src/iop/filmicrgb.c:3339
+#: ../src/iop/filmicrgb.c:3391
 msgid "look + mapping (lin)"
 msgstr "лінійне відображення"
 
-#: ../src/iop/filmicrgb.c:3341
+#: ../src/iop/filmicrgb.c:3393
 msgid "look + mapping (log)"
 msgstr "логарифмічне відображення"
 
-#: ../src/iop/filmicrgb.c:3343
+#: ../src/iop/filmicrgb.c:3395
 msgid "dynamic range mapping"
 msgstr "відображення динамічного діапазону"
 
-#: ../src/iop/filmicrgb.c:3710
+#: ../src/iop/filmicrgb.c:3762
 #, c-format
 msgid "(%.0f %%)"
 msgstr "(%.0f %%)"
 
-#: ../src/iop/filmicrgb.c:3726
+#: ../src/iop/filmicrgb.c:3778
 #, no-c-format
 msgid "% display"
 msgstr "вихід, %"
 
-#: ../src/iop/filmicrgb.c:3738
+#: ../src/iop/filmicrgb.c:3790
 msgid "EV scene"
 msgstr "вхід, EV"
 
-#: ../src/iop/filmicrgb.c:3742
+#: ../src/iop/filmicrgb.c:3794
 #, no-c-format
 msgid "% camera"
 msgstr "камера, %"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3778 ../src/iop/filmicrgb.c:4478
+#: ../src/iop/filmicrgb.c:3830 ../src/iop/filmicrgb.c:4530
 msgid "display"
 msgstr "вихід"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3787
+#: ../src/iop/filmicrgb.c:3839
 msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3796 ../src/iop/filmicrgb.c:4316
+#: ../src/iop/filmicrgb.c:3848 ../src/iop/filmicrgb.c:4368
 msgid "scene"
 msgstr "вхід"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3805
+#: ../src/iop/filmicrgb.c:3857
 msgid "(EV)"
 msgstr "(EV)"
 
 #. we are over the graph area
-#: ../src/iop/filmicrgb.c:4234
+#: ../src/iop/filmicrgb.c:4286
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -15927,11 +15928,11 @@ msgstr ""
 "яскрава крива - це крива тонового відображення filmic\n"
 "темна крива - це крива десатурації."
 
-#: ../src/iop/filmicrgb.c:4240
+#: ../src/iop/filmicrgb.c:4292
 msgid "toggle axis labels and values display"
 msgstr "перемикає відображення міток і значень на осях"
 
-#: ../src/iop/filmicrgb.c:4244
+#: ../src/iop/filmicrgb.c:4296
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
@@ -15943,7 +15944,7 @@ msgstr ""
 "права кнопка миші: попередній тип.\n"
 "подвійний клік: скинути до типу \"лише крива\"."
 
-#: ../src/iop/filmicrgb.c:4323
+#: ../src/iop/filmicrgb.c:4375
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -15953,7 +15954,7 @@ msgstr ""
 "введене тут значення буде відображено на 18.45%.\n"
 "зменшуйте значення, щоб збільшити загальну яскравість."
 
-#: ../src/iop/filmicrgb.c:4351
+#: ../src/iop/filmicrgb.c:4403
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -15961,7 +15962,7 @@ msgstr ""
 "симетрично збільшити або зменшити обчислений динамічний діапазон.\n"
 "корисно для забезпечення запасу безпеки для екстремальних яскравостей."
 
-#: ../src/iop/filmicrgb.c:4361
+#: ../src/iop/filmicrgb.c:4413
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -15979,15 +15980,15 @@ msgstr ""
 "переконайтеся, що ви розумієте ці припущення перед використанням."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4370
+#: ../src/iop/filmicrgb.c:4422
 msgid "reconstruct"
 msgstr "відновлення"
 
-#: ../src/iop/filmicrgb.c:4372
+#: ../src/iop/filmicrgb.c:4424
 msgid "highlights clipping"
 msgstr "переекспозиція"
 
-#: ../src/iop/filmicrgb.c:4378
+#: ../src/iop/filmicrgb.c:4430
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -16003,7 +16004,7 @@ msgstr ""
 "зменшуйте, щоб включити більше областей,\n"
 "збільшуйте, щоб виключити більше областей."
 
-#: ../src/iop/filmicrgb.c:4388
+#: ../src/iop/filmicrgb.c:4440
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -16013,15 +16014,15 @@ msgstr ""
 "зменшуйте, щоб зробити перехід більш жорстким і різким,\n"
 "збільшуйте, щоб зробити перехід більш м’яким і розмитим."
 
-#: ../src/iop/filmicrgb.c:4394 ../src/iop/filmicrgb.c:4395
+#: ../src/iop/filmicrgb.c:4446 ../src/iop/filmicrgb.c:4447
 msgid "display highlight reconstruction mask"
 msgstr "показати маску відновлення переекспозиції"
 
-#: ../src/iop/filmicrgb.c:4402 ../src/iop/splittoning.c:527
+#: ../src/iop/filmicrgb.c:4454 ../src/iop/splittoning.c:527
 msgid "balance"
 msgstr "баланс"
 
-#: ../src/iop/filmicrgb.c:4409
+#: ../src/iop/filmicrgb.c:4461
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16038,7 +16039,7 @@ msgstr ""
 "збільшити, якщо хоча б один канал RGB не обрізаний.\n"
 "зменшити, якщо всі канали RGB обрізані на великих ділянках."
 
-#: ../src/iop/filmicrgb.c:4420
+#: ../src/iop/filmicrgb.c:4472
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16055,7 +16056,7 @@ msgstr ""
 "збільште, якщо хочете більше деталей.\n"
 "зменште, якщо хочете більше розмиття."
 
-#: ../src/iop/filmicrgb.c:4432
+#: ../src/iop/filmicrgb.c:4484
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16074,11 +16075,11 @@ msgstr ""
 "ділянках."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4440
+#: ../src/iop/filmicrgb.c:4492
 msgid "look"
 msgstr "крива"
 
-#: ../src/iop/filmicrgb.c:4450
+#: ../src/iop/filmicrgb.c:4502
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -16088,7 +16089,7 @@ msgstr ""
 "збільшити, щоб зробити світлі тони яскравішими та менш стиснутими.\n"
 "зменшити для приглушення світлих тонів."
 
-#: ../src/iop/filmicrgb.c:4458
+#: ../src/iop/filmicrgb.c:4510
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -16101,7 +16102,7 @@ msgstr ""
 "в цьому діапазоні широти не відбувається десатурація.\n"
 "це не впливає на середні тони."
 
-#: ../src/iop/filmicrgb.c:4473 ../src/iop/filmicrgb.c:4616
+#: ../src/iop/filmicrgb.c:4525 ../src/iop/filmicrgb.c:4668
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -16112,11 +16113,11 @@ msgstr ""
 "збільште, якщо тіні та/або світлі ділянки недостатньо насичені."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:4502
+#: ../src/iop/filmicrgb.c:4554
 msgid "options"
 msgstr "опції"
 
-#: ../src/iop/filmicrgb.c:4507
+#: ../src/iop/filmicrgb.c:4559
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -16125,7 +16126,7 @@ msgstr ""
 "балансу.\n"
 "v4 - новіший метод десатурації, на основі спектральної чистоти світла."
 
-#: ../src/iop/filmicrgb.c:4511
+#: ../src/iop/filmicrgb.c:4563
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -16135,7 +16136,7 @@ msgstr ""
 "може посилити хроматичні аберації та кольоровий шум,\n"
 "тому переконайтеся, що вони правильно виправлені в іншому місці.\n"
 
-#: ../src/iop/filmicrgb.c:4517
+#: ../src/iop/filmicrgb.c:4569
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16147,7 +16148,7 @@ msgstr ""
 "м'який використовує низьку кривизну, що призводить до меншого тонального "
 "стиснення."
 
-#: ../src/iop/filmicrgb.c:4522
+#: ../src/iop/filmicrgb.c:4574
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16159,7 +16160,7 @@ msgstr ""
 "м'який використовує низьку кривизну, що призводить до меншого тонального "
 "стиснення."
 
-#: ../src/iop/filmicrgb.c:4527
+#: ../src/iop/filmicrgb.c:4579
 #, c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -16172,7 +16173,7 @@ msgstr ""
 "замість цього виправляйте глобальну експозицію в модулі експозиції.\n"
 "вимкніть для використання стандартного 18.45 %% середньо-сірого."
 
-#: ../src/iop/filmicrgb.c:4534
+#: ../src/iop/filmicrgb.c:4586
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -16185,7 +16186,7 @@ msgstr ""
 "налаштування.\n"
 "вимкніть, якщо хочете управляти цим вручну."
 
-#: ../src/iop/filmicrgb.c:4540
+#: ../src/iop/filmicrgb.c:4592
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -16199,7 +16200,7 @@ msgstr ""
 "це також допомагає при складних випадках мадженти в переекспонованих "
 "ділянках."
 
-#: ../src/iop/filmicrgb.c:4547
+#: ../src/iop/filmicrgb.c:4599
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -16211,7 +16212,7 @@ msgstr ""
 "коли зображення загалом містить шум, що забезпечує більш\n"
 "природне поєднання з рештою зображення."
 
-#: ../src/iop/filmicrgb.c:4554
+#: ../src/iop/filmicrgb.c:4606
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -16219,11 +16220,11 @@ msgstr ""
 "вибрати статистичний розподіл шуму.\n"
 "це корисно, щоб відповідати природній схемі шуму сенсора.\n"
 
-#: ../src/iop/filmicrgb.c:4622
+#: ../src/iop/filmicrgb.c:4674
 msgid "mid-tones saturation"
 msgstr "насиченість середніх тонів"
 
-#: ../src/iop/filmicrgb.c:4623
+#: ../src/iop/filmicrgb.c:4675
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -16495,10 +16496,6 @@ msgid ""
 msgstr ""
 "режим керованих лапласіанів недоступний для сенсорів X-Trans. повертаємось "
 "до обрізання."
-
-#: ../src/iop/highlights.c:2153
-msgid "guided laplacians"
-msgstr "керовані лапласіани"
 
 #: ../src/iop/highlights.c:2187
 msgid "highlight reconstruction method"
@@ -20186,6 +20183,15 @@ msgstr "додає нове правило до порядку сортуван�
 msgid "revert to a previous set of sort orders"
 msgstr "повернутися до попереднього набору порядків сортування"
 
+#. we change the tooltip of the reset button here, as we are sure the header is defined now
+#: ../src/libs/filtering.c:2034
+msgid ""
+"reset\n"
+"ctrl-click to remove pinned rules too"
+msgstr ""
+"скинути\n"
+"клік з утриманням ctrl видалить також закріплені правила"
+
 #: ../src/libs/filters/colors.c:220
 msgid "Y"
 msgstr "Y"
@@ -23797,6 +23803,9 @@ msgstr ""
 #: ../src/views/view.c:1335
 msgid "mouse actions"
 msgstr "дії за допомогою миші"
+
+#~ msgid "guided laplacians (AI)"
+#~ msgstr "керовані лапласіани (AI)"
 
 #~ msgid "last export time"
 #~ msgstr "час останнього експорту"
