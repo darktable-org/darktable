@@ -192,6 +192,7 @@ typedef struct _filter_t
 #include "libs/filters/filename.c"
 #include "libs/filters/focal.c"
 #include "libs/filters/grouping.c"
+#include "libs/filters/history.c"
 #include "libs/filters/iso.c"
 #include "libs/filters/local_copy.c"
 #include "libs/filters/rating.c"
@@ -213,7 +214,8 @@ static _filter_t filters[] = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_i
                                { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
                                { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
                                { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update },
-                               { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update } };
+                               { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
+                               { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
