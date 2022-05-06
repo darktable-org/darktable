@@ -69,6 +69,7 @@ typedef enum dt_iop_highlights_mode_t
   DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
   DT_IOP_HIGHLIGHTS_LAPLACIAN = 3, //$DESCRIPTION: "guided laplacians"
 } dt_iop_highlights_mode_t;
+#define DT_IOP_HIGHLIGHTS_MAXMODE DT_IOP_HIGHLIGHTS_LAPLACIAN
 
 typedef enum dt_atrous_wavelets_scales_t
 {
@@ -2030,6 +2031,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
 
   memcpy(d, p, sizeof(*p));
+  if(d->mode > DT_IOP_HIGHLIGHTS_MAXMODE)
+    d->mode = DT_IOP_HIGHLIGHTS_CLIP;
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT
   piece->process_cl_ready = (d->mode == DT_IOP_HIGHLIGHTS_INPAINT) ? 0 : 1;
@@ -2108,11 +2111,16 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   // If guided laplacian mode was copied as part of the history of another pic, sanitize it
   // guided laplacian is not available for XTrans
-  if(!bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN)
+  if(!bayer && mode >= DT_IOP_HIGHLIGHTS_MAXMODE)
   {
     p->mode = DT_IOP_HIGHLIGHTS_CLIP;
     dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
     dt_control_log(_("highlights: guided laplacian mode not available for X-Trans sensors. falling back to clip."));
+  }
+  else if(bayer && mode > DT_IOP_HIGHLIGHTS_MAXMODE)
+  {
+    p->mode = DT_IOP_HIGHLIGHTS_CLIP;
+    dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
   }
 }
 
@@ -2219,6 +2227,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "default");
 }
 
+#undef DT_IOP_HIGHLIGHTS_MAXMODE
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
