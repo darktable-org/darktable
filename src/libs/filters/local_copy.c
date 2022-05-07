@@ -34,6 +34,9 @@ typedef enum _local_copy_type_t
   _LCP_NO
 } _local_copy_type_t;
 
+static const char *_local_copy_names[]
+    = { N_("all images"), N_("copied locally"), N_("not copied locally"), NULL };
+
 static void _local_copy_synchronise(_widgets_local_copy_t *source)
 {
   _widgets_local_copy_t *dest = NULL;
@@ -96,27 +99,31 @@ static gboolean _local_copy_update(dt_lib_filtering_rule_t *rule)
   // clang-format off
   g_snprintf(query, sizeof(query),
                    "SELECT CASE "
-                   "         WHEN (flags & %d) THEN 1"
-                   "         ELSE 2"
+                   "         WHEN (flags & %d) THEN 0"
+                   "         ELSE 1"
                    "       END as lcp, COUNT(*) AS count"
                    " FROM main.images AS mi "
                    " WHERE %s"
                    " GROUP BY lcp ORDER BY lcp ASC",
                    DT_IMAGE_LOCAL_COPY, rule->lib->last_where_ext);
   // clang-format on
+  int counts[2] = { 0 };
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int i = sqlite3_column_int(stmt, 0);
     const int count = sqlite3_column_int(stmt, 1);
-    const gchar *name = (i == 1) ? _("copied locally") : _("not copied locally");
-    gchar *item = g_strdup_printf("%s (%d)", name, count);
-
-    dt_bauhaus_combobox_set_entry_label(local_copy->combo, i, item);
-    g_free(item);
+    counts[i] = count;
   }
   sqlite3_finalize(stmt);
+
+  for(int i = 0; i < 2; i++)
+  {
+    gchar *item = g_strdup_printf("%s (%d)", _(_local_copy_names[i + 1]), counts[i]);
+    dt_bauhaus_combobox_set_entry_label(local_copy->combo, i + 1, item);
+    g_free(item);
+  }
 
   dt_bauhaus_combobox_set(local_copy->combo, val);
   rule->manual_widget_set--;
@@ -130,9 +137,9 @@ static void _local_copy_widget_init(dt_lib_filtering_rule_t *rule, const dt_coll
   _widgets_local_copy_t *local_copy = (_widgets_local_copy_t *)g_malloc0(sizeof(_widgets_local_copy_t));
   local_copy->rule = rule;
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(local_copy->combo, self, NULL, N_("local_copy filter"),
-                               _("local copied state filter"), 0, (GtkCallback)_local_copy_changed, local_copy,
-                               N_("all images"), N_("copied locally"), N_("not copied locally"));
+  local_copy->combo = dt_bauhaus_combobox_new_full(
+      DT_ACTION(self), NULL, N_("local_copy filter"), _("local copied state filter"), 0,
+      (GtkCallback)_local_copy_changed, local_copy, _local_copy_names);
   DT_BAUHAUS_WIDGET(local_copy->combo)->show_label = FALSE;
 
   if(top)

@@ -35,6 +35,8 @@ typedef enum _history_type_t
   _HISTORY_ALTERED
 } _history_type_t;
 
+static const char *_history_names[] = { N_("all images"), N_("basic"), N_("auto applied"), N_("altered"), NULL };
+
 static void _history_synchronise(_widgets_history_t *source)
 {
   _widgets_history_t *dest = NULL;
@@ -102,10 +104,10 @@ static gboolean _history_update(dt_lib_filtering_rule_t *rule)
   // clang-format off
   g_snprintf(query, sizeof(query),
                    "SELECT CASE"
-                   "       WHEN basic_hash == current_hash THEN 1"
-                   "       WHEN auto_hash == current_hash THEN 2"
-                   "       WHEN current_hash IS NOT NULL THEN 3"
-                   "       ELSE 1"
+                   "       WHEN basic_hash == current_hash THEN 0"
+                   "       WHEN auto_hash == current_hash THEN 1"
+                   "       WHEN current_hash IS NOT NULL THEN 2"
+                   "       ELSE 0"
                    "     END as altered, COUNT(*) AS count"
                    " FROM main.images AS mi"
                    " LEFT JOIN (SELECT DISTINCT imgid, basic_hash, auto_hash, current_hash"
@@ -115,19 +117,24 @@ static gboolean _history_update(dt_lib_filtering_rule_t *rule)
                    " ORDER BY altered ASC",
                    rule->lib->last_where_ext);
   // clang-format on
+  int counts[3] = { 0 };
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int i = sqlite3_column_int(stmt, 0);
     const int count = sqlite3_column_int(stmt, 1);
-    const gchar *name = (i == 1) ? _("basic") : (i == 2) ? _("auto applied") : _("altered");
-    gchar *item = g_strdup_printf("%s (%d)", name, count);
-
-    dt_bauhaus_combobox_set_entry_label(history->combo, i, item);
-    g_free(item);
+    counts[i] = count;
   }
   sqlite3_finalize(stmt);
+
+  for(int i = 0; i < 3; i++)
+  {
+    gchar *item = g_strdup_printf("%s (%d)", _(_history_names[i + 1]), counts[i]);
+
+    dt_bauhaus_combobox_set_entry_label(history->combo, i + 1, item);
+    g_free(item);
+  }
 
   dt_bauhaus_combobox_set(history->combo, val);
   rule->manual_widget_set--;
@@ -141,9 +148,9 @@ static void _history_widget_init(dt_lib_filtering_rule_t *rule, const dt_collect
   _widgets_history_t *history = (_widgets_history_t *)g_malloc0(sizeof(_widgets_history_t));
   history->rule = rule;
 
-  DT_BAUHAUS_COMBOBOX_NEW_FULL(history->combo, self, NULL, N_("history filter"), _("filter on history state"), 0,
-                               (GtkCallback)_history_changed, history, N_("all images"), N_("basic"),
-                               N_("auto applied"), N_("altered"));
+  history->combo
+      = dt_bauhaus_combobox_new_full(DT_ACTION(self), NULL, N_("history filter"), _("filter on history state"), 0,
+                                     (GtkCallback)_history_changed, history, _history_names);
   DT_BAUHAUS_WIDGET(history->combo)->show_label = FALSE;
 
   if(top)
