@@ -23,6 +23,7 @@
 #include "common/debug.h"
 #include "common/film.h"
 #include "common/history.h"
+#include "common/iop_order.h"
 #include "common/map_locations.h"
 #include "common/metadata.h"
 #include "common/utility.h"
@@ -191,7 +192,11 @@ typedef struct _filter_t
 #include "libs/filters/exposure.c"
 #include "libs/filters/filename.c"
 #include "libs/filters/focal.c"
+#include "libs/filters/grouping.c"
+#include "libs/filters/history.c"
 #include "libs/filters/iso.c"
+#include "libs/filters/local_copy.c"
+#include "libs/filters/module_order.c"
 #include "libs/filters/rating.c"
 #include "libs/filters/ratio.c"
 #include "libs/filters/search.c"
@@ -209,7 +214,11 @@ static _filter_t filters[] = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_i
                                { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update },
                                { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
                                { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
-                               { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update } };
+                               { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
+                               { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update },
+                               { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
+                               { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
+                               { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -875,13 +884,12 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ASPECT_RATIO);
 
-  /* TO BE restored once the filters will be implemented
   _popup_add_item(spop, _("darktable"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GROUPING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_MODULE);
-  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ORDER);*/
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ORDER);
 
   dt_gui_menu_popup(GTK_MENU(spop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
   return TRUE;
@@ -957,13 +965,12 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
 
-  /* TO BE restored once the filters will be implemented
   dt_bauhaus_combobox_add_section(w, _("darktable"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);*/
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
 
 #undef ADD_COLLECT_ENTRY
 

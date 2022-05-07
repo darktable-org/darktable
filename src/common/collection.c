@@ -1443,25 +1443,28 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
+      if(!g_strcmp0(escaped_text, _("basic")) || !g_strcmp0(escaped_text, "$BASIC"))
+      {
+        // images without history and basic together
+        query = g_strdup("(id not IN (SELECT imgid FROM main.history_hash WHERE (basic_hash IS NULL OR "
+                         "current_hash != basic_hash)))");
+      }
+      else if(!g_strcmp0(escaped_text, _("auto applied")) || !g_strcmp0(escaped_text, "$AUTO_APPLIED"))
+      {
+        query = g_strdup("(id IN (SELECT imgid FROM main.history_hash WHERE current_hash == auto_hash))");
+      }
+      else if(!g_strcmp0(escaped_text, _("altered")) || !g_strcmp0(escaped_text, "$ALTERED"))
       {
         // clang-format off
-        // three groups
-        // - images without history and basic together
-        // - auto applied
-        // - altered
-        const char *condition =
-            (strcmp(escaped_text, _("basic")) == 0) ?
-              "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
-            : (strcmp(escaped_text, _("auto applied")) == 0) ?
-              "WHERE current_hash == auto_hash "
-            : (strcmp(escaped_text, _("altered")) == 0) ?
-              "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
-              "AND (auto_hash IS NULL OR current_hash != auto_hash) "
-            : "";
-        const char *condition2 = (strcmp(escaped_text, _("basic")) == 0) ? "not" : "";
-        query = g_strdup_printf("(id %s IN (SELECT imgid FROM main.history_hash %s)) ",
-                                condition2, condition);
+        query = g_strdup("(id IN (SELECT imgid "
+                                  "FROM main.history_hash "
+                                  "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
+                                  "AND (auto_hash IS NULL OR current_hash != auto_hash) ))");
         // clang-format on
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
       }
       break;
 
@@ -1502,11 +1505,18 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
-      // clang-format off
-      query = g_strdup_printf("(id %s IN (SELECT id AS imgid FROM main.images WHERE (flags & %d))) ",
-                              (strcmp(escaped_text, _("not copied locally")) == 0) ? "not" : "",
-                              DT_IMAGE_LOCAL_COPY);
-      // clang-format on
+      if(!g_strcmp0(escaped_text, _("not copied locally")) || !g_strcmp0(escaped_text, "$NO_LOCAL_COPY"))
+      {
+        query = g_strdup_printf("(flags & %d = 0) ", DT_IMAGE_LOCAL_COPY);
+      }
+      else if(!g_strcmp0(escaped_text, _("copied locally")) || !g_strcmp0(escaped_text, "$LOCAL_COPY"))
+      {
+        query = g_strdup_printf("(flags & %d) ", DT_IMAGE_LOCAL_COPY);
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
+      }
       break;
 
     case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio
@@ -1853,7 +1863,39 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     }
 
     case DT_COLLECTION_PROP_GROUPING: // grouping
-      query = g_strdup_printf("(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
+      if(!g_strcmp0(escaped_text, "$NO_GROUP"))
+      {
+        query = g_strdup("(id = group_id AND "
+                         "NOT EXISTS(SELECT 1 AS group_count FROM main.images AS gc WHERE gc.group_id = "
+                         "mi.group_id AND gc.id != mi.id))");
+      }
+      else if(!g_strcmp0(escaped_text, "$GROUP"))
+      {
+        query = g_strdup(
+            "(EXISTS(SELECT 1 FROM main.images AS gc WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
+      }
+      else if(!g_strcmp0(escaped_text, "$LEADER"))
+      {
+        query = g_strdup(
+            "(mi.id = mi.group_id AND "
+            "EXISTS(SELECT 1 FROM main.images AS gc WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
+      }
+      else if(!g_strcmp0(escaped_text, "$FOLLOWER"))
+      {
+        query = g_strdup("(id != group_id)");
+      }
+      else if(!g_strcmp0(escaped_text, _("group leaders"))) // used in collect.c
+      {
+        query = g_strdup("(id = group_id)");
+      }
+      else if(!g_strcmp0(escaped_text, _("group followers"))) // used in collect.c
+      {
+        query = g_strdup("(id != group_id)");
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
+      }
       break;
 
     case DT_COLLECTION_PROP_MODULE: // dev module
@@ -1869,9 +1911,16 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_ORDER: // module order
       {
         int i = 0;
-        for(i = 0; i < DT_IOP_ORDER_LAST; i++)
+        if(strlen(escaped_text) > 1 && g_str_has_prefix(escaped_text, "$"))
         {
-          if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
+          i = atoi(escaped_text + 1);
+        }
+        else
+        {
+          for(i = 0; i < DT_IOP_ORDER_LAST; i++)
+          {
+            if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
+          }
         }
         if(i < DT_IOP_ORDER_LAST)
           // clang-format off
