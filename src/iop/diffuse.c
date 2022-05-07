@@ -54,7 +54,7 @@ typedef struct dt_iop_diffuse_params_t
 {
   // global parameters
   int iterations;           // $MIN: 0    $MAX: 500  $DEFAULT: 1  $DESCRIPTION: "iterations"
-  float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness"
+  float sharpness;          // $MIN: -1.  $MAX: 1.   $DEFAULT: 0. $DESCRIPTION: "sharpness (highest frequencies)"
   int radius;               // $MIN: 0    $MAX: 2048 $DEFAULT: 8  $DESCRIPTION: "radius span"
   float regularization;     // $MIN: 0.   $MAX: 4.   $DEFAULT: 0. $DESCRIPTION: "edge sensitivity"
   float variance_threshold; // $MIN: -2.  $MAX: 2.   $DEFAULT: 0. $DESCRIPTION: "edge threshold"
