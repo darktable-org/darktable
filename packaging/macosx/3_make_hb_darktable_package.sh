@@ -262,8 +262,13 @@ done
 cp defaults.list "$dtResourcesDir"/share/applications/
 cp open.desktop "$dtResourcesDir"/share/applications/
 
-# Sign app bundle when a certificate has been provided
+# Sign app bundle
 if [ -n "$CODECERT" ]; then
+    # Use certificate if one has been provided
     find package/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" \{} \;
     codesign --deep --verbose --force --options runtime -i "org.darktable" -s "${CODECERT}" package/darktable.app
+else
+    # Use ad-hoc signing and preserve metadata
+    find package/darktable.app/Contents/Resources/lib -type f -exec codesign --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - \{} \;
+    codesign --deep --verbose --force --preserve-metadata=entitlements,requirements,flags,runtime -i "org.darktable" -s - package/darktable.app
 fi
