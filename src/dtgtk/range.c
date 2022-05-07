@@ -1540,13 +1540,12 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
     if(range->mouse_inside == HOVER_MAX)
     {
       range->bounds &= ~DT_RANGE_BOUND_MAX;
-      range->select_min_r += 0.0001;
       range->select_max_r = pos_r;
     }
     else if(range->mouse_inside == HOVER_MIN)
     {
       range->bounds &= ~DT_RANGE_BOUND_MIN;
-      range->select_min_r = range->select_max_r + 0.0001;
+      range->select_min_r = range->select_max_r;
       range->select_max_r = pos_r;
     }
     else if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
