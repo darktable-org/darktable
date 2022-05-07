@@ -1313,6 +1313,20 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhau
   if(d->active < 0) d->active = 0;
 }
 
+gboolean dt_bauhaus_combobox_set_entry_label(GtkWidget *widget, const int pos, const gchar *label)
+{
+  // change the text to show for the entry
+  // note that this doesn't break shortcuts but their names in the shortcut panel will remain the initial one
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  if(!d || pos < 0 || pos >= d->entries->len) return FALSE;
+  dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(d->entries, pos);
+  g_free(entry->label);
+  entry->label = g_strdup(label);
+  return TRUE;
+}
+
 void dt_bauhaus_combobox_set_entries_ellipsis(GtkWidget *widget, PangoEllipsizeMode ellipis)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
