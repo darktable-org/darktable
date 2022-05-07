@@ -815,8 +815,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float P = HCB[1];
       float W = sin_T * HCB[1] + cos_T * HCB[2];
 
-      float a = 1.f + d->saturation_global + scalar_product(opacities, saturation);
-      const float b = 1.f + d->brilliance_global + scalar_product(opacities, brilliance);
+      float a = fmaxf(1.f + d->saturation_global + scalar_product(opacities, saturation), 0.f);
+      const float b = fmaxf(1.f + d->brilliance_global + scalar_product(opacities, brilliance), 0.f);
 
       const float max_a = hypotf(P, W) / P;
       a = soft_clip(a, 0.5f * max_a, max_a);
@@ -824,8 +824,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float P_prime = (a - 1.f) * P;
       const float W_prime = sqrtf(sqf(P) * (1.f - sqf(a)) + sqf(W)) * b;
 
-      HCB[1] = M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime;
-      HCB[2] = M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime;
+      HCB[1] = fmaxf(M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime, 0.f);
+      HCB[2] = fmaxf(M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime, 0.f);
 
       dt_UCS_HCB_to_JCH(HCB, JCH);
 

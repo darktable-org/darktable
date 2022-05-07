@@ -1001,8 +1001,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     float P = HCB.y;
     float W = sin_T * HCB.y + cos_T * HCB.z;
 
-    float a = 1.f + saturation_global + dot(opacities, saturation);
-    const float b = 1.f + brilliance_global + dot(opacities, brilliance);
+    float a = fmax(1.f + saturation_global + dot(opacities, saturation), 0.f);
+    const float b = fmax(1.f + brilliance_global + dot(opacities, brilliance), 0.f);
 
     const float max_a = hypot(P, W) / P;
     a = soft_clip(a, 0.5f * max_a, max_a);
@@ -1010,8 +1010,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
     const float P_prime = (a - 1.f) * P;
     const float W_prime = native_sqrt(sqf(P) * (1.f - sqf(a)) + sqf(W)) * b;
 
-    HCB.y = M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime;
-    HCB.z = M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime;
+    HCB.y = fmax(M_rot_inv[0][0] * P_prime + M_rot_inv[0][1] * W_prime, 0.f);
+    HCB.z = fmax(M_rot_inv[1][0] * P_prime + M_rot_inv[1][1] * W_prime, 0.f);
 
     JCH = dt_UCS_HCB_to_JCH(HCB);
 
