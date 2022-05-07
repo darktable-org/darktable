@@ -1911,9 +1911,16 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_ORDER: // module order
       {
         int i = 0;
-        for(i = 0; i < DT_IOP_ORDER_LAST; i++)
+        if(strlen(escaped_text) > 1 && g_str_has_prefix(escaped_text, "$"))
         {
-          if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
+          i = atoi(escaped_text + 1);
+        }
+        else
+        {
+          for(i = 0; i < DT_IOP_ORDER_LAST; i++)
+          {
+            if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
+          }
         }
         if(i < DT_IOP_ORDER_LAST)
           // clang-format off
