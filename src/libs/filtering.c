@@ -449,7 +449,7 @@ static void _history_save(dt_lib_filtering_t *d, const gboolean sort)
   }
   g_free(str);
 
-  // remove all subsequent history that have the same values
+  // remove all subseqeunt history that have the same values
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/%shistory_max", (sort) ? "sort_" : "");
   const int nbmax = dt_conf_get_int(confname);
   int move = 0;

@@ -20,19 +20,17 @@
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
-#include "common/datetime.h"
 #include "common/debug.h"
 #include "common/film.h"
-#include "common/history.h"
-#include "common/map_locations.h"
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/history.h"
+#include "common/map_locations.h"
+#include "common/datetime.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "dtgtk/button.h"
-#include "dtgtk/thumbtable.h"
-#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/preferences_dialogs.h"
 #include "libs/lib.h"
@@ -81,8 +79,6 @@ typedef struct dt_lib_collect_t
 #else
   GUnixMountMonitor *vmonitor;
 #endif
-
-  gboolean inited;
 } dt_lib_collect_t;
 
 typedef struct dt_lib_collect_params_rule_t
@@ -2238,84 +2234,6 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
 
-static void _history_save(dt_lib_collect_t *d)
-{
-  dt_thumbtable_t *table = dt_ui_thumbtable(darktable.gui->ui);
-  // serialize, check for recently used
-  char confname[200] = { 0 };
-
-  char buf[4096];
-  if(dt_collection_serialize(buf, sizeof(buf), FALSE)) return;
-
-  // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
-  uint32_t curr_pos = table->offset;
-  uint32_t new_pos = -1;
-
-  if(!d->inited)
-  {
-    new_pos = dt_conf_get_int("plugins/lighttable/collect/history_pos0");
-    d->inited = TRUE;
-    dt_thumbtable_set_offset(table, new_pos, TRUE);
-  }
-  else if(curr_pos != -1)
-  {
-    dt_conf_set_int("plugins/lighttable/collect/history_pos0", curr_pos);
-  }
-
-  // compare to last saved history
-  gchar *str = dt_conf_get_string("plugins/lighttable/collect/history0");
-  if(!g_strcmp0(str, buf))
-  {
-    g_free(str);
-    return;
-  }
-  g_free(str);
-
-  // remove all subsequent history that have the same values
-  const int nbmax = dt_conf_get_int("plugins/lighttable/collect/history_max");
-  int move = 0;
-  for(int i = 1; i < nbmax; i++)
-  {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i);
-    gchar *string = dt_conf_get_string(confname);
-
-    if(!g_strcmp0(string, buf))
-    {
-      move++;
-      dt_conf_set_string(confname, "");
-    }
-    else if(move > 0)
-    {
-      dt_conf_set_string(confname, "");
-      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i);
-      const int hpos = dt_conf_get_int(confname);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i - move);
-      dt_conf_set_string(confname, string);
-      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i - move);
-      dt_conf_set_int(confname, hpos);
-    }
-    g_free(string);
-  }
-
-  // move all history entries +1 (and delete the last one)
-  for(int i = nbmax - 2; i >= 0; i--)
-  {
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i);
-    gchar *string = dt_conf_get_string(confname);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i);
-    const int hpos = dt_conf_get_int(confname);
-
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i + 1);
-    dt_conf_set_string(confname, string);
-    g_free(string);
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history_pos%1d", i + 1);
-    dt_conf_set_int(confname, hpos);
-  }
-
-  // save current history
-  dt_conf_set_string("plugins/lighttable/collect/history0", buf);
-}
-
 static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col,
                                      GdkEventButton *event, dt_lib_collect_t *d)
 {
@@ -2452,7 +2370,6 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
                                   darktable.view_manager->proxy.module_collect.module);
   if(order) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-  _history_save(d);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -2500,7 +2417,6 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                   darktable.view_manager->proxy.module_collect.module);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
-  _history_save(c);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
   d->typing = FALSE;
@@ -2597,9 +2513,6 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
   }
 
   if(refresh) _lib_collect_gui_update(self);
-
-  // in any case, we refresh the history
-  _history_save(d);
 }
 
 
@@ -2653,7 +2566,6 @@ static void tag_changed(gpointer instance, gpointer self)
     dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                     darktable.view_manager->proxy.module_collect.module);
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_TAG, NULL);
-    _history_save(d);
     dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                       darktable.view_manager->proxy.module_collect.module);
   }
@@ -2671,7 +2583,6 @@ static void tag_changed(gpointer instance, gpointer self)
       dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                       darktable.view_manager->proxy.module_collect.module);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_TAG, NULL);
-      _history_save(d);
       dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                         darktable.view_manager->proxy.module_collect.module);
     }
@@ -2697,7 +2608,6 @@ static void _geotag_changed(gpointer instance, GList *imgs, const int locid, gpo
                                       darktable.view_manager->proxy.module_collect.module);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_GEOTAGGING,
                                  NULL);
-      _history_save(d);
       dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                         darktable.view_manager->proxy.module_collect.module);
     }
@@ -2965,131 +2875,6 @@ void _mount_changed(GUnixMountMonitor *monitor, dt_lib_module_t *self)
   }
 }
 
-static void _history_apply(GtkWidget *widget, dt_lib_module_t *self)
-{
-  const int hid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history"));
-  if(hid < 0 || hid >= dt_conf_get_int("plugins/lighttable/collect/history_max")) return;
-
-  char confname[200];
-  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", hid);
-  const char *line = dt_conf_get_string_const(confname);
-  if(line && line[0] != '\0')
-  {
-    const int prev_property = dt_conf_get_int("plugins/lighttable/collect/item0");
-    dt_collection_deserialize(line, FALSE);
-
-    // for the tag propertyn we need to adjust the order accordingly
-    const int new_property = dt_conf_get_int("plugins/lighttable/collect/item0");
-    gchar *order = NULL;
-    if(prev_property != DT_COLLECTION_PROP_TAG && new_property == DT_COLLECTION_PROP_TAG)
-    {
-      // save global order
-      char buf[4096] = { 0 };
-      dt_collection_sort_serialize(buf, sizeof(buf));
-      dt_conf_set_string("plugins/lighttable/collect/lastorder", buf);
-    }
-    else if(prev_property == DT_COLLECTION_PROP_TAG && new_property != DT_COLLECTION_PROP_TAG)
-    {
-      // restore global order
-      order = dt_conf_get_string("plugins/lighttable/collect/lastorder");
-      dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
-    }
-    if(order) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
-  }
-}
-
-static void _history_pretty_print(const char *buf, char *out, size_t outsize)
-{
-  memset(out, 0, outsize);
-
-  if(!buf || buf[0] == '\0') return;
-
-  int num_rules = 0;
-  char str[400] = { 0 };
-  int mode, item;
-  int c;
-  sscanf(buf, "%d", &num_rules);
-  while(buf[0] != '\0' && buf[0] != ':') buf++;
-  if(buf[0] == ':') buf++;
-
-  for(int k = 0; k < num_rules; k++)
-  {
-    const int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
-
-    if(n == 3)
-    {
-      if(k > 0) switch(mode)
-        {
-          case DT_LIB_COLLECT_MODE_AND:
-            c = g_strlcpy(out, _(" and "), outsize);
-            out += c;
-            outsize -= c;
-            break;
-          case DT_LIB_COLLECT_MODE_OR:
-            c = g_strlcpy(out, _(" or "), outsize);
-            out += c;
-            outsize -= c;
-            break;
-          default: // case DT_LIB_COLLECT_MODE_AND_NOT:
-            c = g_strlcpy(out, _(" but not "), outsize);
-            out += c;
-            outsize -= c;
-            break;
-        }
-      int i = 0;
-      while(str[i] != '\0' && str[i] != '$') i++;
-      if(str[i] == '$') str[i] = '\0';
-
-      c = snprintf(out, outsize, "%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
-                   item == 0 ? dt_image_film_roll_name(str) : str);
-      out += c;
-      outsize -= c;
-    }
-    while(buf[0] != '$' && buf[0] != '\0') buf++;
-    if(buf[0] == '$') buf++;
-  }
-}
-
-static void _history_show(GtkWidget *widget, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  // we show a popup with all the history entries
-  GtkMenuShell *pop = GTK_MENU_SHELL(gtk_menu_new());
-  gtk_widget_set_size_request(GTK_WIDGET(pop), 200, -1);
-
-  const int maxitems = dt_conf_get_int("plugins/lighttable/collect/history_max");
-
-  for(int i = 0; i < maxitems; i++)
-  {
-    char confname[200];
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/history%1d", i);
-    const char *line = dt_conf_get_string_const(confname);
-    if(line && line[0] != '\0')
-    {
-      char str[2048] = { 0 };
-      _history_pretty_print(line, str, sizeof(str));
-      GtkWidget *smt = gtk_menu_item_new_with_label(str);
-      gtk_widget_set_tooltip_text(smt, str);
-      // GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
-      g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
-      g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_history_apply), self);
-      gtk_menu_shell_append(pop, smt);
-    }
-    else
-      break;
-  }
-
-  dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
-}
-
-static void _history_previous(dt_action_t *action)
-{
-  const char *line = dt_conf_get_string_const("plugins/lighttable/collect/history1");
-  if(line && g_strcmp0(line, ""))
-  {
-    dt_collection_deserialize(line, FALSE);
-  }
-}
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -3182,17 +2967,6 @@ void gui_init(dt_lib_module_t *self)
                      dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE,
                      TRUE, 0);
 
-  // the bottom buttons for the rules
-  GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
-  // dummy widget just to ensure alignment of history button  with those in filtering lib
-  gtk_box_pack_start(GTK_BOX(bhbox), gtk_drawing_area_new(), TRUE, TRUE, 0);
-  GtkWidget *btn = dt_action_button_new(self, _("history"), G_CALLBACK(_history_show), self,
-                                        _("revert to a previous set of rules"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  gtk_widget_show_all(bhbox);
-
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
@@ -3242,9 +3016,6 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_CHANGED, G_CALLBACK(metadata_changed), self);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
-
-  dt_action_register(DT_ACTION(self), N_("jump back to previous collection"), _history_previous, GDK_KEY_k,
-                     GDK_CONTROL_MASK);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -3465,4 +3236,3 @@ void init(struct dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
