@@ -411,9 +411,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     memcpy(new_params, old_params, sizeof(dt_iop_colorbalancergb_params_v4_t));
 
     dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
-    n->vibrance = 0.f;
-    n->grey_fulcrum = 0.1845f;
-    n->contrast = 0.f;
     n->saturation_formula = DT_COLORBALANCE_SATURATION_JZAZBZ;
 
     return 0;
@@ -1260,22 +1257,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
         if(t_1 == CLAMP(t_1, 0, 1))
         {
-          float t = (D65_xyY[1] - xyY_blue[1] + tan_angle * (xyY_blue[0] - D65_xyY[0]))
+          const float t = (D65_xyY[1] - xyY_blue[1] + tan_angle * (xyY_blue[0] - D65_xyY[0]))
                     / (xyY_red[1] - xyY_blue[1] + tan_angle * (xyY_blue[0] - xyY_red[0]));
           x_t = xyY_blue[0] + t * (xyY_red[0] - xyY_blue[0]);
           y_t = xyY_blue[1] + t * (xyY_red[1] - xyY_blue[1]);
         }
         else if(t_2 == CLAMP(t_2, 0, 1))
         {
-          float t = (D65_xyY[1] - xyY_red[1] + tan_angle * (xyY_red[0] - D65_xyY[0]))
+          const float t = (D65_xyY[1] - xyY_red[1] + tan_angle * (xyY_red[0] - D65_xyY[0]))
                     / (xyY_green[1] - xyY_red[1] + tan_angle * (xyY_red[0] - xyY_green[0]));
           x_t = xyY_red[0] + t * (xyY_green[0] - xyY_red[0]);
           y_t = xyY_red[1] + t * (xyY_green[1] - xyY_red[1]);
         }
         else if(t_3 == CLAMP(t_3, 0, 1))
         {
-          float t = (D65_xyY[1] - xyY_green[1] + tan_angle * (xyY_green[0] - D65_xyY[0]))
-                    / (xyY_blue[1] - xyY_green[1] + tan_angle * (xyY_green[0] - xyY_blue[0]));
+          const float t = (D65_xyY[1] - xyY_green[1] + tan_angle * (xyY_green[0] - D65_xyY[0]))
+                        / (xyY_blue[1] - xyY_green[1] + tan_angle * (xyY_green[0] - xyY_blue[0]));
           x_t = xyY_green[0] + t * (xyY_blue[0] - xyY_green[0]);
           y_t = xyY_green[1] + t * (xyY_blue[1] - xyY_green[1]);
         }
