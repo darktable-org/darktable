@@ -215,10 +215,10 @@ Since darktable 3.8:
 - Make two new colors (black and white) available for the overlays and
   use better contrast for better visibility of the lines over images.
 
-- A new collection filters module replacing the old recent collection
-  one has been implemented. This new module allows to filter and
-  sort. The usage has been redesign to be easier to use than the
-  current filtering in the collections module.
+- A new collection filters module which enhance current top tool bar
+  filters. This new module allows to filter and sort. The usage has
+  been redesign to be easier to use than the current filtering in the
+  collections module.
 
   The sorting can be done using many properties and multi-layers sort
   is supported.
@@ -227,10 +227,15 @@ Since darktable 3.8:
   corresponding control is duplicated on the tool bar (on top) for
   fast access.
 
-  The filtering section has an history button which corresponds to the
-  previous recent collection module.
+  The filtering section can use presets and has an history button
+  to retrieve previous settings.
 
-  A new text and colors filters have been implemented.
+  Following filters have been implemented (more to come) : rating,
+  color labels, text search, all date-time filters, exposure, iso,
+  focal length, aperture, aspect ratio, filename and extension,
+  grouping, history, local copy, module order
+
+- recent collections module as been merged in the collection module.
 
 - The processing module's user-defined name is also used when
   searching for a module.
