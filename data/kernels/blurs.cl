@@ -18,11 +18,6 @@
 
 #include "common.h"
 
-// use our own coordinate sampler
-const sampler_t samplerA = CLK_NORMALIZED_COORDS_FALSE |
-                           CLK_ADDRESS_NONE            |
-                           CLK_FILTER_NEAREST;
-
 kernel void
 convolve(read_only image2d_t in, read_only image2d_t kern, write_only image2d_t out,
          const int width, const int height, const int radius)

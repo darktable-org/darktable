@@ -341,6 +341,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl->dev[dev].memory_in_use = 0;
   cl->dev[dev].peak_memory = 0;
   cl->dev[dev].tuned_available = 0;
+  cl->dev[dev].used_available = 0;
   // setting sane/conservative defaults at first
   cl->dev[dev].avoid_atomics = 0;
   cl->dev[dev].micro_nap = 250;
@@ -1231,6 +1232,9 @@ static const char *dt_opencl_get_vendor_by_id(unsigned int id)
   return vendor;
 }
 
+// FIXME this benchmark simply doesn't reflect the power of a cl device in a meaningful way resulting in
+// - the config setting for very-fast GPU often misses a proper setting
+// - at the moment we can't use a cpu vs gpu performance ratio to decide if tiled-gpu might be worse than untiled-cpu 
 static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const size_t height, const int count, const float sigma)
 {
   const int bpp = 4 * sizeof(float);
@@ -2703,15 +2707,15 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
    is according to standard), to make sure the buffer is really allocated in graphics mem we
    force a small memory access.
 */
-size_t dt_opencl_get_unused_device_mem(const int devid)
+void _opencl_get_unused_device_mem(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(cl->dev[devid].tuned_available)
-    return cl->dev[devid].tuned_available;
+  if(cl->dev[devid].tuned_available) return;
 
   size_t available = 0;
   size_t x_buff = dt_opencl_get_device_memalloc(devid);
   const size_t allmem = cl->dev[devid].max_global_mem;
+  const size_t maxmem = allmem - 200lu * 1024lu * 1024lu;
   const size_t low_limit = 32lu * 1024lu * 1024lu;
   int checked = 0;
   float *tmp = dt_calloc_align_float(4);
@@ -2723,7 +2727,8 @@ size_t dt_opencl_get_unused_device_mem(const int devid)
   cl_mem tbuf[128];
   cl_int err = CL_SUCCESS;
 
-  while((available < (allmem - x_buff)) && (checked < 128) && (err == CL_SUCCESS))
+  // check for all memory except a safety margin that might be used by the driver itself.
+  while((available < (maxmem - x_buff)) && (checked < 128) && (err == CL_SUCCESS))
   {
     tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
     if(err == CL_SUCCESS)
@@ -2739,7 +2744,8 @@ size_t dt_opencl_get_unused_device_mem(const int devid)
     }
   }
 
-  while((available <= (allmem - low_limit)) && (checked < 128) && (x_buff >= low_limit))
+  x_buff = maxmem - available; // check only what is left
+  while((available <= (maxmem - low_limit)) && (checked < 128) && (x_buff >= low_limit))
   {
     x_buff /= 2;      
     tbuf[checked] = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, x_buff, NULL, &err);
@@ -2762,13 +2768,12 @@ size_t dt_opencl_get_unused_device_mem(const int devid)
   if(timing) dt_get_times(&end_time);
 
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-     "[dt_opencl_get_unused_device_mem] took %.4f secs on `%s` id=%i, %luMB available, %luMB of %luMB already used\n",
+     "[_opencl_get_unused_device_mem] took %.4f secs on `%s` id=%i, %luMB available, %luMB of %luMB reserved\n",
      end_time.clock - start_time.clock, cl->dev[devid].name, devid,
      available / 1024lu / 1024lu, (allmem - available) / 1024lu / 1024lu, allmem / 1024lu / 1024lu);
 
-  cl->dev[devid].tuned_available = available;
   dt_free_align(tmp);
-  return available;
+  cl->dev[devid].tuned_available = MAX(0, available - 100lu * 1024lu * 1024lu);
 }
 
 /* amount of graphics memory declared as available depends on max_global_mem and "resourcelevel". We garantee
@@ -2776,47 +2781,55 @@ size_t dt_opencl_get_unused_device_mem(const int devid)
    - 256MB to simulate a minimum system
    - 2GB to simalate a reference system 
 */
-cl_ulong dt_opencl_get_device_available(const int devid)
+void dt_opencl_check_device_available(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return 0;
-  const int level = darktable.dtresources.level;
+  if(!cl->inited || devid < 0) return;
+  if(darktable.dtresources.tunememory == 0)  cl->dev[devid].tuned_available = 0;
+  if(darktable.dtresources.tunepinning != 0) cl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ON;
+
+  int level = darktable.dtresources.level;
   static int oldlevel = -999;
-  const gboolean mod = (oldlevel != level);
+  const gboolean info = ((oldlevel != level) || (darktable.unmuted & DT_DEBUG_VERBOSE));
   oldlevel = level;
-  size_t available = 0;
 
   if(level < 0)
   {
-    available = darktable.dtresources.refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
-    if(mod)
+    cl->dev[devid].used_available = darktable.dtresources.refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
+    if(info)
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-         "[dt_opencl_get_device_available] reference mode %i, use %luMB as available on device `%s' id=%i\n",
-         level, available / 1024lu / 1024lu, cl->dev[devid].name, devid);
-    return available;
+         "[dt_opencl_check_device_available] reference mode %i, use %luMB on device `%s' id=%i\n",
+         level, cl->dev[devid].used_available / 1024lu / 1024lu, cl->dev[devid].name, devid);
+    return;
   }
+
   const size_t allmem = cl->dev[devid].max_global_mem;
   const gboolean tuned = darktable.dtresources.tunememory && (level > 0);
-  const gboolean oncpu = (cl->dev[devid].cltype & CL_DEVICE_TYPE_CPU) == CL_DEVICE_TYPE_CPU;
   if(tuned)
   {
-    // we always leave a safety margin, 128MB for level large, 100MB + 1/16 of graphics memory for default.
-    const size_t unused = MAX(0, dt_opencl_get_unused_device_mem(devid) - 128lu * 1024lu * 1024lu);
-    available = unused * (16 - MAX(0, 2 - level)) / 16;
+    // we always leave a safety margin, at least 100MB for level large
+    _opencl_get_unused_device_mem(devid);
+    cl->dev[devid].used_available = cl->dev[devid].tuned_available * (32 - MAX(0, 2 - level)) / 32;
   }
   else
   {
     // calculate data from fractions
     const size_t disposable = allmem - 400ul * 1024ul * 1024ul;
     const int fraction = MIN(1024lu, MAX(0, darktable.dtresources.fractions[darktable.dtresources.group + 3]));
-    available = MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction);
+    cl->dev[devid].used_available = MAX(256ul * 1024ul * 1024ul, disposable / 1024ul * fraction);
   }
 
-  if(mod)
+  if(info)
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-       "[dt_opencl_get_device_available] use %luMB (tunemem=%s, cpudevice=%s) as available on device `%s' id=%i\n",
-       available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF", (oncpu) ? "yes" : "no", cl->dev[devid].name, devid);
-  return available;
+       "[dt_opencl_check_device_available] use %luMB (tunemem=%s, pinning=%s) on device `%s' id=%i\n",
+       cl->dev[devid].used_available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF",
+       (cl->dev[devid].pinned_memory) ? "ON" : "OFF", cl->dev[devid].name, devid);
+}
+
+cl_ulong dt_opencl_get_device_available(const int devid)
+{
+  if(!darktable.opencl->inited || devid < 0) return 0;
+  return darktable.opencl->dev[devid].used_available;
 }
 
 static cl_ulong _opencl_get_device_memalloc(const int devid)
@@ -2830,28 +2843,6 @@ cl_ulong dt_opencl_get_device_memalloc(const int devid)
   return _opencl_get_device_memalloc(devid);
 }
 
-static gboolean _cl_test_available_buff(const int devid, const size_t required)
-{
-  float *tmp = dt_calloc_align_float(4);
-  cl_mem tmpcl;
-  cl_int err = CL_SUCCESS;
-  dt_opencl_t *cl = darktable.opencl;
-
-  tmpcl = (cl->dlocl->symbols->dt_clCreateBuffer)(cl->dev[devid].context, CL_MEM_READ_WRITE, required, NULL, &err);
-  if(err == CL_SUCCESS)
-    err = (cl->dlocl->symbols->dt_clEnqueueWriteBuffer)(cl->dev[devid].cmd_queue, tmpcl, CL_TRUE, 0, 16, tmp, 0, NULL, NULL);
-
-  const gboolean success = (err == CL_SUCCESS);
-
-  if(tmpcl) (cl->dlocl->symbols->dt_clReleaseMemObject)(tmpcl);
-  dt_free_align(tmp); 
-
-  dt_print(DT_DEBUG_OPENCL, "[_cl_test_available_buff] (slow test) had %s success for %luMB on device '%s' id=%i\n",
-      success ? "" : "NO",  required / 1024lu / 1024lu, cl->dev[devid].name, devid); 
-
-  return success;
-}
-
 gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const size_t height, const unsigned bpp,
                                 const float factor, const size_t overhead)
 {
@@ -2859,30 +2850,15 @@ gboolean dt_opencl_image_fits_device(const int devid, const size_t width, const 
   if(!cl->inited || devid < 0) return FALSE;
 
   const size_t required  = width * height * bpp;
-  const size_t total = fmaxf(2.0f, factor) * required + overhead;
+  const size_t total = factor * required + overhead;
 
   if(cl->dev[devid].max_image_width < width || cl->dev[devid].max_image_height < height)
     return FALSE;
 
   if(_opencl_get_device_memalloc(devid) < required)      return FALSE; 
   if(dt_opencl_get_device_available(devid) < total)      return FALSE;  
-  // We won't test the hard way per required buffer if sufficiently small
-  if(_opencl_get_device_memalloc(devid) > (required *2)) return TRUE; 
-
-  return _cl_test_available_buff(devid, required);
-}
-
-/** check if buffer fits into limits given by OpenCL runtime */
-gboolean dt_opencl_buffer_fits_device(const int devid, const size_t required)
-{
-  if(!darktable.opencl->inited || devid < 0) return FALSE;
-
-  if(_opencl_get_device_memalloc(devid) < required)      return FALSE; 
-  if(dt_opencl_get_device_available(devid) < required)   return FALSE; 
-  // We won't test the hard way if required if sufficiently small
-  if(_opencl_get_device_memalloc(devid) > (required *2)) return TRUE; 
-
-  return _cl_test_available_buff(devid, required);
+  // We know here that total memory fits and if so the buffersize will also fit as there is a factor of >=2
+  return TRUE; 
 }
 
 /** round size to a multiple of the value given in the device specifig config parameter clroundup_wd/ht */

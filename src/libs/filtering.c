@@ -23,6 +23,7 @@
 #include "common/debug.h"
 #include "common/film.h"
 #include "common/history.h"
+#include "common/iop_order.h"
 #include "common/map_locations.h"
 #include "common/metadata.h"
 #include "common/utility.h"
@@ -191,7 +192,11 @@ typedef struct _filter_t
 #include "libs/filters/exposure.c"
 #include "libs/filters/filename.c"
 #include "libs/filters/focal.c"
+#include "libs/filters/grouping.c"
+#include "libs/filters/history.c"
 #include "libs/filters/iso.c"
+#include "libs/filters/local_copy.c"
+#include "libs/filters/module_order.c"
 #include "libs/filters/rating.c"
 #include "libs/filters/ratio.c"
 #include "libs/filters/search.c"
@@ -209,7 +214,11 @@ static _filter_t filters[] = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_i
                                { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update },
                                { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
                                { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
-                               { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update } };
+                               { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
+                               { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update },
+                               { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
+                               { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
+                               { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -875,13 +884,12 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ASPECT_RATIO);
 
-  /* TO BE restored once the filters will be implemented
   _popup_add_item(spop, _("darktable"), 0, TRUE, NULL, NULL, self, 0.0);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GROUPING);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_MODULE);
-  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ORDER);*/
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_ORDER);
 
   dt_gui_menu_popup(GTK_MENU(spop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
   return TRUE;
@@ -957,13 +965,12 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ISO);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ASPECT_RATIO);
 
-  /* TO BE restored once the filters will be implemented
   dt_bauhaus_combobox_add_section(w, _("darktable"));
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GROUPING);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_LOCAL_COPY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_HISTORY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_MODULE);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);*/
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_ORDER);
 
 #undef ADD_COLLECT_ENTRY
 
@@ -1612,6 +1619,8 @@ static gboolean _sort_close(GtkWidget *widget, GdkEventButton *event, dt_lib_mod
   return TRUE;
 }
 
+static char **_sort_names = NULL;
+
 static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sortid, const int sortorder,
                            const int num, dt_lib_module_t *self)
 {
@@ -1629,7 +1638,13 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     sort->lib = d;
     sort->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_hexpand(sort->box, TRUE);
-    sort->sort = dt_bauhaus_combobox_new(NULL);
+    // we only allow shortcut for the first sort order, always visible
+    if(num == 0)
+      sort->sort = dt_bauhaus_combobox_new_action(DT_ACTION(self));
+    else
+      sort->sort = dt_bauhaus_combobox_new(NULL);
+    dt_bauhaus_widget_set_label(sort->sort, NULL, _("sort order"));
+    DT_BAUHAUS_WIDGET(sort->sort)->show_label = FALSE;
     gtk_widget_set_tooltip_text(sort->sort, _("determine the sort order of shown images"));
     g_signal_connect(G_OBJECT(sort->sort), "value-changed", G_CALLBACK(_sort_combobox_changed), sort);
 
@@ -1637,6 +1652,7 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
   dt_bauhaus_combobox_add_full(sort->sort, dt_collection_sort_name(value), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,       \
                                GUINT_TO_POINTER(value), NULL, TRUE)
 
+    // as the setting rely on ids, the orders of items can be changed if needed
     ADD_SORT_ENTRY(DT_COLLECTION_SORT_FILENAME);
     ADD_SORT_ENTRY(DT_COLLECTION_SORT_DATETIME);
     ADD_SORT_ENTRY(DT_COLLECTION_SORT_IMPORT_TIMESTAMP);
@@ -1656,6 +1672,25 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
 
 #undef ADD_SORT_ENTRY
 
+    if(num == 0)
+    {
+      if(!_sort_names)
+      {
+        // we insert untranslated sort name in the array + NULL at the end
+        _sort_names = g_malloc0_n(dt_bauhaus_combobox_length(sort->sort) + 1, sizeof(char *));
+        for(int i = 0; i < dt_bauhaus_combobox_length(sort->sort); i++)
+        {
+          // we recover the sort enum value from the bauhaus combobox.
+          // this is needed because combobox can have a items order different than the enum one
+          const dt_bauhaus_combobox_data_t *cbd = &DT_BAUHAUS_WIDGET(sort->sort)->data.combobox;
+          if(!cbd) continue;
+          const dt_bauhaus_combobox_entry_t *entry = g_ptr_array_index(cbd->entries, i);
+          _sort_names[i] = g_strdup(dt_collection_sort_name_untranslated(GPOINTER_TO_INT(entry->data)));
+        }
+      }
+      g_hash_table_insert(darktable.control->combo_list, (dt_action_t *)(DT_BAUHAUS_WIDGET(sort->sort)->module),
+                          _sort_names);
+    }
     gtk_box_pack_start(GTK_BOX(sort->box), sort->sort, TRUE, TRUE, 0);
 
     /* reverse order checkbutton */
@@ -1664,6 +1699,11 @@ static gboolean _sort_init(_widgets_sort_t *sort, const dt_collection_sort_t sor
     gtk_box_pack_start(GTK_BOX(sort->box), sort->direction, FALSE, TRUE, 0);
     g_signal_connect(G_OBJECT(sort->direction), "toggled", G_CALLBACK(_sort_reverse_changed), sort);
     dt_gui_add_class(sort->direction, "dt_ignore_fg_state");
+    if(num == 0)
+    {
+      dt_action_t *toggle = dt_action_section(DT_ACTION(self), N_("toggle"));
+      dt_action_define(toggle, NULL, _("sort direction"), sort->direction, &dt_action_def_toggle);
+    }
 
     sort->close = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
     gtk_widget_set_no_show_all(sort->close, TRUE);
@@ -1899,6 +1939,20 @@ void gui_init(dt_lib_module_t *self)
   d->nb_rules = 0;
   d->params = (dt_lib_filtering_params_t *)g_malloc0(sizeof(dt_lib_filtering_params_t));
 
+  darktable.control->accel_initialising = TRUE;
+  const int nb = sizeof(filters) / sizeof(_filter_t);
+  for(int i = 0; i < nb; i++)
+  {
+    dt_lib_filtering_rule_t temp_rule;
+    temp_rule.w_special_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+    filters[i].widget_init(&temp_rule, filters[i].prop, "", self, FALSE);
+
+    gtk_widget_destroy(temp_rule.w_special_box);
+    g_free(temp_rule.w_specific);
+  }
+  darktable.control->accel_initialising = FALSE;
+
   for(int i = 0; i < DT_COLLECTION_MAX_RULES; i++)
   {
     d->rule[i].num = i;
@@ -1984,7 +2038,7 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   _topbar_update(self);
 
   // we change the tooltip of the reset button here, as we are sure the header is defined now
-  gtk_widget_set_tooltip_text(self->reset_button, "reset\nctrl-click to remove pinned rules too");
+  gtk_widget_set_tooltip_text(self->reset_button, _("reset\nctrl-click to remove pinned rules too"));
 }
 
 // clang-format off

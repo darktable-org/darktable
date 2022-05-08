@@ -151,6 +151,7 @@ typedef struct dt_bauhaus_widget_t
 
   // label text, short
   char label[256];
+  gboolean show_label;
   // section, short
   gchar *section;
   gboolean show_extended_label;
@@ -171,6 +172,9 @@ typedef struct dt_bauhaus_widget_t
   GtkBorder *margin, *padding;
   // gap to add to the top padding due to the vertical centering
   int top_gap;
+
+  // is the popup not attached to the main widget (shortcuts)
+  gboolean detached_popup;
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
@@ -342,6 +346,7 @@ void dt_bauhaus_combobox_add_section(GtkWidget *widget, const char *text);
 void dt_bauhaus_combobox_add_aligned(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align);
 void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,
                                   gpointer data, void (*free_func)(void *data), gboolean sensitive);
+gboolean dt_bauhaus_combobox_set_entry_label(GtkWidget *widget, const int pos, const gchar *label);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *w, const char *text);
 gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *w, int value);

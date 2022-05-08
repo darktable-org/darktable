@@ -115,12 +115,41 @@ typedef enum _range_signal
 } _range_signal;
 static guint _signals[LAST_SIGNAL] = { 0 };
 
+static void _dt_pref_changed(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
+
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
+  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
+  int mh = -1;
+  int mw = -1;
+  gtk_style_context_get(context, state, "min-height", &mh, NULL);
+  gtk_style_context_get(context, state, "min-width", &mw, NULL);
+  GtkBorder margin, padding;
+  gtk_style_context_get_margin(context, state, &margin);
+  gtk_style_context_get_padding(context, state, &padding);
+  if(mw > 0)
+    mw += margin.left + margin.right + padding.right + padding.left;
+  else
+    mw = -1;
+  if(mh > 0)
+    mh += margin.top + margin.bottom + padding.top + padding.bottom;
+  else
+    mh = -1;
+  gtk_widget_set_size_request(range->band, mw, mh);
+
+  dtgtk_range_select_redraw(range);
+}
+
 // cleanup everything when the widget is destroyed
 static void _range_select_destroy(GtkWidget *widget)
 {
   g_return_if_fail(DTGTK_IS_RANGE_SELECT(widget));
 
   GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(widget);
+
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_pref_changed), range);
 
   if(range->markers) g_list_free_full(range->markers, g_free);
   range->markers = NULL;
@@ -1434,33 +1463,6 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range)
   gtk_widget_queue_draw(range->band);
 }
 
-static void _dt_pref_changed(gpointer instance, gpointer user_data)
-{
-  if(!user_data) return;
-  GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
-
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
-  int mh = -1;
-  int mw = -1;
-  gtk_style_context_get(context, state, "min-height", &mh, NULL);
-  gtk_style_context_get(context, state, "min-width", &mw, NULL);
-  GtkBorder margin, padding;
-  gtk_style_context_get_margin(context, state, &margin);
-  gtk_style_context_get_padding(context, state, &padding);
-  if(mw > 0)
-    mw += margin.left + margin.right + padding.right + padding.left;
-  else
-    mw = -1;
-  if(mh > 0)
-    mh += margin.top + margin.bottom + padding.top + padding.bottom;
-  else
-    mh = -1;
-  gtk_widget_set_size_request(range->band, mw, mh);
-
-  dtgtk_range_select_redraw(range);
-}
-
 static gboolean _event_band_motion(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   GtkDarktableRangeSelect *range = (GtkDarktableRangeSelect *)user_data;
@@ -1538,13 +1540,12 @@ static gboolean _event_band_press(GtkWidget *w, GdkEventButton *e, gpointer user
     if(range->mouse_inside == HOVER_MAX)
     {
       range->bounds &= ~DT_RANGE_BOUND_MAX;
-      range->select_min_r += 0.0001;
       range->select_max_r = pos_r;
     }
     else if(range->mouse_inside == HOVER_MIN)
     {
       range->bounds &= ~DT_RANGE_BOUND_MIN;
-      range->select_min_r = range->select_max_r + 0.0001;
+      range->select_min_r = range->select_max_r;
       range->select_max_r = pos_r;
     }
     else if(dt_modifier_is(e->state, GDK_SHIFT_MASK))
@@ -1641,8 +1642,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   // the graph band
   range->band = gtk_drawing_area_new();
   gtk_widget_set_events(range->band, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
-                                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                         | GDK_POINTER_MOTION_MASK);
+                                         | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(range->band), "draw", G_CALLBACK(_event_band_draw), range);
   g_signal_connect(G_OBJECT(range->band), "button-press-event", G_CALLBACK(_event_band_press), range);
   g_signal_connect(G_OBJECT(range->band), "button-release-event", G_CALLBACK(_event_band_release), range);
@@ -1707,7 +1707,7 @@ GType dtgtk_range_select_get_type()
       (GInstanceInitFunc)_range_select_init,
     };
     dtgtk_range_select_type
-        = g_type_register_static(GTK_TYPE_BIN, "GtkDarktableRangeSelect", &dtgtk_range_select_info, 0);
+        = g_type_register_static(GTK_TYPE_EVENT_BOX, "GtkDarktableRangeSelect", &dtgtk_range_select_info, 0);
   }
   return dtgtk_range_select_type;
 }
