@@ -1236,12 +1236,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       const float h_red   = atan2f(xyY_red[1] - D65_xyY[1], xyY_red[0] - D65_xyY[0]);
       const float h_green = atan2f(xyY_green[1] - D65_xyY[1], xyY_green[0] - D65_xyY[0]);
       const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
+        
+       float *const restrict LUT_saturation = d->gamut_LUT;
 
       // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
       #ifdef _OPENMP
         #pragma omp parallel for default(none) \
-              dt_omp_firstprivate(input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY, stdout) \
-              schedule(static) dt_omp_sharedconst(d)
+              dt_omp_firstprivate(input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY) \
+              schedule(static) dt_omp_sharedconst(LUT_saturation)
       #endif
       for(int i = 0; i < 50 * 360; i++)
       {
@@ -1291,7 +1293,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           index += (index < 0) ? 360 : 0;
           index -= (index > 359) ? 360 : 0;
           // Warning: we store M², the square of the colorfulness
-          d->gamut_LUT[index] = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
+          LUT_saturation[index] = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
         }
       }
     }
