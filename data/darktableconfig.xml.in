@@ -1318,7 +1318,7 @@
     <type>
       <enum>
         <option>false color</option>
-        <option>gray scale</option>
+        <option>grayscale</option>
       </enum>
     </type>
     <default>false color</default>
