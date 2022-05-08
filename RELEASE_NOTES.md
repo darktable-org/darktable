@@ -40,25 +40,25 @@ are described more fully in the user manual and accompanying blog post.
   match any source object in the image against an arbitrary target
   color. This can be used to perform white balance
   (chromatic adaptation) against non-grey objects of known color, or to
-  ensure the color consistency of an object across a series of images. 
+  ensure the color consistency of an object across a series of images.
 
 - Filmic v6
 
   Filmic v6 introduces new color science. This change removes the mandatory desaturation
   close to medium white and black and replaces it with a true gamut
-  mapping against the output (or export) color space. This allows for more 
+  mapping against the output (or export) color space. This allows for more
   saturated colors, notably in blue skies.
 
   For users who still prefer the "desaturated highlights" look,
-  you can still do this by disabling chroma preservation, but v6 adds a 
-  hue handcuff to prevent the traditional hue shift that comes with this 
+  you can still do this by disabling chroma preservation, but v6 adds a
+  hue handcuff to prevent the traditional hue shift that comes with this
   method (where saturated blue skies degrade to cyan and saturated red to yellow).
 
-  This gamut sanitization is the third and last to be added to darktable, 
+  This gamut sanitization is the third and last to be added to darktable,
   which now has a fully-sanitized color pipeline from input (color calibration),
-  through artistic changes (color balance rgb) to output (filmic v6). Users 
-  can now color-grade pictures safely in the knowledge that invalid input 
-  colors can be recovered in the least destructive fashion possible early 
+  through artistic changes (color balance rgb) to output (filmic v6). Users
+  can now color-grade pictures safely in the knowledge that invalid input
+  colors can be recovered in the least destructive fashion possible early
   in the pipeline, and valid colors can't be pushed out of gamut along the pipeline.
 
   Note: If modules are applied after filmic in the pipeline, they
@@ -69,18 +69,18 @@ are described more fully in the user manual and accompanying blog post.
 - Guided laplacian highlight reconstruction
 
   A new "guided laplacian" method has been added to the "highlight
-  reconstruction" module. This uses an iterative and multi-scale wavelet 
-  scheme to extract valid details from non-clipped RGB channel(s) if any, 
+  reconstruction" module. This uses an iterative and multi-scale wavelet
+  scheme to extract valid details from non-clipped RGB channel(s) if any,
   uses these details to guide the reconstruction of clipped channels, and finally
   propagates the color gradients from neighboring valid regions using
-  edge-aware color diffusion. This limits color bleeding through edges 
+  edge-aware color diffusion. This limits color bleeding through edges
   (preventing green leaves from bleeding color in the reconstruction of clipped
   blue sky, for example).
 
   A noise setting allows Poisson noise to be added to reconstructed highlights,
   in order to help blend them into noisy high-ISO images.
 
-  This method is only available for Bayer sensors and cannot be adapted 
+  This method is only available for Bayer sensors and cannot be adapted
   to X-Trans sensors.
 
 - UI Rewrite
@@ -144,19 +144,19 @@ are described more fully in the user manual and accompanying blog post.
   the academic databases of cosmetology and dermatology available at the
   time of programming. They are only valid for a D65 illuminant and for
   an exposure setting that anchors diffuse white at 92% relative
-  luminance. 
+  luminance.
 
-- A new "contrast" parameter has been added to the guide line overlay 
+- A new "contrast" parameter has been added to the guide line overlay
   settings, allowing for better visibility of the lines over images.
 
-- A new "collection filters" module has been introduced, designed to be easier 
+- A new "collection filters" module has been introduced, designed to be easier
   to use than the filtering in the current "collections" module.
 
   The new module allows the current collection to be sorted and filtered using multiple
   criteria. Each sort/filter rule can be pinned, which duplicates the appropriate control
   on the top tool bar for quick access.
 
-  The following filters have been implemented (more to come in the next version): 
+  The following filters have been implemented (more to come in the next version):
     color labels, text search, date-time filters, exposure, iso,
     focal length, aperture, aspect ratio, filename and extension,
     grouping, history, local copy, module order
@@ -165,7 +165,7 @@ are described more fully in the user manual and accompanying blog post.
 
   All-new text and color filter widgets have been implemented.
 
-- The "recently used collections" module is now incorporated into the 
+- The "recently used collections" module is now incorporated into the
   "collections" module as a "history" button
 
 - The darkroom's module-search facility has been enhanced to also match on
@@ -190,14 +190,14 @@ are described more fully in the user manual and accompanying blog post.
   Slider step sizes have been standardized and can now be
   configured individually.
 
-  Extra pen tablet button clicks  are now treated as key presses so that 
+  Extra pen tablet button clicks  are now treated as key presses so that
   they can be used in shortcuts.
 
-  Support for game-pad triggers has been added (treating them as buttons) 
+  Support for game-pad triggers has been added (treating them as buttons)
   allowing them to be used as shortcuts.
 
 - Modifiers (<kbd>Ctrl</kbd>/<kbd>Shift</kbd>/<kbd>Ctrl+Shift</kbd>)
-  can now be used when dragging sliders, to modify the precision of the 
+  can now be used when dragging sliders, to modify the precision of the
   value-changes.
 
 - When using the "copy" and "move" functionality in the lighttable, the last
@@ -220,8 +220,8 @@ are described more fully in the user manual and accompanying blog post.
 - It is now possible to edit a single node on a brush path. You can
   change the size, opacity and hardness of each node independently.
 
-- A new button in the "highlight reconstruction" module allows clipped pixels 
-  to be better visualized. 
+- A new button in the "highlight reconstruction" module allows clipped pixels
+  to be better visualized.
 
 - The raw overexposure function now shows actual sensor clipping rather than being
   adjusted according to the white balance of the image. This is better
@@ -249,7 +249,7 @@ are described more fully in the user manual and accompanying blog post.
   have been resolved. "Jumpy" movements are also improved when adjusting
   nodes or segments.
 
-- The start of culling mode is improved, especially where no images are 
+- The start of culling mode is improved, especially where no images are
   selected and/or under the mouse.
 
 - Local-copy status icon position fixed in block overlay.
@@ -276,17 +276,17 @@ are described more fully in the user manual and accompanying blog post.
   perspective correction. This fixes an issue when the image is
   flipped making it impossible to use the rotation control.
 
-- Removed RatingPercent in EXIF data as it is not standardized and 
+- Removed RatingPercent in EXIF data as it is not standardized and
   can confuse the Windows image viewer.
 
 - Fixed label/reject behavior when multiple images are selected:
 
   When attempting to reject multiple images, they will now be set to rejected if
   **any** of them are not currently rejected. They will be set to un-rejected if
-  **all** of them are currently rejected. 
+  **all** of them are currently rejected.
 
   This allows for more predictable handling of images with inconsistent reject statuses.
-  
+
   Similar changes have also been made when toggling color labels on/off.
 
 - Fixed white balance preset lookup in the "white balance" module.
