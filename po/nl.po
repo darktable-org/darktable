@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-04 23:17+0200\n"
-"PO-Revision-Date: 2022-05-05 16:01+0200\n"
+"POT-Creation-Date: 2022-05-06 19:11+0200\n"
+"PO-Revision-Date: 2022-05-08 10:26+0200\n"
 "Last-Translator: Nick Alderweireldt>\n"
 "Language-Team: Nick Alderweireldt\n"
 "Language: nl_NL\n"
@@ -1973,10 +1973,10 @@ msgstr "sorteer collectie aflopend"
 #: ../build/bin/preferences_gen.h:8818
 msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
-"'folder', 'times' (e.g. 'date taken')"
+"'folder', 'times' (e.g. 'capture date')"
 msgstr ""
 "sorteer de volgende collecties in aflopende volgorde: ‘film rol’ op map, "
-"‘map’, ‘tijden’ (bijv. ‘opnamedatum’)"
+"‘map’, ‘tijden’ (bijv. ‘opname datum’)"
 
 #: ../build/bin/preferences_gen.h:8888
 msgid "suggested tags level of confidence"
@@ -3224,7 +3224,7 @@ msgstr "contrast grijs draaipunt"
 #: ../src/gui/guides.c:738 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
 #: ../src/iop/colisa.c:305 ../src/iop/colorbalance.c:1895
 #: ../src/iop/colorbalance.c:1901 ../src/iop/filmic.c:1649
-#: ../src/iop/filmicrgb.c:4442 ../src/iop/lowpass.c:573
+#: ../src/iop/filmicrgb.c:4494 ../src/iop/lowpass.c:573
 msgid "contrast"
 msgstr "contrast"
 
@@ -3806,7 +3806,7 @@ msgstr "hardheid"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:296
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4615
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4667
 msgid "extreme luminance saturation"
 msgstr "extreme luminantie verzadiging"
 
@@ -3872,7 +3872,7 @@ msgstr "spline-afhandeling"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:533
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
-#: ../src/common/database.c:2713 ../src/common/variables.c:592
+#: ../src/common/database.c:2751 ../src/common/variables.c:592
 #: ../src/develop/imageop_gui.c:196 ../src/imageio/format/pdf.c:647
 #: ../src/imageio/format/pdf.c:672 ../src/libs/export.c:1208
 #: ../src/libs/export.c:1214 ../src/libs/export.c:1221
@@ -4022,8 +4022,9 @@ msgid "reconstruct color"
 msgstr "reconstrueer kleur"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:261
-msgid "guided laplacians (AI)"
-msgstr "gestuurde laplace-operatoren (AI)"
+#: ../src/iop/highlights.c:2153
+msgid "guided laplacians"
+msgstr "gestuurde laplacians"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:265
 msgid "4 px"
@@ -5742,7 +5743,7 @@ msgstr ""
 msgid "you may tune as before except 'magic'"
 msgstr "je kan afstellen zoals hiervoor behalve 'magisch'"
 
-#: ../src/common/database.c:2684
+#: ../src/common/database.c:2722
 #, c-format
 msgid ""
 "\n"
@@ -5802,11 +5803,11 @@ msgstr ""
 "genereren. </i>\n"
 
 #. clang-format on
-#: ../src/common/database.c:2705
+#: ../src/common/database.c:2743
 msgid "error starting darktable"
 msgstr "fout bij het starten van darktable"
 
-#: ../src/common/database.c:2706 ../src/libs/collect.c:2913
+#: ../src/common/database.c:2744 ../src/libs/collect.c:2913
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
 #: ../src/libs/modulegroups.c:3507 ../src/libs/styles.c:423
@@ -5817,15 +5818,15 @@ msgstr "fout bij het starten van darktable"
 msgid "cancel"
 msgstr "annuleer"
 
-#: ../src/common/database.c:2706
+#: ../src/common/database.c:2744
 msgid "delete database lock files"
 msgstr "verwijder databasevergrendelingsbestanden"
 
-#: ../src/common/database.c:2712
+#: ../src/common/database.c:2750
 msgid "are you sure?"
 msgstr "weet je het zeker?"
 
-#: ../src/common/database.c:2713
+#: ../src/common/database.c:2751
 msgid ""
 "\n"
 "do you really want to delete the lock files?\n"
@@ -5833,7 +5834,7 @@ msgstr ""
 "\n"
 "wil je de lock-bestanden echt verwijderen?\n"
 
-#: ../src/common/database.c:2713 ../src/common/database.c:3773
+#: ../src/common/database.c:2751 ../src/common/database.c:3811
 #: ../src/common/variables.c:590 ../src/develop/imageop_gui.c:197
 #: ../src/imageio/format/pdf.c:648 ../src/imageio/format/pdf.c:673
 #: ../src/libs/export.c:1209 ../src/libs/export.c:1215
@@ -5841,12 +5842,12 @@ msgstr ""
 msgid "yes"
 msgstr "ja"
 
-#: ../src/common/database.c:2728 ../src/libs/export_metadata.c:164
+#: ../src/common/database.c:2766 ../src/libs/export_metadata.c:164
 #: ../src/libs/geotagging.c:812
 msgid "done"
 msgstr "gereed"
 
-#: ../src/common/database.c:2729
+#: ../src/common/database.c:2767
 msgid ""
 "\n"
 "successfully deleted the lock files.\n"
@@ -5857,16 +5858,16 @@ msgstr ""
 "je kunt nu darktable herstarten\n"
 
 #. the button to close the popup
-#: ../src/common/database.c:2730 ../src/common/database.c:2737
+#: ../src/common/database.c:2768 ../src/common/database.c:2775
 #: ../src/libs/filters/filename.c:451
 msgid "ok"
 msgstr "ok"
 
-#: ../src/common/database.c:2733 ../src/iop/cacorrect.c:1336
+#: ../src/common/database.c:2771 ../src/iop/cacorrect.c:1336
 msgid "error"
 msgstr "fout"
 
-#: ../src/common/database.c:2734
+#: ../src/common/database.c:2772
 #, c-format
 msgid ""
 "\n"
@@ -5881,7 +5882,7 @@ msgstr ""
 "i> handmatig te verwijderen\n"
 "in map <a href=“file:///%s”>%s</a>.\n"
 
-#: ../src/common/database.c:2851
+#: ../src/common/database.c:2889
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -5890,18 +5891,18 @@ msgstr ""
 "het database lock-bestand bevat een PID die blijkbaar nog actief in uw "
 "systeem is:% d"
 
-#: ../src/common/database.c:2857
+#: ../src/common/database.c:2895
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "het database lock-bestand lijkt leeg te zijn"
 
-#: ../src/common/database.c:2865
+#: ../src/common/database.c:2903
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "inlezen van het database bestand geeft een foutmelding: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:2902
+#: ../src/common/database.c:2940
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -5920,21 +5921,21 @@ msgstr ""
 "\n"
 "wilt u doorgaan of nu stoppen om een back-up te maken\n"
 
-#: ../src/common/database.c:2910
+#: ../src/common/database.c:2948
 msgid "darktable - schema migration"
 msgstr "darktable - schema migratie"
 
-#: ../src/common/database.c:2911 ../src/common/database.c:3224
-#: ../src/common/database.c:3242 ../src/common/database.c:3404
-#: ../src/common/database.c:3422
+#: ../src/common/database.c:2949 ../src/common/database.c:3262
+#: ../src/common/database.c:3280 ../src/common/database.c:3442
+#: ../src/common/database.c:3460
 msgid "close darktable"
 msgstr "darktable afsluiten"
 
-#: ../src/common/database.c:2911
+#: ../src/common/database.c:2949
 msgid "upgrade database"
 msgstr "database opwaarderen"
 
-#: ../src/common/database.c:3204 ../src/common/database.c:3384
+#: ../src/common/database.c:3242 ../src/common/database.c:3422
 #, c-format
 msgid ""
 "quick_check said:\n"
@@ -5943,21 +5944,21 @@ msgstr ""
 "snelle controle zegt:\n"
 "%s \n"
 
-#: ../src/common/database.c:3221 ../src/common/database.c:3239
-#: ../src/common/database.c:3401 ../src/common/database.c:3419
+#: ../src/common/database.c:3259 ../src/common/database.c:3277
+#: ../src/common/database.c:3439 ../src/common/database.c:3457
 msgid "darktable - error opening database"
 msgstr "darktable - fout bij openen database"
 
-#: ../src/common/database.c:3226 ../src/common/database.c:3406
+#: ../src/common/database.c:3264 ../src/common/database.c:3444
 msgid "attempt restore"
 msgstr "probeer te herstellen"
 
-#: ../src/common/database.c:3228 ../src/common/database.c:3244
-#: ../src/common/database.c:3408 ../src/common/database.c:3424
+#: ../src/common/database.c:3266 ../src/common/database.c:3282
+#: ../src/common/database.c:3446 ../src/common/database.c:3462
 msgid "delete database"
 msgstr "verwijder database"
 
-#: ../src/common/database.c:3232 ../src/common/database.c:3412
+#: ../src/common/database.c:3270 ../src/common/database.c:3450
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup, attempt an automatic restore\n"
@@ -5969,7 +5970,7 @@ msgstr ""
 "uit de meest recente momentopname of de beschadigde database verwijderen\n"
 "en met een nieuwe beginnen?"
 
-#: ../src/common/database.c:3248 ../src/common/database.c:3428
+#: ../src/common/database.c:3286 ../src/common/database.c:3466
 msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or delete the corrupted database\n"
@@ -5979,7 +5980,7 @@ msgstr ""
 " te herstellen uit een back-up of de beschadigde database te verwijderen\n"
 "en met een nieuwe beginnen?"
 
-#: ../src/common/database.c:3255 ../src/common/database.c:3433
+#: ../src/common/database.c:3293 ../src/common/database.c:3471
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -5996,20 +5997,20 @@ msgstr ""
 "het lijkt erop dat de database is beschadigd. \n"
 "%s%s"
 
-#: ../src/common/database.c:3751
+#: ../src/common/database.c:3789
 msgid "click later to be asked on next startup"
 msgstr "klik later om te worden gevraagd bij volgende start"
 
-#: ../src/common/database.c:3755
+#: ../src/common/database.c:3793
 msgid "click later to be asked when closing darktable"
 msgstr "klik later om te worden gevraagd wanneer darktable sluit"
 
-#: ../src/common/database.c:3759
+#: ../src/common/database.c:3797
 msgid "click later to be asked next time when closing darktable"
 msgstr ""
 "klik later om de volgende keer te worden gevraagd wanneer darktable sluit"
 
-#: ../src/common/database.c:3762
+#: ../src/common/database.c:3800
 #, c-format
 msgid ""
 "the database could use some maintenance\n"
@@ -6030,11 +6031,11 @@ msgstr ""
 "%s\n"
 "je kunt de onderhoudsvoorkeuren altijd wijzigen in de kernopties"
 
-#: ../src/common/database.c:3772
+#: ../src/common/database.c:3810
 msgid "darktable - schema maintenance"
 msgstr "darktable - schema onderhoud"
 
-#: ../src/common/database.c:3773
+#: ../src/common/database.c:3811
 msgid "later"
 msgstr "later"
 
@@ -6125,62 +6126,62 @@ msgstr "datum / tijd ongedaan gemaakt voor %d afbeeldingen"
 msgid "date/time re-applied to %d images"
 msgstr "datum / tijd opnieuw toegepast op %d afbeeldingen"
 
-#: ../src/common/image.c:1988
+#: ../src/common/image.c:1991
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "geen toegang tot lokale kopie `%s'"
 
-#: ../src/common/image.c:1995
+#: ../src/common/image.c:1998
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "kan geen lokale kopie `%s' schrijven"
 
-#: ../src/common/image.c:2002
+#: ../src/common/image.c:2005
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "fout bij het verplaatsen van lokale kopie `%s' -> `%s'"
 
-#: ../src/common/image.c:2018
+#: ../src/common/image.c:2021
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "fout bij het verplaatsen `%s': bestand niet gevonden"
 
-#: ../src/common/image.c:2028
+#: ../src/common/image.c:2031
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "fout bij het verplaatsen `%s' -> `%s': bestand bestaan al"
 
-#: ../src/common/image.c:2032
+#: ../src/common/image.c:2035
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "fout bij het verplaatsen `%s' -> `%s'"
 
-#: ../src/common/image.c:2346
+#: ../src/common/image.c:2349
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "aanmaak lokale kopie lukt alleen als het origineel toegankelijk is."
 
-#: ../src/common/image.c:2360
+#: ../src/common/image.c:2363
 msgid "cannot create local copy."
 msgstr "aanmaak lokale kopie niet mogelijk."
 
-#: ../src/common/image.c:2434 ../src/control/jobs/control_jobs.c:768
+#: ../src/common/image.c:2437 ../src/control/jobs/control_jobs.c:768
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "verwijderen van lokale kopie is niet mogelijk wanneer het origineel niet "
 "toegankelijk is."
 
-#: ../src/common/image.c:2599
+#: ../src/common/image.c:2602
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d lokale kopie is gesynchroniseerd"
 msgstr[1] "%d lokale kopieën zijn gesynchroniseerd"
 
-#: ../src/common/image.c:2788
+#: ../src/common/image.c:2791
 msgid "<b>WARNING</b> : camera is missing samples!"
 msgstr "<b>WARNING</b> : camera mist stalen!"
 
-#: ../src/common/image.c:2789
+#: ../src/common/image.c:2792
 msgid ""
 "You must provide samples in <a href='https://raw.pixls.us/'>https://raw."
 "pixls.us/</a>"
@@ -6188,7 +6189,7 @@ msgstr ""
 "Je moet voorbeelden aanleveren in <a href='https://raw.pixls.us/'>https://"
 "raw.pixls.us/</a>"
 
-#: ../src/common/image.c:2790
+#: ../src/common/image.c:2793
 #, c-format
 msgid ""
 "for `%s' `%s'\n"
@@ -6197,16 +6198,16 @@ msgstr ""
 "voor `%s' `%s'\n"
 "in zoveel mogelijk formaten/compressie/bitdieptes"
 
-#: ../src/common/image.c:2793
+#: ../src/common/image.c:2796
 msgid "or the <b>RAW won't be readable</b> in next version."
 msgstr "of de <b>RAW is niet leesbaar</b> in de volgende versie."
 
-#: ../src/common/imageio.c:701 ../src/common/mipmap_cache.c:1074
+#: ../src/common/imageio.c:740 ../src/common/mipmap_cache.c:1074
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "afbeelding `%s' is niet beschikbaar!"
 
-#: ../src/common/imageio.c:719
+#: ../src/common/imageio.c:758
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -6215,17 +6216,17 @@ msgstr ""
 "geheugen toewijzing voor %s mislukt, verlaag het aantal exporteerstappen of "
 "koop meer geheugen."
 
-#: ../src/common/imageio.c:720
+#: ../src/common/imageio.c:759
 msgctxt "noun"
 msgid "thumbnail export"
 msgstr "miniatuur exporteren"
 
-#: ../src/common/imageio.c:720
+#: ../src/common/imageio.c:759
 msgctxt "noun"
 msgid "export"
 msgstr "exporteren"
 
-#: ../src/common/imageio.c:732
+#: ../src/common/imageio.c:771
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "toe te passen stijl '%s' bij het exporteren is niet gevonden."
@@ -6294,27 +6295,27 @@ msgstr "generic poissonian"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "ruisprofiel bestand `%s' is ongeldig"
 
-#: ../src/common/opencl.c:1072
+#: ../src/common/opencl.c:1073
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "vanwege langzame GPU-hardware wordt versnelling via opencl uitgeschakeld"
 
-#: ../src/common/opencl.c:1079
+#: ../src/common/opencl.c:1080
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "meerdere GPU's gedecteerd = OpenCL planningsprofiel is hiermee "
 "overeenkomstig ingesteld"
 
-#: ../src/common/opencl.c:1086
+#: ../src/common/opencl.c:1087
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "zeer snelle GPU gedetecteerd - OpenCL planningsprofiel is hiermee "
 "overeenkomstig ingesteld"
 
-#: ../src/common/opencl.c:1093
+#: ../src/common/opencl.c:1094
 msgid "opencl scheduling profile set to default"
 msgstr "maak standaard van OpenCl planningsprofiel"
 
@@ -7741,8 +7742,8 @@ msgstr ""
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:1729
 #: ../src/iop/exposure.c:1026 ../src/iop/exposure.c:1039
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
-#: ../src/iop/filmicrgb.c:4331 ../src/iop/filmicrgb.c:4341
-#: ../src/iop/filmicrgb.c:4376 ../src/iop/filmicrgb.c:4386
+#: ../src/iop/filmicrgb.c:4383 ../src/iop/filmicrgb.c:4393
+#: ../src/iop/filmicrgb.c:4428 ../src/iop/filmicrgb.c:4438
 #: ../src/iop/graduatednd.c:1098 ../src/iop/negadoctor.c:983
 #: ../src/iop/profile_gamma.c:651 ../src/iop/profile_gamma.c:657
 #: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3131
@@ -8583,7 +8584,7 @@ msgstr ""
 "waarschijnlijke oorzaak door het toepassen van een voorkeur, stijl of "
 "geschiedenis van kopiëren en plakken"
 
-#: ../src/develop/pixelpipe_hb.c:2244
+#: ../src/develop/pixelpipe_hb.c:2241
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -11893,7 +11894,7 @@ msgstr ""
 "verandert alleen luminantie en resultaten in kleurwaardetabs"
 
 #: ../src/iop/atrous.c:1755 ../src/iop/colorbalancergb.c:1695
-#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4298
+#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4350
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:932
 #: ../src/iop/toneequal.c:3176
 msgid "graph"
@@ -13081,7 +13082,7 @@ msgstr ""
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4002 ../src/iop/clipping.c:2105
-#: ../src/iop/colorbalancergb.c:1508 ../src/iop/filmicrgb.c:4313
+#: ../src/iop/colorbalancergb.c:1508 ../src/iop/filmicrgb.c:4365
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3124
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2351
 #: ../src/views/lighttable.c:1240
@@ -15468,8 +15469,8 @@ msgstr ""
 msgid "magic lantern defaults"
 msgstr "magic lantern standaard"
 
-#: ../src/iop/exposure.c:305 ../src/iop/rawoverexposed.c:173
-#: ../src/iop/rawoverexposed.c:292
+#: ../src/iop/exposure.c:305 ../src/iop/rawoverexposed.c:135
+#: ../src/iop/rawoverexposed.c:254
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "invoer raw buffer van afbeelding `%s' is mislukt"
@@ -15618,7 +15619,7 @@ msgstr ""
 "wijzig om de gemiddelde luminantie van het onderwerp te laten overeenkomen\n"
 "behalve bij tegenlichtsituaties, de waarde zal ongeveer 18% zijn."
 
-#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4333
+#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4385
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15628,7 +15629,7 @@ msgstr ""
 "dit is een waarde die een lichtmeter zou geven\n"
 "pas het zodanig aan dat clippen wordt voorkomen"
 
-#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4343
+#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4395
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15648,8 +15649,8 @@ msgstr ""
 "vergroot of verklein het berekende dynamisch bereik\n"
 "nuttig in combinatie met \"automatische afstemming niveaus\"."
 
-#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4356
-#: ../src/iop/filmicrgb.c:4359 ../src/iop/profile_gamma.c:667
+#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4408
+#: ../src/iop/filmicrgb.c:4411 ../src/iop/profile_gamma.c:667
 msgid "auto tune levels"
 msgstr "automatische afstemming niveaus"
 
@@ -15669,7 +15670,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "filmic S curve"
 
-#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4445
+#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4497
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -15678,7 +15679,7 @@ msgstr ""
 "beïnvloed met name de middenkleuren"
 
 #. geotagging
-#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4454
+#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4506
 #: ../src/libs/metadata_view.c:157
 msgid "latitude"
 msgstr "breedte"
@@ -15697,7 +15698,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr "schaduwen en hooglichten balans"
 
-#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4465
+#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4517
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -15779,7 +15780,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "bestemming /display"
 
-#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4484
+#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4536
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -15787,7 +15788,7 @@ msgstr ""
 "luminantie voor uitgaand pikzwart, dit moet uitkomen op 0%\n"
 "tenzij een fletser beeld gewenst wordt"
 
-#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4491
+#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4543
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -15795,7 +15796,7 @@ msgstr ""
 "middengrijswaarde voor doelscherm of kleurruimte\n"
 "wijzig dit niet tenzij je weet waarmee je bezig bent."
 
-#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4498
+#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4550
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -15846,72 +15847,72 @@ msgstr ""
 "filmische hooglichtenreconstructie kon geen geheugen toewijzen, controleer "
 "uw RAM-instellingen"
 
-#: ../src/iop/filmicrgb.c:1949 ../src/iop/filmicrgb.c:2238
+#: ../src/iop/filmicrgb.c:2001 ../src/iop/filmicrgb.c:2290
 msgid "filmic works only on RGB input"
 msgstr "filmic werkt alleen op RGB-invoer"
 
-#: ../src/iop/filmicrgb.c:2093
+#: ../src/iop/filmicrgb.c:2145
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 "filmische hoogtepuntenreconstructie kon geen geheugen toewijzen aan GPU"
 
-#: ../src/iop/filmicrgb.c:3337
+#: ../src/iop/filmicrgb.c:3389
 msgid "look only"
 msgstr "enkel kijken"
 
-#: ../src/iop/filmicrgb.c:3339
+#: ../src/iop/filmicrgb.c:3391
 msgid "look + mapping (lin)"
 msgstr "kijken + in kaart brengen (lin)"
 
-#: ../src/iop/filmicrgb.c:3341
+#: ../src/iop/filmicrgb.c:3393
 msgid "look + mapping (log)"
 msgstr "kijken + in kaart brengen (log)"
 
-#: ../src/iop/filmicrgb.c:3343
+#: ../src/iop/filmicrgb.c:3395
 msgid "dynamic range mapping"
 msgstr "dynamisch bereik in kaart brengen"
 
-#: ../src/iop/filmicrgb.c:3710
+#: ../src/iop/filmicrgb.c:3762
 #, c-format
 msgid "(%.0f %%)"
 msgstr "(%.0f %%)"
 
-#: ../src/iop/filmicrgb.c:3726
+#: ../src/iop/filmicrgb.c:3778
 #, no-c-format
 msgid "% display"
 msgstr "weergave"
 
-#: ../src/iop/filmicrgb.c:3738
+#: ../src/iop/filmicrgb.c:3790
 msgid "EV scene"
 msgstr "EV scène"
 
-#: ../src/iop/filmicrgb.c:3742
+#: ../src/iop/filmicrgb.c:3794
 #, no-c-format
 msgid "% camera"
 msgstr "% camera"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3778 ../src/iop/filmicrgb.c:4478
+#: ../src/iop/filmicrgb.c:3830 ../src/iop/filmicrgb.c:4530
 msgid "display"
 msgstr "display"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3787
+#: ../src/iop/filmicrgb.c:3839
 msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3796 ../src/iop/filmicrgb.c:4316
+#: ../src/iop/filmicrgb.c:3848 ../src/iop/filmicrgb.c:4368
 msgid "scene"
 msgstr "decor"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3805
+#: ../src/iop/filmicrgb.c:3857
 msgid "(EV)"
 msgstr "(EV)"
 
 #. we are over the graph area
-#: ../src/iop/filmicrgb.c:4234
+#: ../src/iop/filmicrgb.c:4286
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -15921,11 +15922,11 @@ msgstr ""
 "de heldere curve is de filmic tonemapping curve\n"
 "de donkere curve is de desaturatiecurve."
 
-#: ../src/iop/filmicrgb.c:4240
+#: ../src/iop/filmicrgb.c:4292
 msgid "toggle axis labels and values display"
 msgstr "schakel aslabels en waarden weergeven in/uit"
 
-#: ../src/iop/filmicrgb.c:4244
+#: ../src/iop/filmicrgb.c:4296
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
@@ -15937,7 +15938,7 @@ msgstr ""
 "rechtermuisknop: achteruit bladeren.\n"
 "dubbelklik: reset om de weergave te bekijken."
 
-#: ../src/iop/filmicrgb.c:4323
+#: ../src/iop/filmicrgb.c:4375
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -15948,7 +15949,7 @@ msgstr ""
 "de hier ingevoerde waarde wordt dan opnieuw toegewezen aan 18,45%.\n"
 "verlaag de waarde om de algehele helderheid te verhogen."
 
-#: ../src/iop/filmicrgb.c:4351
+#: ../src/iop/filmicrgb.c:4403
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -15956,7 +15957,7 @@ msgstr ""
 "vergroot of verklein het berekende dynamisch bereik dynamisch\n"
 "dat is nuttig voor een veiligheidsmarge bij extreme luminanties."
 
-#: ../src/iop/filmicrgb.c:4361
+#: ../src/iop/filmicrgb.c:4413
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -15974,15 +15975,15 @@ msgstr ""
 "zorg ervoor dat u de veronderstellingen begrijpt voordat u het gebruikt."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4370
+#: ../src/iop/filmicrgb.c:4422
 msgid "reconstruct"
 msgstr "reconstrueer"
 
-#: ../src/iop/filmicrgb.c:4372
+#: ../src/iop/filmicrgb.c:4424
 msgid "highlights clipping"
 msgstr "hooglichten uitknippen"
 
-#: ../src/iop/filmicrgb.c:4378
+#: ../src/iop/filmicrgb.c:4430
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -15998,7 +15999,7 @@ msgstr ""
 "verlagen om meer gebieden op te nemen,\n"
 "verhogen om meer gebieden uit te sluiten."
 
-#: ../src/iop/filmicrgb.c:4388
+#: ../src/iop/filmicrgb.c:4440
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -16008,15 +16009,15 @@ msgstr ""
 "verlaag om de overgang harder en scherper te maken,\n"
 "verhoog om de overgang zachter en vager te maken."
 
-#: ../src/iop/filmicrgb.c:4394 ../src/iop/filmicrgb.c:4395
+#: ../src/iop/filmicrgb.c:4446 ../src/iop/filmicrgb.c:4447
 msgid "display highlight reconstruction mask"
 msgstr "toon hooglichten reconstuctiemasker"
 
-#: ../src/iop/filmicrgb.c:4402 ../src/iop/splittoning.c:527
+#: ../src/iop/filmicrgb.c:4454 ../src/iop/splittoning.c:527
 msgid "balance"
 msgstr "witbalans"
 
-#: ../src/iop/filmicrgb.c:4409
+#: ../src/iop/filmicrgb.c:4461
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16033,7 +16034,7 @@ msgstr ""
 "verhoog als ten minste één RGB-kanaal niet is afgekapt.\n"
 "verlaag als alle RGB-kanalen over grote gebieden worden afgekapt."
 
-#: ../src/iop/filmicrgb.c:4420
+#: ../src/iop/filmicrgb.c:4472
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16050,7 +16051,7 @@ msgstr ""
 "verhoog als u meer details wilt.\n"
 "verminder als u meer vervaging wilt."
 
-#: ../src/iop/filmicrgb.c:4432
+#: ../src/iop/filmicrgb.c:4484
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16068,11 +16069,11 @@ msgstr ""
 "verminder als u magenta hooglichten of hooglichten buiten het gamma ziet."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4440
+#: ../src/iop/filmicrgb.c:4492
 msgid "look"
 msgstr "uiterlijk"
 
-#: ../src/iop/filmicrgb.c:4450
+#: ../src/iop/filmicrgb.c:4502
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -16082,7 +16083,7 @@ msgstr ""
 "verhogen om hooglichten helderder en minder gecomprimeerd te maken.\n"
 "verlagen om hooglichten te dempen."
 
-#: ../src/iop/filmicrgb.c:4458
+#: ../src/iop/filmicrgb.c:4510
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -16095,7 +16096,7 @@ msgstr ""
 "anders afnemen. er vindt geen desaturatie plaats in het breedtegraadbereik.\n"
 "dit heeft geen effect op de middentonen."
 
-#: ../src/iop/filmicrgb.c:4473 ../src/iop/filmicrgb.c:4616
+#: ../src/iop/filmicrgb.c:4525 ../src/iop/filmicrgb.c:4668
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -16106,11 +16107,11 @@ msgstr ""
 "verhoog dit als schaduwen en/of hooglichten onderverzadigd zijn."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:4502
+#: ../src/iop/filmicrgb.c:4554
 msgid "options"
 msgstr "opties"
 
-#: ../src/iop/filmicrgb.c:4507
+#: ../src/iop/filmicrgb.c:4559
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -16119,7 +16120,7 @@ msgstr ""
 "v4 is een nieuwere desaturatiemethode, gebaseerd op de spectrale zuiverheid "
 "van licht."
 
-#: ../src/iop/filmicrgb.c:4511
+#: ../src/iop/filmicrgb.c:4563
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -16129,7 +16130,7 @@ msgstr ""
 "mogelijk worden chromatische aberraties en ruis versterkt\n"
 "dus zorg ervoor dat ze elders correct worden gecorrigeerd\n"
 
-#: ../src/iop/filmicrgb.c:4517
+#: ../src/iop/filmicrgb.c:4569
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16139,7 +16140,7 @@ msgstr ""
 "hard gebruikt een hoge kromming wat resulteert in meer tonale compressie.\n"
 "zacht gebruikt een lage kromming, wat resulteert in minder tonale compressie."
 
-#: ../src/iop/filmicrgb.c:4522
+#: ../src/iop/filmicrgb.c:4574
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16149,7 +16150,7 @@ msgstr ""
 "hard gebruikt een hoge kromming wat resulteert in meer tonale compressie.\n"
 "Zacht gebruikt een lage kromming, wat resulteert in minder tonale compressie."
 
-#: ../src/iop/filmicrgb.c:4527
+#: ../src/iop/filmicrgb.c:4579
 #, c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -16163,7 +16164,7 @@ msgstr ""
 "belichtingsmodule.\n"
 "uitschakelen om standaard 18.45 %% middengrijs te gebruiken."
 
-#: ../src/iop/filmicrgb.c:4534
+#: ../src/iop/filmicrgb.c:4586
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -16176,7 +16177,7 @@ msgstr ""
 "afstemming.\n"
 "uitschakelen als je een handmatige bediening wilt."
 
-#: ../src/iop/filmicrgb.c:4540
+#: ../src/iop/filmicrgb.c:4592
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -16188,7 +16189,7 @@ msgstr ""
 "dit zal langzamer zijn maar zal meer neutrale hooglichten opleveren.\n"
 "het helpt ook bij moeilijke gevallen van magenta hooglichten."
 
-#: ../src/iop/filmicrgb.c:4547
+#: ../src/iop/filmicrgb.c:4599
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -16200,7 +16201,7 @@ msgstr ""
 "als het beeld overal veel ruis bevat,\n"
 "zodat ze opgaan in de rest van de foto."
 
-#: ../src/iop/filmicrgb.c:4554
+#: ../src/iop/filmicrgb.c:4606
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -16208,11 +16209,11 @@ msgstr ""
 "kies de statistische verdeling van ruis.\n"
 "dit is handig om met het natuurlijke sensorruispatroon overeen te stemmen.\n"
 
-#: ../src/iop/filmicrgb.c:4622
+#: ../src/iop/filmicrgb.c:4674
 msgid "mid-tones saturation"
 msgstr "middentonen verzadiging"
 
-#: ../src/iop/filmicrgb.c:4623
+#: ../src/iop/filmicrgb.c:4675
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -16483,10 +16484,6 @@ msgid ""
 msgstr ""
 "hooglichten: gestuurde laplacian mode niet beschikbaar voor X-Trans "
 "sensoren. Valt terug naar clip."
-
-#: ../src/iop/highlights.c:2153
-msgid "guided laplacians"
-msgstr "gestuurde laplacians"
 
 #: ../src/iop/highlights.c:2187
 msgid "highlight reconstruction method"
@@ -20179,6 +20176,15 @@ msgstr "toevoegen nieuwe sortering om afbeeldingen te sorteren"
 msgid "revert to a previous set of sort orders"
 msgstr "ga terug naar vorige instelling van sorteer opdracht"
 
+#. we change the tooltip of the reset button here, as we are sure the header is defined now
+#: ../src/libs/filtering.c:2034
+msgid ""
+"reset\n"
+"ctrl-click to remove pinned rules too"
+msgstr ""
+"reset\n"
+"ctrl-klik om ook vastgepinde regels te verwijderen"
+
 #: ../src/libs/filters/colors.c:220
 msgid "Y"
 msgstr "Y"
@@ -20280,11 +20286,10 @@ msgstr "beter"
 msgid "worse"
 msgstr "erger"
 
-# kap ? 
+# kap ?
 #: ../src/libs/filters/rating.c:176
-#, fuzzy
 msgid "cap"
-msgstr "cap"
+msgstr "hoogte limiet"
 
 #: ../src/libs/filters/rating.c:191
 msgid "rating filter"
@@ -23801,6 +23806,9 @@ msgstr ""
 #: ../src/views/view.c:1335
 msgid "mouse actions"
 msgstr "muisacties"
+
+#~ msgid "guided laplacians (AI)"
+#~ msgstr "gestuurde laplace-operatoren (AI)"
 
 #~ msgid "last export time"
 #~ msgstr "laastte exporttijd"
