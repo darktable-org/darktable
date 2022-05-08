@@ -768,6 +768,7 @@ menu,
 menuitem > arrow,
 tooltip,
 popover,
+popover #bauhaus-slider,
 #range-current
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
