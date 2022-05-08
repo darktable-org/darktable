@@ -211,6 +211,10 @@ for dtShare in $dtShares; do
     install_share "$dtShare"
 done
 
+# Update icon caches
+gtk3-update-icon-cache -f "$dtResourcesDir"/share/icons/Adwaita
+gtk3-update-icon-cache -f "$dtResourcesDir"/share/icons/hicolor
+
 # Try updating lensfun
 lensfun-update-data || true
 lfLatestData="$HOME"/.local/share/lensfun/updates/version_1
