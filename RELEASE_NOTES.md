@@ -190,7 +190,7 @@ are described more fully in the user manual and accompanying blog post.
   Slider step sizes have been standardized and can now be
   configured individually.
 
-  Extra pen tablet button clicks  are now treated as key presses so that
+  Extra pen tablet button clicks are now treated as key presses so that
   they can be used in shortcuts.
 
   Support for game-pad triggers has been added (treating them as buttons)
