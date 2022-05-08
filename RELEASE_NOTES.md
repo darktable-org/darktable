@@ -39,7 +39,7 @@ are described more fully in the user manual and accompanying blog post.
   define and save a target color/exposure for the color-pickers, in order to
   match any source object in the image against an arbitrary target
   color. This can be used to perform white balance
-  (chromatic adaptation) against non-grey objects of known color, or to
+  (chromatic adaptation) against non-gray objects of known color, or to
   ensure the color consistency of an object across a series of images.
 
 - Filmic v6
@@ -135,7 +135,7 @@ are described more fully in the user manual and accompanying blog post.
   perceptual validity of their editing for an average observer.
 
   The color vocabulary contains 76 entries: 15 hues × 5 lightnesses +
-  neutral (grey). It does not separate across the chroma axis, so all
+  neutral (gray). It does not separate across the chroma axis, so all
   colors are registred the same no matter their colorfulness.
 
   The vocabulary also contains average skin colors for 3 body
