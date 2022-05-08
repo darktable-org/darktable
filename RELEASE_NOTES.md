@@ -233,9 +233,9 @@ are described more fully in the user manual and accompanying blog post.
 - The control of the lighttable view has been improved by ensuring the up/down
   and left/right keys have the expected behaviour.
 
-- Apply a blur for the color picker. This helps having more consistent
-  mesure avoiding the noise. It makes the filmic black exposure
-  auto-setting more stable.
+- Apply a blur when color picking in area mode. This ensures that color picker
+  measurements aren't overly influenced by image noise. This change particularly
+  improves the stability of filmic's black relative exposure measurement.
 
 ## Bug Fixes
 
