@@ -100,7 +100,7 @@ are described more fully in the user manual and accompanying blog post.
 
   The vignetting module has been split into two sections for clarity.
 
-  Superfuous sections have been removed from the "crop" and "white balance".
+  Superfluous sections have been removed from the "crop" and "white balance".
 
   Support has been added for a new IPAPGothic font.
 
@@ -136,7 +136,7 @@ are described more fully in the user manual and accompanying blog post.
 
   The color vocabulary contains 76 entries: 15 hues × 5 lightnesses +
   neutral (gray). It does not separate across the chroma axis, so all
-  colors are registred the same no matter their colorfulness.
+  colors are registered the same no matter their colorfulness.
 
   The vocabulary also contains average skin colors for 3 body
   parts (forearm, forehead and cheek) of 6 ethnicities (Chinese, Thai,
