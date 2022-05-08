@@ -233,6 +233,10 @@ are described more fully in the user manual and accompanying blog post.
 - The control of the lighttable view has been improved by ensuring the up/down
   and left/right keys have the expected behaviour.
 
+- Apply a blur for the color picker. This helps having more consistent
+  mesure avoiding the noise. It makes the filmic black exposure
+  auto-setting more stable.
+
 ## Bug Fixes
 
 - Check for total memory on Linux is now more portable.
