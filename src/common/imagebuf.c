@@ -129,9 +129,9 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
     // set the module's trouble flag
     if (module)
       dt_iop_set_module_trouble_message(module, _("insufficient memory"),
-                                        _("This module was unable to allocate\n"
+                                        _("this module was unable to allocate\n"
                                           "all of the memory required to process\n"
-                                          "the image.  Some or all processing\n"
+                                          "the image.  some or all processing\n"
                                           "has been skipped."),
                                         "unable to allocate working memory");
   }
@@ -464,4 +464,3 @@ void dt_iop_image_copy_configure()
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
