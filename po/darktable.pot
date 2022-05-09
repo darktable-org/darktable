@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-09 10:02+0200\n"
+"POT-Creation-Date: 2022-05-09 11:29+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5911,9 +5911,9 @@ msgstr ""
 
 #: ../src/common/imagebuf.c:132
 msgid ""
-"This module was unable to allocate\n"
+"this module was unable to allocate\n"
 "all of the memory required to process\n"
-"the image.  Some or all processing\n"
+"the image.  some or all processing\n"
 "has been skipped."
 msgstr ""
 
@@ -18791,7 +18791,7 @@ msgid "local copied state filter"
 msgstr ""
 
 #: ../src/libs/filters/module_order.c:160
-msgid "module_order filter"
+msgid "module order filter"
 msgstr ""
 
 #: ../src/libs/filters/module_order.c:160
