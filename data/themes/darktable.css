@@ -1480,12 +1480,8 @@ progressbar progress
 /* the label buttons */
 .dt_history_items
 {
-  padding: 0;
+  padding: 0em .21em 0em .21em; 
   margin: 0.14em;
-}
-
-.dt_history_items label {
-    padding: 0em .21em 0em .21em; 
 }
 
 /* then the switches */
@@ -1500,7 +1496,7 @@ progressbar progress
 /* and the history number */
 #history-number
 {
-  padding-right: 0.35em;
+  padding: 0 0.35em 0 0;
 }
 
 /* deactivated switch buttons, make them less visible */
