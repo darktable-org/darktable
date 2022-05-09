@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-09 10:02+0200\n"
-"PO-Revision-Date: 2022-05-09 11:27+0200\n"
+"POT-Creation-Date: 2022-05-09 11:29+0200\n"
+"PO-Revision-Date: 2022-05-09 11:29+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6329,14 +6329,14 @@ msgstr "mémoire insuffisante"
 
 #: ../src/common/imagebuf.c:132
 msgid ""
-"This module was unable to allocate\n"
+"this module was unable to allocate\n"
 "all of the memory required to process\n"
-"the image.  Some or all processing\n"
+"the image.  some or all processing\n"
 "has been skipped."
 msgstr ""
 "ce module n'a pas réussi à allouer toute\n"
 "la mémoire nécessaire au traitement\n"
-"de l'image. tout ou parti du traitement a été sauté"
+"de l'image. tout ou parti du traitement a été sauté."
 
 #: ../src/common/imageio.c:740 ../src/common/mipmap_cache.c:1074
 #, c-format
@@ -20565,7 +20565,7 @@ msgid "local copied state filter"
 msgstr "filtre sur l'état de copie locale"
 
 #: ../src/libs/filters/module_order.c:160
-msgid "module_order filter"
+msgid "module order filter"
 msgstr "filtre ordre des modules"
 
 #: ../src/libs/filters/module_order.c:160
