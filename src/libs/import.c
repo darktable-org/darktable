@@ -130,7 +130,7 @@ typedef struct dt_lib_import_t
   GtkButton *mount_camera;
   GtkButton *unmount_camera;
 
-  GtkWidget *ignore_exif, *rating, *apply_metadata, *recursive;
+  GtkWidget *ignore_exif, *delete_imported, *rating, *apply_metadata, *recursive;
   GtkWidget *import_new;
   dt_import_metadata_t metadata;
   GtkBox *devices;
@@ -1749,6 +1749,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
     g_signal_connect(G_OBJECT(d->recursive), "toggled", G_CALLBACK(_recursive_toggled), self);
   }
   GtkWidget *ignore_jpegs = dt_gui_preferences_bool(grid, "ui_last/import_ignore_jpegs", col++, line, TRUE);
+  gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line), TRUE);
+  d->delete_imported = dt_gui_preferences_bool(grid, "ui_last/import_delete_imported", col++, line, TRUE);
   gtk_widget_set_hexpand(gtk_grid_get_child_at(grid, col++, line++), TRUE);
   g_signal_connect(G_OBJECT(ignore_jpegs), "toggled", G_CALLBACK(_ignore_jpegs_toggled), self);
   gtk_box_pack_start(GTK_BOX(rbox), GTK_WIDGET(grid), FALSE, FALSE, 8);
@@ -2067,6 +2069,7 @@ const struct
   int type;
 } _pref[] = {
   {"ui_last/import_ignore_jpegs",       "ignore_jpegs",       DT_BOOL},
+  {"ui_last/import_delete_imported",    "delete_imported",    DT_BOOL},
   {"ui_last/import_apply_metadata",     "apply_metadata",     DT_BOOL},
   {"ui_last/import_recursive",          "recursive",          DT_BOOL},
   {"ui_last/ignore_exif_rating",        "ignore_exif_rating", DT_BOOL},
@@ -2282,4 +2285,3 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

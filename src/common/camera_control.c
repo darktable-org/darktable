@@ -1159,9 +1159,22 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
     }
 
     if(!g_file_set_contents(output, data, size, NULL))
-       dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to write file %s\n", output);
+    {
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to write file %s\n", output);
+    }
     else
+    {
+      if(dt_conf_get_bool("ui_last/import_delete_imported"))
+      {
+        // delete the file in camera
+        if((res = gp_camera_file_delete(cam->gpcam, folder, filename, NULL)) < GP_OK)
+        {
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to delete image in camera: %s\n", gp_result_as_string(res));
+        }
+      }
+
       _dispatch_camera_image_downloaded(c, cam, folder, filename, output);
+    }
 
     gp_file_free(camfile);
     g_free(prev_output);
@@ -2052,4 +2065,3 @@ static void _dispatch_camera_error(const dt_camctl_t *c, const dt_camera_t *came
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

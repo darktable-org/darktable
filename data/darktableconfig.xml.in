@@ -939,6 +939,13 @@
     <longdescription>when having raw+JPEG images together in one directory it makes no sense to import both. with this flag one can ignore all JPEGs found.</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
+    <name>ui_last/import_delete_imported</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>delete imported images</shortdescription>
+    <longdescription>automatically delete imported images from camera, so that you haven't to delete them manually</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
     <name>ui_last/import_apply_metadata</name>
     <type>bool</type>
     <default>false</default>
