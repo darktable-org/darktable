@@ -1467,7 +1467,7 @@ progressbar progress
 /* then set infos shown on top of the image on darkroom, like for example opacity in drawn masks */
 .top .dt_messages
 {
-  border-radius: 0 0 0.56em 0.56em;
+border-radius: 0 0 0.56em 0.56em;
 }
 
 /* Set some specific fonts */
