@@ -231,7 +231,15 @@ void output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixel
                    dt_iop_buffer_dsc_t *dsc)
 {
   default_output_format(self, pipe, piece, dsc);
-
+  // multiframe not needed for subsampled images
+  if(pipe->type & (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_EXPORT))
+  {
+    dsc->frames = pipe->image.buf_dsc.frames;
+  }
+  else
+  {
+    dsc->frames = 1;
+  }
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
   dsc->rawprepare.raw_black_level = d->rawprepare.raw_black_level;
@@ -256,6 +264,88 @@ static int BL(const dt_iop_roi_t *const roi_out, const dt_iop_rawprepare_data_t 
   return ((((row + roi_out->y + d->y) & 1) << 1) + ((col + roi_out->x + d->x) & 1));
 }
 
+static void convert_uint_float(const uint16_t *const in, float *const out, const dt_iop_roi_t *const roi_in,
+                               const dt_iop_roi_t *const roi_out, int csx, int csy,
+                               const dt_iop_rawprepare_data_t *const d)
+{
+  /*fprintf(stderr,"in:  %p - %p, size %i\n",in, in + (roi_in->height * roi_in->width), (roi_in->height * roi_in->width));
+  fprintf(stderr,"out: %p - %p, size %i\n",out, out + (roi_out->height * roi_out->width),(roi_out->height * roi_out->width));*/
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out)          \
+    schedule(static) collapse(2)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
+      const size_t pout = (size_t)j * roi_out->width + i;
+
+      const int id = BL(roi_out, d, j, i);
+      out[pout] = (in[pin] - d->sub[id]) / d->div[id];
+    }
+  }
+
+  /*for(int j = roi_out->height-100; j < roi_out->height; j++)
+  {
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      //const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
+      const size_t pout = (size_t)j * roi_out->width + i;
+
+
+      out[pout] = 0.0f;
+    }
+  }*/
+}
+
+static void convert_float_float(const float *const in, float *const out, const dt_iop_roi_t *const roi_in,
+                                const dt_iop_roi_t *const roi_out, int csx, int csy,
+                                const dt_iop_rawprepare_data_t *const d)
+{
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out)          \
+    schedule(static) collapse(2)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
+      const size_t pout = (size_t)j * roi_out->width + i;
+
+      const int id = BL(roi_out, d, j, i);
+      out[pout] = (in[pin] - d->sub[id]) / d->div[id];
+    }
+  }
+}
+
+static void convert_float_downsampled(const float *const in, float *const out, const dt_iop_roi_t *const roi_in,
+                                      const dt_iop_roi_t *const roi_out, int csx, int csy,
+                                      const dt_iop_rawprepare_data_t *const d, int ch, float sub, float div)
+{
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none)                             \
+    dt_omp_firstprivate(ch, csx, csy, div, in, out, roi_in, roi_out, sub) \
+    schedule(static) collapse(3)
+#endif
+  for(int j = 0; j < roi_out->height; j++)
+  {
+    for(int i = 0; i < roi_out->width; i++)
+    {
+      for(int c = 0; c < ch; c++)
+      {
+        const size_t pin = (size_t)ch * (roi_in->width * (j + csy) + csx + i) + c;
+        const size_t pout = (size_t)ch * (j * roi_out->width + i) + c;
+
+        out[pout] = (in[pin] - sub) / div;
+      }
+    }
+  }
+}
+
 /* Some comments about the cpu code path; tests with gcc 10.x show a clear performance gain for the
    compile generated code vs SSE specific code. This depends slightly on the cpu but it's 1.2 to 3-fold
    better for all tested cases.
@@ -265,10 +355,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_rawprepare_data_t *const d = (dt_iop_rawprepare_data_t *)piece->data;
 
-  // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
-  // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  fprintf(stderr,"rawprepare %s\n", dt_pixelpipe_name(piece->pipe->type));
+  fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  /*fprintf(stderr,"frame size in:  %d\n", roi_in->width * roi_in->height);
+  fprintf(stderr,"frame size iout: %d\n", roi_out->width * roi_out->height);*/
+  //fprintf(stderr,"i: %p\n",ivoid);
+  //fprintf(stderr,"o: %p\n",ovoid);
 
-  const int csx = compute_proper_crop(piece, roi_in, d->x), csy = compute_proper_crop(piece, roi_in, d->y);
+  const int csx = compute_proper_crop(piece, roi_in, d->x);
+  const int csy = compute_proper_crop(piece, roi_in, d->y);
 
   if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1
      && piece->dsc_in.datatype == TYPE_UINT16)
@@ -277,22 +373,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const uint16_t *const in = (const uint16_t *const)ivoid;
     float *const out = (float *const)ovoid;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out) \
-    schedule(static) \
-    collapse(2)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
+    for(size_t f = 0; f < piece->dsc_out.frames; ++f)
     {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
-        const size_t pout = (size_t)j * roi_out->width + i;
-
-        const int id = BL(roi_out, d, j, i);
-        out[pout] = (in[pin] - d->sub[id]) / d->div[id];
-      }
+      const uint16_t *const frame_in = in + (f * roi_in->width * roi_in->height);
+      float *const frame_out = out + (f * roi_out->width * roi_out->height);
+      convert_uint_float(frame_in, frame_out, roi_in, roi_out, csx, csy, d);
+      //fprintf(stderr, "frame %lu: %p\n", f, frame_in);
     }
 
     piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
@@ -301,26 +387,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else if(piece->pipe->dsc.filters && piece->dsc_in.channels == 1
           && piece->dsc_in.datatype == TYPE_FLOAT)
   { // raw mosaic, fp, unnormalized
+    ///TODO test
 
     const float *const in = (const float *const)ivoid;
     float *const out = (float *const)ovoid;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(csx, csy, d, in, out, roi_in, roi_out) \
-    schedule(static) \
-    collapse(2)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
+    for(size_t f = 0; f < piece->dsc_in.frames; ++f)
     {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        const size_t pin = (size_t)(roi_in->width * (j + csy) + csx) + i;
-        const size_t pout = (size_t)j * roi_out->width + i;
-
-        const int id = BL(roi_out, d, j, i);
-        out[pout] = (in[pin] - d->sub[id]) / d->div[id];
-      }
+      const float *const frame_in = in + (f * roi_in->width * roi_in->height);
+      float *const frame_out = out + (f * roi_out->width * roi_out->height);
+      convert_float_float(frame_in, frame_out, roi_in, roi_out, csx, csy, d);
     }
 
     piece->pipe->dsc.filters = dt_rawspeed_crop_dcraw_filters(self->dev->image_storage.buf_dsc.filters, csx, csy);
@@ -328,32 +404,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   { // pre-downsampled buffer that needs black/white scaling
+    ///TODO test
 
     const float *const in = (const float *const)ivoid;
     float *const out = (float *const)ovoid;
 
-    const float sub = d->sub[0], div = d->div[0];
-
+    const float sub = d->sub[0];
+    const float div = d->div[0];
     const int ch = piece->colors;
 
-#ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, csx, csy, div, in, out, roi_in, roi_out, sub) \
-    schedule(static) collapse(3)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
+    for(size_t f = 0; f < piece->dsc_in.frames; ++f)
     {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        for(int c = 0; c < ch; c++)
-        {
-          const size_t pin = (size_t)ch * (roi_in->width * (j + csy) + csx + i) + c;
-          const size_t pout = (size_t)ch * (j * roi_out->width + i) + c;
-
-          out[pout] = (in[pin] - sub) / div;
-        }
-      }
+      const float *const frame_in = in + (f * roi_in->width * roi_in->height);
+      float *const frame_out = out + (f * roi_out->width * roi_out->height);
+      convert_float_downsampled(frame_in, frame_out, roi_in, roi_out, csx, csy, d,ch,sub,div);
     }
+
   }
 
   dt_dev_write_rawdetail_mask(piece, (float *const)ovoid, roi_in, DT_DEV_DETAIL_MASK_RAWPREPARE);
@@ -361,6 +427,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = 1.0f;
 }
 
+#if 0 ///TODO modify to handle multiframe
 #ifdef HAVE_OPENCL
 int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -435,6 +502,7 @@ error:
   dt_print(DT_DEBUG_OPENCL, "[opencl_rawprepare] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
+#endif
 #endif
 
 static int image_is_normalized(const dt_image_t *const image)

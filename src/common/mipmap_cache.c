@@ -257,7 +257,7 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   const int ht = img->height;
 
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(&img->buf_dsc);
-  const size_t buffer_size = (size_t)wd * ht * bpp + sizeof(*dsc);
+  const size_t buffer_size = (size_t)wd * ht * bpp * img->buf_dsc.frames + sizeof(*dsc);
 
   // buf might have been alloc'ed before,
   // so only check size and re-alloc if necessary:
@@ -337,7 +337,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
 
     entry->data = dt_alloc_align(64, entry->data_size);
 
-    // fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %p\n", key, *buf);
+    fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %p %lu\n", entry->key, entry->data, entry->data_size);
     if(!(entry->data))
     {
       fprintf(stderr, "[mipmap cache] memory allocation failed!\n");
@@ -1285,10 +1285,11 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
       *iscale = 1.0f;
       *color_space = dt_mipmap_cache_get_colorspace();
     }
+    fprintf(stderr, "[mipmap init 8] export image %u finished (sizes %d %d => %d %d)!\n", imgid, wd, ht,
+            dat.head.width, dat.head.height);
   }
 
-  // fprintf(stderr, "[mipmap init 8] export image %u finished (sizes %d %d => %d %d)!\n", imgid, wd, ht,
-  // dat.head.width, dat.head.height);
+
 
   // any errors?
   if(res)

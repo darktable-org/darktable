@@ -41,6 +41,9 @@
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
+#include <errno.h>
+
+#define DEBUG_PIXELPIPE
 
 typedef enum dt_pixelpipe_flow_t
 {
@@ -105,6 +108,141 @@ static char *_pipe_type_to_str(int pipe_type)
   }
   return r;
 }
+
+#ifdef DEBUG_PIXELPIPE
+static void save_debug_bitmap(dt_dev_pixelpipe_t *pipe, const char *name, void *out, const dt_iop_roi_t *roi_out)
+{
+  if(pipe->type != DT_DEV_PIXELPIPE_FULL)
+  {
+    return;
+  }
+
+  int single_channel = pipe->dsc.channels == 1;
+  int floating = pipe->dsc.datatype == TYPE_FLOAT;
+
+
+  char ext[8];
+  if(floating)
+  {
+    snprintf(ext,8,"pfm");
+  }
+  else
+  {
+    if(single_channel)
+    {
+      snprintf(ext,8,"pgm");
+    }
+    else
+    {
+      snprintf(ext,8,"ppm");
+    }
+  }
+
+  char filename[128];
+  snprintf(filename, 128, "save_debug_bitmap_%s_%s.%s", name, _pipe_type_to_str(pipe->type), ext);
+  for(int i = 0; i < 128; ++i)
+  {
+    if(filename[i] == '\0')
+    {
+      break;
+    }
+    if((filename[i] == ' ') || (filename[i] == '/'))
+    {
+      filename[i] = '_';
+    }
+  }
+
+  FILE *file = g_fopen(filename, "w");
+  if(file == NULL)
+  {
+    fprintf(stderr, "error opening debug file: %s, %s\n", filename, strerror(errno));
+    return;
+  }
+  if(floating)
+  {
+    if(!single_channel)
+    {
+      fprintf(file, "PF\n");
+    }
+    else
+    {
+      fprintf(file, "Pf\n");
+    }
+  }
+  else
+  {
+    if(single_channel)
+    {
+      fprintf(file, "P2\n");
+    }
+    else
+    {
+      fprintf(file, "P3\n");
+    }
+  }
+  fprintf(file, "%i %i\n", roi_out->width, roi_out->height * pipe->dsc.frames);
+  if(floating)
+  {
+    fprintf(file, "-1.0\n");
+  }
+  else
+  {
+    fprintf(file,"%i\n", 16384);
+  }
+  if(floating)
+  {
+    float *ptr = (float *)out;
+    if((pipe->dsc.channels == 1) || (pipe->dsc.channels == 3))
+    {
+      for(size_t f = 0; f < pipe->dsc.frames; ++f)
+      {
+        float *tmp = ptr + (f * roi_out->width * roi_out->height);
+        for(size_t i = 0; i < roi_out->width; ++i)
+        {
+          for(size_t j = 0; j < roi_out->height; ++j)
+          {
+            const size_t pout = j + (roi_out->height * (i));
+            fwrite(tmp + pout, sizeof(float) * pipe->dsc.channels, 1, file);
+          }
+        }
+      }
+    }
+    else
+    {
+      for(size_t i = 0; i < roi_out->height * roi_out->width * pipe->dsc.frames * pipe->dsc.channels;
+          i += pipe->dsc.channels)
+      {
+        for(size_t j = 0; j < 3; ++j)
+        {
+          fwrite(ptr + i + j, sizeof(float), 1, file);
+        }
+      }
+    }
+  }
+  else
+  {
+    if(single_channel)
+    {
+      uint16_t *ptr = (uint16_t *)out;
+      for(size_t f = 0; f < pipe->dsc.frames; ++f)
+      {
+        uint16_t *tmp = ptr + (f * roi_out->width * roi_out->height);
+        for(size_t i = 0; i < roi_out->width; ++i)
+        {
+          for(size_t j = 0; j < roi_out->height; ++j)
+          {
+            const size_t pout = j + (roi_out->height * (i));
+            fprintf(file,"%hu ",tmp[pout]);
+            //fwrite(tmp + pout, sizeof(uint16_t), 1, file);
+          }
+          fprintf(file,"\n");
+        }
+      }
+    }
+  }
+  fclose(file);
+}
+#endif
 
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks)
@@ -1097,7 +1235,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   if(module) g_strlcpy(module_name, module->op, MIN(sizeof(module_name), sizeof(module->op)));
   get_output_format(module, pipe, piece, dev, *out_format);
   const size_t bpp = dt_iop_buffer_dsc_to_bpp(*out_format);
-  const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height;
+  const size_t bufsize = (size_t)bpp * roi_out->width * roi_out->height * pipe->image.buf_dsc.frames;
 
   // 1) if cached buffer is still available, return data
   if(dt_atomic_get_int(&pipe->shutdown))
@@ -1171,19 +1309,31 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           const int in_y = MAX(roi_in.y, 0);
           const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
+          const int frames = pipe->dsc.frames;
+
+          //fprintf(stderr, "[pipe] %s, input: %p\n", _pipe_type_to_str(pipe->type), pipe->input);
+          //fprintf(stderr, "[pipe] %s, output: %p\n", _pipe_type_to_str(pipe->type), *output);
 
           if (cp_width > 0)
           {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-          dt_omp_firstprivate(bpp, cp_height, cp_width, in_x, in_y) \
+          dt_omp_firstprivate(bpp, cp_height, cp_width, in_x, in_y, frames) \
           shared(pipe, roi_out, roi_in, output) \
           schedule(static)
 #endif
-            for(int j = 0; j < cp_height; j++)
-              memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
-                     ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),
-                     (size_t)bpp * cp_width);
+            for(int f = 0; f < frames; ++f)
+            {
+              char *ptr = ((char *)pipe->input) + (f * bpp * pipe->iheight * pipe->iwidth);
+              char *outptr = ((char *)*output) + (f * bpp * roi_out->height * roi_out->width);
+              for(int j = 0; j < cp_height; j++)
+                memcpy(outptr + (size_t)bpp * j * roi_out->width,
+                       ptr + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth), (size_t)bpp * cp_width);
+            }
+
+#ifdef DEBUG_PIXELPIPE
+            //save_debug_bitmap(pipe,"load",*output,roi_out);
+#endif
           }
         }
         else
@@ -1230,6 +1380,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                   g_list_previous(modules), g_list_previous(pieces), pos - 1))
     return 1;
 
+  //fprintf(stderr,"[pipe] %s, module: %s, input: %p\n",_pipe_type_to_str(pipe->type), module->op ,input);
+
   const size_t in_bpp = dt_iop_buffer_dsc_to_bpp(input_format);
 
   piece->dsc_out = piece->dsc_in = *input_format;
@@ -1258,6 +1410,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
 // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %p\n", module->op, pipe ==
 // dev->preview_pipe ? "[preview]" : "", hash, *output);
+
+  //fprintf(stderr,"[pipe] %s, module: %s, output: %p\n",_pipe_type_to_str(pipe->type), module->op ,*output);
 
   if(dt_atomic_get_int(&pipe->shutdown))
   {
@@ -1910,6 +2064,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       return 1;
   }
 #else // HAVE_OPENCL
+
   if (pixelpipe_process_on_CPU(pipe, dev, input, input_format, &roi_in, output, out_format, roi_out,
                                module, piece, &tiling, &pixelpipe_flow))
     return 1;
@@ -2030,6 +2185,11 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       g_free(module_label);
     }
   }
+
+#ifdef DEBUG_PIXELPIPE
+  save_debug_bitmap(pipe,dt_history_item_get_name(module),*output,roi_out);
+#endif
+
 
   // 4) colorpicker and scopes:
   if(dt_atomic_get_int(&pipe->shutdown))

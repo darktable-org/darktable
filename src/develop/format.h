@@ -36,6 +36,8 @@ typedef struct dt_iop_buffer_dsc_t
 {
   /** how many channels the data has? 1 or 4 */
   unsigned int channels;
+  /** how many frames in multiframe images */
+  unsigned frames;
   /** what is the datatype? */
   dt_iop_buffer_type_t datatype;
   /** Bayer demosaic pattern */
