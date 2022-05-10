@@ -102,6 +102,13 @@ typedef struct _curl_args_t
   char value[512];
 } _curl_args_t;
 
+typedef enum dt_storage_piwigo_conflict_actions_t
+{
+  DT_PIWIGO_CONFLICT_OVERWRITE = 0,
+  DT_PIWIGO_CONFLICT_SKIP = 1,
+  DT_PIWIGO_CONFLICT_METADATA = 2
+} dt_storage_piwigo_conflict_actions_t;
+
 typedef struct dt_storage_piwigo_params_t
 {
   _piwigo_api_context_t *api;
@@ -110,8 +117,8 @@ typedef struct dt_storage_piwigo_params_t
   char *album;
   gboolean new_album;
   int privacy;
-  gboolean export_tags; // deprecated - let here not to change params size. to be removed on next version change
   gchar *tags;
+  dt_storage_piwigo_conflict_actions_t conflict_action;
 } dt_storage_piwigo_params_t;
 
 /* low-level routine doing the HTTP POST request */
@@ -566,6 +573,11 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
   }
 }
 
+static void _piwigo_conflict_changed(GtkWidget *widget, gpointer data)
+{
+  dt_conf_set_int("storage/piwigo/overwrite", dt_bauhaus_combobox_get(widget));
+}
+
 /** Refresh albums */
 static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar *select_album)
 {
@@ -812,11 +824,6 @@ const char *name(const struct dt_imageio_module_storage_t *self)
   return _("piwigo");
 }
 
-static void onsave_action_toggle_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_conf_set_int("storage/piwigo/overwrite", dt_bauhaus_combobox_get(widget));
-}
-
 void gui_init(dt_imageio_module_storage_t *self)
 {
   self->gui_data = (dt_storage_piwigo_gui_data_t *)g_malloc0(sizeof(dt_storage_piwigo_gui_data_t));
@@ -957,7 +964,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_add(ui->conflict_action, _("skip"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("update metadata"));
   gtk_box_pack_start(GTK_BOX(self->widget), ui->conflict_action, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed", G_CALLBACK(onsave_action_toggle_callback), self);
+  g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed", G_CALLBACK(_piwigo_conflict_changed), self);
   dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/overwrite"));
 }
 
@@ -1041,7 +1048,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       description = g_strdup(desc->data);
       g_list_free_full(desc, &g_free);
     }
-    dt_image_cache_read_release(darktable.image_cache, img);
 
     GList *auth = dt_metadata_get(img->id, "Xmp.dc.creator", NULL);
     if(auth != NULL)
@@ -1050,6 +1056,9 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       g_list_free_full(auth, &g_free);
     }
   }
+
+  dt_image_cache_read_release(darktable.image_cache, img);
+
   if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type, icc_filename,
                        icc_intent, self, sdata, num, total, metadata) != 0)
   {
@@ -1080,7 +1089,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     {
       char *pwg_image_id = _piwigo_api_get_image_id(p, img);
 
-      if(dt_bauhaus_combobox_get(ui->conflict_action)==2)
+      if(p->conflict_action==DT_PIWIGO_CONFLICT_METADATA)
       {
         status = _piwigo_api_set_info(p, author, caption, description, pwg_image_id);
         if(!status)
@@ -1090,7 +1099,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
           result = 1;
         }
       }
-      else if(pwg_image_id && dt_bauhaus_combobox_get(ui->conflict_action)==1)
+      else if(pwg_image_id && p->conflict_action==DT_PIWIGO_CONFLICT_SKIP)
       {
         skipped = 1;
       }
@@ -1190,6 +1199,8 @@ void *get_params(dt_imageio_module_storage_t *self)
 
     p->album_id = 0;
     p->tags = NULL;
+
+    p->conflict_action = dt_bauhaus_combobox_get(ui->conflict_action);
 
     switch(dt_bauhaus_combobox_get(ui->permission_list))
     {
