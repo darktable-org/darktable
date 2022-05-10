@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-09 09:30-0300\n"
-"PO-Revision-Date: 2022-05-09 09:41-0300\n"
+"PO-Revision-Date: 2022-05-09 21:44-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -5319,12 +5319,12 @@ msgstr "salmão"
 
 #: ../src/common/color_vocabulary.c:233
 msgid "pink"
-msgstr ""
+msgstr "rosa"
 
 #. 48° - orangy red
 #: ../src/common/color_vocabulary.c:238
 msgid "maroon"
-msgstr ""
+msgstr "bordô"
 
 #: ../src/common/color_vocabulary.c:239
 msgid "dark orange red"
@@ -5345,7 +5345,7 @@ msgstr "cáqui"
 #. 72° - orange
 #: ../src/common/color_vocabulary.c:247
 msgid "brown"
-msgstr ""
+msgstr "marrom"
 
 #: ../src/common/color_vocabulary.c:248
 msgid "chocolate"
@@ -5472,9 +5472,8 @@ msgid "medium blue"
 msgstr "azul médio"
 
 #: ../src/common/color_vocabulary.c:313
-#, fuzzy
 msgid "azure blue"
-msgstr "vermelho & azul"
+msgstr "azul"
 
 #: ../src/common/color_vocabulary.c:323
 msgid "light sky blue"
@@ -20259,9 +20258,8 @@ msgid " (off)"
 msgstr " (desligado)"
 
 #: ../src/libs/filtering.c:1646
-#, fuzzy
 msgid "sort order"
-msgstr "borda menor"
+msgstr "ordem de classificação"
 
 #: ../src/libs/filtering.c:1648
 msgid "determine the sort order of shown images"
@@ -20434,14 +20432,12 @@ msgid "filter on history state"
 msgstr "filtrar por estado do histórico"
 
 #: ../src/libs/filters/local_copy.c:141
-#, fuzzy
 msgid "local_copy filter"
-msgstr "copiar imagens localmente"
+msgstr "filtro de cópia local"
 
 #: ../src/libs/filters/local_copy.c:141
-#, fuzzy
 msgid "local copied state filter"
-msgstr "filtro laplaciano local"
+msgstr "filtro por estado de cópia local"
 
 #: ../src/libs/filters/module_order.c:160
 msgid "module order filter"
@@ -20457,7 +20453,7 @@ msgstr "rejeitadas"
 
 #: ../src/libs/filters/rating.c:49 ../src/libs/filters/rating.c:181
 msgid "not rated"
-msgstr "nãoclassificado"
+msgstr "não classificado"
 
 #: ../src/libs/filters/rating.c:174
 msgid "better"
@@ -20468,9 +20464,8 @@ msgid "worse"
 msgstr "pior"
 
 #: ../src/libs/filters/rating.c:176
-#, fuzzy
 msgid "cap"
-msgstr "mapa"
+msgstr "limite de altura"
 
 #: ../src/libs/filters/rating.c:191
 msgid "rating filter"
@@ -23023,33 +23018,28 @@ msgid "button back"
 msgstr "botão para trás"
 
 #: ../src/libs/tools/gamepad.c:72
-#, fuzzy
 msgid "button guide"
-msgstr "botão ligado"
+msgstr "botão guia"
 
 #: ../src/libs/tools/gamepad.c:72
 msgid "button start"
 msgstr "botão iniciar"
 
 #: ../src/libs/tools/gamepad.c:73
-#, fuzzy
 msgid "left stick"
-msgstr "clique esquerdo"
+msgstr "alavanca esquerda"
 
 #: ../src/libs/tools/gamepad.c:73
-#, fuzzy
 msgid "right stick"
-msgstr "clique direito"
+msgstr "alavanca direita"
 
 #: ../src/libs/tools/gamepad.c:73
-#, fuzzy
 msgid "left shoulder"
-msgstr "pasta"
+msgstr "ombro esquerdo"
 
 #: ../src/libs/tools/gamepad.c:73
-#, fuzzy
 msgid "right shoulder"
-msgstr "clique direito duplo"
+msgstr "ombro direito"
 
 #: ../src/libs/tools/gamepad.c:74
 msgid "dpad up"
@@ -23092,14 +23082,12 @@ msgid "touchpad"
 msgstr "touchpad"
 
 #: ../src/libs/tools/gamepad.c:76
-#, fuzzy
 msgid "left trigger"
-msgstr "esquerda-direita"
+msgstr "gatilho esquerdo"
 
 #: ../src/libs/tools/gamepad.c:76
-#, fuzzy
 msgid "right trigger"
-msgstr "alternar-direita"
+msgstr "gatilho direito"
 
 #: ../src/libs/tools/gamepad.c:81
 msgid "invalid gamepad button"
@@ -23126,18 +23114,16 @@ msgid "left diagonal"
 msgstr "diagonal esquerda"
 
 #: ../src/libs/tools/gamepad.c:99
-#, fuzzy
 msgid "left skew"
-msgstr "clique esquerdo"
+msgstr "inclinar para a esquerda"
 
 #: ../src/libs/tools/gamepad.c:99
 msgid "right diagonal"
 msgstr "diagonal direita"
 
 #: ../src/libs/tools/gamepad.c:99
-#, fuzzy
 msgid "right skew"
-msgstr "direitos"
+msgstr "inclinar para a direita"
 
 #. diagonals
 #: ../src/libs/tools/gamepad.c:104
@@ -23381,12 +23367,12 @@ msgstr "usando codificação absoluta; reinicie para mudar para relativa"
 #: ../src/libs/tools/midi.c:204
 #, c-format
 msgid "%d more identical (down) moves before switching to relative encoding"
-msgstr ""
+msgstr "%d mais movimentos idênticos (para baixo) antes de mudar para codificação relativa"
 
 #: ../src/libs/tools/midi.c:207
 #, c-format
 msgid "switching encoding to relative (down = %d)"
-msgstr ""
+msgstr "mudança para codificação relativa (para baixo = %d)"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
