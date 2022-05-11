@@ -744,7 +744,7 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
   return ret_val;
 }
 
-int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_imgid,
+gboolean dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_imgid,
                                        const gboolean merge, GList *ops,
                                        const gboolean copy_iop_order, const gboolean copy_full)
 {
