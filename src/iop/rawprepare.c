@@ -798,6 +798,7 @@ void gui_update(dt_iop_module_t *self)
   for(int i = 1; i < 4; i++)
     gtk_widget_set_visible(g->black_level_separate[i], !is_monochrome);
 
+  gtk_widget_set_visible(g->flat_field, check_gain_maps(self, NULL));
   dt_bauhaus_combobox_set(g->flat_field, p->flat_field);
 }
 
