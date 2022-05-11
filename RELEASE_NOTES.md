@@ -237,6 +237,10 @@ are described more fully in the user manual and accompanying blog post.
   measurements aren't overly influenced by image noise. This change particularly
   improves the stability of filmic's black relative exposure measurement.
 
+- Add support for DNG GainMap EXIF information and update the pixel
+  gain in raw-prepare module. This gives a better initial exposure
+  to the imported DNG pictures.
+
 ## Bug Fixes
 
 - Check for total memory on Linux is now more portable.
