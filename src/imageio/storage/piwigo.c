@@ -730,10 +730,19 @@ static char *_piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t 
 
   g_list_free(args);
 
-  if(p->api->response && !p->api->error_occured)
+  if(p->api->response && !p->api->error_occured && json_object_has_member(p->api->response, "result"))
   {
-    JsonObject *result = json_node_get_object(json_object_get_member(p->api->response, "result"));
-    return (char *) json_object_get_string_member(result, img->filename);
+    JsonNode *result_node = json_object_get_member(p->api->response, "result");
+
+    if(result_node != NULL && json_node_get_node_type(result_node) == JSON_NODE_OBJECT)
+    {
+      JsonObject *result = json_node_get_object(result_node);
+
+      if(json_object_has_member(result, img->filename))
+      {
+        return (char *) json_object_get_string_member(result, img->filename);
+      }
+    }
   }
 
   return NULL;
@@ -963,6 +972,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_add(ui->conflict_action, _("overwrite"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("skip"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("update metadata"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(ui->conflict_action),
+                              _("check for existing images only works with piwigo-config:\n$conf['uniqueness_mode'] = 'filename';"));
   gtk_box_pack_start(GTK_BOX(self->widget), ui->conflict_action, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed", G_CALLBACK(_piwigo_conflict_changed), self);
   dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/overwrite"));
