@@ -152,6 +152,7 @@ static gboolean _grouping_update(dt_lib_filtering_rule_t *rule)
   g_free(item);
 
   dt_bauhaus_combobox_set(grouping->combo, val);
+  _grouping_synchronise(grouping);
   rule->manual_widget_set--;
 
   return TRUE;
