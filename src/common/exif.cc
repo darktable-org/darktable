@@ -698,9 +698,7 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
     }
     if(FIND_IPTC_TAG("Iptc.Application2.DateCreated"))
     {
-      char *date = strdup(pos->toString().c_str());
-      GString *datetime = g_string_new(date);
-      free(date);
+      GString *datetime = g_string_new(pos->toString().c_str());
 
       // FIXME: Workaround for exiv2 reading partial IPTC DateCreated in YYYYMMDD format
       if(g_regex_match_simple("^\\d{8}$", datetime->str, (GRegexCompileFlags)0, (GRegexMatchFlags)0))
