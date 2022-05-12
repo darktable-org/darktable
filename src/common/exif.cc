@@ -681,7 +681,12 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set_import(img->id, "Xmp.dc.rights", str.c_str());
     }
-    if(FIND_IPTC_TAG("Iptc.Application2.Writer"))
+    if(FIND_IPTC_TAG("Iptc.Application2.Byline"))
+    {
+      std::string str = pos->print(/*&iptcData*/);
+      dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
+    }
+    else if(FIND_IPTC_TAG("Iptc.Application2.Writer"))
     {
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
