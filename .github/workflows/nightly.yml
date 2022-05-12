@@ -14,7 +14,7 @@ jobs:
       fail-fast: true
       matrix:
         btype: [Release]
-        compiler: 
+        compiler:
           - { compiler: GNU,  CC: gcc,   CXX: g++ }
         eco: [-DBINARY_PACKAGE_BUILD=ON]
         target: [skiptest]
@@ -76,6 +76,8 @@ jobs:
             mingw-w64-x86_64-sqlite3
             mingw-w64-x86_64-zlib
           update: true
+      - run: git config --global core.autocrlf input
+        shell: bash
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
