@@ -1311,7 +1311,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     // FIXME: Should the UserComment go into the description? Or do we need an extra field for this?
-    if(FIND_EXIF_TAG("Exif.Photo.UserComment"))
+    if(FIND_EXIF_TAG("Exif.Photo.UserComment") || FIND_EXIF_TAG("Exif.Image.ImageDescription"))
     {
       std::string str = pos->print(&exifData);
       Exiv2::CommentValue value(str);
