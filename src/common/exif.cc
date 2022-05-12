@@ -608,7 +608,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     }
 
     /* read timestamp from Xmp.exif.DateTimeOriginal */
-    if(FIND_XMP_TAG("Xmp.exif.DateTimeOriginal"))
+    if(FIND_XMP_TAG("Xmp.exif.DateTimeOriginal") || FIND_XMP_TAG("Xmp.photoshop.DateCreated"))
     {
       char *datetime = strdup(pos->toString().c_str());
       dt_exif_sanitize_datetime(datetime);
