@@ -426,6 +426,8 @@ jobs:
             mingw-w64-x86_64-sqlite3
             mingw-w64-x86_64-zlib
           update: true
+      - run: git config --global core.autocrlf input
+        shell: bash
       - uses: actions/checkout@v3
         with:
           submodules: true
