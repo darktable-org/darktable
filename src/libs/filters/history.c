@@ -137,6 +137,7 @@ static gboolean _history_update(dt_lib_filtering_rule_t *rule)
   }
 
   dt_bauhaus_combobox_set(history->combo, val);
+  _history_synchronise(history);
   rule->manual_widget_set--;
 
   return TRUE;

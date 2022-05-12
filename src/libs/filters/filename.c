@@ -272,6 +272,7 @@ static gboolean _filename_update(dt_lib_filtering_rule_t *rule)
     if(name) gtk_entry_set_text(GTK_ENTRY(filename->name), name);
     if(ext) gtk_entry_set_text(GTK_ENTRY(filename->ext), ext);
   }
+  _filename_synchronise(filename);
   rule->manual_widget_set--;
 
   g_free(name);
