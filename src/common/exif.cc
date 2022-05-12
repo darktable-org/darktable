@@ -691,6 +691,30 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set_import(img->id, "Xmp.dc.creator", str.c_str());
     }
+    if(FIND_IPTC_TAG("Iptc.Application2.DateCreated"))
+    {
+      char *date = strdup(pos->toString().c_str());
+      GString *datetime = g_string_new(date);
+      free(date);
+
+      // FIXME: Workaround for exiv2 reading partial IPTC DateCreated in YYYYMMDD format
+      if(g_regex_match_simple("^\\d{8}$", datetime->str, (GRegexCompileFlags)0, (GRegexMatchFlags)0))
+      {
+        datetime = g_string_insert_c(datetime, 6, ':');
+        datetime = g_string_insert_c(datetime, 4, ':');
+      }
+
+      if(FIND_IPTC_TAG("Iptc.Application2.TimeCreated"))
+      {
+        char *time = g_strndup(pos->toString().c_str(), 8); // remove timezone at the end
+        datetime = g_string_append(datetime, " ");
+        datetime = g_string_append(datetime, time);
+        free(time);
+      }
+      dt_exif_sanitize_datetime(datetime->str);
+      dt_datetime_exif_to_img(img, datetime->str);
+      g_string_free(datetime, TRUE);
+    }
 
     return true;
   }
@@ -1424,7 +1448,7 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           img->filename, illu[sel_illu], sel_temp,
           illu[0], _illu_to_temp(illu[0]),
           illu[1], _illu_to_temp(illu[1]),
-          illu[2], _illu_to_temp(illu[2])); 
+          illu[2], _illu_to_temp(illu[2]));
 
       // Take the found CalibrationIlluminant / ColorMatrix pair.
       // D65: just copy. Otherwise multiply by the specific correction matrix.
