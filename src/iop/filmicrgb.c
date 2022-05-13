@@ -1595,7 +1595,7 @@ static inline float clip_chroma_white_raw(const float coeffs[3], const float tar
 
   // this channel won't limit the chroma
   if(denominator_Y_coeff == 0.f) return FLT_MAX;
-  
+
   // The equation for max chroma has an asymptote at this point (zero of denominator).
   // Any Y below that value won't give us sensible results for the upper bound
   // and we should consider the lower bound instead.
@@ -1826,15 +1826,17 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
     const float *const restrict pix_in = in + k;
     float *const restrict pix_out = out + k;
 
-    // Norm must be clamped early to the valid input range, otherwise it will be clamped
-    // later in log_tonemapping_v2 and the ratios will be then incorrect.
-    // This would result in colorful patches darker than their surrounding in places
-    // where the raw data is clipped.
-    float norm = CLAMPF(get_pixel_norm(pix_in, variant, work_profile), norm_min, norm_max);
+    float norm = get_pixel_norm(pix_in, variant, work_profile);
 
     // Save the ratios
     dt_aligned_pixel_t ratios = { 0.0f };
     for_each_channel(c,aligned(pix_in)) ratios[c] = pix_in[c] / norm;
+
+    // Norm must be clamped early to the valid input range, otherwise it will be clamped
+    // later in log_tonemapping_v2 and the ratios will be then incorrect.
+    // This would result in colorful patches darker than their surrounding in places
+    // where the raw data is clipped.
+    norm = CLAMPF(norm, norm_min, norm_max);
 
     // Log tone-mapping
     norm = log_tonemapping_v2(norm, data->grey_source, data->black_source, data->dynamic_range);

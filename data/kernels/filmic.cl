@@ -391,7 +391,7 @@ static inline float clip_chroma_white_raw(constant const float *const coeffs, co
 
   // this channel won't limit the chroma
   if(denominator_Y_coeff == 0.f) return FLT_MAX;
-  
+
   // The equation for max chroma has an asymptote at this point (zero of denominator).
   // Any Y below that value won't give us sensible results for the upper bound
   // and we should consider the lower bound instead.
@@ -571,14 +571,16 @@ static inline float4 filmic_chroma_v4(const float4 i,
                                       const float norm_min, const float norm_max)
 
 {
+  float norm = get_pixel_norm(i, variant, profile_info, lut, use_work_profile);
+
+  // Save the ratios
+  float4 ratios = i / (float4)norm;
+
   // Norm must be clamped early to the valid input range, otherwise it will be clamped
   // later in log_tonemapping_v2 and the ratios will be then incorrect.
   // This would result in colorful patches darker than their surrounding in places
   // where the raw data is clipped.
-  float norm = clamp(get_pixel_norm(i, variant, profile_info, lut, use_work_profile), norm_min, norm_max);
-
-  // Save the ratios
-  float4 ratios = i / (float4)norm;
+  norm = clamp(norm, norm_min, norm_max);
 
   // Log tonemapping
   norm = log_tonemapping_v2(norm, grey_value, black_exposure, dynamic_range);
