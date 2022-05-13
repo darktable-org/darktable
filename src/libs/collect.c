@@ -83,6 +83,8 @@ typedef struct dt_lib_collect_t
 #endif
 
   gboolean inited;
+
+  GtkWidget *history_box;
 } dt_lib_collect_t;
 
 typedef struct dt_lib_collect_params_rule_t
@@ -2110,6 +2112,12 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   g_free(tip);
 }
 
+static void _lib_collect_update_history_visibility(dt_lib_module_t *self)
+{
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  const gboolean hide = dt_conf_get_bool("plugins/lighttable/collect/history_hide");
+  gtk_widget_set_visible(d->history_box, !hide);
+}
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
@@ -2919,7 +2927,12 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   dt_osx_disallow_fullscreen(dialog);
 #endif
   gtk_widget_show_all(dialog);
-  gtk_dialog_run(GTK_DIALOG(dialog));
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+  {
+    dt_conf_set_bool("plugins/lighttable/recentcollect/hide",
+                     !dt_conf_get_bool("plugins/lighttable/collect/history_hide"));
+    dt_view_collection_update_history_state(darktable.view_manager);
+  }
   gtk_widget_destroy(dialog);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
@@ -3183,21 +3196,24 @@ void gui_init(dt_lib_module_t *self)
                      TRUE, 0);
 
   // the bottom buttons for the rules
-  GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
+  d->history_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_set_homogeneous(GTK_BOX(d->history_box), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->history_box, TRUE, TRUE, 0);
   // dummy widget just to ensure alignment of history button  with those in filtering lib
-  gtk_box_pack_start(GTK_BOX(bhbox), gtk_drawing_area_new(), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(d->history_box), gtk_drawing_area_new(), TRUE, TRUE, 0);
   GtkWidget *btn = dt_action_button_new(self, _("history"), G_CALLBACK(_history_show), self,
-                                        _("revert to a previous set of rules"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  gtk_widget_show_all(bhbox);
+                                        _("revert to a previous set of rules"), GDK_KEY_k, GDK_CONTROL_MASK);
+  gtk_box_pack_start(GTK_BOX(d->history_box), btn, TRUE, TRUE, 0);
+  gtk_widget_show_all(d->history_box);
+  gtk_widget_set_no_show_all(d->history_box, TRUE);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
+  darktable.view_manager->proxy.module_collect.update_history_visibility = _lib_collect_update_history_visibility;
 
   _lib_collect_gui_update(self);
+  _lib_collect_update_history_visibility(self);
 
   if(_combo_get_active_collection(d->rule[0].combo) == DT_COLLECTION_PROP_TAG)
   {
