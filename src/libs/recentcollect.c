@@ -384,6 +384,8 @@ static void _update_visibility(dt_lib_module_t *self)
 {
   const gboolean hide = dt_conf_get_bool("plugins/lighttable/recentcollect/hide");
   dt_lib_set_visible(self, !hide);
+  // in case dt is starting, we need to set the visible value ourself
+  dt_conf_set_bool("plugins/lighttable/1/recentcollect_visible", !hide);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -419,6 +421,7 @@ void gui_init(dt_lib_module_t *self)
 
   darktable.view_manager->proxy.module_recentcollect.module = self;
   darktable.view_manager->proxy.module_recentcollect.update_visibility = _update_visibility;
+  _update_visibility(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
