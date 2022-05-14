@@ -1129,6 +1129,7 @@ static gchar *_get_lib_view_path(dt_lib_module_t *module, char *suffix)
 {
   if(!darktable.view_manager) return NULL;
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(!cv) return NULL;
   // in lighttable, we store panels states per layout
   char lay[32] = "";
   if(g_strcmp0(cv->module_name, "lighttable") == 0)
@@ -1160,7 +1161,7 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 {
   gchar *key = _get_lib_view_path(module, "_visible");
   GtkWidget *widget;
-  dt_conf_set_bool(key, visible);
+  if(key) dt_conf_set_bool(key, visible);
   g_free(key);
   if(module->widget)
   {
