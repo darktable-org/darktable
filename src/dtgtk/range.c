@@ -26,6 +26,9 @@
 #define SNAP_SIZE 5
 #define BAR_WIDTH 4
 
+// define GTypes
+G_DEFINE_TYPE(GtkDarktableRangeSelect, _range_select, GTK_TYPE_EVENT_BOX);
+
 static void _range_select_class_init(GtkDarktableRangeSelectClass *klass);
 static void _range_select_init(GtkDarktableRangeSelect *button);
 
@@ -160,6 +163,8 @@ static void _range_select_destroy(GtkWidget *widget)
 
   if(range->surface) cairo_surface_destroy(range->surface);
   range->surface = NULL;
+
+  GTK_WIDGET_CLASS(_range_select_parent_class)->destroy(widget);
 }
 
 static void _range_select_class_init(GtkDarktableRangeSelectClass *klass)
@@ -1692,24 +1697,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
 
 GType dtgtk_range_select_get_type()
 {
-  static GType dtgtk_range_select_type = 0;
-  if(!dtgtk_range_select_type)
-  {
-    static const GTypeInfo dtgtk_range_select_info = {
-      sizeof(GtkDarktableRangeSelectClass),
-      (GBaseInitFunc)NULL,
-      (GBaseFinalizeFunc)NULL,
-      (GClassInitFunc)_range_select_class_init,
-      NULL, /* class_finalize */
-      NULL, /* class_data */
-      sizeof(GtkDarktableRangeSelect),
-      0, /* n_preallocs */
-      (GInstanceInitFunc)_range_select_init,
-    };
-    dtgtk_range_select_type
-        = g_type_register_static(GTK_TYPE_EVENT_BOX, "GtkDarktableRangeSelect", &dtgtk_range_select_info, 0);
-  }
-  return dtgtk_range_select_type;
+  return _range_select_get_type();
 }
 
 gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
