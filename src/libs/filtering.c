@@ -198,27 +198,30 @@ typedef struct _filter_t
 #include "libs/filters/local_copy.c"
 #include "libs/filters/module_order.c"
 #include "libs/filters/rating.c"
+#include "libs/filters/rating_legacy.c"
 #include "libs/filters/ratio.c"
 #include "libs/filters/search.c"
 
-static _filter_t filters[] = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_init, _colors_update },
-                               { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
-                               { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update },
-                               { DT_COLLECTION_PROP_TIME, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update },
-                               { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update },
-                               { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update },
-                               { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
-                               { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
-                               { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
-                               { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update },
-                               { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
-                               { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
-                               { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update } };
+static _filter_t filters[]
+    = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_init, _colors_update },
+        { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
+        { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update },
+        { DT_COLLECTION_PROP_TIME, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update },
+        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update },
+        { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update },
+        { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
+        { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
+        { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
+        { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update },
+        { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
+        { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
+        { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update },
+        { DT_COLLECTION_PROP_RATING_LEGACY, _rating_legacy_widget_init, _rating_legacy_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -863,6 +866,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
     }
   }
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING_LEGACY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GEOTAGGING);
@@ -944,6 +948,7 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
     }
   }
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_LEGACY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
@@ -1347,7 +1352,7 @@ void gui_reset(dt_lib_module_t *self)
 
 int position()
 {
-  return 380;
+  return 350;
 }
 
 static void _dt_collection_updated(gpointer instance, dt_collection_change_t query_change,

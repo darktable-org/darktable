@@ -136,6 +136,7 @@ static gboolean _module_order_update(dt_lib_filtering_rule_t *rule)
   }
 
   dt_bauhaus_combobox_set(module_order->combo, val);
+  _module_order_synchronise(module_order);
   rule->manual_widget_set--;
 
   return TRUE;

@@ -126,6 +126,7 @@ static gboolean _local_copy_update(dt_lib_filtering_rule_t *rule)
   }
 
   dt_bauhaus_combobox_set(local_copy->combo, val);
+  _local_copy_synchronise(local_copy);
   rule->manual_widget_set--;
 
   return TRUE;
