@@ -104,9 +104,10 @@ typedef struct _curl_args_t
 
 typedef enum dt_storage_piwigo_conflict_actions_t
 {
-  DT_PIWIGO_CONFLICT_OVERWRITE = 0,
+  DT_PIWIGO_CONFLICT_NOTHING = 0,
   DT_PIWIGO_CONFLICT_SKIP = 1,
-  DT_PIWIGO_CONFLICT_METADATA = 2
+  DT_PIWIGO_CONFLICT_METADATA = 2,
+  DT_PIWIGO_CONFLICT_OVERWRITE = 3
 } dt_storage_piwigo_conflict_actions_t;
 
 typedef struct dt_storage_piwigo_params_t
@@ -120,6 +121,8 @@ typedef struct dt_storage_piwigo_params_t
   gchar *tags;
   dt_storage_piwigo_conflict_actions_t conflict_action;
 } dt_storage_piwigo_params_t;
+
+char existing_image_id[10];
 
 /* low-level routine doing the HTTP POST request */
 static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *filename, gboolean isauth);
@@ -575,7 +578,7 @@ static void _piwigo_album_changed(GtkComboBox *cb, gpointer data)
 
 static void _piwigo_conflict_changed(GtkWidget *widget, gpointer data)
 {
-  dt_conf_set_int("storage/piwigo/overwrite", dt_bauhaus_combobox_get(widget));
+  dt_conf_set_int("storage/piwigo/conflict", dt_bauhaus_combobox_get(widget));
 }
 
 /** Refresh albums */
@@ -722,9 +725,12 @@ static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
 static char *_piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t *img)
 {
   GList *args = NULL;
+  char album_id[10];
+  sprintf(album_id, "%d", (int) p->album_id);
 
-  args = _piwigo_query_add_arguments(args, "method", "pwg.images.exist");
-  args = _piwigo_query_add_arguments(args, "filename_list", img->filename);
+  args = _piwigo_query_add_arguments(args, "method", "pwg.categories.getImages");
+  args = _piwigo_query_add_arguments(args, "cat_id", album_id);
+  args = _piwigo_query_add_arguments(args, "per_page", "999999");
 
   _piwigo_api_post(p->api, args, NULL, TRUE);
 
@@ -738,9 +744,22 @@ static char *_piwigo_api_get_image_id(dt_storage_piwigo_params_t *p, dt_image_t 
     {
       JsonObject *result = json_node_get_object(result_node);
 
-      if(json_object_has_member(result, img->filename))
+      if(json_object_has_member(result, "images"))
       {
-        return (char *) json_object_get_string_member(result, img->filename);
+        JsonArray *existing_images = json_object_get_array_member(result, "images");
+
+        for(int i = 0; i < json_array_get_length(existing_images); i++)
+        {
+          JsonObject *existing_image = json_array_get_object_element(existing_images, i);
+          if(json_object_has_member(existing_image, "file"))
+          {
+            if(strcmp(img->filename, json_object_get_string_member(existing_image, "file")) == 0)
+            {
+              sprintf(existing_image_id, "%d", (int) json_object_get_int_member(existing_image, "id"));
+              return existing_image_id;
+            }
+          }
+        }
       }
     }
   }
@@ -969,14 +988,13 @@ void gui_init(dt_imageio_module_storage_t *self)
   // action on conflict
   ui->conflict_action = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(ui->conflict_action, NULL, N_("on conflict"));
-  dt_bauhaus_combobox_add(ui->conflict_action, _("overwrite"));
+  dt_bauhaus_combobox_add(ui->conflict_action, _("don't check"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("skip"));
   dt_bauhaus_combobox_add(ui->conflict_action, _("update metadata"));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(ui->conflict_action),
-                              _("check for existing images only works with piwigo-config:\n$conf['uniqueness_mode'] = 'filename';"));
+  dt_bauhaus_combobox_add(ui->conflict_action, _("overwrite"));
   gtk_box_pack_start(GTK_BOX(self->widget), ui->conflict_action, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(ui->conflict_action), "value-changed", G_CALLBACK(_piwigo_conflict_changed), self);
-  dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/overwrite"));
+  dt_bauhaus_combobox_set(ui->conflict_action, dt_conf_get_int("storage/piwigo/conflict"));
 }
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
@@ -1098,7 +1116,12 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
     if(status)
     {
-      char *pwg_image_id = _piwigo_api_get_image_id(p, img);
+      char *pwg_image_id = NULL;
+
+      if(p->conflict_action != DT_PIWIGO_CONFLICT_NOTHING)
+      {
+        pwg_image_id = _piwigo_api_get_image_id(p, img);
+      }
 
       if(p->conflict_action==DT_PIWIGO_CONFLICT_METADATA)
       {
