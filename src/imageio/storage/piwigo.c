@@ -118,10 +118,11 @@ typedef struct dt_storage_piwigo_params_t
   char *album;
   gboolean new_album;
   int privacy;
+  gboolean export_tags; // deprecated - let here not to change params size. to be removed on next version change
   gchar *tags;
-  dt_storage_piwigo_conflict_actions_t conflict_action;
 } dt_storage_piwigo_params_t;
 
+dt_storage_piwigo_conflict_actions_t conflict_action;
 char existing_image_id[10];
 
 /* low-level routine doing the HTTP POST request */
@@ -1118,12 +1119,12 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     {
       char *pwg_image_id = NULL;
 
-      if(p->conflict_action != DT_PIWIGO_CONFLICT_NOTHING)
+      if(conflict_action != DT_PIWIGO_CONFLICT_NOTHING)
       {
         pwg_image_id = _piwigo_api_get_image_id(p, img);
       }
 
-      if(p->conflict_action==DT_PIWIGO_CONFLICT_METADATA)
+      if(conflict_action==DT_PIWIGO_CONFLICT_METADATA)
       {
         status = _piwigo_api_set_info(p, author, caption, description, pwg_image_id);
         if(!status)
@@ -1133,7 +1134,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
           result = 1;
         }
       }
-      else if(pwg_image_id && p->conflict_action==DT_PIWIGO_CONFLICT_SKIP)
+      else if(pwg_image_id && conflict_action==DT_PIWIGO_CONFLICT_SKIP)
       {
         skipped = 1;
       }
@@ -1234,7 +1235,7 @@ void *get_params(dt_imageio_module_storage_t *self)
     p->album_id = 0;
     p->tags = NULL;
 
-    p->conflict_action = dt_bauhaus_combobox_get(ui->conflict_action);
+    conflict_action = dt_bauhaus_combobox_get(ui->conflict_action);
 
     switch(dt_bauhaus_combobox_get(ui->permission_list))
     {
