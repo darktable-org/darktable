@@ -1304,7 +1304,7 @@ filechooser row:hover .sidebar-icon
 /* set range parts and quick filter box in header toolbar */
 .search,
 #range-select #dt-range-band,
-#header-toolbar #bauhaus-combobox
+#header-toolbar #bauhaus-combobox:not(.dt_transparent_background)
 {
   background-color: @range_bg_color;
 }
