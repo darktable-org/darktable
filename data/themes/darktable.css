@@ -462,7 +462,8 @@ separator
   opacity: 0.6;
 }
 
-.dt_dimmed:hover /* to set full opacity when hovering those items */
+.dt_dimmed:hover, /* to set full opacity when hovering those items */
+.dt_dimmed:checked
 {
   opacity: 1;
 }
@@ -1327,6 +1328,12 @@ filechooser row:hover .sidebar-icon
 #range-current
 {
   padding: 0.2em;
+}
+
+#collect-header-box button
+{
+  margin-left: 0;
+  margin-right: 0;
 }
 
 /*------------
