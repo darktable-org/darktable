@@ -657,12 +657,17 @@ static void _bound_change(GtkDarktableRangeSelect *range, const gchar *val, cons
     {
       if(bound == BOUND_MIN)
       {
-        if(range->bounds & DT_RANGE_BOUND_MAX) range->bounds = DT_RANGE_BOUND_MAX;
+        range->bounds &= ~DT_RANGE_BOUND_MIN;
+        range->bounds &= ~DT_RANGE_BOUND_MIN_RELATIVE;
+        range->bounds &= ~DT_RANGE_BOUND_FIXED;
         range->select_min_r = v;
       }
       else if(bound == BOUND_MAX)
       {
-        if(range->bounds & DT_RANGE_BOUND_MIN) range->bounds = DT_RANGE_BOUND_MIN;
+        range->bounds &= ~DT_RANGE_BOUND_MAX;
+        range->bounds &= ~DT_RANGE_BOUND_MAX_RELATIVE;
+        range->bounds &= ~DT_RANGE_BOUND_MAX_NOW;
+        range->bounds &= ~DT_RANGE_BOUND_FIXED;
         range->select_max_r = v;
       }
       else if(bound == BOUND_MIDDLE)
