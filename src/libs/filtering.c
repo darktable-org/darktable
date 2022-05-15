@@ -86,6 +86,7 @@ typedef struct dt_lib_filtering_rule_t
   GtkWidget *w_btn_box;
   GtkWidget *w_close;
   GtkWidget *w_off;
+  GtkWidget *w_pin;
 
   GtkWidget *w_widget_box;
   char raw_text[PARAM_STRING_SIZE];
@@ -625,13 +626,6 @@ static void _event_rule_changed(GtkWidget *entry, dt_lib_filtering_rule_t *rule)
 {
   if(rule->manual_widget_set) return;
 
-  // force the on-off to on if topbar
-  if(rule->topbar && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
-  {
-    rule->manual_widget_set++;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), TRUE);
-    rule->manual_widget_set--;
-  }
   // update the config files
   _conf_update_rule(rule);
 
@@ -1039,25 +1033,40 @@ static void _topbar_update(dt_lib_module_t *self)
 
 static void _widget_header_update(dt_lib_filtering_rule_t *rule)
 {
-  gtk_widget_set_visible(rule->w_close, !rule->topbar);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(rule->w_off),
-                               (rule->topbar) ? dtgtk_cairo_paint_pin : dtgtk_cairo_paint_switch, 0, NULL);
+  gtk_widget_set_sensitive(rule->w_close, !rule->topbar);
+  gtk_widget_set_sensitive(rule->w_off, !rule->topbar);
+
   if(rule->topbar)
   {
-    gtk_widget_set_tooltip_text(rule->w_off, _("this rule is pinned into the top toolbar\nctrl-click to un-pin"));
+    gtk_widget_set_tooltip_text(
+        rule->w_pin,
+        _("as this rule is pinned into the top toolbar\nyou can't remove or disable it\nclick to un-pin"));
+    gtk_widget_set_tooltip_text(rule->w_off, "");
+    gtk_widget_set_tooltip_text(rule->w_close, "");
+    DTGTK_TOGGLEBUTTON(rule->w_off)->icon = dtgtk_cairo_paint_empty;
+    DTGTK_BUTTON(rule->w_close)->icon = dtgtk_cairo_paint_empty;
   }
   else
   {
-    gtk_widget_set_tooltip_text(rule->w_off,
-                                _("disable this collect rule\nctrl-click to pin into the top toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule into the top toolbar"));
+    DTGTK_TOGGLEBUTTON(rule->w_off)->icon = dtgtk_cairo_paint_switch;
+    DTGTK_BUTTON(rule->w_close)->icon = dtgtk_cairo_paint_remove;
+    gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
+      gtk_widget_set_tooltip_text(rule->w_off, _("this rule is enabled"));
+    else
+      gtk_widget_set_tooltip_text(rule->w_off, _("this rule is disabled"));
   }
+
   _rule_populate_prop_combo(rule);
 }
 
-static void _rule_topbar_toggle(dt_lib_filtering_rule_t *rule, dt_lib_module_t *self)
+static void _rule_topbar_toggle(GtkWidget *widget, dt_lib_module_t *self)
 {
-  rule->topbar = !rule->topbar;
-  // activate the rule if needed
+  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+
+  rule->topbar = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_pin));
+  // if the rule is pinned, then we force it to on
   if(rule->topbar && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), TRUE);
@@ -1074,11 +1083,7 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   if(rule->manual_widget_set) return TRUE;
 
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-  {
-    _rule_topbar_toggle(rule, self);
-  }
-  else if(!rule->topbar)
+  if(!rule->topbar)
   {
     // decrease the nb of active rules
     dt_lib_filtering_t *d = rule->lib;
@@ -1123,29 +1128,6 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
     return FALSE;
 
   return TRUE;
-}
-
-static gboolean _event_rule_change_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
-{
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK) || (rule->topbar && widget != rule->w_prop))
-  {
-    _rule_topbar_toggle(rule, self);
-  }
-  else if(!rule->topbar && widget == rule->w_prop)
-  {
-    _rule_show_popup(rule->w_prop, rule, self);
-  }
-  else
-    return FALSE;
-  return TRUE;
-}
-
-static void _event_header_resized(GtkWidget *widget, GtkAllocation *allocation, dt_lib_filtering_rule_t *rule)
-{
-  // we want to ensure that the combobox and the buttons box are the same size
-  // so the property widget is centered
-  gtk_widget_set_size_request(rule->w_btn_box, allocation->width, -1);
 }
 
 // initialise or update a rule widget. Return if the a new widget has been created
@@ -1215,24 +1197,26 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, NULL);
     dt_gui_add_class(rule->w_off, "dt_transparent_background");
     g_object_set_data(G_OBJECT(rule->w_off), "rule", rule);
-    g_signal_connect(G_OBJECT(rule->w_off), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
     g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_changed), rule);
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
+    // pin button
+    rule->w_pin = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
+    dt_gui_add_class(rule->w_pin, "dt_transparent_background");
+    g_object_set_data(G_OBJECT(rule->w_pin), "rule", rule);
+    g_signal_connect(G_OBJECT(rule->w_pin), "toggled", G_CALLBACK(_rule_topbar_toggle), self);
+    dt_gui_add_class(rule->w_pin, "dt_dimmed");
+    gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_pin, FALSE, FALSE, 0);
+
     // remove button
     rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
-    gtk_widget_set_no_show_all(rule->w_close, TRUE);
     g_object_set_data(G_OBJECT(rule->w_close), "rule", rule);
-    gtk_widget_set_tooltip_text(rule->w_close,
-                                _("remove this collect rule\nctrl-click to pin into the top toolbar"));
     g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), self);
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_close, FALSE, FALSE, 0);
-
-    g_signal_connect(G_OBJECT(rule->w_operator), "size-allocate", G_CALLBACK(_event_header_resized), rule);
   }
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), !off);
-
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), top || !off);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_pin), top);
   _widget_header_update(rule);
 
   if(newmain)
