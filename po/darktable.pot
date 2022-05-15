@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-15 23:06+0200\n"
+"POT-Creation-Date: 2022-05-15 23:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5538,8 +5538,8 @@ msgstr ""
 #: ../src/common/database.c:2744 ../src/libs/collect.c:2921
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
-#: ../src/libs/modulegroups.c:3507 ../src/libs/styles.c:423
-#: ../src/libs/styles.c:606 ../src/libs/tagging.c:1466
+#: ../src/libs/modulegroups.c:3507 ../src/libs/recentcollect.c:295
+#: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1466
 #: ../src/libs/tagging.c:1554 ../src/libs/tagging.c:1635
 #: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
 #: ../src/libs/tagging.c:3460
@@ -18043,27 +18043,31 @@ msgstr ""
 
 #: ../src/libs/collect.c:2922 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
-#: ../src/libs/tagging.c:1635 ../src/libs/tagging.c:1765
-#: ../src/libs/tagging.c:2039 ../src/libs/tagging.c:3461
+#: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1635
+#: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
+#: ../src/libs/tagging.c:3461
 msgid "save"
 msgstr ""
 
 #: ../src/libs/collect.c:2942 ../src/libs/export.c:1059
 #: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1298
-#: ../src/libs/tagging.c:3483
+#: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3483
 msgid "preferences..."
 msgstr ""
 
 #: ../src/libs/collect.c:3037 ../src/libs/filtering.c:1380
+#: ../src/libs/recentcollect.c:109
 msgid " and "
 msgstr ""
 
 #: ../src/libs/collect.c:3042 ../src/libs/filtering.c:1385
+#: ../src/libs/recentcollect.c:114
 msgid " or "
 msgstr ""
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/collect.c:3047 ../src/libs/filtering.c:1390
+#: ../src/libs/recentcollect.c:119
 msgid " but not "
 msgstr ""
 
@@ -20735,6 +20739,14 @@ msgstr ""
 
 #: ../src/libs/print_settings.c:2726
 msgid "print with current settings"
+msgstr ""
+
+#: ../src/libs/recentcollect.c:67
+msgid "recently used collections"
+msgstr ""
+
+#: ../src/libs/recentcollect.c:294
+msgid "recent collections settings"
 msgstr ""
 
 #: ../src/libs/select.c:134
