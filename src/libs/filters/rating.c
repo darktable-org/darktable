@@ -25,12 +25,64 @@ static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
   if(!rule->w_specific) return FALSE;
   _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
   _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
+  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
+  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
 
   rule->manual_widget_set++;
-  dtgtk_range_select_set_selection_from_raw_text(DTGTK_RANGE_SELECT(special->range_select), rule->raw_text, FALSE);
-  if(specialtop)
-    dtgtk_range_select_set_selection_from_raw_text(DTGTK_RANGE_SELECT(specialtop->range_select), rule->raw_text,
-                                                   FALSE);
+  char query[1024] = { 0 };
+  // clang-format off
+  g_snprintf(query, sizeof(query),
+             "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
+             " COUNT(*) AS count"
+             " FROM main.images AS mi"
+             " WHERE %s"
+             " GROUP BY rating"
+             " ORDER BY rating",
+             rule->lib->last_where_ext);
+  // clang-format on
+  int nb[7] = { 0 };
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int val = sqlite3_column_int(stmt, 0);
+    const int count = sqlite3_column_int(stmt, 1);
+
+    if(val < 6 && val >= -1) nb[val + 1] += count;
+  }
+  sqlite3_finalize(stmt);
+
+  dtgtk_range_select_reset_blocks(range);
+  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
+                                     nb[0] + nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
+  dtgtk_range_select_add_range_block(range, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
+                                     nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
+  dtgtk_range_select_add_range_block(range, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
+  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("unstared only"), nb[1]);
+  dtgtk_range_select_add_range_block(range, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
+  dtgtk_range_select_add_range_block(range, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
+  dtgtk_range_select_add_range_block(range, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
+  dtgtk_range_select_add_range_block(range, 4.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★", nb[5]);
+  dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
+
+  if(rangetop)
+  {
+    dtgtk_range_select_reset_blocks(rangetop);
+    dtgtk_range_select_add_range_block(rangetop, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX,
+                                       _("all images"), nb[0] + nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
+    dtgtk_range_select_add_range_block(rangetop, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
+                                       nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
+    dtgtk_range_select_add_range_block(rangetop, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
+    dtgtk_range_select_add_range_block(rangetop, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("unstared only"), nb[1]);
+    dtgtk_range_select_add_range_block(rangetop, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
+    dtgtk_range_select_add_range_block(rangetop, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
+    dtgtk_range_select_add_range_block(rangetop, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
+    dtgtk_range_select_add_range_block(rangetop, 4.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★", nb[5]);
+    dtgtk_range_select_add_range_block(rangetop, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
+  }
+
+  dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
+  if(rangetop) dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
   rule->manual_widget_set--;
   return TRUE;
 }
@@ -217,39 +269,6 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   range->print = _rating_print_func;
 
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
-
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
-             " COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " GROUP BY rating"
-             " ORDER BY rating");
-  // clang-format on
-  int nb[7] = { 0 };
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const int val = sqlite3_column_int(stmt, 0);
-    const int count = sqlite3_column_int(stmt, 1);
-
-    if(val < 6 && val >= -1) nb[val + 1] += count;
-  }
-  sqlite3_finalize(stmt);
-
-  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
-                                     nb[0] + nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-  dtgtk_range_select_add_range_block(range, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
-                                     nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-  dtgtk_range_select_add_range_block(range, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
-  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("unstared only"), nb[1]);
-  dtgtk_range_select_add_range_block(range, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
-  dtgtk_range_select_add_range_block(range, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
-  dtgtk_range_select_add_range_block(range, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
-  dtgtk_range_select_add_range_block(range, 4.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★", nb[5]);
-  dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
 
   range->min_r = -1;
   range->max_r = 5.999;
