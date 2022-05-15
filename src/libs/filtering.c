@@ -1038,19 +1038,13 @@ static void _widget_header_update(dt_lib_filtering_rule_t *rule)
 
   if(rule->topbar)
   {
-    gtk_widget_set_tooltip_text(
-        rule->w_pin,
-        _("as this rule is pinned into the top toolbar\nyou can't remove or disable it\nclick to un-pin"));
-    gtk_widget_set_tooltip_text(rule->w_off, "");
-    gtk_widget_set_tooltip_text(rule->w_close, "");
-    DTGTK_TOGGLEBUTTON(rule->w_off)->icon = dtgtk_cairo_paint_empty;
-    DTGTK_BUTTON(rule->w_close)->icon = dtgtk_cairo_paint_empty;
+    gtk_widget_set_tooltip_text(rule->w_pin, _("this rule is pinned into the top toolbar\nclick to un-pin"));
+    gtk_widget_set_tooltip_text(rule->w_off, _("you can't disable the rule as it is pinned into the toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_close, _("you can't remove the rule as it is pinned into the toolbar"));
   }
   else
   {
     gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule into the top toolbar"));
-    DTGTK_TOGGLEBUTTON(rule->w_off)->icon = dtgtk_cairo_paint_switch;
-    DTGTK_BUTTON(rule->w_close)->icon = dtgtk_cairo_paint_remove;
     gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
       gtk_widget_set_tooltip_text(rule->w_off, _("this rule is enabled"));

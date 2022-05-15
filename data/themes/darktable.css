@@ -1336,6 +1336,11 @@ filechooser row:hover .sidebar-icon
   margin-right: 0;
 }
 
+#collect-header-box button:disabled
+{
+  color: @disabled_fg_color;
+}
+
 /*------------
   - Map view -
   ------------*/
