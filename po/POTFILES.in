@@ -317,6 +317,7 @@ src/libs/metadata_view.c
 src/libs/modulegroups.c
 src/libs/navigation.c
 src/libs/print_settings.c
+src/libs/recentcollect.c
 src/libs/select.c
 src/libs/session.c
 src/libs/snapshots.c
