@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-15 23:06+0200\n"
+"POT-Creation-Date: 2022-05-15 23:24+0200\n"
 "PO-Revision-Date: 2022-05-15 23:19+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -5897,8 +5897,8 @@ msgstr "erreur de lancement de darktable"
 #: ../src/common/database.c:2744 ../src/libs/collect.c:2921
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
-#: ../src/libs/modulegroups.c:3507 ../src/libs/styles.c:423
-#: ../src/libs/styles.c:606 ../src/libs/tagging.c:1466
+#: ../src/libs/modulegroups.c:3507 ../src/libs/recentcollect.c:295
+#: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1466
 #: ../src/libs/tagging.c:1554 ../src/libs/tagging.c:1635
 #: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
 #: ../src/libs/tagging.c:3460
@@ -19719,27 +19719,31 @@ msgstr "préférences des collections"
 
 #: ../src/libs/collect.c:2922 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
-#: ../src/libs/tagging.c:1635 ../src/libs/tagging.c:1765
-#: ../src/libs/tagging.c:2039 ../src/libs/tagging.c:3461
+#: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1635
+#: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
+#: ../src/libs/tagging.c:3461
 msgid "save"
 msgstr "enregistrer"
 
 #: ../src/libs/collect.c:2942 ../src/libs/export.c:1059
 #: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1298
-#: ../src/libs/tagging.c:3483
+#: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3483
 msgid "preferences..."
 msgstr "préférences..."
 
 #: ../src/libs/collect.c:3037 ../src/libs/filtering.c:1380
+#: ../src/libs/recentcollect.c:109
 msgid " and "
 msgstr " et "
 
 #: ../src/libs/collect.c:3042 ../src/libs/filtering.c:1385
+#: ../src/libs/recentcollect.c:114
 msgid " or "
 msgstr " ou "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/collect.c:3047 ../src/libs/filtering.c:1390
+#: ../src/libs/recentcollect.c:119
 msgid " but not "
 msgstr " mais sans "
 
@@ -22662,6 +22666,14 @@ msgstr "style temporaire à utiliser lors de l'exportation"
 msgid "print with current settings"
 msgstr "imprime avec les réglages actuels"
 
+#: ../src/libs/recentcollect.c:67
+msgid "recently used collections"
+msgstr "collections récentes"
+
+#: ../src/libs/recentcollect.c:294
+msgid "recent collections settings"
+msgstr "préférences des collections récentes"
+
 #: ../src/libs/select.c:134
 msgid "select all images in current collection"
 msgstr "sélectionne toutes les images de la collection actuelle"
@@ -24456,12 +24468,6 @@ msgstr "actions souris"
 
 #~ msgid "taken: today"
 #~ msgstr "prises: aujourd'hui"
-
-#~ msgid "recently used collections"
-#~ msgstr "collections récentes"
-
-#~ msgid "recent collections settings"
-#~ msgstr "préférences des collections récentes"
 
 #~ msgid "comparator"
 #~ msgstr "opérateur"
