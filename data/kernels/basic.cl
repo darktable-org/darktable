@@ -544,6 +544,7 @@ interpolate_and_mask(read_only image2d_t input,
   const int i = get_global_id(1); // = y
 
   if(j >= width || i >= height) return;
+  const float center = read_imagef(input, sampleri, (int2)(j, i)).x;
 
   const int c = FC(i, j, filters);
 
@@ -563,96 +564,93 @@ interpolate_and_mask(read_only image2d_t input,
     // because we are dealing with local averages anyway, later on.
     // Also we remosaic the image at the end, so only the relevant channel gets picked.
     // Finally, it's unlikely that the borders of the image get clipped due to vignetting.
-    const float center = read_imagef(input, sampleri, (int2)(j, i)).x;
     R = G = B = center;
     R_clipped = G_clipped = B_clipped = (center > clips[c]);
   }
   else
   {
     // fetch neighbours and cache them for perf
-    float cache[9];
-    for(int ii = -1; ii < 2; ii++)
-      for(int jj =-1; jj < 2; jj++)
-      {
-        cache[(ii + 1) * 3 + (jj + 1)] = read_imagef(input, samplerA, (int2)(j + jj, i + ii)).x;
-      }
+    const size_t i_prev = (i - 1);
+    const size_t i_next = (i + 1);
+    const size_t j_prev = (j - 1);
+    const size_t j_next = (j + 1);
 
-    const float *const north_west = &cache[0];
-    const float *const north = &cache[1];
-    const float *const north_east = &cache[2];
-    const float *const west = &cache[3];
-    const float *const center = &cache[4];
-    const float *const east = &cache[5];
-    const float *const south_west = &cache[6];
-    const float *const south = &cache[7];
-    const float *const south_east = &cache[8];
+    const float north = read_imagef(input, samplerA, (int2)(j, i_prev)).x;
+    const float south = read_imagef(input, samplerA, (int2)(j, i_next)).x;
+    const float west = read_imagef(input, samplerA, (int2)(j_prev, i)).x;
+    const float east = read_imagef(input, samplerA, (int2)(j_next, i)).x;
+
+    const float north_east = read_imagef(input, samplerA, (int2)(j_next, i_prev)).x;
+    const float north_west = read_imagef(input, samplerA, (int2)(j_prev, i_prev)).x;
+    const float south_east = read_imagef(input, samplerA, (int2)(j_next, i_next)).x;
+    const float south_west = read_imagef(input, samplerA, (int2)(j_prev, i_next)).x;
 
     if(c == GREEN) // green pixel
     {
-      G = *center;
-      G_clipped = (*center > clips[GREEN]);
+      G = center;
+      G_clipped = (center > clips[GREEN]);
     }
     else // non-green pixel
     {
       // interpolate inside an X/Y cross
-      G = (*north + *south + *east + *west) / 4.f;
-      G_clipped = (*north > clips[GREEN] || *south > clips[GREEN] || *east > clips[GREEN] || *west > clips[GREEN]);
+      G = (north + south + east + west) / 4.f;
+      G_clipped = (north > clips[GREEN] || south > clips[GREEN] || east > clips[GREEN] || west > clips[GREEN]);
     }
 
     if(c == RED ) // red pixel
     {
-      R = *center;
-      R_clipped = (*center > clips[RED]);
+      R = center;
+      R_clipped = (center > clips[RED]);
     }
     else // non-red pixel
     {
       if(FC(i - 1, j, filters) == RED && FC(i + 1, j, filters) == RED)
       {
         // we are on a red column, so interpolate column-wise
-        R = (*north + *south) / 2.f;
-        R_clipped = (*north > clips[RED] || *south > clips[RED]);
+        R = (north + south) / 2.f;
+        R_clipped = (north > clips[RED] || south > clips[RED]);
       }
       else if(FC(i, j - 1, filters) == RED && FC(i, j + 1, filters) == RED)
       {
         // we are on a red row, so interpolate row-wise
-        R = (*west + *east) / 2.f;
-        R_clipped = (*west > clips[RED] || *east > clips[RED]);
+        R = (west + east) / 2.f;
+        R_clipped = (west > clips[RED] || east > clips[RED]);
       }
       else
       {
         // we are on a blue row, so interpolate inside a square
-        R = (*north_west + *north_east + *south_east + *south_west) / 4.f;
-        R_clipped = (*north_west > clips[RED] || *north_east > clips[RED] || *south_west > clips[RED]
-                      || *south_east > clips[RED]);
+        R = (north_west + north_east + south_east + south_west) / 4.f;
+        R_clipped = (north_west > clips[RED] || north_east > clips[RED] || south_west > clips[RED]
+                      || south_east > clips[RED]);
       }
     }
 
     if(c == BLUE ) // blue pixel
     {
-      B = *center;
-      B_clipped = (*center > clips[BLUE]);
+      B = center;
+      B_clipped = (center > clips[BLUE]);
     }
     else // non-blue pixel
     {
       if(FC(i - 1, j, filters) == BLUE && FC(i + 1, j, filters) == BLUE)
       {
         // we are on a blue column, so interpolate column-wise
-        B = (*north + *south) / 2.f;
-        B_clipped = (*north > clips[BLUE] || *south > clips[BLUE]);
+        B = (north + south) / 2.f;
+        B_clipped = (north > clips[BLUE] || south > clips[BLUE]);
       }
       else if(FC(i, j - 1, filters) == BLUE && FC(i, j + 1, filters) == BLUE)
       {
         // we are on a red row, so interpolate row-wise
-        B = (*west + *east) / 2.f;
-        B_clipped = (*west > clips[BLUE] || *east > clips[BLUE]);
+        B = (west + east) / 2.f;
+        B_clipped = (west > clips[BLUE] || east > clips[BLUE]);
       }
       else
       {
         // we are on a red row, so interpolate inside a square
-        B = (*north_west + *north_east + *south_east + *south_west) / 4.f;
+        B = (north_west + north_east + south_east + south_west) / 4.f;
 
-        B_clipped = (*north_west > clips[BLUE] || *north_east > clips[BLUE] || *south_west > clips[BLUE]
-                    || *south_east > clips[BLUE]);
+        B_clipped = (north_west > clips[BLUE] || north_east > clips[BLUE] || south_west > clips[BLUE]
+                    || south_east > clips[BLUE]);
       }
     }
   }
