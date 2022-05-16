@@ -1237,15 +1237,19 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 
         // fetch non-local pixels and store them locally and contiguously
         dt_aligned_pixel_t neighbour_pixel_HF[9];
-
-        for(size_t ii = 0; ii < 3; ii++)
-          for(size_t jj = 0; jj < 3; jj++)
-          {
-            const size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
             for_four_channels(c, aligned(neighbour_pixel_HF, HF: 64))
             {
-              neighbour_pixel_HF[3 * ii + jj][c] = HF[neighbor + c];
-            }
+          neighbour_pixel_HF[3 * 0 + 0][c] = HF[4 * (i_neighbours[0] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 0 + 1][c] = HF[4 * (i_neighbours[0] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 0 + 2][c] = HF[4 * (i_neighbours[0] + j_neighbours[2]) + c];
+
+          neighbour_pixel_HF[3 * 1 + 0][c] = HF[4 * (i_neighbours[1] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 1 + 1][c] = HF[4 * (i_neighbours[1] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 1 + 2][c] = HF[4 * (i_neighbours[1] + j_neighbours[2]) + c];
+
+          neighbour_pixel_HF[3 * 2 + 0][c] = HF[4 * (i_neighbours[2] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 2 + 1][c] = HF[4 * (i_neighbours[2] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 2 + 2][c] = HF[4 * (i_neighbours[2] + j_neighbours[2]) + c];
           }
 
         // Compute the linear fit of the laplacian of chromaticity against the laplacian of the norm
@@ -1414,18 +1418,19 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
 
         // fetch non-local pixels and store them locally and contiguously
         dt_aligned_pixel_t neighbour_pixel_HF[9];
-        dt_aligned_pixel_t neighbour_pixel_LF[9];
-
-        for(size_t ii = 0; ii < 3; ii++)
-          for(size_t jj = 0; jj < 3; jj++)
+        for_four_channels(c, aligned(neighbour_pixel_HF, HF: 64))
           {
-            const size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
-            const size_t nidx = 3 * ii + jj;
-            for_four_channels(c, aligned(neighbour_pixel_HF, HF, neighbour_pixel_LF, LF : 64))
-            {
-              neighbour_pixel_HF[nidx][c] = HF[neighbor + c];
-              neighbour_pixel_LF[nidx][c] = LF[neighbor + c];
-            }
+          neighbour_pixel_HF[3 * 0 + 0][c] = HF[4 * (i_neighbours[0] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 0 + 1][c] = HF[4 * (i_neighbours[0] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 0 + 2][c] = HF[4 * (i_neighbours[0] + j_neighbours[2]) + c];
+
+          neighbour_pixel_HF[3 * 1 + 0][c] = HF[4 * (i_neighbours[1] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 1 + 1][c] = HF[4 * (i_neighbours[1] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 1 + 2][c] = HF[4 * (i_neighbours[1] + j_neighbours[2]) + c];
+
+          neighbour_pixel_HF[3 * 2 + 0][c] = HF[4 * (i_neighbours[2] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 2 + 1][c] = HF[4 * (i_neighbours[2] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 2 + 2][c] = HF[4 * (i_neighbours[2] + j_neighbours[2]) + c];
           }
 
         // Compute the laplacian in the direction parallel to the steepest gradient on the norm
