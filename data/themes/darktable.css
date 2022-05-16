@@ -1586,7 +1586,7 @@ treeview *:checked:not(check)
 /* History currently selected button ; they don't need to set background */
 .dt_history_items:active *,
 .dt_history_items:checked *,
-button.dt_transparent_background:checked:not(:disabled)
+button.dt_transparent_background:checked:not(:disabled):not(.dt_ignore_fg_state)
 {
   color: @field_selected_fg;
 }
