@@ -889,7 +889,7 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
   {
     // Break the RGB channels into ratios/norm for the next step of reconstruction
     const float4 out_2 = out * out;
-    const float norm = fmax(native_sqrt(out_2.x + out_2.y + out_2.z), 1e-6f);
+    const float norm = fmax(sqrt(out_2.x + out_2.y + out_2.z), 1e-6f);
     out /= norm;
     out.w = norm;
   }
