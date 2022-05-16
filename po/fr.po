@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-15 23:24+0200\n"
-"PO-Revision-Date: 2022-05-15 23:19+0200\n"
+"PO-Revision-Date: 2022-05-16 23:03+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -20366,7 +20366,7 @@ msgstr ""
 
 #: ../src/libs/filtering.c:654
 msgid "<b><i>actual selection: </i></b>"
-msgstr "<b><i>sélection actuelle :</i></b>"
+msgstr "<b><i>sélection actuelle : </i></b>"
 
 #: ../src/libs/filtering.c:915
 msgid ""
