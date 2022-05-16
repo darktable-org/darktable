@@ -1130,7 +1130,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
                                     float *const restrict output,
                                     const size_t width, const size_t height, const int mult,
                                     const float noise_level, const int salt,
-                                    const uint8_t scale)
+                                    const uint8_t scale, const float radius_sq)
 {
   float *const restrict out = DT_IS_ALIGNED(output);
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
@@ -1138,7 +1138,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, noise_level, salt, scale) \
+    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, noise_level, salt, scale, radius_sq) \
     schedule(static)
 #endif
   for(size_t row = 0; row < height; ++row)
@@ -1226,15 +1226,18 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
                                 * (neighbour_pixel_HF[k][guiding_channel_HF] - means_HF[guiding_channel_HF]) / 9.f;
           }
 
+        const float scale_multiplier = 1.f / radius_sq;
+        const dt_aligned_pixel_t alpha_ch = { clipping_mask[index + RED], clipping_mask[index + GREEN], clipping_mask[index + BLUE], clipping_mask[index + ALPHA] };
+
         dt_aligned_pixel_t a_HF, b_HF;
-        for_each_channel(c, aligned(out, neighbour_pixel_HF, a_HF, b_HF, covariance_HF, variance_HF, means_HF, high_frequency : 64))
+        for_each_channel(c, aligned(out, neighbour_pixel_HF, a_HF, b_HF, covariance_HF, variance_HF, means_HF, high_frequency, alpha_ch))
         {
           // Get a and b s.t. y = a * x + b, y = test data, x = guide
           a_HF[c] = fmaxf(covariance_HF[c] / (variance_HF[guiding_channel_HF]), 0.f);
           b_HF[c] = means_HF[c] - a_HF[c] * means_HF[guiding_channel_HF];
 
-          high_frequency[c] = alpha * (a_HF[c] * high_frequency[guiding_channel_HF] + b_HF[c])
-                            + alpha_comp * high_frequency[c];
+          high_frequency[c] = alpha_ch[c] * scale_multiplier * (a_HF[c] * high_frequency[guiding_channel_HF] + b_HF[c])
+                            + (1.f - alpha_ch[c] * scale_multiplier) * high_frequency[c];
         }
       }
 
@@ -1468,9 +1471,10 @@ static inline gint wavelets_process(const float *const restrict in, float
     decompose_2D_Bspline(buffer_in, HF, buffer_out, width, height, mult, tempbuf, padded_size);
 
     uint8_t current_scale_type = scale_type(s, scales);
+    const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
 
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
-      guide_laplacians(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, noise_level, salt, current_scale_type);
+      guide_laplacians(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, noise_level, salt, current_scale_type, radius);
     else
       heat_PDE_diffusion(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, current_scale_type);
 
@@ -1628,6 +1632,7 @@ static inline cl_int wavelets_process_cl(const int devid,
     if(err != CL_SUCCESS) return err;
 
     uint8_t current_scale_type = scale_type(s, scales);
+    const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
 
     // Compute wavelets low-frequency scales
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
@@ -1643,6 +1648,7 @@ static inline cl_int wavelets_process_cl(const int devid,
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 8, sizeof(float), (void *)&noise_level);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 9, sizeof(int), (void *)&salt);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 10, sizeof(uint8_t), (void *)&current_scale_type);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 11, sizeof(float), (void *)&radius);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_guide_laplacians, sizes);
       if(err != CL_SUCCESS) return err;
     }
