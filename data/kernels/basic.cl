@@ -974,6 +974,14 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     // add the residual and clamp
     out = fmax(out + read_imagef(LF, samplerA, (int2)(x, y)), (float4)0.f);
 
+    // renormalize ratios
+    if(alpha.w > 0.f)
+    {
+      const float4 out_sq = sqf(out);
+      const float norm = sqrt(out_sq.x + out_sq.y + out_sq.z);
+      out.xyz /= norm;
+    }
+
     // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
     // we need it to evaluate the gradient
     out.xyz *= out.w;
