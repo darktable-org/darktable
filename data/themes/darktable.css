@@ -1332,13 +1332,7 @@ filechooser row:hover .sidebar-icon
 
 #collect-header-box button
 {
-  margin-left: 0;
   margin-right: 0;
-}
-
-#collect-header-box button:disabled
-{
-  color: @disabled_fg_color;
 }
 
 /*------------
@@ -1571,7 +1565,7 @@ progressbar progress
 .dt_history_items:active,
 .dt_history_items:checked,
 button:active,
-button:checked,
+button:checked:not(:disabled):not(.dt_transparent_background),
 button:selected,
 cell:selected,
 checkbutton check:checked,
@@ -1591,7 +1585,8 @@ treeview *:checked:not(check)
 
 /* History currently selected button ; they don't need to set background */
 .dt_history_items:active *,
-.dt_history_items:checked *
+.dt_history_items:checked *,
+button.dt_transparent_background:checked:not(:disabled):not(.dt_ignore_fg_state)
 {
   color: @field_selected_fg;
 }
