@@ -724,7 +724,7 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
                  read_only image2d_t output_r, write_only image2d_t output_w,
                  const int width, const int height, const int mult,
                  const float noise_level, const int salt,
-                 const unsigned char scale)
+                 const unsigned char scale, const float radius_sq)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -840,12 +840,15 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
                        * (channel_guide_HF[k] - means_HF_guide) / 9.f;
     }
 
+    const float scale_multiplier = 1.f / radius_sq;
+    const float4 alpha_ch = read_imagef(mask, samplerA, (int2)(x, y));
+
     const float4 a_HF = fmax(covariance_HF / variance_HF_guide, 0.f);
     const float4 b_HF = means_HF - a_HF * means_HF_guide;
 
     // Guide all channels by the norms
-    high_frequency = alpha * (a_HF * high_frequency_guide + b_HF)
-                   + alpha_comp * high_frequency;
+    high_frequency = alpha_ch * scale_multiplier * (a_HF * high_frequency_guide + b_HF)
+                   + (1.f - alpha_ch * scale_multiplier) * high_frequency;
 
   }
 
