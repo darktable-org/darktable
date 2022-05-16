@@ -1171,8 +1171,8 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 
         // fetch non-local pixels and store them locally and contiguously
         dt_aligned_pixel_t neighbour_pixel_HF[9];
-            for_four_channels(c, aligned(neighbour_pixel_HF, HF: 64))
-            {
+        for_four_channels(c, aligned(neighbour_pixel_HF, HF))
+        {
           neighbour_pixel_HF[3 * 0 + 0][c] = HF[4 * (i_neighbours[0] + j_neighbours[0]) + c];
           neighbour_pixel_HF[3 * 0 + 1][c] = HF[4 * (i_neighbours[0] + j_neighbours[1]) + c];
           neighbour_pixel_HF[3 * 0 + 2][c] = HF[4 * (i_neighbours[0] + j_neighbours[2]) + c];
@@ -1184,7 +1184,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
           neighbour_pixel_HF[3 * 2 + 0][c] = HF[4 * (i_neighbours[2] + j_neighbours[0]) + c];
           neighbour_pixel_HF[3 * 2 + 1][c] = HF[4 * (i_neighbours[2] + j_neighbours[1]) + c];
           neighbour_pixel_HF[3 * 2 + 2][c] = HF[4 * (i_neighbours[2] + j_neighbours[2]) + c];
-          }
+        }
 
         // Compute the linear fit of the laplacian of chromaticity against the laplacian of the norm
         // that is the chromaticity filter guided by the norm
@@ -1200,7 +1200,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
         // Get the local variance per channel
         dt_aligned_pixel_t variance_HF = { 0.f, 0.f, 0.f, 0.f };
         for(size_t k = 0; k < 9; k++)
-          for_each_channel(c, aligned(variance_HF, neighbour_pixel_HF, means_HF : 64))
+          for_each_channel(c, aligned(variance_HF, neighbour_pixel_HF, means_HF))
           {
             variance_HF[c] += sqf(neighbour_pixel_HF[k][c] - means_HF[c]) / 9.f;
           }
@@ -1220,7 +1220,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
         // Compute the linear regression channel = f(guide)
         dt_aligned_pixel_t covariance_HF = { 0.f, 0.f, 0.f, 0.f };
         for(size_t k = 0; k < 9; k++)
-          for_each_channel(c, aligned(variance_HF, covariance_HF, neighbour_pixel_HF, means_HF : 64))
+          for_each_channel(c, aligned(variance_HF, covariance_HF, neighbour_pixel_HF, means_HF))
           {
             covariance_HF[c] += (neighbour_pixel_HF[k][c] - means_HF[c])
                                 * (neighbour_pixel_HF[k][guiding_channel_HF] - means_HF[guiding_channel_HF]) / 9.f;
@@ -1356,7 +1356,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         // fetch non-local pixels and store them locally and contiguously
         dt_aligned_pixel_t neighbour_pixel_HF[9];
         for_four_channels(c, aligned(neighbour_pixel_HF, HF: 64))
-          {
+        {
           neighbour_pixel_HF[3 * 0 + 0][c] = HF[4 * (i_neighbours[0] + j_neighbours[0]) + c];
           neighbour_pixel_HF[3 * 0 + 1][c] = HF[4 * (i_neighbours[0] + j_neighbours[1]) + c];
           neighbour_pixel_HF[3 * 0 + 2][c] = HF[4 * (i_neighbours[0] + j_neighbours[2]) + c];
@@ -1368,14 +1368,14 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           neighbour_pixel_HF[3 * 2 + 0][c] = HF[4 * (i_neighbours[2] + j_neighbours[0]) + c];
           neighbour_pixel_HF[3 * 2 + 1][c] = HF[4 * (i_neighbours[2] + j_neighbours[1]) + c];
           neighbour_pixel_HF[3 * 2 + 2][c] = HF[4 * (i_neighbours[2] + j_neighbours[2]) + c];
-          }
+        }
 
         // Compute the laplacian in the direction parallel to the steepest gradient on the norm
         float anisotropic_kernel_isophote[9] = { 0.25f, 0.5f, 0.25f, 0.5f, -3.f, 0.5f, 0.25f, 0.5f, 0.25f };
 
         // Convolve the filter to get the laplacian
         dt_aligned_pixel_t laplacian_HF = { 0.f, 0.f, 0.f, 0.f };
-        for(size_t k = 0; k < 9; k++)
+        for(int k = 0; k < 9; k++)
         {
           for_each_channel(c, aligned(laplacian_HF, neighbour_pixel_HF, anisotropic_kernel_isophote: 64))
             laplacian_HF[c] += neighbour_pixel_HF[k][c] * anisotropic_kernel_isophote[k];
