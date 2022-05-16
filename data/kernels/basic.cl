@@ -829,7 +829,7 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
 
     // Get the local average per channel
     float4 means_HF = 0.f;
-    for(int k = 0; k < 0; k++)
+    for(int k = 0; k < 9; k++)
     {
       means_HF += neighbour_pixel_HF[k] / 9.f;
     }
