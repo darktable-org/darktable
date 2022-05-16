@@ -781,41 +781,70 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
       variance_HF += sqf(neighbour_pixel_HF[k] - means_HF) / 9.f;
     }
 
+    // Find the channel most likely to contain details = max( variance(HF) )
+    // But since OpenCL is not designed to iterate over float4,
+    // we need to check each channel in sequence
     int guiding_channel_HF = ALPHA;
     float guiding_value_HF = 0.f;
-    for(int c = 0; c < 3; ++c)
+
+    if(variance_HF.x > guiding_value_HF)
     {
-      if(((float *)&variance_HF)[c] > guiding_value_HF)
+      guiding_value_HF = variance_HF.x;
+      guiding_channel_HF = RED;
+    }
+    if(variance_HF.y > guiding_value_HF)
       {
-        guiding_value_HF = ((float *)&variance_HF)[c];
-        guiding_channel_HF = c;
+      guiding_value_HF = variance_HF.y;
+      guiding_channel_HF = GREEN;
       }
+    if(variance_HF.z > guiding_value_HF)
+    {
+      guiding_value_HF = variance_HF.z;
+      guiding_channel_HF = BLUE;
     }
 
     // Extract the guiding values for HF and LF now
     // so we can proceed after with vectorized code
-    const float means_HF_guide = ((float *)&means_HF)[guiding_channel_HF];
+    float means_HF_guide = 0.f;
+    float variance_HF_guide = 0.f;
+    float channel_guide_HF[9];
+    float high_frequency_guide = 0.f;
 
-    float4 guide_HF[9];
-    for(int k = 0; k < 9; k++)
+    if(guiding_channel_HF == RED)
     {
-      guide_HF[k] = ((float *)&neighbour_pixel_HF[k])[guiding_channel_HF];
+      means_HF_guide = means_HF.x;
+      variance_HF_guide = variance_HF.x;
+      high_frequency_guide = high_frequency.x;
+      for(int k = 0; k < 9; k++) channel_guide_HF[k] = neighbour_pixel_HF[k].x;
+    }
+    else if(guiding_channel_HF == GREEN)
+    {
+      means_HF_guide = means_HF.y;
+      variance_HF_guide = variance_HF.y;
+      high_frequency_guide = high_frequency.y;
+      for(int k = 0; k < 9; k++) channel_guide_HF[k] = neighbour_pixel_HF[k].y;
+    }
+    else // BLUE
+    {
+      means_HF_guide = means_HF.z;
+      variance_HF_guide = variance_HF.z;
+      high_frequency_guide = high_frequency.z;
+      for(int k = 0; k < 9; k++) channel_guide_HF[k] = neighbour_pixel_HF[k].z;
     }
 
     // Compute the linear regression channel = f(guide)
     float4 covariance_HF = 0.f;
-
     for(int k = 0; k < 9; k++)
     {
       covariance_HF += (neighbour_pixel_HF[k] - means_HF)
-                       * (guide_HF[k] - means_HF_guide) / 9.f;
+                       * (channel_guide_HF[k] - means_HF_guide) / 9.f;
     }
 
-    const float4 a_HF = fmax(covariance_HF / ((float *)&variance_HF)[guiding_channel_HF], 0.f);
+    const float4 a_HF = fmax(covariance_HF / variance_HF_guide, 0.f);
     const float4 b_HF = means_HF - a_HF * means_HF_guide;
 
     // Guide all channels by the norms
-    high_frequency = alpha * (a_HF * ((float *)&high_frequency)[guiding_channel_HF] + b_HF)
+    high_frequency = alpha * (a_HF * high_frequency_guide + b_HF)
                    + alpha_comp * high_frequency;
 
   }
