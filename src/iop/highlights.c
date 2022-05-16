@@ -1107,72 +1107,6 @@ typedef enum diffuse_reconstruct_variant_t
   DIFFUSE_RECONSTRUCT_CHROMA
 } diffuse_reconstruct_variant_t;
 
-typedef enum diffuse_direction_t
-{
-  DIFFUSE_ISOPHOTE = 0,
-  DIFFUSE_GRADIENT = 1,
-} diffuse_direction_t;
-
-
-static inline void compute_laplace_kernel(const dt_aligned_pixel_t neighbour_pixel_LF[9],
-                                          const diffuse_direction_t direction,
-                                          float anisotropic_kernel[9])
-{
-  // dx, dy
-  const float gradient[2] = { (neighbour_pixel_LF[7][ALPHA] - neighbour_pixel_LF[1][ALPHA]) / 2.f,
-                              (neighbour_pixel_LF[5][ALPHA] - neighbour_pixel_LF[3][ALPHA]) / 2.f };
-  const float magnitude_grad = hypotf(gradient[0], gradient[1]);
-  const float c2 = expf(-magnitude_grad / 6.f);
-
-  // direction of the gradient. NB : force arg(grad) = 0 if hypot == 0
-  const float cos_grad = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad : 1.f; // cos(0)
-  const float sin_grad = (magnitude_grad != 0.f) ? gradient[1] / magnitude_grad : 0.f; // sin(0)
-
-  const float cos_grad_sq = cos_grad * cos_grad;
-  const float sin_grad_sq = sin_grad * sin_grad;
-  const float cos_sin_grad = cos_grad * sin_grad;
-
-  // build the rotation matrix along arg(grad) + 90°: isophote
-  float a[2][2];
-
-  if(direction == DIFFUSE_ISOPHOTE)
-  {
-    a[0][0] = cos_grad_sq + c2 * sin_grad_sq;
-    a[1][1] = c2 * cos_grad_sq + sin_grad_sq;
-    a[0][1] = a[1][0] = (c2 - 1.0f) * cos_sin_grad;
-  }
-  else if(direction == DIFFUSE_GRADIENT)
-  {
-    a[0][0] = c2 * cos_grad_sq + sin_grad_sq;
-    a[1][1] = cos_grad_sq + c2 * sin_grad_sq;
-    a[0][1] = a[1][0] = (1.f - c2) * cos_sin_grad;
-  }
-
-  const float b11 = a[0][1] / 2.0f;
-  const float b13 = -b11;
-  const float b22 = -2.0f * (a[0][0] + a[1][1]);
-
-  // build the kernel of rotated anisotropic laplacian
-  // from https://www.researchgate.net/publication/220663968 :
-  // [ [ a12 / 2,  a22,            -a12 / 2 ],
-  //   [ a11,      -2 (a11 + a22), a11      ],
-  //   [ -a12 / 2,   a22,          a12 / 2  ] ]
-  // N.B. we have flipped the signs of the a12 terms
-  // compared to the paper. There's probably a mismatch
-  // of coordinate convention between the paper and the
-  // original derivation of this convolution mask
-  // (Witkin 1991, https://doi.org/10.1145/127719.122750).
-
-  anisotropic_kernel[0] = b11;
-  anisotropic_kernel[1] = a[1][1];
-  anisotropic_kernel[2] = b13;
-  anisotropic_kernel[3] = a[0][0];
-  anisotropic_kernel[4] = b22;
-  anisotropic_kernel[5] = a[0][0];
-  anisotropic_kernel[6] = b13;
-  anisotropic_kernel[7] = a[1][1];
-  anisotropic_kernel[8] = b11;
-}
 
 enum wavelets_scale_t
 {
@@ -1434,8 +1368,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           }
 
         // Compute the laplacian in the direction parallel to the steepest gradient on the norm
-        float anisotropic_kernel_isophote[9];
-        compute_laplace_kernel(neighbour_pixel_LF, DIFFUSE_ISOPHOTE, anisotropic_kernel_isophote);
+        float anisotropic_kernel_isophote[9] = { 0.25f, 0.5f, 0.25f, 0.5f, -3.f, 0.5f, 0.25f, 0.5f, 0.25f };
 
         // Convolve the filter to get the laplacian
         dt_aligned_pixel_t laplacian_HF = { 0.f, 0.f, 0.f, 0.f };
