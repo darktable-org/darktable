@@ -815,12 +815,17 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
 
     // fetch non-local pixels and store them locally and contiguously
     float4 neighbour_pixel_HF[9];
+    neighbour_pixel_HF[3 * 0 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[0]));
+    neighbour_pixel_HF[3 * 0 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[0]));
+    neighbour_pixel_HF[3 * 0 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[0]));
 
-    for(int ii = 0; ii < 3; ii++)
-      for(int jj = 0; jj < 3; jj++)
-      {
-        neighbour_pixel_HF[3 * ii + jj] = read_imagef(HF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
-      }
+    neighbour_pixel_HF[3 * 1 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[1]));
+    neighbour_pixel_HF[3 * 1 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[1]));
+    neighbour_pixel_HF[3 * 1 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[1]));
+
+    neighbour_pixel_HF[3 * 2 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[2]));
+    neighbour_pixel_HF[3 * 2 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[2]));
+    neighbour_pixel_HF[3 * 2 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[2]));
 
     // Compute the linear fit of the laplacian of chromaticity against the laplacian of the norm
     // that is the chromaticity filter guided by the norm
@@ -832,7 +837,7 @@ guide_laplacians(read_only image2d_t HF, read_only image2d_t LF,
       means_HF += neighbour_pixel_HF[k] / 9.f;
     }
 
-    // Find the channel most likely to contain details = max( variance(HF) )
+    // Get the local variance per channel
     float4 variance_HF = 0.f;
     for(int k = 0; k < 9; k++)
     {
@@ -958,14 +963,17 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
 
     // fetch non-local pixels and store them locally and contiguously
     float4 neighbour_pixel_HF[9];
-    float4 neighbour_pixel_LF[9];
+    neighbour_pixel_HF[3 * 0 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[0]));
+    neighbour_pixel_HF[3 * 0 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[0]));
+    neighbour_pixel_HF[3 * 0 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[0]));
 
-    for(int ii = 0; ii < 3; ii++)
-      for(int jj = 0; jj < 3; jj++)
-      {
-        neighbour_pixel_HF[3 * ii + jj] = read_imagef(HF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
-        neighbour_pixel_LF[3 * ii + jj] = read_imagef(LF, samplerA, (int2)(j_neighbours[ii], i_neighbours[jj]));
-      }
+    neighbour_pixel_HF[3 * 1 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[1]));
+    neighbour_pixel_HF[3 * 1 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[1]));
+    neighbour_pixel_HF[3 * 1 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[1]));
+
+    neighbour_pixel_HF[3 * 2 + 0] = read_imagef(HF, samplerA, (int2)(j_neighbours[0], i_neighbours[2]));
+    neighbour_pixel_HF[3 * 2 + 1] = read_imagef(HF, samplerA, (int2)(j_neighbours[1], i_neighbours[2]));
+    neighbour_pixel_HF[3 * 2 + 2] = read_imagef(HF, samplerA, (int2)(j_neighbours[2], i_neighbours[2]));
 
     float4 update = 0.f;
 
