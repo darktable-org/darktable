@@ -1058,6 +1058,7 @@ static void _widget_header_update(dt_lib_filtering_rule_t *rule)
 static void _rule_topbar_toggle(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+  if(rule->manual_widget_set) return;
 
   rule->topbar = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_pin));
   // if the rule is pinned, then we force it to on
@@ -1261,7 +1262,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/item%1d", i);
     const dt_collection_properties_t prop = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/string%1d", i);
-    const gchar *txt = dt_conf_get_string_const(confname);
+    gchar *txt = dt_conf_get_string(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/mode%1d", i);
     const dt_lib_collect_mode_t rmode = dt_conf_get_int(confname);
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/top%1d", i);
@@ -1280,6 +1281,7 @@ static void _filters_gui_update(dt_lib_module_t *self)
     {
       _widget_init_special(&d->rule[i], txt, self, TRUE);
     }
+    g_free(txt);
     _widget_update(&d->rule[i]);
   }
 
@@ -1432,12 +1434,13 @@ static void _event_history_apply(GtkWidget *widget, dt_lib_module_t *self)
 
   char confname[200];
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", hid);
-  const char *line = dt_conf_get_string_const(confname);
+  gchar *line = dt_conf_get_string(confname);
   if(line && line[0] != '\0')
   {
     dt_collection_deserialize(line, TRUE);
     _filters_gui_update(self);
   }
+  g_free(line);
 }
 
 static void _event_history_show(GtkWidget *widget, gpointer user_data)
@@ -1453,7 +1456,7 @@ static void _event_history_show(GtkWidget *widget, gpointer user_data)
   {
     char confname[200];
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/history%1d", i);
-    const char *line = dt_conf_get_string_const(confname);
+    gchar *line = dt_conf_get_string(confname);
     if(line && line[0] != '\0')
     {
       char str[2048] = { 0 };
@@ -1465,9 +1468,13 @@ static void _event_history_show(GtkWidget *widget, gpointer user_data)
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
       g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_event_history_apply), self);
       gtk_menu_shell_append(pop, smt);
+      g_free(line);
     }
     else
+    {
+      g_free(line);
       break;
+    }
   }
 
   dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
@@ -1860,12 +1867,13 @@ static void _sort_history_apply(GtkWidget *widget, dt_lib_module_t *self)
 
   char confname[200];
   snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort_history%1d", hid);
-  const char *line = dt_conf_get_string_const(confname);
+  gchar *line = dt_conf_get_string(confname);
   if(line && line[0] != '\0')
   {
     dt_collection_sort_deserialize(line);
     _sort_gui_update(self);
   }
+  g_free(line);
 }
 
 static void _dt_images_order_change(gpointer instance, gpointer order, gpointer self)
@@ -1891,7 +1899,7 @@ static void _sort_history_show(GtkWidget *widget, gpointer user_data)
   {
     char confname[200];
     snprintf(confname, sizeof(confname), "plugins/lighttable/filtering/sort_history%1d", i);
-    const char *line = dt_conf_get_string_const(confname);
+    gchar *line = dt_conf_get_string(confname);
     if(line && line[0] != '\0')
     {
       char str[2048] = { 0 };
@@ -1901,9 +1909,13 @@ static void _sort_history_show(GtkWidget *widget, gpointer user_data)
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
       g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_sort_history_apply), self);
       gtk_menu_shell_append(pop, smt);
+      g_free(line);
     }
     else
+    {
+      g_free(line);
       break;
+    }
   }
 
   dt_gui_menu_popup(GTK_MENU(pop), widget, GDK_GRAVITY_SOUTH, GDK_GRAVITY_NORTH);
