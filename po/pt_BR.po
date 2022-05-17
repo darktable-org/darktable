@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-17 08:49-0300\n"
-"PO-Revision-Date: 2022-05-17 09:04-0300\n"
+"POT-Creation-Date: 2022-05-19 15:35-0300\n"
+"PO-Revision-Date: 2022-05-19 15:38-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -453,7 +453,7 @@ msgstr "falsa cor"
 
 #: ../build/bin/conf_gen.h:1268 ../build/bin/preferences_gen.h:5262
 msgctxt "preferences"
-msgid "gray scale"
+msgid "grayscale"
 msgstr "tons de cinza"
 
 #: ../build/bin/conf_gen.h:1282 ../build/bin/preferences_gen.h:4923
@@ -2335,9 +2335,11 @@ msgstr "preferir um botão de histórico no módulo de coleta"
 
 #: ../build/bin/preferences_gen.h:9062
 msgid ""
-"prefer to hide this module and acces history with a button in the collect "
+"prefer to hide this module and access history with a button in the collect "
 "module"
-msgstr "preferir esconder este módulo e acessar o histórico com um botão no histórico de coleta"
+msgstr ""
+"preferir esconder este módulo e acessar o histórico com um botão no "
+"histórico de coleta"
 
 #: ../build/bin/preferences_gen.h:9116
 msgid "suggested tags level of confidence"
@@ -2485,7 +2487,7 @@ msgstr "preservar cores"
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2082
 #: ../src/iop/channelmixerrgb.c:4227 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2111 ../src/iop/clipping.c:2126
-#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1816
+#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1909
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1036
 #: ../src/libs/filters/module_order.c:158 ../src/libs/live_view.c:311
 #: ../src/libs/print_settings.c:2668
@@ -2766,7 +2768,7 @@ msgstr "aberração cromática muito grande"
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4179 ../src/iop/colorzones.c:2302
 #: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1992
-#: ../src/libs/collect.c:1700 ../src/libs/filters/colors.c:350
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:350
 msgid "red"
 msgstr "vermelho"
 
@@ -2778,7 +2780,7 @@ msgstr "vermelho"
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4180 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
-#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1700
+#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1793
 #: ../src/libs/filters/colors.c:352
 msgid "green"
 msgstr "verde"
@@ -2791,7 +2793,7 @@ msgstr "verde"
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2307
 #: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1994
-#: ../src/libs/collect.c:1700 ../src/libs/filters/colors.c:353
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:353
 msgid "blue"
 msgstr "azul"
 
@@ -3079,12 +3081,12 @@ msgid "output saturation"
 msgstr "saturação de saída"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:229
-msgid "lift, gamma, gain (ProPhotoRGB)"
-msgstr "elevação, gama, ganho  (ProPhotoRGB)"
+msgid "lift, gamma, gain (ProPhoto RGB)"
+msgstr "elevação, gama, ganho  (ProPhoto RGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:230
-msgid "slope, offset, power (ProPhotoRGB)"
-msgstr "inclinação, deslocamento, potência (ProPhotoRGB)"
+msgid "slope, offset, power (ProPhoto RGB)"
+msgstr "inclinação, deslocamento, potência (ProPhoto RGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:231
 msgid "lift, gamma, gain (sRGB)"
@@ -3295,11 +3297,13 @@ msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatível)"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
+#: ../build/lib/darktable/plugins/introspection_lut3d.c:204
 #: ../src/common/colorspaces.c:1436 ../src/common/colorspaces.c:1659
 msgid "linear Rec709 RGB"
 msgstr "RGB Rec709 linear"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
+#: ../build/lib/darktable/plugins/introspection_lut3d.c:205
 #: ../src/common/colorspaces.c:1445 ../src/common/colorspaces.c:1661
 msgid "linear Rec2020 RGB"
 msgstr "RGB Rec2020 linear"
@@ -3559,7 +3563,7 @@ msgstr "Markesteijn 3-passos + VNG"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1448 ../src/libs/collect.c:1654
+#: ../src/common/collection.c:1448 ../src/libs/collect.c:1747
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "básico"
@@ -4225,16 +4229,8 @@ msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:203
-msgid "gamma rec709 RGB"
-msgstr "gama RGB Rec709"
-
-#: ../build/lib/darktable/plugins/introspection_lut3d.c:204
-msgid "linear rec709 RGB"
-msgstr "RGB Rec709 linear"
-
-#: ../build/lib/darktable/plugins/introspection_lut3d.c:205
-msgid "linear rec2020 RGB"
-msgstr "RGB Rec2020 linear"
+msgid "gamma Rec709 RGB"
+msgstr "gama Rec709 RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:209
 msgid "tetrahedral"
@@ -4815,7 +4811,7 @@ msgstr "menu flutuante"
 #: ../src/gui/presets.c:476 ../src/gui/styles_dialog.c:420
 #: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1557
-#: ../src/libs/collect.c:396 ../src/libs/copy_history.c:107
+#: ../src/libs/collect.c:406 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
 #: ../src/libs/tagging.c:2471 ../src/libs/tagging.c:2507
@@ -5106,8 +5102,8 @@ msgstr "etiqueta"
 msgid "capture date"
 msgstr "data de captura"
 
-#: ../src/common/collection.c:677 ../src/libs/collect.c:3204
-#: ../src/libs/filtering.c:1956 ../src/libs/filtering.c:1976
+#: ../src/common/collection.c:677 ../src/libs/collect.c:3313
+#: ../src/libs/filtering.c:1974 ../src/libs/filtering.c:1994
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "histórico"
@@ -5161,34 +5157,34 @@ msgstr "buscar"
 #: ../src/common/collection.c:1431 ../src/common/colorlabels.c:330
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2304 ../src/iop/temperature.c:1809
-#: ../src/libs/collect.c:1700 ../src/libs/filters/colors.c:351
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:351
 msgid "yellow"
 msgstr "amarelo"
 
 #: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:337
 #: ../src/common/colorlabels.c:333 ../src/iop/colorzones.c:2308
-#: ../src/libs/collect.c:1700 ../src/libs/filters/colors.c:354
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:354
 msgid "purple"
 msgstr "roxo"
 
-#: ../src/common/collection.c:1454 ../src/libs/collect.c:1654
+#: ../src/common/collection.c:1454 ../src/libs/collect.c:1747
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "auto-aplicado"
 
-#: ../src/common/collection.c:1458 ../src/libs/collect.c:1654
+#: ../src/common/collection.c:1458 ../src/libs/collect.c:1747
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "alterado"
 
 #: ../src/common/collection.c:1475 ../src/common/collection.c:1571
-#: ../src/libs/collect.c:1127 ../src/libs/collect.c:1266
-#: ../src/libs/collect.c:1290 ../src/libs/collect.c:1400
-#: ../src/libs/collect.c:2415
+#: ../src/libs/collect.c:1182 ../src/libs/collect.c:1321
+#: ../src/libs/collect.c:1345 ../src/libs/collect.c:1464
+#: ../src/libs/collect.c:2505
 msgid "not tagged"
 msgstr "não etiquetado"
 
-#: ../src/common/collection.c:1476 ../src/libs/collect.c:1290
+#: ../src/common/collection.c:1476 ../src/libs/collect.c:1345
 #: ../src/libs/map_locations.c:765
 msgid "tagged"
 msgstr "etiquetado"
@@ -5198,36 +5194,36 @@ msgid "tagged*"
 msgstr "etiquetado*"
 
 #. local copy
-#: ../src/common/collection.c:1510 ../src/libs/collect.c:1668
+#: ../src/common/collection.c:1510 ../src/libs/collect.c:1761
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "não copiado localmente"
 
-#: ../src/common/collection.c:1514 ../src/libs/collect.c:1668
+#: ../src/common/collection.c:1514 ../src/libs/collect.c:1761
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "copiado localmente"
 
-#: ../src/common/collection.c:1889 ../src/libs/collect.c:1788
+#: ../src/common/collection.c:1889 ../src/libs/collect.c:1881
 #: ../src/libs/filters/grouping.c:147 ../src/libs/filters/grouping.c:170
 msgid "group leaders"
 msgstr "líderes de grupo"
 
-#: ../src/common/collection.c:1893 ../src/libs/collect.c:1788
+#: ../src/common/collection.c:1893 ../src/libs/collect.c:1881
 #: ../src/libs/filters/grouping.c:150 ../src/libs/filters/grouping.c:170
 msgid "group followers"
 msgstr "seguidores de grupo"
 
-#: ../src/common/collection.c:2031 ../src/libs/collect.c:1868
+#: ../src/common/collection.c:2033 ../src/libs/collect.c:1961
 msgid "not defined"
 msgstr "não definido"
 
-#: ../src/common/collection.c:2439
+#: ../src/common/collection.c:2441
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "%d imagem de %d(#%d) na coleção atual está selecionada"
 
-#: ../src/common/collection.c:2445
+#: ../src/common/collection.c:2447
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -5883,7 +5879,7 @@ msgstr ""
 msgid "error starting darktable"
 msgstr "erro ao iniciar o darktable"
 
-#: ../src/common/database.c:2744 ../src/libs/collect.c:2921
+#: ../src/common/database.c:2744 ../src/libs/collect.c:3011
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
@@ -8938,8 +8934,9 @@ msgstr "determinar o limite da faixa de tempo com este valor"
 #: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2916
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
-#: ../src/libs/filtering.c:1404 ../src/libs/filters/colors.c:237
-#: ../src/libs/filters/colors.c:355 ../src/libs/filters/rating_legacy.c:211
+#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1412
+#: ../src/libs/filters/colors.c:237 ../src/libs/filters/colors.c:355
+#: ../src/libs/filters/rating_legacy.c:211
 msgid "all"
 msgstr "tudo"
 
@@ -9380,7 +9377,7 @@ msgid "first"
 msgstr "primeira"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1687
+#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1700
 #: ../src/libs/filters/rating.c:225 ../src/libs/tagging.c:3105
 #: ../src/views/darkroom.c:2289 ../src/views/darkroom.c:2344
 #: ../src/views/darkroom.c:2584
@@ -10641,7 +10638,7 @@ msgstr "falha ao importar predefinição %s"
 msgid "select preset(s) to import"
 msgstr "selecione predefinições para importar"
 
-#: ../src/gui/preferences.c:997 ../src/libs/collect.c:396
+#: ../src/gui/preferences.c:997 ../src/libs/collect.c:406
 #: ../src/libs/copy_history.c:107 ../src/libs/geotagging.c:930
 #: ../src/libs/import.c:1497 ../src/libs/import.c:1601 ../src/libs/styles.c:512
 msgid "_open"
@@ -19439,36 +19436,36 @@ msgstr "velocidade de disparo"
 msgid "WB"
 msgstr "balanço de branco"
 
-#: ../src/libs/collect.c:138
+#: ../src/libs/collect.c:148
 msgid "collections"
 msgstr "coleções"
 
-#: ../src/libs/collect.c:395
+#: ../src/libs/collect.c:405
 msgid "search filmroll"
 msgstr "procura rolo de filme"
 
-#: ../src/libs/collect.c:478
+#: ../src/libs/collect.c:488
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "problema selecionando novo caminho para o rolo de filme em %s"
 
-#: ../src/libs/collect.c:541
+#: ../src/libs/collect.c:551
 msgid "search filmroll..."
 msgstr "procura rolo de filme..."
 
-#: ../src/libs/collect.c:545
+#: ../src/libs/collect.c:555
 msgid "remove..."
 msgstr "remove..."
 
-#: ../src/libs/collect.c:1161
+#: ../src/libs/collect.c:1216
 msgid "uncategorized"
 msgstr "sem categoria"
 
-#: ../src/libs/collect.c:2047
+#: ../src/libs/collect.c:2140
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "use <, <=, >, >=, <>, =, [;] como operadores"
 
-#: ../src/libs/collect.c:2051
+#: ../src/libs/collect.c:2144
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
@@ -19478,7 +19475,7 @@ msgstr ""
 "classificação em estrelas: 0-5\n"
 "imagens rejeitadas: -1"
 
-#: ../src/libs/collect.c:2058
+#: ../src/libs/collect.c:2151
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
@@ -19486,12 +19483,12 @@ msgstr ""
 "use <, <=, >, >=, <>, =, [;] como operadores\n"
 "digite datas no formato : YYYY:MM:DD hh:mm:ss.sss (só o ano é obrigatório)"
 
-#: ../src/libs/collect.c:2065
+#: ../src/libs/collect.c:2158
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "use `%' como curinga e `,' para separar valores"
 
-#: ../src/libs/collect.c:2071
+#: ../src/libs/collect.c:2164
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19504,7 +19501,7 @@ msgstr ""
 "shift+clique para incluir somente a hierarquia corrente (sem sufixo)\n"
 "ctrl+clique para incluir somente sub-hierarquias (sufixo `|%')"
 
-#: ../src/libs/collect.c:2083
+#: ../src/libs/collect.c:2176
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19517,7 +19514,7 @@ msgstr ""
 "shift+clique para incluir somente o local atual (sem sufixo)\n"
 "ctrl+clique para incluir somente sub-locais (sufixo `|%`)"
 
-#: ../src/libs/collect.c:2095
+#: ../src/libs/collect.c:2188
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19530,77 +19527,77 @@ msgstr ""
 "shift+clique para incluir somente a pasta atual (sem sufixo)\n"
 "ctrl+clique para incluir somente sub-pastas (sufixo `|%`)"
 
-#: ../src/libs/collect.c:2106
+#: ../src/libs/collect.c:2199
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "use `%' como curinga"
 
-#: ../src/libs/collect.c:2165 ../src/libs/collect.c:2179
-#: ../src/libs/collect.c:2806
+#: ../src/libs/collect.c:2258 ../src/libs/collect.c:2272
+#: ../src/libs/collect.c:2896
 msgid "clear this rule"
 msgstr "limpar esta regra"
 
-#: ../src/libs/collect.c:2169
+#: ../src/libs/collect.c:2262
 msgid "clear this rule or add new rules"
 msgstr "limpar esta regra ou adicionar nova regra"
 
-#: ../src/libs/collect.c:2812
+#: ../src/libs/collect.c:2902
 msgid "narrow down search"
 msgstr "restringir pesquisa"
 
-#: ../src/libs/collect.c:2817
+#: ../src/libs/collect.c:2907
 msgid "add more images"
 msgstr "adicionar mais imagens"
 
-#: ../src/libs/collect.c:2822
+#: ../src/libs/collect.c:2912
 msgid "exclude images"
 msgstr "excluir imagens"
 
-#: ../src/libs/collect.c:2829
+#: ../src/libs/collect.c:2919
 msgid "change to: and"
 msgstr "muda para: and"
 
-#: ../src/libs/collect.c:2834
+#: ../src/libs/collect.c:2924
 msgid "change to: or"
 msgstr "muda para: ou"
 
-#: ../src/libs/collect.c:2839
+#: ../src/libs/collect.c:2929
 msgid "change to: except"
 msgstr "muda para: exceto"
 
 #. the differents categories
-#: ../src/libs/collect.c:2865 ../src/libs/filtering.c:842
+#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:842
 #: ../src/libs/filtering.c:924
 msgid "files"
 msgstr "arquivos"
 
-#: ../src/libs/collect.c:2870 ../src/libs/export_metadata.c:310
+#: ../src/libs/collect.c:2960 ../src/libs/export_metadata.c:310
 #: ../src/libs/filtering.c:847 ../src/libs/filtering.c:929
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:538 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "metadados"
 
-#: ../src/libs/collect.c:2889 ../src/libs/filtering.c:868
+#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:868
 #: ../src/libs/filtering.c:950
 msgid "times"
 msgstr "tempo"
 
-#: ../src/libs/collect.c:2897 ../src/libs/filtering.c:876
+#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:876
 #: ../src/libs/filtering.c:958
 msgid "capture details"
 msgstr "detalhes da captura da foto"
 
-#: ../src/libs/collect.c:2906 ../src/libs/filtering.c:885
+#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:885
 #: ../src/libs/filtering.c:967 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2919
+#: ../src/libs/collect.c:3009
 msgid "collections settings"
 msgstr "preferências de coleções"
 
-#: ../src/libs/collect.c:2922 ../src/libs/export_metadata.c:288
+#: ../src/libs/collect.c:3012 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1635
 #: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
@@ -19608,33 +19605,30 @@ msgstr "preferências de coleções"
 msgid "save"
 msgstr "salvar"
 
-#: ../src/libs/collect.c:2942 ../src/libs/export.c:1059
+#: ../src/libs/collect.c:3032 ../src/libs/export.c:1059
 #: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1298
 #: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3483
 msgid "preferences..."
 msgstr "preferências..."
 
-#: ../src/libs/collect.c:3037 ../src/libs/filtering.c:1380
-#: ../src/libs/recentcollect.c:109
-msgid " and "
-msgstr " e "
+#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1385
+msgid "AND"
+msgstr "E"
 
-#: ../src/libs/collect.c:3042 ../src/libs/filtering.c:1385
-#: ../src/libs/recentcollect.c:114
-msgid " or "
-msgstr " ou "
+#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1390
+msgid "OR"
+msgstr "OU"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3047 ../src/libs/filtering.c:1390
-#: ../src/libs/recentcollect.c:119
-msgid " but not "
-msgstr " mas não "
+#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1395
+msgid "BUT NOT"
+msgstr "MAS NÃO"
 
-#: ../src/libs/collect.c:3205 ../src/libs/filtering.c:1957
+#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1975
 msgid "revert to a previous set of rules"
 msgstr "reverter para o conjunto anterior de regras"
 
-#: ../src/libs/collect.c:3262
+#: ../src/libs/collect.c:3371
 msgid "jump back to previous collection"
 msgstr "pula para coleção anterior"
 
@@ -20299,76 +20293,76 @@ msgstr "esta regra está habilitada"
 msgid "this rule is disabled"
 msgstr "esta regra está desabilitada"
 
-#: ../src/libs/filtering.c:1155
+#: ../src/libs/filtering.c:1156
 msgid "and"
 msgstr "e"
 
-#: ../src/libs/filtering.c:1156
+#: ../src/libs/filtering.c:1157
 msgid "or"
 msgstr "ou"
 
-#: ../src/libs/filtering.c:1157
+#: ../src/libs/filtering.c:1158
 msgid "and not"
 msgstr "e não"
 
-#: ../src/libs/filtering.c:1159
+#: ../src/libs/filtering.c:1160
 msgid "define how this rule should interact with the previous one"
 msgstr "definir como esta regra deveria interagir com a anterior"
 
-#: ../src/libs/filtering.c:1411
+#: ../src/libs/filtering.c:1419
 msgid " (off)"
 msgstr " (desligado)"
 
-#: ../src/libs/filtering.c:1629
+#: ../src/libs/filtering.c:1642
 msgid "sort order"
 msgstr "ordem de classificação"
 
-#: ../src/libs/filtering.c:1631
+#: ../src/libs/filtering.c:1644
 msgid "determine the sort order of shown images"
 msgstr "determine a ordem em que as imagens são mostradas"
 
-#: ../src/libs/filtering.c:1688
+#: ../src/libs/filtering.c:1701
 msgid "sort direction"
 msgstr "direção da ordenação"
 
-#: ../src/libs/filtering.c:1694
+#: ../src/libs/filtering.c:1707
 msgid "remove this sort order"
 msgstr "remover esta forma de ordenação"
 
-#: ../src/libs/filtering.c:1847
+#: ../src/libs/filtering.c:1860
 msgid "DESC"
 msgstr "DESC"
 
-#: ../src/libs/filtering.c:1847
+#: ../src/libs/filtering.c:1860
 msgid "ASC"
 msgstr "ASC"
 
-#: ../src/libs/filtering.c:1953
+#: ../src/libs/filtering.c:1971
 msgid "new rule"
 msgstr "nova regra"
 
-#: ../src/libs/filtering.c:1954
+#: ../src/libs/filtering.c:1972
 msgid "append new rule to collect images"
 msgstr "adicionar nova regra para coletar imagens"
 
-#: ../src/libs/filtering.c:1965 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1983 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "ordenar por"
 
-#: ../src/libs/filtering.c:1973
+#: ../src/libs/filtering.c:1991
 msgid "new sort"
 msgstr "nova forma de ordenação"
 
-#: ../src/libs/filtering.c:1974
+#: ../src/libs/filtering.c:1992
 msgid "append new sort to order images"
 msgstr "adicionar nova forma de ordenação de imagens"
 
-#: ../src/libs/filtering.c:1977
+#: ../src/libs/filtering.c:1995
 msgid "revert to a previous set of sort orders"
 msgstr "reverter ao conjunto anterior de formas de ordenação"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2024
+#: ../src/libs/filtering.c:2042
 msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
@@ -21877,6 +21871,19 @@ msgstr "pula para rolo de filme"
 #: ../src/libs/recentcollect.c:67
 msgid "recently used collections"
 msgstr "coleções usadas recentemente"
+
+#: ../src/libs/recentcollect.c:109
+msgid " and "
+msgstr " e "
+
+#: ../src/libs/recentcollect.c:114
+msgid " or "
+msgstr " ou "
+
+#. case DT_LIB_COLLECT_MODE_AND_NOT:
+#: ../src/libs/recentcollect.c:119
+msgid " but not "
+msgstr " mas não "
 
 #: ../src/libs/recentcollect.c:294
 msgid "recent collections settings"
@@ -24185,6 +24192,16 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1343
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "linear rec709 RGB"
+#~ msgstr "RGB Rec709 linear"
+
+#~ msgid "linear rec2020 RGB"
+#~ msgstr "RGB Rec2020 linear"
+
+#~ msgctxt "preferences"
+#~ msgid "gray scale"
+#~ msgstr "tons de cinza"
 
 #~ msgid ""
 #~ "disable this collect rule\n"
