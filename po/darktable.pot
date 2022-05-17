@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-17 09:03+0200\n"
+"POT-Creation-Date: 2022-05-17 19:15+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -445,7 +445,7 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:1268 ../build/bin/preferences_gen.h:5262
 msgctxt "preferences"
-msgid "gray scale"
+msgid "grayscale"
 msgstr ""
 
 #: ../build/bin/conf_gen.h:1282 ../build/bin/preferences_gen.h:4923
@@ -4800,7 +4800,7 @@ msgid "capture date"
 msgstr ""
 
 #: ../src/common/collection.c:677 ../src/libs/collect.c:3204
-#: ../src/libs/filtering.c:1956 ../src/libs/filtering.c:1976
+#: ../src/libs/filtering.c:1968 ../src/libs/filtering.c:1988
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr ""
@@ -8389,7 +8389,7 @@ msgstr ""
 #: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2916
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
-#: ../src/libs/filtering.c:1404 ../src/libs/filters/colors.c:237
+#: ../src/libs/filtering.c:1406 ../src/libs/filters/colors.c:237
 #: ../src/libs/filters/colors.c:355 ../src/libs/filters/rating_legacy.c:211
 msgid "all"
 msgstr ""
@@ -8810,7 +8810,7 @@ msgid "first"
 msgstr ""
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1687
+#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1694
 #: ../src/libs/filters/rating.c:225 ../src/libs/tagging.c:3105
 #: ../src/views/darkroom.c:2289 ../src/views/darkroom.c:2344
 #: ../src/views/darkroom.c:2584
@@ -18055,23 +18055,23 @@ msgstr ""
 msgid "preferences..."
 msgstr ""
 
-#: ../src/libs/collect.c:3037 ../src/libs/filtering.c:1380
+#: ../src/libs/collect.c:3037 ../src/libs/filtering.c:1382
 #: ../src/libs/recentcollect.c:109
 msgid " and "
 msgstr ""
 
-#: ../src/libs/collect.c:3042 ../src/libs/filtering.c:1385
+#: ../src/libs/collect.c:3042 ../src/libs/filtering.c:1387
 #: ../src/libs/recentcollect.c:114
 msgid " or "
 msgstr ""
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3047 ../src/libs/filtering.c:1390
+#: ../src/libs/collect.c:3047 ../src/libs/filtering.c:1392
 #: ../src/libs/recentcollect.c:119
 msgid " but not "
 msgstr ""
 
-#: ../src/libs/collect.c:3205 ../src/libs/filtering.c:1957
+#: ../src/libs/collect.c:3205 ../src/libs/filtering.c:1969
 msgid "revert to a previous set of rules"
 msgstr ""
 
@@ -18667,76 +18667,76 @@ msgstr ""
 msgid "this rule is disabled"
 msgstr ""
 
-#: ../src/libs/filtering.c:1155
+#: ../src/libs/filtering.c:1156
 msgid "and"
 msgstr ""
 
-#: ../src/libs/filtering.c:1156
+#: ../src/libs/filtering.c:1157
 msgid "or"
 msgstr ""
 
-#: ../src/libs/filtering.c:1157
+#: ../src/libs/filtering.c:1158
 msgid "and not"
 msgstr ""
 
-#: ../src/libs/filtering.c:1159
+#: ../src/libs/filtering.c:1160
 msgid "define how this rule should interact with the previous one"
 msgstr ""
 
-#: ../src/libs/filtering.c:1411
+#: ../src/libs/filtering.c:1413
 msgid " (off)"
 msgstr ""
 
-#: ../src/libs/filtering.c:1629
+#: ../src/libs/filtering.c:1636
 msgid "sort order"
 msgstr ""
 
-#: ../src/libs/filtering.c:1631
+#: ../src/libs/filtering.c:1638
 msgid "determine the sort order of shown images"
 msgstr ""
 
-#: ../src/libs/filtering.c:1688
+#: ../src/libs/filtering.c:1695
 msgid "sort direction"
 msgstr ""
 
-#: ../src/libs/filtering.c:1694
+#: ../src/libs/filtering.c:1701
 msgid "remove this sort order"
 msgstr ""
 
-#: ../src/libs/filtering.c:1847
+#: ../src/libs/filtering.c:1854
 msgid "DESC"
 msgstr ""
 
-#: ../src/libs/filtering.c:1847
+#: ../src/libs/filtering.c:1854
 msgid "ASC"
 msgstr ""
 
-#: ../src/libs/filtering.c:1953
+#: ../src/libs/filtering.c:1965
 msgid "new rule"
 msgstr ""
 
-#: ../src/libs/filtering.c:1954
+#: ../src/libs/filtering.c:1966
 msgid "append new rule to collect images"
 msgstr ""
 
-#: ../src/libs/filtering.c:1965 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1977 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr ""
 
-#: ../src/libs/filtering.c:1973
+#: ../src/libs/filtering.c:1985
 msgid "new sort"
 msgstr ""
 
-#: ../src/libs/filtering.c:1974
+#: ../src/libs/filtering.c:1986
 msgid "append new sort to order images"
 msgstr ""
 
-#: ../src/libs/filtering.c:1977
+#: ../src/libs/filtering.c:1989
 msgid "revert to a previous set of sort orders"
 msgstr ""
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2024
+#: ../src/libs/filtering.c:2036
 msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
