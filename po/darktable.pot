@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-15 23:24+0200\n"
+"POT-Creation-Date: 2022-05-17 09:03+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2153,10 +2153,10 @@ msgstr ""
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
-#: ../src/develop/blend_gui.c:2973 ../src/develop/develop.c:2248
+#: ../src/develop/blend_gui.c:2974 ../src/develop/develop.c:2248
 #: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:130
 #: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:825
-#: ../src/imageio/format/j2k.c:673 ../src/libs/live_view.c:361
+#: ../src/imageio/format/j2k.c:672 ../src/libs/live_view.c:361
 msgid "off"
 msgstr ""
 
@@ -5538,7 +5538,7 @@ msgstr ""
 #: ../src/common/database.c:2744 ../src/libs/collect.c:2921
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
-#: ../src/libs/modulegroups.c:3507 ../src/libs/recentcollect.c:295
+#: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
 #: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1466
 #: ../src/libs/tagging.c:1554 ../src/libs/tagging.c:1635
 #: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
@@ -7143,26 +7143,26 @@ msgid "RGB (scene)"
 msgstr ""
 
 #. DEVELOP_MASK_ENABLED
-#: ../src/develop/blend_gui.c:102 ../src/develop/blend_gui.c:2979
+#: ../src/develop/blend_gui.c:102 ../src/develop/blend_gui.c:2980
 msgid "uniformly"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:103 ../src/develop/blend_gui.c:2320
-#: ../src/develop/blend_gui.c:2986 ../src/develop/imageop.c:2272
+#: ../src/develop/blend_gui.c:103 ../src/develop/blend_gui.c:2321
+#: ../src/develop/blend_gui.c:2987 ../src/develop/imageop.c:2272
 msgid "drawn mask"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2129
-#: ../src/develop/blend_gui.c:2993 ../src/develop/imageop.c:2274
+#: ../src/develop/blend_gui.c:2994 ../src/develop/imageop.c:2274
 msgid "parametric mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:105 ../src/develop/blend_gui.c:2500
-#: ../src/develop/blend_gui.c:3011 ../src/develop/imageop.c:2276
+#: ../src/develop/blend_gui.c:105 ../src/develop/blend_gui.c:2501
+#: ../src/develop/blend_gui.c:3012 ../src/develop/imageop.c:2276
 msgid "raster mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:106 ../src/develop/blend_gui.c:3002
+#: ../src/develop/blend_gui.c:106 ../src/develop/blend_gui.c:3003
 msgid "drawn & parametric mask"
 msgstr ""
 
@@ -7205,13 +7205,13 @@ msgstr ""
 msgid "on"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2189
+#: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2190
 #: ../src/develop/imageop.c:2379 ../src/iop/channelmixerrgb.c:4102
 #: ../src/iop/exposure.c:1097
 msgid "input"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2189
+#: ../src/develop/blend_gui.c:856 ../src/develop/blend_gui.c:2190
 #: ../src/develop/imageop.c:2379
 msgid "output"
 msgstr ""
@@ -7425,11 +7425,11 @@ msgstr ""
 msgid "invert all channel's polarities"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2183
+#: ../src/develop/blend_gui.c:2184
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2210
+#: ../src/develop/blend_gui.c:2211
 msgid ""
 "double-click to reset.\n"
 "press 'a' to toggle available slider modes.\n"
@@ -7437,7 +7437,7 @@ msgid ""
 "press 'm' to toggle mask view."
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2227 ../src/develop/blend_gui.c:3055
+#: ../src/develop/blend_gui.c:2228 ../src/develop/blend_gui.c:3056
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2016
 #: ../src/iop/exposure.c:1033 ../src/iop/exposure.c:1046
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
@@ -7455,271 +7455,271 @@ msgstr ""
 msgid " EV"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2228 ../src/develop/blend_gui.c:2320
-#: ../src/develop/blend_gui.c:2500 ../src/develop/blend_gui.c:2563
-#: ../src/develop/blend_gui.c:3037 ../src/develop/blend_gui.c:3054
-#: ../src/develop/blend_gui.c:3063 ../src/develop/blend_gui.c:3080
-#: ../src/develop/blend_gui.c:3094 ../src/develop/blend_gui.c:3100
-#: ../src/develop/blend_gui.c:3106 ../src/develop/blend_gui.c:3114
+#: ../src/develop/blend_gui.c:2229 ../src/develop/blend_gui.c:2321
+#: ../src/develop/blend_gui.c:2501 ../src/develop/blend_gui.c:2564
+#: ../src/develop/blend_gui.c:3038 ../src/develop/blend_gui.c:3055
+#: ../src/develop/blend_gui.c:3064 ../src/develop/blend_gui.c:3081
+#: ../src/develop/blend_gui.c:3095 ../src/develop/blend_gui.c:3101
+#: ../src/develop/blend_gui.c:3107 ../src/develop/blend_gui.c:3115
 msgid "blend"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2228
+#: ../src/develop/blend_gui.c:2229
 msgid "boost factor"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2230
+#: ../src/develop/blend_gui.c:2231
 msgid "adjust the boost factor of the channel mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2262
+#: ../src/develop/blend_gui.c:2263
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/develop/blend_gui.c:2267 ../src/develop/blend_gui.c:2323
-#: ../src/develop/blend_gui.c:2389 ../src/develop/blend_gui.c:2501
+#: ../src/develop/blend_gui.c:2268 ../src/develop/blend_gui.c:2324
+#: ../src/develop/blend_gui.c:2390 ../src/develop/blend_gui.c:2502
 msgid "no mask used"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2329
+#: ../src/develop/blend_gui.c:2330
 msgid "toggle polarity of drawn mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2336
+#: ../src/develop/blend_gui.c:2337
 msgid "show and edit mask elements"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2336
+#: ../src/develop/blend_gui.c:2337
 msgid "show and edit in restricted mode"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2341 ../src/libs/masks.c:940
+#: ../src/develop/blend_gui.c:2342 ../src/libs/masks.c:940
 #: ../src/libs/masks.c:968 ../src/libs/masks.c:1676
 msgid "add gradient"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2341
+#: ../src/develop/blend_gui.c:2342
 msgid "add multiple gradients"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2346 ../src/iop/retouch.c:2197
+#: ../src/develop/blend_gui.c:2347 ../src/iop/retouch.c:2197
 #: ../src/libs/masks.c:952 ../src/libs/masks.c:1700
 msgid "add brush"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2346 ../src/iop/retouch.c:2197
+#: ../src/develop/blend_gui.c:2347 ../src/iop/retouch.c:2197
 msgid "add multiple brush strokes"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2351 ../src/iop/retouch.c:2201
+#: ../src/develop/blend_gui.c:2352 ../src/iop/retouch.c:2201
 #: ../src/iop/spots.c:822 ../src/libs/masks.c:936 ../src/libs/masks.c:964
 #: ../src/libs/masks.c:1682
 msgid "add path"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2351 ../src/iop/retouch.c:2201
+#: ../src/develop/blend_gui.c:2352 ../src/iop/retouch.c:2201
 #: ../src/iop/spots.c:822
 msgid "add multiple paths"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2356 ../src/iop/retouch.c:2205
+#: ../src/develop/blend_gui.c:2357 ../src/iop/retouch.c:2205
 #: ../src/iop/spots.c:826 ../src/libs/masks.c:932 ../src/libs/masks.c:960
 #: ../src/libs/masks.c:1688
 msgid "add ellipse"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2356 ../src/iop/retouch.c:2205
+#: ../src/develop/blend_gui.c:2357 ../src/iop/retouch.c:2205
 #: ../src/iop/spots.c:826
 msgid "add multiple ellipses"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2361 ../src/iop/retouch.c:2209
+#: ../src/develop/blend_gui.c:2362 ../src/iop/retouch.c:2209
 #: ../src/iop/spots.c:830 ../src/libs/masks.c:928 ../src/libs/masks.c:956
 #: ../src/libs/masks.c:1694
 msgid "add circle"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2361 ../src/iop/retouch.c:2209
+#: ../src/develop/blend_gui.c:2362 ../src/iop/retouch.c:2209
 #: ../src/iop/spots.c:830
 msgid "add multiple circles"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2509
+#: ../src/develop/blend_gui.c:2510
 msgid "toggle polarity of raster mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2643
+#: ../src/develop/blend_gui.c:2644
 msgid "normal & difference modes"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2648
+#: ../src/develop/blend_gui.c:2649
 msgid "lighten modes"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2652
+#: ../src/develop/blend_gui.c:2653
 msgid "darken modes"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2656
+#: ../src/develop/blend_gui.c:2657
 msgid "contrast enhancing modes"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2666 ../src/develop/blend_gui.c:2679
-#: ../src/develop/blend_gui.c:2704
+#: ../src/develop/blend_gui.c:2667 ../src/develop/blend_gui.c:2680
+#: ../src/develop/blend_gui.c:2705
 msgid "color channel modes"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2694
+#: ../src/develop/blend_gui.c:2695
 msgid "normal & arithmetic modes"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:2708
+#: ../src/develop/blend_gui.c:2709
 msgid "chrominance & luminance modes"
 msgstr ""
 
 #. add deprecated blend mode
-#: ../src/develop/blend_gui.c:2719
+#: ../src/develop/blend_gui.c:2720
 msgid "deprecated modes"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3019
+#: ../src/develop/blend_gui.c:3020
 msgid "blending options"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3037 ../src/libs/history.c:859
+#: ../src/develop/blend_gui.c:3038 ../src/libs/history.c:859
 msgid "blend mode"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3038
+#: ../src/develop/blend_gui.c:3039
 msgid "choose blending mode"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3045
+#: ../src/develop/blend_gui.c:3046
 msgid "toggle blend order"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3048
+#: ../src/develop/blend_gui.c:3049
 msgid ""
 "toggle the blending order between the input and the output of the module,\n"
 "by default the output will be blended on top of the input,\n"
 "order can be reversed by clicking on the icon (input on top of output)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3054 ../src/libs/history.c:861
+#: ../src/develop/blend_gui.c:3055 ../src/libs/history.c:861
 msgid "blend fulcrum"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3057
+#: ../src/develop/blend_gui.c:3058
 msgid "adjust the fulcrum used by some blending operations"
 msgstr ""
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3063 ../src/iop/watermark.c:1121
+#: ../src/develop/blend_gui.c:3064 ../src/iop/watermark.c:1121
 msgid "opacity"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3066
+#: ../src/develop/blend_gui.c:3067
 msgid "set the opacity of the blending"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3068 ../src/libs/history.c:863
+#: ../src/develop/blend_gui.c:3069 ../src/libs/history.c:863
 msgid "combine masks"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3069
+#: ../src/develop/blend_gui.c:3070
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3074 ../src/libs/history.c:871
+#: ../src/develop/blend_gui.c:3075 ../src/libs/history.c:871
 msgid "invert mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3075
+#: ../src/develop/blend_gui.c:3076
 msgid "apply mask in normal or inverted mode"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3080
+#: ../src/develop/blend_gui.c:3081
 msgid "details threshold"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3082
+#: ../src/develop/blend_gui.c:3083
 msgid ""
 "adjust the threshold for the details mask (using raw data), \n"
 "positive values selects areas with strong details, \n"
 "negative values select flat areas"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3087 ../src/libs/history.c:865
+#: ../src/develop/blend_gui.c:3088 ../src/libs/history.c:865
 msgid "feathering guide"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3089
+#: ../src/develop/blend_gui.c:3090
 msgid ""
 "choose to guide mask by input or output image and\n"
 "choose to apply feathering before or after mask blur"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3094 ../src/libs/history.c:864
+#: ../src/develop/blend_gui.c:3095 ../src/libs/history.c:864
 msgid "feathering radius"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3096
+#: ../src/develop/blend_gui.c:3097
 msgid "spatial radius of feathering"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3100
+#: ../src/develop/blend_gui.c:3101
 msgid "blurring radius"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3102
+#: ../src/develop/blend_gui.c:3103
 msgid "radius for gaussian blur of blend mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3106 ../src/iop/retouch.c:2411
+#: ../src/develop/blend_gui.c:3107 ../src/iop/retouch.c:2411
 #: ../src/libs/history.c:862
 msgid "mask opacity"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3108
+#: ../src/develop/blend_gui.c:3109
 msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness "
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3114 ../src/libs/history.c:867
+#: ../src/develop/blend_gui.c:3115 ../src/libs/history.c:867
 msgid "mask contrast"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3116
+#: ../src/develop/blend_gui.c:3117
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3120
+#: ../src/develop/blend_gui.c:3121
 msgid "mask refinement"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3123
+#: ../src/develop/blend_gui.c:3124
 msgid "display mask and/or color channel"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3125
+#: ../src/develop/blend_gui.c:3126
 msgid ""
 "display mask and/or color channel. ctrl+click to display mask, shift+click "
 "to display channel. hover over parametric mask slider to select channel for "
 "display"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3130
+#: ../src/develop/blend_gui.c:3131
 msgid "temporarily switch off blend mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:3132
+#: ../src/develop/blend_gui.c:3133
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 
@@ -8390,7 +8390,7 @@ msgstr ""
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
 #: ../src/libs/filtering.c:1404 ../src/libs/filters/colors.c:237
-#: ../src/libs/filters/colors.c:355
+#: ../src/libs/filters/colors.c:355 ../src/libs/filters/rating_legacy.c:211
 msgid "all"
 msgstr ""
 
@@ -10167,7 +10167,7 @@ msgid "maximum focal length"
 msgstr ""
 
 #. raw/hdr/ldr/mono/color
-#: ../src/gui/presets.c:613 ../src/imageio/format/j2k.c:652
+#: ../src/gui/presets.c:613 ../src/imageio/format/j2k.c:651
 msgid "format"
 msgstr ""
 
@@ -10348,7 +10348,7 @@ msgstr ""
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:871 ../src/imageio/format/j2k.c:665
+#: ../src/imageio/format/avif.c:871 ../src/imageio/format/j2k.c:664
 #: ../src/imageio/format/jpeg.c:578 ../src/imageio/format/webp.c:337
 #: ../src/iop/cacorrect.c:1343 ../src/libs/camera.c:565
 msgid "quality"
@@ -10442,31 +10442,31 @@ msgstr ""
 msgid "DWAB"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:619
+#: ../src/imageio/format/j2k.c:618
 msgid "JPEG 2000 (12-bit)"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:653
+#: ../src/imageio/format/j2k.c:652
 msgid "J2K"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:654
+#: ../src/imageio/format/j2k.c:653
 msgid "jp2"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:672
+#: ../src/imageio/format/j2k.c:671
 msgid "DCP mode"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:674
+#: ../src/imageio/format/j2k.c:673
 msgid "Cinema2K, 24FPS"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:675
+#: ../src/imageio/format/j2k.c:674
 msgid "Cinema2K, 48FPS"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:676
+#: ../src/imageio/format/j2k.c:675
 msgid "Cinema4K, 24FPS"
 msgstr ""
 
@@ -18856,10 +18856,12 @@ msgid "filter images based on their module order"
 msgstr ""
 
 #: ../src/libs/filters/rating.c:58 ../src/libs/filters/rating.c:73
+#: ../src/libs/filters/rating_legacy.c:212
 msgid "all except rejected"
 msgstr ""
 
 #: ../src/libs/filters/rating.c:60 ../src/libs/filters/rating.c:75
+#: ../src/libs/filters/rating_legacy.c:212
 msgid "rejected only"
 msgstr ""
 
@@ -18889,6 +18891,25 @@ msgstr ""
 
 #: ../src/libs/filters/rating.c:243
 msgid "rating filter"
+msgstr ""
+
+#: ../src/libs/filters/rating_legacy.c:199
+msgid "comparator"
+msgstr ""
+
+#: ../src/libs/filters/rating_legacy.c:200
+#: ../src/libs/filters/rating_legacy.c:210
+msgid "filter by images rating"
+msgstr ""
+
+#. create the filter combobox
+#: ../src/libs/filters/rating_legacy.c:210 ../src/libs/image.c:544
+#: ../src/libs/tools/ratings.c:56
+msgid "ratings"
+msgstr ""
+
+#: ../src/libs/filters/rating_legacy.c:211
+msgid "unstarred only"
 msgstr ""
 
 #: ../src/libs/filters/ratio.c:70 ../src/libs/filters/ratio.c:82
@@ -19363,10 +19384,6 @@ msgstr ""
 
 #: ../src/libs/image.c:534
 msgid "remove selected images from the group"
-msgstr ""
-
-#: ../src/libs/image.c:544 ../src/libs/tools/ratings.c:56
-msgid "ratings"
 msgstr ""
 
 #: ../src/libs/image.c:546
@@ -20129,6 +20146,14 @@ msgstr ""
 msgid "jump to film roll"
 msgstr ""
 
+#: ../src/libs/recentcollect.c:67
+msgid "recently used collections"
+msgstr ""
+
+#: ../src/libs/recentcollect.c:294
+msgid "recent collections settings"
+msgstr ""
+
 #: ../src/libs/modulegroups.c:42
 msgid "modules: default"
 msgstr ""
@@ -20739,14 +20764,6 @@ msgstr ""
 
 #: ../src/libs/print_settings.c:2726
 msgid "print with current settings"
-msgstr ""
-
-#: ../src/libs/recentcollect.c:67
-msgid "recently used collections"
-msgstr ""
-
-#: ../src/libs/recentcollect.c:294
-msgid "recent collections settings"
 msgstr ""
 
 #: ../src/libs/select.c:134
