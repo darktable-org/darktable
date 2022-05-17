@@ -306,6 +306,7 @@ static gboolean _colors_update(dt_lib_filtering_rule_t *rule)
     gtk_widget_set_sensitive(colorstop->operator, nb> 1);
   }
 
+  _colors_synchronise(colors);
   rule->manual_widget_set--;
 
   return TRUE;

@@ -373,7 +373,6 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     for(int i = 0; i < numcomps; i++)
     {
       cmptparm[i].prec = prec;
-      cmptparm[i].bpp = prec;
       cmptparm[i].sgnd = 0;
       cmptparm[i].dx = subsampling_dx;
       cmptparm[i].dy = subsampling_dy;

@@ -462,7 +462,8 @@ separator
   opacity: 0.6;
 }
 
-.dt_dimmed:hover /* to set full opacity when hovering those items */
+.dt_dimmed:hover, /* to set full opacity when hovering those items */
+.dt_dimmed:checked
 {
   opacity: 1;
 }
@@ -1304,7 +1305,7 @@ filechooser row:hover .sidebar-icon
 /* set range parts and quick filter box in header toolbar */
 .search,
 #range-select #dt-range-band,
-#header-toolbar #bauhaus-combobox
+#header-toolbar #bauhaus-combobox:not(.dt_transparent_background)
 {
   background-color: @range_bg_color;
 }
@@ -1327,6 +1328,11 @@ filechooser row:hover .sidebar-icon
 #range-current
 {
   padding: 0.2em;
+}
+
+#collect-header-box button
+{
+  margin-right: 0;
 }
 
 /*------------
@@ -1481,7 +1487,7 @@ progressbar progress
 /* the label buttons */
 .dt_history_items
 {
-  padding: 0;
+  padding: 0 0.21em;
   margin: 0.14em;
 }
 
@@ -1497,7 +1503,7 @@ progressbar progress
 /* and the history number */
 #history-number
 {
-  padding-right: 0.35em;
+  padding: 0 0.35em 0 0;
 }
 
 /* deactivated switch buttons, make them less visible */
@@ -1559,7 +1565,7 @@ progressbar progress
 .dt_history_items:active,
 .dt_history_items:checked,
 button:active,
-button:checked,
+button:checked:not(:disabled):not(.dt_transparent_background),
 button:selected,
 cell:selected,
 checkbutton check:checked,
@@ -1579,7 +1585,8 @@ treeview *:checked:not(check)
 
 /* History currently selected button ; they don't need to set background */
 .dt_history_items:active *,
-.dt_history_items:checked *
+.dt_history_items:checked *,
+button.dt_transparent_background:checked:not(:disabled):not(.dt_ignore_fg_state)
 {
   color: @field_selected_fg;
 }

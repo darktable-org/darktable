@@ -86,6 +86,7 @@ typedef struct dt_lib_filtering_rule_t
   GtkWidget *w_btn_box;
   GtkWidget *w_close;
   GtkWidget *w_off;
+  GtkWidget *w_pin;
 
   GtkWidget *w_widget_box;
   char raw_text[PARAM_STRING_SIZE];
@@ -198,27 +199,30 @@ typedef struct _filter_t
 #include "libs/filters/local_copy.c"
 #include "libs/filters/module_order.c"
 #include "libs/filters/rating.c"
+#include "libs/filters/rating_legacy.c"
 #include "libs/filters/ratio.c"
 #include "libs/filters/search.c"
 
-static _filter_t filters[] = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_init, _colors_update },
-                               { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
-                               { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update },
-                               { DT_COLLECTION_PROP_TIME, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update },
-                               { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update },
-                               { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update },
-                               { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update },
-                               { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
-                               { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
-                               { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
-                               { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update },
-                               { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
-                               { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
-                               { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update } };
+static _filter_t filters[]
+    = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_init, _colors_update },
+        { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
+        { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update },
+        { DT_COLLECTION_PROP_TIME, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update },
+        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update },
+        { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update },
+        { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
+        { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
+        { DT_COLLECTION_PROP_EXPOSURE, _exposure_widget_init, _exposure_update },
+        { DT_COLLECTION_PROP_GROUPING, _grouping_widget_init, _grouping_update },
+        { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
+        { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
+        { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update },
+        { DT_COLLECTION_PROP_RATING_LEGACY, _rating_legacy_widget_init, _rating_legacy_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -622,13 +626,6 @@ static void _event_rule_changed(GtkWidget *entry, dt_lib_filtering_rule_t *rule)
 {
   if(rule->manual_widget_set) return;
 
-  // force the on-off to on if topbar
-  if(rule->topbar && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
-  {
-    rule->manual_widget_set++;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), TRUE);
-    rule->manual_widget_set--;
-  }
   // update the config files
   _conf_update_rule(rule);
 
@@ -863,6 +860,7 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
     }
   }
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING);
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING_LEGACY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GEOTAGGING);
@@ -944,6 +942,7 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
     }
   }
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_LEGACY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
@@ -1034,25 +1033,34 @@ static void _topbar_update(dt_lib_module_t *self)
 
 static void _widget_header_update(dt_lib_filtering_rule_t *rule)
 {
-  gtk_widget_set_visible(rule->w_close, !rule->topbar);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(rule->w_off),
-                               (rule->topbar) ? dtgtk_cairo_paint_pin : dtgtk_cairo_paint_switch, 0, NULL);
+  gtk_widget_set_sensitive(rule->w_close, !rule->topbar);
+  gtk_widget_set_sensitive(rule->w_off, !rule->topbar);
+
   if(rule->topbar)
   {
-    gtk_widget_set_tooltip_text(rule->w_off, _("this rule is pinned into the top toolbar\nctrl-click to un-pin"));
+    gtk_widget_set_tooltip_text(rule->w_pin, _("this rule is pinned into the top toolbar\nclick to un-pin"));
+    gtk_widget_set_tooltip_text(rule->w_off, _("you can't disable the rule as it is pinned into the toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_close, _("you can't remove the rule as it is pinned into the toolbar"));
   }
   else
   {
-    gtk_widget_set_tooltip_text(rule->w_off,
-                                _("disable this collect rule\nctrl-click to pin into the top toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_pin, _("click to pin this rule into the top toolbar"));
+    gtk_widget_set_tooltip_text(rule->w_close, _("remove this collect rule"));
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
+      gtk_widget_set_tooltip_text(rule->w_off, _("this rule is enabled"));
+    else
+      gtk_widget_set_tooltip_text(rule->w_off, _("this rule is disabled"));
   }
+
   _rule_populate_prop_combo(rule);
 }
 
-static void _rule_topbar_toggle(dt_lib_filtering_rule_t *rule, dt_lib_module_t *self)
+static void _rule_topbar_toggle(GtkWidget *widget, dt_lib_module_t *self)
 {
-  rule->topbar = !rule->topbar;
-  // activate the rule if needed
+  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
+
+  rule->topbar = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_pin));
+  // if the rule is pinned, then we force it to on
   if(rule->topbar && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rule->w_off)))
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), TRUE);
@@ -1069,11 +1077,7 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
   if(rule->manual_widget_set) return TRUE;
 
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
-  {
-    _rule_topbar_toggle(rule, self);
-  }
-  else if(!rule->topbar)
+  if(!rule->topbar)
   {
     // decrease the nb of active rules
     dt_lib_filtering_t *d = rule->lib;
@@ -1118,29 +1122,6 @@ static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_l
     return FALSE;
 
   return TRUE;
-}
-
-static gboolean _event_rule_change_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
-{
-  dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
-  if(dt_modifier_is(event->state, GDK_CONTROL_MASK) || (rule->topbar && widget != rule->w_prop))
-  {
-    _rule_topbar_toggle(rule, self);
-  }
-  else if(!rule->topbar && widget == rule->w_prop)
-  {
-    _rule_show_popup(rule->w_prop, rule, self);
-  }
-  else
-    return FALSE;
-  return TRUE;
-}
-
-static void _event_header_resized(GtkWidget *widget, GtkAllocation *allocation, dt_lib_filtering_rule_t *rule)
-{
-  // we want to ensure that the combobox and the buttons box are the same size
-  // so the property widget is centered
-  gtk_widget_set_size_request(rule->w_btn_box, allocation->width, -1);
 }
 
 // initialise or update a rule widget. Return if the a new widget has been created
@@ -1210,24 +1191,26 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, NULL);
     dt_gui_add_class(rule->w_off, "dt_transparent_background");
     g_object_set_data(G_OBJECT(rule->w_off), "rule", rule);
-    g_signal_connect(G_OBJECT(rule->w_off), "button-press-event", G_CALLBACK(_event_rule_change_popup), self);
     g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_changed), rule);
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
+    // pin button
+    rule->w_pin = dtgtk_togglebutton_new(dtgtk_cairo_paint_pin, 0, NULL);
+    dt_gui_add_class(rule->w_pin, "dt_transparent_background");
+    g_object_set_data(G_OBJECT(rule->w_pin), "rule", rule);
+    g_signal_connect(G_OBJECT(rule->w_pin), "toggled", G_CALLBACK(_rule_topbar_toggle), self);
+    dt_gui_add_class(rule->w_pin, "dt_dimmed");
+    gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_pin, FALSE, FALSE, 0);
+
     // remove button
     rule->w_close = dtgtk_button_new(dtgtk_cairo_paint_remove, 0, NULL);
-    gtk_widget_set_no_show_all(rule->w_close, TRUE);
     g_object_set_data(G_OBJECT(rule->w_close), "rule", rule);
-    gtk_widget_set_tooltip_text(rule->w_close,
-                                _("remove this collect rule\nctrl-click to pin into the top toolbar"));
     g_signal_connect(G_OBJECT(rule->w_close), "button-press-event", G_CALLBACK(_event_rule_close), self);
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_close, FALSE, FALSE, 0);
-
-    g_signal_connect(G_OBJECT(rule->w_operator), "size-allocate", G_CALLBACK(_event_header_resized), rule);
   }
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), !off);
-
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_off), top || !off);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rule->w_pin), top);
   _widget_header_update(rule);
 
   if(newmain)
@@ -1347,7 +1330,7 @@ void gui_reset(dt_lib_module_t *self)
 
 int position()
 {
-  return 380;
+  return 350;
 }
 
 static void _dt_collection_updated(gpointer instance, dt_collection_change_t query_change,
