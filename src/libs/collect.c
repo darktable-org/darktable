@@ -1340,6 +1340,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       {
         char sdt[DT_DATETIME_EXIF_LENGTH] = {0};
         dt_datetime_gtimespan_to_exif(sdt, sizeof(sdt), sqlite3_column_int64(stmt, 0));
+        if(property == DT_COLLECTION_PROP_DAY)
+          sdt[10] = '\0';
         name = g_strdup(sdt);
       }
       else
@@ -3481,4 +3483,3 @@ void init(struct dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
