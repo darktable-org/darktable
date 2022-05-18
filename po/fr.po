@@ -5032,7 +5032,7 @@ msgstr "nom de fichier"
 
 #: ../src/common/collection.c:612 ../src/common/collection.c:667
 msgid "capture time"
-msgstr "date capture"
+msgstr "heure de capture"
 
 #: ../src/common/collection.c:614 ../src/common/collection.c:669
 msgid "import time"
