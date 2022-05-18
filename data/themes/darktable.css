@@ -1735,7 +1735,7 @@ Hierarchy :
       #thumb-image                                                   (GtkDrawingArea -- thumbnail image)
       #thumb-cursor                                                  (GtkDrawingArea -- top triangle to show active images in filmstrip)
       #thumb-bottom                                                  (GtkEventBox -- background of the bottom infos area)
-        #thumb-bottom-label                                          (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
+      #thumb-bottom-label                                            (GtkLabel -- text of the bottom infos area, just with .dt_extended_overlay)
       #thumb-reject                                                  (GtkDarktableThumbnailBtn -- Reject icon)
       #thumb-star                                                    (GtkDarktableThumbnailBtn -- Star icon, 5 occurrences of this)
       #thumb-colorlabels                                             (GtkDarktableThumbnailBtn -- colorlabels icon, 1 icon with all labels)
@@ -1995,6 +1995,18 @@ Details :
 .dt_overlays_hover #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb-main:hover #thumb-bottom-label,
+.dt_overlays_hover #thumb-main:hover #thumb-group,
+.dt_overlays_hover #thumb-main:hover #thumb-altered,
+.dt_overlays_hover #thumb-main:hover #thumb-audio,
+.dt_overlays_hover_extended:hover #thumb-main #thumb-group,
+.dt_overlays_hover_extended:hover #thumb-main #thumb-altered,
+.dt_overlays_hover_extended:hover #thumb-main #thumb-audio,
+.dt_overlays_hover #thumb-main:selected #thumb-group,
+.dt_overlays_hover #thumb-main:selected #thumb-altered,
+.dt_overlays_hover #thumb-main:selected #thumb-audio,
+.dt_overlays_hover_extended:selected #thumb-main #thumb-group,
+.dt_overlays_hover_extended:selected #thumb-main #thumb-altered,
+.dt_overlays_hover_extended:selected #thumb-main #thumb-audio,
 .dt_overlays_always #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_always #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_always_extended #thumb-main:hover .dt_thumb_btn,
@@ -2004,12 +2016,12 @@ Details :
 .dt_overlays_mixed #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom-label,
-.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn,
-.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn:active,
-.dt_overlays_hover_block #thumb-image:hover #thumb-audio,
-.dt_overlays_hover_block #thumb-image:hover #thumb-altered,
-.dt_overlays_hover_block #thumb-image:hover #thumb-localcopy,
-.dt_overlays_hover_block #thumb-image:hover #thumb-bottom-label
+.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn,
+.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn:active,
+.dt_overlays_hover_block #thumb-main:hover #thumb-audio,
+.dt_overlays_hover_block #thumb-main:hover #thumb-altered,
+.dt_overlays_hover_block #thumb-main:hover #thumb-localcopy,
+.dt_overlays_hover_block #thumb-main:hover #thumb-bottom-label
 {
   color: @thumbnail_font_color;
 }
@@ -2129,33 +2141,30 @@ Details :
 /*---------------------------------------------------------
   - Hide icons on all lighttable modes and duplicate ones -
   ---------------------------------------------------------*/
-.dt_overlays_hover #thumb-main:hover #thumb-group,
-.dt_overlays_hover #thumb-main:hover #thumb-altered,
-.dt_overlays_hover #thumb-main:hover #thumb-audio,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-group,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-altered,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-audio,
+.dt_overlays_hover #thumb-main #thumb-group,
+.dt_overlays_hover #thumb-main #thumb-altered,
+.dt_overlays_hover #thumb-main #thumb-audio,
+.dt_overlays_hover_extended #thumb-main #thumb-group,
+.dt_overlays_hover_extended #thumb-main #thumb-altered,
+.dt_overlays_hover_extended #thumb-main #thumb-audio,
 .dt_culling #thumb-ext,
-.dt_culling #thumb-main:selected #thumb-ext,
-.dt_culling #thumb-main:hover #thumb-ext,
-.dt_overlays_always#culling #thumb-altered,
-.dt_overlays_always#culling #thumb-audio,
-.dt_overlays_always#culling #thumb-group,
-.dt_overlays_always_extended#culling #thumb-altered,
-.dt_overlays_always_extended#culling #thumb-audio,
-.dt_overlays_always_extended#culling #thumb-group,
+.dt_culling #thumb-main #thumb-ext,
+.dt_overlays_always #culling #thumb-altered,
+.dt_overlays_always #culling #thumb-audio,
+.dt_overlays_always #culling #thumb-group,
+.dt_overlays_always_extended #culling #thumb-altered,
+.dt_overlays_always_extended #culling #thumb-audio,
+.dt_overlays_always_extended #culling #thumb-group,
 .dt_preview #thumb-ext,
-.dt_preview #thumb-main:selected #thumb-ext,
-.dt_preview #thumb-main:hover #thumb-ext,
-.dt_overlays_always#preview #thumb-altered,
-.dt_overlays_always#preview #thumb-audio,
-.dt_overlays_always#preview #thumb-group,
-.dt_overlays_always_extended#preview #thumb-altered,
-.dt_overlays_always_extended#preview #thumb-audio,
-.dt_overlays_always_extended#preview #thumb-group,
-.dt_duplicate_ui #thumb-main:hover #thumb-group,
-.dt_duplicate_ui #thumb-main:hover #thumb-altered,
-.dt_duplicate_ui #thumb-main:hover #thumb-audio,
+.dt_overlays_always #preview #thumb-altered,
+.dt_overlays_always #preview #thumb-audio,
+.dt_overlays_always #preview #thumb-group,
+.dt_overlays_always_extended #preview #thumb-altered,
+.dt_overlays_always_extended #preview #thumb-audio,
+.dt_overlays_always_extended #preview #thumb-group,
+.dt_duplicate_ui #thumb-main #thumb-group,
+.dt_duplicate_ui #thumb-main #thumb-altered,
+.dt_duplicate_ui #thumb-main #thumb-audio,
 .dt_duplicate_ui #thumb-altered,
 .dt_duplicate_ui #thumb-audio,
 .dt_duplicate_ui #thumb-group
