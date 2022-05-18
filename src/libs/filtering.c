@@ -1376,24 +1376,30 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
     {
       if(k > 0)
       {
+        c = g_strlcpy(out, "<i>   ", outsize);
+        out += c;
+        outsize -= c;
         switch(mode)
         {
           case DT_LIB_COLLECT_MODE_AND:
-            c = g_strlcpy(out, _(" and "), outsize);
+            c = g_strlcpy(out, _("AND"), outsize);
             out += c;
             outsize -= c;
             break;
           case DT_LIB_COLLECT_MODE_OR:
-            c = g_strlcpy(out, _(" or "), outsize);
+            c = g_strlcpy(out, _("OR"), outsize);
             out += c;
             outsize -= c;
             break;
           default: // case DT_LIB_COLLECT_MODE_AND_NOT:
-            c = g_strlcpy(out, _(" but not "), outsize);
+            c = g_strlcpy(out, _("BUT NOT"), outsize);
             out += c;
             outsize -= c;
             break;
         }
+        c = g_strlcpy(out, "   </i>", outsize);
+        out += c;
+        outsize -= c;
       }
       int i = 0;
       while(str[i] != '\0' && str[i] != '$') i++;
@@ -1409,13 +1415,13 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
 
       if(off)
       {
-        c = snprintf(out, outsize, "%s%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
-                     _(" (off)"), pretty);
+        c = snprintf(out, outsize, "<b>%s</b>%s %s",
+                     item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???", _(" (off)"), pretty);
       }
       else
       {
-        c = snprintf(out, outsize, "%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
-                     pretty);
+        c = snprintf(out, outsize, "<b>%s</b> %s",
+                     item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???", pretty);
       }
 
       g_free(pretty);
@@ -1462,7 +1468,7 @@ static void _event_history_show(GtkWidget *widget, gpointer user_data)
       char str[2048] = { 0 };
       _history_pretty_print(line, str, sizeof(str));
       GtkWidget *smt = gtk_menu_item_new_with_label(str);
-      gtk_widget_set_tooltip_text(smt, str);
+      gtk_widget_set_tooltip_markup(smt, str);
       GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
       gtk_label_set_use_markup(GTK_LABEL(child), TRUE);
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
