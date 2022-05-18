@@ -51,6 +51,15 @@ DT_MODULE(3)
 
 #define PARAM_STRING_SIZE 256 // FIXME: is this enough !?
 
+typedef struct _datetime_range_t
+{
+  GTimeSpan nb1;
+  GTimeSpan nb2;
+  char *operator;
+  GtkTreePath *path1;
+  GtkTreePath *path2;
+} _datetime_range_t;
+
 typedef struct dt_lib_collect_rule_t
 {
   int num;
@@ -60,6 +69,7 @@ typedef struct dt_lib_collect_rule_t
   GtkWidget *button;
   gboolean typing;
   gchar *searchstring;
+  _datetime_range_t datetime_range;
 } dt_lib_collect_rule_t;
 
 typedef struct dt_lib_collect_t
@@ -703,6 +713,28 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
   return FALSE;
 }
 
+static gboolean _datetime_range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
+  gchar *str;
+
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+  const GTimeSpan nb = dt_datetime_exif_to_gtimespan(str);
+  g_free(str);
+  GTimeSpan target = dr->datetime_range.path1 == NULL ? dr->datetime_range.nb1 : dr->datetime_range.nb2;
+
+  if(nb >= target)
+  {
+    if(dr->datetime_range.path1)
+      return TRUE;
+    else
+      dr->datetime_range.path1 = gtk_tree_path_copy(path);
+  }
+  dr->datetime_range.path2 = gtk_tree_path_copy(path);
+
+  return FALSE;
+}
+
 int _combo_get_active_collection(GtkWidget *combo)
 {
   return GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(combo)) - 1;
@@ -907,11 +939,34 @@ static gboolean tree_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   }
   else
   {
-    gchar *haystack = g_utf8_strdown(str, -1),
-          *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
-    visible = (g_strrstr(haystack, needle) != NULL);
+    gchar *haystack = g_utf8_strdown(str, -1);
+    const int property = _combo_get_active_collection(dr->combo);
+    if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
+    {
+      // handle of numeric value, which can have some operator before the text
+      visible = TRUE;
+      if(dr->datetime_range.nb1)
+      {
+        const GTimeSpan nb = dt_datetime_exif_to_gtimespan(haystack);
+        if(!dr->datetime_range.operator)
+          visible = (nb >= dr->datetime_range.nb1 && nb <= dr->datetime_range.nb2);
+        else if(strcmp(dr->datetime_range.operator, ">") == 0)
+          visible = (nb > dr->datetime_range.nb1);
+        else if(strcmp(dr->datetime_range.operator, ">=") == 0)
+          visible = (nb >= dr->datetime_range.nb1);
+        else if(strcmp(dr->datetime_range.operator, "<") == 0)
+          visible = (nb < dr->datetime_range.nb1);
+        else if(strcmp(dr->datetime_range.operator, "<=") == 0)
+          visible = (nb <= dr->datetime_range.nb1);
+        else if(strcmp(dr->datetime_range.operator, "<>") == 0)
+          visible = (nb != dr->datetime_range.nb1);
+        else if(dr->datetime_range.nb2)
+          visible = (nb >= dr->datetime_range.nb1 && nb <= dr->datetime_range.nb2);
+      }
+    }
+    else
+      visible = (g_strrstr(haystack, dr->searchstring) != NULL);
     g_free(haystack);
-    g_free(needle);
   }
 
   g_free(str);
@@ -1543,46 +1598,75 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     d->view_rule = property;
   }
 
-  // if needed, we restrict the tree to matching entries
-  if(dr->typing) tree_set_visibility(model, dr);
   // we update tree expansion and selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
   gtk_tree_view_collapse_all(d->view);
 
+  // prepare datetime entry data
+  if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
+  {
+    gchar *number1, *number2;
+    dt_collection_split_operator_datetime(gtk_entry_get_text(GTK_ENTRY(dr->text)),
+                                          &number1, &number2, &dr->datetime_range.operator);
+    if(number1 && number1[strlen(number1) - 1] == '%')
+      number1[strlen(number1) - 1] = '\0';
+    dr->datetime_range.nb1 = number1 ? dt_datetime_exif_to_gtimespan(number1) : 0;
+    dr->datetime_range.nb2 = number2 ? dt_datetime_exif_to_gtimespan(number2) : 0;
+    g_free(number1);
+    g_free(number2);
+  }
+
+  // if needed, we restrict the tree to matching entries
+  if(dr->typing)
+  {
+    if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
+    {
+      tree_set_visibility(model, dr);
+    }
+    else
+    {
+      gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+      tree_set_visibility(model, dr);
+      g_free(needle);
+    }
+  }
+
+  // select/expand items corresponding to entry
   if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
-    // test selection range [xxx;xxx]
-    GRegex *regex;
-    GMatchInfo *match_info;
-    int match_count;
-
-    regex = g_regex_new("^\\s*\\[\\s*(.*)\\s*;\\s*(.*)\\s*\\]\\s*$", 0, 0, NULL);
-    g_regex_match_full(regex, gtk_entry_get_text(GTK_ENTRY(dr->text)), -1, 0, 0, &match_info, NULL);
-    match_count = g_match_info_get_match_count(match_info);
-
-    if(match_count == 3)
+    if(strcmp(dr->datetime_range.operator, "[]") == 0)
     {
-      _range_t *range = (_range_t *)calloc(1, sizeof(_range_t));
-      /* inversed as dates are in reverse order */
-      range->start = g_match_info_fetch(match_info, 2);
-      range->stop = g_match_info_fetch(match_info, 1);
-
-      gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)range_select, range);
-      if(range->path1 && range->path2)
+      dr->datetime_range.path1 = NULL;
+      dr->datetime_range.path2 = NULL;
+      gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)_datetime_range_select, dr);
+      if(dr->datetime_range.path1 && dr->datetime_range.path2)
       {
-        gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), range->path1, range->path2);
+        GtkTreePath *path1 = gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter), dr->datetime_range.path1);
+        GtkTreePath *path2 = gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter), dr->datetime_range.path2);
+        GtkTreePath *path3 = NULL;
+        GtkTreeIter iter;
+        if(gtk_tree_model_get_iter(d->treefilter, &iter, path1))
+        {
+          GtkTreeIter parent;
+          if(gtk_tree_model_iter_parent(d->treefilter, &parent, &iter))
+            path3 = gtk_tree_model_get_path(d->treefilter, &parent);
+        }
+        gtk_tree_view_expand_to_path(d->view, path3 ? path3 : path1);
+        gtk_tree_view_scroll_to_cell(d->view, path1, NULL, TRUE, 0.5, 0.5);
+        gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), path1, path2);
+        gtk_tree_path_free(path1);
+        gtk_tree_path_free(path2);
+        if(path3)
+          gtk_tree_path_free(path3);
       }
-      g_free(range->start);
-      g_free(range->stop);
-      gtk_tree_path_free(range->path1);
-      gtk_tree_path_free(range->path2);
-      free(range);
+      if(dr->datetime_range.path1)
+        gtk_tree_path_free(dr->datetime_range.path1);
+      if(dr->datetime_range.path2)
+        gtk_tree_path_free(dr->datetime_range.path2);
     }
     else
       gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
-
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
+    g_free(dr->datetime_range.operator);
   }
   else
     gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
@@ -2391,10 +2475,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       gtk_tree_model_get(model, &iter2, DT_LIB_COLLECT_COL_PATH, &text2, -1);
 
       gchar *n_text;
-      if(item == DT_COLLECTION_PROP_DAY || is_time_property(item))
-        n_text = g_strdup_printf("[%s;%s]", text2, text); /* dates are in reverse order */
-      else
-        n_text = g_strdup_printf("[%s;%s]", text, text2);
+      n_text = g_strdup_printf("[%s;%s]", text, text2);
 
       g_free(text);
       g_free(text2);
