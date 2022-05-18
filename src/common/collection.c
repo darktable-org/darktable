@@ -1378,12 +1378,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // clang-format on
       else
       {
-        // test the "integer" case (used by filters)
-        const int val = atoi(escaped_text);
-        if(val != 0 || !g_strcmp0(escaped_text, "0"))
+        // test the "mask" case (used by filters)
+        if(g_str_has_prefix(text, "0x"))
         {
-          const int colors_set = val & 0xFF;
-          const int colors_unset = (val & 0xFF00) >> 8;
+          const int val = strtol(&escaped_text[2], NULL, 16);
+          const int colors_set = val & 0xFFF;
+          const int colors_unset = (val & 0xFFF000) >> 12;
           const gboolean op = val & 0x80000000;
           if(op) // AND
           {
