@@ -3087,7 +3087,7 @@ static void _history_show(GtkWidget *widget, gpointer user_data)
       char str[2048] = { 0 };
       _history_pretty_print(line, str, sizeof(str));
       GtkWidget *smt = gtk_menu_item_new_with_label(str);
-      gtk_widget_set_tooltip_text(smt, str);
+      gtk_widget_set_tooltip_markup(smt, str);
       GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
       gtk_label_set_use_markup(GTK_LABEL(child), TRUE);
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
