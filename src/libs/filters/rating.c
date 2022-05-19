@@ -58,7 +58,7 @@ static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
   dtgtk_range_select_add_range_block(range, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
                                      nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
   dtgtk_range_select_add_range_block(range, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
-  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("unstared only"), nb[1]);
+  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("not rated only"), nb[1]);
   dtgtk_range_select_add_range_block(range, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
   dtgtk_range_select_add_range_block(range, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
   dtgtk_range_select_add_range_block(range, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
@@ -73,7 +73,7 @@ static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
     dtgtk_range_select_add_range_block(rangetop, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
                                        nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
     dtgtk_range_select_add_range_block(rangetop, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
-    dtgtk_range_select_add_range_block(rangetop, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("unstared only"), nb[1]);
+    dtgtk_range_select_add_range_block(rangetop, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("not rated only"), nb[1]);
     dtgtk_range_select_add_range_block(rangetop, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
     dtgtk_range_select_add_range_block(rangetop, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
     dtgtk_range_select_add_range_block(rangetop, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
@@ -99,16 +99,6 @@ static gchar *_rating_print_func(const double value, const gboolean detailled)
         return g_strdup(_("rejected"));
       case 0:
         return g_strdup(_("not rated"));
-      case 1:
-        return g_strdup("★");
-      case 2:
-        return g_strdup("★ ★");
-      case 3:
-        return g_strdup("★ ★ ★");
-      case 4:
-        return g_strdup("★ ★ ★ ★");
-      case 5:
-        return g_strdup("★ ★ ★ ★ ★");
     }
   }
   return g_strdup_printf("%.0lf", floor(value));

@@ -1453,7 +1453,16 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     cairo_line_to(cr, posx_px, range->alloc_padding.height + range->alloc_padding.y);
     cairo_stroke(cr);
     gchar *txt = range->print(current_value_r, TRUE);
-    if(range->cur_window && range->cur_label) gtk_label_set_text(GTK_LABEL(range->cur_label), txt);
+
+    // custom tooltip for rating widget
+    if(range->min_r == -1) 
+      txt = g_strdup_printf("<b>%s: %s</b> (%s: %s)", 
+        _("selected"),
+        g_markup_escape_text(dtgtk_range_select_get_bounds_pretty(range), -1), 
+        _("hovered"),
+        g_markup_escape_text(txt, -1));
+
+    if(range->cur_window && range->cur_label) gtk_label_set_markup(GTK_LABEL(range->cur_label), txt);
     g_free(txt);
   }
 
@@ -1711,6 +1720,36 @@ gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
   if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all"));
 
   gchar *txt = NULL;
+  if((range->bounds & DT_RANGE_BOUND_MIN)) 
+    range->select_min_r = range->min_r;
+  if((range->bounds & DT_RANGE_BOUND_MAX)) 
+    range->select_max_r = range->max_r;
+    
+  if(range->select_min_r == range->select_max_r)
+    return range->print(range->select_min_r, TRUE);
+
+  // custom text for rating widget
+  if(range->min_r == -1)
+  {
+    int rating_min = (int)floor(range->select_min_r);
+    int rating_max = (int)floor(range->select_max_r);
+
+    if(rating_min == -1 && rating_max == 0)
+      return g_strdup_printf("%s + %s", _("rejected"), _("not rated"));
+
+    if(range->bounds & DT_RANGE_BOUND_MIN)
+      return g_strdup_printf("<= %s + %s", range->print(range->select_max_r, TRUE), _("rejected"));
+    else if(range->bounds & DT_RANGE_BOUND_MAX)
+    {
+      if(rating_min == 0)
+        return g_strdup(_("all except rejected"));
+      else
+        return g_strdup_printf(">= %s", range->print(range->select_min_r, TRUE));    
+    }
+    else if(rating_min == 0)
+      return g_strdup_printf("<= %s", range->print(range->select_max_r, TRUE));
+  }
+
   if(range->bounds & DT_RANGE_BOUND_MIN)
     txt = g_strdup(_("min"));
   else if(range->bounds & DT_RANGE_BOUND_MIN_RELATIVE)
