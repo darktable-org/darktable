@@ -817,7 +817,7 @@ dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
 
   if(profile_info == NULL || isnan(profile_info->matrix_in[0][0]) || isnan(profile_info->matrix_out[0][0]))
   {
-    fprintf(stderr, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear rec2020\n", type, filename);
+    fprintf(stderr, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear Rec2020\n", type, filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
   pipe->work_profile_info = profile_info;
@@ -839,7 +839,7 @@ dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
   {
     fprintf(stderr,
             "[dt_ioppr_set_pipe_input_profile_info] unsupported input profile %i %s, it will be replaced with "
-            "linear rec2020\n",
+            "linear Rec2020\n",
             type, filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
