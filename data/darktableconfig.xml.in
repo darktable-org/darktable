@@ -426,7 +426,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>prefer an history button in the collect module</shortdescription>
-    <longdescription>prefer to hide this module and acces history with a button in the collect module</longdescription>
+    <longdescription>prefer to hide this module and access history with a button in the collect module</longdescription>
   </dtconfig>
   <dtconfig dialog="collect">
     <name>plugins/lighttable/collect/history_max</name>
