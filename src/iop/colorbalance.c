@@ -57,8 +57,8 @@ DT_MODULE_INTROSPECTION(3, dt_iop_colorbalance_params_t)
 
 typedef enum dt_iop_colorbalance_mode_t
 {
-  LIFT_GAMMA_GAIN = 0,    // $DESCRIPTION: "lift, gamma, gain (ProPhotoRGB)"
-  SLOPE_OFFSET_POWER = 1, // $DESCRIPTION: "slope, offset, power (ProPhotoRGB)"
+  LIFT_GAMMA_GAIN = 0,    // $DESCRIPTION: "lift, gamma, gain (ProPhoto RGB)"
+  SLOPE_OFFSET_POWER = 1, // $DESCRIPTION: "slope, offset, power (ProPhoto RGB)"
   LEGACY = 2              // $DESCRIPTION: "lift, gamma, gain (sRGB)"
 } dt_iop_colorbalance_mode_t;
 
