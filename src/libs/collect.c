@@ -1292,6 +1292,14 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
       case DT_COLLECTION_PROP_DAY:
+        // clang-format off
+        query = g_strdup_printf("SELECT (datetime_taken / 86400000000) * 86400000000 AS date, 1, COUNT(*) AS count"
+                                " FROM main.images AS mi"
+                                " WHERE datetime_taken IS NOT NULL AND datetime_taken <> 0"
+                                " AND %s"
+                                " GROUP BY date", where_ext);
+        // clang-format on
+        break;
       case DT_COLLECTION_PROP_TIME:
       case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
       case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
@@ -1303,7 +1311,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
         switch(local_property)
         {
-          case DT_COLLECTION_PROP_DAY: colname = "datetime_taken" ; break ;
           case DT_COLLECTION_PROP_TIME: colname = "datetime_taken" ; break ;
           case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
           case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
