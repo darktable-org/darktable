@@ -54,6 +54,14 @@ static void _set_mask(dt_lib_filtering_rule_t *rule , const int mask, const gboo
 
 static gboolean _colors_clicked(GtkWidget *w, GdkEventButton *e, _widgets_colors_t *colors)
 {
+  // double click reset the widget
+  if(e->button == 1 && e->type == GDK_2BUTTON_PRESS)
+  {
+    _set_mask(colors->rule, CL_AND_MASK, TRUE);
+    _colors_update(colors->rule);
+    return TRUE;
+  }
+
   dt_lib_filtering_rule_t *rule = colors->rule;
   const int mask = _get_mask(rule->raw_text);
   const int k = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "colors_index"));
