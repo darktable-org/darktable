@@ -258,7 +258,7 @@ void init_presets(dt_lib_module_t *self)
   }
 
   // initial preset
-  CLEAR_PARAMS(_PRESET_ALL, DT_COLLECTION_PROP_RATING, DT_COLLECTION_SORT_DATETIME);
+  CLEAR_PARAMS(_PRESET_ALL, DT_COLLECTION_PROP_RATING_LEGACY, DT_COLLECTION_SORT_DATETIME);
   params.rules = 3;
   params.rule[0].topbar = 1;
   params.rule[1].item = DT_COLLECTION_PROP_COLORLABEL;

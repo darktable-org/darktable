@@ -480,7 +480,7 @@
   <dtconfig>
     <name>plugins/lighttable/filtering/item0</name>
     <type>int</type>
-    <default>32</default>
+    <default>34</default>
     <shortdescription>first filter</shortdescription>
     <longdescription></longdescription>
   </dtconfig>
