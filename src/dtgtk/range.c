@@ -230,6 +230,10 @@ static gboolean _default_decode_date_func(const gchar *text, double *value)
   }
   return FALSE;
 }
+static gchar *_default_current_text_func(GtkDarktableRangeSelect *range, const double current)
+{
+  return range->print(current, TRUE);
+}
 
 static void _date_tree_count_func(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model,
                                   GtkTreeIter *iter, gpointer data)
@@ -1452,16 +1456,7 @@ static gboolean _event_band_draw(GtkWidget *widget, cairo_t *cr, gpointer user_d
     cairo_move_to(cr, posx_px, range->alloc_padding.y);
     cairo_line_to(cr, posx_px, range->alloc_padding.height + range->alloc_padding.y);
     cairo_stroke(cr);
-    gchar *txt = range->print(current_value_r, TRUE);
-
-    // custom tooltip for rating widget
-    if(range->min_r == -1) 
-      txt = g_strdup_printf("<b>%s: %s</b> (%s: %s)", 
-        _("selected"),
-        g_markup_escape_text(dtgtk_range_select_get_bounds_pretty(range), -1), 
-        _("hovered"),
-        g_markup_escape_text(txt, -1));
-
+    gchar *txt = range->current_text(range, current_value_r);
     if(range->cur_window && range->cur_label) gtk_label_set_markup(GTK_LABEL(range->cur_label), txt);
     g_free(txt);
   }
@@ -1650,6 +1645,7 @@ GtkWidget *dtgtk_range_select_new(const gchar *property, const gboolean show_ent
   range->value_to_band = _default_value_translator;
   range->print = (type == DT_RANGE_TYPE_NUMERIC) ? _default_print_func : _default_print_date_func;
   range->decode = (type == DT_RANGE_TYPE_NUMERIC) ? _default_decode_func : _default_decode_date_func;
+  range->current_text = _default_current_text_func;
   range->show_entries = show_entries;
   range->type = type;
   range->alloc_main.width = 0;

@@ -104,6 +104,15 @@ static gchar *_rating_print_func(const double value, const gboolean detailled)
   return g_strdup_printf("%.0lf", floor(value));
 }
 
+static gchar *_rating_current_text_func(GtkDarktableRangeSelect *range, const double current)
+{
+  return g_strdup_printf("<b>%s: %s</b> (%s: %s)", 
+        _("selected"),
+        g_markup_escape_text(dtgtk_range_select_get_bounds_pretty(range), -1), 
+        _("hovered"),
+        g_markup_escape_text(range->print(current, TRUE), -1));
+}
+
 static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   // first, we set the color depending on the flags
@@ -257,6 +266,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   dtgtk_range_select_add_icon(range, 78, 4, _rating_paint_icon, 0, NULL);
   dtgtk_range_select_add_icon(range, 93, 5, _rating_paint_icon, 0, NULL);
   range->print = _rating_print_func;
+  range->current_text = _rating_current_text_func;
 
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
 
