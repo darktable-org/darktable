@@ -141,7 +141,7 @@ static gboolean _grouping_update(dt_lib_filtering_rule_t *rule)
   gchar *item = g_strdup_printf("%s (%d)", _("ungrouped images"), nb_no_group);
   dt_bauhaus_combobox_set_entry_label(grouping->combo, 1, item);
   g_free(item);
-  item = g_strdup_printf("%s (%d)", _("images in a group"), nb_group);
+  item = g_strdup_printf("%s (%d)", _("grouped images"), nb_group);
   dt_bauhaus_combobox_set_entry_label(grouping->combo, 2, item);
   g_free(item);
   item = g_strdup_printf("%s (%d)", _("group leaders"), nb_leader);
@@ -166,7 +166,7 @@ static void _grouping_widget_init(dt_lib_filtering_rule_t *rule, const dt_collec
 
   DT_BAUHAUS_COMBOBOX_NEW_FULL(grouping->combo, self, NULL, N_("grouping filter"),
                                _("select the type of grouped image to filter"), 0, (GtkCallback)_grouping_changed,
-                               grouping, N_("all images"), N_("ungrouped images"), N_("images in a group"),
+                               grouping, N_("all images"), N_("ungrouped images"), N_("grouped images"),
                                N_("group leaders"), N_("group followers"));
   DT_BAUHAUS_WIDGET(grouping->combo)->show_label = FALSE;
 
