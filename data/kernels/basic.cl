@@ -957,7 +957,7 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     }
 
     // Diffuse
-    const float4 multipliers_HF = { 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 0.f };
+    const float4 multipliers_HF = { 0.5f, 0.5f, 0.5f, 0.f };
     high_frequency += alpha * multipliers_HF * laplacian_HF;
   }
 
