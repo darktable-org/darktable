@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-19 00:05-0500\n"
-"PO-Revision-Date: 2022-05-19 00:26-0500\n"
+"POT-Creation-Date: 2022-05-20 01:45-0500\n"
+"PO-Revision-Date: 2022-05-20 20:34-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -89,7 +89,7 @@ msgstr "Una vez al día"
 #: ../build/bin/preferences_gen.h:4454 ../build/bin/preferences_gen.h:6345
 msgctxt "preferences"
 msgid "small"
-msgstr "Pequeño"
+msgstr "Reducido"
 
 #: ../build/bin/conf_gen.h:287 ../build/bin/conf_gen.h:393
 #: ../build/bin/preferences_gen.h:6350 ../build/bin/preferences_gen.h:6379
@@ -99,15 +99,14 @@ msgid "default"
 msgstr "Por defecto"
 
 #: ../build/bin/conf_gen.h:288 ../build/bin/preferences_gen.h:6355
-#, fuzzy
 msgctxt "preferences"
 msgid "large"
-msgstr "objetivo"
+msgstr "Extenso"
 
 #: ../build/bin/conf_gen.h:289 ../build/bin/preferences_gen.h:6360
 msgctxt "preferences"
 msgid "unrestricted"
-msgstr ""
+msgstr "irresctricto"
 
 #: ../build/bin/conf_gen.h:347 ../build/bin/preferences_gen.h:7547
 msgctxt "preferences"
@@ -159,27 +158,24 @@ msgstr "GPU muy rápido"
 
 #: ../build/bin/conf_gen.h:403 ../build/bin/preferences_gen.h:6636
 #: ../build/bin/preferences_gen.h:6670
-#, fuzzy
 msgctxt "preferences"
 msgid "nothing"
-msgstr "Nada para guardar"
+msgstr "ninguno"
 
 #: ../build/bin/conf_gen.h:404 ../build/bin/preferences_gen.h:6641
-#, fuzzy
 msgctxt "preferences"
 msgid "memory size"
-msgstr "formato de papel"
+msgstr "tamaño de memoria"
 
 #: ../build/bin/conf_gen.h:405 ../build/bin/preferences_gen.h:6646
-#, fuzzy
 msgctxt "preferences"
 msgid "memory transfer"
-msgstr "transferencia de color"
+msgstr "transferencia de memoria"
 
 #: ../build/bin/conf_gen.h:406 ../build/bin/preferences_gen.h:6651
 msgctxt "preferences"
 msgid "memory size and transfer"
-msgstr ""
+msgstr "tamaño y trasnferencia de memoria"
 
 #: ../build/bin/conf_gen.h:414
 msgctxt "preferences"
@@ -2073,7 +2069,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8031
 msgid "order or exclude midi devices"
-msgstr ""
+msgstr "Ordenar o excluir dispositivos MIDI"
 
 #: ../build/bin/preferences_gen.h:8049
 msgid ""
@@ -2335,10 +2331,11 @@ msgid "prefer an history button in the collect module"
 msgstr "puede hacerse con el módulo importar"
 
 #: ../build/bin/preferences_gen.h:9062
+#, fuzzy
 msgid ""
-"prefer to hide this module and acces history with a button in the collect "
+"prefer to hide this module and access history with a button in the collect "
 "module"
-msgstr ""
+msgstr "puede hacerse con el módulo importar"
 
 #: ../build/bin/preferences_gen.h:9116
 msgid "suggested tags level of confidence"
@@ -2481,7 +2478,7 @@ msgstr "preservar los colores"
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2082
 #: ../src/iop/channelmixerrgb.c:4227 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2111 ../src/iop/clipping.c:2126
-#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1818
+#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1909
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1036
 #: ../src/libs/filters/module_order.c:158 ../src/libs/live_view.c:311
 #: ../src/libs/print_settings.c:2668
@@ -2762,7 +2759,7 @@ msgstr "aberración cromática muy acentuada"
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4179 ../src/iop/colorzones.c:2302
 #: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1992
-#: ../src/libs/collect.c:1702 ../src/libs/filters/colors.c:350
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:350
 msgid "red"
 msgstr "rojo"
 
@@ -2774,7 +2771,7 @@ msgstr "rojo"
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4180 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
-#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1702
+#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1793
 #: ../src/libs/filters/colors.c:352
 msgid "green"
 msgstr "verde"
@@ -2787,7 +2784,7 @@ msgstr "verde"
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2307
 #: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1994
-#: ../src/libs/collect.c:1702 ../src/libs/filters/colors.c:353
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:353
 msgid "blue"
 msgstr "azul"
 
@@ -3075,11 +3072,13 @@ msgid "output saturation"
 msgstr "saturación de salida"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:229
-msgid "lift, gamma, gain (ProPhotoRGB)"
+#, fuzzy
+msgid "lift, gamma, gain (ProPhoto RGB)"
 msgstr "realce, gamma, incremento (ProPhotoRGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:230
-msgid "slope, offset, power (ProPhotoRGB)"
+#, fuzzy
+msgid "slope, offset, power (ProPhoto RGB)"
 msgstr "pendiente, translación, potencia (ProPhotoRGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:231
@@ -3292,11 +3291,13 @@ msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
+#: ../build/lib/darktable/plugins/introspection_lut3d.c:204
 #: ../src/common/colorspaces.c:1436 ../src/common/colorspaces.c:1659
 msgid "linear Rec709 RGB"
 msgstr "RGB lineal Rec709"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
+#: ../build/lib/darktable/plugins/introspection_lut3d.c:205
 #: ../src/common/colorspaces.c:1445 ../src/common/colorspaces.c:1661
 msgid "linear Rec2020 RGB"
 msgstr "RGB lineal Rec2020"
@@ -3558,7 +3559,7 @@ msgstr "Markesteijn 3 pasadas + VNG"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1448 ../src/libs/collect.c:1656
+#: ../src/common/collection.c:1448 ../src/libs/collect.c:1747
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "básico"
@@ -4108,7 +4109,7 @@ msgstr "1024 px (muy lento)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:274
 msgid "2048 px (insanely slow)"
-msgstr ""
+msgstr "2048 px (exageradamente lento)"
 
 #: ../build/lib/darktable/plugins/introspection_highpass.c:44
 #: ../build/lib/darktable/plugins/introspection_highpass.c:91
@@ -4228,16 +4229,9 @@ msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:203
-msgid "gamma rec709 RGB"
+#, fuzzy
+msgid "gamma Rec709 RGB"
 msgstr "RGB gamma Rec709"
-
-#: ../build/lib/darktable/plugins/introspection_lut3d.c:204
-msgid "linear rec709 RGB"
-msgstr "RGB lineal Rec709"
-
-#: ../build/lib/darktable/plugins/introspection_lut3d.c:205
-msgid "linear rec2020 RGB"
-msgstr "RGB lineal Rec2020"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:209
 msgid "tetrahedral"
@@ -4820,7 +4814,7 @@ msgstr "Lista deplegable"
 #: ../src/gui/presets.c:476 ../src/gui/styles_dialog.c:420
 #: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1557
-#: ../src/libs/collect.c:396 ../src/libs/copy_history.c:107
+#: ../src/libs/collect.c:406 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
 #: ../src/libs/tagging.c:2471 ../src/libs/tagging.c:2507
@@ -5120,7 +5114,7 @@ msgstr "etiqueta"
 msgid "capture date"
 msgstr "fecha de captura"
 
-#: ../src/common/collection.c:677 ../src/libs/collect.c:3225
+#: ../src/common/collection.c:677 ../src/libs/collect.c:3313
 #: ../src/libs/filtering.c:1974 ../src/libs/filtering.c:1994
 #: ../src/libs/history.c:85
 msgid "history"
@@ -5177,34 +5171,34 @@ msgstr "Buscar"
 #: ../src/common/collection.c:1431 ../src/common/colorlabels.c:330
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2304 ../src/iop/temperature.c:1809
-#: ../src/libs/collect.c:1702 ../src/libs/filters/colors.c:351
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:351
 msgid "yellow"
 msgstr "amarillo"
 
 #: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:337
 #: ../src/common/colorlabels.c:333 ../src/iop/colorzones.c:2308
-#: ../src/libs/collect.c:1702 ../src/libs/filters/colors.c:354
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:354
 msgid "purple"
 msgstr "púrpura"
 
-#: ../src/common/collection.c:1454 ../src/libs/collect.c:1656
+#: ../src/common/collection.c:1454 ../src/libs/collect.c:1747
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "aplicado automático"
 
-#: ../src/common/collection.c:1458 ../src/libs/collect.c:1656
+#: ../src/common/collection.c:1458 ../src/libs/collect.c:1747
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "alterado"
 
 #: ../src/common/collection.c:1475 ../src/common/collection.c:1571
-#: ../src/libs/collect.c:1127 ../src/libs/collect.c:1266
-#: ../src/libs/collect.c:1290 ../src/libs/collect.c:1402
-#: ../src/libs/collect.c:2417
+#: ../src/libs/collect.c:1182 ../src/libs/collect.c:1321
+#: ../src/libs/collect.c:1345 ../src/libs/collect.c:1464
+#: ../src/libs/collect.c:2505
 msgid "not tagged"
 msgstr "sin etiquetar"
 
-#: ../src/common/collection.c:1476 ../src/libs/collect.c:1290
+#: ../src/common/collection.c:1476 ../src/libs/collect.c:1345
 #: ../src/libs/map_locations.c:765
 msgid "tagged"
 msgstr "etiquetado"
@@ -5214,36 +5208,36 @@ msgid "tagged*"
 msgstr "etiquetado*"
 
 #. local copy
-#: ../src/common/collection.c:1510 ../src/libs/collect.c:1670
+#: ../src/common/collection.c:1510 ../src/libs/collect.c:1761
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "sin copia local"
 
-#: ../src/common/collection.c:1514 ../src/libs/collect.c:1670
+#: ../src/common/collection.c:1514 ../src/libs/collect.c:1761
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "copiar localmente"
 
-#: ../src/common/collection.c:1889 ../src/libs/collect.c:1790
+#: ../src/common/collection.c:1889 ../src/libs/collect.c:1881
 #: ../src/libs/filters/grouping.c:147 ../src/libs/filters/grouping.c:170
 msgid "group leaders"
 msgstr "portadas de grupo"
 
-#: ../src/common/collection.c:1893 ../src/libs/collect.c:1790
+#: ../src/common/collection.c:1893 ../src/libs/collect.c:1881
 #: ../src/libs/filters/grouping.c:150 ../src/libs/filters/grouping.c:170
 msgid "group followers"
 msgstr "seguidores de grupo"
 
-#: ../src/common/collection.c:2031 ../src/libs/collect.c:1870
+#: ../src/common/collection.c:2033 ../src/libs/collect.c:1961
 msgid "not defined"
 msgstr "sin definir"
 
-#: ../src/common/collection.c:2439
+#: ../src/common/collection.c:2441
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "%d imagen seleccionada de %d (#%d) de la colección actual"
 
-#: ../src/common/collection.c:2445
+#: ../src/common/collection.c:2447
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -5300,11 +5294,11 @@ msgstr "líneas"
 
 #: ../src/common/color_vocabulary.c:92
 msgid "Thai"
-msgstr ""
+msgstr "tailandesa"
 
 #: ../src/common/color_vocabulary.c:93
 msgid "Kurdish"
-msgstr ""
+msgstr "kurda"
 
 #: ../src/common/color_vocabulary.c:94
 #, fuzzy
@@ -5313,24 +5307,24 @@ msgstr "gaussiano"
 
 #: ../src/common/color_vocabulary.c:95
 msgid "African-american"
-msgstr "Afroamericana"
+msgstr "afroamericana"
 
 #: ../src/common/color_vocabulary.c:98 ../src/common/color_vocabulary.c:103
 #: ../src/common/color_vocabulary.c:108 ../src/common/color_vocabulary.c:113
 msgid "forearm"
-msgstr ""
+msgstr "antebrazo"
 
 #: ../src/common/color_vocabulary.c:118 ../src/common/color_vocabulary.c:123
 #: ../src/common/color_vocabulary.c:128 ../src/common/color_vocabulary.c:133
 #: ../src/common/color_vocabulary.c:138 ../src/common/color_vocabulary.c:143
 msgid "forehead"
-msgstr ""
+msgstr "frente"
 
 #: ../src/common/color_vocabulary.c:148 ../src/common/color_vocabulary.c:153
 #: ../src/common/color_vocabulary.c:158 ../src/common/color_vocabulary.c:163
 #: ../src/common/color_vocabulary.c:168 ../src/common/color_vocabulary.c:173
 msgid "cheek"
-msgstr ""
+msgstr "mejilla"
 
 #: ../src/common/color_vocabulary.c:200
 #, fuzzy, c-format
@@ -5346,7 +5340,7 @@ msgstr "púrpura"
 #. L = 10 %
 #: ../src/common/color_vocabulary.c:221
 msgid "fuchsia"
-msgstr ""
+msgstr "fucsia"
 
 #. L = 30 %
 #: ../src/common/color_vocabulary.c:222
@@ -5357,12 +5351,12 @@ msgstr "magenta"
 #. L = 50 %
 #: ../src/common/color_vocabulary.c:223
 msgid "violet pink"
-msgstr ""
+msgstr "rosa violáceo"
 
 #. L = 70 %
 #: ../src/common/color_vocabulary.c:224
 msgid "plum violet"
-msgstr ""
+msgstr "violeta ciruela"
 
 #. 24° - red
 #: ../src/common/color_vocabulary.c:229
@@ -5372,20 +5366,20 @@ msgstr "oscurecer"
 
 #: ../src/common/color_vocabulary.c:231
 msgid "crimson"
-msgstr ""
+msgstr "carmesí"
 
 #: ../src/common/color_vocabulary.c:232
 msgid "salmon"
-msgstr ""
+msgstr "salmón"
 
 #: ../src/common/color_vocabulary.c:233
 msgid "pink"
-msgstr ""
+msgstr "rosa"
 
 #. 48° - orangy red
 #: ../src/common/color_vocabulary.c:238
 msgid "maroon"
-msgstr ""
+msgstr "granate"
 
 #: ../src/common/color_vocabulary.c:239
 #, fuzzy
@@ -5399,11 +5393,11 @@ msgstr "naranja"
 
 #: ../src/common/color_vocabulary.c:241
 msgid "coral"
-msgstr ""
+msgstr "coral"
 
 #: ../src/common/color_vocabulary.c:242 ../src/common/color_vocabulary.c:259
 msgid "khaki"
-msgstr ""
+msgstr "caqui"
 
 #. 72° - orange
 #: ../src/common/color_vocabulary.c:247
@@ -5586,11 +5580,11 @@ msgstr "levantar azules"
 
 #: ../src/common/color_vocabulary.c:332 ../src/common/color_vocabulary.c:340
 msgid "violet"
-msgstr ""
+msgstr "violeta"
 
 #: ../src/common/color_vocabulary.c:333
 msgid "plum"
-msgstr ""
+msgstr "ciruela"
 
 #: ../src/common/color_vocabulary.c:338
 #, fuzzy
@@ -5604,7 +5598,7 @@ msgstr "magenta"
 
 #: ../src/common/color_vocabulary.c:341
 msgid "lavender"
-msgstr ""
+msgstr "lavanda"
 
 #: ../src/common/color_vocabulary.c:344
 #, fuzzy
@@ -5826,6 +5820,8 @@ msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
 msgstr ""
+"La interfaz de usuario y los elementos internos relacionados para ajustar el "
+"rendimiento de darktable han cambiado."
 
 #: ../src/common/darktable.c:1739
 msgid ""
@@ -5928,7 +5924,7 @@ msgstr ""
 msgid "error starting darktable"
 msgstr "Error al iniciar darktable"
 
-#: ../src/common/database.c:2744 ../src/libs/collect.c:2923
+#: ../src/common/database.c:2744 ../src/libs/collect.c:3011
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
@@ -6399,7 +6395,7 @@ msgstr "ImageMagick"
 
 #: ../src/common/image.h:182
 msgid "heif"
-msgstr ""
+msgstr "HEIF"
 
 #: ../src/common/image.h:183
 msgid "libraw"
@@ -8987,7 +8983,7 @@ msgstr ""
 #: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2916
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
-#: ../src/libs/collect.c:3069 ../src/libs/filtering.c:1412
+#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1412
 #: ../src/libs/filters/colors.c:237 ../src/libs/filters/colors.c:355
 #: ../src/libs/filters/rating_legacy.c:211
 msgid "all"
@@ -10186,7 +10182,7 @@ msgstr "$(HOUR) → hora"
 
 #: ../src/gui/gtkentry.c:198
 msgid "$(HOUR.AMPM) - hour, 12-hour clock"
-msgstr ""
+msgstr "$(HOUR.AMPM) → formato de 12 horas"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(MINUTE) - minute"
@@ -10202,7 +10198,7 @@ msgstr "$(MSEC) → milisegundo"
 
 #: ../src/gui/gtkentry.c:202
 msgid "$(EXIF.YEAR) - EXIF year"
-msgstr "$(EXIF.YEAR) - EXIF year"
+msgstr "$(EXIF.YEAR) → año EXIF"
 
 #: ../src/gui/gtkentry.c:203
 #, fuzzy
@@ -10715,7 +10711,7 @@ msgstr "No se pudo importar el preajuste %s"
 msgid "select preset(s) to import"
 msgstr "Seleccionar preajuste(s) para importar"
 
-#: ../src/gui/preferences.c:997 ../src/libs/collect.c:396
+#: ../src/gui/preferences.c:997 ../src/libs/collect.c:406
 #: ../src/libs/copy_history.c:107 ../src/libs/geotagging.c:930
 #: ../src/libs/import.c:1497 ../src/libs/import.c:1601 ../src/libs/styles.c:512
 msgid "_open"
@@ -19615,36 +19611,36 @@ msgstr "velocidad de disparo"
 msgid "WB"
 msgstr "Balance de blancos"
 
-#: ../src/libs/collect.c:138
+#: ../src/libs/collect.c:148
 msgid "collections"
 msgstr "colección"
 
-#: ../src/libs/collect.c:395
+#: ../src/libs/collect.c:405
 msgid "search filmroll"
 msgstr "buscar sesión"
 
-#: ../src/libs/collect.c:478
+#: ../src/libs/collect.c:488
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "problema seleccionando una nueva ruta para la sesión en %s"
 
-#: ../src/libs/collect.c:541
+#: ../src/libs/collect.c:551
 msgid "search filmroll..."
 msgstr "buscar sesión..."
 
-#: ../src/libs/collect.c:545
+#: ../src/libs/collect.c:555
 msgid "remove..."
 msgstr "eliminar..."
 
-#: ../src/libs/collect.c:1161
+#: ../src/libs/collect.c:1216
 msgid "uncategorized"
 msgstr "sin categoría"
 
-#: ../src/libs/collect.c:2049
+#: ../src/libs/collect.c:2140
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "Utilice <, <=, >, >=, <>, =, [;] como operadores"
 
-#: ../src/libs/collect.c:2053
+#: ../src/libs/collect.c:2144
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
@@ -19654,7 +19650,7 @@ msgstr ""
 "Para puntuar imágenes: 0-5\n"
 "Para rechazar imágenes: -1"
 
-#: ../src/libs/collect.c:2060
+#: ../src/libs/collect.c:2151
 #, fuzzy
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
@@ -19663,12 +19659,12 @@ msgstr ""
 "Utilice <, <=, >, >=, <>, =, [;] como operadores y\n"
 "los formatos de fecha como : YYYY:MM:DD HH:MM:SS (solo el año es obligatorio)"
 
-#: ../src/libs/collect.c:2067
+#: ../src/libs/collect.c:2158
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "Use '%' como comodín y ',' para separar los valores"
 
-#: ../src/libs/collect.c:2073
+#: ../src/libs/collect.c:2164
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19681,7 +19677,7 @@ msgstr ""
 "Use Mayús+Clic para incluir solamente la jerarquía actual (sin sufijo).\n"
 "Use Ctrl+Clic para incluir solamente las subjerarquías (sufijo '|%')."
 
-#: ../src/libs/collect.c:2085
+#: ../src/libs/collect.c:2176
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19694,7 +19690,7 @@ msgstr ""
 "Use Mayús+Clic para incluir solamente la ubicación actual (sin sufijo).\n"
 "Use Ctrl+Clic para incluir solamente las subregiones (sufijo '|%')."
 
-#: ../src/libs/collect.c:2097
+#: ../src/libs/collect.c:2188
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19707,77 +19703,77 @@ msgstr ""
 "Use Mayús+Clic para incluir solamente la carpeta actual (sin sufijo).\n"
 "Use Ctrl+Clic para incluir solamente las subcarpetas (sufijo '|%')."
 
-#: ../src/libs/collect.c:2108
+#: ../src/libs/collect.c:2199
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "Use '%' como comodín"
 
-#: ../src/libs/collect.c:2167 ../src/libs/collect.c:2181
-#: ../src/libs/collect.c:2808
+#: ../src/libs/collect.c:2258 ../src/libs/collect.c:2272
+#: ../src/libs/collect.c:2896
 msgid "clear this rule"
 msgstr "Eliminar esta regla"
 
-#: ../src/libs/collect.c:2171
+#: ../src/libs/collect.c:2262
 msgid "clear this rule or add new rules"
 msgstr "Eliminar esta regla o añadir nuevas reglas"
 
-#: ../src/libs/collect.c:2814
+#: ../src/libs/collect.c:2902
 msgid "narrow down search"
 msgstr "reducir la búsqueda"
 
-#: ../src/libs/collect.c:2819
+#: ../src/libs/collect.c:2907
 msgid "add more images"
 msgstr "añadir más imágenes"
 
-#: ../src/libs/collect.c:2824
+#: ../src/libs/collect.c:2912
 msgid "exclude images"
 msgstr "excluir imágenes"
 
-#: ../src/libs/collect.c:2831
+#: ../src/libs/collect.c:2919
 msgid "change to: and"
 msgstr "cambiar a: y"
 
-#: ../src/libs/collect.c:2836
+#: ../src/libs/collect.c:2924
 msgid "change to: or"
 msgstr "cambiar a: o"
 
-#: ../src/libs/collect.c:2841
+#: ../src/libs/collect.c:2929
 msgid "change to: except"
 msgstr "cambiar a: excepto"
 
 #. the differents categories
-#: ../src/libs/collect.c:2867 ../src/libs/filtering.c:842
+#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:842
 #: ../src/libs/filtering.c:924
 msgid "files"
 msgstr "archivos"
 
-#: ../src/libs/collect.c:2872 ../src/libs/export_metadata.c:310
+#: ../src/libs/collect.c:2960 ../src/libs/export_metadata.c:310
 #: ../src/libs/filtering.c:847 ../src/libs/filtering.c:929
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:538 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "metadatos"
 
-#: ../src/libs/collect.c:2891 ../src/libs/filtering.c:868
+#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:868
 #: ../src/libs/filtering.c:950
 msgid "times"
 msgstr "periodos"
 
-#: ../src/libs/collect.c:2899 ../src/libs/filtering.c:876
+#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:876
 #: ../src/libs/filtering.c:958
 msgid "capture details"
 msgstr "detalles de la captura"
 
-#: ../src/libs/collect.c:2908 ../src/libs/filtering.c:885
+#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:885
 #: ../src/libs/filtering.c:967 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2921
+#: ../src/libs/collect.c:3009
 msgid "collections settings"
 msgstr "Parámetros de las colecciones"
 
-#: ../src/libs/collect.c:2924 ../src/libs/export_metadata.c:288
+#: ../src/libs/collect.c:3012 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1635
 #: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
@@ -19785,31 +19781,31 @@ msgstr "Parámetros de las colecciones"
 msgid "save"
 msgstr "guardar"
 
-#: ../src/libs/collect.c:2944 ../src/libs/export.c:1059
+#: ../src/libs/collect.c:3032 ../src/libs/export.c:1059
 #: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1298
 #: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3483
 msgid "preferences..."
 msgstr "preferencias"
 
-#: ../src/libs/collect.c:3044 ../src/libs/filtering.c:1385
+#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1385
 msgid "AND"
 msgstr ""
 
-#: ../src/libs/collect.c:3049 ../src/libs/filtering.c:1390
+#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1390
 #, fuzzy
 msgid "OR"
 msgstr "R"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3054 ../src/libs/filtering.c:1395
+#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1395
 msgid "BUT NOT"
 msgstr ""
 
-#: ../src/libs/collect.c:3226 ../src/libs/filtering.c:1975
+#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1975
 msgid "revert to a previous set of rules"
 msgstr ""
 
-#: ../src/libs/collect.c:3283
+#: ../src/libs/collect.c:3371
 #, fuzzy
 msgid "jump back to previous collection"
 msgstr "retroceder a la colección anterior"
@@ -24519,6 +24515,12 @@ msgstr ""
 #: ../src/views/view.c:1343
 msgid "mouse actions"
 msgstr "acciones con el ratón"
+
+#~ msgid "linear rec709 RGB"
+#~ msgstr "RGB lineal Rec709"
+
+#~ msgid "linear rec2020 RGB"
+#~ msgstr "RGB lineal Rec2020"
 
 #~ msgid "switch dual threshold"
 #~ msgstr "activar doble umbral"
