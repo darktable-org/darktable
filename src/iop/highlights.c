@@ -1355,7 +1355,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
 
         // fetch non-local pixels and store them locally and contiguously
         dt_aligned_pixel_t neighbour_pixel_HF[9];
-        for_four_channels(c, aligned(neighbour_pixel_HF, HF: 64))
+        for_four_channels(c, aligned(neighbour_pixel_HF, HF: 16))
         {
           neighbour_pixel_HF[3 * 0 + 0][c] = HF[4 * (i_neighbours[0] + j_neighbours[0]) + c];
           neighbour_pixel_HF[3 * 0 + 1][c] = HF[4 * (i_neighbours[0] + j_neighbours[1]) + c];
@@ -1371,13 +1371,13 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         }
 
         // Compute the laplacian in the direction parallel to the steepest gradient on the norm
-        float anisotropic_kernel_isophote[9] = { 0.25f, 0.5f, 0.25f, 0.5f, -3.f, 0.5f, 0.25f, 0.5f, 0.25f };
+        float DT_ALIGNED_ARRAY anisotropic_kernel_isophote[9] = { 0.25f, 0.5f, 0.25f, 0.5f, -3.f, 0.5f, 0.25f, 0.5f, 0.25f };
 
         // Convolve the filter to get the laplacian
         dt_aligned_pixel_t laplacian_HF = { 0.f, 0.f, 0.f, 0.f };
         for(int k = 0; k < 9; k++)
         {
-          for_each_channel(c, aligned(laplacian_HF, neighbour_pixel_HF, anisotropic_kernel_isophote: 64))
+          for_each_channel(c, aligned(laplacian_HF, neighbour_pixel_HF:16) aligned(anisotropic_kernel_isophote: 64))
             laplacian_HF[c] += neighbour_pixel_HF[k][c] * anisotropic_kernel_isophote[k];
         }
 
@@ -1471,7 +1471,7 @@ static inline gint wavelets_process(const float *const restrict in, float
     decompose_2D_Bspline(buffer_in, HF, buffer_out, width, height, mult, tempbuf, padded_size);
 
     uint8_t current_scale_type = scale_type(s, scales);
-    const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
+    const float radius = (equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
 
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
       guide_laplacians(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, noise_level, salt, current_scale_type, radius);
@@ -1632,7 +1632,7 @@ static inline cl_int wavelets_process_cl(const int devid,
     if(err != CL_SUCCESS) return err;
 
     uint8_t current_scale_type = scale_type(s, scales);
-    const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
+    const float radius = (equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
 
     // Compute wavelets low-frequency scales
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
