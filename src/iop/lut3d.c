@@ -55,9 +55,9 @@ typedef enum dt_iop_lut3d_colorspace_t
 {
   DT_IOP_SRGB = 0,    // $DESCRIPTION: "sRGB"
   DT_IOP_ARGB,        // $DESCRIPTION: "Adobe RGB"
-  DT_IOP_REC709,      // $DESCRIPTION: "gamma rec709 RGB"
-  DT_IOP_LIN_REC709,  // $DESCRIPTION: "linear rec709 RGB"
-  DT_IOP_LIN_REC2020, // $DESCRIPTION: "linear rec2020 RGB"
+  DT_IOP_REC709,      // $DESCRIPTION: "gamma Rec709 RGB"
+  DT_IOP_LIN_REC709,  // $DESCRIPTION: "linear Rec709 RGB"
+  DT_IOP_LIN_REC2020, // $DESCRIPTION: "linear Rec2020 RGB"
 } dt_iop_lut3d_colorspace_t;
 
 typedef enum dt_iop_lut3d_interpolation_t

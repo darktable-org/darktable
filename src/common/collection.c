@@ -1378,12 +1378,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // clang-format on
       else
       {
-        // test the "integer" case (used by filters)
-        const int val = atoi(escaped_text);
-        if(val != 0 || !g_strcmp0(escaped_text, "0"))
+        // test the "mask" case (used by filters)
+        if(g_str_has_prefix(text, "0x"))
         {
-          const int colors_set = val & 0xFF;
-          const int colors_unset = (val & 0xFF00) >> 8;
+          const int val = strtol(&escaped_text[2], NULL, 16);
+          const int colors_set = val & 0xFFF;
+          const int colors_unset = (val & 0xFFF000) >> 12;
           const gboolean op = val & 0x80000000;
           if(op) // AND
           {
@@ -1849,7 +1849,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         if(number1 && number2)
           query = g_strdup_printf("((%s >= %" G_GINT64_FORMAT ") AND (%s <= %" G_GINT64_FORMAT "))", colname, nb1, colname, nb2);
       }
-      else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
+      else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1 && number2)
         query = g_strdup_printf("((%s >= %" G_GINT64_FORMAT ") AND (%s <= %" G_GINT64_FORMAT "))", colname, nb1, colname, nb2);
       else if(strcmp(operator, "<>") == 0 && number1 && number2)
         query = g_strdup_printf("((%s < %" G_GINT64_FORMAT ") AND (%s > %" G_GINT64_FORMAT "))", colname, nb1, colname, nb2);
@@ -1938,14 +1938,16 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       case DT_COLLECTION_PROP_TEXTSEARCH: // text search
       {
         // clang-format off
-        query = g_strdup_printf("(id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
-                                " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
-                                "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
-                                " UNION SELECT id FROM main.images"
-                                "   WHERE filename LIKE '%s'"
-                                " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
-                                "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
-                                escaped_text, escaped_text, escaped_text, escaped_text, escaped_text);
+        if(g_strcmp0(escaped_text, "%%") != 0)
+          query = g_strdup_printf
+            ("(id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
+             " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
+             "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
+             " UNION SELECT id FROM main.images"
+             "   WHERE filename LIKE '%s'"
+             " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
+             "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
+             escaped_text, escaped_text, escaped_text, escaped_text, escaped_text);
         // clang-format on
       }
       break;
