@@ -207,7 +207,7 @@ static _filter_t filters[]
     = { { DT_COLLECTION_PROP_COLORLABEL, _colors_widget_init, _colors_update },
         { DT_COLLECTION_PROP_FILENAME, _filename_widget_init, _filename_update },
         { DT_COLLECTION_PROP_TEXTSEARCH, _search_widget_init, _search_update },
-        { DT_COLLECTION_PROP_TIME, _date_widget_init, _date_update },
+        { DT_COLLECTION_PROP_DAY, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_CHANGE_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_EXPORT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
