@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-19 19:21+0200\n"
+"POT-Creation-Date: 2022-05-21 20:29+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2487,7 +2487,7 @@ msgstr ""
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4179 ../src/iop/colorzones.c:2302
 #: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1992
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:350
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:260
 msgid "red"
 msgstr ""
 
@@ -2500,7 +2500,7 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:4180 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
 #: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1793
-#: ../src/libs/filters/colors.c:352
+#: ../src/libs/filters/colors.c:262
 msgid "green"
 msgstr ""
 
@@ -2512,7 +2512,7 @@ msgstr ""
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2307
 #: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1994
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:353
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:263
 msgid "blue"
 msgstr ""
 
@@ -4739,8 +4739,8 @@ msgstr ""
 
 #: ../src/common/collection.c:626 ../src/common/collection.c:679
 #: ../src/common/colorlabels.c:337 ../src/develop/lightroom.c:1550
-#: ../src/dtgtk/thumbnail.c:1384 ../src/libs/filters/colors.c:391
-#: ../src/libs/filters/colors.c:403 ../src/libs/tools/colorlabels.c:94
+#: ../src/dtgtk/thumbnail.c:1384 ../src/libs/filters/colors.c:301
+#: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:94
 msgid "color label"
 msgstr ""
 
@@ -4848,13 +4848,13 @@ msgstr ""
 #: ../src/common/collection.c:1431 ../src/common/colorlabels.c:330
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2304 ../src/iop/temperature.c:1809
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:351
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr ""
 
 #: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:337
 #: ../src/common/colorlabels.c:333 ../src/iop/colorzones.c:2308
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:354
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr ""
 
@@ -7290,7 +7290,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:1987 ../src/develop/blend_gui.c:2014
 #: ../src/iop/channelmixerrgb.c:4179 ../src/iop/denoiseprofile.c:3582
 #: ../src/iop/rawdenoise.c:905 ../src/iop/rgbcurve.c:1369
-#: ../src/iop/rgblevels.c:1013 ../src/libs/filters/colors.c:217
+#: ../src/iop/rgblevels.c:1013 ../src/libs/filters/colors.c:137
 msgid "R"
 msgstr ""
 
@@ -7301,7 +7301,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:1990 ../src/develop/blend_gui.c:2017
 #: ../src/iop/channelmixerrgb.c:4180 ../src/iop/denoiseprofile.c:3583
 #: ../src/iop/rawdenoise.c:906 ../src/iop/rgbcurve.c:1370
-#: ../src/iop/rgblevels.c:1014 ../src/libs/filters/colors.c:223
+#: ../src/iop/rgblevels.c:1014 ../src/libs/filters/colors.c:143
 msgid "G"
 msgstr ""
 
@@ -7312,7 +7312,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:1993 ../src/develop/blend_gui.c:2020
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/denoiseprofile.c:3584
 #: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1371
-#: ../src/iop/rgblevels.c:1015 ../src/libs/filters/colors.c:226
+#: ../src/iop/rgblevels.c:1015 ../src/libs/filters/colors.c:146
 msgid "B"
 msgstr ""
 
@@ -8384,7 +8384,7 @@ msgstr ""
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
 #: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1412
-#: ../src/libs/filters/colors.c:237 ../src/libs/filters/colors.c:355
+#: ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
 #: ../src/libs/filters/rating_legacy.c:211
 msgid "all"
 msgstr ""
@@ -8408,7 +8408,8 @@ msgid ""
 msgstr ""
 
 #. and the number of grouped images
-#: ../src/dtgtk/thumbnail.c:130
+#: ../src/dtgtk/thumbnail.c:130 ../src/libs/filters/grouping.c:144
+#: ../src/libs/filters/grouping.c:169
 msgid "grouped images"
 msgstr ""
 
@@ -15197,7 +15198,7 @@ msgstr ""
 msgid "this module is deprecated. please use the filmic rgb module instead."
 msgstr ""
 
-#: ../src/iop/globaltonemap.c:637 ../src/libs/filters/colors.c:349
+#: ../src/iop/globaltonemap.c:637 ../src/libs/filters/colors.c:259
 msgid "operator"
 msgstr ""
 
@@ -18734,19 +18735,19 @@ msgid ""
 "ctrl-click to remove pinned rules too"
 msgstr ""
 
-#: ../src/libs/filters/colors.c:220
+#: ../src/libs/filters/colors.c:140
 msgid "Y"
 msgstr ""
 
-#: ../src/libs/filters/colors.c:229
+#: ../src/libs/filters/colors.c:149
 msgid "P"
 msgstr ""
 
-#: ../src/libs/filters/colors.c:359
+#: ../src/libs/filters/colors.c:269
 msgid "color filter"
 msgstr ""
 
-#: ../src/libs/filters/colors.c:383
+#: ../src/libs/filters/colors.c:294
 msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
@@ -18754,12 +18755,12 @@ msgid ""
 "the gray button affects all color labels"
 msgstr ""
 
-#: ../src/libs/filters/colors.c:391 ../src/libs/filters/colors.c:403
+#: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
 #: ../src/libs/filters/rating.c:278
 msgid "rules"
 msgstr ""
 
-#: ../src/libs/filters/colors.c:397
+#: ../src/libs/filters/colors.c:306
 msgid ""
 "filter by images color label\n"
 "and (∩): images having all selected color labels\n"
@@ -18800,11 +18801,7 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
-msgid "orphan images"
-msgstr ""
-
-#: ../src/libs/filters/grouping.c:144 ../src/libs/filters/grouping.c:169
-msgid "images in a group"
+msgid "ungrouped images"
 msgstr ""
 
 #: ../src/libs/filters/grouping.c:167
