@@ -19696,7 +19696,7 @@ msgstr "métadonnées"
 #: ../src/libs/collect.c:2979 ../src/libs/filtering.c:868
 #: ../src/libs/filtering.c:950
 msgid "times"
-msgstr "heures"
+msgstr "dates"
 
 #: ../src/libs/collect.c:2987 ../src/libs/filtering.c:876
 #: ../src/libs/filtering.c:958
