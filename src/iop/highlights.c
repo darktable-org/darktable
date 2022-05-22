@@ -60,7 +60,7 @@ static void dump_PFM(const char *filename, const float* out, const uint32_t w, c
 }
 #endif
 
-DT_MODULE_INTROSPECTION(3, dt_iop_highlights_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
 
 typedef enum dt_iop_highlights_mode_t
 {
@@ -100,6 +100,8 @@ typedef struct dt_iop_highlights_params_t
   float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast balance"
   float combine;           // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
   int debugmode;
+  // params of v4
+  float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -109,6 +111,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *noise_level;
   GtkWidget *iterations;
   GtkWidget *scales;
+  GtkWidget *solid_color;
   gboolean show_visualize;
 } dt_iop_highlights_gui_data_t;
 
@@ -165,9 +168,15 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 5 * sizeof(float));
+    /*
+      params of v2 :
+        float clip
+      + params of v3
+      + params of v4
+    */
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 5 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->clip = 1.0f;
     n->noise_level = 0.0f;
@@ -176,11 +185,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->debugmode = 0;
     n->iterations = 1;
     n->scales = 5;
+    n->solid_color = 0.f;
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float));
+    /*
+      params of v3 :
+        float noise_level;
+        int iterations;
+        dt_atrous_wavelets_scales_t scales;
+        float reconstructing;
+        float combine;
+        int debugmode;
+      + params of v4
+    */
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->noise_level = 0.0f;
     n->reconstructing = 0.4f;
@@ -188,6 +208,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->debugmode = 0;
     n->iterations = 1;
     n->scales = 5;
+    n->solid_color = 0.f;
+    return 0;
+  }
+  if(old_version == 3 && new_version == 4)
+  {
+    /*
+      params of v4 :
+        float solid_color;
+    */
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - sizeof(float));
+    dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
+    n->solid_color = 0.f;
     return 0;
   }
 
@@ -1303,7 +1335,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 static inline void heat_PDE_diffusion(const float *const restrict high_freq, const float *const restrict low_freq,
                                       const float *const restrict clipping_mask,
                                       float *const restrict output, const size_t width, const size_t height,
-                                      const int mult, const uint8_t scale)
+                                      const int mult, const uint8_t scale, const float first_order_factor)
 {
   // Simultaneous inpainting for image structure and texture using anisotropic heat transfer model
   // https://www.researchgate.net/publication/220663968
@@ -1320,7 +1352,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, scale) \
+    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, scale, first_order_factor) \
     schedule(static)
 #endif
   for(size_t row = 0; row < height; ++row)
@@ -1384,7 +1416,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         // Diffuse
         const dt_aligned_pixel_t multipliers_HF = { 0.5f, 0.5f, 0.5f, 0.f };
         for_each_channel(c, aligned(high_frequency, multipliers_HF, laplacian_HF, alpha))
-          high_frequency[c] += alpha[c] * multipliers_HF[c] * laplacian_HF[c];
+          high_frequency[c] += alpha[c] * multipliers_HF[c] * (laplacian_HF[c] - first_order_factor * high_frequency[c]);
       }
 
       if((scale & FIRST_SCALE))
@@ -1433,7 +1465,7 @@ static inline gint wavelets_process(const float *const restrict in, float
                                     float *const restrict LF_even,
                                     const diffuse_reconstruct_variant_t variant,
                                     const float noise_level,
-                                    const int salt)
+                                    const int salt, const float first_order_factor)
 {
   gint success = TRUE;
 
@@ -1471,12 +1503,12 @@ static inline gint wavelets_process(const float *const restrict in, float
     decompose_2D_Bspline(buffer_in, HF, buffer_out, width, height, mult, tempbuf, padded_size);
 
     uint8_t current_scale_type = scale_type(s, scales);
-    const float radius = (equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
+    const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
 
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
       guide_laplacians(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, noise_level, salt, current_scale_type, radius);
     else
-      heat_PDE_diffusion(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, current_scale_type);
+      heat_PDE_diffusion(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, current_scale_type, first_order_factor);
 
 #if DEBUG_DUMP_PFM
     char name[64];
@@ -1541,9 +1573,9 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self, dt_dev_pixelpi
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
     wavelets_process(interpolated, temp, clipping_mask, width, height, scales, HF, LF_odd,
-                     LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt);
+                     LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt, data->solid_color);
     wavelets_process(temp, interpolated, clipping_mask, width, height, scales, HF, LF_odd,
-                    LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt);
+                    LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt, data->solid_color);
   }
 
   _remosaic_and_replace(interpolated, output, wb, filters, width, height);
@@ -1573,7 +1605,7 @@ static inline cl_int wavelets_process_cl(const int devid,
                                          cl_mem LF_even,
                                          const diffuse_reconstruct_variant_t variant,
                                          const float noise_level,
-                                         const int salt)
+                                         const int salt, const float solid_color)
 {
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -1632,7 +1664,7 @@ static inline cl_int wavelets_process_cl(const int devid,
     if(err != CL_SUCCESS) return err;
 
     uint8_t current_scale_type = scale_type(s, scales);
-    const float radius = (equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
+    const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
 
     // Compute wavelets low-frequency scales
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
@@ -1663,6 +1695,7 @@ static inline cl_int wavelets_process_cl(const int devid,
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_diffuse_color, 6, sizeof(int), (void *)&height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_diffuse_color, 7, sizeof(int), (void *)&mult);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_diffuse_color, 8, sizeof(uint8_t), (void *)&current_scale_type);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_diffuse_color, 9, sizeof(float), (void *)&solid_color);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_diffuse_color, sizes);
       if(err != CL_SUCCESS) return err;
     }
@@ -1744,11 +1777,11 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pi
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
     err = wavelets_process_cl(devid, interpolated, temp, clipping_mask, sizes, width, height, gd, scales, HF,
-                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt);
+                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt, data->solid_color);
     if(err != CL_SUCCESS) goto error;
 
     err = wavelets_process_cl(devid, temp, interpolated, clipping_mask, sizes, width, height, gd, scales, HF,
-                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt);
+                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt, data->solid_color);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -2055,6 +2088,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->noise_level, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
   gtk_widget_set_visible(g->iterations, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
   gtk_widget_set_visible(g->scales, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
+  gtk_widget_set_visible(g->solid_color, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
 
   dt_bauhaus_widget_set_quad_visibility(g->clip, israw);
 
@@ -2156,6 +2190,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
   gtk_widget_set_tooltip_text(g->iterations, _("increase if magenta highlights don't get fully corrected\n"
                                                "each new iteration brings a performance penalty."));
+
+  g->solid_color = dt_bauhaus_slider_from_params(self, "solid_color");
+  dt_bauhaus_slider_set_format(g->solid_color, "%");
+  gtk_widget_set_tooltip_text(g->solid_color, _("increase if magenta highlights don't get fully corrected.\n"
+                                                "this may produce non-smooth boundaries between valid and clipped regions."));
 
   g->scales = dt_bauhaus_combobox_from_params(self, "scales");
   gtk_widget_set_tooltip_text(g->scales, _("increase to correct larger clipped areas.\n"

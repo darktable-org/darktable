@@ -905,7 +905,7 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
               read_only image2d_t mask,
               read_only image2d_t output_r, write_only image2d_t output_w,
               const int width, const int height,
-              const int mult, const unsigned char scale)
+              const int mult, const unsigned char scale, const float first_order_factor)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -957,8 +957,8 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     }
 
     // Diffuse
-    const float4 multipliers_HF = { 0.5f, 0.5f, 0.5f, 0.f };
-    high_frequency += alpha * multipliers_HF * laplacian_HF;
+    const float4 multipliers_HF = { 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 0.f };
+    high_frequency += alpha * multipliers_HF * (laplacian_HF - first_order_factor * high_frequency);
   }
 
   if((scale & FIRST_SCALE))
