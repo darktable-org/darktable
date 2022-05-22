@@ -811,6 +811,11 @@ menuitem check:selected
   padding: 0.42em 0 0 0.42em;   /* set only padding on top and left margin due to some default hardcoded spacing on bottom and place for icons on some bauhaus on the right */
 }
 
+.dt_bauhaus_popup_right /* set right padding for specific popup with no hardcoded right space due to icons place */
+{
+  padding-right: 0.42em;
+}
+
 /* fix for menuitem in bottom toolbar mainly */
 menuitem > arrow
 {
@@ -1856,7 +1861,7 @@ Details :
   color: @border_color;
 }
 
-/* Set border color around thumbnails */
+/* Set border color around grouped thumbnails */
 .dt_group_left #thumb-back,
 #thumb-main.dt_group_left:selected #thumb-back
 {
@@ -1914,7 +1919,7 @@ Details :
   border : 0.07em solid transparent; /* to not overlay thumb borders */
 }
 
-/* Set outside margins in thumbnails about bottom infos area */
+/* Set outside margins in grouped thumbnails about bottom infos area */
 .dt_group_left #thumb-bottom
 {
   border-left-width: 0.14em;
@@ -1957,8 +1962,8 @@ Details :
 /* Reset color icons to be hidden in following modes, including culling/preview overlays hover block*/
 .dt_overlays_none .dt_thumb_btn,
 .dt_overlays_none #thumb-main:hover .dt_thumb_btn,
-.dt_overlays_hover .dt_thumb_btn,
-.dt_overlays_hover_extended .dt_thumb_btn,
+.dt_overlays_hover #thumb-main .dt_thumb_btn,
+.dt_overlays_hover_extended #thumb-main .dt_thumb_btn,
 .dt_overlays_hover_block #thumb-main .dt_thumb_btn,
 #thumb-ext  /* by default, the extension is hidden */
 {
@@ -1986,30 +1991,29 @@ Details :
 }
 
 /* Set hover and selected color icons, extension name and text infos */
-.dt_overlays_always #thumb-main:hover #thumb-ext,
-.dt_overlays_always #thumb-main:selected #thumb-ext,
-.dt_overlays_always_extended #thumb-main:hover #thumb-ext,
-.dt_overlays_always_extended #thumb-main:selected #thumb-ext,
-.dt_overlays_mixed #thumb-main:hover #thumb-ext,
-.dt_overlays_mixed #thumb-main:selected #thumb-ext,
+.dt_overlays_hover #thumb-main:hover #thumb-ext,
 .dt_overlays_hover #thumb-main:hover .dt_thumb_btn,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-ext,
 .dt_overlays_hover_extended #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb-main:hover #thumb-bottom-label,
+.dt_overlays_always #thumb-main:hover #thumb-ext,
+.dt_overlays_always #thumb-main:selected #thumb-ext,
 .dt_overlays_always #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_always #thumb-main:selected .dt_thumb_btn,
+.dt_overlays_always_extended #thumb-main:hover #thumb-ext,
+.dt_overlays_always_extended #thumb-main:selected #thumb-ext,
 .dt_overlays_always_extended #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_always_extended #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_always_extended #thumb-main:hover #thumb-bottom-label,
 .dt_overlays_always_extended #thumb-main:selected #thumb-bottom-label,
+.dt_overlays_mixed #thumb-main:hover #thumb-ext,
+.dt_overlays_mixed #thumb-main:selected #thumb-ext,
 .dt_overlays_mixed #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom-label,
-.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn,
-.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn:active,
-.dt_overlays_hover_block #thumb-image:hover #thumb-audio,
-.dt_overlays_hover_block #thumb-image:hover #thumb-altered,
-.dt_overlays_hover_block #thumb-image:hover #thumb-localcopy,
-.dt_overlays_hover_block #thumb-image:hover #thumb-bottom-label
+.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn,
+.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn:active,
+.dt_overlays_hover_block #thumb-main:hover #thumb-bottom-label
 {
   color: @thumbnail_font_color;
 }
@@ -2065,6 +2069,10 @@ Details :
 }
 
 /* Set hover group and audio effect */
+.dt_overlays_hover #thumb-main:hover #thumb-group:hover,
+.dt_overlays_hover #thumb-main:hover #thumb-audio:hover,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-group:hover,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-audio:hover,
 .dt_overlays_always #thumb-main:hover #thumb-group:hover,
 .dt_overlays_always #thumb-main:hover #thumb-audio:hover,
 .dt_overlays_always_extended #thumb-main:hover #thumb-group:hover,
@@ -2129,12 +2137,6 @@ Details :
 /*---------------------------------------------------------
   - Hide icons on all lighttable modes and duplicate ones -
   ---------------------------------------------------------*/
-.dt_overlays_hover #thumb-main:hover #thumb-group,
-.dt_overlays_hover #thumb-main:hover #thumb-altered,
-.dt_overlays_hover #thumb-main:hover #thumb-audio,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-group,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-altered,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-audio,
 .dt_culling #thumb-ext,
 .dt_culling #thumb-main:selected #thumb-ext,
 .dt_culling #thumb-main:hover #thumb-ext,
