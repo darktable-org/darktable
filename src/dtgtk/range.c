@@ -1746,6 +1746,8 @@ gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
 
 gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelect *range)
 {
+  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all images"));
+
   if((range->bounds & DT_RANGE_BOUND_MIN)) 
     range->select_min_r = range->min_r;
   if((range->bounds & DT_RANGE_BOUND_MAX)) 
@@ -1754,8 +1756,8 @@ gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelect *rang
   if(range->select_min_r == range->select_max_r)
     return g_strdup_printf("%s %s", range->print(range->select_min_r, TRUE), _("only"));
 
-  int rating_min = (int)floor(range->select_min_r);
-  int rating_max = (int)floor(range->select_max_r);
+  const int rating_min = (int)floor(range->select_min_r);
+  const int rating_max = (int)floor(range->select_max_r);
 
   if(rating_min == -1 && rating_max == 0)
     return g_strdup_printf("%s + %s", _("rejected"), _("not rated"));
