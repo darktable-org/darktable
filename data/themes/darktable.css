@@ -1835,12 +1835,12 @@ Details :
   -----------------*/
 #thumb-image
 {
-  margin: 1.8em 1.2em; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
+  margin: 12px 10px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
 }
 
-.dt_thumbnails_2 #thumb-image /* update consistently margins if big thumbnails (less images per row) are shown */
+.dt_thumbnails_1 #thumb-image
 {
-  margin: 1em 0.75em;
+  margin: 18px 16px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
 }
 
 /* Set top margin on active image in filmstrip */
@@ -1938,7 +1938,7 @@ Details :
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom,
 .dt_overlays_hover #thumb-main:hover #thumb-bottom
 {
-  background-image: linear-gradient(rgba(198, 198, 198, 0.7) 0%, rgba(198, 198, 198, 0.7) 90%,rgba(198, 198, 198, 0) 100%);  /* rgb color needs to be set to same color as #thumb-back hover background */
+  background-image: linear-gradient(rgba(212, 212, 212, 0.7) 0%, rgba(212, 212, 212, 0.7) 90%,rgba(212, 212, 212, 0) 100%);  /* rgb color needs to be set to same color as #thumb-back hover background */
 }
 
 /* Set background on block infos in last overlay mode and culling/preview modes shown with mouse hover */
@@ -2217,17 +2217,7 @@ Details :
 .dt_overlays_always#preview #thumb-bottom,
 .dt_overlays_always_extended#preview #thumb-bottom
 {
-  border-radius: 0.21em;
-  border-top: 0.07em solid @lighttable_bg_color;
-  background-image: linear-gradient(rgba(171, 171, 171, 0.2) 0%, rgba(171, 171, 171, 0.1) 5%, rgba(171, 171, 171, 0) 100%);
-}
-
-.dt_overlays_always#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always#preview #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#preview #thumb-main:hover #thumb-bottom
-{
-  background-image: linear-gradient(rgba(191, 191, 191, 0.4) 0%, rgba(191, 191, 191, 0.2) 5%, rgba(171, 171, 171, 0) 100%);
+  background-color: shade(@lighttable_bg_color, 1.1);
 }
 
 /* Set zoom info */
