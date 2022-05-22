@@ -18,7 +18,6 @@
 
 #include "common/metadata.h"
 #include "common/collection.h"
-#include "common/selection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "control/conf.h"
@@ -342,19 +341,6 @@ static void _write_metadata(GtkTextView *textview, dt_lib_module_t *self)
   }
 
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
-  // workaround: if hovered image instead of selected, aborts
-  if(imgs && !imgs->next)
-  {
-    GList *sels = dt_selection_get_list(darktable.selection, FALSE, FALSE);
-    if(sels && (sels->next || (!sels->next && GPOINTER_TO_INT(sels->data) != GPOINTER_TO_INT(imgs->data))))
-    {
-      g_list_free(sels);
-      g_list_free(imgs);
-      return;
-    }
-    g_list_free(sels);
-  }
-
   dt_metadata_set_list(imgs, key_value, TRUE);
 
   for(GList *l = key_value; l; l = l->next)
