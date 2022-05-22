@@ -1716,35 +1716,6 @@ gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
   if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all"));
 
   gchar *txt = NULL;
-  if((range->bounds & DT_RANGE_BOUND_MIN)) 
-    range->select_min_r = range->min_r;
-  if((range->bounds & DT_RANGE_BOUND_MAX)) 
-    range->select_max_r = range->max_r;
-    
-  if(range->select_min_r == range->select_max_r)
-    return range->print(range->select_min_r, TRUE);
-
-  // custom text for rating widget
-  if(range->min_r == -1)
-  {
-    int rating_min = (int)floor(range->select_min_r);
-    int rating_max = (int)floor(range->select_max_r);
-
-    if(rating_min == -1 && rating_max == 0)
-      return g_strdup_printf("%s + %s", _("rejected"), _("not rated"));
-
-    if(range->bounds & DT_RANGE_BOUND_MIN)
-      return g_strdup_printf("<= %s + %s", range->print(range->select_max_r, TRUE), _("rejected"));
-    else if(range->bounds & DT_RANGE_BOUND_MAX)
-    {
-      if(rating_min == 0)
-        return g_strdup(_("all except rejected"));
-      else
-        return g_strdup_printf(">= %s", range->print(range->select_min_r, TRUE));    
-    }
-    else if(rating_min == 0)
-      return g_strdup_printf("<= %s", range->print(range->select_max_r, TRUE));
-  }
 
   if(range->bounds & DT_RANGE_BOUND_MIN)
     txt = g_strdup(_("min"));
@@ -1771,6 +1742,37 @@ gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
     txt = dt_util_dstrcat(txt, "%s", range->print(range->select_max_r, TRUE));
 
   return txt;
+}
+
+gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelect *range)
+{
+  if((range->bounds & DT_RANGE_BOUND_MIN)) 
+    range->select_min_r = range->min_r;
+  if((range->bounds & DT_RANGE_BOUND_MAX)) 
+    range->select_max_r = range->max_r;
+    
+  if(range->select_min_r == range->select_max_r)
+    return g_strdup_printf("%s %s", range->print(range->select_min_r, TRUE), _("only"));
+
+  int rating_min = (int)floor(range->select_min_r);
+  int rating_max = (int)floor(range->select_max_r);
+
+  if(rating_min == -1 && rating_max == 0)
+    return g_strdup_printf("%s + %s", _("rejected"), _("not rated"));
+
+  if(range->bounds & DT_RANGE_BOUND_MIN)
+    return g_strdup_printf("≤%s + %s", range->print(range->select_max_r, TRUE), _("rejected"));
+  else if(range->bounds & DT_RANGE_BOUND_MAX)
+  {
+    if(rating_min == 0)
+      return g_strdup(_("all except rejected"));
+    else
+      return g_strdup_printf("≥%s", range->print(range->select_min_r, TRUE));    
+  }
+  else if(rating_min == 0)
+    return g_strdup_printf("≤%s", range->print(range->select_max_r, TRUE));
+
+  return dtgtk_range_select_get_bounds_pretty(range);
 }
 
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,

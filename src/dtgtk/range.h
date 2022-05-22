@@ -179,6 +179,7 @@ void dtgtk_range_select_redraw(GtkDarktableRangeSelect *range);
 
 // get a human readable text for bounds
 gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range);
+gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelect *range);
 G_END_DECLS
 
 // clang-format off
