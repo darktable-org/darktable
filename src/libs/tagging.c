@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/collection.h"
+#include "common/selection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/tags.h"
@@ -1356,6 +1357,19 @@ static void _new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   if(!tag || tag[0] == '\0') return;
 
   GList *imgs = dt_act_on_get_images(FALSE, TRUE, FALSE);
+  // workaround: if hovered image instead of selected, aborts
+  if(imgs && !imgs->next)
+  {
+    GList *sels = dt_selection_get_list(darktable.selection, FALSE, FALSE);
+    if(sels && (sels->next || (!sels->next && GPOINTER_TO_INT(sels->data) != GPOINTER_TO_INT(imgs->data))))
+    {
+      g_list_free(sels);
+      g_list_free(imgs);
+      return;
+    }
+    g_list_free(sels);
+  }
+
   const gboolean res = dt_tag_attach_string_list(tag, imgs, TRUE);
   if(res) dt_image_synch_xmps(imgs);
   g_list_free(imgs);
@@ -3530,4 +3544,3 @@ static void _save_last_tag_used(const char *tagnames, dt_lib_tagging_t *d)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
