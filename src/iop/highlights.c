@@ -1414,7 +1414,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         }
 
         // Diffuse
-        const dt_aligned_pixel_t multipliers_HF = { 0.5f, 0.5f, 0.5f, 0.f };
+        const dt_aligned_pixel_t multipliers_HF = { 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 0.f };
         for_each_channel(c, aligned(high_frequency, multipliers_HF, laplacian_HF, alpha))
           high_frequency[c] += alpha[c] * multipliers_HF[c] * (laplacian_HF[c] - first_order_factor * high_frequency[c]);
       }
