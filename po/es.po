@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-20 01:45-0500\n"
-"PO-Revision-Date: 2022-05-20 20:34-0500\n"
+"POT-Creation-Date: 2022-05-22 17:15-0500\n"
+"PO-Revision-Date: 2022-05-23 00:47-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2759,7 +2759,7 @@ msgstr "aberración cromática muy acentuada"
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4179 ../src/iop/colorzones.c:2302
 #: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1992
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:350
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:260
 msgid "red"
 msgstr "rojo"
 
@@ -2772,7 +2772,7 @@ msgstr "rojo"
 #: ../src/iop/channelmixerrgb.c:4180 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
 #: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1793
-#: ../src/libs/filters/colors.c:352
+#: ../src/libs/filters/colors.c:262
 msgid "green"
 msgstr "verde"
 
@@ -2784,7 +2784,7 @@ msgstr "verde"
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2307
 #: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1994
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:353
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:263
 msgid "blue"
 msgstr "azul"
 
@@ -3072,14 +3072,12 @@ msgid "output saturation"
 msgstr "saturación de salida"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:229
-#, fuzzy
 msgid "lift, gamma, gain (ProPhoto RGB)"
-msgstr "realce, gamma, incremento (ProPhotoRGB)"
+msgstr "realce, gamma, incremento (ProPhoto RGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:230
-#, fuzzy
 msgid "slope, offset, power (ProPhoto RGB)"
-msgstr "pendiente, translación, potencia (ProPhotoRGB)"
+msgstr "pendiente, translación, potencia (ProPhoto RGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:231
 msgid "lift, gamma, gain (sRGB)"
@@ -3477,9 +3475,8 @@ msgstr "lmmse perfeccionado"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
-#, fuzzy
 msgid "dual threshold"
-msgstr "umbral de detalles"
+msgstr "dual threshold"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:197
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:204
@@ -4817,7 +4814,7 @@ msgstr "Lista deplegable"
 #: ../src/libs/collect.c:406 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
-#: ../src/libs/tagging.c:2471 ../src/libs/tagging.c:2507
+#: ../src/libs/tagging.c:2485 ../src/libs/tagging.c:2521
 msgid "_cancel"
 msgstr "_cancelar"
 
@@ -5059,8 +5056,8 @@ msgstr "id."
 
 #: ../src/common/collection.c:626 ../src/common/collection.c:679
 #: ../src/common/colorlabels.c:337 ../src/develop/lightroom.c:1550
-#: ../src/dtgtk/thumbnail.c:1384 ../src/libs/filters/colors.c:391
-#: ../src/libs/filters/colors.c:403 ../src/libs/tools/colorlabels.c:94
+#: ../src/dtgtk/thumbnail.c:1384 ../src/libs/filters/colors.c:301
+#: ../src/libs/filters/colors.c:312 ../src/libs/tools/colorlabels.c:94
 msgid "color label"
 msgstr "marcas de color"
 
@@ -5105,7 +5102,7 @@ msgid "camera"
 msgstr "cámara"
 
 #: ../src/common/collection.c:663 ../src/libs/export_metadata.c:189
-#: ../src/libs/tagging.c:3269
+#: ../src/libs/tagging.c:3283
 msgid "tag"
 msgstr "etiqueta"
 
@@ -5164,20 +5161,19 @@ msgid "range rating"
 msgstr "extensión de rango"
 
 #: ../src/common/collection.c:709
-#, fuzzy
 msgid "search"
 msgstr "Buscar"
 
 #: ../src/common/collection.c:1431 ../src/common/colorlabels.c:330
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2304 ../src/iop/temperature.c:1809
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:351
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "amarillo"
 
 #: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:337
 #: ../src/common/colorlabels.c:333 ../src/iop/colorzones.c:2308
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:354
+#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "púrpura"
 
@@ -5288,9 +5284,8 @@ msgstr "gris"
 #. "Cheek" is the most redish part of skin. This translates to high a coordinate.
 #. L decreases with age in all ethnicities and with b/yellowness/melanine/tan.
 #: ../src/common/color_vocabulary.c:91
-#, fuzzy
 msgid "Chinese"
-msgstr "líneas"
+msgstr "China"
 
 #: ../src/common/color_vocabulary.c:92
 msgid "Thai"
@@ -5301,9 +5296,8 @@ msgid "Kurdish"
 msgstr "kurda"
 
 #: ../src/common/color_vocabulary.c:94
-#, fuzzy
 msgid "Caucasian"
-msgstr "gaussiano"
+msgstr "Caucásica"
 
 #: ../src/common/color_vocabulary.c:95
 msgid "African-american"
@@ -5327,9 +5321,9 @@ msgid "cheek"
 msgstr "mejilla"
 
 #: ../src/common/color_vocabulary.c:200
-#, fuzzy, c-format
+#, c-format
 msgid "average %s skin tone\n"
-msgstr "tonos de piel naturales"
+msgstr "Tono de piel promedio %s\n"
 
 #. 0° - pinkish red
 #: ../src/common/color_vocabulary.c:220
@@ -5601,9 +5595,8 @@ msgid "lavender"
 msgstr "lavanda"
 
 #: ../src/common/color_vocabulary.c:344
-#, fuzzy
 msgid "color not found"
-msgstr "«%s» matriz de color no encontrada"
+msgstr "Color no encontrado"
 
 #: ../src/common/colorlabels.c:305
 #, c-format
@@ -5926,12 +5919,12 @@ msgstr "Error al iniciar darktable"
 
 #: ../src/common/database.c:2744 ../src/libs/collect.c:3011
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
-#: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
-#: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1466
-#: ../src/libs/tagging.c:1554 ../src/libs/tagging.c:1635
-#: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
-#: ../src/libs/tagging.c:3460
+#: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1480
+#: ../src/libs/tagging.c:1568 ../src/libs/tagging.c:1649
+#: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
+#: ../src/libs/tagging.c:3474
 msgid "cancel"
 msgstr "Cancelar"
 
@@ -7626,7 +7619,7 @@ msgid "reverse"
 msgstr "invertir"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:357
-#: ../src/libs/metadata.c:496 ../src/libs/metadata_view.c:1185
+#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1185
 msgid "default"
 msgstr "por defecto"
 
@@ -7796,7 +7789,7 @@ msgstr "Control deslizante para el gris"
 #: ../src/develop/blend_gui.c:1987 ../src/develop/blend_gui.c:2014
 #: ../src/iop/channelmixerrgb.c:4179 ../src/iop/denoiseprofile.c:3582
 #: ../src/iop/rawdenoise.c:905 ../src/iop/rgbcurve.c:1369
-#: ../src/iop/rgblevels.c:1013 ../src/libs/filters/colors.c:217
+#: ../src/iop/rgblevels.c:1013 ../src/libs/filters/colors.c:137
 msgid "R"
 msgstr "R"
 
@@ -7807,7 +7800,7 @@ msgstr "Control deslizante del canal R"
 #: ../src/develop/blend_gui.c:1990 ../src/develop/blend_gui.c:2017
 #: ../src/iop/channelmixerrgb.c:4180 ../src/iop/denoiseprofile.c:3583
 #: ../src/iop/rawdenoise.c:906 ../src/iop/rgbcurve.c:1370
-#: ../src/iop/rgblevels.c:1014 ../src/libs/filters/colors.c:223
+#: ../src/iop/rgblevels.c:1014 ../src/libs/filters/colors.c:143
 msgid "G"
 msgstr "G"
 
@@ -7818,7 +7811,7 @@ msgstr "Control deslizante del canal G"
 #: ../src/develop/blend_gui.c:1993 ../src/develop/blend_gui.c:2020
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/denoiseprofile.c:3584
 #: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1371
-#: ../src/iop/rgblevels.c:1015 ../src/libs/filters/colors.c:226
+#: ../src/iop/rgblevels.c:1015 ../src/libs/filters/colors.c:146
 msgid "B"
 msgstr "B"
 
@@ -8303,7 +8296,7 @@ msgstr "bajar"
 #: ../src/develop/imageop.c:951 ../src/develop/imageop.c:3222
 #: ../src/gui/accelerators.c:143 ../src/gui/presets.c:477
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/masks.c:1055
-#: ../src/libs/tagging.c:1466 ../src/libs/tagging.c:1554
+#: ../src/libs/tagging.c:1480 ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "borrar"
 
@@ -8404,7 +8397,7 @@ msgstr "mostrar"
 
 #: ../src/develop/imageop.c:3221 ../src/libs/modulegroups.c:3353
 #: ../src/libs/modulegroups.c:3479 ../src/libs/modulegroups.c:3872
-#: ../src/libs/tagging.c:3235
+#: ../src/libs/tagging.c:3249
 msgid "new"
 msgstr "nueva"
 
@@ -8840,11 +8833,9 @@ msgstr "El zoom está limitado a %d imágenes."
 msgid "no image selected !"
 msgstr "No se ha seleccionado ninguna imagen."
 
-# ?anulado
 #: ../src/dtgtk/range.c:211 ../src/dtgtk/range.c:216
-#, fuzzy
 msgid "invalid"
-msgstr "(inválido)"
+msgstr "inválido"
 
 #: ../src/dtgtk/range.c:324
 #, c-format
@@ -8958,9 +8949,8 @@ msgid "time"
 msgstr "tiempo"
 
 #: ../src/dtgtk/range.c:1034 ../src/dtgtk/range.c:1734
-#, fuzzy
 msgid "now"
-msgstr "no"
+msgstr "Ahora"
 
 #: ../src/dtgtk/range.c:1036
 msgid "set the value to always match current datetime"
@@ -8968,7 +8958,7 @@ msgstr ""
 
 #. apply button
 #: ../src/dtgtk/range.c:1039 ../src/gui/accelerators.c:149
-#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:750
+#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:760
 #: ../src/libs/styles.c:861
 msgid "apply"
 msgstr "establecer"
@@ -8984,7 +8974,7 @@ msgstr ""
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
 #: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1412
-#: ../src/libs/filters/colors.c:237 ../src/libs/filters/colors.c:355
+#: ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
 #: ../src/libs/filters/rating_legacy.c:211
 msgid "all"
 msgstr "todas"
@@ -9008,7 +8998,8 @@ msgid ""
 msgstr ""
 
 #. and the number of grouped images
-#: ../src/dtgtk/thumbnail.c:130
+#: ../src/dtgtk/thumbnail.c:130 ../src/libs/filters/grouping.c:144
+#: ../src/libs/filters/grouping.c:169
 msgid "grouped images"
 msgstr "Imágenes agrupadas"
 
@@ -9089,22 +9080,18 @@ msgstr "Invalidación de miniaturas en caché"
 
 #. setup history key accelerators
 #: ../src/dtgtk/thumbtable.c:2323
-#, fuzzy
 msgid "copy history"
 msgstr "copiar historial"
 
 #: ../src/dtgtk/thumbtable.c:2324
-#, fuzzy
 msgid "copy history parts"
-msgstr "copiar ítems del historial"
+msgstr "copiar elementos del historial"
 
 #: ../src/dtgtk/thumbtable.c:2325
-#, fuzzy
 msgid "paste history"
 msgstr "pegar historial"
 
 #: ../src/dtgtk/thumbtable.c:2326
-#, fuzzy
 msgid "paste history parts"
 msgstr "pegar elementos del historial"
 
@@ -9113,12 +9100,10 @@ msgid "discard history"
 msgstr "descartar historial de acciones"
 
 #: ../src/dtgtk/thumbtable.c:2329
-#, fuzzy
 msgid "duplicate image"
 msgstr "Duplicar imagen"
 
 #: ../src/dtgtk/thumbtable.c:2330
-#, fuzzy
 msgid "duplicate image virgin"
 msgstr "Duplicar imagen virgen"
 
@@ -9391,7 +9376,7 @@ msgid "altgr"
 msgstr "Alt Gr"
 
 #: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:144
-#: ../src/libs/tagging.c:1764
+#: ../src/libs/tagging.c:1778
 msgid "edit"
 msgstr "Modificar"
 
@@ -9431,7 +9416,7 @@ msgstr "Inicio"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
 #: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1700
-#: ../src/libs/filters/rating.c:225 ../src/libs/tagging.c:3105
+#: ../src/libs/filters/rating.c:225 ../src/libs/tagging.c:3119
 #: ../src/views/darkroom.c:2289 ../src/views/darkroom.c:2344
 #: ../src/views/darkroom.c:2584
 msgid "toggle"
@@ -9788,7 +9773,7 @@ msgstr "Id. del dispositivo"
 msgid "select file to export"
 msgstr "Seleccione el archivo a exportar"
 
-#: ../src/gui/accelerators.c:2018 ../src/libs/tagging.c:2507
+#: ../src/gui/accelerators.c:2018 ../src/libs/tagging.c:2521
 msgid "_export"
 msgstr "_exportar"
 
@@ -9820,7 +9805,7 @@ msgstr "Eliminar primero las asignaciones a los dispositivos"
 msgid "select file to import"
 msgstr "Seleccionar el archivo a importar"
 
-#: ../src/gui/accelerators.c:2105 ../src/libs/tagging.c:2471
+#: ../src/gui/accelerators.c:2105 ../src/libs/tagging.c:2485
 msgid "_import"
 msgstr "_importar"
 
@@ -9894,7 +9879,7 @@ msgstr "Restaura los atajos predefinidos o a un estado anterior"
 
 #. import button
 #: ../src/gui/accelerators.c:2340 ../src/libs/styles.c:853
-#: ../src/libs/tagging.c:3238
+#: ../src/libs/tagging.c:3252
 msgid "import..."
 msgstr "Importar"
 
@@ -9905,7 +9890,7 @@ msgstr ""
 
 #. export button
 #: ../src/gui/accelerators.c:2345 ../src/libs/styles.c:857
-#: ../src/libs/tagging.c:3241
+#: ../src/libs/tagging.c:3255
 msgid "export..."
 msgstr "Exportar"
 
@@ -9990,9 +9975,8 @@ msgstr "imprimir"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:1186
-#, fuzzy
 msgid "quit"
-msgstr "salir"
+msgstr "Salir"
 
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
 #: ../src/gui/gtk.c:1189
@@ -14120,14 +14104,12 @@ msgstr ""
 "luces en crominancia | tono | intensidad"
 
 #: ../src/iop/colorbalancergb.c:440
-#, fuzzy
 msgid "add basic colorfulness (legacy)"
-msgstr "añadir coloración básica"
+msgstr "añadir coloración básica (heredado)"
 
 #: ../src/iop/colorbalancergb.c:449
-#, fuzzy
 msgid "basic colorfulness: natural skin"
-msgstr "añadir coloración básica"
+msgstr "añadir coloración básica: piel natural"
 
 #: ../src/iop/colorbalancergb.c:455
 #, fuzzy
@@ -16632,7 +16614,7 @@ msgstr ""
 "Este módulo ha quedado sin soporte. Se recomienda sustituirlo por el módulo "
 "película rgb."
 
-#: ../src/iop/globaltonemap.c:637 ../src/libs/filters/colors.c:349
+#: ../src/iop/globaltonemap.c:637 ../src/libs/filters/colors.c:259
 msgid "operator"
 msgstr "operador"
 
@@ -19750,7 +19732,7 @@ msgstr "archivos"
 #: ../src/libs/collect.c:2960 ../src/libs/export_metadata.c:310
 #: ../src/libs/filtering.c:847 ../src/libs/filtering.c:929
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
-#: ../src/libs/metadata.c:538 ../src/libs/metadata_view.c:1218
+#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "metadatos"
 
@@ -19774,16 +19756,16 @@ msgid "collections settings"
 msgstr "Parámetros de las colecciones"
 
 #: ../src/libs/collect.c:3012 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
-#: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1635
-#: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
-#: ../src/libs/tagging.c:3461
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
+#: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1649
+#: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
+#: ../src/libs/tagging.c:3475
 msgid "save"
 msgstr "guardar"
 
 #: ../src/libs/collect.c:3032 ../src/libs/export.c:1059
-#: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1298
-#: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3483
+#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1298
+#: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3497
 msgid "preferences..."
 msgstr "preferencias"
 
@@ -19871,9 +19853,8 @@ msgid "pick color"
 msgstr "seleccionar color"
 
 #: ../src/libs/colorpicker.c:629
-#, fuzzy
 msgid "add sample"
-msgstr "añadir muestra"
+msgstr "Añadir muestra"
 
 #. Adding the live samples section
 #: ../src/libs/colorpicker.c:633
@@ -20559,21 +20540,20 @@ msgstr ""
 "Preajustes\n"
 "Use Ctrl+Clic para gestionar"
 
-#: ../src/libs/filters/colors.c:220
-#, fuzzy
+#: ../src/libs/filters/colors.c:140
 msgid "Y"
-msgstr "Y0"
+msgstr "Y"
 
-#: ../src/libs/filters/colors.c:229
+#: ../src/libs/filters/colors.c:149
 msgid "P"
 msgstr ""
 
-#: ../src/libs/filters/colors.c:359
+#: ../src/libs/filters/colors.c:269
 #, fuzzy
 msgid "color filter"
 msgstr "película de color"
 
-#: ../src/libs/filters/colors.c:383
+#: ../src/libs/filters/colors.c:294
 msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
@@ -20581,13 +20561,13 @@ msgid ""
 "the gray button affects all color labels"
 msgstr ""
 
-#: ../src/libs/filters/colors.c:391 ../src/libs/filters/colors.c:403
+#: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
 #: ../src/libs/filters/rating.c:278
 #, fuzzy
 msgid "rules"
 msgstr "módulos"
 
-#: ../src/libs/filters/colors.c:397
+#: ../src/libs/filters/colors.c:306
 msgid ""
 "filter by images color label\n"
 "and (∩): images having all selected color labels\n"
@@ -20630,13 +20610,8 @@ msgstr ""
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
 #, fuzzy
-msgid "orphan images"
-msgstr "imágenes huérfanas"
-
-#: ../src/libs/filters/grouping.c:144 ../src/libs/filters/grouping.c:169
-#, fuzzy
-msgid "images in a group"
-msgstr "cantidad mínima por grupo"
+msgid "ungrouped images"
+msgstr "Imágenes agrupadas"
 
 #: ../src/libs/filters/grouping.c:167
 #, fuzzy
@@ -21054,17 +21029,14 @@ msgid "cycle histogram modes"
 msgstr "modo cíclico del histograma"
 
 #: ../src/libs/histogram.c:1954 ../src/libs/histogram.c:1987
-#, fuzzy
 msgid "hide histogram"
 msgstr "ocultar histograma"
 
 #: ../src/libs/histogram.c:1975 ../src/libs/histogram.c:1988
-#, fuzzy
 msgid "switch histogram mode"
 msgstr "cambiar modo de histograma"
 
 #: ../src/libs/histogram.c:1979 ../src/libs/histogram.c:1989
-#, fuzzy
 msgid "switch histogram type"
 msgstr "cambiar tipo de histograma"
 
@@ -21816,23 +21788,23 @@ msgstr "eliminar figuras no usadas"
 msgid "created shapes"
 msgstr "figuras creadas"
 
-#: ../src/libs/metadata.c:60
+#: ../src/libs/metadata.c:61
 msgid "metadata editor"
 msgstr "editor de metadatos"
 
-#: ../src/libs/metadata.c:127 ../src/libs/metadata.c:390
+#: ../src/libs/metadata.c:128 ../src/libs/metadata.c:401
 msgid "<leave unchanged>"
 msgstr "<dejar sin cambios>"
 
-#: ../src/libs/metadata.c:495 ../src/libs/metadata_view.c:1184
+#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1184
 msgid "metadata settings"
 msgstr "Configuración de metadatos"
 
-#: ../src/libs/metadata.c:544 ../src/libs/metadata_view.c:1229
+#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1229
 msgid "visible"
 msgstr "visible"
 
-#: ../src/libs/metadata.c:549
+#: ../src/libs/metadata.c:559
 msgid ""
 "tick if the corresponding metadata is of interest for you\n"
 "it will be visible from metadata editor, collection and import module\n"
@@ -21843,12 +21815,12 @@ msgstr ""
 "importación.\n"
 "También serán exportados."
 
-#: ../src/libs/metadata.c:554 ../src/libs/tagging.c:1665
-#: ../src/libs/tagging.c:1809
+#: ../src/libs/metadata.c:564 ../src/libs/tagging.c:1679
+#: ../src/libs/tagging.c:1823
 msgid "private"
 msgstr "privado"
 
-#: ../src/libs/metadata.c:559
+#: ../src/libs/metadata.c:569
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
@@ -21856,7 +21828,7 @@ msgstr ""
 "exporta con las imágenes)"
 
 # Verificar en contexto
-#: ../src/libs/metadata.c:705
+#: ../src/libs/metadata.c:715
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -21874,60 +21846,60 @@ msgstr ""
 "En ese caso, con clic secundario se puede de elegir una de ellas.\n"
 "Pulse Esc para salir de la ventana emergente."
 
-#: ../src/libs/metadata.c:751
+#: ../src/libs/metadata.c:761
 msgid "write metadata for selected images"
 msgstr "Establecer los metadatos en las imágenes seleccionadas"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:807
+#: ../src/libs/metadata.c:817
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:807
+#: ../src/libs/metadata.c:817
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Atribución (CC BY)"
 
-#: ../src/libs/metadata.c:808
+#: ../src/libs/metadata.c:818
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:808
+#: ../src/libs/metadata.c:818
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Atribución-Compartir Igual (CC BY-SA)"
 
-#: ../src/libs/metadata.c:809
+#: ../src/libs/metadata.c:819
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:809
+#: ../src/libs/metadata.c:819
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Atribución-Sin Derivadas (CC BY-ND)"
 
-#: ../src/libs/metadata.c:810
+#: ../src/libs/metadata.c:820
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:810
+#: ../src/libs/metadata.c:820
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Atribución-No Comercial  (CC BY-NC)"
 
-#: ../src/libs/metadata.c:811
+#: ../src/libs/metadata.c:821
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:812
+#: ../src/libs/metadata.c:822
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Atribución-No Comercial-Compartir Igual (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:813
+#: ../src/libs/metadata.c:823
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:814
+#: ../src/libs/metadata.c:824
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Atribución-No Comercial-Sin Derivadas (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:815
+#: ../src/libs/metadata.c:825
 msgid "all rights reserved"
 msgstr "todos los derechos reservados"
 
@@ -22893,7 +22865,7 @@ msgstr ""
 "seleccionadas"
 
 #. edit
-#: ../src/libs/styles.c:845 ../src/libs/tagging.c:2234
+#: ../src/libs/styles.c:845 ../src/libs/tagging.c:2248
 msgid "edit..."
 msgstr "editar..."
 
@@ -22919,29 +22891,29 @@ msgstr ""
 "Aplicar los estilos seleccionados de la lista anterior a las imágenes "
 "seleccionadas"
 
-#: ../src/libs/tagging.c:102
+#: ../src/libs/tagging.c:103
 msgid "tagging"
 msgstr "etiquetado"
 
-#: ../src/libs/tagging.c:1250
+#: ../src/libs/tagging.c:1251
 msgid "attach tag to all"
 msgstr "Añadir etiqueta a todas las imágenes"
 
-#: ../src/libs/tagging.c:1258 ../src/libs/tagging.c:2207
+#: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:2221
 msgid "detach tag"
 msgstr "disociar etiqueta"
 
-#: ../src/libs/tagging.c:1465
+#: ../src/libs/tagging.c:1479
 msgid "delete tag?"
 msgstr "¿Borrar etiqueta?"
 
-#: ../src/libs/tagging.c:1472 ../src/libs/tagging.c:1560
-#: ../src/libs/tagging.c:1771 ../src/libs/tagging.c:2045
+#: ../src/libs/tagging.c:1486 ../src/libs/tagging.c:1574
+#: ../src/libs/tagging.c:1785 ../src/libs/tagging.c:2059
 #, c-format
 msgid "selected: %s"
 msgstr "Seleccionadas: %s "
 
-#: ../src/libs/tagging.c:1479
+#: ../src/libs/tagging.c:1493
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -22956,73 +22928,73 @@ msgstr[1] ""
 "¿Desea borrar las etiqueta «%s»?\n"
 "%d imágenes tienen asignada esta etiqueta!"
 
-#: ../src/libs/tagging.c:1513
+#: ../src/libs/tagging.c:1527
 #, c-format
 msgid "tag %s removed"
 msgstr "Etiqueta %s eliminada"
 
-#: ../src/libs/tagging.c:1553
+#: ../src/libs/tagging.c:1567
 msgid "delete node?"
 msgstr "¿Desea eliminar el nodo?"
 
-#: ../src/libs/tagging.c:1567
+#: ../src/libs/tagging.c:1581
 #, c-format
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
 msgstr[0] "<u>%d</u> etiqueta se eliminará."
 msgstr[1] "<u>%d</u> etiqueta se eliminarán."
 
-#: ../src/libs/tagging.c:1572 ../src/libs/tagging.c:1783
-#: ../src/libs/tagging.c:2057
+#: ../src/libs/tagging.c:1586 ../src/libs/tagging.c:1797
+#: ../src/libs/tagging.c:2071
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
 msgstr[0] "<u>%d</u> imagen se actualizará."
 msgstr[1] "<u>%d</u> imágenes se actualizarán."
 
-#: ../src/libs/tagging.c:1598
+#: ../src/libs/tagging.c:1612
 #, c-format
 msgid "%d tags removed"
 msgstr "%d etiquetas eliminadas"
 
-#: ../src/libs/tagging.c:1634
+#: ../src/libs/tagging.c:1648
 msgid "create tag"
 msgstr "Crear etiqueta"
 
-#: ../src/libs/tagging.c:1644 ../src/libs/tagging.c:1791
+#: ../src/libs/tagging.c:1658 ../src/libs/tagging.c:1805
 msgid "name: "
 msgstr "nombre:"
 
-#: ../src/libs/tagging.c:1656
+#: ../src/libs/tagging.c:1670
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "añadir a: \"%s\" "
 
-#: ../src/libs/tagging.c:1662 ../src/libs/tagging.c:1806
+#: ../src/libs/tagging.c:1676 ../src/libs/tagging.c:1820
 msgid "category"
 msgstr "categoría"
 
-#: ../src/libs/tagging.c:1671 ../src/libs/tagging.c:1815
+#: ../src/libs/tagging.c:1685 ../src/libs/tagging.c:1829
 msgid "synonyms: "
 msgstr "sinónimos:"
 
-#: ../src/libs/tagging.c:1688 ../src/libs/tagging.c:1837
-#: ../src/libs/tagging.c:2079
+#: ../src/libs/tagging.c:1702 ../src/libs/tagging.c:1851
+#: ../src/libs/tagging.c:2093
 msgid "empty tag is not allowed, aborting"
 msgstr "No se permite una etiqueta en blanco. Abortando."
 
-#: ../src/libs/tagging.c:1699
+#: ../src/libs/tagging.c:1713
 msgid "tag name already exists. aborting."
 msgstr "El nombre de la etiqueta ya existe. Abortando."
 
-#: ../src/libs/tagging.c:1778 ../src/libs/tagging.c:2052
+#: ../src/libs/tagging.c:1792 ../src/libs/tagging.c:2066
 #, c-format
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
 msgstr[0] "<u>%d</u> etiqueta se actualizará."
 msgstr[1] "<u>%d</u> etiquetas se actualizarán."
 
-#: ../src/libs/tagging.c:1839
+#: ../src/libs/tagging.c:1853
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
@@ -23030,105 +23002,105 @@ msgstr ""
 "El caracter '|' no se puede usar para renombrar una etiqueta.\n"
 "Use «cambiar ruta» para modificar la jerarquía. Abortando."
 
-#: ../src/libs/tagging.c:1878
+#: ../src/libs/tagging.c:1892
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "Al menos un nuevo nombre de etiqueta (% s) ya existe... abortando."
 
-#: ../src/libs/tagging.c:1986
+#: ../src/libs/tagging.c:2000
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "Al menos un nombre de etiqueta nuevo (% s) ya existe... abortando."
 
-#: ../src/libs/tagging.c:2038
+#: ../src/libs/tagging.c:2052
 msgid "change path"
 msgstr "Cambiar ruta"
 
-#: ../src/libs/tagging.c:2081
+#: ../src/libs/tagging.c:2095
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' fuera de lugar. No se permite una etiqueta en blanco... abortando."
 
-#: ../src/libs/tagging.c:2177
+#: ../src/libs/tagging.c:2191
 #, c-format
 msgid "tag %s created"
 msgstr "Etiqueta %s creada"
 
-#: ../src/libs/tagging.c:2203
+#: ../src/libs/tagging.c:2217
 msgid "attach tag"
 msgstr "añadir etiqueta"
 
-#: ../src/libs/tagging.c:2216
+#: ../src/libs/tagging.c:2230
 msgid "create tag..."
 msgstr "crear etiqueta..."
 
-#: ../src/libs/tagging.c:2222
+#: ../src/libs/tagging.c:2236
 msgid "delete tag"
 msgstr "borrar etiqueta"
 
-#: ../src/libs/tagging.c:2229
+#: ../src/libs/tagging.c:2243
 msgid "delete node"
 msgstr "Nodo elimindado"
 
-#: ../src/libs/tagging.c:2242
+#: ../src/libs/tagging.c:2256
 msgid "change path..."
 msgstr "cambiar la ruta..."
 
-#: ../src/libs/tagging.c:2252
+#: ../src/libs/tagging.c:2266
 msgid "set as a tag"
 msgstr "marcar como una etiqueta"
 
-#: ../src/libs/tagging.c:2263
+#: ../src/libs/tagging.c:2277
 msgid "copy to entry"
 msgstr "copiar al campo de texto"
 
-#: ../src/libs/tagging.c:2280
+#: ../src/libs/tagging.c:2294
 msgid "go to tag collection"
 msgstr "ir a la colección de etiquetas"
 
-#: ../src/libs/tagging.c:2286
+#: ../src/libs/tagging.c:2300
 msgid "go back to work"
 msgstr "regresar al trabajo"
 
-#: ../src/libs/tagging.c:2443
+#: ../src/libs/tagging.c:2457
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2444
+#: ../src/libs/tagging.c:2458
 msgid "(private)"
 msgstr "(privado)"
 
-#: ../src/libs/tagging.c:2470
+#: ../src/libs/tagging.c:2484
 msgid "select a keyword file"
 msgstr "Selecciona un archivo de palabras clave"
 
-#: ../src/libs/tagging.c:2483
+#: ../src/libs/tagging.c:2497
 msgid "error importing tags"
 msgstr "Error al importar etiquetas"
 
-#: ../src/libs/tagging.c:2485
+#: ../src/libs/tagging.c:2499
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd etiquetas importadas"
 
-#: ../src/libs/tagging.c:2506
+#: ../src/libs/tagging.c:2520
 msgid "select file to export to"
 msgstr "Seleccione el archivo para exportar"
 
-#: ../src/libs/tagging.c:2520
+#: ../src/libs/tagging.c:2534
 msgid "error exporting tags"
 msgstr "Error al exportar etiquetas"
 
-#: ../src/libs/tagging.c:2522
+#: ../src/libs/tagging.c:2536
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd etiquetas exportadas"
 
-#: ../src/libs/tagging.c:2946
+#: ../src/libs/tagging.c:2960
 msgid "drop to root"
 msgstr "volver a la raíz"
 
-#: ../src/libs/tagging.c:3085
+#: ../src/libs/tagging.c:3099
 msgid ""
 "attached tags,\n"
 "press Delete or double-click to detach\n"
@@ -23141,50 +23113,50 @@ msgstr ""
 "Pulse clic secundario para mostrar más opciones.\n"
 "Ctrl+Rueda del Ratón para cambiar el tamaño de la ventana."
 
-#: ../src/libs/tagging.c:3097
+#: ../src/libs/tagging.c:3111
 msgid "attach"
 msgstr "añadir"
 
-#: ../src/libs/tagging.c:3098
+#: ../src/libs/tagging.c:3112
 msgid "attach tag to all selected images"
 msgstr "Añadir etiqueta a todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:3101
+#: ../src/libs/tagging.c:3115
 msgid "detach"
 msgstr "disociar"
 
-#: ../src/libs/tagging.c:3102
+#: ../src/libs/tagging.c:3116
 msgid "detach tag from all selected images"
 msgstr "Disociar etiquetas de todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:3115
+#: ../src/libs/tagging.c:3129
 msgid "toggle list with / without hierarchy"
 msgstr "Conmutar lista (con jerarquía o sin jerarquía)"
 
-#: ../src/libs/tagging.c:3115
+#: ../src/libs/tagging.c:3129
 #, fuzzy
 msgid "hide"
 msgstr "esconder %s"
 
-#: ../src/libs/tagging.c:3117
+#: ../src/libs/tagging.c:3131
 msgid "toggle sort by name or by count"
 msgstr "Cambiar entre ordenar por nombre y ordenar por recuento"
 
-#: ../src/libs/tagging.c:3117
+#: ../src/libs/tagging.c:3131
 #, fuzzy
 msgid "sort"
 msgstr "ordenar por"
 
-#: ../src/libs/tagging.c:3119
+#: ../src/libs/tagging.c:3133
 msgid "toggle show or not darktable tags"
 msgstr "Cambiar entre mostrar y ocultar etiquetas de darktable"
 
-#: ../src/libs/tagging.c:3119
+#: ../src/libs/tagging.c:3133
 #, fuzzy
 msgid "dttags"
 msgstr "etiquetas"
 
-#: ../src/libs/tagging.c:3135
+#: ../src/libs/tagging.c:3149
 msgid ""
 "enter tag name\n"
 "press Enter to create a new tag and attach it on selected images\n"
@@ -23197,11 +23169,11 @@ msgstr ""
 "Pulse Tab o la tecla Abajo para ir a la primera etiqueta coincidente.\n"
 "Pulse Mayús+Tab para seleccionar la primera etiqueta de usuario adjunta."
 
-#: ../src/libs/tagging.c:3146 ../src/libs/tagging.c:3152
+#: ../src/libs/tagging.c:3160 ../src/libs/tagging.c:3166
 msgid "clear entry"
 msgstr "Borrar texto"
 
-#: ../src/libs/tagging.c:3199
+#: ../src/libs/tagging.c:3213
 msgid ""
 "tag dictionary,\n"
 "press Enter or double-click to attach selected tag on selected images,\n"
@@ -23222,7 +23194,7 @@ msgstr ""
 "Pulse Mayús+Tab para tener el foco en la entrada,\n"
 "Use Ctrl+Desplazamiento para cambiar el tamaño de la ventana."
 
-#: ../src/libs/tagging.c:3235
+#: ../src/libs/tagging.c:3249
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -23230,44 +23202,44 @@ msgstr ""
 "Crear una nueva etiqueta con el\n"
 "nombre designado"
 
-#: ../src/libs/tagging.c:3238
+#: ../src/libs/tagging.c:3252
 msgid "import tags from a Lightroom keyword file"
 msgstr "Importar etiquetas desde el archivo Lightroom"
 
-#: ../src/libs/tagging.c:3241
+#: ../src/libs/tagging.c:3255
 msgid "export all tags to a Lightroom keyword file"
 msgstr "Exportar todas las etiquetas al archivo Lightroom"
 
-#: ../src/libs/tagging.c:3245
+#: ../src/libs/tagging.c:3259
 msgid "toggle list / tree view"
 msgstr "Conmutar vista (de lista o de árbol)"
 
-#: ../src/libs/tagging.c:3245
+#: ../src/libs/tagging.c:3259
 msgid "tree"
 msgstr ""
 
-#: ../src/libs/tagging.c:3247
+#: ../src/libs/tagging.c:3261
 msgid "toggle list with / without suggestion"
 msgstr "Cambiar entre lista con o sin sugerencia"
 
-#: ../src/libs/tagging.c:3247
+#: ../src/libs/tagging.c:3261
 #, fuzzy
 msgid "suggestion"
 msgstr "activar/desactivar sugerencia"
 
-#: ../src/libs/tagging.c:3270
+#: ../src/libs/tagging.c:3284
 #, fuzzy
 msgid "redo last tag"
 msgstr "deshacer el último etiquetado"
 
-#: ../src/libs/tagging.c:3354
+#: ../src/libs/tagging.c:3368
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
 "El acceso directo de la etiqueta no está activo con vista de árbol. Cambiar "
 "la vista de la lista"
 
-#: ../src/libs/tagging.c:3458
+#: ../src/libs/tagging.c:3472
 #, fuzzy
 msgid "tagging settings"
 msgstr "configuración de la imagen"
@@ -23325,47 +23297,38 @@ msgid "gamepad"
 msgstr ""
 
 #: ../src/libs/tools/gamepad.c:71
-#, fuzzy
 msgid "button a"
-msgstr "botón"
+msgstr "botón A"
 
 #: ../src/libs/tools/gamepad.c:71
-#, fuzzy
 msgid "button b"
-msgstr "botón"
+msgstr "botón B"
 
 #: ../src/libs/tools/gamepad.c:71
-#, fuzzy
 msgid "button x"
-msgstr "botón"
+msgstr "botón X"
 
 #: ../src/libs/tools/gamepad.c:71
-#, fuzzy
 msgid "button y"
-msgstr "botón"
+msgstr "botón Y"
 
 #: ../src/libs/tools/gamepad.c:72
-#, fuzzy
 msgid "button back"
-msgstr "botón"
+msgstr "botón de retroceso"
 
 #: ../src/libs/tools/gamepad.c:72
-#, fuzzy
 msgid "button guide"
-msgstr "botón activado"
+msgstr "botón de guía"
 
 #: ../src/libs/tools/gamepad.c:72
-#, fuzzy
 msgid "button start"
-msgstr "Al inicio"
+msgstr "botoón de inicio"
 
 #: ../src/libs/tools/gamepad.c:73
-#, fuzzy
 msgid "left stick"
 msgstr "Clic"
 
 #: ../src/libs/tools/gamepad.c:73
-#, fuzzy
 msgid "right stick"
 msgstr "Clic Secundario"
 
@@ -23430,14 +23393,12 @@ msgid "touchpad"
 msgstr "retoque"
 
 #: ../src/libs/tools/gamepad.c:76
-#, fuzzy
 msgid "left trigger"
-msgstr "izquierda/derecha"
+msgstr "gatillo izquierdo"
 
 #: ../src/libs/tools/gamepad.c:76
-#, fuzzy
 msgid "right trigger"
-msgstr "clic secundario + alternar"
+msgstr "gatillo derecho"
 
 #: ../src/libs/tools/gamepad.c:81
 #, fuzzy
@@ -23762,12 +23723,10 @@ msgid "timeline"
 msgstr "línea de tiempo"
 
 #: ../src/libs/tools/timeline.c:1433
-#, fuzzy
 msgid "start selection"
 msgstr "iniciar selección"
 
 #: ../src/libs/tools/timeline.c:1434
-#, fuzzy
 msgid "stop selection"
 msgstr "detener selección"
 
@@ -23866,7 +23825,6 @@ msgid "quick access for applying any of your styles"
 msgstr "Acceso rápido para utilizar cualquiera de los estilos"
 
 #: ../src/views/darkroom.c:2268
-#, fuzzy
 msgid "second window"
 msgstr "2ª ventana"
 
@@ -24037,7 +23995,6 @@ msgstr ""
 "El 100% es el máximo de luminancia media."
 
 #: ../src/views/darkroom.c:2410
-#, fuzzy
 msgid "softproof"
 msgstr "prueba en pantalla"
 
@@ -24515,6 +24472,14 @@ msgstr ""
 #: ../src/views/view.c:1343
 msgid "mouse actions"
 msgstr "acciones con el ratón"
+
+#, fuzzy
+#~ msgid "orphan images"
+#~ msgstr "imágenes huérfanas"
+
+#, fuzzy
+#~ msgid "images in a group"
+#~ msgstr "cantidad mínima por grupo"
 
 #~ msgid "linear rec709 RGB"
 #~ msgstr "RGB lineal Rec709"
