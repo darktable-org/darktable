@@ -106,10 +106,13 @@ static gchar *_rating_print_func(const double value, const gboolean detailled)
 
 static gchar *_rating_current_text_func(GtkDarktableRangeSelect *range, const double current)
 {
-  return g_strdup_printf("  <b>%s</b> | %s: %s  ", 
-        g_markup_escape_text(range->print(current, TRUE), -1),
-        _("selected"),
-        g_markup_escape_text(dtgtk_range_select_get_rating_bounds_pretty(range), -1));
+  gchar *hovered = range->print(current, TRUE);
+  gchar *selected = g_markup_escape_text(dtgtk_range_select_get_rating_bounds_pretty(range), -1);
+  gchar *rating_text = g_strdup_printf("  <b>%s</b> | %s: %s  ", 
+        g_markup_escape_text(hovered, -1), _("selected"), selected);
+  g_free(hovered);
+  g_free(selected);
+  return rating_text;
 }
 
 static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)

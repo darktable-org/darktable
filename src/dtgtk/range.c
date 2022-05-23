@@ -1754,7 +1754,12 @@ gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelect *rang
     range->select_max_r = range->max_r;
     
   if(range->select_min_r == range->select_max_r)
-    return g_strdup_printf("%s %s", range->print(range->select_min_r, TRUE), _("only"));
+  {
+    gchar *printed_min = range->print(range->select_min_r, TRUE);
+    gchar *min_only = g_strdup_printf("%s %s", printed_min, _("only"));
+    g_free(printed_min);
+    return min_only;
+  }
 
   const int rating_min = (int)floor(range->select_min_r);
   const int rating_max = (int)floor(range->select_max_r);
@@ -1763,16 +1768,31 @@ gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelect *rang
     return g_strdup_printf("%s + %s", _("rejected"), _("not rated"));
 
   if(range->bounds & DT_RANGE_BOUND_MIN)
-    return g_strdup_printf("≤%s + %s", range->print(range->select_max_r, TRUE), _("rejected"));
+  {
+    gchar *printed_max = range->print(range->select_max_r, TRUE);
+    gchar *lt_max_rejected = g_strdup_printf("≤%s + %s", printed_max, _("rejected"));
+    g_free(printed_max);
+    return lt_max_rejected;
+  }
   else if(range->bounds & DT_RANGE_BOUND_MAX)
   {
     if(rating_min == 0)
       return g_strdup(_("all except rejected"));
     else
-      return g_strdup_printf("≥%s", range->print(range->select_min_r, TRUE));    
+    {
+      gchar *printed_min = range->print(range->select_min_r, TRUE);
+      gchar *gt_min = g_strdup_printf("≥%s", printed_min);
+      g_free(printed_min);
+      return gt_min;
+    }
   }
   else if(rating_min == 0)
-    return g_strdup_printf("≤%s", range->print(range->select_max_r, TRUE));
+  {
+    gchar *printed_max = range->print(range->select_max_r, TRUE);
+    gchar *lt_max = g_strdup_printf("≤%s", range->print(range->select_max_r, TRUE));
+    g_free(printed_max);
+    return lt_max;
+  }
 
   return dtgtk_range_select_get_bounds_pretty(range);
 }
