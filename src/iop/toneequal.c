@@ -2423,9 +2423,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     //lost focus - stop showing mask
+    const gboolean was_mask = g->mask_display;
     g->mask_display = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
-    dt_dev_reprocess_center(self->dev);
+    if(was_mask) dt_dev_reprocess_center(self->dev);
     dt_collection_hint_message(darktable.collection);
   }
   else
