@@ -59,11 +59,19 @@ static inline void sparse_scalar_product(const dt_aligned_pixel_t buf, const siz
 {
   // scalar product of 2 3×5 vectors stored as RGB planes and B-spline filter,
   // e.g. RRRRR - GGGGG - BBBBB
+  const float filter[BSPLINE_FSIZE] = { 1.0f / 16.0f,
+                                        4.0f / 16.0f,
+                                        6.0f / 16.0f,
+                                        4.0f / 16.0f,
+                                        1.0f / 16.0f };
+
   for_each_channel(c, aligned(buf,indices,result))
   {
-    result[c] = MAX(0.0f, ((buf[indices[0]+c] + 4.0f*(buf[indices[1]+c] + buf[indices[3]+c])
-                           + 6.0f*buf[indices[2]+c] + buf[indices[4]+c])
-                           /16.0f));
+    result[c] = MAX(0.0f, filter[0] * buf[indices[0] + c] +
+                          filter[1] * buf[indices[1] + c] +
+                          filter[2] * buf[indices[2] + c] +
+                          filter[3] * buf[indices[3] + c] +
+                          filter[4] * buf[indices[4] + c]);
   }
 }
 
@@ -176,4 +184,3 @@ inline static void decompose_2D_Bspline(const float *const DT_ALIGNED_PIXEL rest
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
