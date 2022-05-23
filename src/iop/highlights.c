@@ -2158,9 +2158,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(!in)
   {
+    const gboolean was_visualize = dt_bauhaus_widget_get_quad_active(g->clip);
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
     g->show_visualize = FALSE;
-    dt_dev_reprocess_center(self->dev);
+    if(was_visualize) dt_dev_reprocess_center(self->dev);
   }
 }
 
