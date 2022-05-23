@@ -2482,9 +2482,9 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
   // let's update the css class depending on the source widget type
   // this allow to set different padding for example
   if(w->show_quad)
-    gtk_style_context_remove_class(context, "bauhaus-popup-no-quad");
+    gtk_style_context_remove_class(context, "dt_bauhaus_popup_right");
   else
-    gtk_style_context_add_class(context, "bauhaus-popup-no-quad");
+    gtk_style_context_add_class(context, "dt_bauhaus_popup_right");
 
   const GtkStateFlags state = gtk_widget_get_state_flags(darktable.bauhaus->popup_area);
   gtk_style_context_get_padding(context, state, darktable.bauhaus->popup_padding);

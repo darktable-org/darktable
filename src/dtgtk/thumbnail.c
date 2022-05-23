@@ -1608,6 +1608,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_margin_top(thumb->w_bottom, thumb->img_margin->bottom);
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_END);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_CENTER);
+    gtk_widget_set_margin_start(thumb->w_bottom_eb, 0);
 
     // reject icon
     const int margin_b_icons = MAX(0, thumb->img_margin->bottom - icon_size * 0.125 - 1);
