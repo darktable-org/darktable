@@ -437,6 +437,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     params->imgid = image->id;
     dt_variables_set_tags_flags(params, flags);
     gchar *svgdoc = dt_variables_expand(params, svgdata, FALSE);  // returns a new string
+    dt_variables_params_destroy(params);
     g_free(svgdata);  // free the old one
     svgdata = svgdoc; // and make the expanded string our result
   }
@@ -1186,4 +1187,3 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
