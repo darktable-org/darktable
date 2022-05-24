@@ -108,8 +108,8 @@ unsigned char *dt_exif_xmp_decode(const char *input, const int len, int *output_
 /** look for color space hints in data and tell the caller if it's sRGB, AdobeRGB or something else. used for mipmaps */
 dt_colorspaces_color_profile_type_t dt_exif_get_color_space(const uint8_t *data, size_t size);
 
-/** look for datetime_taken in data. used for gphoto downloads */
-void dt_exif_get_datetime_taken(const uint8_t *data, size_t size, char *datetime_taken);
+/** look for basic info in data. used import jobs */
+void dt_exif_get_basic_data(const uint8_t *data, size_t size, dt_image_basic_exif_t *basic_exif);
 
 #ifdef __cplusplus
 }
@@ -120,4 +120,3 @@ void dt_exif_get_datetime_taken(const uint8_t *data, size_t size, char *datetime
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

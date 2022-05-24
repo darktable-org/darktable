@@ -270,6 +270,13 @@ typedef struct dt_image_t
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;
 
+typedef struct dt_image_basic_exif_t
+{
+  char datetime[24];  // must be equal to DT_DATETIME_LENGTH
+  char maker[64];
+  char model[64];
+} dt_image_basic_exif_t;
+
 // image buffer operations:
 /** inits basic values to sensible defaults. */
 void dt_image_init(dt_image_t *img);
@@ -452,4 +459,3 @@ void dt_image_check_camera_missing_sample(const struct dt_image_t *img);
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
