@@ -94,7 +94,7 @@ typedef struct dt_iop_highlights_params_t
   // params of v2
   float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
   // params of v3
-  float noise_level; // $MIN: 0. $MAX: 0.1 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
+  float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
   int iterations; // $MIN: 1 $MAX: 64 $DEFAULT: 1 $DESCRIPTION: "iterations"
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
   float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast balance"
@@ -368,9 +368,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN)
   {
-    const dt_aligned_pixel_t clips = { d->clip * piece->pipe->dsc.processed_maximum[0],
-                                       d->clip * piece->pipe->dsc.processed_maximum[1],
-                                       d->clip * piece->pipe->dsc.processed_maximum[2], clip };
+    const dt_aligned_pixel_t clips = {  0.995f * d->clip * piece->pipe->dsc.processed_maximum[0],
+                                        0.995f * d->clip * piece->pipe->dsc.processed_maximum[1],
+                                        0.995f * d->clip * piece->pipe->dsc.processed_maximum[2], clip };
     err = process_laplacian_bayer_cl(self, piece, dev_in, dev_out, roi_in, roi_out, clips);
     if(err != CL_SUCCESS) goto error;
   }
@@ -1443,7 +1443,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         {
           const float norm = sqrtf(sqf(out[index + RED]) + sqf(out[index + GREEN]) + sqf(out[index + BLUE]));
           for_each_channel(c, aligned(out, LF, high_frequency : 64))
-            out[index + c] /= (c != ALPHA) ? norm : 1.f;
+            out[index + c] /= (c != ALPHA && norm > 1e-4f) ? norm : 1.f;
         }
 
         // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
@@ -1988,9 +1988,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
     case DT_IOP_HIGHLIGHTS_LAPLACIAN:
     {
-      const dt_aligned_pixel_t clips = { data->clip * piece->pipe->dsc.processed_maximum[0],
-                                         data->clip * piece->pipe->dsc.processed_maximum[1],
-                                         data->clip * piece->pipe->dsc.processed_maximum[2], clip };
+      const dt_aligned_pixel_t clips = { 0.995f * data->clip * piece->pipe->dsc.processed_maximum[0],
+                                         0.995f * data->clip * piece->pipe->dsc.processed_maximum[1],
+                                         0.995f * data->clip * piece->pipe->dsc.processed_maximum[2], clip };
       process_laplacian_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clips);
       break;
     }
