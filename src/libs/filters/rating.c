@@ -104,14 +104,73 @@ static gchar *_rating_print_func(const double value, const gboolean detailled)
   return g_strdup_printf("%.0lf", floor(value));
 }
 
+static gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelect *range)
+{
+  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all images"));
+
+  if((range->bounds & DT_RANGE_BOUND_MIN)) 
+    range->select_min_r = range->min_r;
+  if((range->bounds & DT_RANGE_BOUND_MAX)) 
+    range->select_max_r = range->max_r;
+    
+  if(range->select_min_r == range->select_max_r)
+  {
+    gchar *printed_min = range->print(range->select_min_r, TRUE);
+    gchar *min_only = g_strdup_printf("%s %s", printed_min, _("only"));
+    g_free(printed_min);
+    return min_only;
+  }
+
+  const int rating_min = (int)floor(range->select_min_r);
+  const int rating_max = (int)floor(range->select_max_r);
+
+  if(rating_min == -1 && rating_max == 0)
+    return g_strdup_printf("%s + %s", _("rejected"), _("not rated"));
+
+  if(range->bounds & DT_RANGE_BOUND_MIN)
+  {
+    gchar *printed_max = range->print(range->select_max_r, TRUE);
+    gchar *lt_max_rejected = g_strdup_printf("≤%s + %s", printed_max, _("rejected"));
+    g_free(printed_max);
+    return lt_max_rejected;
+  }
+  else if(range->bounds & DT_RANGE_BOUND_MAX)
+  {
+    if(rating_min == 0)
+      return g_strdup(_("all except rejected"));
+    else
+    {
+      gchar *printed_min = range->print(range->select_min_r, TRUE);
+      gchar *gt_min = g_strdup_printf("≥%s", printed_min);
+      g_free(printed_min);
+      return gt_min;
+    }
+  }
+  else if(rating_min == 0)
+  {
+    gchar *printed_max = range->print(range->select_max_r, TRUE);
+    gchar *lt_max = g_strdup_printf("≤%s", range->print(range->select_max_r, TRUE));
+    g_free(printed_max);
+    return lt_max;
+  }
+
+  return dtgtk_range_select_get_bounds_pretty(range);
+}
+
 static gchar *_rating_current_text_func(GtkDarktableRangeSelect *range, const double current)
 {
   gchar *hovered = range->print(current, TRUE);
-  gchar *selected = g_markup_escape_text(dtgtk_range_select_get_rating_bounds_pretty(range), -1);
+  gchar *hovered_escaped = g_markup_escape_text(hovered, -1);
+  gchar *selected = dtgtk_range_select_get_rating_bounds_pretty(range);
+  gchar *selected_escaped = g_markup_escape_text(selected, -1);
+
   gchar *rating_text = g_strdup_printf("  <b>%s</b> | %s: %s  ", 
-        g_markup_escape_text(hovered, -1), _("selected"), selected);
+        hovered_escaped, _("selected"), selected_escaped);
+  
   g_free(hovered);
+  g_free(hovered_escaped);
   g_free(selected);
+  g_free(selected_escaped);
   return rating_text;
 }
 

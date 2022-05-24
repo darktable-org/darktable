@@ -1744,59 +1744,6 @@ gchar *dtgtk_range_select_get_bounds_pretty(GtkDarktableRangeSelect *range)
   return txt;
 }
 
-gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelect *range)
-{
-  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all images"));
-
-  if((range->bounds & DT_RANGE_BOUND_MIN)) 
-    range->select_min_r = range->min_r;
-  if((range->bounds & DT_RANGE_BOUND_MAX)) 
-    range->select_max_r = range->max_r;
-    
-  if(range->select_min_r == range->select_max_r)
-  {
-    gchar *printed_min = range->print(range->select_min_r, TRUE);
-    gchar *min_only = g_strdup_printf("%s %s", printed_min, _("only"));
-    g_free(printed_min);
-    return min_only;
-  }
-
-  const int rating_min = (int)floor(range->select_min_r);
-  const int rating_max = (int)floor(range->select_max_r);
-
-  if(rating_min == -1 && rating_max == 0)
-    return g_strdup_printf("%s + %s", _("rejected"), _("not rated"));
-
-  if(range->bounds & DT_RANGE_BOUND_MIN)
-  {
-    gchar *printed_max = range->print(range->select_max_r, TRUE);
-    gchar *lt_max_rejected = g_strdup_printf("≤%s + %s", printed_max, _("rejected"));
-    g_free(printed_max);
-    return lt_max_rejected;
-  }
-  else if(range->bounds & DT_RANGE_BOUND_MAX)
-  {
-    if(rating_min == 0)
-      return g_strdup(_("all except rejected"));
-    else
-    {
-      gchar *printed_min = range->print(range->select_min_r, TRUE);
-      gchar *gt_min = g_strdup_printf("≥%s", printed_min);
-      g_free(printed_min);
-      return gt_min;
-    }
-  }
-  else if(rating_min == 0)
-  {
-    gchar *printed_max = range->print(range->select_max_r, TRUE);
-    gchar *lt_max = g_strdup_printf("≤%s", range->print(range->select_max_r, TRUE));
-    g_free(printed_max);
-    return lt_max;
-  }
-
-  return dtgtk_range_select_get_bounds_pretty(range);
-}
-
 void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_range_bounds_t bounds,
                                       const double min_r, const double max_r, gboolean signal,
                                       gboolean round_values)
