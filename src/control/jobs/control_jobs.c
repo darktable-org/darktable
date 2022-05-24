@@ -2056,7 +2056,7 @@ static int _control_import_image_copy(const char *filename,
 {
   char *data = NULL;
   gsize size = 0;
-  char exif_time[DT_DATETIME_LENGTH];
+  dt_image_basic_exif_t basic_exif = {0};
   gboolean res = TRUE;
   if(!g_file_get_contents(filename, &data, &size, NULL))
   {
@@ -2072,17 +2072,15 @@ static int _control_import_image_copy(const char *filename,
   else
   {
     char *basename = g_path_get_basename(filename);
-    dt_exif_get_datetime_taken((uint8_t *)data, size, exif_time);
+    dt_exif_get_basic_data((uint8_t *)data, size, &basic_exif);
 
-    if(!exif_time[0])
+    if(!basic_exif.datetime[0])
     { // if no exif datetime try file datetime
       struct stat statbuf;
       if(!stat(filename, &statbuf))
-        dt_datetime_unix_to_exif(exif_time, sizeof(exif_time), &statbuf.st_mtime);
+        dt_datetime_unix_to_exif(basic_exif.datetime, sizeof(basic_exif.datetime), &statbuf.st_mtime);
     }
-
-    if(exif_time[0])
-      dt_import_session_set_exif_time(session, exif_time);
+    dt_import_session_set_exif_basic_info(session, &basic_exif);
     dt_import_session_set_filename(session, basename);
     const char *output_path = dt_import_session_path(session, FALSE);
     const gboolean use_filename = dt_conf_get_bool("session/use_filename");
