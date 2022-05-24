@@ -104,7 +104,7 @@ static gchar *_rating_print_func(const double value, const gboolean detailled)
   return g_strdup_printf("%.0lf", floor(value));
 }
 
-static gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelect *range)
+static gchar *_rating_get_bounds_pretty(GtkDarktableRangeSelect *range)
 {
   if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all images"));
 
@@ -149,7 +149,7 @@ static gchar *dtgtk_range_select_get_rating_bounds_pretty(GtkDarktableRangeSelec
   else if(rating_min == 0)
   {
     gchar *printed_max = range->print(range->select_max_r, TRUE);
-    gchar *lt_max = g_strdup_printf("≤%s", range->print(range->select_max_r, TRUE));
+    gchar *lt_max = g_strdup_printf("≤%s", printed_max);
     g_free(printed_max);
     return lt_max;
   }
@@ -161,7 +161,7 @@ static gchar *_rating_current_text_func(GtkDarktableRangeSelect *range, const do
 {
   gchar *hovered = range->print(current, TRUE);
   gchar *hovered_escaped = g_markup_escape_text(hovered, -1);
-  gchar *selected = dtgtk_range_select_get_rating_bounds_pretty(range);
+  gchar *selected = _rating_get_bounds_pretty(range);
   gchar *selected_escaped = g_markup_escape_text(selected, -1);
 
   gchar *rating_text = g_strdup_printf("  <b>%s</b> | %s: %s  ", 
