@@ -1236,7 +1236,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       const float h_red   = atan2f(xyY_red[1] - D65_xyY[1], xyY_red[0] - D65_xyY[0]);
       const float h_green = atan2f(xyY_green[1] - D65_xyY[1], xyY_green[0] - D65_xyY[0]);
       const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
-        
+
        float *const restrict dt_UCS_LUT = d->gamut_LUT;
 
       // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
@@ -1974,6 +1974,9 @@ void gui_init(dt_iop_module_t *self)
   // Page masks
   self->widget = dt_ui_notebook_page(g->notebook, N_("masks"), _("isolate luminances"));
 
+  g->saturation_formula = dt_bauhaus_combobox_from_params(self, "saturation_formula");
+  gtk_widget_set_tooltip_text(g->saturation_formula, _("choose in which uniform color space the saturation is computed."));
+
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("luminance ranges")), FALSE, FALSE, 0);
 
   const float aspect = dt_conf_get_int("plugins/darkroom/colorbalancergb/aspect_percent") / 100.0;
@@ -2021,8 +2024,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->grey_fulcrum, 4);
   dt_bauhaus_slider_set_format(g->grey_fulcrum, "%");
   gtk_widget_set_tooltip_text(g->grey_fulcrum, _("peak gray luminance value used to normalize the power function"));
-
-  g->saturation_formula = dt_bauhaus_combobox_from_params(self, "saturation_formula");
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("mask preview settings")), FALSE, FALSE, 0);
 
