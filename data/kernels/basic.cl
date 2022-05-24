@@ -982,7 +982,7 @@ diffuse_color(read_only image2d_t HF, read_only image2d_t LF,
     {
       const float4 out_sq = sqf(out);
       const float norm = sqrt(out_sq.x + out_sq.y + out_sq.z);
-      out.xyz /= norm;
+      if(norm > 1e-4f) out.xyz /= norm;
     }
 
     // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
