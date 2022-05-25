@@ -2789,7 +2789,7 @@ float dt_image_get_exposure_bias(const struct dt_image_t *image_storage)
 
 char *dt_image_camera_missing_sample_message(const struct dt_image_t *img, gboolean logmsg)
 {
-  const char *T1 = _("<b>WARNING</b> : camera is missing samples!");
+  const char *T1 = _("<b>WARNING</b>: camera is missing samples!");
   const char *T2 = _("You must provide samples in <a href='https://raw.pixls.us/'>https://raw.pixls.us/</a>");
   char *T3 = g_strdup_printf(_("for `%s' `%s'\n"
                                "in as many format/compression/bit depths as possible"),
