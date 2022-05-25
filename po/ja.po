@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-21 20:29+0200\n"
-"PO-Revision-Date: 2022-05-25 22:49+0900\n"
+"PO-Revision-Date: 2022-05-26 02:36+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -304,7 +304,7 @@ msgstr "インポート時に適用される権利"
 
 #: ../build/bin/conf_gen.h:976
 msgid "comma separated tags to be applied when importing"
-msgstr "インポート時に適用されるコンマで区切られたタグ"
+msgstr "インポート時に適用されるタグ。コンマで区切られています"
 
 #: ../build/bin/conf_gen.h:982
 msgid "import tags from xmp"
@@ -1724,6 +1724,10 @@ msgid ""
 "graphics ram, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
 msgstr ""
+"OpenCLデバイスのランタイム調整を許可します。【メモリのサイズ】を選択すると、"
+"利用可能なグラフィックメモリの検査を行います。【メモリ転送】を選択すると、タ"
+"イリングのためにより高速なメモリアクセスモード（ピンメモリ）を用いるよう試み"
+"ます"
 
 #: ../build/bin/preferences_gen.h:6707
 msgid "security"
@@ -1990,6 +1994,8 @@ msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
 msgstr ""
+"ユーザー設定より前にデフォルトのショートカットを読み込みます。オフにすると、"
+"削除したデフォルト設定に戻ることを避けることが出来ます"
 
 #: ../build/bin/preferences_gen.h:7762
 msgid "scale slider step with min/max"
@@ -2062,7 +2068,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8031
 msgid "order or exclude midi devices"
-msgstr ""
+msgstr "midiデバイスを指定または除外する"
 
 #: ../build/bin/preferences_gen.h:8049
 msgid ""
@@ -2070,6 +2076,9 @@ msgid ""
 "device at id given by location in list or if preceded by - prevent matching "
 "devices from loading. add encoding and number of knobs like 'BeatStep:63:16'"
 msgstr ""
+"デバイス名のリスト。コンマで区切って記入してください。合致したmidiデバイスを"
+"リスト内の位置によって定められたidで読み込みます。-が名前の前にあるデバイスは"
+"読み込みません。エンコードとノブの数を付け加えてください。例）BeatStep:63:16"
 
 #. tags
 #: ../build/bin/preferences_gen.h:8065 ../src/develop/lightroom.c:1516
@@ -4363,10 +4372,8 @@ msgid "flat field correction"
 msgstr "黒レベル補正"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:198
-#, fuzzy
-#| msgid "embedded matrix"
 msgid "embedded GainMap"
-msgstr "埋め込みマトリクス"
+msgstr "埋め込みGainMap"
 
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
@@ -4393,7 +4400,7 @@ msgstr "明るさ（ブライトネス）"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:291
 #: ../build/lib/darktable/plugins/introspection_retouch.c:430
 msgid "max_iter"
-msgstr ""
+msgstr "max_iter"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:444
 #: ../src/libs/metadata_view.c:330
@@ -5164,10 +5171,8 @@ msgid "module order"
 msgstr "モジュールの順序"
 
 #: ../src/common/collection.c:705
-#, fuzzy
-#| msgid "range extent"
 msgid "range rating"
-msgstr "輝度の範囲"
+msgstr "評価の範囲"
 
 #: ../src/common/collection.c:709
 msgid "search"
@@ -5778,22 +5783,26 @@ msgid ""
 msgstr ""
 
 #: ../src/common/darktable.c:1731
-#, fuzzy
-#| msgid "demosaicing for zoomed out darkroom mode"
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
-msgstr "ダークルームモードで縮小表示した際のデモザイク処理方式"
+msgstr ""
+"ダークルームモードの縮小表示については【設定】の【ダークルーム】タブのデモザ"
+"イク設定を参照してください"
 
 #: ../src/common/darktable.c:1737
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
 msgstr ""
+"ユーザーインターフェースと、darktableのパフォーマンスを調整する内部システムが"
+"変更されています。"
 
 #: ../src/common/darktable.c:1739
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
+"ヘッドルームやその類のものは現行バージョンでは無くなっています。その代わり"
+"に、【設定】の【処理】タブの以下の設定を使用します"
 
 #: ../src/common/darktable.c:1741
 msgid "1) darktable resources"
@@ -5808,22 +5817,28 @@ msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
 msgstr ""
+"OpenCLのパフォーマンスに関する全般的な設定の値のいくつかは使用されなくなりま"
+"す。"
 
 #: ../src/common/darktable.c:1752
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
+"その代わりに、'cl_device_v4_canonical-name'に「デバイスごとの」データがありま"
+"す。その内容は以下の通りです"
 
 #: ../src/common/darktable.c:1754
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 msgstr ""
+" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
+"'eventhandles' 'async' 'disable' 'magic'"
 
 #: ../src/common/darktable.c:1756
 msgid "you may tune as before except 'magic'"
-msgstr ""
+msgstr "'magic'の他は、従来どおりに調整することが出来ます"
 
 #: ../src/common/database.c:2722
 #, c-format
@@ -8891,10 +8906,8 @@ msgid "max"
 msgstr "最大"
 
 #: ../src/dtgtk/range.c:922
-#, fuzzy
-#| msgid "date taken"
 msgid "date type"
-msgstr "撮影日"
+msgstr "データタイプ"
 
 #: ../src/dtgtk/range.c:923
 #, fuzzy
@@ -9981,56 +9994,34 @@ msgstr "パネル／折りたたみコントロール"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1195
-#, fuzzy
-#| msgid "leader"
 msgid "header"
-msgstr "リーダー"
+msgstr "ヘッダー"
 
 #: ../src/gui/gtk.c:1196
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "panels/filmstrip and timeline"
 msgid "filmstrip and timeline"
-msgstr "パネル／フィルムストリップとタイムライン"
+msgstr "フィルムストリップとタイムライン"
 
 #: ../src/gui/gtk.c:1197
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "panels/top toolbar"
 msgid "top toolbar"
-msgstr "パネル／上ツールバー"
+msgstr "上ツールバー"
 
 #: ../src/gui/gtk.c:1198
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "panels/bottom toolbar"
 msgid "bottom toolbar"
-msgstr "パネル／下ツールバー"
+msgstr "下ツールバー"
 
 #: ../src/gui/gtk.c:1199
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "panels/all top"
 msgid "all top"
-msgstr "パネル／全て 上"
+msgstr "全て 上"
 
 #: ../src/gui/gtk.c:1200
-#, fuzzy
-#| msgid "bottom"
 msgid "all bottom"
-msgstr "下"
+msgstr "全て下"
 
 #: ../src/gui/gtk.c:1202
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle tooltip visibility"
 msgid "toggle tooltip visibility"
 msgstr "ツールチップの表示／非表示切り替え"
 
 #: ../src/gui/gtk.c:1203
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "reinitialise input devices"
 msgid "reinitialise input devices"
 msgstr "インプットデバイスを再初期化"
 
@@ -10040,9 +10031,6 @@ msgstr "フォーカスピーキングモードのオン／オフを切り替え
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1246
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle focus peaking"
 msgid "toggle focus peaking"
 msgstr "フォーカスピーキングのオン／オフ切り替え"
 
@@ -14083,28 +14071,20 @@ msgstr ""
 "マ）ハイライト|色相|自然な彩度（バイブランス）彩度（サチュレーション）"
 
 #: ../src/iop/colorbalancergb.c:440
-#, fuzzy
-#| msgid "add basic colorfulness"
 msgid "add basic colorfulness (legacy)"
-msgstr "基本的な色鮮やかさ（カラフルネス）を追加"
+msgstr "基本的な色鮮やかさ（カラフルネス）（旧式）を追加"
 
 #: ../src/iop/colorbalancergb.c:449
-#, fuzzy
-#| msgid "add basic colorfulness"
 msgid "basic colorfulness: natural skin"
-msgstr "基本的な色鮮やかさ（カラフルネス）を追加"
+msgstr "基本的な色鮮やかさ（カラフルネス）：自然な肌"
 
 #: ../src/iop/colorbalancergb.c:455
-#, fuzzy
-#| msgid "add basic colorfulness"
 msgid "basic colorfulness: vibrant colors"
-msgstr "基本的な色鮮やかさ（カラフルネス）を追加"
+msgstr "基本的な色鮮やかさ（カラフルネス）：鮮やかな（バイブラント）色"
 
 #: ../src/iop/colorbalancergb.c:461
-#, fuzzy
-#| msgid "add basic colorfulness"
 msgid "basic colorfulness: standard"
-msgstr "基本的な色鮮やかさ（カラフルネス）を追加"
+msgstr "基本的な色鮮やかさ（カラフルネス）：通常"
 
 #: ../src/iop/colorbalancergb.c:895
 msgid "colorbalance works only on RGB input"
@@ -14990,10 +14970,8 @@ msgid "commit"
 msgstr "コミット"
 
 #: ../src/iop/crop.c:1165
-#, fuzzy
-#| msgid "normalize channels"
 msgid "commit changes"
-msgstr "チャンネルの正規化"
+msgstr "変更を反映する"
 
 #: ../src/iop/crop.c:1524
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
@@ -16499,8 +16477,7 @@ msgid ""
 msgstr ""
 "有効にすると、シーンのホワイトポイントとブラックポイントに応じて、ルックの硬"
 "さを自動的に設定します\n"
-"これにより、ミドルグレーが均等線上に維持され、より素早くチューニング出来ま"
-"す\n"
+"これにより、ミドルグレーが均等線上に維持され、より素早く調整出来ます\n"
 "手動でコントロールしたい場合、無効にしてください"
 
 #: ../src/iop/filmicrgb.c:4592
@@ -20551,18 +20528,10 @@ msgid "P"
 msgstr "p"
 
 #: ../src/libs/filters/colors.c:269
-#, fuzzy
-#| msgid "color film"
 msgid "color filter"
-msgstr "カラーフィルム"
+msgstr "色フィルター"
 
 #: ../src/libs/filters/colors.c:294
-#, fuzzy
-#| msgid ""
-#| "filter by images color label\n"
-#| "click to toggle the color label selection\n"
-#| "ctrl+click to exclude the color label\n"
-#| "the grey button affects all color labels"
 msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
@@ -20626,22 +20595,16 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
-#, fuzzy
-#| msgid "grouped images"
 msgid "ungrouped images"
-msgstr "グループ化した画像"
+msgstr "グループ化していない画像"
 
 #: ../src/libs/filters/grouping.c:167
-#, fuzzy
-#| msgid "warming filter"
 msgid "grouping filter"
-msgstr "ウォーム化フィルター"
+msgstr "グループ化フィルター"
 
 #: ../src/libs/filters/grouping.c:168
-#, fuzzy
-#| msgid "select the hue tone of filter"
 msgid "select the type of grouped image to filter"
-msgstr "フィルターの色相トーンを選択してください"
+msgstr "グループ化する画像のタイプを選択して絞り込んでください"
 
 #. predefined selections
 #: ../src/libs/filters/grouping.c:169 ../src/libs/filters/history.c:38
