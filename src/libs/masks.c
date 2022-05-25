@@ -1081,16 +1081,16 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
       if(nb == 1)
       {
         gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-        item = gtk_menu_item_new_with_label(_("mode : union"));
+        item = gtk_menu_item_new_with_label(_("mode: union"));
         g_signal_connect(item, "activate", (GCallback)_tree_union, self);
         gtk_menu_shell_append(menu, item);
-        item = gtk_menu_item_new_with_label(_("mode : intersection"));
+        item = gtk_menu_item_new_with_label(_("mode: intersection"));
         g_signal_connect(item, "activate", (GCallback)_tree_intersection, self);
         gtk_menu_shell_append(menu, item);
-        item = gtk_menu_item_new_with_label(_("mode : difference"));
+        item = gtk_menu_item_new_with_label(_("mode: difference"));
         g_signal_connect(item, "activate", (GCallback)_tree_difference, self);
         gtk_menu_shell_append(menu, item);
-        item = gtk_menu_item_new_with_label(_("mode : exclusion"));
+        item = gtk_menu_item_new_with_label(_("mode: exclusion"));
         g_signal_connect(item, "activate", (GCallback)_tree_exclusion, self);
         gtk_menu_shell_append(menu, item);
       }

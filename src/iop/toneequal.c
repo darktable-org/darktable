@@ -3229,7 +3229,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->feathering = dt_bauhaus_slider_from_params(self, "feathering");
   dt_bauhaus_slider_set_soft_range(g->feathering, 0.1, 50.0);
-  gtk_widget_set_tooltip_text(g->feathering, _("precision of the feathering :\n"
+  gtk_widget_set_tooltip_text(g->feathering, _("precision of the feathering:\n"
                                                "higher values force the mask to follow edges more closely\n"
                                                "but may void the effect of the smoothing\n"
                                                "lower values give smoother gradients and better smoothing\n"
