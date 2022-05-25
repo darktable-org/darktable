@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-21 20:29+0200\n"
-"PO-Revision-Date: 2022-05-26 02:36+0900\n"
+"PO-Revision-Date: 2022-05-26 03:06+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -7296,11 +7296,8 @@ msgid "local copy images"
 msgstr "画像をローカルコピーします"
 
 #: ../src/control/jobs/control_jobs.c:1803 ../src/libs/image.c:607
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "refresh"
 msgid "refresh EXIF"
-msgstr "更新"
+msgstr "EXIFを更新する"
 
 #: ../src/control/jobs/control_jobs.c:1867
 #, c-format
@@ -9285,13 +9282,7 @@ msgstr ""
 "サムネイルは生成されず、終了しました\n"
 
 #: ../src/generate-cache/main.c:238
-#, fuzzy, c-format
-#| msgid ""
-#| "warning: disk backend for full preview cache is disabled "
-#| "(cache_disk_backend_full)\n"
-#| "if you want to pre-generate full preview and for darktable to use them, "
-#| "you need to enable disk backend for full preview cache\n"
-#| "no thumbnails to be generated, done.\n"
+#, c-format
 msgid ""
 "warning: disk backend for full preview cache is disabled "
 "(cache_disk_backend_full)\n"
@@ -9303,7 +9294,7 @@ msgstr ""
 "(cache_disk_backend_full)\n"
 "フルプレビューを事前生成してdarktableで使用したい場合、フルプレビューキャシュ"
 "のディスクバックエンドを有効にする必要があります\n"
-"サムネイルは生成されず、終了しました\n"
+"フルプレビューは生成されず、終了しました\n"
 
 #: ../src/generate-cache/main.c:248
 #, c-format
@@ -9557,26 +9548,18 @@ msgstr ""
 "文字を入力すると、インクリメンタルサーチを行います"
 
 #: ../src/gui/accelerators.c:680
-#, fuzzy
-#| msgid "click to open shortcut configuration"
 msgid "click to filter shortcut list\n"
-msgstr "クリックすると、ショートカットの設定を開きます"
+msgstr "クリックすると、ショートカットのリストを絞り込みます\n"
 
 #: ../src/gui/accelerators.c:681
 msgid "right click to show action of selected shortcut\n"
 msgstr ""
 
 #: ../src/gui/accelerators.c:682
-#, fuzzy
-#| msgid ""
-#| "click to filter shortcut list\n"
-#| "double-click to define new shortcut\n"
-#| "start typing for incremental search"
 msgid ""
 "double-click to define new shortcut\n"
 "start typing for incremental search"
 msgstr ""
-"クリックすると、ショートカットのリストをフィルター検索します\n"
 "ダブルクリックすると、新しいショートカットを定義します\n"
 "文字を入力すると、インクリメンタルサーチを行います"
 
@@ -9986,11 +9969,8 @@ msgid "fullscreen"
 msgstr "全画面"
 
 #: ../src/gui/gtk.c:1193
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "panels/collapsing controls"
 msgid "collapsing controls"
-msgstr "パネル／折りたたみコントロール"
+msgstr "折りたたみコントロール"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1195
@@ -10011,11 +9991,11 @@ msgstr "下ツールバー"
 
 #: ../src/gui/gtk.c:1199
 msgid "all top"
-msgstr "全て 上"
+msgstr "上 全て"
 
 #: ../src/gui/gtk.c:1200
 msgid "all bottom"
-msgstr "全て下"
+msgstr "下 全て"
 
 #: ../src/gui/gtk.c:1202
 msgid "toggle tooltip visibility"
@@ -10187,22 +10167,15 @@ msgid "$(EXIF.MONTH) - EXIF month"
 msgstr "$(EXIF.MONTH) - EXIF 月"
 
 #: ../src/gui/gtkentry.c:205
-#, fuzzy
-#| msgid ""
-#| "$(EXIF.MONTH.SHORT) - abbreviated exif month name according to the "
-#| "current locale"
 msgid ""
 "$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
 "locale"
-msgstr "$(EXIF.MONTH.SHORT) - 現在のロケールに基づくexif 月（略記）"
+msgstr "$(EXIF.MONTH.SHORT) - 現在のロケールに基づくEXIF月（略記）"
 
 #: ../src/gui/gtkentry.c:206
-#, fuzzy
-#| msgid ""
-#| "$(EXIF.MONTH.LONG) - full exif month name according to the current locale"
 msgid ""
 "$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
-msgstr "$(EXIF.MONTH.LONG) - 現在のロケールに基づくexif 月"
+msgstr "$(EXIF.MONTH.LONG) - 現在のロケールに基づくEXIF月"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(EXIF.DAY) - EXIF day"
@@ -20413,11 +20386,11 @@ msgstr "このルールを削除します"
 
 #: ../src/libs/filtering.c:1050
 msgid "this rule is enabled"
-msgstr ""
+msgstr "このルールは有効になっています"
 
 #: ../src/libs/filtering.c:1052
 msgid "this rule is disabled"
-msgstr ""
+msgstr "このルールは無効になっています"
 
 #: ../src/libs/filtering.c:1156
 #, fuzzy
@@ -20447,20 +20420,16 @@ msgid " (off)"
 msgstr ""
 
 #: ../src/libs/filtering.c:1642
-#, fuzzy
-#| msgid "current order"
 msgid "sort order"
-msgstr "現在の順番"
+msgstr "並び順"
 
 #: ../src/libs/filtering.c:1644
 msgid "determine the sort order of shown images"
 msgstr "表示画像の並び順を定義します"
 
 #: ../src/libs/filtering.c:1701
-#, fuzzy
-#| msgid "direction"
 msgid "sort direction"
-msgstr "向き"
+msgstr "並び順 向き"
 
 #: ../src/libs/filtering.c:1707
 #, fuzzy
@@ -20491,10 +20460,8 @@ msgid "sort by"
 msgstr "並び順"
 
 #: ../src/libs/filtering.c:1991
-#, fuzzy
-#| msgid "new preset"
 msgid "new sort"
-msgstr "新しいプリセット"
+msgstr "新しい並び順"
 
 #: ../src/libs/filtering.c:1992
 #, fuzzy
@@ -20658,22 +20625,16 @@ msgid "rejected only"
 msgstr "除外された画像のみ"
 
 #: ../src/libs/filters/rating.c:61 ../src/libs/filters/rating.c:76
-#, fuzzy
-#| msgid "unstarred only"
 msgid "unstared only"
 msgstr "星なしのみ"
 
 #: ../src/libs/filters/rating.c:99 ../src/libs/filters/rating.c:232
-#, fuzzy
-#| msgid "reject"
 msgid "rejected"
 msgstr "除外"
 
 #: ../src/libs/filters/rating.c:101 ../src/libs/filters/rating.c:233
-#, fuzzy
-#| msgid "not tagged"
 msgid "not rated"
-msgstr "タグなし"
+msgstr "評価無し"
 
 #: ../src/libs/filters/rating.c:226
 #, fuzzy
@@ -20692,10 +20653,8 @@ msgid "cap"
 msgstr "マップ"
 
 #: ../src/libs/filters/rating.c:243
-#, fuzzy
-#| msgid "warming filter"
 msgid "rating filter"
-msgstr "ウォーム化フィルター"
+msgstr "評価フィルター"
 
 #: ../src/libs/filters/rating_legacy.c:199
 msgid "comparator"
@@ -23168,7 +23127,7 @@ msgstr "表示をリスト／ツリーに切り替えます"
 
 #: ../src/libs/tagging.c:3245
 msgid "tree"
-msgstr ""
+msgstr "ツリー"
 
 #: ../src/libs/tagging.c:3247
 msgid "toggle list with / without suggestion"
@@ -23461,10 +23420,8 @@ msgstr "常時オーバーレイ+カーソルを乗せている間、拡張オ�
 
 #: ../src/libs/tools/global_toolbox.c:445
 #: ../src/libs/tools/global_toolbox.c:471
-#, fuzzy
-#| msgid "overlays on mouse hover"
 msgid "overlays block on mouse hover"
-msgstr "カーソルを乗せている間、オーバーレイ"
+msgstr "カーソルを乗せている間、ブロックオーバーレイ"
 
 #: ../src/libs/tools/global_toolbox.c:446
 #: ../src/libs/tools/global_toolbox.c:472
@@ -23485,14 +23442,6 @@ msgid "enable this, then click on a control element to see its online help"
 msgstr "有効にすると、参照したい箇所をクリックしてオンラインヘルプを表示します"
 
 #: ../src/libs/tools/global_toolbox.c:498
-#, fuzzy
-#| msgid ""
-#| "define shortcuts\n"
-#| "hover over a widget and press keys with mouse click and scroll or move "
-#| "combinations\n"
-#| "repeat same combination again to delete mapping\n"
-#| "click on a widget, module or screen area to open the dialog for further "
-#| "configuration"
 msgid ""
 "define shortcuts\n"
 "ctrl+click to switch off overwrite confirmations\n"
@@ -23504,6 +23453,8 @@ msgid ""
 "configuration"
 msgstr ""
 "ショートカットを定義します\n"
+"Ctrl+clickすると、上書きの確認をオフにします\n"
+"\n"
 "ウィジェット上にカーソルを置いて、キーを押しながら、マウスのクリック、スク"
 "ロール、あるいは移動を組み合わせて設定します\n"
 "同じ組み合わせをもう一度繰り返すと、ショートカットの割り当てを削除します\n"
