@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-21 20:29+0200\n"
-"PO-Revision-Date: 2022-05-25 22:44+0900\n"
+"PO-Revision-Date: 2022-05-25 22:49+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -20648,16 +20648,12 @@ msgstr "フィルターの色相トーンを選択してください"
 #: ../src/libs/filters/local_copy.c:38 ../src/libs/filters/module_order.c:155
 #: ../src/libs/filters/rating.c:56 ../src/libs/filters/rating.c:72
 #: ../src/libs/filters/ratio.c:68 ../src/libs/filters/ratio.c:81
-#, fuzzy
-#| msgid "max images"
 msgid "all images"
-msgstr "画像の最大数"
+msgstr "全画像"
 
 #: ../src/libs/filters/history.c:153
-#, fuzzy
-#| msgid "list filter"
 msgid "history filter"
-msgstr "フィルターのリスト"
+msgstr "履歴フィルター"
 
 #: ../src/libs/filters/history.c:153
 #, fuzzy
@@ -23216,16 +23212,10 @@ msgid "toggle list with / without suggestion"
 msgstr "リストのサジェストあり／なしを切り替えます"
 
 #: ../src/libs/tagging.c:3247
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle suggestion"
 msgid "suggestion"
-msgstr "サジェストのオン／オフ切り替え"
+msgstr "サジェスト"
 
 #: ../src/libs/tagging.c:3270
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "redo last tag"
 msgid "redo last tag"
 msgstr "最後のタグのやり直し"
 
@@ -23611,9 +23601,6 @@ msgid "click to enter culling layout in dynamic mode."
 msgstr "クリックすると、選別レイアウト動的モードに入ります"
 
 #: ../src/libs/tools/lighttable.c:352
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle filemanager layout"
 msgid "toggle filemanager layout"
 msgstr "ファイルマネージャーレイアウトのオン／オフ切り替え"
 
@@ -23622,9 +23609,6 @@ msgid "click to enter filemanager layout."
 msgstr "クリックすると、ファイルマネージャーレイアウトに入ります"
 
 #: ../src/libs/tools/lighttable.c:361
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle zoomable lighttable layout"
 msgid "toggle zoomable lighttable layout"
 msgstr "ズーム可能なライトテーブルのオン／オフ切り替え"
 
@@ -23633,44 +23617,26 @@ msgid "click to enter zoomable lighttable layout."
 msgstr "クリックすると、ズーム可能なライトテーブルレイアウトに入ります"
 
 #: ../src/libs/tools/lighttable.c:370
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle culling mode"
 msgid "toggle culling mode"
 msgstr "選別モードのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:378
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle culling dynamic mode"
 msgid "toggle culling dynamic mode"
 msgstr "動的選別モードのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:386
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle sticky preview mode"
 msgid "toggle sticky preview mode"
 msgstr "継続プレビューモードのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:427
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle culling zoom mode"
 msgid "toggle culling zoom mode"
 msgstr "選別ズームモードのオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:429
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle sticky preview mode with focus detection"
 msgid "toggle sticky preview mode with focus detection"
 msgstr "継続プレビューモード＋ピント検出のオン／オフ切り替え"
 
 #: ../src/libs/tools/lighttable.c:431
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "exit current layout"
 msgid "exit current layout"
 msgstr "現在のレイアウトを出る"
 
@@ -23698,10 +23664,8 @@ msgstr "モジュールのツールボックス"
 
 #. connect callbacks
 #: ../src/libs/tools/ratings.c:98
-#, fuzzy
-#| msgid "write metadata for selected images"
 msgid "set star rating for selected images"
-msgstr "選択画像にメタデータを書き込みます"
+msgstr "選択した画像に評価を設定する"
 
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
