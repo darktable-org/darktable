@@ -44,6 +44,8 @@ G_BEGIN_DECLS
 typedef double (*DTGTKTranslateValueFunc)(const double value);
 typedef gchar *(*DTGTKPrintValueFunc)(const double value, const gboolean detailled);
 typedef gboolean (*DTGTKDecodeValueFunc)(const gchar *text, double *value);
+typedef struct _GtkDarktableRangeSelect GtkDarktableRangeSelect;
+typedef gchar *(*DTGTKCurrentTextFunc)(GtkDarktableRangeSelect *range, const double current);
 
 typedef enum dt_range_bounds_t
 {
@@ -62,7 +64,7 @@ typedef enum dt_range_type_t
   DT_RANGE_TYPE_DATETIME
 } dt_range_type_t;
 
-typedef struct _GtkDarktableRangeSelect
+struct _GtkDarktableRangeSelect
 {
   GtkEventBox widget;
 
@@ -100,7 +102,7 @@ typedef struct _GtkDarktableRangeSelect
   // print function has detailled mode for extended infos
   DTGTKPrintValueFunc print;
   DTGTKDecodeValueFunc decode;
-
+  DTGTKCurrentTextFunc current_text;
   GList *blocks;
   GList *icons;
   GList *markers;
@@ -116,7 +118,7 @@ typedef struct _GtkDarktableRangeSelect
   GtkWidget *cur_label;
 
   struct _range_date_popup *date_popup;
-} GtkDarktableRangeSelect;
+};
 
 typedef struct _GtkDarktableRangeSelectClass
 {

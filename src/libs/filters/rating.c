@@ -58,7 +58,7 @@ static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
   dtgtk_range_select_add_range_block(range, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
                                      nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
   dtgtk_range_select_add_range_block(range, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
-  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("unstared only"), nb[1]);
+  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("not rated only"), nb[1]);
   dtgtk_range_select_add_range_block(range, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
   dtgtk_range_select_add_range_block(range, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
   dtgtk_range_select_add_range_block(range, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
@@ -73,7 +73,7 @@ static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
     dtgtk_range_select_add_range_block(rangetop, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
                                        nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
     dtgtk_range_select_add_range_block(rangetop, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
-    dtgtk_range_select_add_range_block(rangetop, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("unstared only"), nb[1]);
+    dtgtk_range_select_add_range_block(rangetop, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("not rated only"), nb[1]);
     dtgtk_range_select_add_range_block(rangetop, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
     dtgtk_range_select_add_range_block(rangetop, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
     dtgtk_range_select_add_range_block(rangetop, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
@@ -99,19 +99,79 @@ static gchar *_rating_print_func(const double value, const gboolean detailled)
         return g_strdup(_("rejected"));
       case 0:
         return g_strdup(_("not rated"));
-      case 1:
-        return g_strdup("★");
-      case 2:
-        return g_strdup("★ ★");
-      case 3:
-        return g_strdup("★ ★ ★");
-      case 4:
-        return g_strdup("★ ★ ★ ★");
-      case 5:
-        return g_strdup("★ ★ ★ ★ ★");
     }
   }
   return g_strdup_printf("%.0lf", floor(value));
+}
+
+static gchar *_rating_get_bounds_pretty(GtkDarktableRangeSelect *range)
+{
+  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all images"));
+
+  if((range->bounds & DT_RANGE_BOUND_MIN)) 
+    range->select_min_r = range->min_r;
+  if((range->bounds & DT_RANGE_BOUND_MAX)) 
+    range->select_max_r = range->max_r;
+    
+  if(range->select_min_r == range->select_max_r)
+  {
+    gchar *printed_min = range->print(range->select_min_r, TRUE);
+    gchar *min_only = g_strdup_printf("%s %s", printed_min, _("only"));
+    g_free(printed_min);
+    return min_only;
+  }
+
+  const int rating_min = (int)floor(range->select_min_r);
+  const int rating_max = (int)floor(range->select_max_r);
+
+  if(rating_min == -1 && rating_max == 0)
+    return g_strdup_printf("%s + %s", _("rejected"), _("not rated"));
+
+  if(range->bounds & DT_RANGE_BOUND_MIN)
+  {
+    gchar *printed_max = range->print(range->select_max_r, TRUE);
+    gchar *lt_max_rejected = g_strdup_printf("≤%s + %s", printed_max, _("rejected"));
+    g_free(printed_max);
+    return lt_max_rejected;
+  }
+  else if(range->bounds & DT_RANGE_BOUND_MAX)
+  {
+    if(rating_min == 0)
+      return g_strdup(_("all except rejected"));
+    else
+    {
+      gchar *printed_min = range->print(range->select_min_r, TRUE);
+      gchar *gt_min = g_strdup_printf("≥%s", printed_min);
+      g_free(printed_min);
+      return gt_min;
+    }
+  }
+  else if(rating_min == 0)
+  {
+    gchar *printed_max = range->print(range->select_max_r, TRUE);
+    gchar *lt_max = g_strdup_printf("≤%s", printed_max);
+    g_free(printed_max);
+    return lt_max;
+  }
+
+  return dtgtk_range_select_get_bounds_pretty(range);
+}
+
+static gchar *_rating_current_text_func(GtkDarktableRangeSelect *range, const double current)
+{
+  gchar *hovered = range->print(current, TRUE);
+  gchar *hovered_escaped = g_markup_escape_text(hovered, -1);
+  gchar *selected = _rating_get_bounds_pretty(range);
+  gchar *selected_escaped = g_markup_escape_text(selected, -1);
+
+  gchar *rating_text = g_strdup_printf("  <b>%s</b> | %s: %s  ", 
+        hovered_escaped, _("selected"), selected_escaped);
+  
+  g_free(hovered);
+  g_free(hovered_escaped);
+  g_free(selected);
+  g_free(selected_escaped);
+  return rating_text;
 }
 
 static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
@@ -267,6 +327,7 @@ static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   dtgtk_range_select_add_icon(range, 78, 4, _rating_paint_icon, 0, NULL);
   dtgtk_range_select_add_icon(range, 93, 5, _rating_paint_icon, 0, NULL);
   range->print = _rating_print_func;
+  range->current_text = _rating_current_text_func;
 
   dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
 
