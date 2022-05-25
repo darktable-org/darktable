@@ -1975,7 +1975,8 @@ void gui_init(dt_iop_module_t *self)
   self->widget = dt_ui_notebook_page(g->notebook, N_("masks"), _("isolate luminances"));
 
   g->saturation_formula = dt_bauhaus_combobox_from_params(self, "saturation_formula");
-  gtk_widget_set_tooltip_text(g->saturation_formula, _("choose in which uniform color space the saturation is computed."));
+  gtk_widget_set_tooltip_text(g->saturation_formula,
+                              _("choose in which uniform color space the saturation is computed"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("luminance ranges")), FALSE, FALSE, 0);
 
