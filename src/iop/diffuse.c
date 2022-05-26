@@ -22,7 +22,6 @@
 #include "common/bspline.h"
 #include "common/darktable.h"
 #include "common/dwt.h"
-#include "common/fast_guided_filter.h"
 #include "common/gaussian.h"
 #include "common/image.h"
 #include "common/imagebuf.h"
