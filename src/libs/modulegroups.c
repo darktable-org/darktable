@@ -3510,8 +3510,8 @@ static void _manage_editor_preset_action(GtkWidget *btn, dt_lib_module_t *self)
 #endif
   GtkWidget *bt_ok = gtk_dialog_get_widget_for_response(GTK_DIALOG(dialog), GTK_RESPONSE_OK);
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  gtk_box_pack_start(GTK_BOX(content_area), gtk_label_new(_("new preset name :")), FALSE, TRUE, 0);
-  GtkWidget *lb = gtk_label_new(_("a preset with this name already exists !"));
+  gtk_box_pack_start(GTK_BOX(content_area), gtk_label_new(_("new preset name:")), FALSE, TRUE, 0);
+  GtkWidget *lb = gtk_label_new(_("a preset with this name already exists!"));
   GtkWidget *tb = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(tb), new_name);
   g_object_set_data(G_OBJECT(tb), "existing_names", names);
@@ -3856,7 +3856,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vb, "modulegroups-top-boxes");
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("preset : ")), FALSE, TRUE, 2);
+  gtk_box_pack_start(GTK_BOX(hb2), gtk_label_new(_("preset: ")), FALSE, TRUE, 2);
   d->presets_combo = gtk_combo_box_text_new();
   g_signal_connect(G_OBJECT(d->presets_combo), "changed", G_CALLBACK(_manage_preset_change), self);
   gtk_box_pack_start(GTK_BOX(hb2), d->presets_combo, TRUE, TRUE, 2);

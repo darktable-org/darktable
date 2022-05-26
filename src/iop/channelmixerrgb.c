@@ -365,7 +365,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 1.f;
   p.grey[2] = 0.f;
 
-  dt_gui_presets_add_generic(_("B&W : luminance-based"), self->op,
+  dt_gui_presets_add_generic(_("B&W: luminance-based"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // film emulations
@@ -394,7 +394,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.25958747f;
   p.grey[2] = 0.48737156f;
 
-  dt_gui_presets_add_generic(_("B&W : ILFORD HP5+"), self->op,
+  dt_gui_presets_add_generic(_("B&W: ILFORD HP5+"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD Delta 100
@@ -403,7 +403,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.25366007f;
   p.grey[2] = 0.50081619f;
 
-  dt_gui_presets_add_generic(_("B&W : ILFORD DELTA 100"), self->op,
+  dt_gui_presets_add_generic(_("B&W: ILFORD DELTA 100"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD Delta 400 and 3200 - they have the same curve
@@ -413,7 +413,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.23613559f;
   p.grey[2] = 0.52009729f;
 
-  dt_gui_presets_add_generic(_("B&W : ILFORD DELTA 400 - 3200"), self->op,
+  dt_gui_presets_add_generic(_("B&W: ILFORD DELTA 400 - 3200"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD FP4+
@@ -422,7 +422,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.22149272f;
   p.grey[2] = 0.53701643f;
 
-  dt_gui_presets_add_generic(_("B&W : ILFORD FP4+"), self->op,
+  dt_gui_presets_add_generic(_("B&W: ILFORD FP4+"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Fuji Acros 100
@@ -431,7 +431,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.313f;
   p.grey[2] = 0.353f;
 
-  dt_gui_presets_add_generic(_("B&W : Fuji Acros 100"), self->op,
+  dt_gui_presets_add_generic(_("B&W: Fuji Acros 100"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodak ?
@@ -1760,19 +1760,19 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   // Update GUI label
   g_free(g->delta_E_label_text);
   g->delta_E_label_text
-      = g_strdup_printf(_("\n<b>Profile quality report : %s</b>\n"
-                          "input  ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-                          "WB ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-                          "output ΔE : \tavg. %.2f ; \tmax. %.2f\n\n"
+      = g_strdup_printf(_("\n<b>Profile quality report: %s</b>\n"
+                          "input ΔE: \tavg. %.2f ; \tmax. %.2f\n"
+                          "WB ΔE: \tavg. %.2f; \tmax. %.2f\n"
+                          "output ΔE: \tavg. %.2f; \tmax. %.2f\n\n"
                           "<b>Profile data</b>\n"
-                          "illuminant :  \t%.0f K \t%s \n"
+                          "illuminant:  \t%.0f K \t%s\n"
                           "matrix in adaptation space:\n"
                           "<tt>%+.4f \t%+.4f \t%+.4f\n"
                           "%+.4f \t%+.4f \t%+.4f\n"
                           "%+.4f \t%+.4f \t%+.4f</tt>\n\n"
                           "<b>Normalization values</b>\n"
-                          "exposure compensation : \t%+.2f EV\n"
-                          "black offset : \t%+.4f"
+                          "exposure compensation: \t%+.2f EV\n"
+                          "black offset: \t%+.4f"
                           ),
                         diagnostic, pre_wb_delta_E, pre_wb_max_delta_E, post_wb_delta_E, post_wb_max_delta_E,
                         post_mix_delta_E, post_mix_max_delta_E, temperature, string, g->mix[0][0], g->mix[0][1],
@@ -1806,11 +1806,11 @@ void validate_color_checker(const float *const restrict in,
 
   // Update GUI label
   g_free(g->delta_E_label_text);
-  g->delta_E_label_text = g_strdup_printf(_("\n<b>Profile quality report : %s</b>\n"
-                                            "output ΔE : \tavg. %.2f ; \tmax. %.2f\n\n"
+  g->delta_E_label_text = g_strdup_printf(_("\n<b>Profile quality report: %s</b>\n"
+                                            "output ΔE: \tavg. %.2f; \tmax. %.2f\n\n"
                                             "<b>Normalization values</b>\n"
-                                            "exposure compensation : \t%+.2f EV\n"
-                                            "black offset : \t%+.4f"),
+                                            "exposure compensation: \t%+.2f EV\n"
+                                            "black offset: \t%+.4f"),
                                           diagnostic, pre_wb_delta_E, pre_wb_max_delta_E, log2f(extraction_result.exposure),
                                           extraction_result.black);
 
@@ -3743,7 +3743,7 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   // Write report in GUI
   ++darktable.gui->reset;
   gtk_label_set_text(GTK_LABEL(g->Lch_origin),
-                     g_strdup_printf(_("L : \t%.1f %%\nh : \t%.1f °\nc : \t%.1f"),
+                     g_strdup_printf(_("L: \t%.1f %%\nh: \t%.1f °\nc: \t%.1f"),
                                      Lch[0], Lch[2] * 360.f, Lch[1] ));
   --darktable.gui->reset;
 
@@ -4110,7 +4110,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->origin_spot), "draw", G_CALLBACK(origin_color_draw), self);
   gtk_box_pack_start(GTK_BOX(vvbox), g->origin_spot, TRUE, TRUE, 0);
 
-  g->Lch_origin = gtk_label_new(_("L : \tN/A \nh : \tN/A\nc : \tN/A"));
+  g->Lch_origin = gtk_label_new(_("L: \tN/A\nh: \tN/A\nc: \tN/A"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->Lch_origin),
                               _("these LCh coordinates are computed from CIE Lab 1976 coordinates"));
   gtk_box_pack_start(GTK_BOX(vvbox), GTK_WIDGET(g->Lch_origin), FALSE, FALSE, 0);
