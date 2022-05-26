@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-21 20:29+0200\n"
-"PO-Revision-Date: 2022-05-27 01:36+0900\n"
+"PO-Revision-Date: 2022-05-27 02:11+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -3238,10 +3238,8 @@ msgstr "コントラスト"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:418
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:589
-#, fuzzy
-#| msgid "saturation only"
 msgid "saturation formula"
-msgstr "彩度のみ"
+msgstr "彩度（サチュレーション）の方式"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:603
 msgid "JzAzBz (2021)"
@@ -4028,17 +4026,13 @@ msgstr "再構成の直径"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:149
 #: ../build/lib/darktable/plugins/introspection_highlights.c:236
-#, fuzzy
-#| msgid "balance"
 msgid "cast balance"
 msgstr "バランス"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:155
 #: ../build/lib/darktable/plugins/introspection_highlights.c:240
-#, fuzzy
-#| msgid "combine masks"
 msgid "combine segments"
-msgstr "マスク組み合わせ方式"
+msgstr "諸部分を組み合わせる"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:258
 msgid "clip highlights"
@@ -6105,15 +6099,12 @@ msgid "later"
 msgstr "後で"
 
 #: ../src/common/eigf.h:288
-#, fuzzy
-#| msgid ""
-#| "fast guided filter failed to allocate memory, check your RAM settings"
 msgid ""
 "fast exposure independent guided filter failed to allocate memory, check "
 "your RAM settings"
 msgstr ""
-"高速ガイドフィルターがメモリの割り当てに失敗しました。RAM設定を確認してくださ"
-"い"
+"高速露出非依存ガイドフィルターがメモリの割り当てに失敗しました。RAM設定を確認"
+"してください"
 
 #: ../src/common/exif.cc:4332
 #, c-format
@@ -8889,10 +8880,8 @@ msgid "date type"
 msgstr "データタイプ"
 
 #: ../src/dtgtk/range.c:923
-#, fuzzy
-#| msgid "fixed zoom"
 msgid "fixed"
-msgstr "固定ズーム"
+msgstr "固定"
 
 #: ../src/dtgtk/range.c:924 ../src/iop/colorchecker.c:1382
 msgid "relative"
@@ -11932,39 +11921,39 @@ msgstr "明瞭化"
 
 #: ../src/iop/atrous.c:887
 msgid "deblur: large blur, strength 3"
-msgstr "ボケ除去：大きなボケ、強さ 3"
+msgstr "ぼけ除去：大きなぼけ、強さ 3"
 
 #: ../src/iop/atrous.c:904
 msgid "deblur: medium blur, strength 3"
-msgstr "ボケ除去：中程度のボケ、強さ 3"
+msgstr "ぼけ除去：中程度のぼけ、強さ 3"
 
 #: ../src/iop/atrous.c:920
 msgid "deblur: fine blur, strength 3"
-msgstr "ボケ除去：微細なボケ、強さ 3"
+msgstr "ぼけ除去：微細なぼけ、強さ 3"
 
 #: ../src/iop/atrous.c:938
 msgid "deblur: large blur, strength 2"
-msgstr "ボケ除去：大きなボケ、強さ 2"
+msgstr "ぼけ除去：大きなぼけ、強さ 2"
 
 #: ../src/iop/atrous.c:955
 msgid "deblur: medium blur, strength 2"
-msgstr "ボケ除去：中程度のボケ、強さ 2"
+msgstr "ぼけ除去：中程度のぼけ、強さ 2"
 
 #: ../src/iop/atrous.c:971
 msgid "deblur: fine blur, strength 2"
-msgstr "ボケ除去：微細なボケ、強さ 2"
+msgstr "ぼけ除去：微細なぼけ、強さ 2"
 
 #: ../src/iop/atrous.c:989
 msgid "deblur: large blur, strength 1"
-msgstr "ボケ除去：大きなボケ、強さ 1"
+msgstr "ぼけ除去：大きなぼけ、強さ 1"
 
 #: ../src/iop/atrous.c:1006
 msgid "deblur: medium blur, strength 1"
-msgstr "ボケ除去：中程度のボケ、強さ 1"
+msgstr "ぼけ除去：中程度のぼけ、強さ 1"
 
 #: ../src/iop/atrous.c:1022
 msgid "deblur: fine blur, strength 1"
-msgstr "ボケ除去：微細なボケ、強さ 1"
+msgstr "ぼけ除去：微細なぼけ、強さ 1"
 
 #: ../src/iop/atrous.c:1348 ../src/iop/atrous.c:1594
 #: ../src/iop/denoiseprofile.c:3393 ../src/iop/rawdenoise.c:739
@@ -15400,12 +15389,6 @@ msgid "properties"
 msgstr "プロパティ"
 
 #: ../src/iop/diffuse.c:1479
-#, fuzzy
-#| msgid ""
-#| "more iterations make the effect stronger but the module slower.\n"
-#| "this is analogous to giving more time to the diffusion reaction.\n"
-#| "if you plan on sharpening or inpainting, more iterations help "
-#| "reconstruction."
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -15432,13 +15415,6 @@ msgstr ""
 "値を上げると局所的なコントラストに作用します"
 
 #: ../src/iop/diffuse.c:1498
-#, fuzzy
-#| msgid ""
-#| "width of the diffusion around the center radius.\n"
-#| "high values diffuse on a large band of radii.\n"
-#| "low values diffuse closer to the center radius.\n"
-#| "if you plan on deblurring, the radius should be around the width of your "
-#| "lens blur."
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -15446,10 +15422,10 @@ msgid ""
 "if you plan on deblurring, \n"
 "the radius should be around the width of your lens blur."
 msgstr ""
-"中央区域の周囲の拡散の幅\n"
+"中央区域の周りの拡散の幅\n"
 "値を上げると、半径の広範囲で拡散します\n"
 "値を下げると、中央区域のより近くで拡散します\n"
-"ぼけを除去するつもりであれば、この半径はレンズボケの幅と同じくらいにしてくだ"
+"ぼけを除去するつもりであれば、この半径はレンズぼけの幅と同じくらいにしてくだ"
 "さい"
 
 #: ../src/iop/diffuse.c:1504
@@ -15574,8 +15550,6 @@ msgstr ""
 "0は両者に等しく作用します（等方的）"
 
 #: ../src/iop/diffuse.c:1578
-#, fuzzy
-#| msgid "edges management"
 msgid "edge management"
 msgstr "エッジの操作"
 
@@ -16761,16 +16735,13 @@ msgid "highlight reconstruction method"
 msgstr "ハイライトの再構成の方式"
 
 #: ../src/iop/highlights.c:2192
-#, fuzzy
-#| msgid ""
-#| "manually adjust the clipping threshold against magenta highlights (you "
-#| "shouldn't ever need to touch this)"
 msgid ""
 "manually adjust the clipping threshold against magenta highlights\n"
 "the mask icon shows the clipped area\n"
 "(you shouldn't ever need to touch this)"
 msgstr ""
 "マゼンタのハイライトを避けるよう、クリップのしきい値を手動で調整します\n"
+"マスクアイコンをクリックすると、クリップした領域を表示します\n"
 "（これを変更する必要がないようにしてください）"
 
 #: ../src/iop/highlights.c:2201
@@ -17962,17 +17933,11 @@ msgid "raw black/white point"
 msgstr "RAWブラック／ホワイトポイント"
 
 #: ../src/iop/rawprepare.c:151
-#, fuzzy
-#| msgid ""
-#| "sets technical specificities of the raw sensor.\n"
-#| "\n"
-#| "touch with great care!"
 msgid ""
 "sets technical specificities of the raw sensor.\n"
 "touch with great care!"
 msgstr ""
 "センサーの技術的特性を設定します\n"
-"\n"
 "注意して変更してください"
 
 #: ../src/iop/rawprepare.c:163
@@ -19364,10 +19329,8 @@ msgid "pick color from image"
 msgstr "画像から色を抽出"
 
 #: ../src/iop/watermark.c:1124
-#, fuzzy
-#| msgid "element"
 msgid "placement"
-msgstr "要素"
+msgstr "位置"
 
 #: ../src/iop/watermark.c:1137
 msgid "size is relative to"
@@ -19833,12 +19796,11 @@ msgid "error loading file '%s'"
 msgstr "ファイル'%s'の 読み込み中にエラーが発生しました"
 
 #: ../src/libs/copy_history.c:191
-#, fuzzy, c-format
-#| msgid "history compression warning"
+#, c-format
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
-msgstr[0] "履歴圧縮 警告"
-msgstr[1] "履歴圧縮 警告"
+msgstr[0] "%d枚の画像の履歴を圧縮することが出来ません"
+msgstr[1] "%d枚の画像の履歴を圧縮することが出来ません"
 
 #: ../src/libs/copy_history.c:235
 #, c-format
@@ -20266,18 +20228,6 @@ msgid "formula"
 msgstr "式"
 
 #: ../src/libs/export_metadata.c:383
-#, fuzzy
-#| msgid ""
-#| "list of calculated metadata\n"
-#| "click on '+' button to select and add new metadata\n"
-#| "if formula is empty, the corresponding metadata is removed from exported "
-#| "file,\n"
-#| "if formula is '=', the exif metadata is exported even if exif data are "
-#| "disabled\n"
-#| "otherwise the corresponding metadata is calculated and added to exported "
-#| "file\n"
-#| "click on formula cell to edit\n"
-#| "type '$(' to activate the completion and see the list of variables"
 msgid ""
 "list of calculated metadata\n"
 "click on '+' button to select and add new metadata\n"
@@ -20291,14 +20241,15 @@ msgid ""
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
 "算出されたメタデータのリスト\n"
-"'+'ボタン上でクリックすると、新しいメタデータを選択して追加します\n"
-"式が空欄の場合、対応するメタデータがエクスポートファイルから削除されます\n"
-"式が'='の場合、exifデータが無効であっても、exifメタデータをエクスポートしま"
+"+ボタン上でクリックすると、新しいメタデータを選択し、追加します\n"
+"式が空欄の場合、対応するメタデータがエクスポートファイルから削除されていま"
 "す\n"
-"それ以外の場合、対応するメタデータが算出され、エクスポートファイルに追加され"
+"式が=の場合、EXIFデータが無効であっても、EXIFメタデータがエクスポートされてい"
 "ます\n"
+"それ以外の場合、対応するメタデータが算出され、エクスポートファイルに追加され"
+"ています\n"
 "式セル上でクリックして編集します\n"
-"'$('とタイプすると、入力補完を有効にし、変数のリストを見ることが出来ます"
+"$(とタイプすると、入力補完を有効にし、変数のリストを見ることが出来ます"
 
 #: ../src/libs/export_metadata.c:440
 msgid "add an output metadata tag"
@@ -20446,10 +20397,8 @@ msgid "new rule"
 msgstr "新しいルール"
 
 #: ../src/libs/filtering.c:1972
-#, fuzzy
-#| msgid "apply offset to selected images"
 msgid "append new rule to collect images"
-msgstr "選択した画像に時差を適用します"
+msgstr "画像を集めるための新しいルールを追加します"
 
 #: ../src/libs/filtering.c:1983 ../src/libs/tools/filter.c:100
 msgid "sort by"
@@ -20460,10 +20409,8 @@ msgid "new sort"
 msgstr "新しい並び順"
 
 #: ../src/libs/filtering.c:1992
-#, fuzzy
-#| msgid "added time offset to %d images"
 msgid "append new sort to order images"
-msgstr "%d枚の画像に時差を追加しました"
+msgstr "画像の新しい並び順を追加します"
 
 #: ../src/libs/filtering.c:1995
 msgid "revert to a previous set of sort orders"
