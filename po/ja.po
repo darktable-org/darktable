@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-21 20:29+0200\n"
-"PO-Revision-Date: 2022-05-26 15:48+0900\n"
+"PO-Revision-Date: 2022-05-27 01:36+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1008,12 +1008,8 @@ msgstr ""
 "り替えます"
 
 #: ../build/bin/preferences_gen.h:4191
-#, fuzzy
-#| msgid "scroll to utility modules when expanded/collapsed"
 msgid "scroll utility modules to the top when expanded"
-msgstr ""
-"ユーティリティモジュールを展開／折りたたみした時に該当モジュールへスクロール"
-"する"
+msgstr "ユーティリティモジュールを展開した時、上へスクロールする"
 
 #: ../build/bin/preferences_gen.h:4205 ../build/bin/preferences_gen.h:5500
 msgid ""
@@ -1324,10 +1320,8 @@ msgstr ""
 "ルを自動的に展開または折りたたみます"
 
 #: ../build/bin/preferences_gen.h:5486
-#, fuzzy
-#| msgid "scroll to processing modules when expanded/collapsed"
 msgid "scroll processing modules to the top when expanded"
-msgstr "処理モジュールを展開／折りたたみした時、該当モジュールへスクロールする"
+msgstr "処理モジュールを展開した時、上へスクロールする"
 
 #: ../build/bin/preferences_gen.h:5522
 msgid "white balance slider colors"
@@ -1346,8 +1340,6 @@ msgstr ""
 "'効果の疑似表示'では、スライダーの色は調整がシーンに与える効果を表示します"
 
 #: ../build/bin/preferences_gen.h:5587
-#, fuzzy
-#| msgid "colorbalance slider block layout"
 msgid "color balance slider block layout"
 msgstr "カラーバランスのスライダーブロックのレイアウト"
 
@@ -1489,10 +1481,10 @@ msgid ""
 "display-referred workflow is based on Lab modules and will auto-apply base "
 "curve and the legacy module pipe order."
 msgstr ""
-"シーン参照ワークフローはリニアモジュールに基づいており、フィルミックと露出を"
-"自動適用します\n"
-"ディスプレイ参照ワークフローはLabモジュールに基づいており、ベースカーブと旧式"
-"のモジュールのパイプ順序を自動適用します"
+"シーン参照ワークフローはリニアモジュールにもとづいており、フィルミックと露出"
+"を自動適用します\n"
+"ディスプレイ参照ワークフローはLabモジュールにもとづいており、ベースカーブと旧"
+"式のモジュールのパイプ順序を自動適用します"
 
 #: ../build/bin/preferences_gen.h:6122
 msgid "auto-apply chromatic adaptation defaults"
@@ -1549,16 +1541,12 @@ msgid "detect monochrome previews"
 msgstr "モノクロプレビューを検出する"
 
 #: ../build/bin/preferences_gen.h:6268
-#, fuzzy
-#| msgid ""
-#| "many monochrome images can be identified via exif and preview data. "
-#| "beware: this slows down imports and reading exif data"
 msgid ""
 "many monochrome images can be identified via EXIF and preview data. beware: "
 "this slows down imports and reading of EXIF data"
 msgstr ""
-"多くのモノクロ画像はexifおよびプレビューデータによって識別されます\n"
-"注意：これにより、インポートとexifデータの読み込みが遅くなります"
+"多くのモノクロ画像はEXIFとプレビューデータによって識別されます\n"
+"注意：これにより、インポートとEXIFデータの読み込みが遅くなります"
 
 #: ../build/bin/preferences_gen.h:6290
 msgid "show warning messages"
@@ -1738,10 +1726,8 @@ msgid "ask before removing images from the library"
 msgstr "画像をライブラリから除去する前に確認する"
 
 #: ../build/bin/preferences_gen.h:6744
-#, fuzzy
-#| msgid "always ask the user before any image is removed from the library"
 msgid "always ask the user before removing image information from the library"
-msgstr "画像がライブラリから除去される前に必ずユーザーに確認します"
+msgstr "画像情報をライブラリから除去する前に必ずユーザーに確認します"
 
 #: ../build/bin/preferences_gen.h:6766
 msgid "ask before deleting images from disk"
@@ -1749,7 +1735,7 @@ msgstr "画像をディスクから削除する前に確認する"
 
 #: ../build/bin/preferences_gen.h:6780
 msgid "always ask the user before any image file is deleted"
-msgstr "ファイルが削除される前に必ずユーザーに確認します"
+msgstr "ファイルを削除する前に必ずユーザーに確認します"
 
 #: ../build/bin/preferences_gen.h:6802
 msgid "ask before discarding history stack"
@@ -1757,7 +1743,7 @@ msgstr "履歴スタックを破棄する前に確認する"
 
 #: ../build/bin/preferences_gen.h:6816
 msgid "always ask the user before history stack is discarded on any image"
-msgstr "履歴スタックが破棄される前に必ずユーザーに確認します"
+msgstr "履歴スタックを破棄する前に必ずユーザーに確認します"
 
 #: ../build/bin/preferences_gen.h:6838
 msgid "try to use trash when deleting images"
@@ -1775,7 +1761,7 @@ msgstr "フィルムロールフォルダから画像を移動する前に確認
 
 #: ../build/bin/preferences_gen.h:6888
 msgid "always ask the user before any image file is moved."
-msgstr "画像ファイルが移動される前に必ずユーザーに確認します"
+msgstr "画像ファイルを移動する前に必ずユーザーに確認します"
 
 #: ../build/bin/preferences_gen.h:6910
 msgid "ask before copying images to new film roll folder"
@@ -1783,7 +1769,7 @@ msgstr "新しいフィルムロールフォルダに画像をコピーする前
 
 #: ../build/bin/preferences_gen.h:6924
 msgid "always ask the user before any image file is copied."
-msgstr "ファイルがコピーされる前に必ずユーザーに確認します"
+msgstr "ファイルをコピーする前に必ずユーザーに確認します"
 
 #: ../build/bin/preferences_gen.h:6946
 msgid "ask before removing empty folders"
@@ -1984,10 +1970,8 @@ msgid "interface"
 msgstr "インターフェース"
 
 #: ../build/bin/preferences_gen.h:7726
-#, fuzzy
-#| msgid "restore default shortcuts or previous state"
 msgid "load default shortcuts at startup"
-msgstr "ショートカットのデフォルト設定または以前の状態を復元します"
+msgstr "ショートカットのデフォルト設定を起動時に読み込む"
 
 #: ../build/bin/preferences_gen.h:7740
 msgid ""
@@ -3480,10 +3464,8 @@ msgstr "LMMSE精緻化"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
-#, fuzzy
-#| msgid "details threshold"
 msgid "dual threshold"
-msgstr "ディテールのしきい値"
+msgstr "二重しきい値"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:197
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:204
@@ -4041,10 +4023,8 @@ msgstr "クリッピングのしきい値"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:143
 #: ../build/lib/darktable/plugins/introspection_highlights.c:232
-#, fuzzy
-#| msgid "color reconstruction"
 msgid "diameter of reconstruction"
-msgstr "色の再構成"
+msgstr "再構成の直径"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:149
 #: ../build/lib/darktable/plugins/introspection_highlights.c:236
@@ -4356,10 +4336,8 @@ msgstr "ホワイトポイント"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:112
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:183
-#, fuzzy
-#| msgid "black level correction"
 msgid "flat field correction"
-msgstr "黒レベル補正"
+msgstr "フラットフィールド補正"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:198
 msgid "embedded GainMap"
@@ -7854,7 +7832,7 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"このモジュールが受け取った入力に基づく調整\n"
+"このモジュールが受け取った入力にもとづく調整\n"
 "* 上の三角マーカーで定義された範囲：完全にブレンド\n"
 "* 下の三角マーカーで定義された範囲：ブレンドしない\n"
 "* 隣接する上／下の三角マーカーの間の範囲：徐々にブレンド"
@@ -7866,7 +7844,7 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"このモジュールのブレンドなしの出力に基づく調整\n"
+"このモジュールのブレンドなしの出力にもとづく調整\n"
 "* 上の三角マーカーで定義された範囲：完全にブレンド\n"
 "* 下の三角マーカーで定義された範囲：ブレンドしない\n"
 "* 隣接する上／下の三角マーカーの間の範囲：徐々にブレンド"
@@ -7897,7 +7875,7 @@ msgid ""
 "drag to use the input image\n"
 "ctrl+drag to use the output image"
 msgstr ""
-"画像の領域に基づいて範囲を設定\n"
+"画像の領域にもとづいて範囲を設定\n"
 "入力画像を使用するには ドラッグ\n"
 "出力画像を使用するには Ctrl+ドラッグ"
 
@@ -8158,7 +8136,7 @@ msgid ""
 "choose to guide mask by input or output image and\n"
 "choose to apply feathering before or after mask blur"
 msgstr ""
-"マスクを入力画像または出力画像に基づいて作成します\n"
+"マスクを入力画像または出力画像にもとづいて作成します\n"
 "境界のぼかし処理をマスクぼかし前または後に適用します"
 
 #: ../src/develop/blend_gui.c:3095 ../src/libs/history.c:864
@@ -10130,11 +10108,11 @@ msgstr "$(MONTH) - 月"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
-msgstr "$(MONTH.SHORT) - 現在のロケールに基づく月（略記）"
+msgstr "$(MONTH.SHORT) - 現在のロケールにもとづく月（略記）"
 
 #: ../src/gui/gtkentry.c:195
 msgid "$(MONTH.LONG) - full month name according to the current locale"
-msgstr "$(MONTH.LONG) - 現在のロケールに基づく月"
+msgstr "$(MONTH.LONG) - 現在のロケールにもとづく月"
 
 #: ../src/gui/gtkentry.c:196
 msgid "$(DAY) - day"
@@ -10176,12 +10154,12 @@ msgstr "$(EXIF.MONTH) - EXIF 月"
 msgid ""
 "$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
 "locale"
-msgstr "$(EXIF.MONTH.SHORT) - 現在のロケールに基づくEXIF月（略記）"
+msgstr "$(EXIF.MONTH.SHORT) - 現在のロケールにもとづくEXIF月（略記）"
 
 #: ../src/gui/gtkentry.c:206
 msgid ""
 "$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
-msgstr "$(EXIF.MONTH.LONG) - 現在のロケールに基づくEXIF月"
+msgstr "$(EXIF.MONTH.LONG) - 現在のロケールにもとづくEXIF月"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(EXIF.DAY) - EXIF day"
@@ -11051,7 +11029,7 @@ msgstr ""
 "\n"
 "以下は非可逆モードに設定した場合にのみ適用されます\n"
 "\n"
-"クオリティに基づくピクセル形式\n"
+"クオリティにもとづくピクセル形式\n"
 "\n"
 "    91% - 100% -> YUV444\n"
 "    81% -  90% -> YUV422\n"
@@ -11777,19 +11755,12 @@ msgid ""
 msgstr "パースペクティブ補正をするレンズのモデル：汎用または焦点距離別"
 
 #: ../src/iop/ashift.c:5794
-#, fuzzy
-#| msgid ""
-#| "focal length of the lens, default value set from exif data if available"
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
 "レンズの焦点距離\n"
 "exifデータに記録されている値をデフォルトで設定します"
 
 #: ../src/iop/ashift.c:5796
-#, fuzzy
-#| msgid ""
-#| "crop factor of the camera sensor, default value set from exif data if "
-#| "available, manual setting is often required"
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
@@ -12184,7 +12155,7 @@ msgid ""
 "apply a view transform based on personal or camera manufacturer look,\n"
 "for corrective purposes, to prepare images for display"
 msgstr ""
-"個人のあるいはカメラメーカーのルックに基づいてビュー変換を適用します\n"
+"個人のあるいはカメラメーカーのルックにもとづいてビュー変換を適用します\n"
 "補正を目的として、ディスプレイでの表示に合わせて画像を準備します"
 
 #: ../src/iop/basecurve.c:339 ../src/iop/cacorrect.c:88
@@ -12253,7 +12224,7 @@ msgid ""
 "high dynamic range. expose for the highlights before use."
 msgstr ""
 "元画像と異なる露出補正値と合成し、ハイダイナミックレンジを圧縮します\n"
-"使用前のハイライトに基づいて露出を決定します"
+"使用前のハイライトにもとづいて露出を決定します"
 
 #: ../src/iop/basecurve.c:2090
 msgid "how many stops to shift the individual exposures apart"
@@ -12344,7 +12315,7 @@ msgstr "自然な彩度調整"
 
 #: ../src/iop/basicadj.c:632
 msgid "apply auto exposure based on the entire image"
-msgstr "画像全体に基づいて自動露出を適用します"
+msgstr "画像全体にもとづいて自動露出を適用します"
 
 #: ../src/iop/basicadj.c:639
 msgid ""
@@ -12352,7 +12323,7 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
-"ユーザーが定めた領域に基づいて自動露出を適用します\n"
+"ユーザーが定めた領域にもとづいて自動露出を適用します\n"
 "クリックとドラッグで領域を描きます\n"
 "右クリックすると、キャンセルします"
 
@@ -12717,8 +12688,6 @@ msgid "linear, raw"
 msgstr "リニア、 RAW"
 
 #: ../src/iop/cacorrect.c:1337
-#, fuzzy
-#| msgid "raw CA correction supports only standard RGB bayer filter arrays"
 msgid "raw CA correction supports only standard RGB Bayer filter arrays"
 msgstr "RAW色収差は標準的なRGBベイヤーフィルター配列のみをサポートしています"
 
@@ -12768,16 +12737,12 @@ msgid "activate colorshift correction for blue & red channels"
 msgstr "青および赤チャンネルの色ずれ補正を有効にします"
 
 #: ../src/iop/cacorrect.c:1465
-#, fuzzy
-#| msgid ""
-#| "automatic chromatic aberration correction\n"
-#| "only for bayer raw files"
 msgid ""
 "automatic chromatic aberration correction\n"
 "only for Bayer raw files"
 msgstr ""
 "色収差の自動補正\n"
-"ベイヤーセンサーのRAWファイルでのみ動作"
+"ベイヤーセンサーのRAWファイルでのみ動作します"
 
 #: ../src/iop/cacorrectrgb.c:161 ../src/iop/defringe.c:75
 msgid "chromatic aberrations"
@@ -12960,7 +12925,7 @@ msgstr "色のアーティファクトをブースト"
 
 #: ../src/iop/channelmixer.c:692
 msgid "B/W luminance-based"
-msgstr "白黒：輝度に基づく"
+msgstr "白黒：輝度にもとづく"
 
 #: ../src/iop/channelmixer.c:698
 msgid "B/W artifacts boost"
@@ -13020,7 +12985,7 @@ msgstr "リニア、RGBまたはXYZ"
 
 #: ../src/iop/channelmixerrgb.c:368
 msgid "B&W : luminance-based"
-msgstr "白黒：輝度に基づく"
+msgstr "白黒：輝度にもとづく"
 
 #: ../src/iop/channelmixerrgb.c:397
 msgid "B&W : ILFORD HP5+"
@@ -14649,8 +14614,8 @@ msgid ""
 "based on color dominance"
 msgstr ""
 "クラスタをマップする方法\n"
-"低い値：色の類似度に基づきます\n"
-"高い値：色の優勢度に基づきます"
+"低い値：色の類似度にもとづきます\n"
+"高い値：色の優勢度にもとづきます"
 
 #: ../src/iop/colormapping.c:1077
 msgid "level of histogram equalization"
@@ -14872,7 +14837,7 @@ msgid ""
 "ctrl+drag to create a positive curve\n"
 "shift+drag to create a negative curve"
 msgstr ""
-"画像内の領域に基づいて曲線を作成します\n"
+"画像内の領域にもとづいて曲線を作成します\n"
 "ドラッグで平坦な曲線を作成します\n"
 "Ctrl+ドラッグで正の曲線を作成します\n"
 "Shift+ドラッグで負の曲線を作成します"
@@ -15031,28 +14996,17 @@ msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' 4ベイヤー画像のためのカラーマトリクスが見つかりませんでした"
 
 #: ../src/iop/demosaic.c:5786
-#, fuzzy
-#| msgid ""
-#| "bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE "
-#| "are slow.\n"
-#| "LMMSE is suited best for high ISO images.\n"
-#| "dual demosaicers double processing time."
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
 "LMMSE is suited best for high ISO images.\n"
 "dual demosaicers double processing time."
 msgstr ""
-"ベイヤーセンサーのデモザイク方式。RRGとRCDは高速、AMaZEとLMMSEは低速です\n"
+"ベイヤーセンサーのデモザイク方式。PPGとRCDは高速、AMaZEとLMMSEは低速です\n"
 "LMMSEは高ISOの画像に最も適しています\n"
 "二重デモザイクは処理時間が2倍になります"
 
 #: ../src/iop/demosaic.c:5790
-#, fuzzy
-#| msgid ""
-#| "xtrans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
-#| "chroma are slow.\n"
-#| "dual demosaicers double processing time."
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -15073,20 +15027,16 @@ msgstr ""
 "1.0に設定するとエッジを無視します"
 
 #: ../src/iop/demosaic.c:5799
-#, fuzzy
-#| msgid ""
-#| "contrast threshold for dual demosaic.\n"
-#| "set to 0.0 for high frequency content\n"
-#| "set to 1.0 for flat content"
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
 "set to 1.0 for flat content\n"
 "toggle to visualize the mask"
 msgstr ""
-"二重デモザイクのしきい値\n"
+"二重デモザイクのコントラストしきい値\n"
 "高周波成分に対しては0.0に設定してください\n"
-"フラットな成分に対しては1.0に設定してください"
+"フラットな成分に対しては1.0に設定してください\n"
+"マスクの表示／非表示を切り替えることが出来ます"
 
 #: ../src/iop/demosaic.c:5807
 msgid ""
@@ -15118,8 +15068,6 @@ msgid "denoise (profiled)"
 msgstr "ノイズ除去（プロファイル）"
 
 #: ../src/iop/denoiseprofile.c:719
-#, fuzzy
-#| msgid "denoise using noise statistics profiled on sensors."
 msgid "denoise using noise statistics profiled on sensors"
 msgstr "センサーのノイズ統計プロファイルを用いてノイズを除去します"
 
@@ -15369,19 +15317,13 @@ msgid "diffusion|deconvolution|blur|sharpening"
 msgstr "拡散|デコンボリューション|ぼかし|シャープ化"
 
 #: ../src/iop/diffuse.c:141
-#, fuzzy
-#| msgid ""
-#| "simulate directional diffusion of light with heat transfer model\n"
-#| "to apply an iterative edge-oriented blur, \n"
-#| "inpaint damaged parts of the image,\n"
-#| "or to remove blur with blind deconvolution."
 msgid ""
 "simulate directional diffusion of light with heat transfer model\n"
 "to apply an iterative edge-oriented blur,\n"
 "inpaint damaged parts of the image,or to remove blur with blind "
 "deconvolution."
 msgstr ""
-"電熱モデルを用いて光の指向性のある拡散をシミュレートし、\n"
+"伝熱モデルを用いて光の指向性のある拡散をシミュレートし、\n"
 "反復するエッジ指向ぼかしを適用したり、画像の損なわれた部分を修復したり、\n"
 "ブラインドデコンボリューションによってぼけを除去したりします"
 
@@ -15683,8 +15625,8 @@ msgid ""
 "this can be used to inpaint highlights."
 msgstr ""
 "マスクの輝度のしきい値\n"
-"0に設定すると、輝度に基づくマスクを無効にし、画像全体にこのモジュールを適用し"
-"ます\n"
+"0に設定すると、輝度にもとづくマスクを無効にし、画像全体にこのモジュールを適用"
+"します\n"
 "0より大きい値に設定すると、しきい値より輝度の低いピクセルを除外します\n"
 "これはハイライトを修復する際に有用です"
 
@@ -16447,7 +16389,7 @@ msgid ""
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
 "バージョン3は、カラーバランスと同様に、darktable 3.0の彩度低減方式です\n"
-"バージョン4は新しい彩度低減方式であり、光のスペクトル純度に基づいています"
+"バージョン4は新しい彩度低減方式であり、光のスペクトル純度にもとづいています"
 
 #: ../src/iop/filmicrgb.c:4563
 msgid ""
@@ -18437,7 +18379,7 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
-"ユーザーが定めた領域に基づいてレベルの自動設定を適用\n"
+"ユーザーが定めた領域にもとづいてレベルの自動設定を適用\n"
 "クリックしながらドラッグして領域を描きます\n"
 "右クリックすると、キャンセルします"
 
@@ -18868,8 +18810,9 @@ msgid ""
 "XYZ is similar but applies the saturation changes in XYZ space."
 msgstr ""
 "自動設定にすると、aとbの カーブは効果がなくなり、表示されません。各ピクセルの"
-"彩度（クロマ）値（aとb ）は、Lカーブのデータに基づいて調整されます。自動XYZは"
-"これと似ていますが、XYZ空間における彩度（サチュレーション）の変更を適用します"
+"彩度（クロマ）値（aとb ）は、Lカーブのデータにもとづいて調整されます。自動XYZ"
+"はこれと似ていますが、XYZ空間における彩度（サチュレーション）の変更を適用しま"
+"す"
 
 #: ../src/iop/tonecurve.c:1159
 msgid "tonecurve for L channel"
@@ -20528,16 +20471,12 @@ msgstr "以前の並び順に戻します"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
 #: ../src/libs/filtering.c:2042
-#, fuzzy
-#| msgid ""
-#| "presets\n"
-#| "ctrl+click to manage"
 msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
 msgstr ""
-"プリセット\n"
-"Ctrl+クリックすると、管理画面を表示します"
+"リセット\n"
+"Ctrl+クリックすると、ピン留めされたルールも削除します"
 
 #: ../src/libs/filters/colors.c:140
 msgid "Y"
@@ -20558,7 +20497,7 @@ msgid ""
 "ctrl+click to exclude the color label\n"
 "the gray button affects all color labels"
 msgstr ""
-"画像の色ラベルに基づいて絞り込みます\n"
+"画像の色ラベルにもとづいて絞り込みます\n"
 "クリックすると、色ラベルの選択のオン／オフを切り替えます\n"
 "ctrl+クリックすると、色ラベルを除外します \n"
 "灰色のボタンは全ての色ラベルに作用します"
@@ -20574,7 +20513,7 @@ msgid ""
 "and (∩): images having all selected color labels\n"
 "or (∪): images with at least one of the selected color labels"
 msgstr ""
-"画像の色ラベルに基づいて絞り込みます\n"
+"画像の色ラベルにもとづいて絞り込みます\n"
 "(∩)：選択した色ラベル全てを有する画像\n"
 "(∪)：選択した色ラベルのうち少なくとも一つを有する画像"
 
@@ -20585,13 +20524,14 @@ msgid ""
 "\n"
 "right-click to get existing filenames"
 msgstr ""
+"検索するファイル名を入力してください\n"
+"複数の値は,で区切ってください\n"
+"\n"
+"右クリックすると、既存のファイル名を表示します"
 
 #: ../src/libs/filters/filename.c:376
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "exclusion"
 msgid "extension"
-msgstr "除外"
+msgstr "拡張子"
 
 #: ../src/libs/filters/filename.c:377
 msgid ""
@@ -20601,18 +20541,26 @@ msgid ""
 "\n"
 "right-click to get existing extensions"
 msgstr ""
+"検索する拡張子を入力してください。最初にドットを入力してください\n"
+"複数の値は,で区切ってください\n"
+"\n"
+"右クリックすると、既存の拡張子を表示します"
 
 #: ../src/libs/filters/filename.c:405
 msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
 msgstr ""
+"クリックすると、ファイル名を選択します\n"
+"Ctrl+クリックすると、複数の値を選択します"
 
 #: ../src/libs/filters/filename.c:432
 msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
 msgstr ""
+"クリックすると、拡張子を選択します\n"
+"Ctrl+クリックすると、複数の値を選択します"
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
 msgid "ungrouped images"
@@ -20639,23 +20587,16 @@ msgid "history filter"
 msgstr "履歴フィルター"
 
 #: ../src/libs/filters/history.c:153
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "truncate history stack"
 msgid "filter on history state"
-msgstr "履歴スタックの切捨て"
+msgstr "履歴状態フィルター"
 
 #: ../src/libs/filters/local_copy.c:142
-#, fuzzy
-#| msgid "local copy images"
 msgid "local_copy filter"
-msgstr "画像をローカルコピーします"
+msgstr "ローカルコピーフィルター"
 
 #: ../src/libs/filters/local_copy.c:142
-#, fuzzy
-#| msgid "local laplacian filter"
 msgid "local copied state filter"
-msgstr "ローカルラプラシアンフィルター"
+msgstr "ローカルコピーした状態フィルター"
 
 #: ../src/libs/filters/module_order.c:161
 msgid "module order filter"
@@ -20663,7 +20604,7 @@ msgstr "モジュールの順序フィルター"
 
 #: ../src/libs/filters/module_order.c:161
 msgid "filter images based on their module order"
-msgstr ""
+msgstr "モジュールの順序にもとづいて画像を絞り込みます"
 
 #: ../src/libs/filters/rating.c:58 ../src/libs/filters/rating.c:73
 #: ../src/libs/filters/rating_legacy.c:212
@@ -20688,20 +20629,16 @@ msgid "not rated"
 msgstr "評価無し"
 
 #: ../src/libs/filters/rating.c:226
-#, fuzzy
-#| msgid "letter"
 msgid "better"
-msgstr "レターサイズ"
+msgstr "より良い"
 
 #: ../src/libs/filters/rating.c:227
 msgid "worse"
-msgstr ""
+msgstr "より悪い"
 
 #: ../src/libs/filters/rating.c:228
-#, fuzzy
-#| msgid "map"
 msgid "cap"
-msgstr "マップ"
+msgstr "最高"
 
 #: ../src/libs/filters/rating.c:243
 msgid "rating filter"
@@ -20714,7 +20651,7 @@ msgstr "比較"
 #: ../src/libs/filters/rating_legacy.c:200
 #: ../src/libs/filters/rating_legacy.c:210
 msgid "filter by images rating"
-msgstr "画像の評価に基づいて絞り込みます"
+msgstr "画像の評価にもとづいて絞り込みます"
 
 #. create the filter combobox
 #: ../src/libs/filters/rating_legacy.c:210 ../src/libs/image.c:544
@@ -20747,7 +20684,8 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
-"画像のメタデータ、タグ、ファイルパス、名前のテクストに基づいて絞り込みます\n"
+"画像のメタデータ、タグ、ファイルパス、名前のテクストにもとづいて絞り込みま"
+"す\n"
 "`%' はワイルドカード文字です\n"
 "デフォルトでは、検索する語の最初と最後にワイルドカードが自動的に適用されま"
 "す\n"
@@ -22561,7 +22499,7 @@ msgstr "プリンタープロファイルを適用する際にブラックポイ
 
 #: ../src/libs/print_settings.c:2375
 msgid "measurement units"
-msgstr ""
+msgstr "単位"
 
 #: ../src/libs/print_settings.c:2383
 msgid "image width/height"
@@ -23477,7 +23415,7 @@ msgstr "カーソルを乗せている間、ブロックオーバーレイ"
 #: ../src/libs/tools/global_toolbox.c:446
 #: ../src/libs/tools/global_toolbox.c:472
 msgid "during (s)"
-msgstr ""
+msgstr "時間（秒）"
 
 #: ../src/libs/tools/global_toolbox.c:451
 #: ../src/libs/tools/global_toolbox.c:477
@@ -23612,16 +23550,18 @@ msgstr "midi"
 #: ../src/libs/tools/midi.c:200
 msgid "using absolute encoding; reinitialise to switch to relative"
 msgstr ""
+"絶対エンコーディングを使用しています；相対エンコーディングに切り替えるには最"
+"初期化してください"
 
 #: ../src/libs/tools/midi.c:204
 #, c-format
 msgid "%d more identical (down) moves before switching to relative encoding"
-msgstr ""
+msgstr "さらに%d度同じ（ダウン）動きすると相対エンコーディングに切り替えます"
 
 #: ../src/libs/tools/midi.c:207
 #, c-format
 msgid "switching encoding to relative (down = %d)"
-msgstr ""
+msgstr "相対エンコーディングに切り替えています (ダウン= %d)"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
