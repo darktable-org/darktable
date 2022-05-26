@@ -365,7 +365,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 1.f;
   p.grey[2] = 0.f;
 
-  dt_gui_presets_add_generic(_("B&W : luminance-based"), self->op,
+  dt_gui_presets_add_generic(_("B&W: luminance-based"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // film emulations
@@ -394,7 +394,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.25958747f;
   p.grey[2] = 0.48737156f;
 
-  dt_gui_presets_add_generic(_("B&W : ILFORD HP5+"), self->op,
+  dt_gui_presets_add_generic(_("B&W: ILFORD HP5+"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD Delta 100
@@ -403,7 +403,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.25366007f;
   p.grey[2] = 0.50081619f;
 
-  dt_gui_presets_add_generic(_("B&W : ILFORD DELTA 100"), self->op,
+  dt_gui_presets_add_generic(_("B&W: ILFORD DELTA 100"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD Delta 400 and 3200 - they have the same curve
@@ -413,7 +413,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.23613559f;
   p.grey[2] = 0.52009729f;
 
-  dt_gui_presets_add_generic(_("B&W : ILFORD DELTA 400 - 3200"), self->op,
+  dt_gui_presets_add_generic(_("B&W: ILFORD DELTA 400 - 3200"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // ILFORD FP4+
@@ -422,7 +422,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.22149272f;
   p.grey[2] = 0.53701643f;
 
-  dt_gui_presets_add_generic(_("B&W : ILFORD FP4+"), self->op,
+  dt_gui_presets_add_generic(_("B&W: ILFORD FP4+"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Fuji Acros 100
@@ -431,7 +431,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey[1] = 0.313f;
   p.grey[2] = 0.353f;
 
-  dt_gui_presets_add_generic(_("B&W : Fuji Acros 100"), self->op,
+  dt_gui_presets_add_generic(_("B&W: Fuji Acros 100"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Kodak ?
