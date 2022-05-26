@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-21 20:29+0200\n"
-"PO-Revision-Date: 2022-05-26 13:01+0900\n"
+"PO-Revision-Date: 2022-05-26 15:48+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -4074,10 +4074,8 @@ msgstr "色を復元"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:261
 #: ../src/iop/highlights.c:2153
-#, fuzzy
-#| msgid "guide lines"
 msgid "guided laplacians"
-msgstr "ガイド線"
+msgstr "ガイドラプラシアン"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:265
 msgid "4 px"
@@ -6753,8 +6751,7 @@ msgid "working..."
 msgstr "処理中..."
 
 #: ../src/control/crawler.c:359
-#, fuzzy, c-format
-#| msgid "ERROR: %s NOT synced XMP → DB"
+#, c-format
 msgid "ERROR: %s NOT synced XMP → DB"
 msgstr "エラー：%s XMP → DB 同期していません"
 
@@ -6768,14 +6765,12 @@ msgstr ""
 "ラインである、または読み取りのみに設定されている可能性があります"
 
 #: ../src/control/crawler.c:365
-#, fuzzy, c-format
-#| msgid "SUCCESS: %s synced XMP → DB"
+#, c-format
 msgid "SUCCESS: %s synced XMP → DB"
 msgstr "成功： %s XMP → DB 同期しました"
 
 #: ../src/control/crawler.c:382
-#, fuzzy, c-format
-#| msgid "ERROR: %s NOT synced DB → XMP"
+#, c-format
 msgid "ERROR: %s NOT synced DB → XMP"
 msgstr "エラー：%s DB → XMP 同期していません"
 
@@ -6791,62 +6786,52 @@ msgstr ""
 "可能性があります"
 
 #: ../src/control/crawler.c:388
-#, fuzzy, c-format
-#| msgid "SUCCESS: %s synced DB → XMP"
+#, c-format
 msgid "SUCCESS: %s synced DB → XMP"
 msgstr "成功： %s DB → XMP 同期しました"
 
 #: ../src/control/crawler.c:410
-#, fuzzy, c-format
-#| msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
+#, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
 msgstr "エラー：%s 新 (XMP) → 旧 (DB) 同期していません"
 
 #: ../src/control/crawler.c:415
-#, fuzzy, c-format
-#| msgid "SUCCESS: %s synced new (XMP) → old (DB)"
+#, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
 msgstr "成功： %s 新 (XMP) → 旧 (DB) 同期しました"
 
 #: ../src/control/crawler.c:425
-#, fuzzy, c-format
-#| msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
+#, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
 msgstr "エラー：%s 新 (DB) → 旧 (XMP) 同期していません"
 
 #: ../src/control/crawler.c:430
-#, fuzzy, c-format
-#| msgid "SUCCESS: %s synced new (DB) → old (XMP)"
+#, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
 msgstr "成功： %s 新 (DB) → 旧 (XMP) 同期しました"
 
 #: ../src/control/crawler.c:438 ../src/control/crawler.c:489
-#, fuzzy, c-format
-#| msgid "EXCEPTION: %s has inconsistent timestamps"
+#, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
 msgstr "例外：%s のタイムスタンプが不整合です"
 
 #: ../src/control/crawler.c:462
-#, fuzzy, c-format
-#| msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
+#, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
 msgstr "エラー：%s 旧 (XMP) → 新 (DB) 同期していません"
 
 #: ../src/control/crawler.c:467
-#, fuzzy, c-format
-#| msgid "SUCCESS: %s synced old (XMP) → new (DB)"
+#, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
 msgstr "成功： %s 旧 (XMP) → 新 (DB) 同期しました"
 
 #: ../src/control/crawler.c:476
-#, fuzzy, c-format
-#| msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
+#, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
 msgstr "エラー：%s 旧 (DB) → 新 (XMP) 同期していません"
 
 #: ../src/control/crawler.c:481
-#, fuzzy, c-format
-#| msgid "SUCCESS: %s synced old (DB) → new (XMP)"
+#, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
 msgstr "成功： %s 旧 (DB) → 新 (XMP) 同期しました"
 
@@ -8905,11 +8890,11 @@ msgstr ""
 
 #: ../src/dtgtk/range.c:458
 msgid "date-time interval to subtract from the max value"
-msgstr ""
+msgstr "最大値から引かれる日時間隔"
 
 #: ../src/dtgtk/range.c:462
 msgid "date-time interval to add to the min value"
-msgstr ""
+msgstr "最小値に足される日時間隔"
 
 #: ../src/dtgtk/range.c:602 ../src/dtgtk/range.c:1715 ../src/dtgtk/range.c:1766
 #: ../src/libs/colorpicker.c:53
@@ -8945,6 +8930,8 @@ msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
 msgstr ""
+"クリックすると、日時を選択します\n"
+"ダブルクリックすると、直接日付を使用します"
 
 #: ../src/dtgtk/range.c:954
 msgid "years: "
@@ -8969,7 +8956,7 @@ msgstr "現在"
 
 #: ../src/dtgtk/range.c:1036
 msgid "set the value to always match current datetime"
-msgstr ""
+msgstr "常に現在の日時に一致する値を設定する"
 
 #. apply button
 #: ../src/dtgtk/range.c:1039 ../src/gui/accelerators.c:149
@@ -8980,7 +8967,7 @@ msgstr "適用"
 
 #: ../src/dtgtk/range.c:1040
 msgid "set the range bound with this value"
-msgstr ""
+msgstr "この値に結びついた一定の範囲を設定する"
 
 #. get nice text for bounds
 #. Side-border hide/show
@@ -9572,7 +9559,7 @@ msgstr "クリックすると、ショートカットのリストを絞り込み
 
 #: ../src/gui/accelerators.c:681
 msgid "right click to show action of selected shortcut\n"
-msgstr ""
+msgstr "右クリックすると、選択したショートカットのアクションを表示します\n"
 
 #: ../src/gui/accelerators.c:682
 msgid ""
@@ -15525,7 +15512,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:1504
 msgid "speed (sharpen ↔ diffuse)"
-msgstr ""
+msgstr "速度（シャープ化 ↔ 拡散）"
 
 #: ../src/iop/diffuse.c:1510
 msgid ""
@@ -15536,6 +15523,12 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"低周波ウェーブレットレイヤーの、1次の異方性（下の項目）で設定された方向への拡"
+"散の速度\n"
+"\n"
+"負の値にすると、シャープ化\n"
+"正の値にすると、拡散とぼかし\n"
+"0にすると、何もしません"
 
 #: ../src/iop/diffuse.c:1519
 msgid ""
@@ -15546,6 +15539,11 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"低周波ウェーブレットレイヤーの、2次の異方性で設定された方向への拡散の速度\n"
+"\n"
+"負の値にすると、シャープ化\n"
+"正の値にすると、拡散とぼかし\n"
+"0にすると、何もしません"
 
 #: ../src/iop/diffuse.c:1528
 msgid ""
@@ -15556,6 +15554,11 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"高周波ウェーブレットレイヤーの、3次の異方性で設定された方向への拡散の速度\n"
+"\n"
+"負の値にすると、シャープ化\n"
+"正の値にすると、拡散とぼかし\n"
+"0にすると、何もしません"
 
 #: ../src/iop/diffuse.c:1537
 msgid ""
@@ -15566,6 +15569,11 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"高周波ウェーブレットレイヤーの、4次の異方性で設定された方向への拡散の速度\n"
+"\n"
+"負の値にすると、シャープ化\n"
+"正の値にすると、拡散とぼかし\n"
+"0にすると、何もしません"
 
 #: ../src/iop/diffuse.c:1549
 msgid ""
@@ -15575,6 +15583,11 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"1次の速さ（上の項目）の方向\n"
+"\n"
+"負の値にすると、より勾配に沿います\n"
+"正の値にすると、エッジにならないようにします（等輝度線）\n"
+"0は両者に等しく作用します（等方的）"
 
 #: ../src/iop/diffuse.c:1557
 msgid ""
@@ -15584,6 +15597,11 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"2次の速さ（上の項目）の方向\n"
+"\n"
+"負の値にすると、より勾配に沿います\n"
+"正の値にすると、エッジにならないようにします（等輝度線）\n"
+"0は両者に等しく作用します（等方的）"
 
 #: ../src/iop/diffuse.c:1565
 msgid ""
@@ -15593,6 +15611,11 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"3次の速さ（上の項目）の方向\n"
+"\n"
+"負の値にすると、より勾配に沿います\n"
+"正の値にすると、エッジにならないようにします（等輝度線）\n"
+"0は両者に等しく作用します（等方的）"
 
 #: ../src/iop/diffuse.c:1573
 msgid ""
@@ -15602,6 +15625,11 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"4次の速さ（上の項目）の方向\n"
+"\n"
+"負の値にすると、より勾配に沿います\n"
+"正の値にすると、エッジにならないようにします（等輝度線）\n"
+"0は両者に等しく作用します（等方的）"
 
 #: ../src/iop/diffuse.c:1578
 #, fuzzy
@@ -15615,6 +15643,10 @@ msgid ""
 "can be used to keep details after blooming,\n"
 "for standalone sharpening set speed to negative values."
 msgstr ""
+"最高周波のシャープさを増減します\n"
+"これを用いて、ブルームを加えた後にディテールを保つことが出来ます\n"
+"スタンドアローンのシャープ化として用いるためには、速度を負の値に設定してくだ"
+"さい"
 
 #: ../src/iop/diffuse.c:1589
 msgid ""
@@ -16779,6 +16811,8 @@ msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
 "back to clip."
 msgstr ""
+"ハイライト：ガイドラプラシアンモードはX-Transセンサーによる画像には使用するこ"
+"とが出来ません。クリップしてしまいます"
 
 #: ../src/iop/highlights.c:2187
 msgid "highlight reconstruction method"
@@ -16802,18 +16836,25 @@ msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 msgstr ""
+"ノイズを加えて、再構成した領域をノイズの多い画像の他の領域に視覚的に馴染ませ"
+"ます\n"
+"高ISOで有用です"
 
 #: ../src/iop/highlights.c:2205
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 msgstr ""
+"ハイライトのマゼンタが十分補正されない場合、値を上げてください\n"
+"反復を増やすたびにパフォーマンスに悪影響があります"
 
 #: ../src/iop/highlights.c:2209
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
 msgstr ""
+"値を上げると、広範囲にわたるクリップ領域を補正することが出来ます\n"
+"高い値にすると、パフォーマンスに大きな悪影響があります"
 
 #: ../src/iop/highpass.c:75
 msgid "highpass"
@@ -18015,6 +18056,8 @@ msgstr "黒のレベル 3"
 #: ../src/iop/rawprepare.c:851
 msgid "flat field correction to compensate for lens shading"
 msgstr ""
+"フラットフィールド補正によって、レンズによって引き起こされた周辺減光を補正し"
+"ます"
 
 #: ../src/iop/rawprepare.c:859
 msgid "crop from left border"
@@ -19735,27 +19778,22 @@ msgstr "設定"
 
 #: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1385
 msgid "AND"
-msgstr ""
+msgstr "および"
 
 #: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1390
-#, fuzzy
-#| msgid "R"
 msgid "OR"
-msgstr "R"
+msgstr "または"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1395
 msgid "BUT NOT"
-msgstr ""
+msgstr "のぞく"
 
 #: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1975
 msgid "revert to a previous set of rules"
-msgstr ""
+msgstr "以前のルールに戻します"
 
 #: ../src/libs/collect.c:3371
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "jump back to previous collection"
 msgid "jump back to previous collection"
 msgstr "以前のコレクションに戻る"
 
@@ -20186,8 +20224,6 @@ msgid "EXIF data"
 msgstr "EXIFデータ"
 
 #: ../src/libs/export_metadata.c:308
-#, fuzzy
-#| msgid "export exif metadata"
 msgid "export EXIF metadata"
 msgstr "exifメタデータをエクスポートします"
 
@@ -20355,21 +20391,24 @@ msgstr "撮影：30日以内"
 
 #: ../src/libs/filtering.c:652
 msgid "click or click&#38;drag to select one or multiple values"
-msgstr ""
+msgstr "クリックまたはクリック+ドラッグすると、一つまたは複数の値を選択します"
 
 #: ../src/libs/filtering.c:653
 msgid "right-click opens a menu to select the available values"
-msgstr ""
+msgstr "右クリックすると、メニューを開いて使用可能な値を選択します"
 
 #: ../src/libs/filtering.c:654
 msgid "<b><i>actual selection: </i></b>"
-msgstr ""
+msgstr "<b><i>現在の選択： </i></b>"
 
 #: ../src/libs/filtering.c:915
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
+"ルールのプロパティ\n"
+"このルールはツールバーにピン留めされているため、これを変更することは出来ませ"
+"ん"
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:922
@@ -20386,18 +20425,22 @@ msgid ""
 "this rule is pinned into the top toolbar\n"
 "click to un-pin"
 msgstr ""
+"このルールは上ツールバーにピン留めされています\n"
+"クリックすると、ピン留めを外します"
 
 #: ../src/libs/filtering.c:1042
 msgid "you can't disable the rule as it is pinned into the toolbar"
 msgstr ""
+"このルールは、ツールバーにピン留めされているため、無効にすることが出来ません"
 
 #: ../src/libs/filtering.c:1043
 msgid "you can't remove the rule as it is pinned into the toolbar"
 msgstr ""
+"このルールは、ツールバーにピン留めされているため、削除することが出来ません"
 
 #: ../src/libs/filtering.c:1047
 msgid "click to pin this rule into the top toolbar"
-msgstr ""
+msgstr "クリックすると、このルールを上ツールバーにピン留めします"
 
 #: ../src/libs/filtering.c:1048
 msgid "remove this collect rule"
@@ -20412,31 +20455,24 @@ msgid "this rule is disabled"
 msgstr "このルールは無効になっています"
 
 #: ../src/libs/filtering.c:1156
-#, fuzzy
-#| msgid " and "
 msgid "and"
 msgstr "および"
 
 #: ../src/libs/filtering.c:1157
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "xor"
 msgid "or"
-msgstr "xor"
+msgstr "または"
 
 #: ../src/libs/filtering.c:1158
-#, fuzzy
-#| msgid " and "
 msgid "and not"
-msgstr "および"
+msgstr "および以下を除く"
 
 #: ../src/libs/filtering.c:1160
 msgid "define how this rule should interact with the previous one"
-msgstr ""
+msgstr "このルールが以前のルールとどのように作用しあうかを定義します"
 
 #: ../src/libs/filtering.c:1419
 msgid " (off)"
-msgstr ""
+msgstr " (off)"
 
 #: ../src/libs/filtering.c:1642
 msgid "sort order"
@@ -20451,10 +20487,8 @@ msgid "sort direction"
 msgstr "並び順 向き"
 
 #: ../src/libs/filtering.c:1707
-#, fuzzy
-#| msgid "remove this module"
 msgid "remove this sort order"
-msgstr "このモジュールを削除します"
+msgstr "この並び順を削除します"
 
 #: ../src/libs/filtering.c:1860
 msgid "DESC"
@@ -20490,7 +20524,7 @@ msgstr "%d枚の画像に時差を追加しました"
 
 #: ../src/libs/filtering.c:1995
 msgid "revert to a previous set of sort orders"
-msgstr ""
+msgstr "以前の並び順に戻します"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
 #: ../src/libs/filtering.c:2042
@@ -20624,10 +20658,8 @@ msgid "local copied state filter"
 msgstr "ローカルラプラシアンフィルター"
 
 #: ../src/libs/filters/module_order.c:161
-#, fuzzy
-#| msgid "module order"
 msgid "module order filter"
-msgstr "モジュールの順序"
+msgstr "モジュールの順序フィルター"
 
 #: ../src/libs/filters/module_order.c:161
 msgid "filter images based on their module order"
