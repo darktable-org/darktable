@@ -35,6 +35,7 @@
  **/
 
 #if defined(__GNUC__)
+#pragma GCC push_options
 #pragma GCC optimize ("unroll-loops", "tree-loop-if-convert", \
                       "tree-loop-distribution", "no-strict-aliasing", \
                       "loop-interchange", "loop-nest-optimize", "tree-loop-im", \
@@ -312,6 +313,11 @@ static inline void luminance_mask(const float *const restrict in, float *const r
       break;
   }
 }
+
+#if defined(__GNUC__)
+#pragma GCC pop_options
+#endif
+
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
