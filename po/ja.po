@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-21 20:29+0200\n"
-"PO-Revision-Date: 2022-05-26 03:06+0900\n"
+"PO-Revision-Date: 2022-05-26 13:01+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -2288,11 +2288,11 @@ msgstr "記憶してこのリストに表示する直近に使用したコレク
 
 #: ../build/bin/preferences_gen.h:8808
 msgid "hide the history button and show a specific module instead"
-msgstr ""
+msgstr "履歴ボタンを非表示にして、特定のモジュールを表示する"
 
 #: ../build/bin/preferences_gen.h:8822
 msgid "hide the history button and show the recent collections module instead"
-msgstr ""
+msgstr "履歴ボタンを非表示にして、最近のコレクションモジュールを表示します"
 
 #: ../build/bin/preferences_gen.h:8844
 msgid "number of folder levels to show in lists"
@@ -2317,28 +2317,24 @@ msgid "sort collection descending"
 msgstr "コレクションを降順で分類"
 
 #: ../build/bin/preferences_gen.h:8964
-#, fuzzy
-#| msgid ""
-#| "sort the following collections in descending order: 'film roll' by "
-#| "folder, 'folder', 'times' (e.g. 'date taken')"
 msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
 "'folder', 'times' (e.g. 'capture date')"
 msgstr ""
-"次のコレクションを降順で分類します：「フィルムロール」、「フォルダ」、「日"
-"時」（例：「撮影日」）"
+"コレクションを降順で分類します：「フィルムロール」、「フォルダ」、「日時」"
+"（例：「撮影日」）"
 
 #: ../build/bin/preferences_gen.h:9048
-#, fuzzy
-#| msgid "you can do so in the import module"
 msgid "prefer an history button in the collect module"
-msgstr "インポートモジュールでも行うことが出来ます"
+msgstr "コレクションモジュール内で履歴ボタンを使用する"
 
 #: ../build/bin/preferences_gen.h:9062
 msgid ""
 "prefer to hide this module and access history with a button in the collect "
 "module"
 msgstr ""
+"このモジュールを非表示にして、コレクションモジュール内のボタンで履歴にアクセ"
+"スします"
 
 #: ../build/bin/preferences_gen.h:9116
 msgid "suggested tags level of confidence"
@@ -3081,14 +3077,10 @@ msgid "output saturation"
 msgstr "出力彩度"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:229
-#, fuzzy
-#| msgid "lift, gamma, gain (ProPhotoRGB)"
 msgid "lift, gamma, gain (ProPhoto RGB)"
 msgstr "リフト、ガンマ、ゲイン（ProPhotoRGB）"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:230
-#, fuzzy
-#| msgid "slope, offset, power (ProPhotoRGB)"
 msgid "slope, offset, power (ProPhoto RGB)"
 msgstr "スロープ、オフセット、パワー（ProPhotoRGB）"
 
@@ -5781,6 +5773,8 @@ msgid ""
 "the RCD demosaicer has been defined as default instead of PPG because of "
 "better quality and performance."
 msgstr ""
+"より良いクオリティとパフォーマンスのために、PPGではなくRCDデモザイクがデフォ"
+"ルトとして設定されています"
 
 #: ../src/common/darktable.c:1731
 msgid "see preferences/darkroom/demosaicing for zoomed out darkroom mode"
@@ -6377,7 +6371,7 @@ msgstr "libraw"
 
 #: ../src/common/imagebuf.c:131
 msgid "insufficient memory"
-msgstr ""
+msgstr "メモリ不足"
 
 #: ../src/common/imagebuf.c:132
 msgid ""
@@ -6386,6 +6380,9 @@ msgid ""
 "the image.  some or all processing\n"
 "has been skipped."
 msgstr ""
+"このモジュールは、この画像を処理するために必要なメモリの全てを割り当てること"
+"が出来ませんでした\n"
+"一部または全ての処理がスキップされています"
 
 #: ../src/common/imageio.c:740 ../src/common/mipmap_cache.c:1074
 #, c-format
@@ -8844,6 +8841,9 @@ msgid ""
 "use 'min' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
+"最も小さい値を入力してください\n"
+"制限が無い場合、minと入力してください\n"
+"右クリックすると、既存の値から選択します"
 
 #: ../src/dtgtk/range.c:408
 msgid ""
@@ -8851,12 +8851,17 @@ msgid ""
 "use 'max' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
+"最も大きい値を入力してください\n"
+"制限が無い場合、maxと入力してください\n"
+"右クリックすると、既存の値から選択します"
 
 #: ../src/dtgtk/range.c:414
 msgid ""
 "enter the value\n"
 "right-click to select from existing values"
 msgstr ""
+"値を入力してください\n"
+"右クリックすると、既存の値から選択します"
 
 #: ../src/dtgtk/range.c:419
 msgid ""
@@ -8866,6 +8871,11 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"最も小さい日付を入力してください\n"
+"YYYY:MM:DD hh:mm:ss.sss（年は必須です）\n"
+"制限が無い場合、minを入力してください\n"
+"相対日付は-を前に入力してください\n"
+"右クリックすると、カレンダーまたは既存の値から選択します"
 
 #: ../src/dtgtk/range.c:427
 msgid ""
@@ -8876,6 +8886,12 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"最も大きい日付を入力してください\n"
+"YYYY:MM:DD hh:mm:ss.sss（年は必須です）\n"
+"制限が無い場合、maxを入力してください\n"
+"キーワードnowは取り扱われます\n"
+"相対日付は-を前に入力してください\n"
+"右クリックすると、カレンダーまたは既存の値から選択します"
 
 #: ../src/dtgtk/range.c:436
 msgid ""
@@ -8883,6 +8899,9 @@ msgid ""
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"日付を入力してください\n"
+"YYYY:MM:DD hh:mm:ss.sss（年は必須です）\n"
+"右クリックすると、カレンダーまたは既存の値から選択します"
 
 #: ../src/dtgtk/range.c:458
 msgid "date-time interval to subtract from the max value"
