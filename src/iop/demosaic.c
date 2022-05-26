@@ -5769,9 +5769,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   if(!in)
   {
+    const gboolean was_dualmask = g->visual_mask;
     dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
     g->visual_mask = FALSE;
-    dt_dev_reprocess_center(self->dev);
+    if(was_dualmask) dt_dev_reprocess_center(self->dev);
   }
 }
 

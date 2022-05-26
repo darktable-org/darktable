@@ -450,13 +450,13 @@ void init_presets(dt_iop_module_so_t *self)
   p.quantization = 0.0f;
   p.exposure_boost = 0.0f;
   p.contrast_boost = 0.0f;
-  dt_gui_presets_add_generic(_("mask blending : all purposes"), self->op,
+  dt_gui_presets_add_generic(_("mask blending: all purposes"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.blending = 1.0f;
   p.feathering = 10.0f;
   p.iterations = 3;
-  dt_gui_presets_add_generic(_("mask blending : people with backlight"), self->op,
+  dt_gui_presets_add_generic(_("mask blending: people with backlight"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // Shadows/highlights presets
@@ -472,11 +472,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.details = DT_TONEEQ_EIGF;
   p.feathering = 20.0f;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : strong"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf): strong"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : strong"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf): strong"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
@@ -484,11 +484,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.feathering = 7.0f;
   p.iterations = 3;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : medium"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf): medium"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : medium"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf): medium"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   p.details = DT_TONEEQ_EIGF;
@@ -496,11 +496,11 @@ void init_presets(dt_iop_module_so_t *self)
   p.feathering = 1.0f;
   p.iterations = 1;
   compress_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : soft"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf): soft"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
   p.details = DT_TONEEQ_GUIDED;
   p.feathering = 500.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : soft"), self->op,
+  dt_gui_presets_add_generic(_("compress shadows/highlights (gf): soft"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 
   // build the 1D contrast curves that revert the local compression of contrast above
@@ -536,7 +536,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.whites = 0.15f;
   p.speculars = 0.0f;
 
-  dt_gui_presets_add_generic(_("relight : fill-in"), self->op,
+  dt_gui_presets_add_generic(_("relight: fill-in"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
@@ -2423,9 +2423,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     //lost focus - stop showing mask
+    const gboolean was_mask = g->mask_display;
     g->mask_display = FALSE;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
-    dt_dev_reprocess_center(self->dev);
+    if(was_mask) dt_dev_reprocess_center(self->dev);
     dt_collection_hint_message(darktable.collection);
   }
   else
@@ -3228,7 +3229,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->feathering = dt_bauhaus_slider_from_params(self, "feathering");
   dt_bauhaus_slider_set_soft_range(g->feathering, 0.1, 50.0);
-  gtk_widget_set_tooltip_text(g->feathering, _("precision of the feathering :\n"
+  gtk_widget_set_tooltip_text(g->feathering, _("precision of the feathering:\n"
                                                "higher values force the mask to follow edges more closely\n"
                                                "but may void the effect of the smoothing\n"
                                                "lower values give smoother gradients and better smoothing\n"

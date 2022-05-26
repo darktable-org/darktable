@@ -60,7 +60,7 @@ static void dump_PFM(const char *filename, const float* out, const uint32_t w, c
 }
 #endif
 
-DT_MODULE_INTROSPECTION(3, dt_iop_highlights_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_highlights_params_t)
 
 typedef enum dt_iop_highlights_mode_t
 {
@@ -94,12 +94,14 @@ typedef struct dt_iop_highlights_params_t
   // params of v2
   float clip; // $MIN: 0.0 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "clipping threshold"
   // params of v3
-  float noise_level; // $MIN: 0. $MAX: 0.1 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
+  float noise_level; // $MIN: 0. $MAX: 0.5 $DEFAULT: 0.00 $DESCRIPTION: "noise level"
   int iterations; // $MIN: 1 $MAX: 64 $DEFAULT: 1 $DESCRIPTION: "iterations"
   dt_atrous_wavelets_scales_t scales; // $DEFAULT: 5 $DESCRIPTION: "diameter of reconstruction"
   float reconstructing;    // $MIN: 0.0 $MAX: 1.0  $DEFAULT: 0.4 $DESCRIPTION: "cast balance"
   float combine;           // $MIN: 0.0 $MAX: 10.0 $DEFAULT: 2.0 $DESCRIPTION: "combine segments"
   int debugmode;
+  // params of v4
+  float solid_color; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "inpaint a flat color"
 } dt_iop_highlights_params_t;
 
 typedef struct dt_iop_highlights_gui_data_t
@@ -109,6 +111,7 @@ typedef struct dt_iop_highlights_gui_data_t
   GtkWidget *noise_level;
   GtkWidget *iterations;
   GtkWidget *scales;
+  GtkWidget *solid_color;
   gboolean show_visualize;
 } dt_iop_highlights_gui_data_t;
 
@@ -165,9 +168,15 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 5 * sizeof(float));
+    /*
+      params of v2 :
+        float clip
+      + params of v3
+      + params of v4
+    */
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 5 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->clip = 1.0f;
     n->noise_level = 0.0f;
@@ -176,11 +185,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->debugmode = 0;
     n->iterations = 1;
     n->scales = 5;
+    n->solid_color = 0.f;
     return 0;
   }
-  if(old_version == 2 && new_version == 3)
+  if(old_version == 2 && new_version == 4)
   {
-    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float));
+    /*
+      params of v3 :
+        float noise_level;
+        int iterations;
+        dt_atrous_wavelets_scales_t scales;
+        float reconstructing;
+        float combine;
+        int debugmode;
+      + params of v4
+    */
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - 4 * sizeof(float) - 2 * sizeof(int) - sizeof(dt_atrous_wavelets_scales_t));
     dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
     n->noise_level = 0.0f;
     n->reconstructing = 0.4f;
@@ -188,6 +208,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->debugmode = 0;
     n->iterations = 1;
     n->scales = 5;
+    n->solid_color = 0.f;
+    return 0;
+  }
+  if(old_version == 3 && new_version == 4)
+  {
+    /*
+      params of v4 :
+        float solid_color;
+    */
+    memcpy(new_params, old_params, sizeof(dt_iop_highlights_params_t) - sizeof(float));
+    dt_iop_highlights_params_t *n = (dt_iop_highlights_params_t *)new_params;
+    n->solid_color = 0.f;
     return 0;
   }
 
@@ -336,9 +368,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN)
   {
-    const dt_aligned_pixel_t clips = { d->clip * piece->pipe->dsc.processed_maximum[0],
-                                       d->clip * piece->pipe->dsc.processed_maximum[1],
-                                       d->clip * piece->pipe->dsc.processed_maximum[2], clip };
+    const dt_aligned_pixel_t clips = {  0.995f * d->clip * piece->pipe->dsc.processed_maximum[0],
+                                        0.995f * d->clip * piece->pipe->dsc.processed_maximum[1],
+                                        0.995f * d->clip * piece->pipe->dsc.processed_maximum[2], clip };
     err = process_laplacian_bayer_cl(self, piece, dev_in, dev_out, roi_in, roi_out, clips);
     if(err != CL_SUCCESS) goto error;
   }
@@ -1071,7 +1103,7 @@ static void _interpolate_and_mask(const float *const restrict input,
       for_each_channel(k, aligned(RGB, interpolated, clipping_mask, clipped, wb))
       {
         const size_t idx = (i * width + j) * 4 + k;
-        interpolated[idx] = fmaxf(RGB[k] / wb[c], 0.f);
+        interpolated[idx] = fmaxf(RGB[k] / wb[k], 0.f);
         clipping_mask[idx] = clipped[k];
       }
     }
@@ -1107,72 +1139,6 @@ typedef enum diffuse_reconstruct_variant_t
   DIFFUSE_RECONSTRUCT_CHROMA
 } diffuse_reconstruct_variant_t;
 
-typedef enum diffuse_direction_t
-{
-  DIFFUSE_ISOPHOTE = 0,
-  DIFFUSE_GRADIENT = 1,
-} diffuse_direction_t;
-
-
-static inline void compute_laplace_kernel(const dt_aligned_pixel_t neighbour_pixel_LF[9],
-                                          const diffuse_direction_t direction,
-                                          float anisotropic_kernel[9])
-{
-  // dx, dy
-  const float gradient[2] = { (neighbour_pixel_LF[7][ALPHA] - neighbour_pixel_LF[1][ALPHA]) / 2.f,
-                              (neighbour_pixel_LF[5][ALPHA] - neighbour_pixel_LF[3][ALPHA]) / 2.f };
-  const float magnitude_grad = hypotf(gradient[0], gradient[1]);
-  const float c2 = expf(-magnitude_grad / 6.f);
-
-  // direction of the gradient. NB : force arg(grad) = 0 if hypot == 0
-  const float cos_grad = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad : 1.f; // cos(0)
-  const float sin_grad = (magnitude_grad != 0.f) ? gradient[1] / magnitude_grad : 0.f; // sin(0)
-
-  const float cos_grad_sq = cos_grad * cos_grad;
-  const float sin_grad_sq = sin_grad * sin_grad;
-  const float cos_sin_grad = cos_grad * sin_grad;
-
-  // build the rotation matrix along arg(grad) + 90°: isophote
-  float a[2][2];
-
-  if(direction == DIFFUSE_ISOPHOTE)
-  {
-    a[0][0] = cos_grad_sq + c2 * sin_grad_sq;
-    a[1][1] = c2 * cos_grad_sq + sin_grad_sq;
-    a[0][1] = a[1][0] = (c2 - 1.0f) * cos_sin_grad;
-  }
-  else if(direction == DIFFUSE_GRADIENT)
-  {
-    a[0][0] = c2 * cos_grad_sq + sin_grad_sq;
-    a[1][1] = cos_grad_sq + c2 * sin_grad_sq;
-    a[0][1] = a[1][0] = (1.f - c2) * cos_sin_grad;
-  }
-
-  const float b11 = a[0][1] / 2.0f;
-  const float b13 = -b11;
-  const float b22 = -2.0f * (a[0][0] + a[1][1]);
-
-  // build the kernel of rotated anisotropic laplacian
-  // from https://www.researchgate.net/publication/220663968 :
-  // [ [ a12 / 2,  a22,            -a12 / 2 ],
-  //   [ a11,      -2 (a11 + a22), a11      ],
-  //   [ -a12 / 2,   a22,          a12 / 2  ] ]
-  // N.B. we have flipped the signs of the a12 terms
-  // compared to the paper. There's probably a mismatch
-  // of coordinate convention between the paper and the
-  // original derivation of this convolution mask
-  // (Witkin 1991, https://doi.org/10.1145/127719.122750).
-
-  anisotropic_kernel[0] = b11;
-  anisotropic_kernel[1] = a[1][1];
-  anisotropic_kernel[2] = b13;
-  anisotropic_kernel[3] = a[0][0];
-  anisotropic_kernel[4] = b22;
-  anisotropic_kernel[5] = a[0][0];
-  anisotropic_kernel[6] = b13;
-  anisotropic_kernel[7] = a[1][1];
-  anisotropic_kernel[8] = b11;
-}
 
 enum wavelets_scale_t
 {
@@ -1196,7 +1162,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
                                     float *const restrict output,
                                     const size_t width, const size_t height, const int mult,
                                     const float noise_level, const int salt,
-                                    const uint8_t scale)
+                                    const uint8_t scale, const float radius_sq)
 {
   float *const restrict out = DT_IS_ALIGNED(output);
   const float *const restrict LF = DT_IS_ALIGNED(low_freq);
@@ -1204,7 +1170,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, noise_level, salt, scale) \
+    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, noise_level, salt, scale, radius_sq) \
     schedule(static)
 #endif
   for(size_t row = 0; row < height; ++row)
@@ -1237,16 +1203,20 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 
         // fetch non-local pixels and store them locally and contiguously
         dt_aligned_pixel_t neighbour_pixel_HF[9];
+        for_four_channels(c, aligned(neighbour_pixel_HF, HF))
+        {
+          neighbour_pixel_HF[3 * 0 + 0][c] = HF[4 * (i_neighbours[0] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 0 + 1][c] = HF[4 * (i_neighbours[0] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 0 + 2][c] = HF[4 * (i_neighbours[0] + j_neighbours[2]) + c];
 
-        for(size_t ii = 0; ii < 3; ii++)
-          for(size_t jj = 0; jj < 3; jj++)
-          {
-            const size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
-            for_four_channels(c, aligned(neighbour_pixel_HF, HF: 64))
-            {
-              neighbour_pixel_HF[3 * ii + jj][c] = HF[neighbor + c];
-            }
-          }
+          neighbour_pixel_HF[3 * 1 + 0][c] = HF[4 * (i_neighbours[1] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 1 + 1][c] = HF[4 * (i_neighbours[1] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 1 + 2][c] = HF[4 * (i_neighbours[1] + j_neighbours[2]) + c];
+
+          neighbour_pixel_HF[3 * 2 + 0][c] = HF[4 * (i_neighbours[2] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 2 + 1][c] = HF[4 * (i_neighbours[2] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 2 + 2][c] = HF[4 * (i_neighbours[2] + j_neighbours[2]) + c];
+        }
 
         // Compute the linear fit of the laplacian of chromaticity against the laplacian of the norm
         // that is the chromaticity filter guided by the norm
@@ -1262,7 +1232,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
         // Get the local variance per channel
         dt_aligned_pixel_t variance_HF = { 0.f, 0.f, 0.f, 0.f };
         for(size_t k = 0; k < 9; k++)
-          for_each_channel(c, aligned(variance_HF, neighbour_pixel_HF, means_HF : 64))
+          for_each_channel(c, aligned(variance_HF, neighbour_pixel_HF, means_HF))
           {
             variance_HF[c] += sqf(neighbour_pixel_HF[k][c] - means_HF[c]) / 9.f;
           }
@@ -1282,21 +1252,24 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
         // Compute the linear regression channel = f(guide)
         dt_aligned_pixel_t covariance_HF = { 0.f, 0.f, 0.f, 0.f };
         for(size_t k = 0; k < 9; k++)
-          for_each_channel(c, aligned(variance_HF, covariance_HF, neighbour_pixel_HF, means_HF : 64))
+          for_each_channel(c, aligned(variance_HF, covariance_HF, neighbour_pixel_HF, means_HF))
           {
             covariance_HF[c] += (neighbour_pixel_HF[k][c] - means_HF[c])
                                 * (neighbour_pixel_HF[k][guiding_channel_HF] - means_HF[guiding_channel_HF]) / 9.f;
           }
 
+        const float scale_multiplier = 1.f / radius_sq;
+        const dt_aligned_pixel_t alpha_ch = { clipping_mask[index + RED], clipping_mask[index + GREEN], clipping_mask[index + BLUE], clipping_mask[index + ALPHA] };
+
         dt_aligned_pixel_t a_HF, b_HF;
-        for_each_channel(c, aligned(out, neighbour_pixel_HF, a_HF, b_HF, covariance_HF, variance_HF, means_HF, high_frequency : 64))
+        for_each_channel(c, aligned(out, neighbour_pixel_HF, a_HF, b_HF, covariance_HF, variance_HF, means_HF, high_frequency, alpha_ch))
         {
           // Get a and b s.t. y = a * x + b, y = test data, x = guide
           a_HF[c] = fmaxf(covariance_HF[c] / (variance_HF[guiding_channel_HF]), 0.f);
           b_HF[c] = means_HF[c] - a_HF[c] * means_HF[guiding_channel_HF];
 
-          high_frequency[c] = alpha * (a_HF[c] * high_frequency[guiding_channel_HF] + b_HF[c])
-                            + alpha_comp * high_frequency[c];
+          high_frequency[c] = alpha_ch[c] * scale_multiplier * (a_HF[c] * high_frequency[guiding_channel_HF] + b_HF[c])
+                            + (1.f - alpha_ch[c] * scale_multiplier) * high_frequency[c];
         }
       }
 
@@ -1362,7 +1335,7 @@ static inline void guide_laplacians(const float *const restrict high_freq, const
 static inline void heat_PDE_diffusion(const float *const restrict high_freq, const float *const restrict low_freq,
                                       const float *const restrict clipping_mask,
                                       float *const restrict output, const size_t width, const size_t height,
-                                      const int mult, const uint8_t scale)
+                                      const int mult, const uint8_t scale, const float first_order_factor)
 {
   // Simultaneous inpainting for image structure and texture using anisotropic heat transfer model
   // https://www.researchgate.net/publication/220663968
@@ -1379,7 +1352,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                                                                            \
-    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, scale) \
+    dt_omp_firstprivate(out, clipping_mask, HF, LF, height, width, mult, scale, first_order_factor) \
     schedule(static)
 #endif
   for(size_t row = 0; row < height; ++row)
@@ -1414,36 +1387,36 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
 
         // fetch non-local pixels and store them locally and contiguously
         dt_aligned_pixel_t neighbour_pixel_HF[9];
-        dt_aligned_pixel_t neighbour_pixel_LF[9];
+        for_four_channels(c, aligned(neighbour_pixel_HF, HF: 16))
+        {
+          neighbour_pixel_HF[3 * 0 + 0][c] = HF[4 * (i_neighbours[0] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 0 + 1][c] = HF[4 * (i_neighbours[0] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 0 + 2][c] = HF[4 * (i_neighbours[0] + j_neighbours[2]) + c];
 
-        for(size_t ii = 0; ii < 3; ii++)
-          for(size_t jj = 0; jj < 3; jj++)
-          {
-            const size_t neighbor = 4 * (i_neighbours[ii] + j_neighbours[jj]);
-            const size_t nidx = 3 * ii + jj;
-            for_four_channels(c, aligned(neighbour_pixel_HF, HF, neighbour_pixel_LF, LF : 64))
-            {
-              neighbour_pixel_HF[nidx][c] = HF[neighbor + c];
-              neighbour_pixel_LF[nidx][c] = LF[neighbor + c];
-            }
-          }
+          neighbour_pixel_HF[3 * 1 + 0][c] = HF[4 * (i_neighbours[1] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 1 + 1][c] = HF[4 * (i_neighbours[1] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 1 + 2][c] = HF[4 * (i_neighbours[1] + j_neighbours[2]) + c];
+
+          neighbour_pixel_HF[3 * 2 + 0][c] = HF[4 * (i_neighbours[2] + j_neighbours[0]) + c];
+          neighbour_pixel_HF[3 * 2 + 1][c] = HF[4 * (i_neighbours[2] + j_neighbours[1]) + c];
+          neighbour_pixel_HF[3 * 2 + 2][c] = HF[4 * (i_neighbours[2] + j_neighbours[2]) + c];
+        }
 
         // Compute the laplacian in the direction parallel to the steepest gradient on the norm
-        float anisotropic_kernel_isophote[9];
-        compute_laplace_kernel(neighbour_pixel_LF, DIFFUSE_ISOPHOTE, anisotropic_kernel_isophote);
+        float DT_ALIGNED_ARRAY anisotropic_kernel_isophote[9] = { 0.25f, 0.5f, 0.25f, 0.5f, -3.f, 0.5f, 0.25f, 0.5f, 0.25f };
 
         // Convolve the filter to get the laplacian
         dt_aligned_pixel_t laplacian_HF = { 0.f, 0.f, 0.f, 0.f };
-        for(size_t k = 0; k < 9; k++)
+        for(int k = 0; k < 9; k++)
         {
-          for_each_channel(c, aligned(laplacian_HF, neighbour_pixel_HF, anisotropic_kernel_isophote: 64))
+          for_each_channel(c, aligned(laplacian_HF, neighbour_pixel_HF:16) aligned(anisotropic_kernel_isophote: 64))
             laplacian_HF[c] += neighbour_pixel_HF[k][c] * anisotropic_kernel_isophote[k];
         }
 
         // Diffuse
         const dt_aligned_pixel_t multipliers_HF = { 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 1.f / B_SPLINE_TO_LAPLACIAN, 0.f };
         for_each_channel(c, aligned(high_frequency, multipliers_HF, laplacian_HF, alpha))
-          high_frequency[c] += alpha[c] * multipliers_HF[c] * laplacian_HF[c];
+          high_frequency[c] += alpha[c] * multipliers_HF[c] * (laplacian_HF[c] - first_order_factor * high_frequency[c]);
       }
 
       if((scale & FIRST_SCALE))
@@ -1465,6 +1438,14 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         for_each_channel(c, aligned(out, LF, high_frequency : 64))
           out[index + c] = fmaxf(out[index + c] + LF[index + c], 0.f);
 
+        // renormalize ratios
+        if(alpha[ALPHA] > 0.f)
+        {
+          const float norm = sqrtf(sqf(out[index + RED]) + sqf(out[index + GREEN]) + sqf(out[index + BLUE]));
+          for_each_channel(c, aligned(out, LF, high_frequency : 64))
+            out[index + c] /= (c != ALPHA && norm > 1e-4f) ? norm : 1.f;
+        }
+
         // Last scale : reconstruct RGB from ratios and norm - norm stays in the 4th channel
         // we need it to evaluate the gradient
         for_four_channels(c, aligned(out))
@@ -1484,7 +1465,7 @@ static inline gint wavelets_process(const float *const restrict in, float
                                     float *const restrict LF_even,
                                     const diffuse_reconstruct_variant_t variant,
                                     const float noise_level,
-                                    const int salt)
+                                    const int salt, const float first_order_factor)
 {
   gint success = TRUE;
 
@@ -1522,11 +1503,12 @@ static inline gint wavelets_process(const float *const restrict in, float
     decompose_2D_Bspline(buffer_in, HF, buffer_out, width, height, mult, tempbuf, padded_size);
 
     uint8_t current_scale_type = scale_type(s, scales);
+    const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
 
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
-      guide_laplacians(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, noise_level, salt, current_scale_type);
+      guide_laplacians(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, noise_level, salt, current_scale_type, radius);
     else
-      heat_PDE_diffusion(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, current_scale_type);
+      heat_PDE_diffusion(HF, buffer_out, clipping_mask, reconstructed, width, height, mult, current_scale_type, first_order_factor);
 
 #if DEBUG_DUMP_PFM
     char name[64];
@@ -1591,9 +1573,9 @@ static void process_laplacian_bayer(struct dt_iop_module_t *self, dt_dev_pixelpi
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
     wavelets_process(interpolated, temp, clipping_mask, width, height, scales, HF, LF_odd,
-                     LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt);
+                     LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt, data->solid_color);
     wavelets_process(temp, interpolated, clipping_mask, width, height, scales, HF, LF_odd,
-                    LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt);
+                    LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt, data->solid_color);
   }
 
   _remosaic_and_replace(interpolated, output, wb, filters, width, height);
@@ -1623,7 +1605,7 @@ static inline cl_int wavelets_process_cl(const int devid,
                                          cl_mem LF_even,
                                          const diffuse_reconstruct_variant_t variant,
                                          const float noise_level,
-                                         const int salt)
+                                         const int salt, const float solid_color)
 {
   cl_int err = DT_OPENCL_DEFAULT_ERROR;
 
@@ -1682,6 +1664,7 @@ static inline cl_int wavelets_process_cl(const int devid,
     if(err != CL_SUCCESS) return err;
 
     uint8_t current_scale_type = scale_type(s, scales);
+    const float radius = sqf(equivalent_sigma_at_step(B_SPLINE_SIGMA, s));
 
     // Compute wavelets low-frequency scales
     if(variant == DIFFUSE_RECONSTRUCT_RGB)
@@ -1697,6 +1680,7 @@ static inline cl_int wavelets_process_cl(const int devid,
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 8, sizeof(float), (void *)&noise_level);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 9, sizeof(int), (void *)&salt);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 10, sizeof(uint8_t), (void *)&current_scale_type);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_guide_laplacians, 11, sizeof(float), (void *)&radius);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_guide_laplacians, sizes);
       if(err != CL_SUCCESS) return err;
     }
@@ -1711,6 +1695,7 @@ static inline cl_int wavelets_process_cl(const int devid,
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_diffuse_color, 6, sizeof(int), (void *)&height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_diffuse_color, 7, sizeof(int), (void *)&mult);
       dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_diffuse_color, 8, sizeof(uint8_t), (void *)&current_scale_type);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_diffuse_color, 9, sizeof(float), (void *)&solid_color);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_diffuse_color, sizes);
       if(err != CL_SUCCESS) return err;
     }
@@ -1792,11 +1777,11 @@ static cl_int process_laplacian_bayer_cl(struct dt_iop_module_t *self, dt_dev_pi
   {
     const int salt = (i == data->iterations - 1); // add noise on the last iteration only
     err = wavelets_process_cl(devid, interpolated, temp, clipping_mask, sizes, width, height, gd, scales, HF,
-                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt);
+                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_RGB, noise_level, salt, data->solid_color);
     if(err != CL_SUCCESS) goto error;
 
     err = wavelets_process_cl(devid, temp, interpolated, clipping_mask, sizes, width, height, gd, scales, HF,
-                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt);
+                              LF_odd, LF_even, DIFFUSE_RECONSTRUCT_CHROMA, noise_level, salt, data->solid_color);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -2003,9 +1988,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       break;
     case DT_IOP_HIGHLIGHTS_LAPLACIAN:
     {
-      const dt_aligned_pixel_t clips = { data->clip * piece->pipe->dsc.processed_maximum[0],
-                                         data->clip * piece->pipe->dsc.processed_maximum[1],
-                                         data->clip * piece->pipe->dsc.processed_maximum[2], clip };
+      const dt_aligned_pixel_t clips = { 0.995f * data->clip * piece->pipe->dsc.processed_maximum[0],
+                                         0.995f * data->clip * piece->pipe->dsc.processed_maximum[1],
+                                         0.995f * data->clip * piece->pipe->dsc.processed_maximum[2], clip };
       process_laplacian_bayer(self, piece, ivoid, ovoid, roi_in, roi_out, clips);
       break;
     }
@@ -2103,6 +2088,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->noise_level, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
   gtk_widget_set_visible(g->iterations, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
   gtk_widget_set_visible(g->scales, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
+  gtk_widget_set_visible(g->solid_color, bayer && mode == DT_IOP_HIGHLIGHTS_LAPLACIAN);
 
   dt_bauhaus_widget_set_quad_visibility(g->clip, israw);
 
@@ -2172,9 +2158,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   if(!in)
   {
+    const gboolean was_visualize = g->show_visualize;
     dt_bauhaus_widget_set_quad_active(g->clip, FALSE);
     g->show_visualize = FALSE;
-    dt_dev_reprocess_center(self->dev);
+    if(was_visualize) dt_dev_reprocess_center(self->dev);
   }
 }
 
@@ -2204,6 +2191,11 @@ void gui_init(struct dt_iop_module_t *self)
   g->iterations = dt_bauhaus_slider_from_params(self, "iterations");
   gtk_widget_set_tooltip_text(g->iterations, _("increase if magenta highlights don't get fully corrected\n"
                                                "each new iteration brings a performance penalty."));
+
+  g->solid_color = dt_bauhaus_slider_from_params(self, "solid_color");
+  dt_bauhaus_slider_set_format(g->solid_color, "%");
+  gtk_widget_set_tooltip_text(g->solid_color, _("increase if magenta highlights don't get fully corrected.\n"
+                                                "this may produce non-smooth boundaries between valid and clipped regions."));
 
   g->scales = dt_bauhaus_combobox_from_params(self, "scales");
   gtk_widget_set_tooltip_text(g->scales, _("increase to correct larger clipped areas.\n"

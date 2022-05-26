@@ -57,8 +57,8 @@ DT_MODULE_INTROSPECTION(3, dt_iop_colorbalance_params_t)
 
 typedef enum dt_iop_colorbalance_mode_t
 {
-  LIFT_GAMMA_GAIN = 0,    // $DESCRIPTION: "lift, gamma, gain (ProPhotoRGB)"
-  SLOPE_OFFSET_POWER = 1, // $DESCRIPTION: "slope, offset, power (ProPhotoRGB)"
+  LIFT_GAMMA_GAIN = 0,    // $DESCRIPTION: "lift, gamma, gain (ProPhoto RGB)"
+  SLOPE_OFFSET_POWER = 1, // $DESCRIPTION: "slope, offset, power (ProPhoto RGB)"
   LEGACY = 2              // $DESCRIPTION: "lift, gamma, gain (sRGB)"
 } dt_iop_colorbalance_mode_t;
 
@@ -1732,9 +1732,9 @@ static void _configure_slider_blocks(gpointer instance, dt_iop_module_t *self)
   const gchar *short_label_lgg[] = { C_("color", "lift"), C_("color", "gamma"), C_("color", "gain") };
   const gchar **short_label = (p->mode == SLOPE_OFFSET_POWER) ? short_label_ops : short_label_lgg;
   const gchar *long_label[]
-     = { N_("shadows : lift / offset"),
-         N_("mid-tones : gamma / power"),
-         N_("highlights : gain / slope") };
+     = { N_("shadows: lift / offset"),
+         N_("mid-tones: gamma / power"),
+         N_("highlights: gain / slope") };
 
   gchar *layout = dt_conf_get_string("plugins/darkroom/colorbalance/layout");
 

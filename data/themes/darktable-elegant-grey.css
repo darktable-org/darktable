@@ -121,20 +121,3 @@ combobox window *:hover
 {
   background-image: linear-gradient(rgba(241, 241, 241, 0.7) 0%, rgba(241, 241, 241, 0.7) 90%,rgba(241, 241, 241, 0) 100%);  /* rgb color needs to be set to same color as #thumb_back hover background */
 }
-
-/* Set how bottom infos are rendered on always and always extended overlays modes in culling and preview modes */
-.dt_overlays_always#culling #thumb-bottom,
-.dt_overlays_always_extended#culling #thumb-bottom,
-.dt_overlays_always#preview #thumb-bottom,
-.dt_overlays_always_extended#preview #thumb-bottom
-{
-  background-image: linear-gradient(rgba(226, 226, 226, 0.2) 0%, rgba(226, 226, 226, 0.1) 5%, rgba(226, 226, 226, 0) 100%);
-}
-
-.dt_overlays_always#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always#preview #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#preview #thumb-main:hover #thumb-bottom
-{
-  background-image: linear-gradient(rgba(246, 246, 246, 0.4) 0%, rgba(246, 246, 246, 0.2) 5%, rgba(226, 226, 226, 0) 100%);
-}

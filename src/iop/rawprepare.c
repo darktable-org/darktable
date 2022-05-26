@@ -414,7 +414,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(csx, csy, roi_out, out, im_to_rel_x, im_to_rel_y, rel_to_map_x, rel_to_map_y, \
                         map_w, map_h, map_origin_h, map_origin_v) \
-    shared(d) schedule(static)
+    dt_omp_sharedconst(d) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {

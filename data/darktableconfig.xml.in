@@ -426,7 +426,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>prefer an history button in the collect module</shortdescription>
-    <longdescription>prefer to hide this module and acces history with a button in the collect module</longdescription>
+    <longdescription>prefer to hide this module and access history with a button in the collect module</longdescription>
   </dtconfig>
   <dtconfig dialog="collect">
     <name>plugins/lighttable/collect/history_max</name>
@@ -1282,7 +1282,7 @@
     <type>string</type>
     <default>120|400</default>
     <shortdescription>delimiters for size categories</shortdescription>
-    <longdescription>size categories are used to be able to set different overlays and css values depending of the size of the thumbnail, separated by |. for example, 120|400 means 3 categories of thumbnails : 0px->120px, 120px->400px and >400px</longdescription>
+    <longdescription>size categories are used to be able to set different overlays and css values depending of the size of the thumbnail, separated by |. for example, 120|400 means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
@@ -1339,7 +1339,7 @@
     <type>
       <enum>
         <option>false color</option>
-        <option>gray scale</option>
+        <option>grayscale</option>
       </enum>
     </type>
     <default>false color</default>

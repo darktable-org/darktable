@@ -1501,6 +1501,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
             params->img = (void *)img;
             // at this time only exif info are available
             gchar *result = dt_variables_expand(params, str, FALSE);
+            dt_variables_params_destroy(params);
             if(result && result[0])
             {
               g_free(str);
@@ -4511,4 +4512,3 @@ void dt_exif_cleanup()
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
