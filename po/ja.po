@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-21 20:29+0200\n"
-"PO-Revision-Date: 2022-05-27 02:11+0900\n"
+"POT-Creation-Date: 2022-05-26 15:55+0200\n"
+"PO-Revision-Date: 2022-05-27 02:46+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -1112,7 +1112,7 @@ msgstr "サイズカテゴリの区切り"
 msgid ""
 "size categories are used to be able to set different overlays and css values "
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
-"means 3 categories of thumbnails : 0px->120px, 120px->400px and >400px"
+"means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px"
 msgstr ""
 "サイズカテゴリは、|で区切られたサムネイルのサイズに応じて、異なるオーバーレイ"
 "やcss値を設定できるようにするために使用されます\n"
@@ -2480,8 +2480,8 @@ msgstr "なし"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:154
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:271
 #: ../src/develop/blend_gui.c:2007 ../src/develop/blend_gui.c:2026
-#: ../src/iop/colorbalancergb.c:2061 ../src/iop/colorbalancergb.c:2062
 #: ../src/iop/colorbalancergb.c:2063 ../src/iop/colorbalancergb.c:2064
+#: ../src/iop/colorbalancergb.c:2065 ../src/iop/colorbalancergb.c:2066
 msgid "luminance"
 msgstr "輝度"
 
@@ -2610,8 +2610,8 @@ msgstr "曲率"
 #: ../build/lib/darktable/plugins/introspection_blurs.c:206
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:148
-#: ../src/iop/colorbalancergb.c:2056 ../src/iop/colorbalancergb.c:2060
-#: ../src/iop/colorbalancergb.c:2064
+#: ../src/iop/colorbalancergb.c:2058 ../src/iop/colorbalancergb.c:2062
+#: ../src/iop/colorbalancergb.c:2066
 msgid "offset"
 msgstr "オフセット"
 
@@ -2679,8 +2679,8 @@ msgstr "色ずれ回避"
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:95
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:117
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:244
-#: ../build/lib/darktable/plugins/introspection_highlights.c:137
-#: ../build/lib/darktable/plugins/introspection_highlights.c:228
+#: ../build/lib/darktable/plugins/introspection_highlights.c:143
+#: ../build/lib/darktable/plugins/introspection_highlights.c:240
 msgid "iterations"
 msgstr "反復"
 
@@ -2806,8 +2806,8 @@ msgstr "出力ぼかしの範囲"
 
 #: ../build/lib/darktable/plugins/introspection_censorize.c:69
 #: ../build/lib/darktable/plugins/introspection_censorize.c:124
-#: ../build/lib/darktable/plugins/introspection_highlights.c:131
-#: ../build/lib/darktable/plugins/introspection_highlights.c:224
+#: ../build/lib/darktable/plugins/introspection_highlights.c:137
+#: ../build/lib/darktable/plugins/introspection_highlights.c:236
 msgid "noise level"
 msgstr "ノイズレベル"
 
@@ -3239,7 +3239,7 @@ msgstr "コントラスト"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:418
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:589
 msgid "saturation formula"
-msgstr "彩度（サチュレーション）の方式"
+msgstr "彩度の方式"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:603
 msgid "JzAzBz (2021)"
@@ -3337,9 +3337,9 @@ msgstr "高彩度の色"
 #: ../src/develop/blend_gui.c:1980 ../src/develop/blend_gui.c:1999
 #: ../src/develop/blend_gui.c:2034 ../src/iop/channelmixer.c:622
 #: ../src/iop/channelmixerrgb.c:4051 ../src/iop/channelmixerrgb.c:4141
-#: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:2053
-#: ../src/iop/colorbalancergb.c:2054 ../src/iop/colorbalancergb.c:2055
-#: ../src/iop/colorbalancergb.c:2056 ../src/iop/colorize.c:344
+#: ../src/iop/colorbalance.c:1990 ../src/iop/colorbalancergb.c:2055
+#: ../src/iop/colorbalancergb.c:2056 ../src/iop/colorbalancergb.c:2057
+#: ../src/iop/colorbalancergb.c:2058 ../src/iop/colorize.c:344
 #: ../src/iop/colorreconstruction.c:1288 ../src/iop/colorzones.c:2433
 #: ../src/iop/splittoning.c:471
 msgid "hue"
@@ -3381,8 +3381,8 @@ msgstr "明度"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:1976 ../src/iop/basicadj.c:624
 #: ../src/iop/channelmixer.c:623 ../src/iop/colisa.c:307
-#: ../src/iop/colorbalance.c:2007 ../src/iop/colorbalancergb.c:2071
-#: ../src/iop/colorbalancergb.c:2072 ../src/iop/colorbalancergb.c:2073
+#: ../src/iop/colorbalance.c:2007 ../src/iop/colorbalancergb.c:2073
+#: ../src/iop/colorbalancergb.c:2074 ../src/iop/colorbalancergb.c:2075
 #: ../src/iop/colorchecker.c:1376 ../src/iop/colorcontrast.c:94
 #: ../src/iop/colorcorrection.c:283 ../src/iop/colorize.c:357
 #: ../src/iop/colorzones.c:2432 ../src/iop/lowpass.c:575
@@ -3411,7 +3411,7 @@ msgstr "エッジ検出の範囲"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:224
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:423
 #: ../src/iop/atrous.c:1641 ../src/iop/bloom.c:394
-#: ../src/iop/colorbalancergb.c:2012 ../src/iop/colorreconstruction.c:1284
+#: ../src/iop/colorbalancergb.c:2016 ../src/iop/colorreconstruction.c:1284
 #: ../src/iop/hotpixels.c:385 ../src/iop/sharpen.c:457
 msgid "threshold"
 msgstr "しきい値"
@@ -3700,8 +3700,8 @@ msgstr "中心域"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:62
 #: ../build/lib/darktable/plugins/introspection_dither.c:141
-#: ../build/lib/darktable/plugins/introspection_highlights.c:101
-#: ../build/lib/darktable/plugins/introspection_highlights.c:204
+#: ../build/lib/darktable/plugins/introspection_highlights.c:107
+#: ../build/lib/darktable/plugins/introspection_highlights.c:216
 msgid "method"
 msgstr "方式"
 
@@ -4013,81 +4013,86 @@ msgstr "粗さ"
 msgid "mid-tones bias"
 msgstr "中間トーンのバイアス"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:125
-#: ../build/lib/darktable/plugins/introspection_highlights.c:220
+#: ../build/lib/darktable/plugins/introspection_highlights.c:131
+#: ../build/lib/darktable/plugins/introspection_highlights.c:232
 #: ../src/views/darkroom.c:2331
 msgid "clipping threshold"
 msgstr "クリッピングのしきい値"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:143
-#: ../build/lib/darktable/plugins/introspection_highlights.c:232
+#: ../build/lib/darktable/plugins/introspection_highlights.c:149
+#: ../build/lib/darktable/plugins/introspection_highlights.c:244
 msgid "diameter of reconstruction"
 msgstr "再構成の直径"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:149
-#: ../build/lib/darktable/plugins/introspection_highlights.c:236
+#: ../build/lib/darktable/plugins/introspection_highlights.c:155
+#: ../build/lib/darktable/plugins/introspection_highlights.c:248
 msgid "cast balance"
 msgstr "バランス"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:155
-#: ../build/lib/darktable/plugins/introspection_highlights.c:240
+#: ../build/lib/darktable/plugins/introspection_highlights.c:161
+#: ../build/lib/darktable/plugins/introspection_highlights.c:252
 msgid "combine segments"
 msgstr "諸部分を組み合わせる"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:258
+#: ../build/lib/darktable/plugins/introspection_highlights.c:173
+#: ../build/lib/darktable/plugins/introspection_highlights.c:260
+msgid "inpaint a flat color"
+msgstr "色の一様な部分を修復する"
+
+#: ../build/lib/darktable/plugins/introspection_highlights.c:274
 msgid "clip highlights"
 msgstr "ハイライトのクリップ"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:259
+#: ../build/lib/darktable/plugins/introspection_highlights.c:275
 msgid "reconstruct in LCh"
 msgstr "LChで復元"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:260
+#: ../build/lib/darktable/plugins/introspection_highlights.c:276
 msgid "reconstruct color"
 msgstr "色を復元"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:261
-#: ../src/iop/highlights.c:2153
+#: ../build/lib/darktable/plugins/introspection_highlights.c:277
+#: ../src/iop/highlights.c:2139
 msgid "guided laplacians"
 msgstr "ガイドラプラシアン"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:265
+#: ../build/lib/darktable/plugins/introspection_highlights.c:281
 msgid "4 px"
 msgstr "4 px"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:266
+#: ../build/lib/darktable/plugins/introspection_highlights.c:282
 msgid "8 px"
 msgstr "8 px"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:267
+#: ../build/lib/darktable/plugins/introspection_highlights.c:283
 msgid "16 px"
 msgstr "16 px"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:268
+#: ../build/lib/darktable/plugins/introspection_highlights.c:284
 msgid "32 px"
 msgstr "32 px"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:269
+#: ../build/lib/darktable/plugins/introspection_highlights.c:285
 msgid "64 px"
 msgstr "64 px"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:270
+#: ../build/lib/darktable/plugins/introspection_highlights.c:286
 msgid "128 px"
 msgstr "128 px"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:271
+#: ../build/lib/darktable/plugins/introspection_highlights.c:287
 msgid "256 px (slow)"
 msgstr "256 px (低速)"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:272
+#: ../build/lib/darktable/plugins/introspection_highlights.c:288
 msgid "512 px (slow)"
 msgstr "512 px (低速)"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:273
+#: ../build/lib/darktable/plugins/introspection_highlights.c:289
 msgid "1024 px (very slow)"
 msgstr "1024 px (とても低速)"
 
-#: ../build/lib/darktable/plugins/introspection_highlights.c:274
+#: ../build/lib/darktable/plugins/introspection_highlights.c:290
 msgid "2048 px (insanely slow)"
 msgstr "2048 px (極めて低速)"
 
@@ -4396,7 +4401,7 @@ msgid "erase"
 msgstr "消去"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:458
-#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1106
+#: ../src/gui/presets.c:59 ../src/iop/watermark.c:1107
 #: ../src/libs/colorpicker.c:285 ../src/libs/image.c:615
 #: ../src/libs/modulegroups.c:2409
 msgid "color"
@@ -4470,8 +4475,8 @@ msgstr "暗いシャドウ"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:156
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:297
 #: ../src/iop/bilat.c:459 ../src/iop/colorbalance.c:2047
-#: ../src/iop/colorbalancergb.c:2069 ../src/iop/colorbalancergb.c:2073
-#: ../src/iop/colorbalancergb.c:2077 ../src/iop/shadhi.c:680
+#: ../src/iop/colorbalancergb.c:2071 ../src/iop/colorbalancergb.c:2075
+#: ../src/iop/colorbalancergb.c:2079 ../src/iop/shadhi.c:680
 #: ../src/iop/splittoning.c:520
 msgid "shadows"
 msgstr "シャドウ"
@@ -4483,8 +4488,8 @@ msgstr "明るいシャドウ"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:168
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
-#: ../src/iop/colorbalance.c:2048 ../src/iop/colorbalancergb.c:2068
-#: ../src/iop/colorbalancergb.c:2072 ../src/iop/colorbalancergb.c:2076
+#: ../src/iop/colorbalance.c:2048 ../src/iop/colorbalancergb.c:2070
+#: ../src/iop/colorbalancergb.c:2074 ../src/iop/colorbalancergb.c:2078
 msgid "mid-tones"
 msgstr "中間トーン"
 
@@ -4496,8 +4501,8 @@ msgstr "暗いハイライト"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:180
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:313
 #: ../src/iop/bilat.c:454 ../src/iop/colorbalance.c:2049
-#: ../src/iop/colorbalancergb.c:2067 ../src/iop/colorbalancergb.c:2071
-#: ../src/iop/colorbalancergb.c:2075 ../src/iop/monochrome.c:576
+#: ../src/iop/colorbalancergb.c:2069 ../src/iop/colorbalancergb.c:2073
+#: ../src/iop/colorbalancergb.c:2077 ../src/iop/monochrome.c:576
 #: ../src/iop/shadhi.c:681 ../src/iop/splittoning.c:522
 msgid "highlights"
 msgstr "ハイライト"
@@ -4797,7 +4802,7 @@ msgstr "ドロップ ダウン"
 #: ../src/libs/collect.c:406 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
-#: ../src/libs/tagging.c:2471 ../src/libs/tagging.c:2507
+#: ../src/libs/tagging.c:2485 ../src/libs/tagging.c:2521
 msgid "_cancel"
 msgstr "_キャンセル"
 
@@ -5080,7 +5085,7 @@ msgid "camera"
 msgstr "カメラ"
 
 #: ../src/common/collection.c:663 ../src/libs/export_metadata.c:189
-#: ../src/libs/tagging.c:3269
+#: ../src/libs/tagging.c:3283
 msgid "tag"
 msgstr "タグ"
 
@@ -5089,7 +5094,7 @@ msgid "capture date"
 msgstr "撮影日時"
 
 #: ../src/common/collection.c:677 ../src/libs/collect.c:3313
-#: ../src/libs/filtering.c:1974 ../src/libs/filtering.c:1994
+#: ../src/libs/filtering.c:1975 ../src/libs/filtering.c:1995
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "履歴"
@@ -5868,12 +5873,12 @@ msgstr "darktable起動エラー"
 
 #: ../src/common/database.c:2744 ../src/libs/collect.c:3011
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
-#: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
-#: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1466
-#: ../src/libs/tagging.c:1554 ../src/libs/tagging.c:1635
-#: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
-#: ../src/libs/tagging.c:3460
+#: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1480
+#: ../src/libs/tagging.c:1568 ../src/libs/tagging.c:1649
+#: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
+#: ../src/libs/tagging.c:3474
 msgid "cancel"
 msgstr "キャンセル"
 
@@ -6106,12 +6111,12 @@ msgstr ""
 "高速露出非依存ガイドフィルターがメモリの割り当てに失敗しました。RAM設定を確認"
 "してください"
 
-#: ../src/common/exif.cc:4332
+#: ../src/common/exif.cc:4333
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "xmpファイル'%s': '%s'を読み取れません"
 
-#: ../src/common/exif.cc:4384
+#: ../src/common/exif.cc:4385
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "xmpファイル'%s': '%s'を書き込むことが出来ません"
@@ -6248,7 +6253,7 @@ msgstr[0] "%d 枚のローカルコピーが同期化されました"
 msgstr[1] "%d 枚のローカルコピーが同期化されました"
 
 #: ../src/common/image.c:2792
-msgid "<b>WARNING</b> : camera is missing samples!"
+msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>警告</b>：このカメラはサンプルが提供されていません"
 
 #: ../src/common/image.c:2793
@@ -6560,23 +6565,23 @@ msgstr "ダウングレード"
 msgid "zero"
 msgstr "0"
 
-#: ../src/common/ratings.c:312 ../src/libs/filters/rating.c:234
+#: ../src/common/ratings.c:312 ../src/libs/filters/rating.c:294
 msgid "one"
 msgstr "1"
 
-#: ../src/common/ratings.c:313 ../src/libs/filters/rating.c:235
+#: ../src/common/ratings.c:313 ../src/libs/filters/rating.c:295
 msgid "two"
 msgstr "2"
 
-#: ../src/common/ratings.c:314 ../src/libs/filters/rating.c:236
+#: ../src/common/ratings.c:314 ../src/libs/filters/rating.c:296
 msgid "three"
 msgstr "3"
 
-#: ../src/common/ratings.c:315 ../src/libs/filters/rating.c:237
+#: ../src/common/ratings.c:315 ../src/libs/filters/rating.c:297
 msgid "four"
 msgstr "4"
 
-#: ../src/common/ratings.c:316 ../src/libs/filters/rating.c:238
+#: ../src/common/ratings.c:316 ../src/libs/filters/rating.c:298
 msgid "five"
 msgstr "5"
 
@@ -7562,7 +7567,7 @@ msgid "reverse"
 msgstr "逆転"
 
 #: ../src/develop/blend_gui.c:93 ../src/imageio/format/webp.c:357
-#: ../src/libs/metadata.c:496 ../src/libs/metadata_view.c:1185
+#: ../src/libs/metadata.c:506 ../src/libs/metadata_view.c:1185
 msgid "default"
 msgstr "デフォルト"
 
@@ -7780,10 +7785,10 @@ msgstr "（HSLの）彩度（クロマ）チャンネルのスライダー"
 
 #: ../src/develop/blend_gui.c:2003 ../src/develop/blend_gui.c:2030
 #: ../src/iop/atrous.c:1737 ../src/iop/channelmixerrgb.c:4057
-#: ../src/iop/channelmixerrgb.c:4148 ../src/iop/colorbalancergb.c:2057
-#: ../src/iop/colorbalancergb.c:2058 ../src/iop/colorbalancergb.c:2059
-#: ../src/iop/colorbalancergb.c:2060 ../src/iop/colorbalancergb.c:2067
-#: ../src/iop/colorbalancergb.c:2068 ../src/iop/colorbalancergb.c:2069
+#: ../src/iop/channelmixerrgb.c:4148 ../src/iop/colorbalancergb.c:2059
+#: ../src/iop/colorbalancergb.c:2060 ../src/iop/colorbalancergb.c:2061
+#: ../src/iop/colorbalancergb.c:2062 ../src/iop/colorbalancergb.c:2069
+#: ../src/iop/colorbalancergb.c:2070 ../src/iop/colorbalancergb.c:2071
 #: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:522
 msgid "chroma"
 msgstr "彩度（クロマ）"
@@ -7893,20 +7898,20 @@ msgstr ""
 "'m'を押すと、マスクの表示／非表示を切り替えます"
 
 #: ../src/develop/blend_gui.c:2228 ../src/develop/blend_gui.c:3056
-#: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2016
+#: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2020
 #: ../src/iop/exposure.c:1033 ../src/iop/exposure.c:1046
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
 #: ../src/iop/filmicrgb.c:4383 ../src/iop/filmicrgb.c:4393
 #: ../src/iop/filmicrgb.c:4428 ../src/iop/filmicrgb.c:4438
 #: ../src/iop/graduatednd.c:1098 ../src/iop/negadoctor.c:983
 #: ../src/iop/profile_gamma.c:651 ../src/iop/profile_gamma.c:657
-#: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3131
-#: ../src/iop/toneequal.c:3134 ../src/iop/toneequal.c:3137
-#: ../src/iop/toneequal.c:3140 ../src/iop/toneequal.c:3143
-#: ../src/iop/toneequal.c:3146 ../src/iop/toneequal.c:3149
-#: ../src/iop/toneequal.c:3152 ../src/iop/toneequal.c:3155
-#: ../src/iop/toneequal.c:3249 ../src/iop/toneequal.c:3256
-#: ../src/iop/toneequal.c:3266 ../src/views/darkroom.c:2378
+#: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3132
+#: ../src/iop/toneequal.c:3135 ../src/iop/toneequal.c:3138
+#: ../src/iop/toneequal.c:3141 ../src/iop/toneequal.c:3144
+#: ../src/iop/toneequal.c:3147 ../src/iop/toneequal.c:3150
+#: ../src/iop/toneequal.c:3153 ../src/iop/toneequal.c:3156
+#: ../src/iop/toneequal.c:3250 ../src/iop/toneequal.c:3257
+#: ../src/iop/toneequal.c:3267 ../src/views/darkroom.c:2378
 msgid " EV"
 msgstr "EV"
 
@@ -8076,7 +8081,7 @@ msgid "adjust the fulcrum used by some blending operations"
 msgstr "一部のブレンド操作で使用される支点を調整します"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:3064 ../src/iop/watermark.c:1121
+#: ../src/develop/blend_gui.c:3064 ../src/iop/watermark.c:1122
 msgid "opacity"
 msgstr "不透明度"
 
@@ -8241,7 +8246,7 @@ msgstr "下へ移動"
 #: ../src/develop/imageop.c:951 ../src/develop/imageop.c:3222
 #: ../src/gui/accelerators.c:143 ../src/gui/presets.c:477
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/masks.c:1055
-#: ../src/libs/tagging.c:1466 ../src/libs/tagging.c:1554
+#: ../src/libs/tagging.c:1480 ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "削除"
 
@@ -8339,7 +8344,7 @@ msgstr "表示"
 
 #: ../src/develop/imageop.c:3221 ../src/libs/modulegroups.c:3353
 #: ../src/libs/modulegroups.c:3479 ../src/libs/modulegroups.c:3872
-#: ../src/libs/tagging.c:3235
+#: ../src/libs/tagging.c:3249
 msgid "new"
 msgstr "新規作成"
 
@@ -8784,12 +8789,12 @@ msgstr "画像が選択されていません！"
 msgid "invalid"
 msgstr "無効"
 
-#: ../src/dtgtk/range.c:324
+#: ../src/dtgtk/range.c:328
 #, c-format
 msgid "year %s"
 msgstr "年 %s"
 
-#: ../src/dtgtk/range.c:402
+#: ../src/dtgtk/range.c:406
 msgid ""
 "enter the minimal value\n"
 "use 'min' if no bound\n"
@@ -8799,7 +8804,7 @@ msgstr ""
 "制限が無い場合、minと入力してください\n"
 "右クリックすると、既存の値から選択します"
 
-#: ../src/dtgtk/range.c:408
+#: ../src/dtgtk/range.c:412
 msgid ""
 "enter the maximal value\n"
 "use 'max' if no bound\n"
@@ -8809,7 +8814,7 @@ msgstr ""
 "制限が無い場合、maxと入力してください\n"
 "右クリックすると、既存の値から選択します"
 
-#: ../src/dtgtk/range.c:414
+#: ../src/dtgtk/range.c:418
 msgid ""
 "enter the value\n"
 "right-click to select from existing values"
@@ -8817,7 +8822,7 @@ msgstr ""
 "値を入力してください\n"
 "右クリックすると、既存の値から選択します"
 
-#: ../src/dtgtk/range.c:419
+#: ../src/dtgtk/range.c:423
 msgid ""
 "enter the minimal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8831,7 +8836,7 @@ msgstr ""
 "相対日付は-を前に入力してください\n"
 "右クリックすると、カレンダーまたは既存の値から選択します"
 
-#: ../src/dtgtk/range.c:427
+#: ../src/dtgtk/range.c:431
 msgid ""
 "enter the maximal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8847,7 +8852,7 @@ msgstr ""
 "相対日付は-を前に入力してください\n"
 "右クリックすると、カレンダーまたは既存の値から選択します"
 
-#: ../src/dtgtk/range.c:436
+#: ../src/dtgtk/range.c:440
 msgid ""
 "enter the date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8857,42 +8862,42 @@ msgstr ""
 "YYYY:MM:DD hh:mm:ss.sss（年は必須です）\n"
 "右クリックすると、カレンダーまたは既存の値から選択します"
 
-#: ../src/dtgtk/range.c:458
+#: ../src/dtgtk/range.c:462
 msgid "date-time interval to subtract from the max value"
 msgstr "最大値から引かれる日時間隔"
 
-#: ../src/dtgtk/range.c:462
+#: ../src/dtgtk/range.c:466
 msgid "date-time interval to add to the min value"
 msgstr "最小値に足される日時間隔"
 
-#: ../src/dtgtk/range.c:602 ../src/dtgtk/range.c:1715 ../src/dtgtk/range.c:1766
+#: ../src/dtgtk/range.c:606 ../src/dtgtk/range.c:1721 ../src/dtgtk/range.c:1772
 #: ../src/libs/colorpicker.c:53
 msgid "min"
 msgstr "最小"
 
-#: ../src/dtgtk/range.c:608 ../src/dtgtk/range.c:1727 ../src/dtgtk/range.c:1778
-#: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating.c:239
+#: ../src/dtgtk/range.c:612 ../src/dtgtk/range.c:1733 ../src/dtgtk/range.c:1784
+#: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating.c:299
 msgid "max"
 msgstr "最大"
 
-#: ../src/dtgtk/range.c:922
+#: ../src/dtgtk/range.c:926
 msgid "date type"
 msgstr "データタイプ"
 
-#: ../src/dtgtk/range.c:923
+#: ../src/dtgtk/range.c:927
 msgid "fixed"
 msgstr "固定"
 
-#: ../src/dtgtk/range.c:924 ../src/iop/colorchecker.c:1382
+#: ../src/dtgtk/range.c:928 ../src/iop/colorchecker.c:1382
 msgid "relative"
 msgstr "相対値"
 
 #. the date section
-#: ../src/dtgtk/range.c:936
+#: ../src/dtgtk/range.c:940
 msgid "date"
 msgstr "日付"
 
-#: ../src/dtgtk/range.c:943 ../src/dtgtk/range.c:1009
+#: ../src/dtgtk/range.c:947 ../src/dtgtk/range.c:1013
 msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
@@ -8900,49 +8905,49 @@ msgstr ""
 "クリックすると、日時を選択します\n"
 "ダブルクリックすると、直接日付を使用します"
 
-#: ../src/dtgtk/range.c:954
+#: ../src/dtgtk/range.c:958
 msgid "years: "
 msgstr "年："
 
-#: ../src/dtgtk/range.c:962
+#: ../src/dtgtk/range.c:966
 msgid "months: "
 msgstr "月："
 
-#: ../src/dtgtk/range.c:970
+#: ../src/dtgtk/range.c:974
 msgid "days: "
 msgstr "日："
 
 #. the time section
-#: ../src/dtgtk/range.c:982
+#: ../src/dtgtk/range.c:986
 msgid "time"
 msgstr "時間"
 
-#: ../src/dtgtk/range.c:1034 ../src/dtgtk/range.c:1734
+#: ../src/dtgtk/range.c:1038 ../src/dtgtk/range.c:1740
 msgid "now"
 msgstr "現在"
 
-#: ../src/dtgtk/range.c:1036
+#: ../src/dtgtk/range.c:1040
 msgid "set the value to always match current datetime"
 msgstr "常に現在の日時に一致する値を設定する"
 
 #. apply button
-#: ../src/dtgtk/range.c:1039 ../src/gui/accelerators.c:149
-#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:750
+#: ../src/dtgtk/range.c:1043 ../src/gui/accelerators.c:149
+#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:760
 #: ../src/libs/styles.c:861
 msgid "apply"
 msgstr "適用"
 
-#: ../src/dtgtk/range.c:1040
+#: ../src/dtgtk/range.c:1044
 msgid "set the range bound with this value"
 msgstr "この値に結びついた一定の範囲を設定する"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1711 ../src/gui/accelerators.c:1978
+#: ../src/dtgtk/range.c:1716 ../src/gui/accelerators.c:1978
 #: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2916
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
-#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1412
+#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1413
 #: ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
 #: ../src/libs/filters/rating_legacy.c:211
 msgid "all"
@@ -9344,7 +9349,7 @@ msgid "altgr"
 msgstr "altgr"
 
 #: ../src/gui/accelerators.c:102 ../src/gui/accelerators.c:144
-#: ../src/libs/tagging.c:1764
+#: ../src/libs/tagging.c:1778
 msgid "edit"
 msgstr "編集"
 
@@ -9383,8 +9388,8 @@ msgid "first"
 msgstr "最初"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1700
-#: ../src/libs/filters/rating.c:225 ../src/libs/tagging.c:3105
+#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1701
+#: ../src/libs/filters/rating.c:285 ../src/libs/tagging.c:3119
 #: ../src/views/darkroom.c:2289 ../src/views/darkroom.c:2344
 #: ../src/views/darkroom.c:2584
 msgid "toggle"
@@ -9736,7 +9741,7 @@ msgstr "デバイスID"
 msgid "select file to export"
 msgstr "エクスポートするファイルを選択してください"
 
-#: ../src/gui/accelerators.c:2018 ../src/libs/tagging.c:2507
+#: ../src/gui/accelerators.c:2018 ../src/libs/tagging.c:2521
 msgid "_export"
 msgstr "_エクスポート"
 
@@ -9768,7 +9773,7 @@ msgstr "読み込み前にデバイスを消去"
 msgid "select file to import"
 msgstr "インポートするファイルを選択してください"
 
-#: ../src/gui/accelerators.c:2105 ../src/libs/tagging.c:2471
+#: ../src/gui/accelerators.c:2105 ../src/libs/tagging.c:2485
 msgid "_import"
 msgstr "_インポート"
 
@@ -9841,7 +9846,7 @@ msgstr "ショートカットのデフォルト設定または以前の状態を
 
 #. import button
 #: ../src/gui/accelerators.c:2340 ../src/libs/styles.c:853
-#: ../src/libs/tagging.c:3238
+#: ../src/libs/tagging.c:3252
 msgid "import..."
 msgstr "インポート..."
 
@@ -9851,7 +9856,7 @@ msgstr "ショートカットの全てまたは一部をファイルからイン
 
 #. export button
 #: ../src/gui/accelerators.c:2345 ../src/libs/styles.c:857
-#: ../src/libs/tagging.c:3241
+#: ../src/libs/tagging.c:3255
 msgid "export..."
 msgstr "エクスポート..."
 
@@ -12043,10 +12048,10 @@ msgstr ""
 "それぞれのフィーチャーサイズでエッジ周辺のハロを変更します\n"
 "輝度（ルーマ）タブと彩度（クロマ）タブの結果だけ変更します"
 
-#: ../src/iop/atrous.c:1755 ../src/iop/colorbalancergb.c:1982
+#: ../src/iop/atrous.c:1755 ../src/iop/colorbalancergb.c:1986
 #: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4350
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:932
-#: ../src/iop/toneequal.c:3176
+#: ../src/iop/toneequal.c:3177
 msgid "graph"
 msgstr "グラフ"
 
@@ -12151,7 +12156,7 @@ msgstr ""
 #: ../src/iop/cacorrectrgb.c:167 ../src/iop/colorreconstruction.c:135
 #: ../src/iop/defringe.c:81 ../src/iop/denoiseprofile.c:720
 #: ../src/iop/dither.c:103 ../src/iop/flip.c:105 ../src/iop/hazeremoval.c:112
-#: ../src/iop/highlights.c:144 ../src/iop/hotpixels.c:73
+#: ../src/iop/highlights.c:147 ../src/iop/hotpixels.c:73
 #: ../src/iop/invert.c:122 ../src/iop/lens.cc:159 ../src/iop/nlmeans.c:99
 #: ../src/iop/profile_gamma.c:101 ../src/iop/rawdenoise.c:130
 #: ../src/iop/retouch.c:209 ../src/iop/sharpen.c:94 ../src/iop/spots.c:67
@@ -12660,8 +12665,8 @@ msgstr "色収差を補正します（ベイヤーセンサー専用）"
 
 #: ../src/iop/cacorrect.c:89 ../src/iop/cacorrect.c:91
 #: ../src/iop/cacorrectrgb.c:168 ../src/iop/cacorrectrgb.c:170
-#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:145
-#: ../src/iop/highlights.c:147 ../src/iop/hotpixels.c:74
+#: ../src/iop/demosaic.c:228 ../src/iop/highlights.c:148
+#: ../src/iop/highlights.c:150 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
 #: ../src/iop/rawdenoise.c:133 ../src/iop/rawprepare.c:154
 #: ../src/iop/rawprepare.c:156 ../src/iop/temperature.c:200
@@ -12973,27 +12978,27 @@ msgid "linear, RGB or XYZ"
 msgstr "リニア、RGBまたはXYZ"
 
 #: ../src/iop/channelmixerrgb.c:368
-msgid "B&W : luminance-based"
+msgid "B&W: luminance-based"
 msgstr "白黒：輝度にもとづく"
 
 #: ../src/iop/channelmixerrgb.c:397
-msgid "B&W : ILFORD HP5+"
+msgid "B&W: ILFORD HP5+"
 msgstr "白黒：ILFORD HP5+"
 
 #: ../src/iop/channelmixerrgb.c:406
-msgid "B&W : ILFORD DELTA 100"
+msgid "B&W: ILFORD DELTA 100"
 msgstr "白黒：ILFORD DELTA 100"
 
 #: ../src/iop/channelmixerrgb.c:416
-msgid "B&W : ILFORD DELTA 400 - 3200"
+msgid "B&W: ILFORD DELTA 400 - 3200"
 msgstr "白黒：ILFORD DELTA 400 - 3200"
 
 #: ../src/iop/channelmixerrgb.c:425
-msgid "B&W : ILFORD FP4+"
+msgid "B&W: ILFORD FP4+"
 msgstr "白黒：ILFORD FP4+"
 
 #: ../src/iop/channelmixerrgb.c:434
-msgid "B&W : Fuji Acros 100"
+msgid "B&W: Fuji Acros 100"
 msgstr "白黒：Fuji Acros 100"
 
 #: ../src/iop/channelmixerrgb.c:451
@@ -13036,57 +13041,57 @@ msgstr "悪い"
 #, c-format
 msgid ""
 "\n"
-"<b>Profile quality report : %s</b>\n"
-"input  ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-"WB ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-"output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"<b>Profile quality report: %s</b>\n"
+"input ΔE: \tavg. %.2f ; \tmax. %.2f\n"
+"WB ΔE: \tavg. %.2f; \tmax. %.2f\n"
+"output ΔE: \tavg. %.2f; \tmax. %.2f\n"
 "\n"
 "<b>Profile data</b>\n"
-"illuminant :  \t%.0f K \t%s \n"
+"illuminant:  \t%.0f K \t%s\n"
 "matrix in adaptation space:\n"
 "<tt>%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f</tt>\n"
 "\n"
 "<b>Normalization values</b>\n"
-"exposure compensation : \t%+.2f EV\n"
-"black offset : \t%+.4f"
+"exposure compensation: \t%+.2f EV\n"
+"black offset: \t%+.4f"
 msgstr ""
 "\n"
-"<b>プロファイルクオリティレポート%s</b>\n"
-"入力  ΔE : \t平均 %.2f ; \t最大 %.2f\n"
-"ホワイトバランス ΔE : \t平均 %.2f ; \t最大 %.2f\n"
-"出力 ΔE : \t平均 %.2f  \t最大 %.2f\n"
+"<b>プロファイルクオリティレポート：%s</b>\n"
+"入力 ΔE：\t平均 %.2f；\t最大 %.2f\n"
+"ホワイトバランス ΔE：\t平均 %.2f；\t最大 %.2f\n"
+"出力 ΔE：\t平均 %.2f；\t最大 %.2f\n"
 "\n"
 "<b>プロファイルデータ</b>\n"
-"イルミナント :  \t%.0f K \t%s \n"
-"順応空間でのマトリクス:\n"
+"イルミナント：\t%.0f K \t%s\n"
+"順応空間でのマトリクス：\n"
 "<tt>%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f</tt>\n"
 "\n"
 "<b>正規化値</b>\n"
-"露出補正 : \t%+.2f EV\n"
-"黒オフセット: \t%+.4f"
+"露出補正：\t%+.2f EV\n"
+"黒オフセット：\t%+.4f"
 
 #: ../src/iop/channelmixerrgb.c:1809
 #, c-format
 msgid ""
 "\n"
-"<b>Profile quality report : %s</b>\n"
-"output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"<b>Profile quality report: %s</b>\n"
+"output ΔE: \tavg. %.2f; \tmax. %.2f\n"
 "\n"
 "<b>Normalization values</b>\n"
-"exposure compensation : \t%+.2f EV\n"
-"black offset : \t%+.4f"
+"exposure compensation: \t%+.2f EV\n"
+"black offset: \t%+.4f"
 msgstr ""
 "\n"
-"<b>プロファイルクオリティレポート ：%s</b>\n"
-"出力 ΔE ： \t平均 %.2f ; \t最大 %.2f\n"
+"<b>プロファイルクオリティレポート：%s</b>\n"
+"出力 ΔE：\t平均 %.2f；\t最大 %.2f\n"
 "\n"
 "<b>正規化値</b>\n"
-"露出補正 ： \t%+.2f EV\n"
-"黒オフセット ： \t%+.4f"
+"露出補正：\t%+.2f EV\n"
+"黒オフセット：\t%+.4f"
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
@@ -13216,18 +13221,18 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:3746
 #, c-format
 msgid ""
-"L : \t%.1f %%\n"
-"h : \t%.1f °\n"
-"c : \t%.1f"
+"L: \t%.1f %%\n"
+"h: \t%.1f °\n"
+"c: \t%.1f"
 msgstr ""
-"L : \t%.1f %%\n"
-"h : \t%.1f °\n"
-"c : \t%.1f"
+"L: \t%.1f %%\n"
+"h: \t%.1f °\n"
+"c: \t%.1f"
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4002 ../src/iop/clipping.c:2105
 #: ../src/iop/colorbalancergb.c:1803 ../src/iop/filmicrgb.c:4365
-#: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3124
+#: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3125
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2351
 #: ../src/views/lighttable.c:1240
 msgid "page"
@@ -13343,13 +13348,13 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4113
 msgid ""
-"L : \tN/A \n"
-"h : \tN/A\n"
-"c : \tN/A"
+"L: \tN/A\n"
+"h: \tN/A\n"
+"c: \tN/A"
 msgstr ""
-"L : \tN/A \n"
-"h : \tN/A\n"
-"c : \tN/A"
+"L: \tN/A\n"
+"h: \tN/A\n"
+"c: \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4115 ../src/iop/exposure.c:1110
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
@@ -13866,15 +13871,15 @@ msgid "gain"
 msgstr "ゲイン"
 
 #: ../src/iop/colorbalance.c:1735
-msgid "shadows : lift / offset"
+msgid "shadows: lift / offset"
 msgstr "シャドウ：リフト／オフセット"
 
 #: ../src/iop/colorbalance.c:1736
-msgid "mid-tones : gamma / power"
+msgid "mid-tones: gamma / power"
 msgstr "中間トーン：ガンマ／パワー"
 
 #: ../src/iop/colorbalance.c:1737
-msgid "highlights : gain / slope"
+msgid "highlights: gain / slope"
 msgstr "ハイライト：ゲイン／スロープ"
 
 #: ../src/iop/colorbalance.c:1761
@@ -14156,8 +14161,8 @@ msgstr "ハイライトの色の増幅の色相"
 msgid "chroma of the color gain in highlights"
 msgstr "ハイライトの色の増幅の彩度（クロマ）"
 
-#: ../src/iop/colorbalancergb.c:1953 ../src/iop/colorbalancergb.c:2054
-#: ../src/iop/colorbalancergb.c:2058 ../src/iop/colorbalancergb.c:2062
+#: ../src/iop/colorbalancergb.c:1953 ../src/iop/colorbalancergb.c:2056
+#: ../src/iop/colorbalancergb.c:2060 ../src/iop/colorbalancergb.c:2064
 msgid "power"
 msgstr "パワー"
 
@@ -14182,74 +14187,78 @@ msgstr "マスク"
 msgid "isolate luminances"
 msgstr "輝度を区分けします"
 
-#: ../src/iop/colorbalancergb.c:1977
+#: ../src/iop/colorbalancergb.c:1979
+msgid "choose in which uniform color space the saturation is computed"
+msgstr "どの均等色空間 で彩度を計算するか選択してください"
+
+#: ../src/iop/colorbalancergb.c:1981
 msgid "luminance ranges"
 msgstr "輝度の範囲"
 
-#: ../src/iop/colorbalancergb.c:1991
+#: ../src/iop/colorbalancergb.c:1995
 msgid "weight of the shadows over the whole tonal range"
 msgstr "トーン全域におけるシャドウのウェイト"
 
-#: ../src/iop/colorbalancergb.c:1999
+#: ../src/iop/colorbalancergb.c:2003
 msgid "position of the middle-gray reference for masking"
 msgstr "マスキングに用いるミドルグレーの基準の位置"
 
-#: ../src/iop/colorbalancergb.c:2007
+#: ../src/iop/colorbalancergb.c:2011
 msgid "weights of highlights over the whole tonal range"
 msgstr "トーン全域におけるハイライトのウェイト"
 
-#: ../src/iop/colorbalancergb.c:2017
+#: ../src/iop/colorbalancergb.c:2021
 msgid "peak white luminance value used to normalize the power function"
 msgstr "べき（パワー）関数を正規化するために用いるピークとなる白の輝度値"
 
-#: ../src/iop/colorbalancergb.c:2023
+#: ../src/iop/colorbalancergb.c:2027
 msgid "peak gray luminance value used to normalize the power function"
 msgstr "べき（パワー）関数を正規化するために用いるピークとなるグレーの輝度値"
 
-#: ../src/iop/colorbalancergb.c:2027
+#: ../src/iop/colorbalancergb.c:2029
 msgid "mask preview settings"
 msgstr "マスクプレビューの設定"
 
-#: ../src/iop/colorbalancergb.c:2030
+#: ../src/iop/colorbalancergb.c:2032
 msgid "checkerboard color 1"
 msgstr "チェッカーボードの色 1"
 
-#: ../src/iop/colorbalancergb.c:2033 ../src/iop/colorbalancergb.c:2042
+#: ../src/iop/colorbalancergb.c:2035 ../src/iop/colorbalancergb.c:2044
 msgid "select color of the checkerboard from a swatch"
 msgstr "色見本からチェッカーボードの色を選択してください"
 
-#: ../src/iop/colorbalancergb.c:2039
+#: ../src/iop/colorbalancergb.c:2041
 msgid "checkerboard color 2"
 msgstr "チェッカーボードの色 2"
 
-#: ../src/iop/colorbalancergb.c:2049
+#: ../src/iop/colorbalancergb.c:2051
 msgid "checkerboard size"
 msgstr "チェッカーボードのサイズ"
 
-#: ../src/iop/colorbalancergb.c:2053 ../src/iop/colorbalancergb.c:2057
-#: ../src/iop/colorbalancergb.c:2061
+#: ../src/iop/colorbalancergb.c:2055 ../src/iop/colorbalancergb.c:2059
+#: ../src/iop/colorbalancergb.c:2063
 msgid "lift"
 msgstr "リフト"
 
-#: ../src/iop/colorbalancergb.c:2055 ../src/iop/colorbalancergb.c:2059
-#: ../src/iop/colorbalancergb.c:2063
+#: ../src/iop/colorbalancergb.c:2057 ../src/iop/colorbalancergb.c:2061
+#: ../src/iop/colorbalancergb.c:2065
 msgid "gain"
 msgstr "ゲイン"
 
-#: ../src/iop/colorbalancergb.c:2066
+#: ../src/iop/colorbalancergb.c:2068
 msgid "global chroma"
 msgstr "全体の彩度（クロマ）"
 
-#: ../src/iop/colorbalancergb.c:2070 ../src/iop/filmic.c:1677
+#: ../src/iop/colorbalancergb.c:2072 ../src/iop/filmic.c:1677
 msgid "global saturation"
 msgstr "全体の彩度（サチュレーション）"
 
-#: ../src/iop/colorbalancergb.c:2074
+#: ../src/iop/colorbalancergb.c:2076
 msgid "global brilliance"
 msgstr "全体の明るさ（ブリリアンス）"
 
-#: ../src/iop/colorbalancergb.c:2075 ../src/iop/colorbalancergb.c:2076
-#: ../src/iop/colorbalancergb.c:2077
+#: ../src/iop/colorbalancergb.c:2077 ../src/iop/colorbalancergb.c:2078
+#: ../src/iop/colorbalancergb.c:2079
 msgid "brilliance"
 msgstr "明るさ（ブリリアンス）"
 
@@ -14728,12 +14737,12 @@ msgstr "置き換える色を特定するうえでの優先事項"
 msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "優先される色相トーン"
 
-#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5819
-#: ../src/iop/highlights.c:2212
+#: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5820
+#: ../src/iop/highlights.c:2204
 msgid "not applicable"
 msgstr "適用不可"
 
-#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2213
+#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2205
 msgid "no highlights reconstruction for monochrome images"
 msgstr "モノクロ画像でハイライトの再構成を行うことは出来ません"
 
@@ -14984,7 +14993,7 @@ msgstr "【dual demosaic_cl】内部に問題があります"
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' 4ベイヤー画像のためのカラーマトリクスが見つかりませんでした"
 
-#: ../src/iop/demosaic.c:5786
+#: ../src/iop/demosaic.c:5787
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -14995,7 +15004,7 @@ msgstr ""
 "LMMSEは高ISOの画像に最も適しています\n"
 "二重デモザイクは処理時間が2倍になります"
 
-#: ../src/iop/demosaic.c:5790
+#: ../src/iop/demosaic.c:5791
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -15005,7 +15014,7 @@ msgstr ""
 "す\n"
 "二重デモザイクは処理時間が2倍になります"
 
-#: ../src/iop/demosaic.c:5794
+#: ../src/iop/demosaic.c:5795
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off\n"
@@ -15015,7 +15024,7 @@ msgstr ""
 "0.0に設定すると無効にします\n"
 "1.0に設定するとエッジを無視します"
 
-#: ../src/iop/demosaic.c:5799
+#: ../src/iop/demosaic.c:5800
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -15027,7 +15036,7 @@ msgstr ""
 "フラットな成分に対しては1.0に設定してください\n"
 "マスクの表示／非表示を切り替えることが出来ます"
 
-#: ../src/iop/demosaic.c:5807
+#: ../src/iop/demosaic.c:5808
 msgid ""
 "LMMSE refinement steps. the median steps average the output,\n"
 "refine adds some recalculation of red & blue channels"
@@ -15036,15 +15045,15 @@ msgstr ""
 "ます\n"
 "精緻化は赤チャンネルと青チャンネルの再計算を追加して行います"
 
-#: ../src/iop/demosaic.c:5810
+#: ../src/iop/demosaic.c:5811
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "デモザイク後のカラー平滑化のメディアンステップ数"
 
-#: ../src/iop/demosaic.c:5813
+#: ../src/iop/demosaic.c:5814
 msgid "green channels matching method"
 msgstr "緑チャンネルのマッチング方式"
 
-#: ../src/iop/demosaic.c:5820
+#: ../src/iop/demosaic.c:5821
 msgid "demosaicing is only used for color raw images"
 msgstr "デモザイクはカラーのRAW画像にのみ使われます"
 
@@ -16710,19 +16719,19 @@ msgstr "距離"
 msgid "limit haze removal up to a specific spatial depth"
 msgstr "かすみの除去を特定の奥行きに制限します"
 
-#: ../src/iop/highlights.c:138
+#: ../src/iop/highlights.c:141
 msgid "highlight reconstruction"
 msgstr "ハイライトの再構成"
 
-#: ../src/iop/highlights.c:143
+#: ../src/iop/highlights.c:146
 msgid "avoid magenta highlights and try to recover highlights colors"
 msgstr "マゼンタのハイライトを避け、ハイライトの色を回復するよう試みます"
 
-#: ../src/iop/highlights.c:146 ../src/iop/hotpixels.c:75
+#: ../src/iop/highlights.c:149 ../src/iop/hotpixels.c:75
 msgid "reconstruction, raw"
 msgstr "再構成、RAW"
 
-#: ../src/iop/highlights.c:2115
+#: ../src/iop/highlights.c:2101
 msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
 "back to clip."
@@ -16730,11 +16739,11 @@ msgstr ""
 "ハイライト：ガイドラプラシアンモードはX-Transセンサーによる画像には使用するこ"
 "とが出来ません。クリップしてしまいます"
 
-#: ../src/iop/highlights.c:2187
+#: ../src/iop/highlights.c:2174
 msgid "highlight reconstruction method"
 msgstr "ハイライトの再構成の方式"
 
-#: ../src/iop/highlights.c:2192
+#: ../src/iop/highlights.c:2179
 msgid ""
 "manually adjust the clipping threshold against magenta highlights\n"
 "the mask icon shows the clipped area\n"
@@ -16744,7 +16753,7 @@ msgstr ""
 "マスクアイコンをクリックすると、クリップした領域を表示します\n"
 "（これを変更する必要がないようにしてください）"
 
-#: ../src/iop/highlights.c:2201
+#: ../src/iop/highlights.c:2188
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -16753,7 +16762,7 @@ msgstr ""
 "ます\n"
 "高ISOで有用です"
 
-#: ../src/iop/highlights.c:2205
+#: ../src/iop/highlights.c:2192
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16761,7 +16770,16 @@ msgstr ""
 "ハイライトのマゼンタが十分補正されない場合、値を上げてください\n"
 "反復を増やすたびにパフォーマンスに悪影響があります"
 
-#: ../src/iop/highlights.c:2209
+#: ../src/iop/highlights.c:2197
+msgid ""
+"increase if magenta highlights don't get fully corrected.\n"
+"this may produce non-smooth boundaries between valid and clipped regions."
+msgstr ""
+"ハイライトのマゼンタが十分に補正されない場合、値を上げてください\n"
+"これにより、正常な領域とクリップした領域の境界が滑らかでなくなることがありま"
+"す"
+
+#: ../src/iop/highlights.c:2201
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -17035,7 +17053,7 @@ msgstr "トビー魚眼"
 
 #. scale
 #: ../src/iop/lens.cc:2397 ../src/iop/vignette.c:979
-#: ../src/iop/watermark.c:1131
+#: ../src/iop/watermark.c:1132
 msgid "scale"
 msgstr "スケール"
 
@@ -18817,35 +18835,35 @@ msgid "simple tone curve"
 msgstr "単純なトーンカーブ"
 
 #: ../src/iop/toneequal.c:453
-msgid "mask blending : all purposes"
+msgid "mask blending: all purposes"
 msgstr "マスクブレンド：汎用"
 
 #: ../src/iop/toneequal.c:459
-msgid "mask blending : people with backlight"
+msgid "mask blending: people with backlight"
 msgstr "マスクブレンド：逆光内の人物"
 
 #: ../src/iop/toneequal.c:475
-msgid "compress shadows/highlights (eigf) : strong"
+msgid "compress shadows/highlights (eigf): strong"
 msgstr "シャドウとハイライトの圧縮 （eigf）：強"
 
 #: ../src/iop/toneequal.c:479
-msgid "compress shadows/highlights (gf) : strong"
+msgid "compress shadows/highlights (gf): strong"
 msgstr "シャドウとハイライトの圧縮 （gf）：強"
 
 #: ../src/iop/toneequal.c:487
-msgid "compress shadows/highlights (eigf) : medium"
+msgid "compress shadows/highlights (eigf): medium"
 msgstr "シャドウとハイライトの圧縮 （eigf）：中"
 
 #: ../src/iop/toneequal.c:491
-msgid "compress shadows/highlights (gf) : medium"
+msgid "compress shadows/highlights (gf): medium"
 msgstr "シャドウとハイライトの圧縮 （gf）：中"
 
 #: ../src/iop/toneequal.c:499
-msgid "compress shadows/highlights (eigf) : soft"
+msgid "compress shadows/highlights (eigf): soft"
 msgstr "シャドウとハイライトの圧縮 （eigf）：弱"
 
 #: ../src/iop/toneequal.c:503
-msgid "compress shadows/highlights (gf) : soft"
+msgid "compress shadows/highlights (gf): soft"
 msgstr "シャドウとハイライトの圧縮 （gf）：弱"
 
 #: ../src/iop/toneequal.c:509
@@ -18861,7 +18879,7 @@ msgid "contrast tone curve: strong"
 msgstr "コントラストトーンカーブ：強"
 
 #: ../src/iop/toneequal.c:539
-msgid "relight : fill-in"
+msgid "relight: fill-in"
 msgstr "再照明：フィルイン"
 
 #: ../src/iop/toneequal.c:591
@@ -18895,7 +18913,7 @@ msgstr "補間が不安定です。カーブの平滑化を弱めてください
 msgid "wait for the preview to finish recomputing"
 msgstr "プレビューが再計算を終えるまでお待ちください"
 
-#: ../src/iop/toneequal.c:1954 ../src/iop/toneequal.c:2434
+#: ../src/iop/toneequal.c:1954 ../src/iop/toneequal.c:2435
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -18912,80 +18930,80 @@ msgstr "一部のパラメーターが範囲を逸脱しています"
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:3045
+#: ../src/iop/toneequal.c:3046
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "【画像上で%s】トーンの露出を変更する"
 
-#: ../src/iop/toneequal.c:3047
+#: ../src/iop/toneequal.c:3048
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "【画像上で%s】トーンの露出を大きなステップで変更する"
 
-#: ../src/iop/toneequal.c:3049
+#: ../src/iop/toneequal.c:3050
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "【画像上で%s】トーンの露出を小さなステップで変更する"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3128 ../src/iop/toneequal.c:3157
-#: ../src/iop/toneequal.c:3158 ../src/iop/toneequal.c:3159
-#: ../src/iop/toneequal.c:3160 ../src/iop/toneequal.c:3161
-#: ../src/iop/toneequal.c:3162 ../src/iop/toneequal.c:3163
-#: ../src/iop/toneequal.c:3164 ../src/iop/toneequal.c:3165
+#: ../src/iop/toneequal.c:3129 ../src/iop/toneequal.c:3158
+#: ../src/iop/toneequal.c:3159 ../src/iop/toneequal.c:3160
+#: ../src/iop/toneequal.c:3161 ../src/iop/toneequal.c:3162
+#: ../src/iop/toneequal.c:3163 ../src/iop/toneequal.c:3164
+#: ../src/iop/toneequal.c:3165 ../src/iop/toneequal.c:3166
 msgid "simple"
 msgstr "シンプル"
 
-#: ../src/iop/toneequal.c:3157
+#: ../src/iop/toneequal.c:3158
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3158
+#: ../src/iop/toneequal.c:3159
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3159
+#: ../src/iop/toneequal.c:3160
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3160
+#: ../src/iop/toneequal.c:3161
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3161
+#: ../src/iop/toneequal.c:3162
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3162
+#: ../src/iop/toneequal.c:3163
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3163
+#: ../src/iop/toneequal.c:3164
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3164
+#: ../src/iop/toneequal.c:3165
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3165
+#: ../src/iop/toneequal.c:3166
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3169
+#: ../src/iop/toneequal.c:3170
 msgid "advanced"
 msgstr "高度"
 
-#: ../src/iop/toneequal.c:3188
+#: ../src/iop/toneequal.c:3189
 msgid "double-click to reset the curve"
 msgstr "ダブルクリックすると、カーブをリセットします"
 
-#: ../src/iop/toneequal.c:3192
+#: ../src/iop/toneequal.c:3193
 msgid "curve smoothing"
 msgstr "カーブの平滑化"
 
-#: ../src/iop/toneequal.c:3193
+#: ../src/iop/toneequal.c:3194
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -18998,11 +19016,11 @@ msgstr ""
 "所的なコントラストを損なう可能性があります"
 
 #. Masking options
-#: ../src/iop/toneequal.c:3202
+#: ../src/iop/toneequal.c:3203
 msgid "masking"
 msgstr "マスク"
 
-#: ../src/iop/toneequal.c:3206
+#: ../src/iop/toneequal.c:3207
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -19011,15 +19029,15 @@ msgstr ""
 "覆い焼きする領域と焼き込む領域の間のコントラストが高くなる評価方式を選択して"
 "ください"
 
-#: ../src/iop/toneequal.c:3209
+#: ../src/iop/toneequal.c:3210
 msgid "details"
 msgstr "ディテール"
 
-#: ../src/iop/toneequal.c:3210
+#: ../src/iop/toneequal.c:3211
 msgid "preserve details"
 msgstr "ディテール保持"
 
-#: ../src/iop/toneequal.c:3211
+#: ../src/iop/toneequal.c:3212
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -19042,7 +19060,7 @@ msgstr ""
 "ドフィルターと対照的です）\n"
 "'平均eigf'は'なし'と'eigf'の幾何学的平均です"
 
-#: ../src/iop/toneequal.c:3219
+#: ../src/iop/toneequal.c:3220
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -19050,7 +19068,7 @@ msgstr ""
 "適用するガイドフィルターのパスの数\n"
 "速度を犠牲にして、フィルターのエッジを拡散するのに役立ちます"
 
-#: ../src/iop/toneequal.c:3225
+#: ../src/iop/toneequal.c:3226
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -19061,9 +19079,9 @@ msgstr ""
 "大きいと、\n"
 "ダークルームでのプレビューが大幅に遅くなる可能性があります"
 
-#: ../src/iop/toneequal.c:3231
+#: ../src/iop/toneequal.c:3232
 msgid ""
-"precision of the feathering :\n"
+"precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
 "but may void the effect of the smoothing\n"
 "lower values give smoother gradients and better smoothing\n"
@@ -19075,11 +19093,11 @@ msgstr ""
 "値を下げると、グラデーションが滑らかになり、平滑化が向上しますが、エッジ部の"
 "重なりが不正確になり、また、ハロが生まれる可能性があります"
 
-#: ../src/iop/toneequal.c:3237
+#: ../src/iop/toneequal.c:3238
 msgid "mask post-processing"
 msgstr "マスクの後処理"
 
-#: ../src/iop/toneequal.c:3244
+#: ../src/iop/toneequal.c:3245
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -19089,7 +19107,7 @@ msgstr ""
 "中心線は平均を示しています\n"
 "クリッピングが発生すると、極値にオレンジ色のバーが表示されます"
 
-#: ../src/iop/toneequal.c:3250
+#: ../src/iop/toneequal.c:3251
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -19100,7 +19118,7 @@ msgstr ""
 "高い境界ぼかしの値を用いた時に、ガイドが区分的平滑領域を生み出しやすくなりま"
 "す"
 
-#: ../src/iop/toneequal.c:3257
+#: ../src/iop/toneequal.c:3258
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -19110,7 +19128,7 @@ msgstr ""
 "利用可能なノードによる露出補正のコントロールが向上します\n"
 "魔法の杖は平均露出を自動的に設定します"
 
-#: ../src/iop/toneequal.c:3267
+#: ../src/iop/toneequal.c:3268
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -19124,7 +19142,7 @@ msgstr ""
 "ロールが向上します\n"
 "魔法の杖は平均露出を自動的に設定します"
 
-#: ../src/iop/toneequal.c:3287 ../src/iop/toneequal.c:3288
+#: ../src/iop/toneequal.c:3288 ../src/iop/toneequal.c:3289
 msgid "display exposure mask"
 msgstr "露出マスクを表示"
 
@@ -19270,21 +19288,21 @@ msgstr "透かし"
 msgid "overlay an SVG watermark like a signature on the picture"
 msgstr "SVG形式の透かしを署名のように画像にオーバーレイで入れます"
 
-#: ../src/iop/watermark.c:1064
+#: ../src/iop/watermark.c:1065
 msgid "marker"
 msgstr "マーカー"
 
-#: ../src/iop/watermark.c:1067
+#: ../src/iop/watermark.c:1068
 #, c-format
 msgid "SVG watermarks in %s/watermarks or %s/watermarks"
 msgstr "%s/watermarksまたは%s/watermarks内のSVG形式の透かし"
 
 #. Simple text
-#: ../src/iop/watermark.c:1077
+#: ../src/iop/watermark.c:1078
 msgid "text"
 msgstr "テキスト"
 
-#: ../src/iop/watermark.c:1080
+#: ../src/iop/watermark.c:1081
 msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
@@ -19294,11 +19312,11 @@ msgstr ""
 "$(WATERMARK_TEXT)"
 
 #. Text font
-#: ../src/iop/watermark.c:1088
+#: ../src/iop/watermark.c:1089
 msgid "font"
 msgstr "フォント"
 
-#: ../src/iop/watermark.c:1093
+#: ../src/iop/watermark.c:1094
 msgid ""
 "text font, tags:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
@@ -19311,7 +19329,7 @@ msgstr ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 
-#: ../src/iop/watermark.c:1108
+#: ../src/iop/watermark.c:1109
 msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
@@ -19320,36 +19338,36 @@ msgstr ""
 "タグ：\n"
 "$(WATERMARK_COLOR)"
 
-#: ../src/iop/watermark.c:1110
+#: ../src/iop/watermark.c:1111
 msgid "select watermark color"
 msgstr "透かしの色を選択してください"
 
-#: ../src/iop/watermark.c:1112
+#: ../src/iop/watermark.c:1113
 msgid "pick color from image"
 msgstr "画像から色を抽出"
 
-#: ../src/iop/watermark.c:1124
+#: ../src/iop/watermark.c:1125
 msgid "placement"
 msgstr "位置"
 
-#: ../src/iop/watermark.c:1137
+#: ../src/iop/watermark.c:1138
 msgid "size is relative to"
 msgstr "サイズの基準"
 
-#: ../src/iop/watermark.c:1141 ../src/libs/print_settings.c:2515
+#: ../src/iop/watermark.c:1142 ../src/libs/print_settings.c:2515
 msgid "alignment"
 msgstr "配置"
 
 #. Let's add some tooltips and hook up some signals...
-#: ../src/iop/watermark.c:1162
+#: ../src/iop/watermark.c:1163
 msgid "the opacity of the watermark"
 msgstr "透かしの不透明度"
 
-#: ../src/iop/watermark.c:1163
+#: ../src/iop/watermark.c:1164
 msgid "the scale of the watermark"
 msgstr "透かしの大きさ"
 
-#: ../src/iop/watermark.c:1164
+#: ../src/iop/watermark.c:1165
 msgid "the rotation of the watermark"
 msgstr "透かしの回転"
 
@@ -19637,30 +19655,30 @@ msgid "change to: except"
 msgstr "次に変更します：例外は"
 
 #. the differents categories
-#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:842
-#: ../src/libs/filtering.c:924
+#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:843
+#: ../src/libs/filtering.c:925
 msgid "files"
 msgstr "ファイル"
 
 #: ../src/libs/collect.c:2960 ../src/libs/export_metadata.c:310
-#: ../src/libs/filtering.c:847 ../src/libs/filtering.c:929
+#: ../src/libs/filtering.c:848 ../src/libs/filtering.c:930
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
-#: ../src/libs/metadata.c:538 ../src/libs/metadata_view.c:1218
+#: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "メタデータ"
 
-#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:868
-#: ../src/libs/filtering.c:950
+#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:869
+#: ../src/libs/filtering.c:951
 msgid "times"
 msgstr "日時"
 
-#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:876
-#: ../src/libs/filtering.c:958
+#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:877
+#: ../src/libs/filtering.c:959
 msgid "capture details"
 msgstr "細部を撮影"
 
-#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:885
-#: ../src/libs/filtering.c:967 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:886
+#: ../src/libs/filtering.c:968 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
@@ -19669,33 +19687,33 @@ msgid "collections settings"
 msgstr "コレクション設定"
 
 #: ../src/libs/collect.c:3012 ../src/libs/export_metadata.c:288
-#: ../src/libs/metadata.c:497 ../src/libs/metadata_view.c:1186
-#: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1635
-#: ../src/libs/tagging.c:1765 ../src/libs/tagging.c:2039
-#: ../src/libs/tagging.c:3461
+#: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
+#: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1649
+#: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
+#: ../src/libs/tagging.c:3475
 msgid "save"
 msgstr "保存"
 
 #: ../src/libs/collect.c:3032 ../src/libs/export.c:1059
-#: ../src/libs/metadata.c:632 ../src/libs/metadata_view.c:1298
-#: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3483
+#: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1298
+#: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3497
 msgid "preferences..."
 msgstr "設定"
 
-#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1385
+#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1386
 msgid "AND"
 msgstr "および"
 
-#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1390
+#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1391
 msgid "OR"
 msgstr "または"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1395
+#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1396
 msgid "BUT NOT"
 msgstr "のぞく"
 
-#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1975
+#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1976
 msgid "revert to a previous set of rules"
 msgstr "以前のルールに戻します"
 
@@ -20043,18 +20061,18 @@ msgstr "%sまたは%s内の出力ICCプロファイル"
 #: ../src/libs/export.c:1265
 #, c-format
 msgid ""
-"• perceptual : smoothly moves out-of-gamut colors into gamut,preserving "
+"• perceptual: smoothly moves out-of-gamut colors into gamut,preserving "
 "gradations, but distorts in-gamut colors in the process. note that "
 "perceptual is often a proprietary LUT that depends on the destination "
 "space.\n"
 "\n"
-"• relative colorimetric : keeps luminance while reducing as little as "
+"• relative colorimetric: keeps luminance while reducing as little as "
 "possible saturation until colors fit in gamut.\n"
 "\n"
-"• saturation : designed to present eye-catching business graphics by "
+"• saturation: designed to present eye-catching business graphics by "
 "preserving the saturation. (not suited for photography).\n"
 "\n"
-"• absolute colorimetric : adapt white point of the image to the white point "
+"• absolute colorimetric: adapt white point of the image to the white point "
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
@@ -20062,14 +20080,15 @@ msgstr ""
 "理中に色域内の色を歪めます。このオプションは出力画像の色空間に依存するプロプ"
 "ライエタリなlutであることがしばしばあります\n"
 "\n"
-"・相対的な色彩：色が色域内に合うまで可能な限り控えめに彩度を下げつつ、輝度を"
-"保持します\n"
+"・相対的な色彩測定：色が色域内に合うまで可能な限り控えめに彩度を下げつつ、輝"
+"度を保持します\n"
 "\n"
 "・彩度：ビジネス用の人目を引くグラフィックのためにデザインされたもので、彩度"
 "を保持します（写真には適していません）\n"
 "\n"
-"・絶対的な色彩：画像のホワイトポイントを出力先媒体のホワイトポイントに合わせ"
-"る以外のことをしません。主に色校正のために用います（写真には適していません）"
+"・絶対的な色彩測定：画像のホワイトポイントを出力先媒体のホワイトポイントに合"
+"わせる以外のことをしません。主に色校正のために用います（写真には適していませ"
+"ん）"
 
 #: ../src/libs/export.c:1294 ../src/libs/print_settings.c:2666
 msgid "style"
@@ -20291,11 +20310,11 @@ msgstr "クリックまたはクリック+ドラッグすると、一つまた�
 msgid "right-click opens a menu to select the available values"
 msgstr "右クリックすると、メニューを開いて使用可能な値を選択します"
 
-#: ../src/libs/filtering.c:654
-msgid "<b><i>actual selection: </i></b>"
-msgstr "<b><i>現在の選択： </i></b>"
+#: ../src/libs/filtering.c:656
+msgid "actual selection"
+msgstr "現在の選択"
 
-#: ../src/libs/filtering.c:915
+#: ../src/libs/filtering.c:916
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
@@ -20305,16 +20324,16 @@ msgstr ""
 "ん"
 
 #. otherwise we add all implemented rules
-#: ../src/libs/filtering.c:922
+#: ../src/libs/filtering.c:923
 msgid "rule property"
 msgstr "ルールのプロパティ"
 
-#: ../src/libs/filtering.c:1015
+#: ../src/libs/filtering.c:1016
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "絞り込み"
 
-#: ../src/libs/filtering.c:1041
+#: ../src/libs/filtering.c:1042
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "click to un-pin"
@@ -20322,102 +20341,102 @@ msgstr ""
 "このルールは上ツールバーにピン留めされています\n"
 "クリックすると、ピン留めを外します"
 
-#: ../src/libs/filtering.c:1042
+#: ../src/libs/filtering.c:1043
 msgid "you can't disable the rule as it is pinned into the toolbar"
 msgstr ""
 "このルールは、ツールバーにピン留めされているため、無効にすることが出来ません"
 
-#: ../src/libs/filtering.c:1043
+#: ../src/libs/filtering.c:1044
 msgid "you can't remove the rule as it is pinned into the toolbar"
 msgstr ""
 "このルールは、ツールバーにピン留めされているため、削除することが出来ません"
 
-#: ../src/libs/filtering.c:1047
+#: ../src/libs/filtering.c:1048
 msgid "click to pin this rule into the top toolbar"
 msgstr "クリックすると、このルールを上ツールバーにピン留めします"
 
-#: ../src/libs/filtering.c:1048
+#: ../src/libs/filtering.c:1049
 msgid "remove this collect rule"
 msgstr "このルールを削除します"
 
-#: ../src/libs/filtering.c:1050
+#: ../src/libs/filtering.c:1051
 msgid "this rule is enabled"
 msgstr "このルールは有効になっています"
 
-#: ../src/libs/filtering.c:1052
+#: ../src/libs/filtering.c:1053
 msgid "this rule is disabled"
 msgstr "このルールは無効になっています"
 
-#: ../src/libs/filtering.c:1156
+#: ../src/libs/filtering.c:1157
 msgid "and"
 msgstr "および"
 
-#: ../src/libs/filtering.c:1157
+#: ../src/libs/filtering.c:1158
 msgid "or"
 msgstr "または"
 
-#: ../src/libs/filtering.c:1158
+#: ../src/libs/filtering.c:1159
 msgid "and not"
 msgstr "および以下を除く"
 
-#: ../src/libs/filtering.c:1160
+#: ../src/libs/filtering.c:1161
 msgid "define how this rule should interact with the previous one"
 msgstr "このルールが以前のルールとどのように作用しあうかを定義します"
 
-#: ../src/libs/filtering.c:1419
+#: ../src/libs/filtering.c:1420
 msgid " (off)"
 msgstr " (off)"
 
-#: ../src/libs/filtering.c:1642
+#: ../src/libs/filtering.c:1643
 msgid "sort order"
 msgstr "並び順"
 
-#: ../src/libs/filtering.c:1644
+#: ../src/libs/filtering.c:1645
 msgid "determine the sort order of shown images"
 msgstr "表示画像の並び順を定義します"
 
-#: ../src/libs/filtering.c:1701
+#: ../src/libs/filtering.c:1702
 msgid "sort direction"
 msgstr "並び順 向き"
 
-#: ../src/libs/filtering.c:1707
+#: ../src/libs/filtering.c:1708
 msgid "remove this sort order"
 msgstr "この並び順を削除します"
 
-#: ../src/libs/filtering.c:1860
+#: ../src/libs/filtering.c:1861
 msgid "DESC"
 msgstr "DESC"
 
-#: ../src/libs/filtering.c:1860
+#: ../src/libs/filtering.c:1861
 msgid "ASC"
 msgstr "ASC"
 
-#: ../src/libs/filtering.c:1971
+#: ../src/libs/filtering.c:1972
 msgid "new rule"
 msgstr "新しいルール"
 
-#: ../src/libs/filtering.c:1972
+#: ../src/libs/filtering.c:1973
 msgid "append new rule to collect images"
 msgstr "画像を集めるための新しいルールを追加します"
 
-#: ../src/libs/filtering.c:1983 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1984 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "並び順"
 
-#: ../src/libs/filtering.c:1991
+#: ../src/libs/filtering.c:1992
 msgid "new sort"
 msgstr "新しい並び順"
 
-#: ../src/libs/filtering.c:1992
+#: ../src/libs/filtering.c:1993
 msgid "append new sort to order images"
 msgstr "画像の新しい並び順を追加します"
 
-#: ../src/libs/filtering.c:1995
+#: ../src/libs/filtering.c:1996
 msgid "revert to a previous set of sort orders"
 msgstr "以前の並び順に戻します"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2042
+#: ../src/libs/filtering.c:2043
 msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
@@ -20450,7 +20469,7 @@ msgstr ""
 "灰色のボタンは全ての色ラベルに作用します"
 
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
-#: ../src/libs/filters/rating.c:278
+#: ../src/libs/filters/rating.c:339
 msgid "rules"
 msgstr "ルール"
 
@@ -20525,7 +20544,8 @@ msgstr "グループ化する画像のタイプを選択して絞り込んでく
 #: ../src/libs/filters/grouping.c:169 ../src/libs/filters/history.c:38
 #: ../src/libs/filters/local_copy.c:38 ../src/libs/filters/module_order.c:155
 #: ../src/libs/filters/rating.c:56 ../src/libs/filters/rating.c:72
-#: ../src/libs/filters/ratio.c:68 ../src/libs/filters/ratio.c:81
+#: ../src/libs/filters/rating.c:109 ../src/libs/filters/ratio.c:68
+#: ../src/libs/filters/ratio.c:81
 msgid "all images"
 msgstr "全画像"
 
@@ -20554,7 +20574,7 @@ msgid "filter images based on their module order"
 msgstr "モジュールの順序にもとづいて画像を絞り込みます"
 
 #: ../src/libs/filters/rating.c:58 ../src/libs/filters/rating.c:73
-#: ../src/libs/filters/rating_legacy.c:212
+#: ../src/libs/filters/rating.c:140 ../src/libs/filters/rating_legacy.c:212
 msgid "all except rejected"
 msgstr "除外された画像以外全て"
 
@@ -20564,30 +20584,40 @@ msgid "rejected only"
 msgstr "除外された画像のみ"
 
 #: ../src/libs/filters/rating.c:61 ../src/libs/filters/rating.c:76
-msgid "unstared only"
-msgstr "星なしのみ"
+msgid "not rated only"
+msgstr "評価無しのみ"
 
-#: ../src/libs/filters/rating.c:99 ../src/libs/filters/rating.c:232
+#: ../src/libs/filters/rating.c:99 ../src/libs/filters/rating.c:128
+#: ../src/libs/filters/rating.c:133 ../src/libs/filters/rating.c:292
 msgid "rejected"
 msgstr "除外"
 
-#: ../src/libs/filters/rating.c:101 ../src/libs/filters/rating.c:233
+#: ../src/libs/filters/rating.c:101 ../src/libs/filters/rating.c:128
+#: ../src/libs/filters/rating.c:293
 msgid "not rated"
 msgstr "評価無し"
 
-#: ../src/libs/filters/rating.c:226
+#: ../src/libs/filters/rating.c:119
+msgid "only"
+msgstr "のみ"
+
+#: ../src/libs/filters/rating.c:168
+msgid "selected"
+msgstr "選択"
+
+#: ../src/libs/filters/rating.c:286
 msgid "better"
 msgstr "より良い"
 
-#: ../src/libs/filters/rating.c:227
+#: ../src/libs/filters/rating.c:287
 msgid "worse"
 msgstr "より悪い"
 
-#: ../src/libs/filters/rating.c:228
+#: ../src/libs/filters/rating.c:288
 msgid "cap"
 msgstr "最高"
 
-#: ../src/libs/filters/rating.c:243
+#: ../src/libs/filters/rating.c:303
 msgid "rating filter"
 msgstr "評価フィルター"
 
@@ -21640,19 +21670,19 @@ msgid "use inverted shape"
 msgstr "反転したシェイプを使用"
 
 #: ../src/libs/masks.c:1084
-msgid "mode : union"
+msgid "mode: union"
 msgstr "モード：和"
 
 #: ../src/libs/masks.c:1087
-msgid "mode : intersection"
+msgid "mode: intersection"
 msgstr "モード：積"
 
 #: ../src/libs/masks.c:1090
-msgid "mode : difference"
+msgid "mode: difference"
 msgstr "モード：差"
 
 #: ../src/libs/masks.c:1093
-msgid "mode : exclusion"
+msgid "mode: exclusion"
 msgstr "モード：除外"
 
 #: ../src/libs/masks.c:1107
@@ -21663,23 +21693,23 @@ msgstr "未使用のシェイプを削除"
 msgid "created shapes"
 msgstr "シェイプを作成"
 
-#: ../src/libs/metadata.c:60
+#: ../src/libs/metadata.c:61
 msgid "metadata editor"
 msgstr "メタデータエディタ"
 
-#: ../src/libs/metadata.c:127 ../src/libs/metadata.c:390
+#: ../src/libs/metadata.c:128 ../src/libs/metadata.c:401
 msgid "<leave unchanged>"
 msgstr "<変更しない>"
 
-#: ../src/libs/metadata.c:495 ../src/libs/metadata_view.c:1184
+#: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1184
 msgid "metadata settings"
 msgstr "メタデータ設定"
 
-#: ../src/libs/metadata.c:544 ../src/libs/metadata_view.c:1229
+#: ../src/libs/metadata.c:554 ../src/libs/metadata_view.c:1229
 msgid "visible"
 msgstr "表示"
 
-#: ../src/libs/metadata.c:549
+#: ../src/libs/metadata.c:559
 msgid ""
 "tick if the corresponding metadata is of interest for you\n"
 "it will be visible from metadata editor, collection and import module\n"
@@ -21689,19 +21719,19 @@ msgstr ""
 "メタデータエディタ、コレクション、インポートモジュールで表示されます\n"
 "エクスポートもされます"
 
-#: ../src/libs/metadata.c:554 ../src/libs/tagging.c:1665
-#: ../src/libs/tagging.c:1809
+#: ../src/libs/metadata.c:564 ../src/libs/tagging.c:1679
+#: ../src/libs/tagging.c:1823
 msgid "private"
 msgstr "プライベート"
 
-#: ../src/libs/metadata.c:559
+#: ../src/libs/metadata.c:569
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 "この情報を非公開にしたい場合はチェックしてください（画像とともにエクスポート"
 "されません）"
 
-#: ../src/libs/metadata.c:705
+#: ../src/libs/metadata.c:715
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -21718,60 +21748,60 @@ msgstr ""
 "その場合、右クリックすると、そのうちの1つを選択出来ます\n"
 "Escキーでポップアップウィンドウから出ます"
 
-#: ../src/libs/metadata.c:751
+#: ../src/libs/metadata.c:761
 msgid "write metadata for selected images"
 msgstr "選択画像にメタデータを書き込みます"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:807
+#: ../src/libs/metadata.c:817
 msgid "CC BY"
 msgstr "CC BY クリエイティブ・コモンズ 表示"
 
-#: ../src/libs/metadata.c:807
+#: ../src/libs/metadata.c:817
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC BY)"
 
-#: ../src/libs/metadata.c:808
+#: ../src/libs/metadata.c:818
 msgid "CC BY-SA"
 msgstr "CC BY-SA クリエイティブ・コモンズ 表示−継承"
 
-#: ../src/libs/metadata.c:808
+#: ../src/libs/metadata.c:818
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 
-#: ../src/libs/metadata.c:809
+#: ../src/libs/metadata.c:819
 msgid "CC BY-ND"
 msgstr "CC BY-ND クリエイティブ・コモンズ 表示-改変禁止"
 
-#: ../src/libs/metadata.c:809
+#: ../src/libs/metadata.c:819
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 
-#: ../src/libs/metadata.c:810
+#: ../src/libs/metadata.c:820
 msgid "CC BY-NC"
 msgstr "CC BY-NC クリエイティブ・コモンズ 表示-非営利"
 
-#: ../src/libs/metadata.c:810
+#: ../src/libs/metadata.c:820
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 
-#: ../src/libs/metadata.c:811
+#: ../src/libs/metadata.c:821
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA クリエイティブ・コモンズ 表示-非営利-継承"
 
-#: ../src/libs/metadata.c:812
+#: ../src/libs/metadata.c:822
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:813
+#: ../src/libs/metadata.c:823
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND クリエイティブ・コモンズ 表示-非営利-改変禁止"
 
-#: ../src/libs/metadata.c:814
+#: ../src/libs/metadata.c:824
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:815
+#: ../src/libs/metadata.c:825
 msgid "all rights reserved"
 msgstr "all rights reserved"
 
@@ -22268,15 +22298,15 @@ msgid "rename preset"
 msgstr "プリセット名を変更してください"
 
 #: ../src/libs/modulegroups.c:3513
-msgid "new preset name :"
+msgid "new preset name:"
 msgstr "新しいプリセット名："
 
 #: ../src/libs/modulegroups.c:3514
-msgid "a preset with this name already exists !"
-msgstr "この名前のプリセットは既に存在します！"
+msgid "a preset with this name already exists!"
+msgstr "この名前のプリセットは既に存在しています！"
 
 #: ../src/libs/modulegroups.c:3859
-msgid "preset : "
+msgid "preset: "
 msgstr "プリセット："
 
 #: ../src/libs/modulegroups.c:3866
@@ -22721,7 +22751,7 @@ msgid "create styles from history stack of selected images"
 msgstr "選択した画像の履歴スタックからスタイルを作成します"
 
 #. edit
-#: ../src/libs/styles.c:845 ../src/libs/tagging.c:2234
+#: ../src/libs/styles.c:845 ../src/libs/tagging.c:2248
 msgid "edit..."
 msgstr "編集..."
 
@@ -22745,29 +22775,29 @@ msgstr "選択したスタイルをスタイルファイルにエクスポート
 msgid "apply the selected styles in list above to selected images"
 msgstr "上のリストで選択したスタイルを選択した画像に適用します"
 
-#: ../src/libs/tagging.c:102
+#: ../src/libs/tagging.c:103
 msgid "tagging"
 msgstr "タグ付け"
 
-#: ../src/libs/tagging.c:1250
+#: ../src/libs/tagging.c:1251
 msgid "attach tag to all"
 msgstr "全てにタグを付けます"
 
-#: ../src/libs/tagging.c:1258 ../src/libs/tagging.c:2207
+#: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:2221
 msgid "detach tag"
 msgstr "タグを外します"
 
-#: ../src/libs/tagging.c:1465
+#: ../src/libs/tagging.c:1479
 msgid "delete tag?"
 msgstr "タグを削除しますか？"
 
-#: ../src/libs/tagging.c:1472 ../src/libs/tagging.c:1560
-#: ../src/libs/tagging.c:1771 ../src/libs/tagging.c:2045
+#: ../src/libs/tagging.c:1486 ../src/libs/tagging.c:1574
+#: ../src/libs/tagging.c:1785 ../src/libs/tagging.c:2059
 #, c-format
 msgid "selected: %s"
 msgstr "選択されたタグ：%s"
 
-#: ../src/libs/tagging.c:1479
+#: ../src/libs/tagging.c:1493
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -22782,73 +22812,73 @@ msgstr[1] ""
 "タグ`%s'を本当に削除しますか？\n"
 "%d枚の画像にこのタグが付いています！"
 
-#: ../src/libs/tagging.c:1513
+#: ../src/libs/tagging.c:1527
 #, c-format
 msgid "tag %s removed"
 msgstr "タグ%sを削除しました"
 
-#: ../src/libs/tagging.c:1553
+#: ../src/libs/tagging.c:1567
 msgid "delete node?"
 msgstr "ノードを削除しますか？"
 
-#: ../src/libs/tagging.c:1567
+#: ../src/libs/tagging.c:1581
 #, c-format
 msgid "<u>%d</u> tag will be deleted"
 msgid_plural "<u>%d</u> tags will be deleted"
 msgstr[0] "<u>%d</u>個のタグが削除されます"
 msgstr[1] "<u>%d</u>個のタグが削除されます"
 
-#: ../src/libs/tagging.c:1572 ../src/libs/tagging.c:1783
-#: ../src/libs/tagging.c:2057
+#: ../src/libs/tagging.c:1586 ../src/libs/tagging.c:1797
+#: ../src/libs/tagging.c:2071
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated"
 msgstr[0] "<u>%d</u>枚の画像が更新されます"
 msgstr[1] "<u>%d</u>枚の画像が更新されます"
 
-#: ../src/libs/tagging.c:1598
+#: ../src/libs/tagging.c:1612
 #, c-format
 msgid "%d tags removed"
 msgstr "%d個のタグを削除しました"
 
-#: ../src/libs/tagging.c:1634
+#: ../src/libs/tagging.c:1648
 msgid "create tag"
 msgstr "タグを作成"
 
-#: ../src/libs/tagging.c:1644 ../src/libs/tagging.c:1791
+#: ../src/libs/tagging.c:1658 ../src/libs/tagging.c:1805
 msgid "name: "
 msgstr "タグ名："
 
-#: ../src/libs/tagging.c:1656
+#: ../src/libs/tagging.c:1670
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "\"%s\"に追加"
 
-#: ../src/libs/tagging.c:1662 ../src/libs/tagging.c:1806
+#: ../src/libs/tagging.c:1676 ../src/libs/tagging.c:1820
 msgid "category"
 msgstr "カテゴリー"
 
-#: ../src/libs/tagging.c:1671 ../src/libs/tagging.c:1815
+#: ../src/libs/tagging.c:1685 ../src/libs/tagging.c:1829
 msgid "synonyms: "
 msgstr "シノニム："
 
-#: ../src/libs/tagging.c:1688 ../src/libs/tagging.c:1837
-#: ../src/libs/tagging.c:2079
+#: ../src/libs/tagging.c:1702 ../src/libs/tagging.c:1851
+#: ../src/libs/tagging.c:2093
 msgid "empty tag is not allowed, aborting"
 msgstr "空のタグは無効です。中止します"
 
-#: ../src/libs/tagging.c:1699
+#: ../src/libs/tagging.c:1713
 msgid "tag name already exists. aborting."
 msgstr "タグ名が既に存在します。中止します"
 
-#: ../src/libs/tagging.c:1778 ../src/libs/tagging.c:2052
+#: ../src/libs/tagging.c:1792 ../src/libs/tagging.c:2066
 #, c-format
 msgid "<u>%d</u> tag will be updated"
 msgid_plural "<u>%d</u> tags will be updated"
 msgstr[0] "<u>%d</u>個のタグが更新されます"
 msgstr[1] "<u>%d</u>個のタグが更新されます"
 
-#: ../src/libs/tagging.c:1839
+#: ../src/libs/tagging.c:1853
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierarchy use rename path instead. Aborting."
@@ -22856,105 +22886,105 @@ msgstr ""
 "'|'はタグ名の変更で使うことが出来ません\n"
 "階層を変更するには、パスの名前を変更してください。 中止します"
 
-#: ../src/libs/tagging.c:1878
+#: ../src/libs/tagging.c:1892
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "新しいタグ名（%s）が既に存在します。中止します"
 
-#: ../src/libs/tagging.c:1986
+#: ../src/libs/tagging.c:2000
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "新しいタグ名（%s）が既に存在します。中止します"
 
-#: ../src/libs/tagging.c:2038
+#: ../src/libs/tagging.c:2052
 msgid "change path"
 msgstr "パスの変更"
 
-#: ../src/libs/tagging.c:2081
+#: ../src/libs/tagging.c:2095
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' の場所が不適切です。空のタグは許可されません。中止します"
 
-#: ../src/libs/tagging.c:2177
+#: ../src/libs/tagging.c:2191
 #, c-format
 msgid "tag %s created"
 msgstr "タグ%sが作成されました"
 
-#: ../src/libs/tagging.c:2203
+#: ../src/libs/tagging.c:2217
 msgid "attach tag"
 msgstr "タグを付ける"
 
-#: ../src/libs/tagging.c:2216
+#: ../src/libs/tagging.c:2230
 msgid "create tag..."
 msgstr "タグを作成..."
 
-#: ../src/libs/tagging.c:2222
+#: ../src/libs/tagging.c:2236
 msgid "delete tag"
 msgstr "タグを削除..."
 
-#: ../src/libs/tagging.c:2229
+#: ../src/libs/tagging.c:2243
 msgid "delete node"
 msgstr "ノードを削除"
 
-#: ../src/libs/tagging.c:2242
+#: ../src/libs/tagging.c:2256
 msgid "change path..."
 msgstr "パスの変更..."
 
-#: ../src/libs/tagging.c:2252
+#: ../src/libs/tagging.c:2266
 msgid "set as a tag"
 msgstr "タグとして設定"
 
-#: ../src/libs/tagging.c:2263
+#: ../src/libs/tagging.c:2277
 msgid "copy to entry"
 msgstr "エントリにコピー"
 
-#: ../src/libs/tagging.c:2280
+#: ../src/libs/tagging.c:2294
 msgid "go to tag collection"
 msgstr "タグコレクションへ移動"
 
-#: ../src/libs/tagging.c:2286
+#: ../src/libs/tagging.c:2300
 msgid "go back to work"
 msgstr "作業に戻る"
 
-#: ../src/libs/tagging.c:2443
+#: ../src/libs/tagging.c:2457
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2444
+#: ../src/libs/tagging.c:2458
 msgid "(private)"
 msgstr "（プライベート）"
 
-#: ../src/libs/tagging.c:2470
+#: ../src/libs/tagging.c:2484
 msgid "select a keyword file"
 msgstr "キーワードファイルを選択してください"
 
-#: ../src/libs/tagging.c:2483
+#: ../src/libs/tagging.c:2497
 msgid "error importing tags"
 msgstr "タグのインポート中にエラーが発生しました"
 
-#: ../src/libs/tagging.c:2485
+#: ../src/libs/tagging.c:2499
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd個のタグがインポートされました"
 
-#: ../src/libs/tagging.c:2506
+#: ../src/libs/tagging.c:2520
 msgid "select file to export to"
 msgstr "ファイルを選択して次の宛先にエクスポートします"
 
-#: ../src/libs/tagging.c:2520
+#: ../src/libs/tagging.c:2534
 msgid "error exporting tags"
 msgstr "タグのエクスポート中にエラーが発生しました"
 
-#: ../src/libs/tagging.c:2522
+#: ../src/libs/tagging.c:2536
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd個のタグがエクスポートされました"
 
-#: ../src/libs/tagging.c:2946
+#: ../src/libs/tagging.c:2960
 msgid "drop to root"
 msgstr "ルートにドロップ"
 
-#: ../src/libs/tagging.c:3085
+#: ../src/libs/tagging.c:3099
 msgid ""
 "attached tags,\n"
 "press Delete or double-click to detach\n"
@@ -22968,47 +22998,47 @@ msgstr ""
 "Tabキーを押すと、入力にフォーカスします\n"
 "Ctrl+ホイールスクロールでウィンドウのサイズを変更します"
 
-#: ../src/libs/tagging.c:3097
+#: ../src/libs/tagging.c:3111
 msgid "attach"
 msgstr "付ける"
 
-#: ../src/libs/tagging.c:3098
+#: ../src/libs/tagging.c:3112
 msgid "attach tag to all selected images"
 msgstr "選択した画像全てにタグを付けます"
 
-#: ../src/libs/tagging.c:3101
+#: ../src/libs/tagging.c:3115
 msgid "detach"
 msgstr "外す"
 
-#: ../src/libs/tagging.c:3102
+#: ../src/libs/tagging.c:3116
 msgid "detach tag from all selected images"
 msgstr "選択した画像全てからタグを外します"
 
-#: ../src/libs/tagging.c:3115
+#: ../src/libs/tagging.c:3129
 msgid "toggle list with / without hierarchy"
 msgstr "リストを階層あり／なしに切り替えます"
 
-#: ../src/libs/tagging.c:3115
+#: ../src/libs/tagging.c:3129
 msgid "hide"
 msgstr "非表示"
 
-#: ../src/libs/tagging.c:3117
+#: ../src/libs/tagging.c:3131
 msgid "toggle sort by name or by count"
 msgstr "リストを名前順／カウント順に切り替えます"
 
-#: ../src/libs/tagging.c:3117
+#: ../src/libs/tagging.c:3131
 msgid "sort"
 msgstr "並び順"
 
-#: ../src/libs/tagging.c:3119
+#: ../src/libs/tagging.c:3133
 msgid "toggle show or not darktable tags"
 msgstr "darktableタグの表示／非表示を切り替えます"
 
-#: ../src/libs/tagging.c:3119
+#: ../src/libs/tagging.c:3133
 msgid "dttags"
 msgstr "dtタグ"
 
-#: ../src/libs/tagging.c:3135
+#: ../src/libs/tagging.c:3149
 msgid ""
 "enter tag name\n"
 "press Enter to create a new tag and attach it on selected images\n"
@@ -23020,11 +23050,11 @@ msgstr ""
 "TabキーまたはDownキーを押すと、条件に合うタグの最初のものを選択します\n"
 "Shift+Tabキーを押すと、添付されているユーザー作成タグの最初のものを選択します"
 
-#: ../src/libs/tagging.c:3146 ../src/libs/tagging.c:3152
+#: ../src/libs/tagging.c:3160 ../src/libs/tagging.c:3166
 msgid "clear entry"
 msgstr "入力を削除します"
 
-#: ../src/libs/tagging.c:3199
+#: ../src/libs/tagging.c:3213
 msgid ""
 "tag dictionary,\n"
 "press Enter or double-click to attach selected tag on selected images,\n"
@@ -23043,48 +23073,48 @@ msgstr ""
 "Shift+Tabキーを押すと、入力にフォーカスします\n"
 "Ctrl+ホイールスクロールでウィンドウのサイズを変更します"
 
-#: ../src/libs/tagging.c:3235
+#: ../src/libs/tagging.c:3249
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr "入力した名前で新しいタグを作成します"
 
-#: ../src/libs/tagging.c:3238
+#: ../src/libs/tagging.c:3252
 msgid "import tags from a Lightroom keyword file"
 msgstr "Lightroomのキーワードファイルからタブをインポートします"
 
-#: ../src/libs/tagging.c:3241
+#: ../src/libs/tagging.c:3255
 msgid "export all tags to a Lightroom keyword file"
 msgstr "Lightroomのキーワードファイルに全てのタグをエクスポートします"
 
-#: ../src/libs/tagging.c:3245
+#: ../src/libs/tagging.c:3259
 msgid "toggle list / tree view"
 msgstr "表示をリスト／ツリーに切り替えます"
 
-#: ../src/libs/tagging.c:3245
+#: ../src/libs/tagging.c:3259
 msgid "tree"
 msgstr "ツリー"
 
-#: ../src/libs/tagging.c:3247
+#: ../src/libs/tagging.c:3261
 msgid "toggle list with / without suggestion"
 msgstr "リストのサジェストあり／なしを切り替えます"
 
-#: ../src/libs/tagging.c:3247
+#: ../src/libs/tagging.c:3261
 msgid "suggestion"
 msgstr "サジェスト"
 
-#: ../src/libs/tagging.c:3270
+#: ../src/libs/tagging.c:3284
 msgid "redo last tag"
 msgstr "最後のタグのやり直し"
 
-#: ../src/libs/tagging.c:3354
+#: ../src/libs/tagging.c:3368
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
 "タグツリービューではタグのショートカットがアクティブでありません。 リスト"
 "ビューに切り替えてください"
 
-#: ../src/libs/tagging.c:3458
+#: ../src/libs/tagging.c:3472
 msgid "tagging settings"
 msgstr "タグ付け設定"
 
@@ -24235,6 +24265,12 @@ msgstr "キーを離した後も開いたままになる、クラシックウィ
 #: ../src/views/view.c:1343
 msgid "mouse actions"
 msgstr "マウスアクション"
+
+#~ msgid "<b><i>actual selection: </i></b>"
+#~ msgstr "<b><i>現在の選択： </i></b>"
+
+#~ msgid "unstared only"
+#~ msgstr "星なしのみ"
 
 #~ msgctxt "preferences"
 #~ msgid "gray scale"
@@ -25826,9 +25862,6 @@ msgstr "マウスアクション"
 
 #~ msgid "privacy"
 #~ msgstr "プライバシー"
-
-#~ msgid "only me"
-#~ msgstr "自分のみ"
 
 #~ msgid "public"
 #~ msgstr "パブリック"
