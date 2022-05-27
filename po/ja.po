@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-26 15:55+0200\n"
-"PO-Revision-Date: 2022-05-27 02:49+0900\n"
+"PO-Revision-Date: 2022-05-27 21:08+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8285
 msgctxt "preferences"
@@ -1512,8 +1512,8 @@ msgid ""
 "one if there is one available (needs a restart).\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
-"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
-"\" should be set to \"none\""
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
+"defaults\" should be set to \"none\""
 msgstr ""
 "利用可能であれば、汎用ではない、カメラ固有のベースカーブをデフォルトで使用し"
 "ます（要再起動）\n"
@@ -1712,10 +1712,11 @@ msgid ""
 "graphics ram, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
 msgstr ""
-"OpenCLデバイスのランタイム調整を許可します。【メモリのサイズ】を選択すると、"
-"利用可能なグラフィックメモリの検査を行います。【メモリ転送】を選択すると、タ"
-"イリングのためにより高速なメモリアクセスモード（ピンメモリ）を用いるよう試み"
-"ます"
+"OpenCLデバイスのランタイム調整を許可します\n"
+"【メモリのサイズ】を選択すると、利用可能なグラフィックメモリの検査を行いま"
+"す\n"
+"【メモリ転送】を選択すると、タイリングのためにより高速なメモリアクセスモード"
+"（ピンメモリ）を用いるよう試みます"
 
 #: ../build/bin/preferences_gen.h:6707
 msgid "security"
@@ -1978,8 +1979,8 @@ msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
 msgstr ""
-"ユーザー設定より前にデフォルトのショートカットを読み込みます。オフにすると、"
-"削除したデフォルト設定に戻ることを避けることが出来ます"
+"ユーザー設定より前にデフォルトのショートカットを読み込みます\n"
+"オフにすると、削除したデフォルト設定に戻ることを避けることが出来ます"
 
 #: ../build/bin/preferences_gen.h:7762
 msgid "scale slider step with min/max"
@@ -2060,9 +2061,10 @@ msgid ""
 "device at id given by location in list or if preceded by - prevent matching "
 "devices from loading. add encoding and number of knobs like 'BeatStep:63:16'"
 msgstr ""
-"デバイス名のリスト。コンマで区切って記入してください。合致したmidiデバイスを"
-"リスト内の位置によって定められたidで読み込みます。-が名前の前にあるデバイスは"
-"読み込みません。エンコードとノブの数を付け加えてください。例）BeatStep:63:16"
+"デバイス名のリスト。コンマで区切って記入してください\n"
+"合致したmidiデバイスをリスト内の位置によって定められたidで読み込みます\n"
+"-が名前の前にあるデバイスは読み込みません\n"
+"エンコードとノブの数を付け加えてください。例）BeatStep:63:16"
 
 #. tags
 #: ../build/bin/preferences_gen.h:8065 ../src/develop/lightroom.c:1516
@@ -4037,7 +4039,7 @@ msgstr "諸部分を組み合わせる"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:173
 #: ../build/lib/darktable/plugins/introspection_highlights.c:260
 msgid "inpaint a flat color"
-msgstr "色の一様な部分を修復する"
+msgstr "色の一様な部分を修復"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:274
 msgid "clip highlights"
@@ -5775,7 +5777,7 @@ msgstr ""
 
 #: ../src/common/darktable.c:1741
 msgid "1) darktable resources"
-msgstr "1)  darktableのリソース"
+msgstr "1) darktableのリソース"
 
 #: ../src/common/darktable.c:1743
 msgid "2) tune OpenCL performance"
@@ -8520,8 +8522,8 @@ msgid ""
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
 "<b>サイズ</b>：スクロール　　<b>境界ぼかしのサイズ</b>：Shift+スクロール\n"
-"<b>回転</b>：Ctrl+Shift+スクロール　　 <b>不透明度</b>：Ctrl+スクロール (%d"
-"%%)"
+"<b>回転</b>：Ctrl+Shift+スクロール　　 <b>不透明度</b>：Ctrl+スクロール "
+"(%d%%)"
 
 #: ../src/develop/masks/ellipse.c:2189
 msgid "<b>rotate</b>: ctrl+drag"
@@ -8531,8 +8533,8 @@ msgstr "<b>回転</b>：Ctrl+ドラッグ"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
-"+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
+"ctrl+scroll (%d%%)"
 msgstr ""
 "<b>境界ぼかしのモード</b>：Shift+クリック　　<b>回転</b>：Ctrl+ドラッグ\n"
 "<b>サイズ</b>：スクロール　　<b>境界ぼかしのサイズ</b>：Shift+スクロール　　"
@@ -8676,8 +8678,8 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>ノードを追加する</b>： クリック　　<b>シャープノードを追加する</b>：Ctrl"
-"+クリック\n"
+"<b>ノードを追加する</b>： クリック　　<b>シャープノードを追加する</b>："
+"Ctrl+クリック\n"
 "<b>キャンセル</b>：右クリック"
 
 #: ../src/develop/masks/path.c:3164
@@ -14189,7 +14191,7 @@ msgstr "輝度を区分けします"
 
 #: ../src/iop/colorbalancergb.c:1979
 msgid "choose in which uniform color space the saturation is computed"
-msgstr "どの均等色空間 で彩度を計算するか選択してください"
+msgstr "どの均等色空間で彩度を計算するかを選択します"
 
 #: ../src/iop/colorbalancergb.c:1981
 msgid "luminance ranges"
@@ -17158,8 +17160,8 @@ msgid ""
 "change direction"
 msgstr ""
 "クリックとドラッグで点を追加します\n"
-"スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　Ctrl"
-"+スクロールで方向を変更します"
+"スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　"
+"Ctrl+スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3602
 msgid ""
@@ -17168,8 +17170,8 @@ msgid ""
 "change direction"
 msgstr ""
 "クリックすると、線を追加します\n"
-"スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　Ctrl"
-"+スクロールで方向を変更します"
+"スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　"
+"Ctrl+スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3606
 msgid ""
@@ -17178,8 +17180,8 @@ msgid ""
 "change direction"
 msgstr ""
 "クリックすると、カーブを追加します\n"
-"スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　Ctrl"
-"+スクロールで方向を変更します"
+"スクロールでサイズを変更します　　Shift+スクロールで強さを変更します　　"
+"Ctrl+スクロールで方向を変更します"
 
 #: ../src/iop/liquify.c:3609
 msgid "click to edit nodes"
@@ -20381,7 +20383,7 @@ msgstr "および以下を除く"
 
 #: ../src/libs/filtering.c:1161
 msgid "define how this rule should interact with the previous one"
-msgstr "このルールが以前のルールとどのように作用しあうかを定義します"
+msgstr "このルールと先行するルールとの関係を定義します"
 
 #: ../src/libs/filtering.c:1420
 msgid " (off)"
