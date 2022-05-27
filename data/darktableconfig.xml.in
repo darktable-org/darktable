@@ -2501,6 +2501,18 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/pdf/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+      </enum>
+    </type>
+    <default>8</default>
+    <shortdescription>PDF bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/pdf/compression</name>
     <type>int</type>
     <default>1</default>
