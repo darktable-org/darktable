@@ -381,8 +381,8 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
         gtk_widget_hide(mod->expander);
 
         // this is copied from dt_iop_gui_delete_callback(), not sure why the above sentence...
-        gtk_widget_destroy(mod->widget);
         dt_iop_gui_cleanup_module(mod);
+        gtk_widget_destroy(mod->widget);
       }
 
       iop_list = g_list_remove_link(iop_list, modules);
