@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-25 15:06-0500\n"
-"PO-Revision-Date: 2022-05-25 15:35-0500\n"
+"PO-Revision-Date: 2022-05-27 00:15-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -339,16 +339,15 @@ msgid "override today's date"
 msgstr "Anular la fecha de hoy"
 
 #: ../build/bin/conf_gen.h:1027
-#, fuzzy
 msgid ""
 "type a date in the form: YYYY:MM:DD[ hh:mm:ss[.sss]] if you want to override "
 "the current date/time used when expanding variables:\n"
 "$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS), $(MSEC).\n"
 "let the field empty otherwise"
 msgstr ""
-"Introduzca un formato válido de fecha/hora (AAAA-MM-DD[Thh:mm:ss]) si se "
-"desea anular la fecha/hora utilizada al ampliar las variables:\n"
-"$(AÑO), $(MES), $(DIA), $(HORA), $(MINUTO), $(SEGUNDOS).\n"
+"Introduzca la fecha/hora en el siguiente formato: AAAA:MM:DD [hh:mm:ss[."
+"sss]]. Si se desea anular la fecha/hora utilizada al ampliar las variables:\n"
+"$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS) $(MSEC).\n"
 "En caso contrario, dejar el campo vacío."
 
 #: ../build/bin/conf_gen.h:1032
@@ -1010,9 +1009,9 @@ msgstr ""
 "luz"
 
 #: ../build/bin/preferences_gen.h:4191
-#, fuzzy
 msgid "scroll utility modules to the top when expanded"
-msgstr "Desplazar los módulos de funcionalidad al desplegarlos o contraerlos"
+msgstr ""
+"Desplazar los módulos de funcionalidad a la parte superior al desplegarlos"
 
 #: ../build/bin/preferences_gen.h:4205 ../build/bin/preferences_gen.h:5500
 msgid ""
@@ -1065,9 +1064,8 @@ msgid "show image time with milliseconds"
 msgstr "Mostrar la hora con milisegundos"
 
 #: ../build/bin/preferences_gen.h:4313
-#, fuzzy
 msgid "defines whether time should be displayed with milliseconds"
-msgstr "Se define si las barras de desplazamiento deben ser mostradas"
+msgstr "Determina si la hora se muestra con milisegundos."
 
 #: ../build/bin/preferences_gen.h:4323
 msgid "thumbnails"
@@ -1335,9 +1333,8 @@ msgstr ""
 "Esta opción habilita la expansión o la contracción automática del módulo"
 
 #: ../build/bin/preferences_gen.h:5486
-#, fuzzy
 msgid "scroll processing modules to the top when expanded"
-msgstr "Desplazar los módulos de revelado al desplegarlos o plegarlos"
+msgstr "Desplazar los módulos de revelado a la parte superior al desplegarlos"
 
 #: ../build/bin/preferences_gen.h:5522
 msgid "white balance slider colors"
@@ -1358,11 +1355,8 @@ msgstr ""
 "representan el efecto del ajuste que tendría en la escena."
 
 #: ../build/bin/preferences_gen.h:5587
-#, fuzzy
 msgid "color balance slider block layout"
-msgstr ""
-"Diseño visual de la sección \"sombras / tonos medios / luces\" en balance de "
-"color"
+msgstr "Disposición visual de los controles en balance de color"
 
 #: ../build/bin/preferences_gen.h:5630
 msgid ""
@@ -1568,14 +1562,13 @@ msgid "detect monochrome previews"
 msgstr "Detectar miniaturas monocromáticas"
 
 #: ../build/bin/preferences_gen.h:6268
-#, fuzzy
 msgid ""
 "many monochrome images can be identified via EXIF and preview data. beware: "
 "this slows down imports and reading of EXIF data"
 msgstr ""
-"Muchas imágenes monocromáticas pueden ser identificadas por sus miniaturas o "
-"mediante los datos Exif. Advertencia: esta opción ralentiza la importación y "
-"la lectura de los datos Exif."
+"Muchas imágenes monocromáticas pueden ser identificadas mediante los datos "
+"Exif o de previsualización. Advertencia: esta opción ralentiza la "
+"importación y la lectura de los datos Exif."
 
 #: ../build/bin/preferences_gen.h:6290
 msgid "show warning messages"
@@ -1604,7 +1597,7 @@ msgid "darktable resources"
 msgstr "Recursos de darktable"
 
 #: ../build/bin/preferences_gen.h:6382
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "defines how much darktable may take from your system resources.\n"
 " - default: darktable takes ~50%% of your systems resources and gives "
@@ -1619,6 +1612,18 @@ msgid ""
 "swapping and unexpected performance drops. use with caution and not "
 "recommended for general use!"
 msgstr ""
+"defines how much darktable may take from your system resources.\n"
+" - default: darktable takes ~50%% of your systems resources and gives "
+"darktable enough to be still performant.\n"
+" - small: should be used if you are simultaneously running applications "
+"taking large parts of your systems memory or opencl/gl applications like "
+"games or hugin.\n"
+" - large: is the best option if you are mainly using darktable and want it "
+"to take most of your systems resources for performance.\n"
+" - unrestricted: should only be used for developing extremely large images "
+"as darktable will take all of your systems resources and thus might lead to "
+"swapping and unexpected performance drops. use with caution and not "
+"recommended for general use!"
 
 #: ../build/bin/preferences_gen.h:6404
 msgid "prefer performance over quality"
@@ -1717,7 +1722,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6625
 msgid "tune OpenCL performance"
-msgstr ""
+msgstr "Configurar el rendimiento de OpenCL"
 
 #: ../build/bin/preferences_gen.h:6673
 msgid ""
@@ -1725,6 +1730,10 @@ msgid ""
 "graphics ram, 'memory transfer' tries a faster memory access mode (pinned "
 "memory) used for tiling."
 msgstr ""
+"Permite ajustar los dispositivos OpenCL en tiempo de ejecución. «Tamaño de "
+"la memoria» comprueba la RAM gráfica disponible; «Transferencia de memoria» "
+"prueba un modo de acceso más rápido a la memoria (memoria fijada) utilizado "
+"para el proceso por bandas."
 
 #: ../build/bin/preferences_gen.h:6707
 msgid "security"
@@ -1735,11 +1744,10 @@ msgid "ask before removing images from the library"
 msgstr "Preguntar antes de eliminar las imágenes de la fototeca"
 
 #: ../build/bin/preferences_gen.h:6744
-#, fuzzy
 msgid "always ask the user before removing image information from the library"
 msgstr ""
-"Solicita siempre la confirmación al usuario antes de quitar cualquier imagen "
-"de la fototeca"
+"Solicita siempre la confirmación al usuario antes de quitar cualquier "
+"información de la fototeca"
 
 #: ../build/bin/preferences_gen.h:6766
 msgid "ask before deleting images from disk"
@@ -1989,23 +1997,27 @@ msgid "interface"
 msgstr "interfaz"
 
 #: ../build/bin/preferences_gen.h:7726
-#, fuzzy
 msgid "load default shortcuts at startup"
-msgstr "Restaura los atajos predefinidos o a un estado anterior"
+msgstr "Restaurar los atajos predefinidos al iniciar"
 
 #: ../build/bin/preferences_gen.h:7740
 msgid ""
 "load default shortcuts before user settings. switch off to prevent deleted "
 "defaults returning"
 msgstr ""
+"Restaura los atajos predefinidos en lugar de la configuración del usuario. "
+"Para evitar que los valores predefinidos borrados se reinstauren, desactive "
+"esta opción."
 
 #: ../build/bin/preferences_gen.h:7762
+#, fuzzy
 msgid "scale slider step with min/max"
-msgstr ""
+msgstr "scale slider step with min/max"
 
 #: ../build/bin/preferences_gen.h:7776
+#, fuzzy
 msgid "vary bauhaus slider step size with min/max range"
-msgstr ""
+msgstr "vary bauhaus slider step size with min/max range"
 
 #: ../build/bin/preferences_gen.h:7798
 msgid "sort built-in presets first"
@@ -2072,11 +2084,15 @@ msgid "order or exclude midi devices"
 msgstr "Ordenar o excluir dispositivos MIDI"
 
 #: ../build/bin/preferences_gen.h:8049
+#, fuzzy
 msgid ""
 "comma-separated list of device name fragments that if matched load midi "
 "device at id given by location in list or if preceded by - prevent matching "
 "devices from loading. add encoding and number of knobs like 'BeatStep:63:16'"
 msgstr ""
+"comma-separated list of device name fragments that if matched load midi "
+"device at id given by location in list or if preceded by - prevent matching "
+"devices from loading. add encoding and number of knobs like 'BeatStep:63:16'"
 
 #. tags
 #: ../build/bin/preferences_gen.h:8065 ../src/develop/lightroom.c:1516
@@ -2121,10 +2137,13 @@ msgid "prefer focused instance"
 msgstr "Módulos sin máscaras"
 
 #: ../build/bin/preferences_gen.h:8144
+#, fuzzy
 msgid ""
 "if an instance of the module has focus, apply shortcut to that instance\n"
 "note: blending shortcuts always apply to the focused instance"
 msgstr ""
+"if an instance of the module has focus, apply shortcut to that instance\n"
+"note: blending shortcuts always apply to the focused instance"
 
 #: ../build/bin/preferences_gen.h:8166
 msgid "prefer expanded instances"
@@ -2284,12 +2303,14 @@ msgstr ""
 "mostradas en la lista"
 
 #: ../build/bin/preferences_gen.h:8808
+#, fuzzy
 msgid "hide the history button and show a specific module instead"
-msgstr ""
+msgstr "hide the history button and show a specific module instead"
 
 #: ../build/bin/preferences_gen.h:8822
+#, fuzzy
 msgid "hide the history button and show the recent collections module instead"
-msgstr ""
+msgstr "hide the history button and show the recent collections module instead"
 
 #: ../build/bin/preferences_gen.h:8844
 msgid "number of folder levels to show in lists"
@@ -2338,16 +2359,20 @@ msgid ""
 msgstr "puede hacerse con el módulo importar"
 
 #: ../build/bin/preferences_gen.h:9116
+#, fuzzy
 msgid "suggested tags level of confidence"
-msgstr ""
+msgstr "suggested tags level of confidence"
 
 #: ../build/bin/preferences_gen.h:9140
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "level of confidence to include the tag in the suggestions list, 0: all "
 "associated tags, 99: 99%% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
+"level of confidence to include the tag in the suggestions list, 0: all "
+"associated tags, 99: 99%% matching associated tags, 100: no matching tag to "
+"show only recent tags (faster)"
 
 #: ../build/bin/preferences_gen.h:9162
 #, fuzzy
@@ -2355,10 +2380,13 @@ msgid "number of recently attached tags"
 msgstr "número de agrupaciones"
 
 #: ../build/bin/preferences_gen.h:9186
+#, fuzzy
 msgid ""
 "number of recently attached tags which are included in the suggestions list. "
 "the value `-1' disables the recent list"
 msgstr ""
+"number of recently attached tags which are included in the suggestions list. "
+"the value `-1' disables the recent list"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:130
 #: ../build/lib/darktable/plugins/introspection_ashift.c:279
@@ -3745,7 +3773,6 @@ msgstr "Floyd-Steinberg RGB 16 bits"
 msgid "floyd-steinberg auto"
 msgstr "Floyd-Steinberg automático"
 
-# No existe porceptual
 #: ../build/lib/darktable/plugins/introspection_exposure.c:79
 #: ../build/lib/darktable/plugins/introspection_exposure.c:146
 msgid "percentile"
@@ -4386,8 +4413,9 @@ msgstr "brillo"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:291
 #: ../build/lib/darktable/plugins/introspection_retouch.c:430
+#, fuzzy
 msgid "max_iter"
-msgstr ""
+msgstr "max_iter"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:444
 #: ../src/libs/metadata_view.c:330
@@ -5037,14 +5065,12 @@ msgid "import time"
 msgstr "fecha de importación"
 
 #: ../src/common/collection.c:616 ../src/common/collection.c:671
-#, fuzzy
 msgid "modification time"
-msgstr "última modificación"
+msgstr "fecha de modificación"
 
 #: ../src/common/collection.c:618 ../src/common/collection.c:673
-#, fuzzy
 msgid "export time"
-msgstr "exportar imágenes"
+msgstr "fecha de exportación"
 
 #: ../src/common/collection.c:620 ../src/common/collection.c:675
 msgid "print time"
@@ -5113,7 +5139,6 @@ msgid "tag"
 msgstr "etiqueta"
 
 #: ../src/common/collection.c:665
-#, fuzzy
 msgid "capture date"
 msgstr "fecha de captura"
 
@@ -5400,8 +5425,9 @@ msgstr "caqui"
 
 #. 72° - orange
 #: ../src/common/color_vocabulary.c:247
+#, fuzzy
 msgid "brown"
-msgstr ""
+msgstr "brown"
 
 #: ../src/common/color_vocabulary.c:248
 msgid "chocolate"
@@ -5413,12 +5439,14 @@ msgid "dark gold"
 msgstr "oscurecer"
 
 #: ../src/common/color_vocabulary.c:250
+#, fuzzy
 msgid "gold"
-msgstr ""
+msgstr "gold"
 
 #: ../src/common/color_vocabulary.c:251
+#, fuzzy
 msgid "sandy brown"
-msgstr ""
+msgstr "sandy brown"
 
 #. 96° - yellow olive
 #. 120° - green
@@ -5434,20 +5462,23 @@ msgid "dark olive green"
 msgstr "varianza del verde: "
 
 #: ../src/common/color_vocabulary.c:258
+#, fuzzy
 msgid "olive"
-msgstr ""
+msgstr "olive"
 
 #: ../src/common/color_vocabulary.c:260
+#, fuzzy
 msgid "beige"
-msgstr ""
+msgstr "beige"
 
 #: ../src/common/color_vocabulary.c:266 ../src/common/color_vocabulary.c:276
 msgid "forest green"
 msgstr "verde bosque"
 
 #: ../src/common/color_vocabulary.c:267
+#, fuzzy
 msgid "olive drab"
-msgstr ""
+msgstr "olive drab"
 
 #: ../src/common/color_vocabulary.c:268
 #, fuzzy
@@ -5476,8 +5507,9 @@ msgid "sea green"
 msgstr "verde"
 
 #: ../src/common/color_vocabulary.c:285 ../src/common/color_vocabulary.c:302
+#, fuzzy
 msgid "teal"
-msgstr ""
+msgstr "teal"
 
 #: ../src/common/color_vocabulary.c:286
 #, fuzzy
@@ -5485,8 +5517,9 @@ msgid "light sea green"
 msgstr "calle nocturna"
 
 #: ../src/common/color_vocabulary.c:287
+#, fuzzy
 msgid "turquoise"
-msgstr ""
+msgstr "turquoise"
 
 #. 192° - cyan
 #: ../src/common/color_vocabulary.c:292
@@ -5815,40 +5848,54 @@ msgstr ""
 "rendimiento de darktable han cambiado."
 
 #: ../src/common/darktable.c:1739
+#, fuzzy
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
+"you won't find headroom and friends any longer, instead in preferences/"
+"processing use:"
 
 #: ../src/common/darktable.c:1741
 msgid "1) darktable resources"
 msgstr "1) Recursos de darktable"
 
 #: ../src/common/darktable.c:1743
+#, fuzzy
 msgid "2) tune OpenCL performance"
-msgstr ""
+msgstr "2) tune OpenCL performance"
 
 #: ../src/common/darktable.c:1750
+#, fuzzy
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
 msgstr ""
+"some global config values relevant for OpenCL performance are not used any "
+"longer."
 
 #: ../src/common/darktable.c:1752
+#, fuzzy
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
+"instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
+"content is:"
 
 #: ../src/common/darktable.c:1754
+#, fuzzy
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 msgstr ""
+" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
+"'eventhandles' 'async' 'disable' 'magic'"
 
 #: ../src/common/darktable.c:1756
+#, fuzzy
 msgid "you may tune as before except 'magic'"
-msgstr ""
+msgstr "you may tune as before except 'magic'"
 
 #: ../src/common/database.c:2722
 #, c-format
@@ -6389,20 +6436,26 @@ msgid "heif"
 msgstr "HEIF"
 
 #: ../src/common/image.h:183
+#, fuzzy
 msgid "libraw"
-msgstr ""
+msgstr "libraw"
 
 #: ../src/common/imagebuf.c:131
 msgid "insufficient memory"
 msgstr "Memoria insuficiente"
 
 #: ../src/common/imagebuf.c:132
+#, fuzzy
 msgid ""
 "this module was unable to allocate\n"
 "all of the memory required to process\n"
 "the image.  some or all processing\n"
 "has been skipped."
 msgstr ""
+"this module was unable to allocate\n"
+"all of the memory required to process\n"
+"the image.  some or all processing\n"
+"has been skipped."
 
 #: ../src/common/imageio.c:740 ../src/common/mipmap_cache.c:1074
 #, c-format
@@ -7934,17 +7987,16 @@ msgstr ""
 "Alternar polaridad. Activar 'mostrar máscara' para una mejor visualización"
 
 #: ../src/develop/blend_gui.c:2211
-#, fuzzy
 msgid ""
 "double-click to reset.\n"
 "press 'a' to toggle available slider modes.\n"
 "press 'c' to toggle view of channel data.\n"
 "press 'm' to toggle mask view."
 msgstr ""
-"Doble pulsación para reiniciar. Pulsar 'A' para cambiar los modos de control "
-"deslizante disponibles.\n"
-"Pulsar 'C' para cambiar la vista de los datos del canal. Pulsar 'M' para "
-"cambiar la vista de la máscara."
+"Doble pulsación para reiniciar.\n"
+"Pulsar 'A' para cambiar los modos de control deslizante disponibles.\n"
+"Pulsar 'C' para cambiar la vista de los datos del canal.\n"
+"Pulsar 'M' para cambiar la vista de la máscara."
 
 #: ../src/develop/blend_gui.c:2228 ../src/develop/blend_gui.c:3056
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2020
@@ -8840,26 +8892,38 @@ msgid "year %s"
 msgstr "Año %s"
 
 #: ../src/dtgtk/range.c:406
+#, fuzzy
 msgid ""
 "enter the minimal value\n"
 "use 'min' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
+"enter the minimal value\n"
+"use 'min' if no bound\n"
+"right-click to select from existing values"
 
 #: ../src/dtgtk/range.c:412
+#, fuzzy
 msgid ""
 "enter the maximal value\n"
 "use 'max' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
+"enter the maximal value\n"
+"use 'max' if no bound\n"
+"right-click to select from existing values"
 
 #: ../src/dtgtk/range.c:418
+#, fuzzy
 msgid ""
 "enter the value\n"
 "right-click to select from existing values"
 msgstr ""
+"enter the value\n"
+"right-click to select from existing values"
 
 #: ../src/dtgtk/range.c:423
+#, fuzzy
 msgid ""
 "enter the minimal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8867,8 +8931,14 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"enter the minimal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'min' if no bound\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
 
 #: ../src/dtgtk/range.c:431
+#, fuzzy
 msgid ""
 "enter the maximal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8877,21 +8947,33 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"enter the maximal date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"use 'max' if no bound\n"
+"'now' keyword is handled\n"
+"use '-' prefix for relative date\n"
+"right-click to select from calendar or existing values"
 
 #: ../src/dtgtk/range.c:440
+#, fuzzy
 msgid ""
 "enter the date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"enter the date\n"
+"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
+"right-click to select from calendar or existing values"
 
 #: ../src/dtgtk/range.c:462
+#, fuzzy
 msgid "date-time interval to subtract from the max value"
-msgstr ""
+msgstr "date-time interval to subtract from the max value"
 
 #: ../src/dtgtk/range.c:466
+#, fuzzy
 msgid "date-time interval to add to the min value"
-msgstr ""
+msgstr "date-time interval to add to the min value"
 
 #: ../src/dtgtk/range.c:606 ../src/dtgtk/range.c:1721 ../src/dtgtk/range.c:1772
 #: ../src/libs/colorpicker.c:53
@@ -8922,10 +9004,13 @@ msgid "date"
 msgstr "fecha"
 
 #: ../src/dtgtk/range.c:947 ../src/dtgtk/range.c:1013
+#, fuzzy
 msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
 msgstr ""
+"simple click to select date\n"
+"double click to use the date directly"
 
 #: ../src/dtgtk/range.c:958
 msgid "years: "
@@ -8949,8 +9034,9 @@ msgid "now"
 msgstr "Ahora"
 
 #: ../src/dtgtk/range.c:1040
+#, fuzzy
 msgid "set the value to always match current datetime"
-msgstr ""
+msgstr "set the value to always match current datetime"
 
 #. apply button
 #: ../src/dtgtk/range.c:1043 ../src/gui/accelerators.c:149
@@ -8960,8 +9046,9 @@ msgid "apply"
 msgstr "establecer"
 
 #: ../src/dtgtk/range.c:1044
+#, fuzzy
 msgid "set the range bound with this value"
-msgstr ""
+msgstr "set the range bound with this value"
 
 #. get nice text for bounds
 #. Side-border hide/show
@@ -8988,10 +9075,13 @@ msgid "leader"
 msgstr "Imagen de portada"
 
 #: ../src/dtgtk/thumbnail.c:95
+#, fuzzy
 msgid ""
 "\n"
 "click here to set this image as group leader\n"
 msgstr ""
+"\n"
+"click here to set this image as group leader\n"
 
 #. and the number of grouped images
 #: ../src/dtgtk/thumbnail.c:130 ../src/libs/filters/grouping.c:144
@@ -9283,7 +9373,7 @@ msgstr ""
 "No hay miniaturas que generar, terminado.\n"
 
 #: ../src/generate-cache/main.c:238
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "warning: disk backend for full preview cache is disabled "
 "(cache_disk_backend_full)\n"
@@ -9292,10 +9382,10 @@ msgid ""
 "no full previews to be generated, done.\n"
 msgstr ""
 "Advertencia: la función de almacenar la caché de vista previa completa en el "
-"disco está desactivada (cache_disk_backend).\n"
-"Si desea una generación previa de previsualización completa para que las "
-"disponga darktable, necesita habilitar esta función.\n"
-"No hay miniaturas que generar, terminado.\n"
+"disco está desactivada (cache_disk_backend_full).\n"
+"Si desea generar las previsualizaciones completas para que las disponga "
+"darktable, necesita habilitar esta función.\n"
+"Terminado: sin previsualizaciones completas que generar.\n"
 
 #: ../src/generate-cache/main.c:248
 #, c-format
@@ -9477,14 +9567,12 @@ msgid "long"
 msgstr "larga"
 
 #: ../src/gui/accelerators.c:534
-#, fuzzy
 msgid "double-press"
-msgstr "doble"
+msgstr "Doble pulsación"
 
 #: ../src/gui/accelerators.c:535
-#, fuzzy
 msgid "triple-press"
-msgstr "triple"
+msgstr "Triple pulsación "
 
 #: ../src/gui/accelerators.c:536
 msgid "press"
@@ -9558,8 +9646,9 @@ msgid "click to filter shortcut list\n"
 msgstr "Pulse para abrir la configuración de los atajos de teclado"
 
 #: ../src/gui/accelerators.c:681
+#, fuzzy
 msgid "right click to show action of selected shortcut\n"
-msgstr ""
+msgstr "right click to show action of selected shortcut\n"
 
 #: ../src/gui/accelerators.c:682
 #, fuzzy
@@ -9621,9 +9710,9 @@ msgid "create separate shortcuts for up and down move?"
 msgstr "¿Crear atajos separados para los movimientos arriba/abajo?"
 
 #: ../src/gui/accelerators.c:1052
-#, c-format
+#, fuzzy, c-format
 msgid "%s, speed reset"
-msgstr ""
+msgstr "%s, speed reset"
 
 #: ../src/gui/accelerators.c:1061
 msgid "shortcut exists with different settings"
@@ -10137,7 +10226,7 @@ msgstr "$(YEAR) → año"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(YEAR.SHORT) - year without century"
-msgstr ""
+msgstr "$(YEAR.SHORT) → año sin siglo"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MONTH) - month"
@@ -10145,11 +10234,11 @@ msgstr "$(MONTH) → mes"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
-msgstr ""
+msgstr "$(MONTH.SHORT) → nombre del mes abreviado según la localización actual"
 
 #: ../src/gui/gtkentry.c:195
 msgid "$(MONTH.LONG) - full month name according to the current locale"
-msgstr ""
+msgstr "$(MONTH.LONG) → nombre del mes según la localización actual"
 
 #: ../src/gui/gtkentry.c:196
 msgid "$(DAY) - day"
@@ -10180,9 +10269,8 @@ msgid "$(EXIF.YEAR) - EXIF year"
 msgstr "$(EXIF.YEAR) → año EXIF"
 
 #: ../src/gui/gtkentry.c:203
-#, fuzzy
 msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
-msgstr "$(EXIF.YEAR.SHORT) → año Exif"
+msgstr "$(EXIF.YEAR.SHORT) → año Exif sin siglo"
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF.MONTH) - EXIF month"
@@ -10193,11 +10281,13 @@ msgid ""
 "$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
 "locale"
 msgstr ""
+"$(EXIF.MONTH.SHORT) → nombre del mes EXIF abreviado según la localización "
+"actual"
 
 #: ../src/gui/gtkentry.c:206
 msgid ""
 "$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
-msgstr ""
+msgstr "$(EXIF.MONTH.LONG) → nombre del mes EXIF según la localización actual"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(EXIF.DAY) - EXIF day"
@@ -10456,9 +10546,11 @@ msgid "set overlay color"
 msgstr "Establece el color de las líneas reticulares"
 
 #: ../src/gui/guides.c:739
+#, fuzzy
 msgid ""
 "set the contrast between the lightest and darkest part of the guide overlays"
 msgstr ""
+"set the contrast between the lightest and darkest part of the guide overlays"
 
 #: ../src/gui/guides.c:845 ../src/gui/guides.c:891
 msgid "show guides"
@@ -11769,9 +11861,8 @@ msgid "lens shift (%s)"
 msgstr "desplazamiento %s"
 
 #: ../src/iop/ashift.c:5704
-#, fuzzy
 msgid "manual perspective"
-msgstr "perspectiva"
+msgstr "perspectiva (ajuste manual)"
 
 #: ../src/iop/ashift.c:5754 ../src/iop/ashift.c:5838 ../src/iop/ashift.c:5839
 #: ../src/iop/ashift.c:5840
@@ -13397,17 +13488,21 @@ msgid "spot mode"
 msgstr "modo dcp"
 
 #: ../src/iop/channelmixerrgb.c:4079
+#, fuzzy
 msgid ""
 "\"correction\" automatically adjust the illuminant\n"
 "such that the input color is mapped to the target.\n"
 "\"measure\" simply shows how an input color is mapped by the CAT\n"
 "and can be used to sample a target."
 msgstr ""
+"\"correction\" automatically adjust the illuminant\n"
+"such that the input color is mapped to the target.\n"
+"\"measure\" simply shows how an input color is mapped by the CAT\n"
+"and can be used to sample a target."
 
 #: ../src/iop/channelmixerrgb.c:4084 ../src/iop/exposure.c:1089
-#, fuzzy
 msgid "correction"
-msgstr "correcciones"
+msgstr "corrección"
 
 #: ../src/iop/channelmixerrgb.c:4085 ../src/iop/exposure.c:1090
 #, fuzzy
@@ -13415,29 +13510,39 @@ msgid "measure"
 msgstr "exposición"
 
 #: ../src/iop/channelmixerrgb.c:4089
+#, fuzzy
 msgid "take channel mixing into account"
-msgstr ""
+msgstr "take channel mixing into account"
 
 #: ../src/iop/channelmixerrgb.c:4094
+#, fuzzy
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
 msgstr ""
+"compute the target by taking the channel mixing into account.\n"
+"if disabled, only the CAT is considered."
 
 #: ../src/iop/channelmixerrgb.c:4108 ../src/iop/exposure.c:1103
+#, fuzzy
 msgid "the input color that should be mapped to the target"
-msgstr ""
+msgstr "the input color that should be mapped to the target"
 
 #: ../src/iop/channelmixerrgb.c:4113
+#, fuzzy
 msgid ""
 "L : \tN/A \n"
 "h : \tN/A\n"
 "c : \tN/A"
 msgstr ""
+"L : \tN/A \n"
+"h : \tN/A\n"
+"c : \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4115 ../src/iop/exposure.c:1110
+#, fuzzy
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
-msgstr ""
+msgstr "these LCh coordinates are computed from CIE Lab 1976 coordinates"
 
 #: ../src/iop/channelmixerrgb.c:4128
 #, fuzzy
@@ -13581,9 +13686,8 @@ msgstr ""
 "cuando el marco proyecta una sombra en los bordes del parche."
 
 #: ../src/iop/channelmixerrgb.c:4247
-#, fuzzy
 msgid "the delta E is using the CIE 2000 formula"
-msgstr "Se está usando la fórmula CIE Delta E 2000 (∆E00)"
+msgstr "Delta E está usando la fórmula CIE 2000 (∆E00)"
 
 #: ../src/iop/channelmixerrgb.c:4253
 msgid "accept the computed profile and set it in the module"
@@ -14107,12 +14211,10 @@ msgid "basic colorfulness: natural skin"
 msgstr "añadir coloración básica: piel natural"
 
 #: ../src/iop/colorbalancergb.c:455
-#, fuzzy
 msgid "basic colorfulness: vibrant colors"
-msgstr "añadir coloración básica"
+msgstr "añadir coloración básica: colores vivos"
 
 #: ../src/iop/colorbalancergb.c:461
-#, fuzzy
 msgid "basic colorfulness: standard"
 msgstr "añadir coloración básica"
 
@@ -14284,8 +14386,9 @@ msgid "isolate luminances"
 msgstr "Separa luminancias"
 
 #: ../src/iop/colorbalancergb.c:1979
+#, fuzzy
 msgid "choose in which uniform color space the saturation is computed"
-msgstr ""
+msgstr "choose in which uniform color space the saturation is computed"
 
 #: ../src/iop/colorbalancergb.c:1981
 msgid "luminance ranges"
@@ -15568,10 +15671,12 @@ msgstr ""
 "extensión del desenfoque de la lente."
 
 #: ../src/iop/diffuse.c:1504
+#, fuzzy
 msgid "speed (sharpen ↔ diffuse)"
-msgstr ""
+msgstr "speed (sharpen ↔ diffuse)"
 
 #: ../src/iop/diffuse.c:1510
+#, fuzzy
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -15580,8 +15685,15 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"diffusion speed of low-frequency wavelet layers\n"
+"in the direction of 1st order anisotropy (set below).\n"
+"\n"
+"negative values sharpen, \n"
+"positive values diffuse and blur, \n"
+"zero does nothing."
 
 #: ../src/iop/diffuse.c:1519
+#, fuzzy
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -15590,8 +15702,15 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"diffusion speed of low-frequency wavelet layers\n"
+"in the direction of 2nd order anisotropy (set below).\n"
+"\n"
+"negative values sharpen, \n"
+"positive values diffuse and blur, \n"
+"zero does nothing."
 
 #: ../src/iop/diffuse.c:1528
+#, fuzzy
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -15600,8 +15719,15 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"diffusion speed of high-frequency wavelet layers\n"
+"in the direction of 3rd order anisotropy (set below).\n"
+"\n"
+"negative values sharpen, \n"
+"positive values diffuse and blur, \n"
+"zero does nothing."
 
 #: ../src/iop/diffuse.c:1537
+#, fuzzy
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -15610,8 +15736,15 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"diffusion speed of high-frequency wavelet layers\n"
+"in the direction of 4th order anisotropy (set below).\n"
+"\n"
+"negative values sharpen, \n"
+"positive values diffuse and blur, \n"
+"zero does nothing."
 
 #: ../src/iop/diffuse.c:1549
+#, fuzzy
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -15619,8 +15752,14 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"direction of 1st order speed (set above).\n"
+"\n"
+"negative values follow gradients more closely, \n"
+"positive values rather avoid edges (isophotes), \n"
+"zero affects both equally (isotropic)."
 
 #: ../src/iop/diffuse.c:1557
+#, fuzzy
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -15628,8 +15767,14 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"direction of 2nd order speed (set above).\n"
+"\n"
+"negative values follow gradients more closely, \n"
+"positive values rather avoid edges (isophotes), \n"
+"zero affects both equally (isotropic)."
 
 #: ../src/iop/diffuse.c:1565
+#, fuzzy
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -15637,8 +15782,14 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"direction of 3rd order speed (set above).\n"
+"\n"
+"negative values follow gradients more closely, \n"
+"positive values rather avoid edges (isophotes), \n"
+"zero affects both equally (isotropic)."
 
 #: ../src/iop/diffuse.c:1573
+#, fuzzy
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -15646,6 +15797,11 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"direction of 4th order speed (set above).\n"
+"\n"
+"negative values follow gradients more closely, \n"
+"positive values rather avoid edges (isophotes), \n"
+"zero affects both equally (isotropic)."
 
 #: ../src/iop/diffuse.c:1578
 #, fuzzy
@@ -15653,11 +15809,15 @@ msgid "edge management"
 msgstr "configuración de los bordes"
 
 #: ../src/iop/diffuse.c:1583
+#, fuzzy
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
 "for standalone sharpening set speed to negative values."
 msgstr ""
+"increase or decrease the sharpness of the highest frequencies.\n"
+"can be used to keep details after blooming,\n"
+"for standalone sharpening set speed to negative values."
 
 #: ../src/iop/diffuse.c:1589
 msgid ""
@@ -15800,9 +15960,9 @@ msgid "compensate camera exposure (%+.1f EV)"
 msgstr "compensar la exposición (%+.1f EV)"
 
 #: ../src/iop/exposure.c:739
-#, c-format
+#, fuzzy, c-format
 msgid "L : \t%.1f %%"
-msgstr ""
+msgstr "L : \t%.1f %%"
 
 #: ../src/iop/exposure.c:864 ../src/libs/history.c:861
 #, c-format
@@ -15858,6 +16018,7 @@ msgid "spot exposure mapping"
 msgstr "mostrar la máscara de exposición"
 
 #: ../src/iop/exposure.c:1084
+#, fuzzy
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -15865,14 +16026,21 @@ msgid ""
 "compensation\n"
 "and can be used to define a target."
 msgstr ""
+"\"correction\" automatically adjust exposure\n"
+"such that the input lightness is mapped to the target.\n"
+"\"measure\" simply shows how an input color is mapped by the exposure "
+"compensation\n"
+"and can be used to define a target."
 
 #: ../src/iop/exposure.c:1108
+#, fuzzy
 msgid "L : \tN/A"
-msgstr ""
+msgstr "L : \tN/A"
 
 #: ../src/iop/exposure.c:1123
+#, fuzzy
 msgid "the desired target exposure after mapping"
-msgstr ""
+msgstr "the desired target exposure after mapping"
 
 #: ../src/iop/filmic.c:179
 msgid "this module is deprecated. better use filmic rgb module instead."
@@ -16803,10 +16971,13 @@ msgid "reconstruction, raw"
 msgstr "Reconstrucción, negativo digital"
 
 #: ../src/iop/highlights.c:2101
+#, fuzzy
 msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
 "back to clip."
 msgstr ""
+"highlights: guided laplacian mode not available for X-Trans sensors. falling "
+"back to clip."
 
 #: ../src/iop/highlights.c:2174
 msgid "highlight reconstruction method"
@@ -16823,28 +16994,40 @@ msgstr ""
 "necesario cambiar esto)"
 
 #: ../src/iop/highlights.c:2188
+#, fuzzy
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 msgstr ""
+"add noise to visually blend the reconstructed areas\n"
+"into the rest of the noisy image. useful at high ISO."
 
 #: ../src/iop/highlights.c:2192
+#, fuzzy
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 msgstr ""
+"increase if magenta highlights don't get fully corrected\n"
+"each new iteration brings a performance penalty."
 
 #: ../src/iop/highlights.c:2197
+#, fuzzy
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
 msgstr ""
+"increase if magenta highlights don't get fully corrected.\n"
+"this may produce non-smooth boundaries between valid and clipped regions."
 
 #: ../src/iop/highlights.c:2201
+#, fuzzy
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
 msgstr ""
+"increase to correct larger clipped areas.\n"
+"large values bring huge performance penalties"
 
 #: ../src/iop/highpass.c:75
 msgid "highpass"
@@ -18049,8 +18232,9 @@ msgid "black level 3"
 msgstr "nivel de negro 3"
 
 #: ../src/iop/rawprepare.c:851
+#, fuzzy
 msgid "flat field correction to compensate for lens shading"
-msgstr ""
+msgstr "flat field correction to compensate for lens shading"
 
 #: ../src/iop/rawprepare.c:859
 msgid "crop from left border"
@@ -19775,8 +19959,9 @@ msgid "preferences..."
 msgstr "preferencias"
 
 #: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1386
+#, fuzzy
 msgid "AND"
-msgstr ""
+msgstr "AND"
 
 #: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1391
 #, fuzzy
@@ -19785,12 +19970,14 @@ msgstr "R"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1396
+#, fuzzy
 msgid "BUT NOT"
-msgstr ""
+msgstr "BUT NOT"
 
 #: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1976
+#, fuzzy
 msgid "revert to a previous set of rules"
-msgstr ""
+msgstr "revert to a previous set of rules"
 
 #: ../src/libs/collect.c:3371
 #, fuzzy
@@ -20236,8 +20423,9 @@ msgid "general settings"
 msgstr "Configuración general"
 
 #: ../src/libs/export_metadata.c:307
+#, fuzzy
 msgid "EXIF data"
-msgstr ""
+msgstr "EXIF data"
 
 #: ../src/libs/export_metadata.c:308
 msgid "export EXIF metadata"
@@ -20395,12 +20583,14 @@ msgid "taken: last 30 days"
 msgstr "capturado: últimos 30 días"
 
 #: ../src/libs/filtering.c:652
+#, fuzzy
 msgid "click or click&#38;drag to select one or multiple values"
-msgstr ""
+msgstr "click or click&#38;drag to select one or multiple values"
 
 #: ../src/libs/filtering.c:653
+#, fuzzy
 msgid "right-click opens a menu to select the available values"
-msgstr ""
+msgstr "right-click opens a menu to select the available values"
 
 #: ../src/libs/filtering.c:656
 #, fuzzy
@@ -20408,10 +20598,13 @@ msgid "actual selection"
 msgstr "Despejar selección"
 
 #: ../src/libs/filtering.c:916
+#, fuzzy
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
+"rule property\n"
+"this can't be changed as the rule is pinned into the toolbar"
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:923
@@ -20425,22 +20618,28 @@ msgid "filter"
 msgstr "filtro"
 
 #: ../src/libs/filtering.c:1042
+#, fuzzy
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "click to un-pin"
 msgstr ""
+"this rule is pinned into the top toolbar\n"
+"click to un-pin"
 
 #: ../src/libs/filtering.c:1043
+#, fuzzy
 msgid "you can't disable the rule as it is pinned into the toolbar"
-msgstr ""
+msgstr "you can't disable the rule as it is pinned into the toolbar"
 
 #: ../src/libs/filtering.c:1044
+#, fuzzy
 msgid "you can't remove the rule as it is pinned into the toolbar"
-msgstr ""
+msgstr "you can't remove the rule as it is pinned into the toolbar"
 
 #: ../src/libs/filtering.c:1048
+#, fuzzy
 msgid "click to pin this rule into the top toolbar"
-msgstr ""
+msgstr "click to pin this rule into the top toolbar"
 
 #: ../src/libs/filtering.c:1049
 #, fuzzy
@@ -20473,12 +20672,14 @@ msgid "and not"
 msgstr " y "
 
 #: ../src/libs/filtering.c:1161
+#, fuzzy
 msgid "define how this rule should interact with the previous one"
-msgstr ""
+msgstr "define how this rule should interact with the previous one"
 
 #: ../src/libs/filtering.c:1420
+#, fuzzy
 msgid " (off)"
-msgstr ""
+msgstr " (off)"
 
 #: ../src/libs/filtering.c:1643
 #, fuzzy
@@ -20500,12 +20701,14 @@ msgid "remove this sort order"
 msgstr "Quitar este módulo"
 
 #: ../src/libs/filtering.c:1861
+#, fuzzy
 msgid "DESC"
-msgstr ""
+msgstr "DESC"
 
 #: ../src/libs/filtering.c:1861
+#, fuzzy
 msgid "ASC"
-msgstr ""
+msgstr "ASC"
 
 #: ../src/libs/filtering.c:1972
 #, fuzzy
@@ -20532,8 +20735,9 @@ msgid "append new sort to order images"
 msgstr "Diferencia horaria añadida a %d imagen"
 
 #: ../src/libs/filtering.c:1996
+#, fuzzy
 msgid "revert to a previous set of sort orders"
-msgstr ""
+msgstr "revert to a previous set of sort orders"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
 #: ../src/libs/filtering.c:2043
@@ -20550,8 +20754,9 @@ msgid "Y"
 msgstr "Y"
 
 #: ../src/libs/filters/colors.c:149
+#, fuzzy
 msgid "P"
-msgstr ""
+msgstr "P"
 
 #: ../src/libs/filters/colors.c:269
 #, fuzzy
@@ -20559,12 +20764,17 @@ msgid "color filter"
 msgstr "película de color"
 
 #: ../src/libs/filters/colors.c:294
+#, fuzzy
 msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
 "ctrl+click to exclude the color label\n"
 "the gray button affects all color labels"
 msgstr ""
+"filter by images color label\n"
+"click to toggle the color label selection\n"
+"ctrl+click to exclude the color label\n"
+"the gray button affects all color labels"
 
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
 #: ../src/libs/filters/rating.c:339
@@ -20573,19 +20783,28 @@ msgid "rules"
 msgstr "módulos"
 
 #: ../src/libs/filters/colors.c:306
+#, fuzzy
 msgid ""
 "filter by images color label\n"
 "and (∩): images having all selected color labels\n"
 "or (∪): images with at least one of the selected color labels"
 msgstr ""
+"filter by images color label\n"
+"and (∩): images having all selected color labels\n"
+"or (∪): images with at least one of the selected color labels"
 
 #: ../src/libs/filters/filename.c:365
+#, fuzzy
 msgid ""
 "enter filename to search.\n"
 "multiple values can be separated by ','\n"
 "\n"
 "right-click to get existing filenames"
 msgstr ""
+"enter filename to search.\n"
+"multiple values can be separated by ','\n"
+"\n"
+"right-click to get existing filenames"
 
 #: ../src/libs/filters/filename.c:376
 #, fuzzy
@@ -20593,6 +20812,7 @@ msgid "extension"
 msgstr "exclusión"
 
 #: ../src/libs/filters/filename.c:377
+#, fuzzy
 msgid ""
 "enter extension to search with starting dot\n"
 "multiple values can be separated by ','\n"
@@ -20600,18 +20820,29 @@ msgid ""
 "\n"
 "right-click to get existing extensions"
 msgstr ""
+"enter extension to search with starting dot\n"
+"multiple values can be separated by ','\n"
+"handled keywords: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
+"\n"
+"right-click to get existing extensions"
 
 #: ../src/libs/filters/filename.c:405
+#, fuzzy
 msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
 msgstr ""
+"simple click to select filename\n"
+"ctrl-click to select multiple values"
 
 #: ../src/libs/filters/filename.c:432
+#, fuzzy
 msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
 msgstr ""
+"simple click to select extension\n"
+"ctrl-click to select multiple values"
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
 #, fuzzy
@@ -20664,8 +20895,9 @@ msgid "module order filter"
 msgstr "orden de módulo"
 
 #: ../src/libs/filters/module_order.c:161
+#, fuzzy
 msgid "filter images based on their module order"
-msgstr ""
+msgstr "filter images based on their module order"
 
 #: ../src/libs/filters/rating.c:58 ../src/libs/filters/rating.c:73
 #: ../src/libs/filters/rating.c:140 ../src/libs/filters/rating_legacy.c:212
@@ -20710,8 +20942,9 @@ msgid "better"
 msgstr "carta"
 
 #: ../src/libs/filters/rating.c:287
+#, fuzzy
 msgid "worse"
-msgstr ""
+msgstr "worse"
 
 #: ../src/libs/filters/rating.c:288
 #, fuzzy
@@ -20759,7 +20992,7 @@ msgid "landscape images"
 msgstr "Capturar imágenes"
 
 #: ../src/libs/filters/search.c:180
-#, no-c-format
+#, fuzzy, no-c-format
 msgid ""
 "filter by text from images metadata, tags, file path and name\n"
 "`%' is the wildcard character\n"
@@ -20767,6 +21000,11 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
+"filter by text from images metadata, tags, file path and name\n"
+"`%' is the wildcard character\n"
+"by default start and end wildcards are auto-applied\n"
+"starting or ending with a double quote disables the corresponding wildcard\n"
+"is dimmed during the search execution"
 
 #: ../src/libs/geotagging.c:369
 msgid "apply offset and geo-location"
@@ -21446,8 +21684,9 @@ msgid "please wait while prefetching the list of images from camera..."
 msgstr "Espere mientras se carga la lista de imágenes desde la cámara..."
 
 #: ../src/libs/import.c:1887
+#, fuzzy
 msgid "invalid override date/time format"
-msgstr ""
+msgstr "invalid override date/time format"
 
 #: ../src/libs/import.c:1990
 msgid "add to library..."
@@ -23233,8 +23472,9 @@ msgid "toggle list / tree view"
 msgstr "Conmutar vista (de lista o de árbol)"
 
 #: ../src/libs/tagging.c:3259
+#, fuzzy
 msgid "tree"
-msgstr ""
+msgstr "tree"
 
 #: ../src/libs/tagging.c:3261
 msgid "toggle list with / without suggestion"
@@ -23311,8 +23551,9 @@ msgid "filter"
 msgstr "filtro"
 
 #: ../src/libs/tools/gamepad.c:37
+#, fuzzy
 msgid "gamepad"
-msgstr ""
+msgstr "gamepad"
 
 #: ../src/libs/tools/gamepad.c:71
 msgid "button a"
@@ -23579,8 +23820,9 @@ msgid "show tooltip"
 msgstr "activar la descripción emergente"
 
 #: ../src/libs/tools/global_toolbox.c:489
+#, fuzzy
 msgid "help"
-msgstr ""
+msgstr "help"
 
 #: ../src/libs/tools/global_toolbox.c:491
 msgid "enable this, then click on a control element to see its online help"
@@ -23710,21 +23952,22 @@ msgstr "salir del modo de vista activo"
 
 #: ../src/libs/tools/midi.c:41
 msgid "midi"
-msgstr ""
+msgstr "MIDI"
 
 #: ../src/libs/tools/midi.c:200
+#, fuzzy
 msgid "using absolute encoding; reinitialise to switch to relative"
-msgstr ""
+msgstr "using absolute encoding; reinitialise to switch to relative"
 
 #: ../src/libs/tools/midi.c:204
-#, c-format
+#, fuzzy, c-format
 msgid "%d more identical (down) moves before switching to relative encoding"
-msgstr ""
+msgstr "%d more identical (down) moves before switching to relative encoding"
 
 #: ../src/libs/tools/midi.c:207
-#, c-format
+#, fuzzy, c-format
 msgid "switching encoding to relative (down = %d)"
-msgstr ""
+msgstr "switching encoding to relative (down = %d)"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -24308,8 +24551,9 @@ msgid "whole"
 msgstr "todo"
 
 #: ../src/views/lighttable.c:1244
+#, fuzzy
 msgid "leave"
-msgstr ""
+msgstr "leave"
 
 #: ../src/views/lighttable.c:1252
 #, fuzzy
