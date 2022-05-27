@@ -604,7 +604,9 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
     size_t padded_size;
     float *const restrict denoised = dt_alloc_align_float(4 * roi->width * roi->height);
     float *const DT_ALIGNED_ARRAY tempbuf = dt_alloc_perthread_float(4 * roi->width, &padded_size); //TODO: alloc in caller
-    blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1);
+
+    // blur without clipping negatives because Lab a and b channels can be legitimately negative
+    blur_2D_Bspline(pixel, denoised, tempbuf, roi->width, roi->height, 1, FALSE);
 
     if(((image_cst == picker_cst) || (picker_cst == IOP_CS_NONE)))
       color_picker_helper_4ch(dsc, denoised, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);

@@ -1261,14 +1261,15 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
     const int mult = 1 << s; // fancy-pants C notation for 2^s with integer type, don't be afraid
 
     // Compute wavelets low-frequency scales
-    blur_2D_Bspline(detail, LF, temp, roi_out->width, roi_out->height, mult);
+    blur_2D_Bspline(detail, LF, temp, roi_out->width, roi_out->height, mult, TRUE); // clip negatives
 
     // Compute wavelets high-frequency scales and save the minimum of texture over the RGB channels
     // Note : HF_RGB = detail - LF, HF_grey = max(HF_RGB)
     wavelets_detail_level(detail, LF, HF_RGB_temp, HF_grey, roi_out->width, roi_out->height, ch);
 
     // interpolate/blur/inpaint (same thing) the RGB high-frequency to fill holes
-    blur_2D_Bspline(HF_RGB_temp, HF_RGB, temp, roi_out->width, roi_out->height, 1);
+    blur_2D_Bspline(HF_RGB_temp, HF_RGB, temp, roi_out->width, roi_out->height, 1, TRUE); // clip negatives
+    // FIXME: HF have legitimate negatives, so clipping them is wrong, but compatibility…
 
     // Reconstruct clipped parts
     if(variant == DT_FILMIC_RECONSTRUCT_RGB)
@@ -1595,7 +1596,7 @@ static inline float clip_chroma_white_raw(const float coeffs[3], const float tar
 
   // this channel won't limit the chroma
   if(denominator_Y_coeff == 0.f) return FLT_MAX;
-  
+
   // The equation for max chroma has an asymptote at this point (zero of denominator).
   // Any Y below that value won't give us sensible results for the upper bound
   // and we should consider the lower bound instead.
