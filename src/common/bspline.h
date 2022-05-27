@@ -55,7 +55,7 @@ static inline unsigned int num_steps_to_reach_equivalent_sigma(const float sigma
 #pragma omp declare simd aligned(buf, indices, result:64)
 #endif
 static inline void sparse_scalar_product(const dt_aligned_pixel_t buf, const size_t indices[BSPLINE_FSIZE],
-                                         dt_aligned_pixel_t result)
+                                         dt_aligned_pixel_t result, const gboolean clip_negatives)
 {
   // scalar product of 2 3×5 vectors stored as RGB planes and B-spline filter,
   // e.g. RRRRR - GGGGG - BBBBB
@@ -65,13 +65,27 @@ static inline void sparse_scalar_product(const dt_aligned_pixel_t buf, const siz
                                         4.0f / 16.0f,
                                         1.0f / 16.0f };
 
-  for_each_channel(c, aligned(buf,indices,result))
+  if(clip_negatives)
   {
-    result[c] = MAX(0.0f, filter[0] * buf[indices[0] + c] +
-                          filter[1] * buf[indices[1] + c] +
-                          filter[2] * buf[indices[2] + c] +
-                          filter[3] * buf[indices[3] + c] +
-                          filter[4] * buf[indices[4] + c]);
+    for_each_channel(c, aligned(buf,indices,result))
+    {
+      result[c] = MAX(0.0f, filter[0] * buf[indices[0] + c] +
+                            filter[1] * buf[indices[1] + c] +
+                            filter[2] * buf[indices[2] + c] +
+                            filter[3] * buf[indices[3] + c] +
+                            filter[4] * buf[indices[4] + c]);
+    }
+  }
+  else
+  {
+    for_each_channel(c, aligned(buf,indices,result))
+    {
+      result[c] = filter[0] * buf[indices[0] + c] +
+                  filter[1] * buf[indices[1] + c] +
+                  filter[2] * buf[indices[2] + c] +
+                  filter[3] * buf[indices[3] + c] +
+                  filter[4] * buf[indices[4] + c];
+    }
   }
 }
 
@@ -79,7 +93,7 @@ static inline void sparse_scalar_product(const dt_aligned_pixel_t buf, const siz
 #pragma omp declare simd aligned(in, temp)
 #endif
 static inline void _bspline_vertical_pass(const float *const restrict in, float *const restrict temp,
-                                          size_t row, size_t width, size_t height, int mult)
+                                          size_t row, size_t width, size_t height, int mult, const gboolean clip_negatives)
 {
   size_t DT_ALIGNED_ARRAY indices[BSPLINE_FSIZE];
   // compute the index offsets of the pixels of interest; since the offsets are the same for the entire row,
@@ -92,7 +106,7 @@ static inline void _bspline_vertical_pass(const float *const restrict in, float 
   for(size_t j = 0; j < width; j++)
   {
     // Compute the vertical blur of the current pixel and store it in the temp buffer for the row
-    sparse_scalar_product(in + j * 4, indices, temp + j * 4);
+    sparse_scalar_product(in + j * 4, indices, temp + j * 4, clip_negatives);
   }
 }
 
@@ -100,7 +114,7 @@ static inline void _bspline_vertical_pass(const float *const restrict in, float 
 #pragma omp declare simd aligned(temp, out)
 #endif
 static inline void _bspline_horizontal(const float *const restrict temp, float *const restrict out,
-                                       size_t col, size_t width, int mult)
+                                       size_t col, size_t width, int mult, const gboolean clip_negatives)
 {
   // Compute the array indices of the pixels of interest; since the offsets will change near the ends of
   // the row, we need to recompute for each pixel
@@ -112,7 +126,7 @@ static inline void _bspline_horizontal(const float *const restrict temp, float *
   indices[4] = 4 * MIN(col + 2 * mult, width-1);
   // Compute the horizontal blur of the already vertically-blurred pixel and store the result at the proper
   //  row/column location in the output buffer
-  sparse_scalar_product(temp, indices, out);
+  sparse_scalar_product(temp, indices, out, clip_negatives);
 }
 
 #ifdef _OPENMP
@@ -120,13 +134,13 @@ static inline void _bspline_horizontal(const float *const restrict temp, float *
 #endif
 inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict out,
                                    float *const restrict tempbuf,
-                                   const size_t width, const size_t height, const int mult)
+                                   const size_t width, const size_t height, const int mult, const gboolean clip_negatives)
 {
   // À-trous B-spline interpolation/blur shifted by mult
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
     dt_omp_firstprivate(width, height, mult)  \
-    dt_omp_sharedconst(out, in, tempbuf) \
+    dt_omp_sharedconst(out, in, tempbuf, clip_negatives) \
     schedule(static)
   #endif
   for(size_t row = 0; row < height; row++)
@@ -136,11 +150,11 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
     // interleave the order in which we process the rows so that we minimize cache misses
     const size_t i = dwt_interleave_rows(row, height, mult);
     // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur
-    _bspline_vertical_pass(in, temp, i, width, height, mult);
+    _bspline_vertical_pass(in, temp, i, width, height, mult, clip_negatives);
     // Convolve B-spline filter horizontally over current row
     for(size_t j = 0; j < width; j++)
     {
-      _bspline_horizontal(temp, out + (i * width + j) * 4, j, width, mult);
+      _bspline_horizontal(temp, out + (i * width + j) * 4, j, width, mult, clip_negatives);
     }
   }
 }
@@ -166,12 +180,12 @@ inline static void decompose_2D_Bspline(const float *const DT_ALIGNED_PIXEL rest
     // interleave the order in which we process the rows so that we minimize cache misses
     const size_t i = dwt_interleave_rows(row, height, mult);
     // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur
-    _bspline_vertical_pass(in, temp, i, width, height, mult);
+    _bspline_vertical_pass(in, temp, i, width, height, mult, TRUE); // always clip negatives
     // Convolve B-spline filter horizontally over current row
     for(size_t j = 0; j < width; j++)
     {
       const size_t index = 4U * (i * width + j);
-      _bspline_horizontal(temp, LF + index, j, width, mult);
+      _bspline_horizontal(temp, LF + index, j, width, mult, TRUE); // always clip negatives
       // compute the HF component by subtracting the LF from the original input
       for_four_channels(c)
         HF[index + c] = in[index + c] - LF[index + c];
