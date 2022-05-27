@@ -16,6 +16,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef __GNUC__
+#pragma GCC optimize ("finite-math-only")
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -32,9 +36,6 @@
 #include <xmmintrin.h>
 #endif
 
-#ifdef __GNUC__
-#pragma GCC optimize ("finite-math-only")
-#endif
 
 #if defined(__SSE__)
 #define DT_PREFETCH(addr) _mm_prefetch(addr, _MM_HINT_T2)
