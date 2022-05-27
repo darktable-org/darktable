@@ -52,6 +52,12 @@ typedef struct name_and_operation {
   gchar *operation;
 } name_and_operation;
 
+typedef struct g_and_pixbuf {
+  dt_gui_presets_edit_dialog_t *g;
+  GdkPixbuf *lock_pixbuf;
+  GdkPixbuf *check_pixbuf;
+} g_and_pixbuf;
+
 // link to values in gui/presets.c
 // move to presets.h if needed elsewhere
 extern const int dt_gui_presets_exposure_value_cnt;
@@ -87,6 +93,7 @@ static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
 static void import_preset(GtkButton *button, gpointer data);
 static void export_preset(GtkButton *button, gpointer data);
 static void delete_preset_from_view(GtkTreeModel *tree_model, gchar *name, gchar *operation);
+static g_and_pixbuf *_create_check_lock_pixbuf();
 
 // Signal handlers
 static void tree_row_activated_presets(GtkTreeView *tree, GtkTreePath *path, GtkTreeViewColumn *column,
@@ -576,34 +583,10 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   sqlite3_stmt *stmt;
   gchar *last_module = NULL;
 
-  // Create a GdkPixbuf with a cairo drawing.
-  // lock
-  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                         DT_PIXEL_APPLY_DPI(ICON_SIZE));
-  cairo_t *lock_cr = cairo_create(lock_cst);
-  cairo_set_source_rgb(lock_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_lock(lock_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
-  cairo_surface_flush(lock_cst);
-  guchar *data = cairo_image_surface_get_data(lock_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
-  GdkPixbuf *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
-                                                    DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                    cairo_image_surface_get_stride(lock_cst),
-                                                    cairo_destroy_from_pixbuf, lock_cr);
+  g_and_pixbuf *g_pixbuf = _create_check_lock_pixbuf();
+  GdkPixbuf *lock_pixbuf = g_pixbuf->lock_pixbuf;
+  GdkPixbuf *check_pixbuf = g_pixbuf->check_pixbuf;
 
-  // check mark
-  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                          DT_PIXEL_APPLY_DPI(ICON_SIZE));
-  cairo_t *check_cr = cairo_create(check_cst);
-  cairo_set_source_rgb(check_cr, 0.7, 0.7, 0.7);
-  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
-  cairo_surface_flush(check_cst);
-  data = cairo_image_surface_get_data(check_cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
-  GdkPixbuf *check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
-                                                     DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                     cairo_image_surface_get_stride(check_cst),
-                                                     cairo_destroy_from_pixbuf, check_cr);
   // clang-format off
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
@@ -718,9 +701,7 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   sqlite3_finalize(stmt);
 
   g_object_unref(lock_pixbuf);
-  cairo_surface_destroy(lock_cst);
   g_object_unref(check_pixbuf);
-  cairo_surface_destroy(check_cst);
 }
 
 static gboolean _search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter, gpointer search_data)
@@ -1144,8 +1125,12 @@ static gboolean delete_if_current(GtkTreeModel *tree_model, GtkTreePath *path, G
   return _delete_if_current(tree_model, path, iter, current_name, current_operation);
 }
 
-static gboolean actualize_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer g)
+static gboolean actualize_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer g_pixbuf)
 {
+  GdkPixbuf *check_pixbuf = ((g_and_pixbuf*)g_pixbuf)->check_pixbuf;
+  GdkPixbuf *lock_pixbuf = ((g_and_pixbuf*)g_pixbuf)->lock_pixbuf;
+  dt_gui_presets_edit_dialog_t *g = ((g_and_pixbuf*)g_pixbuf)->g;
+
   gchar *ith_name = NULL, *ith_operation = NULL;
   gtk_tree_model_get(tree_model, iter, P_NAME_COLUMN, &ith_name, P_OPERATION_COLUMN, &ith_operation, -1);
   const gchar *current_name = gtk_entry_get_text(((dt_gui_presets_edit_dialog_t*)g)->name);
@@ -1156,33 +1141,6 @@ static gboolean actualize_if_current(GtkTreeModel *tree_model, GtkTreePath *path
     g_free(ith_operation);
     sqlite3_stmt *stmt;
 
-    // Create a GdkPixbuf with a cairo drawing.
-    // lock
-    cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                           DT_PIXEL_APPLY_DPI(ICON_SIZE));
-    cairo_t *lock_cr = cairo_create(lock_cst);
-    cairo_set_source_rgb(lock_cr, 0.7, 0.7, 0.7);
-    dtgtk_cairo_paint_lock(lock_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
-    cairo_surface_flush(lock_cst);
-    guchar *data = cairo_image_surface_get_data(lock_cst);
-    dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
-    GdkPixbuf *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
-                                                      DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                      cairo_image_surface_get_stride(lock_cst),
-                                                      cairo_destroy_from_pixbuf, lock_cr);
-    // check mark
-    cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                            DT_PIXEL_APPLY_DPI(ICON_SIZE));
-    cairo_t *check_cr = cairo_create(check_cst);
-    cairo_set_source_rgb(check_cr, 0.7, 0.7, 0.7);
-    dtgtk_cairo_paint_check_mark(check_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
-    cairo_surface_flush(check_cst);
-    data = cairo_image_surface_get_data(check_cst);
-    dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
-    GdkPixbuf *check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
-                                                       DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
-                                                       cairo_image_surface_get_stride(check_cst),
-                                                       cairo_destroy_from_pixbuf, check_cr);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT rowid, name, operation, autoapply, model, maker, lens, iso_min, "
                                 "iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
@@ -1288,14 +1246,65 @@ static gboolean actualize_if_current(GtkTreeModel *tree_model, GtkTreePath *path
   return FALSE;
 }
 
+static g_and_pixbuf *_create_check_lock_pixbuf()
+{
+  g_and_pixbuf *g_pixbuf = (g_and_pixbuf *)g_malloc0(sizeof(g_and_pixbuf));
+
+  // Create a GdkPixbuf with a cairo drawing.
+  // lock
+  cairo_surface_t *lock_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                         DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  cairo_t *lock_cr = cairo_create(lock_cst);
+  cairo_set_source_rgb(lock_cr, 0.7, 0.7, 0.7);
+  dtgtk_cairo_paint_lock(lock_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
+  cairo_surface_flush(lock_cst);
+  guchar *data = cairo_image_surface_get_data(lock_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  GdkPixbuf *lock_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
+                                                    DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                    cairo_image_surface_get_stride(lock_cst),
+                                                    cairo_destroy_from_pixbuf, lock_cr);
+  // check mark
+  cairo_surface_t *check_cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                          DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  cairo_t *check_cr = cairo_create(check_cst);
+  cairo_set_source_rgb(check_cr, 0.7, 0.7, 0.7);
+  dtgtk_cairo_paint_check_mark(check_cr, 0, 0, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE), 0, NULL);
+  cairo_surface_flush(check_cst);
+  data = cairo_image_surface_get_data(check_cst);
+  dt_draw_cairo_to_gdk_pixbuf(data, DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE));
+  GdkPixbuf *check_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8,
+                                                     DT_PIXEL_APPLY_DPI(ICON_SIZE), DT_PIXEL_APPLY_DPI(ICON_SIZE),
+                                                     cairo_image_surface_get_stride(check_cst),
+                                                     cairo_destroy_from_pixbuf, check_cr);
+
+  cairo_surface_destroy(lock_cst);
+  cairo_surface_destroy(check_cst);
+
+  g_pixbuf->check_pixbuf = check_pixbuf;
+  g_pixbuf->lock_pixbuf = lock_pixbuf;
+
+  return g_pixbuf;
+}
+
 static void actualize_or_delete_preset_in_view(dt_gui_presets_edit_dialog_t *g)
 {
   GtkTreeModel *tree_model = gtk_tree_view_get_model((GtkTreeView *)g->data);
 
   if(((dt_gui_presets_edit_dialog_t*)g)->action == DT_ACTION_EFFECT_DELETE)
+  {
     gtk_tree_model_foreach(tree_model, (GtkTreeModelForeachFunc)delete_if_current, g);
+  }
   else if(((dt_gui_presets_edit_dialog_t*)g)->action == DT_ACTION_EFFECT_EDIT)
-    gtk_tree_model_foreach(tree_model, (GtkTreeModelForeachFunc)actualize_if_current, g);
+  {
+    g_and_pixbuf *g_pixbuf = _create_check_lock_pixbuf();
+    g_pixbuf->g = g;
+
+    gtk_tree_model_foreach(tree_model, (GtkTreeModelForeachFunc)actualize_if_current, g_pixbuf);
+
+    g_object_unref(g_pixbuf->lock_pixbuf);
+    g_object_unref(g_pixbuf->check_pixbuf);
+  }
 }
 
 static void delete_preset_from_view(GtkTreeModel *tree_model, gchar *name, gchar *operation)
