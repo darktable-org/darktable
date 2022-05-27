@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-25 21:28+0200\n"
-"PO-Revision-Date: 2022-05-26 07:52+0200\n"
+"POT-Creation-Date: 2022-05-26 15:55+0200\n"
+"PO-Revision-Date: 2022-05-26 17:41+0200\n"
 "Last-Translator: Martin Straeten <martin.straeten@gmail.com>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1121,7 +1121,7 @@ msgstr "Grenzwerte für größenabhängige Einstellungen"
 msgid ""
 "size categories are used to be able to set different overlays and css values "
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
-"means 3 categories of thumbnails : 0px->120px, 120px->400px and >400px"
+"means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px"
 msgstr ""
 "Größenkategorien werden benutzt, um verschiedene Bildinfos und CSS-"
 "Einstellungen in Abhängigkeit von der Größe der Vorschaubilder zu wählen. \n"
@@ -6332,7 +6332,7 @@ msgstr[0] "%d lokale Kopie wurde synchronisiert"
 msgstr[1] "%d lokale Kopien wurden synchronisiert"
 
 #: ../src/common/image.c:2792
-msgid "<b>WARNING</b> : camera is missing samples!"
+msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr "<b>WARNUNG</b>: Es fehlen Beispielbilder für die Kamera!"
 
 #: ../src/common/image.c:2793
@@ -13083,28 +13083,28 @@ msgid "linear, RGB or XYZ"
 msgstr "linear, RGB oder XYZ"
 
 #: ../src/iop/channelmixerrgb.c:368
-msgid "B&W : luminance-based"
-msgstr "S/W Luminanz-basiert"
+msgid "B&W: luminance-based"
+msgstr "S/W: Luminanz-basiert"
 
 #: ../src/iop/channelmixerrgb.c:397
-msgid "B&W : ILFORD HP5+"
-msgstr "B&W : ILFORD HP5+"
+msgid "B&W: ILFORD HP5+"
+msgstr "S/W: ILFORD HP5+"
 
 #: ../src/iop/channelmixerrgb.c:406
-msgid "B&W : ILFORD DELTA 100"
-msgstr "B&W : ILFORD DELTA 100"
+msgid "B&W: ILFORD DELTA 100"
+msgstr "S/W: ILFORD DELTA 100"
 
 #: ../src/iop/channelmixerrgb.c:416
-msgid "B&W : ILFORD DELTA 400 - 3200"
-msgstr "B&W : ILFORD DELTA 400 - 3200"
+msgid "B&W: ILFORD DELTA 400 - 3200"
+msgstr "S/W: ILFORD DELTA 400 - 3200"
 
 #: ../src/iop/channelmixerrgb.c:425
-msgid "B&W : ILFORD FP4+"
-msgstr "B&W : ILFORD FP4+"
+msgid "B&W: ILFORD FP4+"
+msgstr "S/W: ILFORD FP4+"
 
 #: ../src/iop/channelmixerrgb.c:434
-msgid "B&W : Fuji Acros 100"
-msgstr "S/W Fuji Acros 100"
+msgid "B&W: Fuji Acros 100"
+msgstr "S/W: Fuji Acros 100"
 
 #: ../src/iop/channelmixerrgb.c:451
 msgid "basic channel mixer"
@@ -13146,21 +13146,21 @@ msgstr "schlecht"
 #, c-format
 msgid ""
 "\n"
-"<b>Profile quality report : %s</b>\n"
-"input  ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-"WB ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-"output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"<b>Profile quality report: %s</b>\n"
+"input ΔE: \tavg. %.2f ; \tmax. %.2f\n"
+"WB ΔE: \tavg. %.2f; \tmax. %.2f\n"
+"output ΔE: \tavg. %.2f; \tmax. %.2f\n"
 "\n"
 "<b>Profile data</b>\n"
-"illuminant :  \t%.0f K \t%s \n"
+"illuminant:  \t%.0f K \t%s\n"
 "matrix in adaptation space:\n"
 "<tt>%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f</tt>\n"
 "\n"
 "<b>Normalization values</b>\n"
-"exposure compensation : \t%+.2f EV\n"
-"black offset : \t%+.4f"
+"exposure compensation: \t%+.2f EV\n"
+"black offset: \t%+.4f"
 msgstr ""
 "\n"
 "<b>Profil Qualität : %s</b>\n"
@@ -13183,12 +13183,12 @@ msgstr ""
 #, c-format
 msgid ""
 "\n"
-"<b>Profile quality report : %s</b>\n"
-"output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"<b>Profile quality report: %s</b>\n"
+"output ΔE: \tavg. %.2f; \tmax. %.2f\n"
 "\n"
 "<b>Normalization values</b>\n"
-"exposure compensation : \t%+.2f EV\n"
-"black offset : \t%+.4f"
+"exposure compensation: \t%+.2f EV\n"
+"black offset: \t%+.4f"
 msgstr ""
 "\n"
 "<b>Profil Qualität : %s</b>\n"
@@ -13321,9 +13321,9 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:3746
 #, c-format
 msgid ""
-"L : \t%.1f %%\n"
-"h : \t%.1f °\n"
-"c : \t%.1f"
+"L: \t%.1f %%\n"
+"h: \t%.1f °\n"
+"c: \t%.1f"
 msgstr ""
 "L : \t%.1f %%\n"
 "h : \t%.1f °\n"
@@ -13448,9 +13448,9 @@ msgstr "Farbe, die an die Referenz angepasst werden soll"
 
 #: ../src/iop/channelmixerrgb.c:4113
 msgid ""
-"L : \tN/A \n"
-"h : \tN/A\n"
-"c : \tN/A"
+"L: \tN/A\n"
+"h: \tN/A\n"
+"c: \tN/A"
 msgstr ""
 "L : \tN/A \n"
 "h : \tN/A\n"
@@ -13974,15 +13974,15 @@ msgid "gain"
 msgstr "Gain"
 
 #: ../src/iop/colorbalance.c:1735
-msgid "shadows : lift / offset"
+msgid "shadows: lift / offset"
 msgstr "Schatten: Lift / Offset"
 
 #: ../src/iop/colorbalance.c:1736
-msgid "mid-tones : gamma / power"
+msgid "mid-tones: gamma / power"
 msgstr "Mitten: Gamma / Power"
 
 #: ../src/iop/colorbalance.c:1737
-msgid "highlights : gain / slope"
+msgid "highlights: gain / slope"
 msgstr "Lichter: Gain / Slope"
 
 #: ../src/iop/colorbalance.c:1761
@@ -18943,35 +18943,35 @@ msgid "simple tone curve"
 msgstr "einfache Tonwertkurve"
 
 #: ../src/iop/toneequal.c:453
-msgid "mask blending : all purposes"
+msgid "mask blending: all purposes"
 msgstr "Maskenüberlagerung: alle Vorhaben"
 
 #: ../src/iop/toneequal.c:459
-msgid "mask blending : people with backlight"
+msgid "mask blending: people with backlight"
 msgstr "Maskenüberlagerung: Personen im Gegenlicht"
 
 #: ../src/iop/toneequal.c:475
-msgid "compress shadows/highlights (eigf) : strong"
+msgid "compress shadows/highlights (eigf): strong"
 msgstr "komprimiert Schatten/Spitzlichter (eigf): stark"
 
 #: ../src/iop/toneequal.c:479
-msgid "compress shadows/highlights (gf) : strong"
+msgid "compress shadows/highlights (gf): strong"
 msgstr "komprimiert Schatten/Spitzlichter (gf): stark"
 
 #: ../src/iop/toneequal.c:487
-msgid "compress shadows/highlights (eigf) : medium"
+msgid "compress shadows/highlights (eigf): medium"
 msgstr "komprimiert Schatten/Spitzlichter (eigf): mittel"
 
 #: ../src/iop/toneequal.c:491
-msgid "compress shadows/highlights (gf) : medium"
+msgid "compress shadows/highlights (gf): medium"
 msgstr "komprimiert Schatten/Spitzlichter (gf): mittel"
 
 #: ../src/iop/toneequal.c:499
-msgid "compress shadows/highlights (eigf) : soft"
+msgid "compress shadows/highlights (eigf): soft"
 msgstr "komprimiert Schatten/Spitzlichter (eigf): gering"
 
 #: ../src/iop/toneequal.c:503
-msgid "compress shadows/highlights (gf) : soft"
+msgid "compress shadows/highlights (gf): soft"
 msgstr "komprimiert Schatten/Spitzlichter (gf): gering"
 
 #: ../src/iop/toneequal.c:509
@@ -18987,7 +18987,7 @@ msgid "contrast tone curve: strong"
 msgstr "Kontrastkurve: stark"
 
 #: ../src/iop/toneequal.c:539
-msgid "relight : fill-in"
+msgid "relight: fill-in"
 msgstr "aufhellen: ausfüllen"
 
 #: ../src/iop/toneequal.c:591
@@ -19192,17 +19192,17 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3232
 msgid ""
-"precision of the feathering :\n"
+"precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
 "but may void the effect of the smoothing\n"
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
 "Genauigkeit des Ausblenden:\n"
-"Höhere Werte bewirken, dass die Maske den Kanten genauer folgt, kann aber "
-"den Effekt der Glättung aufheben. \n"
-"Niedrigere Werte ergeben weichere Gradienten und eine bessere Glättung, kann "
-"aber zu ungenauen Rändern und Halos führen."
+"Höhere Werte bewirken, dass die Maske den Kanten genauer folgt,\n"
+"kann aber den Effekt der Glättung aufheben. \n"
+"Niedrigere Werte ergeben weichere Gradienten und eine bessere Glättung,\n"
+"kann aber zu ungenauen Rändern und Halos führen."
 
 #: ../src/iop/toneequal.c:3238
 msgid "mask post-processing"
@@ -20173,18 +20173,18 @@ msgstr "Ausgabe-ICC-Profile in %s oder %s"
 #: ../src/libs/export.c:1265
 #, c-format
 msgid ""
-"• perceptual : smoothly moves out-of-gamut colors into gamut,preserving "
+"• perceptual: smoothly moves out-of-gamut colors into gamut,preserving "
 "gradations, but distorts in-gamut colors in the process. note that "
 "perceptual is often a proprietary LUT that depends on the destination "
 "space.\n"
 "\n"
-"• relative colorimetric : keeps luminance while reducing as little as "
+"• relative colorimetric: keeps luminance while reducing as little as "
 "possible saturation until colors fit in gamut.\n"
 "\n"
-"• saturation : designed to present eye-catching business graphics by "
+"• saturation: designed to present eye-catching business graphics by "
 "preserving the saturation. (not suited for photography).\n"
 "\n"
-"• absolute colorimetric : adapt white point of the image to the white point "
+"• absolute colorimetric: adapt white point of the image to the white point "
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
@@ -21799,19 +21799,19 @@ msgid "use inverted shape"
 msgstr "invertierte Form benutzen"
 
 #: ../src/libs/masks.c:1084
-msgid "mode : union"
+msgid "mode: union"
 msgstr "Modus: Vereinigung"
 
 #: ../src/libs/masks.c:1087
-msgid "mode : intersection"
+msgid "mode: intersection"
 msgstr "Modus: Überschneidung"
 
 #: ../src/libs/masks.c:1090
-msgid "mode : difference"
+msgid "mode: difference"
 msgstr "Modus: Differenz"
 
 #: ../src/libs/masks.c:1093
-msgid "mode : exclusion"
+msgid "mode: exclusion"
 msgstr "Modus: Ausschluss"
 
 #: ../src/libs/masks.c:1107
@@ -22438,15 +22438,15 @@ msgid "rename preset"
 msgstr "Voreinstellung umbenennen"
 
 #: ../src/libs/modulegroups.c:3513
-msgid "new preset name :"
+msgid "new preset name:"
 msgstr "neuer Name der Voreinstellung:"
 
 #: ../src/libs/modulegroups.c:3514
-msgid "a preset with this name already exists !"
+msgid "a preset with this name already exists!"
 msgstr "Voreinstellung mit dem Namen „%s” existiert bereits!"
 
 #: ../src/libs/modulegroups.c:3859
-msgid "preset : "
+msgid "preset: "
 msgstr "Voreinstellung:"
 
 #: ../src/libs/modulegroups.c:3866
