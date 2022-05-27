@@ -18,12 +18,12 @@
 
 #pragma once
 
-/* Enable extra optimizations on GCC by including this header at the very beginning
- * of your *.c file (before any other includes). This applies these optimizations for
- * all of the source file.
- * 
- * we use finite-math-only because divisions by zero are manually avoided in the code,
- * the rest is loop reorganization and vectorization optimization
+/* Enable extra optimizations on GCC by including this header at the very
+ * beginning of your *.c file (before any other includes). This applies
+ * these optimizations for all of the source file.
+ *
+ * we use finite-math-only because divisions by zero are manually avoided
+ * in the code, the rest is loop reorganization and vectorization optimization
  **/
 
 #if defined(__GNUC__)
