@@ -1,8 +1,0 @@
---- lang/perl5/Portfile.orig	2021-09-10 09:31:26.000000000 +0200
-+++ lang/perl5/Portfile	2021-09-13 10:50:16.000000000 +0200
-@@ -332,3 +332,5 @@
- 
-     livecheck.type      none
- }
-+
-+configure.cflags-append -DNO_USE_ATFUNCTIONS

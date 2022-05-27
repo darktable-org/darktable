@@ -1,8 +1,0 @@
---- textproc/pugixml/Portfile.orig	2018-12-07 13:46:50.000000000 +0300
-+++ textproc/pugixml/Portfile	2018-12-05 18:36:05.000000000 +0300
-@@ -22,4 +22,4 @@
-                     rmd160  5663e6f5226f0ce12b4c93d16a5b8cda1811ea57
- 
- configure.args-append -DBUILD_SHARED_LIBS=ON
--configure.args-append -DCMAKE_CXX_FLAGS='-std=c++11'
-+configure.cxxflags-append -std=c++11

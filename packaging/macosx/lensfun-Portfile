@@ -1,0 +1,80 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           cmake 1.1
+PortGroup           compiler_blacklist_versions 1.0
+PortGroup           github 1.0
+
+name                lensfun
+epoch               1
+version             0.3.3
+revision            0
+categories          graphics
+platforms           darwin
+maintainers         {devans @dbevans} openmaintainer
+license             GPL-3 LGPL-3 CC-BY-SA
+
+description         Library for fixing lens geometry distortion
+
+long_description    Provides a database of photographic lenses and a library \
+                    that allows advanced access to the database including \
+                    functions to correct images based on intimate knowledge \
+                    of lens characteristics and calibration data.
+
+homepage            http://lensfun.sourceforge.net/
+github.setup        lensfun lensfun 0.3.3 v
+
+checksums           rmd160  5580ba7e40ad0da73d7326b18b95ba812b7b1f40 \
+                    sha256  4ecfb4b99d2ae83ab864046529081a26bdb97ef935e9cbe3cb19841dcf243eaa \
+                    size    992550
+
+# With 0.3.0 and gcc-4.2:
+#    #error "I don't know how to change symbol visibility for your compiler"
+compiler.blacklist-append *gcc-3.* *gcc-4.* {clang < 100}
+
+depends_build-append \
+                    port:pkgconfig
+
+depends_lib         path:lib/pkgconfig/glib-2.0.pc:glib2 \
+                    port:libpng \
+                    port:zlib
+
+set python_branch   3.8
+set python_version  [join [split ${python_branch} "."] ""]
+
+# installs python3 helper scripts lensfun-add-adapter lensfun-update-data
+depends_run         port:python${python_version}
+
+patchfiles          patch-docs-CMakeLists.txt.diff \
+                    patch-apps-CMakeLists.txt.diff
+patchfiles-append   c++11.patch
+
+post-patch {
+                    reinplace "s|^#!.*|#!${prefix}/bin/python${python_branch}|" \
+                         ${worksrcpath}/apps/lensfun-add-adapter \
+                         ${worksrcpath}/apps/lensfun-update-data
+                    reinplace "s|@@PYTHON_VERSION@@|${python_branch}|" \
+                         ${worksrcpath}/docs/CMakeLists.txt \
+                         ${worksrcpath}/apps/CMakeLists.txt
+}
+
+configure.args-append \
+                    -DBUILD_LENSTOOL=ON \
+                    -DINSTALL_HELPER_SCRIPTS=ON \
+                    -DSETUP_PY_INSTALL_PREFIX=${destroot}${frameworks_dir}/Python.framework/Versions/${python_branch}
+
+# turn off -msse -msse2 if arch is powerpc
+platform darwin powerpc {
+    configure.args-append \
+                    -DBUILD_FOR_SSE=OFF \
+                    -DBUILD_FOR_SSE2=OFF
+}
+
+variant doc description {Build API and man documentation using doxygen, rst2man} {
+    depends_build-append \
+                    port:doxygen \
+                    port:py${python_version}-docutils
+
+    configure.args-append \
+                    -DBUILD_DOC=ON
+}
