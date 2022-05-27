@@ -1104,36 +1104,44 @@ static void edit_preset_response(dt_gui_presets_edit_dialog_t *g)
   tree_insert_presets(tree_store);
 }
 
-static gboolean delete_by_name_and_operation_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer no)
+static gboolean _delete_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter,
+                                   const gchar *current_name, const gchar *current_operation)
 {
   gchar *ith_name = NULL, *ith_operation = NULL;
   gtk_tree_model_get(tree_model, iter, P_NAME_COLUMN, &ith_name, P_OPERATION_COLUMN, &ith_operation, -1);
-  const gchar *current_name = ((name_and_operation*)no)->name;
-  const gchar *current_operation = ((name_and_operation*)no)->operation;
   if(*ith_name == *current_name && *ith_operation == *current_operation)
   {
     g_free(ith_name);
     g_free(ith_operation);
+
+    GtkTreeIter parent;
+    gtk_tree_model_iter_parent(tree_model, &parent, iter);
+
     gtk_tree_store_remove(GTK_TREE_STORE(tree_model), iter);
+
+    // check whether the parent has children; if not, remove the parent
+    gint n_children = gtk_tree_model_iter_n_children (tree_model, &parent);
+    if(! n_children) gtk_tree_store_remove(GTK_TREE_STORE(tree_model), &parent);
+
     return TRUE;
   }
   return FALSE;
 }
 
+static gboolean delete_by_name_and_operation_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer no)
+{
+  const gchar *current_name = ((name_and_operation*)no)->name;
+  const gchar *current_operation = ((name_and_operation*)no)->operation;
+
+  return _delete_if_current(tree_model, path, iter, current_name, current_operation);
+}
+
 static gboolean delete_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer g)
 {
-  gchar *ith_name = NULL, *ith_operation = NULL;
-  gtk_tree_model_get(tree_model, iter, P_NAME_COLUMN, &ith_name, P_OPERATION_COLUMN, &ith_operation, -1);
   const gchar *current_name = gtk_entry_get_text(((dt_gui_presets_edit_dialog_t*)g)->name);
   const gchar *current_operation = ((dt_gui_presets_edit_dialog_t*)g)->operation;
-  if(*ith_name == *current_name && *ith_operation == *current_operation)
-  {
-    g_free(ith_name);
-    g_free(ith_operation);
-    gtk_tree_store_remove(GTK_TREE_STORE(tree_model), iter);
-    return TRUE;
-  }
-  return FALSE;
+
+  return _delete_if_current(tree_model, path, iter, current_name, current_operation);
 }
 
 static gboolean actualize_if_current(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer g)
@@ -1146,7 +1154,6 @@ static gboolean actualize_if_current(GtkTreeModel *tree_model, GtkTreePath *path
   {
     g_free(ith_name);
     g_free(ith_operation);
-    GtkTreeIter *parent = NULL;
     sqlite3_stmt *stmt;
 
     // Create a GdkPixbuf with a cairo drawing.
@@ -1257,7 +1264,6 @@ static gboolean actualize_if_current(GtkTreeModel *tree_model, GtkTreePath *path
           focal_length = g_strdup_printf("%d – %d", focal_length_min, focal_length_max);
       }
 
-      // gtk_tree_model_iter_parent(tree_model, parent, iter);
       gtk_tree_store_set(GTK_TREE_STORE(tree_model), iter,
                          P_ROWID_COLUMN, rowid, P_OPERATION_COLUMN, operation,
                          P_MODULE_COLUMN, "", P_EDITABLE_COLUMN, writeprotect ? lock_pixbuf : NULL,
