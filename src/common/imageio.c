@@ -82,11 +82,11 @@
 static const gchar *_supported_raw[]
     = { "3fr", "ari", "arw", "bay", "cr2", "cr3", "crw", "dc2", "dcr", "erf", "fff",
         "ia",  "iiq", "k25", "kc2", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw",
-        "orf", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti", "x3f" };
+        "orf", "pef", "raf", "raw", "rw2", "rwl", "sr2", "srf", "srw", "sti", "x3f", NULL };
 static const gchar *_supported_ldr[]
     = { "bmp",  "bmq", "cap", "cine", "cs1", "dcm", "gif", "gpr", "j2c", "j2k", "jng", "jp2", "jpc", "jpeg", "jpg",
-        "miff", "mng", "ori", "pbm",  "pfm", "pgm", "png", "pnm", "ppm", "pxn", "qtk", "rdc", "tif", "tiff" };
-static const gchar *_supported_hdr[] = { "avif", "exr", "hdr", "heic", "heif", "hif", "pfm" };
+        "miff", "mng", "ori", "pbm",  "pfm", "pgm", "png", "pnm", "ppm", "pxn", "qtk", "rdc", "tif", "tiff", NULL };
+static const gchar *_supported_hdr[] = { "avif", "exr", "hdr", "heic", "heif", "hif", "pfm", NULL };
 
 // get the type of image from its extension
 dt_image_flags_t dt_imageio_get_type_from_extension(const char *extension)
