@@ -49,6 +49,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   gchar *module_name;
   gchar *operation;
   int op_version;
+  int action;
 
   GtkEntry *name, *description;
   GtkCheckButton *autoapply, *filter;

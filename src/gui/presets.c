@@ -364,6 +364,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
+    g->action = DT_ACTION_EFFECT_EDIT;
     if(g->callback) ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
   }
   else if(response_id == GTK_RESPONSE_YES && g->old_id)
@@ -393,6 +394,7 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
   {
     dt_gui_presets_confirm_and_delete(GTK_WIDGET(dialog), g->original_name, g->operation, g->old_id);
 
+    g->action = DT_ACTION_EFFECT_DELETE;
     if(g->callback) ((void (*)(dt_gui_presets_edit_dialog_t *))g->callback)(g);
   }
 
