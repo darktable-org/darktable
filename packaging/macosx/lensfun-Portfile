@@ -39,7 +39,7 @@ depends_lib         path:lib/pkgconfig/glib-2.0.pc:glib2 \
                     port:libpng \
                     port:zlib
 
-set python_branch   3.8
+set python_branch   3.9
 set python_version  [join [split ${python_branch} "."] ""]
 
 # installs python3 helper scripts lensfun-add-adapter lensfun-update-data
@@ -61,7 +61,7 @@ post-patch {
 configure.args-append \
                     -DBUILD_LENSTOOL=ON \
                     -DINSTALL_HELPER_SCRIPTS=ON \
-                    -DSETUP_PY_INSTALL_PREFIX=${destroot}${frameworks_dir}/Python.framework/Versions/${python_branch}
+                    -DSETUP_PY_INSTALL_PREFIX=${frameworks_dir}/Python.framework/Versions/${python_branch}
 
 # turn off -msse -msse2 if arch is powerpc
 platform darwin powerpc {
