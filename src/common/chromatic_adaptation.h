@@ -117,6 +117,7 @@ static inline void convert_any_LMS_to_XYZ(const dt_aligned_pixel_t LMS, dt_align
     case DT_ADAPTATION_XYZ:
     case DT_ADAPTATION_RGB:
     case DT_ADAPTATION_LAST:
+    default:
     {
       // special case : just pass through.
       XYZ[0] = LMS[0];
@@ -151,6 +152,7 @@ static inline void convert_any_XYZ_to_LMS(const dt_aligned_pixel_t XYZ, dt_align
     case DT_ADAPTATION_XYZ:
     case DT_ADAPTATION_RGB:
     case DT_ADAPTATION_LAST:
+    default:
     {
       // special case : just pass through.
       LMS[0] = XYZ[0];
