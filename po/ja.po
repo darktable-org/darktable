@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-26 15:55+0200\n"
-"PO-Revision-Date: 2022-05-27 21:06+0900\n"
+"PO-Revision-Date: 2022-05-27 21:08+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -14191,7 +14191,7 @@ msgstr "輝度を区分けします"
 
 #: ../src/iop/colorbalancergb.c:1979
 msgid "choose in which uniform color space the saturation is computed"
-msgstr "どの均等色空間 で彩度を計算するかを選択します"
+msgstr "どの均等色空間で彩度を計算するかを選択します"
 
 #: ../src/iop/colorbalancergb.c:1981
 msgid "luminance ranges"
