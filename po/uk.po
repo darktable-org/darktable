@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-25 21:28+0200\n"
-"PO-Revision-Date: 2022-05-26 16:50+0300\n"
+"POT-Creation-Date: 2022-05-26 15:55+0200\n"
+"PO-Revision-Date: 2022-05-26 20:07+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1115,7 +1115,7 @@ msgstr "роздільники для категорій розміру"
 msgid ""
 "size categories are used to be able to set different overlays and css values "
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
-"means 3 categories of thumbnails : 0px->120px, 120px->400px and >400px"
+"means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px"
 msgstr ""
 "категорії розміру використовуються для того, щоб мати можливість "
 "встановлювати різні інформаційні накладання та значення css залежно від "
@@ -6257,8 +6257,8 @@ msgstr[1] "%d локальні копії синхронізовано"
 msgstr[2] "%d локальних копій синхронізовано"
 
 #: ../src/common/image.c:2792
-msgid "<b>WARNING</b> : camera is missing samples!"
-msgstr "<b>ПОПЕРЕДЖЕННЯ</b> : відсутні зразки зображень з цієї моделі камери!"
+msgid "<b>WARNING</b>: camera is missing samples!"
+msgstr "<b>ПОПЕРЕДЖЕННЯ</b>: відсутні зразки зображень з цієї моделі камери!"
 
 #: ../src/common/image.c:2793
 msgid ""
@@ -13016,28 +13016,28 @@ msgid "linear, RGB or XYZ"
 msgstr "лінійний, RGB або XYZ"
 
 #: ../src/iop/channelmixerrgb.c:368
-msgid "B&W : luminance-based"
+msgid "B&W: luminance-based"
 msgstr "Ч/Б: на основі яскравості"
 
 #: ../src/iop/channelmixerrgb.c:397
-msgid "B&W : ILFORD HP5+"
-msgstr "Ч/Б : ILFORD HP5+"
+msgid "B&W: ILFORD HP5+"
+msgstr "Ч/Б: ILFORD HP5+"
 
 #: ../src/iop/channelmixerrgb.c:406
-msgid "B&W : ILFORD DELTA 100"
-msgstr "Ч/Б : ILFORD DELTA 100"
+msgid "B&W: ILFORD DELTA 100"
+msgstr "Ч/Б: ILFORD DELTA 100"
 
 #: ../src/iop/channelmixerrgb.c:416
-msgid "B&W : ILFORD DELTA 400 - 3200"
-msgstr "Ч/Б : ILFORD DELTA 400 - 3200"
+msgid "B&W: ILFORD DELTA 400 - 3200"
+msgstr "Ч/Б: ILFORD DELTA 400 - 3200"
 
 #: ../src/iop/channelmixerrgb.c:425
-msgid "B&W : ILFORD FP4+"
-msgstr "Ч/Б : ILFORD FP4+"
+msgid "B&W: ILFORD FP4+"
+msgstr "Ч/Б: ILFORD FP4+"
 
 #: ../src/iop/channelmixerrgb.c:434
-msgid "B&W : Fuji Acros 100"
-msgstr "Ч/Б : Fuji Acros 100"
+msgid "B&W: Fuji Acros 100"
+msgstr "Ч/Б: Fuji Acros 100"
 
 #: ../src/iop/channelmixerrgb.c:451
 msgid "basic channel mixer"
@@ -13079,57 +13079,57 @@ msgstr "погана"
 #, c-format
 msgid ""
 "\n"
-"<b>Profile quality report : %s</b>\n"
-"input  ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-"WB ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-"output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"<b>Profile quality report: %s</b>\n"
+"input ΔE: \tavg. %.2f ; \tmax. %.2f\n"
+"WB ΔE: \tavg. %.2f; \tmax. %.2f\n"
+"output ΔE: \tavg. %.2f; \tmax. %.2f\n"
 "\n"
 "<b>Profile data</b>\n"
-"illuminant :  \t%.0f K \t%s \n"
+"illuminant:  \t%.0f K \t%s\n"
 "matrix in adaptation space:\n"
 "<tt>%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f</tt>\n"
 "\n"
 "<b>Normalization values</b>\n"
-"exposure compensation : \t%+.2f EV\n"
-"black offset : \t%+.4f"
+"exposure compensation: \t%+.2f EV\n"
+"black offset: \t%+.4f"
 msgstr ""
 "\n"
-"<b>Звіт про якість профілю : %s</b>\n"
-"вхідна  ΔE : \tсередня %.2f ; \tмаксимальна %.2f\n"
-"ББ ΔE : \tсередня %.2f ; \tмаксимальна %.2f\n"
-"вихідна ΔE : \tсередня %.2f ; \tмаксимальна %.2f\n"
+"<b>Звіт про якість профілю: %s</b>\n"
+"вхідна ΔE: \tсередня %.2f; \tмаксимальна %.2f\n"
+"ББ ΔE: \tсередня %.2f; \tмаксимальна %.2f\n"
+"вихідна ΔE: \tсередня %.2f; \tмаксимальна %.2f\n"
 "\n"
 "<b>Дані профілю</b>\n"
-"джерело світла :  \t%.0f K \t%s \n"
+"джерело світла: \t%.0f K \t%s\n"
 "матриця в адаптаційному просторі:\n"
 "<tt>%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f</tt>\n"
 "\n"
 "<b>Нормалізаційні значення</b>\n"
-"компенсація експозиції : \t%+.2f EV\n"
-"зміщення чорного кольору : \t%+.4f"
+"компенсація експозиції: \t%+.2f EV\n"
+"зміщення чорного кольору: \t%+.4f"
 
 #: ../src/iop/channelmixerrgb.c:1809
 #, c-format
 msgid ""
 "\n"
-"<b>Profile quality report : %s</b>\n"
-"output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"<b>Profile quality report: %s</b>\n"
+"output ΔE: \tavg. %.2f; \tmax. %.2f\n"
 "\n"
 "<b>Normalization values</b>\n"
-"exposure compensation : \t%+.2f EV\n"
-"black offset : \t%+.4f"
+"exposure compensation: \t%+.2f EV\n"
+"black offset: \t%+.4f"
 msgstr ""
 "\n"
-"<b>Звіт про якість профілю : %s</b>\n"
-"вихідна ΔE : \tсередня %.2f ; \tмаксимальна %.2f\n"
+"<b>Звіт про якість профілю: %s</b>\n"
+"вихідна ΔE: \tсередня %.2f; \tмаксимальна %.2f\n"
 "\n"
 "<b>Нормалізаційні значення</b>\n"
-"компенсація експозиції : \t%+.2f EV\n"
-"зміщення чорного кольору : \t%+.4f"
+"компенсація експозиції: \t%+.2f EV\n"
+"зміщення чорного кольору: \t%+.4f"
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
@@ -13258,13 +13258,13 @@ msgstr ""
 #: ../src/iop/channelmixerrgb.c:3746
 #, c-format
 msgid ""
-"L : \t%.1f %%\n"
-"h : \t%.1f °\n"
-"c : \t%.1f"
+"L: \t%.1f %%\n"
+"h: \t%.1f °\n"
+"c: \t%.1f"
 msgstr ""
-"L : \t%.1f %%\n"
-"h : \t%.1f °\n"
-"c : \t%.1f"
+"L: \t%.1f %%\n"
+"h: \t%.1f °\n"
+"c: \t%.1f"
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4002 ../src/iop/clipping.c:2105
@@ -13384,13 +13384,13 @@ msgstr "вхідний колір, який має бути відображен
 
 #: ../src/iop/channelmixerrgb.c:4113
 msgid ""
-"L : \tN/A \n"
-"h : \tN/A\n"
-"c : \tN/A"
+"L: \tN/A\n"
+"h: \tN/A\n"
+"c: \tN/A"
 msgstr ""
-"L : \tN/A \n"
-"h : \tN/A\n"
-"c : \tN/A"
+"L: \tN/A\n"
+"h: \tN/A\n"
+"c: \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4115 ../src/iop/exposure.c:1110
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
@@ -13908,16 +13908,16 @@ msgid "gain"
 msgstr "підсилення"
 
 #: ../src/iop/colorbalance.c:1735
-msgid "shadows : lift / offset"
-msgstr "тіні : підйом / зміщення"
+msgid "shadows: lift / offset"
+msgstr "тіні: підйом / зміщення"
 
 #: ../src/iop/colorbalance.c:1736
-msgid "mid-tones : gamma / power"
-msgstr "середні тони : гамма / показник степеня"
+msgid "mid-tones: gamma / power"
+msgstr "середні тони: гамма / показник степеня"
 
 #: ../src/iop/colorbalance.c:1737
-msgid "highlights : gain / slope"
-msgstr "світлі тони : підсилення / нахил"
+msgid "highlights: gain / slope"
+msgstr "світлі тони: підсилення / нахил"
 
 #: ../src/iop/colorbalance.c:1761
 msgid "shadows / mid-tones / highlights"
@@ -18849,36 +18849,36 @@ msgid "simple tone curve"
 msgstr "проста тонова крива"
 
 #: ../src/iop/toneequal.c:453
-msgid "mask blending : all purposes"
+msgid "mask blending: all purposes"
 msgstr "режим змішування: загальне призначення"
 
 #: ../src/iop/toneequal.c:459
-msgid "mask blending : people with backlight"
+msgid "mask blending: people with backlight"
 msgstr "режим змішування: люди і світло в камеру"
 
 #: ../src/iop/toneequal.c:475
-msgid "compress shadows/highlights (eigf) : strong"
-msgstr "стиснення тіней і світлих тонів (eigf) : сильне"
+msgid "compress shadows/highlights (eigf): strong"
+msgstr "стиснення тіней і світлих тонів (eigf): сильне"
 
 #: ../src/iop/toneequal.c:479
-msgid "compress shadows/highlights (gf) : strong"
-msgstr "стиснення тіней і світлих тонів (gf) : сильне"
+msgid "compress shadows/highlights (gf): strong"
+msgstr "стиснення тіней і світлих тонів (gf): сильне"
 
 #: ../src/iop/toneequal.c:487
-msgid "compress shadows/highlights (eigf) : medium"
-msgstr "стиснення тіней і світлих тонів (eigf) : середнє"
+msgid "compress shadows/highlights (eigf): medium"
+msgstr "стиснення тіней і світлих тонів (eigf): середнє"
 
 #: ../src/iop/toneequal.c:491
-msgid "compress shadows/highlights (gf) : medium"
-msgstr "стиснення тіней і світлих тонів (gf) : середнє"
+msgid "compress shadows/highlights (gf): medium"
+msgstr "стиснення тіней і світлих тонів (gf): середнє"
 
 #: ../src/iop/toneequal.c:499
-msgid "compress shadows/highlights (eigf) : soft"
-msgstr "стиснення тіней і світлих тонів (eigf) : м'яке"
+msgid "compress shadows/highlights (eigf): soft"
+msgstr "стиснення тіней і світлих тонів (eigf): м'яке"
 
 #: ../src/iop/toneequal.c:503
-msgid "compress shadows/highlights (gf) : soft"
-msgstr "стиснення тіней і світлих тонів (gf) : м'яке"
+msgid "compress shadows/highlights (gf): soft"
+msgstr "стиснення тіней і світлих тонів (gf): м'яке"
 
 #: ../src/iop/toneequal.c:509
 msgid "contrast tone curve: soft"
@@ -18893,7 +18893,7 @@ msgid "contrast tone curve: strong"
 msgstr "крива тонального контрасту: сильний контраст"
 
 #: ../src/iop/toneequal.c:539
-msgid "relight : fill-in"
+msgid "relight: fill-in"
 msgstr "заповнення світлом"
 
 #: ../src/iop/toneequal.c:591
@@ -19097,8 +19097,15 @@ msgstr ""
 "знешумлення."
 
 #: ../src/iop/toneequal.c:3232
+#, fuzzy
+#| msgid ""
+#| "precision of the feathering :\n"
+#| "higher values force the mask to follow edges more closely\n"
+#| "but may void the effect of the smoothing\n"
+#| "lower values give smoother gradients and better smoothing\n"
+#| "but may lead to inaccurate edges taping and halos"
 msgid ""
-"precision of the feathering :\n"
+"precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
 "but may void the effect of the smoothing\n"
 "lower values give smoother gradients and better smoothing\n"
@@ -20081,20 +20088,35 @@ msgid "output ICC profiles in %s or %s"
 msgstr "вихідні ICC профілі в %s або %s"
 
 #: ../src/libs/export.c:1265
-#, c-format
+#, fuzzy, c-format
+#| msgid ""
+#| "• perceptual : smoothly moves out-of-gamut colors into gamut,preserving "
+#| "gradations, but distorts in-gamut colors in the process. note that "
+#| "perceptual is often a proprietary LUT that depends on the destination "
+#| "space.\n"
+#| "\n"
+#| "• relative colorimetric : keeps luminance while reducing as little as "
+#| "possible saturation until colors fit in gamut.\n"
+#| "\n"
+#| "• saturation : designed to present eye-catching business graphics by "
+#| "preserving the saturation. (not suited for photography).\n"
+#| "\n"
+#| "• absolute colorimetric : adapt white point of the image to the white "
+#| "point of the destination medium and do nothing else. mainly used when "
+#| "proofing colors. (not suited for photography)."
 msgid ""
-"• perceptual : smoothly moves out-of-gamut colors into gamut,preserving "
+"• perceptual: smoothly moves out-of-gamut colors into gamut,preserving "
 "gradations, but distorts in-gamut colors in the process. note that "
 "perceptual is often a proprietary LUT that depends on the destination "
 "space.\n"
 "\n"
-"• relative colorimetric : keeps luminance while reducing as little as "
+"• relative colorimetric: keeps luminance while reducing as little as "
 "possible saturation until colors fit in gamut.\n"
 "\n"
-"• saturation : designed to present eye-catching business graphics by "
+"• saturation: designed to present eye-catching business graphics by "
 "preserving the saturation. (not suited for photography).\n"
 "\n"
-"• absolute colorimetric : adapt white point of the image to the white point "
+"• absolute colorimetric: adapt white point of the image to the white point "
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
@@ -21701,20 +21723,20 @@ msgid "use inverted shape"
 msgstr "інверсія фігури"
 
 #: ../src/libs/masks.c:1084
-msgid "mode : union"
-msgstr "режим : об'єднання"
+msgid "mode: union"
+msgstr "режим: об'єднання"
 
 #: ../src/libs/masks.c:1087
-msgid "mode : intersection"
-msgstr "режим : перетин"
+msgid "mode: intersection"
+msgstr "режим: перетин"
 
 #: ../src/libs/masks.c:1090
-msgid "mode : difference"
-msgstr "режим : різниця"
+msgid "mode: difference"
+msgstr "режим: різниця"
 
 #: ../src/libs/masks.c:1093
-msgid "mode : exclusion"
-msgstr "режим : виключення"
+msgid "mode: exclusion"
+msgstr "режим: виключення"
 
 #: ../src/libs/masks.c:1107
 msgid "cleanup unused shapes"
@@ -22329,16 +22351,16 @@ msgid "rename preset"
 msgstr "перейменувати пресет"
 
 #: ../src/libs/modulegroups.c:3513
-msgid "new preset name :"
-msgstr "ім'я нового пресету :"
+msgid "new preset name:"
+msgstr "ім'я нового пресету:"
 
 #: ../src/libs/modulegroups.c:3514
-msgid "a preset with this name already exists !"
-msgstr "пресет із цим іменем вже існує !"
+msgid "a preset with this name already exists!"
+msgstr "пресет із цим іменем вже існує!"
 
 #: ../src/libs/modulegroups.c:3859
-msgid "preset : "
-msgstr "пресет : "
+msgid "preset: "
+msgstr "пресет: "
 
 #: ../src/libs/modulegroups.c:3866
 msgid "remove the preset"
