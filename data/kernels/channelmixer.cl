@@ -186,6 +186,7 @@ static inline float4 luma_chroma(const float4 input, const float4 saturation, co
       } \
       case DT_ADAPTATION_RGB: \
       case DT_ADAPTATION_LAST: \
+      default: \
       { \
         XYZ = matrix_product_float4(LMS, RGB_to_XYZ); \
         break; \
@@ -214,6 +215,7 @@ static inline float4 luma_chroma(const float4 input, const float4 saturation, co
     } \
     case DT_ADAPTATION_RGB: \
     case DT_ADAPTATION_LAST: \
+    default: \
     { \
       LMS = matrix_product_float4(XYZ, XYZ_to_RGB); \
       break; \
@@ -336,6 +338,7 @@ static inline float4 chroma_adapt_RGB(const float4 RGB,
     } \
     case DT_ADAPTATION_RGB: \
     case DT_ADAPTATION_LAST: \
+    default: \
     { \
       XYZ = chroma_adapt_RGB(RGB, RGB_to_XYZ, MIX); \
       break; \

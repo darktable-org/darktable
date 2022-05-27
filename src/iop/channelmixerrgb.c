@@ -762,6 +762,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       }
       case DT_ADAPTATION_RGB:
       case DT_ADAPTATION_LAST:
+      default:
       {
         // No white balance.
 
@@ -771,11 +772,6 @@ static inline void loop_switch(const float *const restrict in, float *const rest
         // Convert from RGB to XYZ
         dot_product(temp_one, RGB_to_XYZ, temp_two);
 
-        for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_one[c] = temp_two[c];
-        break;
-      }
-      default:
-      {
         for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_one[c] = temp_two[c];
         break;
       }
@@ -799,6 +795,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       }
       case DT_ADAPTATION_RGB:
       case DT_ADAPTATION_LAST:
+      default:
       {
         // Convert from XYZ to RGB
         dot_product(temp_two, XYZ_to_RGB, temp_one);
@@ -841,6 +838,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
         }
         case DT_ADAPTATION_RGB:
         case DT_ADAPTATION_LAST:
+        default:
         {
           // Convert from RBG to XYZ
           dot_product(temp_two, RGB_to_XYZ, temp_one);
@@ -1604,6 +1602,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
       }
       case DT_ADAPTATION_RGB:
       case DT_ADAPTATION_LAST:
+      default:
       {
         // No white balance.
         for(size_t c = 0; c < 3; ++c) temp[c] = LMS[c];
@@ -1996,6 +1995,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       break;
     }
     case DT_ADAPTATION_LAST:
+    default:
     {
       break;
     }
@@ -2097,6 +2097,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
      }
     case DT_ADAPTATION_RGB:
     case DT_ADAPTATION_LAST:
+    default:
     {
       kernel = gd->kernel_channelmixer_rgb_rgb;
       break;
@@ -2957,6 +2958,7 @@ static void update_illuminants(dt_iop_module_t *self)
       break;
     }
     case DT_ILLUMINANT_LAST:
+    default:
     {
       break;
     }
