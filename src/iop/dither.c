@@ -50,11 +50,11 @@ DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 typedef enum dt_iop_dither_type_t
 {
   DITHER_RANDOM,      // $DESCRIPTION: "random"
-  DITHER_FS1BIT,      // $DESCRIPTION: "floyd-steinberg 1-bit B&W"
-  DITHER_FS4BIT_GRAY, // $DESCRIPTION: "floyd-steinberg 4-bit gray")
-  DITHER_FS8BIT,      // $DESCRIPTION: "floyd-steinberg 8-bit RGB"
-  DITHER_FS16BIT,     // $DESCRIPTION: "floyd-steinberg 16-bit RGB"
-  DITHER_FSAUTO       // $DESCRIPTION: "floyd-steinberg auto"
+  DITHER_FS1BIT,      // $DESCRIPTION: "Floyd-Steinberg 1-bit B&W"
+  DITHER_FS4BIT_GRAY, // $DESCRIPTION: "Floyd-Steinberg 4-bit gray"
+  DITHER_FS8BIT,      // $DESCRIPTION: "Floyd-Steinberg 8-bit RGB"
+  DITHER_FS16BIT,     // $DESCRIPTION: "Floyd-Steinberg 16-bit RGB"
+  DITHER_FSAUTO       // $DESCRIPTION: "Floyd-Steinberg auto"
 } dt_iop_dither_type_t;
 
 
