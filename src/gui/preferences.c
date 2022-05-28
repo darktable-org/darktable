@@ -58,6 +58,11 @@ typedef struct g_and_pixbuf {
   GdkPixbuf *check_pixbuf;
 } g_and_pixbuf;
 
+typedef struct module_and_parent {
+  gchar *last_module;
+  GtkTreeIter parent;
+} module_and_parent;
+
 // link to values in gui/presets.c
 // move to presets.h if needed elsewhere
 extern const int dt_gui_presets_exposure_value_cnt;
@@ -577,11 +582,136 @@ static void cairo_destroy_from_pixbuf(guchar *pixels, gpointer data)
   cairo_destroy((cairo_t *)data);
 }
 
-static void tree_insert_presets(GtkTreeStore *tree_model)
+static module_and_parent *_update_tree_model_line(GtkTreeModel *tree_model, GtkTreeIter *iter, sqlite3_stmt *stmt,
+                                    GdkPixbuf *lock_pixbuf, GdkPixbuf *check_pixbuf,
+                                    gchar *last_module, GtkTreeIter parent, gboolean is_insert)
+{
+
+  const gint rowid = sqlite3_column_int(stmt, 0);
+  const gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
+  const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
+  const gboolean autoapply = (sqlite3_column_int(stmt, 3) == 0 ? FALSE : TRUE);
+  const gchar *model = (gchar *)sqlite3_column_text(stmt, 4);
+  const gchar *maker = (gchar *)sqlite3_column_text(stmt, 5);
+  const gchar *lens = (gchar *)sqlite3_column_text(stmt, 6);
+  const float iso_min = sqlite3_column_double(stmt, 7);
+  const float iso_max = sqlite3_column_double(stmt, 8);
+  const float exposure_min = sqlite3_column_double(stmt, 9);
+  const float exposure_max = sqlite3_column_double(stmt, 10);
+  const float aperture_min = sqlite3_column_double(stmt, 11);
+  const float aperture_max = sqlite3_column_double(stmt, 12);
+  const int focal_length_min = sqlite3_column_double(stmt, 13);
+  const int focal_length_max = sqlite3_column_double(stmt, 14);
+  const gboolean writeprotect = (sqlite3_column_int(stmt, 15) == 0 ? FALSE : TRUE);
+
+  gchar *iso = NULL, *exposure = NULL, *aperture = NULL, *focal_length = NULL, *smaker = NULL, *smodel = NULL, *slens = NULL;
+  int min, max;
+
+  gchar *module = g_strdup(dt_iop_get_localized_name(operation));
+  if(module == NULL) module = g_strdup(dt_lib_get_localized_name(operation));
+  if(module == NULL) module = g_strdup(operation);
+
+  if(!dt_presets_module_can_autoapply(operation))
+  {
+    iso = g_strdup("");
+    exposure = g_strdup("");
+    aperture = g_strdup("");
+    focal_length = g_strdup("");
+    smaker = g_strdup("");
+    smodel = g_strdup("");
+    slens = g_strdup("");
+  }
+  else
+  {
+    smaker = g_strdup(maker);
+    smodel = g_strdup(model);
+    slens = g_strdup(lens);
+
+    if(iso_min == 0.0 && iso_max == FLT_MAX)
+      iso = g_strdup("%");
+    else
+      iso = g_strdup_printf("%zu – %zu", (size_t)iso_min, (size_t)iso_max);
+
+    for(min = 0; min < dt_gui_presets_exposure_value_cnt && exposure_min > dt_gui_presets_exposure_value[min]; min++)
+      ;
+    for(max = 0; max < dt_gui_presets_exposure_value_cnt && exposure_max > dt_gui_presets_exposure_value[max]; max++)
+      ;
+    if(min == 0 && max == dt_gui_presets_exposure_value_cnt - 1)
+      exposure = g_strdup("%");
+    else
+      exposure = g_strdup_printf("%s – %s", dt_gui_presets_exposure_value_str[min],
+                                 dt_gui_presets_exposure_value_str[max]);
+
+    for(min = 0; min < dt_gui_presets_aperture_value_cnt && aperture_min > dt_gui_presets_aperture_value[min]; min++)
+      ;
+    for(max = 0; max < dt_gui_presets_aperture_value_cnt && aperture_max > dt_gui_presets_aperture_value[max]; max++)
+      ;
+    if(min == 0 && max == dt_gui_presets_aperture_value_cnt - 1)
+      aperture = g_strdup("%");
+    else
+      aperture = g_strdup_printf("%s – %s", dt_gui_presets_aperture_value_str[min],
+                                 dt_gui_presets_aperture_value_str[max]);
+
+    if(focal_length_min == 0.0 && focal_length_max == 1000.0)
+      focal_length = g_strdup("%");
+    else
+      focal_length = g_strdup_printf("%d – %d", focal_length_min, focal_length_max);
+  }
+
+  if(is_insert)
+  {
+    if(g_strcmp0(last_module, operation) != 0)
+    {
+      gtk_tree_store_insert_with_values(GTK_TREE_STORE(tree_model), iter, NULL, -1,
+                         P_ROWID_COLUMN, 0, P_OPERATION_COLUMN, "", P_MODULE_COLUMN,
+                         _(module), P_EDITABLE_COLUMN, NULL, P_NAME_COLUMN, "", P_MODEL_COLUMN, "",
+                         P_MAKER_COLUMN, "", P_LENS_COLUMN, "", P_ISO_COLUMN, "", P_EXPOSURE_COLUMN, "",
+                         P_APERTURE_COLUMN, "", P_FOCAL_LENGTH_COLUMN, "", P_AUTOAPPLY_COLUMN, NULL, -1);
+      g_free(last_module);
+      last_module = g_strdup(operation);
+      parent = *iter;
+    }
+
+    gtk_tree_store_insert(GTK_TREE_STORE(tree_model), iter, &parent, -1);
+  }
+
+  gtk_tree_store_set(GTK_TREE_STORE(tree_model), iter,
+                     P_ROWID_COLUMN, rowid, P_OPERATION_COLUMN, operation,
+                     P_MODULE_COLUMN, "", P_EDITABLE_COLUMN, writeprotect ? lock_pixbuf : NULL,
+                     P_NAME_COLUMN, name, P_MODEL_COLUMN, smodel, P_MAKER_COLUMN, smaker, P_LENS_COLUMN, slens,
+                     P_ISO_COLUMN, iso, P_EXPOSURE_COLUMN, exposure, P_APERTURE_COLUMN, aperture,
+                     P_FOCAL_LENGTH_COLUMN, focal_length, P_AUTOAPPLY_COLUMN,
+                     autoapply ? check_pixbuf : NULL, -1);
+
+  g_free(focal_length);
+  g_free(aperture);
+  g_free(exposure);
+  g_free(iso);
+  g_free(module);
+  g_free(smaker);
+  g_free(smodel);
+  g_free(slens);
+
+  if (is_insert)
+  {
+    module_and_parent *last_module_and_parent = (module_and_parent *)g_malloc0(sizeof(module_and_parent));
+    last_module_and_parent->last_module = last_module;
+    last_module_and_parent->parent = parent;
+
+    return last_module_and_parent;
+  }
+  else
+  {
+    return NULL;
+  }
+}
+
+static void tree_insert_presets(GtkTreeStore *tree_store)
 {
   GtkTreeIter iter, parent;
   sqlite3_stmt *stmt;
   gchar *last_module = NULL;
+  module_and_parent *last_module_and_parent = (module_and_parent *)g_malloc0(sizeof(module_and_parent));
 
   g_and_pixbuf *g_pixbuf = _create_check_lock_pixbuf();
   GdkPixbuf *lock_pixbuf = g_pixbuf->lock_pixbuf;
@@ -597,105 +727,11 @@ static void tree_insert_presets(GtkTreeStore *tree_model)
   // clang-format on
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    const gint rowid = sqlite3_column_int(stmt, 0);
-    const gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
-    const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
-    const gboolean autoapply = (sqlite3_column_int(stmt, 3) == 0 ? FALSE : TRUE);
-    const gchar *model = (gchar *)sqlite3_column_text(stmt, 4);
-    const gchar *maker = (gchar *)sqlite3_column_text(stmt, 5);
-    const gchar *lens = (gchar *)sqlite3_column_text(stmt, 6);
-    const float iso_min = sqlite3_column_double(stmt, 7);
-    const float iso_max = sqlite3_column_double(stmt, 8);
-    const float exposure_min = sqlite3_column_double(stmt, 9);
-    const float exposure_max = sqlite3_column_double(stmt, 10);
-    const float aperture_min = sqlite3_column_double(stmt, 11);
-    const float aperture_max = sqlite3_column_double(stmt, 12);
-    const int focal_length_min = sqlite3_column_double(stmt, 13);
-    const int focal_length_max = sqlite3_column_double(stmt, 14);
-    const gboolean writeprotect = (sqlite3_column_int(stmt, 15) == 0 ? FALSE : TRUE);
-
-    gchar *iso = NULL, *exposure = NULL, *aperture = NULL, *focal_length = NULL, *smaker = NULL, *smodel = NULL, *slens = NULL;
-    int min, max;
-
-    gchar *module = g_strdup(dt_iop_get_localized_name(operation));
-    if(module == NULL) module = g_strdup(dt_lib_get_localized_name(operation));
-    if(module == NULL) module = g_strdup(operation);
-
-    if(!dt_presets_module_can_autoapply(operation))
-    {
-      iso = g_strdup("");
-      exposure = g_strdup("");
-      aperture = g_strdup("");
-      focal_length = g_strdup("");
-      smaker = g_strdup("");
-      smodel = g_strdup("");
-      slens = g_strdup("");
-    }
-    else
-    {
-      smaker = g_strdup(maker);
-      smodel = g_strdup(model);
-      slens = g_strdup(lens);
-
-      if(iso_min == 0.0 && iso_max == FLT_MAX)
-        iso = g_strdup("%");
-      else
-        iso = g_strdup_printf("%zu – %zu", (size_t)iso_min, (size_t)iso_max);
-
-      for(min = 0; min < dt_gui_presets_exposure_value_cnt && exposure_min > dt_gui_presets_exposure_value[min]; min++)
-        ;
-      for(max = 0; max < dt_gui_presets_exposure_value_cnt && exposure_max > dt_gui_presets_exposure_value[max]; max++)
-        ;
-      if(min == 0 && max == dt_gui_presets_exposure_value_cnt - 1)
-        exposure = g_strdup("%");
-      else
-        exposure = g_strdup_printf("%s – %s", dt_gui_presets_exposure_value_str[min],
-                                   dt_gui_presets_exposure_value_str[max]);
-
-      for(min = 0; min < dt_gui_presets_aperture_value_cnt && aperture_min > dt_gui_presets_aperture_value[min]; min++)
-        ;
-      for(max = 0; max < dt_gui_presets_aperture_value_cnt && aperture_max > dt_gui_presets_aperture_value[max]; max++)
-        ;
-      if(min == 0 && max == dt_gui_presets_aperture_value_cnt - 1)
-        aperture = g_strdup("%");
-      else
-        aperture = g_strdup_printf("%s – %s", dt_gui_presets_aperture_value_str[min],
-                                   dt_gui_presets_aperture_value_str[max]);
-
-      if(focal_length_min == 0.0 && focal_length_max == 1000.0)
-        focal_length = g_strdup("%");
-      else
-        focal_length = g_strdup_printf("%d – %d", focal_length_min, focal_length_max);
-    }
-
-    if(g_strcmp0(last_module, operation) != 0)
-    {
-      gtk_tree_store_insert_with_values(tree_model, &iter, NULL, -1,
-                         P_ROWID_COLUMN, 0, P_OPERATION_COLUMN, "", P_MODULE_COLUMN,
-                         _(module), P_EDITABLE_COLUMN, NULL, P_NAME_COLUMN, "", P_MODEL_COLUMN, "",
-                         P_MAKER_COLUMN, "", P_LENS_COLUMN, "", P_ISO_COLUMN, "", P_EXPOSURE_COLUMN, "",
-                         P_APERTURE_COLUMN, "", P_FOCAL_LENGTH_COLUMN, "", P_AUTOAPPLY_COLUMN, NULL, -1);
-      g_free(last_module);
-      last_module = g_strdup(operation);
-      parent = iter;
-    }
-
-    gtk_tree_store_insert_with_values(tree_model, &iter, &parent, -1,
-                       P_ROWID_COLUMN, rowid, P_OPERATION_COLUMN, operation,
-                       P_MODULE_COLUMN, "", P_EDITABLE_COLUMN, writeprotect ? lock_pixbuf : NULL,
-                       P_NAME_COLUMN, name, P_MODEL_COLUMN, smodel, P_MAKER_COLUMN, smaker, P_LENS_COLUMN, slens,
-                       P_ISO_COLUMN, iso, P_EXPOSURE_COLUMN, exposure, P_APERTURE_COLUMN, aperture,
-                       P_FOCAL_LENGTH_COLUMN, focal_length, P_AUTOAPPLY_COLUMN,
-                       autoapply ? check_pixbuf : NULL, -1);
-
-    g_free(focal_length);
-    g_free(aperture);
-    g_free(exposure);
-    g_free(iso);
-    g_free(module);
-    g_free(smaker);
-    g_free(smodel);
-    g_free(slens);
+    last_module_and_parent = _update_tree_model_line(
+            GTK_TREE_MODEL(tree_store), &iter, stmt, lock_pixbuf, check_pixbuf,
+            last_module, parent, TRUE);
+    last_module = last_module_and_parent->last_module;
+    parent = last_module_and_parent->parent;
   }
   g_free(last_module);
   sqlite3_finalize(stmt);
@@ -1151,6 +1187,8 @@ static gboolean actualize_if_current(GtkTreeModel *tree_model, GtkTreePath *path
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, (char*)current_name, -1, SQLITE_TRANSIENT);
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
+      _update_tree_model_line(tree_model, iter, stmt, lock_pixbuf, check_pixbuf, NULL, *iter, FALSE);
+
       const gint rowid = sqlite3_column_int(stmt, 0);
       const gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
       const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
