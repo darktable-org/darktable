@@ -137,10 +137,13 @@ Thruput Sidecar dt           Hardware
 ~645    3.4     3.4.0        32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
 ~690    3.4     3.6.0        32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
 720     3.4     3.7.0+440    32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+713     3.4     3.9.0+1630   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
 
 659     3.6     3.7.0+440    32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+661     3.6     3.9.0+1630   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
 
 644	3.8	3.7.0+1370   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
+666     3.8     3.9.0+1630   32-core AMD Threadripper 3970X, 64GB PC3600, no GPU
 
 [*] darktable 3.2.1 using the v3.4 sidecar skips two modules which
   didn't yet exist, so this number is actually over-reporting the
