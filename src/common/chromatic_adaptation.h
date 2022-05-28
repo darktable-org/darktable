@@ -433,11 +433,10 @@ static inline void chroma_adapt_pixel(const dt_aligned_pixel_t in, dt_aligned_pi
     }
     case DT_ADAPTATION_XYZ:
     {
-      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_one[c] = in[c];
+      for_each_channel(c) temp_one[c] = in[c];
       downscale_vector(temp_one, Y);
-      XYZ_adapt_D50(temp_one, illuminant, temp_two);
-      upscale_vector(temp_two, Y);
-      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) out[c] = temp_two[c];
+      XYZ_adapt_D50(temp_one, illuminant, out);
+      upscale_vector(out, Y);
       break;
     }
     case DT_ADAPTATION_RGB:
