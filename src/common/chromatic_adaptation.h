@@ -344,10 +344,7 @@ static inline void XYZ_adapt_D50(const dt_aligned_pixel_t lms_in,
 
   // Precomputed D50 primaries in XYZ for camera WB adjustment
   const dt_aligned_pixel_t D50 = { 0.9642119944211994f, 1.0f, 0.8251882845188288f, 0.f };
-
-  lms_out[0] = lms_in[0] * D50[0] / origin_illuminant[0];
-  lms_out[1] = lms_in[1] * D50[1] / origin_illuminant[1];
-  lms_out[2] = lms_in[2] * D50[2] / origin_illuminant[2];
+  for_each_channel(c) lms_out[c] = lms_in[c] * D50[c] / origin_illuminant[c];
 }
 
 /* Pre-solved matrices to adjust white point for triplets in CIE XYZ 1931 2° observer */
@@ -432,11 +429,10 @@ static inline void chroma_adapt_pixel(const dt_aligned_pixel_t in, dt_aligned_pi
     }
     case DT_ADAPTATION_XYZ:
     {
-      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) temp_one[c] = in[c];
+      for_each_channel(c) temp_one[c] = in[c];
       downscale_vector(temp_one, Y);
-      XYZ_adapt_D50(temp_one, illuminant, temp_two);
-      upscale_vector(temp_two, Y);
-      for(size_t c = 0; c < DT_PIXEL_SIMD_CHANNELS; ++c) out[c] = temp_two[c];
+      XYZ_adapt_D50(temp_one, illuminant, out);
+      upscale_vector(out, Y);
       break;
     }
     case DT_ADAPTATION_RGB:
