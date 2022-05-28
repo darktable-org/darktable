@@ -662,6 +662,7 @@ static module_and_parent *_update_tree_model_line(GtkTreeModel *tree_model, GtkT
   {
     if(g_strcmp0(last_module, operation) != 0)
     {
+      // the first-level entry (the module) must be added
       gtk_tree_store_insert_with_values(GTK_TREE_STORE(tree_model), iter, NULL, -1,
                          P_ROWID_COLUMN, 0, P_OPERATION_COLUMN, "", P_MODULE_COLUMN,
                          _(module), P_EDITABLE_COLUMN, NULL, P_NAME_COLUMN, "", P_MODEL_COLUMN, "",
