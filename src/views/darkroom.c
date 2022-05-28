@@ -519,7 +519,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // force middle grey in background
-      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+      cairo_set_source_rgb(cr, 0.4663, 0.4663, 0.4663);
     }
     else
     {
