@@ -2706,7 +2706,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_R);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_G);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_B);
-      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("chrominance & luminance modes"));
+      dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("chromaticity & lightness modes"));
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMATICITY);
     }
