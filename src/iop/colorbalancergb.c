@@ -609,10 +609,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float L_white = Y_to_dt_UCS_L_star(d->white_fulcrum);
 
+  const float DT_ALIGNED_ARRAY hue_rotation_matrix[2][2] = {
+    { cosf(d->hue_angle), -sinf(d->hue_angle) },
+    { sinf(d->hue_angle),  cosf(d->hue_angle) },
+  };
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, out, roi_in, roi_out, d, g, mask_display, input_matrix, output_matrix, gamut_LUT, \
-    global, highlights, shadows, midtones, chroma, saturation, brilliance, checker_1, checker_2, L_white) \
+    global, highlights, shadows, midtones, chroma, saturation, brilliance, checker_1, checker_2, L_white, \
+    hue_rotation_matrix) \
     schedule(static) collapse(2)
 #endif
   for(size_t i = 0; i < roi_out->height; i++)
@@ -661,11 +667,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                   d->shadows_weight, d->highlights_weight, d->midtones_weight, d->mask_grey_fulcrum, opacities, opacities_comp);
 
     // Hue shift - do it now because we need the gamut limit at output hue right after
-    Ych[2] += d->hue_angle;
-
-    // Ensure hue ± correction is in [-PI; PI]
-    if(Ych[2] > M_PI_F) Ych[2] -= 2.f * M_PI_F;
-    else if(Ych[2] < -M_PI_F) Ych[2] += 2.f * M_PI_F;
+    // The hue rotation is implemented as a matrix multiplication.
+    const float cos_h = Ych[2];
+    const float sin_h = Ych[3];
+    Ych[2] = hue_rotation_matrix[0][0] * cos_h + hue_rotation_matrix[0][1] * sin_h;
+    Ych[3] = hue_rotation_matrix[1][0] * cos_h + hue_rotation_matrix[1][1] * sin_h;
 
     // Linear chroma : distance to achromatic at constant luminance in scene-referred
     const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
@@ -917,6 +923,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem input_matrix_cl = NULL;
   cl_mem output_matrix_cl = NULL;
   cl_mem gamut_LUT = NULL;
+  cl_mem hue_rotation_matrix_cl = NULL;
 
   err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
                                             &dev_profile_info, &dev_profile_lut);
@@ -973,6 +980,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const float L_white = Y_to_dt_UCS_L_star(d->white_fulcrum);
 
+  float hue_rotation_matrix[4]
+    = { cosf(d->hue_angle), -sinf(d->hue_angle), sinf(d->hue_angle), cosf(d->hue_angle) };
+  hue_rotation_matrix_cl = dt_opencl_copy_host_to_device_constant(devid, 4 * sizeof(float), hue_rotation_matrix);
+
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 2, sizeof(int), (void *)&width);
@@ -1009,6 +1020,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 33, 4 * sizeof(float), (void *)&d->checker_color_2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 34, sizeof(float), (void *)&L_white);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 35, sizeof(dt_iop_colorbalancrgb_saturation_t), (void *)&d->saturation_formula);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance_rgb, 36, sizeof(cl_mem), (void *)&hue_rotation_matrix_cl);
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance_rgb, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -1018,6 +1030,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(input_matrix_cl);
   dt_opencl_release_mem_object(output_matrix_cl);
   dt_opencl_release_mem_object(gamut_LUT);
+  dt_opencl_release_mem_object(hue_rotation_matrix_cl);
   return TRUE;
 
 error:
@@ -1025,6 +1038,7 @@ error:
   if(input_matrix_cl) dt_opencl_release_mem_object(input_matrix_cl);
   if(output_matrix_cl) dt_opencl_release_mem_object(output_matrix_cl);
   if(gamut_LUT) dt_opencl_release_mem_object(gamut_LUT);
+  if(hue_rotation_matrix_cl) dt_opencl_release_mem_object(hue_rotation_matrix_cl);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalancergb] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -1104,20 +1118,21 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->hue_angle = M_PI * p->hue_angle / 180.f;
 
   // measure the grading RGB of a pure white
-  const dt_aligned_pixel_t Ych_norm = { 1.f, 0.f, 0.f, 0.f };
+  const dt_aligned_pixel_t Ych_norm = { 1.f, 0.f, 1.f, 0.f };
   dt_aligned_pixel_t RGB_norm = { 0.f };
   Ych_to_gradingRGB(Ych_norm, RGB_norm);
+  dt_aligned_pixel_t Ych;
 
   // global
   {
-    dt_aligned_pixel_t Ych = { 1.f, p->global_C, DEG_TO_RAD(p->global_H), 0.f };
+    make_Ych(1.f, p->global_C, DEG_TO_RAD(p->global_H), Ych);
     Ych_to_gradingRGB(Ych, d->global);
     for(size_t c = 0; c < 4; c++) d->global[c] = (d->global[c] - RGB_norm[c]) + RGB_norm[c] * p->global_Y;
   }
 
   // shadows
   {
-    dt_aligned_pixel_t Ych = { 1.f, p->shadows_C, DEG_TO_RAD(p->shadows_H), 0.f };
+    make_Ych(1.f, p->shadows_C, DEG_TO_RAD(p->shadows_H), Ych);
     Ych_to_gradingRGB(Ych, d->shadows);
     for(size_t c = 0; c < 4; c++) d->shadows[c] = 1.f + (d->shadows[c] - RGB_norm[c]) + p->shadows_Y;
     d->shadows_weight = 2.f + p->shadows_weight * 2.f;
@@ -1125,7 +1140,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // highlights
   {
-    dt_aligned_pixel_t Ych = { 1.f, p->highlights_C, DEG_TO_RAD(p->highlights_H), 0.f };
+    make_Ych(1.f, p->highlights_C, DEG_TO_RAD(p->highlights_H), Ych);
     Ych_to_gradingRGB(Ych, d->highlights);
     for(size_t c = 0; c < 4; c++) d->highlights[c] = 1.f + (d->highlights[c] - RGB_norm[c]) + p->highlights_Y;
     d->highlights_weight = 2.f + p->highlights_weight * 2.f;
@@ -1133,7 +1148,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // midtones
   {
-    dt_aligned_pixel_t Ych = { 1.f, p->midtones_C, DEG_TO_RAD(p->midtones_H), 0.f };
+    make_Ych(1.f, p->midtones_C, DEG_TO_RAD(p->midtones_H), Ych);
     Ych_to_gradingRGB(Ych, d->midtones);
     for(size_t c = 0; c < 4; c++) d->midtones[c] = 1.f / (1.f + (d->midtones[c] - RGB_norm[c]));
     d->midtones_Y = 1.f / (1.f + p->midtones_Y);
@@ -1336,9 +1351,6 @@ void pipe_RGB_to_Ych(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
                              work_profile->nonlinearlut);
   XYZ_D50_to_D65(XYZ_D50, XYZ_D65);
   XYZ_to_Ych(XYZ_D65, Ych);
-
-  if(Ych[2] < 0.f)
-    Ych[2] = 2.f * M_PI + Ych[2];
 }
 
 
@@ -1351,8 +1363,8 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_aligned_pixel_t max_Ych = { 0.f };
   pipe_RGB_to_Ych(self, piece, (const float *)self->picked_color, Ych);
   pipe_RGB_to_Ych(self, piece, (const float *)self->picked_color_max, max_Ych);
-  float hue = RAD_TO_DEG(Ych[2]) + 180.f;   // take the opponent color
-  hue = (hue > 360.f) ? hue - 360.f : hue;  // normalize in [0 ; 360]°
+  const float picked_hue = get_hue_angle_from_Ych(Ych);
+  const float hue = RAD_TO_DEG(picked_hue) + 180.f;   // take the opponent color
 
   ++darktable.gui->reset;
   if(picker == g->global_H)
@@ -1424,7 +1436,8 @@ static void paint_chroma_slider(const dt_iop_order_iccprofile_info_t *output_pro
 
     dt_aligned_pixel_t RGB = { 0.f };
     dt_aligned_pixel_t RGB_linear = { 0.f };
-    dt_aligned_pixel_t Ych = { 0.75f, x, h, 0.f };
+    dt_aligned_pixel_t Ych;
+    make_Ych(0.75f, x, h, Ych);
     dt_aligned_pixel_t XYZ_D65 = { 0.f };
     dt_aligned_pixel_t XYZ_D50 = { 0.f };
     Ych_to_XYZ(Ych, XYZ_D65);
@@ -1455,7 +1468,8 @@ static void paint_hue_sliders(const dt_iop_order_iccprofile_info_t *output_profi
     const float max_chroma = Ych_max_chroma_without_negatives(output_matrix_LMS_to_RGB, cosf(h), sinf(h));
     dt_aligned_pixel_t RGB_linear = { 0.f };
     dt_aligned_pixel_t RGB = { 0.f };
-    dt_aligned_pixel_t Ych = { 0.75f, MIN(0.2f, max_chroma), h, 0.f };
+    dt_aligned_pixel_t Ych;
+    make_Ych(0.75f, MIN(0.2f, max_chroma), h, Ych);
     dt_aligned_pixel_t XYZ_D65 = { 0.f };
     dt_aligned_pixel_t XYZ_D50 = { 0.f };
     Ych_to_XYZ(Ych, XYZ_D65);
