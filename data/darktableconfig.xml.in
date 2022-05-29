@@ -3185,6 +3185,12 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>ui_last/theme</name>
+    <type>string</type>
+    <default>darktable-elegant-grey</default>
+    <shortdescription>darktable theme</shortdescription>
+  </dtconfig>
   <dtconfig prefs="misc" section="interface">
     <name>ui_last/display_profile_source</name>
     <type>
