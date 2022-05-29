@@ -272,7 +272,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
   {
     if(gpx->current_track_point)
     {
-      fprintf(stderr, "broken gpx file, new trkpt element before the previous ended.\n");
+      fprintf(stderr, "broken GPX file, new trkpt element before the previous ended.\n");
       g_free(gpx->current_track_point);
     }
 
@@ -306,12 +306,12 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx, const gchar *element_na
       /* validate that we actually got lon / lat attribute values */
       if(isnan(gpx->current_track_point->longitude) || isnan(gpx->current_track_point->latitude))
       {
-        fprintf(stderr, "broken gpx file, failed to get lon/lat attribute values for trkpt\n");
+        fprintf(stderr, "broken GPX file, failed to get lon/lat attribute values for trkpt\n");
         gpx->invalid_track_point = TRUE;
       }
     }
     else
-      fprintf(stderr, "broken gpx file, trkpt element doesn't have lon/lat attributes\n");
+      fprintf(stderr, "broken GPX file, trkpt element doesn't have lon/lat attributes\n");
 
     gpx->current_parser_element = GPX_PARSER_ELEMENT_TRKPT;
   }
@@ -345,7 +345,7 @@ end:
   return;
 
 element_error:
-  fprintf(stderr, "broken gpx file, element '%s' found outside of trkpt.\n", element_name);
+  fprintf(stderr, "broken GPX file, element '%s' found outside of trkpt.\n", element_name);
 }
 
 void _gpx_parser_end_element(GMarkupParseContext *context, const gchar *element_name, gpointer user_data,
@@ -398,7 +398,7 @@ void _gpx_parser_text(GMarkupParseContext *context, const gchar *text, gsize tex
     if(!gpx->current_track_point->time)
     {
       gpx->invalid_track_point = TRUE;
-      fprintf(stderr, "broken gpx file, failed to pars is8601 time '%s' for trackpoint\n", text);
+      fprintf(stderr, "broken GPX file, failed to pars is8601 time '%s' for trackpoint\n", text);
     }
     dt_gpx_track_segment_t *ts = (dt_gpx_track_segment_t *)gpx->trksegs->data;
     if(ts)
