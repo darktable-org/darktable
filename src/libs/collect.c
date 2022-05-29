@@ -342,7 +342,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     dt_conf_set_string(confname, p->rule[i].string);
 
     /* if one of the rules is a rating filter, the view rating filter will be reset to all */
-    if(p->rule[i].item == DT_COLLECTION_PROP_RATING)
+    if(p->rule[i].item == DT_COLLECTION_PROP_RATING_LEGACY)
     {
       reset_view_filter = TRUE;
     }
@@ -587,7 +587,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
      && (d->view_rule == DT_COLLECTION_PROP_DAY || is_time_property(d->view_rule)
          || d->view_rule == DT_COLLECTION_PROP_APERTURE || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
          || d->view_rule == DT_COLLECTION_PROP_ISO || d->view_rule == DT_COLLECTION_PROP_EXPOSURE
-         || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO || d->view_rule == DT_COLLECTION_PROP_RATING))
+         || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO || d->view_rule == DT_COLLECTION_PROP_RATING_LEGACY))
   {
     // range selection
     GList *sels = gtk_tree_selection_get_selected_rows(selection, NULL);
@@ -840,7 +840,7 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   if(property == DT_COLLECTION_PROP_APERTURE
      || property == DT_COLLECTION_PROP_FOCAL_LENGTH
      || property == DT_COLLECTION_PROP_ISO
-     || property == DT_COLLECTION_PROP_RATING)
+     || property == DT_COLLECTION_PROP_RATING_LEGACY)
   {
     // handle of numeric value, which can have some operator before the text
     visible = TRUE;
@@ -1922,7 +1922,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         }
         break;
 
-      case DT_COLLECTION_PROP_RATING: // image rating
+      case DT_COLLECTION_PROP_RATING_LEGACY: // image rating
         {
         // clang-format off
           g_snprintf(query, sizeof(query),
@@ -2040,7 +2040,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
     if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
        || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE
-       || property == DT_COLLECTION_PROP_ASPECT_RATIO || property == DT_COLLECTION_PROP_RATING)
+       || property == DT_COLLECTION_PROP_ASPECT_RATIO || property == DT_COLLECTION_PROP_RATING_LEGACY)
     {
       gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
     }
@@ -2064,7 +2064,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
          || property == DT_COLLECTION_PROP_FILMROLL || property == DT_COLLECTION_PROP_LENS
          || property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
          || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_MODULE
-         || property == DT_COLLECTION_PROP_ORDER || property == DT_COLLECTION_PROP_RATING
+         || property == DT_COLLECTION_PROP_ORDER || property == DT_COLLECTION_PROP_RATING_LEGACY
          || (property >= DT_COLLECTION_PROP_METADATA
              && property < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER)))
   {
@@ -2080,7 +2080,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
   if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
      || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE
-     || property == DT_COLLECTION_PROP_ASPECT_RATIO || property == DT_COLLECTION_PROP_RATING)
+     || property == DT_COLLECTION_PROP_ASPECT_RATIO || property == DT_COLLECTION_PROP_RATING_LEGACY)
   {
     // test selection range [xxx;xxx]
     GRegex *regex;
@@ -2139,7 +2139,7 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   {
     gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators"));
   }
-  else if(property == DT_COLLECTION_PROP_RATING)
+  else if(property == DT_COLLECTION_PROP_RATING_LEGACY)
   {
     gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators\n"
                                            "star rating: 0-5\n"
@@ -2464,7 +2464,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
             && (item == DT_COLLECTION_PROP_DAY || is_time_property(item) || item == DT_COLLECTION_PROP_APERTURE
                 || item == DT_COLLECTION_PROP_FOCAL_LENGTH || item == DT_COLLECTION_PROP_ISO
                 || item == DT_COLLECTION_PROP_EXPOSURE || item == DT_COLLECTION_PROP_ASPECT_RATIO
-                || item == DT_COLLECTION_PROP_RATING))
+                || item == DT_COLLECTION_PROP_RATING_LEGACY))
     {
       /* this is a range selection */
       GtkTreeIter iter2;
@@ -2972,7 +2972,7 @@ static void _populate_collect_combo(GtkWidget *w)
         ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
       }
     }
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
+    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_LEGACY);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
 
@@ -3553,7 +3553,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_EXPORT_TIMESTAMP);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_PRINT_TIMESTAMP);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_HISTORY);
-  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_RATING);
+  luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_RATING_LEGACY);
   luaA_enum_value(L, dt_collection_properties_t, DT_COLLECTION_PROP_COLORLABEL);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
