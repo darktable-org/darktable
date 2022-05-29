@@ -3732,7 +3732,7 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe)
   if(work_profile == NULL) return;
 
   // Convert to XYZ
-  dt_aligned_pixel_t XYZ;
+  dt_aligned_pixel_t XYZ = { 0.f };
   dot_product(RGB, work_profile->matrix_in, XYZ);
   dt_XYZ_to_sRGB(XYZ, g->spot_RGB);
 
