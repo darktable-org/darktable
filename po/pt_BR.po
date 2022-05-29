@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-28 19:24-0300\n"
-"PO-Revision-Date: 2022-05-28 19:27-0300\n"
+"POT-Creation-Date: 2022-05-30 08:42-0300\n"
+"PO-Revision-Date: 2022-05-30 08:43-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -123,7 +123,7 @@ msgid "on import"
 msgstr "ao importar"
 
 #: ../build/bin/conf_gen.h:357 ../build/bin/conf_gen.h:1188
-#: ../build/bin/conf_gen.h:1204 ../build/bin/conf_gen.h:3097
+#: ../build/bin/conf_gen.h:1204 ../build/bin/conf_gen.h:3102
 #: ../build/bin/preferences_gen.h:4354 ../build/bin/preferences_gen.h:4449
 #: ../build/bin/preferences_gen.h:5663 ../build/bin/preferences_gen.h:5717
 #: ../build/bin/preferences_gen.h:7612
@@ -231,7 +231,7 @@ msgid "Hex"
 msgstr "Hex"
 
 #: ../build/bin/conf_gen.h:736 ../build/bin/conf_gen.h:1834
-#: ../build/bin/conf_gen.h:2413 ../build/bin/conf_gen.h:2912
+#: ../build/bin/conf_gen.h:2413 ../build/bin/conf_gen.h:2917
 #: ../build/bin/preferences_gen.h:6078 ../build/bin/preferences_gen.h:7148
 msgctxt "preferences"
 msgid "none"
@@ -625,7 +625,7 @@ msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/bin/conf_gen.h:2412 ../build/bin/conf_gen.h:3100
+#: ../build/bin/conf_gen.h:2412 ../build/bin/conf_gen.h:3105
 #: ../build/bin/preferences_gen.h:5678 ../build/bin/preferences_gen.h:7143
 #: ../build/bin/preferences_gen.h:7179
 msgctxt "preferences"
@@ -728,49 +728,49 @@ msgctxt "preferences"
 msgid "inch"
 msgstr "polegada"
 
-#: ../build/bin/conf_gen.h:2872 ../build/bin/preferences_gen.h:7977
+#: ../build/bin/conf_gen.h:2877 ../build/bin/preferences_gen.h:7977
 #: ../build/bin/preferences_gen.h:8006
 msgctxt "preferences"
 msgid "all"
 msgstr "tudo"
 
-#: ../build/bin/conf_gen.h:2873 ../build/bin/preferences_gen.h:7982
+#: ../build/bin/conf_gen.h:2878 ../build/bin/preferences_gen.h:7982
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/bin/conf_gen.h:2874 ../build/bin/preferences_gen.h:7987
+#: ../build/bin/conf_gen.h:2879 ../build/bin/preferences_gen.h:7987
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/bin/conf_gen.h:2910 ../build/bin/preferences_gen.h:6068
+#: ../build/bin/conf_gen.h:2915 ../build/bin/preferences_gen.h:6068
 #: ../build/bin/preferences_gen.h:6097
 msgctxt "preferences"
 msgid "scene-referred"
 msgstr "relativo à cena"
 
-#: ../build/bin/conf_gen.h:2911 ../build/bin/preferences_gen.h:6073
+#: ../build/bin/conf_gen.h:2916 ../build/bin/preferences_gen.h:6073
 msgctxt "preferences"
 msgid "display-referred"
 msgstr "relativo à exibição"
 
-#: ../build/bin/conf_gen.h:2920 ../build/bin/preferences_gen.h:6133
+#: ../build/bin/conf_gen.h:2925 ../build/bin/preferences_gen.h:6133
 msgctxt "preferences"
 msgid "modern"
 msgstr "moderno"
 
-#: ../build/bin/conf_gen.h:2921 ../build/bin/preferences_gen.h:6138
+#: ../build/bin/conf_gen.h:2926 ../build/bin/preferences_gen.h:6138
 #: ../build/bin/preferences_gen.h:6157
 msgctxt "preferences"
 msgid "legacy"
 msgstr "legado"
 
-#: ../build/bin/conf_gen.h:3027
+#: ../build/bin/conf_gen.h:3032
 msgid "camera time zone"
 msgstr "fuso horário da câmera"
 
-#: ../build/bin/conf_gen.h:3028
+#: ../build/bin/conf_gen.h:3033
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -778,64 +778,64 @@ msgstr ""
 "a maioria das câmeras não armazena a fuso horário no EXIF. indique o fuso "
 "horário correto para que os dados GPX possam ser processados corretamente"
 
-#: ../build/bin/conf_gen.h:3039 ../build/bin/preferences_gen.h:5533
+#: ../build/bin/conf_gen.h:3044 ../build/bin/preferences_gen.h:5533
 #: ../build/bin/preferences_gen.h:5562
 msgctxt "preferences"
 msgid "no color"
 msgstr "sem cor"
 
-#: ../build/bin/conf_gen.h:3040 ../build/bin/preferences_gen.h:5538
+#: ../build/bin/conf_gen.h:3045 ../build/bin/preferences_gen.h:5538
 msgctxt "preferences"
 msgid "illuminant color"
 msgstr "cor do iluminante"
 
-#: ../build/bin/conf_gen.h:3041 ../build/bin/preferences_gen.h:5543
+#: ../build/bin/conf_gen.h:3046 ../build/bin/preferences_gen.h:5543
 msgctxt "preferences"
 msgid "effect emulation"
 msgstr "emulação do efeito"
 
-#: ../build/bin/conf_gen.h:3087 ../build/bin/preferences_gen.h:5598
+#: ../build/bin/conf_gen.h:3092 ../build/bin/preferences_gen.h:5598
 #: ../build/bin/preferences_gen.h:5627
 msgctxt "preferences"
 msgid "list"
 msgstr "lista"
 
-#: ../build/bin/conf_gen.h:3088 ../build/bin/preferences_gen.h:5603
+#: ../build/bin/conf_gen.h:3093 ../build/bin/preferences_gen.h:5603
 msgctxt "preferences"
 msgid "tabs"
 msgstr "abas"
 
-#: ../build/bin/conf_gen.h:3089 ../build/bin/preferences_gen.h:5608
+#: ../build/bin/conf_gen.h:3094 ../build/bin/preferences_gen.h:5608
 msgctxt "preferences"
 msgid "columns"
 msgstr "colunas"
 
-#: ../build/bin/conf_gen.h:3098 ../build/bin/preferences_gen.h:5668
+#: ../build/bin/conf_gen.h:3103 ../build/bin/preferences_gen.h:5668
 msgctxt "preferences"
 msgid "active"
 msgstr "ativo"
 
-#: ../build/bin/conf_gen.h:3099 ../build/bin/preferences_gen.h:5673
+#: ../build/bin/conf_gen.h:3104 ../build/bin/preferences_gen.h:5673
 msgctxt "preferences"
 msgid "dim"
 msgstr "atenuar"
 
-#: ../build/bin/conf_gen.h:3101 ../build/bin/preferences_gen.h:5683
+#: ../build/bin/conf_gen.h:3106 ../build/bin/preferences_gen.h:5683
 msgctxt "preferences"
 msgid "fade"
 msgstr "esmaecer"
 
-#: ../build/bin/conf_gen.h:3102 ../build/bin/preferences_gen.h:5688
+#: ../build/bin/conf_gen.h:3107 ../build/bin/preferences_gen.h:5688
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../build/bin/conf_gen.h:3103 ../build/bin/preferences_gen.h:5693
+#: ../build/bin/conf_gen.h:3108 ../build/bin/preferences_gen.h:5693
 msgctxt "preferences"
 msgid "smooth"
 msgstr "suavizar"
 
-#: ../build/bin/conf_gen.h:3104 ../build/bin/preferences_gen.h:5698
+#: ../build/bin/conf_gen.h:3109 ../build/bin/preferences_gen.h:5698
 msgctxt "preferences"
 msgid "glide"
 msgstr "deslizar"
@@ -997,7 +997,7 @@ msgid ""
 "values."
 msgstr ""
 "selecione esta opção para usar um único clique para escolher itens no módulo "
-"de coleções. isto permitirá fazer seleções de faixas por data e valores "
+"coleções. isto permitirá fazer seleções de faixas por data e valores "
 "numéricos."
 
 #: ../build/bin/preferences_gen.h:4155
@@ -2294,8 +2294,8 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:8822
 msgid "hide the history button and show the recent collections module instead"
 msgstr ""
-"esconder o botão de histórico e mostrar o módulo de coleções recentes ao "
-"invés disso"
+"esconder o botão de histórico e mostrar o módulo coleções recentes ao invés "
+"disso"
 
 #: ../build/bin/preferences_gen.h:8844
 msgid "number of folder levels to show in lists"
@@ -2330,16 +2330,16 @@ msgstr ""
 "pasta, 'pasta', 'tempos' (por exemplo 'data da captura')"
 
 #: ../build/bin/preferences_gen.h:9048
-msgid "prefer an history button in the collect module"
-msgstr "preferir um botão de histórico no módulo de coleta"
+msgid "prefer a history button in the collections module"
+msgstr "preferir um botão de histórico no módulo de coleções"
 
 #: ../build/bin/preferences_gen.h:9062
 msgid ""
-"prefer to hide this module and access history with a button in the collect "
-"module"
+"hide this module and instead access collections history with a button in the "
+"collections module"
 msgstr ""
 "preferir esconder este módulo e acessar o histórico com um botão no "
-"histórico de coleta"
+"histórico de coleções"
 
 #: ../build/bin/preferences_gen.h:9116
 msgid "suggested tags level of confidence"
@@ -3477,8 +3477,8 @@ msgstr "método de interpolação cromática"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:114
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:179
-msgid "lmmse refine"
-msgstr "refinamento lmmse"
+msgid "LMMSE refine"
+msgstr "refinamento LMMSE"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
@@ -4771,40 +4771,40 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/bauhaus/bauhaus.c:3289
+#: ../src/bauhaus/bauhaus.c:3280
 msgid "button on"
 msgstr "botão ligado"
 
-#: ../src/bauhaus/bauhaus.c:3289
+#: ../src/bauhaus/bauhaus.c:3280
 msgid "button off"
 msgstr "botão desligado"
 
-#: ../src/bauhaus/bauhaus.c:3458 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3449 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "valor"
 
-#: ../src/bauhaus/bauhaus.c:3459 ../src/bauhaus/bauhaus.c:3465
+#: ../src/bauhaus/bauhaus.c:3450 ../src/bauhaus/bauhaus.c:3456
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "botão"
 
-#: ../src/bauhaus/bauhaus.c:3460
+#: ../src/bauhaus/bauhaus.c:3451
 msgid "force"
 msgstr "força"
 
-#: ../src/bauhaus/bauhaus.c:3461
+#: ../src/bauhaus/bauhaus.c:3452
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3464
+#: ../src/bauhaus/bauhaus.c:3455
 msgid "selection"
 msgstr "seleção"
 
-#: ../src/bauhaus/bauhaus.c:3483
+#: ../src/bauhaus/bauhaus.c:3474
 msgid "slider"
 msgstr "controle deslizante"
 
-#: ../src/bauhaus/bauhaus.c:3488
+#: ../src/bauhaus/bauhaus.c:3479
 msgid "dropdown"
 msgstr "menu flutuante"
 
@@ -8042,7 +8042,8 @@ msgid "normal & arithmetic modes"
 msgstr "modos normal & aritméticos"
 
 #: ../src/develop/blend_gui.c:2709
-msgid "chrominance & luminance modes"
+#, fuzzy
+msgid "chromaticity & lightness modes"
 msgstr "modos de crominância e luminância"
 
 #. add deprecated blend mode
@@ -20732,8 +20733,8 @@ msgstr ""
 "analisa o arquivo GPX e atualiza a localização das imagens selecionadas"
 
 #: ../src/libs/geotagging.c:1822
-msgid "gpx file"
-msgstr "arquivo gpx"
+msgid "GPX file"
+msgstr "arquivo GPX"
 
 #: ../src/libs/geotagging.c:1829
 msgid "select a GPX track file..."
@@ -20741,14 +20742,14 @@ msgstr "selecionar arquivo de trilha GPX..."
 
 #: ../src/libs/geotagging.c:1846
 msgid ""
-"list of track segments in the gpx file, for each segment:\n"
+"list of track segments in the GPX file, for each segment:\n"
 "- the start date/time in local time (LT)\n"
 "- the number of track points\n"
 "- the number of matching images based on images date/time, offset and time "
 "zone\n"
 "- more detailed time information hovering the row"
 msgstr ""
-"lista de segmentos de trilhas no arquivo gpx, para cada segmento:\n"
+"lista de segmentos de trilhas no arquivo GPX, para cada segmento:\n"
 "- a data/hora de início em tempo local\n"
 "- o número de pontos de trilha\n"
 "- o número de imagens baseando-se na data/hora das imagens, deslocamento e "
@@ -24218,6 +24219,12 @@ msgstr "mudar para uma janela clássica que ficará aberta após soltar a tecla.
 #: ../src/views/view.c:1345
 msgid "mouse actions"
 msgstr "ações com mouse"
+
+#~ msgid "lmmse refine"
+#~ msgstr "refinamento lmmse"
+
+#~ msgid "gpx file"
+#~ msgstr "arquivo gpx"
 
 #~ msgid "<b><i>actual selection: </i></b>"
 #~ msgstr "<b><i>seleção atual: </i></b>"
