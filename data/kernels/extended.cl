@@ -818,7 +818,8 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
                  const float saturation_global, const float4 saturation,
                  const int mask_display, const int mask_type, const int checker_1, const int checker_2,
                  const float4 checker_color_1, const float4 checker_color_2, const float L_white,
-                 const dt_iop_colorbalancrgb_saturation_t saturation_formula)
+                 const dt_iop_colorbalancrgb_saturation_t saturation_formula,
+                 constant const float *const hue_rotation_matrix)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -850,11 +851,11 @@ colorbalancergb (read_only image2d_t in, write_only image2d_t out,
   const float4 opacities_comp = (float4)1.f - opacities;
 
   // Hue shift - do it now because we need the gamut limit at output hue right after
-  Ych.z += hue_angle;
-
-  // Ensure hue ± correction is in [-PI; PI]
-  if(Ych.z > M_PI_F) Ych.z -= 2.f * M_PI_F;
-  else if(Ych.z < -M_PI_F) Ych.z += 2.f * M_PI_F;
+  // The hue rotation is implemented as a matrix multiplication.
+  const float cos_h = Ych.z;
+  const float sin_h = Ych.w;
+  Ych.z = hue_rotation_matrix[0] * cos_h + hue_rotation_matrix[1] * sin_h;
+  Ych.w = hue_rotation_matrix[2] * cos_h + hue_rotation_matrix[3] * sin_h;
 
   // Linear chroma : distance to achromatic at constant luminance in scene-referred
   const float chroma_boost = chroma_global + dot(opacities, chroma);

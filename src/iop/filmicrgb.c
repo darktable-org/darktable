@@ -1559,13 +1559,13 @@ static inline void gamut_check_RGB(const dt_colormatrix_t matrix_in, const dt_co
   // white would do. We will next find the chroma change needed to bring the pixel
   // into gamut.
   const float Y = CLAMP((Ych_in[0] + Ych_brightened[0]) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_black), CIE_Y_1931_to_CIE_Y_2006(display_white));
-  // Precompute sin and cos of hue for reuse
-  const float cos_h = cosf(Ych_in[2]);
-  const float sin_h = sinf(Ych_in[2]);
+
+  const float cos_h = Ych_in[2];
+  const float sin_h = Ych_in[3];
   const float new_chroma = MIN(Ych_in[1], Ych_max_chroma(matrix_out, display_white, Y, cos_h, sin_h));
 
   // Go to RGB, using existing luminance and hue and the new chroma
-  const dt_aligned_pixel_t Ych = { Y, new_chroma, Ych_in[2], 0.f };
+  const dt_aligned_pixel_t Ych = { Y, new_chroma, cos_h, sin_h };
   Ych_to_RGB(Ych, matrix_out, RGB_out);
 
   // Clamp in target RGB as a final catch-all
@@ -1585,6 +1585,7 @@ static inline void gamut_mapping(dt_aligned_pixel_t Ych_final, dt_aligned_pixel_
 {
   // Force final hue to original
   Ych_final[2] = Ych_original[2];
+  Ych_final[3] = Ych_original[3];
 
   // Clip luminance
   Ych_final[0] = CLAMP(Ych_final[0],

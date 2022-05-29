@@ -1145,8 +1145,14 @@ static inline void Yrg_to_LMS(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t L
 }
 
 /*
-* Re-express Filmlight Yrg in polar coordinates Ych
-*/
+ * Re-express Filmlight Yrg in polar coordinates Ych.
+ *
+ * Note that we don't explicitly store the hue angle
+ * but rather just the cosine and sine of the angle.
+ * This is because we don't need the hue angle anywhere
+ * and this way we can avoid calculating expensive
+ * trigonometric functions.
+ */
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(Ych, Yrg: 16)
@@ -1160,11 +1166,13 @@ static inline void Yrg_to_Ych(const dt_aligned_pixel_t Yrg, dt_aligned_pixel_t Y
   // -> grading RGB conversion.
   const float r = Yrg[1] - 0.21902143f;
   const float g = Yrg[2] - 0.54371398f;
-  const float c = hypotf(g, r);
-  const float h = atan2f(g, r);
+  const float c = dt_fast_hypotf(g, r);
+  const float cos_h = c != 0.f ? r / c : 1.f;
+  const float sin_h = c != 0.f ? g / c : 0.f;
   Ych[0] = Y;
   Ych[1] = c;
-  Ych[2] = h;
+  Ych[2] = cos_h;
+  Ych[3] = sin_h;
 }
 
 #ifdef _OPENMP
@@ -1174,12 +1182,32 @@ static inline void Ych_to_Yrg(const dt_aligned_pixel_t Ych, dt_aligned_pixel_t Y
 {
   const float Y = Ych[0];
   const float c = Ych[1];
-  const float h = Ych[2];
-  const float r = c * cosf(h) + 0.21902143f;
-  const float g = c * sinf(h) + 0.54371398f;
+  const float cos_h = Ych[2];
+  const float sin_h = Ych[3];
+  const float r = c * cos_h + 0.21902143f;
+  const float g = c * sin_h + 0.54371398f;
   Yrg[0] = Y;
   Yrg[1] = r;
   Yrg[2] = g;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych: 16)
+#endif
+static inline void make_Ych(const float Y, const float c, const float h, dt_aligned_pixel_t Ych)
+{
+  Ych[0] = Y;
+  Ych[1] = c;
+  Ych[2] = cosf(h);
+  Ych[3] = sinf(h);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych: 16)
+#endif
+static inline float get_hue_angle_from_Ych(const dt_aligned_pixel_t Ych)
+{
+  return atan2f(Ych[3], Ych[2]);
 }
 
 /*
@@ -1256,8 +1284,8 @@ static inline void gamut_check_Yrg(dt_aligned_pixel_t Ych)
   const float D65_g = 0.54371398f;
 
   float max_c = Ych[1];
-  const float cos_h = cosf(Ych[2]);
-  const float sin_h = sinf(Ych[2]);
+  const float cos_h = Ych[2];
+  const float sin_h = Ych[3];
 
   if(Yrg[1] < 0.f)
   {

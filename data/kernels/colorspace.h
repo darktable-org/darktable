@@ -550,8 +550,14 @@ static inline float4 Yrg_to_LMS(const float4 Yrg)
 
 
 /*
-* Re-express Filmlight Yrg in polar coordinates Ych
-*/
+ * Re-express Filmlight Yrg in polar coordinates Ych
+ *
+ * Note that we don't explicitly store the hue angle
+ * but rather just the cosine and sine of the angle.
+ * This is because we don't need the hue angle anywhere
+ * and this way we can avoid calculating expensive
+ * trigonometric functions.
+ */
 
 static inline float4 Yrg_to_Ych(const float4 Yrg)
 {
@@ -562,9 +568,10 @@ static inline float4 Yrg_to_Ych(const float4 Yrg)
   // -> grading RGB conversion.
   const float r = Yrg.y - 0.21902143f;
   const float g = Yrg.z - 0.54371398f;
-  const float c = hypot(g, r);
-  const float h = atan2(g, r);
-  return (float4)(Y, c, h, Yrg.w);
+  const float c = dt_fast_hypot(g, r);
+  const float cos_h = c != 0.f ? r / c : 1.f;
+  const float sin_h = c != 0.f ? g / c : 0.f;
+  return (float4)(Y, c, cos_h, sin_h);
 }
 
 
@@ -572,10 +579,11 @@ static inline float4 Ych_to_Yrg(const float4 Ych)
 {
   const float Y = Ych.x;
   const float c = Ych.y;
-  const float h = Ych.z;
-  const float r = c * native_cos(h) + 0.21902143f;
-  const float g = c * native_sin(h) + 0.54371398f;
-  return (float4)(Y, r, g, Ych.w);
+  const float cos_h = Ych.z;
+  const float sin_h = Ych.w;
+  const float r = c * cos_h + 0.21902143f;
+  const float g = c * sin_h + 0.54371398f;
+  return (float4)(Y, r, g, 0.f);
 }
 
 
@@ -737,8 +745,8 @@ static inline float4 gamut_check_Yrg(float4 Ych)
   const float D65_r = 0.21902143f;
   const float D65_g = 0.54371398f;
   float max_c = Ych.y;
-  const float cos_h = native_cos(Ych.z);
-  const float sin_h = native_sin(Ych.z);
+  const float cos_h = Ych.z;
+  const float sin_h = Ych.w;
 
   if(Yrg.y < 0.f)
   {
