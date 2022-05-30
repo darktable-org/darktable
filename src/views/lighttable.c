@@ -15,6 +15,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the lighttable module.  */
+
+#include "common/extra_optimizations.h"
+
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
@@ -596,17 +599,8 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
 {
   const dt_lighttable_layout_t layout = dt_view_lighttable_get_layout(darktable.view_manager);
 
-  switch(layout)
-  {
-    case DT_LIGHTTABLE_LAYOUT_FILEMANAGER:
-    case DT_LIGHTTABLE_LAYOUT_ZOOMABLE:
-    {
-      dt_thumbtable_scrollbar_changed(dt_ui_thumbtable(darktable.gui->ui), x, y);
-      break;
-    }
-    default:
-      break;
-  }
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+    dt_thumbtable_scrollbar_changed(dt_ui_thumbtable(darktable.gui->ui), x, y);
 }
 
 enum

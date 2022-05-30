@@ -2153,9 +2153,9 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   // Save the shortcuts before editing
   dt_shortcuts_save(".edit", FALSE);
 
-  _selected_action = g_hash_table_lookup(darktable.control->widgets, widget);
-  if(!_selected_action && widget)
-    _selected_action = g_hash_table_lookup(darktable.control->widgets, gtk_widget_get_parent(widget));
+  GtkWidget *widget_or_parent = widget;
+  while(!(_selected_action = g_hash_table_lookup(darktable.control->widgets, widget_or_parent)) && widget_or_parent)
+    widget_or_parent = gtk_widget_get_parent(widget_or_parent);
   darktable.control->element = -1;
 
   GtkWidget *container = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
@@ -3071,7 +3071,7 @@ static float _process_action(dt_action_t *action, int instance,
     if(definition && definition->process
         && (action->type < DT_ACTION_TYPE_WIDGET
             || definition->no_widget
-            || !_widget_invisible(action_target)))
+            || (action_target && !_widget_invisible(action_target))))
     {
       if(!isnan(move_size) &&
          (definition->elements[element].effects != dt_action_effect_value || effect != DT_ACTION_EFFECT_SET))

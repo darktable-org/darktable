@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/extra_optimizations.h"
+
 #include "views/view.h"
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
@@ -1056,6 +1058,14 @@ void dt_view_collection_update(const dt_view_manager_t *vm)
   if(vm->proxy.module_filtering.module) vm->proxy.module_filtering.update(vm->proxy.module_filtering.module);
   if(vm->proxy.module_collect.module)
     vm->proxy.module_collect.update(vm->proxy.module_collect.module);
+}
+
+void dt_view_collection_update_history_state(const dt_view_manager_t *vm)
+{
+  if(vm->proxy.module_recentcollect.module)
+    vm->proxy.module_recentcollect.update_visibility(vm->proxy.module_recentcollect.module);
+  if(vm->proxy.module_collect.module)
+    vm->proxy.module_collect.update_history_visibility(vm->proxy.module_collect.module);
 }
 
 void dt_view_filtering_set_sort(const dt_view_manager_t *vm, int sort, gboolean asc)

@@ -264,9 +264,17 @@ typedef struct dt_view_manager_t
     {
       struct dt_lib_module_t *module;
       void (*update)(struct dt_lib_module_t *);
+      void (*update_history_visibility)(struct dt_lib_module_t *);
     } module_collect;
 
-    /* module collection proxy object */
+    /* module recent collection proxy object */
+    struct
+    {
+      struct dt_lib_module_t *module;
+      void (*update_visibility)(struct dt_lib_module_t *);
+    } module_recentcollect;
+
+    /* module filtering proxy object */
     struct
     {
       struct dt_lib_module_t *module;
@@ -409,6 +417,7 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
 /** update the collection module */
 void dt_view_collection_update(const dt_view_manager_t *vm);
 void dt_view_filtering_set_sort(const dt_view_manager_t *vm, int sort, gboolean asc);
+void dt_view_collection_update_history_state(const dt_view_manager_t *vm);
 
 /*
  * Filter dropdown proxy

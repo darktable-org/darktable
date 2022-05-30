@@ -59,6 +59,7 @@ extern "C" {
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/dng_opcode.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/exif.h"
@@ -710,7 +711,29 @@ static bool dt_check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
   return FALSE;
 }
 
-void dt_exif_img_check_usercrop(dt_image_t *img, const char *filename)
+static gboolean dt_check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
+{
+  gboolean has_opcodes = FALSE;
+  Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.OpcodeList2"));
+  // DNGs without an embedded preview have the opcodes under Exif.Image instead of Exif.SubImage1
+  if(pos == exifData.end())
+    pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.OpcodeList2"));
+  if(pos != exifData.end())
+  {
+    uint8_t *data = (uint8_t *)g_malloc(pos->size());
+    pos->copy(data, Exiv2::invalidByteOrder);
+    dt_dng_opcode_process_opcode_list_2(data, pos->size(), img);
+    g_free(data);
+    has_opcodes = TRUE;
+  }
+  else
+  {
+    dt_vprint(DT_DEBUG_IMAGEIO, "DNG OpcodeList2 tag not found\n");
+  }
+  return has_opcodes;
+}
+
+void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename)
 {
   try
   {
@@ -718,7 +741,11 @@ void dt_exif_img_check_usercrop(dt_image_t *img, const char *filename)
     assert(image.get() != 0);
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
-    if(!exifData.empty()) dt_check_usercrop(exifData, img);
+    if(!exifData.empty())
+    {
+      dt_check_usercrop(exifData, img);
+      dt_check_dng_opcodes(exifData, img);
+    }
     return;
   }
   catch(Exiv2::AnyError &e)
@@ -890,13 +917,19 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     if (dt_check_usercrop(exifData, img))
       {
-        img->flags |= DT_IMAGE_HAS_USERCROP;
+        img->flags |= DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS;
         guint tagid = 0;
         char tagname[64];
         snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
         dt_tag_new(tagname, &tagid);
         dt_tag_attach(tagid, img->id, FALSE, FALSE);
       }
+
+    if(dt_check_dng_opcodes(exifData, img))
+    {
+      img->flags |= DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS;
+    }
+
     /*
      * Get the focus distance in meters.
      */
@@ -1468,6 +1501,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
             params->img = (void *)img;
             // at this time only exif info are available
             gchar *result = dt_variables_expand(params, str, FALSE);
+            dt_variables_params_destroy(params);
             if(result && result[0])
             {
               g_free(str);
@@ -4478,4 +4512,3 @@ void dt_exif_cleanup()
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

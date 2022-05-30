@@ -602,45 +602,50 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
   }
 }
 
-const char *dt_collection_sort_name(dt_collection_sort_t sort)
+const char *dt_collection_sort_name_untranslated(dt_collection_sort_t sort)
 {
   switch(sort)
   {
     case DT_COLLECTION_SORT_FILENAME:
-      return _("filename");
+      return N_("filename");
     case DT_COLLECTION_SORT_DATETIME:
-      return _("capture time");
+      return N_("capture time");
     case DT_COLLECTION_SORT_IMPORT_TIMESTAMP:
-      return _("import time");
+      return N_("import time");
     case DT_COLLECTION_SORT_CHANGE_TIMESTAMP:
-      return _("last modification time");
+      return N_("modification time");
     case DT_COLLECTION_SORT_EXPORT_TIMESTAMP:
-      return _("last export time");
+      return N_("export time");
     case DT_COLLECTION_SORT_PRINT_TIMESTAMP:
-      return _("last print time");
+      return N_("print time");
     case DT_COLLECTION_SORT_RATING:
-      return _("rating");
+      return N_("rating");
     case DT_COLLECTION_SORT_ID:
-      return _("id");
+      return N_("id");
     case DT_COLLECTION_SORT_COLOR:
-      return _("color label");
+      return N_("color label");
     case DT_COLLECTION_SORT_GROUP:
-      return _("group");
+      return N_("group");
     case DT_COLLECTION_SORT_PATH:
-      return _("full path");
+      return N_("full path");
     case DT_COLLECTION_SORT_CUSTOM_ORDER:
-      return _("custom sort");
+      return N_("custom sort");
     case DT_COLLECTION_SORT_TITLE:
-      return _("title");
+      return N_("title");
     case DT_COLLECTION_SORT_DESCRIPTION:
-      return _("description");
+      return N_("description");
     case DT_COLLECTION_SORT_ASPECT_RATIO:
-      return _("aspect ratio");
+      return N_("aspect ratio");
     case DT_COLLECTION_SORT_SHUFFLE:
-      return _("shuffle");
+      return N_("shuffle");
     default:
       return "";
   }
+};
+
+const char *dt_collection_sort_name(dt_collection_sort_t sort)
+{
+  return _(dt_collection_sort_name_untranslated(sort));
 };
 
 const char *dt_collection_name_untranslated(dt_collection_properties_t prop)
@@ -657,17 +662,17 @@ const char *dt_collection_name_untranslated(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_TAG:
       return N_("tag");
     case DT_COLLECTION_PROP_DAY:
-      return N_("date taken");
+      return N_("capture date");
     case DT_COLLECTION_PROP_TIME:
-      return N_("date-time taken");
+      return N_("capture time");
     case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
-      return N_("import timestamp");
+      return N_("import time");
     case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
-      return N_("change timestamp");
+      return N_("modification time");
     case DT_COLLECTION_PROP_EXPORT_TIMESTAMP:
-      return N_("export timestamp");
+      return N_("export time");
     case DT_COLLECTION_PROP_PRINT_TIMESTAMP:
-      return N_("print timestamp");
+      return N_("print time");
     case DT_COLLECTION_PROP_HISTORY:
       return N_("history");
     case DT_COLLECTION_PROP_COLORLABEL:
@@ -697,6 +702,8 @@ const char *dt_collection_name_untranslated(dt_collection_properties_t prop)
     case DT_COLLECTION_PROP_ORDER:
       return N_("module order");
     case DT_COLLECTION_PROP_RATING:
+      return N_("range rating");
+    case DT_COLLECTION_PROP_RATING_LEGACY:
       return N_("rating");
     case DT_COLLECTION_PROP_TEXTSEARCH:
       return N_("search");
@@ -1371,12 +1378,12 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         // clang-format on
       else
       {
-        // test the "integer" case (used by filters)
-        const int val = atoi(escaped_text);
-        if(val != 0 || !g_strcmp0(escaped_text, "0"))
+        // test the "mask" case (used by filters)
+        if(g_str_has_prefix(text, "0x"))
         {
-          const int colors_set = val & 0xFF;
-          const int colors_unset = (val & 0xFF00) >> 8;
+          const int val = strtol(&escaped_text[2], NULL, 16);
+          const int colors_set = val & 0xFFF;
+          const int colors_unset = (val & 0xFFF000) >> 12;
           const gboolean op = val & 0x80000000;
           if(op) // AND
           {
@@ -1438,25 +1445,28 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
+      if(!g_strcmp0(escaped_text, _("basic")) || !g_strcmp0(escaped_text, "$BASIC"))
+      {
+        // images without history and basic together
+        query = g_strdup("(id not IN (SELECT imgid FROM main.history_hash WHERE (basic_hash IS NULL OR "
+                         "current_hash != basic_hash)))");
+      }
+      else if(!g_strcmp0(escaped_text, _("auto applied")) || !g_strcmp0(escaped_text, "$AUTO_APPLIED"))
+      {
+        query = g_strdup("(id IN (SELECT imgid FROM main.history_hash WHERE current_hash == auto_hash))");
+      }
+      else if(!g_strcmp0(escaped_text, _("altered")) || !g_strcmp0(escaped_text, "$ALTERED"))
       {
         // clang-format off
-        // three groups
-        // - images without history and basic together
-        // - auto applied
-        // - altered
-        const char *condition =
-            (strcmp(escaped_text, _("basic")) == 0) ?
-              "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
-            : (strcmp(escaped_text, _("auto applied")) == 0) ?
-              "WHERE current_hash == auto_hash "
-            : (strcmp(escaped_text, _("altered")) == 0) ?
-              "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
-              "AND (auto_hash IS NULL OR current_hash != auto_hash) "
-            : "";
-        const char *condition2 = (strcmp(escaped_text, _("basic")) == 0) ? "not" : "";
-        query = g_strdup_printf("(id %s IN (SELECT imgid FROM main.history_hash %s)) ",
-                                condition2, condition);
+        query = g_strdup("(id IN (SELECT imgid "
+                                  "FROM main.history_hash "
+                                  "WHERE (basic_hash IS NULL OR current_hash != basic_hash) "
+                                  "AND (auto_hash IS NULL OR current_hash != auto_hash) ))");
         // clang-format on
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
       }
       break;
 
@@ -1497,11 +1507,18 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
-      // clang-format off
-      query = g_strdup_printf("(id %s IN (SELECT id AS imgid FROM main.images WHERE (flags & %d))) ",
-                              (strcmp(escaped_text, _("not copied locally")) == 0) ? "not" : "",
-                              DT_IMAGE_LOCAL_COPY);
-      // clang-format on
+      if(!g_strcmp0(escaped_text, _("not copied locally")) || !g_strcmp0(escaped_text, "$NO_LOCAL_COPY"))
+      {
+        query = g_strdup_printf("(flags & %d = 0) ", DT_IMAGE_LOCAL_COPY);
+      }
+      else if(!g_strcmp0(escaped_text, _("copied locally")) || !g_strcmp0(escaped_text, "$LOCAL_COPY"))
+      {
+        query = g_strdup_printf("(flags & %d) ", DT_IMAGE_LOCAL_COPY);
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
+      }
       break;
 
     case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio
@@ -1832,7 +1849,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         if(number1 && number2)
           query = g_strdup_printf("((%s >= %" G_GINT64_FORMAT ") AND (%s <= %" G_GINT64_FORMAT "))", colname, nb1, colname, nb2);
       }
-      else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
+      else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1 && number2)
         query = g_strdup_printf("((%s >= %" G_GINT64_FORMAT ") AND (%s <= %" G_GINT64_FORMAT "))", colname, nb1, colname, nb2);
       else if(strcmp(operator, "<>") == 0 && number1 && number2)
         query = g_strdup_printf("((%s < %" G_GINT64_FORMAT ") AND (%s > %" G_GINT64_FORMAT "))", colname, nb1, colname, nb2);
@@ -1848,7 +1865,39 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     }
 
     case DT_COLLECTION_PROP_GROUPING: // grouping
-      query = g_strdup_printf("(id %s group_id)", (strcmp(escaped_text, _("group leaders")) == 0) ? "=" : "!=");
+      if(!g_strcmp0(escaped_text, "$NO_GROUP"))
+      {
+        query = g_strdup("(id = group_id AND "
+                         "NOT EXISTS(SELECT 1 AS group_count FROM main.images AS gc WHERE gc.group_id = "
+                         "mi.group_id AND gc.id != mi.id))");
+      }
+      else if(!g_strcmp0(escaped_text, "$GROUP"))
+      {
+        query = g_strdup(
+            "(EXISTS(SELECT 1 FROM main.images AS gc WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
+      }
+      else if(!g_strcmp0(escaped_text, "$LEADER"))
+      {
+        query = g_strdup(
+            "(mi.id = mi.group_id AND "
+            "EXISTS(SELECT 1 FROM main.images AS gc WHERE gc.group_id = mi.group_id AND gc.id != mi.id))");
+      }
+      else if(!g_strcmp0(escaped_text, "$FOLLOWER"))
+      {
+        query = g_strdup("(id != group_id)");
+      }
+      else if(!g_strcmp0(escaped_text, _("group leaders"))) // used in collect.c
+      {
+        query = g_strdup("(id = group_id)");
+      }
+      else if(!g_strcmp0(escaped_text, _("group followers"))) // used in collect.c
+      {
+        query = g_strdup("(id != group_id)");
+      }
+      else // by default, we select all the images
+      {
+        query = g_strdup("1 = 1");
+      }
       break;
 
     case DT_COLLECTION_PROP_MODULE: // dev module
@@ -1864,9 +1913,16 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_ORDER: // module order
       {
         int i = 0;
-        for(i = 0; i < DT_IOP_ORDER_LAST; i++)
+        if(strlen(escaped_text) > 1 && g_str_has_prefix(escaped_text, "$"))
         {
-          if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
+          i = atoi(escaped_text + 1);
+        }
+        else
+        {
+          for(i = 0; i < DT_IOP_ORDER_LAST; i++)
+          {
+            if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
+          }
         }
         if(i < DT_IOP_ORDER_LAST)
           // clang-format off
@@ -1882,19 +1938,22 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       case DT_COLLECTION_PROP_TEXTSEARCH: // text search
       {
         // clang-format off
-        query = g_strdup_printf("(id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
-                                " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
-                                "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
-                                " UNION SELECT id FROM main.images"
-                                "   WHERE filename LIKE '%s'"
-                                " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
-                                "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
-                                escaped_text, escaped_text, escaped_text, escaped_text, escaped_text);
+        if(g_strcmp0(escaped_text, "%%") != 0)
+          query = g_strdup_printf
+            ("(id IN (SELECT id FROM main.meta_data WHERE value LIKE '%s'"
+             " UNION SELECT imgid AS id FROM main.tagged_images AS ti, data.tags AS t"
+             "   WHERE t.id=ti.tagid AND (t.name LIKE '%s' OR t.synonyms LIKE '%s')"
+             " UNION SELECT id FROM main.images"
+             "   WHERE filename LIKE '%s'"
+             " UNION SELECT i.id FROM main.images AS i, main.film_rolls AS fr"
+             "   WHERE fr.id=i.film_id AND fr.folder LIKE '%s'))",
+             escaped_text, escaped_text, escaped_text, escaped_text, escaped_text);
         // clang-format on
       }
       break;
 
       case DT_COLLECTION_PROP_RATING: // image rating
+      case DT_COLLECTION_PROP_RATING_LEGACY:
       {
         gchar *operator, *number1, *number2;
         dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);

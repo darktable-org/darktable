@@ -91,6 +91,7 @@ FILE(GLOB SOURCE_FILES
   "common/iop_group.c"
   "common/iop_order.c"
   "common/iop_profile.c"
+  "common/dng_opcode.c"
   "control/conf.c"
   "control/control.c"
   "control/crawler.c"
@@ -365,11 +366,24 @@ if (USE_AVIF)
 endif()
 
 if(USE_HEIF)
-  find_package(libheif 1.9.0 CONFIG)
+  macro(find_libheif versions)
+    foreach(version ${versions})
+      find_package(libheif ${version} CONFIG)
+      if(libheif_FOUND)
+        break()
+      else()
+        find_package(libheif ${version})
+        if(libheif_FOUND)
+          break()
+        endif()
+      endif()
+    endforeach()
+  endmacro()
+  
+  find_libheif(1.12.0;1.11.0;1.10.0;1.9.0)
   if(TARGET heif)
     list(APPEND LIBS heif)
   else()
-    find_package(libheif 1.9.0)
     if(TARGET libheif::libheif)
       list(APPEND LIBS libheif::libheif)
     endif()

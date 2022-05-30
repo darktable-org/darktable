@@ -23,13 +23,8 @@
 /* hide selection frame in culling */
 @define-color culling_selected_border_color transparent;
 
-*,
-#lib-plugin-ui,
-#iop-plugin-ui,
-#bauhaus-popup,
-#modules-tabs,
-#left,
-#right,
+.dt_plugin_ui,
+.dt_bauhaus_popup,
 combobox,
 combobox *,
 togglebutton,
@@ -80,8 +75,8 @@ box *
 }
 
 button,
-.section_label,
-.section_label *
+.dt_section_label,
+.dt_section_label *
 {
     font-family: "Roboto Medium", "Roboto",
                  "Segoe UI Semibold", "Segoe UI",
@@ -102,9 +97,9 @@ button,
                   sans-serif;
 }
 
-notebook tabs,
 #modules-tabs,
 #blending-tabs,
+notebook tabs,
 tooltip label,
 .active_menu_item * /* needed for some Pango issues not rendering synthetic bold for all OS */
 {

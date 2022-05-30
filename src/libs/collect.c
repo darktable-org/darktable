@@ -51,6 +51,15 @@ DT_MODULE(3)
 
 #define PARAM_STRING_SIZE 256 // FIXME: is this enough !?
 
+typedef struct _datetime_range_t
+{
+  GTimeSpan nb1;
+  GTimeSpan nb2;
+  char *operator;
+  GtkTreePath *path1;
+  GtkTreePath *path2;
+} _datetime_range_t;
+
 typedef struct dt_lib_collect_rule_t
 {
   int num;
@@ -60,6 +69,7 @@ typedef struct dt_lib_collect_rule_t
   GtkWidget *button;
   gboolean typing;
   gchar *searchstring;
+  _datetime_range_t datetime_range;
 } dt_lib_collect_rule_t;
 
 typedef struct dt_lib_collect_t
@@ -83,6 +93,8 @@ typedef struct dt_lib_collect_t
 #endif
 
   gboolean inited;
+
+  GtkWidget *history_box;
 } dt_lib_collect_t;
 
 typedef struct dt_lib_collect_params_rule_t
@@ -701,6 +713,28 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
   return FALSE;
 }
 
+static gboolean _datetime_range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *)data;
+  gchar *str;
+
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+  const GTimeSpan nb = dt_datetime_exif_to_gtimespan(str);
+  g_free(str);
+  GTimeSpan target = dr->datetime_range.path1 == NULL ? dr->datetime_range.nb1 : dr->datetime_range.nb2;
+
+  if(nb >= target)
+  {
+    if(dr->datetime_range.path1)
+      return TRUE;
+    else
+      dr->datetime_range.path1 = gtk_tree_path_copy(path);
+  }
+  dr->datetime_range.path2 = gtk_tree_path_copy(path);
+
+  return FALSE;
+}
+
 int _combo_get_active_collection(GtkWidget *combo)
 {
   return GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(combo)) - 1;
@@ -905,11 +939,34 @@ static gboolean tree_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   }
   else
   {
-    gchar *haystack = g_utf8_strdown(str, -1),
-          *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
-    visible = (g_strrstr(haystack, needle) != NULL);
+    gchar *haystack = g_utf8_strdown(str, -1);
+    const int property = _combo_get_active_collection(dr->combo);
+    if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
+    {
+      // handle of numeric value, which can have some operator before the text
+      visible = TRUE;
+      if(dr->datetime_range.nb1)
+      {
+        const GTimeSpan nb = dt_datetime_exif_to_gtimespan(haystack);
+        if(!dr->datetime_range.operator)
+          visible = (nb >= dr->datetime_range.nb1 && nb <= dr->datetime_range.nb2);
+        else if(strcmp(dr->datetime_range.operator, ">") == 0)
+          visible = (nb > dr->datetime_range.nb1);
+        else if(strcmp(dr->datetime_range.operator, ">=") == 0)
+          visible = (nb >= dr->datetime_range.nb1);
+        else if(strcmp(dr->datetime_range.operator, "<") == 0)
+          visible = (nb < dr->datetime_range.nb1);
+        else if(strcmp(dr->datetime_range.operator, "<=") == 0)
+          visible = (nb <= dr->datetime_range.nb1);
+        else if(strcmp(dr->datetime_range.operator, "<>") == 0)
+          visible = (nb != dr->datetime_range.nb1);
+        else if(dr->datetime_range.nb2)
+          visible = (nb >= dr->datetime_range.nb1 && nb <= dr->datetime_range.nb2);
+      }
+    }
+    else
+      visible = (g_strrstr(haystack, dr->searchstring) != NULL);
     g_free(haystack);
-    g_free(needle);
   }
 
   g_free(str);
@@ -1290,6 +1347,14 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         // clang-format on
         break;
       case DT_COLLECTION_PROP_DAY:
+        // clang-format off
+        query = g_strdup_printf("SELECT (datetime_taken / 86400000000) * 86400000000 AS date, 1, COUNT(*) AS count"
+                                " FROM main.images AS mi"
+                                " WHERE datetime_taken IS NOT NULL AND datetime_taken <> 0"
+                                " AND %s"
+                                " GROUP BY date", where_ext);
+        // clang-format on
+        break;
       case DT_COLLECTION_PROP_TIME:
       case DT_COLLECTION_PROP_IMPORT_TIMESTAMP:
       case DT_COLLECTION_PROP_CHANGE_TIMESTAMP:
@@ -1301,7 +1366,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
         switch(local_property)
         {
-          case DT_COLLECTION_PROP_DAY: colname = "datetime_taken" ; break ;
           case DT_COLLECTION_PROP_TIME: colname = "datetime_taken" ; break ;
           case DT_COLLECTION_PROP_IMPORT_TIMESTAMP: colname = "import_timestamp" ; break ;
           case DT_COLLECTION_PROP_CHANGE_TIMESTAMP: colname = "change_timestamp" ; break ;
@@ -1338,6 +1402,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       {
         char sdt[DT_DATETIME_EXIF_LENGTH] = {0};
         dt_datetime_gtimespan_to_exif(sdt, sizeof(sdt), sqlite3_column_int64(stmt, 0));
+        if(property == DT_COLLECTION_PROP_DAY)
+          sdt[10] = '\0';
         name = g_strdup(sdt);
       }
       else
@@ -1532,46 +1598,75 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     d->view_rule = property;
   }
 
-  // if needed, we restrict the tree to matching entries
-  if(dr->typing) tree_set_visibility(model, dr);
   // we update tree expansion and selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
   gtk_tree_view_collapse_all(d->view);
 
+  // prepare datetime entry data
+  if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
+  {
+    gchar *number1, *number2;
+    dt_collection_split_operator_datetime(gtk_entry_get_text(GTK_ENTRY(dr->text)),
+                                          &number1, &number2, &dr->datetime_range.operator);
+    if(number1 && number1[strlen(number1) - 1] == '%')
+      number1[strlen(number1) - 1] = '\0';
+    dr->datetime_range.nb1 = number1 ? dt_datetime_exif_to_gtimespan(number1) : 0;
+    dr->datetime_range.nb2 = number2 ? dt_datetime_exif_to_gtimespan(number2) : 0;
+    g_free(number1);
+    g_free(number2);
+  }
+
+  // if needed, we restrict the tree to matching entries
+  if(dr->typing)
+  {
+    if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
+    {
+      tree_set_visibility(model, dr);
+    }
+    else
+    {
+      gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+      tree_set_visibility(model, dr);
+      g_free(needle);
+    }
+  }
+
+  // select/expand items corresponding to entry
   if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
-    // test selection range [xxx;xxx]
-    GRegex *regex;
-    GMatchInfo *match_info;
-    int match_count;
-
-    regex = g_regex_new("^\\s*\\[\\s*(.*)\\s*;\\s*(.*)\\s*\\]\\s*$", 0, 0, NULL);
-    g_regex_match_full(regex, gtk_entry_get_text(GTK_ENTRY(dr->text)), -1, 0, 0, &match_info, NULL);
-    match_count = g_match_info_get_match_count(match_info);
-
-    if(match_count == 3)
+    if(strcmp(dr->datetime_range.operator, "[]") == 0)
     {
-      _range_t *range = (_range_t *)calloc(1, sizeof(_range_t));
-      /* inversed as dates are in reverse order */
-      range->start = g_match_info_fetch(match_info, 2);
-      range->stop = g_match_info_fetch(match_info, 1);
-
-      gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)range_select, range);
-      if(range->path1 && range->path2)
+      dr->datetime_range.path1 = NULL;
+      dr->datetime_range.path2 = NULL;
+      gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)_datetime_range_select, dr);
+      if(dr->datetime_range.path1 && dr->datetime_range.path2)
       {
-        gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), range->path1, range->path2);
+        GtkTreePath *path1 = gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter), dr->datetime_range.path1);
+        GtkTreePath *path2 = gtk_tree_model_filter_convert_child_path_to_path(GTK_TREE_MODEL_FILTER(d->treefilter), dr->datetime_range.path2);
+        GtkTreePath *path3 = NULL;
+        GtkTreeIter iter;
+        if(gtk_tree_model_get_iter(d->treefilter, &iter, path1))
+        {
+          GtkTreeIter parent;
+          if(gtk_tree_model_iter_parent(d->treefilter, &parent, &iter))
+            path3 = gtk_tree_model_get_path(d->treefilter, &parent);
+        }
+        gtk_tree_view_expand_to_path(d->view, path3 ? path3 : path1);
+        gtk_tree_view_scroll_to_cell(d->view, path1, NULL, TRUE, 0.5, 0.5);
+        gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), path1, path2);
+        gtk_tree_path_free(path1);
+        gtk_tree_path_free(path2);
+        if(path3)
+          gtk_tree_path_free(path3);
       }
-      g_free(range->start);
-      g_free(range->stop);
-      gtk_tree_path_free(range->path1);
-      gtk_tree_path_free(range->path2);
-      free(range);
+      if(dr->datetime_range.path1)
+        gtk_tree_path_free(dr->datetime_range.path1);
+      if(dr->datetime_range.path2)
+        gtk_tree_path_free(dr->datetime_range.path2);
     }
     else
       gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
-
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
+    g_free(dr->datetime_range.operator);
   }
   else
     gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
@@ -2110,6 +2205,12 @@ static void _set_tooltip(dt_lib_collect_rule_t *d)
   g_free(tip);
 }
 
+static void _lib_collect_update_history_visibility(dt_lib_module_t *self)
+{
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  const gboolean hide = dt_conf_get_bool("plugins/lighttable/collect/history_hide");
+  gtk_widget_set_visible(d->history_box, !hide);
+}
 
 static void _lib_collect_gui_update(dt_lib_module_t *self)
 {
@@ -2374,10 +2475,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       gtk_tree_model_get(model, &iter2, DT_LIB_COLLECT_COL_PATH, &text2, -1);
 
       gchar *n_text;
-      if(item == DT_COLLECTION_PROP_DAY || is_time_property(item))
-        n_text = g_strdup_printf("[%s;%s]", text2, text); /* dates are in reverse order */
-      else
-        n_text = g_strdup_printf("[%s;%s]", text, text2);
+      n_text = g_strdup_printf("[%s;%s]", text, text2);
 
       g_free(text);
       g_free(text2);
@@ -2919,7 +3017,12 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   dt_osx_disallow_fullscreen(dialog);
 #endif
   gtk_widget_show_all(dialog);
-  gtk_dialog_run(GTK_DIALOG(dialog));
+  if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+  {
+    dt_conf_set_bool("plugins/lighttable/recentcollect/hide",
+                     !dt_conf_get_bool("plugins/lighttable/collect/history_hide"));
+    dt_view_collection_update_history_state(darktable.view_manager);
+  }
   gtk_widget_destroy(dialog);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, DT_COLLECTION_PROP_UNDEF, NULL);
 }
@@ -2975,7 +3078,26 @@ static void _history_apply(GtkWidget *widget, dt_lib_module_t *self)
   const char *line = dt_conf_get_string_const(confname);
   if(line && line[0] != '\0')
   {
+    const int prev_property = dt_conf_get_int("plugins/lighttable/collect/item0");
     dt_collection_deserialize(line, FALSE);
+
+    // for the tag propertyn we need to adjust the order accordingly
+    const int new_property = dt_conf_get_int("plugins/lighttable/collect/item0");
+    gchar *order = NULL;
+    if(prev_property != DT_COLLECTION_PROP_TAG && new_property == DT_COLLECTION_PROP_TAG)
+    {
+      // save global order
+      char buf[4096] = { 0 };
+      dt_collection_sort_serialize(buf, sizeof(buf));
+      dt_conf_set_string("plugins/lighttable/collect/lastorder", buf);
+    }
+    else if(prev_property == DT_COLLECTION_PROP_TAG && new_property != DT_COLLECTION_PROP_TAG)
+    {
+      // restore global order
+      order = dt_conf_get_string("plugins/lighttable/collect/lastorder");
+      dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
+    }
+    if(order) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGES_ORDER_CHANGE, order);
   }
 }
 
@@ -2999,30 +3121,48 @@ static void _history_pretty_print(const char *buf, char *out, size_t outsize)
 
     if(n == 3)
     {
-      if(k > 0) switch(mode)
+      if(k > 0)
+      {
+        c = g_strlcpy(out, "<i>   ", outsize);
+        out += c;
+        outsize -= c;
+        switch(mode)
         {
           case DT_LIB_COLLECT_MODE_AND:
-            c = g_strlcpy(out, _(" and "), outsize);
+            c = g_strlcpy(out, _("AND"), outsize);
             out += c;
             outsize -= c;
             break;
           case DT_LIB_COLLECT_MODE_OR:
-            c = g_strlcpy(out, _(" or "), outsize);
+            c = g_strlcpy(out, _("OR"), outsize);
             out += c;
             outsize -= c;
             break;
           default: // case DT_LIB_COLLECT_MODE_AND_NOT:
-            c = g_strlcpy(out, _(" but not "), outsize);
+            c = g_strlcpy(out, _("BUT NOT"), outsize);
             out += c;
             outsize -= c;
             break;
         }
+        c = g_strlcpy(out, "   </i>", outsize);
+        out += c;
+        outsize -= c;
+      }
       int i = 0;
       while(str[i] != '\0' && str[i] != '$') i++;
       if(str[i] == '$') str[i] = '\0';
 
-      c = snprintf(out, outsize, "%s %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
-                   item == 0 ? dt_image_film_roll_name(str) : str);
+      gchar *pretty = NULL;
+      if(!g_strcmp0(str, "%"))
+        pretty = g_strdup(_("all"));
+      else if(item == DT_COLLECTION_PROP_FILMROLL)
+        pretty = g_strdup(dt_image_film_roll_name(str));
+      else
+        pretty = g_markup_escape_text(str, -1);
+
+      c = snprintf(out, outsize, "<b>%s</b> %s", item < DT_COLLECTION_PROP_LAST ? dt_collection_name(item) : "???",
+                   pretty);
+      g_free(pretty);
       out += c;
       outsize -= c;
     }
@@ -3050,8 +3190,9 @@ static void _history_show(GtkWidget *widget, gpointer user_data)
       char str[2048] = { 0 };
       _history_pretty_print(line, str, sizeof(str));
       GtkWidget *smt = gtk_menu_item_new_with_label(str);
-      gtk_widget_set_tooltip_text(smt, str);
-      // GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
+      gtk_widget_set_tooltip_markup(smt, str);
+      GtkWidget *child = gtk_bin_get_child(GTK_BIN(smt));
+      gtk_label_set_use_markup(GTK_LABEL(child), TRUE);
       g_object_set_data(G_OBJECT(smt), "history", GINT_TO_POINTER(i));
       g_signal_connect(G_OBJECT(smt), "activate", G_CALLBACK(_history_apply), self);
       gtk_menu_shell_append(pop, smt);
@@ -3164,21 +3305,24 @@ void gui_init(dt_lib_module_t *self)
                      TRUE, 0);
 
   // the bottom buttons for the rules
-  GtkWidget *bhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_set_homogeneous(GTK_BOX(bhbox), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), bhbox, TRUE, TRUE, 0);
+  d->history_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_set_homogeneous(GTK_BOX(d->history_box), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->history_box, TRUE, TRUE, 0);
   // dummy widget just to ensure alignment of history button  with those in filtering lib
-  gtk_box_pack_start(GTK_BOX(bhbox), gtk_drawing_area_new(), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(d->history_box), gtk_drawing_area_new(), TRUE, TRUE, 0);
   GtkWidget *btn = dt_action_button_new(self, _("history"), G_CALLBACK(_history_show), self,
-                                        _("revert to a previous set of rules"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(bhbox), btn, TRUE, TRUE, 0);
-  gtk_widget_show_all(bhbox);
+                                        _("revert to a previous set of rules"), GDK_KEY_k, GDK_CONTROL_MASK);
+  gtk_box_pack_start(GTK_BOX(d->history_box), btn, TRUE, TRUE, 0);
+  gtk_widget_show_all(d->history_box);
+  gtk_widget_set_no_show_all(d->history_box, TRUE);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;
   darktable.view_manager->proxy.module_collect.update = _lib_collect_gui_update;
+  darktable.view_manager->proxy.module_collect.update_history_visibility = _lib_collect_update_history_visibility;
 
   _lib_collect_gui_update(self);
+  _lib_collect_update_history_visibility(self);
 
   if(_combo_get_active_collection(d->rule[0].combo) == DT_COLLECTION_PROP_TAG)
   {
@@ -3446,4 +3590,3 @@ void init(struct dt_lib_module_t *self)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-

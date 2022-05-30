@@ -140,7 +140,8 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color collapsible_bg_color @grey_25;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_bg shade(@bg_color, 1.06);
+@define-color bauhaus_bg alpha(@bg_color, 0.55);
+@define-color bauhaus_fg @fg_color;       /* needed to correctly display color pickers in all states, even if they inherit @fg_color by default */
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
@@ -461,7 +462,8 @@ separator
   opacity: 0.6;
 }
 
-.dt_dimmed:hover /* to set full opacity when hovering those items */
+.dt_dimmed:hover, /* to set full opacity when hovering those items */
+.dt_dimmed:checked
 {
   opacity: 1;
 }
@@ -608,7 +610,7 @@ dialog .sidebar row:selected:hover label,
 /* Collapsible sections on lib & iop modules */
 #collapse-block
 {
-  margin-top: 0.21em;
+  margin: 0.21em 0;
 }
 
 #collapsible
@@ -627,7 +629,7 @@ dialog .sidebar row:selected:hover label,
 .dt_section_expander,
 .dt_section_expander label
 {
-  background-color: shade(@collapsible_bg_color, 0.96);
+  background-color: @collapsible_bg_color;
   border: none;
   margin-top: 0.14em;
   padding: 0.07em 0;
@@ -767,6 +769,7 @@ menu,
 menuitem > arrow,
 tooltip,
 popover,
+popover #bauhaus-slider,
 #range-current
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
@@ -806,6 +809,11 @@ menuitem check:selected
 {
   color: shade(@fg_color, 0.9);
   padding: 0.42em 0 0 0.42em;   /* set only padding on top and left margin due to some default hardcoded spacing on bottom and place for icons on some bauhaus on the right */
+}
+
+.dt_bauhaus_popup_right /* set right padding for specific popup with no hardcoded right space due to icons place */
+{
+  padding-right: 0.42em;
 }
 
 /* fix for menuitem in bottom toolbar mainly */
@@ -1302,7 +1310,7 @@ filechooser row:hover .sidebar-icon
 /* set range parts and quick filter box in header toolbar */
 .search,
 #range-select #dt-range-band,
-#header-toolbar #bauhaus-combobox
+#header-toolbar #bauhaus-combobox:not(.dt_transparent_background)
 {
   background-color: @range_bg_color;
 }
@@ -1325,6 +1333,11 @@ filechooser row:hover .sidebar-icon
 #range-current
 {
   padding: 0.2em;
+}
+
+#collect-header-box button
+{
+  margin-right: 0;
 }
 
 /*------------
@@ -1410,6 +1423,13 @@ border-bottom: 0.07em solid alpha(@selected_bg_color, 0.75);
   color: shade(@fg_color, 0.75);
 }
 
+/* set "buttons" combo in lens correction module */
+#lens-module .text-button
+{
+  background-color: alpha(@fg_color, 0.06);
+  min-height: 1em;
+}
+
 /* Progress bar on bottom left side when exporting, importing, etc... */
 #background-job-eventbox label
 {
@@ -1472,7 +1492,7 @@ progressbar progress
 /* the label buttons */
 .dt_history_items
 {
-  padding: 0;
+  padding: 0 0.21em;
   margin: 0.14em;
 }
 
@@ -1488,7 +1508,7 @@ progressbar progress
 /* and the history number */
 #history-number
 {
-  padding-right: 0.35em;
+  padding: 0 0.35em 0 0;
 }
 
 /* deactivated switch buttons, make them less visible */
@@ -1550,7 +1570,7 @@ progressbar progress
 .dt_history_items:active,
 .dt_history_items:checked,
 button:active,
-button:checked,
+button:checked:not(:disabled):not(.dt_transparent_background),
 button:selected,
 cell:selected,
 checkbutton check:checked,
@@ -1570,7 +1590,8 @@ treeview *:checked:not(check)
 
 /* History currently selected button ; they don't need to set background */
 .dt_history_items:active *,
-.dt_history_items:checked *
+.dt_history_items:checked *,
+button.dt_transparent_background:checked:not(:disabled):not(.dt_ignore_fg_state)
 {
   color: @field_selected_fg;
 }
@@ -1585,6 +1606,7 @@ notebook tab:hover,
 radiobutton:hover label,
 treeview:not(#lutname) *:hover:not(check),
 #dt-range-date-popup .text-button:hover,
+#lens-module .text-button:hover,
 #main-histogram .dt_module_btn:hover:not(.toggle),
 #non-flat:hover,
 #view-label:hover,
@@ -1813,12 +1835,12 @@ Details :
   -----------------*/
 #thumb-image
 {
-  margin: 1.8em 1.2em; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
+  margin: 12px 10px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
 }
 
-.dt_thumbnails_2 #thumb-image /* update consistently margins if big thumbnails (less images per row) are shown */
+.dt_thumbnails_1 #thumb-image
 {
-  margin: 1em 0.75em;
+  margin: 18px 16px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
 }
 
 /* Set top margin on active image in filmstrip */
@@ -1839,7 +1861,7 @@ Details :
   color: @border_color;
 }
 
-/* Set border color around thumbnails */
+/* Set border color around grouped thumbnails */
 .dt_group_left #thumb-back,
 #thumb-main.dt_group_left:selected #thumb-back
 {
@@ -1897,7 +1919,7 @@ Details :
   border : 0.07em solid transparent; /* to not overlay thumb borders */
 }
 
-/* Set outside margins in thumbnails about bottom infos area */
+/* Set outside margins in grouped thumbnails about bottom infos area */
 .dt_group_left #thumb-bottom
 {
   border-left-width: 0.14em;
@@ -1916,7 +1938,7 @@ Details :
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom,
 .dt_overlays_hover #thumb-main:hover #thumb-bottom
 {
-  background-image: linear-gradient(rgba(198, 198, 198, 0.7) 0%, rgba(198, 198, 198, 0.7) 90%,rgba(198, 198, 198, 0) 100%);  /* rgb color needs to be set to same color as #thumb-back hover background */
+  background-image: linear-gradient(rgba(212, 212, 212, 0.7) 0%, rgba(212, 212, 212, 0.7) 90%,rgba(212, 212, 212, 0) 100%);  /* rgb color needs to be set to same color as #thumb-back hover background */
 }
 
 /* Set background on block infos in last overlay mode and culling/preview modes shown with mouse hover */
@@ -1940,8 +1962,8 @@ Details :
 /* Reset color icons to be hidden in following modes, including culling/preview overlays hover block*/
 .dt_overlays_none .dt_thumb_btn,
 .dt_overlays_none #thumb-main:hover .dt_thumb_btn,
-.dt_overlays_hover .dt_thumb_btn,
-.dt_overlays_hover_extended .dt_thumb_btn,
+.dt_overlays_hover #thumb-main .dt_thumb_btn,
+.dt_overlays_hover_extended #thumb-main .dt_thumb_btn,
 .dt_overlays_hover_block #thumb-main .dt_thumb_btn,
 #thumb-ext  /* by default, the extension is hidden */
 {
@@ -1969,30 +1991,29 @@ Details :
 }
 
 /* Set hover and selected color icons, extension name and text infos */
-.dt_overlays_always #thumb-main:hover #thumb-ext,
-.dt_overlays_always #thumb-main:selected #thumb-ext,
-.dt_overlays_always_extended #thumb-main:hover #thumb-ext,
-.dt_overlays_always_extended #thumb-main:selected #thumb-ext,
-.dt_overlays_mixed #thumb-main:hover #thumb-ext,
-.dt_overlays_mixed #thumb-main:selected #thumb-ext,
+.dt_overlays_hover #thumb-main:hover #thumb-ext,
 .dt_overlays_hover #thumb-main:hover .dt_thumb_btn,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-ext,
 .dt_overlays_hover_extended #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_hover_extended #thumb-main:hover #thumb-bottom-label,
+.dt_overlays_always #thumb-main:hover #thumb-ext,
+.dt_overlays_always #thumb-main:selected #thumb-ext,
 .dt_overlays_always #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_always #thumb-main:selected .dt_thumb_btn,
+.dt_overlays_always_extended #thumb-main:hover #thumb-ext,
+.dt_overlays_always_extended #thumb-main:selected #thumb-ext,
 .dt_overlays_always_extended #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_always_extended #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_always_extended #thumb-main:hover #thumb-bottom-label,
 .dt_overlays_always_extended #thumb-main:selected #thumb-bottom-label,
+.dt_overlays_mixed #thumb-main:hover #thumb-ext,
+.dt_overlays_mixed #thumb-main:selected #thumb-ext,
 .dt_overlays_mixed #thumb-main:hover .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:selected .dt_thumb_btn,
 .dt_overlays_mixed #thumb-main:hover #thumb-bottom-label,
-.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn,
-.dt_overlays_hover_block #thumb-image:hover .dt_thumb_btn:active,
-.dt_overlays_hover_block #thumb-image:hover #thumb-audio,
-.dt_overlays_hover_block #thumb-image:hover #thumb-altered,
-.dt_overlays_hover_block #thumb-image:hover #thumb-localcopy,
-.dt_overlays_hover_block #thumb-image:hover #thumb-bottom-label
+.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn,
+.dt_overlays_hover_block #thumb-main:hover .dt_thumb_btn:active,
+.dt_overlays_hover_block #thumb-main:hover #thumb-bottom-label
 {
   color: @thumbnail_font_color;
 }
@@ -2048,6 +2069,10 @@ Details :
 }
 
 /* Set hover group and audio effect */
+.dt_overlays_hover #thumb-main:hover #thumb-group:hover,
+.dt_overlays_hover #thumb-main:hover #thumb-audio:hover,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-group:hover,
+.dt_overlays_hover_extended #thumb-main:hover #thumb-audio:hover,
 .dt_overlays_always #thumb-main:hover #thumb-group:hover,
 .dt_overlays_always #thumb-main:hover #thumb-audio:hover,
 .dt_overlays_always_extended #thumb-main:hover #thumb-group:hover,
@@ -2112,12 +2137,6 @@ Details :
 /*---------------------------------------------------------
   - Hide icons on all lighttable modes and duplicate ones -
   ---------------------------------------------------------*/
-.dt_overlays_hover #thumb-main:hover #thumb-group,
-.dt_overlays_hover #thumb-main:hover #thumb-altered,
-.dt_overlays_hover #thumb-main:hover #thumb-audio,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-group,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-altered,
-.dt_overlays_hover_extended #thumb-main:hover #thumb-audio,
 .dt_culling #thumb-ext,
 .dt_culling #thumb-main:selected #thumb-ext,
 .dt_culling #thumb-main:hover #thumb-ext,
@@ -2198,17 +2217,7 @@ Details :
 .dt_overlays_always#preview #thumb-bottom,
 .dt_overlays_always_extended#preview #thumb-bottom
 {
-  border-radius: 0.21em;
-  border-top: 0.07em solid @lighttable_bg_color;
-  background-image: linear-gradient(rgba(171, 171, 171, 0.2) 0%, rgba(171, 171, 171, 0.1) 5%, rgba(171, 171, 171, 0) 100%);
-}
-
-.dt_overlays_always#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#culling #thumb-main:hover #thumb-bottom,
-.dt_overlays_always#preview #thumb-main:hover #thumb-bottom,
-.dt_overlays_always_extended#preview #thumb-main:hover #thumb-bottom
-{
-  background-image: linear-gradient(rgba(191, 191, 191, 0.4) 0%, rgba(191, 191, 191, 0.2) 5%, rgba(171, 171, 171, 0) 100%);
+  background-color: shade(@lighttable_bg_color, 1.1);
 }
 
 /* Set zoom info */
