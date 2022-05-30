@@ -298,7 +298,7 @@ src/libs/filters/iso.c
 src/libs/filters/local_copy.c
 src/libs/filters/module_order.c
 src/libs/filters/rating.c
-src/libs/filters/rating_legacy.c
+src/libs/filters/rating_range.c
 src/libs/filters/ratio.c
 src/libs/filters/search.c
 src/libs/geotagging.c
