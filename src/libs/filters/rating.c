@@ -20,324 +20,220 @@
   This file contains the necessary routines to implement a filter for the filtering module
 */
 
-static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
+typedef struct _widgets_rating_legacy_t
 {
-  if(!rule->w_specific) return FALSE;
-  _widgets_range_t *special = (_widgets_range_t *)rule->w_specific;
-  _widgets_range_t *specialtop = (_widgets_range_t *)rule->w_specific_top;
-  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  GtkDarktableRangeSelect *rangetop = (specialtop) ? DTGTK_RANGE_SELECT(specialtop->range_select) : NULL;
+  dt_lib_filtering_rule_t *rule;
 
-  rule->manual_widget_set++;
-  char query[1024] = { 0 };
-  // clang-format off
-  g_snprintf(query, sizeof(query),
-             "SELECT CASE WHEN (flags & 8) == 8 THEN -1 ELSE (flags & 7) END AS rating,"
-             " COUNT(*) AS count"
-             " FROM main.images AS mi"
-             " WHERE %s"
-             " GROUP BY rating"
-             " ORDER BY rating",
-             rule->lib->last_where_ext);
-  // clang-format on
-  int nb[7] = { 0 };
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  GtkWidget *overlay;
+  GtkWidget *comparator;
+  GtkWidget *stars;
+} _widgets_rating_legacy_t;
+
+static void _rating_legacy_synchronise(_widgets_rating_legacy_t *source)
+{
+  _widgets_rating_legacy_t *dest = NULL;
+  if(source == source->rule->w_specific_top)
+    dest = source->rule->w_specific;
+  else
+    dest = source->rule->w_specific_top;
+
+  if(dest)
   {
-    const int val = sqlite3_column_int(stmt, 0);
-    const int count = sqlite3_column_int(stmt, 1);
-
-    if(val < 6 && val >= -1) nb[val + 1] += count;
+    source->rule->manual_widget_set++;
+    const int comp = dt_bauhaus_combobox_get(source->comparator);
+    dt_bauhaus_combobox_set(dest->comparator, comp);
+    const int stars = dt_bauhaus_combobox_get(source->stars);
+    dt_bauhaus_combobox_set(dest->stars, stars);
+    gtk_widget_set_visible(dest->comparator, stars > 1 && stars < 7);
+    source->rule->manual_widget_set--;
   }
-  sqlite3_finalize(stmt);
-
-  dtgtk_range_select_reset_blocks(range);
-  dtgtk_range_select_add_range_block(range, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX, _("all images"),
-                                     nb[0] + nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-  dtgtk_range_select_add_range_block(range, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
-                                     nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-  dtgtk_range_select_add_range_block(range, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
-  dtgtk_range_select_add_range_block(range, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("not rated only"), nb[1]);
-  dtgtk_range_select_add_range_block(range, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
-  dtgtk_range_select_add_range_block(range, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
-  dtgtk_range_select_add_range_block(range, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
-  dtgtk_range_select_add_range_block(range, 4.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★", nb[5]);
-  dtgtk_range_select_add_range_block(range, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
-
-  if(rangetop)
-  {
-    dtgtk_range_select_reset_blocks(rangetop);
-    dtgtk_range_select_add_range_block(rangetop, 1.0, 1.0, DT_RANGE_BOUND_MIN | DT_RANGE_BOUND_MAX,
-                                       _("all images"), nb[0] + nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-    dtgtk_range_select_add_range_block(rangetop, 0.0, 1.0, DT_RANGE_BOUND_MAX, _("all except rejected"),
-                                       nb[1] + nb[2] + nb[3] + nb[4] + nb[5] + nb[6]);
-    dtgtk_range_select_add_range_block(rangetop, -1.0, -1.0, DT_RANGE_BOUND_FIXED, _("rejected only"), nb[0]);
-    dtgtk_range_select_add_range_block(rangetop, 0.0, 0.0, DT_RANGE_BOUND_FIXED, _("not rated only"), nb[1]);
-    dtgtk_range_select_add_range_block(rangetop, 1.0, 5.0, DT_RANGE_BOUND_MAX, "★", nb[2]);
-    dtgtk_range_select_add_range_block(rangetop, 2.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★", nb[3]);
-    dtgtk_range_select_add_range_block(rangetop, 3.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★", nb[4]);
-    dtgtk_range_select_add_range_block(rangetop, 4.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★", nb[5]);
-    dtgtk_range_select_add_range_block(rangetop, 5.0, 5.0, DT_RANGE_BOUND_MAX, "★ ★ ★ ★ ★", nb[6]);
-  }
-
-  dtgtk_range_select_set_selection_from_raw_text(range, rule->raw_text, FALSE);
-  if(rangetop) dtgtk_range_select_set_selection_from_raw_text(rangetop, rule->raw_text, FALSE);
-  rule->manual_widget_set--;
-  return TRUE;
 }
 
-static gchar *_rating_print_func(const double value, const gboolean detailled)
+static void _rating_legacy_decode(const gchar *txt, int *comp, int *stars)
 {
-  if(detailled)
-  {
-    darktable.control->element = value + 1;
+  if(!txt) return;
 
-    switch((int)floor(value))
-    {
-      case -1:
-        return g_strdup(_("rejected"));
-      case 0:
-        return g_strdup(_("not rated"));
-    }
+  // we handle the "text" forms first
+  if(strlen(txt) == 0)
+  {
+    // all images
+    *comp = 3;
+    *stars = 0;
+    return;
   }
-  return g_strdup_printf("%.0lf", floor(value));
-}
-
-static gchar *_rating_get_bounds_pretty(GtkDarktableRangeSelect *range)
-{
-  if((range->bounds & DT_RANGE_BOUND_MIN) && (range->bounds & DT_RANGE_BOUND_MAX)) return g_strdup(_("all images"));
-
-  if((range->bounds & DT_RANGE_BOUND_MIN)) 
-    range->select_min_r = range->min_r;
-  if((range->bounds & DT_RANGE_BOUND_MAX)) 
-    range->select_max_r = range->max_r;
-    
-  if(range->select_min_r == range->select_max_r)
+  if(!g_strcmp0(txt, "=0"))
   {
-    gchar *printed_min = range->print(range->select_min_r, TRUE);
-    gchar *min_only = g_strdup_printf("%s %s", printed_min, _("only"));
-    g_free(printed_min);
-    return min_only;
+    // unstarred only
+    *comp = 3;
+    *stars = 1;
+    return;
+  }
+  if(!g_strcmp0(txt, "=-1"))
+  {
+    // rejected only
+    *comp = 3;
+    *stars = 7;
+    return;
+  }
+  if(!g_strcmp0(txt, ">=0"))
+  {
+    // all except rejected
+    *comp = 3;
+    *stars = 8;
+    return;
   }
 
-  const int rating_min = (int)floor(range->select_min_r);
-  const int rating_max = (int)floor(range->select_max_r);
-
-  if(rating_min == -1 && rating_max == 0)
-    return g_strdup_printf("%s + %s", _("rejected"), _("not rated"));
-
-  if(range->bounds & DT_RANGE_BOUND_MIN)
+  // we read the comparator first
+  int comp_length = 2;
+  if(g_str_has_prefix(txt, "<="))
+    *comp = 1;
+  else if(g_str_has_prefix(txt, ">="))
+    *comp = 3;
+  else if(g_str_has_prefix(txt, "<>"))
+    *comp = 5;
+  else
   {
-    gchar *printed_max = range->print(range->select_max_r, TRUE);
-    gchar *lt_max_rejected = g_strdup_printf("≤%s + %s", printed_max, _("rejected"));
-    g_free(printed_max);
-    return lt_max_rejected;
-  }
-  else if(range->bounds & DT_RANGE_BOUND_MAX)
-  {
-    if(rating_min == 0)
-      return g_strdup(_("all except rejected"));
+    comp_length = 1;
+    if(g_str_has_prefix(txt, "<"))
+      *comp = 0;
+    else if(g_str_has_prefix(txt, ">"))
+      *comp = 4;
+    else if(g_str_has_prefix(txt, "="))
+      *comp = 2;
     else
     {
-      gchar *printed_min = range->print(range->select_min_r, TRUE);
-      gchar *gt_min = g_strdup_printf("≥%s", printed_min);
-      g_free(printed_min);
-      return gt_min;
+      // no comparator is considers as =
+      *comp = 2;
+      comp_length = 0;
     }
   }
-  else if(rating_min == 0)
+
+
+  // and now we read the stars values
+  if(strlen(txt) <= comp_length)
   {
-    gchar *printed_max = range->print(range->select_max_r, TRUE);
-    gchar *lt_max = g_strdup_printf("≤%s", printed_max);
-    g_free(printed_max);
-    return lt_max;
+    *stars = 0;
+    return;
   }
 
-  return dtgtk_range_select_get_bounds_pretty(range);
-}
-
-static gchar *_rating_current_text_func(GtkDarktableRangeSelect *range, const double current)
-{
-  gchar *hovered = range->print(current, TRUE);
-  gchar *hovered_escaped = g_markup_escape_text(hovered, -1);
-  gchar *selected = _rating_get_bounds_pretty(range);
-  gchar *selected_escaped = g_markup_escape_text(selected, -1);
-
-  gchar *rating_text = g_strdup_printf("  <b>%s</b> | %s: %s  ", 
-        hovered_escaped, _("selected"), selected_escaped);
-  
-  g_free(hovered);
-  g_free(hovered_escaped);
-  g_free(selected);
-  g_free(selected_escaped);
-  return rating_text;
-}
-
-static void _rating_paint_icon(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
-{
-  // first, we set the color depending on the flags
-  void *my_data = data;
-
-  if((flags & CPF_PRELIGHT) || (flags & CPF_ACTIVE))
+  const int val = atoi(txt + comp_length);
+  if(val >= 1 && val <= 5)
   {
-    // we want a filled icon
-    GdkRGBA bc = darktable.gui->colors[DT_GUI_COLOR_RANGE_ICONS];
-    GdkRGBA *shade_color = gdk_rgba_copy(&bc);
-    shade_color->alpha *= 0.6;
-    my_data = shade_color;
+    *stars = val + 1;
   }
-
-  // then we draw the regular icon
-  dtgtk_cairo_paint_star(cr, x, y, w, h, flags, my_data);
 }
 
-enum
+static void _rating_legacy_changed(GtkWidget *widget, gpointer user_data)
 {
-  // DT_ACTION_EFFECT_TOGGLE = DT_ACTION_EFFECT_DEFAULT_KEY,
-  _ACTION_EFFECT_BETTER = DT_ACTION_EFFECT_DEFAULT_UP,
-  _ACTION_EFFECT_WORSE = DT_ACTION_EFFECT_DEFAULT_DOWN,
-  _ACTION_EFFECT_CAP,
-};
+  _widgets_rating_legacy_t *rating_legacy = (_widgets_rating_legacy_t *)user_data;
+  if(rating_legacy->rule->manual_widget_set) return;
 
-enum
-{
-  _ACTION_ELEMENT_MAX = 5 + 1 + 1,
-};
-
-static float _action_process_ratings(gpointer target, dt_action_element_t element, dt_action_effect_t effect, float move_size)
-{
-  if(!target) return NAN;
-
-  double new_value = element - 1.0;
-  GtkDarktableRangeSelect *range = target;
-  double min = range->select_min_r;
-  double max = range->select_max_r;
-  dt_range_bounds_t bounds = range->bounds;
-
-  if(!isnan(move_size))
+  const int comp = dt_bauhaus_combobox_get(rating_legacy->comparator);
+  const int stars = dt_bauhaus_combobox_get(rating_legacy->stars);
+  if(stars == 0)
+    _rule_set_raw_text(rating_legacy->rule, "", TRUE);
+  else if(stars == 1)
+    _rule_set_raw_text(rating_legacy->rule, "=0", TRUE);
+  else if(stars == 7)
+    _rule_set_raw_text(rating_legacy->rule, "=-1", TRUE);
+  else if(stars == 8)
+    _rule_set_raw_text(rating_legacy->rule, ">=0", TRUE);
+  else
   {
-    switch(effect)
+    gchar *txt;
+    switch(comp)
     {
-    case DT_ACTION_EFFECT_TOGGLE:
-      if(element != _ACTION_ELEMENT_MAX && (min != new_value || bounds & DT_RANGE_BOUND_MIN))
-      {
-        if(max == min) max = new_value;
-        min = new_value;
-        if(min > max) max = min;
-        bounds &= ~DT_RANGE_BOUND_MIN;
-      }
-      else
-        bounds ^= DT_RANGE_BOUND_MAX;
-      break;
-    case _ACTION_EFFECT_BETTER:
-      if(element != _ACTION_ELEMENT_MAX)
-      {
-        if(min < 5) min++;
-        if(min > max) max = min;
-        bounds &= ~DT_RANGE_BOUND_MIN;
-      }
-      else
-      {
-        if(max < 5) max++;
-        bounds &= ~DT_RANGE_BOUND_MAX;
-      }
-      break;
-    case _ACTION_EFFECT_WORSE:
-      if(element != _ACTION_ELEMENT_MAX)
-      {
-        if(min > -1)
-        {
-          if(max == min) max = min - 1;
-          min--;
-        }
-        bounds &= ~DT_RANGE_BOUND_MIN;
-      }
-      else
-      {
-        if(max > -1) max--;
-        if(min > max) min = max;
-        bounds &= ~DT_RANGE_BOUND_MAX;
-      }
-      break;
-    case _ACTION_EFFECT_CAP:
-      if(element != _ACTION_ELEMENT_MAX && (max != new_value || bounds & DT_RANGE_BOUND_MAX))
-      {
-        max = new_value;
-        if(min > max) min = max;
-        bounds &= ~DT_RANGE_BOUND_MAX;
-      }
-      else
-        bounds ^= DT_RANGE_BOUND_MIN;
-      break;
+      case 0:
+        txt = g_strdup_printf("<%d", stars - 1);
+        break;
+      case 1:
+        txt = g_strdup_printf("<=%d", stars - 1);
+        break;
+      case 2:
+        txt = g_strdup_printf("=%d", stars - 1);
+        break;
+      case 4:
+        txt = g_strdup_printf(">%d", stars - 1);
+        break;
+      case 5:
+        txt = g_strdup_printf("<>%d", stars - 1);
+        break;
+      default:
+        txt = g_strdup_printf(">=%d", stars - 1);
+        break;
     }
-    dtgtk_range_select_set_selection(range, bounds, min, max, TRUE, FALSE);
-    gchar *txt = dtgtk_range_select_get_bounds_pretty(range);
-    dt_action_widget_toast(NULL, target, txt);
+    _rule_set_raw_text(rating_legacy->rule, txt, TRUE);
     g_free(txt);
   }
 
-  const gboolean is_active = (new_value >= min || bounds & DT_RANGE_BOUND_MIN) && (new_value <= max || bounds & DT_RANGE_BOUND_MAX);
-  return - min - 2 + (is_active ? DT_VALUE_PATTERN_ACTIVE : 0);
+  gtk_widget_set_visible(rating_legacy->comparator, stars > 1 && stars < 7);
+  _rating_legacy_synchronise(rating_legacy);
 }
 
-const gchar *dt_action_effect_rating[]
-  = { [DT_ACTION_EFFECT_TOGGLE] = N_("toggle"),
-      [_ACTION_EFFECT_BETTER  ] = N_("better"),
-      [_ACTION_EFFECT_WORSE   ] = N_("worse"),
-      [_ACTION_EFFECT_CAP     ] = N_("cap"),
-      NULL };
+static gboolean _rating_update(dt_lib_filtering_rule_t *rule)
+{
+  if(!rule->w_specific) return FALSE;
+  int comp = 3, stars = 0;
+  _rating_legacy_decode(rule->raw_text, &comp, &stars);
 
-const dt_action_element_def_t _action_elements_ratings[]
-  = { { N_("rejected"  ), dt_action_effect_rating },
-      { N_("not rated" ), dt_action_effect_rating },
-      { N_("one"       ), dt_action_effect_rating },
-      { N_("two"       ), dt_action_effect_rating },
-      { N_("three"     ), dt_action_effect_rating },
-      { N_("four"      ), dt_action_effect_rating },
-      { N_("five"      ), dt_action_effect_rating },
-      { N_("max"       ), dt_action_effect_rating },
-      { NULL } };
+  rule->manual_widget_set++;
+  _widgets_rating_legacy_t *rating_legacy = (_widgets_rating_legacy_t *)rule->w_specific;
+  dt_bauhaus_combobox_set(rating_legacy->comparator, comp);
+  dt_bauhaus_combobox_set(rating_legacy->stars, stars);
+  gtk_widget_set_visible(rating_legacy->comparator, stars > 1 && stars < 7);
+  _rating_legacy_synchronise(rating_legacy);
+  rule->manual_widget_set--;
 
-const dt_action_def_t dt_action_def_ratings_rule
-  = { N_("rating filter"),
-      _action_process_ratings,
-      _action_elements_ratings };
+  return TRUE;
+}
 
 static void _rating_widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_properties_t prop,
-                                const gchar *text, dt_lib_module_t *self, const gboolean top)
+                                       const gchar *text, dt_lib_module_t *self, const gboolean top)
 {
-  _widgets_range_t *special = (_widgets_range_t *)g_malloc0(sizeof(_widgets_range_t));
+  _widgets_rating_legacy_t *rating_legacy
+      = (_widgets_rating_legacy_t *)g_malloc0(sizeof(_widgets_rating_legacy_t));
+  rating_legacy->rule = rule;
 
-  special->range_select
-      = dtgtk_range_select_new(dt_collection_name_untranslated(prop), FALSE, DT_RANGE_TYPE_NUMERIC);
-  GtkDarktableRangeSelect *range = DTGTK_RANGE_SELECT(special->range_select);
-  // to keep a nice ratio, we don't want the widget to exceed a certain value
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(range->band));
-  GtkStateFlags state = gtk_widget_get_state_flags(range->band);
-  int mh = -1;
-  gtk_style_context_get(context, state, "min-height", &mh, NULL);
-  if(mh > 0) range->max_width_px = 8 * mh * 0.8;
-  range->step_bd = 1.0;
-  dtgtk_range_select_add_icon(range, 7, -1, dtgtk_cairo_paint_reject, 0, NULL);
-  dtgtk_range_select_add_icon(range, 22, 0, dtgtk_cairo_paint_unratestar, 0, NULL);
-  dtgtk_range_select_add_icon(range, 36, 1, _rating_paint_icon, 0, NULL);
-  dtgtk_range_select_add_icon(range, 50, 2, _rating_paint_icon, 0, NULL);
-  dtgtk_range_select_add_icon(range, 64, 3, _rating_paint_icon, 0, NULL);
-  dtgtk_range_select_add_icon(range, 78, 4, _rating_paint_icon, 0, NULL);
-  dtgtk_range_select_add_icon(range, 93, 5, _rating_paint_icon, 0, NULL);
-  range->print = _rating_print_func;
-  range->current_text = _rating_current_text_func;
+  rating_legacy->overlay = gtk_overlay_new();
 
-  dtgtk_range_select_set_selection_from_raw_text(range, text, FALSE);
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(rating_legacy->comparator, self, NULL, N_("comparator"),
+                               _("filter by images rating"), 3, _rating_legacy_changed, rating_legacy, "<", "≤",
+                               "=", "≥", ">", "≠");
+  DT_BAUHAUS_WIDGET(rating_legacy->comparator)->show_label = FALSE;
+  gtk_widget_set_halign(rating_legacy->comparator, GTK_ALIGN_START);
+  gtk_widget_set_no_show_all(rating_legacy->comparator, TRUE);
+  dt_gui_add_class(rating_legacy->comparator, "dt_transparent_background");
+  gtk_overlay_add_overlay(GTK_OVERLAY(rating_legacy->overlay), rating_legacy->comparator);
+  gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(rating_legacy->overlay), rating_legacy->comparator, TRUE);
 
-  range->min_r = -1;
-  range->max_r = 5.999;
+  /* create the filter combobox */
+  DT_BAUHAUS_COMBOBOX_NEW_FULL(rating_legacy->stars, self, NULL, N_("ratings"), _("filter by images rating"), 0,
+                               _rating_legacy_changed, rating_legacy, N_("all"), N_("unstarred only"), "★", "★ ★",
+                               "★ ★ ★", "★ ★ ★ ★", "★ ★ ★ ★ ★", N_("rejected only"), N_("all except rejected"));
+  DT_BAUHAUS_WIDGET(rating_legacy->stars)->show_label = FALSE;
+  // we increase the left padding of the 5 star entry to be sure it's visible with the comparator on top
+  // we do that here to not cause trouble with shortcuts
+  dt_bauhaus_combobox_set_entry_label(rating_legacy->stars, 6, "           ★ ★ ★ ★ ★");
+  gtk_container_add(GTK_CONTAINER(rating_legacy->overlay), rating_legacy->stars);
 
-  _range_widget_add_to_rule(rule, special, top);
+  if(top)
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box_top), rating_legacy->overlay, TRUE, TRUE, 0);
+  else
+  {
+    gtk_box_pack_start(GTK_BOX(rule->w_special_box), rating_legacy->overlay, TRUE, TRUE, 0);
+    gtk_widget_set_halign(rating_legacy->overlay, GTK_ALIGN_CENTER);
+  }
 
-  dt_action_define(DT_ACTION(self), N_("rules"), dt_collection_name_untranslated(prop),
-                   special->range_select, &dt_action_def_ratings_rule);
+
+  if(top)
+  {
+    dt_gui_add_class(rating_legacy->overlay, "dt_quick_filter");
+  }
+
+  if(top)
+    rule->w_specific_top = rating_legacy;
+  else
+    rule->w_specific = rating_legacy;
 }
 
 // clang-format off
