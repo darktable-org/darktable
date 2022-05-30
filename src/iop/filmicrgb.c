@@ -1900,7 +1900,7 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
       // Apply the transfer function of the display
       pix_out[c] = powf(CLAMP(filmic_spline(pix_out[c], spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
                                                  spline.latitude_min, spline.latitude_max, spline.type),
-                              display_black,
+                              0.f,  // individual components can always go to zero, luminance is clamped later
                               display_white), data->output_power);
     }
 
