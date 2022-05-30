@@ -1538,8 +1538,6 @@ static inline void Ych_to_pipe_RGB(const dt_aligned_pixel_t in, const dt_colorma
 
   // go from CIE LMS 2006 to pipeline RGB
   dot_product(LMS, matrix, out);
-
-  for_each_channel(c, aligned(out)) out[c] = fmaxf(out[c], 0.f);
 }
 
 static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, dt_aligned_pixel_t Ych_final, const float saturation)
@@ -1849,7 +1847,7 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
                 data->output_power);
 
     // Restore RGB
-    for_each_channel(c,aligned(pix_out)) pix_out[c] = fmaxf(ratios[c] * norm, 0.f);
+    for_each_channel(c,aligned(pix_out)) pix_out[c] = ratios[c] * norm;
 
     // Save Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_original = { 0.f };
