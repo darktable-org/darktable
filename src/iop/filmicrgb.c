@@ -1913,7 +1913,6 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
     dt_aligned_pixel_t Ych_final = { 0.f };
     pipe_RGB_to_Ych(pix_out, input_matrix, Ych_final);
 
-    // Force final hue and chroma to original
     Ych_final[1] = fminf(Ych_original[1], Ych_final[1]);
 
     gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix, output_matrix, export_input_matrix,

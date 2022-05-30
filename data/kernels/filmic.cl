@@ -639,14 +639,7 @@ static inline float4 filmic_split_v4(const float4 i,
   // Get final Ych in Kirk/Filmlight Yrg
   float4 Ych_final = pipe_RGB_to_Ych(o, matrix_in);
 
-  // Force final hue and chroma to original
-  Ych_final.z = Ych_original.z;
   Ych_final.y = fmin(Ych_original.y, Ych_final.y);
-
-  // Clip luminance
-  Ych_final.x = clamp(Ych_final.x,
-                      CIE_Y_1931_to_CIE_Y_2006(display_black),
-                      CIE_Y_1931_to_CIE_Y_2006(display_white));
 
   o = gamut_mapping(Ych_final, Ych_original, o, matrix_in, matrix_out,
                     export_matrix_in, export_matrix_out,
