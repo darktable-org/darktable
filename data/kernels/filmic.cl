@@ -629,7 +629,7 @@ static inline float4 filmic_split_v4(const float4 i,
     // Filmic S curve on the max RGB
     // Apply the transfer function of the display
     output[c] = native_powr(clamp(filmic_spline(output[c], M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
-                       display_black,
+                       0.f,  // individual components can always go to zero, luminance is clamped later
                        display_white), output_power);
   }
 
