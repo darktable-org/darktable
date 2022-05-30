@@ -1264,7 +1264,7 @@ void gui_init(dt_lib_module_t *self)
 
   tooltip = g_strdup_printf(_("• perceptual: "
                               "smoothly moves out-of-gamut colors into gamut,"
-                              "preserving gradations, but distorts in-gamut colors in the process."
+                              " preserving gradations, but distorts in-gamut colors in the process."
                               " note that perceptual is often a proprietary LUT that depends"
                               " on the destination space."
                               "\n\n"
