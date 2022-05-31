@@ -531,11 +531,13 @@ static inline float4 gamut_mapping(float4 Ych_final, float4 Ych_original,
   Ych_final = filmic_desaturate_v4(Ych_original, Ych_final, saturation);
   Ych_final = gamut_check_Yrg(Ych_final);
 
+  float4 output;
+
   if(!use_output_profile)
   {
     // Now, it is still possible that one channel > display white or < display black because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    return gamut_check_RGB(input_matrix, output_matrix, display_black, display_white, Ych_final);
+    output = gamut_check_RGB(input_matrix, output_matrix, display_black, display_white, Ych_final);
   }
   else
   {
@@ -547,8 +549,10 @@ static inline float4 gamut_mapping(float4 Ych_final, float4 Ych_original,
     const float4 LMS = matrix_product_float4(export_RGB, export_input_matrix);
 
     // Go from CIE LMS 2006 D65 to pipeline RGB D50
-    return matrix_product_float4(LMS, output_matrix);
+    output = matrix_product_float4(LMS, output_matrix);
   }
+
+  return output;
 }
 
 
