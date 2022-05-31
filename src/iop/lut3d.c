@@ -130,7 +130,7 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
 
 const char *name()
 {
-  return _("lut 3D");
+  return _("LUT 3D");
 }
 
 const char **description(struct dt_iop_module_t *self)
