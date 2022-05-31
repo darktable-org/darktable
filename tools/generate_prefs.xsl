@@ -527,6 +527,10 @@ gboolean restart_required = FALSE;
   <xsl:apply-templates select="." mode="tab"/>
   <xsl:text>    gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);</xsl:text>
   <xsl:if test="longdescription != ''">
+    <xsl:if test="contains(longdescription,'%')">
+      <xsl:text>    
+    /* xgettext:no-c-format */</xsl:text>
+    </xsl:if>
     <xsl:text>&#xA;    g_object_set(widget, "tooltip-text", _("</xsl:text><xsl:value-of select="longdescription"/><xsl:text>"), (gchar *)0);</xsl:text>
   </xsl:if>
         <xsl:choose>
