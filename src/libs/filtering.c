@@ -198,8 +198,8 @@ typedef struct _filter_t
 #include "libs/filters/iso.c"
 #include "libs/filters/local_copy.c"
 #include "libs/filters/module_order.c"
+#include "libs/filters/rating_range.c"
 #include "libs/filters/rating.c"
-#include "libs/filters/rating_legacy.c"
 #include "libs/filters/ratio.c"
 #include "libs/filters/search.c"
 
@@ -213,7 +213,7 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update },
-        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update },
+        { DT_COLLECTION_PROP_RATING_RANGE, _rating_range_widget_init, _rating_range_update },
         { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update },
         { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
         { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
@@ -222,7 +222,7 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
         { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
         { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update },
-        { DT_COLLECTION_PROP_RATING_LEGACY, _rating_legacy_widget_init, _rating_legacy_update } };
+        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -258,7 +258,7 @@ void init_presets(dt_lib_module_t *self)
   }
 
   // initial preset
-  CLEAR_PARAMS(_PRESET_ALL, DT_COLLECTION_PROP_RATING, DT_COLLECTION_SORT_DATETIME);
+  CLEAR_PARAMS(_PRESET_ALL, DT_COLLECTION_PROP_RATING_RANGE, DT_COLLECTION_SORT_DATETIME);
   params.rules = 3;
   params.rule[0].topbar = 1;
   params.rule[1].item = DT_COLLECTION_PROP_COLORLABEL;
@@ -647,12 +647,13 @@ static void _range_set_tooltip(_widgets_range_t *special)
 {
   // we recreate the tooltip
   gchar *val = dtgtk_range_select_get_bounds_pretty(DTGTK_RANGE_SELECT(special->range_select));
-  gchar *txt = g_strdup_printf("<b>%s</b>\n%s\n%s\n%s%s",
+  gchar *txt = g_strdup_printf("<b>%s</b>\n%s\n%s",
                                dt_collection_name(special->rule->prop),
                                _("click or click&#38;drag to select one or multiple values"),
-                               _("right-click opens a menu to select the available values"),
-                               _("<b><i>actual selection: </i></b>"),
-                               val);
+                               _("right-click opens a menu to select the available values"));
+
+  if(special->rule->prop != DT_COLLECTION_PROP_RATING_RANGE)
+    txt = g_strdup_printf("%s\n<b><i>%s:</i></b> %s", txt, _("actual selection"), val);
   gtk_widget_set_tooltip_markup(special->range_select, txt);
   g_free(txt);
   g_free(val);
@@ -859,8 +860,8 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
       ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_METADATA + i);
     }
   }
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING);
-  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING_LEGACY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GEOTAGGING);
@@ -941,8 +942,8 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
       ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
     }
   }
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_LEGACY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);

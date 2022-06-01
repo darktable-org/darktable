@@ -2482,9 +2482,9 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
   // let's update the css class depending on the source widget type
   // this allow to set different padding for example
   if(w->show_quad)
-    gtk_style_context_remove_class(context, "bauhaus-popup-no-quad");
+    gtk_style_context_remove_class(context, "dt_bauhaus_popup_right");
   else
-    gtk_style_context_add_class(context, "bauhaus-popup-no-quad");
+    gtk_style_context_add_class(context, "dt_bauhaus_popup_right");
 
   const GtkStateFlags state = gtk_widget_get_state_flags(darktable.bauhaus->popup_area);
   gtk_style_context_get_padding(context, state, darktable.bauhaus->popup_padding);
@@ -2852,16 +2852,15 @@ void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(float value, 
   d->curve = curve;
 }
 
-static gboolean dt_bauhaus_slider_postponed_value_change(gpointer data)
+static gboolean _bauhaus_slider_value_change_dragging(gpointer data);
+
+static void _bauhaus_slider_value_change(dt_bauhaus_widget_t *w)
 {
-  if(!GTK_IS_WIDGET(data)) return G_SOURCE_REMOVE;
+  if(!GTK_IS_WIDGET(w)) return;
 
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)data;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  if(d->is_changed)
+  if(d->is_changed && !d->timeout_handle && !darktable.gui->reset)
   {
-    if(darktable.gui->reset) return G_SOURCE_CONTINUE;
-
     if(w->field)
     {
       float val = dt_bauhaus_slider_get(GTK_WIDGET(w));
@@ -2869,30 +2868,39 @@ static gboolean dt_bauhaus_slider_postponed_value_change(gpointer data)
       {
         case DT_INTROSPECTION_TYPE_FLOAT:;
           float *f = w->field, prevf = *f; *f = val;
-          if(*f != prevf) dt_iop_gui_changed(w->module, data, &prevf);
+          if(*f != prevf) dt_iop_gui_changed(w->module, GTK_WIDGET(w), &prevf);
           break;
         case DT_INTROSPECTION_TYPE_INT:;
           int *i = w->field, previ = *i; *i = val;
-          if(*i != previ) dt_iop_gui_changed(w->module, data, &previ);
+          if(*i != previ) dt_iop_gui_changed(w->module, GTK_WIDGET(w), &previ);
           break;
         case DT_INTROSPECTION_TYPE_USHORT:;
           unsigned short *s = w->field, prevs = *s; *s = val;
-          if(*s != prevs) dt_iop_gui_changed(w->module, data, &prevs);
+          if(*s != prevs) dt_iop_gui_changed(w->module, GTK_WIDGET(w), &prevs);
           break;
         default:
-          fprintf(stderr, "[dt_bauhaus_slider_postponed_value_change] unsupported slider data type\n");
+          fprintf(stderr, "[_bauhaus_slider_value_change] unsupported slider data type\n");
       }
     }
 
     g_signal_emit_by_name(G_OBJECT(w), "value-changed");
     d->is_changed = 0;
-    return G_SOURCE_CONTINUE;
   }
-  else
+
+  if(d->is_changed && d->is_dragging && !d->timeout_handle)
   {
-    d->timeout_handle = 0;
-    return G_SOURCE_REMOVE;
+    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
+                            DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
+    d->timeout_handle = g_timeout_add(delay, _bauhaus_slider_value_change_dragging, w);
   }
+}
+
+static gboolean _bauhaus_slider_value_change_dragging(gpointer data)
+{
+  dt_bauhaus_widget_t *w = data;
+  w->data.slider.timeout_handle = 0;
+  _bauhaus_slider_value_change(data);
+  return G_SOURCE_REMOVE;
 }
 
 static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
@@ -2908,22 +2916,8 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   d->pos = d->curve(rpos, DT_BAUHAUS_SET);
   gtk_widget_queue_draw(GTK_WIDGET(w));
   d->is_changed = 1;
-  if(!darktable.gui->reset)
-  {
-    if(!d->is_dragging)
-    {
-      dt_bauhaus_slider_postponed_value_change(w);
-    }
-    else
-    {
-      if(!d->timeout_handle)
-      {
-        const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
-                                DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
-        d->timeout_handle = g_timeout_add(delay, dt_bauhaus_slider_postponed_value_change, w);
-      }
-    }
-  }
+
+  _bauhaus_slider_value_change(w);
 }
 
 static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -3087,18 +3081,15 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     }
     else
     {
+      d->is_dragging = 1;
       if(!dt_modifier_is(event->state, 0))
-      {
         darktable.bauhaus->mouse_x = ex;
-        d->is_dragging = 1;
-      }
       else if(ey > darktable.bauhaus->line_height / 2.0f)
       {
         const float r = slider_right_pos((float)w3, w);
         dt_bauhaus_slider_set_normalized(w, (ex / w3) / r);
 
         darktable.bauhaus->mouse_x = NAN;
-        d->is_dragging = 1;
       }
     }
     return TRUE;

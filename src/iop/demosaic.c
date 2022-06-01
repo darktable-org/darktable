@@ -122,7 +122,7 @@ typedef struct dt_iop_demosaic_params_t
   float median_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "edge threshold"
   dt_iop_demosaic_smooth_t color_smoothing; // $DEFAULT: DEMOSAIC_SMOOTH_OFF $DESCRIPTION: "color smoothing"
   dt_iop_demosaic_method_t demosaicing_method; // $DEFAULT: DT_IOP_DEMOSAIC_RCD $DESCRIPTION: "demosaicing method"
-  dt_iop_demosaic_lmmse_t lmmse_refine; // $DEFAULT: LMMSE_REFINE_1 $DESCRIPTION: "lmmse refine"
+  dt_iop_demosaic_lmmse_t lmmse_refine; // $DEFAULT: LMMSE_REFINE_1 $DESCRIPTION: "LMMSE refine"
   float dual_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.20 $DESCRIPTION: "dual threshold"
 } dt_iop_demosaic_params_t;
 
@@ -5769,9 +5769,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   if(!in)
   {
+    const gboolean was_dualmask = g->visual_mask;
     dt_bauhaus_widget_set_quad_active(g->dual_thrs, FALSE);
     g->visual_mask = FALSE;
-    dt_dev_reprocess_center(self->dev);
+    if(was_dualmask) dt_dev_reprocess_center(self->dev);
   }
 }
 

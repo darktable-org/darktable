@@ -701,9 +701,9 @@ const char *dt_collection_name_untranslated(dt_collection_properties_t prop)
       return N_("module");
     case DT_COLLECTION_PROP_ORDER:
       return N_("module order");
-    case DT_COLLECTION_PROP_RATING:
+    case DT_COLLECTION_PROP_RATING_RANGE:
       return N_("range rating");
-    case DT_COLLECTION_PROP_RATING_LEGACY:
+    case DT_COLLECTION_PROP_RATING:
       return N_("rating");
     case DT_COLLECTION_PROP_TEXTSEARCH:
       return N_("search");
@@ -1952,8 +1952,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       }
       break;
 
-      case DT_COLLECTION_PROP_RATING: // image rating
-      case DT_COLLECTION_PROP_RATING_LEGACY:
+      case DT_COLLECTION_PROP_RATING_RANGE: // image rating
+      case DT_COLLECTION_PROP_RATING:
       {
         gchar *operator, *number1, *number2;
         dt_collection_split_operator_number(escaped_text, &number1, &number2, &operator);

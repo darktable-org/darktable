@@ -1714,6 +1714,8 @@ static gboolean rt_add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_i
 
   if(darktable.gui->reset) return FALSE;
 
+  dt_iop_color_picker_reset(self, TRUE);
+
   const int creation_continuous = dt_modifier_is(e->state, GDK_CONTROL_MASK);
 
   rt_add_shape(widget, creation_continuous, self);

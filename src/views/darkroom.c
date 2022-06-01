@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the darkroom module.  */
+
+#include "common/extra_optimizations.h"
+
 #include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/colorspaces.h"
@@ -516,7 +519,7 @@ void expose(
     if(dev->iso_12646.enabled)
     {
       // force middle grey in background
-      cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+      cairo_set_source_rgb(cr, 0.4663, 0.4663, 0.4663);
     }
     else
     {

@@ -15,6 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include "common/extra_optimizations.h"
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -22,7 +25,6 @@
 #include "common/bspline.h"
 #include "common/darktable.h"
 #include "common/dwt.h"
-#include "common/fast_guided_filter.h"
 #include "common/gaussian.h"
 #include "common/image.h"
 #include "common/imagebuf.h"
