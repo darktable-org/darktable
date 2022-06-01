@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-02 00:53+0200\n"
+"PO-Revision-Date: 2022-06-02 01:12+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -227,7 +227,6 @@ msgid "false"
 msgstr "vals-kleur"
 
 #: ../build/bin/conf_gen.h:716 ../build/bin/preferences_gen.h:8902
-#, fuzzy
 #: ../build/bin/preferences_gen.h:8926
 msgctxt "preferences"
 msgid "id"
@@ -240,13 +239,11 @@ msgid "folder"
 msgstr "Cartella"
 
 #: ../build/bin/conf_gen.h:731
-#, fuzzy
 msgctxt "preferences"
 msgid "RGB"
-msgstr "rgb průvod"
+msgstr "RGB"
 
 #: ../build/bin/conf_gen.h:732
-#, fuzzy
 msgctxt "preferences"
 msgid "Lab"
 msgstr "Lab"
@@ -257,13 +254,11 @@ msgid "LCh"
 msgstr "LCh"
 
 #: ../build/bin/conf_gen.h:734
-#, fuzzy
 msgctxt "preferences"
 msgid "HSL"
 msgstr "HSL"
 
 #: ../build/bin/conf_gen.h:735
-#, fuzzy
 msgctxt "preferences"
 msgid "Hex"
 msgstr "Hex"
@@ -283,13 +278,11 @@ msgid "mean"
 msgstr "Medio"
 
 #: ../build/bin/conf_gen.h:745
-#, fuzzy
 msgctxt "preferences"
 msgid "min"
 msgstr "min"
 
 #: ../build/bin/conf_gen.h:746
-#, fuzzy
 msgctxt "preferences"
 msgid "max"
 msgstr "max"
@@ -465,7 +458,6 @@ msgid "5K"
 msgstr "5K"
 
 #: ../build/bin/conf_gen.h:1238 ../build/bin/preferences_gen.h:4699
-#, fuzzy
 #: ../build/bin/preferences_gen.h:4743
 msgctxt "preferences"
 msgid "off"
@@ -502,7 +494,6 @@ msgid "brush size (relative)"
 msgstr "Dimensione pennello (relativa)"
 
 #: ../build/bin/conf_gen.h:1251 ../build/bin/preferences_gen.h:4779
-#, fuzzy
 msgctxt "preferences"
 msgid "low"
 msgstr "Bassa"
@@ -834,13 +825,11 @@ msgid "AzBz"
 msgstr "AzBz"
 
 #: ../build/bin/conf_gen.h:2830
-#, fuzzy
 msgctxt "preferences"
 msgid "mm"
 msgstr "mm"
 
 #: ../build/bin/conf_gen.h:2831
-#, fuzzy
 msgctxt "preferences"
 msgid "cm"
 msgstr "cm"
@@ -852,7 +841,6 @@ msgid "inch"
 msgstr "pollici"
 
 #: ../build/bin/conf_gen.h:2877 ../build/bin/preferences_gen.h:7978
-#, fuzzy
 #: ../build/bin/preferences_gen.h:8007
 msgctxt "preferences"
 msgid "all"
@@ -955,10 +943,9 @@ msgid "active"
 msgstr "aktiewe module"
 
 #: ../build/bin/conf_gen.h:3104 ../build/bin/preferences_gen.h:5673
-#, fuzzy
 msgctxt "preferences"
 msgid "dim"
-msgstr "dim"
+msgstr "Debole"
 
 #: ../build/bin/conf_gen.h:3106 ../build/bin/preferences_gen.h:5683
 #, fuzzy
@@ -967,7 +954,6 @@ msgid "fade"
 msgstr "Sfumatura"
 
 #: ../build/bin/conf_gen.h:3107 ../build/bin/preferences_gen.h:5688
-#, fuzzy
 msgctxt "preferences"
 msgid "fit"
 msgstr "Adatta"
@@ -2208,7 +2194,6 @@ msgstr ""
 "solo della più recente per ripristinare con successo."
 
 #: ../build/bin/preferences_gen.h:7512 ../src/control/crawler.c:608
-#, fuzzy
 msgid "xmp"
 msgstr "xmp"
 
@@ -2788,7 +2773,6 @@ msgstr "Specifico"
 
 #. DEVELOP_MASK_DISABLED
 #: ../build/lib/darktable/plugins/introspection_ashift.c:366
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:124
@@ -3169,7 +3153,6 @@ msgid "very large chromatic aberration"
 msgstr "Aberrazione cromatica molto ampia"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#, fuzzy
 #: ../src/common/collection.c:1429 ../src/common/color_vocabulary.c:230
 #: ../src/common/colorlabels.c:329 ../src/develop/blend_gui.c:1989
 #: ../src/develop/blend_gui.c:2016 ../src/develop/lightroom.c:834
@@ -3473,7 +3456,6 @@ msgid "non-linear Bradford"
 msgstr "Bradford non lineare"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:554
-#, fuzzy
 msgid "XYZ"
 msgstr "XYZ"
 
@@ -3507,13 +3489,12 @@ msgid "left"
 msgstr "Sinistra"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:148
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_clipping.c:307
 #: ../build/lib/darktable/plugins/introspection_crop.c:67
 #: ../build/lib/darktable/plugins/introspection_crop.c:138
 #: ../src/gui/accelerators.c:106 ../src/gui/gtk.c:1143
 msgid "top"
-msgstr "superiore"
+msgstr "Superiore"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:154
 #, fuzzy
@@ -3869,7 +3850,6 @@ msgid "saturated colors"
 msgstr "Colori saturati"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:155
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:257
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:87
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:152
@@ -3896,7 +3876,6 @@ msgstr "Seleziona per"
 
 #. mix slider
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:138
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:233
 #: ../build/lib/darktable/plugins/introspection_soften.c:66
 #: ../build/lib/darktable/plugins/introspection_soften.c:121
@@ -4062,7 +4041,6 @@ msgid "VNG4"
 msgstr "VNG4"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:216
-#, fuzzy
 msgid "RCD"
 msgstr "RCD"
 
@@ -4213,7 +4191,6 @@ msgid "color mode"
 msgstr "Modalità colore"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:410
-#, fuzzy
 #: ../src/libs/colorpicker.c:51 ../src/libs/colorpicker.c:260
 msgid "RGB"
 msgstr "RGB"
@@ -4537,7 +4514,6 @@ msgid "spline handling"
 msgstr "Gestione della funzione spline"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:533
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/database.c:2751 ../src/common/variables.c:592
 #: ../src/develop/imageop_gui.c:196 ../src/imageio/format/pdf.c:647
@@ -5469,7 +5445,6 @@ msgid "developers"
 msgstr "Sviluppatori"
 
 #: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:11
-#, fuzzy
 msgid "translators"
 msgstr "Traduttori"
 
@@ -5872,7 +5847,6 @@ msgid "rating"
 msgstr "Valutazione"
 
 #: ../src/common/collection.c:624 ../src/libs/live_view.c:313
-#, fuzzy
 msgid "id"
 msgstr "id"
 
@@ -5934,7 +5908,6 @@ msgid "camera"
 msgstr "Fotocamera"
 
 #: ../src/common/collection.c:663 ../src/libs/export_metadata.c:189
-#, fuzzy
 #: ../src/libs/tagging.c:3283
 msgid "tag"
 msgstr "Etichetta"
@@ -6573,7 +6546,6 @@ msgid "linear XYZ"
 msgstr "XYZ lineare "
 
 #: ../src/common/colorspaces.c:1479 ../src/common/colorspaces.c:1665
-#, fuzzy
 #: ../src/develop/blend_gui.c:95 ../src/develop/blend_gui.c:1713
 #: ../src/libs/colorpicker.c:51 ../src/libs/colorpicker.c:261
 msgid "Lab"
@@ -6885,13 +6857,12 @@ msgstr ""
 "Vuoi veramente eliminare i file di blocco?\n"
 
 #: ../src/common/database.c:2751 ../src/common/database.c:3811
-#, fuzzy
 #: ../src/common/variables.c:590 ../src/develop/imageop_gui.c:197
 #: ../src/imageio/format/pdf.c:648 ../src/imageio/format/pdf.c:673
 #: ../src/libs/export.c:1209 ../src/libs/export.c:1215
 #: ../src/libs/export.c:1222 ../src/libs/metadata_view.c:678
 msgid "yes"
-msgstr "ja"
+msgstr "Si"
 
 #: ../src/common/database.c:2766 ../src/libs/export_metadata.c:164
 #, fuzzy
@@ -6912,7 +6883,6 @@ msgstr ""
 
 #. the button to close the popup
 #: ../src/common/database.c:2768 ../src/common/database.c:2775
-#, fuzzy
 #: ../src/libs/filters/filename.c:452
 msgid "ok"
 msgstr "ok"
@@ -7317,14 +7287,12 @@ msgid "tiff"
 msgstr "tiff"
 
 #: ../src/common/image.h:171
-#, fuzzy
 msgid "png"
-msgstr "png"
+msgstr "PNG"
 
 #: ../src/common/image.h:172
-#, fuzzy
 msgid "j2k"
-msgstr "j2k"
+msgstr "J2K"
 
 #: ../src/common/image.h:173
 #, fuzzy
@@ -7332,9 +7300,8 @@ msgid "jpeg"
 msgstr "jpeg"
 
 #: ../src/common/image.h:174
-#, fuzzy
 msgid "exr"
-msgstr "exr"
+msgstr "EXR"
 
 #: ../src/common/image.h:175
 #, fuzzy
@@ -7342,9 +7309,8 @@ msgid "rgbe"
 msgstr "rgbe"
 
 #: ../src/common/image.h:176
-#, fuzzy
 msgid "pfm"
-msgstr "pfm"
+msgstr "PFM"
 
 #: ../src/common/image.h:177
 #, fuzzy
@@ -7537,13 +7503,11 @@ msgid "opencl scheduling profile set to default"
 msgstr "Profilo di pianificazione OpenCL impostato con i predefiniti"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:1916
-#, fuzzy
 #: ../src/libs/filters/focal.c:74 ../src/libs/print_settings.c:83
 msgid "mm"
 msgstr "mm"
 
 #: ../src/common/pdf.h:89 ../src/libs/export.c:533 ../src/libs/export.c:1164
-#, fuzzy
 #: ../src/libs/print_settings.c:83
 msgid "cm"
 msgstr "cm"
@@ -7558,12 +7522,10 @@ msgid "\""
 msgstr "\""
 
 #: ../src/common/pdf.h:104
-#, fuzzy
 msgid "a4"
 msgstr "a4"
 
 #: ../src/common/pdf.h:105
-#, fuzzy
 msgid "a3"
 msgstr "a3"
 
@@ -7638,14 +7600,12 @@ msgid "zero"
 msgstr "Zero"
 
 #: ../src/common/ratings.c:312 ../src/libs/filters/rating_range.c:294
-#, fuzzy
 msgid "one"
 msgstr "Uno"
 
 #: ../src/common/ratings.c:313 ../src/libs/filters/rating_range.c:295
-#, fuzzy
 msgid "two"
-msgstr "二"
+msgstr "Due"
 
 #: ../src/common/ratings.c:314 ../src/libs/filters/rating_range.c:296
 #, fuzzy
@@ -7748,7 +7708,6 @@ msgid "below sea level"
 msgstr "Sotto il livello del mare"
 
 #: ../src/common/utility.c:555 ../src/libs/metadata_view.c:875
-#, fuzzy
 msgid "m"
 msgstr "m"
 
@@ -8635,10 +8594,9 @@ msgid "chromaticity"
 msgstr "Cromaticità"
 
 #: ../src/develop/blend_gui.c:64
-#, fuzzy
 msgctxt "blendmode"
 msgid "hue"
-msgstr "To (hue) HSL"
+msgstr "Tonalità"
 
 #: ../src/develop/blend_gui.c:65
 #, fuzzy
@@ -8768,7 +8726,6 @@ msgid "default"
 msgstr "Predefinito"
 
 #: ../src/develop/blend_gui.c:94
-#, fuzzy
 msgid "RAW"
 msgstr "RAW"
 
@@ -8852,7 +8809,6 @@ msgid "input after blur"
 msgstr "Input dopo aver sfocato"
 
 #: ../src/develop/blend_gui.c:125 ../src/develop/develop.c:2248
-#, fuzzy
 #: ../src/gui/accelerators.c:120 ../src/gui/accelerators.c:129
 #: ../src/gui/accelerators.c:198 ../src/imageio/format/avif.c:823
 #: ../src/libs/live_view.c:362
@@ -8898,7 +8854,6 @@ msgid "show output channels"
 msgstr "Mostra i canali di output"
 
 #: ../src/develop/blend_gui.c:1964 ../src/develop/blend_gui.c:2004
-#, fuzzy
 #: ../src/iop/tonecurve.c:1159
 msgid "L"
 msgstr "L"
@@ -8964,7 +8919,6 @@ msgid "sliders for gray value"
 msgstr "Selettore scorrevole per il valore del grigio"
 
 #: ../src/develop/blend_gui.c:1987 ../src/develop/blend_gui.c:2014
-#, fuzzy
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/denoiseprofile.c:3582
 #: ../src/iop/rawdenoise.c:905 ../src/iop/rgbcurve.c:1369
 #: ../src/iop/rgblevels.c:1013 ../src/libs/filters/colors.c:137
@@ -8977,7 +8931,6 @@ msgid "sliders for red channel"
 msgstr "Selettore scorrevole per il canale del rosso"
 
 #: ../src/develop/blend_gui.c:1990 ../src/develop/blend_gui.c:2017
-#, fuzzy
 #: ../src/iop/channelmixerrgb.c:4182 ../src/iop/denoiseprofile.c:3583
 #: ../src/iop/rawdenoise.c:906 ../src/iop/rgbcurve.c:1370
 #: ../src/iop/rgblevels.c:1014 ../src/libs/filters/colors.c:143
@@ -8990,7 +8943,6 @@ msgid "sliders for green channel"
 msgstr "Selettore scorrevole per il canale del verde"
 
 #: ../src/develop/blend_gui.c:1993 ../src/develop/blend_gui.c:2020
-#, fuzzy
 #: ../src/iop/channelmixerrgb.c:4183 ../src/iop/denoiseprofile.c:3584
 #: ../src/iop/rawdenoise.c:907 ../src/iop/rgbcurve.c:1371
 #: ../src/iop/rgblevels.c:1015 ../src/libs/filters/colors.c:146
@@ -9003,7 +8955,6 @@ msgid "sliders for blue channel"
 msgstr "Selettore scorrevole per il canale del blu"
 
 #: ../src/develop/blend_gui.c:1996
-#, fuzzy
 msgid "H"
 msgstr "H"
 
@@ -9013,7 +8964,6 @@ msgid "sliders for hue channel (of HSL)"
 msgstr "Selettore scorrevole per il canale tinta (di HSL)"
 
 #: ../src/develop/blend_gui.c:2000
-#, fuzzy
 msgid "S"
 msgstr "S"
 
@@ -9039,7 +8989,6 @@ msgid "sliders for value channel (of HSL)"
 msgstr "Selettore scorrevole per il canale di valore (di HSL)"
 
 #: ../src/develop/blend_gui.c:2023
-#, fuzzy
 msgid "Jz"
 msgstr "Jz"
 
@@ -9155,7 +9104,6 @@ msgstr ""
 "premi 'm' per abilitare/disabilitare la visualizzazione maschera."
 
 #: ../src/develop/blend_gui.c:2228 ../src/develop/blend_gui.c:3056
-#, fuzzy
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2020
 #: ../src/iop/exposure.c:1033 ../src/iop/exposure.c:1046
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
@@ -9678,11 +9626,10 @@ msgid "show"
 msgstr "Lento"
 
 #: ../src/develop/imageop.c:3221 ../src/libs/modulegroups.c:3353
-#, fuzzy
 #: ../src/libs/modulegroups.c:3479 ../src/libs/modulegroups.c:3872
 #: ../src/libs/tagging.c:3249
 msgid "new"
-msgstr "Nuova"
+msgstr "Nuovo"
 
 #: ../src/develop/imageop.c:3224 ../src/libs/duplicate.c:543
 #, fuzzy
@@ -10259,16 +10206,14 @@ msgid "date-time interval to add to the min value"
 msgstr "interval data-času pro přidání k min. hodnotě"
 
 #: ../src/dtgtk/range.c:606 ../src/dtgtk/range.c:1721 ../src/dtgtk/range.c:1772
-#, fuzzy
 #: ../src/libs/colorpicker.c:53
 msgid "min"
-msgstr "min"
+msgstr "Min"
 
 #: ../src/dtgtk/range.c:612 ../src/dtgtk/range.c:1733 ../src/dtgtk/range.c:1784
-#, fuzzy
 #: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:299
 msgid "max"
-msgstr "max"
+msgstr "Max"
 
 #: ../src/dtgtk/range.c:926
 #, fuzzy
@@ -10322,9 +10267,8 @@ msgid "time"
 msgstr "čas"
 
 #: ../src/dtgtk/range.c:1038 ../src/dtgtk/range.c:1740
-#, fuzzy
 msgid "now"
-msgstr "зараз"
+msgstr "Adesso"
 
 #: ../src/dtgtk/range.c:1040
 #, fuzzy
@@ -10348,7 +10292,6 @@ msgstr "bu değere bağlı aralığı ayarlama"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../src/dtgtk/range.c:1716 ../src/gui/accelerators.c:1978
-#, fuzzy
 #: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2916
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
@@ -10390,7 +10333,6 @@ msgid "grouped images"
 msgstr "Immagini raggruppate"
 
 #: ../src/dtgtk/thumbnail.c:714 ../src/dtgtk/thumbnail.c:1448
-#, fuzzy
 #: ../src/iop/ashift.c:5768 ../src/iop/ashift.c:5835 ../src/iop/ashift.c:5836
 #: ../src/iop/ashift.c:5837
 msgid "fit"
@@ -10633,7 +10575,6 @@ msgstr "Fluorescente ai vapori di mercurio alta temperatura"
 
 #. On Some Panasonic
 #: ../src/external/wb_presets.c:70
-#, fuzzy
 msgid "D55"
 msgstr "D55"
 
@@ -10755,9 +10696,8 @@ msgid "scroll"
 msgstr "Scorri"
 
 #: ../src/gui/accelerators.c:74
-#, fuzzy
 msgid "pan"
-msgstr "pan"
+msgstr "Panoramica"
 
 #: ../src/gui/accelerators.c:75 ../src/iop/ashift.c:5423
 #, fuzzy
@@ -10813,14 +10753,12 @@ msgid "ctrl"
 msgstr "ctrl"
 
 #: ../src/gui/accelerators.c:91 ../src/views/view.c:1189
-#, fuzzy
 msgid "alt"
-msgstr "alt"
+msgstr "Alt"
 
 #: ../src/gui/accelerators.c:92
-#, fuzzy
 msgid "cmd"
-msgstr "cmd"
+msgstr "Cmd"
 
 #: ../src/gui/accelerators.c:93
 #, fuzzy
@@ -10834,9 +10772,8 @@ msgid "edit"
 msgstr "Modifica "
 
 #: ../src/gui/accelerators.c:103 ../src/gui/accelerators.c:552
-#, fuzzy
 msgid "up"
-msgstr "上"
+msgstr "Su"
 
 #: ../src/gui/accelerators.c:104 ../src/gui/accelerators.c:552
 #, fuzzy
@@ -10844,7 +10781,6 @@ msgid "down"
 msgstr "下"
 
 #: ../src/gui/accelerators.c:108
-#, fuzzy
 msgid "set"
 msgstr "Imposta"
 
@@ -11261,7 +11197,6 @@ msgid "export shortcuts"
 msgstr "Esporta scorciatoie"
 
 #: ../src/gui/accelerators.c:1968 ../src/gui/accelerators.c:2047
-#, fuzzy
 #: ../src/gui/hist_dialog.c:198 ../src/gui/presets.c:477
 msgid "_ok"
 msgstr "_ok"
@@ -11509,9 +11444,8 @@ msgid "tethering"
 msgstr "Tethering (scatto remoto)"
 
 #: ../src/gui/gtk.c:1178 ../src/views/map.c:197
-#, fuzzy
 msgid "map"
-msgstr "mapa"
+msgstr "Mappa"
 
 #: ../src/gui/gtk.c:1179 ../src/views/slideshow.c:344
 #, fuzzy
@@ -12412,12 +12346,10 @@ msgid "non-raw"
 msgstr "非 raw"
 
 #: ../src/gui/presets.c:59 ../src/libs/metadata_view.c:333
-#, fuzzy
 msgid "raw"
-msgstr "raw"
+msgstr "RAW"
 
 #: ../src/gui/presets.c:59
-#, fuzzy
 msgid "HDR"
 msgstr "HDR"
 
@@ -12889,7 +12821,6 @@ msgid "uncompressed"
 msgstr "Non compresso"
 
 #: ../src/imageio/format/exr.cc:487
-#, fuzzy
 msgid "RLE"
 msgstr "RLE"
 
@@ -12899,7 +12830,6 @@ msgid "ZIPS"
 msgstr "ZIPS"
 
 #: ../src/imageio/format/exr.cc:489
-#, fuzzy
 msgid "ZIP"
 msgstr "ZIP"
 
@@ -12937,9 +12867,8 @@ msgid "J2K"
 msgstr "J2K"
 
 #: ../src/imageio/format/j2k.c:653
-#, fuzzy
 msgid "jp2"
-msgstr "jp2"
+msgstr "JP2"
 
 #: ../src/imageio/format/j2k.c:671
 #, fuzzy
@@ -13053,9 +12982,8 @@ msgstr ""
 
 #. dpi
 #: ../src/imageio/format/pdf.c:635 ../src/libs/export.c:1169
-#, fuzzy
 msgid "dpi"
-msgstr "dpi"
+msgstr "DPI"
 
 #: ../src/imageio/format/pdf.c:639
 #, fuzzy
@@ -13269,9 +13197,8 @@ msgid "graphic"
 msgstr "grafika"
 
 #: ../src/imageio/format/xcf.c:299
-#, fuzzy
 msgid "xcf"
-msgstr "xcf"
+msgstr "XCF"
 
 #: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:1053
 #, fuzzy
@@ -13491,7 +13418,6 @@ msgid "family"
 msgstr "Famiglia"
 
 #: ../src/imageio/storage/piwigo.c:866
-#, fuzzy
 msgid "you"
 msgstr "Tu"
 
@@ -14005,7 +13931,6 @@ msgid "finest"
 msgstr "Più bello"
 
 #: ../src/iop/atrous.c:1655 ../src/libs/export.c:1162 ../src/libs/export.c:1177
-#, fuzzy
 msgid "x"
 msgstr "x"
 
@@ -15207,7 +15132,6 @@ msgid "passable"
 msgstr "Accettabile"
 
 #: ../src/iop/channelmixerrgb.c:1755 ../src/iop/channelmixerrgb.c:1804
-#, fuzzy
 msgid "bad"
 msgstr "Brutto"
 
@@ -15429,7 +15353,6 @@ msgstr "Pagina"
 
 #. Page CAT
 #: ../src/iop/channelmixerrgb.c:4007
-#, fuzzy
 msgid "CAT"
 msgstr "CAT"
 
@@ -15897,7 +15820,6 @@ msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
 #: ../src/iop/clipping.c:2145 ../src/iop/crop.c:1057
-#, fuzzy
 msgid "5x7"
 msgstr "5x7"
 
@@ -16202,7 +16124,6 @@ msgid "color control sliders"
 msgstr "Selettori scorrevoli controllo colore"
 
 #: ../src/iop/colorbalance.c:1863 ../src/libs/colorpicker.c:51
-#, fuzzy
 msgid "HSL"
 msgstr "HSL"
 
@@ -19715,7 +19636,6 @@ msgid "focal length (mm)"
 msgstr "Lunghezza focale (mm)"
 
 #: ../src/iop/lens.cc:1941
-#, fuzzy
 msgid "f/"
 msgstr "f/"
 
@@ -19725,7 +19645,6 @@ msgid "f-number (aperture)"
 msgstr "Numero-f (apertura diaframma)"
 
 #: ../src/iop/lens.cc:1956
-#, fuzzy
 msgid "d"
 msgstr "d"
 
@@ -22624,7 +22543,6 @@ msgid "battery"
 msgstr "Batteria"
 
 #: ../src/libs/camera.c:343
-#, fuzzy
 msgid "n/a"
 msgstr "n/a"
 
@@ -22757,7 +22675,6 @@ msgid "shutterspeed"
 msgstr "Tempo di scatto"
 
 #: ../src/libs/camera.c:562
-#, fuzzy
 msgid "WB"
 msgstr "WB"
 
@@ -22961,12 +22878,10 @@ msgid "preferences..."
 msgstr "Preferenze..."
 
 #: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1386
-#, fuzzy
 msgid "AND"
 msgstr "E"
 
 #: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1391
-#, fuzzy
 msgid "OR"
 msgstr "O"
 
@@ -22991,12 +22906,10 @@ msgid "LCh"
 msgstr "LCh"
 
 #: ../src/libs/colorpicker.c:51
-#, fuzzy
 msgid "HSV"
 msgstr "HSV"
 
 #: ../src/libs/colorpicker.c:51
-#, fuzzy
 msgid "Hex"
 msgstr "Hex"
 
@@ -23255,10 +23168,9 @@ msgid "which is equal to %s × %s px"
 msgstr "Che è uguale a %s x %s px"
 
 #: ../src/libs/export.c:533
-#, fuzzy
 msgctxt "unit"
 msgid "in"
-msgstr "in"
+msgstr "In"
 
 #: ../src/libs/export.c:1071
 #, fuzzy
@@ -23343,7 +23255,6 @@ msgid "@"
 msgstr "@"
 
 #: ../src/libs/export.c:1180 ../src/libs/tools/global_toolbox.c:219
-#, fuzzy
 msgid "px"
 msgstr "px"
 
@@ -23466,7 +23377,6 @@ msgid "select tag"
 msgstr "Seleziona etichetta"
 
 #: ../src/libs/export_metadata.c:164
-#, fuzzy
 msgid "add"
 msgstr "Aggiungi"
 
@@ -23758,12 +23668,10 @@ msgid "this rule is disabled"
 msgstr "bu kural devre dışı"
 
 #: ../src/libs/filtering.c:1157
-#, fuzzy
 msgid "and"
 msgstr "e"
 
 #: ../src/libs/filtering.c:1158
-#, fuzzy
 msgid "or"
 msgstr "o"
 
@@ -23808,7 +23716,6 @@ msgid "DESC"
 msgstr "DESC"
 
 #: ../src/libs/filtering.c:1861
-#, fuzzy
 msgid "ASC"
 msgstr "ASC"
 
@@ -23857,7 +23764,6 @@ msgid "Y"
 msgstr "Y"
 
 #: ../src/libs/filters/colors.c:149
-#, fuzzy
 msgid "P"
 msgstr "P"
 
@@ -24076,9 +23982,8 @@ msgid "worse"
 msgstr "погіршити"
 
 #: ../src/libs/filters/rating_range.c:288
-#, fuzzy
 msgid "cap"
-msgstr "обмежити"
+msgstr ""
 
 #: ../src/libs/filters/rating_range.c:303
 #, fuzzy
@@ -25081,13 +24986,11 @@ msgid "overlay mode"
 msgstr "Modalità sovrapposizione"
 
 #: ../src/libs/live_view.c:336
-#, fuzzy
 msgctxt "blendmode"
 msgid "xor"
-msgstr "xor"
+msgstr "Xor"
 
 #: ../src/libs/live_view.c:337
-#, fuzzy
 msgctxt "blendmode"
 msgid "add"
 msgstr "Aggiungi"
@@ -25579,14 +25482,12 @@ msgid "unused/deprecated"
 msgstr "Non usato/deprecato"
 
 #: ../src/libs/metadata_view.c:332
-#, fuzzy
 msgid "ldr"
-msgstr "ldr"
+msgstr "LDR"
 
 #: ../src/libs/metadata_view.c:334
-#, fuzzy
 msgid "hdr"
-msgstr "hdr"
+msgstr "HDR"
 
 #: ../src/libs/metadata_view.c:335
 #, fuzzy
@@ -26297,7 +26198,6 @@ msgid "image width/height"
 msgstr "Larghezza/altezza immagine"
 
 #: ../src/libs/print_settings.c:2387
-#, fuzzy
 msgid " x "
 msgstr " x "
 
@@ -26513,7 +26413,6 @@ msgid "snapshots"
 msgstr "Istantanee"
 
 #: ../src/libs/snapshots.c:111
-#, fuzzy
 msgctxt "snapshot sign"
 msgid "S"
 msgstr "S"
@@ -27085,9 +26984,14 @@ msgid "and..."
 msgstr "e..."
 
 #: ../src/libs/tools/darktable.c:308
-#, fuzzy
 msgid "translator-credits"
-msgstr "Mauro 'bartokk' Bartoccelli <bartokk@gmail.com>"
+msgstr ""
+"Matteo Mardegan <matteo@mardegan.org> (2019-2022)\n"
+"Luca Cignoni (2022)\n"
+"Maurizio Paglia <mpaglia0@gmail.com> (2018-2022)\n"
+"Nelle precedenti versioni:\n"
+"Germano Massullo (2015-2017)\n"
+"Mauro 'bartokk' Bartoccelli (2013-2014)"
 
 #: ../src/libs/tools/filmstrip.c:45
 #, fuzzy
@@ -27751,7 +27655,6 @@ msgid "color scheme"
 msgstr "Combinazione colori"
 
 #: ../src/views/darkroom.c:2320
-#, fuzzy
 msgctxt "solidcolor"
 msgid "red"
 msgstr "Rosso"
