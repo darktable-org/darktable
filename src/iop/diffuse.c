@@ -557,57 +557,70 @@ static inline void find_laplacians(const dt_aligned_pixel_t pixels[9], dt_aligne
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(kernel, c2: 64) uniform(isotropy_type)
+#pragma omp declare simd aligned(a, c2: 64) uniform(isotropy_type)
 #endif
-static inline void compute_kernel(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
-                                  const dt_aligned_pixel_t cos_theta2, const dt_aligned_pixel_t sin_theta2,
-                                  const dt_isotropy_t isotropy_type, dt_aligned_pixel_t kernel[5])
+static inline void compute_diffusion_matrix(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
+                                            const dt_aligned_pixel_t cos_theta2, const dt_aligned_pixel_t sin_theta2,
+                                            const dt_isotropy_t isotropy_type, dt_aligned_pixel_t a[3])
 {
-  // Build the matrix of rotation with anisotropy
+  // Build the diffusion matrix
   for_each_channel(c)
   {
-    const float b1 = c2[c] * cos_theta2[c] + sin_theta2[c];
-    const float b2 = cos_theta2[c] + c2[c] * sin_theta2[c];
-    const float b3 = (1.f - c2[c]) * cos_theta_sin_theta[c];
-    const int is_gradient = isotropy_type == DT_ISOTROPY_GRADIENT;
+    const float b1 = cos_theta2[c] + c2[c] * sin_theta2[c];
+    const float b2 = (c2[c] - 1.f) * cos_theta_sin_theta[c];
+    const float b3 = c2[c] * cos_theta2[c] + sin_theta2[c];
 
-    const float a11 = is_gradient ? b1 : b2;
-    const float a22 = is_gradient ? b2 : b1;
-    const float a12 = is_gradient ? b3 : -b3;
+    if(isotropy_type == DT_ISOTROPY_ISOPHOTE)
+    {
+      a[0][c] = b1;
+      a[1][c] = b2;
+      a[2][c] = b3;
+    }
+    else  // isotropy_type == DT_ISOTROPY_GRADIENT || isotropy_type == DT_ISOTROPY_ISOTROPE
+    {
+      a[0][c] = b3;
+      a[1][c] = -b2;
+      a[2][c] = b1;
+    }
+  }
+}
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, neighbours, out: 16)
+#endif
+static inline void diffuse(const dt_aligned_pixel_t a[3], const dt_aligned_pixel_t neighbours[9],
+                           dt_aligned_pixel_t out)
+{
+  for_each_channel(c)
+  {
+    const float a11 = a[0][c];
+    const float a12 = a[1][c];
+    const float a22 = a[2][c];
+    const float a11a22 = a11 + a22;
+
+    // Convolve the neighbourhood with the mask:
+    //
     // [ [  a12 / 2 + (a11 + a22) / 8,  a22 / 2,         -a12 / 2 + (a11 + a22) / 8 ],
     //   [  a11 / 2,                   -1.5 (a11 + a22),  a11 / 2                   ],
     //   [ -a12 / 2 + (a11 + a22) / 8,  a22 / 2,          a12 / 2 + (a11 + a22) / 8 ] ]
+    //
     // but modified to reduce to the isotropic Laplacian when a12 goes to zero,
     // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Second-order-isotropic-finite-differences
     // for references (Oono & Puri).
+    //
     // N.B. we also have flipped the signs of the a12 terms
     // compared to the paper. There's probably a mismatch
     // of coordinate convention between the paper and the
     // original derivation of this convolution mask
     // (Witkin 1991, https://doi.org/10.1145/127719.122750).
-    const float a11a22 = a11 + a22;
-    kernel[0][c] = a12 / 2.f + a11a22 / 8.f;
-    kernel[1][c] = a22 / 2.f;
-    kernel[2][c] = -a12 / 2.f + a11a22 / 8.f;
-    kernel[3][c] = a11 / 2.f;
-    kernel[4][c] = -1.5f * a11a22;
-  }
-}
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(kernel, neighbourhood, out: 16)
-#endif
-static inline void convolve(const dt_aligned_pixel_t kernel[5], const dt_aligned_pixel_t neighbourhood[9],
-                            dt_aligned_pixel_t out)
-{
-  for_each_channel(c)
-  {
-    out[c] = kernel[4][c] * neighbourhood[4][c] +
-      kernel[0][c] * (neighbourhood[0][c] + neighbourhood[8][c]) +
-      kernel[1][c] * (neighbourhood[1][c] + neighbourhood[7][c]) +
-      kernel[2][c] * (neighbourhood[2][c] + neighbourhood[6][c]) +
-      kernel[3][c] * (neighbourhood[3][c] + neighbourhood[5][c]);
+    out[c] = (
+       (a12 + a11a22 / 4.f) * (neighbours[0][c] + neighbours[8][c]) +
+                        a22 * (neighbours[1][c] + neighbours[7][c]) +
+      (-a12 + a11a22 / 4.f) * (neighbours[2][c] + neighbours[6][c]) +
+                        a11 * (neighbours[3][c] + neighbours[5][c]) +
+              -3.f * a11a22 * neighbours[4][c]
+    ) / 2.f;
   }
 }
 
@@ -727,21 +740,27 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           dt_fast_expf_4wide(c2[k], c2[k]);
         }
 
-        dt_aligned_pixel_t kern_first[5], kern_second[5], kern_third[5], kern_fourth[5];
-        compute_kernel(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0],
-                       kern_first);
-        compute_kernel(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[1],
-                       kern_second);
-        compute_kernel(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[2],
-                       kern_third);
-        compute_kernel(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[3],
-                       kern_fourth);
+        dt_aligned_pixel_t a1[3], a2[3], a[3], derivative_LF, derivative_HF;
 
-        dt_aligned_pixel_t derivatives[4];
-        convolve(kern_first, neighbour_pixel_LF, derivatives[0]);
-        convolve(kern_second, neighbour_pixel_LF, derivatives[1]);
-        convolve(kern_third, neighbour_pixel_HF, derivatives[2]);
-        convolve(kern_fourth, neighbour_pixel_HF, derivatives[3]);
+        compute_diffusion_matrix(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[0], a1);
+        compute_diffusion_matrix(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[1], a2);
+        for_each_channel(c)
+        {
+          a[0][c] = ABCD[0] * a1[0][c] + ABCD[1] * a2[0][c];
+          a[1][c] = ABCD[0] * a1[1][c] + ABCD[1] * a2[1][c];
+          a[2][c] = ABCD[0] * a1[2][c] + ABCD[1] * a2[2][c];
+        }
+        diffuse(a, neighbour_pixel_LF, derivative_LF);
+
+        compute_diffusion_matrix(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type[2], a1);
+        compute_diffusion_matrix(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type[3], a2);
+        for_each_channel(c)
+        {
+          a[0][c] = ABCD[2] * a1[0][c] + ABCD[3] * a2[0][c];
+          a[1][c] = ABCD[2] * a1[1][c] + ABCD[3] * a2[1][c];
+          a[2][c] = ABCD[2] * a1[2][c] + ABCD[3] * a2[2][c];
+        }
+        diffuse(a, neighbour_pixel_HF, derivative_HF);
 
         dt_aligned_pixel_t variance = { 0.f };
         // convolve filters and compute the variance and the regularization term
@@ -760,18 +779,12 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         {
           variance[c] = variance_threshold + variance[c] * regularization_factor;
         }
-        // compute the update
-        dt_aligned_pixel_t acc = { 0.f };
-        for(size_t k = 0; k < 4; k++)
+
+        for_each_channel(c, aligned(derivative_LF, derivative_HF, variance, out))
         {
-          for_each_channel(c, aligned(acc,derivatives,ABCD))
-            acc[c] += derivatives[k][c] * ABCD[k];
-        }
-        for_each_channel(c, aligned(acc,HF,LF,variance,out))
-        {
-          acc[c] = (neighbour_pixel_HF[4][c] * strength + acc[c] / variance[c]);
+          const float acc = (neighbour_pixel_HF[4][c] * strength + (derivative_LF[c] + derivative_HF[c]) / variance[c]);
           // update the solution
-          out[index + c] = fmaxf(acc[c] + neighbour_pixel_LF[4][c], 0.f);
+          out[index + c] = fmaxf(acc + neighbour_pixel_LF[4][c], 0.f);
         }
       }
       else

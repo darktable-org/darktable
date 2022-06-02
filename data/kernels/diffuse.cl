@@ -61,50 +61,63 @@ inline float4 sqf(const float4 in)
 }
 
 
-inline void compute_kern(const float4 c2,
-                           const float4 cos_theta_sin_theta,
-                           const float4 cos_theta2, const float4 sin_theta2,
-                           const dt_isotropy_t isotropy_type,
-                           float4 kern[5])
+inline void compute_diffusion_matrix(const float4 c2,
+                                     const float4 cos_theta_sin_theta,
+                                     const float4 cos_theta2, const float4 sin_theta2,
+                                     const dt_isotropy_t isotropy_type,
+                                     float4 a[3])
 {
-  // Build the matrix of rotation with anisotropy
+  // Build the diffusion matrix
 
-  const float4 b1 = c2 * cos_theta2 + sin_theta2;
-  const float4 b2 = cos_theta2 + c2 * sin_theta2;
-  const float4 b3 = (1.f - c2) * cos_theta_sin_theta;
-  const bool is_gradient = isotropy_type == DT_ISOTROPY_GRADIENT;
+  const float4 b1 = cos_theta2 + c2 * sin_theta2;
+  const float4 b2 = (c2 - 1.f) * cos_theta_sin_theta;
+  const float4 b3 = c2 * cos_theta2 + sin_theta2;
 
-  const float4 a11 = is_gradient ? b1 : b2;
-  const float4 a22 = is_gradient ? b2 : b1;
-  const float4 a12 = is_gradient ? b3 : -b3;
+  if(isotropy_type == DT_ISOTROPY_ISOPHOTE)
+  {
+    a[0] = b1;
+    a[1] = b2;
+    a[2] = b3;
+  }
+  else  // isotropy_type == DT_ISOTROPY_GRADIENT || isotropy_type == DT_ISOTROPY_ISOTROPE
+  {
+    a[0] = b3;
+    a[1] = -b2;
+    a[2] = b1;
+  }
+}
 
+
+inline float4 diffuse(const float4 a[3], const float4 neighbours[9])
+{
+  // Convolve the neighbourhood with the mask:
+  //
   // [ [  a12 / 2 + (a11 + a22) / 8,  a22 / 2,         -a12 / 2 + (a11 + a22) / 8 ],
   //   [  a11 / 2,                   -1.5 (a11 + a22),  a11 / 2                   ],
   //   [ -a12 / 2 + (a11 + a22) / 8,  a22 / 2,          a12 / 2 + (a11 + a22) / 8 ] ]
+  //
   // but modified to reduce to the isotropic Laplacian when a12 goes to zero,
   // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Second-order-isotropic-finite-differences
   // for references (Oono & Puri).
+  //
   // N.B. we also have flipped the signs of the a12 terms
   // compared to the paper. There's probably a mismatch
   // of coordinate convention between the paper and the
   // original derivation of this convolution mask
   // (Witkin 1991, https://doi.org/10.1145/127719.122750).
+
+  const float4 a11 = a[0];
+  const float4 a12 = a[1];
+  const float4 a22 = a[2];
   const float4 a11a22 = a11 + a22;
-  kern[0] = a12 / 2.f + a11a22 / 8.f;
-  kern[1] = a22 / 2.f;
-  kern[2] = -a12 / 2.f + a11a22 / 8.f;
-  kern[3] = a11 / 2.f;
-  kern[4] = -1.5f * a11a22;
-}
 
-
-inline float4 convolve(const float4 kern[5], const float4 neighbours[9])
-{
-  return kern[4] * neighbours[4] +
-    kern[0] * (neighbours[0] + neighbours[8]) +
-    kern[1] * (neighbours[1] + neighbours[7]) +
-    kern[2] * (neighbours[2] + neighbours[6]) +
-    kern[3] * (neighbours[3] + neighbours[5]);
+  return (
+     (a12 + a11a22 / 4.f) * (neighbours[0] + neighbours[8]) +
+                      a22 * (neighbours[1] + neighbours[7]) +
+    (-a12 + a11a22 / 4.f) * (neighbours[2] + neighbours[6]) +
+                      a11 * (neighbours[3] + neighbours[5]) +
+            -3.f * a11a22 * neighbours[4]
+  ) / 2.f;
 }
 
 
@@ -189,20 +202,27 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
                            native_exp(-magnitude_grad * anisotropy.z),
                            native_exp(-magnitude_lapl * anisotropy.w) };
 
-    float4 kern_first[5], kern_second[5], kern_third[5], kern_fourth[5];
-    compute_kern(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type.x, kern_first);
-    compute_kern(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type.y, kern_second);
-    compute_kern(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type.z, kern_third);
-    compute_kern(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type.w, kern_fourth);
-
-    // convolve filters and compute the variance and the regularization term
-    float4 derivatives[4] = {
-      convolve(kern_first, neighbour_pixel_LF),
-      convolve(kern_second, neighbour_pixel_LF),
-      convolve(kern_third, neighbour_pixel_HF),
-      convolve(kern_fourth, neighbour_pixel_HF),
+    // temp buffers for calculating the diffusion matrix
+    float4 a1[3], a2[3];
+    compute_diffusion_matrix(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type.x, a1);
+    compute_diffusion_matrix(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type.y, a2);
+    const float4 a_LF[3] = {
+      ABCD.x * a1[0] + ABCD.y * a2[0],
+      ABCD.x * a1[1] + ABCD.y * a2[1],
+      ABCD.x * a1[2] + ABCD.y * a2[2],
     };
+    const float4 derivative_LF = diffuse(a_LF, neighbour_pixel_LF);
 
+    compute_diffusion_matrix(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type.z, a1);
+    compute_diffusion_matrix(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type.w, a2);
+    const float4 a_HF[3] = {
+      ABCD.z * a1[0] + ABCD.w * a2[0],
+      ABCD.z * a1[1] + ABCD.w * a2[1],
+      ABCD.z * a1[2] + ABCD.w * a2[2],
+    };
+    const float4 derivative_HF = diffuse(a_HF, neighbour_pixel_HF);
+
+    // compute the variance and the regularization term
     float4 variance = (float4)0.f;
     #pragma unroll
     for(int k = 0; k < 9; k++)
@@ -217,9 +237,8 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     variance = variance_threshold + variance * regularization_factor;
 
     // compute the update
-    float4 acc = (float4)0.f;
-    for(int k = 0; k < 4; k++) acc += derivatives[k] * ((float *)&ABCD)[k];
-    acc = (neighbour_pixel_HF[4] * strength + acc / variance);
+    const float4 acc = (derivative_LF + derivative_HF) / variance +
+      neighbour_pixel_HF[4] * strength;
 
     // update the solution
     out = fmax(acc + neighbour_pixel_LF[4], 0.f);
