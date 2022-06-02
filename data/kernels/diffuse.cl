@@ -60,43 +60,23 @@ inline float4 sqf(const float4 in)
   return in * in;
 }
 
-inline void rotation_matrix_isophote(const float4 c2,
-                                     const float4 cos_theta_sin_theta,
-                                     const float4 cos_theta2, const float4 sin_theta2,
-                                     float4 a[2][2])
-{
-  // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
-  // [[ a11, a12 ],
-  //  [ a12, a22 ]]
-  // taken from https://www.researchgate.net/publication/220663968
-  // c dampens the gradient direction
-  a[0][0] = cos_theta2 + c2 * sin_theta2;
-  a[1][1] = c2 * cos_theta2 + sin_theta2;
-  a[0][1] = a[1][0] = (c2 - 1.0f) * cos_theta_sin_theta;
-}
 
-inline void rotation_matrix_gradient(const float4 c2,
-                                     const float4 cos_theta_sin_theta,
-                                     const float4 cos_theta2, const float4 sin_theta2,
-                                     float4 a[2][2])
+inline void compute_kern(const float4 c2,
+                           const float4 cos_theta_sin_theta,
+                           const float4 cos_theta2, const float4 sin_theta2,
+                           const dt_isotropy_t isotropy_type,
+                           float4 kern[9])
 {
-  // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
-  // [[ a11, a12 ],
-  //  [ a12, a22 ]]
-  // based on https://www.researchgate.net/publication/220663968 and inverted
-  // c dampens the isophote direction
-  a[0][0] = c2 * cos_theta2 + sin_theta2;
-  a[1][1] = cos_theta2 + c2 * sin_theta2;
-  a[0][1] = a[1][0] = (1.0f - c2) * cos_theta_sin_theta;
-}
+  // Build the matrix of rotation with anisotropy
 
+  const float4 b1 = c2 * cos_theta2 + sin_theta2;
+  const float4 b2 = cos_theta2 + c2 * sin_theta2;
+  const float4 b3 = (1.f - c2) * cos_theta_sin_theta;
+  const bool is_gradient = isotropy_type == DT_ISOTROPY_GRADIENT;
 
-inline void build_matrix(const float4 a[2][2], float4 kern[9])
-{
-  const float4 a12 = a[0][1];
-  const float4 a11 = a[0][0];
-  const float4 a22 = a[1][1];
-  const float4 a11a22 = a11 + a22;
+  const float4 a11 = is_gradient ? b1 : b2;
+  const float4 a22 = is_gradient ? b2 : b1;
+  const float4 a12 = is_gradient ? b3 : -b3;
 
   // [ [  a12 / 2 + (a11 + a22) / 8,  a22 / 2,         -a12 / 2 + (a11 + a22) / 8 ],
   //   [  a11 / 2,                   -1.5 (a11 + a22),  a11 / 2                   ],
@@ -109,46 +89,12 @@ inline void build_matrix(const float4 a[2][2], float4 kern[9])
   // of coordinate convention between the paper and the
   // original derivation of this convolution mask
   // (Witkin 1991, https://doi.org/10.1145/127719.122750).
+  const float4 a11a22 = a11 + a22;
   kern[0] = kern[8] = a12 / 2.f + a11a22 / 8.f;
   kern[1] = kern[7] = a22 / 2.f;
   kern[2] = kern[6] = -a12 / 2.f + a11a22 / 8.f;
   kern[3] = kern[5] = a11 / 2.f;
   kern[4] = -1.5f * a11a22;
-}
-
-
-inline void compute_kern(const float4 c2,
-                           const float4 cos_theta_sin_theta,
-                           const float4 cos_theta2, const float4 sin_theta2,
-                           const dt_isotropy_t isotropy_type,
-                           float4 kern[9])
-{
-  // Build the matrix of rotation with anisotropy
-
-  float4 a[2][2];
-
-  switch(isotropy_type)
-  {
-    case(DT_ISOTROPY_ISOTROPE):
-    default:
-    {
-      a[0][0] = a[1][1] = (float4)1.f;
-      a[0][1] = a[1][0] = (float4)0.f;
-      break;
-    }
-    case(DT_ISOTROPY_ISOPHOTE):
-    {
-      rotation_matrix_isophote(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
-      break;
-    }
-    case(DT_ISOTROPY_GRADIENT):
-    {
-      rotation_matrix_gradient(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
-      break;
-    }
-  }
-
-  build_matrix(a, kern);
 }
 
 

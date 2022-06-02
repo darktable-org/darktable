@@ -557,57 +557,23 @@ static inline void find_laplacians(const dt_aligned_pixel_t pixels[9], dt_aligne
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16)
+#pragma omp declare simd aligned(kernel, c2: 64) uniform(isotropy_type)
 #endif
-static inline void rotation_matrix_isophote(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
-                                            const dt_aligned_pixel_t cos_theta2,
-                                            const dt_aligned_pixel_t sin_theta2, dt_aligned_pixel_t a[2][2])
+static inline void compute_kernel(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
+                                  const dt_aligned_pixel_t cos_theta2, const dt_aligned_pixel_t sin_theta2,
+                                  const dt_isotropy_t isotropy_type, dt_aligned_pixel_t kernel[9])
 {
-  // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
-  // [[ a11, a12 ],
-  //  [ a12, a22 ]]
-  // taken from https://www.researchgate.net/publication/220663968
-  // c dampens the gradient direction
+  // Build the matrix of rotation with anisotropy
   for_each_channel(c)
   {
-    a[0][0][c] = cos_theta2[c] + c2[c] * sin_theta2[c];
-    a[1][1][c] = c2[c] * cos_theta2[c] + sin_theta2[c];
-    a[0][1][c] = a[1][0][c] = (c2[c] - 1.0f) * cos_theta_sin_theta[c];
-  }
-}
+    const float b1 = c2[c] * cos_theta2[c] + sin_theta2[c];
+    const float b2 = cos_theta2[c] + c2[c] * sin_theta2[c];
+    const float b3 = (1.f - c2[c]) * cos_theta_sin_theta[c];
+    const int is_gradient = isotropy_type == DT_ISOTROPY_GRADIENT;
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, c2, cos_theta_sin_theta, cos_theta2, sin_theta2:16)
-#endif
-static inline void rotation_matrix_gradient(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
-                                            const dt_aligned_pixel_t cos_theta2,
-                                            const dt_aligned_pixel_t sin_theta2, dt_aligned_pixel_t a[2][2])
-{
-  // Write the coefficients of a square symmetrical matrice of rotation of the gradient :
-  // [[ a11, a12 ],
-  //  [ a12, a22 ]]
-  // based on https://www.researchgate.net/publication/220663968 and inverted
-  // c dampens the isophote direction
-  for_each_channel(c)
-  {
-    a[0][0][c] = c2[c] * cos_theta2[c] + sin_theta2[c];
-    a[1][1][c] = cos_theta2[c] + c2[c] * sin_theta2[c];
-    a[0][1][c] = a[1][0][c] = (1.0f - c2[c]) * cos_theta_sin_theta[c];
-  }
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(a, kernel: 64)
-#endif
-static inline void build_matrix(const dt_aligned_pixel_t a[2][2], dt_aligned_pixel_t kernel[9])
-{
-  for_each_channel(c)
-  {
-    const float a12 = a[0][1][c];
-    const float a11 = a[0][0][c];
-    const float a22 = a[1][1][c];
-    const float a11a22 = a11 + a22;
+    const float a11 = is_gradient ? b1 : b2;
+    const float a22 = is_gradient ? b2 : b1;
+    const float a12 = is_gradient ? b3 : -b3;
 
     // [ [  a12 / 2 + (a11 + a22) / 8,  a22 / 2,         -a12 / 2 + (a11 + a22) / 8 ],
     //   [  a11 / 2,                   -1.5 (a11 + a22),  a11 / 2                   ],
@@ -620,49 +586,13 @@ static inline void build_matrix(const dt_aligned_pixel_t a[2][2], dt_aligned_pix
     // of coordinate convention between the paper and the
     // original derivation of this convolution mask
     // (Witkin 1991, https://doi.org/10.1145/127719.122750).
+    const float a11a22 = a11 + a22;
     kernel[0][c] = kernel[8][c] = a12 / 2.f + a11a22 / 8.f;
     kernel[1][c] = kernel[7][c] = a22 / 2.f;
     kernel[2][c] = kernel[6][c] = -a12 / 2.f + a11a22 / 8.f;
     kernel[3][c] = kernel[5][c] = a11 / 2.f;
     kernel[4][c] = -1.5f * a11a22;
   }
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(kernel, c2: 64) uniform(isotropy_type)
-#endif
-static inline void compute_kernel(const dt_aligned_pixel_t c2, const dt_aligned_pixel_t cos_theta_sin_theta,
-                                  const dt_aligned_pixel_t cos_theta2, const dt_aligned_pixel_t sin_theta2,
-                                  const dt_isotropy_t isotropy_type, dt_aligned_pixel_t kernel[9])
-{
-  // Build the matrix of rotation with anisotropy
-  dt_aligned_pixel_t a[2][2];
-
-  switch(isotropy_type)
-  {
-    case(DT_ISOTROPY_ISOTROPE):
-    default:
-    {
-      for_each_channel(c)
-      {
-        a[0][0][c] = a[1][1][c] = 1.f;
-        a[1][0][c] = a[0][1][c] = 0.f;
-      }
-      break;
-    }
-    case(DT_ISOTROPY_ISOPHOTE):
-    {
-      rotation_matrix_isophote(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
-      break;
-    }
-    case(DT_ISOTROPY_GRADIENT):
-    {
-      rotation_matrix_gradient(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
-      break;
-    }
-  }
-
-  build_matrix(a, kernel);
 }
 
 static inline void heat_PDE_diffusion(const float *const restrict high_freq, const float *const restrict low_freq,
