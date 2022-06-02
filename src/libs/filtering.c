@@ -1074,6 +1074,15 @@ static void _rule_topbar_toggle(GtkWidget *widget, dt_lib_module_t *self)
   _widget_header_update(rule);
 }
 
+static void _event_rule_disable(GtkWidget *widget, dt_lib_filtering_rule_t *rule)
+{
+  if(rule->manual_widget_set) return;
+  _event_rule_changed(widget, rule);
+
+  // update the rule header
+  _widget_header_update(rule);
+}
+
 static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
@@ -1193,7 +1202,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, NULL);
     dt_gui_add_class(rule->w_off, "dt_transparent_background");
     g_object_set_data(G_OBJECT(rule->w_off), "rule", rule);
-    g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_changed), rule);
+    g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_disable), rule);
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
     // pin button
