@@ -754,10 +754,9 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         // c² in https://www.researchgate.net/publication/220663968
         dt_aligned_pixel_t c2[4];
         // build the local anisotropic convolution filters for gradients and laplacians
-        dt_aligned_pixel_t gradient[2], laplacian[2]; // x, y for each channel
-        find_gradients(neighbour_pixel_LF, gradient);
-        find_gradients(neighbour_pixel_HF, laplacian);
 
+        dt_aligned_pixel_t gradient[2]; // x, y for each channel
+        find_gradients(neighbour_pixel_LF, gradient);
         dt_aligned_pixel_t cos_theta_grad_sq;
         dt_aligned_pixel_t sin_theta_grad_sq;
         dt_aligned_pixel_t cos_theta_sin_theta_grad;
@@ -776,6 +775,8 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
           cos_theta_sin_theta_grad[c] = gradient[0][c] * gradient[1][c];
         }
 
+        dt_aligned_pixel_t laplacian[2]; // x, y for each channel
+        find_gradients(neighbour_pixel_HF, laplacian);
         dt_aligned_pixel_t cos_theta_lapl_sq;
         dt_aligned_pixel_t sin_theta_lapl_sq;
         dt_aligned_pixel_t cos_theta_sin_theta_lapl;

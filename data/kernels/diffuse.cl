@@ -214,10 +214,9 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
       }
 
     // build the local anisotropic convolution filters for gradients and laplacians
-    float4 gradient[2], laplacian[2];
-    find_gradient(neighbour_pixel_LF, gradient);
-    find_gradient(neighbour_pixel_HF, laplacian);
 
+    float4 gradient[2];
+    find_gradient(neighbour_pixel_LF, gradient);
     const float4 magnitude_grad = native_sqrt(sqf(gradient[0]) + sqf(gradient[1]));
     // Compute cos(arg(grad)) = dx / hypot - force arg(grad) = 0 if hypot == 0
     gradient[0] = (magnitude_grad != 0.f) ? gradient[0] / magnitude_grad
@@ -226,7 +225,12 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     gradient[1] = (magnitude_grad != 0.f) ? gradient[1] / magnitude_grad
                                           : 0.f; // sin(0)
     // Warning : now gradient[2] = { cos(arg(grad)) , sin(arg(grad)) }
+    const float4 cos_theta_grad_sq = sqf(gradient[0]);
+    const float4 sin_theta_grad_sq = sqf(gradient[1]);
+    const float4 cos_theta_sin_theta_grad = gradient[0] * gradient[1];
 
+    float4 laplacian[2];
+    find_gradient(neighbour_pixel_HF, laplacian);
     const float4 magnitude_lapl = native_sqrt(sqf(laplacian[0]) + sqf(laplacian[1]));
     // Compute cos(arg(lapl)) = dx / hypot - force arg(lapl) = 0 if hypot == 0
     laplacian[0] = (magnitude_lapl != 0.f) ? laplacian[0] / magnitude_lapl
@@ -235,10 +239,6 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     laplacian[1] = (magnitude_lapl != 0.f) ? laplacian[1] / magnitude_lapl
                                            : 0.f; // sin(0)
     // Warning : now laplacian[2] = { cos(arg(lapl)) , sin(arg(lapl)) }
-
-    const float4 cos_theta_grad_sq = sqf(gradient[0]);
-    const float4 sin_theta_grad_sq = sqf(gradient[1]);
-    const float4 cos_theta_sin_theta_grad = gradient[0] * gradient[1];
     const float4 cos_theta_lapl_sq = sqf(laplacian[0]);
     const float4 sin_theta_lapl_sq = sqf(laplacian[1]);
     const float4 cos_theta_sin_theta_lapl = laplacian[0] * laplacian[1];
