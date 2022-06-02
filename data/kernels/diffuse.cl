@@ -65,7 +65,7 @@ inline void compute_kern(const float4 c2,
                            const float4 cos_theta_sin_theta,
                            const float4 cos_theta2, const float4 sin_theta2,
                            const dt_isotropy_t isotropy_type,
-                           float4 kern[9])
+                           float4 kern[5])
 {
   // Build the matrix of rotation with anisotropy
 
@@ -90,11 +90,21 @@ inline void compute_kern(const float4 c2,
   // original derivation of this convolution mask
   // (Witkin 1991, https://doi.org/10.1145/127719.122750).
   const float4 a11a22 = a11 + a22;
-  kern[0] = kern[8] = a12 / 2.f + a11a22 / 8.f;
-  kern[1] = kern[7] = a22 / 2.f;
-  kern[2] = kern[6] = -a12 / 2.f + a11a22 / 8.f;
-  kern[3] = kern[5] = a11 / 2.f;
+  kern[0] = a12 / 2.f + a11a22 / 8.f;
+  kern[1] = a22 / 2.f;
+  kern[2] = -a12 / 2.f + a11a22 / 8.f;
+  kern[3] = a11 / 2.f;
   kern[4] = -1.5f * a11a22;
+}
+
+
+inline float4 convolve(const float4 kern[5], const float4 neighbours[9])
+{
+  return kern[4] * neighbours[4] +
+    kern[0] * (neighbours[0] + neighbours[8]) +
+    kern[1] * (neighbours[1] + neighbours[7]) +
+    kern[2] * (neighbours[2] + neighbours[6]) +
+    kern[3] * (neighbours[3] + neighbours[5]);
 }
 
 
@@ -179,23 +189,24 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
                            native_exp(-magnitude_grad * anisotropy.z),
                            native_exp(-magnitude_lapl * anisotropy.w) };
 
-    float4 kern_first[9], kern_second[9], kern_third[9], kern_fourth[9];
+    float4 kern_first[5], kern_second[5], kern_third[5], kern_fourth[5];
     compute_kern(c2[0], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type.x, kern_first);
     compute_kern(c2[1], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type.y, kern_second);
     compute_kern(c2[2], cos_theta_sin_theta_grad, cos_theta_grad_sq, sin_theta_grad_sq, isotropy_type.z, kern_third);
     compute_kern(c2[3], cos_theta_sin_theta_lapl, cos_theta_lapl_sq, sin_theta_lapl_sq, isotropy_type.w, kern_fourth);
 
     // convolve filters and compute the variance and the regularization term
-    float4 derivatives[4] = { (float4)0.f };
-    float4 variance = (float4)0.f;
+    float4 derivatives[4] = {
+      convolve(kern_first, neighbour_pixel_LF),
+      convolve(kern_second, neighbour_pixel_LF),
+      convolve(kern_third, neighbour_pixel_HF),
+      convolve(kern_fourth, neighbour_pixel_HF),
+    };
 
+    float4 variance = (float4)0.f;
     #pragma unroll
     for(int k = 0; k < 9; k++)
     {
-      derivatives[0] += kern_first[k] * neighbour_pixel_LF[k];
-      derivatives[1] += kern_second[k] * neighbour_pixel_LF[k];
-      derivatives[2] += kern_third[k] * neighbour_pixel_HF[k];
-      derivatives[3] += kern_fourth[k] * neighbour_pixel_HF[k];
       variance += sqf(neighbour_pixel_HF[k]);
     }
 
