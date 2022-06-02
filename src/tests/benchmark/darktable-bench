@@ -280,7 +280,7 @@ def warm_up_caches(program,image,xmp,args):
 def get_version(program):
    output = subprocess.check_output([program,"--version"],stdin=None,stderr=subprocess.PIPE)
    if output:
-      output = output.decode('utf-8').split('\n')
+      output = output.decode('utf-8').splitlines()
    if 'this is ' in output[0]:
       return output[0][8:].replace('-cli','')
    else:
