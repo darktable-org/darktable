@@ -604,50 +604,27 @@ static inline void build_matrix(const dt_aligned_pixel_t a[2][2], dt_aligned_pix
 {
   for_each_channel(c)
   {
-    const float b11 = a[0][1][c] / 2.0f;
-    const float b13 = -b11;
-    const float b22 = -2.0f * (a[0][0][c] + a[1][1][c]);
+    const float a12 = a[0][1][c];
+    const float a11 = a[0][0][c];
+    const float a22 = a[1][1][c];
+    const float a11a22 = a11 + a22;
 
-    // build the kernel of rotated anisotropic laplacian
-    // from https://www.researchgate.net/publication/220663968 :
-    // [ [ a12 / 2,  a22,            -a12 / 2 ],
-    //   [ a11,      -2 (a11 + a22), a11      ],
-    //   [ -a12 / 2,   a22,          a12 / 2  ] ]
-    // N.B. we have flipped the signs of the a12 terms
+    // [ [  a12 / 2 + (a11 + a22) / 8,  a22 / 2,         -a12 / 2 + (a11 + a22) / 8 ],
+    //   [  a11 / 2,                   -1.5 (a11 + a22),  a11 / 2                   ],
+    //   [ -a12 / 2 + (a11 + a22) / 8,  a22 / 2,          a12 / 2 + (a11 + a22) / 8 ] ]
+    // but modified to reduce to the isotropic Laplacian when a12 goes to zero,
+    // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Second-order-isotropic-finite-differences
+    // for references (Oono & Puri).
+    // N.B. we also have flipped the signs of the a12 terms
     // compared to the paper. There's probably a mismatch
     // of coordinate convention between the paper and the
     // original derivation of this convolution mask
     // (Witkin 1991, https://doi.org/10.1145/127719.122750).
-    kernel[0][c] = b11;
-    kernel[1][c] = a[1][1][c];
-    kernel[2][c] = b13;
-    kernel[3][c] = a[0][0][c];
-    kernel[4][c] = b22;
-    kernel[5][c] = a[0][0][c];
-    kernel[6][c] = b13;
-    kernel[7][c] = a[1][1][c];
-    kernel[8][c] = b11;
-  }
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(kernel: 64)
-#endif
-static inline void isotrope_laplacian(dt_aligned_pixel_t kernel[9])
-{
-  // see in https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Second-order-isotropic-finite-differences
-  // for references (Oono & Puri)
-  for_each_channel(c)
-  {
-    kernel[0][c] = 0.25f;
-    kernel[1][c] = 0.5f;
-    kernel[2][c] = 0.25f;
-    kernel[3][c] = 0.5f;
-    kernel[4][c] = -3.f;
-    kernel[5][c] = 0.5f;
-    kernel[6][c] = 0.25f;
-    kernel[7][c] = 0.5f;
-    kernel[8][c] = 0.25f;
+    kernel[0][c] = kernel[8][c] = a12 / 2.f + a11a22 / 8.f;
+    kernel[1][c] = kernel[7][c] = a22 / 2.f;
+    kernel[2][c] = kernel[6][c] = -a12 / 2.f + a11a22 / 8.f;
+    kernel[3][c] = kernel[5][c] = a11 / 2.f;
+    kernel[4][c] = -1.5f * a11a22;
   }
 }
 
@@ -659,30 +636,33 @@ static inline void compute_kernel(const dt_aligned_pixel_t c2, const dt_aligned_
                                   const dt_isotropy_t isotropy_type, dt_aligned_pixel_t kernel[9])
 {
   // Build the matrix of rotation with anisotropy
+  dt_aligned_pixel_t a[2][2];
 
   switch(isotropy_type)
   {
     case(DT_ISOTROPY_ISOTROPE):
     default:
     {
-      isotrope_laplacian(kernel);
+      for_each_channel(c)
+      {
+        a[0][0][c] = a[1][1][c] = 1.f;
+        a[1][0][c] = a[0][1][c] = 0.f;
+      }
       break;
     }
     case(DT_ISOTROPY_ISOPHOTE):
     {
-      dt_aligned_pixel_t a[2][2] = { { { 0.f } } };
       rotation_matrix_isophote(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
-      build_matrix(a, kernel);
       break;
     }
     case(DT_ISOTROPY_GRADIENT):
     {
-      dt_aligned_pixel_t a[2][2] = { { { 0.f } } };
       rotation_matrix_gradient(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
-      build_matrix(a, kernel);
       break;
     }
   }
+
+  build_matrix(a, kernel);
 }
 
 static inline void heat_PDE_diffusion(const float *const restrict high_freq, const float *const restrict low_freq,

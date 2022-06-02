@@ -93,45 +93,27 @@ inline void rotation_matrix_gradient(const float4 c2,
 
 inline void build_matrix(const float4 a[2][2], float4 kern[9])
 {
-  const float4 b11 = a[0][1] / 2.0f;
-  const float4 b13 = -b11;
-  const float4 b22 = -2.0f * (a[0][0] + a[1][1]);
+  const float4 a12 = a[0][1];
+  const float4 a11 = a[0][0];
+  const float4 a22 = a[1][1];
+  const float4 a11a22 = a11 + a22;
 
-  // build the kernel of rotated anisotropic laplacian
-  // from https://www.researchgate.net/publication/220663968 :
-  // [ [ a12 / 2,  a22,            -a12 / 2 ],
-  //   [ a11,      -2 (a11 + a22), a11      ],
-  //   [ -a12 / 2,   a22,          a12 / 2  ] ]
-  // N.B. we have flipped the signs of the a12 terms
+  // [ [  a12 / 2 + (a11 + a22) / 8,  a22 / 2,         -a12 / 2 + (a11 + a22) / 8 ],
+  //   [  a11 / 2,                   -1.5 (a11 + a22),  a11 / 2                   ],
+  //   [ -a12 / 2 + (a11 + a22) / 8,  a22 / 2,          a12 / 2 + (a11 + a22) / 8 ] ]
+  // but modified to reduce to the isotropic Laplacian when a12 goes to zero,
+  // see https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Second-order-isotropic-finite-differences
+  // for references (Oono & Puri).
+  // N.B. we also have flipped the signs of the a12 terms
   // compared to the paper. There's probably a mismatch
   // of coordinate convention between the paper and the
   // original derivation of this convolution mask
   // (Witkin 1991, https://doi.org/10.1145/127719.122750).
-  kern[0] = b11;
-  kern[1] = a[1][1];
-  kern[2] = b13;
-  kern[3] = a[0][0];
-  kern[4] = b22;
-  kern[5] = a[0][0];
-  kern[6] = b13;
-  kern[7] = a[1][1];
-  kern[8] = b11;
-}
-
-
-inline void isotrope_laplacian(float4 kern[9])
-{
-  // see in https://eng.aurelienpierre.com/2021/03/rotation-invariant-laplacian-for-2d-grids/#Second-order-isotropic-finite-differences
-  // for references (Oono & Puri)
-  kern[0] = 0.25f;
-  kern[1] = 0.5f;
-  kern[2] = 0.25f;
-  kern[3] = 0.5f;
-  kern[4] = -3.f;
-  kern[5] = 0.5f;
-  kern[6] = 0.25f;
-  kern[7] = 0.5f;
-  kern[8] = 0.25f;
+  kern[0] = kern[8] = a12 / 2.f + a11a22 / 8.f;
+  kern[1] = kern[7] = a22 / 2.f;
+  kern[2] = kern[6] = -a12 / 2.f + a11a22 / 8.f;
+  kern[3] = kern[5] = a11 / 2.f;
+  kern[4] = -1.5f * a11a22;
 }
 
 
@@ -143,29 +125,30 @@ inline void compute_kern(const float4 c2,
 {
   // Build the matrix of rotation with anisotropy
 
+  float4 a[2][2];
+
   switch(isotropy_type)
   {
     case(DT_ISOTROPY_ISOTROPE):
     default:
     {
-      isotrope_laplacian(kern);
+      a[0][0] = a[1][1] = (float4)1.f;
+      a[0][1] = a[1][0] = (float4)0.f;
       break;
     }
     case(DT_ISOTROPY_ISOPHOTE):
     {
-      float4 a[2][2] = { { (float4)0.f } };
       rotation_matrix_isophote(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
-      build_matrix(a, kern);
       break;
     }
     case(DT_ISOTROPY_GRADIENT):
     {
-      float4 a[2][2] = { { (float4)0.f } };
       rotation_matrix_gradient(c2, cos_theta_sin_theta, cos_theta2, sin_theta2, a);
-      build_matrix(a, kern);
       break;
     }
   }
+
+  build_matrix(a, kern);
 }
 
 
