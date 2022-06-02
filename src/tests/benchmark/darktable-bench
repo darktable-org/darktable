@@ -251,7 +251,7 @@ def run_benchmark(program,image,xmp,args):
       trace = ''
       pixpipe = -1.0
    if trace:
-      trace = trace.decode('utf-8').split('\n')
+      trace = trace.decode('utf-8').splitlines()
    loadtime = 0.0
    savetime = -1
    gpu = False
