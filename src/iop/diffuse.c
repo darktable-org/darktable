@@ -841,9 +841,9 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         }
         for_each_channel(c, aligned(acc,HF,LF,variance,out))
         {
-          acc[c] = (HF[index + c] * strength + acc[c] / variance[c]);
+          acc[c] = (neighbour_pixel_HF[4][c] * strength + acc[c] / variance[c]);
           // update the solution
-          out[index + c] = fmaxf(acc[c] + LF[index + c], 0.f);
+          out[index + c] = fmaxf(acc[c] + neighbour_pixel_LF[4][c], 0.f);
         }
       }
       else

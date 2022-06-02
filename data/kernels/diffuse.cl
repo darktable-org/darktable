@@ -279,12 +279,10 @@ diffuse_pde(read_only image2d_t HF, read_only image2d_t LF,
     // compute the update
     float4 acc = (float4)0.f;
     for(int k = 0; k < 4; k++) acc += derivatives[k] * ((float *)&ABCD)[k];
-    float4 hf = read_imagef(HF, samplerA, (int2)(x, y));
-    acc = (hf * strength + acc / variance);
+    acc = (neighbour_pixel_HF[4] * strength + acc / variance);
 
     // update the solution
-    float4 lf = read_imagef(LF, samplerA, (int2)(x, y));
-    out = fmax(acc + lf, 0.f);
+    out = fmax(acc + neighbour_pixel_LF[4], 0.f);
   }
   else
   {
