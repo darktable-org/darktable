@@ -701,7 +701,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         dt_aligned_pixel_t cos_theta_sin_theta_grad;
         for_each_channel(c)
         {
-          float magnitude_grad = sqrtf(sqf(gradient[0][c]) + sqf(gradient[1][c]));
+          const float magnitude_grad = dt_fast_hypotf(gradient[0][c], gradient[1][c]);
           c2[0][c] = -magnitude_grad * anisotropy[0];
           c2[2][c] = -magnitude_grad * anisotropy[2];
           // Compute cos(arg(grad)) = dx / hypot - force arg(grad) = 0 if hypot == 0
@@ -721,7 +721,7 @@ static inline void heat_PDE_diffusion(const float *const restrict high_freq, con
         dt_aligned_pixel_t cos_theta_sin_theta_lapl;
         for_each_channel(c)
         {
-          float magnitude_lapl = sqrtf(sqf(laplacian[0][c]) + sqf(laplacian[1][c]));
+          const float magnitude_lapl = dt_fast_hypotf(laplacian[0][c], laplacian[1][c]);
           c2[1][c] = -magnitude_lapl * anisotropy[1];
           c2[3][c] = -magnitude_lapl * anisotropy[3];
           // Compute cos(arg(lapl)) = dx / hypot - force arg(lapl) = 0 if hypot == 0
