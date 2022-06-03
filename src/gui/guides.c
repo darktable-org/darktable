@@ -732,6 +732,8 @@ GtkWidget *dt_guides_popover(dt_view_t *self, GtkWidget *button)
                                N_("yellow"),
                                N_("cyan"),
                                N_("magenta"));
+  // NOTE: any change in the number of entries above will require a corresponding change in _overlay_cycle_callback
+  // in src/views/darkroom.c
   gtk_box_pack_start(GTK_BOX(vbox), darktable.view_manager->guides_colors, TRUE, TRUE, 0);
 
   GtkWidget *contrast = darktable.view_manager->guides_contrast = dt_bauhaus_slider_new_action(DT_ACTION(self), 0, 1, 0.005, 0.5, 3);
