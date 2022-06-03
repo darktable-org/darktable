@@ -1367,8 +1367,8 @@ msgid ""
 "columns - the blocks of sliders are shown next to each other (in narrow "
 "columns)"
 msgstr ""
-"Cambia la disposición visual de los controles deslizantes de la sección "
-"sombras / tonos medios / luces:\n"
+"Cambia la disposición visual de los controles deslizantes para"
+"realce, gamma e incremento:\n"
 "Lista: Todos los controles están organizados en forma de lista.\n"
 "Pestañas: Los controles están organizados por conjunto en cada pestaña.\n"
 "Columnas: Los controles están organizados en columnas estrechas en una sola "
@@ -1454,7 +1454,7 @@ msgid ""
 msgstr ""
 "Indica el interpolador de pixel usado en los módulos para la rotación, "
 "corrección de lente, licuar, recorte y escalado final (bilineal, bicúbico, "
-"lanczos2)"
+"Lanczos2)"
 
 #: ../build/bin/preferences_gen.h:5944
 msgid "pixel interpolator (scaling)"
@@ -1465,7 +1465,7 @@ msgid ""
 "pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3)."
 msgstr ""
 "Indica el interpolador de pixel que será usado para el escalado (bilineal, "
-"bicúbico, lanczos2, lanczos3)"
+"bicúbico, Lanczos2, Lanczos3)"
 
 #: ../build/bin/preferences_gen.h:6014
 msgid "3D lut root folder"
@@ -4259,9 +4259,8 @@ msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:203
-#, fuzzy
 msgid "gamma Rec709 RGB"
-msgstr "RGB gamma Rec. 709"
+msgstr "RGB Rec. 709 gamma"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:209
 msgid "tetrahedral"
@@ -5676,7 +5675,7 @@ msgstr "sRGB (fiable para internet)"
 
 #: ../src/common/colorspaces.c:1440 ../src/common/colorspaces.c:1693
 msgid "Rec709 RGB"
-msgstr "Rec. 709 RGB"
+msgstr "RGB Rec. 709"
 
 #: ../src/common/colorspaces.c:1450
 msgid "PQ Rec2020 RGB"
@@ -18545,15 +18544,15 @@ msgstr "Modifica los tonos de la imagen mediante curvas en el espacio RGB"
 
 #: ../src/iop/rgbcurve.c:192 ../src/iop/tonecurve.c:563
 msgid "gamma 1.0 (linear)"
-msgstr "gamma 1.0 (linear)"
+msgstr "gamma 1.0 (lineal)"
 
 #: ../src/iop/rgbcurve.c:202 ../src/iop/tonecurve.c:573
 msgid "contrast - med (linear)"
-msgstr "contraste medio (linear)"
+msgstr "contraste medio (lineal)"
 
 #: ../src/iop/rgbcurve.c:211 ../src/iop/tonecurve.c:582
 msgid "contrast - high (linear)"
-msgstr "contraste alto (linear)"
+msgstr "contraste alto (lineal)"
 
 #: ../src/iop/rgbcurve.c:225 ../src/iop/tonecurve.c:594
 msgid "contrast - med (gamma 2.2)"
