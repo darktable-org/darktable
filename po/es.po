@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-02 16:26-0500\n"
-"PO-Revision-Date: 2022-06-03 00:33-0500\n"
+"PO-Revision-Date: 2022-06-03 00:46-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1121,8 +1121,8 @@ msgid ""
 msgstr ""
 "Las categorías de tamaño se utilizan para poder establecer diferentes "
 "superposiciones y valores CSS en función del tamaño de la miniatura, "
-"separadas por |. Por ejemplo, 120|400 indican 3 categorías de miniaturas: de "
-"0 px a 120 px, 120 px → 400 px y mayor a 400 px."
+"separadas por |. Por ejemplo, 120|400 indican 3 categorías de miniaturas: 0 "
+"px → 120 px, 120 px → 400 px y mayor a 400 px."
 
 #: ../build/bin/preferences_gen.h:4573
 msgid "pattern for the thumbnail extended overlay text"
@@ -1366,7 +1366,7 @@ msgid ""
 "columns - the blocks of sliders are shown next to each other (in narrow "
 "columns)"
 msgstr ""
-"Cambia la disposición visual de los controles deslizantes pararealce, gamma "
+"Cambia la disposición visual de los controles deslizantes para realce, gamma "
 "e incremento:\n"
 "Lista: Todos los controles están organizados en forma de lista.\n"
 "Pestañas: Los controles están organizados por conjunto en cada pestaña.\n"
@@ -12798,7 +12798,6 @@ msgid "linear, raw"
 msgstr "Lineal, negativo digital"
 
 #: ../src/iop/cacorrect.c:1337
-#, fuzzy
 msgid "raw CA correction supports only standard RGB Bayer filter arrays"
 msgstr ""
 "La corrección de aberración cromática en bruto sólo admite matrices de "
@@ -19798,13 +19797,13 @@ msgstr ""
 "Para rechazar imágenes: -1"
 
 #: ../src/libs/collect.c:2151
-#, fuzzy
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
 msgstr ""
 "Utilice <, <=, >, >=, <>, =, [;] como operadores y\n"
-"los formatos de fecha como : YYYY:MM:DD HH:MM:SS (solo el año es obligatorio)"
+"los formatos de fecha como: YYYY:MM:DD HH:MM:SS.SSS (solo el año es "
+"obligatorio)"
 
 #: ../src/libs/collect.c:2158
 #, no-c-format
@@ -20399,9 +20398,8 @@ msgid "general settings"
 msgstr "Configuración general"
 
 #: ../src/libs/export_metadata.c:307
-#, fuzzy
 msgid "EXIF data"
-msgstr "EXIF data"
+msgstr "Datos Exif"
 
 #: ../src/libs/export_metadata.c:308
 msgid "export EXIF metadata"
@@ -20623,12 +20621,10 @@ msgid "remove this collect rule"
 msgstr "Quitar este módulo"
 
 #: ../src/libs/filtering.c:1051
-#, fuzzy
 msgid "this rule is enabled"
 msgstr "Esta regla está activa"
 
 #: ../src/libs/filtering.c:1053
-#, fuzzy
 msgid "this rule is disabled"
 msgstr "Esta regla está inactiva"
 
@@ -21107,9 +21103,8 @@ msgstr ""
 "Abrir archivo GPX y actualizar la ubicación de las imágenes seleccionadas"
 
 #: ../src/libs/geotagging.c:1822
-#, fuzzy
 msgid "GPX file"
-msgstr "Abrir archivo GPX"
+msgstr "Archivo GPX"
 
 #: ../src/libs/geotagging.c:1829
 msgid "select a GPX track file..."
