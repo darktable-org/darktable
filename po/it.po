@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-02 02:09+0200\n"
+"PO-Revision-Date: 2022-06-03 23:43+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -8447,7 +8447,7 @@ msgstr "Istanza"
 #: ../src/gui/accelerators.c:114 ../src/iop/atrous.c:1581
 #: ../src/libs/lib.c:1290 ../src/libs/modulegroups.c:3936
 msgid "reset"
-msgstr ""
+msgstr "Ripristina"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:3233 ../src/gui/preferences.c:774
@@ -8892,6 +8892,8 @@ msgid ""
 "enter the value\n"
 "right-click to select from existing values"
 msgstr ""
+"Inserisci il valore\n"
+"Click destro per selezionare dai valori esistenti"
 
 #: ../src/dtgtk/range.c:423
 msgid ""
@@ -8939,11 +8941,11 @@ msgstr "Max"
 
 #: ../src/dtgtk/range.c:926
 msgid "date type"
-msgstr ""
+msgstr "Tipo data"
 
 #: ../src/dtgtk/range.c:927
 msgid "fixed"
-msgstr ""
+msgstr "Corretto"
 
 #: ../src/dtgtk/range.c:928 ../src/iop/colorchecker.c:1382
 msgid "relative"
@@ -8962,20 +8964,20 @@ msgstr ""
 
 #: ../src/dtgtk/range.c:958
 msgid "years: "
-msgstr ""
+msgstr "Anni: "
 
 #: ../src/dtgtk/range.c:966
 msgid "months: "
-msgstr ""
+msgstr "Mesi: "
 
 #: ../src/dtgtk/range.c:974
 msgid "days: "
-msgstr ""
+msgstr "Giorni: "
 
 #. the time section
 #: ../src/dtgtk/range.c:986
 msgid "time"
-msgstr ""
+msgstr "Orario"
 
 #: ../src/dtgtk/range.c:1038 ../src/dtgtk/range.c:1740
 msgid "now"
@@ -9428,7 +9430,7 @@ msgstr "Apparire"
 #: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
 #: ../src/gui/gtk.c:2844 ../src/views/lighttable.c:749
 msgid "next"
-msgstr ""
+msgstr "Successivo"
 
 #: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
 #: ../src/gui/gtk.c:2845 ../src/views/lighttable.c:750
@@ -9510,11 +9512,11 @@ msgstr "Lungo"
 
 #: ../src/gui/accelerators.c:534
 msgid "double-press"
-msgstr ""
+msgstr "Premi due volte"
 
 #: ../src/gui/accelerators.c:535
 msgid "triple-press"
-msgstr ""
+msgstr "Premi tre volte"
 
 #: ../src/gui/accelerators.c:536
 msgid "press"
@@ -9543,7 +9545,7 @@ msgstr "Lungo"
 #: ../src/gui/accelerators.c:544
 msgctxt "accel"
 msgid "double-click"
-msgstr ""
+msgstr "Doppio click"
 
 #: ../src/gui/accelerators.c:545
 msgctxt "accel"
@@ -9647,7 +9649,7 @@ msgstr "Creare scorciatoie separate per muovere su o giù?"
 #: ../src/gui/accelerators.c:1052
 #, c-format
 msgid "%s, speed reset"
-msgstr ""
+msgstr "%s, ripristino veloce"
 
 #: ../src/gui/accelerators.c:1061
 msgid "shortcut exists with different settings"
@@ -9972,7 +9974,7 @@ msgstr "no-op"
 
 #: ../src/gui/gtk.c:1174
 msgid "switch views"
-msgstr ""
+msgstr "Cambia viste"
 
 #: ../src/gui/gtk.c:1175 ../src/views/tethering.c:102
 msgid "tethering"
@@ -10012,7 +10014,7 @@ msgstr ""
 
 #: ../src/gui/gtk.c:1196
 msgid "filmstrip and timeline"
-msgstr ""
+msgstr "Provino e linea temporale"
 
 #: ../src/gui/gtk.c:1197
 msgid "top toolbar"
@@ -10024,11 +10026,11 @@ msgstr ""
 
 #: ../src/gui/gtk.c:1199
 msgid "all top"
-msgstr ""
+msgstr "Tutto in alto"
 
 #: ../src/gui/gtk.c:1200
 msgid "all bottom"
-msgstr ""
+msgstr "Tutto in basso"
 
 #: ../src/gui/gtk.c:1202
 msgid "toggle tooltip visibility"
@@ -10127,11 +10129,11 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:187
 msgid "$(HEIGHT.SENSOR) - image sensor height"
-msgstr ""
+msgstr "$(HEIGHT.SENSOR) - altezza del sensore d'immagine"
 
 #: ../src/gui/gtkentry.c:188
 msgid "$(HEIGHT.RAW) - RAW image height"
-msgstr ""
+msgstr "$(HEIGHT.RAW) - altezza immagine RAW"
 
 #: ../src/gui/gtkentry.c:189
 msgid "$(HEIGHT.CROP) - image height after crop"
@@ -10139,7 +10141,7 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(HEIGHT.EXPORT) - exported image height"
-msgstr ""
+msgstr "$(HEIGHT.EXPORT) - altezza dell'immagine esportata"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(YEAR) - year"
@@ -10171,7 +10173,7 @@ msgstr "$(HOUR) - Ora"
 
 #: ../src/gui/gtkentry.c:198
 msgid "$(HOUR.AMPM) - hour, 12-hour clock"
-msgstr ""
+msgstr "$(HOUR.AMPM) - ora, orologio in 12 ore"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(MINUTE) - minute"
@@ -10183,11 +10185,11 @@ msgstr "$(SECOND) - Secondo"
 
 #: ../src/gui/gtkentry.c:201
 msgid "$(MSEC) - millisecond"
-msgstr ""
+msgstr "$(MSEC) - millisecondi"
 
 #: ../src/gui/gtkentry.c:202
 msgid "$(EXIF.YEAR) - EXIF year"
-msgstr ""
+msgstr "$(EXIF.YEAR) - anno EXIF"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
@@ -10195,7 +10197,7 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF.MONTH) - EXIF month"
-msgstr ""
+msgstr "$(EXIF.MONTH) - mese EXIF"
 
 #: ../src/gui/gtkentry.c:205
 msgid ""
@@ -10222,11 +10224,11 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:210
 msgid "$(EXIF.MINUTE) - EXIF minute"
-msgstr ""
+msgstr "$(EXIF.MINUTE) - minuto EXIF"
 
 #: ../src/gui/gtkentry.c:211
 msgid "$(EXIF.SECOND) - EXIF second"
-msgstr ""
+msgstr "$(EXIF.SECOND) - secondo EXIF"
 
 #: ../src/gui/gtkentry.c:212
 msgid "$(EXIF.MSEC) - EXIF millisecond"
@@ -10234,11 +10236,11 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:213
 msgid "$(EXIF.ISO) - ISO value"
-msgstr ""
+msgstr "$(EXIF.ISO) - valore ISO"
 
 #: ../src/gui/gtkentry.c:214
 msgid "$(EXIF.EXPOSURE) - EXIF exposure"
-msgstr ""
+msgstr "$(EXIF.EXPOSURE) - esposizione EXIF"
 
 #: ../src/gui/gtkentry.c:215
 msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
@@ -10246,27 +10248,27 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(EXIF.APERTURE) - EXIF aperture"
-msgstr ""
+msgstr "$(EXIF.APERTURE) - apertura EXIF"
 
 #: ../src/gui/gtkentry.c:217
 msgid "$(EXIF.FOCAL.LENGTH) - EXIF focal length"
-msgstr ""
+msgstr "$(EXIF.FOCAL.LENGTH) - lunghezza focale EXIF"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(EXIF.FOCUS.DISTANCE) - EXIF focal distance"
-msgstr ""
+msgstr "$(EXIF.FOCUS.DISTANCE) - distanza focale EXIF"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(EXIF.MAKER) - camera maker"
-msgstr ""
+msgstr "$(EXIF.MAKER) - costruttore fotocamera"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(EXIF.MODEL) - camera model"
-msgstr ""
+msgstr "$(EXIF.MODEL) - modello fotocamera"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(EXIF.LENS) - lens"
-msgstr ""
+msgstr "$(EXIF.LENS) - obiettivo"
 
 #: ../src/gui/gtkentry.c:222
 msgid "$(LONGITUDE) - longitude"
@@ -10290,15 +10292,15 @@ msgstr ""
 
 #: ../src/gui/gtkentry.c:227
 msgid "$(LABELS) - color labels as text"
-msgstr ""
+msgstr "$(LABELS) - etichette colore in testo"
 
 #: ../src/gui/gtkentry.c:228
 msgid "$(LABELS.ICONS) - color labels as icons"
-msgstr ""
+msgstr "$(LABELS.ICONS) - etichette colore come icone"
 
 #: ../src/gui/gtkentry.c:229
 msgid "$(ID) - image ID"
-msgstr ""
+msgstr "$(ID) - ID immagine"
 
 #: ../src/gui/gtkentry.c:230
 msgid "$(TITLE) - title from metadata"
@@ -10322,19 +10324,19 @@ msgstr "$(RIGHTS) - Diritti dai metadata"
 
 #: ../src/gui/gtkentry.c:235
 msgid "$(USERNAME) - login name"
-msgstr ""
+msgstr "$(USERNAME) - nome di login"
 
 #: ../src/gui/gtkentry.c:236
 msgid "$(FOLDER.PICTURES) - pictures folder"
-msgstr ""
+msgstr "$(FOLDER.PICTURES) - cartella delle immagini"
 
 #: ../src/gui/gtkentry.c:237
 msgid "$(FOLDER.HOME) - home folder"
-msgstr ""
+msgstr "$(FOLDER.HOME) - cartella home"
 
 #: ../src/gui/gtkentry.c:238
 msgid "$(FOLDER.DESKTOP) - desktop folder"
-msgstr ""
+msgstr "$(FOLDER.DESKTOP) - cartella del desktop"
 
 #: ../src/gui/gtkentry.c:239
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
@@ -10352,11 +10354,11 @@ msgstr "$(TAGS) - Etichette come impostato nelle impostazioni metadati"
 
 #: ../src/gui/gtkentry.c:242
 msgid "$(DARKTABLE.NAME) - darktable name"
-msgstr ""
+msgstr "$(DARKTABLE.NAME) - nome di darktable"
 
 #: ../src/gui/gtkentry.c:243
 msgid "$(DARKTABLE.VERSION) - current darktable version"
-msgstr ""
+msgstr "$(DARKTABLE.VERSION) - attuale versione di Darktable"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:263
 msgid "grid"
@@ -11579,7 +11581,7 @@ msgstr "Crea un nuovo album"
 
 #: ../src/imageio/storage/piwigo.c:623
 msgid "---"
-msgstr ""
+msgstr "---"
 
 #: ../src/imageio/storage/piwigo.c:665
 msgid "cannot refresh albums"
@@ -11775,7 +11777,7 @@ msgstr "Spostamento lente (%s)"
 
 #: ../src/iop/ashift.c:5704
 msgid "manual perspective"
-msgstr ""
+msgstr "Prospettiva manuale"
 
 #: ../src/iop/ashift.c:5754 ../src/iop/ashift.c:5838 ../src/iop/ashift.c:5839
 #: ../src/iop/ashift.c:5840
@@ -11894,11 +11896,11 @@ msgstr "Disegna manualmente delle linee di struttura"
 
 #: ../src/iop/ashift.c:5838
 msgid "rectangle"
-msgstr ""
+msgstr "Rettangolo"
 
 #: ../src/iop/ashift.c:5839
 msgid "lines"
-msgstr ""
+msgstr "Linee"
 
 #: ../src/iop/ashift.c:5863 ../src/iop/clipping.c:3361
 #, c-format
@@ -11967,7 +11969,7 @@ msgstr "Riduzione rumore e nitidezza"
 #: ../src/iop/atrous.c:806
 msgctxt "atrous"
 msgid "sharpen"
-msgstr ""
+msgstr "Nitidezza"
 
 #: ../src/iop/atrous.c:821
 msgid "denoise chroma"
@@ -12087,7 +12089,7 @@ msgstr "x"
 
 #: ../src/iop/atrous.c:1736 ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:519
 msgid "luma"
-msgstr ""
+msgstr "Luminanza"
 
 #: ../src/iop/atrous.c:1736
 msgid "change lightness at each feature size"
@@ -12548,19 +12550,19 @@ msgstr "15:10 Cartolina nera"
 
 #: ../src/iop/borders.c:961
 msgid "3:1"
-msgstr ""
+msgstr "3:1"
 
 #: ../src/iop/borders.c:962
 msgid "95:33"
-msgstr ""
+msgstr "95:33"
 
 #: ../src/iop/borders.c:963
 msgid "2:1"
-msgstr ""
+msgstr "2:1"
 
 #: ../src/iop/borders.c:964
 msgid "16:9"
-msgstr ""
+msgstr "16:9"
 
 #: ../src/iop/borders.c:965 ../src/iop/clipping.c:2149 ../src/iop/crop.c:1061
 msgid "golden cut"
@@ -12568,7 +12570,7 @@ msgstr "Taglio aureo"
 
 #: ../src/iop/borders.c:966
 msgid "3:2"
-msgstr ""
+msgstr "3:2"
 
 #: ../src/iop/borders.c:967
 msgid "A4"
@@ -12580,7 +12582,7 @@ msgstr "DIN"
 
 #: ../src/iop/borders.c:969
 msgid "4:3"
-msgstr ""
+msgstr "4:3"
 
 #: ../src/iop/borders.c:970 ../src/iop/clipping.c:2139 ../src/iop/crop.c:1051
 #: ../src/libs/filtering.c:277 ../src/libs/filters/ratio.c:126
@@ -12601,19 +12603,19 @@ msgstr "Centro"
 
 #: ../src/iop/borders.c:994 ../src/iop/borders.c:1000
 msgid "1/3"
-msgstr ""
+msgstr "1/3"
 
 #: ../src/iop/borders.c:995 ../src/iop/borders.c:1001
 msgid "3/8"
-msgstr ""
+msgstr "3/8"
 
 #: ../src/iop/borders.c:996 ../src/iop/borders.c:1002
 msgid "5/8"
-msgstr ""
+msgstr "5/8"
 
 #: ../src/iop/borders.c:997 ../src/iop/borders.c:1003
 msgid "2/3"
-msgstr ""
+msgstr "2/3"
 
 #: ../src/iop/borders.c:1028
 msgid "size of the border in percent of the full image"
@@ -13382,11 +13384,11 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4086 ../src/iop/exposure.c:1089
 msgid "correction"
-msgstr ""
+msgstr "Correzione"
 
 #: ../src/iop/channelmixerrgb.c:4087 ../src/iop/exposure.c:1090
 msgid "measure"
-msgstr ""
+msgstr "Misura"
 
 #: ../src/iop/channelmixerrgb.c:4091
 msgid "take channel mixing into account"
@@ -13648,7 +13650,7 @@ msgstr "Rifletti l'immagine orizzontalmente e/o verticalmente"
 
 #: ../src/iop/clipping.c:2119
 msgid "angle"
-msgstr ""
+msgstr "Angolo"
 
 #: ../src/iop/clipping.c:2122
 msgid "right-click and drag a line on the image to drag a straight line"
@@ -13721,7 +13723,7 @@ msgstr "Cinemascope"
 
 #: ../src/iop/clipping.c:2154 ../src/iop/crop.c:1066
 msgid "21:9"
-msgstr ""
+msgstr "21:9"
 
 #: ../src/iop/clipping.c:2155 ../src/iop/crop.c:1067
 msgid "anamorphic"
@@ -14237,7 +14239,7 @@ msgstr "Cromaticità dell'esponente del colore nei toni medi"
 #. Page masks
 #: ../src/iop/colorbalancergb.c:1975
 msgid "masks"
-msgstr ""
+msgstr "Maschere"
 
 #: ../src/iop/colorbalancergb.c:1975
 msgid "isolate luminances"
@@ -14944,7 +14946,7 @@ msgstr ""
 
 #: ../src/iop/crop.c:128 ../src/iop/rawprepare.c:856
 msgid "crop"
-msgstr ""
+msgstr "Ritaglia"
 
 #: ../src/iop/crop.c:133
 msgid "reframe|distortion"
@@ -15641,7 +15643,7 @@ msgstr "Nitidezza (forte)"
 #: ../src/iop/equalizer.c:316
 msgctxt "equalizer"
 msgid "sharpen"
-msgstr ""
+msgstr "Nitidezza"
 
 #: ../src/iop/equalizer.c:322
 msgid "null"
@@ -16252,7 +16254,7 @@ msgstr ""
 #. Page LOOK
 #: ../src/iop/filmicrgb.c:4493
 msgid "look"
-msgstr ""
+msgstr "Aspetto"
 
 #: ../src/iop/filmicrgb.c:4503
 msgid ""
@@ -16292,7 +16294,7 @@ msgstr ""
 #. Page OPTIONS
 #: ../src/iop/filmicrgb.c:4555
 msgid "options"
-msgstr ""
+msgstr "Opzioni"
 
 #: ../src/iop/filmicrgb.c:4560
 msgid ""
