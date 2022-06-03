@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-01 07:43+0200\n"
+"PO-Revision-Date: 2022-06-03 10:25+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8899,7 +8899,7 @@ msgstr "type de date"
 
 #: ../src/dtgtk/range.c:927
 msgid "fixed"
-msgstr "fixé"
+msgstr "fixée"
 
 #: ../src/dtgtk/range.c:928 ../src/iop/colorchecker.c:1382
 msgid "relative"
