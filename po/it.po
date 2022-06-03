@@ -2,21 +2,22 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>, 2022.
+# Luca Cignoni <cigno5@users.noreply.github.com>, 2022.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-03 23:43+0200\n"
-"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
-"\n"
+"PO-Revision-Date: 2022-06-03 21:49+0000\n"
+"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 21.12.3\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Generator: Gtranslator 41.0\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -512,12 +513,11 @@ msgid "group size factor"
 msgstr "Fattore dimensione gruppo"
 
 #: ../build/bin/conf_gen.h:1819
-#, fuzzy
 msgid ""
 "increase or decrease the spatial size of images groups on the map. can "
 "influence the calculation time"
 msgstr ""
-"Aumenta o diminuisci la dimensione degli spazi dei gruppi di immagini sulla "
+"Aumenta o diminuisci la dimensione spaziale delle immagini raggruppate sulla "
 "mappa. Può influenzare il tempo di calcolo"
 
 #: ../build/bin/conf_gen.h:1826
@@ -525,12 +525,11 @@ msgid "min images per group"
 msgstr "Immagini min per gruppo"
 
 #: ../build/bin/conf_gen.h:1827
-#, fuzzy
 msgid ""
 "the minimum number of images to set up an images group. can influence the "
 "calculation time."
 msgstr ""
-"Il numero minimo di immagini che compone un gruppo di immagini sulla mappa "
+"Il numero minimo di immagini che compone un gruppo di immagini sulla mappa. "
 "Può influenzare il tempo di calcolo."
 
 #: ../build/bin/conf_gen.h:1832
@@ -548,13 +547,12 @@ msgid "thumbnail display"
 msgstr "Visualizza miniature"
 
 #: ../build/bin/conf_gen.h:1837
-#, fuzzy
 msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
 "Sono disponibili tre opzioni: miniature immagini, solo il conto delle "
-"immagini del gruppo o niente"
+"immagini del gruppo o nulla"
 
 #: ../build/bin/conf_gen.h:1848
 msgid "max polygon points"
@@ -911,7 +909,7 @@ msgstr "Generale"
 
 #: ../build/bin/preferences_gen.h:4083
 msgid "hide built-in presets for utility modules"
-msgstr "Nascondi le pre-impostazioni incorporate per i moduli di utilità"
+msgstr "Nascondi i preset incorporati per i moduli di utilità"
 
 #: ../build/bin/preferences_gen.h:4094 ../build/bin/preferences_gen.h:4130
 #: ../build/bin/preferences_gen.h:4166 ../build/bin/preferences_gen.h:4202
@@ -984,10 +982,9 @@ msgid "FALSE"
 msgstr "FALSO"
 
 #: ../build/bin/preferences_gen.h:4097
-#, fuzzy
 msgid "hides built-in presets of utility modules in presets menu."
 msgstr ""
-"Nascondi le preimpostazioni incorporate nei moduli di utilità nel menu dei "
+"Nascondi i preset incorporate nei moduli di utilità nel menu dei "
 "preimpostazioni."
 
 #: ../build/bin/preferences_gen.h:4119
@@ -1032,11 +1029,10 @@ msgstr ""
 "Valutare un'immagine con una stella per due volte non azzera la valutazione"
 
 #: ../build/bin/preferences_gen.h:4241
-#, fuzzy
 msgid ""
 "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
-"Definisce se valutare un'immagine con una stella per due volte azzererà la "
+"Stabilisce se valutare un'immagine con una stella per due volte azzererà la "
 "valutazione."
 
 #: ../build/bin/preferences_gen.h:4263 ../build/bin/preferences_gen.h:5031
@@ -1083,7 +1079,6 @@ msgid "use raw file instead of embedded JPEG from size"
 msgstr "Usa il file RAW anziché il JPEG incorporato dalla dimensione"
 
 #: ../build/bin/preferences_gen.h:4416
-#, fuzzy
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "raw file instead of the embedded preview JPEG (better but slower).\n"
@@ -1091,8 +1086,8 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"Se la dimensione dell'anteprima è maggiore di questo valore, verrà "
-"processato usando il file RAW file al posto dell'anteprima memorizzata nel "
+"Se la dimensione della miniatura è maggiore di questo valore, verrà "
+"processato usando il file RAW file al posto della miniatura memorizzata nel "
 "JPEG (migliore ma più lento).\n"
 "Se vuoi tutte tutte le anteprime e le immagini pre-elaborate nella miglior "
 "qualità dovresti scegliere l'opzione *sempre*.\n"
@@ -1103,7 +1098,6 @@ msgid "high quality processing from size"
 msgstr "Elaborazione in alta qualità a partire dalle dimensioni"
 
 #: ../build/bin/preferences_gen.h:4511
-#, fuzzy
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower).\n"
@@ -1111,7 +1105,7 @@ msgid ""
 "should choose the *always* option.\n"
 "(more comments in the manual)"
 msgstr ""
-"Se la dimensione dell'anteprima è maggiore di questo valore, verrà "
+"Se la dimensione della miniatura è maggiore di questo valore, verrà "
 "processato usando la via dell'elaborazione in massima qualità (migliore ma "
 "più lento).\n"
 "Se vuoi tutte tutte le anteprime e le immagini pre-elaborate nella miglior "
@@ -2383,9 +2377,8 @@ msgid ""
 "hide this module and instead access collections history with a button in the "
 "collections module"
 msgstr ""
-"Nascondi questo modulo e piuttosto accedi alla storia raccolte con un"
-" pulsante "
-"nel modulo raccolte"
+"Nascondi questo modulo e piuttosto accedi alla storia raccolte con un "
+"pulsante nel modulo raccolte"
 
 #: ../build/bin/preferences_gen.h:9117
 msgid "suggested tags level of confidence"
@@ -3831,11 +3824,11 @@ msgid "middle gray luminance"
 msgstr "Luminanza del grigio medio"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:212
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:415
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:97
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:166
 #: ../src/iop/filmic.c:1617
+#, fuzzy
 msgid "black relative exposure"
 msgstr "Esposizione nero relativo"
 
@@ -6795,8 +6788,8 @@ msgid "ERROR: %s NOT synced XMP → DB"
 msgstr "ERRORE: %s NON sincronizzato XMP → DB"
 
 #: ../src/control/crawler.c:360 ../src/control/crawler.c:411
-#, fuzzy
 #: ../src/control/crawler.c:463
+#, fuzzy
 msgid ""
 "ERROR: cannot write the database. the destination may be full, offline or "
 "read-only."
@@ -8757,8 +8750,8 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>aggiungi un nodo</b>: click, <b>aggiungi un nodo ad angolo</b>:ctrl"
-"+click\n"
+"<b>aggiungi un nodo</b>: click, <b>aggiungi un nodo ad angolo</b>:"
+"ctrl+click\n"
 "<b>elimina</b>: click col tasto destro"
 
 #: ../src/develop/masks/path.c:3164
@@ -8767,8 +8760,8 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>aggiungi un nodo</b>: click, <b>aggiungi un nodo ad angolo</b>:ctrl"
-"+click\n"
+"<b>aggiungi un nodo</b>: click, <b>aggiungi un nodo ad angolo</b>:"
+"ctrl+click\n"
 "<b>termina il tracciato</b>: click col tasto destro"
 
 #: ../src/develop/masks/path.c:3167
@@ -10901,8 +10894,8 @@ msgid "update preset?"
 msgstr "Aggiorno la preimpostazione?"
 
 #: ../src/gui/presets.c:1097 ../src/libs/modulegroups.c:3836
-#, fuzzy
 #: ../src/libs/modulegroups.c:3845
+#, fuzzy
 msgid "manage module layouts"
 msgstr "gestisci i layout dei moduli"
 
@@ -14136,8 +14129,8 @@ msgid "add or remove saturation by an absolute amount"
 msgstr "Aggiungi o togli saturazione attraverso un ammontare assoluto"
 
 #: ../src/iop/colorbalancergb.c:1859 ../src/iop/colorbalancergb.c:1864
-#, fuzzy
 #: ../src/iop/colorbalancergb.c:1869
+#, fuzzy
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
@@ -14154,8 +14147,8 @@ msgid "add or remove brilliance by an absolute amount"
 msgstr "Aggiungi o togli brillantezza attraverso un ammontare assoluto"
 
 #: ../src/iop/colorbalancergb.c:1881 ../src/iop/colorbalancergb.c:1886
-#, fuzzy
 #: ../src/iop/colorbalancergb.c:1891
+#, fuzzy
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
@@ -20139,8 +20132,8 @@ msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
-"È inclusa solamente l'ultima parte delle etichette gerarchiche. Utile "
-"nel caso in cui non sono utilizzate le categorie"
+"È inclusa solamente l'ultima parte delle etichette gerarchiche. Utile nel "
+"caso in cui non sono utilizzate le categorie"
 
 #: ../src/libs/export_metadata.c:350
 msgid "hierarchical tags"
@@ -21897,8 +21890,8 @@ msgid "on-off"
 msgstr "on-off"
 
 #: ../src/libs/modulegroups.c:495 ../src/libs/modulegroups.c:498
-#, fuzzy
 #: ../src/libs/modulegroups.c:592
+#, fuzzy
 msgid ""
 "this quick access widget is disabled as there are multiple instances of this "
 "module present. Please use the full module to access this widget..."
@@ -23049,12 +23042,12 @@ msgstr "e..."
 #: ../src/libs/tools/darktable.c:308
 msgid "translator-credits"
 msgstr ""
-"\"Matteo Mardegan <matteo@mardegan.org> (2019-2022)\n\""
-"\"Luca Cignoni (2022)\n\""
-"\"Maurizio Paglia (2018-2022)\n\""
-"\"Nelle precedenti versioni:\n\""
-"\"Germano Massullo (2015-2017)\n\""
-"\"Mauro 'bartokk' Bartoccelli (2013-2014)\""
+"\"Matteo Mardegan <matteo@mardegan.org> (2019-2022)\n"
+"\"\"Luca Cignoni (2022)\n"
+"\"\"Maurizio Paglia (2018-2022)\n"
+"\"\"Nelle precedenti versioni:\n"
+"\"\"Germano Massullo (2015-2017)\n"
+"\"\"Mauro 'bartokk' Bartoccelli (2013-2014)\""
 
 #: ../src/libs/tools/filmstrip.c:45
 msgid "filmstrip"
@@ -23539,8 +23532,8 @@ msgstr "Nessuna immagine da aprire!"
 #: ../src/views/darkroom.c:1309
 msgid "no userdefined presets for favorite modules were found"
 msgstr ""
-"Non sono stati trovate preimpostazioni definiti dall'utente per i moduli"
-" preferiti"
+"Non sono stati trovate preimpostazioni definiti dall'utente per i moduli "
+"preferiti"
 
 #: ../src/views/darkroom.c:1314
 #, c-format
