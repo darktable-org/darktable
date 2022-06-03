@@ -3320,7 +3320,7 @@ msgstr "Adobe RGB (compatible)"
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:204
 #: ../src/common/colorspaces.c:1436 ../src/common/colorspaces.c:1659
 msgid "linear Rec709 RGB"
-msgstr "RGB lineal Rec709"
+msgstr "RGB lineal Rec. 709"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:205
@@ -4261,7 +4261,7 @@ msgstr "Adobe RGB"
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:203
 #, fuzzy
 msgid "gamma Rec709 RGB"
-msgstr "RGB gamma Rec709"
+msgstr "RGB gamma Rec. 709"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:209
 msgid "tetrahedral"
@@ -5676,7 +5676,7 @@ msgstr "sRGB (fiable para internet)"
 
 #: ../src/common/colorspaces.c:1440 ../src/common/colorspaces.c:1693
 msgid "Rec709 RGB"
-msgstr "Rec709 RGB"
+msgstr "Rec. 709 RGB"
 
 #: ../src/common/colorspaces.c:1450
 msgid "PQ Rec2020 RGB"
@@ -14726,7 +14726,7 @@ msgstr "El perfil de entrada no puede ser generado"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "El perfil de entrada está sin soporte y ha sido reemplazado por RGB lineal "
-"Rec709"
+"Rec. 709"
 
 #: ../src/iop/colorin.c:2047
 msgid "input profile"
@@ -24724,7 +24724,7 @@ msgstr "acciones con el ratón"
 #~ msgstr "cantidad mínima por grupo"
 
 #~ msgid "linear rec709 RGB"
-#~ msgstr "RGB lineal Rec709"
+#~ msgstr "RGB lineal Rec. 709"
 
 #~ msgid "linear rec2020 RGB"
 #~ msgstr "RGB lineal Rec2020"
@@ -26078,7 +26078,7 @@ msgstr "acciones con el ratón"
 #~ msgstr "Importar imágenes en su lugar sin cambiar el nombre"
 
 #~ msgid "gamma22 Rec709"
-#~ msgstr "Rec709 gamma22"
+#~ msgstr "Rec. 709 gamma22"
 
 #~ msgid "ProPhoto RGB"
 #~ msgstr "ProPhoto RGB"
