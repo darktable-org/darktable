@@ -376,9 +376,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   }
 
   // update processed maximum
-  const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
-                        piece->pipe->dsc.processed_maximum[2]);
-  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
+  if(d->mode !=  DT_IOP_HIGHLIGHTS_LAPLACIAN)
+  {
+    // The guided laplacian is the only mode that keeps signal scene-referred and doesn't clip highlights to 1
+    // For the other modes, we need to notify the pipeline that white point has changed
+    const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
+                          piece->pipe->dsc.processed_maximum[2]);
+    for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
+  }
 
   dt_opencl_release_mem_object(dev_xtrans);
   return TRUE;
@@ -2001,9 +2006,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   // update processed maximum
-  const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
-                        piece->pipe->dsc.processed_maximum[2]);
-  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
+  if(data->mode !=  DT_IOP_HIGHLIGHTS_LAPLACIAN)
+  {
+    // The guided laplacian is the only mode that keeps signal scene-referred and doesn't clip highlights to 1
+    // For the other modes, we need to notify the pipeline that white point has changed
+    const float m = fmaxf(fmaxf(piece->pipe->dsc.processed_maximum[0], piece->pipe->dsc.processed_maximum[1]),
+                          piece->pipe->dsc.processed_maximum[2]);
+    for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] = m;
+  }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
