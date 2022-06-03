@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-02 16:26-0500\n"
-"PO-Revision-Date: 2022-06-02 21:58-0500\n"
+"PO-Revision-Date: 2022-06-03 00:33-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1114,7 +1114,6 @@ msgid "delimiters for size categories"
 msgstr "Delimitadores de categorías de tamaño"
 
 #: ../build/bin/preferences_gen.h:4551
-#, fuzzy
 msgid ""
 "size categories are used to be able to set different overlays and css values "
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
@@ -1122,8 +1121,8 @@ msgid ""
 msgstr ""
 "Las categorías de tamaño se utilizan para poder establecer diferentes "
 "superposiciones y valores CSS en función del tamaño de la miniatura, "
-"separadas por |. Por ejemplo, 120|400 indican 3 categorías de miniaturas: 0 "
-"px -> 120 px, 120 px -> 400 px y mayor a 400 px."
+"separadas por |. Por ejemplo, 120|400 indican 3 categorías de miniaturas: de "
+"0 px a 120 px, 120 px → 400 px y mayor a 400 px."
 
 #: ../build/bin/preferences_gen.h:4573
 msgid "pattern for the thumbnail extended overlay text"
@@ -1367,8 +1366,8 @@ msgid ""
 "columns - the blocks of sliders are shown next to each other (in narrow "
 "columns)"
 msgstr ""
-"Cambia la disposición visual de los controles deslizantes para"
-"realce, gamma e incremento:\n"
+"Cambia la disposición visual de los controles deslizantes pararealce, gamma "
+"e incremento:\n"
 "Lista: Todos los controles están organizados en forma de lista.\n"
 "Pestañas: Los controles están organizados por conjunto en cada pestaña.\n"
 "Columnas: Los controles están organizados en columnas estrechas en una sola "
@@ -5358,9 +5357,8 @@ msgstr "Tono de piel promedio %s\n"
 
 #. 0° - pinkish red
 #: ../src/common/color_vocabulary.c:220
-#, fuzzy
 msgid "deep purple"
-msgstr "púrpura"
+msgstr "púrpura oscuro"
 
 #. L = 10 %
 #: ../src/common/color_vocabulary.c:221
@@ -5369,9 +5367,8 @@ msgstr "fucsia"
 
 #. L = 30 %
 #: ../src/common/color_vocabulary.c:222
-#, fuzzy
 msgid "medium magenta"
-msgstr "magenta"
+msgstr "magenta medio"
 
 #. L = 50 %
 #: ../src/common/color_vocabulary.c:223
@@ -5406,14 +5403,12 @@ msgid "maroon"
 msgstr "granate"
 
 #: ../src/common/color_vocabulary.c:239
-#, fuzzy
 msgid "dark orange red"
-msgstr "varianza del rojo: "
+msgstr "rojo anaranjado oscuro"
 
 #: ../src/common/color_vocabulary.c:240
-#, fuzzy
 msgid "orange red"
-msgstr "naranja"
+msgstr "rojo anaranjado"
 
 #: ../src/common/color_vocabulary.c:241
 msgid "coral"
@@ -5425,28 +5420,24 @@ msgstr "caqui"
 
 #. 72° - orange
 #: ../src/common/color_vocabulary.c:247
-#, fuzzy
 msgid "brown"
-msgstr "brown"
+msgstr "marrón"
 
 #: ../src/common/color_vocabulary.c:248
 msgid "chocolate"
 msgstr "chocolate"
 
 #: ../src/common/color_vocabulary.c:249
-#, fuzzy
 msgid "dark gold"
-msgstr "oscurecer"
+msgstr "dorado oscuro"
 
 #: ../src/common/color_vocabulary.c:250
-#, fuzzy
 msgid "gold"
-msgstr "gold"
+msgstr "dorado"
 
 #: ../src/common/color_vocabulary.c:251
-#, fuzzy
 msgid "sandy brown"
-msgstr "sandy brown"
+msgstr "marrón arenoso"
 
 #. 96° - yellow olive
 #. 120° - green
@@ -5457,17 +5448,14 @@ msgid "dark green"
 msgstr "verde oscuro"
 
 #: ../src/common/color_vocabulary.c:257
-#, fuzzy
 msgid "dark olive green"
-msgstr "varianza del verde: "
+msgstr "verde oliva oscuro"
 
 #: ../src/common/color_vocabulary.c:258
-#, fuzzy
 msgid "olive"
-msgstr "olive"
+msgstr "oliva"
 
 #: ../src/common/color_vocabulary.c:260
-#, fuzzy
 msgid "beige"
 msgstr "beige"
 
@@ -5476,66 +5464,54 @@ msgid "forest green"
 msgstr "verde bosque"
 
 #: ../src/common/color_vocabulary.c:267
-#, fuzzy
 msgid "olive drab"
-msgstr "olive drab"
+msgstr "verde oliva"
 
 #: ../src/common/color_vocabulary.c:268
-#, fuzzy
 msgid "yellow green"
-msgstr "marca verde"
+msgstr " verde amarillo"
 
 #: ../src/common/color_vocabulary.c:269 ../src/common/color_vocabulary.c:278
-#, fuzzy
 msgid "pale green"
-msgstr "púrpura y verde"
+msgstr "verde claro"
 
 #: ../src/common/color_vocabulary.c:277
-#, fuzzy
 msgid "lime green"
-msgstr "púrpura y verde"
+msgstr "verde lima"
 
 #. 168° - greenish cyian
 #: ../src/common/color_vocabulary.c:283
-#, fuzzy
 msgid "dark sea green"
-msgstr "varianza del verde: "
+msgstr "verde marino oscuro"
 
 #: ../src/common/color_vocabulary.c:284
-#, fuzzy
 msgid "sea green"
-msgstr "verde"
+msgstr "verde marino"
 
 #: ../src/common/color_vocabulary.c:285 ../src/common/color_vocabulary.c:302
-#, fuzzy
 msgid "teal"
-msgstr "teal"
+msgstr "azul verde"
 
 #: ../src/common/color_vocabulary.c:286
-#, fuzzy
 msgid "light sea green"
-msgstr "calle nocturna"
+msgstr "verde marino claro"
 
 #: ../src/common/color_vocabulary.c:287
-#, fuzzy
 msgid "turquoise"
-msgstr "turquoise"
+msgstr "turquesa"
 
 #. 192° - cyan
 #: ../src/common/color_vocabulary.c:292
-#, fuzzy
 msgid "dark slate gray"
-msgstr "gris medio"
+msgstr "gris pizarra oscuro"
 
 #: ../src/common/color_vocabulary.c:293
-#, fuzzy
 msgid "light slate gray"
-msgstr "calle nocturna oscura"
+msgstr "gris pizarra claro"
 
 #: ../src/common/color_vocabulary.c:294 ../src/common/color_vocabulary.c:303
-#, fuzzy
 msgid "dark cyan"
-msgstr "oscurecer"
+msgstr "cian oscuro"
 
 #: ../src/common/color_vocabulary.c:295 ../src/common/color_vocabulary.c:315
 #: ../src/iop/colorzones.c:2306
@@ -5549,19 +5525,16 @@ msgstr "cian"
 
 #. 216° - medium blue
 #: ../src/common/color_vocabulary.c:301
-#, fuzzy
 msgid "navy blue"
-msgstr "ACT azul"
+msgstr "azul marino"
 
 #: ../src/common/color_vocabulary.c:304 ../src/common/color_vocabulary.c:314
-#, fuzzy
 msgid "deep sky blue"
-msgstr "rojo y azul"
+msgstr "azul celeste profundo"
 
 #: ../src/common/color_vocabulary.c:305
-#, fuzzy
 msgid "aquamarine blue"
-msgstr "varianza del azul: "
+msgstr "azul aguamarina"
 
 #. 240° - blue and 264° - bluer than blue
 #. these are collapsed because CIE Lab 1976 sucks for blues
@@ -5575,14 +5548,12 @@ msgid "medium blue"
 msgstr "azul medio"
 
 #: ../src/common/color_vocabulary.c:313
-#, fuzzy
 msgid "azure blue"
-msgstr "rojo y azul"
+msgstr "azur"
 
 #: ../src/common/color_vocabulary.c:323
-#, fuzzy
 msgid "light sky blue"
-msgstr "mesa de luz"
+msgstr "azul celeste claro"
 
 #: ../src/common/color_vocabulary.c:324
 msgid "light blue"
@@ -5590,19 +5561,16 @@ msgstr "azul claro"
 
 #. 312° - violet
 #: ../src/common/color_vocabulary.c:329
-#, fuzzy
 msgid "indigo"
-msgstr "combinación"
+msgstr "índigo"
 
 #: ../src/common/color_vocabulary.c:330
-#, fuzzy
 msgid "dark violet"
-msgstr "vista de cuarto oscuro"
+msgstr "violeta oscuro"
 
 #: ../src/common/color_vocabulary.c:331
-#, fuzzy
 msgid "blue violet"
-msgstr "levantar azules"
+msgstr "azul violáceo"
 
 #: ../src/common/color_vocabulary.c:332 ../src/common/color_vocabulary.c:340
 msgid "violet"
