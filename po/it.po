@@ -9,8 +9,9 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-04 12:25+0200\n"
-"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
+"PO-Revision-Date: 2022-06-04 15:40+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -8848,6 +8849,9 @@ msgid ""
 "use 'min' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
+"Inserisci il valore minimo\n"
+"usa 'min' se senza limite\n"
+"click destro per selezionare dai valori esistenti"
 
 #: ../src/dtgtk/range.c:412
 msgid ""
@@ -8855,6 +8859,9 @@ msgid ""
 "use 'max' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
+"Inserisci il valore massimo\n"
+"usa 'max' se senza limite\n"
+"click destro per selezionare dai valori esistenti"
 
 #: ../src/dtgtk/range.c:418
 msgid ""
@@ -8872,6 +8879,11 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"Inserisci la data minima\n"
+"nella forma YYYY:MM:DD hh:mm:ss.sss (è obbligatorio solo l'anno)\n"
+"usa 'min' se senza limite\n"
+"usa il prefisso '-' per una data relativa\n"
+"click destro per selezionare dal calendario o da valori esistenti"
 
 #: ../src/dtgtk/range.c:431
 msgid ""
@@ -8882,6 +8894,11 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"Inserisci la data massima\n"
+"nella forma YYYY:MM:DD hh:mm:ss.sss (è obbligatorio solo l'anno)\n"
+"usa 'mad' se senza limite\n"
+"usa il prefisso '-' per una data relativa\n"
+"click destro per selezionare dal calendario o da valori esistenti"
 
 #: ../src/dtgtk/range.c:440
 msgid ""
@@ -8889,14 +8906,17 @@ msgid ""
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
 "right-click to select from calendar or existing values"
 msgstr ""
+"Inserisci la data\n"
+"nella forma YYYY:MM:DD hh:mm:ss.sss (è obbligatorio solo l'anno)\n"
+"click destro per selezionare dal calendario o da valori esistenti"
 
 #: ../src/dtgtk/range.c:462
 msgid "date-time interval to subtract from the max value"
-msgstr ""
+msgstr "Intervallo data/ora da sottrarre dal valore massimo"
 
 #: ../src/dtgtk/range.c:466
 msgid "date-time interval to add to the min value"
-msgstr ""
+msgstr "Intervallo data/ora da aggiungere al valore minimo"
 
 #: ../src/dtgtk/range.c:606 ../src/dtgtk/range.c:1721 ../src/dtgtk/range.c:1772
 #: ../src/libs/colorpicker.c:53
@@ -8930,6 +8950,8 @@ msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
 msgstr ""
+"Click singolo per selezionare la data\n"
+"doppio click per usare la data direttamente"
 
 #: ../src/dtgtk/range.c:958
 msgid "years: "
@@ -8965,7 +8987,7 @@ msgstr "Applica"
 
 #: ../src/dtgtk/range.c:1044
 msgid "set the range bound with this value"
-msgstr ""
+msgstr "Imposta i valori limite con questo valore"
 
 #. get nice text for bounds
 #. Side-border hide/show
@@ -8996,6 +9018,8 @@ msgid ""
 "\n"
 "click here to set this image as group leader\n"
 msgstr ""
+"\n"
+"clicca qui per impostare questa immagine come principale del gruppo\n"
 
 #. and the number of grouped images
 #: ../src/dtgtk/thumbnail.c:133 ../src/libs/filters/grouping.c:144
@@ -9469,7 +9493,7 @@ msgstr "Applicare sulla nuova istanza"
 
 #: ../src/gui/accelerators.c:457
 msgid "tablet button"
-msgstr ""
+msgstr "Pulsante della tavoletta"
 
 #: ../src/gui/accelerators.c:466
 msgid "unknown driver"
@@ -9519,7 +9543,7 @@ msgstr "Doppio click"
 #: ../src/gui/accelerators.c:545
 msgctxt "accel"
 msgid "triple-click"
-msgstr ""
+msgstr "Triplo click"
 
 #: ../src/gui/accelerators.c:546
 msgid "click"
@@ -9554,17 +9578,20 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:680
 msgid "click to filter shortcut list\n"
-msgstr ""
+msgstr "Clicca per filtrare la lista delle scorciatoie\n"
 
 #: ../src/gui/accelerators.c:681
 msgid "right click to show action of selected shortcut\n"
 msgstr ""
+"Click destro per mostrare il funzionamento della scorciatoia selezionata\n"
 
 #: ../src/gui/accelerators.c:682
 msgid ""
 "double-click to define new shortcut\n"
 "start typing for incremental search"
 msgstr ""
+"Doppio click per definire una nuova scorciatoia\n"
+"Inizia a digitare per la ricerca incrementale"
 
 #: ../src/gui/accelerators.c:701
 #, fuzzy
@@ -9589,7 +9616,7 @@ msgstr "CTRL+click per rimuovere dal pannello di accesso rapido\n"
 
 #: ../src/gui/accelerators.c:705
 msgid "scroll to change default speed"
-msgstr ""
+msgstr "Ctrl+(rotella mouse) per modificare la velocità predefinita"
 
 #: ../src/gui/accelerators.c:706
 msgid "right click to exit mapping mode"
@@ -9973,13 +10000,14 @@ msgid "fullscreen"
 msgstr "a pieno schermo"
 
 #: ../src/gui/gtk.c:1193
+#, fuzzy
 msgid "collapsing controls"
-msgstr ""
+msgstr "Controlli di chiusura"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1195
 msgid "header"
-msgstr ""
+msgstr "Testata"
 
 #: ../src/gui/gtk.c:1196
 msgid "filmstrip and timeline"
@@ -9987,11 +10015,11 @@ msgstr "Provino e linea temporale"
 
 #: ../src/gui/gtk.c:1197
 msgid "top toolbar"
-msgstr ""
+msgstr "Barra degli strumenti superiore"
 
 #: ../src/gui/gtk.c:1198
 msgid "bottom toolbar"
-msgstr ""
+msgstr "Barra degli strumenti inferiore"
 
 #: ../src/gui/gtk.c:1199
 msgid "all top"
@@ -10036,37 +10064,40 @@ msgstr "Schede"
 
 #: ../src/gui/gtkentry.c:172
 msgid "$(ROLL.NAME) - roll of the input image"
-msgstr ""
+msgstr "$(ROLL.NAME) - arrotola l'immagine da immettere"
 
 #: ../src/gui/gtkentry.c:173
 msgid "$(FILE.FOLDER) - folder containing the input image"
-msgstr ""
+msgstr "$(FILE.FOLDER) - cartella contenente l'immagine da immettere"
 
 #: ../src/gui/gtkentry.c:174
 msgid "$(FILE.NAME) - basename of the input image"
-msgstr ""
+msgstr "$(FILE.NAME) - nome base dell'immagine da immettere"
 
 #: ../src/gui/gtkentry.c:175
 msgid "$(FILE.EXTENSION) - extension of the input image"
-msgstr ""
+msgstr "$(FILE.EXTENSION) - estensione dell'immagine da immettere"
 
 #: ../src/gui/gtkentry.c:176
 msgid "$(VERSION) - duplicate version"
 msgstr "$(VERSION) - Versione duplicata"
 
 #: ../src/gui/gtkentry.c:177
+#, fuzzy
 msgid ""
 "$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
 "exists"
 msgstr ""
+"$(VERSION.IF_MULTI) - uguale a $(VERSION) ma stringa vuota se esiste una sola"
+" versione"
 
 #: ../src/gui/gtkentry.c:178
 msgid "$(VERSION.NAME) - version name from metadata"
-msgstr ""
+msgstr "$(VERSION.NAME) - nome versione per i metadati"
 
 #: ../src/gui/gtkentry.c:179
 msgid "$(JOBCODE) - job code for import"
-msgstr ""
+msgstr "$(JOBCODE) - coda di lavoro per importazione"
 
 #: ../src/gui/gtkentry.c:180
 msgid "$(SEQUENCE) - sequence number"
@@ -10074,27 +10105,27 @@ msgstr "$(SEQUENCE) - Numero sequenza"
 
 #: ../src/gui/gtkentry.c:181
 msgid "$(WIDTH.MAX) - maximum image export width"
-msgstr ""
+msgstr "$(WIDTH.MAX) - larghezza massima di esportazione dell'immagine"
 
 #: ../src/gui/gtkentry.c:182
 msgid "$(WIDTH.SENSOR) - image sensor width"
-msgstr ""
+msgstr "$(WIDTH.SENSOR) - larghezza del sensore d'immagine"
 
 #: ../src/gui/gtkentry.c:183
 msgid "$(WIDTH.RAW) - RAW image width"
-msgstr ""
+msgstr "$(WIDTH.RAW) - larghezza immagine RAW"
 
 #: ../src/gui/gtkentry.c:184
 msgid "$(WIDTH.CROP) - image width after crop"
-msgstr ""
+msgstr "$(WIDTH.CROP) - larghezza immagine dopo il taglio"
 
 #: ../src/gui/gtkentry.c:185
 msgid "$(WIDTH.EXPORT) - exported image width"
-msgstr ""
+msgstr "$(WIDTH.EXPORT) - larghezza dell'immagine esportata"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(HEIGHT.MAX) - maximum image export height"
-msgstr ""
+msgstr "$(HEIGHT.MAX) - altezza massima dell'immagine esportata"
 
 #: ../src/gui/gtkentry.c:187
 msgid "$(HEIGHT.SENSOR) - image sensor height"
@@ -10106,7 +10137,7 @@ msgstr "$(HEIGHT.RAW) - altezza immagine RAW"
 
 #: ../src/gui/gtkentry.c:189
 msgid "$(HEIGHT.CROP) - image height after crop"
-msgstr ""
+msgstr "$(HEIGHT.CROP) - altezza immagine dopo il taglio"
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(HEIGHT.EXPORT) - exported image height"
@@ -10118,7 +10149,7 @@ msgstr "$(YEAR) - Anno"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(YEAR.SHORT) - year without century"
-msgstr ""
+msgstr "$(YEAR.SHORT) - anno abbreviato (senza secolo)"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MONTH) - month"
@@ -10127,10 +10158,12 @@ msgstr "$(MONTH) - Mese"
 #: ../src/gui/gtkentry.c:194
 msgid "$(MONTH.SHORT) - abbreviated month name according to the current locale"
 msgstr ""
+"$(MONTH.SHORT) - nome abbreviato del mese in base alla localizzazione corrente"
 
 #: ../src/gui/gtkentry.c:195
 msgid "$(MONTH.LONG) - full month name according to the current locale"
 msgstr ""
+"$(MONTH.LONG) - nome intero del mese in base alla localizzazione corrente"
 
 #: ../src/gui/gtkentry.c:196
 msgid "$(DAY) - day"
@@ -10162,7 +10195,7 @@ msgstr "$(EXIF.YEAR) - anno EXIF"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF.YEAR.SHORT) - EXIF year without century"
-msgstr ""
+msgstr "$(EXIF.YEAR.SHORT) - anno abbreviato EXIF (senza secolo)"
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF.MONTH) - EXIF month"
@@ -10173,23 +10206,26 @@ msgid ""
 "$(EXIF.MONTH.SHORT) - abbreviated EXIF month name according to the current "
 "locale"
 msgstr ""
+"$(EXIF.MONTH.SHORT) - nome mese EXIF abbreviato in base alla localizzazione"
+" corrente"
 
 #: ../src/gui/gtkentry.c:206
 msgid ""
 "$(EXIF.MONTH.LONG) - full EXIF month name according to the current locale"
 msgstr ""
+"$(EXIF.MONTH.LONG) - nome del mese EXIF intero sulla base della corrente"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(EXIF.DAY) - EXIF day"
-msgstr ""
+msgstr "$(EXIF.DAY) - giorno EXIF"
 
 #: ../src/gui/gtkentry.c:208
 msgid "$(EXIF.HOUR) - EXIF hour"
-msgstr ""
+msgstr "$(EXIF.HOUR) - ora EXIF"
 
 #: ../src/gui/gtkentry.c:209
 msgid "$(EXIF.HOUR.AMPM) - EXIF hour, 12-hour clock"
-msgstr ""
+msgstr "$(EXIF.HOUR.AMPM) - ora EXIF, su 12 ore"
 
 #: ../src/gui/gtkentry.c:210
 msgid "$(EXIF.MINUTE) - EXIF minute"
@@ -10201,7 +10237,7 @@ msgstr "$(EXIF.SECOND) - secondo EXIF"
 
 #: ../src/gui/gtkentry.c:212
 msgid "$(EXIF.MSEC) - EXIF millisecond"
-msgstr ""
+msgstr "$(EXIF.MSEC) - millisecondi EXIF"
 
 #: ../src/gui/gtkentry.c:213
 msgid "$(EXIF.ISO) - ISO value"
@@ -10213,7 +10249,7 @@ msgstr "$(EXIF.EXPOSURE) - esposizione EXIF"
 
 #: ../src/gui/gtkentry.c:215
 msgid "$(EXIF.EXPOSURE.BIAS) - EXIF exposure bias"
-msgstr ""
+msgstr "$(EXIF.EXPOSURE.BIAS) - compensazione esposizione EXIF"
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(EXIF.APERTURE) - EXIF aperture"
@@ -10309,7 +10345,7 @@ msgstr "$(FOLDER.DESKTOP) - cartella del desktop"
 
 #: ../src/gui/gtkentry.c:239
 msgid "$(OPENCL.ACTIVATED) - whether OpenCL is activated"
-msgstr ""
+msgstr "$(OPENCL.ACTIVATED) - qualora OpenCL è attivato"
 
 #: ../src/gui/gtkentry.c:240
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
@@ -10440,6 +10476,8 @@ msgstr "Scegli colore sovrimpressione"
 msgid ""
 "set the contrast between the lightest and darkest part of the guide overlays"
 msgstr ""
+"Imposta il contrasto tra tra la parte più luminosa e la più scura delle guide"
+" sovraimpresse"
 
 #: ../src/gui/guides.c:845 ../src/gui/guides.c:891
 msgid "show guides"
@@ -13854,7 +13892,7 @@ msgstr ""
 
 #: ../src/iop/colorbalance.c:945 ../src/iop/colorbalance.c:2058
 msgid "optimize luma"
-msgstr ""
+msgstr "Ottimizza la luminanza"
 
 #: ../src/iop/colorbalance.c:949
 msgid "neutralize colors from patches"
@@ -15139,7 +15177,7 @@ msgstr "Non-local means automatico"
 
 #: ../src/iop/denoiseprofile.c:3668
 msgid "wavelets"
-msgstr ""
+msgstr "Wavelets"
 
 #: ../src/iop/denoiseprofile.c:3669
 msgid "wavelets auto"
@@ -15425,7 +15463,7 @@ msgstr ""
 
 #: ../src/iop/diffuse.c:1506
 msgid "speed (sharpen ↔ diffuse)"
-msgstr ""
+msgstr "Velocità (nitidezza ↔ diffusione)"
 
 #: ../src/iop/diffuse.c:1512
 msgid ""
