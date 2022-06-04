@@ -9,16 +9,15 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-04 15:40+0200\n"
-"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
-"\n"
+"PO-Revision-Date: 2022-06-04 21:41+0100\n"
+"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 19.12.3\n"
+"X-Generator: Lokalize 2.0\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -2347,7 +2346,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:9049
 msgid "prefer a history button in the collections module"
-msgstr ""
+msgstr "Preferisci un pulsante di coda di sviluppo nel modulo Raccolte"
 
 #: ../build/bin/preferences_gen.h:9063
 msgid ""
@@ -2359,7 +2358,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:9117
 msgid "suggested tags level of confidence"
-msgstr ""
+msgstr "Livello di confidenza delle etichette suggerite"
 
 #: ../build/bin/preferences_gen.h:9142
 #, no-c-format
@@ -2368,6 +2367,11 @@ msgid ""
 "associated tags, 99: 99% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
+"Livello di confidenza per includere l'etichetta nella lista dei suggerimenti, "
+"0: tutte le etichette associate, 99: 99% delle etichette associate"
+" corrispondenti, "
+"100: nessuna etichetta corrispondente, mostra solo etichette recenti (più"
+" veloce)"
 
 #: ../build/bin/preferences_gen.h:9164
 msgid "number of recently attached tags"
@@ -3746,28 +3750,24 @@ msgid "random"
 msgstr "Casuale"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:180
-#, fuzzy
 msgid "Floyd-Steinberg 1-bit B&W"
 msgstr "Floyd-Steinberg 1-bit B&N"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:181
-#, fuzzy
 msgid "Floyd-Steinberg 4-bit gray"
 msgstr "Floyd-Steinberg 4-bit grigio"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:182
-#, fuzzy
 msgid "Floyd-Steinberg 8-bit RGB"
-msgstr "Floyd-Steinberg 16-bit RGB"
+msgstr "Floyd-Steinberg 8-bit RGB"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:183
-#, fuzzy
 msgid "Floyd-Steinberg 16-bit RGB"
 msgstr "Floyd-Steinberg 16-bit RGB"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:184
 msgid "Floyd-Steinberg auto"
-msgstr "Floyd-Steinberg auto"
+msgstr "Floyd-Steinberg automatico"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:79
 #: ../build/lib/darktable/plugins/introspection_exposure.c:146
@@ -3805,9 +3805,8 @@ msgstr "Luminanza del grigio medio"
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:97
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:166
 #: ../src/iop/filmic.c:1617
-#, fuzzy
 msgid "black relative exposure"
-msgstr "Esposizione nero relativo"
+msgstr "Esposizione relativa del nero"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:218
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:419
@@ -4040,7 +4039,7 @@ msgstr "Densità"
 #: ../build/lib/darktable/plugins/introspection_grain.c:117
 #: ../src/iop/bilat.c:445
 msgid "coarseness"
-msgstr ""
+msgstr "Grossolanità"
 
 #: ../build/lib/darktable/plugins/introspection_grain.c:70
 #: ../build/lib/darktable/plugins/introspection_grain.c:125
@@ -4073,7 +4072,7 @@ msgstr "Combina i segmenti"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:173
 #: ../build/lib/darktable/plugins/introspection_highlights.c:260
 msgid "inpaint a flat color"
-msgstr ""
+msgstr "Ricostruisci un colore piatto"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:274
 msgid "clip highlights"
@@ -4088,9 +4087,10 @@ msgid "reconstruct color"
 msgstr "Ricostruisci colore"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:277
+#, fuzzy
 #: ../src/iop/highlights.c:2139
 msgid "guided laplacians"
-msgstr ""
+msgstr "Guida laplaciana"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:281
 msgid "4 px"
@@ -4370,9 +4370,10 @@ msgid "white point"
 msgstr "Punto di bianco"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:112
+#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:183
 msgid "flat field correction"
-msgstr ""
+msgstr "Correzione del campo piatto"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:198
 msgid "embedded GainMap"
@@ -4401,9 +4402,10 @@ msgid "brightness"
 msgstr "Luminosità"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:291
+#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_retouch.c:430
 msgid "max_iter"
-msgstr ""
+msgstr "massime iterazioni"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:444
 #: ../src/libs/metadata_view.c:330
@@ -4788,11 +4790,11 @@ msgstr "Stampa le tue immagini"
 
 #: ../src/bauhaus/bauhaus.c:3280
 msgid "button on"
-msgstr ""
+msgstr "Pulsante acceso"
 
 #: ../src/bauhaus/bauhaus.c:3280
 msgid "button off"
-msgstr ""
+msgstr "Pulsante spento"
 
 #: ../src/bauhaus/bauhaus.c:3449 ../src/gui/accelerators.c:270
 msgid "value"
@@ -4881,11 +4883,9 @@ msgid "too long ext for --out-ext"
 msgstr "Il parametro di --out-ext è troppo lungo"
 
 #: ../src/cli/main.c:344
-#, fuzzy, c-format
+#, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
-msgstr ""
-"Nota: il file o la cartella di input '%s' non esistono, non posso "
-"proseguire\n"
+msgstr "Nota: il file o la cartella di input '%s' non esiste, preseguo oltre\n"
 
 #: ../src/cli/main.c:353
 #, c-format
@@ -5001,7 +5001,7 @@ msgstr ""
 "Accerta che la tua fotocamera permetta l'accesso e non sia montata altrimenti"
 
 #: ../src/common/camera_control.c:855
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "failed to initialize `%s' on port `%s', likely causes are: locked by another "
 "application, no access to devices etc"
@@ -5173,7 +5173,7 @@ msgstr "Ordine dei moduli"
 
 #: ../src/common/collection.c:705
 msgid "range rating"
-msgstr ""
+msgstr "Intervallo di valutazione"
 
 #: ../src/common/collection.c:709
 msgid "search"
@@ -5333,7 +5333,7 @@ msgstr "Fronte"
 #: ../src/common/color_vocabulary.c:158 ../src/common/color_vocabulary.c:163
 #: ../src/common/color_vocabulary.c:168 ../src/common/color_vocabulary.c:173
 msgid "cheek"
-msgstr ""
+msgstr "Guancia"
 
 #: ../src/common/color_vocabulary.c:200
 #, c-format
@@ -24180,4 +24180,5 @@ msgstr ""
 #: ../src/views/view.c:1345
 msgid "mouse actions"
 msgstr "Azioni mouse"
+
 
