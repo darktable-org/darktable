@@ -448,6 +448,7 @@ entry selection
 checkbutton check
 {
   margin: 0.28em 0.56em 0.28em 0;
+  border: none;
 }
 
 /* Separator */
@@ -1068,27 +1069,27 @@ treeview header label
 
 #preferences-notebook combobox,
 #preferences-notebook spinbutton,
-#preset_controls entry,
-#shortcut_controls entry
+#preset-controls entry,
+#shortcut-controls entry
 {
    min-width: 15em;
 }
 
 /* Set buttons and search field on presets and shortcuts control buttons */
-#shortcut_controls,
-#preset_controls
+#shortcut-controls,
+#preset-controls
 {
   margin-top: 0.35em;
 }
 
-#shortcut_controls button,
-#preset_controls button
+#shortcut-controls button,
+#preset-controls button
 {
   margin-left: 0.28em;
 }
 
-#shortcut_controls .search,
-#preferences-box #shortcut_controls check
+#shortcut-controls .search,
+#preferences-box #shortcut-controls check
 {
   margin-right: 0.28em;
 }
