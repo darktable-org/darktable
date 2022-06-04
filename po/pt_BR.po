@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-03 23:05-0300\n"
-"PO-Revision-Date: 2022-06-03 23:09-0300\n"
+"POT-Creation-Date: 2022-06-04 17:26-0300\n"
+"PO-Revision-Date: 2022-06-04 17:24-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -8041,9 +8041,8 @@ msgid "normal & arithmetic modes"
 msgstr "modos normal & aritméticos"
 
 #: ../src/develop/blend_gui.c:2709
-#, fuzzy
 msgid "chromaticity & lightness modes"
-msgstr "modos de crominância e luminância"
+msgstr "modos de cromaticidade e luminância"
 
 #. add deprecated blend mode
 #: ../src/develop/blend_gui.c:2720
@@ -8914,6 +8913,10 @@ msgstr "dias: "
 #: ../src/dtgtk/range.c:988
 msgid "time"
 msgstr "tempo"
+
+#: ../src/dtgtk/range.c:1036
+msgid "current date: "
+msgstr "data atual: "
 
 #: ../src/dtgtk/range.c:1040 ../src/dtgtk/range.c:1742
 msgid "now"
