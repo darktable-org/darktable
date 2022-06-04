@@ -16,6 +16,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the thumbnail class for the lighttable module.  */
+
+#include "common/extra_optimizations.h"
+
 #include "dtgtk/thumbnail.h"
 
 #include "bauhaus/bauhaus.h"
@@ -905,7 +908,7 @@ static gboolean _event_rating_release(GtkWidget *widget, GdkEventButton *event, 
     if(rating != DT_VIEW_DESERT)
     {
       dt_ratings_apply_on_image(thumb->imgid, rating, TRUE, TRUE, TRUE);
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING,
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, DT_COLLECTION_PROP_RATING_RANGE,
                                  g_list_prepend(NULL, GINT_TO_POINTER(thumb->imgid)));
     }
   }

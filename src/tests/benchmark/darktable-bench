@@ -243,12 +243,17 @@ def run_benchmark(program,image,xmp,args):
       arglist = arglist + ["--disable-opencl"]
    os.environ['LANG'] = 'C'
    os.environ['LC_ALL'] = 'C'
-   trace = subprocess.check_output([program]+arglist,stdin=None,stderr=subprocess.PIPE,env=os.environ)
+   try:
+      trace = subprocess.check_output([program]+arglist,stdin=None,stderr=subprocess.PIPE,env=os.environ)
+      pixpipe = 0.0
+   except KeyboardInterrupt as e:
+      print('KeyboardInterrupt')
+      trace = ''
+      pixpipe = -1.0
    if trace:
       trace = trace.decode('utf-8').split('\n')
    loadtime = 0.0
    savetime = -1
-   pixpipe = 0.0
    gpu = False
    for t in trace:
       if 'GPU' in t:
@@ -321,18 +326,22 @@ def main():
    total = 0.0
    pixpipe = 0.0
    used_gpu = False
+   reps_run = 0
    for rep in range(args.reps):
       if args.reps > 1:
          print('     run #',rep+1,end='')
       p, t, g = run_benchmark(args.program,args.image,args.xmp,args)
+      if p < 0.0:
+         continue
       pixpipe += p
       total += t
+      reps_run += 1
       if g:
          used_gpu = True
       if args.reps > 1:
          print(f': {p:7.3f} pixpipe,  {t:7.3f} total')
-   total = total / args.reps
-   pixpipe = pixpipe / args.reps
+   total = total / reps_run if reps_run > 0 else 999.9
+   pixpipe = pixpipe / reps_run if reps_run > 0 else 999.9
    print_performance(pixpipe,total,get_version(args.program),args.version,args.image_base,args.threads,used_gpu)
    cleanup(args)
    return

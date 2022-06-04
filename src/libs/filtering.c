@@ -198,8 +198,8 @@ typedef struct _filter_t
 #include "libs/filters/iso.c"
 #include "libs/filters/local_copy.c"
 #include "libs/filters/module_order.c"
+#include "libs/filters/rating_range.c"
 #include "libs/filters/rating.c"
-#include "libs/filters/rating_legacy.c"
 #include "libs/filters/ratio.c"
 #include "libs/filters/search.c"
 
@@ -213,7 +213,7 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_IMPORT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_PRINT_TIMESTAMP, _date_widget_init, _date_update },
         { DT_COLLECTION_PROP_ASPECT_RATIO, _ratio_widget_init, _ratio_update },
-        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update },
+        { DT_COLLECTION_PROP_RATING_RANGE, _rating_range_widget_init, _rating_range_update },
         { DT_COLLECTION_PROP_APERTURE, _aperture_widget_init, _aperture_update },
         { DT_COLLECTION_PROP_FOCAL_LENGTH, _focal_widget_init, _focal_update },
         { DT_COLLECTION_PROP_ISO, _iso_widget_init, _iso_update },
@@ -222,7 +222,7 @@ static _filter_t filters[]
         { DT_COLLECTION_PROP_LOCAL_COPY, _local_copy_widget_init, _local_copy_update },
         { DT_COLLECTION_PROP_HISTORY, _history_widget_init, _history_update },
         { DT_COLLECTION_PROP_ORDER, _module_order_widget_init, _module_order_update },
-        { DT_COLLECTION_PROP_RATING_LEGACY, _rating_legacy_widget_init, _rating_legacy_update } };
+        { DT_COLLECTION_PROP_RATING, _rating_widget_init, _rating_update } };
 
 static _filter_t *_filters_get(const dt_collection_properties_t prop)
 {
@@ -258,7 +258,7 @@ void init_presets(dt_lib_module_t *self)
   }
 
   // initial preset
-  CLEAR_PARAMS(_PRESET_ALL, DT_COLLECTION_PROP_RATING, DT_COLLECTION_SORT_DATETIME);
+  CLEAR_PARAMS(_PRESET_ALL, DT_COLLECTION_PROP_RATING_RANGE, DT_COLLECTION_SORT_DATETIME);
   params.rules = 3;
   params.rule[0].topbar = 1;
   params.rule[1].item = DT_COLLECTION_PROP_COLORLABEL;
@@ -652,7 +652,7 @@ static void _range_set_tooltip(_widgets_range_t *special)
                                _("click or click&#38;drag to select one or multiple values"),
                                _("right-click opens a menu to select the available values"));
 
-  if(special->rule->prop != DT_COLLECTION_PROP_RATING)
+  if(special->rule->prop != DT_COLLECTION_PROP_RATING_RANGE)
     txt = g_strdup_printf("%s\n<b><i>%s:</i></b> %s", txt, _("actual selection"), val);
   gtk_widget_set_tooltip_markup(special->range_select, txt);
   g_free(txt);
@@ -860,8 +860,8 @@ static gboolean _rule_show_popup(GtkWidget *widget, dt_lib_filtering_rule_t *rul
       ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_METADATA + i);
     }
   }
+  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING);
-  ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_RATING_LEGACY);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(spop, DT_COLLECTION_PROP_GEOTAGGING);
@@ -942,8 +942,8 @@ static void _rule_populate_prop_combo(dt_lib_filtering_rule_t *rule)
       ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
     }
   }
+  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_RANGE);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING);
-  ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_RATING_LEGACY);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TEXTSEARCH);
   ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
@@ -1074,6 +1074,15 @@ static void _rule_topbar_toggle(GtkWidget *widget, dt_lib_module_t *self)
   _widget_header_update(rule);
 }
 
+static void _event_rule_disable(GtkWidget *widget, dt_lib_filtering_rule_t *rule)
+{
+  if(rule->manual_widget_set) return;
+  _event_rule_changed(widget, rule);
+
+  // update the rule header
+  _widget_header_update(rule);
+}
+
 static gboolean _event_rule_close(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_filtering_rule_t *rule = (dt_lib_filtering_rule_t *)g_object_get_data(G_OBJECT(widget), "rule");
@@ -1193,7 +1202,7 @@ static gboolean _widget_init(dt_lib_filtering_rule_t *rule, const dt_collection_
     rule->w_off = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, 0, NULL);
     dt_gui_add_class(rule->w_off, "dt_transparent_background");
     g_object_set_data(G_OBJECT(rule->w_off), "rule", rule);
-    g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_changed), rule);
+    g_signal_connect(G_OBJECT(rule->w_off), "toggled", G_CALLBACK(_event_rule_disable), rule);
     gtk_box_pack_end(GTK_BOX(rule->w_btn_box), rule->w_off, FALSE, FALSE, 0);
 
     // pin button
