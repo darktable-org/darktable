@@ -24,6 +24,7 @@
 #include "common/exif.h"
 #include "common/chromatic_adaptation.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/gamut_mapping.h"
 #include "common/opencl.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -134,6 +135,7 @@ typedef struct dt_iop_colorbalancergb_gui_data_t
   GtkWidget *checker_color_1_picker, *checker_color_2_picker, *checker_size;
   gboolean mask_display;
   dt_iop_colorbalancergb_mask_data_t mask_type;
+  const dt_iop_order_iccprofile_info_t *sliders_output_profile;
 } dt_iop_colorbalancergb_gui_data_t;
 
 
@@ -1400,30 +1402,77 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 }
 
 
-static void paint_chroma_slider(GtkWidget *w, const float hue)
+static void paint_chroma_slider(const dt_iop_order_iccprofile_info_t *output_profile,
+                                const dt_colormatrix_t output_matrix_LMS_to_RGB,
+                                GtkWidget *w, const float hue)
 {
   const float x_min = 0;
   const float x_max = 1;
   const float x_range = x_max - x_min;
 
+  const float h = DEG_TO_RAD(hue);
+  const float cos_h = cosf(h);
+  const float sin_h = sinf(h);
+  // Find max available chroma at this hue without negative RGB
+  const float max_chroma = Ych_max_chroma_without_negatives(output_matrix_LMS_to_RGB, cos_h, sin_h);
+
   // Varies x in range around current y param
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    const float x = x_min + stop * x_range;
-    const float h = DEG_TO_RAD(hue);
+    const float x = MIN(x_min + stop * x_range, max_chroma);
 
     dt_aligned_pixel_t RGB = { 0.f };
+    dt_aligned_pixel_t RGB_linear = { 0.f };
     dt_aligned_pixel_t Ych = { 0.75f, x, h, 0.f };
-    dt_aligned_pixel_t XYZ = { 0.f };
-    Ych_to_XYZ(Ych, XYZ);
-    dt_XYZ_to_Rec709_D65(XYZ, RGB);
-    const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
-    for(size_t c = 0; c < 3; c++) RGB[c] = powf(RGB[c] / max_RGB, 1.f / 2.2f);
+    dt_aligned_pixel_t XYZ_D65 = { 0.f };
+    dt_aligned_pixel_t XYZ_D50 = { 0.f };
+    Ych_to_XYZ(Ych, XYZ_D65);
+    XYZ_D65_to_D50(XYZ_D65, XYZ_D50);
+    dt_apply_transposed_color_matrix(XYZ_D50, output_profile->matrix_out_transposed, RGB_linear);
+    // normalize to the brightest value available at this hue and chroma
+    const float max_RGB = fmaxf(fmaxf(RGB_linear[0], RGB_linear[1]), RGB_linear[2]);
+    for_each_channel(c) RGB_linear[c] = MAX(RGB_linear[c] / max_RGB, 0.f);
+    // Apply nonlinear LUT if necessary
+    if(output_profile->nonlinearlut)
+      dt_ioppr_apply_trc(RGB_linear, RGB, output_profile->lut_out,
+                         output_profile->unbounded_coeffs_out, output_profile->lutsize);
     dt_bauhaus_slider_set_stop(w, stop, RGB[0], RGB[1], RGB[2]);
   }
 
   gtk_widget_queue_draw(w);
+}
+
+
+static void paint_hue_sliders(const dt_iop_order_iccprofile_info_t *output_profile,
+                              const dt_colormatrix_t output_matrix_LMS_to_RGB,
+                              const dt_iop_colorbalancergb_gui_data_t *const g)
+{
+  for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
+  {
+    const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
+    const float h = DEG_TO_RAD(stop * (360.f));
+    const float max_chroma = Ych_max_chroma_without_negatives(output_matrix_LMS_to_RGB, cosf(h), sinf(h));
+    dt_aligned_pixel_t RGB_linear = { 0.f };
+    dt_aligned_pixel_t RGB = { 0.f };
+    dt_aligned_pixel_t Ych = { 0.75f, MIN(0.2f, max_chroma), h, 0.f };
+    dt_aligned_pixel_t XYZ_D65 = { 0.f };
+    dt_aligned_pixel_t XYZ_D50 = { 0.f };
+    Ych_to_XYZ(Ych, XYZ_D65);
+    XYZ_D65_to_D50(XYZ_D65, XYZ_D50);
+    dt_apply_transposed_color_matrix(XYZ_D50, output_profile->matrix_out_transposed, RGB_linear);
+    // normalize to the brightest value available at this hue and chroma
+    const float max_RGB = fmaxf(fmaxf(RGB_linear[0], RGB_linear[1]), RGB_linear[2]);
+    for_each_channel(c) RGB_linear[c] = MAX(RGB_linear[c] / max_RGB, 0.f);
+    // Apply nonlinear LUT if necessary
+    if(output_profile->nonlinearlut)
+      dt_ioppr_apply_trc(RGB_linear, RGB, output_profile->lut_out,
+                         output_profile->unbounded_coeffs_out, output_profile->lutsize);
+    dt_bauhaus_slider_set_stop(g->global_H, stop, RGB[0], RGB[1], RGB[2]);
+    dt_bauhaus_slider_set_stop(g->shadows_H, stop, RGB[0], RGB[1], RGB[2]);
+    dt_bauhaus_slider_set_stop(g->highlights_H, stop, RGB[0], RGB[1], RGB[2]);
+    dt_bauhaus_slider_set_stop(g->midtones_H, stop, RGB[0], RGB[1], RGB[2]);
+  }
 }
 
 
@@ -1668,25 +1717,52 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
 
+  // Prepare data for gamut mapping slider backgrounds
+  // Make our best effort to find display profile. If not found
+  // or it is not a matrix profile, fall back to sRGB.
+  const dt_iop_order_iccprofile_info_t *output_profile = NULL;
+
+  if(self->dev && self->dev->pipe)
+    output_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
+
+  if(!output_profile || isnan(output_profile->matrix_out[0][0]))
+  {
+    output_profile = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "",
+                                                       DT_INTENT_RELATIVE_COLORIMETRIC);
+  }
+
+  // Prepare LMS 2006 -> RGB matrix for chroma clipping
+  dt_colormatrix_t input_matrix = { { 0.f } };  // this is actually unused but is generated by below function anyway
+  dt_colormatrix_t output_matrix = { { 0.f } };
+  prepare_RGB_Yrg_matrices(output_profile, input_matrix, output_matrix);
+
+  // Check if output profile is different than last time - will need to repaint
+  // slider backgrounds.
+  const gboolean output_profile_changed = output_profile != g->sliders_output_profile;
+
    ++darktable.gui->reset;
 
-  if(!w || w == g->global_H)
-    paint_chroma_slider(g->global_C, p->global_H);
+  if(output_profile_changed)
+    paint_hue_sliders(output_profile, output_matrix, g);
 
-  if(!w || w == g->shadows_H)
-    paint_chroma_slider(g->shadows_C, p->shadows_H);
+  if(!w || w == g->global_H || output_profile_changed)
+    paint_chroma_slider(output_profile, output_matrix, g->global_C, p->global_H);
 
-  if(!w || w == g->midtones_H)
-    paint_chroma_slider(g->midtones_C, p->midtones_H);
+  if(!w || w == g->shadows_H || output_profile_changed)
+    paint_chroma_slider(output_profile, output_matrix, g->shadows_C, p->shadows_H);
 
-  if(!w || w == g->highlights_H)
-    paint_chroma_slider(g->highlights_C, p->highlights_H);
+  if(!w || w == g->midtones_H || output_profile_changed)
+    paint_chroma_slider(output_profile, output_matrix, g->midtones_C, p->midtones_H);
+
+  if(!w || w == g->highlights_H || output_profile_changed)
+    paint_chroma_slider(output_profile, output_matrix, g->highlights_C, p->highlights_H);
 
   if(!w || w == g->shadows_weight || w == g->highlights_weight || w == g->mask_grey_fulcrum)
     gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
   --darktable.gui->reset;
 
+  g->sliders_output_profile = output_profile;
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -2100,19 +2176,6 @@ void gui_init(dt_iop_module_t *self)
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
   {
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
-    const float h = DEG_TO_RAD(stop * (360.f));
-    dt_aligned_pixel_t RGB = { 0.f };
-    dt_aligned_pixel_t Ych = { 0.75f, 0.2f, h, 0.f };
-    dt_aligned_pixel_t XYZ = { 0.f };
-    Ych_to_XYZ(Ych, XYZ);
-    dt_XYZ_to_Rec709_D65(XYZ, RGB);
-    const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
-    for(size_t c = 0; c < 3; c++) RGB[c] = powf(RGB[c] / max_RGB, 1.f / 2.2f);
-    dt_bauhaus_slider_set_stop(g->global_H, stop, RGB[0], RGB[1], RGB[2]);
-    dt_bauhaus_slider_set_stop(g->shadows_H, stop, RGB[0], RGB[1], RGB[2]);
-    dt_bauhaus_slider_set_stop(g->highlights_H, stop, RGB[0], RGB[1], RGB[2]);
-    dt_bauhaus_slider_set_stop(g->midtones_H, stop, RGB[0], RGB[1], RGB[2]);
-
     const float Y = 0.f + stop;
     dt_bauhaus_slider_set_stop(g->global_Y, stop, Y, Y, Y);
     dt_bauhaus_slider_set_stop(g->shadows_Y, stop, Y, Y, Y);

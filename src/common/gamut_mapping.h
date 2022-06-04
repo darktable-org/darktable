@@ -106,6 +106,16 @@ static inline float _clip_chroma_black(const float coeffs[3], const float cos_h,
 }
 
 
+static inline float Ych_max_chroma_without_negatives(const dt_colormatrix_t matrix_out,
+                                                     const float cos_h, const float sin_h)
+{
+  const float chroma_R_black = _clip_chroma_black(matrix_out[0], cos_h, sin_h);
+  const float chroma_G_black = _clip_chroma_black(matrix_out[1], cos_h, sin_h);
+  const float chroma_B_black = _clip_chroma_black(matrix_out[2], cos_h, sin_h);
+  return MIN(MIN(chroma_R_black, chroma_G_black), chroma_B_black);
+}
+
+
 #ifdef _OPENMP
 #pragma omp declare simd uniform(matrix) aligned(in, out:16) aligned(matrix:64)
 #endif
@@ -173,10 +183,7 @@ static inline float Ych_max_chroma(const dt_colormatrix_t matrix_out, const floa
   const float chroma_B_white = _clip_chroma_white(matrix_out[2], target_white, Y, cos_h, sin_h);
   const float max_chroma_white = MIN(MIN(chroma_R_white, chroma_G_white), chroma_B_white);
 
-  const float chroma_R_black = _clip_chroma_black(matrix_out[0], cos_h, sin_h);
-  const float chroma_G_black = _clip_chroma_black(matrix_out[1], cos_h, sin_h);
-  const float chroma_B_black = _clip_chroma_black(matrix_out[2], cos_h, sin_h);
-  const float max_chroma_black = MIN(MIN(chroma_R_black, chroma_G_black), chroma_B_black);
+  const float max_chroma_black = Ych_max_chroma_without_negatives(matrix_out, cos_h, sin_h);
 
   return MIN(max_chroma_black, max_chroma_white);
 }
