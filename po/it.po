@@ -1,15 +1,15 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
+#
 # Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>, 2022.
 # Luca Cignoni <cigno5@users.noreply.github.com>, 2022.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-03 21:49+0000\n"
+"PO-Revision-Date: 2022-06-04 10:09+0100\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Gtranslator 41.0\n"
+"X-Generator: Lokalize 2.0\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -1072,7 +1072,7 @@ msgstr "Stabilisce se gli orari debbano mostrare i millisecondi"
 
 #: ../build/bin/preferences_gen.h:4323
 msgid "thumbnails"
-msgstr "Anteprime"
+msgstr "Miniature"
 
 #: ../build/bin/preferences_gen.h:4343
 msgid "use raw file instead of embedded JPEG from size"
@@ -1117,14 +1117,13 @@ msgid "delimiters for size categories"
 msgstr "Delimitatori per le categorie di misura"
 
 #: ../build/bin/preferences_gen.h:4551
-#, fuzzy
 msgid ""
 "size categories are used to be able to set different overlays and css values "
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
 "means 3 categories of thumbnails: 0px->120px, 120px->400px and >400px"
 msgstr ""
 "Le categorie di misura sono utilizzate per poter impostare differenti "
-"sovrimpressioni e i valori CSS in base alla dimensione dell'anteprima, "
+"sovrimpressioni e valori CSS in base alla dimensione della miniatura, "
 "separati da |. Per esempio, 120|400 significa 3 categorie di anteprima : 0px-"
 ">120px, 120px->400px e >400px"
 
@@ -1179,7 +1178,6 @@ msgid "scroll down to increase mask parameters"
 msgstr "Scorri giù per aumentare i parametri della maschera"
 
 #: ../build/bin/preferences_gen.h:4847
-#, fuzzy
 msgid ""
 "when using the mouse scroll wheel to change mask parameters, scroll down to "
 "increase the mask size, feather size, opacity, brush hardness and gradient "
@@ -1190,7 +1188,7 @@ msgstr ""
 "maschera, scorri verso il basso per aumentare la dimensione della maschera, "
 "della sfumatura, dell'opacità, la durezza del pennello e la curvatura del "
 "gradiente\n"
-"In modo predefinito correre in alto aumenta questi parametri"
+"In modo predefinito scorrere in alto aumenta questi parametri"
 
 #: ../build/bin/preferences_gen.h:4869
 msgid "pattern for the image information line"
@@ -1231,7 +1229,6 @@ msgstr ""
 "Demosaicizzazione per le immagini ingrandite in modalità di Camera Oscura"
 
 #: ../build/bin/preferences_gen.h:5110
-#, fuzzy
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using RCD + interpolation modes specified "
@@ -1240,9 +1237,9 @@ msgid ""
 "as middle ground."
 msgstr ""
 "Interpolazione quando la visualizzazione in modalità Camera Oscura non è "
-"1:1: bilineare è più veloce, ma non molto definita. Una via di mezzo si "
+"1:1: bilineare è la più veloce, ma non la più definita. Una via di mezzo si "
 "ottiene usando RCD + le modalità di interpolazione specificate nell'opzione "
-"'interpolatore pixel' (scheda di processo), pieno usa esattamente le "
+"'interpolatore pixel' (scheda elaborazione), pieno usa esattamente le "
 "impostazioni per l'esportazione nella dimensione massima. I sensori X-Trans "
 "usano VNG anziché RCD come via di mezzo."
 
@@ -1251,10 +1248,9 @@ msgid "reduce resolution of preview image"
 msgstr "Riduci la risoluzione dell'immagine in anteprima"
 
 #: ../build/bin/preferences_gen.h:5180
-#, fuzzy
 msgid "decrease to speed up preview rendering, may hinder accurate masking"
 msgstr ""
-"Riduci per accelerare la visualizzazione dell'immagine di anteprima "
+"Riduci per velocizzare la visualizzazione dell'immagine di anteprima "
 "(potrebbe diminuire la precisione delle maschere)"
 
 #: ../build/bin/preferences_gen.h:5202
@@ -1262,7 +1258,6 @@ msgid "show loading screen between images"
 msgstr "Mostra la schermata di caricamento tra le immagini"
 
 #: ../build/bin/preferences_gen.h:5216
-#, fuzzy
 msgid ""
 "show gray loading screen when navigating between images in the darkroom\n"
 "disable to just show a toast message"
@@ -1292,13 +1287,12 @@ msgid "hide built-in presets for processing modules"
 msgstr "Nascondi le preimpostazioni incorporate per i moduli di processo"
 
 #: ../build/bin/preferences_gen.h:5320
-#, fuzzy
 msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
-"Nascondi le preimpostazioni incorporate dei moduli di processo in entrambi i "
-"menu preimpostazioni e preferiti."
+"Nascondi i preset incorporati dei moduli di elaborazione in entrambi i "
+"menu preset e preferiti."
 
 #: ../build/bin/preferences_gen.h:5342 ../build/bin/preferences_gen.h:5356
 msgid "show the guides widget in modules UI"
@@ -1365,7 +1359,6 @@ msgid "color balance slider block layout"
 msgstr "Disposizione dei selettori scorrevoli di bilanciamento colore"
 
 #: ../build/bin/preferences_gen.h:5630
-#, fuzzy
 msgid ""
 "choose how to organise the slider blocks for lift, gamma and gain:\n"
 "list - all sliders are shown in one long list (with headers),\n"
@@ -1375,7 +1368,7 @@ msgid ""
 msgstr ""
 "Scegli come organizzare i blocchi dei selettori per lift, gamma e gain:\n"
 "lista - tutti i selettori scorrevoli verranno visualizzati in una lunga "
-"lista (con intestazioni),\n"
+"lista (con le intestazioni),\n"
 "schede - verranno usate delle schede per catalogare i blocchi di selettori,\n"
 "colonne - i blocchi di selettori vengono visualizzati uno di fianco "
 "all'altro (in colonne sottili)"
@@ -1413,7 +1406,6 @@ msgid "show mask indicator in module headers"
 msgstr "Visualizza l'indicatore della maschera nell'intestazione dei moduli"
 
 #: ../build/bin/preferences_gen.h:5756
-#, fuzzy
 msgid ""
 "if enabled, an icon will be shown in the header of any processing modules "
 "that have a mask applied"
@@ -1426,7 +1418,6 @@ msgid "prompt for name on addition of new instance"
 msgstr "Pronto per un nome in aggiunta della nuova istanza"
 
 #: ../build/bin/preferences_gen.h:5792
-#, fuzzy
 msgid ""
 "if enabled, a rename prompt will be present for each new module instance "
 "(either new instance or duplicate)"
@@ -1455,7 +1446,6 @@ msgid "pixel interpolator (warp)"
 msgstr "Intepolatore pixel (distorce)"
 
 #: ../build/bin/preferences_gen.h:5922
-#, fuzzy
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
@@ -1469,7 +1459,6 @@ msgid "pixel interpolator (scaling)"
 msgstr "Intepolatore pixel (ridimensionamento)"
 
 #: ../build/bin/preferences_gen.h:5992
-#, fuzzy
 msgid ""
 "pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3)."
 msgstr ""
@@ -1492,7 +1481,6 @@ msgid "select directory"
 msgstr "Seleziona cartella"
 
 #: ../build/bin/preferences_gen.h:6035
-#, fuzzy
 msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. "
 "(need a restart)."
@@ -1501,14 +1489,12 @@ msgstr ""
 "lut3d. (Richiede il riavvio)."
 
 #: ../build/bin/preferences_gen.h:6057
-#, fuzzy
 msgid "auto-apply pixel workflow defaults"
 msgstr ""
 "Applica automaticamente i valori predefiniti per il flusso di lavoro sui "
 "pixel"
 
 #: ../build/bin/preferences_gen.h:6100
-#, fuzzy
 msgid ""
 "scene-referred workflow is based on linear modules and will auto-apply "
 "filmic and exposure,\n"
@@ -1526,7 +1512,6 @@ msgid "auto-apply chromatic adaptation defaults"
 msgstr "Applica automaticamente gli adattamenti cromatici di default"
 
 #: ../build/bin/preferences_gen.h:6160
-#, fuzzy
 msgid ""
 "legacy performs a basic chromatic adaptation using only the white balance "
 "module\n"
@@ -1544,7 +1529,6 @@ msgid "auto-apply per camera basecurve presets"
 msgstr "Applica automaticamente i preset della curva base per la fotocamera"
 
 #: ../build/bin/preferences_gen.h:6196
-#, fuzzy
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available (needs a restart).\n"
@@ -1594,7 +1578,6 @@ msgid "show warning messages"
 msgstr "Mostra i messaggi di avviso"
 
 #: ../build/bin/preferences_gen.h:6304
-#, fuzzy
 msgid ""
 "display messages in modules to warn beginner users when non-standard and "
 "possibly harmful settings are used in the pipeline.\n"
@@ -1602,7 +1585,7 @@ msgid ""
 "what you are doing. this option will hide them all the time."
 msgstr ""
 "Mostra i messaggi nei moduli per avvisare gli utenti principianti quando "
-"impostazioni non-standard e potenzialmente dannose sono usate nella are used "
+"impostazioni non-standard e potenzialmente dannose sono usate nella "
 "nella coda di sviluppo.\n"
 "Questi messaggi posson esser falsi positivi e dovrebbero esser ignorati se "
 "sai cosa stai facendo. Questa opzione li nasconderà per tutto il tempo."
@@ -1616,7 +1599,7 @@ msgid "darktable resources"
 msgstr "Risorse darktable"
 
 #: ../build/bin/preferences_gen.h:6383
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "defines how much darktable may take from your system resources.\n"
 " - default: darktable takes ~50% of your systems resources and gives "
@@ -1632,13 +1615,13 @@ msgid ""
 "recommended for general use!"
 msgstr ""
 "Stabilisce quante risorse di sistema darktable può occupare.\n"
-" - predefinito: darktable occupa ~50%% delle risorse di sistema e fornisce a "
+" - predefinito: darktable occupa ~50% delle risorse di sistema e fornisce a "
 "darktable abbastanza spazio per mantenerlo prestante.\n"
 " - piccolo: dovrebbe essere usato se stai eseguendo simultameneamente "
 "applicazioni che occupano grandi aree della memoria di sistema, o "
 "applicazioni OpenCL/GL tipo giochi o hugin.\n"
 " - grande: questa è la migliore opzione se stai usando principalmente "
-"darktable e vuoi che prenda la maggior parte delle risorse di sistema per le "
+"darktable e vuoi che occupi la maggior parte delle risorse di sistema per le "
 "prestazioni.\n"
 " - illimitato: dovrebbe essere usato soltanto per sviluppare immagini "
 "estremamente grandi, in quanto darktable occuperà tutte le risorse di "
@@ -1918,7 +1901,6 @@ msgid "create database snapshot"
 msgstr "Crea un'istantanea del database"
 
 #: ../build/bin/preferences_gen.h:7457
-#, fuzzy
 msgid ""
 "database snapshots are created right before closing darktable. options allow "
 "you to choose how often to make snapshots:\n"
@@ -1932,8 +1914,8 @@ msgstr ""
 "Le istantanee del database sono create appena prima la chiusura di "
 "Darktable. Le opzioni consentono di scegliere quanto spesso fare le "
 "istantanee:\n"
-"Mai - semplicemente non prende istantanee. In questo modo le uniche "
-"istantanee fatte sono quelle obbligatorie per aggiornamento di versione\n"
+"Mai - semplicemente non crea istantanee. In questo modo le uniche "
+"istantanee fatte sono quelle obbligatorie per l'aggiornamento di versione\n"
 "Una volta al mese - crea un'istantanea se è passato un mese dall'ultima "
 "fatta\n"
 "Una volta a settimana - crea un'istantanea se sono passati 7 giorni "
@@ -2047,7 +2029,6 @@ msgid "sort built-in presets first"
 msgstr "Ordina prima le preimpostazioni integrate"
 
 #: ../build/bin/preferences_gen.h:7813
-#, fuzzy
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
@@ -24166,3 +24147,4 @@ msgstr ""
 #: ../src/views/view.c:1345
 msgid "mouse actions"
 msgstr "Azioni mouse"
+
