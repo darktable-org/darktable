@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-04 10:09+0100\n"
+"PO-Revision-Date: 2022-06-04 12:25+0200\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 2.0\n"
+"X-Generator: Lokalize 19.12.3\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -2128,14 +2128,13 @@ msgid "shortcuts with multiple instances"
 msgstr "Scorciatoie con istanze multiple"
 
 #: ../build/bin/preferences_gen.h:8115
-#, fuzzy
 msgid ""
 "where multiple module instances are present, these preferences control rules "
 "that are applied (in order) to decide which module instance shortcuts will "
 "be applied to"
 msgstr ""
 "Dove sono presenti istanze multiple di un modulo, questa opzione controlla "
-"le regole che sono applicate (in ordine) per stabilire quale scorciatoie "
+"le regole da usare (in ordine) per stabilire a quale istanza le scorciatoie "
 "devono esser applicate"
 
 #: ../build/bin/preferences_gen.h:8131
@@ -2188,12 +2187,11 @@ msgid "selection order"
 msgstr "Ordine di selezione"
 
 #: ../build/bin/preferences_gen.h:8313
-#, fuzzy
 msgid ""
 "after applying the above rules, apply the shortcut based on its position in "
 "the pixelpipe"
 msgstr ""
-"Dopo aver applicato le regole precedenti, applica la scorciatoia in base "
+"Dopo aver applicato le regole qui sopra, applica la scorciatoia in base "
 "alla posizione nel flusso di sviluppo (pixelpipe)"
 
 #: ../build/bin/preferences_gen.h:8335
@@ -2201,15 +2199,14 @@ msgid "allow visual assignment to specific instances"
 msgstr "Consenti l'assegnazione visuale a specifiche istanze"
 
 #: ../build/bin/preferences_gen.h:8349
-#, fuzzy
 msgid ""
 "when multiple instances are present on an image this allows shortcuts to be "
 "visually assigned to those specific instances\n"
 "otherwise shortcuts will always be assigned to the preferred instance"
 msgstr ""
-"Quanto istanze multiple sono presenti sull'immagine questo consente che "
-"siano visivamente assegnate le scorciatoie a queste specifiche istanze\n"
-"Altrimenti le scorciatoie saranno sempre assegnate alle istanze preferite"
+"Quando sono prsenti istanze multiple sull'immagine, questo consente che "
+"le scorciatoie siano visivamente assegnate a queste specifiche istanze\n"
+"Altrimenti le scorciatoie saranno sempre assegnate all'istanza preferita"
 
 #: ../build/bin/preferences_gen.h:8359
 msgid "map / geolocalization view"
@@ -2262,12 +2259,11 @@ msgid "keep original filename"
 msgstr "Mantenere il nome originale del file"
 
 #: ../build/bin/preferences_gen.h:8590
-#, fuzzy
 msgid ""
 "keep original filename instead of a pattern while importing from camera or "
 "card"
 msgstr ""
-"Mantenere il nome originale del file quando si importa da una fotocamera o "
+"Mantiene il nome originale del file quando si importa da una fotocamera o "
 "da una scheda di memoria"
 
 #: ../build/bin/preferences_gen.h:8612
@@ -2293,7 +2289,6 @@ msgid "tags case sensitivity"
 msgstr "Etichette sensibili alle maiuscole"
 
 #: ../build/bin/preferences_gen.h:8741
-#, fuzzy
 msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensivity works "
 "only for the 26 latin letters"
