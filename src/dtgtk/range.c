@@ -1033,7 +1033,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   // the select line
   hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox0), hbox2, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new("current date : "), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(_("current date: ")), FALSE, TRUE, 0);
   pop->selection = gtk_entry_new();
   gtk_entry_set_alignment(GTK_ENTRY(pop->selection), 0.5);
   gtk_box_pack_start(GTK_BOX(hbox2), pop->selection, TRUE, TRUE, 0);
