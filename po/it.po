@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-05 17:05+0200\n"
+"PO-Revision-Date: 2022-06-05 23:48+0200\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -2148,7 +2148,7 @@ msgid ""
 msgstr ""
 "Se l'istanza di un modulo ha il fuoco, applica la scorciatoia a questa "
 "istanza\n"
-"Nota: le scorciatoie combinate si applicano sempre all'istanza a fuoco"
+"Nota: le scorciatoie di fusione si applicano sempre all'istanza a fuoco"
 
 #: ../build/bin/preferences_gen.h:8167
 msgid "prefer expanded instances"
@@ -3098,11 +3098,11 @@ msgstr "Saturazione in uscita"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:229
 msgid "lift, gamma, gain (ProPhoto RGB)"
-msgstr ""
+msgstr "lift, gamma, gain (ProPhoto RGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:230
 msgid "slope, offset, power (ProPhoto RGB)"
-msgstr ""
+msgstr "slope, offset, power (ProPhoto RGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalance.c:231
 msgid "lift, gamma, gain (sRGB)"
@@ -4060,10 +4060,9 @@ msgid "diameter of reconstruction"
 msgstr "Diametro della ricostruzione"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:155
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_highlights.c:248
 msgid "cast balance"
-msgstr "bilanciamento della dominante"
+msgstr "Bilanciamento della dominante"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:161
 #: ../build/lib/darktable/plugins/introspection_highlights.c:252
@@ -4088,7 +4087,6 @@ msgid "reconstruct color"
 msgstr "Ricostruisci colore"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:277
-#, fuzzy
 #: ../src/iop/highlights.c:2139
 msgid "guided laplacians"
 msgstr "Guida laplaciana"
@@ -4371,10 +4369,9 @@ msgid "white point"
 msgstr "Punto di bianco"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:112
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:183
 msgid "flat field correction"
-msgstr "Correzione del campo piatto"
+msgstr "Correzione del campo piatto (FFT)"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:198
 msgid "embedded GainMap"
@@ -6815,42 +6812,42 @@ msgstr "ERRORE: %s NON sincronizzato nuovo (XMP) → vecchio (DB)"
 #: ../src/control/crawler.c:415
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
-msgstr ""
+msgstr "SUCCESSO: %s sincronizzato nuovo (XMP) → vecchio (DB)"
 
 #: ../src/control/crawler.c:425
 #, c-format
 msgid "ERROR: %s NOT synced new (DB) → old (XMP)"
-msgstr ""
+msgstr "ERRORE: %s NON sincronizzato nuovo (DB) → vecchio (XMP)"
 
 #: ../src/control/crawler.c:430
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
-msgstr ""
+msgstr "SUCCESSO: %s sincronizzato nuovo (DB) → vecchio (XMP)"
 
 #: ../src/control/crawler.c:438 ../src/control/crawler.c:489
 #, c-format
 msgid "EXCEPTION: %s has inconsistent timestamps"
-msgstr ""
+msgstr "ECCEZIONE: %s ha marcatori temporali inconsistenti"
 
 #: ../src/control/crawler.c:462
 #, c-format
 msgid "ERROR: %s NOT synced old (XMP) → new (DB)"
-msgstr ""
+msgstr "ERRORE: %s NON sincronizzato vecchio (XMP) → nuovo (DB)"
 
 #: ../src/control/crawler.c:467
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
-msgstr ""
+msgstr "SUCCESSO: %s sincronizzato vecchio (XMP) → nuovo (DB)"
 
 #: ../src/control/crawler.c:476
 #, c-format
 msgid "ERROR: %s NOT synced old (DB) → new (XMP)"
-msgstr ""
+msgstr "ERRORE: %s NON sincronizzato vecchio (DB) → nuovo (XMP)"
 
 #: ../src/control/crawler.c:481
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
-msgstr ""
+msgstr "SUCCESSO: %s sincronizzato vecchio (DB) → nuovo (XMP)"
 
 #: ../src/control/crawler.c:560
 #, c-format
@@ -7234,7 +7231,6 @@ msgid "delete images?"
 msgstr "Eliminare le immagini?"
 
 #: ../src/control/jobs/control_jobs.c:1644
-#, fuzzy
 msgid ""
 "do you really want to physically delete selected image (using trash if "
 "possible)?"
@@ -7525,7 +7521,7 @@ msgstr "Regolazione colore"
 #: ../src/develop/blend_gui.c:67
 msgctxt "blendmode"
 msgid "Lab lightness"
-msgstr ""
+msgstr "Tono Lab (Lightness)"
 
 #: ../src/develop/blend_gui.c:68
 msgctxt "blendmode"
@@ -8112,14 +8108,13 @@ msgid "toggle blend order"
 msgstr "Nascondi l'ordine di miscelazione"
 
 #: ../src/develop/blend_gui.c:3049
-#, fuzzy
 msgid ""
 "toggle the blending order between the input and the output of the module,\n"
 "by default the output will be blended on top of the input,\n"
 "order can be reversed by clicking on the icon (input on top of output)"
 msgstr ""
-"Nascondi l'ordine di miscelazione tra l'input e l'output del modulo,\n"
-"per default l'output è miscelato al di sopra dell'input,\n"
+"Nascondi l'ordine di fusione tra l'input e l'output del modulo,\n"
+"per default l'output viene fuso al di sopra dell'input,\n"
 "l'ordine può esser invertito cliccando sull'icona (input al di sopra "
 "dell'output)"
 
@@ -8179,12 +8174,11 @@ msgid "feathering guide"
 msgstr "Guida per la sfumatura"
 
 #: ../src/develop/blend_gui.c:3090
-#, fuzzy
 msgid ""
 "choose to guide mask by input or output image and\n"
 "choose to apply feathering before or after mask blur"
 msgstr ""
-"Scegli di far guidare la maschera dall'immagine di inputo o di output e\n"
+"Scegli di far guidare la maschera dall'immagine di input o di output e\n"
 "scegli di applicare la sfumatura prima o dopo la maschera di sfocatura"
 
 #: ../src/develop/blend_gui.c:3095 ../src/libs/history.c:864
@@ -8237,7 +8231,6 @@ msgid "display mask and/or color channel"
 msgstr "Visualizza la maschera e/o canale colore"
 
 #: ../src/develop/blend_gui.c:3126
-#, fuzzy
 msgid ""
 "display mask and/or color channel. ctrl+click to display mask, shift+click "
 "to display channel. hover over parametric mask slider to select channel for "
@@ -8347,7 +8340,7 @@ msgstr "Scopo"
 
 #: ../src/develop/imageop.c:2379
 msgid "process"
-msgstr ""
+msgstr "Elaborazione"
 
 #: ../src/develop/imageop.c:2476
 msgid ""
@@ -8535,13 +8528,13 @@ msgid "circle #%d"
 msgstr "Cerchio #%d"
 
 #: ../src/develop/masks/circle.c:1361 ../src/develop/masks/path.c:3174
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>dimensione</b>: rotella mouse, <b>dimensione sfumatura</b>: shift+rotella "
-"mouse\n"
+"<b>dimensione</b>: rotella mouse, <b>dimensione sfumatura</b>: shift+rotella"
+" mouse\n"
 "<b>opacità</b>: ctrl+rotella mouse (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:491 ../src/develop/masks/ellipse.c:593
