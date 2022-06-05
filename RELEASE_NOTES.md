@@ -114,7 +114,7 @@ are described more fully in the user manual and accompanying blog post.
 
   All performance and OpenCL settings and pixelpipe optimizations have been
   fully reviewed and updated. Many new optimizations have been
-  added and the user-preferences have been simplified.
+  added and the user preferences have been simplified.
 
   All configurations are now per-device allowing each OpenCL
   device to be tuned separately.
