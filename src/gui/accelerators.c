@@ -2321,7 +2321,7 @@ GtkWidget *dt_shortcuts_prefs(GtkWidget *widget)
   g_signal_connect(G_OBJECT(shortcuts_view), "size-allocate", G_CALLBACK(_resize_shortcuts_view), container);
 
   GtkWidget *button_bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0), *button = NULL;
-  gtk_widget_set_name(button_bar, "shortcut_controls");
+  gtk_widget_set_name(button_bar, "shortcut-controls");
   gtk_box_pack_start(GTK_BOX(button_bar), search_actions, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(button_bar), search_shortcuts, FALSE, FALSE, 0);
 
