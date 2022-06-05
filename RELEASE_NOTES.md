@@ -36,7 +36,7 @@ are described more fully in the user manual and accompanying blog post.
 - Color and exposure mapping
 
   A new feature in the "exposure" and "color calibration" modules allows you to
-  define and save a target color/exposure for the color-pickers, in order to
+  define and save a target color/exposure for the color pickers, in order to
   match any source object in the image against an arbitrary target
   color. This can be used to perform white balance
   (chromatic adaptation) against non-gray objects of known color, or to
@@ -96,7 +96,7 @@ are described more fully in the user manual and accompanying blog post.
 
 - UI Rewrite
 
-  The UI has been fully-revamped again so improve look and consistency.
+  The UI has been completely revamped again to improve look and consistency.
   Padding, margins, color, contrast, alignment, and icons have been reworked
   throughout.
 
@@ -125,7 +125,7 @@ are described more fully in the user manual and accompanying blog post.
 
   All performance and OpenCL settings and pixelpipe optimizations have been
   fully reviewed and updated. Many new optimizations have been
-  added and the user-preferences have been simplified.
+  added and the user preferences have been simplified.
 
   All configurations are now per-device allowing each OpenCL
   device to be tuned separately.
@@ -133,7 +133,7 @@ are described more fully in the user manual and accompanying blog post.
   Performance configuration is now applied at runtime and no longer
   requires darktable to be restarted when changed.
 
-  Some modules had incorrect or overly-conservative tiling factors, which made
+  Some modules had incorrect or overly conservative tiling factors, which made
   darktable unnecessarily slow (since tiling was used when it was not required)
   The followimg modules have been updated
 
@@ -172,7 +172,7 @@ are described more fully in the user manual and accompanying blog post.
   on the top tool bar for quick access.
 
   The following filters have been implemented (more to come in the next version):
-    color labels, text search, date-time filters, exposure, iso,
+    color labels, text search, date-time filters, exposure, ISO,
     focal length, aperture, aspect ratio, filename and extension,
     grouping, history, local copy, module order
 
@@ -183,7 +183,7 @@ are described more fully in the user manual and accompanying blog post.
 - The "recently used collections" module is now incorporated into the
   "collections" module as a "history" button
 
-- The darkroom's module-search facility has been enhanced to also match on
+- The darkroom's module search facility has been enhanced to also match on
   any user-defined module names.
 
 - Support for EXR 16-bit (half) float export has been added.
@@ -208,12 +208,12 @@ are described more fully in the user manual and accompanying blog post.
   Extra pen tablet button clicks are now treated as key presses so that
   they can be used in shortcuts.
 
-  Support for game-pad triggers has been added (treating them as buttons)
+  Support for gamepad triggers has been added (treating them as buttons)
   allowing them to be used as shortcuts.
 
 - Modifiers (<kbd>Ctrl</kbd>/<kbd>Shift</kbd>/<kbd>Ctrl+Shift</kbd>)
   can now be used when dragging sliders, to modify the precision of the
-  value-changes.
+  value changes.
 
 - When using the "copy" and "move" functionality in the lighttable, the last
   directories are remembered independently for each operation.
