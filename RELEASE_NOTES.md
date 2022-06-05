@@ -106,6 +106,10 @@ are described more fully in the user manual and accompanying blog post.
 
   The module-description tooltips have been reworked to ensure better layout.
 
+  Finally the default theme has been changed to Elegant Grey. The
+  darktable default is now in line with the theme recommended by the
+  team.
+
 - Performance and OpenCL support changes
 
   All performance and OpenCL settings and pixelpipe optimizations have been
