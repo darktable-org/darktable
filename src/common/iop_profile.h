@@ -238,7 +238,7 @@ static inline float eval_exp(const float coeff[3], const float x)
   aligned(lut:64) \
   uniform(rgb_in, rgb_out, unbounded_coeffs, lut)
 #endif
-static inline void _apply_trc(const dt_aligned_pixel_t rgb_in, dt_aligned_pixel_t rgb_out,
+static inline void dt_ioppr_apply_trc(const dt_aligned_pixel_t rgb_in, dt_aligned_pixel_t rgb_out,
                               float *const lut[3],
                               const float unbounded_coeffs[3][3],
                               const int lutsize)
@@ -267,7 +267,7 @@ static inline float dt_ioppr_get_rgb_matrix_luminance(const dt_aligned_pixel_t r
   if(nonlinearlut)
   {
     dt_aligned_pixel_t linear_rgb;
-    _apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
+    dt_ioppr_apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
     luminance = matrix_in[1][0] * linear_rgb[0] + matrix_in[1][1] * linear_rgb[1] + matrix_in[1][2] * linear_rgb[2];
   }
   else
@@ -291,7 +291,7 @@ static inline void dt_ioppr_rgb_matrix_to_xyz(const dt_aligned_pixel_t rgb, dt_a
   if(nonlinearlut)
   {
     dt_aligned_pixel_t linear_rgb;
-    _apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
+    dt_ioppr_apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
     dt_apply_transposed_color_matrix(linear_rgb, matrix_in_transposed, xyz);
   }
   else
@@ -313,7 +313,7 @@ static inline void dt_ioppr_xyz_to_rgb_matrix(const dt_aligned_pixel_t xyz, dt_a
   {
     dt_aligned_pixel_t linear_rgb;
     dt_apply_transposed_color_matrix(xyz, matrix_out_transposed, linear_rgb);
-    _apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
+    dt_ioppr_apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
   }
   else
     dt_apply_transposed_color_matrix(xyz, matrix_out_transposed, rgb);
@@ -338,7 +338,7 @@ static inline void dt_ioppr_lab_to_rgb_matrix(const dt_aligned_pixel_t lab, dt_a
   {
     dt_aligned_pixel_t linear_rgb;
     dt_apply_transposed_color_matrix(xyz, matrix_out_transposed, linear_rgb);
-    _apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
+    dt_ioppr_apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
   }
   else
   {
