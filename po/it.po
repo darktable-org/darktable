@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-04 21:41+0100\n"
+"PO-Revision-Date: 2022-06-05 17:05+0200\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 2.0\n"
+"X-Generator: Lokalize 19.12.3\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -4060,9 +4060,10 @@ msgid "diameter of reconstruction"
 msgstr "Diametro della ricostruzione"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:155
+#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_highlights.c:248
 msgid "cast balance"
-msgstr ""
+msgstr "bilanciamento della dominante"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:161
 #: ../build/lib/darktable/plugins/introspection_highlights.c:252
@@ -4377,7 +4378,7 @@ msgstr "Correzione del campo piatto"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:198
 msgid "embedded GainMap"
-msgstr ""
+msgstr "GainMap (mappa del guadagno) incorporata"
 
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
@@ -4402,10 +4403,9 @@ msgid "brightness"
 msgstr "Luminosità"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:291
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_retouch.c:430
 msgid "max_iter"
-msgstr "massime iterazioni"
+msgstr "max_iter"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:444
 #: ../src/libs/metadata_view.c:330
@@ -5338,91 +5338,91 @@ msgstr "Guancia"
 #: ../src/common/color_vocabulary.c:200
 #, c-format
 msgid "average %s skin tone\n"
-msgstr ""
+msgstr "media %s incarnato\n"
 
 #. 0° - pinkish red
 #: ../src/common/color_vocabulary.c:220
 msgid "deep purple"
-msgstr ""
+msgstr "Viola intenso"
 
 #. L = 10 %
 #: ../src/common/color_vocabulary.c:221
 msgid "fuchsia"
-msgstr ""
+msgstr "Fucsia"
 
 #. L = 30 %
 #: ../src/common/color_vocabulary.c:222
 msgid "medium magenta"
-msgstr ""
+msgstr "Magenta medio"
 
 #. L = 50 %
 #: ../src/common/color_vocabulary.c:223
 msgid "violet pink"
-msgstr ""
+msgstr "Viola-rosa"
 
 #. L = 70 %
 #: ../src/common/color_vocabulary.c:224
 msgid "plum violet"
-msgstr ""
+msgstr "Viola prugna"
 
 #. 24° - red
 #: ../src/common/color_vocabulary.c:229
 msgid "dark red"
-msgstr ""
+msgstr "Rosso scuro"
 
 #: ../src/common/color_vocabulary.c:231
 msgid "crimson"
-msgstr ""
+msgstr "Cremisi"
 
 #: ../src/common/color_vocabulary.c:232
 msgid "salmon"
-msgstr ""
+msgstr "Rosa salmone"
 
 #: ../src/common/color_vocabulary.c:233
 msgid "pink"
-msgstr ""
+msgstr "Rosa"
 
 #. 48° - orangy red
 #: ../src/common/color_vocabulary.c:238
 msgid "maroon"
-msgstr ""
+msgstr "Rosso granata"
 
 #: ../src/common/color_vocabulary.c:239
 msgid "dark orange red"
-msgstr ""
+msgstr "Arancione-rosso scuro"
 
 #: ../src/common/color_vocabulary.c:240
 msgid "orange red"
-msgstr ""
+msgstr "Arancione-rosso"
 
 #: ../src/common/color_vocabulary.c:241
 msgid "coral"
-msgstr ""
+msgstr "Corallo"
 
 #: ../src/common/color_vocabulary.c:242 ../src/common/color_vocabulary.c:259
 msgid "khaki"
-msgstr ""
+msgstr "Cachi"
 
 #. 72° - orange
 #: ../src/common/color_vocabulary.c:247
 msgid "brown"
-msgstr ""
+msgstr "Marrone"
 
 #: ../src/common/color_vocabulary.c:248
 msgid "chocolate"
-msgstr ""
+msgstr "Cioccolato"
 
 #: ../src/common/color_vocabulary.c:249
 msgid "dark gold"
-msgstr ""
+msgstr "Oro scuro"
 
 #: ../src/common/color_vocabulary.c:250
 msgid "gold"
-msgstr ""
+msgstr "Oro"
 
 #: ../src/common/color_vocabulary.c:251
 msgid "sandy brown"
-msgstr ""
+msgstr "Marrone sabbia"
 
 #. 96° - yellow olive
 #. 120° - green
@@ -5430,73 +5430,73 @@ msgstr ""
 #: ../src/common/color_vocabulary.c:256 ../src/common/color_vocabulary.c:265
 #: ../src/common/color_vocabulary.c:274
 msgid "dark green"
-msgstr ""
+msgstr "Verde scuro"
 
 #: ../src/common/color_vocabulary.c:257
 msgid "dark olive green"
-msgstr ""
+msgstr "Verde oliva scuro"
 
 #: ../src/common/color_vocabulary.c:258
 msgid "olive"
-msgstr ""
+msgstr "Verde oliva"
 
 #: ../src/common/color_vocabulary.c:260
 msgid "beige"
-msgstr ""
+msgstr "Beige"
 
 #: ../src/common/color_vocabulary.c:266 ../src/common/color_vocabulary.c:276
 msgid "forest green"
-msgstr ""
+msgstr "Verde foresta"
 
 #: ../src/common/color_vocabulary.c:267
 msgid "olive drab"
-msgstr ""
+msgstr "Grigio-verde"
 
 #: ../src/common/color_vocabulary.c:268
 msgid "yellow green"
-msgstr ""
+msgstr "Giallo-verde"
 
 #: ../src/common/color_vocabulary.c:269 ../src/common/color_vocabulary.c:278
 msgid "pale green"
-msgstr ""
+msgstr "Verde pallido"
 
 #: ../src/common/color_vocabulary.c:277
 msgid "lime green"
-msgstr ""
+msgstr "Verde limone"
 
 #. 168° - greenish cyian
 #: ../src/common/color_vocabulary.c:283
 msgid "dark sea green"
-msgstr ""
+msgstr "Verde mare scuro"
 
 #: ../src/common/color_vocabulary.c:284
 msgid "sea green"
-msgstr ""
+msgstr "Verde mare"
 
 #: ../src/common/color_vocabulary.c:285 ../src/common/color_vocabulary.c:302
 msgid "teal"
-msgstr ""
+msgstr "Color foglia da tè"
 
 #: ../src/common/color_vocabulary.c:286
 msgid "light sea green"
-msgstr ""
+msgstr "Verde mare chiaro"
 
 #: ../src/common/color_vocabulary.c:287
 msgid "turquoise"
-msgstr ""
+msgstr "Turchese"
 
 #. 192° - cyan
 #: ../src/common/color_vocabulary.c:292
 msgid "dark slate gray"
-msgstr ""
+msgstr "Grigio antracite scuro"
 
 #: ../src/common/color_vocabulary.c:293
 msgid "light slate gray"
-msgstr ""
+msgstr "Gricio antracite chiaro"
 
 #: ../src/common/color_vocabulary.c:294 ../src/common/color_vocabulary.c:303
 msgid "dark cyan"
-msgstr ""
+msgstr "Ciano scuro"
 
 #: ../src/common/color_vocabulary.c:295 ../src/common/color_vocabulary.c:315
 #: ../src/iop/colorzones.c:2306
@@ -5511,63 +5511,63 @@ msgstr "Ciano"
 #. 216° - medium blue
 #: ../src/common/color_vocabulary.c:301
 msgid "navy blue"
-msgstr ""
+msgstr "Blu marino"
 
 #: ../src/common/color_vocabulary.c:304 ../src/common/color_vocabulary.c:314
 msgid "deep sky blue"
-msgstr ""
+msgstr "Azzurro intenso"
 
 #: ../src/common/color_vocabulary.c:305
 msgid "aquamarine blue"
-msgstr ""
+msgstr "Blu acquamarina"
 
 #. 240° - blue and 264° - bluer than blue
 #. these are collapsed because CIE Lab 1976 sucks for blues
 #. 288° - more blue
 #: ../src/common/color_vocabulary.c:311 ../src/common/color_vocabulary.c:320
 msgid "dark blue"
-msgstr ""
+msgstr "Blu scuro"
 
 #: ../src/common/color_vocabulary.c:312 ../src/common/color_vocabulary.c:321
 msgid "medium blue"
-msgstr ""
+msgstr "Blu medio"
 
 #: ../src/common/color_vocabulary.c:313
 msgid "azure blue"
-msgstr ""
+msgstr "Azzurro"
 
 #: ../src/common/color_vocabulary.c:323
 msgid "light sky blue"
-msgstr ""
+msgstr "Blu cielo chiaro"
 
 #: ../src/common/color_vocabulary.c:324
 msgid "light blue"
-msgstr ""
+msgstr "Blu chiaro"
 
 #. 312° - violet
 #: ../src/common/color_vocabulary.c:329
 msgid "indigo"
-msgstr ""
+msgstr "Indaco"
 
 #: ../src/common/color_vocabulary.c:330
 msgid "dark violet"
-msgstr ""
+msgstr "Viola scuro"
 
 #: ../src/common/color_vocabulary.c:331
 msgid "blue violet"
-msgstr ""
+msgstr "Blu viola"
 
 #: ../src/common/color_vocabulary.c:332 ../src/common/color_vocabulary.c:340
 msgid "violet"
-msgstr ""
+msgstr "Viola"
 
 #: ../src/common/color_vocabulary.c:333
 msgid "plum"
-msgstr ""
+msgstr "Prugna"
 
 #: ../src/common/color_vocabulary.c:338
 msgid "dark magenta"
-msgstr ""
+msgstr "Magenta scuro"
 
 #: ../src/common/color_vocabulary.c:339 ../src/gui/guides.c:734
 #: ../src/iop/colorzones.c:2309 ../src/iop/temperature.c:1805
@@ -5669,11 +5669,11 @@ msgid "BRG (for testing)"
 msgstr "BRG (per test)"
 
 #: ../src/common/colorspaces.c:1580
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
 msgstr ""
-"Il profilo `%s' non utilizzabile come profilo istogramma. E' stato "
+"Il profilo `%s' non è utilizzabile come profilo istogramma. E' stato "
 "sostituito da sRGB!"
 
 #: ../src/common/colorspaces.c:1671
@@ -5776,7 +5776,7 @@ msgstr "Mostra ancora quest'informazione"
 
 #: ../src/common/darktable.c:1297
 msgid "understood"
-msgstr ""
+msgstr "Compreso"
 
 #: ../src/common/darktable.c:1729
 msgid ""
@@ -5801,10 +5801,13 @@ msgstr ""
 "di darktable sono state cambiate."
 
 #: ../src/common/darktable.c:1739
+#, fuzzy
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
+"Non troverai più \"headroom\" e compagnia, invece, in preferenze/ "
+"elaborazione, usa:"
 
 #: ../src/common/darktable.c:1741
 msgid "1) darktable resources"
@@ -5827,19 +5830,25 @@ msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
+"Invece troverai dati per 'dispositivo' in 'cl_device_v4_canonical-name'. "
+"Il contenuto è:"
 
 #: ../src/common/darktable.c:1754
+#, fuzzy
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 msgstr ""
+" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
+"'eventhandles' 'async' 'disable' 'magic'"
 
 #: ../src/common/darktable.c:1756
+#, fuzzy
 msgid "you may tune as before except 'magic'"
-msgstr ""
+msgstr "Puoi ottimizzare come prima, ad eccezione di \"magico\""
 
 #: ../src/common/database.c:2722
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "  Sorry, darktable could not be started (database is locked)\n"
@@ -5874,9 +5883,9 @@ msgstr ""
 "  Come puoi risolvere questo problema?\n"
 "\n"
 "  1 - Se un'altra istanza di darktable è già aperta, \n"
-"      clicca annulla e usa quell'istanza oppure chiudila prima di tentare di "
+"      clicca annulla e usa quell'istanza, oppure chiudila prima di tentare di "
 "riavviare darktable \n"
-"      (il processo ID <i><b>%d</b></i> ha creato il blocco del database)\n"
+"      (il processo ID <i><b>%d</b></i> ha sta bloccando il database)\n"
 "\n"
 "  2 - Se non riesci a trovare un istanza avviata di darktable, prova a "
 "riavviare la sessione o il tuo computer. \n"
@@ -5893,7 +5902,7 @@ msgstr ""
 "\n"
 "      <i><u>Attenzione!</u> Non cancellare questi file senza prima esserti "
 "assicurato dei controlli sopra, \n"
-"      altrimenti rischi di generare inconsistenze serie sul tuo database.</"
+"      altrimenti rischi di generare gravi inconsistenze sul tuo database.</"
 "i>\n"
 
 #. clang-format on
@@ -5962,7 +5971,7 @@ msgid "error"
 msgstr "Errore"
 
 #: ../src/common/database.c:2772
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "at least one file could not be removed.\n"
@@ -5971,7 +5980,7 @@ msgid ""
 "in folder <a href=\"file:///%s\">%s</a>.\n"
 msgstr ""
 "\n"
-"Non dovrebbe esser rimosso almeno un file.\n"
+"Non è stato possibile eliminare almeno un file.\n"
 "Puoi provare a cancellare manualmente i file <i>data.db.lock</i> e "
 "<i>library.db.lock</i>\n"
 "nella cartella <a href=\"file:///%s\">%s</a>.\n"
@@ -6144,6 +6153,9 @@ msgid ""
 "fast exposure independent guided filter failed to allocate memory, check "
 "your RAM settings"
 msgstr ""
+"Il filtro guidato indipendente dall'esposizione non è stato in grado di"
+" allocare "
+"la memoria, controlla le impostazioni della RAM"
 
 #: ../src/common/exif.cc:4333
 #, c-format
@@ -6289,9 +6301,8 @@ msgstr[0] "%d copia locale è stata sincronizzata"
 msgstr[1] "%d copie locali sono state sincronizzate"
 
 #: ../src/common/image.c:2792
-#, fuzzy
 msgid "<b>WARNING</b>: camera is missing samples!"
-msgstr "<b>ATTENZIONE</b>: La fotocamera manca di campioni!"
+msgstr "<b>ATTENZIONE</b>: mancano campioni per la fotocamera!"
 
 #: ../src/common/image.c:2793
 msgid ""
@@ -6370,7 +6381,7 @@ msgstr "ImageMagick"
 
 #: ../src/common/image.h:182
 msgid "heif"
-msgstr ""
+msgstr "heif"
 
 #: ../src/common/image.h:183
 msgid "libraw"
@@ -6430,7 +6441,6 @@ msgstr ""
 "le impostazioni di importazione."
 
 #: ../src/common/import_session.c:373
-#, fuzzy
 msgid "requested session path not available. device not mounted?"
 msgstr ""
 "Il percorso della sessione richiesta non è disponibile. E' montato il "
@@ -6490,7 +6500,6 @@ msgid "noiseprofile file `%s' is not valid"
 msgstr "Il file di profilo del rumore `%s' non è valido"
 
 #: ../src/common/opencl.c:1073
-#, fuzzy
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
@@ -6766,7 +6775,6 @@ msgstr "ERRORE: %s NON sincronizzato XMP → DB"
 
 #: ../src/control/crawler.c:360 ../src/control/crawler.c:411
 #: ../src/control/crawler.c:463
-#, fuzzy
 msgid ""
 "ERROR: cannot write the database. the destination may be full, offline or "
 "read-only."
@@ -6797,12 +6805,12 @@ msgstr ""
 #: ../src/control/crawler.c:388
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
-msgstr ""
+msgstr "SUCCESSO: %s sincronizzato DB → XMP"
 
 #: ../src/control/crawler.c:410
 #, c-format
 msgid "ERROR: %s NOT synced new (XMP) → old (DB)"
-msgstr ""
+msgstr "ERRORE: %s NON sincronizzato nuovo (XMP) → vecchio (DB)"
 
 #: ../src/control/crawler.c:415
 #, c-format
@@ -24180,5 +24188,4 @@ msgstr ""
 #: ../src/views/view.c:1345
 msgid "mouse actions"
 msgstr "Azioni mouse"
-
 
