@@ -1790,7 +1790,7 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
                             range->select_relative_date_r.hour, range->select_relative_date_r.minute,
                             range->select_relative_date_r.second);
     else if(range->bounds & DT_RANGE_BOUND_MAX_NOW)
-      txt = g_strdup("now");
+      txt = g_strdup(_("now"));
     else
       txt = range->print(range->select_max_r, FALSE);
     gtk_entry_set_text(GTK_ENTRY(range->entry_max), txt);
