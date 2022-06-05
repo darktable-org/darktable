@@ -197,7 +197,7 @@ are described more fully in the user manual and accompanying blog post.
   Extra pen tablet button clicks are now treated as key presses so that
   they can be used in shortcuts.
 
-  Support for game-pad triggers has been added (treating them as buttons)
+  Support for gamepad triggers has been added (treating them as buttons)
   allowing them to be used as shortcuts.
 
 - Modifiers (<kbd>Ctrl</kbd>/<kbd>Shift</kbd>/<kbd>Ctrl+Shift</kbd>)
