@@ -363,7 +363,7 @@ entry,
 spinbutton button,
 textview
 {
-  margin: 0.14em 0;
+  margin: 0.07em;
 }
 
 .combo,
@@ -371,7 +371,7 @@ entry,
 textview
 {
   background-color: alpha(@fg_color, 0.09);
-  padding-left: 0.28em;
+  padding: 0.28em;
 }
 
 .combo *
