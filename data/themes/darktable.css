@@ -152,6 +152,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 /* GTK Buttons and tabs */
 @define-color button_bg @grey_25;
+@define-color button_fg alpha(@fg_color, 0.55);
 @define-color button_border shade(@button_bg, 1.04);
 @define-color button_hover_bg @grey_50;
 @define-color button_hover_fg @grey_15;
@@ -387,7 +388,7 @@ header button,
 .dt_module_btn,
 .dt_ignore_fg_state:checked
 {
-  color: alpha(@fg_color, 0.55);
+  color: @button_fg;
 }
 
 spinbutton > button
