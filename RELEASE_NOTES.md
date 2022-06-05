@@ -85,7 +85,7 @@ are described more fully in the user manual and accompanying blog post.
 
 - UI Rewrite
 
-  The UI has been fully-revamped again so improve look and consistency.
+  The UI has been completely revamped again to improve look and consistency.
   Padding, margins, color, contrast, alignment, and icons have been reworked
   throughout.
 
