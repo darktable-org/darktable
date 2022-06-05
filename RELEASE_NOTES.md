@@ -161,7 +161,7 @@ are described more fully in the user manual and accompanying blog post.
   on the top tool bar for quick access.
 
   The following filters have been implemented (more to come in the next version):
-    color labels, text search, date-time filters, exposure, iso,
+    color labels, text search, date-time filters, exposure, ISO,
     focal length, aperture, aspect ratio, filename and extension,
     grouping, history, local copy, module order
 
