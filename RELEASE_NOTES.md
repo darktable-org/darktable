@@ -82,6 +82,17 @@ are described more fully in the user manual and accompanying blog post.
 
   This method is only available for Bayer sensors and cannot be adapted
   to X-Trans sensors.
+  
+- Introducing the darktable Uniform Color Space 2022
+
+  The darktable UCS 22 is a perceptually uniform color space designed 
+  from psychoperceptual experimental data specifically for the purpose
+  of artistic saturation changes, as performed in the *color balance RGB* module.
+  It uses a brightness-saturation scheme that compensates for the Helmholtz-Kohlraush effect 
+  (accounting for the contribution of colorfulness in perceived brighntess)
+  and allows an efficient gamut-mapping against pipeline RGB at constant 
+  brightness. It will make the saturation control in *color balance RGB* 
+  better behaved.
 
 - UI Rewrite
 
