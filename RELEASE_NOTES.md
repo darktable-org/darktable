@@ -122,7 +122,7 @@ are described more fully in the user manual and accompanying blog post.
   Performance configuration is now applied at runtime and no longer
   requires darktable to be restarted when changed.
 
-  Some modules had incorrect or overly-conservative tiling factors, which made
+  Some modules had incorrect or overly conservative tiling factors, which made
   darktable unnecessarily slow (since tiling was used when it was not required)
   The followimg modules have been updated
 
