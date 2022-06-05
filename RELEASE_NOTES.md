@@ -172,7 +172,7 @@ are described more fully in the user manual and accompanying blog post.
 - The "recently used collections" module is now incorporated into the
   "collections" module as a "history" button
 
-- The darkroom's module-search facility has been enhanced to also match on
+- The darkroom's module search facility has been enhanced to also match on
   any user-defined module names.
 
 - Support for EXR 16-bit (half) float export has been added.
