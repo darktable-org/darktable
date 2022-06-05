@@ -202,7 +202,7 @@ are described more fully in the user manual and accompanying blog post.
 
 - Modifiers (<kbd>Ctrl</kbd>/<kbd>Shift</kbd>/<kbd>Ctrl+Shift</kbd>)
   can now be used when dragging sliders, to modify the precision of the
-  value-changes.
+  value changes.
 
 - When using the "copy" and "move" functionality in the lighttable, the last
   directories are remembered independently for each operation.
