@@ -36,7 +36,7 @@ are described more fully in the user manual and accompanying blog post.
 - Color and exposure mapping
 
   A new feature in the "exposure" and "color calibration" modules allows you to
-  define and save a target color/exposure for the color-pickers, in order to
+  define and save a target color/exposure for the color pickers, in order to
   match any source object in the image against an arbitrary target
   color. This can be used to perform white balance
   (chromatic adaptation) against non-gray objects of known color, or to
