@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-03 10:01+0200\n"
+"PO-Revision-Date: 2022-06-06 12:43+0200\n"
 "Last-Translator: Nick Alderweireldt>\n"
 "Language-Team: Nick Alderweireldt\n"
 "Language: nl_NL\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 2.3\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -1518,8 +1518,8 @@ msgid ""
 "one if there is one available (needs a restart).\n"
 "this option is taken into account when the \"auto-apply pixel workflow "
 "defaults\" is set to \"display-referred\".\n"
-"to prevent auto-apply basecurve presets \"auto-apply pixel workflow "
-"defaults\" should be set to \"none\""
+"to prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults"
+"\" should be set to \"none\""
 msgstr ""
 "gebruik standaard de basiscurve per camera in plaats van de generieke van de "
 "fabrikant als die beschikbaar is (darktable moet opnieuw opstarten).\n"
@@ -8541,8 +8541,8 @@ msgstr "<b> roteren </b>: ctrl + slepen"
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
-"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
-"ctrl+scroll (%d%%)"
+"<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
+"+scroll (%d%%)"
 msgstr ""
 "<b> doezelaarmodus </b>: shift + klik, <b> roteren </b>: ctrl + slepen\n"
 "<b> grootte </b>: scroll, <b> doezelaar grootte </b>: shift + scroll, <b> "
@@ -8686,8 +8686,8 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>knooppunt toevoegen</b>: klik, <b>scherp knooppunt toevoegen</b>:"
-"ctrl+klik\n"
+"<b>knooppunt toevoegen</b>: klik, <b>scherp knooppunt toevoegen</b>:ctrl"
+"+klik\n"
 "<b>annuleren</b>: rechts klikken"
 
 #: ../src/develop/masks/path.c:3164
@@ -8695,8 +8695,8 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
 msgstr ""
-"<b>knooppunt toevoegen</b>: klik, <b>voeg scherp knooppunt toe</b>:"
-"ctrl+klik\n"
+"<b>knooppunt toevoegen</b>: klik, <b>voeg scherp knooppunt toe</b>:ctrl"
+"+klik\n"
 "<b>beëindig pad</b>: rechts klikken"
 
 #: ../src/develop/masks/path.c:3167
@@ -13379,7 +13379,7 @@ msgid ""
 msgstr ""
 "L : \tN.v.t. \n"
 "h : \tN.v.t.\n"
-"c : \tN.v.t. "
+"c : \tN.v.t"
 
 #: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
@@ -13753,8 +13753,8 @@ msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>formaat wijzigen</b>: slepen, <b>beeldverhouding behouden</b>: "
-"shift+slepen\n"
+"<b>formaat wijzigen</b>: slepen, <b>beeldverhouding behouden</b>: shift"
+"+slepen\n"
 "<b>rechttrekken</b>: sleep naar rechts"
 
 #: ../src/iop/clipping.c:3084
@@ -14944,8 +14944,8 @@ msgstr "gebruik wijzigingen"
 #: ../src/iop/crop.c:1524
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>formaat wijzigen</b>: slepen, <b>beeldverhouding behouden</b>: "
-"shift+slepen"
+"<b>formaat wijzigen</b>: slepen, <b>beeldverhouding behouden</b>: shift"
+"+slepen"
 
 #: ../src/iop/crop.c:1531
 msgid ""
@@ -19839,7 +19839,7 @@ msgstr "afbeeldings historie verwijderen?"
 
 #: ../src/libs/copy_history.c:344
 msgid "selective copy..."
-msgstr "selectief kopiëren …"
+msgstr "selectief kopiëren… ."
 
 #: ../src/libs/copy_history.c:345
 msgid "choose which modules to copy from the source image"
@@ -19855,7 +19855,9 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:354
 msgid "selective paste..."
-msgstr "selectief plakken …"
+msgstr ""
+"selectief plakken\n"
+"… ."
 
 #: ../src/libs/copy_history.c:355
 msgid "choose which modules to paste to the target image(s)"
@@ -23199,7 +23201,7 @@ msgstr "iedereen die eerdere uitgaven mogelijk maakte"
 
 #: ../src/libs/tools/darktable.c:306
 msgid "and..."
-msgstr "en…"
+msgstr "en..."
 
 #: ../src/libs/tools/darktable.c:308
 msgid "translator-credits"
@@ -24449,7 +24451,6 @@ msgstr "muisacties"
 #~ msgid "exif data"
 #~ msgstr "exif data"
 
-#, c-format
 #~ msgid ""
 #~ "no history compression of 1 image.\n"
 #~ "see tag: darktable|problem|history-compress"
@@ -24527,12 +24528,10 @@ msgstr "muisacties"
 #~ "met name wanneer handmatig persoonlijke voorkeuren zijn ingesteld\n"
 #~ "wilt u dat deze prestatie update wordt uitgevoerd?\n"
 
-#, c-format
 #~ msgctxt "accel"
 #~ msgid "styles/apply %s"
 #~ msgstr "stijlen/toepassen %s"
 
-#, c-format
 #~ msgctxt "accel"
 #~ msgid "apply %s"
 #~ msgstr "toepassen %s"
@@ -24659,7 +24658,6 @@ msgstr "muisacties"
 #~ "percentage van heldere waarden; uitgeclipt, activeer door kleurkiezer te "
 #~ "schakelen"
 
-#, c-format
 #~ msgid "%.0f ISO"
 #~ msgstr "%.0f ISO"
 
@@ -24669,7 +24667,6 @@ msgstr "muisacties"
 #~ msgid "white balance settings"
 #~ msgstr "witbalans instellingen"
 
-#, c-format
 #~ msgid "%.0f mired"
 #~ msgstr "%.0f mired"
 
