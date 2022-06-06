@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-05 23:48+0200\n"
+"PO-Revision-Date: 2022-06-06 10:21+0100\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 19.12.3\n"
+"X-Generator: Lokalize 2.0\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -23207,7 +23207,7 @@ msgstr ""
 #. diagonals
 #: ../src/libs/tools/gamepad.c:104
 msgid "invalid gamepad axis"
-msgstr ""
+msgstr "Asse del gamepad non valido"
 
 #. we write the label with the size category
 #: ../src/libs/tools/global_toolbox.c:217
@@ -23271,7 +23271,7 @@ msgstr "Modalità sovrimpressione per dimensione"
 
 #: ../src/libs/tools/global_toolbox.c:436
 msgid "thumbnail overlays"
-msgstr ""
+msgstr "Sovrimpressione delle miniature"
 
 #: ../src/libs/tools/global_toolbox.c:438
 #: ../src/libs/tools/global_toolbox.c:467
@@ -23317,7 +23317,7 @@ msgstr "Visualizza suggerimenti"
 
 #: ../src/libs/tools/global_toolbox.c:489
 msgid "help"
-msgstr ""
+msgstr "Aiuto"
 
 #: ../src/libs/tools/global_toolbox.c:491
 msgid "enable this, then click on a control element to see its online help"
@@ -23326,6 +23326,7 @@ msgstr ""
 "visualizzare l'aiuto in linea"
 
 #: ../src/libs/tools/global_toolbox.c:498
+#, fuzzy
 msgid ""
 "define shortcuts\n"
 "ctrl+click to switch off overwrite confirmations\n"
@@ -23336,6 +23337,14 @@ msgid ""
 "click on a widget, module or screen area to open the dialog for further "
 "configuration"
 msgstr ""
+"Stabilisci scorciatoie da tastiera\n"
+"ctrl+click per spengere la conferma di sovrascrittura\n"
+"\n"
+"passa col mouse sopra un elemento e premi i tasti assieme al click e allo "
+"scorrimento, o combinazione di movimenti\n"
+"effettua di nuovo la stessa combinazione per eliminare la mappatura\n"
+"fai click su un elemento, un modulo o un'area dello schermo per aprire "
+"una finestra di dialogo per ulteriori configurazioni"
 
 #: ../src/libs/tools/global_toolbox.c:514
 msgid "show global preferences"
@@ -23433,21 +23442,23 @@ msgstr "Esci dal layout corrente"
 
 #: ../src/libs/tools/midi.c:41
 msgid "midi"
-msgstr ""
+msgstr "midi"
 
 #: ../src/libs/tools/midi.c:200
 msgid "using absolute encoding; reinitialise to switch to relative"
-msgstr ""
+msgstr "Usa codifica assoluta; re-inizializzare per passare a relativa"
 
 #: ../src/libs/tools/midi.c:204
 #, c-format
 msgid "%d more identical (down) moves before switching to relative encoding"
 msgstr ""
+"ancora %d mosse identiche (verso il basso) prima di passare alla codifica"
+" relativa"
 
 #: ../src/libs/tools/midi.c:207
 #, c-format
 msgid "switching encoding to relative (down = %d)"
-msgstr ""
+msgstr "passa alla codifica relativa (giù = %d)"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -23456,7 +23467,7 @@ msgstr "Modulo strumenti"
 #. connect callbacks
 #: ../src/libs/tools/ratings.c:98
 msgid "set star rating for selected images"
-msgstr ""
+msgstr "Imposta la valutazione in stelle per le immagini selezionate"
 
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
@@ -23503,7 +23514,7 @@ msgid "lua options"
 msgstr "Opzioni lua"
 
 #: ../src/views/darkroom.c:624
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "darktable could not load `%s', switching to lighttable now.\n"
 "\n"
@@ -23515,13 +23526,13 @@ msgid ""
 "an issue\n"
 "at https://github.com/darktable-org/darktable"
 msgstr ""
-"Darktable non può caricare `%s', passa ora al Tavolo Luminosoto.\n"
+"darktable non può caricare `%s', passa ora al Tavolo Luminosoto.\n"
 "\n"
 "Per favore, controlla che il modello di fotocamera che ha prodotto "
-"l'immagine sia supportato in Darktable\n"
-"(la lista delle fotocamere supportate è qui https://www.darktable.org/"
+"l'immagine sia supportato in darktable\n"
+"(la lista delle fotocamere supportate è qui: https://www.darktable.org/"
 "resources/camera-support/).\n"
-"Se sei sicuro che il modello di fotocamera è supportato, prendi in "
+"Se sei sicuro che il modello di fotocamera sia supportato, prendi in "
 "considerazione di aprire un issue\n"
 "in https://github.com/darktable-org/darktable"
 
@@ -23902,10 +23913,9 @@ msgstr "Ricerca moduli"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
 #: ../src/views/darkroom.c:2661
-#, fuzzy
 msgid "change keyboard shortcut slider precision"
 msgstr ""
-"Modifica la scorciatoia da tastiera per la precisione dei selettori "
+"Modifica la precisione della scorciatoia da tastiera per i selettori "
 "scorrevoli"
 
 #: ../src/views/darkroom.c:3843
@@ -24171,14 +24181,14 @@ msgid "darktable - accels window"
 msgstr "darktable - finestra scorciatoie"
 
 #: ../src/views/view.c:1286
-#, fuzzy
 msgid "switch to a classic window which will stay open after key release"
 msgstr ""
-"Passa ad una finestra classica che rimarrà aperta dopo che il rilascio del "
+"Passa ad una finestra classica che rimarrà aperta dopo aver rilasciato il "
 "tasto"
 
 #. we add the mouse actions too
 #: ../src/views/view.c:1345
 msgid "mouse actions"
 msgstr "Azioni mouse"
+
 
