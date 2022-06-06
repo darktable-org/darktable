@@ -92,7 +92,8 @@ const char *Lch_to_color_name(dt_aligned_pixel_t color)
                                             { .name = _("Thai"),      .ethnicity = ETHNIE_THAI },
                                             { .name = _("Kurdish"),   .ethnicity = ETHNIE_KURDISH },
                                             { .name = _("Caucasian"), .ethnicity = ETHNIE_CAUCASIAN },
-                                            { .name = _("African-american"), .ethnicity = ETHNIE_AFRICAN_AM } };
+                                            { .name = _("African-american"), .ethnicity = ETHNIE_AFRICAN_AM },
+                                            { .name = _("Mexican"),   .ethnicity = ETHNIE_MEXICAN } };
 
   const skin_color_t skin[SKINS] = {
     { .name = _("forearm"),
