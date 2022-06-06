@@ -175,11 +175,11 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 /* Views */
 @define-color darkroom_bg_color @grey_50;    /* this need to be middle grey to correctly work on images. And for all themes */
-@define-color darkroom_preview_bg_color @grey_45;
-@define-color print_bg_color @darkroom_bg_color;
-@define-color lighttable_bg_color @darkroom_bg_color;
-@define-color lighttable_preview_bg_color @darkroom_preview_bg_color;
+@define-color darkroom_preview_bg_color @darkroom_bg_color;
+@define-color lighttable_bg_color @grey_45;
+@define-color lighttable_preview_bg_color @darkroom_bg_color;
 @define-color lighttable_bg_font_color @grey_75;
+@define-color print_bg_color @lighttable_bg_color;
 
 /* Lighttable and film-strip */
 @define-color thumbnail_font_color @grey_30;
@@ -191,8 +191,8 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color thumbnail_selected_bg_color @grey_70;
 @define-color thumbnail_hover_bg_color @grey_85;
 @define-color thumbnail_hover_fg_color @grey_90;
-@define-color filmstrip_bg_color @darkroom_bg_color;
-@define-color timeline_bg_color shade(@darkroom_bg_color, 0.9);
+@define-color filmstrip_bg_color @lighttable_bg_color;
+@define-color timeline_bg_color shade(@lighttable_bg_color, 0.9);
 @define-color timeline_fg_color @text_color;
 @define-color timeline_text_bg_color alpha(black, .8);
 @define-color timeline_text_fg_color alpha(white, .9);
@@ -1040,7 +1040,7 @@ treeview header label
 #usercss-box
 {
   border: 0.07em inset @border_color;
-  background-color: shade(@bg_color, 1.075);
+  background-color: shade(@bg_color, 1.1);
   margin-top: 0.7em;
   padding: 0.7em;
 }
@@ -1236,7 +1236,7 @@ filechooser row:hover .sidebar-icon
   --------------------*/
 #basics-header-box
 {
-  border-top: 0.07em solid @darkroom_bg_color;
+  border-top: 0.07em solid @lighttable_bg_color;
 }
 
 #basics-header-box,
