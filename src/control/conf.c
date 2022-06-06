@@ -832,6 +832,25 @@ gchar* dt_conf_expand_default_dir(const char *dir)
 
   return normalized_path;
 }
+void dt_conf_save(dt_conf_t *cf)
+{
+  FILE *f = g_fopen(cf->filename, "wb");
+  if(f)
+  {
+    GList *keys = g_hash_table_get_keys(cf->table);
+    GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
+
+    for(GList *iter = sorted; iter; iter = g_list_next(iter))
+    {
+      const gchar *key = (const gchar *)iter->data;
+      const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
+      dt_conf_print(key, val, f);
+    }
+
+    g_list_free(sorted);
+    fclose(f);
+  }
+}
 
 
 // clang-format off
