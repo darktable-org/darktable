@@ -251,7 +251,7 @@ def run_benchmark(program,image,xmp,args):
       trace = ''
       pixpipe = -1.0
    if trace:
-      trace = trace.decode('utf-8').split('\n')
+      trace = trace.decode('utf-8').splitlines()
    loadtime = 0.0
    savetime = -1
    gpu = False
@@ -280,7 +280,7 @@ def warm_up_caches(program,image,xmp,args):
 def get_version(program):
    output = subprocess.check_output([program,"--version"],stdin=None,stderr=subprocess.PIPE)
    if output:
-      output = output.decode('utf-8').split('\n')
+      output = output.decode('utf-8').splitlines()
    if 'this is ' in output[0]:
       return output[0][8:].replace('-cli','')
    else:
