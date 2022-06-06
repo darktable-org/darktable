@@ -116,6 +116,7 @@ typedef struct dt_lib_filtering_t
   _widgets_sort_t sorttop;
   GtkWidget *sort_box;
   gboolean manual_sort_set;
+  gboolean leaving;
 
   struct dt_lib_filtering_params_t *params;
 
@@ -663,6 +664,7 @@ static void _range_changed(GtkWidget *widget, gpointer user_data)
 {
   _widgets_range_t *special = (_widgets_range_t *)user_data;
   if(special->rule->manual_widget_set) return;
+  if(special->rule->lib->leaving) return;
 
   // we recreate the right raw text and put it in the raw entry
   gchar *txt = dtgtk_range_select_get_raw_text(DTGTK_RANGE_SELECT(special->range_select));
@@ -2044,6 +2046,8 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  d->leaving = FALSE;
   // if we enter lighttable view, then we need to populate the filter topbar
   // we do it here because we are sure that both libs are loaded at this point
   _topbar_update(self);
@@ -2052,6 +2056,12 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
   gtk_widget_set_tooltip_text(self->reset_button, _("reset\nctrl-click to remove pinned rules too"));
 }
 
+void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
+{
+  // we are leaving, so we want to avoid pb with focus and such
+  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+  d->leaving = TRUE;
+}
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
