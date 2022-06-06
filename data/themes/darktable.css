@@ -135,7 +135,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_20;
-@define-color section_label shade(@fg_color, 1.05);
+@define-color section_label shade(@fg_color, 1.2);
 @define-color plugin_label_color @grey_60;
 @define-color collapsible_bg_color @grey_25;
 
@@ -594,8 +594,9 @@ dialog .sidebar row:selected:hover label,
 }
 
 /* Labels of controls sections in modules */
-.dt_section_label,
-#blending-box .dt_section_label label  /* as those sections has icons on same line, we need to apply dt_section_label class on box above label and so separate what we apply on border and what we apply on box above */
+.dt_section_label:not(#blending-box),
+#blending-box .dt_section_label label, /* we need to separate what we apply on label and not after for those lines as they have icons on it */
+#blending-box .dt_section_label .dt_bauhaus  /* same here for drawn mask line */
 {
   padding: 0.14em 0;
   color: @section_label;
