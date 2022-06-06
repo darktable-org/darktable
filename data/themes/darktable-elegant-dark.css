@@ -66,8 +66,6 @@
 @define-color log_fg_color @grey_90;
 
 /* Views */
-@define-color darkroom_bg_color @grey_60;
-@define-color darkroom_preview_bg_color @grey_50;
 @define-color lighttable_bg_font_color @grey_85;
 
 /* Lighttable and film-strip */
