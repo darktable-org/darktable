@@ -703,19 +703,18 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
   dt_opencl_md5sum(clincludes, includemd5);
 
+  if(newdevice) // so far the device seems to be ok. Make sure to write&export the conf database to
+  {
+    dt_opencl_write_device_config(dev);
+    dt_conf_save(darktable.conf);
+  }
+
   // now load all darktable cl kernels.
   // TODO: compile as a job?
   tstart = dt_get_wtime();
   FILE *f = g_fopen(filename, "rb");
   if(f)
   {
-    if(newdevice) // so far the device seems to be ok. disable for now until kernels are fine.
-    {
-      cl->dev[dev].disabled = 1;
-      dt_opencl_write_device_config(dev);
-      dt_conf_save(darktable.conf);
-    }
-
     while(!feof(f))
     {
       int prog = -1;
@@ -788,9 +787,6 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   }
   for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++) g_free(includemd5[n]);
   res = 0;
-
-  // we are safe now enabling the device
-  if(newdevice) cl->dev[dev].disabled = 0;
 
 end:
   // we always write the device config to keep track of disabled devices
