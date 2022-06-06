@@ -9,15 +9,16 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-06 10:21+0100\n"
-"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
+"PO-Revision-Date: 2022-06-07 00:03+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 2.0\n"
+"X-Generator: Lokalize 21.12.3\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -8533,8 +8534,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>dimensione</b>: rotella mouse, <b>dimensione sfumatura</b>: shift+rotella"
-" mouse\n"
+"<b>dimensione</b>: rotella mouse, <b>dimensione sfumatura</b>: "
+"shift+rotella mouse\n"
 "<b>opacità</b>: ctrl+rotella mouse (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:491 ../src/develop/masks/ellipse.c:593
@@ -8564,22 +8565,22 @@ msgid "ellipse #%d"
 msgstr "Ellisse #%d"
 
 #: ../src/develop/masks/ellipse.c:2186
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>dimensione</b>: rotella mouse, <b>dimensione sfumatura</b>: shift+rotella "
-"mouse\n"
-"<b>rotazione</b>: ctrl+shift+rotella mouse, <b>opacità</b>: ctrl+rotella "
-"mouse (%d%%)"
+"<b>dimensione</b>: rotella mouse, <b>dimensione sfumatura</b>: "
+"shift+rotella mouse\n"
+"<b>rotazione</b>: ctrl+shift+rotella mouse, <b>opacità</b>: "
+"ctrl+rotella mouse (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:2189
 msgid "<b>rotate</b>: ctrl+drag"
 msgstr "<b>Ruota</b>: Ctrl+trascina"
 
 #: ../src/develop/masks/ellipse.c:2192
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: "
@@ -8723,17 +8724,14 @@ msgid "path #%d"
 msgstr "Tracciato #%d"
 
 #: ../src/develop/masks/path.c:3161
-#, fuzzy
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
-"<b>aggiungi un nodo</b>: click, <b>aggiungi un nodo ad angolo</b>:"
-"ctrl+click\n"
-"<b>elimina</b>: click col tasto destro"
+"<b>aggiungi un nodo</b>: click, <b>aggiungi un nodo ad angolo</b>:ctrl+click\n"
+"<b>annulla</b>: click col tasto destro"
 
 #: ../src/develop/masks/path.c:3164
-#, fuzzy
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finish path</b>: right-click"
@@ -8743,14 +8741,13 @@ msgstr ""
 "<b>termina il tracciato</b>: click col tasto destro"
 
 #: ../src/develop/masks/path.c:3167
-#, fuzzy
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
 "<b>sposta il nodo</b>: trascina, <b>rimuovi il nodo</b>: click col tasto "
 "destro\n"
-"<b>accendi il modo ammorbidisci/nitidezza</b>: ctrl+click"
+"<b>attiva il modo ammorbidisci/nitidezza</b>: ctrl+click"
 
 #: ../src/develop/masks/path.c:3170
 msgid ""
@@ -8773,13 +8770,12 @@ msgid "enabled as required"
 msgstr "Abilitato come richiesto"
 
 #: ../src/develop/pixelpipe_hb.c:394
-#, fuzzy
 msgid ""
 "history had module disabled but it is required for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
 "La cronologia ha il modulo disabilitato ma è richiesto per questo tipo di \n"
-" immagine. Probabile che sia accaduto applicando una preimpostazione, uno  "
+"immagine. Probabile che sia accaduto applicando una preimpostazione, uno "
 "stile o un copia e incolla della cronologia"
 
 #: ../src/develop/pixelpipe_hb.c:396
@@ -8787,13 +8783,12 @@ msgid "disabled as not appropriate"
 msgstr "Disabilitato come non appropriato"
 
 #: ../src/develop/pixelpipe_hb.c:396
-#, fuzzy
 msgid ""
 "history had module enabled but it is not allowed for this type of image.\n"
 "likely introduced by applying a preset, style or history copy&paste"
 msgstr ""
 "La cronologia ha il modulo abilitato ma non è permesso per questo tipo di \n"
-" immagine. Probabile che sia accaduto applicando una preimpostazione, uno  "
+"immagine. Probabile che sia accaduto applicando una preimpostazione, uno "
 "stile o un copia e incolla della cronologia"
 
 #: ../src/develop/pixelpipe_hb.c:2241
@@ -9079,7 +9074,7 @@ msgstr ""
 "\n"
 
 #: ../src/dtgtk/thumbtable.c:1242
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
 "\n"
@@ -9089,7 +9084,7 @@ msgstr ""
 "\n"
 
 #: ../src/dtgtk/thumbtable.c:1244
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
@@ -9595,12 +9590,11 @@ msgstr ""
 "Inizia a digitare per la ricerca incrementale"
 
 #: ../src/gui/accelerators.c:701
-#, fuzzy
 msgid ""
 "press keys with mouse click and scroll or move combinations to create a "
 "shortcut"
 msgstr ""
-"Premi tasti con il click del mouse e scorri o muovi le combinazioni per "
+"Premi tasti con il click del mouse e rotella o muovi le combinazioni per "
 "creare una scorciatoia"
 
 #: ../src/gui/accelerators.c:702
@@ -9691,7 +9685,6 @@ msgid "(unchanged)"
 msgstr "(non cambiato)"
 
 #: ../src/gui/accelerators.c:1441
-#, fuzzy
 msgid ""
 "define a shortcut by pressing a key, optionally combined with modifier keys "
 "(ctrl/shift/alt)\n"
@@ -9706,7 +9699,7 @@ msgid ""
 msgstr ""
 "Definisce una scorciatoia premendo un tasto, in opzione combinato con tasti "
 "modificatori (ctrl/shift/alt)\n"
-"Un tasto può esser premuto duo o tre volte, con una ultima pressione lunga\n"
+"Un tasto può esser premuto duo o tre volte, con un'ultima pressione lunga\n"
 "Mentre il tasto è premuto, una combinazione di tasti del mouse possono (due/ "
 "tre volte /a lungo) esser premuti\n"
 "Tenendo premuto il tasto (e modificatori e/o pulsanti) uno scorrimento del "
@@ -9714,7 +9707,7 @@ msgstr ""
 "I dispositivi connessi possono inviare tasti o movimenti usando i loro "
 "controller fisici\n"
 "\n"
-"Clicca col destro per cancellare"
+"Clicca col destro per annullare"
 
 #: ../src/gui/accelerators.c:1488
 msgid "removing shortcut"
@@ -9881,7 +9874,6 @@ msgid "enable fallbacks"
 msgstr "Attiva abbandonate"
 
 #: ../src/gui/accelerators.c:2329
-#, fuzzy
 msgid ""
 "enables default meanings for additional buttons, modifiers or moves\n"
 "when used in combination with a base shortcut"
@@ -10001,7 +9993,6 @@ msgid "fullscreen"
 msgstr "a pieno schermo"
 
 #: ../src/gui/gtk.c:1193
-#, fuzzy
 msgid "collapsing controls"
 msgstr "Controlli di chiusura"
 
@@ -10290,11 +10281,11 @@ msgstr "$(ELEVATION) - Altitudine"
 
 #: ../src/gui/gtkentry.c:225
 msgid "$(STARS) - star rating as number (-1 for rejected)"
-msgstr ""
+msgstr "$(STARS) - valutazione in stelle come numero (-1 per respinto)"
 
 #: ../src/gui/gtkentry.c:226
 msgid "$(RATING.ICONS) - star/reject rating in icon form"
-msgstr ""
+msgstr "$(RATING.ICONS) - valutazione in stelle/respinto sotto forma di icona"
 
 #: ../src/gui/gtkentry.c:227
 msgid "$(LABELS) - color labels as text"
@@ -10489,15 +10480,14 @@ msgid "show guide overlay when this module has focus"
 msgstr "Mostra guida sovrimpressa quando questo modulo ha focus"
 
 #: ../src/gui/guides.c:902
-#, fuzzy
 msgid ""
 "change global guide settings\n"
 "note that these settings are applied globally and will impact any module "
 "that shows guide overlays"
 msgstr ""
 "Cambia le impostazioni della guida globale\n"
-"Nota che queste impostazioni sono applicate globalmente ed impattano ogni "
-"modulo Questo mostra sovrimpressioni guidate"
+"Nota che queste impostazioni sono applicate globalmente ed hanno impatto "
+"su ogni modulo che mostra sovrimpressioni guidate"
 
 #: ../src/gui/hist_dialog.c:193
 msgid "select parts to copy"
@@ -10609,7 +10599,6 @@ msgid "GUI controls and text DPI"
 msgstr "DPI dei controlli della GUI e del testo"
 
 #: ../src/gui/preferences.c:377
-#, fuzzy
 msgid ""
 "adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
 "increase for a magnified GUI, decrease to fit more content in window.\n"
@@ -10617,11 +10606,12 @@ msgid ""
 "default is 96 DPI on most systems.\n"
 "(needs a restart)."
 msgstr ""
-"Regola la risoluzione globale dell'interfaccia per ridimensionare i "
-"controlli, i pulsanti, le etichette, ecc.\n"
-"Aumentare il valore per ingrandire l'interfaccia o diminuire per includere "
-"un maggior contenuto nello schermo.\n"
-"Impostare a -1 per usare la risoluzione definita dal sistema.\n"
+"Regola la risoluzione globale dell'interfaccia per ridimensionare i"
+" controlli, "
+"i pulsanti, le etichette, ecc.\n"
+"Aumentare il valore per ingrandire l'interfaccia, diminuire per includere "
+"un maggior contenuto nella finestra.\n"
+"Impostare a -1 per usare la risoluzione globale definita dal sistema.\n"
 "Il valore predefinito è 96 DPI sulla maggior parte dei sistemi.\n"
 "(Richiede un riavvio)."
 
@@ -10888,7 +10878,6 @@ msgid "format"
 msgstr "Formato"
 
 #: ../src/gui/presets.c:616
-#, fuzzy
 msgid "select image types you want this preset to be available for"
 msgstr ""
 "Seleziona i tipi di immagine per le quali questa preimpostazione sarà "
@@ -10910,9 +10899,8 @@ msgstr "Aggiorno la preimpostazione?"
 
 #: ../src/gui/presets.c:1097 ../src/libs/modulegroups.c:3836
 #: ../src/libs/modulegroups.c:3845
-#, fuzzy
 msgid "manage module layouts"
-msgstr "gestisci i layout dei moduli"
+msgstr "Gestisci le disposizioni dei moduli"
 
 #: ../src/gui/presets.c:1105
 msgid "manage quick presets"
@@ -11042,7 +11030,6 @@ msgid "grayscale"
 msgstr "Scala di grigio"
 
 #: ../src/imageio/format/avif.c:808
-#, fuzzy
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
 "Salvando come scala di grigi ridurrà la dimensione delle immagini in bianco "
@@ -11060,7 +11047,7 @@ msgid ""
 "makes encoding faster. the impact on quality reduction is negligible, but "
 "increases the file size."
 msgstr ""
-"Affianca un immagine ai segmenti.\n"
+"Suddividi un immagine in segmenti.\n"
 "\n"
 "Rende la codifica più veloce. L'impatto sulla riduzione della qualità è "
 "trascurabile, ma aumenta la dimensione del file."
@@ -11125,7 +11112,7 @@ msgstr "Il profilo di output selezionato non funziona bene con EXR"
 
 #: ../src/imageio/format/exr.cc:446
 msgid "OpenEXR (16/32-bit float)"
-msgstr ""
+msgstr "OpenEXR (16/32-bit in virgola mobile)"
 
 #: ../src/imageio/format/exr.cc:474 ../src/imageio/format/pdf.c:80
 #: ../src/imageio/format/png.c:527 ../src/imageio/format/tiff.c:804
@@ -11477,12 +11464,16 @@ msgid "file on disk"
 msgstr "File su disco"
 
 #: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/gallery.c:166
+#, fuzzy
 #: ../src/imageio/storage/latex.c:165
 msgid ""
 "enter the path where to put exported images\n"
 "variables support bash like string manipulation\n"
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
+"Inserisci il percorso dove salvare le immagini esportate\n"
+"le variabili supportano (bash like string manipulation)\n"
+"digita '$(' per attivare il completamento e vedere la lista delle variabili"
 
 #: ../src/imageio/storage/disk.c:193
 msgid "on conflict"
@@ -11825,12 +11816,16 @@ msgstr ""
 #: ../src/iop/ashift.c:5794
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
+"Lunghezza focale dell'obiettivo, il valore predefinito è impostato dall'EXIF"
+" se disponibile"
 
 #: ../src/iop/ashift.c:5796
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
 msgstr ""
+"Fattore di taglio del sensore fotocamera, il valore predefinito è impostato"
+" dall'EXIF se disponibile, è spesso richiesta l'impostazione manuale"
 
 #: ../src/iop/ashift.c:5799
 msgid ""
@@ -11867,7 +11862,6 @@ msgstr ""
 "Maiusc+click per correggere solamente la distorsione della lente"
 
 #: ../src/iop/ashift.c:5808
-#, fuzzy
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -11875,12 +11869,14 @@ msgid ""
 "shift+click to only fit lens shift\n"
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
-"Automaticamente corregge la distorsione prospettica verticale ed "
-"orizzontale; la rotazione, l'allineamento della lente in entrambe le "
+"Corregge automaticamente la distorsione prospettica verticale ed "
+"orizzontale; adattando la rotazione, l'allineamento dell'obiettivo in"
+" entrambe le "
 "direzioni e lo stiramento\n"
-"Ctrl+click per correggere solamente la rotazione\n"
-"Maiusc+click per correggere solamente l'allineamento della lente\n"
-"Ctrl+Maiusc+click per correggere la rotazione e l'allineamento della lente"
+"Ctrl+click per adattare solamente la rotazione\n"
+"Maiusc+click per adattare solamente l'allineamento dell'obiettivo\n"
+"Ctrl+Maiusc+click per adattare solamente la rotazione e l'allineamento"
+" dell'obiettivo"
 
 #: ../src/iop/ashift.c:5814
 msgid ""
@@ -12101,11 +12097,11 @@ msgstr "Luminanza"
 
 #: ../src/iop/atrous.c:1736
 msgid "change lightness at each feature size"
-msgstr ""
+msgstr "Cambia tono per ogni dimensione caratteristica"
 
 #: ../src/iop/atrous.c:1737
 msgid "change color saturation at each feature size"
-msgstr ""
+msgstr "Cambia la saturazione del colore per ogni dimensione caratteristica"
 
 #: ../src/iop/atrous.c:1738
 msgid "edges"
@@ -12203,7 +12199,7 @@ msgstr "Nokia"
 #: ../src/iop/basecurve.c:273 ../src/iop/colorzones.c:2531
 #: ../src/iop/rgbcurve.c:1422 ../src/iop/tonecurve.c:1199
 msgid "cubic spline"
-msgstr ""
+msgstr "Spline cubica"
 
 #: ../src/iop/basecurve.c:332
 msgid "base curve"
@@ -12433,6 +12429,9 @@ msgid ""
 "the filter used for local contrast enhancement. bilateral is faster but can "
 "lead to artifacts around edges for extreme settings."
 msgstr ""
+"Il filtro usato per il miglioramento del contrasto locale. Bilaterale è più"
+" veloce "
+"ma può portare ad artefatti attorno ai margini con impostazioni estreme."
 
 #: ../src/iop/bilat.c:430 ../src/iop/globaltonemap.c:647
 msgid "detail"
@@ -12449,6 +12448,7 @@ msgstr "Dimensione del dettaglio locale (sigma spaziale del filtro bilaterale)"
 #: ../src/iop/bilat.c:452
 msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr ""
+"Differenza L per individuare i margini (range sigma del filtro bilaterale)"
 
 #: ../src/iop/bilat.c:457
 msgid "changes the local contrast of highlights"
@@ -12526,7 +12526,7 @@ msgstr "Intensità di luce soffusa"
 
 #: ../src/iop/blurs.c:81
 msgid "blurs"
-msgstr ""
+msgstr "Sfocature"
 
 #: ../src/iop/blurs.c:86
 msgid "blur|lens|motion"
@@ -12627,7 +12627,7 @@ msgstr "2/3"
 
 #: ../src/iop/borders.c:1028
 msgid "size of the border in percent of the full image"
-msgstr ""
+msgstr "Dimensione del bordo in percentuale dell'intera immagine"
 
 #: ../src/iop/borders.c:1032 ../src/iop/clipping.c:2236 ../src/iop/crop.c:1147
 msgid "aspect"
@@ -12742,35 +12742,33 @@ msgstr "Lineare, RAW"
 #: ../src/iop/cacorrect.c:1337
 msgid "raw CA correction supports only standard RGB Bayer filter arrays"
 msgstr ""
+"Correzione CA del RAW supporta solo matrici di filtri RGB Bayer standard"
 
 #: ../src/iop/cacorrect.c:1339 ../src/iop/cacorrect.c:1347
 msgid "bypassed while zooming in"
 msgstr "Bypassato mentre si sta ingrandendo"
 
 #: ../src/iop/cacorrect.c:1340
-#, fuzzy
 msgid ""
 "while calculating the correction parameters the internal maths failed so "
 "module is bypassed.\n"
 "you can get more info by running dt via the console."
 msgstr ""
-"Durante il calcolo dei parametri di correzione i calcoli interni sono "
+"Durante il calcolo dei parametri di correzione la matematica interna ha "
 "falliti perciò il modulo è bypassato.\n"
 "Puoi ottenere maggiori informazioni lanciando dt da console."
 
 #: ../src/iop/cacorrect.c:1344
-#, fuzzy
 msgid ""
 "internals maths found too few data points so restricted the order of the fit "
 "to linear.\n"
 "you might view bad correction results."
 msgstr ""
-"I calcoli interni hanno trovato troppi pochi punti di dati perciò è stato "
-"limitatol'ordine di adattamento a lineare.\n"
-"Potresti vedere il risultato di cattive correzioni."
+"La matematica interna ha trovato troppi pochi dati perciò è stato "
+"limitato l'ordine di adattamento a lineare.\n"
+"Potresti vedere risultati di cattive correzioni."
 
 #: ../src/iop/cacorrect.c:1348
-#, fuzzy
 msgid ""
 "to calculate good parameters for raw CA correction we want full sensor data "
 "or at least a sensible part of that.\n"
@@ -12779,7 +12777,7 @@ msgid ""
 msgstr ""
 "Per calcolare dei buoni parametri per la correzione CA del RAW vogliamo "
 "tutti i dati sensore o almeno una buona parte di essi.\n"
-"L'immagine mostrata in Camera Oscura dovrebbe sembrare enormemente "
+"L'immagine visualizzata in Camera Oscura dovrebbe sembrare enormemente "
 "differente dai file elaborati perciò ora l'effetto è bypassato."
 
 #: ../src/iop/cacorrect.c:1455
@@ -12843,7 +12841,6 @@ msgid "advanced parameters"
 msgstr "Parametri avanzati"
 
 #: ../src/iop/cacorrectrgb.c:759
-#, fuzzy
 msgid ""
 "correction mode to use.\n"
 "can help with multiple\n"
@@ -12853,12 +12850,13 @@ msgid ""
 "efficient to correct blue\n"
 "chromatic aberration."
 msgstr ""
-"Modo di correzione da usare.\n"
+"Modalità di correzione da usare.\n"
 "Può aiutare con istanze\n"
 "multiple per immagini molto\n"
 "danneggiate.\n"
-"Scurisci solo è particolarmente\n"
-"efficace per correggere le abberrazioni cromatiche blu."
+"Solo scurisci è particolarmente\n"
+"efficace per correggere le \n"
+"aberrazioni cromatiche blu."
 
 #: ../src/iop/cacorrectrgb.c:767
 msgid ""
@@ -13057,14 +13055,12 @@ msgid "B&W: ILFORD HP5+"
 msgstr "B/N: ILFORD HP5+"
 
 #: ../src/iop/channelmixerrgb.c:406
-#, fuzzy
 msgid "B&W: ILFORD DELTA 100"
-msgstr "B&N: ILFORD DELTA 100"
+msgstr "B/N: ILFORD DELTA 100"
 
 #: ../src/iop/channelmixerrgb.c:416
-#, fuzzy
 msgid "B&W: ILFORD DELTA 400 - 3200"
-msgstr "B&N: ILFORD DELTA 100"
+msgstr "B/N: ILFORD DELTA 400 - 3200"
 
 #: ../src/iop/channelmixerrgb.c:425
 msgid "B&W: ILFORD FP4+"
@@ -13111,7 +13107,7 @@ msgid "bad"
 msgstr "Brutto"
 
 #: ../src/iop/channelmixerrgb.c:1762
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "<b>Profile quality report: %s</b>\n"
@@ -13132,23 +13128,23 @@ msgid ""
 msgstr ""
 "\n"
 "<b>Rapporto di qualità del profilo: %s</b>\n"
-"input  ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-"WB ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-"output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+"input ΔE: \tavg. %.2f ; \tmax. %.2f\n"
+"WB ΔE: \tavg. %.2f; \tmax. %.2f\n"
+"output ΔE: \tavg. %.2f; \tmax. %.2f\n"
 "\n"
 "<b>Dati profilo</b>\n"
-"illuminante :  \t%.0f K \t%s \n"
+"illuminante:  \t%.0f K \t%s\n"
 "matrice nello spazio di adattamento:\n"
 "<tt>%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f</tt>\n"
 "\n"
 "<b>Valori di normalizzazione</b>\n"
-"compensazione esposizione : \t%+.2f EV\n"
-"spostamento del nero : \t%+.4f"
+"compensazione esposizione: \t%+.2f EV\n"
+"spostamento del nero: \t%+.4f"
 
 #: ../src/iop/channelmixerrgb.c:1808
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "<b>Profile quality report: %s</b>\n"
@@ -13285,13 +13281,12 @@ msgid "auto-detection of white balance started…"
 msgstr "Il calcolo del bilanciamento del bianco è iniziato..."
 
 #: ../src/iop/channelmixerrgb.c:3702
-#, fuzzy
 msgid ""
 "color calibration: the sum of the gray channel parameters is zero, "
 "normalization will be disabled."
 msgstr ""
 "Calibrazione colore: la somma dei parametri del canale grigio è zero, la "
-"normalizzazione verrà disabilitata"
+"normalizzazione verrà disabilitata."
 
 #: ../src/iop/channelmixerrgb.c:3748
 #, c-format
@@ -13300,6 +13295,9 @@ msgid ""
 "h: \t%.1f °\n"
 "c: \t%.1f"
 msgstr ""
+"L: \t%.1f %%\n"
+"h: \t%.1f °\n"
+"c: \t%.1f"
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4004 ../src/iop/clipping.c:2105
@@ -13324,7 +13322,6 @@ msgid "adaptation"
 msgstr "Modifica"
 
 #: ../src/iop/channelmixerrgb.c:4011
-#, fuzzy
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -13343,7 +13340,7 @@ msgstr ""
 "può produrre risultati migliori della versione lineare, ma è inaffidabile.\n"
 "• XYZ è una semplice scalatura nello spazio XYZ. In generale non è "
 "raccomandato.\n"
-"• nessuno, disabilità ogni adattamento ed usa la coda di sviluppo che lavora "
+"• nessuno disabilità ogni adattamento ed usa la coda di sviluppo che lavora "
 "in RGB."
 
 #: ../src/iop/channelmixerrgb.c:4029
@@ -13356,7 +13353,7 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4036
 msgid "picker"
-msgstr ""
+msgstr "Selettore"
 
 #: ../src/iop/channelmixerrgb.c:4037 ../src/iop/temperature.c:1922
 msgid "set white balance to detected from area"
@@ -13372,7 +13369,7 @@ msgstr "Temperatura"
 
 #: ../src/iop/channelmixerrgb.c:4075
 msgid "spot color mapping"
-msgstr ""
+msgstr "Mappatura dei colori puntuale"
 
 #: ../src/iop/channelmixerrgb.c:4078 ../src/iop/channelmixerrgb.c:4206
 msgid "use a color checker target to autoset CAT and channels"
@@ -13380,7 +13377,7 @@ msgstr "Usa un campione colore obiettivo per auto impostare CAT e canali"
 
 #: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1083
 msgid "spot mode"
-msgstr ""
+msgstr "Modalità puntuale"
 
 #: ../src/iop/channelmixerrgb.c:4081
 msgid ""
@@ -13389,6 +13386,10 @@ msgid ""
 "\"measure\" simply shows how an input color is mapped by the CAT\n"
 "and can be used to sample a target."
 msgstr ""
+"\"Correzione\" aggiusta automaticamente l'illuminante\n"
+"come se il colore di ingresso fosse mappato sull'obiettivo.\n"
+"\"Misura\" mostra semplicemente come il colore di ingresso è mappato dal CAT\n"
+"e può esser usato come campione obiettivo."
 
 #: ../src/iop/channelmixerrgb.c:4086 ../src/iop/exposure.c:1089
 msgid "correction"
@@ -13400,17 +13401,19 @@ msgstr "Misura"
 
 #: ../src/iop/channelmixerrgb.c:4091
 msgid "take channel mixing into account"
-msgstr ""
+msgstr "Prendi la miscelazione canale nell'account"
 
 #: ../src/iop/channelmixerrgb.c:4096
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
 msgstr ""
+"Calcola l'obiettivo prendendo la miscelazione canale nell'account.\n"
+"Se disabilitato, è considerato solo il CAT."
 
 #: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1103
 msgid "the input color that should be mapped to the target"
-msgstr ""
+msgstr "Il colore di ingresso che deve esser mappato all'obiettivo"
 
 #: ../src/iop/channelmixerrgb.c:4115
 msgid ""
@@ -13418,14 +13421,17 @@ msgid ""
 "h: \tN/A\n"
 "c: \tN/A"
 msgstr ""
+"L: \tN/A\n"
+"h: \tN/A\n"
+"c: \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
-msgstr ""
+msgstr "Queste coordinate LCh sono calcolate dalle coordinate CIE Lab 1976"
 
 #: ../src/iop/channelmixerrgb.c:4130
 msgid "the desired target color after mapping"
-msgstr ""
+msgstr "Il colore obiettivo desiderato dopo la mappatura"
 
 #: ../src/iop/channelmixerrgb.c:4165
 msgid "input R"
