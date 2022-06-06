@@ -37,7 +37,7 @@
 @define-color scroll_bar_bg @grey_40;
 
 /* Modules box (plugins) */
-@define-color plugin_bg_color @grey_50;
+@define-color plugin_bg_color shade(@darkroom_bg_color, 0.95);
 @define-color plugin_label_color @grey_80;
 @define-color collapsible_bg_color @grey_55;
 
@@ -70,8 +70,7 @@
 @define-color log_fg_color @grey_95;
 
 /* Views */
-@define-color darkroom_bg_color @grey_75;
-@define-color darkroom_preview_bg_color @grey_65;
+@define-color lighttable_bg_color @grey_65;
 @define-color lighttable_bg_font_color @grey_95;
 
 /* Lighttable and film-strip */
