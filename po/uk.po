@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-04 19:24+0200\n"
-"PO-Revision-Date: 2022-06-04 22:36+0300\n"
+"PO-Revision-Date: 2022-06-06 17:08+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -6071,15 +6071,16 @@ msgstr ""
 
 #: ../src/common/database.c:3789
 msgid "click later to be asked on next startup"
-msgstr "натисніть 'пізніше' і наступне запитання буде при наступному запуску"
+msgstr "при виборі 'пізніше' наступний запит буде при наступному запуску"
 
 #: ../src/common/database.c:3793
 msgid "click later to be asked when closing darktable"
-msgstr "натисніть 'пізніше' і наступне запитання буде при закритті darktable"
+msgstr "при виборі 'пізніше' наступний запит буде при закритті darktable"
 
 #: ../src/common/database.c:3797
 msgid "click later to be asked next time when closing darktable"
-msgstr "натисніть 'пізніше' і наступне запитання буде при закритті darktable"
+msgstr ""
+"при виборі 'пізніше' наступний запит буде при наступному закритті darktable"
 
 #: ../src/common/database.c:3800
 #, c-format
