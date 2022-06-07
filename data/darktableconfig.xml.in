@@ -339,11 +339,15 @@
         <option>memory size</option>
         <option>memory transfer</option>
         <option>memory size and transfer</option>
+        <option>400 MB</option>
+        <option>400 MB and transfer</option>
+        <option>600 MB</option>
+        <option>600 MB and transfer</option>
       </enum>
     </type>
     <default>nothing</default>
     <shortdescription>tune OpenCL performance</shortdescription>
-    <longdescription>allows runtime tuning of OpenCL devices. 'memory size' tests for available graphics ram, 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.</longdescription>
+    <longdescription>allows runtime tuning of OpenCL devices. 'memory size' tests for available graphics ram, 'memory transfer' tries a faster memory access mode (pinned memory) used for tiling.\nyou may also select a fixed headroom mode</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_synch_cache</name>
