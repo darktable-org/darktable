@@ -113,7 +113,7 @@ are described more fully in the user manual and accompanying blog post.
 
   Superfluous sections have been removed from the "crop" and "white balance".
 
-  Support has been added for a new IPAPGothic font.
+  Support has been added for the IPAPGothic font.
 
   The module-description tooltips have been reworked to ensure better layout.
 
