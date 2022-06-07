@@ -9,16 +9,15 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-07 00:03+0200\n"
-"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
-"\n"
+"PO-Revision-Date: 2022-06-07 23:28+0200\n"
+"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 21.12.3\n"
+"X-Generator: Lokalize 19.12.3\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -20576,12 +20575,12 @@ msgid "apply geo-location"
 msgstr "Applica la geo localizzazione"
 
 #: ../src/libs/geotagging.c:372
-#, fuzzy
 msgid ""
 "apply offset and geo-location to matching images\n"
 "double operation: two ctrl-Z to undo"
 msgstr ""
-"Applica lo spostamento e la geo localizzazione alle immagini corrispondenti\n"
+"Applica la compensazione e la geo localizzazione alle immagini"
+" corrispondenti\n"
 "Doppia operazione: due ctrl-Z per annullare"
 
 #: ../src/libs/geotagging.c:374 ../src/libs/geotagging.c:1906
@@ -20632,6 +20631,8 @@ msgid ""
 "enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "key in the new numbers or scroll over the cell"
 msgstr ""
+"Inserisci la nuova data/ora (YYYY:MM:DD hh:mm:ss[.sss])\n"
+"inserisci i nuovi valori o usa la rotella del mouse sulla cella"
 
 #: ../src/libs/geotagging.c:1733
 msgid "original date/time"
@@ -20643,7 +20644,7 @@ msgstr "Spostamento della data/ora"
 
 #: ../src/libs/geotagging.c:1741
 msgid "offset or difference ([-]dd hh:mm:ss[.sss])"
-msgstr ""
+msgstr "compensazione o differenza ([-]dd hh:mm:ss[.sss])"
 
 #: ../src/libs/geotagging.c:1744
 msgid "lock date/time offset value to apply it onto another selection"
@@ -20668,14 +20669,13 @@ msgid "apply the same date/time to selected images"
 msgstr "Applica la stessa data/ora alle immagini selezionate"
 
 #: ../src/libs/geotagging.c:1768
-#, fuzzy
 msgid ""
 "start typing to show a list of permitted values and select your timezone.\n"
 "press enter to confirm, so that the asterisk * disappears"
 msgstr ""
 "Inizia a digitare per mostrare una lista di valori permessi e selezionare il "
 "tuo fuso orario.\n"
-"Premi Enter per confermare, così facendo l'asterisco * scompare"
+"Premi Invio per confermare, così facendo l'asterisco * scompare"
 
 #. gpx
 #: ../src/libs/geotagging.c:1810
@@ -20696,7 +20696,6 @@ msgid "select a GPX track file..."
 msgstr "Seleziona un file tracciato GPX..."
 
 #: ../src/libs/geotagging.c:1846
-#, fuzzy
 msgid ""
 "list of track segments in the GPX file, for each segment:\n"
 "- the start date/time in local time (LT)\n"
@@ -20709,7 +20708,7 @@ msgstr ""
 "- la data/ora di inizio nell'orario locale (LT)\n"
 "- il numero di punti del tracciato\n"
 "- il numero di immagini corrispondenti sulla base della data/ora delle "
-"immagini, spostamento e zona oraria\n"
+"immagini, compensazione e fuso orario\n"
 "- informazioni sul tempo più dettagliate passando sopra la riga"
 
 #: ../src/libs/geotagging.c:1885
@@ -20863,6 +20862,8 @@ msgid ""
 "create a minimal history stack which produces the same image\n"
 "ctrl+click to truncate history to the selected item"
 msgstr ""
+"Crea una coda di sviluppo minimale che produce la stessa immagine\n"
+"Ctrl+click per troncare la coda di sviluppo dell'elemento selezionato"
 
 #: ../src/libs/history.c:133
 msgid "create a style from the current history stack"
@@ -20995,10 +20996,9 @@ msgid "create a high dynamic range image from selected shots"
 msgstr "Crea HDR dagli scatti selezionati"
 
 #: ../src/libs/image.c:498
-#, fuzzy
 msgid "add a duplicate to the image library, including its history stack"
 msgstr ""
-"Aggiungi un duplicato alla biblioteca delle immagini, includendo la coda di "
+"Aggiungi un duplicato alla libreria delle immagini, includendo la coda di "
 "sviluppo"
 
 #: ../src/libs/image.c:504 ../src/libs/image.c:507
@@ -21072,7 +21072,7 @@ msgstr "Seleziona i metadati di dt (dal modulo di gestione metadati)"
 
 #: ../src/libs/image.c:586
 msgid "set the selected image as source of metadata"
-msgstr ""
+msgstr "Imposta l'immagine selezionata come origine dei metadati"
 
 #: ../src/libs/image.c:591
 msgid "paste selected metadata on selected images"
@@ -21093,6 +21093,8 @@ msgstr "Come gestire i metadati esistenti"
 #: ../src/libs/image.c:608
 msgid "update image information to match changes to file"
 msgstr ""
+"Aggiorna le informazioni dell'immagine per farle corrispondere alle modifiche"
+" al file"
 
 #: ../src/libs/image.c:612
 msgid "set selection as monochrome images and activate monochrome workflow"
@@ -21106,7 +21108,7 @@ msgstr "Imposta la selezione per immagini a colori"
 
 #: ../src/libs/image.c:628
 msgid "duplicate virgin"
-msgstr ""
+msgstr "Duplicato vergine"
 
 #: ../src/libs/import.c:264
 #, c-format
@@ -21206,11 +21208,10 @@ msgid "modified"
 msgstr "Modificato"
 
 #: ../src/libs/import.c:1558
-#, fuzzy
 msgid "file 'modified date/time', may be different from 'Exif date/time'"
 msgstr ""
-"La 'data/ora di modifica' del file, può esser differente dalla 'data/ora "
-"Exif'"
+"La 'data/ora di modifica' del file, può essere differente dalla 'data/ora"
+" Exif'"
 
 #: ../src/libs/import.c:1570
 msgid "show/hide thumbnails"
@@ -21238,7 +21239,7 @@ msgstr "Attendere la prelettura della lista delle immagini dalla fotocamera..."
 
 #: ../src/libs/import.c:1887
 msgid "invalid override date/time format"
-msgstr ""
+msgstr "Formato data/ora di sovrascrittura invalido"
 
 #: ../src/libs/import.c:1990
 msgid "add to library..."
@@ -21282,7 +21283,7 @@ msgstr "v3.0 per JPEG/input non-RAW"
 
 #: ../src/libs/lib.c:387
 msgid "deleting preset for obsolete module"
-msgstr ""
+msgstr "Eliminazione preset di modulo obsoleto"
 
 #: ../src/libs/lib.c:522
 msgid "manage presets..."
@@ -21302,7 +21303,7 @@ msgstr "Modulo utilità"
 
 #: ../src/libs/live_view.c:106
 msgid "live view"
-msgstr ""
+msgstr "Live view"
 
 #: ../src/libs/live_view.c:289
 msgid "toggle live view"
@@ -21484,7 +21485,6 @@ msgstr ""
 "località"
 
 #: ../src/libs/map_locations.c:961
-#, fuzzy
 msgid ""
 "list of user locations,\n"
 "click to show or hide a location on the map:\n"
@@ -21502,26 +21502,25 @@ msgstr ""
 "Elenco delle località personalizzate,\n"
 "clicca con il mouse per visualizzare o nascondere una località sulla mappa:\n"
 "- rotella mouse all'interno della forma per ridimensionarla,\n"
-"- rotella mouse + <Shift> o <Ctrl> per modificarne la larghezza o l'altezza\n"
+"- rotella mouse + <Maiusc> o <Ctrl> per modificarne la larghezza o l'altezza\n"
 "- clicca all'interno della forma e trascina per modificarne la posizione\n"
-"- Ctrl+click per spostare un'immagine dentro la località\n"
+"- Ctrl+click per spostare un'immagine da dentro la località\n"
 "- Ctrl+click per modificare il nome della località\n"
 "- il simbolo pipe '|' spezza il nome in diversi livelli\n"
 "- per cancellare un gruppo di località, cancellane il nome\n"
-"- premi Invio per validare il nuovo nome, Esc per terminare la modifica\n"
+"- premi Invio per validare il nuovo nome, Esc per annullare la modifica\n"
 "- Click destro per altre azioni: cancella la località e vai alla raccolta,\n"
 "- Ctrl+rotella mouse per ridimensionare la finestra"
 
 #: ../src/libs/map_locations.c:988
-#, fuzzy
 msgid ""
 "select the shape of the location's limits on the map, circle or rectangle\n"
 "or even polygon if available (select first a polygon place in 'find "
 "location' module)"
 msgstr ""
-"Seleziona la forma del limite della località sulla mappa, cerchio o "
-"rettangolo\n"
-"o è disponibile il poligono (prima seleziona il luogo del poligono nel "
+"Seleziona la forma del limite della località sulla mappa, cerchio o"
+" rettangolo\n"
+"o anche poligono se disponibile (prima seleziona il luogo del poligono nel "
 "modulo 'trova località')"
 
 #: ../src/libs/map_locations.c:992
@@ -21603,7 +21602,7 @@ msgstr "Editor metadati"
 
 #: ../src/libs/metadata.c:128 ../src/libs/metadata.c:401
 msgid "<leave unchanged>"
-msgstr ""
+msgstr "<lascia invariato>"
 
 #: ../src/libs/metadata.c:505 ../src/libs/metadata_view.c:1184
 msgid "metadata settings"
@@ -21783,7 +21782,7 @@ msgstr "CategorieSenza categoria"
 
 #: ../src/libs/metadata_view.c:170
 msgid "image information"
-msgstr ""
+msgstr "Informazioni immagine"
 
 #: ../src/libs/metadata_view.c:331
 msgid "unused/deprecated"
@@ -21831,7 +21830,7 @@ msgstr "Caricatore: %s"
 
 #: ../src/libs/metadata_view.c:631
 msgid "<various values>"
-msgstr ""
+msgstr "<diversi valori>"
 
 #: ../src/libs/metadata_view.c:644
 #, c-format
@@ -21912,23 +21911,21 @@ msgstr "on-off"
 
 #: ../src/libs/modulegroups.c:495 ../src/libs/modulegroups.c:498
 #: ../src/libs/modulegroups.c:592
-#, fuzzy
 msgid ""
 "this quick access widget is disabled as there are multiple instances of this "
 "module present. Please use the full module to access this widget..."
 msgstr ""
-"Questo accesso rapido al widget è disattivato in quanto ci sono molte "
-"istanze di questo modulo attivo. Usa il modulo completo per accedere a "
+"Questo widget di accesso rapido è disattivato in quanto sono presenti più "
+"istanze di questo modulo. Usa il modulo completo per accedere a "
 "questo widget..."
 
 #: ../src/libs/modulegroups.c:599
-#, fuzzy
 msgid ""
 "this quick access widget is disabled as it's hidden in the actual module "
 "configuration. Please use the full module to access this widget..."
 msgstr ""
-"Questo accesso rapido al widget è disattivato in quanto è nascosto "
-"nell'attuale  modulo di configurazione. Usa il modulo completo per accedere "
+"Questo widget di accesso rapido è disattivato in quanto è nascosto "
+"nell'attuale modulo di configurazione. Usa il modulo completo per accedere "
 "a questo widget..."
 
 #: ../src/libs/modulegroups.c:606
@@ -22085,13 +22082,13 @@ msgid "show all history modules"
 msgstr "Mostra tutta la storia dei i moduli"
 
 #: ../src/libs/modulegroups.c:2703 ../src/libs/modulegroups.c:3889
-#, fuzzy
 msgid ""
 "show modules that are present in the history stack, regardless of whether or "
 "not they are currently enabled"
 msgstr ""
-"Mostra i moduli che sono presenti nella coda di sviluppo, senza riguardo a "
-"dove o no sono attualmente attivati"
+"Mostra i moduli che sono presenti nella coda di sviluppo, a prescindere che"
+" siano attivati "
+"o meno"
 
 #: ../src/libs/modulegroups.c:2794
 msgid ""
@@ -22287,27 +22284,27 @@ msgstr "Adatta allo schermo"
 
 #: ../src/libs/navigation.c:517
 msgid "50%"
-msgstr ""
+msgstr "50%"
 
 #: ../src/libs/navigation.c:521
 msgid "100%"
-msgstr ""
+msgstr "100%"
 
 #: ../src/libs/navigation.c:525
 msgid "200%"
-msgstr ""
+msgstr "200%"
 
 #: ../src/libs/navigation.c:529
 msgid "400%"
-msgstr ""
+msgstr "400%"
 
 #: ../src/libs/navigation.c:533
 msgid "800%"
-msgstr ""
+msgstr "800%"
 
 #: ../src/libs/navigation.c:537
 msgid "1600%"
-msgstr ""
+msgstr "1600%"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:46 ../src/libs/print_settings.c:2597
@@ -22396,7 +22393,7 @@ msgstr ""
 
 #: ../src/libs/print_settings.c:2375
 msgid "measurement units"
-msgstr ""
+msgstr "Unità di misura"
 
 #: ../src/libs/print_settings.c:2383
 msgid "image width/height"
@@ -22505,7 +22502,7 @@ msgstr "Disposizione chiara"
 
 #: ../src/libs/print_settings.c:2541
 msgid "remove all image areas from the page"
-msgstr ""
+msgstr "Rimuovi tutte le aree immagini dalla pagina"
 
 #. d->b_x = gtk_spin_button_new_with_range(0, 1000, 1);
 #: ../src/libs/print_settings.c:2556
@@ -22919,6 +22916,11 @@ msgid ""
 "press Tab to give the focus to entry,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"Etichette allegate,\n"
+"premi Del o fai doppio click per rimuovere\n"
+"Click di destro per le altre azioni su un'etichetta allegata,\n"
+"premi Tab per dare il fuoco alla voce,\n"
+"Ctrl+Rotella del mouse per ridimensionare la finestra"
 
 #: ../src/libs/tagging.c:3111
 msgid "attach"
@@ -22942,7 +22944,7 @@ msgstr "Abilita lista gerarchica o normale"
 
 #: ../src/libs/tagging.c:3129
 msgid "hide"
-msgstr ""
+msgstr "Nascondi"
 
 #: ../src/libs/tagging.c:3131
 msgid "toggle sort by name or by count"
@@ -22950,15 +22952,16 @@ msgstr "Abilita ordinamento per nome o per conteggio"
 
 #: ../src/libs/tagging.c:3131
 msgid "sort"
-msgstr ""
+msgstr "Ordina"
 
 #: ../src/libs/tagging.c:3133
 msgid "toggle show or not darktable tags"
 msgstr "Attiva o disattiva la visualizzazione dei Tag di darktable"
 
 #: ../src/libs/tagging.c:3133
+#, fuzzy
 msgid "dttags"
-msgstr ""
+msgstr "dttags"
 
 #: ../src/libs/tagging.c:3149
 msgid ""
@@ -22967,6 +22970,11 @@ msgid ""
 "press Tab or Down key to go to the first matching tag\n"
 "press shift+Tab to select the first attached user tag"
 msgstr ""
+"Inserisci nome etichetta\n"
+"premi Invio per creare una nuova etichetta e allegarla alle immagini"
+" selezionate\n"
+"premi Tab o Freccia Giù per andare alla prima etichetta corrispondente\n"
+"premi Maiusc+Tab per selezionare la prima etichetta allegata dell'utente"
 
 #: ../src/libs/tagging.c:3160 ../src/libs/tagging.c:3166
 msgid "clear entry"
@@ -22982,6 +22990,14 @@ msgid ""
 "press shift+Tab to give the focus to entry,\n"
 "ctrl-scroll to resize the window"
 msgstr ""
+"Dizionario etichette,\n"
+"premi Invio o fai doppio click per allegare l'etichetta selezionata alle"
+" immagini selezionate,\n"
+"idem con Maiusc+Invio, il quale concede il fuoco sulla voce,\n"
+"Maiusc+click per espandere completamente l'etichetta selezionata,\n"
+"Click di destro per le altre operazioni sull'etichetta selezionata,\n"
+"Premi Maiusc+Tab per dare il fuoco ad una voce,\n"
+"Ctrl+rotella del mouse per ridimensionare la finestra"
 
 #: ../src/libs/tagging.c:3249
 msgid ""
@@ -23005,7 +23021,7 @@ msgstr "Commuta visualizzazione lista / albero"
 
 #: ../src/libs/tagging.c:3259
 msgid "tree"
-msgstr ""
+msgstr "Albero"
 
 #: ../src/libs/tagging.c:3261
 msgid "toggle list with / without suggestion"
@@ -23013,7 +23029,7 @@ msgstr "Attiva la lista con o senza suggerimento"
 
 #: ../src/libs/tagging.c:3261
 msgid "suggestion"
-msgstr ""
+msgstr "Suggerimento"
 
 #: ../src/libs/tagging.c:3284
 msgid "redo last tag"
@@ -23028,7 +23044,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:3472
 msgid "tagging settings"
-msgstr ""
+msgstr "Impostazioni di etichettatura"
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -23080,135 +23096,139 @@ msgstr "Filtro"
 
 #: ../src/libs/tools/gamepad.c:37
 msgid "gamepad"
-msgstr ""
+msgstr "gamepad"
 
 #: ../src/libs/tools/gamepad.c:71
 msgid "button a"
-msgstr ""
+msgstr "pulsante a"
 
 #: ../src/libs/tools/gamepad.c:71
 msgid "button b"
-msgstr ""
+msgstr "pulsante b"
 
 #: ../src/libs/tools/gamepad.c:71
 msgid "button x"
-msgstr ""
+msgstr "pulsante x"
 
 #: ../src/libs/tools/gamepad.c:71
 msgid "button y"
-msgstr ""
+msgstr "pulsante y"
 
 #: ../src/libs/tools/gamepad.c:72
 msgid "button back"
-msgstr ""
+msgstr "pulsante nero"
 
 #: ../src/libs/tools/gamepad.c:72
 msgid "button guide"
-msgstr ""
+msgstr "pulsante guida"
 
 #: ../src/libs/tools/gamepad.c:72
 msgid "button start"
-msgstr ""
+msgstr "pulsante start"
 
 #: ../src/libs/tools/gamepad.c:73
 msgid "left stick"
-msgstr ""
+msgstr "levetta sinistra"
 
 #: ../src/libs/tools/gamepad.c:73
 msgid "right stick"
-msgstr ""
+msgstr "levetta destra"
 
 #: ../src/libs/tools/gamepad.c:73
 msgid "left shoulder"
-msgstr ""
+msgstr "dorsale sinistro"
 
 #: ../src/libs/tools/gamepad.c:73
 msgid "right shoulder"
-msgstr ""
+msgstr "dorsale destro"
 
 #: ../src/libs/tools/gamepad.c:74
 msgid "dpad up"
-msgstr ""
+msgstr "tasto direzionale su"
 
 #: ../src/libs/tools/gamepad.c:74
 msgid "dpad down"
-msgstr ""
+msgstr "tasto direzionale giù"
 
 #: ../src/libs/tools/gamepad.c:74
 msgid "dpad left"
-msgstr ""
+msgstr "tasto direzionale sinistra"
 
 #: ../src/libs/tools/gamepad.c:74
 msgid "dpad right"
-msgstr ""
+msgstr "tasto direzionale destra"
 
 #: ../src/libs/tools/gamepad.c:75
 msgid "button misc1"
-msgstr ""
+msgstr "pulsante misc1"
 
 #: ../src/libs/tools/gamepad.c:75
+#, fuzzy
 msgid "paddle1"
-msgstr ""
+msgstr "paddle1"
 
 #: ../src/libs/tools/gamepad.c:75
+#, fuzzy
 msgid "paddle2"
-msgstr ""
+msgstr "paddle2"
 
 #: ../src/libs/tools/gamepad.c:75
+#, fuzzy
 msgid "paddle3"
-msgstr ""
+msgstr "paddle3"
 
 #: ../src/libs/tools/gamepad.c:75
+#, fuzzy
 msgid "paddle4"
-msgstr ""
+msgstr "paddle4"
 
 #: ../src/libs/tools/gamepad.c:75
 msgid "touchpad"
-msgstr ""
+msgstr "touchpad"
 
 #: ../src/libs/tools/gamepad.c:76
 msgid "left trigger"
-msgstr ""
+msgstr "grilletto sinistro"
 
 #: ../src/libs/tools/gamepad.c:76
 msgid "right trigger"
-msgstr ""
+msgstr "grilletto destro"
 
 #: ../src/libs/tools/gamepad.c:81
 msgid "invalid gamepad button"
-msgstr ""
+msgstr "Pulsante del gamepad non valido"
 
 #: ../src/libs/tools/gamepad.c:98
 msgid "left x"
-msgstr ""
+msgstr "x sinistra"
 
 #: ../src/libs/tools/gamepad.c:98
 msgid "left y"
-msgstr ""
+msgstr "y sinistra"
 
 #: ../src/libs/tools/gamepad.c:98
 msgid "right x"
-msgstr ""
+msgstr "x destra"
 
 #: ../src/libs/tools/gamepad.c:98
 msgid "right y"
-msgstr ""
+msgstr "y destra"
 
 #: ../src/libs/tools/gamepad.c:99
 msgid "left diagonal"
-msgstr ""
+msgstr "diagonale sinistra"
 
 #: ../src/libs/tools/gamepad.c:99
 msgid "left skew"
-msgstr ""
+msgstr "inclinato a sinistra"
 
 #: ../src/libs/tools/gamepad.c:99
 msgid "right diagonal"
-msgstr ""
+msgstr "diagonale destra"
 
 #: ../src/libs/tools/gamepad.c:99
 msgid "right skew"
-msgstr ""
+msgstr "inclinato a destra"
 
 #. diagonals
 #: ../src/libs/tools/gamepad.c:104
@@ -23309,12 +23329,13 @@ msgstr "Sovrimpressioni estese permanenti al passaggio del mouse"
 #: ../src/libs/tools/global_toolbox.c:445
 #: ../src/libs/tools/global_toolbox.c:471
 msgid "overlays block on mouse hover"
-msgstr ""
+msgstr "Le sovraimpressioni si ferma quando il mouse è sopra"
 
 #: ../src/libs/tools/global_toolbox.c:446
+#, fuzzy
 #: ../src/libs/tools/global_toolbox.c:472
 msgid "during (s)"
-msgstr ""
+msgstr "durante (s)"
 
 #: ../src/libs/tools/global_toolbox.c:451
 #: ../src/libs/tools/global_toolbox.c:477
@@ -23332,7 +23353,6 @@ msgstr ""
 "visualizzare l'aiuto in linea"
 
 #: ../src/libs/tools/global_toolbox.c:498
-#, fuzzy
 msgid ""
 "define shortcuts\n"
 "ctrl+click to switch off overwrite confirmations\n"
@@ -24032,7 +24052,7 @@ msgstr "Intero"
 
 #: ../src/views/lighttable.c:1247
 msgid "leave"
-msgstr ""
+msgstr "lascia"
 
 #: ../src/views/lighttable.c:1255
 msgid "align images to grid"
@@ -24196,5 +24216,4 @@ msgstr ""
 #: ../src/views/view.c:1345
 msgid "mouse actions"
 msgstr "Azioni mouse"
-
 
