@@ -589,7 +589,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   }
 
   const gboolean pinning = (cl->dev[dev].pinned_memory & DT_OPENCL_PINNING_ON) || darktable.dtresources.tunepinning;
-  const gboolean tuning = darktable.dtresources.tunememory;
+  const gboolean tuning = darktable.dtresources.tunememory == 1;
   dt_print_nts(DT_DEBUG_OPENCL, "   ASYNC PIXELPIPE:          %s\n", (cl->dev[dev].asyncmode) ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL, "   PINNED MEMORY TRANSFER:   %s\n", pinning ? "YES" : "NO");
   dt_print_nts(DT_DEBUG_OPENCL, "   MEMORY TUNING:            %s\n", tuning ? "YES" : "NO");
@@ -2785,13 +2785,18 @@ void dt_opencl_check_device_available(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || devid < 0) return;
-  if(darktable.dtresources.tunememory == 0)  cl->dev[devid].tuned_available = 0;
+  if(darktable.dtresources.tunememory != 1)  cl->dev[devid].tuned_available = 0;
   if(darktable.dtresources.tunepinning != 0) cl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ON;
 
-  int level = darktable.dtresources.level;
+  const int level = darktable.dtresources.level;
+  const int tunemem = darktable.dtresources.tunememory;
+
   static int oldlevel = -999;
-  const gboolean info = ((oldlevel != level) || (darktable.unmuted & DT_DEBUG_VERBOSE));
+  static int oldtunemem = -999;
+  const gboolean info = ((oldlevel != level) || (oldtunemem != tunemem) ||  (darktable.unmuted & DT_DEBUG_VERBOSE));
+
   oldlevel = level;
+  oldtunemem = tunemem;
 
   if(level < 0)
   {
@@ -2804,12 +2809,19 @@ void dt_opencl_check_device_available(const int devid)
   }
 
   const size_t allmem = cl->dev[devid].max_global_mem;
-  const gboolean tuned = darktable.dtresources.tunememory && (level > 0);
+  const gboolean tuned = (tunemem > 0) && (level > 0);
   if(tuned)
   {
-    // we always leave a safety margin, at least 100MB for level large
-    _opencl_get_unused_device_mem(devid);
-    cl->dev[devid].used_available = cl->dev[devid].tuned_available * (32 - MAX(0, 2 - level)) / 32;
+    if(tunemem == 1)
+    {
+      // we always leave a safety margin, at least 200MB for level large
+      _opencl_get_unused_device_mem(devid);
+      cl->dev[devid].used_available = cl->dev[devid].tuned_available * (32 - MAX(0, 2 - level)) / 32;
+    }
+    else
+    {
+       cl->dev[devid].used_available = cl->dev[devid].max_global_mem - ((size_t)tunemem * 200lu * 1024lu * 1024lu); 
+    }
   }
   else
   {
@@ -2822,7 +2834,7 @@ void dt_opencl_check_device_available(const int devid)
   if(info)
     dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
        "[dt_opencl_check_device_available] use %luMB (tunemem=%s, pinning=%s) on device `%s' id=%i\n",
-       cl->dev[devid].used_available / 1024lu / 1024lu, (tuned) ? "ON" : "OFF",
+       cl->dev[devid].used_available / 1024lu / 1024lu, (tunemem == 1) ? "ON" : "OFF",
        (cl->dev[devid].pinned_memory) ? "ON" : "OFF", cl->dev[devid].name, devid);
 }
 
@@ -2959,6 +2971,10 @@ int dt_opencl_get_tuning_mode(void)
     if(!strcmp(pstr, "memory size"))                   res = DT_OPENCL_TUNE_MEMSIZE;
     else if(!strcmp(pstr, "memory transfer"))          res = DT_OPENCL_TUNE_PINNED;
     else if(!strcmp(pstr, "memory size and transfer")) res = DT_OPENCL_TUNE_MEMSIZE | DT_OPENCL_TUNE_PINNED;
+    else if(!strcmp(pstr, "400 MB"))                   res = 4;
+    else if(!strcmp(pstr, "400 MB and transfer"))      res = 4 | DT_OPENCL_TUNE_PINNED;
+    else if(!strcmp(pstr, "600 MB"))                   res = 6;
+    else if(!strcmp(pstr, "600 MB and transfer"))      res = 6 | DT_OPENCL_TUNE_PINNED;
   }
   return res;  
 }

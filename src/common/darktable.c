@@ -1343,7 +1343,7 @@ void dt_get_sysresource_level()
   darktable.dtresources.level = oldlevel = level;
   oldtunecl = tunecl;
 #ifdef HAVE_OPENCL
-  darktable.dtresources.tunememory  = (tunecl & DT_OPENCL_TUNE_MEMSIZE) ? 1 : 0;
+  darktable.dtresources.tunememory  = tunecl / 2;
   darktable.dtresources.tunepinning = (tunecl & DT_OPENCL_TUNE_PINNED) ? 1 : 0;
 #else
   darktable.dtresources.tunememory  = 0;
@@ -1359,7 +1359,7 @@ void dt_get_sysresource_level()
     fprintf(stderr,"  available mem:   %luMB\n", dt_get_available_mem() / 1024lu / 1024lu);
     fprintf(stderr,"  singlebuff:      %luMB\n", dt_get_singlebuffer_mem() / 1024lu / 1024lu);
 #ifdef HAVE_OPENCL
-    fprintf(stderr,"  OpenCL tune mem: %s\n", ((darktable.dtresources.tunememory) && (level >= 0)) ? "ON" : "OFF");
+    fprintf(stderr,"  OpenCL tune mem: %s\n", ((darktable.dtresources.tunememory == 1) && (level >= 0)) ? "ON" : "OFF");
     fprintf(stderr,"  OpenCL pinned:   %s\n", ((darktable.dtresources.tunepinning) && (level >= 0)) ? "ON" : "OFF");
 #endif
     darktable.dtresources.group = oldgrp;

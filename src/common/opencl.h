@@ -97,8 +97,8 @@ typedef struct dt_opencl_eventtag_t
 typedef enum dt_opencl_tunemode_t
 {
   DT_OPENCL_TUNE_NOTHING = 0,
-  DT_OPENCL_TUNE_MEMSIZE = 1,
-  DT_OPENCL_TUNE_PINNED  = 2
+  DT_OPENCL_TUNE_PINNED  = 1,
+  DT_OPENCL_TUNE_MEMSIZE = 2,
 } dt_opencl_tunemode_t;
 
 typedef enum dt_opencl_pinmode_t
