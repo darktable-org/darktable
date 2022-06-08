@@ -263,14 +263,4 @@ as root. It's also enough to install a server setup without X.
 - Now you have a Windows version of darktable in `/opt/darktable-win/`, which should be suited for 64 bit Windows installations. Before you can run it do `cp /usr/x86_64-w64-mingw32/sys-root/mingw/bin/*.dll /opt/darktable-win/bin/`
 - Done. Copy `/opt/darktable-win/` to a Windows box, go to the bin folder and double click `darktable.exe`.
 
-### KNOWN ISSUES:
-
-- The current working directory has to be the bin folder when running the `.exe`. Double clicking in Explorer does that for you.
-- GTK engine is not copied over/found currently, probably just a matter of putting the right DLLs into the correct places and/or setting some environment variables. We also want "wimp" in gtkrc instead of clearlooks. You can find it in `/usr/x86_64-w64-mingw32/sys-root/mingw/lib/gtk-2.0/2.10.0/engines/`
-- A stupid error message about missing dbus symbols in a DLL. This is fixed in libglib already but the version used by us doesn't have it. Using newer openSUSE releases might fix this but I couldn't find lensfun and libexiv2 for them. Some day we might add our own build service to OBS so that will go away eventually.
-- Moving darktable's main window freezes the application. No idea what's going on there. Since I have seen some Windows installations moving the window on startup and subsequently freezing automatically it might be impossible to run darktable for you.
-- Building with openCL isn't completely done yet (links used for caching). This might change soonish, no idea if it would work in the end though.
-- Importing directories didn't work in my tests (freezes), single images imported fine though, I could edit them and export them.
-- Lua support doesn't compile right now since it uses select() on a file which is not supported on Windows.
-
 Have fun with this, report back your findings.
