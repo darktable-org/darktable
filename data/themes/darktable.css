@@ -372,13 +372,19 @@ entry,
 textview
 {
   background-color: alpha(@fg_color, 0.09);
-  padding: 0.14em 0.28em;
+  padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of worakaround just below */
 }
 
 .combo *
 {
   min-height: 1em;
   min-width: 1em;
+}
+
+/* workaround for specific Gtk issue since 3.24.24 on scrolledwindow textview if more top/bottom padding */
+scrolledwindow textview
+{
+  border: none;
 }
 
 /* Buttons in modules header, path-bar on filechooser dialog window and all text-button and related */
