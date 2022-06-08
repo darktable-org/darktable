@@ -200,7 +200,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 @define-color range_graph_color alpha(@timeline_fg_color, 0.75);
 @define-color range_bg_color alpha(@fg_color, 0.12);
 @define-color range_cursor_color alpha(@fg_color, 0.75);
-@define-color range_sel_color alpha(@timeline_bg_color, 0.6);
+@define-color range_sel_color alpha(@bauhaus_fill, 0.6);
 @define-color range_icon_color alpha(@thumbnail_hover_fg_color, 0.8);
 
 /* Brushes */
@@ -372,13 +372,19 @@ entry,
 textview
 {
   background-color: alpha(@fg_color, 0.09);
-  padding: 0.28em;
+  padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of worakaround just below */
 }
 
 .combo *
 {
   min-height: 1em;
   min-width: 1em;
+}
+
+/* workaround for specific Gtk issue since 3.24.24 on scrolledwindow textview if more top/bottom padding */
+scrolledwindow textview
+{
+  border: none;
 }
 
 /* Buttons in modules header, path-bar on filechooser dialog window and all text-button and related */
