@@ -75,8 +75,9 @@ box *
 }
 
 button,
-.dt_section_label,
-.dt_section_label *
+.dt_section_label:not(#blending-box),
+#blending-box .dt_section_label label,
+#blending-box .dt_section_label .dt_bauhaus
 {
     font-family: "Roboto Medium", "Roboto",
                  "Segoe UI Semibold", "Segoe UI",
