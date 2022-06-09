@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-07 23:28+0200\n"
+"PO-Revision-Date: 2022-06-09 08:29+0100\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 19.12.3\n"
+"X-Generator: Lokalize 2.0\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -20376,7 +20376,7 @@ msgstr "P"
 
 #: ../src/libs/filters/colors.c:269
 msgid "color filter"
-msgstr ""
+msgstr "Filtro colore"
 
 #: ../src/libs/filters/colors.c:294
 msgid ""
@@ -20389,7 +20389,7 @@ msgstr ""
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
 #: ../src/libs/filters/rating_range.c:339
 msgid "rules"
-msgstr ""
+msgstr "Regole"
 
 #: ../src/libs/filters/colors.c:306
 msgid ""
@@ -20408,7 +20408,7 @@ msgstr ""
 
 #: ../src/libs/filters/filename.c:376
 msgid "extension"
-msgstr ""
+msgstr "Estensione"
 
 #: ../src/libs/filters/filename.c:377
 msgid ""
@@ -20424,24 +20424,28 @@ msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
 msgstr ""
+"Semplice click per selezionare il nome file\n"
+"ctrl-click per selezionare valori multipli"
 
 #: ../src/libs/filters/filename.c:432
 msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
 msgstr ""
+"Semplice click per selezionare l'estensione\n"
+"ctrl-click per selezionare valori multipli"
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
 msgid "ungrouped images"
-msgstr ""
+msgstr "Immagini non raggruppate"
 
 #: ../src/libs/filters/grouping.c:167
 msgid "grouping filter"
-msgstr ""
+msgstr "FIltro gruppo"
 
 #: ../src/libs/filters/grouping.c:168
 msgid "select the type of grouped image to filter"
-msgstr ""
+msgstr "Seleziona il tipo delle immagini raggruppate da filtrare"
 
 #. predefined selections
 #: ../src/libs/filters/grouping.c:169 ../src/libs/filters/history.c:38
@@ -20450,31 +20454,31 @@ msgstr ""
 #: ../src/libs/filters/rating_range.c:109 ../src/libs/filters/ratio.c:68
 #: ../src/libs/filters/ratio.c:81
 msgid "all images"
-msgstr ""
+msgstr "Tutte le immagini"
 
 #: ../src/libs/filters/history.c:153
 msgid "history filter"
-msgstr ""
+msgstr "FIltro coda sviluppo"
 
 #: ../src/libs/filters/history.c:153
 msgid "filter on history state"
-msgstr ""
+msgstr "Filtro sullo stato coda sviluppo"
 
 #: ../src/libs/filters/local_copy.c:142
 msgid "local_copy filter"
-msgstr ""
+msgstr "Filtro copia locale"
 
 #: ../src/libs/filters/local_copy.c:142
 msgid "local copied state filter"
-msgstr ""
+msgstr "Filtro stato copia locale"
 
 #: ../src/libs/filters/module_order.c:161
 msgid "module order filter"
-msgstr ""
+msgstr "Filtro ordine moduli"
 
 #: ../src/libs/filters/module_order.c:161
 msgid "filter images based on their module order"
-msgstr ""
+msgstr "Filtra le immagini in base all'ordine dei moduli"
 
 #: ../src/libs/filters/rating.c:199
 msgid "comparator"
@@ -20482,7 +20486,7 @@ msgstr "Comparatore"
 
 #: ../src/libs/filters/rating.c:200 ../src/libs/filters/rating.c:210
 msgid "filter by images rating"
-msgstr ""
+msgstr "FIltra per valutazione immagine"
 
 #. create the filter combobox
 #: ../src/libs/filters/rating.c:210 ../src/libs/image.c:544
@@ -20506,35 +20510,35 @@ msgstr "Tutte escluso le scartate"
 
 #: ../src/libs/filters/rating_range.c:61 ../src/libs/filters/rating_range.c:76
 msgid "not rated only"
-msgstr ""
+msgstr "solo non valutati"
 
 #: ../src/libs/filters/rating_range.c:99 ../src/libs/filters/rating_range.c:128
 #: ../src/libs/filters/rating_range.c:133
 #: ../src/libs/filters/rating_range.c:292
 msgid "rejected"
-msgstr ""
+msgstr "scartato"
 
 #: ../src/libs/filters/rating_range.c:101
 #: ../src/libs/filters/rating_range.c:128
 #: ../src/libs/filters/rating_range.c:293
 msgid "not rated"
-msgstr ""
+msgstr "non valutato"
 
 #: ../src/libs/filters/rating_range.c:119
 msgid "only"
-msgstr ""
+msgstr "soltanto"
 
 #: ../src/libs/filters/rating_range.c:168
 msgid "selected"
-msgstr ""
+msgstr "selezionato"
 
 #: ../src/libs/filters/rating_range.c:286
 msgid "better"
-msgstr ""
+msgstr "migliore"
 
 #: ../src/libs/filters/rating_range.c:287
 msgid "worse"
-msgstr ""
+msgstr "peggiore"
 
 #: ../src/libs/filters/rating_range.c:288
 msgid "cap"
@@ -20542,22 +20546,22 @@ msgstr ""
 
 #: ../src/libs/filters/rating_range.c:303
 msgid "rating filter"
-msgstr ""
+msgstr "Filtro valutazione"
 
 #: ../src/libs/filters/ratio.c:70 ../src/libs/filters/ratio.c:82
 msgid "portrait images"
-msgstr ""
+msgstr "immagini di ritratto"
 
 #: ../src/libs/filters/ratio.c:71 ../src/libs/filters/ratio.c:83
 msgid "square images"
-msgstr ""
+msgstr "immagini quadrate"
 
 #: ../src/libs/filters/ratio.c:72 ../src/libs/filters/ratio.c:84
 msgid "landscape images"
-msgstr ""
+msgstr "Immagini di paesaggi"
 
 #: ../src/libs/filters/search.c:180
-#, no-c-format
+#, fuzzy, no-c-format
 msgid ""
 "filter by text from images metadata, tags, file path and name\n"
 "`%' is the wildcard character\n"
@@ -22215,9 +22219,8 @@ msgid "new preset name:"
 msgstr "Nuovo nome della preimpostazione:"
 
 #: ../src/libs/modulegroups.c:3514
-#, fuzzy
 msgid "a preset with this name already exists!"
-msgstr "Esiste già una preimpostazione con questo nome!"
+msgstr "Esiste già un preset con questo nome!"
 
 #: ../src/libs/modulegroups.c:3859
 msgid "preset: "
@@ -24216,4 +24219,5 @@ msgstr ""
 #: ../src/views/view.c:1345
 msgid "mouse actions"
 msgstr "Azioni mouse"
+
 
