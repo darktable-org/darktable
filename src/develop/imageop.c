@@ -2453,6 +2453,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   snprintf(w_name, sizeof(w_name), "iop-panel-icon-%s", module->op);
   hw[IOP_MODULE_ICON] = gtk_label_new("");
   gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_ICON]), w_name);
+  dt_gui_add_class(GTK_WIDGET(hw[IOP_MODULE_ICON]), "dt_icon");
   gtk_widget_set_valign(GTK_WIDGET(hw[IOP_MODULE_ICON]), GTK_ALIGN_CENTER);
 
   /* add module label */
