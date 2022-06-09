@@ -135,7 +135,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_20;
-@define-color section_label shade(@fg_color, 1.2);
+@define-color section_label shade(@fg_color, 0.92);
 @define-color plugin_label_color @grey_60;
 @define-color collapsible_bg_color @grey_25;
 
@@ -353,7 +353,6 @@ textview,
   border: 1px solid @button_border; /* this too */
   border-radius: 0.21em;
   background-color: @button_bg;
-  font-weight: normal;
   font-family: sans-serif;
 }
 
@@ -372,7 +371,7 @@ entry,
 textview
 {
   background-color: alpha(@fg_color, 0.09);
-  padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of worakaround just below */
+  padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of workaround just below */
 }
 
 .combo *
@@ -381,7 +380,7 @@ textview
   min-width: 1em;
 }
 
-/* workaround for specific Gtk issue since 3.24.24 on scrolledwindow textview if more top/bottom padding */
+/* workaround for specific Gtk issue since 3.24.24 on scrolledwindow textview as borders are not displayed */
 scrolledwindow textview
 {
   border: none;
