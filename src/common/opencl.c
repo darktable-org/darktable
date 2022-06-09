@@ -703,13 +703,18 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   char *includemd5[DT_OPENCL_MAX_INCLUDES] = { NULL };
   dt_opencl_md5sum(clincludes, includemd5);
 
+  if(newdevice) // so far the device seems to be ok. Make sure to write&export the conf database to
+  {
+    dt_opencl_write_device_config(dev);
+    dt_conf_save(darktable.conf);
+  }
+
   // now load all darktable cl kernels.
   // TODO: compile as a job?
   tstart = dt_get_wtime();
   FILE *f = g_fopen(filename, "rb");
   if(f)
   {
-
     while(!feof(f))
     {
       int prog = -1;
@@ -1982,7 +1987,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     cl->dev[dev].program[prog] = (cl->dlocl->symbols->dt_clCreateProgramWithSource)(
         cl->dev[dev].context, 1, (const char **)&file, &filesize, &err);
     free(file);
-    if(err != CL_SUCCESS)
+    if((err != CL_SUCCESS) || (cl->dev[dev].program[prog] == NULL))
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_load_source] could not create program from file `%s'! (%s)\n",
                filename, cl_errstr(err));
