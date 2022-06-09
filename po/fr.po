@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-04 19:24+0200\n"
-"PO-Revision-Date: 2022-06-04 19:24+0200\n"
+"POT-Creation-Date: 2022-06-09 22:31+0200\n"
+"PO-Revision-Date: 2022-06-09 22:31+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2760,10 +2760,10 @@ msgid "very large chromatic aberration"
 msgstr "aberrations chromatiques très larges"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1429 ../src/common/color_vocabulary.c:230
+#: ../src/common/collection.c:1429 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:329 ../src/develop/blend_gui.c:1989
 #: ../src/develop/blend_gui.c:2016 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:2917 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
+#: ../src/gui/gtk.c:2918 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2302
 #: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1992
@@ -2772,10 +2772,10 @@ msgid "red"
 msgstr "rouge"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1433 ../src/common/color_vocabulary.c:275
+#: ../src/common/collection.c:1433 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:331 ../src/develop/blend_gui.c:1992
 #: ../src/develop/blend_gui.c:2019 ../src/develop/lightroom.c:838
-#: ../src/gui/gtk.c:2918 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
+#: ../src/gui/gtk.c:2919 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4182 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
@@ -2785,10 +2785,10 @@ msgid "green"
 msgstr "vert"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1435 ../src/common/color_vocabulary.c:322
+#: ../src/common/collection.c:1435 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:332 ../src/develop/blend_gui.c:1995
 #: ../src/develop/blend_gui.c:2022 ../src/develop/lightroom.c:840
-#: ../src/gui/gtk.c:2919 ../src/iop/bilateral.cc:315
+#: ../src/gui/gtk.c:2920 ../src/iop/bilateral.cc:315
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4183 ../src/iop/colorzones.c:2307
 #: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1994
@@ -4769,40 +4769,40 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer vos images"
 
-#: ../src/bauhaus/bauhaus.c:3280
+#: ../src/bauhaus/bauhaus.c:3273
 msgid "button on"
 msgstr "bouton actif"
 
-#: ../src/bauhaus/bauhaus.c:3280
+#: ../src/bauhaus/bauhaus.c:3273
 msgid "button off"
 msgstr "bouton inactif"
 
-#: ../src/bauhaus/bauhaus.c:3449 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3442 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "valeur"
 
-#: ../src/bauhaus/bauhaus.c:3450 ../src/bauhaus/bauhaus.c:3456
+#: ../src/bauhaus/bauhaus.c:3443 ../src/bauhaus/bauhaus.c:3449
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "bouton"
 
-#: ../src/bauhaus/bauhaus.c:3451
+#: ../src/bauhaus/bauhaus.c:3444
 msgid "force"
 msgstr "force"
 
-#: ../src/bauhaus/bauhaus.c:3452
+#: ../src/bauhaus/bauhaus.c:3445
 msgid "zoom"
 msgstr "zoom"
 
-#: ../src/bauhaus/bauhaus.c:3455
+#: ../src/bauhaus/bauhaus.c:3448
 msgid "selection"
 msgstr "sélection"
 
-#: ../src/bauhaus/bauhaus.c:3474
+#: ../src/bauhaus/bauhaus.c:3467
 msgid "slider"
 msgstr "réglette"
 
-#: ../src/bauhaus/bauhaus.c:3479
+#: ../src/bauhaus/bauhaus.c:3472
 msgid "dropdown"
 msgstr "menu déroulant"
 
@@ -5116,7 +5116,7 @@ msgid "capture date"
 msgstr "date de capture"
 
 #: ../src/common/collection.c:677 ../src/libs/collect.c:3313
-#: ../src/libs/filtering.c:1984 ../src/libs/filtering.c:2004
+#: ../src/libs/filtering.c:1986 ../src/libs/filtering.c:2006
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "historique"
@@ -5174,7 +5174,7 @@ msgstr "rechercher"
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:337
+#: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:333 ../src/iop/colorzones.c:2308
 #: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:264
 msgid "purple"
@@ -5250,323 +5250,291 @@ msgstr[1] "%d images sur %d sélectionnées dans la collection courante"
 msgid "gray"
 msgstr "gris"
 
-#. Human skin tones database
-#. This is a racially-charged matter, tread with it carefully.
-#. Usable data are : tabulated avg ± std (P < 0.05) models on skin color measurements
-#. on more than 80 individuals under D65 illuminant.
-#. Notice all these data are valid only under D65 illuminant and errors up to delta E = 6 have
-#. been measured for A illuminant. Proper camera profiling and chromatic adaptation needs to be performed
-#. or all the following is meaningless.
-#. We use ranges of avg ± 2 std, giving 95 % of confidence in the prediction.
-#. We use CIE Lab instead of Lch coordinates, because a and b parameters are physiologically meaningful :
-#. - a (redness) is linked to blood flow and health,
-#. - b (yellowness) is linked to melanine and sun tan.
-#. Reference :
-#. XIAO, Kaida, YATES, Julian M., ZARDAWI, Faraedon, et al.
-#. Characterising the variations in ethnic skin colours: a new calibrated data base for human skin.
-#. Skin Research and Technology, 2017, vol. 23, no 1, p. 21-29.
-#. https://onlinelibrary.wiley.com/doi/pdf/10.1111/srt.12295
-#.
-#. Sample : 187 caucasian, 202 chinese, 145 kurdish and 426 thai.
-#.
-#. DE RIGAL, Jean, DES MAZIS, Isabelle, DIRIDOLLOU, Stephane, et al.
-#. The effect of age on skin color and color heterogeneity in four ethnic groups.
-#. Skin Research and Technology, 2010, vol. 16, no 2, p. 168-178.
-#. https://pubmed.ncbi.nlm.nih.gov/20456097/
-#.
-#. Sample : 121 african-american, 64 mexican.
-#. Note : the data have been read on the graph and are inaccurate and std is majorated.
-#. The original authors have been contacted to get the tabulated, accurate data,
-#. but the main author is retired, co-authors have changed jobs, and the L'Oréal head of R&D
-#. did not respond. So the values here are given for what it's worth.
-#.
-#. "Forearm" is the ventral forearm skin. It is the least sun-tanned part of skin.
-#. Sun tan will depend the most on lifestyle, therefore the ventral forearm
-#. is the least socially-biased skin color metric.
-#. "Forehead" is the most sun-tanned part of skin. This translates to high b coordinate.
-#. "Cheek" is the most redish part of skin. This translates to high a coordinate.
-#. L decreases with age in all ethnicities and with b/yellowness/melanine/tan.
-#: ../src/common/color_vocabulary.c:91
+#: ../src/common/color_vocabulary.c:92
 msgid "Chinese"
 msgstr "Chinois"
 
-#: ../src/common/color_vocabulary.c:92
+#: ../src/common/color_vocabulary.c:93
 msgid "Thai"
 msgstr "Thaïlandais"
 
-#: ../src/common/color_vocabulary.c:93
+#: ../src/common/color_vocabulary.c:94
 msgid "Kurdish"
 msgstr "Turque"
 
-#: ../src/common/color_vocabulary.c:94
+#: ../src/common/color_vocabulary.c:95
 msgid "Caucasian"
 msgstr "Caucasien"
 
-#: ../src/common/color_vocabulary.c:95
+#: ../src/common/color_vocabulary.c:96
 msgid "African-american"
 msgstr "Afro-américain"
 
-#: ../src/common/color_vocabulary.c:98 ../src/common/color_vocabulary.c:103
-#: ../src/common/color_vocabulary.c:108 ../src/common/color_vocabulary.c:113
+#: ../src/common/color_vocabulary.c:97
+msgid "Mexican"
+msgstr "Mexicain"
+
+#: ../src/common/color_vocabulary.c:100 ../src/common/color_vocabulary.c:105
+#: ../src/common/color_vocabulary.c:110 ../src/common/color_vocabulary.c:115
 msgid "forearm"
 msgstr "avant bras"
 
-#: ../src/common/color_vocabulary.c:118 ../src/common/color_vocabulary.c:123
-#: ../src/common/color_vocabulary.c:128 ../src/common/color_vocabulary.c:133
-#: ../src/common/color_vocabulary.c:138 ../src/common/color_vocabulary.c:143
+#: ../src/common/color_vocabulary.c:120 ../src/common/color_vocabulary.c:125
+#: ../src/common/color_vocabulary.c:130 ../src/common/color_vocabulary.c:135
+#: ../src/common/color_vocabulary.c:140 ../src/common/color_vocabulary.c:145
 msgid "forehead"
 msgstr "front"
 
-#: ../src/common/color_vocabulary.c:148 ../src/common/color_vocabulary.c:153
-#: ../src/common/color_vocabulary.c:158 ../src/common/color_vocabulary.c:163
-#: ../src/common/color_vocabulary.c:168 ../src/common/color_vocabulary.c:173
+#: ../src/common/color_vocabulary.c:150 ../src/common/color_vocabulary.c:155
+#: ../src/common/color_vocabulary.c:160 ../src/common/color_vocabulary.c:165
+#: ../src/common/color_vocabulary.c:170 ../src/common/color_vocabulary.c:175
 msgid "cheek"
 msgstr "joue"
 
-#: ../src/common/color_vocabulary.c:200
+#: ../src/common/color_vocabulary.c:202
 #, c-format
 msgid "average %s skin tone\n"
 msgstr "ton chair %s moyen\n"
 
 #. 0° - pinkish red
-#: ../src/common/color_vocabulary.c:220
+#: ../src/common/color_vocabulary.c:222
 msgid "deep purple"
 msgstr "violet profond"
 
 #. L = 10 %
-#: ../src/common/color_vocabulary.c:221
+#: ../src/common/color_vocabulary.c:223
 msgid "fuchsia"
 msgstr "fuchsia"
 
 #. L = 30 %
-#: ../src/common/color_vocabulary.c:222
+#: ../src/common/color_vocabulary.c:224
 msgid "medium magenta"
 msgstr "magenta moyen"
 
 #. L = 50 %
-#: ../src/common/color_vocabulary.c:223
+#: ../src/common/color_vocabulary.c:225
 msgid "violet pink"
 msgstr "rose violacé"
 
 #. L = 70 %
-#: ../src/common/color_vocabulary.c:224
+#: ../src/common/color_vocabulary.c:226
 msgid "plum violet"
 msgstr "violet prune"
 
 #. 24° - red
-#: ../src/common/color_vocabulary.c:229
+#: ../src/common/color_vocabulary.c:231
 msgid "dark red"
 msgstr "rouge foncé"
 
-#: ../src/common/color_vocabulary.c:231
+#: ../src/common/color_vocabulary.c:233
 msgid "crimson"
 msgstr "cramoisie"
 
-#: ../src/common/color_vocabulary.c:232
+#: ../src/common/color_vocabulary.c:234
 msgid "salmon"
 msgstr "saumon"
 
-#: ../src/common/color_vocabulary.c:233
+#: ../src/common/color_vocabulary.c:235
 msgid "pink"
 msgstr "rose"
 
 #. 48° - orangy red
-#: ../src/common/color_vocabulary.c:238
+#: ../src/common/color_vocabulary.c:240
 msgid "maroon"
 msgstr "bordeaux"
 
-#: ../src/common/color_vocabulary.c:239
+#: ../src/common/color_vocabulary.c:241
 msgid "dark orange red"
 msgstr "rouge orangé foncé "
 
-#: ../src/common/color_vocabulary.c:240
+#: ../src/common/color_vocabulary.c:242
 msgid "orange red"
 msgstr "rouge orangé"
 
-#: ../src/common/color_vocabulary.c:241
+#: ../src/common/color_vocabulary.c:243
 msgid "coral"
 msgstr "corail"
 
-#: ../src/common/color_vocabulary.c:242 ../src/common/color_vocabulary.c:259
+#: ../src/common/color_vocabulary.c:244 ../src/common/color_vocabulary.c:261
 msgid "khaki"
 msgstr "kaki"
 
 #. 72° - orange
-#: ../src/common/color_vocabulary.c:247
+#: ../src/common/color_vocabulary.c:249
 msgid "brown"
 msgstr "marron"
 
-#: ../src/common/color_vocabulary.c:248
+#: ../src/common/color_vocabulary.c:250
 msgid "chocolate"
 msgstr "chocolat"
 
-#: ../src/common/color_vocabulary.c:249
+#: ../src/common/color_vocabulary.c:251
 msgid "dark gold"
 msgstr "or foncé"
 
-#: ../src/common/color_vocabulary.c:250
+#: ../src/common/color_vocabulary.c:252
 msgid "gold"
 msgstr "or"
 
-#: ../src/common/color_vocabulary.c:251
+#: ../src/common/color_vocabulary.c:253
 msgid "sandy brown"
 msgstr "brun sable"
 
 #. 96° - yellow olive
 #. 120° - green
 #. 144° - blueish green
-#: ../src/common/color_vocabulary.c:256 ../src/common/color_vocabulary.c:265
-#: ../src/common/color_vocabulary.c:274
+#: ../src/common/color_vocabulary.c:258 ../src/common/color_vocabulary.c:267
+#: ../src/common/color_vocabulary.c:276
 msgid "dark green"
 msgstr "vert foncé"
 
-#: ../src/common/color_vocabulary.c:257
+#: ../src/common/color_vocabulary.c:259
 msgid "dark olive green"
 msgstr "vert olive foncé"
 
-#: ../src/common/color_vocabulary.c:258
+#: ../src/common/color_vocabulary.c:260
 msgid "olive"
 msgstr "olive"
 
-#: ../src/common/color_vocabulary.c:260
+#: ../src/common/color_vocabulary.c:262
 msgid "beige"
 msgstr "beige"
 
-#: ../src/common/color_vocabulary.c:266 ../src/common/color_vocabulary.c:276
+#: ../src/common/color_vocabulary.c:268 ../src/common/color_vocabulary.c:278
 msgid "forest green"
 msgstr "vert foret"
 
-#: ../src/common/color_vocabulary.c:267
+#: ../src/common/color_vocabulary.c:269
 msgid "olive drab"
 msgstr "olive terne"
 
-#: ../src/common/color_vocabulary.c:268
+#: ../src/common/color_vocabulary.c:270
 msgid "yellow green"
 msgstr "jaune vert"
 
-#: ../src/common/color_vocabulary.c:269 ../src/common/color_vocabulary.c:278
+#: ../src/common/color_vocabulary.c:271 ../src/common/color_vocabulary.c:280
 msgid "pale green"
 msgstr "vert pale"
 
-#: ../src/common/color_vocabulary.c:277
+#: ../src/common/color_vocabulary.c:279
 msgid "lime green"
 msgstr "vert citron"
 
 #. 168° - greenish cyian
-#: ../src/common/color_vocabulary.c:283
+#: ../src/common/color_vocabulary.c:285
 msgid "dark sea green"
 msgstr "vert marin foncé"
 
-#: ../src/common/color_vocabulary.c:284
+#: ../src/common/color_vocabulary.c:286
 msgid "sea green"
 msgstr "vert océan"
 
-#: ../src/common/color_vocabulary.c:285 ../src/common/color_vocabulary.c:302
+#: ../src/common/color_vocabulary.c:287 ../src/common/color_vocabulary.c:304
 msgid "teal"
 msgstr "sarcelle"
 
-#: ../src/common/color_vocabulary.c:286
+#: ../src/common/color_vocabulary.c:288
 msgid "light sea green"
 msgstr "vert océan clair"
 
-#: ../src/common/color_vocabulary.c:287
+#: ../src/common/color_vocabulary.c:289
 msgid "turquoise"
 msgstr "turquoise"
 
 #. 192° - cyan
-#: ../src/common/color_vocabulary.c:292
+#: ../src/common/color_vocabulary.c:294
 msgid "dark slate gray"
 msgstr "gris ardoise foncé"
 
-#: ../src/common/color_vocabulary.c:293
+#: ../src/common/color_vocabulary.c:295
 msgid "light slate gray"
 msgstr "gris ardoise clair"
 
-#: ../src/common/color_vocabulary.c:294 ../src/common/color_vocabulary.c:303
+#: ../src/common/color_vocabulary.c:296 ../src/common/color_vocabulary.c:305
 msgid "dark cyan"
 msgstr "cyan foncé"
 
-#: ../src/common/color_vocabulary.c:295 ../src/common/color_vocabulary.c:315
+#: ../src/common/color_vocabulary.c:297 ../src/common/color_vocabulary.c:317
 #: ../src/iop/colorzones.c:2306
 msgid "aqua"
 msgstr "aqua"
 
-#: ../src/common/color_vocabulary.c:296 ../src/gui/guides.c:733
+#: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
 #: ../src/iop/temperature.c:1807
 msgid "cyan"
 msgstr "cyan"
 
 #. 216° - medium blue
-#: ../src/common/color_vocabulary.c:301
+#: ../src/common/color_vocabulary.c:303
 msgid "navy blue"
 msgstr "bleu marin"
 
-#: ../src/common/color_vocabulary.c:304 ../src/common/color_vocabulary.c:314
+#: ../src/common/color_vocabulary.c:306 ../src/common/color_vocabulary.c:316
 msgid "deep sky blue"
 msgstr "bleu ciel profond"
 
-#: ../src/common/color_vocabulary.c:305
+#: ../src/common/color_vocabulary.c:307
 msgid "aquamarine blue"
 msgstr "bleu aigue-marine"
 
 #. 240° - blue and 264° - bluer than blue
 #. these are collapsed because CIE Lab 1976 sucks for blues
 #. 288° - more blue
-#: ../src/common/color_vocabulary.c:311 ../src/common/color_vocabulary.c:320
+#: ../src/common/color_vocabulary.c:313 ../src/common/color_vocabulary.c:322
 msgid "dark blue"
 msgstr "bleu foncé"
 
-#: ../src/common/color_vocabulary.c:312 ../src/common/color_vocabulary.c:321
+#: ../src/common/color_vocabulary.c:314 ../src/common/color_vocabulary.c:323
 msgid "medium blue"
 msgstr "bleu moyen"
 
-#: ../src/common/color_vocabulary.c:313
+#: ../src/common/color_vocabulary.c:315
 msgid "azure blue"
 msgstr "bleu azure"
 
-#: ../src/common/color_vocabulary.c:323
+#: ../src/common/color_vocabulary.c:325
 msgid "light sky blue"
 msgstr "bleu ciel clair"
 
-#: ../src/common/color_vocabulary.c:324
+#: ../src/common/color_vocabulary.c:326
 msgid "light blue"
 msgstr "bleu clair"
 
 #. 312° - violet
-#: ../src/common/color_vocabulary.c:329
+#: ../src/common/color_vocabulary.c:331
 msgid "indigo"
 msgstr "indigo"
 
-#: ../src/common/color_vocabulary.c:330
+#: ../src/common/color_vocabulary.c:332
 msgid "dark violet"
 msgstr "violet foncé"
 
-#: ../src/common/color_vocabulary.c:331
+#: ../src/common/color_vocabulary.c:333
 msgid "blue violet"
 msgstr "bleu violet"
 
-#: ../src/common/color_vocabulary.c:332 ../src/common/color_vocabulary.c:340
+#: ../src/common/color_vocabulary.c:334 ../src/common/color_vocabulary.c:342
 msgid "violet"
 msgstr "violet"
 
-#: ../src/common/color_vocabulary.c:333
+#: ../src/common/color_vocabulary.c:335
 msgid "plum"
 msgstr "prune"
 
-#: ../src/common/color_vocabulary.c:338
+#: ../src/common/color_vocabulary.c:340
 msgid "dark magenta"
 msgstr "magenta foncé"
 
-#: ../src/common/color_vocabulary.c:339 ../src/gui/guides.c:734
+#: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
 #: ../src/iop/colorzones.c:2309 ../src/iop/temperature.c:1805
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/common/color_vocabulary.c:341
+#: ../src/common/color_vocabulary.c:343
 msgid "lavender"
 msgstr "lavande"
 
-#: ../src/common/color_vocabulary.c:344
+#: ../src/common/color_vocabulary.c:346
 msgid "color not found"
 msgstr "couleur non trouvée"
 
@@ -6475,26 +6443,26 @@ msgstr "distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "le profil de gestion du bruit « %s » n'est pas valide"
 
-#: ../src/common/opencl.c:1073
+#: ../src/common/opencl.c:1078
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
 
-#: ../src/common/opencl.c:1080
+#: ../src/common/opencl.c:1085
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU multiples détectés - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:1087
+#: ../src/common/opencl.c:1092
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU très rapide détecté - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:1094
+#: ../src/common/opencl.c:1099
 msgid "opencl scheduling profile set to default"
 msgstr "profil de planification opencl par défaut positionné"
 
@@ -7976,7 +7944,7 @@ msgid "show and edit in restricted mode"
 msgstr "montre et édite en mode restreint"
 
 #: ../src/develop/blend_gui.c:2342 ../src/libs/masks.c:940
-#: ../src/libs/masks.c:968 ../src/libs/masks.c:1676
+#: ../src/libs/masks.c:968 ../src/libs/masks.c:1634
 msgid "add gradient"
 msgstr "ajouter un dégradé"
 
@@ -7985,7 +7953,7 @@ msgid "add multiple gradients"
 msgstr "ajouter plusieurs gradients"
 
 #: ../src/develop/blend_gui.c:2347 ../src/iop/retouch.c:2199
-#: ../src/libs/masks.c:952 ../src/libs/masks.c:1700
+#: ../src/libs/masks.c:952 ../src/libs/masks.c:1658
 msgid "add brush"
 msgstr "ajouter une forme au pinceau"
 
@@ -7995,7 +7963,7 @@ msgstr "ajouter plusieurs coup de pinceau"
 
 #: ../src/develop/blend_gui.c:2352 ../src/iop/retouch.c:2203
 #: ../src/iop/spots.c:822 ../src/libs/masks.c:936 ../src/libs/masks.c:964
-#: ../src/libs/masks.c:1682
+#: ../src/libs/masks.c:1640
 msgid "add path"
 msgstr "ajouter un chemin"
 
@@ -8006,7 +7974,7 @@ msgstr "ajouter plusieurs chemins"
 
 #: ../src/develop/blend_gui.c:2357 ../src/iop/retouch.c:2207
 #: ../src/iop/spots.c:826 ../src/libs/masks.c:932 ../src/libs/masks.c:960
-#: ../src/libs/masks.c:1688
+#: ../src/libs/masks.c:1646
 msgid "add ellipse"
 msgstr "ajouter une ellipse"
 
@@ -8017,7 +7985,7 @@ msgstr "ajouter plusieurs ellipses"
 
 #: ../src/develop/blend_gui.c:2362 ../src/iop/retouch.c:2211
 #: ../src/iop/spots.c:830 ../src/libs/masks.c:928 ../src/libs/masks.c:956
-#: ../src/libs/masks.c:1694
+#: ../src/libs/masks.c:1652
 msgid "add circle"
 msgstr "ajouter un cercle"
 
@@ -8940,6 +8908,7 @@ msgid "current date: "
 msgstr "date actuelle : "
 
 #: ../src/dtgtk/range.c:1040 ../src/dtgtk/range.c:1742
+#: ../src/dtgtk/range.c:1793
 msgid "now"
 msgstr "maintenant"
 
@@ -8949,7 +8918,7 @@ msgstr "défini la valeur pour toujours correspondre à la date/heure actuelle"
 
 #. apply button
 #: ../src/dtgtk/range.c:1045 ../src/gui/accelerators.c:149
-#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:760
+#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:758
 #: ../src/libs/styles.c:861
 msgid "apply"
 msgstr "appliquer"
@@ -8961,10 +8930,10 @@ msgstr "défini les bornes de l'étendu avec cette valeur"
 #. get nice text for bounds
 #. Side-border hide/show
 #: ../src/dtgtk/range.c:1718 ../src/gui/accelerators.c:1978
-#: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2916
+#: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2917
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
-#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1422
+#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1424
 #: ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
 #: ../src/libs/filters/rating.c:211
 msgid "all"
@@ -9391,12 +9360,12 @@ msgid "popup"
 msgstr "popup"
 
 #: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
-#: ../src/gui/gtk.c:2844 ../src/views/lighttable.c:749
+#: ../src/gui/gtk.c:2845 ../src/views/lighttable.c:749
 msgid "next"
 msgstr "suivant"
 
 #: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
-#: ../src/gui/gtk.c:2845 ../src/views/lighttable.c:750
+#: ../src/gui/gtk.c:2846 ../src/views/lighttable.c:750
 msgid "previous"
 msgstr "précédent"
 
@@ -9409,7 +9378,7 @@ msgid "first"
 msgstr "premier"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1710
+#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1712
 #: ../src/libs/filters/rating_range.c:285 ../src/libs/tagging.c:3119
 #: ../src/views/darkroom.c:2292 ../src/views/darkroom.c:2347
 #: ../src/views/darkroom.c:2587
@@ -9432,7 +9401,7 @@ msgstr "inverser-droit"
 msgid "right-on"
 msgstr "sur-droit"
 
-#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2843
+#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2844
 msgid "activate"
 msgstr "activer"
 
@@ -10030,7 +9999,7 @@ msgstr "%.1f"
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:2923 ../src/gui/gtk.c:2928 ../src/gui/gtk.c:2933
+#: ../src/gui/gtk.c:2924 ../src/gui/gtk.c:2929 ../src/gui/gtk.c:2934
 msgid "tabs"
 msgstr "tabs"
 
@@ -11212,13 +11181,13 @@ msgid "page orientation"
 msgstr "orientation de la page"
 
 #: ../src/imageio/format/pdf.c:608 ../src/iop/borders.c:1042
-#: ../src/libs/filtering.c:285 ../src/libs/filters/ratio.c:122
+#: ../src/libs/filtering.c:286 ../src/libs/filters/ratio.c:122
 #: ../src/libs/print_settings.c:2366
 msgid "portrait"
 msgstr "portrait"
 
 #: ../src/imageio/format/pdf.c:609 ../src/iop/borders.c:1043
-#: ../src/libs/filtering.c:281 ../src/libs/filters/ratio.c:124
+#: ../src/libs/filtering.c:282 ../src/libs/filters/ratio.c:124
 #: ../src/libs/print_settings.c:2367
 msgid "landscape"
 msgstr "paysage"
@@ -12567,7 +12536,7 @@ msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:970 ../src/iop/clipping.c:2139 ../src/iop/crop.c:1051
-#: ../src/libs/filtering.c:277 ../src/libs/filters/ratio.c:126
+#: ../src/libs/filtering.c:278 ../src/libs/filters/ratio.c:126
 msgid "square"
 msgstr "carré"
 
@@ -19704,30 +19673,30 @@ msgid "change to: except"
 msgstr "changer en « sauf »"
 
 #. the differents categories
-#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:843
-#: ../src/libs/filtering.c:925
+#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:845
+#: ../src/libs/filtering.c:927
 msgid "files"
 msgstr "fichiers"
 
 #: ../src/libs/collect.c:2960 ../src/libs/export_metadata.c:310
-#: ../src/libs/filtering.c:848 ../src/libs/filtering.c:930
+#: ../src/libs/filtering.c:850 ../src/libs/filtering.c:932
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "métadonnées"
 
-#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:869
-#: ../src/libs/filtering.c:951
+#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:871
+#: ../src/libs/filtering.c:953
 msgid "times"
 msgstr "dates"
 
-#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:877
-#: ../src/libs/filtering.c:959
+#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:879
+#: ../src/libs/filtering.c:961
 msgid "capture details"
 msgstr "détails de prise de vue"
 
-#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:886
-#: ../src/libs/filtering.c:968 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:888
+#: ../src/libs/filtering.c:970 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
@@ -19749,20 +19718,20 @@ msgstr "enregistrer"
 msgid "preferences..."
 msgstr "préférences..."
 
-#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1395
+#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1397
 msgid "AND"
 msgstr "ET"
 
-#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1400
+#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1402
 msgid "OR"
 msgstr "OU"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1405
+#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1407
 msgid "BUT NOT"
 msgstr "SAUF"
 
-#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1985
+#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1987
 msgid "revert to a previous set of rules"
 msgstr "bascule vers une règle précédente"
 
@@ -20346,44 +20315,44 @@ msgstr "ajoute une métadonnée à l'exportation"
 msgid "delete metadata tag"
 msgstr "supprime la métadonnée sélectionnée"
 
-#: ../src/libs/filtering.c:239
+#: ../src/libs/filtering.c:240
 msgid "collection filters"
 msgstr "filtres de collection"
 
-#: ../src/libs/filtering.c:272
+#: ../src/libs/filtering.c:273
 msgid "initial setting"
 msgstr "paramètres initiaux"
 
-#: ../src/libs/filtering.c:291
+#: ../src/libs/filtering.c:292
 msgid "imported: last 24h"
 msgstr "importées: dernières 24h"
 
-#: ../src/libs/filtering.c:296
+#: ../src/libs/filtering.c:297
 msgid "imported: last 30 days"
 msgstr "importées: 30 derniers jours"
 
-#: ../src/libs/filtering.c:302
+#: ../src/libs/filtering.c:303
 msgid "taken: last 24h"
 msgstr "prises: dernières 24h"
 
-#: ../src/libs/filtering.c:306
+#: ../src/libs/filtering.c:307
 msgid "taken: last 30 days"
 msgstr "prises: 30 derniers jours"
 
-#: ../src/libs/filtering.c:652
+#: ../src/libs/filtering.c:653
 msgid "click or click&#38;drag to select one or multiple values"
 msgstr "clic ou clic+déplacer pour sélectionner une ou plusieurs valeurs"
 
-#: ../src/libs/filtering.c:653
+#: ../src/libs/filtering.c:654
 msgid "right-click opens a menu to select the available values"
 msgstr ""
 "clic-droit pour ouvrir un menu afin de sélectionner une valeur disponible"
 
-#: ../src/libs/filtering.c:656
+#: ../src/libs/filtering.c:657
 msgid "actual selection"
 msgstr "sélection actuelle"
 
-#: ../src/libs/filtering.c:916
+#: ../src/libs/filtering.c:918
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
@@ -20393,16 +20362,16 @@ msgstr ""
 "supérieure"
 
 #. otherwise we add all implemented rules
-#: ../src/libs/filtering.c:923
+#: ../src/libs/filtering.c:925
 msgid "rule property"
 msgstr "propriété de la règle"
 
-#: ../src/libs/filtering.c:1016
+#: ../src/libs/filtering.c:1018
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "filtrer"
 
-#: ../src/libs/filtering.c:1042
+#: ../src/libs/filtering.c:1044
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "click to un-pin"
@@ -20410,100 +20379,100 @@ msgstr ""
 "cette règle est épinglé dans la barre supérieure\n"
 "clic pour dé-épingler"
 
-#: ../src/libs/filtering.c:1043
+#: ../src/libs/filtering.c:1045
 msgid "you can't disable the rule as it is pinned into the toolbar"
 msgstr "impossible de désactiver une règle épinglée dans la barre supérieure"
 
-#: ../src/libs/filtering.c:1044
+#: ../src/libs/filtering.c:1046
 msgid "you can't remove the rule as it is pinned into the toolbar"
 msgstr "impossible de supprimer une règle épinglée dans la barre supérieure"
 
-#: ../src/libs/filtering.c:1048
+#: ../src/libs/filtering.c:1050
 msgid "click to pin this rule into the top toolbar"
 msgstr "clic pour épingler dans la bar supérieure"
 
-#: ../src/libs/filtering.c:1049
+#: ../src/libs/filtering.c:1051
 msgid "remove this collect rule"
 msgstr "supprimer cette règle de collection"
 
-#: ../src/libs/filtering.c:1051
+#: ../src/libs/filtering.c:1053
 msgid "this rule is enabled"
 msgstr "cette règle est activée"
 
-#: ../src/libs/filtering.c:1053
+#: ../src/libs/filtering.c:1055
 msgid "this rule is disabled"
 msgstr "cette règle est désactivée"
 
-#: ../src/libs/filtering.c:1166
+#: ../src/libs/filtering.c:1168
 msgid "and"
 msgstr "et"
 
-#: ../src/libs/filtering.c:1167
+#: ../src/libs/filtering.c:1169
 msgid "or"
 msgstr "ou"
 
-#: ../src/libs/filtering.c:1168
+#: ../src/libs/filtering.c:1170
 msgid "and not"
 msgstr "et non"
 
-#: ../src/libs/filtering.c:1170
+#: ../src/libs/filtering.c:1172
 msgid "define how this rule should interact with the previous one"
 msgstr "défini comment cette règle interagie avec la précédente"
 
-#: ../src/libs/filtering.c:1429
+#: ../src/libs/filtering.c:1431
 msgid " (off)"
 msgstr "(off)"
 
-#: ../src/libs/filtering.c:1652
+#: ../src/libs/filtering.c:1654
 msgid "sort order"
 msgstr "ordre de tri"
 
-#: ../src/libs/filtering.c:1654
+#: ../src/libs/filtering.c:1656
 msgid "determine the sort order of shown images"
 msgstr "spécifie l'ordre de tri des images affichées"
 
-#: ../src/libs/filtering.c:1711
+#: ../src/libs/filtering.c:1713
 msgid "sort direction"
 msgstr "direction du tri"
 
-#: ../src/libs/filtering.c:1717
+#: ../src/libs/filtering.c:1719
 msgid "remove this sort order"
 msgstr "supprimer ce tri"
 
-#: ../src/libs/filtering.c:1870
+#: ../src/libs/filtering.c:1872
 msgid "DESC"
 msgstr "DES"
 
-#: ../src/libs/filtering.c:1870
+#: ../src/libs/filtering.c:1872
 msgid "ASC"
 msgstr "ASC"
 
-#: ../src/libs/filtering.c:1981
+#: ../src/libs/filtering.c:1983
 msgid "new rule"
 msgstr "nouvelle règle"
 
-#: ../src/libs/filtering.c:1982
+#: ../src/libs/filtering.c:1984
 msgid "append new rule to collect images"
 msgstr "appliquer une nouvelle règle pour collecter des images"
 
-#: ../src/libs/filtering.c:1993 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1995 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "trier par"
 
-#: ../src/libs/filtering.c:2001
+#: ../src/libs/filtering.c:2003
 msgid "new sort"
 msgstr "nouveau tri"
 
-#: ../src/libs/filtering.c:2002
+#: ../src/libs/filtering.c:2004
 msgid "append new sort to order images"
 msgstr "ajouter un nouveau tri pour ordonner les images"
 
-#: ../src/libs/filtering.c:2005
+#: ../src/libs/filtering.c:2007
 msgid "revert to a previous set of sort orders"
 msgstr "bascule vers un tri précédent"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2052
+#: ../src/libs/filtering.c:2056
 msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
@@ -21774,7 +21743,7 @@ msgstr "mode : exclusion"
 msgid "cleanup unused shapes"
 msgstr "supprimer les formes non utilisées"
 
-#: ../src/libs/masks.c:1670
+#: ../src/libs/masks.c:1628
 msgid "created shapes"
 msgstr "formes existantes"
 
@@ -21817,7 +21786,7 @@ msgstr ""
 "sélectionner si vous voulez garder cette information privée (non exportée "
 "avec les images)"
 
-#: ../src/libs/metadata.c:715
+#: ../src/libs/metadata.c:713
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -21834,59 +21803,59 @@ msgstr ""
 "dans ce cas, clic-droit donne la possibilité de choisir l'une d'elles.\n"
 "presser échap pour quitter le dialogue"
 
-#: ../src/libs/metadata.c:761
+#: ../src/libs/metadata.c:759
 msgid "write metadata for selected images"
 msgstr ""
 "écrire les métadonnées\n"
 "des images sélectionnées"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:817
+#: ../src/libs/metadata.c:815
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:817
+#: ../src/libs/metadata.c:815
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Paternité (CC-BY)"
 
-#: ../src/libs/metadata.c:818
+#: ../src/libs/metadata.c:816
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:818
+#: ../src/libs/metadata.c:816
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr ""
 "Creative Commons \n"
 "Paternité\n"
 "Partage des conditions initiales à l'identique (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:819
+#: ../src/libs/metadata.c:817
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:819
+#: ../src/libs/metadata.c:817
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr ""
 "Creative Commons \n"
 "Paternité\n"
 "Pas de modification(CC-BY-ND)"
 
-#: ../src/libs/metadata.c:820
+#: ../src/libs/metadata.c:818
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:820
+#: ../src/libs/metadata.c:818
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr ""
 "Creative Commons \n"
 "Paternité\n"
 "Pas d'utilisation commerciale (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:821
+#: ../src/libs/metadata.c:819
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:822
+#: ../src/libs/metadata.c:820
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr ""
 "Creative Commons\n"
@@ -21894,11 +21863,11 @@ msgstr ""
 "Pas d'utilisation commerciale\n"
 "Partage des conditions initiales à l'identique (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:823
+#: ../src/libs/metadata.c:821
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:824
+#: ../src/libs/metadata.c:822
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr ""
 "Creative Commons \n"
@@ -21906,7 +21875,7 @@ msgstr ""
 "Pas d'utilisation commerciale\n"
 "Pas de modification (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:825
+#: ../src/libs/metadata.c:823
 msgid "all rights reserved"
 msgstr "tous droits réservés"
 
