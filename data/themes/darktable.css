@@ -236,7 +236,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
   background-color: @bg_color;
   background-image: none;
   color: @fg_color;
-  font-size: 1em;
+  font-size: 1em;   /* avoid changing this settings or you will made the UI quite awful (too big or too small) */
   font-family: sans-serif;
   font-weight: normal;
   box-shadow:none;
@@ -249,7 +249,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
   min-height: 0;
 }
 
-/* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
+/* Be sure now than all others UI widgets have no background color on start */
 combobox,
 combobox *,
 togglebutton,
@@ -295,7 +295,6 @@ eventbox *,
 box,
 box *
 {
-  font-size: 1em; /* avoid changing this settings or you will made the UI quite awful (too big or too small) */
   background-color: transparent;
 }
 
@@ -308,15 +307,15 @@ box *
 }
 
 /* Set no background and no border. And avoid undershoot and overshoot having too much empty space at top/bottom of sidepanels when scrolled */
-.dt_accels_box treeview,
 .combo,
 .combo:disabled,
+.dt_accels_box treeview,
+.dt_ignore_fg_state:checked,
 .dt_module_btn,
 .dt_module_btn:disabled,
 .dt_transparent_background,
 .dt_transparent_background:checked,
 .dt_transparent_background check:selected,
-.dt_ignore_fg_state:checked,
 filechooser .sidebar-button,
 menuitem:hover arrow,
 popover #bauhaus-combobox,
@@ -875,16 +874,16 @@ combobox separator
   - GTK Notebooks tabs -
   ----------------------*/
 notebook tabs,
-#modules-tabs,
 #blending-tabs,
-#guides-line
+#guides-line,
+#modules-tabs
 {
   font-family: sans-serif;
 }
 
-#modules-tabs,
 #blending-tabs,
-#guides-line
+#guides-line,
+#modules-tabs
 {
   background-color: @field_active_bg;
 }
@@ -901,9 +900,9 @@ notebook tabs,
   min-height: 1.3em;
 }
 
-#modules-tabs .dt_module_btn,   /* This is needed separately to set a minimal width if panel is really narrow */
 .dt_plugin_ui #blending-tabs .dt_module_btn,
-#guides-line .dt_module_btn
+#guides-line .dt_module_btn,
+#modules-tabs .dt_module_btn   /* This is needed separately to set a minimal width if panel is really narrow */
 {
   border-radius: 0;
   min-width: 1.5em;

@@ -75,7 +75,6 @@ box *
                 sans-serif;                                /* default default */
 }
 
-button,
 .dt_section_label:not(#blending-box),
 #blending-box .dt_section_label label,
 #blending-box .dt_section_label .dt_bauhaus
@@ -99,11 +98,11 @@ button,
                sans-serif;
 }
 
-#modules-tabs,
-#blending-tabs,
+.active_menu_item *, /* needed for some Pango issues not rendering synthetic bold for all OS */
 notebook tabs,
 tooltip label,
-.active_menu_item * /* needed for some Pango issues not rendering synthetic bold for all OS */
+#blending-tabs,
+#modules-tabs
 {
   font-family: "Roboto",
                "Segoe UI",
