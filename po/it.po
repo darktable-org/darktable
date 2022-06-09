@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-09 08:29+0100\n"
+"PO-Revision-Date: 2022-06-09 23:05+0200\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 2.0\n"
+"X-Generator: Lokalize 19.12.3\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -19056,18 +19056,20 @@ msgid ""
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
+"0 disabilita la quantizzazione.\n"
+"valori più alti posterizzano la maschera di luminanza per aiutare le guide\n"
+"produce aree spezzate dolcemente quando si usano valori alti di sfumatura"
 
 #: ../src/iop/toneequal.c:3243
-#, fuzzy
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
 "the magic wand will auto-adjust the average exposure"
 msgstr ""
-"Utilizzalo per far scorrere la maschera dell'esposizione media lungo i "
-"canali\n"
-"per un miglior controllo della correzione d'esposizione con i nodi "
-"disponibili.\n"
+"Utilizzalo per far scorrere la maschera dell'esposizione media lungo i"
+" canali\n"
+"per un miglior controllo della correzione d'esposizione con i nodi"
+" disponibili.\n"
 "La bacchetta magica aggiusterà automaticamente l'esposizione media"
 
 #: ../src/iop/toneequal.c:3253
@@ -19152,7 +19154,7 @@ msgstr "Lomo"
 
 #: ../src/iop/vignette.c:985
 msgid "position / form"
-msgstr ""
+msgstr "Posizione / da"
 
 #: ../src/iop/vignette.c:1003
 msgid "the radii scale of vignette for start of fall-off"
@@ -19284,7 +19286,7 @@ msgstr "Prendi colore dall'immagine"
 
 #: ../src/iop/watermark.c:1125
 msgid "placement"
-msgstr ""
+msgstr "Posizionamento"
 
 #: ../src/iop/watermark.c:1138
 msgid "size is relative to"
@@ -19318,6 +19320,10 @@ msgid ""
 "left-click on a border to create a marker\n"
 "right-click on a marker to delete it"
 msgstr ""
+"Zone di tono\n"
+"usa la rotella del mouse per cambiare il numero di zone\n"
+"click su un confine per creare un marcatore\n"
+"click di destro su un marcatore per eliminarlo"
 
 #: ../src/libs/backgroundjobs.c:52
 msgid "background jobs"
@@ -19351,7 +19357,7 @@ msgstr "Controllo fotocamera"
 
 #: ../src/libs/camera.c:422
 msgid "modes"
-msgstr ""
+msgstr "Modalità"
 
 #: ../src/libs/camera.c:423
 msgid "timer (s)"
@@ -19390,7 +19396,6 @@ msgid "the count of seconds before actually doing a capture"
 msgstr "Numero di secondi prima di acquisire"
 
 #: ../src/libs/camera.c:467
-#, fuzzy
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -19499,6 +19504,9 @@ msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
 msgstr ""
+"Usa <, <=, >, >=, <>, =, [;] come operatori\n"
+"digita le date nel formato: YYYY:MM:DD hh:mm:ss.sss (solo l'anno è"
+" obbligatorio)"
 
 #: ../src/libs/collect.c:2158
 #, no-c-format
@@ -19643,7 +19651,7 @@ msgstr "MA NON"
 
 #: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1976
 msgid "revert to a previous set of rules"
-msgstr ""
+msgstr "Ripristina le regole precedenti"
 
 #: ../src/libs/collect.c:3371
 msgid "jump back to previous collection"
@@ -19670,16 +19678,14 @@ msgid "color picker"
 msgstr "Selettore colore"
 
 #: ../src/libs/colorpicker.c:457
-#, fuzzy
 msgid ""
 "hover to highlight sample on canvas,\n"
 "click to lock sample,\n"
 "right-click to load sample area into active color picker"
 msgstr ""
-"Posizionati sopra per evidenziare il campione, fai click per bloccare il "
-"campione,\n"
-"fai click col destro per caricare l'area di esempio nel selettore colore "
-"attivo"
+"Posizionati col cursore per evidenziare il campione sulla tela,\n"
+"fai click per bloccare il campione,\n"
+"click di destro per caricare l'area campione nel selettore colore attivo"
 
 #: ../src/libs/colorpicker.c:554 ../src/libs/colorpicker.c:605
 msgid "click to (un)hide large color patch"
@@ -19747,7 +19753,7 @@ msgstr "Errore nel caricamento del file '%s'"
 #, c-format
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
-msgstr[0] ""
+msgstr[0] "Nessuna compressione della coda di sviluppo dell'immagine %d"
 msgstr[1] ""
 
 #: ../src/libs/copy_history.c:235
@@ -19950,7 +19956,7 @@ msgstr "Risoluzione punti/pollice"
 
 #: ../src/libs/export.c:1167
 msgid "@"
-msgstr ""
+msgstr "@"
 
 #: ../src/libs/export.c:1180 ../src/libs/tools/global_toolbox.c:219
 msgid "px"
@@ -19999,7 +20005,7 @@ msgid "output ICC profiles in %s or %s"
 msgstr "Output del profilo ICC in %s o %s"
 
 #: ../src/libs/export.c:1265
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
 "gradations, but distorts in-gamut colors in the process. note that "
@@ -20016,12 +20022,13 @@ msgid ""
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
-"• Percettivo: sposta i colori fuori gamma all'interno della gamma stessa, "
+"• Percettivo: sposta dolcemente i colori fuori-gamma all'interno della gamma"
+" stessa, "
 "preservandone le gradazioni, ma nel processo distorce i colori all'interno "
 "della gamma. Nota che percettivo spesso è una LUT proprietaria che dipende "
 "dallo spazio di destinazione.\n"
 "\n"
-"• Colorimetrico Relativo: preserva la luminanza e riduce minimamente la "
+"• Colorimetrico Relativo: preserva la luminanza e riduce il meno possibile la "
 "saturazione fino a fare rientrare i colori in gamma.\n"
 "\n"
 "• Saturazione : pensato per render accattivante la grafica commerciale "
@@ -20200,6 +20207,17 @@ msgid ""
 "click on formula cell to edit\n"
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
+"Lista dei metadati calcolati\n"
+"fai click sul pulsante '+' button per selezionare e aggiungere un nuovo"
+" metadato\n"
+"se la formula è vuota, il metadato corrispondente è escluso dal file"
+" esportato,\n"
+"se la formula è '=', il metadato EXIF viene esportato anche se i dati EXIF"
+" sono disabilitati\n"
+"altrimenti il metadato corrispondente viene calcolato e aggiunto al file"
+" esportato\n"
+"fai click sulla cella della formula per modificare\n"
+"digita '$(' per attivare il completamento e vedere la lista delle variabili"
 
 #: ../src/libs/export_metadata.c:440
 msgid "add an output metadata tag"
@@ -20211,11 +20229,11 @@ msgstr "Elimina metadati etichetta"
 
 #: ../src/libs/filtering.c:239
 msgid "collection filters"
-msgstr ""
+msgstr "Filtri di raccolta"
 
 #: ../src/libs/filtering.c:272
 msgid "initial setting"
-msgstr ""
+msgstr "Impostazioni iniziali"
 
 #: ../src/libs/filtering.c:291
 msgid "imported: last 24h"
@@ -20235,26 +20253,29 @@ msgstr "Scattate: ultimi 30 giorni"
 
 #: ../src/libs/filtering.c:652
 msgid "click or click&#38;drag to select one or multiple values"
-msgstr ""
+msgstr "fai click o trascina per selezionare uno o più valori"
 
 #: ../src/libs/filtering.c:653
 msgid "right-click opens a menu to select the available values"
-msgstr ""
+msgstr "Il click di destro apre un menù per selezionare i valori disponibili"
 
 #: ../src/libs/filtering.c:656
 msgid "actual selection"
-msgstr ""
+msgstr "Selezione attuale"
 
 #: ../src/libs/filtering.c:916
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
+"Proprietà regola\n"
+"questa non può essere modificate in quanto la regola è bloccata nella barra"
+" degli strumenti"
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:923
 msgid "rule property"
-msgstr ""
+msgstr "Proprietà regola"
 
 #: ../src/libs/filtering.c:1016
 msgctxt "quickfilter"
@@ -20266,30 +20287,35 @@ msgid ""
 "this rule is pinned into the top toolbar\n"
 "click to un-pin"
 msgstr ""
+"Questa regola è bloccata nella barra degli strumenti in alto\n"
+"fai click per sbloccarla"
 
 #: ../src/libs/filtering.c:1043
 msgid "you can't disable the rule as it is pinned into the toolbar"
 msgstr ""
+"Non puoi disabilitare la regola poiché è bloccata nella barra degli strumenti"
 
 #: ../src/libs/filtering.c:1044
 msgid "you can't remove the rule as it is pinned into the toolbar"
 msgstr ""
+"Non puoi rimuovere la regola poiché è bloccata nella barra degli strumenti"
 
 #: ../src/libs/filtering.c:1048
 msgid "click to pin this rule into the top toolbar"
 msgstr ""
+"Fai click per bloccare questa regola nella barra degli strumenti in alto"
 
 #: ../src/libs/filtering.c:1049
 msgid "remove this collect rule"
-msgstr ""
+msgstr "Rimuovi questa regola di raccolta"
 
 #: ../src/libs/filtering.c:1051
 msgid "this rule is enabled"
-msgstr ""
+msgstr "Questa regola è abilitata"
 
 #: ../src/libs/filtering.c:1053
 msgid "this rule is disabled"
-msgstr ""
+msgstr "Questa regola è disabilitata"
 
 #: ../src/libs/filtering.c:1157
 msgid "and"
@@ -20301,11 +20327,11 @@ msgstr "o"
 
 #: ../src/libs/filtering.c:1159
 msgid "and not"
-msgstr ""
+msgstr "e non"
 
 #: ../src/libs/filtering.c:1161
 msgid "define how this rule should interact with the previous one"
-msgstr ""
+msgstr "Stabilisce come questa regola dovrebbe interagire con la precedente"
 
 #: ../src/libs/filtering.c:1420
 msgid " (off)"
@@ -20313,23 +20339,23 @@ msgstr " (disabilitato)"
 
 #: ../src/libs/filtering.c:1643
 msgid "sort order"
-msgstr ""
+msgstr "Ordinamento"
 
 #: ../src/libs/filtering.c:1645
 msgid "determine the sort order of shown images"
-msgstr "Determina l'ordine delle immagini mostrate"
+msgstr "Determina l'ordinamento delle immagini mostrate"
 
 #: ../src/libs/filtering.c:1702
 msgid "sort direction"
-msgstr ""
+msgstr "Direzione ordinamento"
 
 #: ../src/libs/filtering.c:1708
 msgid "remove this sort order"
-msgstr ""
+msgstr "Rimuovi questo ordinamento"
 
 #: ../src/libs/filtering.c:1861
 msgid "DESC"
-msgstr ""
+msgstr "DSC"
 
 #: ../src/libs/filtering.c:1861
 msgid "ASC"
@@ -20337,11 +20363,11 @@ msgstr "ASC"
 
 #: ../src/libs/filtering.c:1972
 msgid "new rule"
-msgstr ""
+msgstr "Nuova regola"
 
 #: ../src/libs/filtering.c:1973
 msgid "append new rule to collect images"
-msgstr ""
+msgstr "Aggiungi nuova regola per raccogliere le immagini"
 
 #: ../src/libs/filtering.c:1984 ../src/libs/tools/filter.c:100
 msgid "sort by"
@@ -20349,15 +20375,15 @@ msgstr "Ordina per"
 
 #: ../src/libs/filtering.c:1992
 msgid "new sort"
-msgstr ""
+msgstr "Nuovo ordinamento"
 
 #: ../src/libs/filtering.c:1993
 msgid "append new sort to order images"
-msgstr ""
+msgstr "Aggiungi un nuovo ordinamento per ordinare le immagini"
 
 #: ../src/libs/filtering.c:1996
 msgid "revert to a previous set of sort orders"
-msgstr ""
+msgstr "Ripristina gli ordinamenti precedento"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
 #: ../src/libs/filtering.c:2043
@@ -20365,6 +20391,8 @@ msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
 msgstr ""
+"Azzera\n"
+"ctrl-click per rimuovere anche le regole bloccate"
 
 #: ../src/libs/filters/colors.c:140
 msgid "Y"
@@ -20385,6 +20413,10 @@ msgid ""
 "ctrl+click to exclude the color label\n"
 "the gray button affects all color labels"
 msgstr ""
+"Filtra per etichetta colore delle immagini\n"
+"click to attivare/disattivare la selezione dell'etichetta colore\n"
+"ctrl+click per escludere l'etichetta colore\n"
+"il pulsante grigio riguarda tutte le etichette colore"
 
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
 #: ../src/libs/filters/rating_range.c:339
@@ -20397,6 +20429,9 @@ msgid ""
 "and (∩): images having all selected color labels\n"
 "or (∪): images with at least one of the selected color labels"
 msgstr ""
+"Filtra per etichetta colore delle immagini\n"
+"\"e\" (∩): immagini che hanno tutte le etichette colore selezionate\n"
+"\"o\" (∪): immagini con almento una delle etichette colore selezionate"
 
 #: ../src/libs/filters/filename.c:365
 msgid ""
@@ -20405,6 +20440,10 @@ msgid ""
 "\n"
 "right-click to get existing filenames"
 msgstr ""
+"Inserisci il nome del file da cercare.\n"
+"i valori multipli possono essere separati da ','\n"
+"\n"
+"click di destro per ottenere i nomi file esistenti"
 
 #: ../src/libs/filters/filename.c:376
 msgid "extension"
@@ -20418,6 +20457,11 @@ msgid ""
 "\n"
 "right-click to get existing extensions"
 msgstr ""
+"Inserisci l'estensione da cercare iniziando con il punto\n"
+"i valori multipli possono essere separati da ','\n"
+"parole chiavi gestite: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
+"\n"
+"click di destro per ottenere le estensioni esistenti"
 
 #: ../src/libs/filters/filename.c:405
 msgid ""
@@ -20561,7 +20605,7 @@ msgid "landscape images"
 msgstr "Immagini di paesaggi"
 
 #: ../src/libs/filters/search.c:180
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "filter by text from images metadata, tags, file path and name\n"
 "`%' is the wildcard character\n"
@@ -20569,6 +20613,13 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
+"Filtra usando il testo dai metadati dell'immagine, etichette, percorso del"
+" file e nome file\n"
+"`%' è il carattere jolly\n"
+"il carattere jolly viene applicato di default all'inizio e alla fine\n"
+"iniziare o finire con i doppi apici disabilita il carattere jolly"
+" corrispondente\n"
+"viene attenuato durante la ricerca"
 
 #: ../src/libs/geotagging.c:369
 msgid "apply offset and geo-location"
@@ -24219,5 +24270,4 @@ msgstr ""
 #: ../src/views/view.c:1345
 msgid "mouse actions"
 msgstr "Azioni mouse"
-
 
