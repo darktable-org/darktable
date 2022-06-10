@@ -193,8 +193,8 @@ typedef struct dt_iop_filmicrgb_params_t
   float black_point_target; // $MIN: 0.000 $MAX: 20.000 $DEFAULT: 0.01517634 $DESCRIPTION: "target black luminance"
   float white_point_target; // $MIN: 0 $MAX: 1600 $DEFAULT: 100 $DESCRIPTION: "target white luminance"
   float output_power;       // $MIN: 1 $MAX: 10 $DEFAULT: 4.0 $DESCRIPTION: "hardness"
-  float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 50.0
-  float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.1
+  float latitude;           // $MIN: 0.01 $MAX: 99 $DEFAULT: 0.01
+  float contrast;           // $MIN: 0 $MAX: 5 $DEFAULT: 1.0
   float saturation;         // $MIN: -200 $MAX: 200 $DEFAULT: 0 $DESCRIPTION: "extreme luminance saturation"
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows ↔ highlights balance"
   float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "add noise in highlights"
@@ -204,8 +204,8 @@ typedef struct dt_iop_filmicrgb_params_t
   gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-gray values"
   int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
   dt_iop_filmic_noise_distribution_t noise_distribution; // $DEFAULT: DT_NOISE_GAUSSIAN $DESCRIPTION: "type of noise"
-  dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in shadows"
-  dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_RATIONAL $DESCRIPTION: "contrast in highlights"
+  dt_iop_filmicrgb_curve_type_t shadows; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in shadows"
+  dt_iop_filmicrgb_curve_type_t highlights; // $DEFAULT: DT_FILMIC_CURVE_POLY_4 $DESCRIPTION: "contrast in highlights"
   gboolean compensate_icc_black; // $DEFAULT: FALSE $DESCRIPTION: "compensate output ICC profile black point"
   dt_iop_filmicrgb_spline_version_type_t spline_version; // $DEFAULT: DT_FILMIC_SPLINE_VERSION_V3 $DESCRIPTION: "spline handling"
 } dt_iop_filmicrgb_params_t;
@@ -2992,7 +2992,7 @@ void reload_defaults(dt_iop_module_t *module)
   {
     // For scene-referred workflow, auto-enable and adjust based on exposure
     // TODO: fetch actual exposure in module, don't assume 1.
-    const float exposure = 0.5f - dt_image_get_exposure_bias(&module->dev->image_storage);
+    const float exposure = 0.7f - dt_image_get_exposure_bias(&module->dev->image_storage);
 
     // As global exposure increases, white exposure increases faster than black
     // this is probably because raw black/white points offsets the lower bound of the dynamic range to 0
