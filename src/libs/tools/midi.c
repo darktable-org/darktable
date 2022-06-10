@@ -153,6 +153,8 @@ void midi_write(midi_device *midi, gint channel, gint type, gint key, gint veloc
     if (pmerror != pmNoError)
     {
       g_print("Portmidi error: %s\n", Pm_GetErrorText(pmerror));
+      Pm_Close(midi->portmidi_out);
+      midi->portmidi_out = NULL;
     }
   }
 }
@@ -532,9 +534,10 @@ static gboolean _timeout_midi_update(gpointer user_data)
   {
     midi_device *midi = devices->data;
 
-    for(int i = 0; i < midi->num_knobs; i++) update_with_move(midi, 0, i + midi->first_knob, NAN);
+    for(int i = 0; i < midi->num_knobs && midi->portmidi_out; i++)
+      update_with_move(midi, 0, i + midi->first_knob, NAN);
 
-    for(int i = 0; i < midi->num_keys; i++)
+    for(int i = 0; i < midi->num_keys && midi->portmidi_out; i++)
       midi_write(midi, midi->is_x_touch_mini ? 0 : midi->channel, 0x9,
                  i + midi->first_light, dt_shortcut_key_active(midi->id, i + midi->first_key));
 
