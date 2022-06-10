@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-09 23:05+0200\n"
+"PO-Revision-Date: 2022-06-10 23:45+0200\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -18782,42 +18782,34 @@ msgid "simple tone curve"
 msgstr "Curva di tono semplice"
 
 #: ../src/iop/toneequal.c:438
-#, fuzzy
 msgid "mask blending: all purposes"
 msgstr "Fusione maschera: generico"
 
 #: ../src/iop/toneequal.c:444
-#, fuzzy
 msgid "mask blending: people with backlight"
 msgstr "Fusione maschera: soggetto in controluce"
 
 #: ../src/iop/toneequal.c:460
-#, fuzzy
 msgid "compress shadows/highlights (eigf): strong"
 msgstr "Compressione ombre/alte luci (eigf): forte"
 
 #: ../src/iop/toneequal.c:464
-#, fuzzy
 msgid "compress shadows/highlights (gf): strong"
 msgstr "Compressione ombre/alte luci (gf): forte"
 
 #: ../src/iop/toneequal.c:472
-#, fuzzy
 msgid "compress shadows/highlights (eigf): medium"
 msgstr "Compressione ombre/alte luci (eigf): media"
 
 #: ../src/iop/toneequal.c:476
-#, fuzzy
 msgid "compress shadows/highlights (gf): medium"
 msgstr "Compressione ombre/alte luci (gf): media"
 
 #: ../src/iop/toneequal.c:484
-#, fuzzy
 msgid "compress shadows/highlights (eigf): soft"
 msgstr "Compressione ombre/alte luci (eigf): leggera"
 
 #: ../src/iop/toneequal.c:488
-#, fuzzy
 msgid "compress shadows/highlights (gf): soft"
 msgstr "Compressione ombre/alte luci (gf): leggera"
 
@@ -18967,6 +18959,12 @@ msgid ""
 "negative values will avoid oscillations and behave more robustly\n"
 "but may produce brutal tone transitions and damage local contrast."
 msgstr ""
+"Valori positivi produrranno transizioni di tono più progressivi\n"
+"ma la curva potrebbe diventare oscillatoria con alcune impostazioni.\n"
+"Valori negativi eviteranno oscillazioni e si comporteranno in maniera più"
+" robusta\n"
+"ma potrebbero produrre transizioni di tono più brutali e danneggiare il"
+" contrasto locale."
 
 #. Masking options
 #: ../src/iop/toneequal.c:3188
@@ -18987,10 +18985,9 @@ msgstr "Dettagli"
 
 #: ../src/iop/toneequal.c:3196
 msgid "preserve details"
-msgstr ""
+msgstr "Preserva i dettagli"
 
 #: ../src/iop/toneequal.c:3197
-#, fuzzy
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -19003,7 +19000,7 @@ msgid ""
 "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided "
 "filter' methods"
 msgstr ""
-"'no' influisce sul contrasto globale e locale (sicuro per aggiungere "
+"'no' influisce sul contrasto globale e locale (è sicuro se si aggiunge "
 "semplicemente del contrasto)\n"
 "'filtro guidato' influisce sul contrasto globale e cerca di mantenere il "
 "contrasto locale\n"
@@ -19019,6 +19016,8 @@ msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
+"Numero dei passaggi da applicare per il filtro guidato\n"
+"aiuta a propagare i bordi del filtro a spese della velocità"
 
 #: ../src/iop/toneequal.c:3211
 msgid ""
@@ -19026,6 +19025,11 @@ msgid ""
 "warning: big values of this parameter can make the darkroom\n"
 "preview much slower if denoise profiled is used."
 msgstr ""
+"Diametro della sfocatura in percentuale sulla più grande delle dimensioni"
+" dell'immagine\n"
+"attenzione: valori molto alti di questo parametro possono rendere il preview\n"
+"della Camera Oscura decisamente più lento se si è usata la riduzione del"
+" rumore (profilato)."
 
 #: ../src/iop/toneequal.c:3217
 msgid ""
@@ -19035,6 +19039,11 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
+"Precisione della sfumatura:\n"
+"valori più alti forzano la maschera a seguire i bordi più da vicino\n"
+"ma possono annullare l'effetto della morbidezza\n"
+"valori più bassi forniscono gradienti più dolci e una migliore morbidezza\n"
+"ma possono portare ad aloni e inaccuratezza nel mascheramento dei bordi"
 
 #: ../src/iop/toneequal.c:3223
 msgid "mask post-processing"
