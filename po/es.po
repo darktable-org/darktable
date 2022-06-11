@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-02 16:26-0500\n"
-"PO-Revision-Date: 2022-06-03 00:46-0500\n"
+"POT-Creation-Date: 2022-06-03 19:19-0500\n"
+"PO-Revision-Date: 2022-06-11 00:40-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -3268,10 +3268,10 @@ msgstr "contraste del punto de referencia del gris"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
-#: ../src/gui/guides.c:738 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
+#: ../src/gui/guides.c:740 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
 #: ../src/iop/colisa.c:305 ../src/iop/colorbalance.c:1895
 #: ../src/iop/colorbalance.c:1901 ../src/iop/filmic.c:1649
-#: ../src/iop/filmicrgb.c:4495 ../src/iop/lowpass.c:573
+#: ../src/iop/filmicrgb.c:4492 ../src/iop/lowpass.c:573
 msgid "contrast"
 msgstr "contraste"
 
@@ -3870,7 +3870,7 @@ msgstr "transición"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:296
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4668
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4665
 msgid "extreme luminance saturation"
 msgstr "saturación de luminancia extrema"
 
@@ -4095,7 +4095,7 @@ msgid "reconstruct color"
 msgstr "reconstruir color"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:277
-#: ../src/iop/highlights.c:2139
+#: ../src/iop/highlights.c:2149
 #, fuzzy
 msgid "guided laplacians"
 msgstr "retícula"
@@ -5829,9 +5829,8 @@ msgid "1) darktable resources"
 msgstr "1) Recursos de darktable"
 
 #: ../src/common/darktable.c:1743
-#, fuzzy
 msgid "2) tune OpenCL performance"
-msgstr "2) tune OpenCL performance"
+msgstr "2) Configurar el rendimiento de OpenCL"
 
 #: ../src/common/darktable.c:1750
 #, fuzzy
@@ -6317,10 +6316,10 @@ msgstr[0] "%d copia local ha sido sincronizada"
 msgstr[1] "%d copias locales han sido sincronizadas"
 
 #: ../src/common/image.c:2792
-#, fuzzy
 msgid "<b>WARNING</b>: camera is missing samples!"
 msgstr ""
-"<b>WARNING</b> : No existen muestras de referencia para el modelo de cámara."
+"<b>ADVERTENCIA</b>: No existen muestras de referencia para el modelo de "
+"cámara."
 
 #: ../src/common/image.c:2793
 msgid ""
@@ -7970,8 +7969,8 @@ msgstr ""
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2020
 #: ../src/iop/exposure.c:1033 ../src/iop/exposure.c:1046
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
-#: ../src/iop/filmicrgb.c:4384 ../src/iop/filmicrgb.c:4394
-#: ../src/iop/filmicrgb.c:4429 ../src/iop/filmicrgb.c:4439
+#: ../src/iop/filmicrgb.c:4381 ../src/iop/filmicrgb.c:4391
+#: ../src/iop/filmicrgb.c:4426 ../src/iop/filmicrgb.c:4436
 #: ../src/iop/graduatednd.c:1098 ../src/iop/negadoctor.c:983
 #: ../src/iop/profile_gamma.c:651 ../src/iop/profile_gamma.c:657
 #: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3117
@@ -10477,7 +10476,7 @@ msgid "global guide overlay settings"
 msgstr "Configuración general de la retícula"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:738 ../src/views/darkroom.c:2587
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2587
 msgid "guide lines"
 msgstr "retícula"
 
@@ -10514,22 +10513,22 @@ msgstr "color de línea"
 msgid "set overlay color"
 msgstr "Establece el color de las líneas reticulares"
 
-#: ../src/gui/guides.c:739
+#: ../src/gui/guides.c:741
 #, fuzzy
 msgid ""
 "set the contrast between the lightest and darkest part of the guide overlays"
 msgstr ""
 "set the contrast between the lightest and darkest part of the guide overlays"
 
-#: ../src/gui/guides.c:845 ../src/gui/guides.c:891
+#: ../src/gui/guides.c:847 ../src/gui/guides.c:893
 msgid "show guides"
 msgstr "mostrar retícula"
 
-#: ../src/gui/guides.c:900
+#: ../src/gui/guides.c:902
 msgid "show guide overlay when this module has focus"
 msgstr "Muestra una retícula mientras este módulo tenga el foco"
 
-#: ../src/gui/guides.c:902
+#: ../src/gui/guides.c:904
 msgid ""
 "change global guide settings\n"
 "note that these settings are applied globally and will impact any module "
@@ -12172,7 +12171,7 @@ msgstr ""
 "modificaciones."
 
 #: ../src/iop/atrous.c:1755 ../src/iop/colorbalancergb.c:1986
-#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4351
+#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4348
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:932
 #: ../src/iop/toneequal.c:3162
 msgid "graph"
@@ -13177,7 +13176,7 @@ msgid "bad"
 msgstr "Deficiente"
 
 #: ../src/iop/channelmixerrgb.c:1762
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "<b>Profile quality report: %s</b>\n"
@@ -13198,12 +13197,12 @@ msgid ""
 msgstr ""
 "\n"
 "<b>Informe de calidad del perfil: %s</b>\n"
-"entrada  ΔE : \tprom. %.2f ; \tmáx. %.2f\n"
-"balance de blancos ΔE : \tprom. %.2f ; \tmáx. %.2f\n"
-"salida ΔE : \tprom. %.2f ; \tmáx. %.2f\n"
+"entrada ΔE: \tprom. %.2f ; \tmáx. %.2f\n"
+"balance de blancos ΔE: \tprom. %.2f; \tmáx. %.2f\n"
+"salida ΔE: \tprom. %.2f; \tmáx. %.2f\n"
 "\n"
 "<b>Datos del perfil</b>\n"
-"iluminante:  \t%.0f K \t%s \n"
+"iluminante:  \t%.0f K \t%s\n"
 "matriz en el espacio de adaptación:\n"
 "<tt>%+.4f \t%+.4f \t%+.4f\n"
 "%+.4f \t%+.4f \t%+.4f\n"
@@ -13214,7 +13213,7 @@ msgstr ""
 "compensación del negro: \t%+.4f"
 
 #: ../src/iop/channelmixerrgb.c:1808
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "<b>Profile quality report: %s</b>\n"
@@ -13226,11 +13225,11 @@ msgid ""
 msgstr ""
 "\n"
 "<b>Informe de calidad del perfil: %s</b>\n"
-"salida ΔE : \tprom. %.2f ; \tmáx. %.2f\n"
+"salida ΔE: \tprom. %.2f; \tmáx. %.2f\n"
 "\n"
 "<b>Valores de normalización</b>\n"
-"compensación de la exposición : \t%+.2f EV\n"
-"compensación del negro : \t%+.4f"
+"compensación de la exposición: \t%+.2f EV\n"
+"compensación del negro: \t%+.4f"
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
@@ -13371,7 +13370,7 @@ msgstr ""
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4004 ../src/iop/clipping.c:2105
-#: ../src/iop/colorbalancergb.c:1803 ../src/iop/filmicrgb.c:4366
+#: ../src/iop/colorbalancergb.c:1803 ../src/iop/filmicrgb.c:4363
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3110
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2351
 #: ../src/views/lighttable.c:1243
@@ -13503,9 +13502,9 @@ msgid ""
 "h: \tN/A\n"
 "c: \tN/A"
 msgstr ""
-"L : \tN/A \n"
-"h : \tN/A\n"
-"c : \tN/A"
+"L: \tN/A \n"
+"h: \tN/A\n"
+"c: \tN/A"
 
 #: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
 #, fuzzy
@@ -13877,7 +13876,6 @@ msgid "the bottom margin cannot overlap with the top margin"
 msgstr "El margen inferior no puede superponerse con el margen superior"
 
 #: ../src/iop/clipping.c:3037
-#, fuzzy
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
 msgstr ""
 "<b>Confirmar</b>: Pulsado Doble, <b>Enderezar</b>: Clic Secundario + Arrastre"
@@ -13910,7 +13908,6 @@ msgstr ""
 "<b>Mover línea / punto de control</b>: Arrastre"
 
 #: ../src/iop/clipping.c:3101
-#, fuzzy
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag\n"
@@ -14493,7 +14490,7 @@ msgid "patch #%d"
 msgstr "parche #%d"
 
 #: ../src/iop/colorchecker.c:1208
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
 "altered patches are marked with an outline\n"
@@ -14503,11 +14500,11 @@ msgid ""
 "shift+click while color picking to replace patch"
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
-"Los parches modificados se muestran con un contorno\n"
-"Pulse para seleccionar un parche\n"
-"Doble pulsado para reiniciarlo\n"
-"Pulsado secundario para borrarlo\n"
-"Mayús+Clic para reemplazar el parche por el color de la selección"
+"Los parches modificados se muestran con un contorno.\n"
+"Pulse para seleccionar un parche.\n"
+"Doble pulsado para reiniciarlo.\n"
+"Pulsado secundario para borrarlo.\n"
+"Mayús+Clic para reemplazar el parche por el color de la selección."
 
 #: ../src/iop/colorchecker.c:1345
 msgid "patch"
@@ -14909,11 +14906,11 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Elegir el tono que debería tener mayor prioridad sobre los demás"
 
 #: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5820
-#: ../src/iop/highlights.c:2204
+#: ../src/iop/highlights.c:2214
 msgid "not applicable"
 msgstr "no es aplicable"
 
-#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2205
+#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2215
 #, fuzzy
 msgid "no highlights reconstruction for monochrome images"
 msgstr "Método de reconstrucción de luces"
@@ -15171,7 +15168,6 @@ msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "«%s» matriz de color no encontrada para la imagen 4bayer"
 
 #: ../src/iop/demosaic.c:5787
-#, fuzzy
 msgid ""
 "Bayer sensor demosaicing method, PPG and RCD are fast, AMaZE and LMMSE are "
 "slow.\n"
@@ -15184,7 +15180,6 @@ msgstr ""
 "El tiempo de procesado se duplica con la interpolación cromática dual."
 
 #: ../src/iop/demosaic.c:5791
-#, fuzzy
 msgid ""
 "X-Trans sensor demosaicing method, Markesteijn 3-pass and frequency domain "
 "chroma are slow.\n"
@@ -15205,7 +15200,6 @@ msgstr ""
 "Poner en 1.0 para ignorar bordes."
 
 #: ../src/iop/demosaic.c:5800
-#, fuzzy
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content\n"
@@ -15214,7 +15208,8 @@ msgid ""
 msgstr ""
 "Umbral de contraste para la doble interpolación cromática.\n"
 "El ajuste a 0.0 favorece las frecuencias altas (detalles).\n"
-"El ajuste a 1.0 favorece las frecuencias bajas (planas)."
+"El ajuste a 1.0 favorece las frecuencias bajas (planas).\n"
+"Para visualizar la máscara, pulse el control correspondiente."
 
 #: ../src/iop/demosaic.c:5808
 msgid ""
@@ -15252,7 +15247,6 @@ msgid "denoise (profiled)"
 msgstr "reducción de ruido (perfilado)"
 
 #: ../src/iop/denoiseprofile.c:719
-#, fuzzy
 msgid "denoise using noise statistics profiled on sensors"
 msgstr ""
 "Realiza la reducción de ruido recurriendo a las estadísticas perfiladas en "
@@ -15506,18 +15500,17 @@ msgid "diffusion|deconvolution|blur|sharpening"
 msgstr "difusión|deconvolución|desenfoque|nitidez"
 
 #: ../src/iop/diffuse.c:143
-#, fuzzy
 msgid ""
 "simulate directional diffusion of light with heat transfer model\n"
 "to apply an iterative edge-oriented blur,\n"
 "inpaint damaged parts of the image,or to remove blur with blind "
 "deconvolution."
 msgstr ""
-"Imita la dispersión direccional de la luz basándose\n"
+"Puede imitar la dispersión direccional de la luz basándose\n"
 "en un modelo de transferencia de calor para generar\n"
 "un desenfoque iterativo a lo largo de los bordes,\n"
-"reconstruye zonas dañadas de la imagen y\n"
-"logra reducir el desenfoque por el método de deconvolución ciega"
+"reconstruir zonas dañadas de la imagen o\n"
+"reducir el desenfoque por el método de deconvolución ciega."
 
 #: ../src/iop/diffuse.c:236
 msgid "lens deblur: soft"
@@ -15593,7 +15586,6 @@ msgid "properties"
 msgstr "propiedades"
 
 #: ../src/iop/diffuse.c:1481
-#, fuzzy
 msgid ""
 "more iterations make the effect stronger but the module slower.\n"
 "this is analogous to giving more time to the diffusion reaction.\n"
@@ -15603,8 +15595,8 @@ msgstr ""
 "A mayor número de iteraciones, mayor se vuelve el efecto. Sin embargo, el "
 "módulo se vuelve más lento.\n"
 "De manera análoga, es a dar más tiempo a la reacción de difusión.\n"
-"Si la intención es aumentar la nitidez o reconstruir, se recomienda un mayor "
-"número iteraciones."
+"Si la intención es aumentar la nitidez o reconstruir,\n"
+" se recomienda un mayor número iteraciones."
 
 #: ../src/iop/diffuse.c:1490
 msgid ""
@@ -15623,7 +15615,6 @@ msgstr ""
 "Incremente para actuar sobre el contraste local."
 
 #: ../src/iop/diffuse.c:1500
-#, fuzzy
 msgid ""
 "width of the diffusion around the central radius.\n"
 "high values diffuse on a large band of radii.\n"
@@ -15634,8 +15625,8 @@ msgstr ""
 "Extensión de la difusión en torno al radio central.\n"
 "Los valores altos se dispersan en una amplia banda de radios.\n"
 "Los valores bajos se dispersan más cerca del radio central.\n"
-"Si se va a eliminar el desenfoque, el radio debe ser aproximadamente la "
-"extensión del desenfoque de la lente."
+"Si se va a eliminar el desenfoque,\n"
+"el radio debe ser aproximadamente la extensión del desenfoque de la lente."
 
 #: ../src/iop/diffuse.c:1506
 msgid "speed (sharpen ↔ diffuse)"
@@ -16067,7 +16058,7 @@ msgstr ""
 "Excepto en situaciones de retroiluminación, esto debería ser alrededor del "
 "18%."
 
-#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4386
+#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4383
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -16077,7 +16068,7 @@ msgstr ""
 "Es la lectura que un exposímetro mostraría en la escena.\n"
 "Ajustarlo para evitar el recorte de luces."
 
-#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4396
+#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4393
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -16097,8 +16088,8 @@ msgstr ""
 "Aumentar o reducir el rango dinámico calculado.\n"
 "Útil en combinación con \"niveles automáticos\"."
 
-#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4409
-#: ../src/iop/filmicrgb.c:4412 ../src/iop/profile_gamma.c:667
+#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4406
+#: ../src/iop/filmicrgb.c:4409 ../src/iop/profile_gamma.c:667
 msgid "auto tune levels"
 msgstr "niveles automáticos"
 
@@ -16118,7 +16109,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "curva S de película"
 
-#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4498
+#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4495
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -16127,7 +16118,7 @@ msgstr ""
 "Afecta sobre todo a los tonos medios"
 
 #. geotagging
-#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4507
+#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4504
 #: ../src/libs/metadata_view.c:157
 msgid "latitude"
 msgstr "latitud"
@@ -16146,7 +16137,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr "equilibrio entre sombras y luces"
 
-#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4518
+#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4515
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -16228,7 +16219,7 @@ msgstr ""
 msgid "destination/display"
 msgstr "destino/visualización"
 
-#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4537
+#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4534
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -16236,7 +16227,7 @@ msgstr ""
 "La luminancia de salida negro puro, debería ser del 0%\n"
 "excepto si se desea lograr un aspecto difuminado"
 
-#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4544
+#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4541
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -16244,7 +16235,7 @@ msgstr ""
 "Valor gris medio de la pantalla de destino o espacio de color.\n"
 "Evitar modificarlo (a no ser que se sepa lo que se está haciendo)."
 
-#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4551
+#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4548
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -16293,73 +16284,73 @@ msgstr ""
 "Hubo un fallo en reconstrucción de luces en película al reservar memoria, "
 "verifique la configuración de la RAM"
 
-#: ../src/iop/filmicrgb.c:2002 ../src/iop/filmicrgb.c:2291
+#: ../src/iop/filmicrgb.c:1999 ../src/iop/filmicrgb.c:2288
 msgid "filmic works only on RGB input"
 msgstr "Película sólo trabaja con una entrada RGB"
 
-#: ../src/iop/filmicrgb.c:2146
+#: ../src/iop/filmicrgb.c:2143
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 "Hubo un fallo en reconstrucción de luces en película al reservar memoria en "
 "la GPU."
 
-#: ../src/iop/filmicrgb.c:3390
+#: ../src/iop/filmicrgb.c:3387
 msgid "look only"
 msgstr "vista general"
 
-#: ../src/iop/filmicrgb.c:3392
+#: ../src/iop/filmicrgb.c:3389
 msgid "look + mapping (lin)"
 msgstr "vista + mapeo (lin)"
 
-#: ../src/iop/filmicrgb.c:3394
+#: ../src/iop/filmicrgb.c:3391
 msgid "look + mapping (log)"
 msgstr "vista + mapeo (log)"
 
-#: ../src/iop/filmicrgb.c:3396
+#: ../src/iop/filmicrgb.c:3393
 msgid "dynamic range mapping"
 msgstr "mapeo del rango dinámico"
 
-#: ../src/iop/filmicrgb.c:3763
+#: ../src/iop/filmicrgb.c:3760
 #, c-format
 msgid "(%.0f %%)"
 msgstr "(%.0f %%)"
 
-#: ../src/iop/filmicrgb.c:3779
+#: ../src/iop/filmicrgb.c:3776
 #, no-c-format
 msgid "% display"
 msgstr "% de visualización"
 
-#: ../src/iop/filmicrgb.c:3791
+#: ../src/iop/filmicrgb.c:3788
 msgid "EV scene"
 msgstr "EV de escena "
 
-#: ../src/iop/filmicrgb.c:3795
+#: ../src/iop/filmicrgb.c:3792
 #, no-c-format
 msgid "% camera"
 msgstr "% en cámara"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3831 ../src/iop/filmicrgb.c:4531
+#: ../src/iop/filmicrgb.c:3828 ../src/iop/filmicrgb.c:4528
 msgid "display"
 msgstr "pantalla"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3840
+#: ../src/iop/filmicrgb.c:3837
 msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3849 ../src/iop/filmicrgb.c:4369
+#: ../src/iop/filmicrgb.c:3846 ../src/iop/filmicrgb.c:4366
 msgid "scene"
 msgstr "escena"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3858
+#: ../src/iop/filmicrgb.c:3855
 msgid "(EV)"
 msgstr "(EV)"
 
 #. we are over the graph area
-#: ../src/iop/filmicrgb.c:4287
+#: ../src/iop/filmicrgb.c:4284
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -16369,11 +16360,11 @@ msgstr ""
 "La curva clara corresponde al mapeo de tono de película.\n"
 "La curva oscura corresponde a la saturación."
 
-#: ../src/iop/filmicrgb.c:4293
+#: ../src/iop/filmicrgb.c:4290
 msgid "toggle axis labels and values display"
 msgstr "Mostrar los valores y etiquetas en los ejes"
 
-#: ../src/iop/filmicrgb.c:4297
+#: ../src/iop/filmicrgb.c:4294
 #, fuzzy
 msgid ""
 "cycle through graph views.\n"
@@ -16386,7 +16377,7 @@ msgstr ""
 "Clic secundario: hacia atrás.\n"
 "Pulsación doble: vista general."
 
-#: ../src/iop/filmicrgb.c:4376
+#: ../src/iop/filmicrgb.c:4373
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -16397,7 +16388,7 @@ msgstr ""
 "El valor aquí ingresado se reajustará para corresponder al 18.45%.\n"
 "Disminuya el valor para aumentar el brillo general."
 
-#: ../src/iop/filmicrgb.c:4404
+#: ../src/iop/filmicrgb.c:4401
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
@@ -16405,7 +16396,7 @@ msgstr ""
 "Ampliar o reducir simétricamente el rango dinámico calculado.\n"
 "Es útil para dar margen de seguridad a las luminancias extremas."
 
-#: ../src/iop/filmicrgb.c:4414
+#: ../src/iop/filmicrgb.c:4411
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -16422,15 +16413,15 @@ msgstr ""
 "por lo que es importante comprender esas estimaciones antes de usarlo."
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4423
+#: ../src/iop/filmicrgb.c:4420
 msgid "reconstruct"
 msgstr "reconstruir"
 
-#: ../src/iop/filmicrgb.c:4425
+#: ../src/iop/filmicrgb.c:4422
 msgid "highlights clipping"
 msgstr "recorte de luces"
 
-#: ../src/iop/filmicrgb.c:4431
+#: ../src/iop/filmicrgb.c:4428
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -16447,7 +16438,7 @@ msgstr ""
 "Disminuir para abarcar un área mayor.\n"
 "Aumentar para excluir un área mayor."
 
-#: ../src/iop/filmicrgb.c:4441
+#: ../src/iop/filmicrgb.c:4438
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -16457,15 +16448,15 @@ msgstr ""
 "Disminuir para hacer la transición más drástica y nítida.\n"
 "Aumentar para hacer la transición más suave y difuminada."
 
-#: ../src/iop/filmicrgb.c:4447 ../src/iop/filmicrgb.c:4448
+#: ../src/iop/filmicrgb.c:4444 ../src/iop/filmicrgb.c:4445
 msgid "display highlight reconstruction mask"
 msgstr "mostrar la máscara de reconstrucción de luces"
 
-#: ../src/iop/filmicrgb.c:4455 ../src/iop/splittoning.c:527
+#: ../src/iop/filmicrgb.c:4452 ../src/iop/splittoning.c:527
 msgid "balance"
 msgstr "balance"
 
-#: ../src/iop/filmicrgb.c:4462
+#: ../src/iop/filmicrgb.c:4459
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16482,7 +16473,7 @@ msgstr ""
 "Aumentar si al menos un canal RGB no está recortado.\n"
 "Disminuir si todos los canales RGB están recortados en áreas amplias."
 
-#: ../src/iop/filmicrgb.c:4473
+#: ../src/iop/filmicrgb.c:4470
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16499,7 +16490,7 @@ msgstr ""
 "Aumentar para obtener más detalles.\n"
 "Disminuir para obtener más difuminado."
 
-#: ../src/iop/filmicrgb.c:4485
+#: ../src/iop/filmicrgb.c:4482
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16517,11 +16508,11 @@ msgstr ""
 "Disminuir si en las luces aparece un tono magenta o fuera de gama."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4493
+#: ../src/iop/filmicrgb.c:4490
 msgid "look"
 msgstr "apariencia"
 
-#: ../src/iop/filmicrgb.c:4503
+#: ../src/iop/filmicrgb.c:4500
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -16531,7 +16522,7 @@ msgstr ""
 "Aumentar para que las luces sean más brillantes y con menor compresión.\n"
 "Disminuir para apagar las luces."
 
-#: ../src/iop/filmicrgb.c:4511
+#: ../src/iop/filmicrgb.c:4508
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -16545,7 +16536,7 @@ msgstr ""
 "latitud.\n"
 "No tiene ningún efecto en los tonos medios."
 
-#: ../src/iop/filmicrgb.c:4526 ../src/iop/filmicrgb.c:4669
+#: ../src/iop/filmicrgb.c:4523 ../src/iop/filmicrgb.c:4666
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -16556,11 +16547,11 @@ msgstr ""
 "Aumentar si las sombras o las luces les falta saturación."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:4555
+#: ../src/iop/filmicrgb.c:4552
 msgid "options"
 msgstr "opciones"
 
-#: ../src/iop/filmicrgb.c:4560
+#: ../src/iop/filmicrgb.c:4557
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -16570,7 +16561,7 @@ msgstr ""
 "LA v4 es un método de desaturación más reciente, basado en la pureza "
 "espectral de luz."
 
-#: ../src/iop/filmicrgb.c:4564
+#: ../src/iop/filmicrgb.c:4561
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -16580,7 +16571,7 @@ msgstr ""
 "Puede acentuar el ruido de croma y las aberraciones cromáticas, \n"
 "por lo que se recomienda corregir mediante otros módulos.\n"
 
-#: ../src/iop/filmicrgb.c:4570
+#: ../src/iop/filmicrgb.c:4567
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16592,7 +16583,7 @@ msgstr ""
 "tonal.\n"
 "suave: usa una menor curvatura que resulta en una menor compresión tonal."
 
-#: ../src/iop/filmicrgb.c:4575
+#: ../src/iop/filmicrgb.c:4572
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16604,7 +16595,7 @@ msgstr ""
 "tonal.\n"
 "suave: usa una menor curvatura que resulta en una menor compresión tonal."
 
-#: ../src/iop/filmicrgb.c:4580
+#: ../src/iop/filmicrgb.c:4577
 #, c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -16618,7 +16609,7 @@ msgstr ""
 "exposición.\n"
 "Deshabilitar para el uso del gris medio estándar a 18.45 %%."
 
-#: ../src/iop/filmicrgb.c:4587
+#: ../src/iop/filmicrgb.c:4584
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -16630,7 +16621,7 @@ msgstr ""
 "Esto mantiene idéntico el gris medio y mejora los ajustes rápidos.\n"
 "Si se desea ajustar manualmente, desactive."
 
-#: ../src/iop/filmicrgb.c:4593
+#: ../src/iop/filmicrgb.c:4590
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -16643,7 +16634,7 @@ msgstr ""
 "Será más lento pero producirá más luces neutras.\n"
 "También ayuda en los casos difíciles de luces magentas."
 
-#: ../src/iop/filmicrgb.c:4600
+#: ../src/iop/filmicrgb.c:4597
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -16655,7 +16646,7 @@ msgstr ""
 "las luces pueden verse muy suavizadas.\n"
 "El ruido añadido hará que se mezclen con el resto de la imagen,"
 
-#: ../src/iop/filmicrgb.c:4607
+#: ../src/iop/filmicrgb.c:4604
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -16663,11 +16654,11 @@ msgstr ""
 "Elija una distribución de probabilidad para el ruido.\n"
 "Es útil para hacerlo combinar con el patrón natural del ruido del sensor.\n"
 
-#: ../src/iop/filmicrgb.c:4675
+#: ../src/iop/filmicrgb.c:4672
 msgid "mid-tones saturation"
 msgstr "saturación en los tonos medios"
 
-#: ../src/iop/filmicrgb.c:4676
+#: ../src/iop/filmicrgb.c:4673
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -16934,7 +16925,7 @@ msgstr "Intenta recuperar el color y evitar los tonos magentas en las luces"
 msgid "reconstruction, raw"
 msgstr "Reconstrucción, negativo digital"
 
-#: ../src/iop/highlights.c:2101
+#: ../src/iop/highlights.c:2111
 #, fuzzy
 msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
@@ -16943,11 +16934,11 @@ msgstr ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
 "back to clip."
 
-#: ../src/iop/highlights.c:2174
+#: ../src/iop/highlights.c:2184
 msgid "highlight reconstruction method"
 msgstr "Método de reconstrucción de luces"
 
-#: ../src/iop/highlights.c:2179
+#: ../src/iop/highlights.c:2189
 #, fuzzy
 msgid ""
 "manually adjust the clipping threshold against magenta highlights\n"
@@ -16957,7 +16948,7 @@ msgstr ""
 "Ajustar manualmente el umbral de corte contra las luces magenta (no sería "
 "necesario cambiar esto)"
 
-#: ../src/iop/highlights.c:2188
+#: ../src/iop/highlights.c:2198
 #, fuzzy
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
@@ -16966,7 +16957,7 @@ msgstr ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 
-#: ../src/iop/highlights.c:2192
+#: ../src/iop/highlights.c:2202
 #, fuzzy
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
@@ -16975,7 +16966,7 @@ msgstr ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 
-#: ../src/iop/highlights.c:2197
+#: ../src/iop/highlights.c:2207
 #, fuzzy
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
@@ -16984,7 +16975,7 @@ msgstr ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
 
-#: ../src/iop/highlights.c:2201
+#: ../src/iop/highlights.c:2211
 #, fuzzy
 msgid ""
 "increase to correct larger clipped areas.\n"
