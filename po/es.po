@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-03 19:19-0500\n"
-"PO-Revision-Date: 2022-06-11 00:40-0500\n"
+"PO-Revision-Date: 2022-06-11 02:32-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -23558,14 +23558,12 @@ msgid "right stick"
 msgstr "Clic Secundario"
 
 #: ../src/libs/tools/gamepad.c:73
-#, fuzzy
 msgid "left shoulder"
-msgstr "carpeta"
+msgstr "hombro izquierdo"
 
 #: ../src/libs/tools/gamepad.c:73
-#, fuzzy
 msgid "right shoulder"
-msgstr "Doble Clic Secundario"
+msgstr "hombro derecho"
 
 #: ../src/libs/tools/gamepad.c:74
 #, fuzzy
@@ -23642,9 +23640,8 @@ msgid "right x"
 msgstr "X derecha"
 
 #: ../src/libs/tools/gamepad.c:98
-#, fuzzy
 msgid "right y"
-msgstr "derecho"
+msgstr "Y derecha"
 
 #: ../src/libs/tools/gamepad.c:99
 #, fuzzy
