@@ -198,6 +198,10 @@ typedef struct dt_opencl_device_t
   // a device might be turned off by force by setting this value to 1
   // also used for blacklisted drivers
   int disabled;
+
+  // Some devices are known to be unused by other apps so there is no need to test for available memory at all.
+  // Also some devices might behave badly with the checking code, in this case we could enforce a headroom here.
+  int forced_headroom;
 } dt_opencl_device_t;
 
 struct dt_bilateral_cl_global_t;
