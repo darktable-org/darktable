@@ -89,7 +89,7 @@ static float _action_process_modifiers(gpointer target, dt_action_element_t elem
     }
   }
 
-  return (dt_modifier_shortcuts & mask) != 0;
+  return ((dt_modifier_shortcuts | dt_key_modifier_state()) & mask) != 0;
 }
 
 const dt_action_element_def_t _action_elements_modifiers[]
