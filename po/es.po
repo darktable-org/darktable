@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-03 19:19-0500\n"
-"PO-Revision-Date: 2022-06-12 23:43-0500\n"
+"PO-Revision-Date: 2022-06-12 23:58-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -13491,15 +13491,14 @@ msgid "the input color that should be mapped to the target"
 msgstr "the input color that should be mapped to the target"
 
 #: ../src/iop/channelmixerrgb.c:4115
-#, fuzzy
 msgid ""
 "L: \tN/A\n"
 "h: \tN/A\n"
 "c: \tN/A"
 msgstr ""
-"L: \tN/A \n"
-"h: \tN/A\n"
-"c: \tN/A"
+"L: \tno corresponde \n"
+"h: \tno corresponde\n"
+"c: \tno corresponde"
 
 #: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
 #, fuzzy
@@ -19618,7 +19617,7 @@ msgstr "batería"
 
 #: ../src/libs/camera.c:343
 msgid "n/a"
-msgstr "n/a"
+msgstr "no aplica"
 
 #. Camera control
 #: ../src/libs/camera.c:418
