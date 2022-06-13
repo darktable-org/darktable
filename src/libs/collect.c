@@ -70,6 +70,7 @@ typedef struct dt_lib_collect_rule_t
   gboolean typing;
   gchar *searchstring;
   gboolean startwildcard;
+  gboolean sensitive;
   _datetime_range_t datetime_range;
   GtkTreePath *expanded_path;
 } dt_lib_collect_rule_t;
@@ -757,7 +758,7 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   gboolean expanded = FALSE;
 
   gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
-  gchar *haystack = g_utf8_strdown(str, -1);
+  gchar *haystack = dr->sensitive ? g_strdup(str) : g_utf8_strdown(str, -1);
   gchar *needle = g_strdup(dr->searchstring);
 
   int collection = _combo_get_active_collection(dr->combo);
@@ -916,7 +917,7 @@ static gboolean tree_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   }
   else
   {
-    gchar *haystack = g_utf8_strdown(str, -1);
+    gchar *haystack = dr->sensitive ? g_strdup(str) : g_utf8_strdown(str, -1);
     const int property = _combo_get_active_collection(dr->combo);
     if(is_time_property(property) || property == DT_COLLECTION_PROP_DAY)
     {
@@ -1622,7 +1623,10 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     g_free(number2);
   }
 
-  gchar *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+  dr->sensitive = (property == DT_COLLECTION_PROP_TAG &&
+     dt_conf_is_equal("plugins/lighttable/tagging/case_sensitivity", "sensitive"));
+  gchar *needle = dr->sensitive ? g_strdup(gtk_entry_get_text(GTK_ENTRY(dr->text)))
+                                : g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
   if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
   dr->startwildcard = needle[0] == '%';
   dr->searchstring =  needle[0] == '%' ? &needle[1] : needle;
