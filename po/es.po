@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-03 19:19-0500\n"
-"PO-Revision-Date: 2022-06-11 02:32-0500\n"
+"PO-Revision-Date: 2022-06-12 21:49-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -6412,17 +6412,16 @@ msgid "insufficient memory"
 msgstr "Memoria insuficiente"
 
 #: ../src/common/imagebuf.c:132
-#, fuzzy
 msgid ""
 "this module was unable to allocate\n"
 "all of the memory required to process\n"
 "the image.  some or all processing\n"
 "has been skipped."
 msgstr ""
-"this module was unable to allocate\n"
-"all of the memory required to process\n"
-"the image.  some or all processing\n"
-"has been skipped."
+"Este módulo fue incapaz de asignar\n"
+"toda la memoria requerida para procesar la imagen.\n"
+"La omisión del procesamiento de imagen pudo haber sido\n"
+"parcial o total."
 
 #: ../src/common/imageio.c:740 ../src/common/mipmap_cache.c:1074
 #, c-format
@@ -9598,7 +9597,6 @@ msgid "speed"
 msgstr "velocidad"
 
 #: ../src/gui/accelerators.c:664
-#, fuzzy
 msgid ""
 "press Del to delete selected shortcut\n"
 "double-click to add new shortcut\n"
@@ -10088,7 +10086,6 @@ msgstr "Activar o desactivar detección de máximo enfoque"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1246
-#, fuzzy
 msgid "toggle focus peaking"
 msgstr "activar o desactivar detección de máximo enfoque"
 
@@ -11875,14 +11872,13 @@ msgstr ""
 "si están disponibles."
 
 #: ../src/iop/ashift.c:5796
-#, fuzzy
 msgid ""
 "crop factor of the camera sensor, default value set from EXIF data if "
 "available, manual setting is often required"
 msgstr ""
-"Factor de recorte del sensor de la cámara. Se toma el valor por defecto "
-"desde los datos Exif si están disponibles. Normalmente los ajustes manuales "
-"son requeridos."
+"Factor de recorte del sensor de la cámara. Predeterminadamente, se toma el "
+"valor desde los datos Exif si están disponibles. Por lo general, se requiere "
+"un ajuste manual."
 
 #: ../src/iop/ashift.c:5799
 msgid ""
@@ -12853,13 +12849,12 @@ msgstr ""
 "Activar la corrección de la desviación de color para los canales azul y rojo"
 
 #: ../src/iop/cacorrect.c:1465
-#, fuzzy
 msgid ""
 "automatic chromatic aberration correction\n"
 "only for Bayer raw files"
 msgstr ""
 "Corrección automática de aberración cromática.\n"
-"Funciona sólo en imágenes RAW tipo Bayer."
+"Funciona sólo con imágenes en bruto tipo Bayer."
 
 #: ../src/iop/cacorrectrgb.c:164 ../src/iop/defringe.c:75
 msgid "chromatic aberrations"
@@ -16365,7 +16360,6 @@ msgid "toggle axis labels and values display"
 msgstr "Mostrar los valores y etiquetas en los ejes"
 
 #: ../src/iop/filmicrgb.c:4294
-#, fuzzy
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
@@ -16375,7 +16369,7 @@ msgstr ""
 "Cambiar vista de gráfica.\n"
 "Clic primario: hacia adelante.\n"
 "Clic secundario: hacia atrás.\n"
-"Pulsación doble: vista general."
+"Pulsación doble: restablece la vista."
 
 #: ../src/iop/filmicrgb.c:4373
 msgid ""
@@ -19304,7 +19298,6 @@ msgstr ""
 "sea mucho más lenta si se usa la reducción de ruido perfilado."
 
 #: ../src/iop/toneequal.c:3217
-#, fuzzy
 msgid ""
 "precision of the feathering:\n"
 "higher values force the mask to follow edges more closely\n"
@@ -19315,9 +19308,9 @@ msgstr ""
 "Precisión del difuminado:\n"
 "Con valores elevados, se fuerza a la máscara a incrementar la precisión con "
 "los bordes,\n"
-"pero se puede anular el efecto del suavizado\n"
-"Con valores inferiores, se dan gradientes más lisos y mejor suavizado,\n"
-"pero pueden darse bordes imprecisos y halos"
+"pero el efecto del suavizado puede llegar a anularse.\n"
+"Con valores inferiores, se dan gradientes más lisos y un mejor suavizado,\n"
+"pero pueden surgir halos y darse bordes imprecisos."
 
 #: ../src/iop/toneequal.c:3223
 msgid "mask post-processing"
