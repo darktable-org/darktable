@@ -483,6 +483,11 @@ static void _popup_date_update(GtkDarktableRangeSelect *range, GtkWidget *w)
 
   pop->internal_change++;
 
+  dt_bauhaus_combobox_clear(pop->type);
+  dt_bauhaus_combobox_add(pop->type, _("fixed"));
+  if(w == range->entry_min || w == range->entry_max) dt_bauhaus_combobox_add(pop->type, _("relative"));
+  gtk_widget_set_sensitive(pop->type, (w == range->entry_min || w == range->entry_max));
+
   int datetype = 0;
   if((w == range->entry_max && range->bounds & DT_RANGE_BOUND_MAX_RELATIVE)
      || (w == range->entry_min && range->bounds & DT_RANGE_BOUND_MIN_RELATIVE))
@@ -924,9 +929,6 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   // the type of date selection
   pop->type = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(pop->type, NULL, _("date type"));
-  dt_bauhaus_combobox_add(pop->type, _("fixed"));
-  dt_bauhaus_combobox_add(pop->type, _("relative"));
-  dt_bauhaus_combobox_set(pop->type, 0);
   g_signal_connect(G_OBJECT(pop->type), "value-changed", G_CALLBACK(_popup_date_type_changed), range);
   gtk_box_pack_start(GTK_BOX(vbox), pop->type, FALSE, TRUE, 0);
 
@@ -1031,7 +1033,7 @@ static void _popup_date_init(GtkDarktableRangeSelect *range)
   // the select line
   hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox0), hbox2, FALSE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new("current date : "), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox2), gtk_label_new(_("current date: ")), FALSE, TRUE, 0);
   pop->selection = gtk_entry_new();
   gtk_entry_set_alignment(GTK_ENTRY(pop->selection), 0.5);
   gtk_box_pack_start(GTK_BOX(hbox2), pop->selection, TRUE, TRUE, 0);
@@ -1788,7 +1790,7 @@ void dtgtk_range_select_set_selection(GtkDarktableRangeSelect *range, const dt_r
                             range->select_relative_date_r.hour, range->select_relative_date_r.minute,
                             range->select_relative_date_r.second);
     else if(range->bounds & DT_RANGE_BOUND_MAX_NOW)
-      txt = g_strdup("now");
+      txt = g_strdup(_("now"));
     else
       txt = range->print(range->select_max_r, FALSE);
     gtk_entry_set_text(GTK_ENTRY(range->entry_max), txt);

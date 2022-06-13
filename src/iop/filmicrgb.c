@@ -181,7 +181,7 @@ typedef struct dt_iop_filmicrgb_params_t
 {
   float grey_point_source;     // $MIN: 0 $MAX: 100 $DEFAULT: 18.45 $DESCRIPTION: "middle gray luminance"
   float black_point_source;    // $MIN: -16 $MAX: -0.1 $DEFAULT: -8.0 $DESCRIPTION: "black relative exposure"
-  float white_point_source;    // $MIN: 0 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
+  float white_point_source;    // $MIN: 0.1 $MAX: 16 $DEFAULT: 4.0 $DESCRIPTION: "white relative exposure"
   float reconstruct_threshold; // $MIN: -6.0 $MAX: 6.0 $DEFAULT: +3.0 $DESCRIPTION: "threshold"
   float reconstruct_feather;   // $MIN: 0.25 $MAX: 6.0 $DEFAULT: 3.0 $DESCRIPTION: "transition"
   float reconstruct_bloom_vs_details; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "bloom ↔ reconstruct"
@@ -1538,8 +1538,6 @@ static inline void Ych_to_pipe_RGB(const dt_aligned_pixel_t in, const dt_colorma
 
   // go from CIE LMS 2006 to pipeline RGB
   dot_product(LMS, matrix, out);
-
-  for_each_channel(c, aligned(out)) out[c] = fmaxf(out[c], 0.f);
 }
 
 static inline void filmic_desaturate_v4(const dt_aligned_pixel_t Ych_original, dt_aligned_pixel_t Ych_final, const float saturation)
@@ -1849,7 +1847,7 @@ static inline void filmic_chroma_v4(const float *const restrict in, float *const
                 data->output_power);
 
     // Restore RGB
-    for_each_channel(c,aligned(pix_out)) pix_out[c] = fmaxf(ratios[c] * norm, 0.f);
+    for_each_channel(c,aligned(pix_out)) pix_out[c] = ratios[c] * norm;
 
     // Save Ych in Kirk/Filmlight Yrg
     dt_aligned_pixel_t Ych_original = { 0.f };
@@ -1903,7 +1901,7 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
       // Apply the transfer function of the display
       pix_out[c] = powf(CLAMP(filmic_spline(pix_out[c], spline.M1, spline.M2, spline.M3, spline.M4, spline.M5,
                                                  spline.latitude_min, spline.latitude_max, spline.type),
-                              display_black,
+                              0.f,  // individual components can always go to zero, luminance is clamped later
                               display_white), data->output_power);
     }
 
@@ -1915,7 +1913,6 @@ static inline void filmic_split_v4(const float *const restrict in, float *const 
     dt_aligned_pixel_t Ych_final = { 0.f };
     pipe_RGB_to_Ych(pix_out, input_matrix, Ych_final);
 
-    // Force final hue and chroma to original
     Ych_final[1] = fminf(Ych_original[1], Ych_final[1]);
 
     gamut_mapping(Ych_final, Ych_original, pix_out, input_matrix, output_matrix, export_input_matrix,
