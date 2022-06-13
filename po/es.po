@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-03 19:19-0500\n"
-"PO-Revision-Date: 2022-06-12 21:49-0500\n"
+"PO-Revision-Date: 2022-06-12 23:43-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -16933,14 +16933,14 @@ msgid "highlight reconstruction method"
 msgstr "Método de reconstrucción de luces"
 
 #: ../src/iop/highlights.c:2189
-#, fuzzy
 msgid ""
 "manually adjust the clipping threshold against magenta highlights\n"
 "the mask icon shows the clipped area\n"
 "(you shouldn't ever need to touch this)"
 msgstr ""
-"Ajustar manualmente el umbral de corte contra las luces magenta (no sería "
-"necesario cambiar esto)"
+"Ajustar manualmente el umbral de recorte contra las luces magenta.\n"
+"El ícono de la máscara muestra el área recortada.\n"
+"(No sería necesario reajustar estos valores)."
 
 #: ../src/iop/highlights.c:2198
 #, fuzzy
@@ -17704,7 +17704,6 @@ msgid "select file outside LUT root folder is not allowed"
 msgstr "No es posible seleccionar el archivo fuera de la carpeta raíz de LUT"
 
 #: ../src/iop/lut3d.c:1674
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed LUT) file "
 "CAUTION: 3D LUT folder must be set in preferences/processing before choosing "
@@ -17715,7 +17714,6 @@ msgstr ""
 "en Preferencias→procesamiento→procesamiento de imagen.\""
 
 #: ../src/iop/lut3d.c:1678
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D LUT folder must be "
 "set in preferences/processing before choosing the LUT file"
@@ -17725,22 +17723,20 @@ msgstr ""
 "Preferencias→procesamiento→procesamiento de imagen."
 
 #: ../src/iop/lut3d.c:1690
-#, fuzzy
 msgid ""
 "the file path (relative to LUT folder) is saved with image along with the "
 "LUT data if it's a compressed LUT (gmz)"
 msgstr ""
-"La ruta del archivo (relativa a la carpeta LUT) se guarda con la imagen (y "
-"no los datos LUT en sí mismos)"
+"La ruta del archivo (relativa a la carpeta LUT) se guarda con la imagen "
+"junto con los datos LUT en el caso de ser una LUT comprimida (gmz)."
 
 #: ../src/iop/lut3d.c:1693
-#, fuzzy
 msgid ""
 "the file path (relative to LUT folder) is saved with image (and not the LUT "
 "data themselves)"
 msgstr ""
 "La ruta del archivo (relativa a la carpeta LUT) se guarda con la imagen (y "
-"no los datos LUT en sí mismos)"
+"no los datos LUT en sí mismos)."
 
 #: ../src/iop/lut3d.c:1702
 msgid "enter LUT name"
@@ -18155,7 +18151,6 @@ msgid "raw black/white point"
 msgstr "punto negro / punto blanco"
 
 #: ../src/iop/rawprepare.c:151
-#, fuzzy
 msgid ""
 "sets technical specificities of the raw sensor.\n"
 "touch with great care!"
@@ -19049,34 +19044,28 @@ msgid "mask blending: people with backlight"
 msgstr "fusión de máscara: sujetos a contraluz"
 
 #: ../src/iop/toneequal.c:460
-#, fuzzy
 msgid "compress shadows/highlights (eigf): strong"
-msgstr "compresión de sombras/luces (FGIE): densa"
+msgstr "compresión de sombras/luces (FGIE): intensa"
 
 #: ../src/iop/toneequal.c:464
-#, fuzzy
 msgid "compress shadows/highlights (gf): strong"
-msgstr "compresión de sombras/luces (FG): densa"
+msgstr "compresión de sombras/luces (FG): intensa"
 
 #: ../src/iop/toneequal.c:472
-#, fuzzy
 msgid "compress shadows/highlights (eigf): medium"
 msgstr "compresión de sombras/luces (FGIE): media"
 
 #: ../src/iop/toneequal.c:476
-#, fuzzy
 msgid "compress shadows/highlights (gf): medium"
 msgstr "compresión de sombras/luces (FG): media"
 
 #: ../src/iop/toneequal.c:484
-#, fuzzy
 msgid "compress shadows/highlights (eigf): soft"
-msgstr "compresión de sombras/luces (FGIE): leve"
+msgstr "compresión de sombras/luces (FGIE): ligera"
 
 #: ../src/iop/toneequal.c:488
-#, fuzzy
 msgid "compress shadows/highlights (gf): soft"
-msgstr "compresión de sombras/luces (FG): leve"
+msgstr "compresión de sombras/luces (FG): ligera"
 
 #: ../src/iop/toneequal.c:494
 msgid "contrast tone curve: soft"
@@ -20038,11 +20027,13 @@ msgid "error loading file '%s'"
 msgstr "Error al cargar el archivo «%s»"
 
 #: ../src/libs/copy_history.c:191
-#, fuzzy, c-format
+#, c-format
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
-msgstr[0] "Advertencia de compresión del historial"
-msgstr[1] "Advertencia de compresión del historial"
+msgstr[0] ""
+"No pudo realizarse la compresión del historial de acciones de %d imagen."
+msgstr[1] ""
+"No pudo realizarse la compresión del historial de acciones de %d imágenes."
 
 #: ../src/libs/copy_history.c:235
 #, c-format
