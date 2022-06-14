@@ -830,7 +830,7 @@ static void init_tab_presets(GtkWidget *stack)
 
   // Adding the import/export buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(hbox, "preset_controls");
+  gtk_widget_set_name(hbox, "preset-controls");
 
   GtkWidget *search_presets = gtk_search_entry_new();
   gtk_box_pack_start(GTK_BOX(hbox), search_presets, FALSE, TRUE, 0);
