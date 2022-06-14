@@ -237,7 +237,7 @@ void dt_opencl_write_device_config(const int devid)
 
   // Also take care of extended device data, these are not only device specific but also depend on the devid
   // to support systems with two similar cards.
-  g_snprintf(key, 254, "%s%i_%s", DT_CLDEVICE_HEAD, devid, cl->dev[devid].cname);
+  g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
   g_snprintf(dat, 510, "%i", cl->dev[devid].forced_headroom);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -306,7 +306,7 @@ gboolean dt_opencl_read_device_config(const int devid)
   cl->dev[devid].disabled &= 1;
 
   // Also take care of extended device data, these are not only device specific but also depend on the devid
-  g_snprintf(key, 254, "%s%i_%s", DT_CLDEVICE_HEAD, devid, cl->dev[devid].cname);
+  g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
   if(dt_conf_key_not_empty(key))
   {
     const gchar *dat = dt_conf_get_string_const(key);
@@ -928,7 +928,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     if(err != CL_SUCCESS)
     {
       all_num_devices[n] = 0;
-      dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %s\n", cl_errstr(err));
+      dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] could not get device id: %s\n", cl_errstr(err));
     }
     else
     {
