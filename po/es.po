@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-13 23:54-0500\n"
-"PO-Revision-Date: 2022-06-13 23:57-0500\n"
+"PO-Revision-Date: 2022-06-14 00:33-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -20259,7 +20259,7 @@ msgid "output ICC profiles in %s or %s"
 msgstr "Perfiles de salida ICC en %s o %s"
 
 #: ../src/libs/export.c:1265
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "• perceptual: smoothly moves out-of-gamut colors into gamut, preserving "
 "gradations, but distorts in-gamut colors in the process. note that "
@@ -20448,7 +20448,6 @@ msgid "formula"
 msgstr "fórmula"
 
 #: ../src/libs/export_metadata.c:383
-#, fuzzy
 msgid ""
 "list of calculated metadata\n"
 "click on '+' button to select and add new metadata\n"
@@ -20462,13 +20461,16 @@ msgid ""
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
 "Lista de metadatos calculados.\n"
+"Pulse sobre el botón '+' para seleccionar y añadir metadatos nuevos.\n"
 "Si la fórmula está vacía, los metadatos correspondientes se eliminan del "
 "archivo exportado.\n"
 "Si la fórmula es '=', los metadatos Exif se exportan incluso si los datos "
 "Exif están desactivados,\n"
 "de lo contrario, los metadatos correspondientes se calculan y se añaden al "
-"archivo exportado\n"
-"Pulse en la celda de fórmula para editarla. Variables reconocidas:\n"
+"archivo exportado.\n"
+"Pulse en la celda de fórmula para editarla.\n"
+"Teclee '$(' para iniciar la compleción automática y desplegar la lista de "
+"las variables disponibles."
 
 #: ../src/libs/export_metadata.c:440
 msgid "add an output metadata tag"
@@ -20602,33 +20604,28 @@ msgid " (off)"
 msgstr " (off)"
 
 #: ../src/libs/filtering.c:1654
-#, fuzzy
 msgid "sort order"
-msgstr "orden actual"
+msgstr "orden de clasificación"
 
 #: ../src/libs/filtering.c:1656
 msgid "determine the sort order of shown images"
 msgstr "Establece el orden en el que las imágenes serán mostradas"
 
 #: ../src/libs/filtering.c:1713
-#, fuzzy
 msgid "sort direction"
-msgstr "dirección"
+msgstr "sentido"
 
 #: ../src/libs/filtering.c:1719
-#, fuzzy
 msgid "remove this sort order"
-msgstr "Quitar este módulo"
+msgstr "Quitar el orden de clasificación"
 
 #: ../src/libs/filtering.c:1872
-#, fuzzy
 msgid "DESC"
-msgstr "DESC"
+msgstr "Descendente"
 
 #: ../src/libs/filtering.c:1872
-#, fuzzy
 msgid "ASC"
-msgstr "ASC"
+msgstr "Ascendente"
 
 #: ../src/libs/filtering.c:1983
 #, fuzzy
@@ -20674,14 +20671,12 @@ msgid "Y"
 msgstr "Y"
 
 #: ../src/libs/filters/colors.c:149
-#, fuzzy
 msgid "P"
 msgstr "P"
 
 #: ../src/libs/filters/colors.c:269
-#, fuzzy
 msgid "color filter"
-msgstr "película de color"
+msgstr "filtro de color"
 
 #: ../src/libs/filters/colors.c:294
 #, fuzzy
@@ -20988,12 +20983,11 @@ msgid "date/time"
 msgstr "fecha/hora"
 
 #: ../src/libs/geotagging.c:1727
-#, fuzzy
 msgid ""
 "enter the new date/time (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "key in the new numbers or scroll over the cell"
 msgstr ""
-"Ingresar la nueva fecha/hora (yyyy:mm:dd hh:mm:ss)\n"
+"Ingresar la nueva fecha/hora (YYYY:MM:DD hh:mm:ss[.sss])\n"
 "tecleando los números o usando la rueda del ratón sobre la celda."
 
 #: ../src/libs/geotagging.c:1733
@@ -21005,9 +20999,8 @@ msgid "date/time offset"
 msgstr "diferencia horaria"
 
 #: ../src/libs/geotagging.c:1741
-#, fuzzy
 msgid "offset or difference ([-]dd hh:mm:ss[.sss])"
-msgstr "Diferencia horaria ([-]dd hh:mm:ss)"
+msgstr "Diferencia horaria ([-]dd hh:mm:ss[.sss])"
 
 #: ../src/libs/geotagging.c:1744
 msgid "lock date/time offset value to apply it onto another selection"
@@ -21059,7 +21052,6 @@ msgid "select a GPX track file..."
 msgstr "Selecciona archivo GPX de recorrido..."
 
 #: ../src/libs/geotagging.c:1846
-#, fuzzy
 msgid ""
 "list of track segments in the GPX file, for each segment:\n"
 "- the start date/time in local time (LT)\n"
@@ -21202,7 +21194,6 @@ msgid "histogram"
 msgstr "histograma"
 
 #: ../src/libs/histogram.c:1949 ../src/libs/histogram.c:1986
-#, fuzzy
 msgid "cycle histogram modes"
 msgstr "modo cíclico del histograma"
 
@@ -21223,7 +21214,6 @@ msgid "compress history stack"
 msgstr "comprimir historial de acciones"
 
 #: ../src/libs/history.c:124
-#, fuzzy
 msgid ""
 "create a minimal history stack which produces the same image\n"
 "ctrl+click to truncate history to the selected item"
@@ -21236,9 +21226,8 @@ msgid "create a style from the current history stack"
 msgstr "Crear un estilo a partir del historial de acciones"
 
 #: ../src/libs/history.c:134
-#, fuzzy
 msgid "create style from history"
-msgstr "crear un estilo desde el historial"
+msgstr "crear un estilo con base en el historial"
 
 #: ../src/libs/history.c:190
 msgid "always-on module"
@@ -21436,9 +21425,8 @@ msgid "select dt metadata (from metadata editor module)"
 msgstr "Seleccionar metadatos de dt (desde el módulo editor de metadatos)"
 
 #: ../src/libs/image.c:586
-#, fuzzy
 msgid "set the selected image as source of metadata"
-msgstr "Fijar la primer imagen seleccionada como fuente de metadatos"
+msgstr "Fijar la imagen seleccionada como fuente de metadatos"
 
 #: ../src/libs/image.c:591
 msgid "paste selected metadata on selected images"
@@ -21473,7 +21461,6 @@ msgid "set selection as color images"
 msgstr "Marcar selección como imágenes a color"
 
 #: ../src/libs/image.c:628
-#, fuzzy
 msgid "duplicate virgin"
 msgstr "duplicar imagen virgen"
 
@@ -22201,12 +22188,12 @@ msgid "<various values>"
 msgstr "<múltiples valores>"
 
 #: ../src/libs/metadata_view.c:644
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "double-click to jump to film roll\n"
 "%s"
 msgstr ""
-"doble clic para saltar al carrete\n"
+"Realice un doble clic para cambiar al carrete\n"
 "%s"
 
 #: ../src/libs/metadata_view.c:736
@@ -22230,9 +22217,8 @@ msgstr ""
 "Utilice los preajustes en caso de requerir una configuración diferente."
 
 #: ../src/libs/metadata_view.c:1380
-#, fuzzy
 msgid "jump to film roll"
-msgstr "saltar al carrete"
+msgstr "cambiar al carrete"
 
 #: ../src/libs/recentcollect.c:67
 msgid "recently used collections"
@@ -22585,7 +22571,6 @@ msgid "new preset name:"
 msgstr "Nuevo nombre del preajuste:"
 
 #: ../src/libs/modulegroups.c:3514
-#, fuzzy
 msgid "a preset with this name already exists!"
 msgstr "Ya existe un preajuste con el mismo nombre"
 
@@ -23314,16 +23299,14 @@ msgid "toggle list with / without hierarchy"
 msgstr "Conmutar lista (con jerarquía o sin jerarquía)"
 
 #: ../src/libs/tagging.c:3127
-#, fuzzy
 msgid "hide"
-msgstr "esconder %s"
+msgstr "ocultar"
 
 #: ../src/libs/tagging.c:3129
 msgid "toggle sort by name or by count"
 msgstr "Cambiar entre ordenar por nombre y ordenar por recuento"
 
 #: ../src/libs/tagging.c:3129
-#, fuzzy
 msgid "sort"
 msgstr "ordenar por"
 
@@ -23332,9 +23315,8 @@ msgid "toggle show or not darktable tags"
 msgstr "Cambiar entre mostrar y ocultar etiquetas de darktable"
 
 #: ../src/libs/tagging.c:3131
-#, fuzzy
 msgid "dttags"
-msgstr "etiquetas"
+msgstr "etiquetas dt"
 
 #: ../src/libs/tagging.c:3147
 msgid ""
@@ -23395,18 +23377,16 @@ msgid "toggle list / tree view"
 msgstr "Conmutar vista (de lista o de árbol)"
 
 #: ../src/libs/tagging.c:3257
-#, fuzzy
 msgid "tree"
-msgstr "tree"
+msgstr "vista de árbol"
 
 #: ../src/libs/tagging.c:3259
 msgid "toggle list with / without suggestion"
 msgstr "Cambiar entre lista con o sin sugerencia"
 
 #: ../src/libs/tagging.c:3259
-#, fuzzy
 msgid "suggestion"
-msgstr "activar/desactivar sugerencia"
+msgstr "sugerencia"
 
 #: ../src/libs/tagging.c:3282
 #, fuzzy
