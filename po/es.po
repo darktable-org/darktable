@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.9/4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-13 23:54-0500\n"
-"PO-Revision-Date: 2022-06-14 00:33-0500\n"
+"PO-Revision-Date: 2022-06-14 20:29-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2134,7 +2134,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:8131
 #, fuzzy
 msgid "prefer focused instance"
-msgstr "Módulos sin máscaras"
+msgstr "prefer focused instance"
 
 #: ../build/bin/preferences_gen.h:8145
 #, fuzzy
@@ -2337,26 +2337,27 @@ msgid "sort collection descending"
 msgstr "Colección en orden descendente"
 
 #: ../build/bin/preferences_gen.h:8965
-#, fuzzy
 msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
 "'folder', 'times' (e.g. 'capture date')"
 msgstr ""
 "Organiza en orden descendente las siguientes colecciones: «carrete» por "
 "carpeta, «carpeta»\n"
-" y «periodos» (por ejemplo: \"fecha (día)\")"
+" y «periodos» (por ejemplo: \"fecha de captura\")"
 
 #: ../build/bin/preferences_gen.h:9049
 #, fuzzy
 msgid "prefer a history button in the collections module"
-msgstr "puede hacerse con el módulo importar"
+msgstr "prefer a history button in the collections module"
 
 #: ../build/bin/preferences_gen.h:9063
 #, fuzzy
 msgid ""
 "hide this module and instead access collections history with a button in the "
 "collections module"
-msgstr "puede hacerse con el módulo importar"
+msgstr ""
+"hide this module and instead access collections history with a button in the "
+"collections module"
 
 #: ../build/bin/preferences_gen.h:9117
 #, fuzzy
@@ -2375,18 +2376,16 @@ msgstr ""
 "show only recent tags (faster)"
 
 #: ../build/bin/preferences_gen.h:9164
-#, fuzzy
 msgid "number of recently attached tags"
-msgstr "número de agrupaciones"
+msgstr "número de etiquetas recién añadidas"
 
 #: ../build/bin/preferences_gen.h:9188
-#, fuzzy
 msgid ""
 "number of recently attached tags which are included in the suggestions list. "
 "the value `-1' disables the recent list"
 msgstr ""
-"number of recently attached tags which are included in the suggestions list. "
-"the value `-1' disables the recent list"
+"Número de etiquetas que se añadieron recientemente y que se incluyen en la "
+"lista de sugerencias. El valor '-1' desactiva la lista reciente."
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:130
 #: ../build/lib/darktable/plugins/introspection_ashift.c:279
@@ -4060,9 +4059,8 @@ msgstr "umbral superior"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:149
 #: ../build/lib/darktable/plugins/introspection_highlights.c:244
-#, fuzzy
 msgid "diameter of reconstruction"
-msgstr "reconstrucción de color"
+msgstr "diámetro de reconstrucción"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:155
 #: ../build/lib/darktable/plugins/introspection_highlights.c:248
@@ -4072,15 +4070,13 @@ msgstr "balance"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:161
 #: ../build/lib/darktable/plugins/introspection_highlights.c:252
-#, fuzzy
 msgid "combine segments"
-msgstr "combinar máscaras"
+msgstr "combinar segmentos"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:173
 #: ../build/lib/darktable/plugins/introspection_highlights.c:260
-#, fuzzy
 msgid "inpaint a flat color"
-msgstr "Color del iluminante"
+msgstr "reconstruir un color plano"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:274
 msgid "clip highlights"
@@ -8072,9 +8068,8 @@ msgid "normal & arithmetic modes"
 msgstr "modos aritméticos y normales"
 
 #: ../src/develop/blend_gui.c:2709
-#, fuzzy
 msgid "chromaticity & lightness modes"
-msgstr "modos de crominancia y luminancia"
+msgstr "modos de crominancia y luminosidad"
 
 #. add deprecated blend mode
 #: ../src/develop/blend_gui.c:2720
@@ -8965,9 +8960,8 @@ msgid "time"
 msgstr "tiempo"
 
 #: ../src/dtgtk/range.c:1036
-#, fuzzy
 msgid "current date: "
-msgstr "actual:"
+msgstr "fecha actual:"
 
 #: ../src/dtgtk/range.c:1040 ../src/dtgtk/range.c:1742
 #: ../src/dtgtk/range.c:1793
@@ -9581,9 +9575,8 @@ msgstr ""
 "La búsqueda se realiza desde que se comienza a escribir."
 
 #: ../src/gui/accelerators.c:680
-#, fuzzy
 msgid "click to filter shortcut list\n"
-msgstr "Pulse para abrir la configuración de los atajos de teclado"
+msgstr "Pulse para filtrar la lista de atajos del teclado.\n"
 
 #: ../src/gui/accelerators.c:681
 #, fuzzy
@@ -9591,12 +9584,10 @@ msgid "right click to show action of selected shortcut\n"
 msgstr "right click to show action of selected shortcut\n"
 
 #: ../src/gui/accelerators.c:682
-#, fuzzy
 msgid ""
 "double-click to define new shortcut\n"
 "start typing for incremental search"
 msgstr ""
-"Pulse para filtrar la lista de atajos del teclado.\n"
 "Pulsación doble para definir un nuevo atajo.\n"
 "Comenzar a escribir para la búsqueda dinámica."
 
@@ -10006,7 +9997,7 @@ msgstr "Salir"
 #. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
 #: ../src/gui/gtk.c:1189
 msgid "fullscreen"
-msgstr "pantalla completa"
+msgstr "Pantalla completa"
 
 #: ../src/gui/gtk.c:1193
 #, fuzzy
@@ -10015,48 +10006,40 @@ msgstr "paneles/ controles de pliegue"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1195
-#, fuzzy
 msgid "header"
-msgstr "Imagen de portada"
+msgstr "Encabezado"
 
 #: ../src/gui/gtk.c:1196
-#, fuzzy
 msgid "filmstrip and timeline"
-msgstr "paneles/ tira de imágenes y línea del tiempo"
+msgstr "Tira de imágenes y línea del tiempo"
 
 #: ../src/gui/gtk.c:1197
-#, fuzzy
 msgid "top toolbar"
-msgstr "paneles/barra de herramienta superior"
+msgstr "Barra de herramienta superior"
 
 #: ../src/gui/gtk.c:1198
-#, fuzzy
 msgid "bottom toolbar"
-msgstr "paneles/barra de herramienta inferior"
+msgstr "Barra de herramienta inferior"
 
 #: ../src/gui/gtk.c:1199
-#, fuzzy
 msgid "all top"
-msgstr "paneles/superiores"
+msgstr "Paneles superiores"
 
 #: ../src/gui/gtk.c:1200
-#, fuzzy
 msgid "all bottom"
-msgstr "inferior"
+msgstr "Paneles inferiores"
 
 #: ../src/gui/gtk.c:1202
-#, fuzzy
 msgid "toggle tooltip visibility"
-msgstr "activar/desactivar descripción emergente"
+msgstr "Activar/desactivar descripción emergente"
 
 #: ../src/gui/gtk.c:1203
-#, fuzzy
 msgid "reinitialise input devices"
-msgstr "reiniciar los dispositivos de entrada"
+msgstr "Reiniciar los dispositivos de entrada"
 
 #: ../src/gui/gtk.c:1241
 msgid "toggle focus-peaking mode"
-msgstr "Activar o desactivar detección de máximo enfoque"
+msgstr "Modo de detección de máximo enfoque"
 
 #. toggle focus peaking everywhere
 #: ../src/gui/gtk.c:1246
@@ -10587,7 +10570,6 @@ msgid "interface language"
 msgstr "Idioma de la interfaz"
 
 #: ../src/gui/preferences.c:290
-#, fuzzy
 msgid "double-click to reset to the system language"
 msgstr "Doble clic para restablecer al idioma del sistema"
 
@@ -11489,15 +11471,15 @@ msgstr "archivo en disco"
 
 #: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/gallery.c:166
 #: ../src/imageio/storage/latex.c:165
-#, fuzzy
 msgid ""
 "enter the path where to put exported images\n"
 "variables support bash like string manipulation\n"
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
-"Ingrese la ruta destino para exportar las imágenes\n"
-"Las variables admiten bash como la manipulación de cadenas\n"
-"variables reconocidas:"
+"Ingrese la ruta de destino para exportar las imágenes.\n"
+"Las variables admiten la manipulación de cadenas tipo bash.\n"
+"Teclee '$(' para iniciar la autocompleción y desplegar la lista de las "
+"variables disponibles."
 
 #: ../src/imageio/storage/disk.c:193
 msgid "on conflict"
@@ -11839,11 +11821,10 @@ msgstr ""
 "la distancia focal"
 
 #: ../src/iop/ashift.c:5794
-#, fuzzy
 msgid "focal length of the lens, default value set from EXIF data if available"
 msgstr ""
-"Distancia focal del lente. Se fija el valor por defecto desde los datos Exif "
-"si están disponibles."
+"Distancia focal del lente. El valor predeterminado se fija a partir de los "
+"datos Exif (si están disponibles)."
 
 #: ../src/iop/ashift.c:5796
 msgid ""
@@ -19880,20 +19861,17 @@ msgid "preferences..."
 msgstr "preferencias"
 
 #: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1397
-#, fuzzy
 msgid "AND"
-msgstr "AND"
+msgstr "Y"
 
 #: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1402
-#, fuzzy
 msgid "OR"
-msgstr "R"
+msgstr "O"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1407
-#, fuzzy
 msgid "BUT NOT"
-msgstr "BUT NOT"
+msgstr "EXCEPTO"
 
 #: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1987
 #, fuzzy
@@ -19961,7 +19939,6 @@ msgstr ""
 "Pulse Ctrl+Clic o el botón secundario para seleccionar un área."
 
 #: ../src/libs/colorpicker.c:590
-#, fuzzy
 msgid "pick color"
 msgstr "seleccionar color"
 
@@ -20469,8 +20446,8 @@ msgstr ""
 "de lo contrario, los metadatos correspondientes se calculan y se añaden al "
 "archivo exportado.\n"
 "Pulse en la celda de fórmula para editarla.\n"
-"Teclee '$(' para iniciar la compleción automática y desplegar la lista de "
-"las variables disponibles."
+"Teclee '$(' para iniciar la autocompleción y desplegar la lista de las "
+"variables disponibles."
 
 #: ../src/libs/export_metadata.c:440
 msgid "add an output metadata tag"
@@ -20579,19 +20556,16 @@ msgid "this rule is disabled"
 msgstr "Esta regla está inactiva"
 
 #: ../src/libs/filtering.c:1168
-#, fuzzy
 msgid "and"
 msgstr " y "
 
 #: ../src/libs/filtering.c:1169
-#, fuzzy
 msgid "or"
-msgstr "xor"
+msgstr "o"
 
 #: ../src/libs/filtering.c:1170
-#, fuzzy
 msgid "and not"
-msgstr " y "
+msgstr " y  no"
 
 #: ../src/libs/filtering.c:1172
 #, fuzzy
@@ -20599,9 +20573,8 @@ msgid "define how this rule should interact with the previous one"
 msgstr "define how this rule should interact with the previous one"
 
 #: ../src/libs/filtering.c:1431
-#, fuzzy
 msgid " (off)"
-msgstr " (off)"
+msgstr " (desactivado)"
 
 #: ../src/libs/filtering.c:1654
 msgid "sort order"
@@ -20693,33 +20666,31 @@ msgstr ""
 
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
 #: ../src/libs/filters/rating_range.c:339
-#, fuzzy
 msgid "rules"
-msgstr "módulos"
+msgstr "reglas"
 
 #: ../src/libs/filters/colors.c:306
-#, fuzzy
 msgid ""
 "filter by images color label\n"
 "and (∩): images having all selected color labels\n"
 "or (∪): images with at least one of the selected color labels"
 msgstr ""
-"filter by images color label\n"
-"and (∩): images having all selected color labels\n"
-"or (∪): images with at least one of the selected color labels"
+"Filtrar por marcas de color en las imágenes.\n"
+"Y (∩): imágenes que tienen todas las marcas de color seleccionadas.\n"
+"O (∪): imágenes con al menos una de las marcas de color seleccionadas."
 
 #: ../src/libs/filters/filename.c:365
-#, fuzzy
 msgid ""
 "enter filename to search.\n"
 "multiple values can be separated by ','\n"
 "\n"
 "right-click to get existing filenames"
 msgstr ""
-"enter filename to search.\n"
-"multiple values can be separated by ','\n"
+"Ingrese el nombre del archivo para buscar.\n"
+"Se pueden separar diferentes valores con ','\n"
 "\n"
-"right-click to get existing filenames"
+"Pulse el botón secundario para obtener los nombres de los archivos "
+"existentes."
 
 #: ../src/libs/filters/filename.c:376
 #, fuzzy
@@ -20760,19 +20731,16 @@ msgstr ""
 "ctrl-click to select multiple values"
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
-#, fuzzy
 msgid "ungrouped images"
-msgstr "Imágenes agrupadas"
+msgstr "Imágenes desagrupadas"
 
 #: ../src/libs/filters/grouping.c:167
-#, fuzzy
 msgid "grouping filter"
-msgstr "filtro de calentamiento"
+msgstr "filtro de agrupación"
 
 #: ../src/libs/filters/grouping.c:168
-#, fuzzy
 msgid "select the type of grouped image to filter"
-msgstr "Seleccionar el tono del filtro"
+msgstr "Seleccione el tipo de imagen agrupada para filtrar."
 
 #. predefined selections
 #: ../src/libs/filters/grouping.c:169 ../src/libs/filters/history.c:38
@@ -20780,14 +20748,12 @@ msgstr "Seleccionar el tono del filtro"
 #: ../src/libs/filters/rating_range.c:56 ../src/libs/filters/rating_range.c:72
 #: ../src/libs/filters/rating_range.c:109 ../src/libs/filters/ratio.c:68
 #: ../src/libs/filters/ratio.c:81
-#, fuzzy
 msgid "all images"
-msgstr "límite máximo"
+msgstr "Todas las imágenes"
 
 #: ../src/libs/filters/history.c:153
-#, fuzzy
 msgid "history filter"
-msgstr "filtro de lista"
+msgstr "filtro del historial de acciones"
 
 #: ../src/libs/filters/history.c:153
 #, fuzzy
