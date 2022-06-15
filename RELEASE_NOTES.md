@@ -277,6 +277,8 @@ are described more fully in the user manual and accompanying blog post.
 
 - RCD OpenCL tiling issues resolved.
 
+- Tile stitching for X-Trans sensors 
+
 - Filmstrip update fixed if crop is left open when moving to next
   image.
 
