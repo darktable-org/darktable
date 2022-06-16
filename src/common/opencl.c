@@ -2863,13 +2863,15 @@ void dt_opencl_check_tuning(const int devid)
     cl->dev[devid].used_available = res->refresource[4*(-level-1) + 3] * 1024lu * 1024lu;
     if(info)
       dt_print(DT_DEBUG_OPENCL | DT_DEBUG_MEMORY,
-         "[dt_opencl_check_tuning] reference mode %i, use %luMB on device `%s' id=%i\n",
-         level, cl->dev[devid].used_available / 1024lu / 1024lu, cl->dev[devid].name, devid);
+         "[dt_opencl_check_tuning] reference mode %i, use %luMB (pinning=%s) on device `%s' id=%i\n",
+         level, cl->dev[devid].used_available / 1024lu / 1024lu,
+         (cl->dev[devid].tuneactive & DT_OPENCL_TUNE_PINNED) ? "ON" : "OFF",
+         cl->dev[devid].name, devid);
     return;
   }
 
   const size_t allmem = cl->dev[devid].max_global_mem;
-  if((cl->dev[devid].tuneactive & DT_OPENCL_TUNE_MEMSIZE) && (level > 0))
+  if(cl->dev[devid].tuneactive & DT_OPENCL_TUNE_MEMSIZE)
   {
     if(cl->dev[devid].forced_headroom)
        cl->dev[devid].used_available = MAX(0ul, cl->dev[devid].max_global_mem - ((size_t)cl->dev[devid].forced_headroom * 1024ul * 1024ul));
