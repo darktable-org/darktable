@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-16 11:50+0900\n"
+"PO-Revision-Date: 2022-06-16 11:52+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -17479,7 +17479,7 @@ msgstr "_選択"
 #: ../src/iop/lut3d.c:1577
 msgid "hald CLUT (png), 3D LUT (cube or 3dl) or gmic compressed LUT (gmz)"
 msgstr ""
-"hald CLUT（png）、3D LUT（cubeまたは3dl）、またはG'MIC により圧縮されたLUT"
+"hald CLUT（png）、3D LUT（cubeまたは3dl）、またはG'MICにより圧縮されたLUT"
 "（gmz）"
 
 #: ../src/iop/lut3d.c:1579
