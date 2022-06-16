@@ -97,7 +97,7 @@ static int init_coeffs(const dt_image_t *img, const dt_iop_mlens_params_t *d,
     int nc = cd->sony.nc;
     for(int i = 0; i < nc; i++)
     {
-      knots[i] = (float) i / (nc - 1);
+      knots[i] = (float) (i + 0.5) / (nc - 1);
 
       if(cor_rgb && d->cor_dist)
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (d->cor_dist_ft * cd->sony.distortion[i] * powf(2, -14) + 1) * d->scale;

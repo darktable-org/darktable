@@ -692,6 +692,21 @@ static bool _exif_decode_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
   }
 }
 
+static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator *pos, string key)
+{
+  try
+  {
+    return (*pos = exifData.findKey(Exiv2::ExifKey(key))) != exifData.end() && (*pos)->size();
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2 read_exif_tag] " << s << std::endl;
+    return false;
+  }
+}
+#define FIND_EXIF_TAG(key) dt_exif_read_exif_tag(exifData, &pos, key)
+
 // Support DefaultUserCrop, what is the safe exif tag?
 // Magic-nr taken from dng specs, the specs also say it has 4 floats (top,left,bottom,right
 // We only take them if a) we find a value != the default *and* b) data are plausible
@@ -733,6 +748,74 @@ static gboolean dt_check_dng_opcodes(Exiv2::ExifData &exifData, dt_image_t *img)
   return has_opcodes;
 }
 
+static gboolean dt_check_mlens_params(Exiv2::ExifData &exifData, dt_image_t *img)
+{
+  Exiv2::ExifData::const_iterator pos, posd, posc, posv;
+
+  /*
+   * Sony lens correction data
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && dt_exif_read_exif_tag(exifData, &posd, "Exif.SubImage1.DistortionCorrParams")
+    && dt_exif_read_exif_tag(exifData, &posc, "Exif.SubImage1.ChromaticAberrationCorrParams")
+    && dt_exif_read_exif_tag(exifData, &posv, "Exif.SubImage1.VignettingCorrParams"))
+  {
+    printf("Found sony!\n");
+    // Validate
+    int nc = posd->toLong(0);
+    if(nc <= 16 && 2*nc == posc->toLong(0) && nc == posv->toLong(0))
+    {
+      img->exif_correction_type = CORRECTION_TYPE_SONY;
+      img->exif_correction_data.sony.nc = nc;
+      for(int i = 0; i < nc; i++)
+      {
+        img->exif_correction_data.sony.distortion[i] = posd->toLong(i + 1);
+        img->exif_correction_data.sony.ca_r[i] = posc->toLong(i + 1);
+        img->exif_correction_data.sony.ca_b[i] = posc->toLong(nc + i + 1);
+        img->exif_correction_data.sony.vignetting[i] = posv->toLong(i + 1);
+      }
+    }
+  }
+
+  /*
+   * Fuji lens correction data
+   */
+  if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+    && dt_exif_read_exif_tag(exifData, &posd, "Exif.Fujifilm.GeometricDistortionParams")
+    && dt_exif_read_exif_tag(exifData, &posc, "Exif.Fujifilm.ChromaticAberrationParams")
+    && dt_exif_read_exif_tag(exifData, &posv, "Exif.Fujifilm.VignettingParams"))
+  {
+    // Validate
+    if(posd->count() == 19 && posc->count() == 29 && posv->count() == 19)
+    {
+      img->exif_correction_type = CORRECTION_TYPE_FUJI;
+      for(int i = 0; i < 9; i++)
+      {
+        float kd = posd->toFloat(i + 1), kc = posc->toFloat(i + 1), kv = posv->toFloat(i + 1);
+        if (kd != kc || kd != kv)
+        {
+          img->exif_correction_type = CORRECTION_TYPE_NONE;
+          break;
+        }
+
+        img->exif_correction_data.fuji.knots[i] = kd;
+        img->exif_correction_data.fuji.distortion[i] = posd->toFloat(i + 10);
+        img->exif_correction_data.fuji.ca_r[i] = posc->toFloat(i + 10);
+        img->exif_correction_data.fuji.ca_b[i] = posc->toFloat(i + 19);
+        img->exif_correction_data.fuji.vignetting[i] = posv->toFloat(i + 10);
+      }
+
+      // Account for the 1.25x crop modes in some Fuji cameras
+      if(FIND_EXIF_TAG("Exif.Fujifilm.CropMode") && (pos->toLong() == 2 || pos->toLong() == 4))
+        img->exif_correction_data.fuji.cropf = 1.25f;
+      else
+        img->exif_correction_data.fuji.cropf = 1;
+    }
+  }
+
+  return img->exif_correction_type != CORRECTION_TYPE_NONE;
+}
+
 void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename)
 {
   try
@@ -745,6 +828,7 @@ void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename)
     {
       dt_check_usercrop(exifData, img);
       dt_check_dng_opcodes(exifData, img);
+      dt_check_mlens_params(exifData, img);
     }
     return;
   }
@@ -755,21 +839,6 @@ void dt_exif_img_check_additional_tags(dt_image_t *img, const char *filename)
     return;
   }
 }
-
-static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator *pos, string key)
-{
-  try
-  {
-    return (*pos = exifData.findKey(Exiv2::ExifKey(key))) != exifData.end() && (*pos)->size();
-  }
-  catch(Exiv2::AnyError &e)
-  {
-    std::string s(e.what());
-    std::cerr << "[exiv2 read_exif_tag] " << s << std::endl;
-    return false;
-  }
-}
-#define FIND_EXIF_TAG(key) dt_exif_read_exif_tag(exifData, &pos, key)
 
 static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator pos,
                                  char *exif_datetime_taken)
@@ -926,6 +995,11 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       }
 
     if(dt_check_dng_opcodes(exifData, img))
+    {
+      img->flags |= DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS;
+    }
+
+    if(dt_check_mlens_params(exifData, img))
     {
       img->flags |= DT_IMAGE_HAS_ADDITIONAL_DNG_TAGS;
     }
@@ -1139,69 +1213,6 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
        && FIND_EXIF_TAG("Exif.Photo.LensModel"))
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
-    }
-
-    img->exif_correction_type = CORRECTION_TYPE_NONE;
-    Exiv2::ExifData::const_iterator posd, posc, posv;
-
-    /*
-     * Sony lens correction data
-     */
-    if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
-       && dt_exif_read_exif_tag(exifData, &posd, "Exif.SubImage1.DistortionCorrParams")
-       && dt_exif_read_exif_tag(exifData, &posc, "Exif.SubImage1.ChromaticAberrationCorrParams")
-       && dt_exif_read_exif_tag(exifData, &posv, "Exif.SubImage1.VignettingCorrParams"))
-    {
-      // Validate
-      int nc = posd->toLong(0);
-      if(nc <= 16 && 2*nc == posc->toLong(0) && nc == posv->toLong(0))
-      {
-        img->exif_correction_type = CORRECTION_TYPE_SONY;
-        img->exif_correction_data.sony.nc = nc;
-        for(int i = 0; i < nc; i++)
-        {
-          img->exif_correction_data.sony.distortion[i] = posd->toLong(i + 1);
-          img->exif_correction_data.sony.ca_r[i] = posc->toLong(i + 1);
-          img->exif_correction_data.sony.ca_b[i] = posc->toLong(nc + i + 1);
-          img->exif_correction_data.sony.vignetting[i] = posv->toLong(i + 1);
-        }
-      }
-    }
-
-    /*
-     * Fuji lens correction data
-     */
-    if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
-       && dt_exif_read_exif_tag(exifData, &posd, "Exif.Fujifilm.GeometricDistortionParams")
-       && dt_exif_read_exif_tag(exifData, &posc, "Exif.Fujifilm.ChromaticAberrationParams")
-       && dt_exif_read_exif_tag(exifData, &posv, "Exif.Fujifilm.VignettingParams"))
-    {
-      // Validate
-      if(posd->count() == 19 && posc->count() == 29 && posv->count() == 19)
-      {
-        img->exif_correction_type = CORRECTION_TYPE_FUJI;
-        for(int i = 0; i < 9; i++)
-        {
-          float kd = posd->toFloat(i + 1), kc = posc->toFloat(i + 1), kv = posv->toFloat(i + 1);
-          if (kd != kc || kd != kv)
-          {
-            img->exif_correction_type = CORRECTION_TYPE_NONE;
-            break;
-          }
-
-          img->exif_correction_data.fuji.knots[i] = kd;
-          img->exif_correction_data.fuji.distortion[i] = posd->toFloat(i + 10);
-          img->exif_correction_data.fuji.ca_r[i] = posc->toFloat(i + 10);
-          img->exif_correction_data.fuji.ca_b[i] = posc->toFloat(i + 19);
-          img->exif_correction_data.fuji.vignetting[i] = posv->toFloat(i + 10);
-        }
-
-        // Account for the 1.25x crop modes in some Fuji cameras
-        if(FIND_EXIF_TAG("Exif.Fujifilm.CropMode") && (pos->toLong() == 2 || pos->toLong() == 4))
-          img->exif_correction_data.fuji.cropf = 1.25f;
-        else
-          img->exif_correction_data.fuji.cropf = 1;
-      }
     }
 
 #if 0
