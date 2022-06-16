@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-16 11:52+0900\n"
+"PO-Revision-Date: 2022-06-16 11:54+0900\n"
 "Last-Translator: Ryo Shinozaki\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -20296,7 +20296,7 @@ msgid ""
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
 "ルールのプロパティ\n"
-"このルールはツールバーにピン留めされているため、変更することが出来ません"
+"このルールは、ツールバーにピン留めされているため、変更することが出来ません"
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:925
