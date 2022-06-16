@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-13 23:54-0500\n"
-"PO-Revision-Date: 2022-06-16 00:12-0500\n"
+"PO-Revision-Date: 2022-06-16 17:46-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -8822,35 +8822,32 @@ msgid "year %s"
 msgstr "Año %s"
 
 #: ../src/dtgtk/range.c:406
-#, fuzzy
 msgid ""
 "enter the minimal value\n"
 "use 'min' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
-"enter the minimal value\n"
-"use 'min' if no bound\n"
-"right-click to select from existing values"
+"Introduzca el valor mínimo.\n"
+"Utilice «mín» si no hay límites.\n"
+"Pulse el botón secundario para elegir un valor existente."
 
 #: ../src/dtgtk/range.c:412
-#, fuzzy
 msgid ""
 "enter the maximal value\n"
 "use 'max' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
-"enter the maximal value\n"
-"use 'max' if no bound\n"
-"right-click to select from existing values"
+"Introduzca el valor mínimo.\n"
+"Utilice «máx» si no hay límites.\n"
+"Pulse el botón secundario para elegir un valor existente."
 
 #: ../src/dtgtk/range.c:418
-#, fuzzy
 msgid ""
 "enter the value\n"
 "right-click to select from existing values"
 msgstr ""
-"enter the value\n"
-"right-click to select from existing values"
+"Introduzca el valor.\n"
+"Pulse el botón secundario para elegir un valor existente."
 
 #: ../src/dtgtk/range.c:423
 #, fuzzy
@@ -11942,7 +11939,7 @@ msgstr "ecualizador de contraste"
 
 #: ../src/iop/atrous.c:133
 msgid "sharpness|acutance|local contrast"
-msgstr "enfoque | acutancia | contraste local"
+msgstr "enfoque|acutancia|contraste local"
 
 #: ../src/iop/atrous.c:138
 msgid "add or remove local contrast, sharpness, acutance"
@@ -13058,7 +13055,7 @@ msgstr "calibración de color"
 
 #: ../src/iop/channelmixerrgb.c:225
 msgid "channel mixer|white balance|monochrome"
-msgstr "mezclador de canal | balance de blancos | monocromo"
+msgstr "mezclador de canal|balance de blancos|monocromo"
 
 #: ../src/iop/channelmixerrgb.c:235
 msgid "linear, RGB or XYZ"
@@ -13895,8 +13892,7 @@ msgstr "balance de color"
 #: ../src/iop/colorbalance.c:153
 msgid "lift gamma gain|cdl|color grading|contrast|saturation|hue"
 msgstr ""
-"realce gamma incremento | cdl | calibración de color | contraste | "
-"saturación | tono"
+"realce gamma incremento|cdl|calibración de color|contraste|saturación|tono"
 
 #: ../src/iop/colorbalance.c:158 ../src/iop/colorbalancergb.c:181
 msgid "affect color, brightness and contrast"
@@ -14112,8 +14108,8 @@ msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
 "saturation"
 msgstr ""
-"translación potencia pendiente | CDL | calibración de color | contraste | "
-"luces en crominancia | tono | intensidad | saturación"
+"translación potencia pendiente|CDL|calibración de color|contraste|luces en "
+"crominancia|tono|intensidad|saturación"
 
 #: ../src/iop/colorbalancergb.c:440
 msgid "add basic colorfulness (legacy)"
@@ -14384,7 +14380,7 @@ msgstr "tabla de búsqueda de color"
 
 #: ../src/iop/colorchecker.c:120
 msgid "profile|lut|color grading"
-msgstr "perfil | LUT | calibración de color"
+msgstr "perfil|LUT|calibración de color"
 
 #: ../src/iop/colorchecker.c:125
 msgid "perform color space corrections and apply looks"
@@ -15582,7 +15578,6 @@ msgid "speed (sharpen ↔ diffuse)"
 msgstr "velocidad (nítido ↔ difuso)"
 
 #: ../src/iop/diffuse.c:1512
-#, fuzzy
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 1st order anisotropy (set below).\n"
@@ -15591,15 +15586,14 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
-"diffusion speed of low-frequency wavelet layers\n"
-"in the direction of 1st order anisotropy (set below).\n"
+"Velocidad de dispersión de las capas de ondículas de baja frecuencia\n"
+"en dirección a la anisotropía de 1er orden (situado debajo).\n"
 "\n"
-"negative values sharpen, \n"
-"positive values diffuse and blur, \n"
-"zero does nothing."
+"Los valores negativos aumentan la nitidez.\n"
+"Los valores positivos aumentan la dispersión y el desenfoque.\n"
+"El valor cero no tiene efecto."
 
 #: ../src/iop/diffuse.c:1521
-#, fuzzy
 msgid ""
 "diffusion speed of low-frequency wavelet layers\n"
 "in the direction of 2nd order anisotropy (set below).\n"
@@ -15608,15 +15602,14 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
-"diffusion speed of low-frequency wavelet layers\n"
-"in the direction of 2nd order anisotropy (set below).\n"
+"Velocidad de dispersión de las capas de ondículas de baja frecuencia\n"
+"en dirección a la anisotropía de 2º orden (situado debajo).\n"
 "\n"
-"negative values sharpen, \n"
-"positive values diffuse and blur, \n"
-"zero does nothing."
+"Los valores negativos aumentan la nitidez.\n"
+"Los valores positivos aumentan la dispersión y el desenfoque.\n"
+"El valor cero no tiene efecto."
 
 #: ../src/iop/diffuse.c:1530
-#, fuzzy
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 3rd order anisotropy (set below).\n"
@@ -15625,15 +15618,14 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
-"diffusion speed of high-frequency wavelet layers\n"
-"in the direction of 3rd order anisotropy (set below).\n"
+"Velocidad de dispersión de las capas de ondículas de alta frecuencia\n"
+"en dirección a la anisotropía de 3er orden (situado debajo).\n"
 "\n"
-"negative values sharpen, \n"
-"positive values diffuse and blur, \n"
-"zero does nothing."
+"Los valores negativos aumentan la nitidez.\n"
+"Los valores positivos aumentan la dispersión y el desenfoque.\n"
+"El valor cero no tiene efecto."
 
 #: ../src/iop/diffuse.c:1539
-#, fuzzy
 msgid ""
 "diffusion speed of high-frequency wavelet layers\n"
 "in the direction of 4th order anisotropy (set below).\n"
@@ -15642,15 +15634,14 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
-"diffusion speed of high-frequency wavelet layers\n"
-"in the direction of 4th order anisotropy (set below).\n"
+"Velocidad de dispersión de las capas de ondículas de alta frecuencia\n"
+"en dirección a la anisotropía de 4ta orden (situado debajo).\n"
 "\n"
-"negative values sharpen, \n"
-"positive values diffuse and blur, \n"
-"zero does nothing."
+"Los valores negativos aumentan la nitidez.\n"
+"Los valores positivos aumentan la dispersión y el desenfoque.\n"
+"El valor cero no tiene efecto."
 
 #: ../src/iop/diffuse.c:1551
-#, fuzzy
 msgid ""
 "direction of 1st order speed (set above).\n"
 "\n"
@@ -15658,14 +15649,15 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
-"direction of 1st order speed (set above).\n"
+"Dirección de la velocidad de 1er orden (situado arriba).\n"
 "\n"
-"negative values follow gradients more closely, \n"
-"positive values rather avoid edges (isophotes), \n"
-"zero affects both equally (isotropic)."
+"Los valores negativos hacen que se aproxime más a los gradientes, mientras "
+"que\n"
+"los valores positivos hacen que se eviten los bordes (isófotas), \n"
+"El valor cero hace que la dispersión sea igual en todas las direcciones "
+"(isotrópica)."
 
 #: ../src/iop/diffuse.c:1559
-#, fuzzy
 msgid ""
 "direction of 2nd order speed (set above).\n"
 "\n"
@@ -15673,14 +15665,15 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
-"direction of 2nd order speed (set above).\n"
+"Dirección de la velocidad de 2º orden (situado arriba).\n"
 "\n"
-"negative values follow gradients more closely, \n"
-"positive values rather avoid edges (isophotes), \n"
-"zero affects both equally (isotropic)."
+"Los valores negativos hacen que se aproxime más a los gradientes, mientras "
+"que\n"
+"los valores positivos hacen que se eviten los bordes (isófotas), \n"
+"El valor cero hace que la dispersión sea igual en todas las direcciones "
+"(isotrópica)."
 
 #: ../src/iop/diffuse.c:1567
-#, fuzzy
 msgid ""
 "direction of 3rd order speed (set above).\n"
 "\n"
@@ -15688,14 +15681,15 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
-"direction of 3rd order speed (set above).\n"
+"Dirección de la velocidad de 3er orden (situado arriba).\n"
 "\n"
-"negative values follow gradients more closely, \n"
-"positive values rather avoid edges (isophotes), \n"
-"zero affects both equally (isotropic)."
+"Los valores negativos hacen que se aproxime más a los gradientes, mientras "
+"que\n"
+"los valores positivos hacen que se eviten los bordes (isófotas), \n"
+"El valor cero hace que la dispersión sea igual en todas las direcciones "
+"(isotrópica)."
 
 #: ../src/iop/diffuse.c:1575
-#, fuzzy
 msgid ""
 "direction of 4th order speed (set above).\n"
 "\n"
@@ -15703,11 +15697,13 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
-"direction of 4th order speed (set above).\n"
+"Dirección de la velocidad de 4to orden (situado arriba).\n"
 "\n"
-"negative values follow gradients more closely, \n"
-"positive values rather avoid edges (isophotes), \n"
-"zero affects both equally (isotropic)."
+"Los valores negativos hacen que se aproxime más a los gradientes, mientras "
+"que\n"
+"los valores positivos hacen que se eviten los bordes (isófotas), \n"
+"El valor cero hace que la dispersión sea igual en todas las direcciones "
+"(isotrópica)."
 
 #: ../src/iop/diffuse.c:1580
 msgid "edge management"
