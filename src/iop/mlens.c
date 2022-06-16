@@ -58,7 +58,7 @@ const char *aliases()
   return _("vignette|chromatic aberrations|distortion");
 }
 
-const char *description(dt_iop_module_t *self)
+const char **description(dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("correct lenses optical flaws"),
                                 _("corrective"),
@@ -84,7 +84,7 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_rgb;
+  return IOP_CS_RGB;
 }
 
 static int init_coeffs(const dt_image_t *img, const dt_iop_mlens_params_t *d,
@@ -418,8 +418,8 @@ void reload_defaults(dt_iop_module_t *module)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_mlens_gui_data_t *g = self->gui_data;
-  dt_iop_mlens_params_t *p = self->params;
+  dt_iop_mlens_gui_data_t *g = (dt_iop_mlens_gui_data_t *) self->gui_data;
+  dt_iop_mlens_params_t *p = (dt_iop_mlens_params_t *) self->params;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cor_dist), p->cor_dist);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cor_ca), p->cor_ca);
