@@ -2058,9 +2058,12 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
 
 void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
-  // we are leaving, so we want to avoid pb with focus and such
-  dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
-  d->leaving = TRUE;
+  if(!new_view)
+  {
+    // we are leaving dt, so we want to avoid pb with focus and such
+    dt_lib_filtering_t *d = (dt_lib_filtering_t *)self->data;
+    d->leaving = TRUE;
+  }
 }
 // clang-format off
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
