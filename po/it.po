@@ -4,20 +4,21 @@
 #
 # Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>, 2022.
 # Luca Cignoni <cigno5@users.noreply.github.com>, 2022.
+# Maurizio Paglia <mpaglia0@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-10 23:45+0200\n"
-"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
-"Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
+"PO-Revision-Date: 2022-06-16 22:32+0200\n"
+"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
+"Language-Team: darktable ITA translation team\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 19.12.3\n"
+"X-Generator: Lokalize 20.04.2\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -13570,7 +13571,7 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:4249
 msgid "the delta E is using the CIE 2000 formula"
-msgstr ""
+msgstr "Il delta E sta utilizzando la formula CIE 2000"
 
 #: ../src/iop/channelmixerrgb.c:4255
 msgid "accept the computed profile and set it in the module"
@@ -13754,7 +13755,6 @@ msgstr ""
 "Formato invalido per le proporzioni `%s'. Deve essere \"numero:numero\""
 
 #: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1158
-#, fuzzy
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square\n"
@@ -13789,37 +13789,36 @@ msgstr "Il margine inferiore non può sovrapporsi a quello superiore"
 #: ../src/iop/clipping.c:3037
 msgid "<b>commit</b>: double-click, <b>straighten</b>: right-drag"
 msgstr ""
+"<b>Applicare</b>: doppio click, <b>Raddrizzare</b>: trascina col tasto destro"
+" del mouse"
 
 #: ../src/iop/clipping.c:3041
-#, fuzzy
 msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>Ridimensionare</b>: trascinare, <b>tenere il rapporto d'aspetto</b>: "
-"Maiuscolo+trascinare\n"
-"<b>Raddrizzare</b>: destro-trascina"
+"<b>Ridimensionare</b>: trascinare, <b>Mantenere il rapporto d'aspetto</b>: "
+"Maiusc+trascinare\n"
+"<b>Raddrizzare</b>: trascina col pulsante destro del mouse"
 
 #: ../src/iop/clipping.c:3084
 msgid "<b>move control point</b>: drag"
 msgstr "<b>Sposta il punto di controllo</b>: trascina"
 
 #: ../src/iop/clipping.c:3089
-#, fuzzy
 msgid "<b>move line</b>: drag, <b>toggle symmetry</b>: click <tt>ꝏ</tt>"
 msgstr ""
-"<b>Muovi la linea</b>: trascina, <b>attiva la simmetria</b>: clicca <tt>ꝏ</"
+"<b>Muovi la linea</b>: trascina, <b>Attiva la simmetria</b>: clicca <tt>ꝏ</"
 "tt>"
 
 #: ../src/iop/clipping.c:3094
-#, fuzzy
 msgid ""
 "<b>apply</b>: click <tt>ok</tt>, <b>toggle symmetry</b>: click <tt>ꝏ</tt>\n"
 "<b>move line/control point</b>: drag"
 msgstr ""
-"<b>applica</b>: clicca <tt>ok</tt>, <b>attiva simmetria</b>: clicca <tt>ꝏ</"
+"<b>Applica</b>: clicca <tt>ok</tt>, <b>Attiva simmetria</b>: clicca <tt>ꝏ</"
 "tt>\n"
-"<b>muovi il punto/la linea di controllo</b>: trascina"
+"<b>Muovi il punto/la linea di controllo</b>: trascina"
 
 #: ../src/iop/clipping.c:3101
 msgid ""
@@ -13827,6 +13826,11 @@ msgid ""
 "b>: ctrl+drag\n"
 "<b>straighten</b>: right-drag, <b>commit</b>: double-click"
 msgstr ""
+"<b>Sposta</b>: trascina, <b>Sposta verticalmente</b>: Maiusc+trascina, <b"
+">Sposta orizzontalmente</"
+"b>: Ctrl+trascina\n"
+"<b>Raddrizza</b>: trascina con il pulsante destro del mouse, <b>Applica</b>:"
+" doppio click"
 
 #: ../src/iop/clipping.c:3358 ../src/iop/crop.c:1638
 #, c-format
@@ -13894,7 +13898,7 @@ msgstr "Simile a Kodachrome"
 
 #: ../src/iop/colorbalance.c:943
 msgid "optimize luma from patches"
-msgstr ""
+msgstr "Ottimizza la luminanza dai campioni"
 
 #: ../src/iop/colorbalance.c:945 ../src/iop/colorbalance.c:2058
 msgid "optimize luma"
@@ -13939,18 +13943,16 @@ msgid "gain"
 msgstr "Gain"
 
 #: ../src/iop/colorbalance.c:1735
-#, fuzzy
 msgid "shadows: lift / offset"
 msgstr "Ombre: lift / offset"
 
 #: ../src/iop/colorbalance.c:1736
-#, fuzzy
 msgid "mid-tones: gamma / power"
-msgstr "Mezzitoni: gamma / power"
+msgstr "Mezzi toni: gamma / power"
 
 #: ../src/iop/colorbalance.c:1737
 msgid "highlights: gain / slope"
-msgstr ""
+msgstr "Alte luci: gain / slope"
 
 #: ../src/iop/colorbalance.c:1761
 msgid "shadows / mid-tones / highlights"
@@ -14060,7 +14062,7 @@ msgstr "Ottimizzatori automatici"
 
 #: ../src/iop/colorbalance.c:2059
 msgid "fit the whole histogram and center the average luma"
-msgstr ""
+msgstr "Aggiusta l'intero istogramma e entra il valore di luminanza medio"
 
 #: ../src/iop/colorbalance.c:2065
 msgid "optimize the RGB curves to remove color casts"
@@ -14075,22 +14077,25 @@ msgid ""
 "offset power slope|cdl|color grading|contrast|chroma_highlights|hue|vibrance|"
 "saturation"
 msgstr ""
+"offset power slope|cdl|gradazione colore|contrasto|cromaticità alte"
+" luci|tonalità|vibranza|"
+"saturazione"
 
 #: ../src/iop/colorbalancergb.c:440
 msgid "add basic colorfulness (legacy)"
-msgstr ""
+msgstr "Aggiungi colorazione di base (legacy)"
 
 #: ../src/iop/colorbalancergb.c:449
 msgid "basic colorfulness: natural skin"
-msgstr ""
+msgstr "Colorazione di base: pelle naturale"
 
 #: ../src/iop/colorbalancergb.c:455
 msgid "basic colorfulness: vibrant colors"
-msgstr ""
+msgstr "Colorazione di base: colori vibranti"
 
 #: ../src/iop/colorbalancergb.c:461
 msgid "basic colorfulness: standard"
-msgstr ""
+msgstr "Colorazione di base: standard"
 
 #: ../src/iop/colorbalancergb.c:895
 msgid "colorbalance works only on RGB input"
@@ -14121,7 +14126,7 @@ msgstr "Aumenta il contrasto con cromaticità costante"
 
 #: ../src/iop/colorbalancergb.c:1826
 msgid "linear chroma grading"
-msgstr ""
+msgstr "Gradazione cromaticità lineare"
 
 #: ../src/iop/colorbalancergb.c:1832
 msgid "increase colorfulness at same luminance globally"
@@ -14142,7 +14147,7 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:1849
 msgid "perceptual saturation grading"
-msgstr ""
+msgstr "Gradazione saturazione percettiva"
 
 #: ../src/iop/colorbalancergb.c:1854
 msgid "add or remove saturation by an absolute amount"
@@ -14150,12 +14155,11 @@ msgstr "Aggiungi o togli saturazione attraverso un ammontare assoluto"
 
 #: ../src/iop/colorbalancergb.c:1859 ../src/iop/colorbalancergb.c:1864
 #: ../src/iop/colorbalancergb.c:1869
-#, fuzzy
 msgid ""
 "increase or decrease saturation proportionally to the original pixel "
 "saturation"
 msgstr ""
-"Aumenta o riduci saturazione proporzionalmente alla saturazione originale "
+"Aumenta o riduci la saturazione proporzionalmente alla saturazione originale "
 "dei pixel"
 
 #: ../src/iop/colorbalancergb.c:1871
@@ -14168,12 +14172,12 @@ msgstr "Aggiungi o togli brillantezza attraverso un ammontare assoluto"
 
 #: ../src/iop/colorbalancergb.c:1881 ../src/iop/colorbalancergb.c:1886
 #: ../src/iop/colorbalancergb.c:1891
-#, fuzzy
 msgid ""
 "increase or decrease brilliance proportionally to the original pixel "
 "brilliance"
 msgstr ""
-"Aumenta o riduci brillantezza proporzionalmente a quella originale dei pixel"
+"Aumenta o riduci la brillantezza proporzionalmente a quella originale dei"
+" pixel"
 
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:1894
@@ -14198,7 +14202,7 @@ msgstr "Tonalità dello spostamento del colore globale"
 
 #: ../src/iop/colorbalancergb.c:1913
 msgid "chroma of the global color offset"
-msgstr ""
+msgstr "Cromaticità dello spostamento globale del colore"
 
 #: ../src/iop/colorbalancergb.c:1915
 msgid "shadows lift"
@@ -14261,6 +14265,7 @@ msgstr "Isolare brillanze"
 #: ../src/iop/colorbalancergb.c:1979
 msgid "choose in which uniform color space the saturation is computed"
 msgstr ""
+"Seleziona lo spazio colore all'interno del quale computare la saturazione"
 
 #: ../src/iop/colorbalancergb.c:1981
 msgid "luminance ranges"
@@ -14279,14 +14284,12 @@ msgid "weights of highlights over the whole tonal range"
 msgstr "Pesi delle alteluci sull'intera gamma tonale"
 
 #: ../src/iop/colorbalancergb.c:2021
-#, fuzzy
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
 "Valore di picco della luminanza del bianco usato per normalizzare la "
 "funzione di forza"
 
 #: ../src/iop/colorbalancergb.c:2027
-#, fuzzy
 msgid "peak gray luminance value used to normalize the power function"
 msgstr ""
 "Valore di picco della luminanza del grigio usato per normalizzare la "
@@ -14407,6 +14410,12 @@ msgid ""
 "right click to delete patch\n"
 "shift+click while color picking to replace patch"
 msgstr ""
+"(%2.2f %2.2f %2.2f)\n"
+"I campioni modificati sono circondati da un bordo\n"
+"Click per selezionare\n"
+"Doppio click per azzerare\n"
+"Click destro per cancellare il campione\n"
+"Maiusc+click mentre si preleva il colore per sostituire il campione"
 
 #: ../src/iop/colorchecker.c:1345
 msgid "patch"
@@ -14417,7 +14426,6 @@ msgid "color checker patch"
 msgstr "Campione per la verifica del colore"
 
 #: ../src/iop/colorchecker.c:1357
-#, fuzzy
 msgid ""
 "adjust target color Lab 'L' channel\n"
 "lower values darken target color while higher brighten it"
@@ -14441,14 +14449,13 @@ msgid "green-magenta offset"
 msgstr "Compensazione verde-magenta"
 
 #: ../src/iop/colorchecker.c:1368
-#, fuzzy
 msgid ""
 "adjust target color Lab 'b' channel\n"
 "lower values shift target color towards blues while higher shift towards "
 "yellows"
 msgstr ""
 "Aggiusta il canale Lab 'b' del colore obiettivo\n"
-"Valori più bassi spostano verso i blue il colore obiettivo mentre più alti "
+"Valori più bassi spostano verso i blu il colore obiettivo mentre più alti "
 "lo spostano verso i gialli"
 
 #: ../src/iop/colorchecker.c:1369
@@ -14456,14 +14463,13 @@ msgid "blue-yellow offset"
 msgstr "Compensazione blue-giallo"
 
 #: ../src/iop/colorchecker.c:1375
-#, fuzzy
 msgid ""
 "adjust target color saturation\n"
 "adjusts 'a' and 'b' channels of target color in Lab space simultaneously\n"
 "lower values scale towards lower saturation while higher scale towards "
 "higher saturation"
 msgstr ""
-"Aggiusta l'obiettivo di saturazione del colore\n"
+"Aggiusta la saturazione del colore obiettivo\n"
 "Aggiusta i canali 'a' e 'b' del colore obiettivo simultaneamente nello "
 "spazio Lab\n"
 "Valori più bassi scalano verso una saturazione bassa, mentre più alti "
@@ -14578,6 +14584,8 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr ""
+"Non è possibile estrarre la matrice dallo spazio colore `%s', verrà"
+" sostituita da Rec2020"
 
 #: ../src/iop/colorin.c:1543
 #, c-format
@@ -14630,11 +14638,11 @@ msgstr "Seleziona la saturazione per le ombre"
 
 #: ../src/iop/colorize.c:365
 msgid "lightness of color"
-msgstr ""
+msgstr "Chiarezza del colore"
 
 #: ../src/iop/colorize.c:369
 msgid "mix value of source lightness"
-msgstr ""
+msgstr "Mescola il valore della luminosità sorgente"
 
 #: ../src/iop/colormapping.c:147
 msgid "color mapping"
@@ -14789,6 +14797,8 @@ msgstr "Precedenza"
 #: ../src/iop/colorreconstruction.c:1303
 msgid "pixels with lightness values above this threshold are corrected"
 msgstr ""
+"I pixel con un valore di chiarezza superiore a questa soglia non verranno"
+" corretti"
 
 #: ../src/iop/colorreconstruction.c:1304
 msgid "how far to look for replacement colors in spatial dimensions"
@@ -14798,6 +14808,8 @@ msgstr ""
 #: ../src/iop/colorreconstruction.c:1305
 msgid "how far to look for replacement colors in the luminance dimension"
 msgstr ""
+"La distanza fino a cui cercare i colori da sostituire nella dimensione della"
+" luminanza"
 
 #: ../src/iop/colorreconstruction.c:1306
 msgid "if and how to give precedence to specific replacement colors"
@@ -14814,7 +14826,7 @@ msgstr "Non applicabile"
 
 #: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2205
 msgid "no highlights reconstruction for monochrome images"
-msgstr ""
+msgstr "Non è possibile ricostruire le alte luci nelle immagini monocromatiche"
 
 #: ../src/iop/colortransfer.c:103
 msgid "color transfer"
@@ -14938,12 +14950,12 @@ msgstr "Metodo interpolazione"
 #: ../src/iop/colorzones.c:2532 ../src/iop/rgbcurve.c:1423
 #: ../src/iop/tonecurve.c:1200
 msgid "centripetal spline"
-msgstr ""
+msgstr "Spline centripeta"
 
 #: ../src/iop/colorzones.c:2533 ../src/iop/rgbcurve.c:1424
 #: ../src/iop/tonecurve.c:1201
 msgid "monotonic spline"
-msgstr ""
+msgstr "Spline monotonica"
 
 #: ../src/iop/colorzones.c:2536 ../src/iop/rgbcurve.c:1427
 #: ../src/iop/tonecurve.c:1203
@@ -14956,6 +14968,13 @@ msgid ""
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
 "exp)\n"
 msgstr ""
+"Modifica questo metodo se noti delle oscillazioni o dei picchi nella curva\n"
+"- La spline cubica produce curve morbide ma oscilla quando i nodi "
+"sono troppo ravvicinati\n"
+"- La spline centripeta evita la comparsa di picchi e di oscillazioni con nodi "
+"molto ravvicinati ma è meno dolce\n"
+"- Quella monotonica è da preferire per l'accuratezza delle funzioni di pura "
+"analisi (log; gamma; exp)\n"
 
 #: ../src/iop/crop.c:128 ../src/iop/rawprepare.c:856
 msgid "crop"
@@ -14975,20 +14994,22 @@ msgstr "Applica"
 
 #: ../src/iop/crop.c:1165
 msgid "commit changes"
-msgstr ""
+msgstr "Applica le modifiche"
 
 #: ../src/iop/crop.c:1524
-#, fuzzy
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
 msgstr ""
-"<b>Ridimensionare</b>: trascinare, <b>tenere il rapporto d'aspetto</b>: "
-"Maiuscolo+trascinare"
+"<b>Ridimensiona</b>: trascina, <b>Mantenere il rapporto d'aspetto</b>: "
+"Maiusc+trascina"
 
 #: ../src/iop/crop.c:1531
 msgid ""
 "<b>move</b>: drag, <b>move vertically</b>: shift+drag, <b>move horizontally</"
 "b>: ctrl+drag"
 msgstr ""
+"<b>Sposta</b>: trascina, <b>Sposta verticalmente</b>: Maiusc+trascina, <b"
+">Sposta orizzontalmente</"
+"b>: Ctrl+trascina"
 
 #: ../src/iop/defringe.c:70
 msgid "defringe"
@@ -15016,6 +15037,14 @@ msgid ""
 "more desaturation where required\n"
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
+"Metodo per la protezione del colore:\n"
+" - Media globale: veloce, può causare errori di visualizzazione con "
+"forti ingrandimenti. Potrebbe proteggere troppo o troppo poco la saturazione "
+"rispetto al metodo seguente\n"
+" - Media locale: più lenta della precedente, protegge la saturazione meglio "
+"del metodo precedente perchè utilizza i pixel vicini come riferimento per il "
+"colore. Se richiesto può desaturare parecchio l'immagine\n"
+" - Statico: veloce, ma dovrà essere utilizzata una soglia come limite"
 
 #: ../src/iop/defringe.c:424
 msgid "radius for detecting fringe"
@@ -15027,7 +15056,7 @@ msgstr "Soglia per il defringe, valori maggiori significano meno defringe"
 
 #: ../src/iop/demosaic.c:221
 msgid "demosaic"
-msgstr ""
+msgstr "demosaicizzazione"
 
 #: ../src/iop/demosaic.c:226
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
@@ -15050,6 +15079,11 @@ msgid ""
 "LMMSE is suited best for high ISO images.\n"
 "dual demosaicers double processing time."
 msgstr ""
+"I metodi di demosaicizzazione dei sensori Bayer PPG e RCD sono veloci; AMaZE"
+" e LMMSE "
+"sono lenti\n"
+"LMMSE è più idoneo per immagini scattate ad alti ISO\n"
+"Una demosaicizzazione doppia raddoppia il tempo di calcolo"
 
 #: ../src/iop/demosaic.c:5791
 msgid ""
@@ -15057,6 +15091,10 @@ msgid ""
 "chroma are slow.\n"
 "dual demosaicers double processing time."
 msgstr ""
+"I metodi di demosaicizzazione dei sensori X-Trans Markesteijn 3-passaggi e"
+" cromaticità "
+"dominio di frequenza sono lenti\n"
+"Una demosaicizzazione doppia raddoppia il tempo di calcolo"
 
 #: ../src/iop/demosaic.c:5795
 msgid ""
@@ -15075,6 +15113,10 @@ msgid ""
 "set to 1.0 for flat content\n"
 "toggle to visualize the mask"
 msgstr ""
+"Soglia di contrasto per doppia demosaicizzazione.\n"
+"Imposta 0.0 per contenuti ad alta frequenza\n"
+"Imposta 1.0 per contenuti piatti\n"
+"Disattiva per visualizzare la maschera"
 
 #: ../src/iop/demosaic.c:5808
 msgid ""
@@ -15108,6 +15150,8 @@ msgstr "riduzione rumore (profilato)"
 #: ../src/iop/denoiseprofile.c:719
 msgid "denoise using noise statistics profiled on sensors"
 msgstr ""
+"Riduzione del rumore con l'utilizzo delle statistiche relative al rumore"
+" tipico del sensore"
 
 #: ../src/iop/denoiseprofile.c:2714
 #, c-format
@@ -15273,6 +15317,10 @@ msgid ""
 "increase for better denoising performance, but watch the long runtimes! "
 "large radii can be very slow. you have been warned"
 msgstr ""
+"Solo per emergenze! raggio di prossimità per cercare campioni per "
+"migliorare la riduzione del rumore al prezzo di un forte aumento dei tempi "
+"di calcolo! "
+"Raggi ampi possono rallentare parecchio il calcolo. Siete stati avvisati!"
 
 #: ../src/iop/denoiseprofile.c:3722
 msgid ""
@@ -15359,6 +15407,11 @@ msgid ""
 "inpaint damaged parts of the image,or to remove blur with blind "
 "deconvolution."
 msgstr ""
+"Simula la diffusione direzionale della luce in base ad un modello "
+"di trasferimento del calore per applicare una sfumatura interattiva"
+" orientata,\n"
+"ricreare aree danneggiate dell'immagine o per rimuovere le sfocature "
+"con una deconvoluzione cieca."
 
 #: ../src/iop/diffuse.c:236
 msgid "lens deblur: soft"
@@ -15421,10 +15474,9 @@ msgid "fast local contrast"
 msgstr "Contrasto locale veloce"
 
 #: ../src/iop/diffuse.c:1104 ../src/iop/diffuse.c:1364
-#, fuzzy
 msgid "diffuse/sharpen failed to allocate memory, check your RAM settings"
 msgstr ""
-"Diffondi/rendi nitido fallito ad allocare la memoria, controlla le "
+"Diffondi/nitidezza non ha potuto allocare la memoria, controlla le "
 "impostazioni della RAM"
 
 #. Additional parameters
@@ -15441,9 +15493,12 @@ msgid ""
 "if you plan on sharpening or inpainting, \n"
 "more iterations help reconstruction."
 msgstr ""
+"Più iterazioni rendono l'effetto più visibile ma il modulo rallenterà.\n"
+"Questa azione è come dare più tempo alla reazione di diffusione.\n"
+"Se volete aumentare la nitidezza o ricreare aree danneggiate \n"
+"più iterazioni rendono il lavoro più accurato."
 
 #: ../src/iop/diffuse.c:1490
-#, fuzzy
 msgid ""
 "main scale of the diffusion.\n"
 "zero makes diffusion act on the finest details more heavily.\n"
@@ -15452,7 +15507,7 @@ msgid ""
 "increase to act on local contrast instead."
 msgstr ""
 "Scala principale della diffusione.\n"
-"Zero rende più pesante l'azione di diffusione sui dettagli più belli.\n"
+"Zero rende più pesante l'azione di diffusione sui dettagli più piccoli.\n"
 "Diverso da zero definisce la misura dei dettagli da diffondere "
 "pesantemente.\n"
 "Per aumentare nitidezza e riduzione rumore, imposta a zero.\n"
@@ -15466,6 +15521,11 @@ msgid ""
 "if you plan on deblurring, \n"
 "the radius should be around the width of your lens blur."
 msgstr ""
+"Ampiezza della diffusione intorno al raggio centrale.\n"
+"Valori alti diffondono molto lontano dal raggio.\n"
+"Valori bassi diffondono più vicino al raggio centrale.\n"
+"Se volete aumentare la nitidezza il raggio dovrebbe "
+"essere uguale all'ampiezza della sfocatura dell'obiettivo."
 
 #: ../src/iop/diffuse.c:1506
 msgid "speed (sharpen ↔ diffuse)"
@@ -15480,6 +15540,12 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"Velocità di diffusione del livello di bassa frequenza\n"
+"nella direzione del 1° ordine di anisotropia (impostato sotto).\n"
+"\n"
+"Valori negativi aumentano la nitidezza\n"
+"Valori positivi sfocano\n"
+"Zero non fa nulla."
 
 #: ../src/iop/diffuse.c:1521
 msgid ""
@@ -15490,6 +15556,12 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"Velocità di diffusione del livello di bassa frequenza\n"
+"nella direzione del 2° ordine di anisotropia (impostato sotto).\n"
+"\n"
+"Valori negativi aumentano la nitidezza\n"
+"Valori positivi sfocano\n"
+"Zero non fa nulla."
 
 #: ../src/iop/diffuse.c:1530
 msgid ""
@@ -15500,6 +15572,12 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"Velocità di diffusione del livello di alta frequenza\n"
+"nella direzione del 3° ordine di anisotropia (impostato sotto).\n"
+"\n"
+"Valori negativi aumentano la nitidezza\n"
+"Valori positivi sfocano\n"
+"Zero non fa nulla."
 
 #: ../src/iop/diffuse.c:1539
 msgid ""
@@ -15510,6 +15588,12 @@ msgid ""
 "positive values diffuse and blur, \n"
 "zero does nothing."
 msgstr ""
+"Velocità di diffusione del livello di alta frequenza\n"
+"nella direzione del 4° ordine di anisotropia (impostato sotto).\n"
+"\n"
+"Valori negativi aumentano la nitidezza\n"
+"Valori positivi sfocano\n"
+"Zero non fa nulla."
 
 #: ../src/iop/diffuse.c:1551
 msgid ""
@@ -15519,6 +15603,11 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"Direzione del 1° ordine di velocità (impostato sopra).\n"
+"\n"
+"Valori negativi seguono il gradiente con precisione\n"
+"Valori positivi evitano i bordi (isofoto)\n"
+"Zero li modifica entrambi allo stesso modo (isotropo)."
 
 #: ../src/iop/diffuse.c:1559
 msgid ""
@@ -15528,6 +15617,11 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"Direzione del 2° ordine di velocità (impostato sopra).\n"
+"\n"
+"Valori negativi seguono il gradiente con precisione\n"
+"Valori positivi evitano i bordi (isofoto)\n"
+"Zero li modifica entrambi allo stesso modo (isotropo)."
 
 #: ../src/iop/diffuse.c:1567
 msgid ""
@@ -15537,6 +15631,11 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"Direzione del 3° ordine di velocità (impostato sopra).\n"
+"\n"
+"Valori negativi seguono il gradiente con precisione\n"
+"Valori positivi evitano i bordi (isofoto)\n"
+"Zero li modifica entrambi allo stesso modo (isotropo)."
 
 #: ../src/iop/diffuse.c:1575
 msgid ""
@@ -15546,10 +15645,15 @@ msgid ""
 "positive values rather avoid edges (isophotes), \n"
 "zero affects both equally (isotropic)."
 msgstr ""
+"Direzione del 4° ordine di velocità (impostato sopra).\n"
+"\n"
+"Valori negativi seguono il gradiente con precisione\n"
+"Valori positivi evitano i bordi (isofoto)\n"
+"Zero li modifica entrambi allo stesso modo (isotropo)."
 
 #: ../src/iop/diffuse.c:1580
 msgid "edge management"
-msgstr ""
+msgstr "Gestione bordi"
 
 #: ../src/iop/diffuse.c:1585
 msgid ""
@@ -15557,6 +15661,9 @@ msgid ""
 "can be used to keep details after blooming,\n"
 "for standalone sharpening set speed to negative values."
 msgstr ""
+"Aumenta o diminuisce la nitidezza delle frequenze più alte.\n"
+"Può essere utilizzato per mantenere i dettagli dopo un effetto di soft-focus\n"
+"Per aumentare solamente la nitidezza impostare la velocità a valori negativi"
 
 #: ../src/iop/diffuse.c:1591
 msgid ""
@@ -15569,7 +15676,6 @@ msgstr ""
 "se appaiono frange o aloni."
 
 #: ../src/iop/diffuse.c:1597
-#, fuzzy
 msgid ""
 "define the variance threshold between edge amplification and penalty.\n"
 "decrease if you want pixels on smooth surfaces get a boost,\n"
@@ -15578,9 +15684,9 @@ msgid ""
 msgstr ""
 "Definisce la soglia della varianza tra amplificazione del margine e "
 "penalità.\n"
-"Diminuisci se vuoi che pixels e superfici morbide ottengano una spinta,\n"
+"Diminuisci se vuoi che pixels e superfici morbide vengano evidenziati,\n"
 "aumenta se vedi apparire rumore su superfici morbide o\n"
-"se le aree scure sembrano sovra-nitide rispetto alle aree chiare."
+"se le aree scure sembrano troppo nitide rispetto alle aree chiare."
 
 #: ../src/iop/diffuse.c:1603
 msgid "diffusion spatiality"
@@ -15602,7 +15708,7 @@ msgstr ""
 
 #: ../src/iop/dither.c:97 ../src/iop/vignette.c:992
 msgid "dithering"
-msgstr ""
+msgstr "dithering"
 
 #: ../src/iop/dither.c:102
 msgid ""
@@ -15642,7 +15748,6 @@ msgid "legacy equalizer"
 msgstr "Equalizzatore (obsoleto)"
 
 #: ../src/iop/equalizer.c:110
-#, fuzzy
 msgid ""
 "this module is deprecated. better use contrast equalizer module instead."
 msgstr ""
@@ -15758,7 +15863,7 @@ msgstr ""
 
 #: ../src/iop/exposure.c:1080
 msgid "spot exposure mapping"
-msgstr ""
+msgstr "Mappatura esposizione spot"
 
 #: ../src/iop/exposure.c:1084
 msgid ""
@@ -15768,14 +15873,19 @@ msgid ""
 "compensation\n"
 "and can be used to define a target."
 msgstr ""
+"\"Correzione\" aggiusta automaticamente l'esposizione\n"
+"in modo che la chiarezza in entrata viene mappata a quella obiettivo.\n"
+"\"Misurazione\" mostra semplicemente come un colore in ingresso viene "
+"mappato alla compensazione dell'esposizione\n"
+"e può essere utilizzato per definire un obiettivo."
 
 #: ../src/iop/exposure.c:1108
 msgid "L : \tN/A"
-msgstr ""
+msgstr "L : \tN/A"
 
 #: ../src/iop/exposure.c:1123
 msgid "the desired target exposure after mapping"
-msgstr ""
+msgstr "L'esposizione desiderata dopo la mappatura"
 
 #: ../src/iop/filmic.c:179
 msgid "this module is deprecated. better use filmic rgb module instead."
@@ -15831,6 +15941,8 @@ msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
 msgstr ""
+"Regola sulla luminanza media del soggetto.\n"
+"Tranne in situazioni di controluce dovrebbe essere intorno a 18%"
 
 #: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4386
 msgid ""
@@ -15874,6 +15986,11 @@ msgid ""
 "works better for landscapes and evenly-lit pictures\n"
 "but fails for high-keys and low-keys."
 msgstr ""
+"Tenta di ottimizzare le impostazioni con qualche tentativo.\n"
+"Dovrai far rientrare i valori di luminanza all'interno dei bordi"
+" dell'istogramma.\n"
+"Funziona meglio con foto di paesaggi e immagini ben illuminate\n"
+"mentre sbaglia sulle immagini molto contrastate."
 
 #: ../src/iop/filmic.c:1644
 msgid "filmic S curve"
@@ -15995,6 +16112,8 @@ msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr ""
+"Luminanza del nero pure in uscita: dovrebbe essere 0%\n"
+"a meno che non vogliate ottenere un effetto sbiadito"
 
 #: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4544
 msgid ""
@@ -16010,6 +16129,8 @@ msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
 msgstr ""
+"Luminanza del bianco puro in uscita: dovrebbe essere 100%\n"
+"a meno che non vogliate ottenere un effetti sbiadito"
 
 #: ../src/iop/filmic.c:1765
 msgid "target gamma"
@@ -16048,12 +16169,11 @@ msgstr ""
 "prevenendo tagli in modo non distruttivo."
 
 #: ../src/iop/filmicrgb.c:1211
-#, fuzzy
 msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
 msgstr ""
-"La ricostruzione delle alteluci di filmic non è riuscita ad allocare "
+"La ricostruzione delle alte luci di filmic non è riuscita ad allocare "
 "memoria. Verificate le impostazioni della RAM"
 
 #: ../src/iop/filmicrgb.c:2002 ../src/iop/filmicrgb.c:2291
@@ -16061,7 +16181,6 @@ msgid "filmic works only on RGB input"
 msgstr "filmic opera solamente su input in RGB"
 
 #: ../src/iop/filmicrgb.c:2146
-#, fuzzy
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 "La ricostruzione delle alte luci di filmic non è riuscita ad allocare "
@@ -16110,12 +16229,12 @@ msgstr "Schermo"
 #. axis legend
 #: ../src/iop/filmicrgb.c:3840
 msgid "(%)"
-msgstr ""
+msgstr "(%)"
 
 #. Page SCENE
 #: ../src/iop/filmicrgb.c:3849 ../src/iop/filmicrgb.c:4369
 msgid "scene"
-msgstr ""
+msgstr "Scena"
 
 #. axis legend
 #: ../src/iop/filmicrgb.c:3858
@@ -16144,6 +16263,10 @@ msgid ""
 "right click: cycle backward.\n"
 "double-click: reset to look view."
 msgstr ""
+"Sfoglia le visualizzazioni del grafico.\n"
+"Click sinistro: sfoglia in avanti.\n"
+"Click destro: sfoglia all'indietro.\n"
+"Doppio click: resetta le viste"
 
 #: ../src/iop/filmicrgb.c:4376
 msgid ""
@@ -16151,12 +16274,17 @@ msgid ""
 "the value entered here will then be remapped to 18.45%.\n"
 "decrease the value to increase the overall brightness."
 msgstr ""
+"Regola sulla luminanza media del soggetto.\n"
+"Questo valore verrà quindi rimappato a 18,45%\n"
+"Diminuisci questo valore per aumentare la luminosità globale."
 
 #: ../src/iop/filmicrgb.c:4404
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr ""
+"Allarga o riduci simmetricamente la gamma dinamica calcolata.\n"
+"Utile per dare un margine di sicurezza alle luminanze estreme."
 
 #: ../src/iop/filmicrgb.c:4414
 msgid ""
@@ -16167,11 +16295,18 @@ msgid ""
 "this is not an artificial intelligence, but a simple guess.\n"
 "ensure you understand its assumptions before using it."
 msgstr ""
+"Tenta di ottimizzare le impostazioni con qualche ragionamento statistico.\n"
+"Questo adatterà la gamma di luminanza dentro i bordi dell'istogramma.\n"
+"Funziona meglio per paesaggi e immagini uniformemente illuminate\n"
+"ma fallisce con immagini molto contrastate o scattate ad alti ISO.\n"
+"Questo modulo non usa l'intelligenza artificiale ma un semplice calcolo"
+" probabilistico.\n"
+"Assicurati di aver compreso questi presupposti prima di utilizzarlo."
 
 #. Page RECONSTRUCT
 #: ../src/iop/filmicrgb.c:4423
 msgid "reconstruct"
-msgstr ""
+msgstr "Ricostruisci"
 
 #: ../src/iop/filmicrgb.c:4425
 msgid "highlights clipping"
@@ -16280,7 +16415,6 @@ msgstr ""
 "Riduci per ammorbidire le alteluci."
 
 #: ../src/iop/filmicrgb.c:4511
-#, fuzzy
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -16331,7 +16465,6 @@ msgstr ""
 "altro modo.\n"
 
 #: ../src/iop/filmicrgb.c:4570
-#, fuzzy
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16343,7 +16476,6 @@ msgstr ""
 "Morbida usa una bassa risultante di curvatura con minor compressione tonale."
 
 #: ../src/iop/filmicrgb.c:4575
-#, fuzzy
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
@@ -16425,6 +16557,9 @@ msgid ""
 "specifically at medium luminances.\n"
 "increase if midtones are under-saturated."
 msgstr ""
+"Desatura l'immagine in uscita dal modulo\n"
+"soprattutto alle luminanze medie.\n"
+"Aumenta se i mezzi toni sono poco saturi."
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
@@ -16632,7 +16767,6 @@ msgid "the strength of applied grain"
 msgstr "Intensità della grana applicata"
 
 #: ../src/iop/grain.c:576
-#, fuzzy
 msgid ""
 "amount of mid-tones bias from the photographic paper response modeling. the "
 "greater the bias, the more pronounced the fall off of the grain in shadows "
@@ -16683,6 +16817,9 @@ msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
 "back to clip."
 msgstr ""
+"Il modo laplaciano guidato per le alte luci non è disponibile per i sensori"
+" X-Trans. "
+"Devo tagliare."
 
 #: ../src/iop/highlights.c:2174
 msgid "highlight reconstruction method"
@@ -16694,30 +16831,42 @@ msgid ""
 "the mask icon shows the clipped area\n"
 "(you shouldn't ever need to touch this)"
 msgstr ""
+"Regola manualmente la soglia di tosaggio per le alte luci magenta\n"
+"L'icona con la maschera visualizza le aree tagliate\n"
+"(non dovresti mai aver bisogno di modificare questo controllo)"
 
 #: ../src/iop/highlights.c:2188
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 msgstr ""
+"Aggiungi rumore per uniformare le aree ricostruite\n"
+"con il resto dell'immagine: utile per foto ad alti ISO"
 
 #: ../src/iop/highlights.c:2192
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 msgstr ""
+"Aumenta se le alte luci magenta non vengono corrette del tutto\n"
+"Ogni nuova iterazione rallenta il calcolo"
 
 #: ../src/iop/highlights.c:2197
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
 msgstr ""
+"Aumenta se le alte luci magenta non vengono corrette del tutto\n"
+"Questo potrebbe portare a bordi molto visibili tra le aree originali "
+"e quelle tagliate."
 
 #: ../src/iop/highlights.c:2201
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
 msgstr ""
+"Aumenta per correggere le grosse aree tagliate.\n"
+"Alti valori rallentano di molto il calcolo"
 
 #: ../src/iop/highpass.c:75
 msgid "highpass"
@@ -16811,7 +16960,7 @@ msgstr "Colore del supporto della pellicola"
 
 #: ../src/iop/invert.c:600 ../src/iop/negadoctor.c:820
 msgid "pick color of film material from image"
-msgstr ""
+msgstr "Seleziona il colore del materiale della pellicola dall'immagine"
 
 #: ../src/iop/invert.c:602
 msgid "select color of film material"
@@ -16938,7 +17087,7 @@ msgstr "Trova obiettivo"
 #. Page CORRECTIONS
 #: ../src/iop/lens.cc:2365 ../src/iop/negadoctor.c:873
 msgid "corrections"
-msgstr ""
+msgstr "Correzioni"
 
 #: ../src/iop/lens.cc:2367
 msgid "which corrections to apply"
@@ -17071,7 +17220,7 @@ msgstr "Percentile del bianco"
 
 #: ../src/iop/liquify.c:290
 msgid "liquify"
-msgstr ""
+msgstr "Fluidifica"
 
 #: ../src/iop/liquify.c:295
 msgid "distort parts of the image"
@@ -17088,7 +17237,6 @@ msgstr ""
 "modificare la durezza - Ctrl+(rotella mouse) per cambiare direzione"
 
 #: ../src/iop/liquify.c:3602
-#, fuzzy
 msgid ""
 "click to add line\n"
 "scroll to change size - shift+scroll to change strength - ctrl+scroll to "
@@ -17316,7 +17464,6 @@ msgid "defined by profile, RGB"
 msgstr "Definito dal profilo, RGB"
 
 #: ../src/iop/lut3d.c:466
-#, fuzzy
 msgid "error allocating buffer for gmz LUT"
 msgstr "Errore - impossibile allocare il buffer per il lut gmz"
 
@@ -17336,18 +17483,17 @@ msgid "invalid level in png file %d %d"
 msgstr "Livello non valido nel file PNG %d %d"
 
 #: ../src/iop/lut3d.c:519
-#, fuzzy
 msgid "this darktable build is not compatible with compressed CLUT"
 msgstr ""
 "Questa installazione di darktable non è compatibile con i clut compressi"
 
 #: ../src/iop/lut3d.c:536 ../src/iop/lut3d.c:785
-#, fuzzy, c-format
+#, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
-msgstr "Errore - la dimensione del lut 3D %d eccede quella massima supportata"
+msgstr ""
+"Errore - la dimensione %d del lut 3D %d eccede quella massima supportata"
 
 #: ../src/iop/lut3d.c:548
-#, fuzzy
 msgid "error allocating buffer for png LUT"
 msgstr "Errore - impossibile allocare il buffer per il lut png"
 
@@ -17357,7 +17503,6 @@ msgid "error - could not read png image %s"
 msgstr "Errore - impossibile leggere l'immagine PNG %s"
 
 #: ../src/iop/lut3d.c:566
-#, fuzzy
 msgid "error - allocating buffer for png LUT"
 msgstr "Errore - impossibile allocare il buffer per il lut png"
 
@@ -17375,33 +17520,30 @@ msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMINIO MAX <> 1,0 non è supportato"
 
 #: ../src/iop/lut3d.c:774
-#, fuzzy
 msgid "[1D cube LUT is not supported"
 msgstr "[Il cubo lut 1D non è supportato"
 
 #: ../src/iop/lut3d.c:796 ../src/iop/lut3d.c:900
-#, fuzzy
 msgid "error - allocating buffer for cube LUT"
 msgstr "Errore - impossibile allocare il buffer per il lut cubo"
 
 #: ../src/iop/lut3d.c:807 ../src/iop/lut3d.c:913
-#, fuzzy
 msgid "error - cube LUT size is not defined"
 msgstr "Errore - la dimensione del cubo lut non è definita"
 
 #: ../src/iop/lut3d.c:818
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube LUT invalid number line %d"
 msgstr "Errore - numero non valido sulla riga %d del cubo lut"
 
 #: ../src/iop/lut3d.c:834
-#, fuzzy, c-format
+#, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
 msgstr ""
 "Errore - il numero della riga lut %d non è corretto, dovrebbe essere %d"
 
 #: ../src/iop/lut3d.c:844
-#, fuzzy, c-format
+#, c-format
 msgid "warning - cube LUT %d out of range values [0,1]"
 msgstr "Attenzione - il cubo lut %d ha dei valori fuori gamma [0,1]"
 
@@ -17411,24 +17553,21 @@ msgid "error - invalid 3dl file: %s"
 msgstr "Errore - file 3dl %s non valido"
 
 #: ../src/iop/lut3d.c:889
-#, fuzzy, c-format
+#, c-format
 msgid "error - the maximum shaper LUT value %d is too low"
 msgstr "Errore - il valore massimo del modellatore lut %d è troppo basso"
 
 #: ../src/iop/lut3d.c:941
-#, fuzzy
 msgid "error - cube LUT lines number is not correct"
 msgstr "Errore - la quantità di linee del cubo lut non è corretta"
 
 #: ../src/iop/lut3d.c:957
-#, fuzzy
 msgid "error - the maximum LUT value does not match any valid bit depth"
 msgstr ""
 "Errore - il valore massimo del lut non corrisponde a nessun valore valido di "
 "profondità di bit"
 
 #: ../src/iop/lut3d.c:1550
-#, fuzzy
 msgid "LUT root folder not defined"
 msgstr "Non è definita la cartella radice dei lut"
 
@@ -17449,13 +17588,11 @@ msgid "hald CLUT (png) or 3D LUT (cube or 3dl)"
 msgstr "CLUT dimezzato (png) o 3D LUT (cubo o 3dl)"
 
 #: ../src/iop/lut3d.c:1603
-#, fuzzy
 msgid "select file outside LUT root folder is not allowed"
 msgstr ""
 "Non è permesso selezionare un file esterno alla cartella radice dei Lut"
 
 #: ../src/iop/lut3d.c:1674
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube, a 3dl or a gmz (compressed LUT) file "
 "CAUTION: 3D LUT folder must be set in preferences/processing before choosing "
@@ -17466,7 +17603,6 @@ msgstr ""
 "elaborazione prima di scegliere il file lut"
 
 #: ../src/iop/lut3d.c:1678
-#, fuzzy
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D LUT folder must be "
 "set in preferences/processing before choosing the LUT file"
@@ -17476,7 +17612,6 @@ msgstr ""
 "Principali/Varie prima di selezionare il file lut"
 
 #: ../src/iop/lut3d.c:1690
-#, fuzzy
 msgid ""
 "the file path (relative to LUT folder) is saved with image along with the "
 "LUT data if it's a compressed LUT (gmz)"
@@ -17485,7 +17620,6 @@ msgstr ""
 "l'immagine insieme ai dati lut nel caso in cui sia un lut compresso (gmz)"
 
 #: ../src/iop/lut3d.c:1693
-#, fuzzy
 msgid ""
 "the file path (relative to LUT folder) is saved with image (and not the LUT "
 "data themselves)"
@@ -17597,7 +17731,6 @@ msgid "dynamic range of the film"
 msgstr "Gamma dinamica della pellicola"
 
 #: ../src/iop/negadoctor.c:860
-#, fuzzy
 msgid ""
 "maximum density of the film, corresponding to white after inversion.\n"
 "this value depends on the film specifications, the developing process,\n"
@@ -17836,7 +17969,7 @@ msgstr "Fattore esponenziale gamma"
 
 #: ../src/iop/profile_gamma.c:646
 msgid "adjust to match the average luma of the subject"
-msgstr ""
+msgstr "Regola sulla luminanza media del soggetto"
 
 #: ../src/iop/profile_gamma.c:652
 msgid ""
@@ -17908,6 +18041,8 @@ msgid ""
 "sets technical specificities of the raw sensor.\n"
 "touch with great care!"
 msgstr ""
+"Imposta le specifiche tecniche del sensore raw.\n"
+"Da utilizzare con cautela!"
 
 #: ../src/iop/rawprepare.c:163
 msgid "passthrough"
@@ -17974,7 +18109,6 @@ msgid "fill light"
 msgstr "luce di riempimento"
 
 #: ../src/iop/relight.c:97 ../src/iop/zonesystem.c:122
-#, fuzzy
 msgid ""
 "this module is deprecated. please use the tone equalizer module instead."
 msgstr ""
@@ -18000,7 +18134,7 @@ msgstr ""
 #: ../src/iop/relight.c:284 ../src/libs/metadata_view.c:147
 #: ../src/libs/print_settings.c:2385
 msgid "width"
-msgstr ""
+msgstr "larghezza"
 
 #: ../src/iop/relight.c:285
 msgid "width of fill-light area defined in zones"
@@ -18015,10 +18149,10 @@ msgid "split-frequency|healing|cloning|stamp"
 msgstr "Divisione frequenze | cerotto | clona | timbro"
 
 #: ../src/iop/retouch.c:208
-#, fuzzy
 msgid "remove and clone spots, perform split-frequency skin editing"
 msgstr ""
-"Rimuovi e clona aree, esegui la correzione della pelle con la divisione "
+"Rimuovi e clona aree, esegui la correzione della pelle con il metodo di"
+" divisione "
 "delle frequenze"
 
 #: ../src/iop/retouch.c:211
@@ -18407,10 +18541,9 @@ msgstr "Regola la saturazione delle alteluci"
 #: ../src/iop/sharpen.c:73
 msgctxt "modulename"
 msgid "sharpen"
-msgstr ""
+msgstr "Nitidezza"
 
 #: ../src/iop/sharpen.c:93
-#, fuzzy
 msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
 msgstr ""
 "Evidenzia i dettagli dell'immagine utilizzando una maschera di contrasto "
@@ -18428,7 +18561,7 @@ msgstr "Quasi-lineare, Lab, riferito allo schermo o alla scena"
 #. restrict to raw images
 #: ../src/iop/sharpen.c:104 ../src/iop/sharpen.c:108
 msgid "sharpen"
-msgstr ""
+msgstr "nitidezza"
 
 #: ../src/iop/sharpen.c:451
 msgid "spatial extent of the unblurring"
@@ -18444,7 +18577,7 @@ msgstr "Soglia per attivare la nitidezza"
 
 #: ../src/iop/soften.c:84
 msgid "soften"
-msgstr ""
+msgstr "sfumatura"
 
 #: ../src/iop/soften.c:104
 msgid "create a softened image using the Orton effect"
@@ -18531,7 +18664,6 @@ msgid "geometric, raw"
 msgstr "Geometrica, grezza"
 
 #: ../src/iop/spots.c:220
-#, fuzzy
 msgid "spot module is limited to 64 shapes. please add a new instance !"
 msgstr ""
 "Il modulo rimozione macchie è limitato a 64 forme. Aggiungi una nuova "
