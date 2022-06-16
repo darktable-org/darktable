@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 3.9/4.0\n"
+"Project-Id-Version: darktable 4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-13 23:54-0500\n"
-"PO-Revision-Date: 2022-06-14 20:29-0500\n"
+"PO-Revision-Date: 2022-06-16 00:12-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -23420,9 +23420,8 @@ msgid "filter"
 msgstr "filtro"
 
 #: ../src/libs/tools/gamepad.c:37
-#, fuzzy
 msgid "gamepad"
-msgstr "gamepad"
+msgstr "panel de control"
 
 #: ../src/libs/tools/gamepad.c:71
 msgid "button a"
@@ -23446,19 +23445,19 @@ msgstr "botón de retroceso"
 
 #: ../src/libs/tools/gamepad.c:72
 msgid "button guide"
-msgstr "botón de guía"
+msgstr "botón guía"
 
 #: ../src/libs/tools/gamepad.c:72
 msgid "button start"
-msgstr "botoón de inicio"
+msgstr "botón de inicio"
 
 #: ../src/libs/tools/gamepad.c:73
 msgid "left stick"
-msgstr "Clic"
+msgstr "palanca de mando izquierda"
 
 #: ../src/libs/tools/gamepad.c:73
 msgid "right stick"
-msgstr "Clic Secundario"
+msgstr "palanca de mando derecha"
 
 #: ../src/libs/tools/gamepad.c:73
 msgid "left shoulder"
@@ -23469,54 +23468,44 @@ msgid "right shoulder"
 msgstr "hombro derecho"
 
 #: ../src/libs/tools/gamepad.c:74
-#, fuzzy
 msgid "dpad up"
-msgstr "acelerar"
+msgstr "controlador direccional arriba"
 
 #: ../src/libs/tools/gamepad.c:74
-#, fuzzy
 msgid "dpad down"
-msgstr "Lista deplegable"
+msgstr "controlador direccional abajo"
 
 #: ../src/libs/tools/gamepad.c:74
-#, fuzzy
 msgid "dpad left"
-msgstr "Parte superior izquierda"
+msgstr "controlador direccional izquierdo"
 
 #: ../src/libs/tools/gamepad.c:74
-#, fuzzy
 msgid "dpad right"
-msgstr "Parte superior derecha"
+msgstr "controlador direccional derecho"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "button misc1"
-msgstr "botón activado"
+msgstr "botón misceláneo1"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "paddle1"
-msgstr "media"
+msgstr "palanca 1"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "paddle2"
-msgstr "media"
+msgstr "palanca 2"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "paddle3"
-msgstr "media"
+msgstr "palanca 3"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "paddle4"
-msgstr "media"
+msgstr "palanca 4"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "touchpad"
-msgstr "retoque"
+msgstr "panel táctil"
 
 #: ../src/libs/tools/gamepad.c:76
 msgid "left trigger"
@@ -23547,24 +23536,20 @@ msgid "right y"
 msgstr "Y derecha"
 
 #: ../src/libs/tools/gamepad.c:99
-#, fuzzy
 msgid "left diagonal"
-msgstr "diagonal"
+msgstr "diagonal izquierda"
 
 #: ../src/libs/tools/gamepad.c:99
-#, fuzzy
 msgid "left skew"
-msgstr "Clic"
+msgstr "inclinación izquierda"
 
 #: ../src/libs/tools/gamepad.c:99
-#, fuzzy
 msgid "right diagonal"
-msgstr "diagonal"
+msgstr "diagonal derecha"
 
 #: ../src/libs/tools/gamepad.c:99
-#, fuzzy
 msgid "right skew"
-msgstr "derechos"
+msgstr "inclinación derecha"
 
 #. diagonals
 #: ../src/libs/tools/gamepad.c:104
@@ -23666,7 +23651,6 @@ msgstr "fijar información parcialmente y extender sólo al pasar el ratón"
 
 #: ../src/libs/tools/global_toolbox.c:445
 #: ../src/libs/tools/global_toolbox.c:471
-#, fuzzy
 msgid "overlays block on mouse hover"
 msgstr "información superpuesta al pasar el ratón"
 
@@ -23691,7 +23675,6 @@ msgstr ""
 "ayuda en línea"
 
 #: ../src/libs/tools/global_toolbox.c:498
-#, fuzzy
 msgid ""
 "define shortcuts\n"
 "ctrl+click to switch off overwrite confirmations\n"
@@ -23703,6 +23686,9 @@ msgid ""
 "configuration"
 msgstr ""
 "Definir atajos\n"
+"Pulse Ctrl+Clic para que las confirmaciones de sobreescritura se "
+"desactiven.\n"
+"\n"
 "Mueva el puntero del ratón sobre un componente y pulse el botón en "
 "combinación con el clic del ratón y desplazar o mover.\n"
 "Repita la misma combinación para eliminar la asignación.\n"
@@ -24392,9 +24378,8 @@ msgid "align images to grid"
 msgstr "alinear imágenes a la cuadrícula"
 
 #: ../src/views/lighttable.c:1256
-#, fuzzy
 msgid "reset first image offset"
-msgstr "reajustar el primer desplazamiento de la primera imagen"
+msgstr "reiniciar el desplazamiento de la primera imagen"
 
 #: ../src/views/lighttable.c:1257
 msgid "select toggle image"
