@@ -240,6 +240,40 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   return 1;
 }
 
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_image_t *img = &self->dev->image_storage;
+  const dt_iop_mlens_params_t *d = piece->data;
+
+  // Prepare the correction splines
+  float knots[NKNOTS], cor_rgb[3][NKNOTS];
+  int nc = init_coeffs(img, d, knots, cor_rgb, NULL);
+
+  const float w2 = 0.5f * roi_in->scale * piece->buf_in.width;
+  const float h2 = 0.5f * roi_in->scale * piece->buf_in.height;
+  const float r = 1 / sqrtf(w2*w2 + h2*h2);
+
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+
+#ifdef _OPENMP
+  #pragma omp parallel for
+#endif
+  for(int y = 0; y < roi_out->height; y++)
+  {
+    float *_out = out + (size_t) y * roi_out->width;
+
+    for(int x = 0; x < roi_out->width; x++, _out++)
+    {
+      float cx = roi_out->x + x - w2, cy = roi_out->y + y - h2;
+      float dr = interpolate(knots, cor_rgb[1], nc, r*sqrtf(cx*cx + cy*cy));
+      float xs = dr*cx + w2 - roi_in->x, ys = dr*cy + h2 - roi_in->y;
+      *_out = dt_interpolation_compute_sample(interpolation, in, xs, ys, roi_in->width,
+                                              roi_in->height, 1, roi_in->width);
+    }
+  }
+}
+
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   const dt_image_t *img = &self->dev->image_storage;
@@ -321,7 +355,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int c = 0; c < ch; c++)
       {
         float dr = interpolate(knots, cor_rgb[c], nc, r*sqrtf(cx*cx + cy*cy));
-        float xs = dr*cx + w2 - roi_in->x , ys = dr*cy + h2 - roi_in->y;
+        float xs = dr*cx + w2 - roi_in->x, ys = dr*cy + h2 - roi_in->y;
         out[c] = dt_interpolation_compute_sample(interpolation, buf + c, xs, ys, roi_in->width,
                                                  roi_in->height, ch, ch_width);
       }
