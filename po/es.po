@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-13 23:54-0500\n"
-"PO-Revision-Date: 2022-06-16 17:46-0500\n"
+"PO-Revision-Date: 2022-06-17 00:59-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -96,7 +96,7 @@ msgstr "Reducido"
 #: ../build/bin/preferences_gen.h:6566 ../build/bin/preferences_gen.h:6595
 msgctxt "preferences"
 msgid "default"
-msgstr "Por defecto"
+msgstr "Preestablecido"
 
 #: ../build/bin/conf_gen.h:288 ../build/bin/preferences_gen.h:6355
 msgctxt "preferences"
@@ -1597,7 +1597,7 @@ msgid "darktable resources"
 msgstr "Recursos de darktable"
 
 #: ../build/bin/preferences_gen.h:6383
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "defines how much darktable may take from your system resources.\n"
 " - default: darktable takes ~50% of your systems resources and gives "
@@ -1612,18 +1612,20 @@ msgid ""
 "swapping and unexpected performance drops. use with caution and not "
 "recommended for general use!"
 msgstr ""
-"defines how much darktable may take from your system resources.\n"
-" - default: darktable takes ~50%% of your systems resources and gives "
-"darktable enough to be still performant.\n"
-" - small: should be used if you are simultaneously running applications "
-"taking large parts of your systems memory or opencl/gl applications like "
-"games or hugin.\n"
-" - large: is the best option if you are mainly using darktable and want it "
-"to take most of your systems resources for performance.\n"
-" - unrestricted: should only be used for developing extremely large images "
-"as darktable will take all of your systems resources and thus might lead to "
-"swapping and unexpected performance drops. use with caution and not "
-"recommended for general use!"
+"Determina la proporción que darktable puede utilizar de los recursos del "
+"sistema.\n"
+" • Preestablecido: darktable utiliza alrededor del 50% de los recursos del "
+"sistema siendo suficiente para su desempeño.\n"
+" • Reducido: opción apta para escenarios en el que se ejecutan "
+"simultáneamente varios programas que requieren grandes cantidades de memoria "
+"o que utilicen OpenCL/GL tales como juegos o Hugin.\n"
+" • Extenso: es la mejor opción si se ejecuta darktable principalmente y se "
+"desea priorizar su rendimiento.\n"
+" • Irresctricto: opción únicamente recomendada para revelar imágenes "
+"extremadamente grandes. darktable empleará todos los recursos disponibles, "
+"lo que podría conducir al uso intensivo de memoria de intercambio, causando "
+"caídas inesperadas de rendimiento y excesiva lentitud del sistema. Use esta "
+"opción con prudencia (no se recomienda para uso en general)."
 
 #: ../build/bin/preferences_gen.h:6405
 msgid "prefer performance over quality"
@@ -2303,14 +2305,15 @@ msgstr ""
 "mostradas en la lista"
 
 #: ../build/bin/preferences_gen.h:8809
-#, fuzzy
 msgid "hide the history button and show a specific module instead"
-msgstr "hide the history button and show a specific module instead"
+msgstr ""
+"Ocultar el botón del historial y en su lugar mostrar un módulo específico"
 
 #: ../build/bin/preferences_gen.h:8823
-#, fuzzy
 msgid "hide the history button and show the recent collections module instead"
-msgstr "hide the history button and show the recent collections module instead"
+msgstr ""
+"Ocultar el botón del historial y en su lugar mostrar el módulo de "
+"colecciones recientes"
 
 #: ../build/bin/preferences_gen.h:8845
 msgid "number of folder levels to show in lists"
@@ -2346,18 +2349,16 @@ msgstr ""
 " y «periodos» (por ejemplo: \"fecha de captura\")"
 
 #: ../build/bin/preferences_gen.h:9049
-#, fuzzy
 msgid "prefer a history button in the collections module"
-msgstr "prefer a history button in the collections module"
+msgstr "Optar por el botón del historial en el módulo de colecciones"
 
 #: ../build/bin/preferences_gen.h:9063
-#, fuzzy
 msgid ""
 "hide this module and instead access collections history with a button in the "
 "collections module"
 msgstr ""
-"hide this module and instead access collections history with a button in the "
-"collections module"
+"Ocultar este módulo y en su lugar acceder mediante un botón al historial de "
+"colecciones"
 
 #: ../build/bin/preferences_gen.h:9117
 #, fuzzy
@@ -4064,9 +4065,8 @@ msgstr "diámetro de reconstrucción"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:155
 #: ../build/lib/darktable/plugins/introspection_highlights.c:248
-#, fuzzy
 msgid "cast balance"
-msgstr "balance"
+msgstr "equilibrar dominio de color"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:161
 #: ../build/lib/darktable/plugins/introspection_highlights.c:252
@@ -4076,7 +4076,7 @@ msgstr "combinar segmentos"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:173
 #: ../build/lib/darktable/plugins/introspection_highlights.c:260
 msgid "inpaint a flat color"
-msgstr "reconstruir un color plano"
+msgstr "reconstruir color plano"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:274
 msgid "clip highlights"
@@ -4092,9 +4092,8 @@ msgstr "reconstruir color"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:277
 #: ../src/iop/highlights.c:2149
-#, fuzzy
 msgid "guided laplacians"
-msgstr "retícula"
+msgstr "laplaciano guiado"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:281
 msgid "4 px"
@@ -4134,7 +4133,7 @@ msgstr "1024 px (muy lento)"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:290
 msgid "2048 px (insanely slow)"
-msgstr "2048 px (exageradamente lento)"
+msgstr "2048 px (extremadamente lento)"
 
 #: ../build/lib/darktable/plugins/introspection_highpass.c:44
 #: ../build/lib/darktable/plugins/introspection_highpass.c:91
@@ -15110,7 +15109,7 @@ msgstr "Problema interno [doble interpolación cromática OpenCL]"
 #: ../src/iop/demosaic.c:5661
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "«%s» matriz de color no encontrada para la imagen 4bayer"
+msgstr "«%s» matriz de color no encontrada para imagen tipo Bayer"
 
 #: ../src/iop/demosaic.c:5787
 msgid ""
@@ -16991,7 +16990,7 @@ msgstr ""
 #: ../src/iop/invert.c:95 ../src/iop/invert.c:527
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "«%s» matriz de color no encontrada para imagen 4bayer"
+msgstr "«%s» matriz de color no encontrada para imagen tipo Bayer"
 
 #: ../src/iop/invert.c:111
 msgid "invert"
