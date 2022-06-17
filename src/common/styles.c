@@ -977,7 +977,7 @@ void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
 
     dt_action_t *old = dt_action_locate(&darktable.control->actions_global,
                                         (gchar **)(const gchar *[]){"styles", name, NULL}, FALSE);
-    dt_action_rename(old, NULL);
+    if(old) dt_action_rename(old, NULL);
 
     if(raise)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
@@ -1600,4 +1600,3 @@ dt_style_t *dt_styles_get_by_name(const char *name)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
