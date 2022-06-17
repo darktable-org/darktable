@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-03 19:00+0700\n"
-"Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
+"PO-Revision-Date: 2022-06-17 01:05-0500\n"
+"Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: русский\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 2.4.2\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -3998,7 +3998,7 @@ msgstr "Восстановить цвет"
 #: ../build/lib/darktable/plugins/introspection_highlights.c:277
 #: ../src/iop/highlights.c:2139
 msgid "guided laplacians"
-msgstr "Режим Лалласа"
+msgstr "Режим Лапласа"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:281
 msgid "4 px"
@@ -16482,7 +16482,7 @@ msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
 "back to clip."
 msgstr ""
-"Управляемый режим Лалласа недоступен для датчиков X-Trans. Вернуться к "
+"Управляемый режим Лапласа недоступен для датчиков X-Trans. Вернуться к "
 "обрезке."
 
 #: ../src/iop/highlights.c:2174
