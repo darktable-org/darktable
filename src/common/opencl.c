@@ -314,6 +314,8 @@ gboolean dt_opencl_read_device_config(const int devid)
     sscanf(dat, "%i", &forced_headroom);
     if(forced_headroom > 0) cl->dev[devid].forced_headroom = forced_headroom;
   }
+  else // this is used if updating to 4.0 or fresh installs; see commenting _opencl_get_unused_device_mem()
+    cl->dev[devid].forced_headroom = 400;
   dt_opencl_write_device_config(devid);
   return !existing_device || !safety_ok;
 }
@@ -2730,6 +2732,7 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
    clCreateBuffer does not tell an error condition if there is no memory available (this
    is according to standard), to make sure the buffer is really allocated in graphics mem we
    force a small memory access.
+   Note: This code seems to be bad at least for nvidia 515/16 drivers, the reason is not understood yet.
 */
 void _opencl_get_unused_device_mem(const int devid)
 {
