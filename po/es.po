@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-17 21:20-0500\n"
-"PO-Revision-Date: 2022-06-18 01:18-0500\n"
+"POT-Creation-Date: 2022-06-18 14:04-0500\n"
+"PO-Revision-Date: 2022-06-18 15:00-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -5816,9 +5816,8 @@ msgstr ""
 "\" \"eventhandles\" \"async\" \"disable\" \"magic\""
 
 #: ../src/common/darktable.c:1756
-#, fuzzy
 msgid "you may tune as before except 'magic'"
-msgstr "you may tune as before except 'magic'"
+msgstr "Todos se pueden ajustar como antes, excepto por \"magic\""
 
 #: ../src/common/database.c:2722
 #, c-format
@@ -6476,14 +6475,14 @@ msgstr "distribución de Poisson"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Archivo de perfil de ruido «%s» no es válido"
 
-#: ../src/common/opencl.c:1097
+#: ../src/common/opencl.c:1099
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "Debido al lento comportamiento de la GPU para la aceleración vía OpenCl, el "
 "hardware se ha desactivado."
 
-#: ../src/common/opencl.c:1104
+#: ../src/common/opencl.c:1106
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
@@ -6491,14 +6490,14 @@ msgstr ""
 "de OpenCL."
 
 # Ignorar advertencia: en el texto original GPU va en mayúsculas.
-#: ../src/common/opencl.c:1111
+#: ../src/common/opencl.c:1113
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU muy veloz detectada: el perfil de control de OpenCL se ha configurado en "
 "función de la misma."
 
-#: ../src/common/opencl.c:1118
+#: ../src/common/opencl.c:1120
 msgid "opencl scheduling profile set to default"
 msgstr "El perfil de control para OpenCL se ha ajustado al predefinido."
 
@@ -10445,11 +10444,11 @@ msgid "set overlay color"
 msgstr "Establece el color de las líneas reticulares"
 
 #: ../src/gui/guides.c:741
-#, fuzzy
 msgid ""
 "set the contrast between the lightest and darkest part of the guide overlays"
 msgstr ""
-"set the contrast between the lightest and darkest part of the guide overlays"
+"Establecer un contraste entre la parte más clara y la más oscura de las "
+"guías superpuestas"
 
 #: ../src/gui/guides.c:847 ../src/gui/guides.c:893
 msgid "show guides"
@@ -13416,9 +13415,8 @@ msgstr ""
 "if disabled, only the CAT is considered."
 
 #: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1103
-#, fuzzy
 msgid "the input color that should be mapped to the target"
-msgstr "the input color that should be mapped to the target"
+msgstr "El color de entrada que debe ajustarse al destino"
 
 #: ../src/iop/channelmixerrgb.c:4115
 msgid ""
@@ -13431,9 +13429,9 @@ msgstr ""
 "c: \tno corresponde"
 
 #: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
-#, fuzzy
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
-msgstr "these LCh coordinates are computed from CIE Lab 1976 coordinates"
+msgstr ""
+"Estas coordenadas LCh se calculan a partir de las coordenadas CIE Lab 1976"
 
 #: ../src/iop/channelmixerrgb.c:4130
 #, fuzzy
@@ -14273,9 +14271,8 @@ msgid "isolate luminances"
 msgstr "Separa luminancias"
 
 #: ../src/iop/colorbalancergb.c:1979
-#, fuzzy
 msgid "choose in which uniform color space the saturation is computed"
-msgstr "choose in which uniform color space the saturation is computed"
+msgstr "Elegir en qué espacio de color uniforme se calcula la saturación"
 
 #: ../src/iop/colorbalancergb.c:1981
 msgid "luminance ranges"
@@ -14834,9 +14831,8 @@ msgid "not applicable"
 msgstr "no es aplicable"
 
 #: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2215
-#, fuzzy
 msgid "no highlights reconstruction for monochrome images"
-msgstr "Método de reconstrucción de luces"
+msgstr "No se hay reconstrucción de luces para las imágenes monocromáticas"
 
 #: ../src/iop/colortransfer.c:103
 msgid "color transfer"
@@ -20447,27 +20443,26 @@ msgid "taken: last 30 days"
 msgstr "capturado: últimos 30 días"
 
 #: ../src/libs/filtering.c:653
-#, fuzzy
 msgid "click or click&#38;drag to select one or multiple values"
-msgstr "click or click&#38;drag to select one or multiple values"
+msgstr "Pulse o Pulse&#38;Arrastre para elegir varios elementos"
 
 #: ../src/libs/filtering.c:654
-#, fuzzy
 msgid "right-click opens a menu to select the available values"
-msgstr "right-click opens a menu to select the available values"
+msgstr ""
+"Con el clic secundario se despliega un menú para elegir entre los elementos "
+"disponibles"
 
 #: ../src/libs/filtering.c:657
 msgid "actual selection"
 msgstr "Selección actual"
 
 #: ../src/libs/filtering.c:918
-#, fuzzy
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
-"rule property\n"
-"this can't be changed as the rule is pinned into the toolbar"
+"Propiedad de la regla\n"
+"No puede cambiarse ya que la regla está anclada en la barra de herramientas"
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:925
@@ -20504,9 +20499,8 @@ msgid "click to pin this rule into the top toolbar"
 msgstr "Pulse para anclar esta regla en la barra de herramientas superior"
 
 #: ../src/libs/filtering.c:1051
-#, fuzzy
 msgid "remove this collect rule"
-msgstr "Quitar este módulo"
+msgstr "Eliminar esta regla para la colección"
 
 #: ../src/libs/filtering.c:1053
 msgid "this rule is enabled"
@@ -20529,9 +20523,8 @@ msgid "and not"
 msgstr " y  no"
 
 #: ../src/libs/filtering.c:1172
-#, fuzzy
 msgid "define how this rule should interact with the previous one"
-msgstr "define how this rule should interact with the previous one"
+msgstr "Se define cómo debe interactuar esta regla con la anterior"
 
 #: ../src/libs/filtering.c:1431
 msgid " (off)"
@@ -20575,29 +20568,25 @@ msgid "sort by"
 msgstr "ordenar por"
 
 #: ../src/libs/filtering.c:2003
-#, fuzzy
 msgid "new sort"
-msgstr "nuevo preajuste"
+msgstr "nuevo ordenamiento"
 
 #: ../src/libs/filtering.c:2004
-#, fuzzy
 msgid "append new sort to order images"
-msgstr "Diferencia horaria añadida a %d imagen"
+msgstr "Añadir una nueva clasificación para ordenar las imágenes"
 
 #: ../src/libs/filtering.c:2007
-#, fuzzy
 msgid "revert to a previous set of sort orders"
-msgstr "revert to a previous set of sort orders"
+msgstr "Revertir al conjunto de orden de clasificación previo"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
 #: ../src/libs/filtering.c:2056
-#, fuzzy
 msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
 msgstr ""
-"Preajustes\n"
-"Use Ctrl+Clic para gestionar"
+"Restablecer\n"
+"Use Ctrl+Clic para eliminar las reglas ancladas también"
 
 #: ../src/libs/filters/colors.c:140
 msgid "Y"
@@ -23727,18 +23716,20 @@ msgstr "MIDI"
 #: ../src/libs/tools/midi.c:200
 msgid "using absolute encoding; reinitialise to switch to relative"
 msgstr ""
-"Utilizando la codificación absoluta Reinicie para cambiar a la codificación "
+"Utilizando la codificación absoluta. Reinicie para cambiar a la codificación "
 "relativa."
 
 #: ../src/libs/tools/midi.c:204
-#, fuzzy, c-format
+#, c-format
 msgid "%d more identical (down) moves before switching to relative encoding"
-msgstr "%d more identical (down) moves before switching to relative encoding"
+msgstr ""
+"%d más movimientos idénticos (bloqueados) antes de cambiar a la codificación "
+"relativa"
 
 #: ../src/libs/tools/midi.c:207
-#, fuzzy, c-format
+#, c-format
 msgid "switching encoding to relative (down = %d)"
-msgstr "switching encoding to relative (down = %d)"
+msgstr "Cambiando la codificación a relativa (bloqueados = %d)"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
