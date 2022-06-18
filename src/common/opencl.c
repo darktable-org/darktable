@@ -2361,7 +2361,7 @@ int dt_opencl_read_host_from_device_raw(const int devid, void *host, void *devic
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Read Image (from device to host)]");
 
   return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadImage)(darktable.opencl->dev[devid].cmd_queue,
-                                                                   device, blocking, origin, region, rowpitch,
+                                                                   device, blocking ? CL_TRUE : CL_FALSE, origin, region, rowpitch,
                                                                    0, host, 0, NULL, eventp);
 }
 
@@ -2406,7 +2406,7 @@ int dt_opencl_write_host_to_device_raw(const int devid, void *host, void *device
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Write Image (from host to device)]");
 
   return (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteImage)(darktable.opencl->dev[devid].cmd_queue,
-                                                                    device, blocking, origin, region,
+                                                                    device, blocking ? CL_TRUE : CL_FALSE, origin, region,
                                                                     rowpitch, 0, host, 0, NULL, eventp);
 }
 
@@ -2466,7 +2466,7 @@ int dt_opencl_read_buffer_from_device(const int devid, void *host, void *device,
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Read Buffer (from device to host)]");
 
   return (darktable.opencl->dlocl->symbols->dt_clEnqueueReadBuffer)(
-      darktable.opencl->dev[devid].cmd_queue, device, blocking, offset, size, host, 0, NULL, eventp);
+      darktable.opencl->dev[devid].cmd_queue, device, blocking ? CL_TRUE : CL_FALSE, offset, size, host, 0, NULL, eventp);
 }
 
 int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, const size_t offset,
@@ -2477,7 +2477,7 @@ int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, 
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Write Buffer (from host to device)]");
 
   return (darktable.opencl->dlocl->symbols->dt_clEnqueueWriteBuffer)(
-      darktable.opencl->dev[devid].cmd_queue, device, blocking, offset, size, host, 0, NULL, eventp);
+      darktable.opencl->dev[devid].cmd_queue, device, blocking ? CL_TRUE : CL_FALSE, offset, size, host, 0, NULL, eventp);
 }
 
 
@@ -2553,7 +2553,7 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
   void *ptr;
   cl_event *eventp = dt_opencl_events_get_slot(devid, "[Map Buffer]");
   ptr = (darktable.opencl->dlocl->symbols->dt_clEnqueueMapBuffer)(
-      darktable.opencl->dev[devid].cmd_queue, buffer, blocking, flags, offset, size, 0, NULL, eventp, &err);
+      darktable.opencl->dev[devid].cmd_queue, buffer, blocking ? CL_TRUE : CL_FALSE, flags, offset, size, 0, NULL, eventp, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer on device %d: %s\n", devid, cl_errstr(err));
   return ptr;
 }
