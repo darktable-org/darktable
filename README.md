@@ -149,9 +149,9 @@ Building
 ### Dependencies
 
 Compatible compilers:
-* Clang: 8, 9, 10
-* GCC: 8, 9, 10
-* Mingw64: 6, 7
+* Clang: 8 and later
+* GCC: 8 and later
+* MinGW-w64: 6 and later
 
 Required dependencies (minimum version):
 * CMake 3.10
