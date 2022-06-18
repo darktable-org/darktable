@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-13 23:54-0500\n"
-"PO-Revision-Date: 2022-06-17 00:59-0500\n"
+"POT-Creation-Date: 2022-06-17 21:20-0500\n"
+"PO-Revision-Date: 2022-06-17 23:59-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2086,15 +2086,15 @@ msgid "order or exclude midi devices"
 msgstr "Ordenar o excluir dispositivos MIDI"
 
 #: ../build/bin/preferences_gen.h:8050
-#, fuzzy
 msgid ""
 "comma-separated list of device name fragments that if matched load midi "
 "device at id given by location in list or if preceded by - prevent matching "
 "devices from loading. add encoding and number of knobs like 'BeatStep:63:16'"
 msgstr ""
-"comma-separated list of device name fragments that if matched load midi "
-"device at id given by location in list or if preceded by - prevent matching "
-"devices from loading. add encoding and number of knobs like 'BeatStep:63:16'"
+"Lista de fragmentos de nombres de dispositivos MIDI separada por comas, que "
+"al coincidir, se cargan con el id. dado por la ubicación en la lista. Los "
+"dispositivos precedidos por - no serán cargados. Se añade la codificación y "
+"el número de mandos como «BeatStep:63:16»."
 
 #. tags
 #: ../build/bin/preferences_gen.h:8066 ../src/develop/lightroom.c:1516
@@ -2506,7 +2506,7 @@ msgstr "preservar los colores"
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2082
 #: ../src/iop/channelmixerrgb.c:4229 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2111 ../src/iop/clipping.c:2126
-#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1909
+#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1905
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1036
 #: ../src/libs/filters/module_order.c:158 ../src/libs/live_view.c:311
 #: ../src/libs/print_settings.c:2668
@@ -2787,7 +2787,7 @@ msgstr "aberración cromática muy acentuada"
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2302
 #: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1992
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:260
+#: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:260
 msgid "red"
 msgstr "rojo"
 
@@ -2799,7 +2799,7 @@ msgstr "rojo"
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4182 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
-#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1793
+#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1789
 #: ../src/libs/filters/colors.c:262
 msgid "green"
 msgstr "verde"
@@ -2812,7 +2812,7 @@ msgstr "verde"
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4183 ../src/iop/colorzones.c:2307
 #: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1994
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:263
+#: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:263
 msgid "blue"
 msgstr "azul"
 
@@ -3583,7 +3583,7 @@ msgstr "Markesteijn 3 pasadas + VNG"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1448 ../src/libs/collect.c:1747
+#: ../src/common/collection.c:1448 ../src/libs/collect.c:1743
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "básico"
@@ -4374,14 +4374,12 @@ msgstr "punto blanco"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:112
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:183
-#, fuzzy
 msgid "flat field correction"
-msgstr "corrección de nivel de negro"
+msgstr "corrección de campo plano"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:198
-#, fuzzy
 msgid "embedded GainMap"
-msgstr "matriz incrustada"
+msgstr "GainMap incrustada"
 
 #. exposure
 #: ../build/lib/darktable/plugins/introspection_relight.c:43
@@ -4839,7 +4837,7 @@ msgstr "Lista deplegable"
 #: ../src/gui/presets.c:476 ../src/gui/styles_dialog.c:420
 #: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1557
-#: ../src/libs/collect.c:406 ../src/libs/copy_history.c:107
+#: ../src/libs/collect.c:409 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
 #: ../src/libs/tagging.c:2485 ../src/libs/tagging.c:2521
@@ -5136,7 +5134,7 @@ msgstr "etiqueta"
 msgid "capture date"
 msgstr "fecha de captura"
 
-#: ../src/common/collection.c:677 ../src/libs/collect.c:3313
+#: ../src/common/collection.c:677 ../src/libs/collect.c:3309
 #: ../src/libs/filtering.c:1986 ../src/libs/filtering.c:2006
 #: ../src/libs/history.c:85
 msgid "history"
@@ -5181,9 +5179,8 @@ msgid "module order"
 msgstr "orden de módulo"
 
 #: ../src/common/collection.c:705
-#, fuzzy
 msgid "range rating"
-msgstr "extensión de rango"
+msgstr "rango de valoración"
 
 #: ../src/common/collection.c:709
 msgid "search"
@@ -5192,34 +5189,34 @@ msgstr "Buscar"
 #: ../src/common/collection.c:1431 ../src/common/colorlabels.c:330
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2304 ../src/iop/temperature.c:1809
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:261
+#: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "amarillo"
 
 #: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:333 ../src/iop/colorzones.c:2308
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:264
+#: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "púrpura"
 
-#: ../src/common/collection.c:1454 ../src/libs/collect.c:1747
+#: ../src/common/collection.c:1454 ../src/libs/collect.c:1743
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "aplicado automático"
 
-#: ../src/common/collection.c:1458 ../src/libs/collect.c:1747
+#: ../src/common/collection.c:1458 ../src/libs/collect.c:1743
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "alterado"
 
 #: ../src/common/collection.c:1475 ../src/common/collection.c:1571
-#: ../src/libs/collect.c:1182 ../src/libs/collect.c:1321
-#: ../src/libs/collect.c:1345 ../src/libs/collect.c:1464
-#: ../src/libs/collect.c:2505
+#: ../src/libs/collect.c:1164 ../src/libs/collect.c:1328
+#: ../src/libs/collect.c:1352 ../src/libs/collect.c:1471
+#: ../src/libs/collect.c:2501
 msgid "not tagged"
 msgstr "sin etiquetar"
 
-#: ../src/common/collection.c:1476 ../src/libs/collect.c:1345
+#: ../src/common/collection.c:1476 ../src/libs/collect.c:1352
 #: ../src/libs/map_locations.c:765
 msgid "tagged"
 msgstr "etiquetado"
@@ -5229,27 +5226,27 @@ msgid "tagged*"
 msgstr "etiquetado*"
 
 #. local copy
-#: ../src/common/collection.c:1510 ../src/libs/collect.c:1761
+#: ../src/common/collection.c:1510 ../src/libs/collect.c:1757
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "sin copia local"
 
-#: ../src/common/collection.c:1514 ../src/libs/collect.c:1761
+#: ../src/common/collection.c:1514 ../src/libs/collect.c:1757
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "copiar localmente"
 
-#: ../src/common/collection.c:1889 ../src/libs/collect.c:1881
+#: ../src/common/collection.c:1889 ../src/libs/collect.c:1877
 #: ../src/libs/filters/grouping.c:147 ../src/libs/filters/grouping.c:170
 msgid "group leaders"
 msgstr "portadas de grupo"
 
-#: ../src/common/collection.c:1893 ../src/libs/collect.c:1881
+#: ../src/common/collection.c:1893 ../src/libs/collect.c:1877
 #: ../src/libs/filters/grouping.c:150 ../src/libs/filters/grouping.c:170
 msgid "group followers"
 msgstr "seguidores de grupo"
 
-#: ../src/common/collection.c:2033 ../src/libs/collect.c:1961
+#: ../src/common/collection.c:2033 ../src/libs/collect.c:1957
 msgid "not defined"
 msgstr "sin definir"
 
@@ -5779,13 +5776,12 @@ msgstr ""
 "rendimiento de darktable han cambiado."
 
 #: ../src/common/darktable.c:1739
-#, fuzzy
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
-"you won't find headroom and friends any longer, instead in preferences/"
-"processing use:"
+"Todos los elementos relacionados se han remplazado por las siguientes "
+"secciones ubicadas en preferencias/procesamiento:"
 
 #: ../src/common/darktable.c:1741
 msgid "1) darktable resources"
@@ -5796,31 +5792,28 @@ msgid "2) tune OpenCL performance"
 msgstr "2) Configurar el rendimiento de OpenCL"
 
 #: ../src/common/darktable.c:1750
-#, fuzzy
 msgid ""
 "some global config values relevant for OpenCL performance are not used any "
 "longer."
 msgstr ""
-"some global config values relevant for OpenCL performance are not used any "
-"longer."
+"Algunos valores relevantes de configuración general para el rendimiento de "
+"OpenCL ya no se utilizan más."
 
 #: ../src/common/darktable.c:1752
-#, fuzzy
 msgid ""
 "instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
 "content is:"
 msgstr ""
-"instead you will find 'per device' data in 'cl_device_v4_canonical-name'. "
-"content is:"
+"Sin embargo, encontrará los datos por dispositivo en \"cldevice_v4_canonical-"
+"name\". El contenido es :"
 
 #: ../src/common/darktable.c:1754
-#, fuzzy
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
 msgstr ""
-" 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
-"'eventhandles' 'async' 'disable' 'magic'"
+" \"avoid_atomics\" \"micro_nap\" \"pinned_memory\" \"roundupwd\" \"roundupht"
+"\" \"eventhandles\" \"async\" \"disable\" \"magic\""
 
 #: ../src/common/darktable.c:1756
 #, fuzzy
@@ -5892,7 +5885,7 @@ msgstr ""
 msgid "error starting darktable"
 msgstr "Error al iniciar darktable"
 
-#: ../src/common/database.c:2744 ../src/libs/collect.c:3011
+#: ../src/common/database.c:2744 ../src/libs/collect.c:3007
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
@@ -6131,13 +6124,12 @@ msgid "later"
 msgstr "Después"
 
 #: ../src/common/eigf.h:288
-#, fuzzy
 msgid ""
 "fast exposure independent guided filter failed to allocate memory, check "
 "your RAM settings"
 msgstr ""
-"El filtro guiado rápido no pudo reservar memoria. Verifique la configuración "
-"de la RAM."
+"El filtro guiado rápido independiente de la exposición no pudo reservar "
+"memoria. Verifique la configuración de la RAM."
 
 #: ../src/common/exif.cc:4333
 #, c-format
@@ -8849,7 +8841,6 @@ msgstr ""
 "Pulse el botón secundario para elegir un valor existente."
 
 #: ../src/dtgtk/range.c:423
-#, fuzzy
 msgid ""
 "enter the minimal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8857,11 +8848,12 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
-"enter the minimal date\n"
-"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
-"use 'min' if no bound\n"
-"use '-' prefix for relative date\n"
-"right-click to select from calendar or existing values"
+"Introduzca la fecha mínima\n"
+"en la forma AAAA:MM:DD hh:mm:ss.sss (sólo el año es obligatorio)\\n\n"
+"Utilice «mín» si no hay límites.\n"
+"Utilice el prefijo '-' para fecha relativa.\n"
+"Pulse el botón secundario del ratón para seleccionar entre los valores "
+"existentes o desde en el calendario."
 
 #: ../src/dtgtk/range.c:431
 #, fuzzy
@@ -8920,9 +8912,8 @@ msgid "max"
 msgstr "máx."
 
 #: ../src/dtgtk/range.c:931
-#, fuzzy
 msgid "date type"
-msgstr "fecha/hora"
+msgstr "tipo de fecha"
 
 #. the date section
 #: ../src/dtgtk/range.c:942
@@ -8930,13 +8921,12 @@ msgid "date"
 msgstr "fecha"
 
 #: ../src/dtgtk/range.c:949 ../src/dtgtk/range.c:1015
-#, fuzzy
 msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
 msgstr ""
-"simple click to select date\n"
-"double click to use the date directly"
+"Pulse para la selección de la fecha.\n"
+"Haga pulsación doble para utilizar la fecha directamente."
 
 #: ../src/dtgtk/range.c:960
 msgid "years: "
@@ -8987,7 +8977,7 @@ msgstr "set the range bound with this value"
 #: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2917
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
-#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1424
+#: ../src/libs/collect.c:3153 ../src/libs/filtering.c:1424
 #: ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
 #: ../src/libs/filters/rating.c:211
 msgid "all"
@@ -9485,9 +9475,8 @@ msgid "apply on new instance"
 msgstr "establecer en un nuevo módulo"
 
 #: ../src/gui/accelerators.c:457
-#, fuzzy
 msgid "tablet button"
-msgstr "penúltimo"
+msgstr "botón de la tableta"
 
 #: ../src/gui/accelerators.c:466
 msgid "unknown driver"
@@ -9637,9 +9626,9 @@ msgid "create separate shortcuts for up and down move?"
 msgstr "¿Crear atajos separados para los movimientos arriba/abajo?"
 
 #: ../src/gui/accelerators.c:1052
-#, fuzzy, c-format
+#, c-format
 msgid "%s, speed reset"
-msgstr "%s, speed reset"
+msgstr "%s, reinicio de velocidad"
 
 #: ../src/gui/accelerators.c:1061
 msgid "shortcut exists with different settings"
@@ -9964,9 +9953,8 @@ msgid "no-op"
 msgstr "sin opción"
 
 #: ../src/gui/gtk.c:1174
-#, fuzzy
 msgid "switch views"
-msgstr "cambiar vista a mapa"
+msgstr "cambiar vistas"
 
 #: ../src/gui/gtk.c:1175 ../src/views/tethering.c:102
 msgid "tethering"
@@ -10699,7 +10687,7 @@ msgstr "No se pudo importar el preajuste %s"
 msgid "select preset(s) to import"
 msgstr "Seleccionar preajuste(s) para importar"
 
-#: ../src/gui/preferences.c:997 ../src/libs/collect.c:406
+#: ../src/gui/preferences.c:997 ../src/libs/collect.c:409
 #: ../src/libs/copy_history.c:107 ../src/libs/geotagging.c:930
 #: ../src/libs/import.c:1497 ../src/libs/import.c:1601 ../src/libs/styles.c:512
 msgid "_open"
@@ -13418,14 +13406,12 @@ msgid "correction"
 msgstr "corrección"
 
 #: ../src/iop/channelmixerrgb.c:4087 ../src/iop/exposure.c:1090
-#, fuzzy
 msgid "measure"
-msgstr "exposición"
+msgstr "medición"
 
 #: ../src/iop/channelmixerrgb.c:4091
-#, fuzzy
 msgid "take channel mixing into account"
-msgstr "take channel mixing into account"
+msgstr "tener en cuenta el mezclador de canal"
 
 #: ../src/iop/channelmixerrgb.c:4096
 #, fuzzy
@@ -15029,9 +15015,8 @@ msgid "commit"
 msgstr "aceptar"
 
 #: ../src/iop/crop.c:1165
-#, fuzzy
 msgid "commit changes"
-msgstr "canales normalizados"
+msgstr "confirmar cambios"
 
 #: ../src/iop/crop.c:1524
 msgid "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag"
@@ -15937,9 +15922,8 @@ msgid "L : \tN/A"
 msgstr "L : \tno corresponde"
 
 #: ../src/iop/exposure.c:1123
-#, fuzzy
 msgid "the desired target exposure after mapping"
-msgstr "the desired target exposure after mapping"
+msgstr "La exposición del objetivo deseada después del mapeo"
 
 #: ../src/iop/filmic.c:179
 msgid "this module is deprecated. better use filmic rgb module instead."
@@ -16869,13 +16853,12 @@ msgid "reconstruction, raw"
 msgstr "Reconstrucción, negativo digital"
 
 #: ../src/iop/highlights.c:2111
-#, fuzzy
 msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
 "back to clip."
 msgstr ""
-"highlights: guided laplacian mode not available for X-Trans sensors. falling "
-"back to clip."
+"Luces:el modo laplaciano guiado no está disponible para los sensores tipo X-"
+"Trans. Volviendo al recorte."
 
 #: ../src/iop/highlights.c:2184
 msgid "highlight reconstruction method"
@@ -16901,31 +16884,31 @@ msgstr ""
 "into the rest of the noisy image. useful at high ISO."
 
 #: ../src/iop/highlights.c:2202
-#, fuzzy
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
 msgstr ""
-"increase if magenta highlights don't get fully corrected\n"
-"each new iteration brings a performance penalty."
+"Incremente el valor si las luces magenta no se han corregido totalmente.\n"
+"Tenga en cuenta que con cada nueva iteración, el rendimiento se verá "
+"afectado."
 
 #: ../src/iop/highlights.c:2207
-#, fuzzy
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
 msgstr ""
-"increase if magenta highlights don't get fully corrected.\n"
-"this may produce non-smooth boundaries between valid and clipped regions."
+"Incremente el valor si las luces magenta no se han corregido totalmente,\n"
+"teniendo en cuenta de que se puede provocar que las delimitaciones sean "
+"abruptas entre las regiones válidas y las recortadas."
 
 #: ../src/iop/highlights.c:2211
-#, fuzzy
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
 msgstr ""
-"increase to correct larger clipped areas.\n"
-"large values bring huge performance penalties"
+"Incremente el valor para corregir áreas más grandes recortadas.\n"
+"Entre más altos sean los valores, mayor será la penalización en el "
+"rendimiento."
 
 #: ../src/iop/highpass.c:75
 msgid "highpass"
@@ -18129,9 +18112,8 @@ msgid "black level 3"
 msgstr "nivel de negro 3"
 
 #: ../src/iop/rawprepare.c:851
-#, fuzzy
 msgid "flat field correction to compensate for lens shading"
-msgstr "flat field correction to compensate for lens shading"
+msgstr "Corrección de campo plano para compensar el viñeteado del objetivo"
 
 #: ../src/iop/rawprepare.c:859
 msgid "crop from left border"
@@ -19370,9 +19352,8 @@ msgid "lomo"
 msgstr "lomo"
 
 #: ../src/iop/vignette.c:985
-#, fuzzy
 msgid "position / form"
-msgstr "posición"
+msgstr "posición / forma"
 
 #: ../src/iop/vignette.c:1003
 msgid "the radii scale of vignette for start of fall-off"
@@ -19504,9 +19485,8 @@ msgid "pick color from image"
 msgstr "Seleccionar un color de la imagen"
 
 #: ../src/iop/watermark.c:1125
-#, fuzzy
 msgid "placement"
-msgstr "elemento"
+msgstr "colocación"
 
 #: ../src/iop/watermark.c:1138
 msgid "size is relative to"
@@ -19679,36 +19659,36 @@ msgstr "velocidad de disparo"
 msgid "WB"
 msgstr "Balance de blancos"
 
-#: ../src/libs/collect.c:148
+#: ../src/libs/collect.c:151
 msgid "collections"
 msgstr "colección"
 
-#: ../src/libs/collect.c:405
+#: ../src/libs/collect.c:408
 msgid "search filmroll"
 msgstr "buscar sesión"
 
-#: ../src/libs/collect.c:488
+#: ../src/libs/collect.c:491
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "problema seleccionando una nueva ruta para la sesión en %s"
 
-#: ../src/libs/collect.c:551
+#: ../src/libs/collect.c:554
 msgid "search filmroll..."
 msgstr "buscar sesión..."
 
-#: ../src/libs/collect.c:555
+#: ../src/libs/collect.c:558
 msgid "remove..."
 msgstr "eliminar..."
 
-#: ../src/libs/collect.c:1216
+#: ../src/libs/collect.c:1223
 msgid "uncategorized"
 msgstr "sin categoría"
 
-#: ../src/libs/collect.c:2140
+#: ../src/libs/collect.c:2136
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "Utilice <, <=, >, >=, <>, =, [;] como operadores"
 
-#: ../src/libs/collect.c:2144
+#: ../src/libs/collect.c:2140
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
@@ -19718,7 +19698,7 @@ msgstr ""
 "Para puntuar imágenes: 0-5\n"
 "Para rechazar imágenes: -1"
 
-#: ../src/libs/collect.c:2151
+#: ../src/libs/collect.c:2147
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
@@ -19727,12 +19707,12 @@ msgstr ""
 "los formatos de fecha como: YYYY:MM:DD HH:MM:SS.SSS (solo el año es "
 "obligatorio)"
 
-#: ../src/libs/collect.c:2158
+#: ../src/libs/collect.c:2154
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "Use '%' como comodín y ',' para separar los valores"
 
-#: ../src/libs/collect.c:2164
+#: ../src/libs/collect.c:2160
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19745,7 +19725,7 @@ msgstr ""
 "Use Mayús+Clic para incluir solamente la jerarquía actual (sin sufijo).\n"
 "Use Ctrl+Clic para incluir solamente las subjerarquías (sufijo '|%')."
 
-#: ../src/libs/collect.c:2176
+#: ../src/libs/collect.c:2172
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19758,7 +19738,7 @@ msgstr ""
 "Use Mayús+Clic para incluir solamente la ubicación actual (sin sufijo).\n"
 "Use Ctrl+Clic para incluir solamente las subregiones (sufijo '|%')."
 
-#: ../src/libs/collect.c:2188
+#: ../src/libs/collect.c:2184
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19771,77 +19751,77 @@ msgstr ""
 "Use Mayús+Clic para incluir solamente la carpeta actual (sin sufijo).\n"
 "Use Ctrl+Clic para incluir solamente las subcarpetas (sufijo '|%')."
 
-#: ../src/libs/collect.c:2199
+#: ../src/libs/collect.c:2195
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "Use '%' como comodín"
 
-#: ../src/libs/collect.c:2258 ../src/libs/collect.c:2272
-#: ../src/libs/collect.c:2896
+#: ../src/libs/collect.c:2254 ../src/libs/collect.c:2268
+#: ../src/libs/collect.c:2892
 msgid "clear this rule"
 msgstr "Eliminar esta regla"
 
-#: ../src/libs/collect.c:2262
+#: ../src/libs/collect.c:2258
 msgid "clear this rule or add new rules"
 msgstr "Eliminar esta regla o añadir nuevas reglas"
 
-#: ../src/libs/collect.c:2902
+#: ../src/libs/collect.c:2898
 msgid "narrow down search"
 msgstr "reducir la búsqueda"
 
-#: ../src/libs/collect.c:2907
+#: ../src/libs/collect.c:2903
 msgid "add more images"
 msgstr "añadir más imágenes"
 
-#: ../src/libs/collect.c:2912
+#: ../src/libs/collect.c:2908
 msgid "exclude images"
 msgstr "excluir imágenes"
 
-#: ../src/libs/collect.c:2919
+#: ../src/libs/collect.c:2915
 msgid "change to: and"
 msgstr "cambiar a: y"
 
-#: ../src/libs/collect.c:2924
+#: ../src/libs/collect.c:2920
 msgid "change to: or"
 msgstr "cambiar a: o"
 
-#: ../src/libs/collect.c:2929
+#: ../src/libs/collect.c:2925
 msgid "change to: except"
 msgstr "cambiar a: excepto"
 
 #. the differents categories
-#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:845
+#: ../src/libs/collect.c:2951 ../src/libs/filtering.c:845
 #: ../src/libs/filtering.c:927
 msgid "files"
 msgstr "archivos"
 
-#: ../src/libs/collect.c:2960 ../src/libs/export_metadata.c:310
+#: ../src/libs/collect.c:2956 ../src/libs/export_metadata.c:310
 #: ../src/libs/filtering.c:850 ../src/libs/filtering.c:932
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "metadatos"
 
-#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:871
+#: ../src/libs/collect.c:2975 ../src/libs/filtering.c:871
 #: ../src/libs/filtering.c:953
 msgid "times"
 msgstr "periodos"
 
-#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:879
+#: ../src/libs/collect.c:2983 ../src/libs/filtering.c:879
 #: ../src/libs/filtering.c:961
 msgid "capture details"
 msgstr "detalles de la captura"
 
-#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:888
+#: ../src/libs/collect.c:2992 ../src/libs/filtering.c:888
 #: ../src/libs/filtering.c:970 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:3009
+#: ../src/libs/collect.c:3005
 msgid "collections settings"
 msgstr "Parámetros de las colecciones"
 
-#: ../src/libs/collect.c:3012 ../src/libs/export_metadata.c:288
+#: ../src/libs/collect.c:3008 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1649
 #: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
@@ -19849,34 +19829,32 @@ msgstr "Parámetros de las colecciones"
 msgid "save"
 msgstr "guardar"
 
-#: ../src/libs/collect.c:3032 ../src/libs/export.c:1059
+#: ../src/libs/collect.c:3028 ../src/libs/export.c:1059
 #: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1298
 #: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3495
 msgid "preferences..."
 msgstr "preferencias"
 
-#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1397
+#: ../src/libs/collect.c:3128 ../src/libs/filtering.c:1397
 msgid "AND"
 msgstr "Y"
 
-#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1402
+#: ../src/libs/collect.c:3133 ../src/libs/filtering.c:1402
 msgid "OR"
 msgstr "O"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1407
+#: ../src/libs/collect.c:3138 ../src/libs/filtering.c:1407
 msgid "BUT NOT"
 msgstr "EXCEPTO"
 
-#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1987
-#, fuzzy
+#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:1987
 msgid "revert to a previous set of rules"
-msgstr "revert to a previous set of rules"
+msgstr "volver al conjunto de reglas previo"
 
-#: ../src/libs/collect.c:3371
-#, fuzzy
+#: ../src/libs/collect.c:3367
 msgid "jump back to previous collection"
-msgstr "retroceder a la colección anterior"
+msgstr "volver a la colección anterior"
 
 #: ../src/libs/colorpicker.c:51
 msgid "LCh"
@@ -20453,14 +20431,12 @@ msgid "delete metadata tag"
 msgstr "Eliminar etiqueta de los metadatos"
 
 #: ../src/libs/filtering.c:240
-#, fuzzy
 msgid "collection filters"
-msgstr "colección"
+msgstr "filtros en la colección"
 
 #: ../src/libs/filtering.c:273
-#, fuzzy
 msgid "initial setting"
-msgstr "puntuación inicial"
+msgstr "configuración inicial"
 
 #: ../src/libs/filtering.c:292
 msgid "imported: last 24h"
@@ -20489,9 +20465,8 @@ msgid "right-click opens a menu to select the available values"
 msgstr "right-click opens a menu to select the available values"
 
 #: ../src/libs/filtering.c:657
-#, fuzzy
 msgid "actual selection"
-msgstr "Despejar selección"
+msgstr "Selección actual"
 
 #: ../src/libs/filtering.c:918
 #, fuzzy
@@ -20504,9 +20479,8 @@ msgstr ""
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:925
-#, fuzzy
 msgid "rule property"
-msgstr "propiedades"
+msgstr "propiedades de la regla"
 
 #: ../src/libs/filtering.c:1018
 msgctxt "quickfilter"
@@ -20514,28 +20488,28 @@ msgid "filter"
 msgstr "filtro"
 
 #: ../src/libs/filtering.c:1044
-#, fuzzy
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "click to un-pin"
 msgstr ""
-"this rule is pinned into the top toolbar\n"
-"click to un-pin"
+"Esta regla está anclada en la barra de herramientas superior.\n"
+"Pulse para desanclar."
 
 #: ../src/libs/filtering.c:1045
-#, fuzzy
 msgid "you can't disable the rule as it is pinned into the toolbar"
-msgstr "you can't disable the rule as it is pinned into the toolbar"
+msgstr ""
+"No se puede desactivar la regla mientras esté anclada en la barra de "
+"herramientas"
 
 #: ../src/libs/filtering.c:1046
-#, fuzzy
 msgid "you can't remove the rule as it is pinned into the toolbar"
-msgstr "you can't remove the rule as it is pinned into the toolbar"
+msgstr ""
+"No se puede eliminar la regla mientras esté anclada en la barra de "
+"herramientas"
 
 #: ../src/libs/filtering.c:1050
-#, fuzzy
 msgid "click to pin this rule into the top toolbar"
-msgstr "click to pin this rule into the top toolbar"
+msgstr "Pulse para anclar esta regla en la barra de herramientas superior"
 
 #: ../src/libs/filtering.c:1051
 #, fuzzy
@@ -20596,9 +20570,8 @@ msgid "ASC"
 msgstr "Ascendente"
 
 #: ../src/libs/filtering.c:1983
-#, fuzzy
 msgid "new rule"
-msgstr "nuevo preajuste"
+msgstr "nueva regla"
 
 #: ../src/libs/filtering.c:1984
 #, fuzzy
@@ -20688,12 +20661,10 @@ msgstr ""
 "existentes."
 
 #: ../src/libs/filters/filename.c:376
-#, fuzzy
 msgid "extension"
-msgstr "exclusión"
+msgstr "extensión"
 
 #: ../src/libs/filters/filename.c:377
-#, fuzzy
 msgid ""
 "enter extension to search with starting dot\n"
 "multiple values can be separated by ','\n"
@@ -20701,29 +20672,27 @@ msgid ""
 "\n"
 "right-click to get existing extensions"
 msgstr ""
-"enter extension to search with starting dot\n"
-"multiple values can be separated by ','\n"
-"handled keywords: 'RAW', 'NOT RAW', 'LDR', 'HDR'\n"
+"Ingrese la extensión para buscar con el punto inicial.\n"
+"Se pueden separar diferentes valores con ','\n"
+"Palabras clave admitidas: \"RAW\", \"NOT RAW\", \"LDR\", \"HDR\"\n"
 "\n"
-"right-click to get existing extensions"
+"Pulse el botón secundario para obtener las extensiones existentes."
 
 #: ../src/libs/filters/filename.c:405
-#, fuzzy
 msgid ""
 "simple click to select filename\n"
 "ctrl-click to select multiple values"
 msgstr ""
-"simple click to select filename\n"
-"ctrl-click to select multiple values"
+"Pulse para seleccionar el nombre del archivo.\n"
+"Use Ctrl+Clic para seleccionar varios elementos."
 
 #: ../src/libs/filters/filename.c:432
-#, fuzzy
 msgid ""
 "simple click to select extension\n"
 "ctrl-click to select multiple values"
 msgstr ""
-"simple click to select extension\n"
-"ctrl-click to select multiple values"
+"Pulse para seleccionar la extensión.\n"
+"Use Ctrl+Clic para seleccionar varios elementos."
 
 #: ../src/libs/filters/grouping.c:141 ../src/libs/filters/grouping.c:169
 msgid "ungrouped images"
@@ -20751,38 +20720,32 @@ msgid "history filter"
 msgstr "filtro del historial de acciones"
 
 #: ../src/libs/filters/history.c:153
-#, fuzzy
 msgid "filter on history state"
-msgstr "truncar la pila de la historia"
+msgstr "Filtrar por el estado del historial"
 
 #: ../src/libs/filters/local_copy.c:142
-#, fuzzy
 msgid "local_copy filter"
-msgstr "Copia local de las imágenes"
+msgstr "filtro por copia local"
 
 #: ../src/libs/filters/local_copy.c:142
-#, fuzzy
 msgid "local copied state filter"
-msgstr "filtro laplaciano local"
+msgstr "Filtrar por el estado de copiado local"
 
 #: ../src/libs/filters/module_order.c:161
-#, fuzzy
 msgid "module order filter"
-msgstr "orden de módulo"
+msgstr "filtro por orden de módulo"
 
 #: ../src/libs/filters/module_order.c:161
-#, fuzzy
 msgid "filter images based on their module order"
-msgstr "filter images based on their module order"
+msgstr "Filtrar con base en el orden de los módulos"
 
 #: ../src/libs/filters/rating.c:199
 msgid "comparator"
 msgstr "operador de comparación"
 
 #: ../src/libs/filters/rating.c:200 ../src/libs/filters/rating.c:210
-#, fuzzy
 msgid "filter by images rating"
-msgstr "imágenes filtradas"
+msgstr "filtrar por puntuación de imágenes"
 
 #. create the filter combobox
 #: ../src/libs/filters/rating.c:210 ../src/libs/image.c:544
@@ -20805,68 +20768,56 @@ msgid "all except rejected"
 msgstr "todas excluyendo rechazadas"
 
 #: ../src/libs/filters/rating_range.c:61 ../src/libs/filters/rating_range.c:76
-#, fuzzy
 msgid "not rated only"
-msgstr "sin etiquetar"
+msgstr "únicamente sin puntuar"
 
 #: ../src/libs/filters/rating_range.c:99 ../src/libs/filters/rating_range.c:128
 #: ../src/libs/filters/rating_range.c:133
 #: ../src/libs/filters/rating_range.c:292
-#, fuzzy
 msgid "rejected"
-msgstr "Rechazar"
+msgstr "rechazado"
 
 #: ../src/libs/filters/rating_range.c:101
 #: ../src/libs/filters/rating_range.c:128
 #: ../src/libs/filters/rating_range.c:293
-#, fuzzy
 msgid "not rated"
-msgstr "sin etiquetar"
+msgstr "sin puntuar"
 
 #: ../src/libs/filters/rating_range.c:119
-#, fuzzy
 msgid "only"
-msgstr "solo yo"
+msgstr "únicamente"
 
 #: ../src/libs/filters/rating_range.c:168
-#, fuzzy
 msgid "selected"
-msgstr "seleccionar"
+msgstr "seleccionado"
 
 #: ../src/libs/filters/rating_range.c:286
-#, fuzzy
 msgid "better"
-msgstr "carta"
+msgstr "mejor"
 
 #: ../src/libs/filters/rating_range.c:287
-#, fuzzy
 msgid "worse"
-msgstr "worse"
+msgstr "peor"
 
 #: ../src/libs/filters/rating_range.c:288
-#, fuzzy
 msgid "cap"
-msgstr "mapa"
+msgstr "límite máximo"
 
 #: ../src/libs/filters/rating_range.c:303
-#, fuzzy
 msgid "rating filter"
-msgstr "filtro de calentamiento"
+msgstr "filtro de puntuación"
 
 #: ../src/libs/filters/ratio.c:70 ../src/libs/filters/ratio.c:82
-#, fuzzy
 msgid "portrait images"
-msgstr "exportar imágenes"
+msgstr "imágenes verticales"
 
 #: ../src/libs/filters/ratio.c:71 ../src/libs/filters/ratio.c:83
-#, fuzzy
 msgid "square images"
-msgstr "imágenes admitidas"
+msgstr "imágenes cuadradas"
 
 #: ../src/libs/filters/ratio.c:72 ../src/libs/filters/ratio.c:84
-#, fuzzy
 msgid "landscape images"
-msgstr "Capturar imágenes"
+msgstr "imágenes horizontales"
 
 #: ../src/libs/filters/search.c:180
 #, fuzzy, no-c-format
@@ -21554,9 +21505,8 @@ msgid "please wait while prefetching the list of images from camera..."
 msgstr "Espere mientras se carga la lista de imágenes desde la cámara..."
 
 #: ../src/libs/import.c:1887
-#, fuzzy
 msgid "invalid override date/time format"
-msgstr "invalid override date/time format"
+msgstr "formato de fecha/hora no válido"
 
 #: ../src/libs/import.c:1990
 msgid "add to library..."
@@ -22586,7 +22536,6 @@ msgid "navigation"
 msgstr "navegación"
 
 #: ../src/libs/navigation.c:134
-#, fuzzy
 msgid "hide navigation thumbnail"
 msgstr "ocultar navegación de miniaturas"
 
@@ -22817,7 +22766,6 @@ msgid "clear layout"
 msgstr "borrar disposición"
 
 #: ../src/libs/print_settings.c:2541
-#, fuzzy
 msgid "remove all image areas from the page"
 msgstr "Eliminar toda el área de imagen de la página"
 
@@ -22916,7 +22864,6 @@ msgstr ""
 "diferente del proceso o con otra imagen"
 
 #: ../src/libs/snapshots.c:411
-#, fuzzy
 msgid "toggle last snapshot"
 msgstr "cambiar la última instantánea"
 
@@ -23350,7 +23297,6 @@ msgid "suggestion"
 msgstr "sugerencia"
 
 #: ../src/libs/tagging.c:3282
-#, fuzzy
 msgid "redo last tag"
 msgstr "deshacer el último etiquetado"
 
@@ -23362,9 +23308,8 @@ msgstr ""
 "la vista de la lista"
 
 #: ../src/libs/tagging.c:3470
-#, fuzzy
 msgid "tagging settings"
-msgstr "configuración de la imagen"
+msgstr "configuración de etiquetado"
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -23788,9 +23733,10 @@ msgid "midi"
 msgstr "MIDI"
 
 #: ../src/libs/tools/midi.c:200
-#, fuzzy
 msgid "using absolute encoding; reinitialise to switch to relative"
-msgstr "using absolute encoding; reinitialise to switch to relative"
+msgstr ""
+"Utilizando la codificación absoluta Reinicie para cambiar a la codificación "
+"relativa."
 
 #: ../src/libs/tools/midi.c:204
 #, fuzzy, c-format
@@ -23808,9 +23754,8 @@ msgstr "lista de módulos"
 
 #. connect callbacks
 #: ../src/libs/tools/ratings.c:98
-#, fuzzy
 msgid "set star rating for selected images"
-msgstr "Establecer los metadatos en las imágenes seleccionadas"
+msgstr "Establecer la puntuación en las imágenes seleccionadas"
 
 #: ../src/libs/tools/timeline.c:102
 msgid "timeline"
