@@ -1,20 +1,23 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2021 darktable developers.
+    Copyright (C) 2021-2022 darktable developers.
+
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
+
     darktable is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "bauhaus/bauhaus.h"
-#include "common/colorspaces.c"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/imageio.h"
@@ -23,62 +26,47 @@
 
 #include "jxl/encode.h"
 #include "jxl/resizable_parallel_runner.h"
-#include "jxl/thread_parallel_runner.h"
 
 DT_MODULE(1)
 
-
-
-#define CONF_PREFIX "plugins/imageio/format/jxl/"
-
-
-
-/*
--------- MODULE INFO --------
-*/
-
-
-typedef struct dt_imageio_jxl_params_t
+typedef struct dt_imageio_jxl_t
 {
   dt_imageio_module_data_t global;
-  gboolean lossless;
-  float quality;
-  int encoding_effort;
-  int decoding_effort;
-} dt_imageio_jxl_params_t;
+  int bpp;
+  int quality;
+  int effort;
+  int tier;
+} dt_imageio_jxl_t;
 
 typedef struct dt_imageio_jxl_gui_data_t
 {
-  // Boolean: is output lossless
-  GtkWidget *lossless;
-  // Float (0.0-15.0): if lossy, the quality of the image. 0 = extremely lossy, 14 = visually lossless, 15 =
-  // lossless.
+  // Int (0: 8b, 1: 10b, 2:12b, 3:16b, 4:half, 5:float)
+  GtkWidget *bpp;
+  // Int (0-100): the quality of the image, roughly corresponding to JPEG quality (100 is lossless)
   GtkWidget *quality;
-  // Int (1-9): effort with which to encode output. 1 = low quality, 9 = high quality.
-  GtkWidget *encoding_effort;
-  // Int (0-4): effort required to decode output. 0 = fast, 4 = slow.
-  GtkWidget *decoding_effort;
+  // Int (1-9): effort with which to encode output, higher is slower (default is 7)
+  GtkWidget *effort;
+  // Int (0-4): higher value favors decoding speed vs quality (default is 0)
+  GtkWidget *tier;
 } dt_imageio_jxl_gui_data_t;
-
 
 
 void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
-  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_params_t, lossless, gboolean);
+  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_t, bpp, int);
 
-  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_params_t, quality, float);
+  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_t, quality, int);
 
-  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_params_t, encoding_effort, int);
+  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_t, effort, int);
 
-  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_params_t, decoding_effort, int);
+  dt_lua_register_module_member(darktable.lua_state.state, self, dt_imageio_jxl_t, tier, int);
 #endif
 }
 
 void cleanup(dt_imageio_module_format_t *self)
 {
 }
-
 
 
 const char *mime(dt_imageio_module_data_t *data)
@@ -95,123 +83,14 @@ int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_
               uint32_t *height)
 {
   // The maximum dimensions supported by jxl images
-  *width = 1073741823;
-  *height = 1073741823;
+  *width = 1073741823U;
+  *height = 1073741823U;
   return 1;
 }
 
 int bpp(dt_imageio_module_data_t *data)
 {
-  // 32 bytes per pixel
-  return 32;
-}
-
-
-
-/*
--------- IMAGE WRITING --------
-*/
-
-// Note: We include our own code to write the jxl codestream within a BMFF container.
-// JXL images can either be naked (just the codestream) or wrapped in a BMFF container.
-// libjxl can write the codestream in a container for you, but it doesn't have options for
-// including other "boxes" such as exif data, so we will manage the BMFF container ourselves.
-
-int write_32(FILE *stream, const uint32_t num)
-{
-  uint32_t be;
-
-  // Need to ensure that the number is in big endian format
-  uint8_t *buf = (uint8_t *)&be;
-  buf[0] = (num >> 24) & 0xFF;
-  buf[1] = (num >> 16) & 0xFF;
-  buf[2] = (num >> 8) & 0xFF;
-  buf[3] = (num >> 0) & 0xFF;
-
-  if(fwrite(buf, 4, 1, stream) != 1) return 1; // failure writing to file
-  return 0;
-}
-
-int write_64(FILE *stream, const uint64_t num)
-{
-  uint64_t be;
-
-  // Need to ensure that the number is in big endian format
-  uint8_t *buf = (uint8_t *)&be;
-  buf[0] = (num >> 56) & 0xFF;
-  buf[1] = (num >> 48) & 0xFF;
-  buf[2] = (num >> 40) & 0xFF;
-  buf[3] = (num >> 32) & 0xFF;
-  buf[4] = (num >> 24) & 0xFF;
-  buf[5] = (num >> 16) & 0xFF;
-  buf[6] = (num >> 8) & 0xFF;
-  buf[7] = (num >> 0) & 0xFF;
-
-  if(fwrite(buf, 8, 1, stream) != 1) return 1; // failure writing to file
-  return 0;
-}
-
-int write_box(FILE *stream, const uint8_t *type, const uint8_t *data, const uint64_t data_len)
-{
-  uint64_t box_len = 0;
-  box_len += 4; // The size of the "size" field - 4 bytes
-  box_len += 4; // The size of the "type" field - 4 bytes
-  box_len += data_len;
-
-  // can we fit the data length into a 32 bit unsigned integer?
-  const gboolean large = box_len > 0xFFFFFFFF;
-  if(large) box_len += 8; // The size of the "largesize" field - 8 bytes
-
-  if(write_32(stream, large ? 1 : box_len)) return 1;
-
-  if(fwrite(type, 4, 1, stream) != 1) return 1; // failure writing to file
-
-  if(large)
-  {
-    if(write_64(stream, box_len)) return 1;
-  }
-
-  // If data is null then the caller wants to write the data itself (or there is no data)
-  if(data)
-  {
-    if(fwrite(data, data_len, 1, stream) != 1) return 1; // failure writing to file
-  }
-  return 0;
-}
-
-// Write a BMFF header for a JXL file
-int write_container_header(FILE *stream)
-{
-  const uint8_t *signature_type = (uint8_t *)"JXL ";
-  const uint8_t signature[4] = { 0xd, 0xa, 0x87, 0xa };
-  if(write_box(stream, signature_type, (uint8_t *)&signature, 4)) return 1;
-
-  const uint8_t *ftyp_type = (uint8_t *)"ftyp";
-  // first 4 bytes: major brand (jxl )
-  // second 4 bytes: minor version (0)
-  // third 4 bytes: compatible brands (jxl )
-  const uint8_t *ftyp = (uint8_t *)"jxl \0\0\0\0jxl ";
-  if(write_box(stream, ftyp_type, ftyp, 12)) return 1;
-  return 0;
-}
-
-int write_container_codestream(FILE *stream, const uint8_t *codestream, const uint64_t codestream_len)
-{
-  const uint8_t *codestream_type = (uint8_t *)"jxlc";
-  if(write_box(stream, codestream_type, codestream, codestream_len)) return 1;
-  return 0;
-}
-
-int write_container_exif(FILE *stream, const uint8_t *exif, const uint64_t exif_len)
-{
-  const uint8_t *exif_type = (uint8_t *)"Exif";
-  const uint64_t data_len = 4 + exif_len; // add space for offset
-  if(write_box(stream, exif_type, NULL, data_len)) return 1;
-
-  write_32(stream, 0); // offset
-  if(fwrite(exif, exif_len, 1, stream) != 1) return 1;
-
-  return 0;
+  return 32; /* always request float */
 }
 
 
@@ -219,41 +98,105 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename, void *exif, int exif_len,
                 int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
 {
-  // By default error code
-  int out = 1;
+  // Return error code by default
+  int ret = 1;
 
-  const float *in = (float *)in_tmp;
   float *pixels = NULL;
   uint8_t *out_buf = NULL;
   FILE *out_file = NULL;
+  uint8_t *icc_buf = NULL;
+  uint8_t *exif_buf = NULL;
+  char *xmp_string = NULL;
 
 #define LIBJXL_ASSERT(code)                                                                                       \
   {                                                                                                               \
-    const JxlEncoderStatus res = code;                                                                            \
-    if(res != JXL_ENC_SUCCESS)                                                                                    \
+    if((JxlEncoderStatus)code != JXL_ENC_SUCCESS)                                                                 \
     {                                                                                                             \
-      fprintf(stderr, "JXL: libjxl call failed with err %d (src/imageio/format/jxl.c#L%d)\n", res, __LINE__);     \
+      JxlEncoderError err = JxlEncoderGetError(encoder);                                                          \
+      dt_print(DT_DEBUG_IMAGEIO, "[jxl] libjxl call failed with err %d (src/imageio/format/jxl.c#L%d)\n", err,    \
+               __LINE__);                                                                                         \
       goto end;                                                                                                   \
     }                                                                                                             \
   }
 
 #define JXL_FAIL(msg, ...)                                                                                        \
   {                                                                                                               \
-    fprintf(stderr, "JXL: " msg "\n", ##__VA_ARGS__);                                                             \
+    dt_print(DT_DEBUG_IMAGEIO, "[jxl] " msg "\n", ##__VA_ARGS__);                                                 \
     goto end;                                                                                                     \
   }
 
-  const dt_imageio_jxl_params_t *params = (dt_imageio_jxl_params_t *)data;
-  const int width = params->global.width;
-  const int height = params->global.height;
+  const dt_imageio_jxl_t *params = (dt_imageio_jxl_t *)data;
+  const uint32_t width = (uint32_t)params->global.width;
+  const uint32_t height = (uint32_t)params->global.height;
 
   JxlEncoder *encoder = JxlEncoderCreate(NULL);
+  LIBJXL_ASSERT(JxlEncoderSetCodestreamLevel(encoder, 10));
 
-  // JxlThreadParallelRunnerDefaultNumWorkerThreads()
   const uint32_t num_threads = JxlResizableParallelRunnerSuggestThreads(width, height);
-  void *runner = JxlThreadParallelRunnerCreate(NULL, num_threads);
-  LIBJXL_ASSERT(JxlEncoderSetParallelRunner(encoder, JxlThreadParallelRunner, runner));
+  void *runner = JxlResizableParallelRunnerCreate(NULL);
+  if(!runner) JXL_FAIL("could not create resizable parallel runner");
+  JxlResizableParallelRunnerSetThreads(runner, num_threads);
+  LIBJXL_ASSERT(JxlEncoderSetParallelRunner(encoder, JxlResizableParallelRunner, runner));
 
+  // Automatically freed when we destroy the encoder
+  JxlEncoderFrameSettings *frame_settings = JxlEncoderFrameSettingsCreate(encoder, NULL);
+
+  // Set encoder basic info
+  JxlBasicInfo basic_info;
+  JxlEncoderInitBasicInfo(&basic_info);
+  basic_info.xsize = width;
+  basic_info.ysize = height;
+  switch(params->bpp)
+  {
+    case 0:
+      basic_info.bits_per_sample = 8;
+      basic_info.exponent_bits_per_sample = 0;
+      break;
+    case 1:
+      basic_info.bits_per_sample = 10;
+      basic_info.exponent_bits_per_sample = 0;
+      break;
+    case 2:
+      basic_info.bits_per_sample = 12;
+      basic_info.exponent_bits_per_sample = 0;
+      break;
+    case 3:
+      basic_info.bits_per_sample = 16;
+      basic_info.exponent_bits_per_sample = 0;
+      break;
+    case 4:
+      basic_info.bits_per_sample = 16;
+      basic_info.exponent_bits_per_sample = 5;
+      break;
+    default:
+      basic_info.bits_per_sample = 32;
+      basic_info.exponent_bits_per_sample = 8;
+      break;
+  }
+  // Lossless only makes sense for integer modes
+  if(basic_info.exponent_bits_per_sample == 0 && params->quality == 100)
+  {
+    // Must preserve original profile for lossless mode
+    basic_info.uses_original_profile = JXL_TRUE;
+    LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, 0.0f));
+    LIBJXL_ASSERT(JxlEncoderSetFrameLossless(frame_settings, JXL_TRUE));
+  }
+  else
+  {
+    basic_info.uses_original_profile = JXL_FALSE;
+    float distance = params->quality >= 30 ? 0.1f + (100 - params->quality) * 0.09f
+                                           : 6.4f + powf(2.5f, (30 - params->quality) / 5.0f) / 6.25f;
+    LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, distance));
+  }
+
+  LIBJXL_ASSERT(JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_EFFORT, params->effort));
+
+  LIBJXL_ASSERT(
+      JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_DECODING_SPEED, params->tier));
+
+  LIBJXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
+
+  // Determine and set the encoder color space
   const dt_colorspaces_color_profile_t *output_profile
       = dt_colorspaces_get_output_profile(imgid, over_type, over_filename);
   const cmsHPROFILE out_profile = output_profile->profile;
@@ -261,7 +204,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // (not what the user requested in the export menu but what the image is actually using)
   over_type = output_profile->type;
 
-  // If possible we want libjxl to save the color encoding in it's own format, rather
+  // If possible we want libjxl to save the color encoding in its own format, rather
   // than as an ICC binary blob which is possible.
   // If we are unable to find the required color encoding data for libjxl we will
   // just fallback to providing an ICC blob (and hope we can at least do that!).
@@ -272,8 +215,8 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   // TODO: safe to simply put pipe->icc_intent here?
   color_encoding.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
 
-  // Attempt to find the whitepoint, primaries and transfer function
-  // If we can't find any of these we fall back to ICC binary
+  // Attempt to find and set the known white point, primaries and transfer function.
+  // If we can't find any of these we fall back to an ICC binary blob.
   switch(over_type)
   {
     case DT_COLORSPACE_SRGB:
@@ -281,10 +224,26 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
       color_encoding.primaries = JXL_PRIMARIES_SRGB;
       color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_SRGB;
       break;
+    case DT_COLORSPACE_LIN_REC709:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_SRGB;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+      break;
     case DT_COLORSPACE_LIN_REC2020:
       color_encoding.white_point = JXL_WHITE_POINT_D65;
       color_encoding.primaries = JXL_PRIMARIES_2100;
       color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+      break;
+    // TODO: enable when JXL_PRIMARIES_XYZ are added to libjxl
+    //  case DT_COLORSPACE_XYZ:
+    //    color_encoding.white_point = JXL_WHITE_POINT_E;
+    //    color_encoding.primaries = JXL_PRIMARIES_XYZ;
+    //    color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
+    //    break;
+    case DT_COLORSPACE_REC709:
+      color_encoding.white_point = JXL_WHITE_POINT_D65;
+      color_encoding.primaries = JXL_PRIMARIES_SRGB;
+      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_709;
       break;
     case DT_COLORSPACE_PQ_REC2020:
       color_encoding.white_point = JXL_WHITE_POINT_D65;
@@ -295,16 +254,6 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
       color_encoding.white_point = JXL_WHITE_POINT_D65;
       color_encoding.primaries = JXL_PRIMARIES_2100;
       color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_HLG;
-      break;
-    case DT_COLORSPACE_REC709:
-      color_encoding.white_point = JXL_WHITE_POINT_D65;
-      color_encoding.primaries = JXL_PRIMARIES_SRGB;
-      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_709;
-      break;
-    case DT_COLORSPACE_LIN_REC709:
-      color_encoding.white_point = JXL_WHITE_POINT_D65;
-      color_encoding.primaries = JXL_PRIMARIES_SRGB;
-      color_encoding.transfer_function = JXL_TRANSFER_FUNCTION_LINEAR;
       break;
     case DT_COLORSPACE_PQ_P3:
       color_encoding.white_point = JXL_WHITE_POINT_D65;
@@ -328,371 +277,328 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   else
   {
     // If we didn't manage to write the color encoding natively we need to fallback to ICC
-    fprintf(stdout, "JXL: Could not generate color encoding data, falling back to ICC binary\n");
+    dt_print(DT_DEBUG_IMAGEIO, "[jxl] could not generate color encoding structure, falling back to ICC\n");
 
-    cmsUInt32Number size = 0;
-    unsigned char *icc_buf = NULL;
-    // First find the size of the icc buffer
-    if(!cmsSaveProfileToMem(out_profile, NULL, &size)) JXL_FAIL("Error finding ICC data length");
+    cmsUInt32Number icc_size = 0;
+    // First find the size of the ICC buffer
+    if(!cmsSaveProfileToMem(out_profile, NULL, &icc_size)) JXL_FAIL("error finding ICC data length");
+    if(icc_size > 0) icc_buf = g_malloc(icc_size);
+    if(!icc_buf) JXL_FAIL("could not allocate ICC buffer of size %u", icc_size);
 
-    icc_buf = malloc(size);
-    if(!icc_buf) JXL_FAIL("Could not allocate ICC buffer of length %u", size);
+    // Fill the ICC buffer
+    if(!cmsSaveProfileToMem(out_profile, icc_buf, &icc_size)) JXL_FAIL("error writing ICC data");
 
-    // Fill the icc buffer
-    if(!cmsSaveProfileToMem(out_profile, icc_buf, &size)) JXL_FAIL("Error writing ICC data");
-
-    LIBJXL_ASSERT(JxlEncoderSetICCProfile(encoder, icc_buf, size));
-    free(icc_buf);
+    LIBJXL_ASSERT(JxlEncoderSetICCProfile(encoder, icc_buf, icc_size));
   }
 
-  JxlBasicInfo basic_info;
-  JxlEncoderInitBasicInfo(&basic_info);
-  basic_info.have_container = JXL_FALSE;
-  basic_info.xsize = width;
-  basic_info.ysize = height;
-  basic_info.bits_per_sample = 32;
-  basic_info.exponent_bits_per_sample = 8;
-  basic_info.intensity_target = 255.f;
-  basic_info.min_nits = 0.f;
-  basic_info.relative_to_max_display = JXL_FALSE;
-  basic_info.linear_below = 0.f;
-  basic_info.uses_original_profile = JXL_TRUE;
-  basic_info.have_preview = JXL_FALSE;
-  basic_info.have_animation = JXL_FALSE;
-  basic_info.orientation = JXL_ORIENT_IDENTITY;
-  basic_info.num_color_channels = 3;
-  basic_info.num_extra_channels = 0;
-  basic_info.alpha_bits = 0;
-  basic_info.alpha_exponent_bits = 0;
-  basic_info.alpha_premultiplied = JXL_FALSE;
-  LIBJXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
+  // We assume that the user wants the JXL image in a BMFF container.
+  // JXL images can be stored without any container so they are smaller, but
+  // this removes the possibility of storing extra metadata like Exif and XMP.
+  LIBJXL_ASSERT(JxlEncoderUseBoxes(encoder));
 
-  // We assume that the user wants the JXL image in a bmff container.
-  // JXL images can be stored without any container so they are smaller, but this
-  // removes the possibility of storing extra data like exif.
-  // It is not likely darktable users exporting images care so much about this
-  // small size improvement, and more likely they want to store exif data.
-  // HOWEVER - We do not want libjxl to write the image in a container, we will
-  // do that ourselves. This gives us the control to be able to add our own
-  // sections (e.g. exif data).
-  LIBJXL_ASSERT(JxlEncoderUseContainer(encoder, JXL_FALSE));
-
-  // automatically freed when we destroy the encoder
-  JxlEncoderOptions *options = JxlEncoderOptionsCreate(encoder, NULL);
-  LIBJXL_ASSERT(JxlEncoderOptionsSetLossless(options, params->lossless ? JXL_TRUE : JXL_FALSE));
-
-  int decode_effort = params->decoding_effort;
-  // We store decoding effort but jxl wants encoding speed, we must reverse it
-  decode_effort = (decode_effort - 4) * -1;
-  LIBJXL_ASSERT(JxlEncoderOptionsSetDecodingSpeed(options, decode_effort));
-
-  const int encode_effort = params->encoding_effort;
-  LIBJXL_ASSERT(JxlEncoderOptionsSetEffort(options, encode_effort));
-
-  int quality = params->quality;
-  // We store quality but jxl wants distance, so we reverse the scale
-  quality = (quality - 15) * -1;
-  LIBJXL_ASSERT(JxlEncoderOptionsSetDistance(options, quality));
-
-  const int channels = 3;
-  JxlPixelFormat pixel_format = { channels, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 1 };
+  JxlPixelFormat pixel_format = { 3, JXL_TYPE_FLOAT, JXL_NATIVE_ENDIAN, 0 };
 
   // Fix pixel stride
-  const size_t in_buf_size = width * height * channels * sizeof(float);
-  pixels = malloc(in_buf_size);
-  if(!pixels) JXL_FAIL("Could not allocate pixel buffer of size %zu", in_buf_size);
-  for(int y = 0; y < height; y++)
+  const size_t pixels_size = width * height * 3 * sizeof(float);
+  pixels = g_malloc(pixels_size);
+  if(!pixels) JXL_FAIL("could not allocate output pixel buffer of size %zu", pixels_size);
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) dt_omp_firstprivate(in_tmp, pixels, width, height) schedule(simd      \
+                                                                                                        : static) \
+    collapse(2)
+#endif
+  for(uint32_t y = 0; y < height; ++y)
   {
-    for(int x = 0; x < width; x++)
+    for(uint32_t x = 0; x < width; ++x)
     {
-      const float *in_pixel = &in[((y * width) + x) * 4];
-      float *pixel = &pixels[(y * width * channels) + (x * channels)];
-      for(int k = 0; k < channels; k++) pixel[k] = in_pixel[k];
+      const float *in_pixel = (const float *)in_tmp + 4 * ((y * width) + x);
+      float *out_pixel = pixels + 3 * ((y * width) + x);
+
+      out_pixel[0] = in_pixel[0];
+      out_pixel[1] = in_pixel[1];
+      out_pixel[2] = in_pixel[2];
     }
   }
 
-  LIBJXL_ASSERT(JxlEncoderAddImageFrame(options, &pixel_format, pixels, in_buf_size));
+  LIBJXL_ASSERT(JxlEncoderAddImageFrame(frame_settings, &pixel_format, pixels, pixels_size));
+
+  // Add the Exif data if it exists
+  if(exif && exif_len > 6)
+  {
+    // Prepend the 4 byte (zero) offset to the blob before writing
+    // (as required in the equivalent HEIF/JPEG XS Exif box specs).
+    // Also skip the 6-byte "Exif\000\000" JPEG APP1 header
+    // dt_exif_read_blob() assumes.
+    exif_buf = g_malloc0(exif_len - 6 + 4);
+    if(!exif_buf) JXL_FAIL("could not allocate Exif buffer of size %zu", (size_t)(exif_len - 6 + 4));
+    memmove(exif_buf + 4, exif + 6, exif_len - 6);
+    // Exiv2 doesn't support compressed boxes
+    LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "Exif", exif_buf, exif_len - 6 + 4, JXL_FALSE));
+  }
+
+  /* TODO: workaround; remove when exiv2 implements JXL BMFF write support and update flags() */
+  xmp_string = dt_exif_xmp_read_string(imgid);
+  size_t xmp_len;
+  if(xmp_string && (xmp_len = strlen(xmp_string)) > 0)
+  {
+    // Exiv2 doesn't support compressed boxes
+    LIBJXL_ASSERT(JxlEncoderAddBox(encoder, "xml ", (const uint8_t *)xmp_string, xmp_len, JXL_FALSE));
+  }
+
+  // No more image frames nor metadata boxes to add
   JxlEncoderCloseInput(encoder);
 
-
-  // Write the image codestream to a buffer. We write the image in chunks of 50,000 bytes.
-  // fixme: Can we better estimate what the optimal size of chunks is for this image?
-  const size_t chunkSize = 50000;
-  out_buf = malloc(chunkSize);
-  if(!out_buf) JXL_FAIL("Could not allocate codestream chunk of size %zu", chunkSize);
+  // Write the image codestream to a buffer, starting with a chunk of 64 KiB.
+  // TODO: Can we better estimate what the optimal size of chunks is for this image?
+  size_t chunk_size = 1 << 16;
+  size_t out_len = chunk_size;
+  out_buf = g_malloc(out_len);
+  if(!out_buf) JXL_FAIL("could not allocate codestream buffer of size %zu", out_len);
   uint8_t *out_cur = out_buf;
-  size_t out_len = chunkSize;
+  size_t out_avail = out_len;
 
   JxlEncoderStatus out_status = JXL_ENC_NEED_MORE_OUTPUT;
-
   while(out_status == JXL_ENC_NEED_MORE_OUTPUT)
   {
-    size_t out_avail = out_buf + out_len - out_cur;
-
     out_status = JxlEncoderProcessOutput(encoder, &out_cur, &out_avail);
-
-    // out_cur is incremented by the amount written and out_avail is decremented by the same amount
 
     if(out_status == JXL_ENC_NEED_MORE_OUTPUT)
     {
-      // Make sure there is still enough available space
-      if(out_avail < chunkSize / 2)
+      const size_t offset = out_cur - out_buf;
+      if(chunk_size < 1 << 20) chunk_size *= 2;
+      out_len += chunk_size;
+      out_buf = g_realloc(out_buf, out_len);
+      if(!out_buf)
       {
-        const size_t offset = out_cur - out_buf;
-        out_len += chunkSize - out_avail;
-        out_buf = realloc(out_buf, out_len);
-        if(!out_buf) JXL_FAIL("Could not reallocate codestream chunk to size %zu", out_len);
-        out_cur = out_buf + offset;
+        JXL_FAIL("could not reallocate codestream buffer to size %zu", out_len);
+        goto end;
       }
-    }
-    else if(out_status != JXL_ENC_SUCCESS)
-    {
-      // out_status should be an error: force it to be processed
-      LIBJXL_ASSERT(out_status);
-      // just to let the compiler know that we will goto end (even though it
-      // should happen anyway in the assertion)
-      goto end;
+      out_cur = out_buf + offset;
+      out_avail = out_len - offset;
     }
   }
+  LIBJXL_ASSERT(out_status);
+  // Update actual length of codestream written
+  out_len = out_cur - out_buf;
 
+  // Write codestream contents to file
   out_file = g_fopen(filename, "wb");
-  if(!out_file) JXL_FAIL("Could not open output file '%s'", filename);
+  if(!out_file) JXL_FAIL("could not open output file `%s'", filename);
 
-  // Now we need to write the bmff container, starting with the header
-  if(write_container_header(out_file)) JXL_FAIL("Error writing BMFF container header");
+  if(fwrite(out_buf, sizeof(uint8_t), out_len, out_file) != out_len)
+    JXL_FAIL("could not write bytes to `%s'", filename);
 
-  // Write the image codestream (the output from libjxl)
-  if(write_container_codestream(out_file, out_buf, out_len)) JXL_FAIL("Error writing codestream to output file");
-
-  // Write the exif data if it exists
-  if(exif)
-  {
-    if(write_container_exif(out_file, exif, exif_len)) JXL_FAIL("Error writing EXIF data to output file");
-  }
-
-  // Successful write: set to success code
-  out = 0;
+  // Finally, successful write: set to success code
+  ret = 0;
 
 end:
-  if(runner) JxlThreadParallelRunnerDestroy(runner);
+  if(runner) JxlResizableParallelRunnerDestroy(runner);
   if(encoder) JxlEncoderDestroy(encoder);
   if(out_file) fclose(out_file);
-  if(out_buf) free(out_buf);
-  if(pixels) free(pixels);
+  g_free(pixels);
+  g_free(icc_buf);
+  g_free(exif_buf);
+  g_free(xmp_string);
+  g_free(out_buf);
 
-  return out;
+  return ret;
 }
 
 int levels(dt_imageio_module_data_t *data)
 {
-  return IMAGEIO_INT32 | IMAGEIO_FLOAT | IMAGEIO_RGB;
+  return IMAGEIO_RGB | IMAGEIO_FLOAT;
 }
 
 int flags(dt_imageio_module_data_t *data)
 {
-  // fixme: For now exiv2 does not support writing to bmff containers.
-  // Uncomment when that is no longer the case.
-  // return FORMAT_FLAGS_SUPPORT_XMP;
-  return 0;
+  /*
+   * As of exiv2 0.27.5 there is no write support for the JXL BMFF format,
+   * so we do not return the XMP supported flag currently.
+   * Once exiv2 write support is there, the flag can be returned, and the
+   * direct XMP embedding workaround using JxlEncoderAddBox("xml ") above
+   * can be removed.
+   */
+  return 0; /* FORMAT_FLAGS_SUPPORT_XMP; */
 }
-
-
-
-/*
--------- PARAMS --------
-*/
 
 
 size_t params_size(dt_imageio_module_format_t *self)
 {
-  return sizeof(dt_imageio_jxl_params_t);
+  return sizeof(dt_imageio_jxl_t);
 }
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jxl_params_t *params = calloc(1, sizeof(dt_imageio_jxl_params_t));
+  dt_imageio_jxl_t *d = g_malloc0(sizeof(dt_imageio_jxl_t));
 
-  if(params == NULL)
-  {
-    return NULL;
-  }
+  if(!d) return NULL;
 
-  params->lossless = dt_conf_get_bool(CONF_PREFIX "lossless");
+  d->bpp = dt_conf_get_int("plugins/imageio/format/jxl/bpp");
 
-  params->quality = dt_conf_get_float(CONF_PREFIX "quality");
+  d->quality = dt_conf_get_int("plugins/imageio/format/jxl/quality");
 
-  params->encoding_effort = dt_conf_get_int(CONF_PREFIX "encoding_effort");
+  d->effort = dt_conf_get_int("plugins/imageio/format/jxl/effort");
 
-  params->decoding_effort = dt_conf_get_int(CONF_PREFIX "decoding_effort");
+  d->tier = dt_conf_get_int("plugins/imageio/format/jxl/tier");
 
-  return params;
+  return d;
 }
 
 void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
-  free(params);
+  g_free(params);
 }
 
-int set_params(dt_imageio_module_format_t *self, const void *params_v, const int size)
+int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != self->params_size(self)) return 1;
 
-  const dt_imageio_jxl_params_t *params = (dt_imageio_jxl_params_t *)params_v;
-  dt_imageio_jxl_gui_data_t *gui = (dt_imageio_jxl_gui_data_t *)self->gui_data;
+  const dt_imageio_jxl_t *d = (dt_imageio_jxl_t *)params;
+  dt_imageio_jxl_gui_data_t *g = (dt_imageio_jxl_gui_data_t *)self->gui_data;
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gui->lossless), params->lossless);
+  int bpp = d->bpp;
+  if(bpp < 0)
+    bpp = 0;
+  else if(bpp > 5)
+    bpp = 5;
+  dt_bauhaus_combobox_set(g->bpp, bpp);
 
-  float quality = params->quality;
-  if(quality < 0.0)
-    quality = 0.0;
-  else if(quality > 5.0)
-    quality = 5.0;
-  dt_bauhaus_slider_set(gui->quality, quality);
+  int quality = d->quality;
+  if(quality < 0)
+    quality = 0;
+  else if(quality > 100)
+    quality = 100;
+  dt_bauhaus_slider_set(g->quality, quality);
 
-  int encoding_effort = params->encoding_effort;
-  if(encoding_effort < 1)
-    encoding_effort = 1;
-  else if(encoding_effort > 9)
-    encoding_effort = 9;
-  dt_bauhaus_slider_set(gui->encoding_effort, encoding_effort);
+  int effort = d->effort;
+  if(effort < 1)
+    effort = 1;
+  else if(effort > 9)
+    effort = 9;
+  dt_bauhaus_slider_set(g->effort, effort);
 
-  int decoding_effort = params->decoding_effort;
-  if(decoding_effort < 0)
-    decoding_effort = 0;
-  else if(decoding_effort > 4)
-    decoding_effort = 4;
-  dt_bauhaus_slider_set(gui->decoding_effort, decoding_effort);
+  int tier = d->tier;
+  if(tier < 0)
+    tier = 0;
+  else if(tier > 4)
+    tier = 4;
+  dt_bauhaus_slider_set(g->tier, tier);
 
   return 0;
 }
 
-
-
-/*
--------- GUI --------
-*/
 
 const char *name()
 {
   return _("JPEG XL");
 }
 
-static void lossless_changed(GtkWidget *lossless, dt_imageio_module_format_t *self)
+static void bpp_changed(GtkWidget *bpp, dt_imageio_module_format_t *self)
 {
-  const gboolean is_lossless = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lossless));
-
-  dt_conf_set_bool(CONF_PREFIX "lossless", is_lossless);
-  dt_imageio_jxl_gui_data_t *gui = (dt_imageio_jxl_gui_data_t *)self->gui_data;
-  if(is_lossless == TRUE)
-  {
-    gtk_widget_set_sensitive(gui->quality, FALSE);
-  }
-  else
-  {
-    gtk_widget_set_sensitive(gui->quality, TRUE);
-  }
+  dt_conf_set_int("plugins/imageio/format/jxl/bpp", (int)dt_bauhaus_combobox_get(bpp));
 }
 
 static void quality_changed(GtkWidget *quality, dt_imageio_module_format_t *self)
 {
-  dt_conf_set_int(CONF_PREFIX "quality", (int)dt_bauhaus_slider_get(quality));
+  dt_conf_set_int("plugins/imageio/format/jxl/quality", (int)dt_bauhaus_slider_get(quality));
 }
 
-static void encoding_effort_changed(GtkWidget *encoding_effort, dt_imageio_module_format_t *self)
+static void effort_changed(GtkWidget *effort, dt_imageio_module_format_t *self)
 {
-  dt_conf_set_int(CONF_PREFIX "encoding_effort", (int)dt_bauhaus_slider_get(encoding_effort));
+  dt_conf_set_int("plugins/imageio/format/jxl/effort", (int)dt_bauhaus_slider_get(effort));
 }
 
-static void decoding_effort_changed(GtkWidget *decoding_effort, dt_imageio_module_format_t *self)
+static void tier_changed(GtkWidget *tier, dt_imageio_module_format_t *self)
 {
-  dt_conf_set_float(CONF_PREFIX "decoding_effort", dt_bauhaus_slider_get(decoding_effort));
+  dt_conf_set_int("plugins/imageio/format/jxl/tier", dt_bauhaus_slider_get(tier));
 }
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jxl_gui_data_t *gui = malloc(sizeof(dt_imageio_jxl_gui_data_t));
+  dt_imageio_jxl_gui_data_t *gui = g_malloc0(sizeof(dt_imageio_jxl_gui_data_t));
   if(!gui) return;
   self->gui_data = gui;
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   self->widget = box;
 
-  // lossless checkbox
-  GtkWidget *lossless = gtk_check_button_new_with_label(_("lossless"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lossless), dt_conf_get_bool(CONF_PREFIX "lossless"));
-  gtk_widget_set_tooltip_text(lossless, _("preserve all quality"));
-  g_signal_connect(G_OBJECT(lossless), "clicked", G_CALLBACK(lossless_changed), self);
-  gtk_box_pack_start(GTK_BOX(box), lossless, FALSE, TRUE, 0);
-  gui->lossless = lossless;
+  // bits per sample combobox
+  GtkWidget *bpp = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_combobox_add(bpp, _("8 bit"));
+  dt_bauhaus_combobox_add(bpp, _("10 bit"));
+  dt_bauhaus_combobox_add(bpp, _("12 bit"));
+  dt_bauhaus_combobox_add(bpp, _("16 bit"));
+  dt_bauhaus_combobox_add(bpp, _("16 bit (half)"));
+  dt_bauhaus_combobox_add(bpp, _("32 bit (float)"));
+  dt_bauhaus_combobox_set(bpp, dt_conf_get_int("plugins/imageio/format/jxl/bpp"));
+  dt_bauhaus_widget_set_label(bpp, NULL, N_("bit depth"));
+  g_signal_connect(G_OBJECT(bpp), "value-changed", G_CALLBACK(bpp_changed), self);
+  gtk_box_pack_start(GTK_BOX(box), bpp, TRUE, TRUE, 0);
+  gui->bpp = bpp;
 
-  // lossy distance/quality slider
+  // quality slider
   GtkWidget *quality
-      = dt_bauhaus_slider_new_with_range(NULL, dt_confgen_get_float(CONF_PREFIX "quality", DT_MIN),
-                                         dt_confgen_get_float(CONF_PREFIX "quality", DT_MAX), 0.1,
-                                         dt_confgen_get_float(CONF_PREFIX "quality", DT_DEFAULT), 1.0);
-  dt_bauhaus_slider_set(quality, dt_conf_get_float(CONF_PREFIX "quality"));
+      = dt_bauhaus_slider_new_with_range(NULL, dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_MIN),
+                                         dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_MAX), 1,
+                                         dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_DEFAULT), 0);
+  dt_bauhaus_slider_set(quality, dt_conf_get_int("plugins/imageio/format/jxl/quality"));
   dt_bauhaus_widget_set_label(quality, NULL, _("quality"));
-  gtk_widget_set_tooltip_text(
-      quality,
-      _("the quality of the output image\n0 = very lossy\n14 = visually lossless\n15 = mathematically lossless"));
+  gtk_widget_set_tooltip_text(quality, _("the quality of the output image\n0-29 = very lossy\n30-99 = JPEG "
+                                         "quality comparable\n100 = lossless (integer bith depth only)"));
   g_signal_connect(G_OBJECT(quality), "value-changed", G_CALLBACK(quality_changed), self);
   gtk_box_pack_start(GTK_BOX(box), quality, TRUE, TRUE, 0);
-  // quality should only be available if losslessness is disabled
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lossless)) == TRUE)
-    gtk_widget_set_sensitive(quality, FALSE);
-  else
-    gtk_widget_set_sensitive(quality, TRUE);
   gui->quality = quality;
 
   // encode effort slider
-  GtkWidget *encoding_effort
-      = dt_bauhaus_slider_new_with_range(NULL, dt_confgen_get_int(CONF_PREFIX "encoding_effort", DT_MIN),
-                                         dt_confgen_get_int(CONF_PREFIX "encoding_effort", DT_MAX), 1,
-                                         dt_confgen_get_int(CONF_PREFIX "encoding_effort", DT_DEFAULT), 0);
-  dt_bauhaus_slider_set(encoding_effort, dt_conf_get_int(CONF_PREFIX "encoding_effort"));
-  dt_bauhaus_widget_set_label(encoding_effort, NULL, _("encoding effort"));
-  gtk_widget_set_tooltip_text(encoding_effort, _("the effort used to encode the image, higher efforts will have "
-                                                 "better results at the expense of longer encode times"));
-  g_signal_connect(G_OBJECT(encoding_effort), "value-changed", G_CALLBACK(encoding_effort_changed), self);
-  gtk_box_pack_start(GTK_BOX(box), encoding_effort, TRUE, TRUE, 0);
-  gui->encoding_effort = encoding_effort;
+  GtkWidget *effort
+      = dt_bauhaus_slider_new_with_range(NULL, dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_MIN),
+                                         dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_MAX), 1,
+                                         dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_DEFAULT), 0);
+  dt_bauhaus_slider_set(effort, dt_conf_get_int("plugins/imageio/format/jxl/effort"));
+  dt_bauhaus_widget_set_label(effort, NULL, _("encoding effort"));
+  gtk_widget_set_tooltip_text(effort, _("the effort used to encode the image, higher efforts will have "
+                                        "better results at the expense of longer encode times"));
+  g_signal_connect(G_OBJECT(effort), "value-changed", G_CALLBACK(effort_changed), self);
+  gtk_box_pack_start(GTK_BOX(box), effort, TRUE, TRUE, 0);
+  gui->effort = effort;
 
-  // decode effort slider
-  GtkWidget *decoding_effort
-      = dt_bauhaus_slider_new_with_range(NULL, dt_confgen_get_int(CONF_PREFIX "decoding_effort", DT_MIN),
-                                         dt_confgen_get_int(CONF_PREFIX "decoding_effort", DT_MAX), 1,
-                                         dt_confgen_get_int(CONF_PREFIX "decoding_effort", DT_DEFAULT), 0);
-  dt_bauhaus_slider_set(decoding_effort, dt_conf_get_float(CONF_PREFIX "decoding_effort"));
-  dt_bauhaus_widget_set_label(decoding_effort, NULL, _("decoding effort"));
-  gtk_widget_set_tooltip_text(decoding_effort, _("the effort required to decode the image"));
-  g_signal_connect(G_OBJECT(decoding_effort), "value-changed", G_CALLBACK(decoding_effort_changed), self);
-  gtk_box_pack_start(GTK_BOX(box), decoding_effort, TRUE, TRUE, 0);
-  gui->decoding_effort = decoding_effort;
+  // decode speed slider
+  GtkWidget *tier
+      = dt_bauhaus_slider_new_with_range(NULL, dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_MIN),
+                                         dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_MAX), 1,
+                                         dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_DEFAULT), 0);
+  dt_bauhaus_slider_set(tier, dt_conf_get_int("plugins/imageio/format/jxl/tier"));
+  dt_bauhaus_widget_set_label(tier, NULL, _("decoding speed"));
+  gtk_widget_set_tooltip_text(tier, _("the preffered decoding speed with some sacrifice of quality"));
+  g_signal_connect(G_OBJECT(tier), "value-changed", G_CALLBACK(tier_changed), self);
+  gtk_box_pack_start(GTK_BOX(box), tier, TRUE, TRUE, 0);
+  gui->tier = tier;
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
 {
-  free(self->gui_data);
-  self->gui_data = NULL;
+  g_free(self->gui_data);
 }
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_jxl_gui_data_t *gui = (dt_imageio_jxl_gui_data_t *)self->gui_data;
 
-  const gboolean lossless = dt_confgen_get_bool(CONF_PREFIX "lossless", DT_DEFAULT);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gui->lossless), lossless);
+  const int bpp = dt_confgen_get_int("plugins/imageio/format/jxl/bpp", DT_DEFAULT);
+  dt_bauhaus_combobox_set(gui->bpp, bpp);
 
-  const float quality = dt_confgen_get_float(CONF_PREFIX "quality", DT_DEFAULT);
+  const int quality = dt_confgen_get_int("plugins/imageio/format/jxl/quality", DT_DEFAULT);
   dt_bauhaus_slider_set(gui->quality, quality);
 
-  const int encoding_effort = dt_confgen_get_int(CONF_PREFIX "encoding_effort", DT_DEFAULT);
-  dt_bauhaus_slider_set(gui->encoding_effort, encoding_effort);
+  const int effort = dt_confgen_get_int("plugins/imageio/format/jxl/effort", DT_DEFAULT);
+  dt_bauhaus_slider_set(gui->effort, effort);
 
-  const int decoding_effort = dt_confgen_get_int(CONF_PREFIX "decoding_effort", DT_DEFAULT);
-  dt_bauhaus_slider_set(gui->decoding_effort, decoding_effort);
+  const int tier = dt_confgen_get_int("plugins/imageio/format/jxl/tier", DT_DEFAULT);
+  dt_bauhaus_slider_set(gui->tier, tier);
 }
 
-
-
-#undef CONF_PREFIX
+// clang-format off
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.py
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+// clang-format on

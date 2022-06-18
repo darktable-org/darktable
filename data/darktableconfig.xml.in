@@ -2614,28 +2614,28 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/imageio/format/jxl/lossless</name>
-    <type>bool</type>
-    <default>false</default>
+    <name>plugins/imageio/format/jxl/bpp</name>
+    <type min="0" max="5">int</type>
+    <default>0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/jxl/quality</name>
-    <type min="0.0" max="15.0">float</type>
-    <default>14.0</default>
+    <type min="0" max="100">int</type>
+    <default>95</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/imageio/format/jxl/encoding_effort</name>
+    <name>plugins/imageio/format/jxl/effort</name>
     <type min="1" max="9">int</type>
-    <default>3</default>
+    <default>7</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/imageio/format/jxl/decoding_effort</name>
+    <name>plugins/imageio/format/jxl/tier</name>
     <type min="0" max="4">int</type>
     <default>0</default>
     <shortdescription/>
