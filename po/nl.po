@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-10 10:56+0200\n"
+"PO-Revision-Date: 2022-06-18 14:32+0200\n"
 "Last-Translator: Nick Alderweireldt>\n"
 "Language-Team: Nick Alderweireldt\n"
 "Language: nl_NL\n"
@@ -327,7 +327,7 @@ msgstr ""
 
 #: ../build/bin/conf_gen.h:1020
 msgid "import job"
-msgstr "taak importeren"
+msgstr "importeer taak"
 
 #: ../build/bin/conf_gen.h:1021
 msgid "name of the import job"
@@ -2265,14 +2265,14 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8703
 msgid "tags case sensitivity"
-msgstr "labelt hoofdlettergevoeligheid"
+msgstr "labels hoofdlettergevoelig"
 
 #: ../build/bin/preferences_gen.h:8741
 msgid ""
 "tags case sensitivity. without the Sqlite ICU extension, insensivity works "
 "only for the 26 latin letters"
 msgstr ""
-"labelt hoofdlettergevoeligheid. zonder de Sqlite ICU-extensie werkt "
+"labelt hoofdlettergevoelig. zonder de Sqlite ICU-extensie werkt "
 "ongevoeligheid alleen voor de 26 Latijnse letters"
 
 #: ../build/bin/preferences_gen.h:8763 ../build/bin/preferences_gen.h:9003
@@ -5159,7 +5159,7 @@ msgstr "module volgorde"
 
 #: ../src/common/collection.c:705
 msgid "range rating"
-msgstr "bereik beoordelen"
+msgstr "bereik beoordeling"
 
 #: ../src/common/collection.c:709
 msgid "search"
@@ -19657,7 +19657,7 @@ msgstr "darktable"
 
 #: ../src/libs/collect.c:3009
 msgid "collections settings"
-msgstr "collecties instellingen"
+msgstr "instellingen collecties"
 
 #: ../src/libs/collect.c:3012 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
@@ -19889,7 +19889,7 @@ msgstr "bewerkingsstappen en labelingen opslaan in xmp bestanden"
 
 #: ../src/libs/duplicate.c:60
 msgid "duplicate manager"
-msgstr "duplicaat beheerder"
+msgstr "duplicaat beheer"
 
 #: ../src/libs/duplicate.c:263
 #, no-c-format
@@ -20310,7 +20310,7 @@ msgid ""
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
 "regel instellingen\n"
-"deze kunnen niet gewijzigd worden omdat deze zijn vast gepind in het paneel"
+"deze kunnen niet gewijzigd worden omdat deze is vastgepind in het paneel"
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:925
@@ -21267,7 +21267,7 @@ msgstr "kies de root van de map boom hieronder"
 
 #: ../src/libs/import.c:1147
 msgid "places"
-msgstr "plaatsen"
+msgstr "locaties"
 
 #: ../src/libs/import.c:1153
 msgid "restore all default places you have removed by right-click"
@@ -21324,7 +21324,7 @@ msgstr "miniaturen tonen/verbergen"
 
 #: ../src/libs/import.c:1640
 msgid "naming rules"
-msgstr "naamgevingsregels"
+msgstr "naamgeving regels"
 
 #: ../src/libs/import.c:1681
 msgid "add to library"
