@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-10 07:55+0300\n"
+"PO-Revision-Date: 2022-06-18 22:56+0300\n"
 "Last-Translator: Victor Forsiuk <vvforce@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1578,7 +1578,7 @@ msgid ""
 "what you are doing. this option will hide them all the time."
 msgstr ""
 "відображати повідомлення в модулях, щоб попереджати початківців, коли в "
-"конвеєрі використовуються нестандартні та, можливо, шкідливі настройки.\n"
+"конвеєрі використовуються нестандартні та, можливо, шкідливі налаштування.\n"
 "ці повідомлення можуть бути хибнопозитивними, і їх слід ігнорувати, якщо ви "
 "знаєте, що робите. цей параметр буде постійно їх приховувати."
 
@@ -19924,7 +19924,7 @@ msgstr "створити дублікат зображення з тією ж і
 #. Export button
 #: ../src/libs/export.c:154 ../src/libs/export.c:1335
 msgid "export"
-msgstr "експортувати"
+msgstr "експорт"
 
 #: ../src/libs/export.c:318
 msgid "export to disk"
@@ -22703,9 +22703,9 @@ msgstr[2] "ви дійсно хочете видалити %d стилів?"
 #: ../src/libs/styles.c:308
 msgid "remove style?"
 msgid_plural "remove styles?"
-msgstr[0] "видалити стиль?"
-msgstr[1] "видалити стиль?"
-msgstr[2] "видалити стиль?"
+msgstr[0] "видалення стилів"
+msgstr[1] "видалення стилів"
+msgstr[2] "видалення стилів"
 
 #: ../src/libs/styles.c:429 ../src/libs/styles.c:612
 #, c-format
@@ -23175,7 +23175,10 @@ msgstr "і..."
 
 #: ../src/libs/tools/darktable.c:308
 msgid "translator-credits"
-msgstr "translator-credits"
+msgstr ""
+"Віктор Форсюк <vvforce@gmail.com>\n"
+"Слава Україні! Героям слава!\n"
+" "
 
 #: ../src/libs/tools/filmstrip.c:45
 msgid "filmstrip"
