@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-17 21:20-0500\n"
-"PO-Revision-Date: 2022-06-17 23:59-0500\n"
+"PO-Revision-Date: 2022-06-18 01:18-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -8819,7 +8819,7 @@ msgid ""
 "right-click to select from existing values"
 msgstr ""
 "Introduzca el valor mínimo.\n"
-"Utilice «mín» si no hay límites.\n"
+"Utilice «mín.» si no hay límites.\n"
 "Pulse el botón secundario para elegir un valor existente."
 
 #: ../src/dtgtk/range.c:412
@@ -8828,8 +8828,8 @@ msgid ""
 "use 'max' if no bound\n"
 "right-click to select from existing values"
 msgstr ""
-"Introduzca el valor mínimo.\n"
-"Utilice «máx» si no hay límites.\n"
+"Introduzca el valor máximo.\n"
+"Utilice «máx.» si no hay límites.\n"
 "Pulse el botón secundario para elegir un valor existente."
 
 #: ../src/dtgtk/range.c:418
@@ -8849,14 +8849,13 @@ msgid ""
 "right-click to select from calendar or existing values"
 msgstr ""
 "Introduzca la fecha mínima\n"
-"en la forma AAAA:MM:DD hh:mm:ss.sss (sólo el año es obligatorio)\\n\n"
-"Utilice «mín» si no hay límites.\n"
+"en la forma AAAA:MM:DD hh:mm:ss.sss (sólo el año es obligatorio)\n"
+"Utilice «mín.» si no hay límites.\n"
 "Utilice el prefijo '-' para fecha relativa.\n"
 "Pulse el botón secundario del ratón para seleccionar entre los valores "
 "existentes o desde en el calendario."
 
 #: ../src/dtgtk/range.c:431
-#, fuzzy
 msgid ""
 "enter the maximal date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
@@ -8865,33 +8864,32 @@ msgid ""
 "use '-' prefix for relative date\n"
 "right-click to select from calendar or existing values"
 msgstr ""
-"enter the maximal date\n"
-"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
-"use 'max' if no bound\n"
-"'now' keyword is handled\n"
-"use '-' prefix for relative date\n"
-"right-click to select from calendar or existing values"
+"Introduzca la fecha máxima\n"
+"en la forma AAAA:MM:DD hh:mm:ss.sss (sólo el año es obligatorio)\n"
+"Utilice «máx.» si no hay límites.\n"
+"Se admite la palabra clave «ahora».\n"
+"Utilice el prefijo '-' para fecha relativa.\n"
+"Pulse el botón secundario del ratón para seleccionar entre los valores "
+"existentes o desde en el calendario."
 
 #: ../src/dtgtk/range.c:440
-#, fuzzy
 msgid ""
 "enter the date\n"
 "in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
 "right-click to select from calendar or existing values"
 msgstr ""
-"enter the date\n"
-"in the form YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)\n"
-"right-click to select from calendar or existing values"
+"Introduzca la fecha\n"
+"en la forma AAAA:MM:DD hh:mm:ss.sss (sólo el año es obligatorio)\n"
+"Pulse el botón secundario del ratón para seleccionar entre los valores "
+"existentes o desde en el calendario."
 
 #: ../src/dtgtk/range.c:462
-#, fuzzy
 msgid "date-time interval to subtract from the max value"
-msgstr "date-time interval to subtract from the max value"
+msgstr "Intervalo de fecha/hora que se le restará al valor máximo"
 
 #: ../src/dtgtk/range.c:466
-#, fuzzy
 msgid "date-time interval to add to the min value"
-msgstr "date-time interval to add to the min value"
+msgstr "Intervalo de fecha/hora que se le añadirá al valor mínimo"
 
 #: ../src/dtgtk/range.c:487
 msgid "fixed"
@@ -8952,12 +8950,11 @@ msgstr "fecha actual:"
 #: ../src/dtgtk/range.c:1040 ../src/dtgtk/range.c:1742
 #: ../src/dtgtk/range.c:1793
 msgid "now"
-msgstr "Ahora"
+msgstr "ahora"
 
 #: ../src/dtgtk/range.c:1042
-#, fuzzy
 msgid "set the value to always match current datetime"
-msgstr "set the value to always match current datetime"
+msgstr "Establecer el valor para que siempre coincida con la fecha actual"
 
 #. apply button
 #: ../src/dtgtk/range.c:1045 ../src/gui/accelerators.c:149
@@ -8967,9 +8964,8 @@ msgid "apply"
 msgstr "establecer"
 
 #: ../src/dtgtk/range.c:1046
-#, fuzzy
 msgid "set the range bound with this value"
-msgstr "set the range bound with this value"
+msgstr "Establecer el límite del rango con este valor"
 
 #. get nice text for bounds
 #. Side-border hide/show
@@ -8996,13 +8992,12 @@ msgid "leader"
 msgstr "Imagen de portada"
 
 #: ../src/dtgtk/thumbnail.c:98
-#, fuzzy
 msgid ""
 "\n"
 "click here to set this image as group leader\n"
 msgstr ""
 "\n"
-"click here to set this image as group leader\n"
+"Pulsar aquí para establecer esta imagen como portada de grupo\n"
 
 #. and the number of grouped images
 #: ../src/dtgtk/thumbnail.c:133 ../src/libs/filters/grouping.c:144
@@ -9564,9 +9559,9 @@ msgid "click to filter shortcut list\n"
 msgstr "Pulse para filtrar la lista de atajos del teclado.\n"
 
 #: ../src/gui/accelerators.c:681
-#, fuzzy
 msgid "right click to show action of selected shortcut\n"
-msgstr "right click to show action of selected shortcut\n"
+msgstr ""
+"Pulsar botón secundario para mostrar la acción del atajo seleccionado\n"
 
 #: ../src/gui/accelerators.c:682
 msgid ""
@@ -9597,9 +9592,9 @@ msgid "ctrl+click to remove from quick access panel\n"
 msgstr "Ctrl+Clic para quitar un componente del panel de control modular\n"
 
 #: ../src/gui/accelerators.c:705
-#, fuzzy
 msgid "scroll to change default speed"
-msgstr "Para cambiar la altura del visor: Ctrl+Desplazamiento"
+msgstr ""
+"Cambiar la velocidad predeterminada con desplazamiento o rueda del ratón"
 
 #: ../src/gui/accelerators.c:706
 msgid "right click to exit mapping mode"
@@ -9948,7 +9943,6 @@ msgstr "paneles"
 
 #. an action that does nothing - used for overriding/removing default shortcuts
 #: ../src/gui/gtk.c:1172
-#, fuzzy
 msgid "no-op"
 msgstr "sin opción"
 
@@ -9984,9 +9978,8 @@ msgid "fullscreen"
 msgstr "Pantalla completa"
 
 #: ../src/gui/gtk.c:1193
-#, fuzzy
 msgid "collapsing controls"
-msgstr "paneles/ controles de pliegue"
+msgstr "controles de pliegue"
 
 #. specific top/bottom toggles
 #: ../src/gui/gtk.c:1195
@@ -13389,17 +13382,17 @@ msgid "spot mode"
 msgstr "modo dcp"
 
 #: ../src/iop/channelmixerrgb.c:4081
-#, fuzzy
 msgid ""
 "\"correction\" automatically adjust the illuminant\n"
 "such that the input color is mapped to the target.\n"
 "\"measure\" simply shows how an input color is mapped by the CAT\n"
 "and can be used to sample a target."
 msgstr ""
-"\"correction\" automatically adjust the illuminant\n"
-"such that the input color is mapped to the target.\n"
-"\"measure\" simply shows how an input color is mapped by the CAT\n"
-"and can be used to sample a target."
+"La opción «corrección» ajusta automáticamente el iluminante\n"
+"de tal manera que el color de entrada coincida con el destino.\n"
+"La opción «medición» simplemente presenta cómo un color de entrada es "
+"adaptado por el TAC\n"
+"y que pueda utilizarse para un muestreo de objetivo."
 
 #: ../src/iop/channelmixerrgb.c:4086 ../src/iop/exposure.c:1089
 msgid "correction"
@@ -15903,7 +15896,6 @@ msgid "spot exposure mapping"
 msgstr "mostrar la máscara de exposición"
 
 #: ../src/iop/exposure.c:1084
-#, fuzzy
 msgid ""
 "\"correction\" automatically adjust exposure\n"
 "such that the input lightness is mapped to the target.\n"
@@ -15911,11 +15903,11 @@ msgid ""
 "compensation\n"
 "and can be used to define a target."
 msgstr ""
-"\"correction\" automatically adjust exposure\n"
-"such that the input lightness is mapped to the target.\n"
-"\"measure\" simply shows how an input color is mapped by the exposure "
-"compensation\n"
-"and can be used to define a target."
+"La opción «corrección» ajusta automáticamente la exposición\n"
+"de tal manera que la luminosidad de entrada coincida con en el destino.\n"
+"La opción «medición» simplemente presenta cómo un color de entrada es "
+"adaptado por el TAC\n"
+"y que pueda utilizarse para un muestreo de objetivo."
 
 #: ../src/iop/exposure.c:1108
 msgid "L : \tN/A"
@@ -22056,11 +22048,11 @@ msgstr "sin usar/sin soporte"
 
 #: ../src/libs/metadata_view.c:332
 msgid "ldr"
-msgstr "ldr"
+msgstr "LDR"
 
 #: ../src/libs/metadata_view.c:334
 msgid "hdr"
-msgstr "hdr"
+msgstr "HDR"
 
 #: ../src/libs/metadata_view.c:335
 msgid "marked for deletion"
