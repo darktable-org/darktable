@@ -176,6 +176,7 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #LIBJXL
       ${MINGW_PATH}/libjxl.dll
+      ${MINGW_PATH}/libjxl_threads.dll
     )
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
