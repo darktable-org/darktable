@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-03 19:00+0700\n"
+"POT-Creation-Date: 2022-06-09 22:31+0200\n"
+"PO-Revision-Date: 2022-06-18 20:40+0700\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
 "Language: ru\n"
@@ -2686,10 +2686,10 @@ msgid "very large chromatic aberration"
 msgstr "Сильные хроматические аберрации"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:158
-#: ../src/common/collection.c:1429 ../src/common/color_vocabulary.c:230
+#: ../src/common/collection.c:1429 ../src/common/color_vocabulary.c:232
 #: ../src/common/colorlabels.c:329 ../src/develop/blend_gui.c:1989
 #: ../src/develop/blend_gui.c:2016 ../src/develop/lightroom.c:834
-#: ../src/gui/gtk.c:2917 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
+#: ../src/gui/gtk.c:2918 ../src/gui/guides.c:730 ../src/iop/bilateral.cc:305
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2302
 #: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1992
@@ -2698,10 +2698,10 @@ msgid "red"
 msgstr "Красный"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:159
-#: ../src/common/collection.c:1433 ../src/common/color_vocabulary.c:275
+#: ../src/common/collection.c:1433 ../src/common/color_vocabulary.c:277
 #: ../src/common/colorlabels.c:331 ../src/develop/blend_gui.c:1992
 #: ../src/develop/blend_gui.c:2019 ../src/develop/lightroom.c:838
-#: ../src/gui/gtk.c:2918 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
+#: ../src/gui/gtk.c:2919 ../src/gui/guides.c:731 ../src/iop/bilateral.cc:310
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4182 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
@@ -2711,10 +2711,10 @@ msgid "green"
 msgstr "Зелёный"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrectrgb.c:160
-#: ../src/common/collection.c:1435 ../src/common/color_vocabulary.c:322
+#: ../src/common/collection.c:1435 ../src/common/color_vocabulary.c:324
 #: ../src/common/colorlabels.c:332 ../src/develop/blend_gui.c:1995
 #: ../src/develop/blend_gui.c:2022 ../src/develop/lightroom.c:840
-#: ../src/gui/gtk.c:2919 ../src/iop/bilateral.cc:315
+#: ../src/gui/gtk.c:2920 ../src/iop/bilateral.cc:315
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4183 ../src/iop/colorzones.c:2307
 #: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1994
@@ -3174,10 +3174,10 @@ msgstr "Серый, опорная точка"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:412
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:585
-#: ../src/gui/guides.c:738 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
+#: ../src/gui/guides.c:740 ../src/iop/basicadj.c:607 ../src/iop/bilat.c:451
 #: ../src/iop/colisa.c:305 ../src/iop/colorbalance.c:1895
 #: ../src/iop/colorbalance.c:1901 ../src/iop/filmic.c:1649
-#: ../src/iop/filmicrgb.c:4495 ../src/iop/lowpass.c:573
+#: ../src/iop/filmicrgb.c:4492 ../src/iop/lowpass.c:573
 msgid "contrast"
 msgstr "Контраст"
 
@@ -3775,7 +3775,7 @@ msgstr "Резкость"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:296
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:471
-#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4668
+#: ../src/iop/filmic.c:1687 ../src/iop/filmicrgb.c:4665
 msgid "extreme luminance saturation"
 msgstr "Насыщенность верхов и низов"
 
@@ -3996,7 +3996,7 @@ msgid "reconstruct color"
 msgstr "Восстановить цвет"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:277
-#: ../src/iop/highlights.c:2139
+#: ../src/iop/highlights.c:2149
 msgid "guided laplacians"
 msgstr "Режим Лалласа"
 
@@ -4693,40 +4693,40 @@ msgstr "Показ снимков на карте"
 msgid "Print your images"
 msgstr "Печать снимков"
 
-#: ../src/bauhaus/bauhaus.c:3280
+#: ../src/bauhaus/bauhaus.c:3273
 msgid "button on"
 msgstr "Кнопка включения"
 
-#: ../src/bauhaus/bauhaus.c:3280
+#: ../src/bauhaus/bauhaus.c:3273
 msgid "button off"
 msgstr "Кнопка выключения"
 
-#: ../src/bauhaus/bauhaus.c:3449 ../src/gui/accelerators.c:270
+#: ../src/bauhaus/bauhaus.c:3442 ../src/gui/accelerators.c:270
 msgid "value"
 msgstr "Значение"
 
-#: ../src/bauhaus/bauhaus.c:3450 ../src/bauhaus/bauhaus.c:3456
+#: ../src/bauhaus/bauhaus.c:3443 ../src/bauhaus/bauhaus.c:3449
 #: ../src/gui/accelerators.c:253
 msgid "button"
 msgstr "Кнопка"
 
-#: ../src/bauhaus/bauhaus.c:3451
+#: ../src/bauhaus/bauhaus.c:3444
 msgid "force"
 msgstr "Сила"
 
-#: ../src/bauhaus/bauhaus.c:3452
+#: ../src/bauhaus/bauhaus.c:3445
 msgid "zoom"
 msgstr " Масштаб"
 
-#: ../src/bauhaus/bauhaus.c:3455
+#: ../src/bauhaus/bauhaus.c:3448
 msgid "selection"
 msgstr "Выделение"
 
-#: ../src/bauhaus/bauhaus.c:3474
+#: ../src/bauhaus/bauhaus.c:3467
 msgid "slider"
 msgstr "Слайдер"
 
-#: ../src/bauhaus/bauhaus.c:3479
+#: ../src/bauhaus/bauhaus.c:3472
 msgid "dropdown"
 msgstr "Выпадающий список"
 
@@ -5030,7 +5030,7 @@ msgid "capture date"
 msgstr "Дата захвата"
 
 #: ../src/common/collection.c:677 ../src/libs/collect.c:3313
-#: ../src/libs/filtering.c:1975 ../src/libs/filtering.c:1995
+#: ../src/libs/filtering.c:1986 ../src/libs/filtering.c:2006
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "История"
@@ -5088,7 +5088,7 @@ msgstr "Поиск"
 msgid "yellow"
 msgstr "Жёлтый"
 
-#: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:337
+#: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:333 ../src/iop/colorzones.c:2308
 #: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:264
 msgid "purple"
@@ -5165,323 +5165,291 @@ msgstr[2] "В текущей коллекции выбрано %d снимков
 msgid "gray"
 msgstr "Серый"
 
-#. Human skin tones database
-#. This is a racially-charged matter, tread with it carefully.
-#. Usable data are : tabulated avg ± std (P < 0.05) models on skin color measurements
-#. on more than 80 individuals under D65 illuminant.
-#. Notice all these data are valid only under D65 illuminant and errors up to delta E = 6 have
-#. been measured for A illuminant. Proper camera profiling and chromatic adaptation needs to be performed
-#. or all the following is meaningless.
-#. We use ranges of avg ± 2 std, giving 95 % of confidence in the prediction.
-#. We use CIE Lab instead of Lch coordinates, because a and b parameters are physiologically meaningful :
-#. - a (redness) is linked to blood flow and health,
-#. - b (yellowness) is linked to melanine and sun tan.
-#. Reference :
-#. XIAO, Kaida, YATES, Julian M., ZARDAWI, Faraedon, et al.
-#. Characterising the variations in ethnic skin colours: a new calibrated data base for human skin.
-#. Skin Research and Technology, 2017, vol. 23, no 1, p. 21-29.
-#. https://onlinelibrary.wiley.com/doi/pdf/10.1111/srt.12295
-#.
-#. Sample : 187 caucasian, 202 chinese, 145 kurdish and 426 thai.
-#.
-#. DE RIGAL, Jean, DES MAZIS, Isabelle, DIRIDOLLOU, Stephane, et al.
-#. The effect of age on skin color and color heterogeneity in four ethnic groups.
-#. Skin Research and Technology, 2010, vol. 16, no 2, p. 168-178.
-#. https://pubmed.ncbi.nlm.nih.gov/20456097/
-#.
-#. Sample : 121 african-american, 64 mexican.
-#. Note : the data have been read on the graph and are inaccurate and std is majorated.
-#. The original authors have been contacted to get the tabulated, accurate data,
-#. but the main author is retired, co-authors have changed jobs, and the L'Oréal head of R&D
-#. did not respond. So the values here are given for what it's worth.
-#.
-#. "Forearm" is the ventral forearm skin. It is the least sun-tanned part of skin.
-#. Sun tan will depend the most on lifestyle, therefore the ventral forearm
-#. is the least socially-biased skin color metric.
-#. "Forehead" is the most sun-tanned part of skin. This translates to high b coordinate.
-#. "Cheek" is the most redish part of skin. This translates to high a coordinate.
-#. L decreases with age in all ethnicities and with b/yellowness/melanine/tan.
-#: ../src/common/color_vocabulary.c:91
+#: ../src/common/color_vocabulary.c:92
 msgid "Chinese"
 msgstr "Монголоидный тип"
 
-#: ../src/common/color_vocabulary.c:92
+#: ../src/common/color_vocabulary.c:93
 msgid "Thai"
 msgstr "Тайский тип"
 
-#: ../src/common/color_vocabulary.c:93
+#: ../src/common/color_vocabulary.c:94
 msgid "Kurdish"
 msgstr "Курдский тип"
 
-#: ../src/common/color_vocabulary.c:94
+#: ../src/common/color_vocabulary.c:95
 msgid "Caucasian"
 msgstr "Европеоидный тип"
 
-#: ../src/common/color_vocabulary.c:95
+#: ../src/common/color_vocabulary.c:96
 msgid "African-american"
 msgstr "Афроамериканский тип"
 
-#: ../src/common/color_vocabulary.c:98 ../src/common/color_vocabulary.c:103
-#: ../src/common/color_vocabulary.c:108 ../src/common/color_vocabulary.c:113
+#: ../src/common/color_vocabulary.c:97
+msgid "Mexican"
+msgstr "Мексиканский тип"
+
+#: ../src/common/color_vocabulary.c:100 ../src/common/color_vocabulary.c:105
+#: ../src/common/color_vocabulary.c:110 ../src/common/color_vocabulary.c:115
 msgid "forearm"
 msgstr "Предплечье"
 
-#: ../src/common/color_vocabulary.c:118 ../src/common/color_vocabulary.c:123
-#: ../src/common/color_vocabulary.c:128 ../src/common/color_vocabulary.c:133
-#: ../src/common/color_vocabulary.c:138 ../src/common/color_vocabulary.c:143
+#: ../src/common/color_vocabulary.c:120 ../src/common/color_vocabulary.c:125
+#: ../src/common/color_vocabulary.c:130 ../src/common/color_vocabulary.c:135
+#: ../src/common/color_vocabulary.c:140 ../src/common/color_vocabulary.c:145
 msgid "forehead"
 msgstr "Лоб"
 
-#: ../src/common/color_vocabulary.c:148 ../src/common/color_vocabulary.c:153
-#: ../src/common/color_vocabulary.c:158 ../src/common/color_vocabulary.c:163
-#: ../src/common/color_vocabulary.c:168 ../src/common/color_vocabulary.c:173
+#: ../src/common/color_vocabulary.c:150 ../src/common/color_vocabulary.c:155
+#: ../src/common/color_vocabulary.c:160 ../src/common/color_vocabulary.c:165
+#: ../src/common/color_vocabulary.c:170 ../src/common/color_vocabulary.c:175
 msgid "cheek"
 msgstr "Щека"
 
-#: ../src/common/color_vocabulary.c:200
+#: ../src/common/color_vocabulary.c:202
 #, c-format
 msgid "average %s skin tone\n"
 msgstr "Средний %s тон кожи\n"
 
 #. 0° - pinkish red
-#: ../src/common/color_vocabulary.c:220
+#: ../src/common/color_vocabulary.c:222
 msgid "deep purple"
 msgstr "Пурпурный темный"
 
 #. L = 10 %
-#: ../src/common/color_vocabulary.c:221
+#: ../src/common/color_vocabulary.c:223
 msgid "fuchsia"
 msgstr "Фуксия"
 
 #. L = 30 %
-#: ../src/common/color_vocabulary.c:222
+#: ../src/common/color_vocabulary.c:224
 msgid "medium magenta"
 msgstr "Маджента"
 
 #. L = 50 %
-#: ../src/common/color_vocabulary.c:223
+#: ../src/common/color_vocabulary.c:225
 msgid "violet pink"
 msgstr "Розово-фиолетовый"
 
 #. L = 70 %
-#: ../src/common/color_vocabulary.c:224
+#: ../src/common/color_vocabulary.c:226
 msgid "plum violet"
 msgstr "Сливово-фиолетовый"
 
 #. 24° - red
-#: ../src/common/color_vocabulary.c:229
+#: ../src/common/color_vocabulary.c:231
 msgid "dark red"
 msgstr "Темно-красный"
 
-#: ../src/common/color_vocabulary.c:231
+#: ../src/common/color_vocabulary.c:233
 msgid "crimson"
 msgstr "Малиновый"
 
-#: ../src/common/color_vocabulary.c:232
+#: ../src/common/color_vocabulary.c:234
 msgid "salmon"
 msgstr "Salmon"
 
-#: ../src/common/color_vocabulary.c:233
+#: ../src/common/color_vocabulary.c:235
 msgid "pink"
 msgstr "Розовый"
 
 #. 48° - orangy red
-#: ../src/common/color_vocabulary.c:238
+#: ../src/common/color_vocabulary.c:240
 msgid "maroon"
 msgstr "Коричнево-малиновый"
 
-#: ../src/common/color_vocabulary.c:239
+#: ../src/common/color_vocabulary.c:241
 msgid "dark orange red"
 msgstr "Темно-оранжевый"
 
-#: ../src/common/color_vocabulary.c:240
+#: ../src/common/color_vocabulary.c:242
 msgid "orange red"
 msgstr "Красно-оранжевый"
 
-#: ../src/common/color_vocabulary.c:241
+#: ../src/common/color_vocabulary.c:243
 msgid "coral"
 msgstr "Коралловый"
 
-#: ../src/common/color_vocabulary.c:242 ../src/common/color_vocabulary.c:259
+#: ../src/common/color_vocabulary.c:244 ../src/common/color_vocabulary.c:261
 msgid "khaki"
 msgstr "Хаки"
 
 #. 72° - orange
-#: ../src/common/color_vocabulary.c:247
+#: ../src/common/color_vocabulary.c:249
 msgid "brown"
 msgstr "Коричнево-бордовый"
 
-#: ../src/common/color_vocabulary.c:248
+#: ../src/common/color_vocabulary.c:250
 msgid "chocolate"
 msgstr "Коричный"
 
-#: ../src/common/color_vocabulary.c:249
+#: ../src/common/color_vocabulary.c:251
 msgid "dark gold"
 msgstr "Темное золото"
 
-#: ../src/common/color_vocabulary.c:250
+#: ../src/common/color_vocabulary.c:252
 msgid "gold"
 msgstr "Золотой"
 
-#: ../src/common/color_vocabulary.c:251
+#: ../src/common/color_vocabulary.c:253
 msgid "sandy brown"
 msgstr "Красный песок"
 
 #. 96° - yellow olive
 #. 120° - green
 #. 144° - blueish green
-#: ../src/common/color_vocabulary.c:256 ../src/common/color_vocabulary.c:265
-#: ../src/common/color_vocabulary.c:274
+#: ../src/common/color_vocabulary.c:258 ../src/common/color_vocabulary.c:267
+#: ../src/common/color_vocabulary.c:276
 msgid "dark green"
 msgstr "Темно-зеленый"
 
-#: ../src/common/color_vocabulary.c:257
+#: ../src/common/color_vocabulary.c:259
 msgid "dark olive green"
 msgstr "Темно-оливковый"
 
-#: ../src/common/color_vocabulary.c:258
+#: ../src/common/color_vocabulary.c:260
 msgid "olive"
 msgstr "Оливковый"
 
-#: ../src/common/color_vocabulary.c:260
+#: ../src/common/color_vocabulary.c:262
 msgid "beige"
 msgstr "Бежевый"
 
-#: ../src/common/color_vocabulary.c:266 ../src/common/color_vocabulary.c:276
+#: ../src/common/color_vocabulary.c:268 ../src/common/color_vocabulary.c:278
 msgid "forest green"
 msgstr "Лиственный зеленый"
 
-#: ../src/common/color_vocabulary.c:267
+#: ../src/common/color_vocabulary.c:269
 msgid "olive drab"
 msgstr "Нежно-оливковый"
 
-#: ../src/common/color_vocabulary.c:268
+#: ../src/common/color_vocabulary.c:270
 msgid "yellow green"
 msgstr "Желто-зеленый"
 
-#: ../src/common/color_vocabulary.c:269 ../src/common/color_vocabulary.c:278
+#: ../src/common/color_vocabulary.c:271 ../src/common/color_vocabulary.c:280
 msgid "pale green"
 msgstr "Бледно-зеленый"
 
-#: ../src/common/color_vocabulary.c:277
+#: ../src/common/color_vocabulary.c:279
 msgid "lime green"
 msgstr "Лаймово-зеленый"
 
 #. 168° - greenish cyian
-#: ../src/common/color_vocabulary.c:283
+#: ../src/common/color_vocabulary.c:285
 msgid "dark sea green"
 msgstr "Цвет морской волны, темный"
 
-#: ../src/common/color_vocabulary.c:284
+#: ../src/common/color_vocabulary.c:286
 msgid "sea green"
 msgstr "Цвет морской волны"
 
-#: ../src/common/color_vocabulary.c:285 ../src/common/color_vocabulary.c:302
+#: ../src/common/color_vocabulary.c:287 ../src/common/color_vocabulary.c:304
 msgid "teal"
 msgstr "Окраски птицы чирок"
 
-#: ../src/common/color_vocabulary.c:286
+#: ../src/common/color_vocabulary.c:288
 msgid "light sea green"
 msgstr "Цвет морской волны, светлый"
 
-#: ../src/common/color_vocabulary.c:287
+#: ../src/common/color_vocabulary.c:289
 msgid "turquoise"
 msgstr "Бирюзовый"
 
 #. 192° - cyan
-#: ../src/common/color_vocabulary.c:292
+#: ../src/common/color_vocabulary.c:294
 msgid "dark slate gray"
 msgstr "Аспидно-серый"
 
-#: ../src/common/color_vocabulary.c:293
+#: ../src/common/color_vocabulary.c:295
 msgid "light slate gray"
 msgstr "Светлый аспидно-серый"
 
-#: ../src/common/color_vocabulary.c:294 ../src/common/color_vocabulary.c:303
+#: ../src/common/color_vocabulary.c:296 ../src/common/color_vocabulary.c:305
 msgid "dark cyan"
 msgstr "Темный зелено-голубой"
 
-#: ../src/common/color_vocabulary.c:295 ../src/common/color_vocabulary.c:315
+#: ../src/common/color_vocabulary.c:297 ../src/common/color_vocabulary.c:317
 #: ../src/iop/colorzones.c:2306
 msgid "aqua"
 msgstr "Вода"
 
-#: ../src/common/color_vocabulary.c:296 ../src/gui/guides.c:733
+#: ../src/common/color_vocabulary.c:298 ../src/gui/guides.c:733
 #: ../src/iop/temperature.c:1807
 msgid "cyan"
 msgstr "Сине-зелёный"
 
 #. 216° - medium blue
-#: ../src/common/color_vocabulary.c:301
+#: ../src/common/color_vocabulary.c:303
 msgid "navy blue"
 msgstr "Темно-синий"
 
-#: ../src/common/color_vocabulary.c:304 ../src/common/color_vocabulary.c:314
+#: ../src/common/color_vocabulary.c:306 ../src/common/color_vocabulary.c:316
 msgid "deep sky blue"
 msgstr "Темный небесно-голубой"
 
-#: ../src/common/color_vocabulary.c:305
+#: ../src/common/color_vocabulary.c:307
 msgid "aquamarine blue"
 msgstr "Аквамариновый"
 
 #. 240° - blue and 264° - bluer than blue
 #. these are collapsed because CIE Lab 1976 sucks for blues
 #. 288° - more blue
-#: ../src/common/color_vocabulary.c:311 ../src/common/color_vocabulary.c:320
+#: ../src/common/color_vocabulary.c:313 ../src/common/color_vocabulary.c:322
 msgid "dark blue"
 msgstr "Темный ультрамариновый"
 
-#: ../src/common/color_vocabulary.c:312 ../src/common/color_vocabulary.c:321
+#: ../src/common/color_vocabulary.c:314 ../src/common/color_vocabulary.c:323
 msgid "medium blue"
 msgstr "Сине-голубой"
 
-#: ../src/common/color_vocabulary.c:313
+#: ../src/common/color_vocabulary.c:315
 msgid "azure blue"
 msgstr "Лазурный"
 
-#: ../src/common/color_vocabulary.c:323
+#: ../src/common/color_vocabulary.c:325
 msgid "light sky blue"
 msgstr "Ярко-голубой"
 
-#: ../src/common/color_vocabulary.c:324
+#: ../src/common/color_vocabulary.c:326
 msgid "light blue"
 msgstr "Светлый синий"
 
 #. 312° - violet
-#: ../src/common/color_vocabulary.c:329
+#: ../src/common/color_vocabulary.c:331
 msgid "indigo"
 msgstr "Индиго"
 
-#: ../src/common/color_vocabulary.c:330
+#: ../src/common/color_vocabulary.c:332
 msgid "dark violet"
 msgstr "Темно-фиолетовый"
 
-#: ../src/common/color_vocabulary.c:331
+#: ../src/common/color_vocabulary.c:333
 msgid "blue violet"
 msgstr "Сине-фиолетовый"
 
-#: ../src/common/color_vocabulary.c:332 ../src/common/color_vocabulary.c:340
+#: ../src/common/color_vocabulary.c:334 ../src/common/color_vocabulary.c:342
 msgid "violet"
 msgstr "Фиолетовый"
 
-#: ../src/common/color_vocabulary.c:333
+#: ../src/common/color_vocabulary.c:335
 msgid "plum"
 msgstr "Светлая слива"
 
-#: ../src/common/color_vocabulary.c:338
+#: ../src/common/color_vocabulary.c:340
 msgid "dark magenta"
 msgstr "Темный маджента"
 
-#: ../src/common/color_vocabulary.c:339 ../src/gui/guides.c:734
+#: ../src/common/color_vocabulary.c:341 ../src/gui/guides.c:734
 #: ../src/iop/colorzones.c:2309 ../src/iop/temperature.c:1805
 msgid "magenta"
 msgstr "Пурпурный"
 
-#: ../src/common/color_vocabulary.c:341
+#: ../src/common/color_vocabulary.c:343
 msgid "lavender"
 msgstr "Лаванда"
 
-#: ../src/common/color_vocabulary.c:344
+#: ../src/common/color_vocabulary.c:346
 msgid "color not found"
 msgstr "Цвет не найден"
 
@@ -6366,28 +6334,28 @@ msgstr "Распределение Пуассона"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Файл шумового профиля «%s» некорректный"
 
-#: ../src/common/opencl.c:1073
+#: ../src/common/opencl.c:1078
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "Из-за медленного аппаратного ускорения графического процессора через opencl "
 "деактивировано"
 
-#: ../src/common/opencl.c:1080
+#: ../src/common/opencl.c:1085
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "Обнаружено несколько графических процессоров - профиль планирования opencl "
 "был установлен соответствующим образом"
 
-#: ../src/common/opencl.c:1087
+#: ../src/common/opencl.c:1092
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "Обнаружен очень быстрый графический процессор - профиль планирования opencl "
 "был установлен соответствующим образом"
 
-#: ../src/common/opencl.c:1094
+#: ../src/common/opencl.c:1099
 msgid "opencl scheduling profile set to default"
 msgstr "Профиль планирования opencl установлен по умолчанию"
 
@@ -7833,8 +7801,8 @@ msgstr ""
 #: ../src/iop/basicadj.c:600 ../src/iop/colorbalancergb.c:2020
 #: ../src/iop/exposure.c:1033 ../src/iop/exposure.c:1046
 #: ../src/iop/filmic.c:1607 ../src/iop/filmic.c:1619 ../src/iop/filmic.c:1659
-#: ../src/iop/filmicrgb.c:4384 ../src/iop/filmicrgb.c:4394
-#: ../src/iop/filmicrgb.c:4429 ../src/iop/filmicrgb.c:4439
+#: ../src/iop/filmicrgb.c:4381 ../src/iop/filmicrgb.c:4391
+#: ../src/iop/filmicrgb.c:4426 ../src/iop/filmicrgb.c:4436
 #: ../src/iop/graduatednd.c:1098 ../src/iop/negadoctor.c:983
 #: ../src/iop/profile_gamma.c:651 ../src/iop/profile_gamma.c:657
 #: ../src/iop/relight.c:267 ../src/iop/soften.c:404 ../src/iop/toneequal.c:3117
@@ -7890,7 +7858,7 @@ msgid "show and edit in restricted mode"
 msgstr "Показывать и менять фигуры в ограниченном режиме"
 
 #: ../src/develop/blend_gui.c:2342 ../src/libs/masks.c:940
-#: ../src/libs/masks.c:968 ../src/libs/masks.c:1676
+#: ../src/libs/masks.c:968 ../src/libs/masks.c:1634
 msgid "add gradient"
 msgstr "Добавить градиент"
 
@@ -7899,7 +7867,7 @@ msgid "add multiple gradients"
 msgstr "добавляет несколько градиентов"
 
 #: ../src/develop/blend_gui.c:2347 ../src/iop/retouch.c:2199
-#: ../src/libs/masks.c:952 ../src/libs/masks.c:1700
+#: ../src/libs/masks.c:952 ../src/libs/masks.c:1658
 msgid "add brush"
 msgstr "Добавить кисть"
 
@@ -7909,7 +7877,7 @@ msgstr "добавляет несколько элементов"
 
 #: ../src/develop/blend_gui.c:2352 ../src/iop/retouch.c:2203
 #: ../src/iop/spots.c:822 ../src/libs/masks.c:936 ../src/libs/masks.c:964
-#: ../src/libs/masks.c:1682
+#: ../src/libs/masks.c:1640
 msgid "add path"
 msgstr "Добавить контур"
 
@@ -7920,7 +7888,7 @@ msgstr "добавляет несколько элементов"
 
 #: ../src/develop/blend_gui.c:2357 ../src/iop/retouch.c:2207
 #: ../src/iop/spots.c:826 ../src/libs/masks.c:932 ../src/libs/masks.c:960
-#: ../src/libs/masks.c:1688
+#: ../src/libs/masks.c:1646
 msgid "add ellipse"
 msgstr "Добавить эллипс"
 
@@ -7931,7 +7899,7 @@ msgstr "добавляет несколько элементов"
 
 #: ../src/develop/blend_gui.c:2362 ../src/iop/retouch.c:2211
 #: ../src/iop/spots.c:830 ../src/libs/masks.c:928 ../src/libs/masks.c:956
-#: ../src/libs/masks.c:1694
+#: ../src/libs/masks.c:1652
 msgid "add circle"
 msgstr "Добавить окружность"
 
@@ -8781,34 +8749,34 @@ msgstr "Интервал даты и времени для вычитания и
 msgid "date-time interval to add to the min value"
 msgstr "Интервал даты и времени для добавления к минимальному значению"
 
-#: ../src/dtgtk/range.c:606 ../src/dtgtk/range.c:1721 ../src/dtgtk/range.c:1772
+#: ../src/dtgtk/range.c:487
+msgid "fixed"
+msgstr "Фиксированное"
+
+#: ../src/dtgtk/range.c:488 ../src/iop/colorchecker.c:1382
+msgid "relative"
+msgstr "Относительные значения"
+
+#: ../src/dtgtk/range.c:611 ../src/dtgtk/range.c:1723 ../src/dtgtk/range.c:1774
 #: ../src/libs/colorpicker.c:53
 msgid "min"
 msgstr "Минимальное"
 
-#: ../src/dtgtk/range.c:612 ../src/dtgtk/range.c:1733 ../src/dtgtk/range.c:1784
+#: ../src/dtgtk/range.c:617 ../src/dtgtk/range.c:1735 ../src/dtgtk/range.c:1786
 #: ../src/libs/colorpicker.c:53 ../src/libs/filters/rating_range.c:299
 msgid "max"
 msgstr "Максимальное"
 
-#: ../src/dtgtk/range.c:926
+#: ../src/dtgtk/range.c:931
 msgid "date type"
 msgstr "Тип даты"
 
-#: ../src/dtgtk/range.c:927
-msgid "fixed"
-msgstr "Фиксированное"
-
-#: ../src/dtgtk/range.c:928 ../src/iop/colorchecker.c:1382
-msgid "relative"
-msgstr "Относительные значения"
-
 #. the date section
-#: ../src/dtgtk/range.c:940
+#: ../src/dtgtk/range.c:942
 msgid "date"
 msgstr "Дата"
 
-#: ../src/dtgtk/range.c:947 ../src/dtgtk/range.c:1013
+#: ../src/dtgtk/range.c:949 ../src/dtgtk/range.c:1015
 msgid ""
 "simple click to select date\n"
 "double click to use the date directly"
@@ -8816,50 +8784,55 @@ msgstr ""
 "Щелчок для выбора даты\n"
 "Двойной щелчок, чтобы использовать существующую дату"
 
-#: ../src/dtgtk/range.c:958
+#: ../src/dtgtk/range.c:960
 msgid "years: "
 msgstr "Годы:"
 
-#: ../src/dtgtk/range.c:966
+#: ../src/dtgtk/range.c:968
 msgid "months: "
 msgstr "Месяцы:"
 
-#: ../src/dtgtk/range.c:974
+#: ../src/dtgtk/range.c:976
 msgid "days: "
 msgstr "Дни:"
 
 #. the time section
-#: ../src/dtgtk/range.c:986
+#: ../src/dtgtk/range.c:988
 msgid "time"
 msgstr "Дата и время"
 
-#: ../src/dtgtk/range.c:1038 ../src/dtgtk/range.c:1740
+#: ../src/dtgtk/range.c:1036
+msgid "current date: "
+msgstr "Текущая дата:"
+
+#: ../src/dtgtk/range.c:1040 ../src/dtgtk/range.c:1742
+#: ../src/dtgtk/range.c:1793
 msgid "now"
 msgstr "Сейчас"
 
-#: ../src/dtgtk/range.c:1040
+#: ../src/dtgtk/range.c:1042
 msgid "set the value to always match current datetime"
 msgstr ""
 "Установите значение, чтобы оно всегда соответствовало текущей дате и времени"
 
 #. apply button
-#: ../src/dtgtk/range.c:1043 ../src/gui/accelerators.c:149
-#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:760
+#: ../src/dtgtk/range.c:1045 ../src/gui/accelerators.c:149
+#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:758
 #: ../src/libs/styles.c:861
 msgid "apply"
 msgstr "Применить"
 
-#: ../src/dtgtk/range.c:1044
+#: ../src/dtgtk/range.c:1046
 msgid "set the range bound with this value"
 msgstr "Задайте диапазон, привязанный к этому значению"
 
 #. get nice text for bounds
 #. Side-border hide/show
-#: ../src/dtgtk/range.c:1716 ../src/gui/accelerators.c:1978
-#: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2916
+#: ../src/dtgtk/range.c:1718 ../src/gui/accelerators.c:1978
+#: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2917
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
-#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1413
+#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1424
 #: ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
 #: ../src/libs/filters/rating.c:211
 msgid "all"
@@ -9271,12 +9244,12 @@ msgid "popup"
 msgstr "Всплывашка"
 
 #: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:141
-#: ../src/gui/gtk.c:2844 ../src/views/lighttable.c:749
+#: ../src/gui/gtk.c:2845 ../src/views/lighttable.c:749
 msgid "next"
 msgstr "Следующий"
 
 #: ../src/gui/accelerators.c:113 ../src/gui/accelerators.c:140
-#: ../src/gui/gtk.c:2845 ../src/views/lighttable.c:750
+#: ../src/gui/gtk.c:2846 ../src/views/lighttable.c:750
 msgid "previous"
 msgstr "Предыдущий"
 
@@ -9289,7 +9262,7 @@ msgid "first"
 msgstr "Первый"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1701
+#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1712
 #: ../src/libs/filters/rating_range.c:285 ../src/libs/tagging.c:3119
 #: ../src/views/darkroom.c:2292 ../src/views/darkroom.c:2347
 #: ../src/views/darkroom.c:2587
@@ -9312,7 +9285,7 @@ msgstr "Правый переключатель"
 msgid "right-on"
 msgstr "Право на"
 
-#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2843
+#: ../src/gui/accelerators.c:134 ../src/gui/gtk.c:2844
 msgid "activate"
 msgstr "Активировать"
 
@@ -9903,7 +9876,7 @@ msgstr "%.1f"
 msgid "Sans %s"
 msgstr "Sans %s"
 
-#: ../src/gui/gtk.c:2923 ../src/gui/gtk.c:2928 ../src/gui/gtk.c:2933
+#: ../src/gui/gtk.c:2924 ../src/gui/gtk.c:2929 ../src/gui/gtk.c:2934
 msgid "tabs"
 msgstr "Закладки"
 
@@ -10272,7 +10245,7 @@ msgid "global guide overlay settings"
 msgstr "Общие настройки"
 
 #: ../src/gui/guides.c:710 ../src/gui/guides.c:719 ../src/gui/guides.c:727
-#: ../src/gui/guides.c:738 ../src/views/darkroom.c:2587
+#: ../src/gui/guides.c:740 ../src/views/darkroom.c:2587
 msgid "guide lines"
 msgstr "Линии руководства"
 
@@ -10309,21 +10282,21 @@ msgstr "Цвет"
 msgid "set overlay color"
 msgstr "Выбор цвета вспомогательных элементов интерфейса"
 
-#: ../src/gui/guides.c:739
+#: ../src/gui/guides.c:741
 msgid ""
 "set the contrast between the lightest and darkest part of the guide overlays"
 msgstr ""
 "Установить контраст между самой светлой и самой темной частью направляющих"
 
-#: ../src/gui/guides.c:845 ../src/gui/guides.c:891
+#: ../src/gui/guides.c:847 ../src/gui/guides.c:893
 msgid "show guides"
 msgstr "Показать руководство"
 
-#: ../src/gui/guides.c:900
+#: ../src/gui/guides.c:902
 msgid "show guide overlay when this module has focus"
 msgstr "Показать наложение руководства, когда этот модуль находится в фокусе"
 
-#: ../src/gui/guides.c:902
+#: ../src/gui/guides.c:904
 msgid ""
 "change global guide settings\n"
 "note that these settings are applied globally and will impact any module "
@@ -11075,13 +11048,13 @@ msgid "page orientation"
 msgstr "Ориентация"
 
 #: ../src/imageio/format/pdf.c:608 ../src/iop/borders.c:1042
-#: ../src/libs/filtering.c:285 ../src/libs/filters/ratio.c:122
+#: ../src/libs/filtering.c:286 ../src/libs/filters/ratio.c:122
 #: ../src/libs/print_settings.c:2366
 msgid "portrait"
 msgstr "Портретная"
 
 #: ../src/imageio/format/pdf.c:609 ../src/iop/borders.c:1043
-#: ../src/libs/filtering.c:281 ../src/libs/filters/ratio.c:124
+#: ../src/libs/filtering.c:282 ../src/libs/filters/ratio.c:124
 #: ../src/libs/print_settings.c:2367
 msgid "landscape"
 msgstr "Альбомная"
@@ -11940,7 +11913,7 @@ msgstr ""
 "Влияет только на результат на вкладках «Яркость» и «Цветность»."
 
 #: ../src/iop/atrous.c:1755 ../src/iop/colorbalancergb.c:1986
-#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4351
+#: ../src/iop/colorzones.c:2507 ../src/iop/filmicrgb.c:4348
 #: ../src/iop/lowlight.c:836 ../src/iop/rawdenoise.c:932
 #: ../src/iop/toneequal.c:3162
 msgid "graph"
@@ -12414,7 +12387,7 @@ msgid "4:3"
 msgstr "4×3"
 
 #: ../src/iop/borders.c:970 ../src/iop/clipping.c:2139 ../src/iop/crop.c:1051
-#: ../src/libs/filtering.c:277 ../src/libs/filters/ratio.c:126
+#: ../src/libs/filtering.c:278 ../src/libs/filters/ratio.c:126
 msgid "square"
 msgstr "Квадрат"
 
@@ -13095,7 +13068,7 @@ msgstr ""
 
 #. //////////////////////// PAGE SETTINGS
 #: ../src/iop/channelmixerrgb.c:4004 ../src/iop/clipping.c:2105
-#: ../src/iop/colorbalancergb.c:1803 ../src/iop/filmicrgb.c:4366
+#: ../src/iop/colorbalancergb.c:1803 ../src/iop/filmicrgb.c:4363
 #: ../src/iop/negadoctor.c:802 ../src/iop/toneequal.c:3110
 #: ../src/libs/image.c:462 ../src/libs/print_settings.c:2351
 #: ../src/views/lighttable.c:1243
@@ -14585,11 +14558,11 @@ msgid "the hue tone which should be given precedence over other hue tones"
 msgstr "Приоритетный тон"
 
 #: ../src/iop/colorreconstruction.c:1309 ../src/iop/demosaic.c:5820
-#: ../src/iop/highlights.c:2204
+#: ../src/iop/highlights.c:2214
 msgid "not applicable"
 msgstr "Не может быть применено"
 
-#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2205
+#: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2215
 msgid "no highlights reconstruction for monochrome images"
 msgstr "Обработка пересвеченных участков для монохр. изображений недоступна."
 
@@ -15685,14 +15658,14 @@ msgstr ""
 "Коррекция серой точки. Значения, отличные от 18%, могут быть полезны при "
 "съёмке тёмного объекта на светлом фоне."
 
-#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4386
+#: ../src/iop/filmic.c:1608 ../src/iop/filmicrgb.c:4383
 msgid ""
 "number of stops between middle gray and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr "Диапазон между серой точкой и чистым белым"
 
-#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4396
+#: ../src/iop/filmic.c:1620 ../src/iop/filmicrgb.c:4393
 msgid ""
 "number of stops between middle gray and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -15708,8 +15681,8 @@ msgstr ""
 "Относительное изменение широты динамического диапазона.\n"
 "Полезно с функцией автоматического расчёта уровней."
 
-#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4409
-#: ../src/iop/filmicrgb.c:4412 ../src/iop/profile_gamma.c:667
+#: ../src/iop/filmic.c:1637 ../src/iop/filmicrgb.c:4406
+#: ../src/iop/filmicrgb.c:4409 ../src/iop/profile_gamma.c:667
 msgid "auto tune levels"
 msgstr "Автоуровни"
 
@@ -15725,14 +15698,14 @@ msgstr "Автоматическая настройка по каналу све
 msgid "filmic S curve"
 msgstr "S-подобная кривая"
 
-#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4498
+#: ../src/iop/filmic.c:1651 ../src/iop/filmicrgb.c:4495
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
 msgstr "Крутизна наклона линейной части кривой (контраст)"
 
 #. geotagging
-#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4507
+#: ../src/iop/filmic.c:1658 ../src/iop/filmicrgb.c:4504
 #: ../src/libs/metadata_view.c:157
 msgid "latitude"
 msgstr "Широта"
@@ -15750,7 +15723,7 @@ msgstr ""
 msgid "shadows/highlights balance"
 msgstr "Тени и света"
 
-#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4518
+#: ../src/iop/filmic.c:1671 ../src/iop/filmicrgb.c:4515
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -15825,13 +15798,13 @@ msgstr ""
 msgid "destination/display"
 msgstr "Конечное изображение"
 
-#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4537
+#: ../src/iop/filmic.c:1741 ../src/iop/filmicrgb.c:4534
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr "Значения, отличные от 0%, высветляют тёмные элементы изображения"
 
-#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4544
+#: ../src/iop/filmic.c:1750 ../src/iop/filmicrgb.c:4541
 msgid ""
 "middle gray value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -15839,7 +15812,7 @@ msgstr ""
 "Значения, отличные от 18%, сдвигают баланс серого в светлую или тёмную "
 "сторону"
 
-#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4551
+#: ../src/iop/filmic.c:1759 ../src/iop/filmicrgb.c:4548
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -15882,73 +15855,73 @@ msgstr ""
 "Плёночная тональная кривая RGB: ошибка выделения памяти! Проверьте настройки "
 "памяти."
 
-#: ../src/iop/filmicrgb.c:2002 ../src/iop/filmicrgb.c:2291
+#: ../src/iop/filmicrgb.c:1999 ../src/iop/filmicrgb.c:2288
 msgid "filmic works only on RGB input"
 msgstr "Плёночная тональная кривая RGB работает только с данными в формате RGB"
 
-#: ../src/iop/filmicrgb.c:2146
+#: ../src/iop/filmicrgb.c:2143
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 "Плёночная тональная кривая RGB: ошибка выделения памяти! Проверьте настройки "
 "памяти."
 
-#: ../src/iop/filmicrgb.c:3390
+#: ../src/iop/filmicrgb.c:3387
 msgid "look only"
 msgstr "Кривая преобразования"
 
-#: ../src/iop/filmicrgb.c:3392
+#: ../src/iop/filmicrgb.c:3389
 msgid "look + mapping (lin)"
 msgstr "Линейн. масштабирование"
 
-#: ../src/iop/filmicrgb.c:3394
+#: ../src/iop/filmicrgb.c:3391
 msgid "look + mapping (log)"
 msgstr "Логарифмич. масштабирование"
 
-#: ../src/iop/filmicrgb.c:3396
+#: ../src/iop/filmicrgb.c:3393
 msgid "dynamic range mapping"
 msgstr "Преобразование динамич. диапазона"
 
-#: ../src/iop/filmicrgb.c:3763
+#: ../src/iop/filmicrgb.c:3760
 #, c-format
 msgid "(%.0f %%)"
 msgstr "(%.0f %%)"
 
-#: ../src/iop/filmicrgb.c:3779
+#: ../src/iop/filmicrgb.c:3776
 #, no-c-format
 msgid "% display"
 msgstr "Выход, %"
 
-#: ../src/iop/filmicrgb.c:3791
+#: ../src/iop/filmicrgb.c:3788
 msgid "EV scene"
 msgstr "Вход, EV"
 
-#: ../src/iop/filmicrgb.c:3795
+#: ../src/iop/filmicrgb.c:3792
 #, no-c-format
 msgid "% camera"
 msgstr "Камера, %"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3831 ../src/iop/filmicrgb.c:4531
+#: ../src/iop/filmicrgb.c:3828 ../src/iop/filmicrgb.c:4528
 msgid "display"
 msgstr "Выход"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3840
+#: ../src/iop/filmicrgb.c:3837
 msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3849 ../src/iop/filmicrgb.c:4369
+#: ../src/iop/filmicrgb.c:3846 ../src/iop/filmicrgb.c:4366
 msgid "scene"
 msgstr "Вход"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3858
+#: ../src/iop/filmicrgb.c:3855
 msgid "(EV)"
 msgstr "(EV)"
 
 #. we are over the graph area
-#: ../src/iop/filmicrgb.c:4287
+#: ../src/iop/filmicrgb.c:4284
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -15957,11 +15930,11 @@ msgstr ""
 "Светлая кривая отображает преобразование тонов.\n"
 "Тёмная кривая отображает преобразование насыщенности."
 
-#: ../src/iop/filmicrgb.c:4293
+#: ../src/iop/filmicrgb.c:4290
 msgid "toggle axis labels and values display"
 msgstr "Переключить метки осей и отображение значений"
 
-#: ../src/iop/filmicrgb.c:4297
+#: ../src/iop/filmicrgb.c:4294
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
@@ -15973,7 +15946,7 @@ msgstr ""
 "Щелчок правой кнопкой мыши для перехода к предыдущему.\n"
 "Двойной щелчок сбрасывает изменения."
 
-#: ../src/iop/filmicrgb.c:4376
+#: ../src/iop/filmicrgb.c:4373
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -15982,13 +15955,13 @@ msgstr ""
 "Коррекция серой точки.\n"
 "Уменьшите значение для увеличения яркости изображения."
 
-#: ../src/iop/filmicrgb.c:4404
+#: ../src/iop/filmicrgb.c:4401
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr "Изменение широты динамического диапазона"
 
-#: ../src/iop/filmicrgb.c:4414
+#: ../src/iop/filmicrgb.c:4411
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -16001,15 +15974,15 @@ msgstr ""
 "светлоты в пределы гистограммы"
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:4423
+#: ../src/iop/filmicrgb.c:4420
 msgid "reconstruct"
 msgstr "Восстановление"
 
-#: ../src/iop/filmicrgb.c:4425
+#: ../src/iop/filmicrgb.c:4422
 msgid "highlights clipping"
 msgstr "Восстановление пересветов"
 
-#: ../src/iop/filmicrgb.c:4431
+#: ../src/iop/filmicrgb.c:4428
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -16023,7 +15996,7 @@ msgstr ""
 "производится восстановление пересветов. Увеличение же\n"
 "значения уменьшает эту площадь."
 
-#: ../src/iop/filmicrgb.c:4441
+#: ../src/iop/filmicrgb.c:4438
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -16033,15 +16006,15 @@ msgstr ""
 "Уменьшите значение для более контрастного перехода. Увеличьте его для\n"
 "более плавного перехода."
 
-#: ../src/iop/filmicrgb.c:4447 ../src/iop/filmicrgb.c:4448
+#: ../src/iop/filmicrgb.c:4444 ../src/iop/filmicrgb.c:4445
 msgid "display highlight reconstruction mask"
 msgstr "Маска восстановления пересветов"
 
-#: ../src/iop/filmicrgb.c:4455 ../src/iop/splittoning.c:527
+#: ../src/iop/filmicrgb.c:4452 ../src/iop/splittoning.c:527
 msgid "balance"
 msgstr "Баланс"
 
-#: ../src/iop/filmicrgb.c:4462
+#: ../src/iop/filmicrgb.c:4459
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16056,7 +16029,7 @@ msgstr ""
 "один из каналов не подвергся клиппингу. Уменьшите его,\n"
 "если пиксели во всех каналах засвечены."
 
-#: ../src/iop/filmicrgb.c:4473
+#: ../src/iop/filmicrgb.c:4470
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16071,7 +16044,7 @@ msgstr ""
 "необходимо сохранить больше деталей. Уменьшите его,\n"
 "если необходим эффект размытия."
 
-#: ../src/iop/filmicrgb.c:4485
+#: ../src/iop/filmicrgb.c:4482
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -16087,11 +16060,11 @@ msgstr ""
 "пурпурные пересветы."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:4493
+#: ../src/iop/filmicrgb.c:4490
 msgid "look"
 msgstr "Кривая"
 
-#: ../src/iop/filmicrgb.c:4503
+#: ../src/iop/filmicrgb.c:4500
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -16100,7 +16073,7 @@ msgstr ""
 "Аналог качества бумаги при печати. Увеличьте для более ярких светов\n"
 "и уменьшения сжатия, уменьшите для более приглушённых светов."
 
-#: ../src/iop/filmicrgb.c:4511
+#: ../src/iop/filmicrgb.c:4508
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "increase to get more contrast and less desaturation at extreme luminances,\n"
@@ -16113,7 +16086,7 @@ msgstr ""
 "иначе уменьшить. в диапазоне широт не происходит десатурации.\n"
 "это не влияет на средние тона."
 
-#: ../src/iop/filmicrgb.c:4526 ../src/iop/filmicrgb.c:4669
+#: ../src/iop/filmicrgb.c:4523 ../src/iop/filmicrgb.c:4666
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -16124,11 +16097,11 @@ msgstr ""
 "слишком малую насыщенность."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:4555
+#: ../src/iop/filmicrgb.c:4552
 msgid "options"
 msgstr "Параметры"
 
-#: ../src/iop/filmicrgb.c:4560
+#: ../src/iop/filmicrgb.c:4557
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -16137,7 +16110,7 @@ msgstr ""
 "v4 в базируется на спектральной чистоте\n"
 "цвета и применяется в более новых версиях."
 
-#: ../src/iop/filmicrgb.c:4564
+#: ../src/iop/filmicrgb.c:4561
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -16146,21 +16119,21 @@ msgstr ""
 "Сохранять оригинальные цвета.\n"
 "Может чрезмерно усиливать цветовой шум или хроматические аберрации.\n"
 
-#: ../src/iop/filmicrgb.c:4570
+#: ../src/iop/filmicrgb.c:4567
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr "Крутизна кривой в светах"
 
-#: ../src/iop/filmicrgb.c:4575
+#: ../src/iop/filmicrgb.c:4572
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr "Крутизна кривой в тенях"
 
-#: ../src/iop/filmicrgb.c:4580
+#: ../src/iop/filmicrgb.c:4577
 #, c-format
 msgid ""
 "enable to input custom middle-gray values.\n"
@@ -16171,7 +16144,7 @@ msgstr ""
 "Включить возможность коррекции серой точки.\n"
 "Не рекомендуется, используйте модуль «Экспозиции»."
 
-#: ../src/iop/filmicrgb.c:4587
+#: ../src/iop/filmicrgb.c:4584
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -16179,7 +16152,7 @@ msgid ""
 "disable if you want a manual control."
 msgstr "Автонастройка резкости перехода исходя из белой и чёрной точек"
 
-#: ../src/iop/filmicrgb.c:4593
+#: ../src/iop/filmicrgb.c:4590
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -16189,7 +16162,7 @@ msgstr ""
 "Дополнительные проходы восстановления светов дают\n"
 "более естественное заполнение цветом засвеченных пикселей"
 
-#: ../src/iop/filmicrgb.c:4600
+#: ../src/iop/filmicrgb.c:4597
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -16199,7 +16172,7 @@ msgstr ""
 "Добавление шума в восстановленные света для\n"
 "получения более естественного изображения"
 
-#: ../src/iop/filmicrgb.c:4607
+#: ../src/iop/filmicrgb.c:4604
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -16207,11 +16180,11 @@ msgstr ""
 "Статистическая модель распределения,\n"
 "описывающая естественный шум сенсора\n"
 
-#: ../src/iop/filmicrgb.c:4675
+#: ../src/iop/filmicrgb.c:4672
 msgid "mid-tones saturation"
 msgstr "Насыщенность в средних тонах"
 
-#: ../src/iop/filmicrgb.c:4676
+#: ../src/iop/filmicrgb.c:4673
 msgid ""
 "desaturates the output of the module\n"
 "specifically at medium luminances.\n"
@@ -16477,7 +16450,7 @@ msgstr ""
 msgid "reconstruction, raw"
 msgstr "Восстановление, Raw"
 
-#: ../src/iop/highlights.c:2101
+#: ../src/iop/highlights.c:2111
 msgid ""
 "highlights: guided laplacian mode not available for X-Trans sensors. falling "
 "back to clip."
@@ -16485,11 +16458,11 @@ msgstr ""
 "Управляемый режим Лалласа недоступен для датчиков X-Trans. Вернуться к "
 "обрезке."
 
-#: ../src/iop/highlights.c:2174
+#: ../src/iop/highlights.c:2184
 msgid "highlight reconstruction method"
 msgstr "Алгоритм обработки пересвеченных участков"
 
-#: ../src/iop/highlights.c:2179
+#: ../src/iop/highlights.c:2189
 msgid ""
 "manually adjust the clipping threshold against magenta highlights\n"
 "the mask icon shows the clipped area\n"
@@ -16498,7 +16471,7 @@ msgstr ""
 "Настройка порога обрезки для борьбы с пересветами (обычно в этом нет "
 "необходимости)"
 
-#: ../src/iop/highlights.c:2188
+#: ../src/iop/highlights.c:2198
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
@@ -16506,7 +16479,7 @@ msgstr ""
 "Добавление шума для интеграции реконструированных областей\n"
 "в остальную часть изображения с шумом. Полезно при высоком ISO."
 
-#: ../src/iop/highlights.c:2192
+#: ../src/iop/highlights.c:2202
 msgid ""
 "increase if magenta highlights don't get fully corrected\n"
 "each new iteration brings a performance penalty."
@@ -16515,7 +16488,7 @@ msgstr ""
 "полностью.\n"
 "Каждая новая итерация приводит к снижению производительности."
 
-#: ../src/iop/highlights.c:2197
+#: ../src/iop/highlights.c:2207
 msgid ""
 "increase if magenta highlights don't get fully corrected.\n"
 "this may produce non-smooth boundaries between valid and clipped regions."
@@ -16525,7 +16498,7 @@ msgstr ""
 "Это может привести к несглаженным границам между допустимыми и засвеченными "
 "областями."
 
-#: ../src/iop/highlights.c:2201
+#: ../src/iop/highlights.c:2211
 msgid ""
 "increase to correct larger clipped areas.\n"
 "large values bring huge performance penalties"
@@ -19344,30 +19317,30 @@ msgid "change to: except"
 msgstr "Изменить на: КРОМЕ"
 
 #. the differents categories
-#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:843
-#: ../src/libs/filtering.c:925
+#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:845
+#: ../src/libs/filtering.c:927
 msgid "files"
 msgstr "Файлы"
 
 #: ../src/libs/collect.c:2960 ../src/libs/export_metadata.c:310
-#: ../src/libs/filtering.c:848 ../src/libs/filtering.c:930
+#: ../src/libs/filtering.c:850 ../src/libs/filtering.c:932
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "Метаданные"
 
-#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:869
-#: ../src/libs/filtering.c:951
+#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:871
+#: ../src/libs/filtering.c:953
 msgid "times"
 msgstr "Дата и время"
 
-#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:877
-#: ../src/libs/filtering.c:959
+#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:879
+#: ../src/libs/filtering.c:961
 msgid "capture details"
 msgstr "Детали съёмки"
 
-#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:886
-#: ../src/libs/filtering.c:968 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:888
+#: ../src/libs/filtering.c:970 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
@@ -19389,20 +19362,20 @@ msgstr "Сохранить"
 msgid "preferences..."
 msgstr "Настройки..."
 
-#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1386
+#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1397
 msgid "AND"
 msgstr "И"
 
-#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1391
+#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1402
 msgid "OR"
 msgstr "ИЛИ"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1396
+#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1407
 msgid "BUT NOT"
 msgstr "НО НЕ"
 
-#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1976
+#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1987
 msgid "revert to a previous set of rules"
 msgstr "Вернуться к предыдущему набору параметров"
 
@@ -19965,45 +19938,45 @@ msgstr "Добавить метку метаданных"
 msgid "delete metadata tag"
 msgstr "Удалить метку метаданных"
 
-#: ../src/libs/filtering.c:239
+#: ../src/libs/filtering.c:240
 msgid "collection filters"
 msgstr "Фильтры коллекции"
 
-#: ../src/libs/filtering.c:272
+#: ../src/libs/filtering.c:273
 msgid "initial setting"
 msgstr "Начальная настройка"
 
-#: ../src/libs/filtering.c:291
+#: ../src/libs/filtering.c:292
 msgid "imported: last 24h"
 msgstr "Импортировано: последние 24 часа"
 
-#: ../src/libs/filtering.c:296
+#: ../src/libs/filtering.c:297
 msgid "imported: last 30 days"
 msgstr "Импортировано: Последние 30 дней"
 
-#: ../src/libs/filtering.c:302
+#: ../src/libs/filtering.c:303
 msgid "taken: last 24h"
 msgstr "Принят: Последние 24 часа"
 
-#: ../src/libs/filtering.c:306
+#: ../src/libs/filtering.c:307
 msgid "taken: last 30 days"
 msgstr "Принят: Последние 30 дней"
 
-#: ../src/libs/filtering.c:652
+#: ../src/libs/filtering.c:653
 msgid "click or click&#38;drag to select one or multiple values"
 msgstr ""
 "Одиночный щелчок для выбора имени файла, ctrl+щелчок для выбора нескольких "
 "значений"
 
-#: ../src/libs/filtering.c:653
+#: ../src/libs/filtering.c:654
 msgid "right-click opens a menu to select the available values"
 msgstr "Щелчок правой кнопкой открывает меню для выбора доступных значений"
 
-#: ../src/libs/filtering.c:656
+#: ../src/libs/filtering.c:657
 msgid "actual selection"
 msgstr "Актуальное выделение"
 
-#: ../src/libs/filtering.c:916
+#: ../src/libs/filtering.c:918
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
@@ -20012,16 +19985,16 @@ msgstr ""
 "Невозможно изменить, так как параметр закреплен на панели инструментов"
 
 #. otherwise we add all implemented rules
-#: ../src/libs/filtering.c:923
+#: ../src/libs/filtering.c:925
 msgid "rule property"
 msgstr "Свойство параметра"
 
-#: ../src/libs/filtering.c:1016
+#: ../src/libs/filtering.c:1018
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "Фильтр"
 
-#: ../src/libs/filtering.c:1042
+#: ../src/libs/filtering.c:1044
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "click to un-pin"
@@ -20029,100 +20002,100 @@ msgstr ""
 "Этот параметр закреплен на верхней панели инструментов\n"
 "Нажмите, чтобы открепить"
 
-#: ../src/libs/filtering.c:1043
+#: ../src/libs/filtering.c:1045
 msgid "you can't disable the rule as it is pinned into the toolbar"
 msgstr "Не удается отключить параметр,, закрепленный на панели инструментов"
 
-#: ../src/libs/filtering.c:1044
+#: ../src/libs/filtering.c:1046
 msgid "you can't remove the rule as it is pinned into the toolbar"
 msgstr "Не удается удалить параметр, закрепленный на панели инструментов"
 
-#: ../src/libs/filtering.c:1048
+#: ../src/libs/filtering.c:1050
 msgid "click to pin this rule into the top toolbar"
 msgstr "Щелчок закрепляет этот параметр на верхней панели инструментов"
 
-#: ../src/libs/filtering.c:1049
+#: ../src/libs/filtering.c:1051
 msgid "remove this collect rule"
 msgstr "Удалить параметр"
 
-#: ../src/libs/filtering.c:1051
+#: ../src/libs/filtering.c:1053
 msgid "this rule is enabled"
 msgstr "Этот параметр включен"
 
-#: ../src/libs/filtering.c:1053
+#: ../src/libs/filtering.c:1055
 msgid "this rule is disabled"
 msgstr "Этот параметр отключен"
 
-#: ../src/libs/filtering.c:1157
+#: ../src/libs/filtering.c:1168
 msgid "and"
 msgstr " и "
 
-#: ../src/libs/filtering.c:1158
+#: ../src/libs/filtering.c:1169
 msgid "or"
 msgstr "или"
 
-#: ../src/libs/filtering.c:1159
+#: ../src/libs/filtering.c:1170
 msgid "and not"
 msgstr "и не"
 
-#: ../src/libs/filtering.c:1161
+#: ../src/libs/filtering.c:1172
 msgid "define how this rule should interact with the previous one"
 msgstr "Определите, как этот параметр должен взаимодействовать с предыдущим"
 
-#: ../src/libs/filtering.c:1420
+#: ../src/libs/filtering.c:1431
 msgid " (off)"
 msgstr "(Откл.)"
 
-#: ../src/libs/filtering.c:1643
+#: ../src/libs/filtering.c:1654
 msgid "sort order"
 msgstr "Порядок сортировки"
 
-#: ../src/libs/filtering.c:1645
+#: ../src/libs/filtering.c:1656
 msgid "determine the sort order of shown images"
 msgstr "Определить порядок сортировки отображаемых изображений"
 
-#: ../src/libs/filtering.c:1702
+#: ../src/libs/filtering.c:1713
 msgid "sort direction"
 msgstr "Направление сортировки"
 
-#: ../src/libs/filtering.c:1708
+#: ../src/libs/filtering.c:1719
 msgid "remove this sort order"
 msgstr "Удалить порядок сортировки"
 
-#: ../src/libs/filtering.c:1861
+#: ../src/libs/filtering.c:1872
 msgid "DESC"
 msgstr "DESC"
 
-#: ../src/libs/filtering.c:1861
+#: ../src/libs/filtering.c:1872
 msgid "ASC"
 msgstr "ASC"
 
-#: ../src/libs/filtering.c:1972
+#: ../src/libs/filtering.c:1983
 msgid "new rule"
 msgstr "Новый параметр"
 
-#: ../src/libs/filtering.c:1973
+#: ../src/libs/filtering.c:1984
 msgid "append new rule to collect images"
 msgstr "Добавить новый параметр для выбранных изображений"
 
-#: ../src/libs/filtering.c:1984 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1995 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "Сортировка"
 
-#: ../src/libs/filtering.c:1992
+#: ../src/libs/filtering.c:2003
 msgid "new sort"
 msgstr "Новая сортировка"
 
-#: ../src/libs/filtering.c:1993
+#: ../src/libs/filtering.c:2004
 msgid "append new sort to order images"
 msgstr "Добавить новую сортировку для %d снимков"
 
-#: ../src/libs/filtering.c:1996
+#: ../src/libs/filtering.c:2007
 msgid "revert to a previous set of sort orders"
 msgstr "К предыдущему порядку сортировки"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2043
+#: ../src/libs/filtering.c:2056
 msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
@@ -21364,7 +21337,7 @@ msgstr "Режим: Вычитание"
 msgid "cleanup unused shapes"
 msgstr "Удалить неиспользуемые фигуры"
 
-#: ../src/libs/masks.c:1670
+#: ../src/libs/masks.c:1628
 msgid "created shapes"
 msgstr "Созданные фигуры"
 
@@ -21405,7 +21378,7 @@ msgstr ""
 "Укажите, если вы не хотите, чтобы указанные метаданные использовалась при "
 "экспорте снимков"
 
-#: ../src/libs/metadata.c:715
+#: ../src/libs/metadata.c:713
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -21419,60 +21392,60 @@ msgstr ""
 "Ctrl+Enter для вставки символа перевода строки.\n"
 "Esc для закрытия редактора."
 
-#: ../src/libs/metadata.c:761
+#: ../src/libs/metadata.c:759
 msgid "write metadata for selected images"
 msgstr "Записать метаданные в выбранные снимки"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:817
+#: ../src/libs/metadata.c:815
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:817
+#: ../src/libs/metadata.c:815
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC BY)"
 
-#: ../src/libs/metadata.c:818
+#: ../src/libs/metadata.c:816
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:818
+#: ../src/libs/metadata.c:816
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 
-#: ../src/libs/metadata.c:819
+#: ../src/libs/metadata.c:817
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:819
+#: ../src/libs/metadata.c:817
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 
-#: ../src/libs/metadata.c:820
+#: ../src/libs/metadata.c:818
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:820
+#: ../src/libs/metadata.c:818
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 
-#: ../src/libs/metadata.c:821
+#: ../src/libs/metadata.c:819
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:822
+#: ../src/libs/metadata.c:820
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:823
+#: ../src/libs/metadata.c:821
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:824
+#: ../src/libs/metadata.c:822
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:825
+#: ../src/libs/metadata.c:823
 msgid "all rights reserved"
 msgstr "Все права сохранены"
 
