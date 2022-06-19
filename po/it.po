@@ -9294,7 +9294,7 @@ msgstr ""
 "Se vuoi generare in anticipo le anteprime a schermo intero affinchè darktable"
 " le possa utilizzare "
 "devi abilitare la cache del backend disco per l'anteprima a schermo pieno\n"
-"non verranno generate anteprime; fatto.\b"
+"non verranno generate anteprime; fatto.\n"
 
 #: ../src/generate-cache/main.c:248
 #, c-format
@@ -17464,7 +17464,7 @@ msgstr ""
 #, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
 msgstr ""
-"Errore - la dimensione %d del lut 3D %d eccede quella massima supportata"
+"Errore - la dimensione %d del lut 3D eccede quella massima supportata"
 
 #: ../src/iop/lut3d.c:548
 msgid "error allocating buffer for png LUT"
