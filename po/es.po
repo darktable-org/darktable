@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-18 14:04-0500\n"
-"PO-Revision-Date: 2022-06-19 01:43-0500\n"
+"PO-Revision-Date: 2022-06-19 02:10-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2012,14 +2012,13 @@ msgstr ""
 "esta opción."
 
 #: ../build/bin/preferences_gen.h:7763
-#, fuzzy
 msgid "scale slider step with min/max"
-msgstr "scale slider step with min/max"
+msgstr "variar el incremento del control deslizante con mín./máx."
 
 #: ../build/bin/preferences_gen.h:7777
-#, fuzzy
 msgid "vary bauhaus slider step size with min/max range"
-msgstr "vary bauhaus slider step size with min/max range"
+msgstr ""
+"Varía el incremento de los controles deslizantes según el rango mín./máx."
 
 #: ../build/bin/preferences_gen.h:7799
 msgid "sort built-in presets first"
@@ -2134,18 +2133,17 @@ msgstr ""
 "el orden para determinar a qué módulo se le aplicarán los atajos de teclado."
 
 #: ../build/bin/preferences_gen.h:8131
-#, fuzzy
 msgid "prefer focused instance"
-msgstr "prefer focused instance"
+msgstr "Preferir los módulos en foco"
 
 #: ../build/bin/preferences_gen.h:8145
-#, fuzzy
 msgid ""
 "if an instance of the module has focus, apply shortcut to that instance\n"
 "note: blending shortcuts always apply to the focused instance"
 msgstr ""
-"if an instance of the module has focus, apply shortcut to that instance\n"
-"note: blending shortcuts always apply to the focused instance"
+"Si existen módulos duplicados, se aplica el atajo al módulo que tiene el "
+"foco.\n"
+"Nota: los atajos de fusión siempre se aplican al módulo en foco."
 
 #: ../build/bin/preferences_gen.h:8167
 msgid "prefer expanded instances"
@@ -2361,20 +2359,20 @@ msgstr ""
 "colecciones"
 
 #: ../build/bin/preferences_gen.h:9117
-#, fuzzy
 msgid "suggested tags level of confidence"
-msgstr "suggested tags level of confidence"
+msgstr "Nivel de confianza para las palabras clave sugeridas"
 
 #: ../build/bin/preferences_gen.h:9142
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "level of confidence to include the tag in the suggestions list, 0: all "
 "associated tags, 99: 99% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
-"level of confidence to include the tag in the suggestions list, 0: all "
-"associated tags, 99: 99%% matching associated tags, 100: no matching tag to "
-"show only recent tags (faster)"
+"Nivel de confianza para incluir una etiqueta en la lista de sugerencias. 0: "
+"todas las palabras clave coincidentes; 99: 99% de palabras clave "
+"coincidentes; 100: ninguna coincidencia, sólo para palabras clave recientes "
+"(más rápido)."
 
 #: ../build/bin/preferences_gen.h:9164
 msgid "number of recently attached tags"
@@ -13364,9 +13362,8 @@ msgid "temperature"
 msgstr "temperatura"
 
 #: ../src/iop/channelmixerrgb.c:4075
-#, fuzzy
 msgid "spot color mapping"
-msgstr "mapeo de color"
+msgstr "mapeo de colores planos"
 
 #: ../src/iop/channelmixerrgb.c:4078 ../src/iop/channelmixerrgb.c:4206
 msgid "use a color checker target to autoset CAT and channels"
@@ -13375,9 +13372,8 @@ msgstr ""
 "automáticamente"
 
 #: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1083
-#, fuzzy
 msgid "spot mode"
-msgstr "modo dcp"
+msgstr "modo puntual"
 
 #: ../src/iop/channelmixerrgb.c:4081
 msgid ""
@@ -13402,16 +13398,15 @@ msgstr "medición"
 
 #: ../src/iop/channelmixerrgb.c:4091
 msgid "take channel mixing into account"
-msgstr "tener en cuenta el mezclador de canal"
+msgstr "incluir al mezclador de canal"
 
 #: ../src/iop/channelmixerrgb.c:4096
-#, fuzzy
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
 msgstr ""
-"compute the target by taking the channel mixing into account.\n"
-"if disabled, only the CAT is considered."
+"Calcula el destino teniendo en cuenta el mezclador de canales.\n"
+"Al desactivar, sólo se tendrá en cuenta el TAC."
 
 #: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1103
 msgid "the input color that should be mapped to the target"
@@ -13433,9 +13428,8 @@ msgstr ""
 "Estas coordenadas LCh se calculan a partir de las coordenadas CIE Lab 1976"
 
 #: ../src/iop/channelmixerrgb.c:4130
-#, fuzzy
 msgid "the desired target color after mapping"
-msgstr "establecer el puntaje reelevante del mapa de color correspondiente"
+msgstr "El color del destino deseado después del mapeo"
 
 #: ../src/iop/channelmixerrgb.c:4165
 msgid "input R"
@@ -15682,15 +15676,14 @@ msgid "edge management"
 msgstr "configuración de los bordes"
 
 #: ../src/iop/diffuse.c:1585
-#, fuzzy
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
 "for standalone sharpening set speed to negative values."
 msgstr ""
-"increase or decrease the sharpness of the highest frequencies.\n"
-"can be used to keep details after blooming,\n"
-"for standalone sharpening set speed to negative values."
+"Aumentar o disminuir la nitidez de las frecuencias más altas.\n"
+"Puede utilizarse para mantener los detalles después del resplandor.\n"
+"Para una nitidez autónoma, configure la velocidad con valores negativos."
 
 #: ../src/iop/diffuse.c:1591
 msgid ""
@@ -15886,9 +15879,8 @@ msgstr ""
 "empujando los valores RGB a negativos."
 
 #: ../src/iop/exposure.c:1080
-#, fuzzy
 msgid "spot exposure mapping"
-msgstr "mostrar la máscara de exposición"
+msgstr "mapeo de la exposición puntual"
 
 #: ../src/iop/exposure.c:1084
 msgid ""
@@ -16862,13 +16854,13 @@ msgstr ""
 "(No sería necesario reajustar estos valores)."
 
 #: ../src/iop/highlights.c:2198
-#, fuzzy
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 msgstr ""
-"add noise to visually blend the reconstructed areas\n"
-"into the rest of the noisy image. useful at high ISO."
+"Añadir ruido para mezclar virtualmente las áreas reconstruidas\n"
+"en el resto de la imagen ruidosa, lo que resulta muy útil cuando hay ISO "
+"alto."
 
 #: ../src/iop/highlights.c:2202
 msgid ""
@@ -20558,9 +20550,8 @@ msgid "new rule"
 msgstr "nueva regla"
 
 #: ../src/libs/filtering.c:1984
-#, fuzzy
 msgid "append new rule to collect images"
-msgstr "Establecer la diferencia horaria en las imágenes seleccionadas"
+msgstr "Añadir una nueva regla para la colección de imágenes"
 
 #: ../src/libs/filtering.c:1995 ../src/libs/tools/filter.c:100
 msgid "sort by"
