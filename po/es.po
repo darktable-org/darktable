@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-17 21:20-0500\n"
-"PO-Revision-Date: 2022-06-18 01:18-0500\n"
+"POT-Creation-Date: 2022-06-18 14:04-0500\n"
+"PO-Revision-Date: 2022-06-19 02:10-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2012,14 +2012,13 @@ msgstr ""
 "esta opción."
 
 #: ../build/bin/preferences_gen.h:7763
-#, fuzzy
 msgid "scale slider step with min/max"
-msgstr "scale slider step with min/max"
+msgstr "variar el incremento del control deslizante con mín./máx."
 
 #: ../build/bin/preferences_gen.h:7777
-#, fuzzy
 msgid "vary bauhaus slider step size with min/max range"
-msgstr "vary bauhaus slider step size with min/max range"
+msgstr ""
+"Varía el incremento de los controles deslizantes según el rango mín./máx."
 
 #: ../build/bin/preferences_gen.h:7799
 msgid "sort built-in presets first"
@@ -2134,18 +2133,17 @@ msgstr ""
 "el orden para determinar a qué módulo se le aplicarán los atajos de teclado."
 
 #: ../build/bin/preferences_gen.h:8131
-#, fuzzy
 msgid "prefer focused instance"
-msgstr "prefer focused instance"
+msgstr "Preferir los módulos en foco"
 
 #: ../build/bin/preferences_gen.h:8145
-#, fuzzy
 msgid ""
 "if an instance of the module has focus, apply shortcut to that instance\n"
 "note: blending shortcuts always apply to the focused instance"
 msgstr ""
-"if an instance of the module has focus, apply shortcut to that instance\n"
-"note: blending shortcuts always apply to the focused instance"
+"Si existen módulos duplicados, se aplica el atajo al módulo que tiene el "
+"foco.\n"
+"Nota: los atajos de fusión siempre se aplican al módulo en foco."
 
 #: ../build/bin/preferences_gen.h:8167
 msgid "prefer expanded instances"
@@ -2361,20 +2359,20 @@ msgstr ""
 "colecciones"
 
 #: ../build/bin/preferences_gen.h:9117
-#, fuzzy
 msgid "suggested tags level of confidence"
-msgstr "suggested tags level of confidence"
+msgstr "Nivel de confianza para las palabras clave sugeridas"
 
 #: ../build/bin/preferences_gen.h:9142
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "level of confidence to include the tag in the suggestions list, 0: all "
 "associated tags, 99: 99% matching associated tags, 100: no matching tag to "
 "show only recent tags (faster)"
 msgstr ""
-"level of confidence to include the tag in the suggestions list, 0: all "
-"associated tags, 99: 99%% matching associated tags, 100: no matching tag to "
-"show only recent tags (faster)"
+"Nivel de confianza para incluir una etiqueta en la lista de sugerencias. 0: "
+"todas las palabras clave coincidentes; 99: 99% de palabras clave "
+"coincidentes; 100: ninguna coincidencia, sólo para palabras clave recientes "
+"(más rápido)."
 
 #: ../build/bin/preferences_gen.h:9164
 msgid "number of recently attached tags"
@@ -4405,7 +4403,6 @@ msgstr "brillo"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:291
 #: ../build/lib/darktable/plugins/introspection_retouch.c:430
-#, fuzzy
 msgid "max_iter"
 msgstr "max_iter"
 
@@ -5816,9 +5813,8 @@ msgstr ""
 "\" \"eventhandles\" \"async\" \"disable\" \"magic\""
 
 #: ../src/common/darktable.c:1756
-#, fuzzy
 msgid "you may tune as before except 'magic'"
-msgstr "you may tune as before except 'magic'"
+msgstr "Todos se pueden ajustar como antes, excepto por \"magic\""
 
 #: ../src/common/database.c:2722
 #, c-format
@@ -6476,14 +6472,14 @@ msgstr "distribución de Poisson"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Archivo de perfil de ruido «%s» no es válido"
 
-#: ../src/common/opencl.c:1097
+#: ../src/common/opencl.c:1099
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "Debido al lento comportamiento de la GPU para la aceleración vía OpenCl, el "
 "hardware se ha desactivado."
 
-#: ../src/common/opencl.c:1104
+#: ../src/common/opencl.c:1106
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
@@ -6491,14 +6487,14 @@ msgstr ""
 "de OpenCL."
 
 # Ignorar advertencia: en el texto original GPU va en mayúsculas.
-#: ../src/common/opencl.c:1111
+#: ../src/common/opencl.c:1113
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU muy veloz detectada: el perfil de control de OpenCL se ha configurado en "
 "función de la misma."
 
-#: ../src/common/opencl.c:1118
+#: ../src/common/opencl.c:1120
 msgid "opencl scheduling profile set to default"
 msgstr "El perfil de control para OpenCL se ha ajustado al predefinido."
 
@@ -10445,11 +10441,11 @@ msgid "set overlay color"
 msgstr "Establece el color de las líneas reticulares"
 
 #: ../src/gui/guides.c:741
-#, fuzzy
 msgid ""
 "set the contrast between the lightest and darkest part of the guide overlays"
 msgstr ""
-"set the contrast between the lightest and darkest part of the guide overlays"
+"Establecer un contraste entre la parte más clara y la más oscura de las "
+"guías superpuestas"
 
 #: ../src/gui/guides.c:847 ../src/gui/guides.c:893
 msgid "show guides"
@@ -13366,9 +13362,8 @@ msgid "temperature"
 msgstr "temperatura"
 
 #: ../src/iop/channelmixerrgb.c:4075
-#, fuzzy
 msgid "spot color mapping"
-msgstr "mapeo de color"
+msgstr "mapeo de colores planos"
 
 #: ../src/iop/channelmixerrgb.c:4078 ../src/iop/channelmixerrgb.c:4206
 msgid "use a color checker target to autoset CAT and channels"
@@ -13377,9 +13372,8 @@ msgstr ""
 "automáticamente"
 
 #: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1083
-#, fuzzy
 msgid "spot mode"
-msgstr "modo dcp"
+msgstr "modo puntual"
 
 #: ../src/iop/channelmixerrgb.c:4081
 msgid ""
@@ -13404,21 +13398,19 @@ msgstr "medición"
 
 #: ../src/iop/channelmixerrgb.c:4091
 msgid "take channel mixing into account"
-msgstr "tener en cuenta el mezclador de canal"
+msgstr "incluir al mezclador de canal"
 
 #: ../src/iop/channelmixerrgb.c:4096
-#, fuzzy
 msgid ""
 "compute the target by taking the channel mixing into account.\n"
 "if disabled, only the CAT is considered."
 msgstr ""
-"compute the target by taking the channel mixing into account.\n"
-"if disabled, only the CAT is considered."
+"Calcula el destino teniendo en cuenta el mezclador de canales.\n"
+"Al desactivar, sólo se tendrá en cuenta el TAC."
 
 #: ../src/iop/channelmixerrgb.c:4110 ../src/iop/exposure.c:1103
-#, fuzzy
 msgid "the input color that should be mapped to the target"
-msgstr "the input color that should be mapped to the target"
+msgstr "El color de entrada que debe ajustarse al destino"
 
 #: ../src/iop/channelmixerrgb.c:4115
 msgid ""
@@ -13431,14 +13423,13 @@ msgstr ""
 "c: \tno corresponde"
 
 #: ../src/iop/channelmixerrgb.c:4117 ../src/iop/exposure.c:1110
-#, fuzzy
 msgid "these LCh coordinates are computed from CIE Lab 1976 coordinates"
-msgstr "these LCh coordinates are computed from CIE Lab 1976 coordinates"
+msgstr ""
+"Estas coordenadas LCh se calculan a partir de las coordenadas CIE Lab 1976"
 
 #: ../src/iop/channelmixerrgb.c:4130
-#, fuzzy
 msgid "the desired target color after mapping"
-msgstr "establecer el puntaje reelevante del mapa de color correspondiente"
+msgstr "El color del destino deseado después del mapeo"
 
 #: ../src/iop/channelmixerrgb.c:4165
 msgid "input R"
@@ -14273,9 +14264,8 @@ msgid "isolate luminances"
 msgstr "Separa luminancias"
 
 #: ../src/iop/colorbalancergb.c:1979
-#, fuzzy
 msgid "choose in which uniform color space the saturation is computed"
-msgstr "choose in which uniform color space the saturation is computed"
+msgstr "Elegir en qué espacio de color uniforme se calcula la saturación"
 
 #: ../src/iop/colorbalancergb.c:1981
 msgid "luminance ranges"
@@ -14834,9 +14824,8 @@ msgid "not applicable"
 msgstr "no es aplicable"
 
 #: ../src/iop/colorreconstruction.c:1310 ../src/iop/highlights.c:2215
-#, fuzzy
 msgid "no highlights reconstruction for monochrome images"
-msgstr "Método de reconstrucción de luces"
+msgstr "No se hay reconstrucción de luces para las imágenes monocromáticas"
 
 #: ../src/iop/colortransfer.c:103
 msgid "color transfer"
@@ -15687,15 +15676,14 @@ msgid "edge management"
 msgstr "configuración de los bordes"
 
 #: ../src/iop/diffuse.c:1585
-#, fuzzy
 msgid ""
 "increase or decrease the sharpness of the highest frequencies.\n"
 "can be used to keep details after blooming,\n"
 "for standalone sharpening set speed to negative values."
 msgstr ""
-"increase or decrease the sharpness of the highest frequencies.\n"
-"can be used to keep details after blooming,\n"
-"for standalone sharpening set speed to negative values."
+"Aumentar o disminuir la nitidez de las frecuencias más altas.\n"
+"Puede utilizarse para mantener los detalles después del resplandor.\n"
+"Para una nitidez autónoma, configure la velocidad con valores negativos."
 
 #: ../src/iop/diffuse.c:1591
 msgid ""
@@ -15891,9 +15879,8 @@ msgstr ""
 "empujando los valores RGB a negativos."
 
 #: ../src/iop/exposure.c:1080
-#, fuzzy
 msgid "spot exposure mapping"
-msgstr "mostrar la máscara de exposición"
+msgstr "mapeo de la exposición puntual"
 
 #: ../src/iop/exposure.c:1084
 msgid ""
@@ -16867,13 +16854,13 @@ msgstr ""
 "(No sería necesario reajustar estos valores)."
 
 #: ../src/iop/highlights.c:2198
-#, fuzzy
 msgid ""
 "add noise to visually blend the reconstructed areas\n"
 "into the rest of the noisy image. useful at high ISO."
 msgstr ""
-"add noise to visually blend the reconstructed areas\n"
-"into the rest of the noisy image. useful at high ISO."
+"Añadir ruido para mezclar virtualmente las áreas reconstruidas\n"
+"en el resto de la imagen ruidosa, lo que resulta muy útil cuando hay ISO "
+"alto."
 
 #: ../src/iop/highlights.c:2202
 msgid ""
@@ -18315,7 +18302,7 @@ msgstr ""
 
 #: ../src/iop/retouch.c:2295
 msgid "display masks"
-msgstr "mostrar máscaras"
+msgstr "Mostrar máscaras"
 
 #: ../src/iop/retouch.c:2300
 msgid "temporarily switch off shapes"
@@ -20447,27 +20434,26 @@ msgid "taken: last 30 days"
 msgstr "capturado: últimos 30 días"
 
 #: ../src/libs/filtering.c:653
-#, fuzzy
 msgid "click or click&#38;drag to select one or multiple values"
-msgstr "click or click&#38;drag to select one or multiple values"
+msgstr "Pulse o Pulse&#38;Arrastre para elegir varios elementos"
 
 #: ../src/libs/filtering.c:654
-#, fuzzy
 msgid "right-click opens a menu to select the available values"
-msgstr "right-click opens a menu to select the available values"
+msgstr ""
+"Con el clic secundario se despliega un menú para elegir entre los elementos "
+"disponibles"
 
 #: ../src/libs/filtering.c:657
 msgid "actual selection"
 msgstr "Selección actual"
 
 #: ../src/libs/filtering.c:918
-#, fuzzy
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
 msgstr ""
-"rule property\n"
-"this can't be changed as the rule is pinned into the toolbar"
+"Propiedad de la regla\n"
+"No puede cambiarse ya que la regla está anclada en la barra de herramientas"
 
 #. otherwise we add all implemented rules
 #: ../src/libs/filtering.c:925
@@ -20504,9 +20490,8 @@ msgid "click to pin this rule into the top toolbar"
 msgstr "Pulse para anclar esta regla en la barra de herramientas superior"
 
 #: ../src/libs/filtering.c:1051
-#, fuzzy
 msgid "remove this collect rule"
-msgstr "Quitar este módulo"
+msgstr "Eliminar esta regla para la colección"
 
 #: ../src/libs/filtering.c:1053
 msgid "this rule is enabled"
@@ -20529,9 +20514,8 @@ msgid "and not"
 msgstr " y  no"
 
 #: ../src/libs/filtering.c:1172
-#, fuzzy
 msgid "define how this rule should interact with the previous one"
-msgstr "define how this rule should interact with the previous one"
+msgstr "Se define cómo debe interactuar esta regla con la anterior"
 
 #: ../src/libs/filtering.c:1431
 msgid " (off)"
@@ -20566,38 +20550,33 @@ msgid "new rule"
 msgstr "nueva regla"
 
 #: ../src/libs/filtering.c:1984
-#, fuzzy
 msgid "append new rule to collect images"
-msgstr "Establecer la diferencia horaria en las imágenes seleccionadas"
+msgstr "Añadir una nueva regla para la colección de imágenes"
 
 #: ../src/libs/filtering.c:1995 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "ordenar por"
 
 #: ../src/libs/filtering.c:2003
-#, fuzzy
 msgid "new sort"
-msgstr "nuevo preajuste"
+msgstr "nuevo ordenamiento"
 
 #: ../src/libs/filtering.c:2004
-#, fuzzy
 msgid "append new sort to order images"
-msgstr "Diferencia horaria añadida a %d imagen"
+msgstr "Añadir una nueva clasificación para ordenar las imágenes"
 
 #: ../src/libs/filtering.c:2007
-#, fuzzy
 msgid "revert to a previous set of sort orders"
-msgstr "revert to a previous set of sort orders"
+msgstr "Revertir al conjunto de orden de clasificación previo"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
 #: ../src/libs/filtering.c:2056
-#, fuzzy
 msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
 msgstr ""
-"Preajustes\n"
-"Use Ctrl+Clic para gestionar"
+"Restablecer\n"
+"Use Ctrl+Clic para eliminar las reglas ancladas también"
 
 #: ../src/libs/filters/colors.c:140
 msgid "Y"
@@ -20612,17 +20591,16 @@ msgid "color filter"
 msgstr "filtro de color"
 
 #: ../src/libs/filters/colors.c:294
-#, fuzzy
 msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
 "ctrl+click to exclude the color label\n"
 "the gray button affects all color labels"
 msgstr ""
-"filter by images color label\n"
-"click to toggle the color label selection\n"
-"ctrl+click to exclude the color label\n"
-"the gray button affects all color labels"
+"Filtrar imágenes por marcas de color\n"
+"Pulse para alternar la selección de la marca de color.\n"
+"Use Ctrl+clic para excluir la marca de color.\n"
+"El botón gris afecta a todas las marcas de color."
 
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
 #: ../src/libs/filters/rating_range.c:339
@@ -20812,7 +20790,7 @@ msgid "landscape images"
 msgstr "imágenes horizontales"
 
 #: ../src/libs/filters/search.c:180
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "filter by text from images metadata, tags, file path and name\n"
 "`%' is the wildcard character\n"
@@ -20820,11 +20798,14 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
-"filter by text from images metadata, tags, file path and name\n"
-"`%' is the wildcard character\n"
-"by default start and end wildcards are auto-applied\n"
-"starting or ending with a double quote disables the corresponding wildcard\n"
-"is dimmed during the search execution"
+"Filtrar por texto a partir de los metadatos de las imágenes, las etiquetas, "
+"la ruta del archivo y el nombre.\n"
+"Use '%' como comodín\n"
+"De manera preestablecida, los comodines de inicio y fin se aplican "
+"automáticamente.\n"
+"Al empezar o terminar con una comilla doble se desactiva el comodín "
+"correspondiente.\n"
+"Durante la ejecución de la búsqueda, se atenúa."
 
 #: ../src/libs/geotagging.c:369
 msgid "apply offset and geo-location"
@@ -23534,9 +23515,8 @@ msgid "collapse grouped images"
 msgstr "Plegar imágenes agrupadas"
 
 #: ../src/libs/tools/global_toolbox.c:408
-#, fuzzy
 msgid "thumbnail overlays options"
-msgstr "opciones para la información sobrepuesta"
+msgstr "opciones de visibilidad de información sobrepuesta"
 
 #: ../src/libs/tools/global_toolbox.c:409
 msgid "click to change the type of overlays shown on thumbnails"
@@ -23550,9 +23530,8 @@ msgid "overlay mode for size"
 msgstr "modo de visibilidad para el tamaño"
 
 #: ../src/libs/tools/global_toolbox.c:436
-#, fuzzy
 msgid "thumbnail overlays"
-msgstr "opciones para la información sobrepuesta"
+msgstr "información sobrepuesta"
 
 #: ../src/libs/tools/global_toolbox.c:438
 #: ../src/libs/tools/global_toolbox.c:467
@@ -23727,18 +23706,20 @@ msgstr "MIDI"
 #: ../src/libs/tools/midi.c:200
 msgid "using absolute encoding; reinitialise to switch to relative"
 msgstr ""
-"Utilizando la codificación absoluta Reinicie para cambiar a la codificación "
+"Utilizando la codificación absoluta. Reinicie para cambiar a la codificación "
 "relativa."
 
 #: ../src/libs/tools/midi.c:204
-#, fuzzy, c-format
+#, c-format
 msgid "%d more identical (down) moves before switching to relative encoding"
-msgstr "%d more identical (down) moves before switching to relative encoding"
+msgstr ""
+"%d más movimientos idénticos (bloqueados) antes de cambiar a la codificación "
+"relativa"
 
 #: ../src/libs/tools/midi.c:207
-#, fuzzy, c-format
+#, c-format
 msgid "switching encoding to relative (down = %d)"
-msgstr "switching encoding to relative (down = %d)"
+msgstr "Cambiando la codificación a relativa (bloqueados = %d)"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
