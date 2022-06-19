@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-16 22:32+0200\n"
+"PO-Revision-Date: 2022-06-19 10:39+0200\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: darktable ITA translation team\n"
 "Language: it\n"
@@ -8972,7 +8972,7 @@ msgstr "Adesso"
 
 #: ../src/dtgtk/range.c:1040
 msgid "set the value to always match current datetime"
-msgstr ""
+msgstr "Imposta il valore alla data corrente"
 
 #. apply button
 #: ../src/dtgtk/range.c:1043 ../src/gui/accelerators.c:149
@@ -9320,6 +9320,13 @@ msgid ""
 "need to enable disk backend for full preview cache\n"
 "no full previews to be generated, done.\n"
 msgstr ""
+"Attenzione: backend disco per la cache dell'anteprima a schermo intero è"
+" disabilitata. "
+"(cache backend disco piena)\n"
+"Se vuoi generare in anticipo le anteprime a schermo intero affinchè darktable"
+" le possa utilizzare "
+"devi abilitare la cache del backend disco per l'anteprima a schermo pieno\n"
+"non verranno generate anteprime; fatto.\b"
 
 #: ../src/generate-cache/main.c:248
 #, c-format
@@ -16640,6 +16647,8 @@ msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
 msgstr ""
+"Il selettore scorrevole per la mappatura tonale controlla la linearità: più"
+" il valore è alto e più saranno visibili dettagli nelle ombre."
 
 #: ../src/iop/globaltonemap.c:645
 msgid "the target light for tonemapper specified as cd/m2"
@@ -18066,7 +18075,7 @@ msgstr "Livello di nero 3"
 
 #: ../src/iop/rawprepare.c:851
 msgid "flat field correction to compensate for lens shading"
-msgstr ""
+msgstr "Correzione di campo per compensare la vignettatura dell'obiettivo"
 
 #: ../src/iop/rawprepare.c:859
 msgid "crop from left border"
@@ -18130,6 +18139,7 @@ msgstr ""
 #: ../src/iop/relight.c:281
 msgid "toggle tool for picking median lightness in image"
 msgstr ""
+"Attiva/disattiva lo strumento per prelevare la chiarezza media nell'immagine"
 
 #: ../src/iop/relight.c:284 ../src/libs/metadata_view.c:147
 #: ../src/libs/print_settings.c:2385
@@ -18340,6 +18350,8 @@ msgstr "Preleva il colore di riempimento dall'immagine"
 #: ../src/iop/retouch.c:2399
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr ""
+"Regola la luminosità del colore con precisione. Funziona anche con il"
+" cancellino."
 
 #: ../src/iop/retouch.c:2405
 msgid "type for the blur algorithm"
@@ -19894,7 +19906,7 @@ msgstr "Errore nel caricamento del file '%s'"
 #, c-format
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
-msgstr[0] "Nessuna compressione della coda di sviluppo dell'immagine %d"
+msgstr[0] "Nessuna compressione della coda di sviluppo per l'immagine %d\t"
 msgstr[1] ""
 
 #: ../src/libs/copy_history.c:235
