@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-18 14:04-0500\n"
-"PO-Revision-Date: 2022-06-18 15:00-0500\n"
+"PO-Revision-Date: 2022-06-19 01:43-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -4405,7 +4405,6 @@ msgstr "brillo"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:291
 #: ../build/lib/darktable/plugins/introspection_retouch.c:430
-#, fuzzy
 msgid "max_iter"
 msgstr "max_iter"
 
@@ -18311,7 +18310,7 @@ msgstr ""
 
 #: ../src/iop/retouch.c:2295
 msgid "display masks"
-msgstr "mostrar máscaras"
+msgstr "Mostrar máscaras"
 
 #: ../src/iop/retouch.c:2300
 msgid "temporarily switch off shapes"
@@ -20601,17 +20600,16 @@ msgid "color filter"
 msgstr "filtro de color"
 
 #: ../src/libs/filters/colors.c:294
-#, fuzzy
 msgid ""
 "filter by images color label\n"
 "click to toggle the color label selection\n"
 "ctrl+click to exclude the color label\n"
 "the gray button affects all color labels"
 msgstr ""
-"filter by images color label\n"
-"click to toggle the color label selection\n"
-"ctrl+click to exclude the color label\n"
-"the gray button affects all color labels"
+"Filtrar imágenes por marcas de color\n"
+"Pulse para alternar la selección de la marca de color.\n"
+"Use Ctrl+clic para excluir la marca de color.\n"
+"El botón gris afecta a todas las marcas de color."
 
 #: ../src/libs/filters/colors.c:301 ../src/libs/filters/colors.c:312
 #: ../src/libs/filters/rating_range.c:339
@@ -20801,7 +20799,7 @@ msgid "landscape images"
 msgstr "imágenes horizontales"
 
 #: ../src/libs/filters/search.c:180
-#, fuzzy, no-c-format
+#, no-c-format
 msgid ""
 "filter by text from images metadata, tags, file path and name\n"
 "`%' is the wildcard character\n"
@@ -20809,11 +20807,14 @@ msgid ""
 "starting or ending with a double quote disables the corresponding wildcard\n"
 "is dimmed during the search execution"
 msgstr ""
-"filter by text from images metadata, tags, file path and name\n"
-"`%' is the wildcard character\n"
-"by default start and end wildcards are auto-applied\n"
-"starting or ending with a double quote disables the corresponding wildcard\n"
-"is dimmed during the search execution"
+"Filtrar por texto a partir de los metadatos de las imágenes, las etiquetas, "
+"la ruta del archivo y el nombre.\n"
+"Use '%' como comodín\n"
+"De manera preestablecida, los comodines de inicio y fin se aplican "
+"automáticamente.\n"
+"Al empezar o terminar con una comilla doble se desactiva el comodín "
+"correspondiente.\n"
+"Durante la ejecución de la búsqueda, se atenúa."
 
 #: ../src/libs/geotagging.c:369
 msgid "apply offset and geo-location"
@@ -23523,9 +23524,8 @@ msgid "collapse grouped images"
 msgstr "Plegar imágenes agrupadas"
 
 #: ../src/libs/tools/global_toolbox.c:408
-#, fuzzy
 msgid "thumbnail overlays options"
-msgstr "opciones para la información sobrepuesta"
+msgstr "opciones de visibilidad de información sobrepuesta"
 
 #: ../src/libs/tools/global_toolbox.c:409
 msgid "click to change the type of overlays shown on thumbnails"
@@ -23539,9 +23539,8 @@ msgid "overlay mode for size"
 msgstr "modo de visibilidad para el tamaño"
 
 #: ../src/libs/tools/global_toolbox.c:436
-#, fuzzy
 msgid "thumbnail overlays"
-msgstr "opciones para la información sobrepuesta"
+msgstr "información sobrepuesta"
 
 #: ../src/libs/tools/global_toolbox.c:438
 #: ../src/libs/tools/global_toolbox.c:467
