@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-19 12:04+0200\n"
+"PO-Revision-Date: 2022-06-19 12:30+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -5800,7 +5800,6 @@ msgstr ""
 "di darktable sono state cambiate."
 
 #: ../src/common/darktable.c:1739
-#, fuzzy
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
@@ -5833,7 +5832,6 @@ msgstr ""
 "Il contenuto è:"
 
 #: ../src/common/darktable.c:1754
-#, fuzzy
 msgid ""
 " 'avoid_atomics' 'micro_nap' 'pinned_memory' 'roundupwd' 'roundupht' "
 "'eventhandles' 'async' 'disable' 'magic'"
@@ -5842,7 +5840,6 @@ msgstr ""
 "'eventhandles' 'async' 'disable' 'magic'"
 
 #: ../src/common/darktable.c:1756
-#, fuzzy
 msgid "you may tune as before except 'magic'"
 msgstr "Puoi ottimizzare come prima, ad eccezione di \"magico\""
 
@@ -9065,7 +9062,7 @@ msgstr ""
 "\n"
 
 #: ../src/dtgtk/thumbtable.c:1239
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
@@ -10083,7 +10080,6 @@ msgid "$(VERSION) - duplicate version"
 msgstr "$(VERSION) - Versione duplicata"
 
 #: ../src/gui/gtkentry.c:177
-#, fuzzy
 msgid ""
 "$(VERSION.IF_MULTI) - same as $(VERSION) but null string if only one version "
 "exists"
@@ -11048,7 +11044,6 @@ msgid "tiling"
 msgstr "Tiling"
 
 #: ../src/imageio/format/avif.c:829
-#, fuzzy
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -11472,7 +11467,6 @@ msgid "file on disk"
 msgstr "File su disco"
 
 #: ../src/imageio/storage/disk.c:182 ../src/imageio/storage/gallery.c:166
-#, fuzzy
 #: ../src/imageio/storage/latex.c:165
 msgid ""
 "enter the path where to put exported images\n"
@@ -11480,7 +11474,7 @@ msgid ""
 "type '$(' to activate the completion and see the list of variables"
 msgstr ""
 "Inserisci il percorso dove salvare le immagini esportate\n"
-"le variabili supportano (bash like string manipulation)\n"
+"le variabili supportano stringhe di manipolazione come quelle di bash\n"
 "digita '$(' per attivare il completamento e vedere la lista delle variabili"
 
 #: ../src/imageio/storage/disk.c:193
@@ -13522,7 +13516,6 @@ msgid "optimize for"
 msgstr "Ottimizza per"
 
 #: ../src/iop/channelmixerrgb.c:4223
-#, fuzzy
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -19908,7 +19901,7 @@ msgstr "Errore nel caricamento del file '%s'"
 msgid "no history compression of %d image"
 msgid_plural "no history compression of %d images"
 msgstr[0] "Nessuna compressione della coda di sviluppo per l'immagine %d\t"
-msgstr[1] ""
+msgstr[1] "Nessuna compressione della coda di sviluppo per le immagini %d\t"
 
 #: ../src/libs/copy_history.c:235
 #, c-format
@@ -20740,7 +20733,7 @@ msgstr "peggiore"
 
 #: ../src/libs/filters/rating_range.c:288
 msgid "cap"
-msgstr ""
+msgstr "cap"
 
 #: ../src/libs/filters/rating_range.c:303
 msgid "rating filter"
@@ -23167,7 +23160,6 @@ msgid "toggle show or not darktable tags"
 msgstr "Attiva o disattiva la visualizzazione dei Tag di darktable"
 
 #: ../src/libs/tagging.c:3133
-#, fuzzy
 msgid "dttags"
 msgstr "dttags"
 
@@ -23371,22 +23363,18 @@ msgid "button misc1"
 msgstr "pulsante misc1"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "paddle1"
 msgstr "paddle1"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "paddle2"
 msgstr "paddle2"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "paddle3"
 msgstr "paddle3"
 
 #: ../src/libs/tools/gamepad.c:75
-#, fuzzy
 msgid "paddle4"
 msgstr "paddle4"
 
@@ -23540,7 +23528,6 @@ msgid "overlays block on mouse hover"
 msgstr "Le sovraimpressioni si ferma quando il mouse è sopra"
 
 #: ../src/libs/tools/global_toolbox.c:446
-#, fuzzy
 #: ../src/libs/tools/global_toolbox.c:472
 msgid "during (s)"
 msgstr "durante (s)"
