@@ -1086,13 +1086,15 @@ finally:
         if((cl->dev[n].benchmark > 0.0f) && (cl->dev[n].disabled == 0))
         {
           tgpumin = fminf(cl->dev[n].benchmark, tgpumin);
-          tgpumax = fminf(cl->dev[n].benchmark, tgpumax);
+          tgpumax = fmaxf(cl->dev[n].benchmark, tgpumax);
         }
       }
       
-      if(tcpu <= 1.5f * tgpumin)
+      if(tcpu < tgpumin / 3.0f)
       {
-        // de-activate opencl for darktable in case of too slow GPU(s). user can always manually overrule this later.
+        // de-activate opencl for darktable in case the cpu is three times faster than the fastest GPU.
+        // FIXME the problem here is that the benchmark might not reflect real-world performance.
+        // user can always manually overrule this later.
         cl->enabled = FALSE;
         dt_conf_set_bool("opencl", FALSE);
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
@@ -1108,6 +1110,9 @@ finally:
       else if((tcpu >= 6.0f * tgpumin) && (cl->num_devs == 1))
       {
         // set scheduling profile to "very fast GPU" if CPU is way too slow and there is just one device
+        // FIXME this condition is very unlikely to be met. Proper fixing might need
+        // a) a more realistic benchmark as we use in modern modules like d&s
+        // b) a redesigned scheduler for dt > 4.0
         dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
         dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly"));
