@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-19 12:37+0200\n"
+"PO-Revision-Date: 2022-06-19 12:44+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -11943,7 +11943,6 @@ msgid "denoise & sharpen"
 msgstr "Riduzione rumore e nitidezza"
 
 #: ../src/iop/atrous.c:806
-#, fuzzy
 msgctxt "atrous"
 msgid "sharpen"
 msgstr "Nitidezza"
@@ -15731,7 +15730,6 @@ msgid "sharpen (strong)"
 msgstr "Nitidezza (forte)"
 
 #: ../src/iop/equalizer.c:316
-#, fuzzy
 msgctxt "equalizer"
 msgid "sharpen"
 msgstr "Nitidezza"
@@ -18517,7 +18515,6 @@ msgid "adjust saturation of highlights"
 msgstr "Regola la saturazione delle alteluci"
 
 #: ../src/iop/sharpen.c:73
-#, fuzzy
 msgctxt "modulename"
 msgid "sharpen"
 msgstr "Nitidezza"
@@ -18539,7 +18536,6 @@ msgstr "Quasi-lineare, Lab, riferito allo schermo o alla scena"
 #. add the preset.
 #. restrict to raw images
 #: ../src/iop/sharpen.c:104 ../src/iop/sharpen.c:108
-#, fuzzy
 msgid "sharpen"
 msgstr "Nitidezza"
 
