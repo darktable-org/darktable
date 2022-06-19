@@ -10,15 +10,16 @@ msgstr ""
 "Project-Id-Version: unnamed project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-01 07:38+0200\n"
-"PO-Revision-Date: 2022-06-19 10:39+0200\n"
-"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
-"Language-Team: darktable ITA translation team\n"
+"PO-Revision-Date: 2022-06-19 12:04+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
+"Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 20.04.2\n"
+"X-Generator: Lokalize 21.12.3\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -2650,7 +2651,7 @@ msgstr "Curvatura"
 #: ../src/iop/colorbalancergb.c:2058 ../src/iop/colorbalancergb.c:2062
 #: ../src/iop/colorbalancergb.c:2066
 msgid "offset"
-msgstr "Spostamento"
+msgstr "Compensazione"
 
 #: ../build/lib/darktable/plugins/introspection_blurs.c:220
 #: ../src/common/collection.c:681 ../src/gui/preferences.c:804
@@ -2690,7 +2691,7 @@ msgstr "Dimensione bordo"
 #: ../build/lib/darktable/plugins/introspection_borders.c:140
 #: ../build/lib/darktable/plugins/introspection_borders.c:271
 msgid "horizontal offset"
-msgstr "Spostamento orizzontale"
+msgstr "Compensazione orizzontale"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:158
 #: ../build/lib/darktable/plugins/introspection_borders.c:283
@@ -2705,7 +2706,7 @@ msgstr "Dimensione della cornice"
 #: ../build/lib/darktable/plugins/introspection_borders.c:182
 #: ../build/lib/darktable/plugins/introspection_borders.c:299
 msgid "frame line offset"
-msgstr "Spostamento cornice"
+msgstr "Compensazione cornice"
 
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:42
 #: ../build/lib/darktable/plugins/introspection_cacorrect.c:91
@@ -8972,7 +8973,7 @@ msgstr "Adesso"
 
 #: ../src/dtgtk/range.c:1040
 msgid "set the value to always match current datetime"
-msgstr "Imposta il valore alla data corrente"
+msgstr "Imposta sempre il valore alla data e ora corrente"
 
 #. apply button
 #: ../src/dtgtk/range.c:1043 ../src/gui/accelerators.c:149
@@ -9304,7 +9305,7 @@ msgid ""
 "need to enable disk backend for thumbnail cache\n"
 "no thumbnails to be generated, done.\n"
 msgstr ""
-"Attenzione: backend disco per la cache anteprime è disabilitato "
+"Attenzione: la gestione disco per la cache anteprime è disabilitato "
 "(cache_disk_backend)\n"
 "Se si vogliono generare in anticipo le anteprime e fare anche in modo che "
 "esse possano essere utilizzate da darktable, è necessario abilitare il "
@@ -13905,7 +13906,7 @@ msgstr "Simile a Kodachrome"
 
 #: ../src/iop/colorbalance.c:943
 msgid "optimize luma from patches"
-msgstr "Ottimizza la luminanza dai campioni"
+msgstr "Ottimizza la luminosità dai campioni"
 
 #: ../src/iop/colorbalance.c:945 ../src/iop/colorbalance.c:2058
 msgid "optimize luma"
@@ -13922,7 +13923,7 @@ msgstr "Neutralizza colori"
 #: ../src/iop/colorbalance.c:1731
 msgctxt "color"
 msgid "offset"
-msgstr "Spostamento"
+msgstr "Compensazione"
 
 #: ../src/iop/colorbalance.c:1731
 msgctxt "color"
@@ -13951,15 +13952,15 @@ msgstr "Gain"
 
 #: ../src/iop/colorbalance.c:1735
 msgid "shadows: lift / offset"
-msgstr "Ombre: lift / offset"
+msgstr "Ombre: alza / compensa"
 
 #: ../src/iop/colorbalance.c:1736
 msgid "mid-tones: gamma / power"
-msgstr "Mezzi toni: gamma / power"
+msgstr "Mezzitoni: gamma / potenza"
 
 #: ../src/iop/colorbalance.c:1737
 msgid "highlights: gain / slope"
-msgstr "Alte luci: gain / slope"
+msgstr "Aletluci: guadano / riduzione"
 
 #: ../src/iop/colorbalance.c:1761
 msgid "shadows / mid-tones / highlights"
@@ -14069,7 +14070,7 @@ msgstr "Ottimizzatori automatici"
 
 #: ../src/iop/colorbalance.c:2059
 msgid "fit the whole histogram and center the average luma"
-msgstr "Aggiusta l'intero istogramma e entra il valore di luminanza medio"
+msgstr "Aggiusta l'intero istogramma e centra il valore di luminanza medio"
 
 #: ../src/iop/colorbalance.c:2065
 msgid "optimize the RGB curves to remove color casts"
@@ -14133,7 +14134,7 @@ msgstr "Aumenta il contrasto con cromaticità costante"
 
 #: ../src/iop/colorbalancergb.c:1826
 msgid "linear chroma grading"
-msgstr "Gradazione cromaticità lineare"
+msgstr "Gradiente di cromaticità lineare"
 
 #: ../src/iop/colorbalancergb.c:1832
 msgid "increase colorfulness at same luminance globally"
@@ -14418,7 +14419,7 @@ msgid ""
 "shift+click while color picking to replace patch"
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
-"I campioni modificati sono circondati da un bordo\n"
+"I campioni modificati sono circondati da un contorno\n"
 "Click per selezionare\n"
 "Doppio click per azzerare\n"
 "Click destro per cancellare il campione\n"
@@ -15063,7 +15064,7 @@ msgstr "Soglia per il defringe, valori maggiori significano meno defringe"
 
 #: ../src/iop/demosaic.c:221
 msgid "demosaic"
-msgstr "demosaicizzazione"
+msgstr "Demosaicizzazione"
 
 #: ../src/iop/demosaic.c:226
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
@@ -17781,7 +17782,7 @@ msgstr "Prendi il colore delle ombre dall'immagine"
 
 #: ../src/iop/negadoctor.c:892
 msgid "shadows red offset"
-msgstr "Offset rosso delle ombre"
+msgstr "Compensazione rosso delle ombre"
 
 #: ../src/iop/negadoctor.c:893 ../src/iop/negadoctor.c:900
 #: ../src/iop/negadoctor.c:907
@@ -17802,7 +17803,7 @@ msgstr "Compensazione delle ombre verdi"
 
 #: ../src/iop/negadoctor.c:906
 msgid "shadows blue offset"
-msgstr "Offset blu delle ombre"
+msgstr "Compensazione blu delle ombre"
 
 #. WB highlights
 #: ../src/iop/negadoctor.c:913
@@ -19327,11 +19328,11 @@ msgstr "Intensità dell'effetto sulla saturazione"
 
 #: ../src/iop/vignette.c:1007
 msgid "horizontal offset of center of the effect"
-msgstr "Spostamento orizzontale del centro dell'effetto"
+msgstr "Compensazione orizzontale del centro dell'effetto"
 
 #: ../src/iop/vignette.c:1008
 msgid "vertical offset of center of the effect"
-msgstr "Spostamento verticale del centro dell'effetto"
+msgstr "Compensazione verticale del centro dell'effetto"
 
 #: ../src/iop/vignette.c:1009
 msgid ""
@@ -20776,7 +20777,7 @@ msgstr ""
 
 #: ../src/libs/geotagging.c:369
 msgid "apply offset and geo-location"
-msgstr "Applica lo spostamento e la geo localizzazione"
+msgstr "Applica la compensazione e la geo localizzazione"
 
 #: ../src/libs/geotagging.c:370 ../src/libs/geotagging.c:1905
 msgid "apply geo-location"
@@ -20848,7 +20849,7 @@ msgstr "Data/ora originale"
 
 #: ../src/libs/geotagging.c:1739
 msgid "date/time offset"
-msgstr "Spostamento della data/ora"
+msgstr "Compensazione della data/ora"
 
 #: ../src/libs/geotagging.c:1741
 msgid "offset or difference ([-]dd hh:mm:ss[.sss])"
@@ -20862,7 +20863,7 @@ msgstr ""
 #. apply
 #: ../src/libs/geotagging.c:1753
 msgid "apply offset"
-msgstr "Applica lo spostamento"
+msgstr "Applica la compensazione"
 
 #: ../src/libs/geotagging.c:1754
 msgid "apply offset to selected images"
@@ -24267,7 +24268,7 @@ msgstr "Riallinea le immagini alla griglia"
 
 #: ../src/views/lighttable.c:1256
 msgid "reset first image offset"
-msgstr "Azzera lo spostamento della prima immagine"
+msgstr "Azzera la compensazione della prima immagine"
 
 #: ../src/views/lighttable.c:1257
 msgid "select toggle image"
