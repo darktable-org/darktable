@@ -510,7 +510,7 @@ static inline float4 gamut_check_RGB(constant const float *const matrix_in, cons
   return clamp(RGB_out, 0.f, display_white);
 }
 
-static inline float4 gamut_mapping(float4 Ych_final, float4 Ych_original, float4 pix_out,
+static inline float4 gamut_mapping(float4 Ych_final, float4 Ych_original,
                                    constant const float *const input_matrix,
                                    constant const float *const output_matrix,
                                    constant const float *const export_input_matrix,
@@ -531,26 +531,28 @@ static inline float4 gamut_mapping(float4 Ych_final, float4 Ych_original, float4
   Ych_final = filmic_desaturate_v4(Ych_original, Ych_final, saturation);
   Ych_final = gamut_check_Yrg(Ych_final);
 
+  float4 output;
+
   if(!use_output_profile)
   {
     // Now, it is still possible that one channel > display white or < display black because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    pix_out = gamut_check_RGB(input_matrix, output_matrix, display_black, display_white, Ych_final);
+    output = gamut_check_RGB(input_matrix, output_matrix, display_black, display_white, Ych_final);
   }
   else
   {
     // Now, it is still possible that one channel > display white or < display black because of saturation.
     // We have already clipped Y, so we know that any problem now is caused by c
-    pix_out = gamut_check_RGB(export_input_matrix, export_output_matrix, display_black, display_white, Ych_final);
+    const float4 export_RGB = gamut_check_RGB(export_input_matrix, export_output_matrix, display_black, display_white, Ych_final);
 
     // Go from export RGB to CIE LMS 2006 D65
-    const float4 LMS = matrix_product_float4(pix_out, export_input_matrix);
+    const float4 LMS = matrix_product_float4(export_RGB, export_input_matrix);
 
     // Go from CIE LMS 2006 D65 to pipeline RGB D50
-    pix_out = matrix_product_float4(LMS, output_matrix);
+    output = matrix_product_float4(LMS, output_matrix);
   }
 
-  return pix_out;
+  return output;
 }
 
 
@@ -598,10 +600,9 @@ static inline float4 filmic_chroma_v4(const float4 i,
   // Get final Ych in Kirk/Filmlight Yrg
   float4 Ych_final = pipe_RGB_to_Ych(o, matrix_in);
 
-  o = gamut_mapping(Ych_final, Ych_original, o, matrix_in, matrix_out,
-                    export_matrix_in, export_matrix_out,
-                    display_black, display_white, saturation, use_output_profile);
-  return o;
+  return gamut_mapping(Ych_final, Ych_original, matrix_in, matrix_out,
+                       export_matrix_in, export_matrix_out,
+                       display_black, display_white, saturation, use_output_profile);
 }
 
 static inline float4 filmic_split_v4(const float4 i,
@@ -618,20 +619,23 @@ static inline float4 filmic_split_v4(const float4 i,
                                      const int use_output_profile,
                                      constant const float *const export_matrix_in, constant const float *const export_matrix_out)
 {
-  float *input = (float *)&i;
   float4 o;
-  float *output = (float *)&o;
-  for(int c = 0; c < 3; c++)
-  {
-    // Log tonemapping
-    output[c] = log_tonemapping_v2(input[c], grey_value, black_exposure, dynamic_range);
 
-    // Filmic S curve on the max RGB
-    // Apply the transfer function of the display
-    output[c] = native_powr(clamp(filmic_spline(output[c], M1, M2, M3, M4, M5, latitude_min, latitude_max, type),
-                       display_black,
-                       display_white), output_power);
-  }
+  // Log tonemapping
+  o.x = log_tonemapping_v2(i.x, grey_value, black_exposure, dynamic_range);
+  o.y = log_tonemapping_v2(i.y, grey_value, black_exposure, dynamic_range);
+  o.z = log_tonemapping_v2(i.z, grey_value, black_exposure, dynamic_range);
+  o.w = 0.f;
+
+  // Filmic S curve on individual channels
+  o.x = filmic_spline(o.x, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
+  o.y = filmic_spline(o.y, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
+  o.z = filmic_spline(o.z, M1, M2, M3, M4, M5, latitude_min, latitude_max, type);
+
+  // Clamp to [0, display_white]: we don't want to clamp individual channels to display_black
+  // as that would limit the max available saturation. Luminance is clipped to display_black later.
+  // Apply output power function afterwards.
+  o = native_powr(clamp(o, (float4)0.f, (float4)display_white), output_power);
 
   // Save Ych in Kirk/Filmlight Yrg
   float4 Ych_original = pipe_RGB_to_Ych(i, matrix_in);
@@ -639,19 +643,11 @@ static inline float4 filmic_split_v4(const float4 i,
   // Get final Ych in Kirk/Filmlight Yrg
   float4 Ych_final = pipe_RGB_to_Ych(o, matrix_in);
 
-  // Force final hue and chroma to original
-  Ych_final.z = Ych_original.z;
   Ych_final.y = fmin(Ych_original.y, Ych_final.y);
 
-  // Clip luminance
-  Ych_final.x = clamp(Ych_final.x,
-                      CIE_Y_1931_to_CIE_Y_2006(display_black),
-                      CIE_Y_1931_to_CIE_Y_2006(display_white));
-
-  o = gamut_mapping(Ych_final, Ych_original, o, matrix_in, matrix_out,
-                    export_matrix_in, export_matrix_out,
-                    display_black, display_white, saturation, use_output_profile);
-  return o;
+  return gamut_mapping(Ych_final, Ych_original, matrix_in, matrix_out,
+                       export_matrix_in, export_matrix_out,
+                       display_black, display_white, saturation, use_output_profile);
 }
 
 static inline float4 filmic_split_v1(const float4 i,

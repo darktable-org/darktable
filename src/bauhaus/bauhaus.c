@@ -171,15 +171,8 @@ static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cai
     pango_layout_set_text(layout, NULL, 0);
   }
 
-  PangoFontDescription *font_desc =
-    w->is_section && is_label
-    ? pango_font_description_copy_static(darktable.bauhaus->pango_sec_font_desc)
-    : pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-
-  // This should be able to update the font style for current text depending on :hover, :focused, etc.
-  // CSS pseudo-classes, yet it defaults to system font.
-  // FIXME: get that working so we can put :active text in bold, for example.
-  //gtk_style_context_get(context, gtk_widget_get_state_flags(GTK_WIDGET(w)), "font", font_desc, NULL);
+  PangoFontDescription *font_desc = 0;
+  gtk_style_context_get(context, gtk_widget_get_state_flags(GTK_WIDGET(w)), "font", &font_desc, NULL);
 
   pango_layout_set_font_description(layout, font_desc);
 
@@ -644,7 +637,7 @@ void dt_bauhaus_load_theme()
   GtkStyleContext *ctx = gtk_style_context_new();
   GtkWidgetPath *path = gtk_widget_path_new();
   const int pos = gtk_widget_path_append_type(path, GTK_TYPE_WIDGET);
-  gtk_widget_path_iter_add_class(path, pos, "plugin-ui");
+  gtk_widget_path_iter_add_class(path, pos, "dt_bauhaus");
   gtk_style_context_set_path(ctx, path);
   gtk_style_context_set_screen (ctx, gtk_widget_get_screen(root_window));
 

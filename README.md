@@ -149,9 +149,9 @@ Building
 ### Dependencies
 
 Compatible compilers:
-* Clang: 8, 9, 10
-* GCC: 8, 9, 10
-* Mingw64: 6, 7
+* Clang: 8 and later
+* GCC: 8 and later
+* MinGW-w64: 6 and later
 
 Required dependencies (minimum version):
 * CMake 3.10
@@ -217,7 +217,7 @@ errors like `Package XXX has not been found` or `Command YYY has no provider on 
 If you see one of these errors you should find out which package provides the missing package/command in your distribution,
 then install it. This can usually be done in your package manager (not the application manager
 customarily provided by default in your distribution) or from the internet with a search engine.
-You may need to install a package manager first (like Synaptic on Debian/Ubuntu, or DNF Dragora on Fedora/RHEL).
+You may need to install a package manager first (like APT on Debian/Ubuntu, or DNF on Fedora/RHEL).
 
 This process might be tedious but you only need to do it once. See
 [this page on building darktable](https://github.com/darktable-org/darktable/wiki/Building-darktable)
