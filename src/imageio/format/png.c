@@ -191,7 +191,15 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
   }
 
   // write exif data
-  PNGwriteRawProfile(png_ptr, info_ptr, "exif", exif, exif_len);
+  if(exif && exif_len > 0)
+  {
+    /* The legacy tEXt chunk storage scheme implies the "Exif\0\0" APP1 prefix */
+    uint8_t *buf = malloc(exif_len + 6);
+    memcpy(buf, "Exif\0\0", 6);
+    memcpy(buf + 6, exif, exif_len);
+    PNGwriteRawProfile(png_ptr, info_ptr, "exif", buf, exif_len + 6);
+    free(buf);
+  }
 
   png_write_info(png_ptr, info_ptr);
 
@@ -569,4 +577,3 @@ int flags(dt_imageio_module_data_t *data)
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
 // clang-format on
-
