@@ -336,6 +336,9 @@ N/A
 
 ### White Balance Presets
 
+- Nikon D4S
+- Panasonic DC-S5
+- Sony ILCE-7M4
 
 ### Noise Profiles
 
