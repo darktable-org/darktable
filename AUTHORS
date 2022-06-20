@@ -1,84 +1,66 @@
 * developers:
 Pascal Obry
-Aurélien PIERRE
 Aldric Renaudin
+Aurélien PIERRE
 parafin
 Roman Lebedev
 
 * translators:
 Pascal Obry
 Jeronimo Pellegrini
-Martin Straeten
-EdgarLux
-Marcus Gama
-Matt Maguire
-篠崎亮　Ryo Shinozaki
-Philippe Weyland
 Victor Forsiuk
-vertama
+Martin Straeten
+Ryo Shinozaki
+EdgarLux
+Serkan ÖNDER
+Stephan Hoek
+Petr Stasiak
+Matt Maguire
 Matjaž Jeran
-Aurélien PIERRE
-Matteo Mardegan
-Miloš Komarčević
-Michel Leblond
 Nicolas Auffray
-Tianhao Chai
-Bogusław Ciastek
+Яна Тунгушпаева
+cotacot
+mmardegan
 Báthory Péter
-PeterWem
-Tomasz Golinski
-Wiktor Nowak
-sbraitbart
+Hui Xie
+Jan Friedrich
+Marko Vertainen
+Matteo Mardegan
+MatteoVita
+shlomi braitbart
+篠崎亮　Ryo Shinozaki
 
 * contributors (at least 4 commits):
-ralfbrown
-Diederik ter Rahe
-Dan Torop
-Hubert Kowalski
+Hanno Schwalm
 Philippe Weyland
-Miloš Komarčević
-Bill Ferguson
-Jeronimo Pellegrini
-hanno@schwalm-bremen.de
-Marco Carrarini
-Martin Straeten
-Daniel Vogelbacher
-Mark-64
-EdgarLux
-rawfiner
-Nicolas Auffray
-Chris Elston
-Chris.Elston
-Marcus Gama
-Sakari Kapanen
 Victor Forsiuk
-Arnaud TANGUY
-wpferguson
+Nicolas Auffray
+Diederik ter Rahe
+Jeronimo Pellegrini
+Miloš Komarčević
+Chris Elston
+Martin Straeten
+Ryo Shinozaki
+Dan Torop
+EdgarLux
+Sakari Kapanen
+HansBull
+Serkan ÖNDER
+Ralf Brown
+Stephan Hoek
+Petr Stasiak
+rawfiner
+solarer
+Philipp Lutz
+luz paz
+Apfelkraut
 Matt Maguire
-David-Tillmann Schaefer
-Marco
-Paolo DePetrillo
 quovadit
-篠崎亮　Ryo Shinozaki
-vertama
-Matjaž Jeran
-darkelectron
-piratenpanda
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
-Jordan Neumeyer
-Miloš Komarčević
-Andreas Schneider
-Marko Toplak
-hanno@schwalm-bremen.de
-helloqiu
-luz paz
 
 * Sub-module integration contributors (at least 1 commit):
 Pascal Obry
-Sakari Kapanen
-ralfbrown
-Aurélien PIERRE
 
 And all those of you that made previous releases possible
