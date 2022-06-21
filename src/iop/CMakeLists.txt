@@ -149,6 +149,7 @@ add_iop(colorbalancergb "colorbalancergb.c")
 add_iop(cacorrectrgb "cacorrectrgb.c")
 add_iop(diffuse "diffuse.c")
 add_iop(blurs "blurs.c")
+add_iop(colorequal "colorequal.c")
 
 
 if(Rsvg2_FOUND)
