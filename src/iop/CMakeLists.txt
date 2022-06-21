@@ -151,6 +151,7 @@ add_iop(diffuse "diffuse.c")
 add_iop(blurs "blurs.c")
 add_iop(sigmoid "sigmoid.c")
 add_iop(primaries "primaries.c")
+add_iop(colorequal "colorequal.c")
 
 if(Rsvg2_FOUND)
   add_iop(watermark "watermark.c")
