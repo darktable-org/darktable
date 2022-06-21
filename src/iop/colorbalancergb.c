@@ -24,6 +24,7 @@
 #include "common/exif.h"
 #include "common/chromatic_adaptation.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/darktable_ucs_22_helpers.h"
 #include "common/opencl.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -41,7 +42,6 @@
 
 //#include <gtk/gtk.h>
 #include <stdlib.h>
-#define LUT_ELEM 360     // gamut LUT number of elements: resolution of 1°
 #define STEPS 92         // so we test 92×92×92 combinations of RGB in [0; 1] to build the gamut LUT
 
 // Filmlight Yrg puts red at 330°, while usual HSL wheels put it at 360/0°
@@ -492,52 +492,6 @@ static inline void opacity_masks(const float x,
     output_comp[2] = beta_comp;
     output_comp[3] = 0.f;
   }
-}
-
-
-static inline float soft_clip(const float x, const float soft_threshold, const float hard_threshold)
-{
-  // use an exponential soft clipping above soft_threshold
-  // hard threshold must be > soft threshold
-  const float norm = hard_threshold - soft_threshold;
-  return (x > soft_threshold) ? soft_threshold + (1.f - expf(-(x - soft_threshold) / norm)) * norm : x;
-}
-
-
-static inline float lookup_gamut(const float *const gamut_lut, const float x)
-{
-  // WARNING : x should be between [-pi ; pi ], which is the default output of atan2 anyway
-
-  // convert in LUT coordinate
-  const float x_test = (LUT_ELEM - 1) * (x + M_PI_F) / (2.f * M_PI_F);
-
-  // find the 2 closest integer coordinates (next/previous)
-  float x_prev = floorf(x_test);
-  float x_next = ceilf(x_test);
-
-  // get the 2 closest LUT elements at integer coordinates
-  // cycle on the hue ring if out of bounds
-  int xi = (int)x_prev;
-  if(xi < 0) xi = LUT_ELEM - 1;
-  else if(xi > LUT_ELEM - 1) xi = 0;
-
-  int xii = (int)x_next;
-  if(xii < 0) xii = LUT_ELEM - 1;
-  else if(xii > LUT_ELEM - 1) xii = 0;
-
-  // fetch the corresponding y values
-  const float y_prev = gamut_lut[xi];
-  const float y_next = gamut_lut[xii];
-
-  // assume that we are exactly on an integer LUT element
-  float out = y_prev;
-
-  if(x_next != x_prev)
-    // we are between 2 LUT elements : do linear interpolation
-    // actually, we only add the slope term on the previous one
-    out += (x_test - x_prev) * (y_next - y_prev) / (x_next - x_prev);
-
-  return out;
 }
 
 
@@ -1048,17 +1002,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 #endif
 
 
-static inline float Delta_H(const float h_1, const float h_2)
-{
-  // Compute the difference between 2 angles
-  // and force the result in [-pi; pi] radians
-  float diff = h_1 - h_2;
-  diff += (diff < -M_PI_F) ? 2.f * M_PI_F : 0.f;
-  diff -= (diff > M_PI_F) ? 2.f * M_PI_F : 0.f;
-  return diff;
-}
-
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1159,11 +1102,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // this will be used to prevent users to mess up their images by pushing chroma out of gamut
   if(!d->lut_inited)
   {
-    float *const restrict LUT_saturation = dt_alloc_align_float(LUT_ELEM);
-
-    // init the LUT between -pi and pi by increments of 1°
-    for(size_t k = 0; k < LUT_ELEM; k++) LUT_saturation[k] = 0.f;
-
     // Premultiply both matrices to go from D50 pipeline RGB to D65 XYZ in a single matrix dot product
     // instead of D50 pipeline to D50 XYZ (work_profile->matrix_in) and then D50 XYZ to D65 XYZ
     dt_colormatrix_t input_matrix;
@@ -1172,6 +1110,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
     if(p->saturation_formula == DT_COLORBALANCE_SATURATION_JZAZBZ)
     {
+      // init the LUT between -pi and pi by increments of 1°
+      float *const restrict LUT_saturation = dt_alloc_align_float(LUT_ELEM);
+      for(size_t k = 0; k < LUT_ELEM; k++) LUT_saturation[k] = 0.f;
+
       #ifdef _OPENMP
       #pragma omp parallel for default(none) \
             dt_omp_firstprivate(input_matrix, p) schedule(static) dt_omp_sharedconst(LUT_saturation) \
@@ -1212,93 +1154,14 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->gamut_LUT[1] = (LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1] + LUT_saturation[2] + LUT_saturation[3]) / 5.f;
       d->gamut_LUT[LUT_ELEM - 1] = (LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0] + LUT_saturation[1]) / 5.f;
       d->gamut_LUT[LUT_ELEM - 2] = (LUT_saturation[LUT_ELEM - 4] + LUT_saturation[LUT_ELEM - 3] + LUT_saturation[LUT_ELEM - 2] + LUT_saturation[LUT_ELEM - 1] + LUT_saturation[0]) / 5.f;
+
+      dt_free_align(LUT_saturation);
     }
     else if(p->saturation_formula == DT_COLORBALANCE_SATURATION_DTUCS)
     {
-      dt_aligned_pixel_t D65_xyY = { 0.31269999999999992f,  0.32899999999999996f ,  1.f, 0.f };
-
-      // Compute the RGB space primaries in xyY
-      dt_aligned_pixel_t RGB_red   = { 1.f, 0.f, 0.f, 0.f };
-      dt_aligned_pixel_t RGB_green = { 0.f, 1.f, 0.f, 0.f };
-      dt_aligned_pixel_t RGB_blue =  { 0.f, 0.f, 1.f, 0.f };
-
-      dt_aligned_pixel_t XYZ_red, XYZ_green, XYZ_blue;
-      dot_product(RGB_red, input_matrix, XYZ_red);
-      dot_product(RGB_green, input_matrix, XYZ_green);
-      dot_product(RGB_blue, input_matrix, XYZ_blue);
-
-      dt_aligned_pixel_t xyY_red, xyY_green, xyY_blue;
-      dt_XYZ_to_xyY(XYZ_red, xyY_red);
-      dt_XYZ_to_xyY(XYZ_green, xyY_green);
-      dt_XYZ_to_xyY(XYZ_blue, xyY_blue);
-
-      // Get the "hue" angles of the primaries in xy compared to D65
-      const float h_red   = atan2f(xyY_red[1] - D65_xyY[1], xyY_red[0] - D65_xyY[0]);
-      const float h_green = atan2f(xyY_green[1] - D65_xyY[1], xyY_green[0] - D65_xyY[0]);
-      const float h_blue  = atan2f(xyY_blue[1] - D65_xyY[1], xyY_blue[0] - D65_xyY[0]);
-
-       float *const restrict dt_UCS_LUT = d->gamut_LUT;
-
-      // March the gamut boundary in CIE xyY 1931 by angular steps of 0.02°
-      #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-              dt_omp_firstprivate(input_matrix, xyY_red, xyY_green, xyY_blue, h_red, h_green, h_blue, D65_xyY) \
-              schedule(static) dt_omp_sharedconst(dt_UCS_LUT)
-      #endif
-      for(int i = 0; i < 50 * 360; i++)
-      {
-        const float angle = -M_PI_F + ((float)i) / (50.f * 360.f) * 2.f * M_PI_F;
-        const float tan_angle = tanf(angle);
-
-        const float t_1 = Delta_H(angle, h_blue)  / Delta_H(h_red, h_blue);
-        const float t_2 = Delta_H(angle, h_red)   / Delta_H(h_green, h_red);
-        const float t_3 = Delta_H(angle, h_green) / Delta_H(h_blue, h_green);
-
-        float x_t = 0;
-        float y_t = 0;
-
-        if(t_1 == CLAMP(t_1, 0, 1))
-        {
-          const float t = (D65_xyY[1] - xyY_blue[1] + tan_angle * (xyY_blue[0] - D65_xyY[0]))
-                    / (xyY_red[1] - xyY_blue[1] + tan_angle * (xyY_blue[0] - xyY_red[0]));
-          x_t = xyY_blue[0] + t * (xyY_red[0] - xyY_blue[0]);
-          y_t = xyY_blue[1] + t * (xyY_red[1] - xyY_blue[1]);
-        }
-        else if(t_2 == CLAMP(t_2, 0, 1))
-        {
-          const float t = (D65_xyY[1] - xyY_red[1] + tan_angle * (xyY_red[0] - D65_xyY[0]))
-                    / (xyY_green[1] - xyY_red[1] + tan_angle * (xyY_red[0] - xyY_green[0]));
-          x_t = xyY_red[0] + t * (xyY_green[0] - xyY_red[0]);
-          y_t = xyY_red[1] + t * (xyY_green[1] - xyY_red[1]);
-        }
-        else if(t_3 == CLAMP(t_3, 0, 1))
-        {
-          const float t = (D65_xyY[1] - xyY_green[1] + tan_angle * (xyY_green[0] - D65_xyY[0]))
-                        / (xyY_blue[1] - xyY_green[1] + tan_angle * (xyY_green[0] - xyY_blue[0]));
-          x_t = xyY_green[0] + t * (xyY_blue[0] - xyY_green[0]);
-          y_t = xyY_green[1] + t * (xyY_blue[1] - xyY_green[1]);
-        }
-
-        // Convert to darktable UCS
-        dt_aligned_pixel_t xyY = { x_t, y_t, 1.f, 0.f };
-        float UV_star_prime[2];
-        xyY_to_dt_UCS_UV(xyY, UV_star_prime);
-
-        // Get the hue angle in darktable UCS
-        const float H = atan2f(UV_star_prime[1], UV_star_prime[0]) * 180.f / M_PI_F;
-        const float H_round = roundf(H);
-        if(fabsf(H - H_round) < 0.02f)
-        {
-          int index = (int)(H_round + 180);
-          index += (index < 0) ? 360 : 0;
-          index -= (index > 359) ? 360 : 0;
-          // Warning: we store M², the square of the colorfulness
-          dt_UCS_LUT[index] = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1];
-        }
-      }
+      dt_UCS_22_build_gamut_LUT(input_matrix, d->gamut_LUT);
     }
 
-    dt_free_align(LUT_saturation);
     d->lut_inited = TRUE;
   }
 }
