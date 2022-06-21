@@ -1396,6 +1396,18 @@ static inline void xyY_to_dt_UCS_UV(const dt_aligned_pixel_t xyY, float UV_star_
 
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(JCH: 16)
+#endif
+static inline void dt_UCS_LUV_to_JCH(const float L_star, const float L_white, const float UV_star_prime[2], dt_aligned_pixel_t JCH)
+{
+  const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
+
+  // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
+  JCH[0] = L_star / L_white;
+  JCH[1] = 15.932993652962535f * powf(L_star, 0.6523997524738018f) * powf(M2, 0.6007557017508491f) / L_white;
+  JCH[2] = atan2f(UV_star_prime[1], UV_star_prime[0]);
+ }
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, JCH: 16)
@@ -1414,14 +1426,7 @@ static inline void xyY_to_dt_UCS_JCH(const dt_aligned_pixel_t xyY, const float L
   float UV_star_prime[2];
   xyY_to_dt_UCS_UV(xyY, UV_star_prime);
 
-  // L_star must be clipped to the valid range of dt UCS
-  const float L_star = Y_to_dt_UCS_L_star(CLAMPF(xyY[2], 0.f, DT_UCS_Y_UPPER_LIMIT));
-  const float M2 = UV_star_prime[0] * UV_star_prime[0] + UV_star_prime[1] * UV_star_prime[1]; // square of colorfulness M
-
-  // should be JCH[0] = powf(L_star / L_white), cz) but we treat only the case where cz = 1
-  JCH[0] = L_star / L_white;
-  JCH[1] = 15.932993652962535f * powf(L_star, 0.6523997524738018f) * powf(M2, 0.6007557017508491f) / L_white;
-  JCH[2] = atan2f(UV_star_prime[1], UV_star_prime[0]);
+  dt_UCS_LUV_to_JCH(Y_to_dt_UCS_L_star(xyY[2]), L_white, UV_star_prime, JCH);
 }
 
 
@@ -1518,6 +1523,17 @@ static inline void dt_UCS_HPW_to_HSB(const dt_aligned_pixel_t HPW, dt_aligned_pi
   HSB[0] = HPW[0];
   HSB[1] = HPW[1] * HPW[2];
   HSB[2] = fmaxf(sqrtf(HPW[2] * HPW[2] - HSB[1] * HSB[1]), 0.f);
+}
+
+static inline void dt_UCS_HSB_to_XYZ(const dt_aligned_pixel_t HSB, const float L_w, dt_aligned_pixel_t XYZ)
+{
+  // Quick path
+  dt_aligned_pixel_t JCH = { 0.f };
+  dt_aligned_pixel_t xyY = { 0.f };
+
+  dt_UCS_HSB_to_JCH(HSB, JCH);
+  dt_UCS_JCH_to_xyY(JCH, L_w, xyY);
+  dt_xyY_to_XYZ(xyY, XYZ);
 }
 
 #undef DT_RESTRICT
