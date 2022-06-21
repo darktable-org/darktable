@@ -395,7 +395,7 @@ header button,
 {
   min-height: 1.2em;
   min-width: 1.2em;
-  margin: 0.1em 0.07em;
+  margin: 0.07em;
 }
 
 .dt_module_btn,
@@ -948,6 +948,16 @@ scrollbar slider
 {
   background-color: @scroll_bar_inactive;
   border: 0.14em solid transparent;
+}
+
+scrollbar.horizontal slider
+{
+  min-width: 1em;
+  min-height: 0.42em;
+}
+
+scrollbar.vertical slider
+{
   min-width: 0.42em;
   min-height: 1em;
 }
@@ -1799,7 +1809,7 @@ Details :
 #thumb-back
 {
   background-color: @thumbnail_bg_color;
-  border: 1px solid @lighttable_bg_color;
+  border: 1px solid @selected_bg_color;
 }
 
 /* Last active images animation */
