@@ -321,14 +321,13 @@ gboolean dt_opencl_read_device_config(const int devid)
   return !existing_device || !safety_ok;
 }
 
-float dt_opencl_device_perfgain(const int devid)
+static float dt_opencl_device_perfgain(const int devid)
 {
   dt_opencl_t *cl = darktable.opencl;
-  if(!cl->inited || devid < 0) return 1.0f;
-
-  const float tcpu = fmaxf(1e-8f, cl->cpubenchmark);
-  const float tgpu = fmaxf(1e-8f, cl->dev[devid].benchmark);
-  return tcpu / fminf(tgpu, tcpu);  
+  const float tcpu = cl->cpubenchmark;
+  const float tgpu = cl->dev[devid].benchmark;
+  if((tcpu < 1e-8) || (tgpu < 1e-8)) return 1.0f;
+  return (tcpu / tgpu);  
 } 
 
 // returns 0 if all ok or an error if we failed to init this device
@@ -623,7 +622,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   dt_print_nts(DT_DEBUG_OPENCL, "   ROUNDUP WIDTH:            %i\n", cl->dev[dev].clroundup_wd);
   dt_print_nts(DT_DEBUG_OPENCL, "   ROUNDUP HEIGHT:           %i\n", cl->dev[dev].clroundup_ht);
   dt_print_nts(DT_DEBUG_OPENCL, "   CHECK EVENT HANDLES:      %i\n", cl->dev[dev].event_handles);
-  dt_print_nts(DT_DEBUG_OPENCL, "   PERFORMANCE:              %f (CPU %f)\n", cl->dev[dev].benchmark, cl->cpubenchmark);
+  if(cl->dev[dev].benchmark > 0.0f)
+    dt_print_nts(DT_DEBUG_OPENCL, "   PERFORMANCE:              %f\n", dt_opencl_device_perfgain(dev));
   dt_print_nts(DT_DEBUG_OPENCL, "   DEFAULT DEVICE:           %s\n", (type & CL_DEVICE_TYPE_DEFAULT) ? "YES" : "NO");
 
   if(cl->dev[dev].disabled)
@@ -1120,12 +1120,10 @@ finally:
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for multiple GPUs.\n");
         dt_control_log(_("multiple GPUs detected - opencl scheduling profile has been set accordingly"));
       }
-      else if((tcpu >= 6.0f * tgpumin) && (cl->num_devs == 1))
+      else if((tcpu >= 2.0f * tgpumin) && (cl->num_devs == 1))
       {
-        // set scheduling profile to "very fast GPU" if CPU is way too slow and there is just one device
-        // FIXME this condition is very unlikely to be met. Proper fixing might need
-        // a) a more realistic benchmark as we use in modern modules like d&s
-        // b) a redesigned scheduler for dt > 4.0
+        // set scheduling profile to "very fast GPU" if fastest GPU is at least 2 times better than CPU and there is just one device
+        // We might want a better benchmark but even with the current result (underestimates real world performance) this is safe.
         dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
         dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly"));
