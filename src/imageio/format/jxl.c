@@ -130,7 +130,6 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   const uint32_t height = (uint32_t)params->global.height;
 
   JxlEncoder *encoder = JxlEncoderCreate(NULL);
-  LIBJXL_ASSERT(JxlEncoderSetCodestreamLevel(encoder, 10));
 
   const uint32_t num_threads = JxlResizableParallelRunnerSuggestThreads(width, height);
   void *runner = JxlResizableParallelRunnerCreate(NULL);
@@ -183,6 +182,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   }
   else
   {
+    // TODO: expose controle over profile conversion?
     basic_info.uses_original_profile = JXL_FALSE;
     float distance = params->quality >= 30 ? 0.1f + (100 - params->quality) * 0.09f
                                            : 6.4f + powf(2.5f, (30 - params->quality) / 5.0f) / 6.25f;
@@ -194,7 +194,12 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   LIBJXL_ASSERT(
       JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_DECODING_SPEED, params->tier));
 
-  LIBJXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
+  // Try the settings with default codestream level 5 first, upgrade otherwise
+  if(JXL_ENC_ERR_API_USAGE == JxlEncoderSetBasicInfo(encoder, &basic_info))
+  {
+    LIBJXL_ASSERT(JxlEncoderSetCodestreamLevel(encoder, 10));
+    LIBJXL_ASSERT(JxlEncoderSetBasicInfo(encoder, &basic_info));
+  }
 
   // Determine and set the encoder color space
   const dt_colorspaces_color_profile_t *output_profile
