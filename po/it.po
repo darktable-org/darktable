@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-23 00:25+0200\n"
+"PO-Revision-Date: 2022-06-23 00:57+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -1466,7 +1466,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6014
 msgid "3D lut root folder"
-msgstr "Cartella radice 3D lut"
+msgstr "Cartella radice 3D LUT"
 
 #: ../build/bin/preferences_gen.h:6019 ../src/control/jobs/control_jobs.c:1679
 #: ../src/control/jobs/control_jobs.c:1741 ../src/gui/preferences.c:1035
@@ -2673,7 +2673,7 @@ msgstr "Proporzioni"
 #: ../build/lib/darktable/plugins/introspection_borders.c:263
 #: ../src/iop/flip.c:74 ../src/libs/print_settings.c:2365
 msgid "orientation"
-msgstr "Orientamento"
+msgstr "orientamento"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:134
 #: ../build/lib/darktable/plugins/introspection_borders.c:267
@@ -3665,7 +3665,7 @@ msgstr "Y0U0V0"
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:248
 #: ../src/iop/atrous.c:1633 ../src/iop/highpass.c:394
 msgid "sharpness"
-msgstr "Nitidezza"
+msgstr "nitidezza"
 
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:129
 #: ../build/lib/darktable/plugins/introspection_diffuse.c:252
@@ -4378,7 +4378,7 @@ msgstr "GainMap (mappa del guadagno) incorporata"
 #: ../src/gui/presets.c:570 ../src/iop/basicadj.c:598 ../src/iop/exposure.c:123
 #: ../src/iop/exposure.c:1030 ../src/libs/metadata_view.c:141
 msgid "exposure"
-msgstr "Esposizione"
+msgstr "esposizione"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:267
 #: ../build/lib/darktable/plugins/introspection_retouch.c:414
@@ -10696,7 +10696,7 @@ msgstr "HDR"
 #: ../src/gui/presets.c:59 ../src/iop/monochrome.c:77 ../src/libs/image.c:611
 #: ../src/libs/metadata_view.c:341
 msgid "monochrome"
-msgstr "Scala di grigi"
+msgstr "scala di grigi"
 
 #: ../src/gui/presets.c:165
 #, c-format
@@ -12483,7 +12483,7 @@ msgstr "Intensità di luce soffusa"
 
 #: ../src/iop/blurs.c:81
 msgid "blurs"
-msgstr "Sfocature"
+msgstr "sfocature"
 
 #: ../src/iop/blurs.c:86
 msgid "blur|lens|motion"
@@ -13798,7 +13798,7 @@ msgstr "[%s on borders] ritaglia e mantieni le proporzioni"
 
 #: ../src/iop/colisa.c:79
 msgid "contrast brightness saturation"
-msgstr "Contrasto luminosità saturazione"
+msgstr "contrasto luminosità saturazione"
 
 #: ../src/iop/colisa.c:84
 msgid "adjust the look of the image"
@@ -14301,7 +14301,7 @@ msgstr "tabella ricerca colore"
 
 #: ../src/iop/colorchecker.c:120
 msgid "profile|lut|color grading"
-msgstr "Profilo | lut | gradiente colore"
+msgstr "Profilo | LUT | gradiente colore"
 
 #: ../src/iop/colorchecker.c:125
 msgid "perform color space corrections and apply looks"
@@ -14930,7 +14930,7 @@ msgstr ""
 
 #: ../src/iop/crop.c:128 ../src/iop/rawprepare.c:856
 msgid "crop"
-msgstr "Ritaglia"
+msgstr "ritaglio"
 
 #: ../src/iop/crop.c:133
 msgid "reframe|distortion"
@@ -15006,7 +15006,7 @@ msgstr "Soglia per il defringe, valori maggiori significano meno defringe"
 
 #: ../src/iop/demosaic.c:221
 msgid "demosaic"
-msgstr "Demosaicizzazione"
+msgstr "demosaicizzazione"
 
 #: ../src/iop/demosaic.c:226
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
@@ -17160,7 +17160,7 @@ msgstr "Percentile del bianco"
 
 #: ../src/iop/liquify.c:290
 msgid "liquify"
-msgstr "Fluidifica"
+msgstr "fluidifica"
 
 #: ../src/iop/liquify.c:295
 msgid "distort parts of the image"
@@ -17404,7 +17404,7 @@ msgstr "Definito dal profilo, RGB"
 
 #: ../src/iop/lut3d.c:466
 msgid "error allocating buffer for gmz LUT"
-msgstr "Errore - impossibile allocare il buffer per il lut gmz"
+msgstr "Errore - impossibile allocare il buffer per il LUT gmz"
 
 #: ../src/iop/lut3d.c:492
 #, c-format
@@ -17429,11 +17429,11 @@ msgstr ""
 #: ../src/iop/lut3d.c:536 ../src/iop/lut3d.c:785
 #, c-format
 msgid "error - LUT 3D size %d exceeds the maximum supported"
-msgstr "Errore - la dimensione %d del lut 3D eccede quella massima supportata"
+msgstr "Errore - la dimensione %d del LUT 3D eccede quella massima supportata"
 
 #: ../src/iop/lut3d.c:548
 msgid "error allocating buffer for png LUT"
-msgstr "Errore - impossibile allocare il buffer per il lut png"
+msgstr "Errore - impossibile allocare il buffer per il LUT PNG"
 
 #: ../src/iop/lut3d.c:556
 #, c-format
@@ -17442,7 +17442,7 @@ msgstr "Errore - impossibile leggere l'immagine PNG %s"
 
 #: ../src/iop/lut3d.c:566
 msgid "error - allocating buffer for png LUT"
-msgstr "Errore - impossibile allocare il buffer per il lut png"
+msgstr "Errore - impossibile allocare il buffer per il LUT PNG"
 
 #: ../src/iop/lut3d.c:740
 #, c-format
@@ -17459,31 +17459,31 @@ msgstr "DOMINIO MAX <> 1,0 non è supportato"
 
 #: ../src/iop/lut3d.c:774
 msgid "[1D cube LUT is not supported"
-msgstr "[Il cubo lut 1D non è supportato"
+msgstr "[Il cubo LUT 1D non è supportato"
 
 #: ../src/iop/lut3d.c:796 ../src/iop/lut3d.c:900
 msgid "error - allocating buffer for cube LUT"
-msgstr "Errore - impossibile allocare il buffer per il lut cubo"
+msgstr "Errore - impossibile allocare il buffer per il LUTo LUT"
 
 #: ../src/iop/lut3d.c:807 ../src/iop/lut3d.c:913
 msgid "error - cube LUT size is not defined"
-msgstr "Errore - la dimensione del cubo lut non è definita"
+msgstr "Errore - la dimensione del cubo LUT non è definita"
 
 #: ../src/iop/lut3d.c:818
 #, c-format
 msgid "error - cube LUT invalid number line %d"
-msgstr "Errore - numero non valido sulla riga %d del cubo lut"
+msgstr "Errore - numero non valido sulla riga %d del cubo LUT"
 
 #: ../src/iop/lut3d.c:834
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
 msgstr ""
-"Errore - il numero della riga lut %d non è corretto, dovrebbe essere %d"
+"Errore - il numero della riga LUT %d non è corretto, dovrebbe essere %d"
 
 #: ../src/iop/lut3d.c:844
 #, c-format
 msgid "warning - cube LUT %d out of range values [0,1]"
-msgstr "Attenzione - il cubo lut %d ha dei valori fuori gamma [0,1]"
+msgstr "Attenzione - il cubo LUT %d ha dei valori fuori gamma [0,1]"
 
 #: ../src/iop/lut3d.c:868
 #, c-format
@@ -17493,21 +17493,21 @@ msgstr "Errore - file 3dl %s non valido"
 #: ../src/iop/lut3d.c:889
 #, c-format
 msgid "error - the maximum shaper LUT value %d is too low"
-msgstr "Errore - il valore massimo del modellatore lut %d è troppo basso"
+msgstr "Errore - il valore massimo del modellatore LUT %d è troppo basso"
 
 #: ../src/iop/lut3d.c:941
 msgid "error - cube LUT lines number is not correct"
-msgstr "Errore - la quantità di linee del cubo lut non è corretta"
+msgstr "Errore - la quantità di linee del cubo LUT non è corretta"
 
 #: ../src/iop/lut3d.c:957
 msgid "error - the maximum LUT value does not match any valid bit depth"
 msgstr ""
-"Errore - il valore massimo del lut non corrisponde a nessun valore valido di "
+"Errore - il valore massimo del LUT non corrisponde a nessun valore valido di "
 "profondità di bit"
 
 #: ../src/iop/lut3d.c:1550
 msgid "LUT root folder not defined"
-msgstr "Non è definita la cartella radice dei lut"
+msgstr "Non è definita la cartella radice dei LUT"
 
 #: ../src/iop/lut3d.c:1556
 msgid "select LUT file"
@@ -17519,11 +17519,11 @@ msgstr "_seleziona"
 
 #: ../src/iop/lut3d.c:1577
 msgid "hald CLUT (png), 3D LUT (cube or 3dl) or gmic compressed LUT (gmz)"
-msgstr "CLUT dimezzato (png), 3D LUT (cubo o 3dl) o LUT gmic compresso (gmz)"
+msgstr "CLUT dimezzato (PNG), 3D LUT (cubo o 3dl) o LUT gmic compresso (gmz)"
 
 #: ../src/iop/lut3d.c:1579
 msgid "hald CLUT (png) or 3D LUT (cube or 3dl)"
-msgstr "CLUT dimezzato (png) o 3D LUT (cubo o 3dl)"
+msgstr "CLUT dimezzato (PNG) o 3D LUT (cubo o 3dl)"
 
 #: ../src/iop/lut3d.c:1603
 msgid "select file outside LUT root folder is not allowed"
@@ -17536,34 +17536,35 @@ msgid ""
 "CAUTION: 3D LUT folder must be set in preferences/processing before choosing "
 "the LUT file"
 msgstr ""
-"Seleziona un PNG (haldclut), un cubo, un file 3dl o gmz (lut compresso) "
-"ATTENZIONE: la cartella dei 3D lut deve esser impostata in preferenze/"
-"elaborazione prima di scegliere il file lut"
+"Seleziona un PNG (haldclut), un cubo, un file 3dl o gmz (LUT compresso) "
+"ATTENZIONE: la cartella dei 3D LUT deve esser impostata in preferenze/"
+"elaborazione prima di scegliere il file LUT"
 
 #: ../src/iop/lut3d.c:1678
+#, fuzzy
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D LUT folder must be "
 "set in preferences/processing before choosing the LUT file"
 msgstr ""
-"Seleziona un file png (haldclut), un cubo o un 3dl\n"
-"ATTENZIONE: la cartella lut deve essere impostata in Preferenze/Opzioni "
-"Principali/Varie prima di selezionare il file lut"
+"Seleziona un file PNG (haldclut), un cubo o un 3dl\n"
+"ATTENZIONE: la cartella LUT deve essere impostata in Preferenze/Opzioni "
+"Principali/Varie prima di selezionare il file LUT"
 
 #: ../src/iop/lut3d.c:1690
 msgid ""
 "the file path (relative to LUT folder) is saved with image along with the LUT "
 "data if it's a compressed LUT (gmz)"
 msgstr ""
-"Il percorso del file (relativo alla cartella lut) viene salvato con "
-"l'immagine insieme ai dati lut nel caso in cui sia un lut compresso (gmz)"
+"Il percorso del file (relativo alla cartella LUT) viene salvato con "
+"l'immagine insieme ai dati LUT nel caso in cui sia un LUT compresso (gmz)"
 
 #: ../src/iop/lut3d.c:1693
 msgid ""
 "the file path (relative to LUT folder) is saved with image (and not the LUT "
 "data themselves)"
 msgstr ""
-"Il percorso del file (relativo alla cartella lut) viene salvato con "
-"l'immagine (non vengono salvati i dati lut)"
+"Il percorso del file (relativo alla cartella LUT) viene salvato con "
+"l'immagine (non vengono salvati i dati LUT)"
 
 #: ../src/iop/lut3d.c:1702
 msgid "enter LUT name"
@@ -17571,11 +17572,11 @@ msgstr "Inserisci il nome LUT"
 
 #: ../src/iop/lut3d.c:1723
 msgid "select the LUT"
-msgstr "Seleziona lut"
+msgstr "Seleziona LUT"
 
 #: ../src/iop/lut3d.c:1736
 msgid "select the color space in which the LUT has to be applied"
-msgstr "Seleziona lo spazio colore all'interno del quale applicare il lut"
+msgstr "Seleziona lo spazio colore all'interno del quale applicare il LUT"
 
 #: ../src/iop/lut3d.c:1738
 msgid "interpolation"
@@ -23204,12 +23205,12 @@ msgstr "e..."
 #: ../src/libs/tools/darktable.c:308
 msgid "translator-credits"
 msgstr ""
-"\"Matteo Mardegan <matteo@mardegan.org> (2019-2022)\n"
-"\"\"Luca Cignoni (2022)\n"
-"\"\"Maurizio Paglia (2018-2022)\n"
-"\"\"Nelle precedenti versioni:\n"
-"\"\"Germano Massullo (2015-2017)\n"
-"\"\"Mauro 'bartokk' Bartoccelli (2013-2014)\""
+"Matteo Mardegan <matteo@mardegan.org> (2019-2022)\n"
+"Luca Cignoni (2022)\n"
+"Maurizio Paglia (2018-2022)\n"
+"Nelle precedenti versioni:\n"
+"Germano Massullo (2015-2017)\n"
+"Mauro 'bartokk' Bartoccelli (2013-2014)"
 
 #: ../src/libs/tools/filmstrip.c:45
 msgid "filmstrip"
