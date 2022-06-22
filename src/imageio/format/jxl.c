@@ -217,8 +217,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
 
   JxlColorEncoding color_encoding;
   color_encoding.color_space = JXL_COLOR_SPACE_RGB;
-  // TODO: safe to simply put pipe->icc_intent here?
-  color_encoding.rendering_intent = JXL_RENDERING_INTENT_PERCEPTUAL;
+  color_encoding.rendering_intent = (JxlRenderingIntent)pipe->icc_intent;
 
   // Attempt to find and set the known white point, primaries and transfer function.
   // If we can't find any of these we fall back to an ICC binary blob.
