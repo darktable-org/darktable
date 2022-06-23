@@ -7,8 +7,9 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-23 13:48+0200\n"
-"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
+"PO-Revision-Date: 2022-06-23 23:50+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -1033,7 +1034,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4263 ../build/bin/preferences_gen.h:5031
 msgid "show scrollbars for central view"
-msgstr "Per la vista centrale mostra le barre di scorrimento"
+msgstr "Per la vista centrale visualizza le barre di scorrimento"
 
 #: ../build/bin/preferences_gen.h:4274 ../build/bin/preferences_gen.h:5213
 #: ../build/bin/preferences_gen.h:5353 ../build/bin/preferences_gen.h:5389
@@ -1060,7 +1061,7 @@ msgstr "Definisce dove devono essere mostrate le barre di scorrimento"
 
 #: ../build/bin/preferences_gen.h:4299
 msgid "show image time with milliseconds"
-msgstr "Mostra i millisecondi nell'orario dell'immagine"
+msgstr "Visualizza i millisecondi nell'orario dell'immagine"
 
 #: ../build/bin/preferences_gen.h:4313
 msgid "defines whether time should be displayed with milliseconds"
@@ -1438,26 +1439,26 @@ msgstr "Più lento dell'opzione di default."
 
 #: ../build/bin/preferences_gen.h:5879
 msgid "pixel interpolator (warp)"
-msgstr "Intepolatore pixel (distorce)"
+msgstr "Interpolatore pixel (distorce)"
 
 #: ../build/bin/preferences_gen.h:5922
 msgid ""
 "pixel interpolator used in modules for rotation, lens correction, liquify, "
 "cropping and final scaling (bilinear, bicubic, lanczos2)."
 msgstr ""
-"L'intepolatore di pixel viene nei moduli per la rotazione, nella correzione "
+"L'interpolatore di pixel viene nei moduli per la rotazione, nella correzione "
 "obiettivo, fluidifica, ritaglia e riscala finale (bilineare, bicubica, "
 "lanczos2)."
 
 #: ../build/bin/preferences_gen.h:5944
 msgid "pixel interpolator (scaling)"
-msgstr "Intepolatore pixel (ridimensionamento)"
+msgstr "Interpolatore pixel (ridimensionamento)"
 
 #: ../build/bin/preferences_gen.h:5992
 msgid ""
 "pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3)."
 msgstr ""
-"L'intepolatore di pixel è usato per il ridimensionamento (bilineare, "
+"L'interpolatore di pixel è usato per il ridimensionamento (bilineare, "
 "bicubica, lanczos2, lanczo3)."
 
 #: ../build/bin/preferences_gen.h:6014
@@ -1480,7 +1481,7 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. (need "
 "a restart)."
 msgstr ""
-"Questa cartella (e le sotto-cartelle) contiene i file Lut usati dal modulo "
+"Questa cartella (e le sotto-cartelle) contiene i file LUT usati dal modulo "
 "lut3d. (Richiede il riavvio)."
 
 #: ../build/bin/preferences_gen.h:6057
@@ -1580,7 +1581,7 @@ msgstr ""
 "Mostra i messaggi nei moduli per avvisare gli utenti principianti quando "
 "impostazioni non-standard e potenzialmente dannose sono usate nella nella "
 "coda di sviluppo.\n"
-"Questi messaggi posson esser falsi positivi e dovrebbero esser ignorati se "
+"Questi messaggi possono esser falsi positivi e dovrebbero esser ignorati se "
 "sai cosa stai facendo. Questa opzione li nasconderà per tutto il tempo."
 
 #: ../build/bin/preferences_gen.h:6314
@@ -1728,7 +1729,7 @@ msgid ""
 "memory) used for tiling."
 msgstr ""
 "Permette, durante l'esecuzione, di ottimizzare i dispositivi OpenCL. "
-"'dimensione memoria' esegue il test della memora grafica disponibile, "
+"'dimensione memoria' esegue il test della memoria grafica disponibile, "
 "'trasferimento di memoria' tenta una modalità di accesso più rapido alla "
 "memoria (pinned memory) usata per il tiling."
 
@@ -1744,7 +1745,7 @@ msgstr "Chiedi prima di rimuovere immagini dalla biblioteca"
 msgid "always ask the user before removing image information from the library"
 msgstr ""
 "chiedi sempre prima di rimuovere le informazioni di un'immagine dalla "
-"bibilioteca"
+"biblioteca"
 
 #: ../build/bin/preferences_gen.h:6767
 msgid "ask before deleting images from disk"
@@ -2011,7 +2012,7 @@ msgstr "Adatta il passo del selettore scorrevole con minimo/massimo"
 #: ../build/bin/preferences_gen.h:7777
 msgid "vary bauhaus slider step size with min/max range"
 msgstr ""
-"Modifica il passo dei selettori scorriveoli a seconda dell'intervallo minimo/"
+"scorrevoli passo dei selettori scorrevoli a seconda dell'intervallo minimo/"
 "massimo"
 
 #: ../build/bin/preferences_gen.h:7799
@@ -2035,12 +2036,12 @@ msgid ""
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
 "Se abilitato permette di utilizzare la rotella del mouse per scorrere i "
-"moduli nel pannello laterale. Usa Crtl+Alt per utilizzare la rotella del "
+"moduli nel pannello laterale. Usa Ctrl+Alt per utilizzare la rotella del "
 "mouse per immettere i dati. Se disabilitato, si comporta al contrario."
 
 #: ../build/bin/preferences_gen.h:7871
 msgid "always show panels' scrollbars"
-msgstr "Mostra sempre le barre di scorrimento dei pannelli"
+msgstr "Visualizza sempre le barre di scorrimento dei pannelli"
 
 #: ../build/bin/preferences_gen.h:7885
 msgid ""
@@ -2129,7 +2130,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:8131
 msgid "prefer focused instance"
-msgstr "Prediligi instanza a fuoco"
+msgstr "Prediligi istanza a fuoco"
 
 #: ../build/bin/preferences_gen.h:8145
 msgid ""
@@ -2194,7 +2195,7 @@ msgid ""
 "visually assigned to those specific instances\n"
 "otherwise shortcuts will always be assigned to the preferred instance"
 msgstr ""
-"Quando sono prsenti istanze multiple sull'immagine, questo consente che le "
+"Quando sono presenti istanze multiple sull'immagine, questo consente che le "
 "scorciatoie siano visivamente assegnate a queste specifiche istanze\n"
 "Altrimenti le scorciatoie saranno sempre assegnate all'istanza preferita"
 
@@ -2295,7 +2296,7 @@ msgstr "Il numero di raccolte recenti da archiviare e mostrare in questa lista"
 
 #: ../build/bin/preferences_gen.h:8809
 msgid "hide the history button and show a specific module instead"
-msgstr "Nascondi il pusante storia e mostra invece un modulo specifico"
+msgstr "Nascondi il pulsante storia e mostra invece un modulo specifico"
 
 #: ../build/bin/preferences_gen.h:8823
 msgid "hide the history button and show the recent collections module instead"
@@ -2330,7 +2331,7 @@ msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
 "'folder', 'times' (e.g. 'capture date')"
 msgstr ""
-"Ordina le seguenti raccole in ordine discendente: 'rullino' per cartella, "
+"Ordina le seguenti raccolte in ordine discendente: 'rullino' per cartella, "
 "'cartella', 'ore' (es: 'ora di scatto')"
 
 #: ../build/bin/preferences_gen.h:9049
@@ -3570,7 +3571,7 @@ msgstr "Markesteijn 3-pass + VNG"
 #: ../src/common/collection.c:1448 ../src/libs/collect.c:1747
 #: ../src/libs/filters/history.c:38
 msgid "basic"
-msgstr "basique"
+msgstr "Basico"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:233
 msgid "median"
@@ -3739,7 +3740,7 @@ msgstr "Casuale"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:180
 msgid "Floyd-Steinberg 1-bit B&W"
-msgstr "Floyd-Steinberg 1-bit B&N"
+msgstr "Floyd-Steinberg 1-bit B/N"
 
 #: ../build/lib/darktable/plugins/introspection_dither.c:181
 msgid "Floyd-Steinberg 4-bit gray"
@@ -4242,7 +4243,7 @@ msgstr "Gamma Rec709 RGB"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:209
 msgid "tetrahedral"
-msgstr "Tetaedro"
+msgstr "Tetraedro"
 
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:210
 msgid "trilinear"
@@ -4543,7 +4544,7 @@ msgstr "Speculari"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:198
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:325
 msgid "smoothing diameter"
-msgstr "Diametro omogeinizzazione"
+msgstr "Diametro omogeneizzazione"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:210
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:333
@@ -4824,7 +4825,7 @@ msgstr "A discesa"
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
 #: ../src/libs/tagging.c:2485 ../src/libs/tagging.c:2521
 msgid "_cancel"
-msgstr "_cancella"
+msgstr "_annulla"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1036
 #: ../src/gui/styles_dialog.c:423 ../src/libs/styles.c:377
@@ -4870,7 +4871,7 @@ msgstr "Il parametro di --out-ext è troppo lungo"
 #: ../src/cli/main.c:344
 #, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
-msgstr "Nota: il file o la cartella di input '%s' non esiste, preseguo oltre\n"
+msgstr "Nota: il file o la cartella di input '%s' non esiste, proseguo oltre\n"
 
 #: ../src/cli/main.c:353
 #, c-format
@@ -4991,7 +4992,7 @@ msgid ""
 "application, no access to devices etc"
 msgstr ""
 "Errore nell'inizializzare `%s' sulla porta `%s', possibili cause sono: "
-"bloccata da un'altra applicazone, nessun accesso al dispositivo, ecc."
+"bloccata da un'altra applicazione, nessun accesso al dispositivo, ecc."
 
 #: ../src/common/camera_control.c:866
 #, c-format
@@ -4999,8 +5000,8 @@ msgid ""
 "`%s' on port `%s' is not interesting because it supports neither tethering "
 "nor import"
 msgstr ""
-"`%s' sulla porta `%s' non è interessata perchè non supporta nè il tethering, "
-"nè l'importazione"
+"`%s' sulla porta `%s' non è interessata perché non supporta ne il tethering, "
+"ne l'importazione"
 
 #: ../src/common/camera_control.c:916
 #, c-format
@@ -5273,7 +5274,7 @@ msgstr "Messicano"
 #: ../src/common/color_vocabulary.c:100 ../src/common/color_vocabulary.c:105
 #: ../src/common/color_vocabulary.c:110 ../src/common/color_vocabulary.c:115
 msgid "forearm"
-msgstr "Avanbraccio"
+msgstr "Avambraccio"
 
 #: ../src/common/color_vocabulary.c:120 ../src/common/color_vocabulary.c:125
 #: ../src/common/color_vocabulary.c:130 ../src/common/color_vocabulary.c:135
@@ -5444,7 +5445,7 @@ msgstr "Grigio antracite scuro"
 
 #: ../src/common/color_vocabulary.c:295
 msgid "light slate gray"
-msgstr "Gricio antracite chiaro"
+msgstr "Grigio antracite chiaro"
 
 #: ../src/common/color_vocabulary.c:296 ../src/common/color_vocabulary.c:305
 msgid "dark cyan"
@@ -5762,7 +5763,7 @@ msgstr ""
 
 #: ../src/common/darktable.c:1741
 msgid "1) darktable resources"
-msgstr "1) risorse dartkable"
+msgstr "1) risorse Darktable"
 
 #: ../src/common/darktable.c:1743
 msgid "2) tune OpenCL performance"
@@ -6053,19 +6054,19 @@ msgstr ""
 
 #: ../src/common/database.c:3789
 msgid "click later to be asked on next startup"
-msgstr "Clicca 'Successivamente' affinchè ti venga richiesto al prossimo avvio"
+msgstr "Clicca 'Successivamente' affinché ti venga richiesto al prossimo avvio"
 
 #: ../src/common/database.c:3793
 msgid "click later to be asked when closing darktable"
 msgstr ""
-"Clicca 'successivamente' affinchè ti venga chiesto al momento della chiusura "
-"di darktable"
+"Clicca 'successivamente' affinché ti venga chiesto al momento della chiusura "
+"di Darktable"
 
 #: ../src/common/database.c:3797
 msgid "click later to be asked next time when closing darktable"
 msgstr ""
-"Clicca 'successivamente' affinchè ti venga chiesto la prossima volta al "
-"momento della chiusura di darktable"
+"Clicca 'successivamente' affinché ti venga chiesto la prossima volta al "
+"momento della chiusura di Darktable"
 
 #: ../src/common/database.c:3800
 #, c-format
@@ -6519,7 +6520,7 @@ msgstr[1] "Eliminazione %d immagini"
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
-msgstr[0] "Applicazione della valutazione %d all' %d immagine"
+msgstr[0] "Applicazione della valutazione %d all'immagine %d"
 msgstr[1] "Applicazione della valutazione %d alle %d immagini"
 
 #: ../src/common/ratings.c:221
@@ -6699,7 +6700,7 @@ msgstr "Fusione"
 #: ../src/control/control.c:115
 msgctxt "accel"
 msgid "lua scripts"
-msgstr "Scripts LUA"
+msgstr "Script LUA"
 
 #: ../src/control/control.c:116
 msgctxt "accel"
@@ -6731,7 +6732,7 @@ msgstr ""
 #: ../src/control/crawler.c:365
 #, c-format
 msgid "SUCCESS: %s synced XMP → DB"
-msgstr "SUCCESSO: %s sincronizzato XMP → DB"
+msgstr "RIUSCITO: %s sincronizzato XMP → DB"
 
 #: ../src/control/crawler.c:382
 #, c-format
@@ -6751,7 +6752,7 @@ msgstr ""
 #: ../src/control/crawler.c:388
 #, c-format
 msgid "SUCCESS: %s synced DB → XMP"
-msgstr "SUCCESSO: %s sincronizzato DB → XMP"
+msgstr "RIUSCITO: %s sincronizzato DB → XMP"
 
 #: ../src/control/crawler.c:410
 #, c-format
@@ -6761,7 +6762,7 @@ msgstr "ERRORE: %s NON sincronizzato nuovo (XMP) → vecchio (DB)"
 #: ../src/control/crawler.c:415
 #, c-format
 msgid "SUCCESS: %s synced new (XMP) → old (DB)"
-msgstr "SUCCESSO: %s sincronizzato nuovo (XMP) → vecchio (DB)"
+msgstr "RIUSCITO: %s sincronizzato nuovo (XMP) → vecchio (DB)"
 
 #: ../src/control/crawler.c:425
 #, c-format
@@ -6771,7 +6772,7 @@ msgstr "ERRORE: %s NON sincronizzato nuovo (DB) → vecchio (XMP)"
 #: ../src/control/crawler.c:430
 #, c-format
 msgid "SUCCESS: %s synced new (DB) → old (XMP)"
-msgstr "SUCCESSO: %s sincronizzato nuovo (DB) → vecchio (XMP)"
+msgstr "RIUSCITO: %s sincronizzato nuovo (DB) → vecchio (XMP)"
 
 #: ../src/control/crawler.c:438 ../src/control/crawler.c:489
 #, c-format
@@ -6786,7 +6787,7 @@ msgstr "ERRORE: %s NON sincronizzato vecchio (XMP) → nuovo (DB)"
 #: ../src/control/crawler.c:467
 #, c-format
 msgid "SUCCESS: %s synced old (XMP) → new (DB)"
-msgstr "SUCCESSO: %s sincronizzato vecchio (XMP) → nuovo (DB)"
+msgstr "RIUSCITO: %s sincronizzato vecchio (XMP) → nuovo (DB)"
 
 #: ../src/control/crawler.c:476
 #, c-format
@@ -6796,7 +6797,7 @@ msgstr "ERRORE: %s NON sincronizzato vecchio (DB) → nuovo (XMP)"
 #: ../src/control/crawler.c:481
 #, c-format
 msgid "SUCCESS: %s synced old (DB) → new (XMP)"
-msgstr "SUCCESSO: %s sincronizzato vecchio (DB) → nuovo (XMP)"
+msgstr "RIUSCITO: %s sincronizzato vecchio (DB) → nuovo (XMP)"
 
 #: ../src/control/crawler.c:560
 #, c-format
@@ -7385,7 +7386,7 @@ msgstr "Scurisci"
 #: ../src/develop/blend_gui.c:50 ../src/libs/live_view.c:339
 msgctxt "blendmode"
 msgid "multiply"
-msgstr "Moliplica"
+msgstr "Moltiplica"
 
 #: ../src/develop/blend_gui.c:51
 msgctxt "blendmode"
@@ -8302,7 +8303,7 @@ msgid ""
 "ctrl+click to reapply any automatic presets"
 msgstr ""
 "Azzera i parametri\n"
-"Crtrl+click per applicare di nuovo qualsiasi preimpostazione automatica"
+"Ctrl+click per applicare di nuovo qualsiasi preimpostazione automatica"
 
 #: ../src/develop/imageop.c:2496
 msgid ""
@@ -8335,7 +8336,7 @@ msgstr ""
 #: ../src/develop/imageop.c:3218 ../src/develop/imageop.c:3228
 #: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1289
 msgid "show"
-msgstr "Lento"
+msgstr "Mostra"
 
 #: ../src/develop/imageop.c:3221 ../src/libs/modulegroups.c:3353
 #: ../src/libs/modulegroups.c:3479 ../src/libs/modulegroups.c:3872
@@ -8370,7 +8371,7 @@ msgstr "Ripristina"
 #: ../src/develop/imageop.c:3233 ../src/gui/preferences.c:774
 #: ../src/libs/lib.c:1291
 msgid "presets"
-msgstr "Preset"
+msgstr "Preimpostazioni"
 
 #: ../src/develop/imageop.c:3245
 msgid "processing module"
@@ -9270,7 +9271,7 @@ msgid ""
 msgstr ""
 "Attenzione: backend disco per la cache dell'anteprima a schermo intero è "
 "disabilitata. (cache backend disco piena)\n"
-"Se vuoi generare in anticipo le anteprime a schermo intero affinchè darktable "
+"Se vuoi generare in anticipo le anteprime a schermo intero affinché Darktable "
 "le possa utilizzare devi abilitare la cache del backend disco per l'anteprima "
 "a schermo pieno\n"
 "non verranno generate anteprime; fatto.\n"
@@ -9319,7 +9320,7 @@ msgstr "Storto"
 
 #: ../src/gui/accelerators.c:79
 msgid "leftright"
-msgstr "Sinistradestra"
+msgstr "Sinistra destra"
 
 #: ../src/gui/accelerators.c:80
 msgid "updown"
@@ -9327,7 +9328,7 @@ msgstr "Sottosopra"
 
 #: ../src/gui/accelerators.c:81
 msgid "pgupdown"
-msgstr "Pagsugiù"
+msgstr "Pagsu/giù"
 
 #: ../src/gui/accelerators.c:89 ../src/views/view.c:1187
 msgid "shift"
@@ -9418,7 +9419,7 @@ msgstr "Attiva"
 
 #: ../src/gui/accelerators.c:135
 msgid "ctrl-activate"
-msgstr "CTR-attiva"
+msgstr "CTRL-attiva"
 
 #: ../src/gui/accelerators.c:136
 msgid "right-activate"
@@ -10421,15 +10422,15 @@ msgid ""
 "set the contrast between the lightest and darkest part of the guide overlays"
 msgstr ""
 "Imposta il contrasto tra tra la parte più luminosa e la più scura delle guide "
-"sovraimpresse"
+"sovrimpresse"
 
 #: ../src/gui/guides.c:847 ../src/gui/guides.c:893
 msgid "show guides"
-msgstr "Mostra guide"
+msgstr "Visualizza guide"
 
 #: ../src/gui/guides.c:902
 msgid "show guide overlay when this module has focus"
-msgstr "Mostra guida sovrimpressa quando questo modulo ha focus"
+msgstr "Visualizza guida sovrimpressa quando questo modulo ha focus"
 
 #: ../src/gui/guides.c:904
 msgid ""
@@ -10650,7 +10651,7 @@ msgstr "Non riesco ad importare la preimpostazione %s"
 
 #: ../src/gui/preferences.c:996
 msgid "select preset(s) to import"
-msgstr "Selezionare la/le preimpstazione/i da importare"
+msgstr "Selezionare la/le preimpostazione/i da importare"
 
 #: ../src/gui/preferences.c:997 ../src/libs/collect.c:406
 #: ../src/libs/copy_history.c:107 ../src/libs/geotagging.c:930
@@ -10724,7 +10725,7 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"Preset '%s' già esistente.\n"
+"Preimpostazione '%s' già esistente.\n"
 "Vuoi sovrascriverlo?"
 
 #: ../src/gui/presets.c:254
@@ -10793,11 +10794,11 @@ msgstr "Stringa per la corrispondenza degli obiettivi (usa % come jolly)"
 
 #: ../src/gui/presets.c:560
 msgid "minimum ISO value"
-msgstr "Valore iso minimo"
+msgstr "Valore ISO minimo"
 
 #: ../src/gui/presets.c:563
 msgid "maximum ISO value"
-msgstr "Valore iso massimo"
+msgstr "Valore ISO massimo"
 
 #: ../src/gui/presets.c:574
 msgid "minimum exposure time"
@@ -11271,7 +11272,7 @@ msgstr "Incorpora profili icc"
 
 #: ../src/imageio/format/pdf.c:676
 msgid "images can be tagged with their icc profile"
-msgstr "Le immagini possono essere taggate con il loro profilo icc"
+msgstr "Le immagini possono essere etichettate con il loro profilo icc"
 
 #: ../src/imageio/format/pdf.c:692
 msgid "bits per channel of the embedded images"
@@ -11351,7 +11352,7 @@ msgstr "Livello di compressione"
 
 #: ../src/imageio/format/tiff.c:843
 msgid "b&w image"
-msgstr "Immagine BN"
+msgstr "Immagine B/N"
 
 #: ../src/imageio/format/tiff.c:844
 msgid "write rgb colors"
@@ -11503,7 +11504,7 @@ msgstr "Inserisci il titolo del sito web"
 
 #: ../src/imageio/storage/latex.c:71
 msgid "LaTeX book template"
-msgstr "Modello libro latex"
+msgstr "Modello libro Latex"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
 #: ../src/imageio/storage/latex.c:184
@@ -12322,7 +12323,7 @@ msgid ""
 msgstr ""
 "Applica un'esposizione automatica basata su un'area definita dall'utente\n"
 "Click e trascina per definire l'area\n"
-"Click destro per cancellarla"
+"Click destro per annullare"
 
 #: ../src/iop/basicadj.c:647
 msgid "clip"
@@ -13143,7 +13144,7 @@ msgstr "Ho terminato il calcolo del bilanciamento del bianco"
 
 #: ../src/iop/channelmixerrgb.c:2056
 msgid "channelmixerrgb works only on RGB input"
-msgstr "MixercanaliRGB lavora solamente su input in RGB"
+msgstr "Mixer canali RGB lavora solamente su input in RGB"
 
 #: ../src/iop/channelmixerrgb.c:3313
 #, c-format
@@ -13273,7 +13274,7 @@ msgid ""
 "• none disables any adaptation and uses pipeline working RGB."
 msgstr ""
 "Scegli il metodo per adattare l'illuminante\n"
-"e lo spaziocolore in cui lavora il modulo: \n"
+"e lo spazio colore in cui lavora il modulo: \n"
 "• Linear Bradford (1985) è consistente con la serie di strumenti ICC v4.\n"
 "• CAT16 (2016) è più robusto ed accurato.\n"
 "• Bradford non-lineare (1985) è l'originale Bradford,\n"
@@ -14171,6 +14172,7 @@ msgid "chroma of the color gain in highlights"
 msgstr "Cromaticità del guadagno colore nelle alte luci"
 
 #: ../src/iop/colorbalancergb.c:1953 ../src/iop/colorbalancergb.c:2056
+#, fuzzy
 #: ../src/iop/colorbalancergb.c:2060 ../src/iop/colorbalancergb.c:2064
 msgid "power"
 msgstr "Power"
@@ -14477,14 +14479,14 @@ msgstr "Filtro di riscaldamento"
 
 #: ../src/iop/colorcorrection.c:123
 msgid "cooling filter"
-msgstr "Filtro di rafreddamento"
+msgstr "Filtro di raffreddamento"
 
 #: ../src/iop/colorcorrection.c:265
 msgid ""
 "drag the line for split-toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"Trascina la linea per la divisione dei toni. Chiaro = Alteluci, Scuro = "
+"Trascina la linea per la divisione dei toni. Chiaro = Alte luci, Scuro = "
 "Ombre. Usa la rotella del mouse per variare la saturazione."
 
 #: ../src/iop/colorcorrection.c:284
@@ -14970,7 +14972,7 @@ msgstr ""
 "ingrandimenti. Potrebbe proteggere troppo o troppo poco la saturazione "
 "rispetto al metodo seguente\n"
 " - Media locale: più lenta della precedente, protegge la saturazione meglio "
-"del metodo precedente perchè utilizza i pixel vicini come riferimento per il "
+"del metodo precedente perché utilizza i pixel vicini come riferimento per il "
 "colore. Se richiesto può desaturare parecchio l'immagine\n"
 " - Statico: veloce, ma dovrà essere utilizzata una soglia come limite"
 
@@ -15049,7 +15051,7 @@ msgid ""
 "refine adds some recalculation of red & blue channels"
 msgstr ""
 "Passi di rifinitura LMMSE. I passi mediani fanno la media dell'uscita,\n"
-"refinisce aggiunge un po' di ricalcolo dei cananli rosso e blu"
+"rifinisce aggiunge un po' di ricalcolo dei canali rosso e blu"
 
 #: ../src/iop/demosaic.c:5811
 msgid "how many color smoothing median steps after demosaicing"
@@ -15065,6 +15067,7 @@ msgid "demosaicing is only used for color raw images"
 msgstr "La demosaicizzazione è usata per il colore delle immagini RAW"
 
 #: ../src/iop/denoiseprofile.c:707
+#, fuzzy
 msgid "wavelets: chroma only"
 msgstr "Wavelets: solo cromaticità"
 
@@ -15186,7 +15189,7 @@ msgid ""
 "you get. once enabled, you won't be able to\n"
 "return back to old algorithm."
 msgstr ""
-"Risolve i difetti nella trasformazione ascombe che porta\n"
+"Risolve i difetti nella trasformazione anscombe che porta\n"
 "a scarsi risultati nel canale verde in modalità wavelets\n"
 "combinati con una cattiva gestione dei coefficienti di\n"
 "bilanciamento del bianco, e un difetto nella\n"
@@ -15622,7 +15625,7 @@ msgid ""
 msgstr ""
 "Soglia di luminanza per la maschera.\n"
 "0. Disabilita il mascheramento con luminanza ed applica il modulo all'intera "
-"imagine.\n"
+"immagine.\n"
 "Ogni valore più alto esclude i pixel con luminanza più bassa della soglia.\n"
 "Può essere usato per rimuovere alte luci."
 
@@ -15640,8 +15643,9 @@ msgstr ""
 
 #. add the preset.
 #: ../src/iop/dither.c:131
+#, fuzzy
 msgid "dither"
-msgstr "Dither"
+msgstr "Oscilla"
 
 #: ../src/iop/dither.c:885
 msgid "radius for blurring step"
@@ -17040,7 +17044,7 @@ msgstr "Stereografica"
 
 #: ../src/iop/lens.cc:2390
 msgid "equisolid angle"
-msgstr "Angolo equisolido"
+msgstr "Angolo equi solido"
 
 #: ../src/iop/lens.cc:2391
 msgid "thoby fish-eye"
@@ -17400,7 +17404,7 @@ msgstr "Livello non valido nel file PNG %d %d"
 #: ../src/iop/lut3d.c:519
 msgid "this darktable build is not compatible with compressed CLUT"
 msgstr ""
-"Questa installazione di darktable non è compatibile con i clut compressi"
+"Questa installazione di Darktable non è compatibile con i CLUT compressi"
 
 #: ../src/iop/lut3d.c:536 ../src/iop/lut3d.c:785
 #, c-format
@@ -17439,7 +17443,7 @@ msgstr "[Il cubo LUT 1D non è supportato"
 
 #: ../src/iop/lut3d.c:796 ../src/iop/lut3d.c:900
 msgid "error - allocating buffer for cube LUT"
-msgstr "Errore - impossibile allocare il buffer per il LUTo LUT"
+msgstr "Errore - impossibile allocare il buffer per il cubo LUT"
 
 #: ../src/iop/lut3d.c:807 ../src/iop/lut3d.c:913
 msgid "error - cube LUT size is not defined"
@@ -17502,7 +17506,7 @@ msgstr "CLUT dimezzato (PNG) o 3D LUT (cubo o 3dl)"
 
 #: ../src/iop/lut3d.c:1603
 msgid "select file outside LUT root folder is not allowed"
-msgstr "Non è permesso selezionare un file esterno alla cartella radice dei Lut"
+msgstr "Non è permesso selezionare un file esterno alla cartella radice dei LUT"
 
 #: ../src/iop/lut3d.c:1674
 msgid ""
@@ -18354,7 +18358,7 @@ msgid ""
 msgstr ""
 "Applica i livelli automatici in base ad un'area definita dall'utente\n"
 "Click e trascina per selezionare l'area\n"
-"Click destro per cancellarla"
+"Click destro per annullare"
 
 #: ../src/iop/rotatepixels.c:70
 msgctxt "modulename"
@@ -19746,7 +19750,7 @@ msgstr "Statistica"
 
 #: ../src/libs/colorpicker.c:569
 msgid "select which statistic to show"
-msgstr "Seleziona quale statistica mostrare"
+msgstr "Seleziona quale statistica visualizzare"
 
 #: ../src/libs/colorpicker.c:578
 msgid "select which color mode to use"
@@ -21876,7 +21880,7 @@ msgstr "Altitudine"
 
 #: ../src/libs/metadata_view.c:163
 msgid "categories"
-msgstr "CategorieSenza categoria"
+msgstr "Categorie"
 
 #: ../src/libs/metadata_view.c:170
 msgid "image information"
@@ -23174,9 +23178,9 @@ msgstr "e..."
 #: ../src/libs/tools/darktable.c:308
 msgid "translator-credits"
 msgstr ""
+"Maurizio Paglia (2018-2022)\n"
 "Matteo Mardegan <matteo@mardegan.org> (2019-2022)\n"
 "Luca Cignoni (2022)\n"
-"Maurizio Paglia (2018-2022)\n"
 "Nelle precedenti versioni:\n"
 "Germano Massullo (2015-2017)\n"
 "Mauro 'bartokk' Bartoccelli (2013-2014)"
@@ -23834,7 +23838,7 @@ msgstr ""
 "sRGB a 16 bit taglia il nero a -20,69 EV,\n"
 "tipicamente una stampa fine-art opaca imposta il nero a -5,30 EV,\n"
 "una stampa a colori lucida imposta il nero a -8,00 EV,\n"
-"una stampa in BN lucida imposta il nero a -9,00 EV."
+"una stampa in B/N lucida imposta il nero a -9,00 EV."
 
 #: ../src/views/darkroom.c:2399
 msgid "upper threshold"
@@ -24221,7 +24225,7 @@ msgstr "Rallenta"
 
 #: ../src/views/slideshow.c:618
 msgid "speed up"
-msgstr "Accellera"
+msgstr "Accelera"
 
 #: ../src/views/slideshow.c:622
 msgid "step forward"
