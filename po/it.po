@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-24 00:06+0200\n"
+"PO-Revision-Date: 2022-06-24 00:13+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -1742,13 +1742,13 @@ msgstr "Sicurezza"
 
 #: ../build/bin/preferences_gen.h:6731
 msgid "ask before removing images from the library"
-msgstr "Chiedi prima di rimuovere immagini dalla biblioteca"
+msgstr "Chiedi prima di rimuovere immagini dalla raccolta"
 
 #: ../build/bin/preferences_gen.h:6745
 msgid "always ask the user before removing image information from the library"
 msgstr ""
 "chiedi sempre prima di rimuovere le informazioni di un'immagine dalla "
-"biblioteca"
+"raccolta"
 
 #: ../build/bin/preferences_gen.h:6767
 msgid "ask before deleting images from disk"
@@ -7000,7 +7000,7 @@ msgstr "Elimina fisicamente tutti i file"
 
 #: ../src/control/jobs/control_jobs.c:862
 msgid "only remove from the image library"
-msgstr "Rimuovi solo dalla biblioteca delle immagini"
+msgstr "Rimuovi solo dalla raccolta delle immagini"
 
 #: ../src/control/jobs/control_jobs.c:863
 msgid "skip to next file"
@@ -21096,7 +21096,7 @@ msgstr "Rimuovi"
 
 #: ../src/libs/image.c:477
 msgid "remove images from the image library, without deleting"
-msgstr "Rimuove le immagini dalla biblioteca delle immagini, senza cancellarle"
+msgstr "Rimuove le immagini dalla raccolta delle immagini, senza cancellarle"
 
 #: ../src/libs/image.c:485
 msgid "move..."
@@ -21350,7 +21350,7 @@ msgstr "Modelli nominazione"
 
 #: ../src/libs/import.c:1681
 msgid "add to library"
-msgstr "Aggiungi alla biblioteca"
+msgstr "Aggiungi alla raccolta"
 
 #: ../src/libs/import.c:1682
 msgid "copy & import"
@@ -21370,11 +21370,11 @@ msgstr "Formato data/ora di sovrascrittura invalido"
 
 #: ../src/libs/import.c:1990
 msgid "add to library..."
-msgstr "Aggiungi alla biblioteca..."
+msgstr "Aggiungi alla raccolta..."
 
 #: ../src/libs/import.c:1991
 msgid "add existing images to the library"
-msgstr "Aggiunge le immagini presenti alla biblioteca"
+msgstr "Aggiunge le immagini presenti alla raccolta"
 
 #: ../src/libs/import.c:1997
 msgid "copy & import..."
@@ -21387,7 +21387,7 @@ msgid ""
 "folders"
 msgstr ""
 "Copia ed eventualmente rinomina le immagini prima di aggiungerle alla "
-"biblioteca\n"
+"raccolta\n"
 "Possono esser definiti dei modelli per rinominare le immagini e specificare "
 "la cartella di destinazione"
 
