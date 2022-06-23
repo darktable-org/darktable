@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-23 08:05+0200\n"
+"PO-Revision-Date: 2022-06-23 13:48+0200\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -3394,7 +3394,7 @@ msgstr "Modalità di esecuzione"
 #: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2431
 #: ../src/iop/exposure.c:1129
 msgid "lightness"
-msgstr "chiarezza"
+msgstr "tono"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:93
@@ -4597,7 +4597,7 @@ msgstr "Media RGB"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:380
 msgid "HSL lightness"
-msgstr "Chiarezza HSL"
+msgstr "Tono HSL"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
@@ -7445,7 +7445,7 @@ msgstr "Luce puntiforme"
 #: ../src/develop/blend_gui.c:62
 msgctxt "blendmode"
 msgid "lightness"
-msgstr "Chiarezza"
+msgstr "Tono"
 
 #: ../src/develop/blend_gui.c:63
 msgctxt "blendmode"
@@ -7470,7 +7470,7 @@ msgstr "Regolazione colore"
 #: ../src/develop/blend_gui.c:67
 msgctxt "blendmode"
 msgid "Lab lightness"
-msgstr "Chiarezza Lab"
+msgstr "Tono Lab"
 
 #: ../src/develop/blend_gui.c:68
 msgctxt "blendmode"
@@ -8032,7 +8032,7 @@ msgstr "Modalità normale e aritmetica"
 
 #: ../src/develop/blend_gui.c:2709
 msgid "chromaticity & lightness modes"
-msgstr "Modalità cromaticità e chiarezza"
+msgstr "Modalità cromaticità e tono"
 
 #. add deprecated blend mode
 #: ../src/develop/blend_gui.c:2720
@@ -12044,7 +12044,7 @@ msgstr "Luminanza"
 
 #: ../src/iop/atrous.c:1736
 msgid "change lightness at each feature size"
-msgstr "Cambia chiarezza per ogni dimensione caratteristica"
+msgstr "Cambia tono per ogni dimensione caratteristica"
 
 #: ../src/iop/atrous.c:1737
 msgid "change color saturation at each feature size"
@@ -14571,11 +14571,11 @@ msgstr "Seleziona la saturazione per le ombre"
 
 #: ../src/iop/colorize.c:365
 msgid "lightness of color"
-msgstr "Chiarezza del colore"
+msgstr "Tono del colore"
 
 #: ../src/iop/colorize.c:369
 msgid "mix value of source lightness"
-msgstr "Mescola il valore della chiarezza sorgente"
+msgstr "Mescola il valore del tono sorgente"
 
 #: ../src/iop/colormapping.c:147
 msgid "color mapping"
@@ -14729,8 +14729,7 @@ msgstr "Precedenza"
 #: ../src/iop/colorreconstruction.c:1303
 msgid "pixels with lightness values above this threshold are corrected"
 msgstr ""
-"I pixel con un valore di chiarezza superiore a questa soglia non verranno "
-"corretti"
+"I pixel con un valore di tono superiore a questa soglia non verranno corretti"
 
 #: ../src/iop/colorreconstruction.c:1304
 msgid "how far to look for replacement colors in spatial dimensions"
@@ -15208,7 +15207,7 @@ msgid ""
 "wavelets work best for `color' blending"
 msgstr ""
 "Metodo usato per la riduzione del rumore.\n"
-"Non-local vuol dire che funziona meglio per la fusione `chiarezza',\n"
+"Non-local vuol dire che funziona meglio per la fusione `tono',\n"
 "Wavelets funziona meglio per la modalità di fusione `colore'"
 
 #: ../src/iop/denoiseprofile.c:3712
@@ -15793,7 +15792,7 @@ msgid ""
 "and can be used to define a target."
 msgstr ""
 "\"Correzione\" regola automaticamente l'esposizione\n"
-"in modo che la chiarezza in entrata viene mappata a quella obiettivo.\n"
+"in modo che il tono in entrata viene mappato a quello obiettivo.\n"
 "\"Misurazione\" mostra semplicemente come un colore in ingresso viene mappato "
 "alla compensazione dell'esposizione\n"
 "e può essere utilizzato per definire un obiettivo."
@@ -18040,8 +18039,7 @@ msgstr ""
 
 #: ../src/iop/relight.c:281
 msgid "toggle tool for picking median lightness in image"
-msgstr ""
-"Attiva/disattiva lo strumento per prelevare la chiarezza media nell'immagine"
+msgstr "Attiva/disattiva lo strumento per prelevare il tono medio nell'immagine"
 
 #: ../src/iop/relight.c:284 ../src/libs/metadata_view.c:147
 #: ../src/libs/print_settings.c:2385
@@ -19183,7 +19181,7 @@ msgid ""
 "saturate and reduce the lightness of the most saturated pixels\n"
 "to make the colors more vivid."
 msgstr ""
-"Satura e riduce la chiarezza dei pixel più saturi\n"
+"Satura e riduce il tono dei pixel più saturi\n"
 "per rendere i colori più vividi."
 
 #: ../src/iop/vibrance.c:223
@@ -19371,7 +19369,7 @@ msgid ""
 "left-click on a border to create a marker\n"
 "right-click on a marker to delete it"
 msgstr ""
-"Zone di chiarezza\n"
+"Zone di tono\n"
 "usa la rotella del mouse per cambiare il numero di zone\n"
 "click su un confine per creare un marcatore\n"
 "click di destro su un marcatore per eliminarlo"
