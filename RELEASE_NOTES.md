@@ -82,16 +82,16 @@ are described more fully in the user manual and accompanying blog post.
 
   This method is only available for Bayer sensors and cannot be adapted
   to X-Trans sensors.
-  
+
 - Introducing the darktable Uniform Color Space 2022
 
-  The darktable UCS 22 is a perceptually uniform color space designed 
+  The darktable UCS 22 is a perceptually uniform color space designed
   from psychoperceptual experimental data specifically for the purpose
   of artistic saturation changes, as performed in the *color balance RGB* module.
-  It uses a brightness-saturation scheme that compensates for the Helmholtz-Kohlraush effect 
-  (accounting for the contribution of colorfulness in perceived brighntess)
-  and allows an efficient gamut-mapping against pipeline RGB at constant 
-  brightness. It will make the saturation control in *color balance RGB* 
+  It uses a brightness-saturation scheme that compensates for the Helmholtz-Kohlraush effect
+  (accounting for the contribution of colorfulness in perceived brightness)
+  and allows an efficient gamut-mapping against pipeline RGB at constant
+  brightness. It will make the saturation control in *color balance RGB*
   better behaved.
 
 - UI Rewrite
@@ -242,11 +242,11 @@ are described more fully in the user manual and accompanying blog post.
   adjusted according to the white balance of the image. This is better
   suited to the default scene-referred workflow.
 
-- Shortcuts can now be directed to the the currently-focused processing module
+- Shortcuts can now be directed to the currently-focused processing module
   instance instead of the currently-expanded one.
 
 - The control of the lighttable view has been improved by ensuring the up/down
-  and left/right keys have the expected behaviour.
+  and left/right keys have the expected behavior.
 
 - Apply a blur when color picking in area mode. This ensures that color picker
   measurements aren't overly influenced by image noise. This change particularly
@@ -276,6 +276,8 @@ are described more fully in the user manual and accompanying blog post.
 - Crop handle positions fixed when using fast movements.
 
 - RCD OpenCL tiling issues resolved.
+
+- Tile stitching for X-Trans sensors 
 
 - Filmstrip update fixed if crop is left open when moving to next
   image.

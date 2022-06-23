@@ -3001,8 +3001,6 @@ static gboolean _event_dnd_motion(GtkWidget *widget, GdkDragContext *context,
         if(!gtk_tree_view_row_expanded(tree, path))
           d->drag.expand_timeout = g_timeout_add(200, (GSourceFunc)_dnd_expand_timeout, self);
       }
-      else
-        gtk_tree_view_collapse_all(d->dictionary_view);
     }
 
     GtkTreeSelection *selection = gtk_tree_view_get_selection(d->dictionary_view);

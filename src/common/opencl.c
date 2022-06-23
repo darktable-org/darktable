@@ -237,7 +237,7 @@ void dt_opencl_write_device_config(const int devid)
 
   // Also take care of extended device data, these are not only device specific but also depend on the devid
   // to support systems with two similar cards.
-  g_snprintf(key, 254, "%s%i_%s", DT_CLDEVICE_HEAD, devid, cl->dev[devid].cname);
+  g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
   g_snprintf(dat, 510, "%i", cl->dev[devid].forced_headroom);
   dt_vprint(DT_DEBUG_OPENCL, "[dt_opencl_write_device_config] writing data '%s' for '%s'\n", dat, key);
   dt_conf_set_string(key, dat);
@@ -306,7 +306,7 @@ gboolean dt_opencl_read_device_config(const int devid)
   cl->dev[devid].disabled &= 1;
 
   // Also take care of extended device data, these are not only device specific but also depend on the devid
-  g_snprintf(key, 254, "%s%i_%s", DT_CLDEVICE_HEAD, devid, cl->dev[devid].cname);
+  g_snprintf(key, 254, "%s%s_id%i", DT_CLDEVICE_HEAD, cl->dev[devid].cname, devid);
   if(dt_conf_key_not_empty(key))
   {
     const gchar *dat = dt_conf_get_string_const(key);
@@ -314,6 +314,8 @@ gboolean dt_opencl_read_device_config(const int devid)
     sscanf(dat, "%i", &forced_headroom);
     if(forced_headroom > 0) cl->dev[devid].forced_headroom = forced_headroom;
   }
+  else // this is used if updating to 4.0 or fresh installs; see commenting _opencl_get_unused_device_mem()
+    cl->dev[devid].forced_headroom = 400;
   dt_opencl_write_device_config(devid);
   return !existing_device || !safety_ok;
 }
@@ -928,7 +930,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     if(err != CL_SUCCESS)
     {
       all_num_devices[n] = 0;
-      dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] could not get device id size: %s\n", cl_errstr(err));
+      dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] could not get device id: %s\n", cl_errstr(err));
     }
     else
     {
@@ -1084,13 +1086,15 @@ finally:
         if((cl->dev[n].benchmark > 0.0f) && (cl->dev[n].disabled == 0))
         {
           tgpumin = fminf(cl->dev[n].benchmark, tgpumin);
-          tgpumax = fminf(cl->dev[n].benchmark, tgpumax);
+          tgpumax = fmaxf(cl->dev[n].benchmark, tgpumax);
         }
       }
       
-      if(tcpu <= 1.5f * tgpumin)
+      if(tcpu < tgpumin / 3.0f)
       {
-        // de-activate opencl for darktable in case of too slow GPU(s). user can always manually overrule this later.
+        // de-activate opencl for darktable in case the cpu is three times faster than the fastest GPU.
+        // FIXME the problem here is that the benchmark might not reflect real-world performance.
+        // user can always manually overrule this later.
         cl->enabled = FALSE;
         dt_conf_set_bool("opencl", FALSE);
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] due to a slow GPU the opencl flag has been set to OFF.\n");
@@ -1106,6 +1110,9 @@ finally:
       else if((tcpu >= 6.0f * tgpumin) && (cl->num_devs == 1))
       {
         // set scheduling profile to "very fast GPU" if CPU is way too slow and there is just one device
+        // FIXME this condition is very unlikely to be met. Proper fixing might need
+        // a) a more realistic benchmark as we use in modern modules like d&s
+        // b) a redesigned scheduler for dt > 4.0
         dt_conf_set_string("opencl_scheduling_profile", "very fast GPU");
         dt_print_nts(DT_DEBUG_OPENCL, "[opencl_init] set scheduling profile for very fast GPU.\n");
         dt_control_log(_("very fast GPU detected - opencl scheduling profile has been set accordingly"));
@@ -2730,6 +2737,7 @@ void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t actio
    clCreateBuffer does not tell an error condition if there is no memory available (this
    is according to standard), to make sure the buffer is really allocated in graphics mem we
    force a small memory access.
+   Note: This code seems to be bad at least for nvidia 515/16 drivers, the reason is not understood yet.
 */
 void _opencl_get_unused_device_mem(const int devid)
 {
