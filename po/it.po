@@ -7,16 +7,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-23 00:57+0200\n"
-"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
-"\n"
+"PO-Revision-Date: 2022-06-23 07:55+0200\n"
+"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 21.12.3\n"
+"X-Generator: Poedit 3.0\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -558,8 +557,7 @@ msgid "max polygon points"
 msgstr "Punti massimi del poligono"
 
 #: ../build/bin/conf_gen.h:1849
-msgid ""
-"limit the number of points imported with polygon in find location module"
+msgid "limit the number of points imported with polygon in find location module"
 msgstr ""
 "Limita il numero di punti importati con il poligono nel modulo trova località"
 
@@ -1019,7 +1017,7 @@ msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
 msgstr ""
-"Quando questa opzione è abilitata, Darktable proverà a spostare il modulo in "
+"Quando questa opzione è abilitata, darktable proverà a spostare il modulo in "
 "cima alla lista visibile"
 
 #: ../build/bin/preferences_gen.h:4227
@@ -1028,8 +1026,7 @@ msgstr ""
 "Valutare un'immagine con una stella per due volte non azzera la valutazione"
 
 #: ../build/bin/preferences_gen.h:4241
-msgid ""
-"defines whether rating an image one star twice will zero out star rating"
+msgid "defines whether rating an image one star twice will zero out star rating"
 msgstr ""
 "Stabilisce se valutare un'immagine con una stella per due volte azzererà la "
 "valutazione."
@@ -1088,8 +1085,8 @@ msgstr ""
 "Se la dimensione della miniatura è maggiore di questo valore, verrà "
 "processato usando il file RAW file al posto della miniatura memorizzata nel "
 "JPEG (migliore ma più lento).\n"
-"Se vuoi tutte le anteprime e le immagini pre-elaborate nella miglior "
-"qualità dovresti scegliere l'opzione *sempre*.\n"
+"Se vuoi tutte le anteprime e le immagini pre-elaborate nella miglior qualità "
+"dovresti scegliere l'opzione *sempre*.\n"
 "(altri commenti nel manuale)"
 
 #: ../build/bin/preferences_gen.h:4438
@@ -1107,8 +1104,8 @@ msgstr ""
 "Se la dimensione della miniatura è maggiore di questo valore, verrà "
 "processato usando la via dell'elaborazione in massima qualità (migliore ma "
 "più lento).\n"
-"Se vuoi tutte le anteprime e le immagini pre-elaborate nella miglior "
-"qualità dovresti scegliere l'opzione *sempre*.\n"
+"Se vuoi tutte le anteprime e le immagini pre-elaborate nella miglior qualità "
+"dovresti scegliere l'opzione *sempre*.\n"
 "(altri commenti nel manuale)"
 
 #: ../build/bin/preferences_gen.h:4533
@@ -1136,8 +1133,7 @@ msgstr "Consulta il manuale per conoscere tutte le etichette che puoi usare."
 
 #: ../build/bin/preferences_gen.h:4616
 msgid "pattern for the thumbnail tooltip (empty to disable)"
-msgstr ""
-"Modello dei suggerimenti sui provini (lasciare vuoto per disabilitarlo)"
+msgstr "Modello dei suggerimenti sui provini (lasciare vuoto per disabilitarlo)"
 
 #: ../build/bin/preferences_gen.h:4665 ../src/gui/gtk.c:1177
 #: ../src/gui/preferences.c:538 ../src/views/darkroom.c:91
@@ -1593,7 +1589,7 @@ msgstr "CPU / GPU / Memoria"
 
 #: ../build/bin/preferences_gen.h:6334
 msgid "darktable resources"
-msgstr "Risorse Darktable"
+msgstr "Risorse darktable"
 
 #: ../build/bin/preferences_gen.h:6383
 #, no-c-format
@@ -1611,17 +1607,17 @@ msgid ""
 "swapping and unexpected performance drops. use with caution and not "
 "recommended for general use!"
 msgstr ""
-"Stabilisce quante risorse di sistema Darktable può occupare.\n"
-" - predefinito: Darktable occupa ~50% delle risorse di sistema e fornisce a "
-"Darktable abbastanza spazio per mantenerlo prestante.\n"
+"Stabilisce quante risorse di sistema darktable può occupare.\n"
+" - predefinito: darktable occupa ~50% delle risorse di sistema e fornisce a "
+"darktable abbastanza spazio per mantenerlo prestante.\n"
 " - piccolo: dovrebbe essere usato se stai eseguendo simultameneamente "
 "applicazioni che occupano grandi aree della memoria di sistema, o "
 "applicazioni OpenCL/GL tipo giochi o hugin.\n"
 " - grande: questa è la migliore opzione se stai usando principalmente "
-"Darktable e vuoi che occupi la maggior parte delle risorse di sistema per le "
+"darktable e vuoi che occupi la maggior parte delle risorse di sistema per le "
 "prestazioni.\n"
 " - illimitato: dovrebbe essere usato soltanto per sviluppare immagini "
-"estremamente grandi, in quanto Darktable occuperà tutte le risorse di "
+"estremamente grandi, in quanto darktable occuperà tutte le risorse di "
 "sistema, e ciò potrebbe portare a fare swapping con un decremento inaspettato "
 "delle prestazioni. Usare con cautela, non è raccomandato per uso generale!"
 
@@ -1843,8 +1839,7 @@ msgid "password storage backend to use"
 msgstr "Gestore password da utilizzare"
 
 #: ../build/bin/preferences_gen.h:7183
-msgid ""
-"the storage backend for password storage: auto, none, libsecret, kwallet"
+msgid "the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr ""
 "Gestore delle password memorizzate: automatico, nessuno, libsecret, kwallet"
 
@@ -1907,7 +1902,7 @@ msgid ""
 "once a day - create snapshot if over 24h passed since last snapshot\n"
 "on close - create snapshot every time darktable is closed"
 msgstr ""
-"Le istantanee del database sono create appena prima la chiusura di Darktable. "
+"Le istantanee del database sono create appena prima la chiusura di darktable. "
 "Le opzioni consentono di scegliere quanto spesso fare le istantanee:\n"
 "Mai - semplicemente non crea istantanee. In questo modo le uniche istantanee "
 "fatte sono quelle obbligatorie per l'aggiornamento di versione\n"
@@ -1917,7 +1912,7 @@ msgstr ""
 "dall'ultima fatta\n"
 "Una volta al giorno - crea un'istantanea se sono passate più di 24 ore "
 "dall'ultima fatta\n"
-"Alla chiusura - crea un'istantanea ogni volta che Darktable viene chiuso"
+"Alla chiusura - crea un'istantanea ogni volta che darktable viene chiuso"
 
 #: ../build/bin/preferences_gen.h:7479
 msgid "how many snapshots to keep"
@@ -2114,7 +2109,7 @@ msgid ""
 msgstr ""
 "Quando si crea il file XMP, le etichette gerarchiche vengono aggiunte come "
 "una lista di etichette non-gerarchiche per renderle visibili ad altri "
-"programmi. Quando questa opzione è abilitata Darktable includerà solo "
+"programmi. Quando questa opzione è abilitata darktable includerà solo "
 "l'ultima parte e ignorerà il resto. In questo modo 'foo|bar|baz' diventerà "
 "solamente 'baz'."
 
@@ -2274,8 +2269,7 @@ msgid "do not set the 'uncategorized' entry for tags"
 msgstr "Non impostare la voce 'senza categoria' per le etichette"
 
 #: ../build/bin/preferences_gen.h:8681
-msgid ""
-"do not set the 'uncategorized' entry for tags which do not have children"
+msgid "do not set the 'uncategorized' entry for tags which do not have children"
 msgstr ""
 "Non impostare la voce 'senza categoria' per le etichette che non hanno figli"
 
@@ -3277,7 +3271,7 @@ msgstr "JzAzBz (2021)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:604
 msgid "darktable UCS (2022)"
-msgstr "Darktable UCS (2022)"
+msgstr "darktable UCS (2022)"
 
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:54
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:121
@@ -3400,7 +3394,7 @@ msgstr "Modalità di esecuzione"
 #: ../src/iop/colorize.c:363 ../src/iop/colorzones.c:2431
 #: ../src/iop/exposure.c:1129
 msgid "lightness"
-msgstr "Tono"
+msgstr "chiarezza"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:256
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:93
@@ -4603,7 +4597,7 @@ msgstr "Media RGB"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:380
 msgid "HSL lightness"
-msgstr "Tono HSL"
+msgstr "Chiarezza HSL"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
@@ -4739,7 +4733,7 @@ msgid ""
 "through a lighttable. It also enables you to develop raw images and enhance "
 "them in a darkroom."
 msgstr ""
-"Darktable gestisce i tuoi negativi digitali in un database e ti permette di "
+"darktable gestisce i tuoi negativi digitali in un database e ti permette di "
 "vederli attraverso un Tavolo Luminoso. Ti permette inoltre di sviluppare le "
 "immagini RAW e di migliorarle in una Camera Oscura."
 
@@ -4756,7 +4750,7 @@ msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
-"Darktable supporta i formati RAW delle più moderne fotocamere, e ne esegue le "
+"darktable supporta i formati RAW delle più moderne fotocamere, e ne esegue le "
 "elaborazioni con un'altissima precisione."
 
 #: ../data/darktable.appdata.xml.in.h:5
@@ -4901,8 +4895,7 @@ msgstr "Attenzione: opzione sconosciuta %s\n"
 #: ../src/cli/main.c:454
 #, c-format
 msgid "error: input file and import opts specified! that's not supported!\n"
-msgstr ""
-"Errore: file e opzioni di input specificate! Questo non è supportato!\n"
+msgstr "Errore: file e opzioni di input specificate! Questo non è supportato!\n"
 
 #: ../src/cli/main.c:487
 #, c-format
@@ -5757,15 +5750,15 @@ msgid ""
 "performance have changed."
 msgstr ""
 "L'interfaccia utente ed i meccanismi interni per regolare le prestazioni di "
-"Darktable sono state cambiate."
+"darktable sono state cambiate."
 
 #: ../src/common/darktable.c:1739
 msgid ""
 "you won't find headroom and friends any longer, instead in preferences/"
 "processing use:"
 msgstr ""
-"Non troverai più \"headroom\" e compagnia, in preferenze/elaborazione, "
-"usa invece:"
+"Non troverai più \"headroom\" e parametri simili ma, in preferenze/"
+"elaborazione, usa invece:"
 
 #: ../src/common/darktable.c:1741
 msgid "1) darktable resources"
@@ -5781,7 +5774,7 @@ msgid ""
 "longer."
 msgstr ""
 "Alcuni valori di configurazione globale rilevanti per le prestazioni OpenCL "
-"non sono più usate."
+"non sono più usati."
 
 #: ../src/common/darktable.c:1752
 msgid ""
@@ -5834,22 +5827,22 @@ msgid ""
 "</i>\n"
 msgstr ""
 "\n"
-"  Scusa, Darktable non può esser avviato (il database è bloccato)\n"
+"  Scusa, darktable non può esser avviato (il database è bloccato)\n"
 "\n"
 "  Come puoi risolvere questo problema?\n"
 "\n"
-"  1 - Se un'altra istanza di Darktable è già aperta, \n"
+"  1 - Se un'altra istanza di darktable è già aperta, \n"
 "      clicca annulla e usa quell'istanza, oppure chiudila prima di tentare di "
-"riavviare Darktable \n"
+"riavviare darktable \n"
 "      (il processo ID <i><b>%d</b></i> ha sta bloccando il database)\n"
 "\n"
-"  2 - Se non riesci a trovare un istanza avviata di Darktable, prova a "
+"  2 - Se non riesci a trovare un istanza avviata di darktable, prova a "
 "riavviare la sessione o il tuo computer. \n"
 "      Questo chiuderà tutti i programmi avviati e si spera chiuda i databases "
 "correttamente. \n"
 "\n"
 "  3 - Se hai già fatto questo o sei certo che nessun'altra istanza di "
-"Darktable è in corso, \n"
+"darktable è in corso, \n"
 "      significa probabilmente che l'ultima istanza si è chiusa in modo "
 "anomalo. \n"
 "      Clicca sul pulsante \"Cancella i file di blocco del database\" per "
@@ -5864,7 +5857,7 @@ msgstr ""
 #. clang-format on
 #: ../src/common/database.c:2743
 msgid "error starting darktable"
-msgstr "Errore in fase di avvio di Darktable"
+msgstr "Errore in fase di avvio di darktable"
 
 #: ../src/common/database.c:2744 ../src/libs/collect.c:3011
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
@@ -5914,7 +5907,7 @@ msgid ""
 msgstr ""
 "\n"
 "File di blocco cancellati con successo.\n"
-"Ora puoi riavviare Darktable\n"
+"Ora puoi riavviare darktable\n"
 
 #. the button to close the popup
 #: ../src/common/database.c:2768 ../src/common/database.c:2775
@@ -5984,13 +5977,13 @@ msgstr ""
 
 #: ../src/common/database.c:2948
 msgid "darktable - schema migration"
-msgstr "Darktable - migrazione schema"
+msgstr "darktable - migrazione schema"
 
 #: ../src/common/database.c:2949 ../src/common/database.c:3262
 #: ../src/common/database.c:3280 ../src/common/database.c:3442
 #: ../src/common/database.c:3460
 msgid "close darktable"
-msgstr "Chiudi Darktable"
+msgstr "Chiudi darktable"
 
 #: ../src/common/database.c:2949
 msgid "upgrade database"
@@ -6008,7 +6001,7 @@ msgstr ""
 #: ../src/common/database.c:3259 ../src/common/database.c:3277
 #: ../src/common/database.c:3439 ../src/common/database.c:3457
 msgid "darktable - error opening database"
-msgstr "Darktable - errore nell'apertura del database"
+msgstr "darktable - errore nell'apertura del database"
 
 #: ../src/common/database.c:3264 ../src/common/database.c:3444
 msgid "attempt restore"
@@ -6026,7 +6019,7 @@ msgid ""
 "from the most recent snapshot or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
-"Vuoi chiudere Darktable ora per ripristinare manualmente\n"
+"Vuoi chiudere darktable ora per ripristinare manualmente\n"
 "il database da un backup, tentare un ripristino automatico\n"
 "dall'istantanea più recente o cancellare il database corrotto\n"
 "e partire con uno nuovo?"
@@ -6037,7 +6030,7 @@ msgid ""
 "the database from a backup or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
-"Vuoi chiudere Darktable ora per ripristinare manualmente\n"
+"Vuoi chiudere darktable ora per ripristinare manualmente\n"
 "il database da un backup o cancellare il database corrotto\n"
 "e partire con uno nuovo?"
 
@@ -6066,13 +6059,13 @@ msgstr "Clicca 'Successivamente' affinchè ti venga richiesto al prossimo avvio"
 msgid "click later to be asked when closing darktable"
 msgstr ""
 "Clicca 'successivamente' affinchè ti venga chiesto al momento della chiusura "
-"di Darktable"
+"di darktable"
 
 #: ../src/common/database.c:3797
 msgid "click later to be asked next time when closing darktable"
 msgstr ""
 "Clicca 'successivamente' affinchè ti venga chiesto la prossima volta al "
-"momento della chiusura di Darktable"
+"momento della chiusura di darktable"
 
 #: ../src/common/database.c:3800
 #, c-format
@@ -6098,7 +6091,7 @@ msgstr ""
 
 #: ../src/common/database.c:3810
 msgid "darktable - schema maintenance"
-msgstr "Darktable - manutenzione schema"
+msgstr "darktable - manutenzione schema"
 
 #: ../src/common/database.c:3811
 msgid "later"
@@ -6175,7 +6168,7 @@ msgid ""
 "your browser now and <b>go back</b> to darktable.</p>"
 msgstr ""
 "<h1>Grazie,</h1><p>tutto deve esser andato per il verso giusto, ora puoi "
-"<b>chiudere</b> il tuo browser e <b>tornare indietro</b> a Darktable.</p>"
+"<b>chiudere</b> il tuo browser e <b>tornare indietro</b> a darktable.</p>"
 
 #: ../src/common/image.c:296
 msgid "orphaned image"
@@ -6454,8 +6447,7 @@ msgid "noiseprofile file `%s' is not valid"
 msgstr "Il file di profilo del rumore `%s' non è valido"
 
 #: ../src/common/opencl.c:1078
-msgid ""
-"due to a slow GPU hardware acceleration via opencl has been de-activated"
+msgid "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "A causa della GPU lenta, l'accelerazione hardware via OpenCL è stata "
 "disattivata"
@@ -7136,10 +7128,10 @@ msgid_plural ""
 "do you really want to remove %d images from darktable\n"
 "(without deleting files on disk)?"
 msgstr[0] ""
-"Sicuro di voler eliminare l'immagine %d da Darktable\n"
+"Sicuro di voler eliminare l'immagine %d da darktable\n"
 "(senza cancellare il file dal disco)?"
 msgstr[1] ""
-"Sicuro di voler eliminare le immagini %d da Darktable\n"
+"Sicuro di voler eliminare le immagini %d da darktable\n"
 "(senza cancellare i file dal disco)?"
 
 #: ../src/control/jobs/control_jobs.c:1567
@@ -7453,7 +7445,7 @@ msgstr "Luce puntiforme"
 #: ../src/develop/blend_gui.c:62
 msgctxt "blendmode"
 msgid "lightness"
-msgstr "Tono"
+msgstr "Chiarezza"
 
 #: ../src/develop/blend_gui.c:63
 msgctxt "blendmode"
@@ -7478,7 +7470,7 @@ msgstr "Regolazione colore"
 #: ../src/develop/blend_gui.c:67
 msgctxt "blendmode"
 msgid "Lab lightness"
-msgstr "Tono Lab (Lightness)"
+msgstr "Chiarezza Lab"
 
 #: ../src/develop/blend_gui.c:68
 msgctxt "blendmode"
@@ -8040,7 +8032,7 @@ msgstr "Modalità normale e aritmetica"
 
 #: ../src/develop/blend_gui.c:2709
 msgid "chromaticity & lightness modes"
-msgstr "Modalità cromaticità e luminosità"
+msgstr "Modalità cromaticità e chiarezza"
 
 #. add deprecated blend mode
 #: ../src/develop/blend_gui.c:2720
@@ -8162,9 +8154,8 @@ msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness "
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
-"Sposta ed inclina la curva di tono della maschera di fusione per regolare "
-"la luminosità senza interferire con le zone completamente trasparenti od "
-"opache"
+"Sposta ed inclina la curva di tono della maschera di fusione per regolare la "
+"luminosità senza interferire con le zone completamente trasparenti od opache"
 
 #: ../src/develop/blend_gui.c:3115 ../src/libs/history.c:867
 msgid "mask contrast"
@@ -8488,9 +8479,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>dimensione</b>: (rotella mouse), <b>dimensione sfumatura</b>:"
-" Maiusc+rotella "
-"mouse\n"
+"<b>dimensione</b>: (rotella mouse), <b>dimensione sfumatura</b>: Maiusc"
+"+rotella mouse\n"
 "<b>opacità</b>: Ctrl+(rotella mouse) (%d%%)"
 
 #: ../src/develop/masks/ellipse.c:491 ../src/develop/masks/ellipse.c:593
@@ -8525,9 +8515,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>dimensione</b>: (rotella mouse), <b>dimensione sfumatura</b>:"
-" Maiusc+rotella "
-"mouse\n"
+"<b>dimensione</b>: (rotella mouse), <b>dimensione sfumatura</b>: Maiusc"
+"+rotella mouse\n"
 "<b>rotazione</b>: Ctrl+Maiusc+(rotella mouse), <b>opacità</b>: Ctrl+rotella "
 "mouse (%d%%)"
 
@@ -8543,9 +8532,8 @@ msgid ""
 "+scroll (%d%%)"
 msgstr ""
 "<b>modo sfumatura</b>: Maiusc+click, <b>ruota</b>: Ctrl+trascina\n"
-"<b>dimensione</b>: (rotella mouse), <b>dimensione sfumatura</b>:"
-" Maiusc+rotella "
-"mouse, <b>opacità</b>: Ctrl+ (rotella mouse) (%d%%)"
+"<b>dimensione</b>: (rotella mouse), <b>dimensione sfumatura</b>: Maiusc"
+"+rotella mouse, <b>opacità</b>: Ctrl+ (rotella mouse) (%d%%)"
 
 #: ../src/develop/masks/gradient.c:101 ../src/develop/masks/gradient.c:140
 #, c-format
@@ -8588,8 +8576,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>rotation</b>: click+drag, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>curvatura</b>: (rotella mouse), <b>compressione</b>: Maiusc+(rotella"
-" mouse)\n"
+"<b>curvatura</b>: (rotella mouse), <b>compressione</b>: Maiusc+(rotella "
+"mouse)\n"
 "<b>rotazione</b>: click+trascina, <b>opacità</b>: Ctrl+(rotella mouse) (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1467
@@ -8598,8 +8586,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
-"<b>curvatura</b>: (rotella mouse), <b>compressione</b>: Maiusc+(rotella"
-" mouse)\n"
+"<b>curvatura</b>: (rotella mouse), <b>compressione</b>: Maiusc+(rotella "
+"mouse)\n"
 "<b>opacità</b>: Ctrl+(rotella mouse) (%d%%)"
 
 #: ../src/develop/masks/gradient.c:1470
@@ -8753,7 +8741,7 @@ msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
 msgstr ""
-"Darktable ha riscontrato dei problemi con la configurazione OpenCL; "
+"darktable ha riscontrato dei problemi con la configurazione OpenCL; "
 "disabilitazione OpenCL per questa sessione!"
 
 #: ../src/develop/tiling.c:833 ../src/develop/tiling.c:1167
@@ -9011,8 +8999,7 @@ msgid "or add images in the collections module in the left panel"
 msgstr "o aggiungi le immagini nel modulo raccolte nel pannello sinistro"
 
 #: ../src/dtgtk/thumbtable.c:1235
-msgid ""
-"you have changed the settings related to how thumbnails are generated.\n"
+msgid "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 "Hai cambiato le impostazioni relative al come le anteprime sono generate.\n"
 
@@ -9268,7 +9255,7 @@ msgstr ""
 "Attenzione: la gestione disco per la cache anteprime è disabilitato "
 "(cache_disk_backend)\n"
 "Se si vogliono generare in anticipo le anteprime e fare anche in modo che "
-"esse possano essere utilizzate da Darktable, è necessario abilitare il "
+"esse possano essere utilizzate da darktable, è necessario abilitare il "
 "backend disco per la cache delle anteprime\n"
 "Nessuna anteprima deve essere generata, fatto.\n"
 
@@ -9283,7 +9270,7 @@ msgid ""
 msgstr ""
 "Attenzione: backend disco per la cache dell'anteprima a schermo intero è "
 "disabilitata. (cache backend disco piena)\n"
-"Se vuoi generare in anticipo le anteprime a schermo intero affinchè Darktable "
+"Se vuoi generare in anticipo le anteprime a schermo intero affinchè darktable "
 "le possa utilizzare devi abilitare la cache del backend disco per l'anteprima "
 "a schermo pieno\n"
 "non verranno generate anteprime; fatto.\n"
@@ -9896,7 +9883,7 @@ msgstr "%s assegnato a %s"
 
 #: ../src/gui/gtk.c:171 ../src/views/darkroom.c:4515
 msgid "darktable - darkroom preview"
-msgstr "Darktable - Anteprima Camera Oscura"
+msgstr "darktable - Anteprima Camera Oscura"
 
 #: ../src/gui/gtk.c:182
 msgid "tooltips off"
@@ -9916,7 +9903,7 @@ msgstr ""
 
 #: ../src/gui/gtk.c:808
 msgid "closing darktable..."
-msgstr "Sto chiudendo Darktable..."
+msgstr "Sto chiudendo darktable..."
 
 #: ../src/gui/gtk.c:1123
 msgid "panels"
@@ -10316,11 +10303,11 @@ msgstr "$(TAGS) - Etichette come impostato nelle impostazioni metadati"
 
 #: ../src/gui/gtkentry.c:242
 msgid "$(DARKTABLE.NAME) - darktable name"
-msgstr "$(DARKTABLE.NAME) - nome di Darktable"
+msgstr "$(DARKTABLE.NAME) - nome di darktable"
 
 #: ../src/gui/gtkentry.c:243
 msgid "$(DARKTABLE.VERSION) - current darktable version"
-msgstr "$(DARKTABLE.VERSION) - attuale versione di Darktable"
+msgstr "$(DARKTABLE.VERSION) - attuale versione di darktable"
 
 #: ../src/gui/guides.c:30 ../src/iop/colorcorrection.c:263
 msgid "grid"
@@ -10610,12 +10597,12 @@ msgstr "Inserisci qui le modifiche al CSS del tema"
 
 #: ../src/gui/preferences.c:484
 msgid "darktable preferences"
-msgstr "Preferenze Darktable"
+msgstr "Preferenze darktable"
 
 #: ../src/gui/preferences.c:557
 msgid "darktable needs to be restarted for settings to take effect"
 msgstr ""
-"Darktable richiede di esser riavviato affinché le impostazioni siano attivate"
+"darktable richiede di esser riavviato affinché le impostazioni siano attivate"
 
 #. exif
 #: ../src/gui/preferences.c:796 ../src/gui/presets.c:535
@@ -10673,7 +10660,7 @@ msgstr "_apri"
 
 #: ../src/gui/preferences.c:1006
 msgid "darktable preset files"
-msgstr "File delle preimpostazioni di Darktable"
+msgstr "File delle preimpostazioni di darktable"
 
 #: ../src/gui/preferences.c:1011 ../src/iop/lut3d.c:1588
 #: ../src/libs/copy_history.c:144 ../src/libs/geotagging.c:946
@@ -11500,7 +11487,7 @@ msgstr "Invia tramite email"
 
 #: ../src/imageio/storage/email.c:198
 msgid "images exported from darktable"
-msgstr "Immagini esportate da Darktable"
+msgstr "Immagini esportate da darktable"
 
 #: ../src/imageio/storage/email.c:251
 msgid "could not launch email client!"
@@ -12057,7 +12044,7 @@ msgstr "Luminanza"
 
 #: ../src/iop/atrous.c:1736
 msgid "change lightness at each feature size"
-msgstr "Cambia tono per ogni dimensione caratteristica"
+msgstr "Cambia chiarezza per ogni dimensione caratteristica"
 
 #: ../src/iop/atrous.c:1737
 msgid "change color saturation at each feature size"
@@ -12256,8 +12243,7 @@ msgstr "Scala per il grafico"
 
 #: ../src/iop/basicadj.c:136
 msgid "this module is deprecated. please use the quick access panel instead."
-msgstr ""
-"Questo modulo è deprecato. Piuttosto usa il pannello di accesso rapido."
+msgstr "Questo modulo è deprecato. Piuttosto usa il pannello di accesso rapido."
 
 #: ../src/iop/basicadj.c:141
 msgid "basic adjustments"
@@ -12435,8 +12421,7 @@ msgstr "riduzione rumore (filtro bilaterale)"
 
 #: ../src/iop/bilateral.cc:98
 msgid "apply edge-aware surface blur to denoise or smoothen textures"
-msgstr ""
-"Applica una sfocatura della superficie per ridurre il rumore o la grana"
+msgstr "Applica una sfocatura della superficie per ridurre il rumore o la grana"
 
 #: ../src/iop/bilateral.cc:101 ../src/iop/blurs.c:93
 #: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:722
@@ -12888,8 +12873,7 @@ msgstr "miscelatore canali"
 #: ../src/iop/channelmixer.c:131
 msgid ""
 "this module is deprecated. please use the color calibration module instead."
-msgstr ""
-"Questo modulo è deprecato. Piuttosto usa il modulo calibrazione colore."
+msgstr "Questo modulo è deprecato. Piuttosto usa il modulo calibrazione colore."
 
 #: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:230
 msgid ""
@@ -13549,8 +13533,7 @@ msgstr ""
 "impostazioni della RAM"
 
 #: ../src/iop/clahe.c:74
-msgid ""
-"this module is deprecated. better use new local contrast module instead."
+msgid "this module is deprecated. better use new local contrast module instead."
 msgstr "Questo modulo è deprecato. Utilizzare il modulo Contrasto Locale"
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:453
@@ -13707,8 +13690,7 @@ msgstr "3:1, panorama"
 #: ../src/iop/crop.c:1112
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr ""
-"Formato invalido per le proporzioni `%s'. Deve essere \"numero:numero\""
+msgstr "Formato invalido per le proporzioni `%s'. Deve essere \"numero:numero\""
 
 #: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1158
 msgid ""
@@ -13753,8 +13735,8 @@ msgid ""
 "<b>resize</b>: drag, <b>keep aspect ratio</b>: shift+drag\n"
 "<b>straighten</b>: right-drag"
 msgstr ""
-"<b>Ridimensionare</b>: trascinare, <b>Mantenere le proporzioni</b>: "
-"Maiusc+trascinare\n"
+"<b>Ridimensionare</b>: trascinare, <b>Mantenere le proporzioni</b>: Maiusc"
+"+trascinare\n"
 "<b>Raddrizzare</b>: trascina col pulsante destro del mouse"
 
 #: ../src/iop/clipping.c:3084
@@ -14095,8 +14077,7 @@ msgstr "Aumenta la colorazione alla stessa luminanza soprattutto nei toni medi"
 
 #: ../src/iop/colorbalancergb.c:1847
 msgid "increase colorfulness at same luminance mostly in highlights"
-msgstr ""
-"Aumenta la colorazione alla stessa luminanza soprattutto alle alte luci"
+msgstr "Aumenta la colorazione alla stessa luminanza soprattutto alle alte luci"
 
 #: ../src/iop/colorbalancergb.c:1849
 msgid "perceptual saturation grading"
@@ -14594,15 +14575,14 @@ msgstr "Chiarezza del colore"
 
 #: ../src/iop/colorize.c:369
 msgid "mix value of source lightness"
-msgstr "Mescola il valore della luminosità sorgente"
+msgstr "Mescola il valore della chiarezza sorgente"
 
 #: ../src/iop/colormapping.c:147
 msgid "color mapping"
 msgstr "mappatura dei colori"
 
 #: ../src/iop/colormapping.c:152
-msgid ""
-"transfer a color palette and tonal repartition from one image to another"
+msgid "transfer a color palette and tonal repartition from one image to another"
 msgstr ""
 "Trasferisce una paletta colore e la suddivisione dei toni da un'immagine ad "
 "un'altra"
@@ -14754,8 +14734,7 @@ msgstr ""
 
 #: ../src/iop/colorreconstruction.c:1304
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr ""
-"Distanza di ricerca di colori di sostituzione nella dimensione spaziale"
+msgstr "Distanza di ricerca di colori di sostituzione nella dimensione spaziale"
 
 #: ../src/iop/colorreconstruction.c:1305
 msgid "how far to look for replacement colors in the luminance dimension"
@@ -15010,8 +14989,7 @@ msgstr "demosaicizzazione"
 
 #: ../src/iop/demosaic.c:226
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
-msgstr ""
-"Ricostruisce i pixel in RGB dalla lettura del filtro colore del sensore"
+msgstr "Ricostruisce i pixel in RGB dalla lettura del filtro colore del sensore"
 
 #: ../src/iop/demosaic.c:5288
 msgid "[dual demosaic_cl] internal problem"
@@ -15691,8 +15669,7 @@ msgid "legacy equalizer"
 msgstr "Equalizzatore (obsoleto)"
 
 #: ../src/iop/equalizer.c:110
-msgid ""
-"this module is deprecated. better use contrast equalizer module instead."
+msgid "this module is deprecated. better use contrast equalizer module instead."
 msgstr ""
 "Questo modulo è deprecato. E' consigliabile usare l'Equalizzatore di contrasto"
 
@@ -16095,8 +16072,8 @@ msgstr "filmic rgb"
 #: ../src/iop/filmicrgb.c:346
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
 msgstr ""
-"Mappatura tonale | curve | trasforma vista | contrasto | saturazione | "
-"alte luci"
+"Mappatura tonale | curve | trasforma vista | contrasto | saturazione | alte "
+"luci"
 
 #: ../src/iop/filmicrgb.c:351
 msgid ""
@@ -16388,7 +16365,7 @@ msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
 msgstr ""
-"v3 è il metodo di desaturazione standard di Darktable 3.0\n"
+"v3 è il metodo di desaturazione standard di darktable 3.0\n"
 "lo stesso del modulo bilanciamento colore.\n"
 "v4 è un nuovo metodo di desaturazione basato\n"
 "sulla purezza dello spettro di luce."
@@ -17424,7 +17401,7 @@ msgstr "Livello non valido nel file PNG %d %d"
 #: ../src/iop/lut3d.c:519
 msgid "this darktable build is not compatible with compressed CLUT"
 msgstr ""
-"Questa installazione di Darktable non è compatibile con i clut compressi"
+"Questa installazione di darktable non è compatibile con i clut compressi"
 
 #: ../src/iop/lut3d.c:536 ../src/iop/lut3d.c:785
 #, c-format
@@ -17477,8 +17454,7 @@ msgstr "Errore - numero non valido sulla riga %d del cubo LUT"
 #: ../src/iop/lut3d.c:834
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
-msgstr ""
-"Errore - il numero della riga LUT %d non è corretto, dovrebbe essere %d"
+msgstr "Errore - il numero della riga LUT %d non è corretto, dovrebbe essere %d"
 
 #: ../src/iop/lut3d.c:844
 #, c-format
@@ -17527,8 +17503,7 @@ msgstr "CLUT dimezzato (PNG) o 3D LUT (cubo o 3dl)"
 
 #: ../src/iop/lut3d.c:1603
 msgid "select file outside LUT root folder is not allowed"
-msgstr ""
-"Non è permesso selezionare un file esterno alla cartella radice dei Lut"
+msgstr "Non è permesso selezionare un file esterno alla cartella radice dei Lut"
 
 #: ../src/iop/lut3d.c:1674
 msgid ""
@@ -17874,8 +17849,7 @@ msgstr "correzione profilo di ingresso"
 
 #: ../src/iop/profile_gamma.c:100
 msgid "correct input color profiles meant to be applied on non-linear RGB"
-msgstr ""
-"Corregge i profili colore di input da applicare in modo RGB non-lineare"
+msgstr "Corregge i profili colore di input da applicare in modo RGB non-lineare"
 
 #: ../src/iop/profile_gamma.c:135
 msgid "16 EV dynamic range (generic)"
@@ -18047,8 +18021,7 @@ msgid "fill light"
 msgstr "luce di riempimento"
 
 #: ../src/iop/relight.c:97 ../src/iop/zonesystem.c:122
-msgid ""
-"this module is deprecated. please use the tone equalizer module instead."
+msgid "this module is deprecated. please use the tone equalizer module instead."
 msgstr ""
 "Questo modulo è deprecato. E' consigliabile usare piuttosto il modulo "
 "equalizzatore toni"
@@ -18830,8 +18803,8 @@ msgstr "equalizzatore toni"
 #: ../src/iop/toneequal.c:299
 msgid "tone curve|tone mapping|relight|background light|shadows highlights"
 msgstr ""
-"Curva di tono | Mappatura dei toni | Illumina | Luce sfondo | Ombre e alte"
-" luci"
+"Curva di tono | Mappatura dei toni | Illumina | Luce sfondo | Ombre e alte "
+"luci"
 
 #: ../src/iop/toneequal.c:305
 msgid "relight the scene as if the lighting was done directly on the scene"
@@ -19398,7 +19371,7 @@ msgid ""
 "left-click on a border to create a marker\n"
 "right-click on a marker to delete it"
 msgstr ""
-"Zone di tono\n"
+"Zone di chiarezza\n"
 "usa la rotella del mouse per cambiare il numero di zone\n"
 "click su un confine per creare un marcatore\n"
 "click di destro su un marcatore per eliminarlo"
@@ -19694,7 +19667,7 @@ msgstr "Dettagli di scatto"
 #: ../src/libs/collect.c:2996 ../src/libs/filtering.c:888
 #: ../src/libs/filtering.c:970 ../src/libs/tools/darktable.c:65
 msgid "darktable"
-msgstr "Darktable"
+msgstr "darktable"
 
 #: ../src/libs/collect.c:3009
 msgid "collections settings"
@@ -20813,8 +20786,7 @@ msgstr "Applica un file tracciato GPX..."
 
 #: ../src/libs/geotagging.c:1811
 msgid "parses a GPX file and updates location of selected images"
-msgstr ""
-"Analizza un file GPX e aggiorna la posizione delle immagini selezionate"
+msgstr "Analizza un file GPX e aggiorna la posizione delle immagini selezionate"
 
 #: ../src/libs/geotagging.c:1822
 msgid "GPX file"
@@ -21607,8 +21579,7 @@ msgid "go to collection (lighttable)"
 msgstr "Vai alla raccolta (Tavolo Luminoso)"
 
 #: ../src/libs/map_locations.c:867
-msgid ""
-"terminate edit (press enter or escape) before selecting another location"
+msgid "terminate edit (press enter or escape) before selecting another location"
 msgstr ""
 "Termina la modifica (premi Invio o Esc) prima di selezionare una nuova "
 "località"
@@ -22766,7 +22737,7 @@ msgstr "Selezione stile"
 
 #: ../src/libs/styles.c:521
 msgid "darktable style files"
-msgstr "File stile di Darktable"
+msgstr "File stile di darktable"
 
 #: ../src/libs/styles.c:798
 msgid ""
@@ -23083,7 +23054,7 @@ msgstr "Ordina"
 
 #: ../src/libs/tagging.c:3133
 msgid "toggle show or not darktable tags"
-msgstr "Attiva o disattiva la visualizzazione dei Tag di Darktable"
+msgstr "Attiva o disattiva la visualizzazione dei Tag di darktable"
 
 #: ../src/libs/tagging.c:3133
 msgid "dttags"
@@ -23661,10 +23632,10 @@ msgid ""
 "an issue\n"
 "at https://github.com/darktable-org/darktable"
 msgstr ""
-"Darktable non può caricare `%s', passa ora al Tavolo Luminosoto.\n"
+"darktable non può caricare `%s', passa ora al Tavolo Luminosoto.\n"
 "\n"
 "Per favore, controlla che il modello di fotocamera che ha prodotto l'immagine "
-"sia supportato in Darktable\n"
+"sia supportato in darktable\n"
 "(la lista delle fotocamere supportate è qui: https://www.darktable.org/"
 "resources/camera-support/).\n"
 "Se sei sicuro che il modello di fotocamera sia supportato, prendi in "
@@ -24313,7 +24284,7 @@ msgstr "Tasto destro+trascina"
 
 #: ../src/views/view.c:1238
 msgid "darktable - accels window"
-msgstr "Darktable - finestra scorciatoie"
+msgstr "darktable - finestra scorciatoie"
 
 #: ../src/views/view.c:1286
 msgid "switch to a classic window which will stay open after key release"
