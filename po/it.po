@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-23 23:50+0200\n"
+"PO-Revision-Date: 2022-06-24 00:06+0200\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Lokalize 21.12.3\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -558,7 +558,8 @@ msgid "max polygon points"
 msgstr "Punti massimi del poligono"
 
 #: ../build/bin/conf_gen.h:1849
-msgid "limit the number of points imported with polygon in find location module"
+msgid ""
+"limit the number of points imported with polygon in find location module"
 msgstr ""
 "Limita il numero di punti importati con il poligono nel modulo trova località"
 
@@ -1027,7 +1028,8 @@ msgstr ""
 "Valutare un'immagine con una stella per due volte non azzera la valutazione"
 
 #: ../build/bin/preferences_gen.h:4241
-msgid "defines whether rating an image one star twice will zero out star rating"
+msgid ""
+"defines whether rating an image one star twice will zero out star rating"
 msgstr ""
 "Stabilisce se valutare un'immagine con una stella per due volte azzererà la "
 "valutazione."
@@ -1134,7 +1136,8 @@ msgstr "Consulta il manuale per conoscere tutte le etichette che puoi usare."
 
 #: ../build/bin/preferences_gen.h:4616
 msgid "pattern for the thumbnail tooltip (empty to disable)"
-msgstr "Modello dei suggerimenti sui provini (lasciare vuoto per disabilitarlo)"
+msgstr ""
+"Modello dei suggerimenti sui provini (lasciare vuoto per disabilitarlo)"
 
 #: ../build/bin/preferences_gen.h:4665 ../src/gui/gtk.c:1177
 #: ../src/gui/preferences.c:538 ../src/views/darkroom.c:91
@@ -1840,7 +1843,8 @@ msgid "password storage backend to use"
 msgstr "Gestore password da utilizzare"
 
 #: ../build/bin/preferences_gen.h:7183
-msgid "the storage backend for password storage: auto, none, libsecret, kwallet"
+msgid ""
+"the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr ""
 "Gestore delle password memorizzate: automatico, nessuno, libsecret, kwallet"
 
@@ -2270,7 +2274,8 @@ msgid "do not set the 'uncategorized' entry for tags"
 msgstr "Non impostare la voce 'senza categoria' per le etichette"
 
 #: ../build/bin/preferences_gen.h:8681
-msgid "do not set the 'uncategorized' entry for tags which do not have children"
+msgid ""
+"do not set the 'uncategorized' entry for tags which do not have children"
 msgstr ""
 "Non impostare la voce 'senza categoria' per le etichette che non hanno figli"
 
@@ -4896,7 +4901,8 @@ msgstr "Attenzione: opzione sconosciuta %s\n"
 #: ../src/cli/main.c:454
 #, c-format
 msgid "error: input file and import opts specified! that's not supported!\n"
-msgstr "Errore: file e opzioni di input specificate! Questo non è supportato!\n"
+msgstr ""
+"Errore: file e opzioni di input specificate! Questo non è supportato!\n"
 
 #: ../src/cli/main.c:487
 #, c-format
@@ -6448,7 +6454,8 @@ msgid "noiseprofile file `%s' is not valid"
 msgstr "Il file di profilo del rumore `%s' non è valido"
 
 #: ../src/common/opencl.c:1078
-msgid "due to a slow GPU hardware acceleration via opencl has been de-activated"
+msgid ""
+"due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "A causa della GPU lenta, l'accelerazione hardware via OpenCL è stata "
 "disattivata"
@@ -9000,7 +9007,8 @@ msgid "or add images in the collections module in the left panel"
 msgstr "o aggiungi le immagini nel modulo raccolte nel pannello sinistro"
 
 #: ../src/dtgtk/thumbtable.c:1235
-msgid "you have changed the settings related to how thumbnails are generated.\n"
+msgid ""
+"you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
 "Hai cambiato le impostazioni relative al come le anteprime sono generate.\n"
 
@@ -11356,7 +11364,7 @@ msgstr "Immagine B/N"
 
 #: ../src/imageio/format/tiff.c:844
 msgid "write rgb colors"
-msgstr "Scrivi colori rgb"
+msgstr "Scrivi colori RGB"
 
 #: ../src/imageio/format/tiff.c:845
 msgid "write grayscale"
@@ -11921,7 +11929,7 @@ msgstr "Riduzione rumore e nitidezza"
 #: ../src/iop/atrous.c:806
 msgctxt "atrous"
 msgid "sharpen"
-msgstr "Nitidezza"
+msgstr "nitidezza"
 
 #: ../src/iop/atrous.c:821
 msgid "denoise chroma"
@@ -12244,7 +12252,8 @@ msgstr "Scala per il grafico"
 
 #: ../src/iop/basicadj.c:136
 msgid "this module is deprecated. please use the quick access panel instead."
-msgstr "Questo modulo è deprecato. Piuttosto usa il pannello di accesso rapido."
+msgstr ""
+"Questo modulo è deprecato. Piuttosto usa il pannello di accesso rapido."
 
 #: ../src/iop/basicadj.c:141
 msgid "basic adjustments"
@@ -12422,7 +12431,8 @@ msgstr "riduzione rumore (filtro bilaterale)"
 
 #: ../src/iop/bilateral.cc:98
 msgid "apply edge-aware surface blur to denoise or smoothen textures"
-msgstr "Applica una sfocatura della superficie per ridurre il rumore o la grana"
+msgstr ""
+"Applica una sfocatura della superficie per ridurre il rumore o la grana"
 
 #: ../src/iop/bilateral.cc:101 ../src/iop/blurs.c:93
 #: ../src/iop/channelmixer.c:141 ../src/iop/denoiseprofile.c:722
@@ -12874,7 +12884,8 @@ msgstr "miscelatore canali"
 #: ../src/iop/channelmixer.c:131
 msgid ""
 "this module is deprecated. please use the color calibration module instead."
-msgstr "Questo modulo è deprecato. Piuttosto usa il modulo calibrazione colore."
+msgstr ""
+"Questo modulo è deprecato. Piuttosto usa il modulo calibrazione colore."
 
 #: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:230
 msgid ""
@@ -13534,7 +13545,8 @@ msgstr ""
 "impostazioni della RAM"
 
 #: ../src/iop/clahe.c:74
-msgid "this module is deprecated. better use new local contrast module instead."
+msgid ""
+"this module is deprecated. better use new local contrast module instead."
 msgstr "Questo modulo è deprecato. Utilizzare il modulo Contrasto Locale"
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:453
@@ -13691,7 +13703,8 @@ msgstr "3:1, panorama"
 #: ../src/iop/crop.c:1112
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr "Formato invalido per le proporzioni `%s'. Deve essere \"numero:numero\""
+msgstr ""
+"Formato invalido per le proporzioni `%s'. Deve essere \"numero:numero\""
 
 #: ../src/iop/clipping.c:2247 ../src/iop/crop.c:1158
 msgid ""
@@ -14078,7 +14091,8 @@ msgstr "Aumenta la colorazione alla stessa luminanza soprattutto nei toni medi"
 
 #: ../src/iop/colorbalancergb.c:1847
 msgid "increase colorfulness at same luminance mostly in highlights"
-msgstr "Aumenta la colorazione alla stessa luminanza soprattutto alle alte luci"
+msgstr ""
+"Aumenta la colorazione alla stessa luminanza soprattutto alle alte luci"
 
 #: ../src/iop/colorbalancergb.c:1849
 msgid "perceptual saturation grading"
@@ -14584,7 +14598,8 @@ msgid "color mapping"
 msgstr "mappatura dei colori"
 
 #: ../src/iop/colormapping.c:152
-msgid "transfer a color palette and tonal repartition from one image to another"
+msgid ""
+"transfer a color palette and tonal repartition from one image to another"
 msgstr ""
 "Trasferisce una paletta colore e la suddivisione dei toni da un'immagine ad "
 "un'altra"
@@ -14735,7 +14750,8 @@ msgstr ""
 
 #: ../src/iop/colorreconstruction.c:1304
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr "Distanza di ricerca di colori di sostituzione nella dimensione spaziale"
+msgstr ""
+"Distanza di ricerca di colori di sostituzione nella dimensione spaziale"
 
 #: ../src/iop/colorreconstruction.c:1305
 msgid "how far to look for replacement colors in the luminance dimension"
@@ -14990,7 +15006,8 @@ msgstr "demosaicizzazione"
 
 #: ../src/iop/demosaic.c:226
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
-msgstr "Ricostruisce i pixel in RGB dalla lettura del filtro colore del sensore"
+msgstr ""
+"Ricostruisce i pixel in RGB dalla lettura del filtro colore del sensore"
 
 #: ../src/iop/demosaic.c:5288
 msgid "[dual demosaic_cl] internal problem"
@@ -15672,7 +15689,8 @@ msgid "legacy equalizer"
 msgstr "Equalizzatore (obsoleto)"
 
 #: ../src/iop/equalizer.c:110
-msgid "this module is deprecated. better use contrast equalizer module instead."
+msgid ""
+"this module is deprecated. better use contrast equalizer module instead."
 msgstr ""
 "Questo modulo è deprecato. E' consigliabile usare l'Equalizzatore di contrasto"
 
@@ -15683,7 +15701,7 @@ msgstr "Nitidezza (forte)"
 #: ../src/iop/equalizer.c:316
 msgctxt "equalizer"
 msgid "sharpen"
-msgstr "Nitidezza"
+msgstr "nitidezza"
 
 #: ../src/iop/equalizer.c:322
 msgid "null"
@@ -15811,7 +15829,7 @@ msgstr "L'esposizione desiderata dopo la mappatura"
 
 #: ../src/iop/filmic.c:179
 msgid "this module is deprecated. better use filmic rgb module instead."
-msgstr "questo modulo è deprecato. E' consigliabile utilizzare filmic rgb"
+msgstr "questo modulo è deprecato. E' consigliabile utilizzare filmic RGB"
 
 #: ../src/iop/filmic.c:306
 msgid "09 EV (low-key)"
@@ -16070,7 +16088,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:341
 msgid "filmic rgb"
-msgstr "filmic rgb"
+msgstr "filmic RGB"
 
 #: ../src/iop/filmicrgb.c:346
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
@@ -17457,7 +17475,8 @@ msgstr "Errore - numero non valido sulla riga %d del cubo LUT"
 #: ../src/iop/lut3d.c:834
 #, c-format
 msgid "error - cube LUT lines number %d is not correct, should be %d"
-msgstr "Errore - il numero della riga LUT %d non è corretto, dovrebbe essere %d"
+msgstr ""
+"Errore - il numero della riga LUT %d non è corretto, dovrebbe essere %d"
 
 #: ../src/iop/lut3d.c:844
 #, c-format
@@ -17506,7 +17525,8 @@ msgstr "CLUT dimezzato (PNG) o 3D LUT (cubo o 3dl)"
 
 #: ../src/iop/lut3d.c:1603
 msgid "select file outside LUT root folder is not allowed"
-msgstr "Non è permesso selezionare un file esterno alla cartella radice dei LUT"
+msgstr ""
+"Non è permesso selezionare un file esterno alla cartella radice dei LUT"
 
 #: ../src/iop/lut3d.c:1674
 msgid ""
@@ -17852,7 +17872,8 @@ msgstr "correzione profilo di ingresso"
 
 #: ../src/iop/profile_gamma.c:100
 msgid "correct input color profiles meant to be applied on non-linear RGB"
-msgstr "Corregge i profili colore di input da applicare in modo RGB non-lineare"
+msgstr ""
+"Corregge i profili colore di input da applicare in modo RGB non-lineare"
 
 #: ../src/iop/profile_gamma.c:135
 msgid "16 EV dynamic range (generic)"
@@ -18024,7 +18045,8 @@ msgid "fill light"
 msgstr "luce di riempimento"
 
 #: ../src/iop/relight.c:97 ../src/iop/zonesystem.c:122
-msgid "this module is deprecated. please use the tone equalizer module instead."
+msgid ""
+"this module is deprecated. please use the tone equalizer module instead."
 msgstr ""
 "Questo modulo è deprecato. E' consigliabile usare piuttosto il modulo "
 "equalizzatore toni"
@@ -18043,7 +18065,8 @@ msgstr ""
 
 #: ../src/iop/relight.c:281
 msgid "toggle tool for picking median lightness in image"
-msgstr "Attiva/disattiva lo strumento per prelevare il tono medio nell'immagine"
+msgstr ""
+"Attiva/disattiva lo strumento per prelevare il tono medio nell'immagine"
 
 #: ../src/iop/relight.c:284 ../src/libs/metadata_view.c:147
 #: ../src/libs/print_settings.c:2385
@@ -18283,7 +18306,7 @@ msgstr "La scala massima per un'immagine di queste dimensioni è %i"
 
 #: ../src/iop/rgbcurve.c:121
 msgid "rgb curve"
-msgstr "curva rgb"
+msgstr "curva RGB"
 
 #: ../src/iop/rgbcurve.c:141
 msgid "alter an image’s tones using curves in RGB color space"
@@ -18344,7 +18367,7 @@ msgstr "Nodi curva per canale b"
 
 #: ../src/iop/rgblevels.c:101
 msgid "rgb levels"
-msgstr "livelli rgb"
+msgstr "livelli RGB"
 
 #: ../src/iop/rgblevels.c:121
 msgid "adjust black, white and mid-gray points in RGB color space"
@@ -18474,7 +18497,7 @@ msgstr "Quasi-lineare, Lab, riferito allo schermo o alla scena"
 #. restrict to raw images
 #: ../src/iop/sharpen.c:104 ../src/iop/sharpen.c:108
 msgid "sharpen"
-msgstr "Nitidezza"
+msgstr "nitidezza"
 
 #: ../src/iop/sharpen.c:451
 msgid "spatial extent of the unblurring"
@@ -20788,7 +20811,8 @@ msgstr "Applica un file tracciato GPX..."
 
 #: ../src/libs/geotagging.c:1811
 msgid "parses a GPX file and updates location of selected images"
-msgstr "Analizza un file GPX e aggiorna la posizione delle immagini selezionate"
+msgstr ""
+"Analizza un file GPX e aggiorna la posizione delle immagini selezionate"
 
 #: ../src/libs/geotagging.c:1822
 msgid "GPX file"
@@ -21581,7 +21605,8 @@ msgid "go to collection (lighttable)"
 msgstr "Vai alla raccolta (Tavolo Luminoso)"
 
 #: ../src/libs/map_locations.c:867
-msgid "terminate edit (press enter or escape) before selecting another location"
+msgid ""
+"terminate edit (press enter or escape) before selecting another location"
 msgstr ""
 "Termina la modifica (premi Invio o Esc) prima di selezionare una nuova "
 "località"
