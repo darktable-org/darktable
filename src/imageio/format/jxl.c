@@ -183,7 +183,7 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
   else
   {
     // TODO: expose control over profile conversion?
-    basic_info.uses_original_profile = JXL_FALSE;
+    basic_info.uses_original_profile = JXL_TRUE;
     float distance = params->quality >= 30 ? 0.1f + (100 - params->quality) * 0.09f
                                            : 6.4f + powf(2.5f, (30 - params->quality) / 5.0f) / 6.25f;
     LIBJXL_ASSERT(JxlEncoderSetFrameDistance(frame_settings, distance));
@@ -217,7 +217,11 @@ int write_image(struct dt_imageio_module_data_t *data, const char *filename, con
 
   JxlColorEncoding color_encoding;
   color_encoding.color_space = JXL_COLOR_SPACE_RGB;
-  color_encoding.rendering_intent = (JxlRenderingIntent)pipe->icc_intent;
+  // If not explicitly set in the export menu, use the intent of the actual output profile
+  if(pipe->icc_intent >= DT_INTENT_PERCEPTUAL && pipe->icc_intent < DT_INTENT_LAST)
+    color_encoding.rendering_intent = (JxlRenderingIntent)pipe->icc_intent;
+  else
+    color_encoding.rendering_intent = (JxlRenderingIntent)cmsGetHeaderRenderingIntent(out_profile);
 
   // Attempt to find and set the known white point, primaries and transfer function.
   // If we can't find any of these we fall back to an ICC binary blob.
