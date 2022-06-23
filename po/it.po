@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-23 07:55+0200\n"
+"PO-Revision-Date: 2022-06-23 08:05+0200\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -12628,7 +12628,7 @@ msgstr ""
 
 #: ../src/iop/borders.c:1076
 msgid "offset of the frame line beginning on picture side"
-msgstr "Spostamento della cornice partendo dal lato dell'immagine"
+msgstr "Distanza della cornice partendo dal lato dell'immagine"
 
 #: ../src/iop/borders.c:1083
 msgid "border color"
@@ -13081,7 +13081,7 @@ msgstr ""
 "\n"
 "<b>Valori di normalizzazione</b>\n"
 "compensazione esposizione: \t%+.2f EV\n"
-"spostamento del nero: \t%+.4f"
+"scostamento del nero: \t%+.4f"
 
 #: ../src/iop/channelmixerrgb.c:1808
 #, c-format
@@ -13100,7 +13100,7 @@ msgstr ""
 "\n"
 "<b>Valori di normalizzazione</b>\n"
 "compensazione esposizione: \t%+.2f EV\n"
-"spostamento del nero: \t%+.4f"
+"scostamento del nero: \t%+.4f"
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
@@ -13880,7 +13880,7 @@ msgstr "Gain"
 
 #: ../src/iop/colorbalance.c:1735
 msgid "shadows: lift / offset"
-msgstr "Ombre: alza / compensa"
+msgstr "Ombre: lift / offset"
 
 #: ../src/iop/colorbalance.c:1736
 msgid "mid-tones: gamma / power"
@@ -13950,7 +13950,7 @@ msgstr "Fattore del lift/offset"
 
 #: ../src/iop/colorbalance.c:2031
 msgid "factor of red for lift/offset"
-msgstr "Fattore del rosso per il lift/pffset"
+msgstr "Fattore del rosso per il lift/offset"
 
 #: ../src/iop/colorbalance.c:2032
 msgid "factor of green for lift/offset"
@@ -14124,19 +14124,19 @@ msgstr "Gradiente selettivo colore"
 
 #: ../src/iop/colorbalancergb.c:1896
 msgid "global offset"
-msgstr "Spostamento globale"
+msgstr "Scostamento globale"
 
 #: ../src/iop/colorbalancergb.c:1902
 msgid "global luminance offset"
-msgstr "Spostamento della luminanza globale"
+msgstr "Scostamento della luminanza globale"
 
 #: ../src/iop/colorbalancergb.c:1907
 msgid "hue of the global color offset"
-msgstr "Tonalità dello spostamento del colore globale"
+msgstr "Tonalità dello scostamento del colore globale"
 
 #: ../src/iop/colorbalancergb.c:1913
 msgid "chroma of the global color offset"
-msgstr "Cromaticità dello spostamento globale del colore"
+msgstr "Cromaticità dello scostamento globale del colore"
 
 #: ../src/iop/colorbalancergb.c:1915
 msgid "shadows lift"
