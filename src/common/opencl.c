@@ -140,12 +140,10 @@ const char *cl_errstr(cl_int error)
 int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_info param_name, void **param_value,
                               size_t *param_value_size)
 {
-  cl_int err;
-
   *param_value_size = SIZE_MAX;
 
   // 1. figure out how much memory is needed
-  err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(device, param_name, 0, NULL, param_value_size);
+  cl_int err = (cl->dlocl->symbols->dt_clGetDeviceInfo)(device, param_name, 0, NULL, param_value_size);
   if(err != CL_SUCCESS)
   {
     dt_print(DT_DEBUG_OPENCL,
@@ -1776,7 +1774,7 @@ int dt_opencl_lock_device(const int pipetype)
 
       dt_iop_nap(usec);
     }
-    dt_print(DT_DEBUG_OPENCL, "[opencl_lock_device] reached opencl_mandatory_timeout trying to lock mandatory device, fallback to CPU");
+    dt_print(DT_DEBUG_OPENCL, "[opencl_lock_device] reached opencl_mandatory_timeout trying to lock mandatory device, fallback to CPU\n");
   }
   else
   {
@@ -2294,14 +2292,13 @@ int dt_opencl_enqueue_kernel_2d_with_local(const int dev, const int kernel, cons
   dt_opencl_t *cl = darktable.opencl;
   if(!cl->inited || dev < 0) return -1;
   if(kernel < 0 || kernel >= DT_OPENCL_MAX_KERNELS) return -1;
-  int err;
+
   char buf[256];
   buf[0] = '\0';
   if(darktable.unmuted & DT_DEBUG_OPENCL)
-    (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel], CL_KERNEL_FUNCTION_NAME, 256, buf,
-                                            NULL);
+    (cl->dlocl->symbols->dt_clGetKernelInfo)(cl->dev[dev].kernel[kernel], CL_KERNEL_FUNCTION_NAME, 256, buf, NULL);
   cl_event *eventp = dt_opencl_events_get_slot(dev, buf);
-  err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel],
+  cl_int err = (cl->dlocl->symbols->dt_clEnqueueNDRangeKernel)(cl->dev[dev].cmd_queue, cl->dev[dev].kernel[kernel],
                                                         2, NULL, sizes, local, 0, NULL, eventp);
 
   if(err != CL_SUCCESS)
