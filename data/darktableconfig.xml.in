@@ -2628,6 +2628,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/format/jxl/original</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/jxl/effort</name>
     <type min="1" max="9">int</type>
     <default>7</default>
