@@ -176,7 +176,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 /* Views */
 @define-color darkroom_bg_color @grey_50;    /* this need to be middle grey to correctly work on images. And for all themes */
 @define-color darkroom_preview_bg_color @darkroom_bg_color;
-@define-color lighttable_bg_color @grey_45;
+@define-color lighttable_bg_color @grey_40;
 @define-color lighttable_preview_bg_color @darkroom_bg_color;
 @define-color lighttable_bg_font_color @grey_75;
 @define-color print_bg_color @lighttable_bg_color;
@@ -1809,7 +1809,7 @@ Details :
 #thumb-back
 {
   background-color: @thumbnail_bg_color;
-  border: 1px solid @selected_bg_color;
+  border: 1px solid @lighttable_bg_color;
 }
 
 /* Last active images animation */
