@@ -2445,16 +2445,21 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
       if(!d->entries->len) return;
       tmp.height = darktable.bauhaus->line_height * d->entries->len;
       // if the popup is detached, we show the label in any cases, in a special line
-      if(w->detached_popup) tmp.height += darktable.bauhaus->line_height;
+      if(w->detached_popup)
+      {
+        tmp.height += darktable.bauhaus->line_height;
+        wy -= darktable.bauhaus->line_height;
+        darktable.bauhaus->mouse_y = darktable.bauhaus->line_height;
+      }
+
       if(w->margin) tmp.height += w->margin->top + w->margin->bottom + w->top_gap;
 
       GtkAllocation allocation_w;
       gtk_widget_get_allocation(widget, &allocation_w);
       const int ht = allocation_w.height;
-      const int skip = darktable.bauhaus->line_height;
       wy -= d->active * darktable.bauhaus->line_height;
       darktable.bauhaus->mouse_x = 0;
-      darktable.bauhaus->mouse_y = d->active * skip + ht / 2;
+      darktable.bauhaus->mouse_y += d->active * darktable.bauhaus->line_height + ht / 2;
       break;
     }
     default:
