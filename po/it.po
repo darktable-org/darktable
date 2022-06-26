@@ -8,8 +8,9 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-26 23:14+0200\n"
-"Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
+"PO-Revision-Date: 2022-06-27 00:25+0200\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -13325,7 +13326,7 @@ msgstr "Mappatura dei colori puntuale"
 
 #: ../src/iop/channelmixerrgb.c:4078 ../src/iop/channelmixerrgb.c:4206
 msgid "use a color checker target to autoset CAT and channels"
-msgstr "Usa un color checker obiettivo per auto impostare CAT e canali"
+msgstr "Usa un color checker per auto impostare CAT e canali"
 
 #: ../src/iop/channelmixerrgb.c:4080 ../src/iop/exposure.c:1083
 msgid "spot mode"
@@ -17538,8 +17539,8 @@ msgid ""
 "set in preferences/processing before choosing the LUT file"
 msgstr ""
 "Seleziona un file PNG (haldclut), un cubo o un file 3dl\n"
-"ATTENZIONE: la cartella LUT deve essere impostata in Preferenze/Opzioni "
-"Principali/Varie prima di selezionare il file LUT"
+"ATTENZIONE: la cartella LUT 3D deve essere impostata in"
+" Preferenze/Elaborazione prima di selezionare il file LUT"
 
 #: ../src/iop/lut3d.c:1690
 msgid ""
