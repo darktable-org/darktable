@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-26 23:05+0200\n"
+"PO-Revision-Date: 2022-06-26 23:08+0200\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -1283,7 +1283,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5306
 msgid "hide built-in presets for processing modules"
-msgstr "Nascondi le preimpostazioni incorporate per i moduli di processo"
+msgstr "Nascondi le preimpostazioni incorporate per i moduli di elaborazione"
 
 #: ../build/bin/preferences_gen.h:5320
 msgid ""
@@ -1687,7 +1687,8 @@ msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
 msgstr ""
-"Se presente, usa OpenCL per migliorare la velocità del processo. Può essere o "
+"Se presente, usa OpenCL per migliorare la velocità dell'elaborazione. Può"
+" essere o "
 "meno abilitato ogni volta."
 
 #: ../build/bin/preferences_gen.h:6528 ../build/bin/preferences_gen.h:6599
@@ -18892,8 +18893,8 @@ msgstr "Illumin.: luce riempimento"
 msgid ""
 "tone equalizer needs to be after distortion modules in the pipeline – disabled"
 msgstr ""
-"L'equalizzatore di tono nel processo di sviluppo deve trovarsi dopo i moduli "
-"di distorsione nel processo di sviluppo - disabilitato"
+"L'equalizzatore di tono deve trovarsi dopo i moduli di distorsione nella"
+" pipeline - disabilitato"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
 #: ../src/iop/toneequal.c:920
