@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-26 23:08+0200\n"
+"PO-Revision-Date: 2022-06-26 23:14+0200\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -16740,7 +16740,7 @@ msgstr "recupero alte luci"
 
 #: ../src/iop/highlights.c:146
 msgid "avoid magenta highlights and try to recover highlights colors"
-msgstr "Cancella il magenta dalle alte luci e tenta di recuperare i colori"
+msgstr "Evita il magenta e tenta di recuperare i colori nelle alteluci"
 
 #: ../src/iop/highlights.c:149 ../src/iop/hotpixels.c:75
 msgid "reconstruction, raw"
