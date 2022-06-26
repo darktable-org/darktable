@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-09 22:31+0200\n"
-"PO-Revision-Date: 2022-06-25 09:05+0200\n"
+"PO-Revision-Date: 2022-06-26 23:05+0200\n"
 "Last-Translator: Luca Cignoni <cigno5@users.noreply.github.com>\n"
 "Language-Team: Italian <darktable-dev@lists.darktable.org>\n"
 "Language: it\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Lokalize 20.12.0\n"
+"X-Generator: Lokalize 19.12.3\n"
 
 #: ../build/bin/conf_gen.h:158 ../build/bin/preferences_gen.h:8286
 msgctxt "preferences"
@@ -14183,10 +14183,9 @@ msgid "chroma of the color gain in highlights"
 msgstr "Cromaticità del guadagno colore nelle alte luci"
 
 #: ../src/iop/colorbalancergb.c:1953 ../src/iop/colorbalancergb.c:2056
-#, fuzzy
 #: ../src/iop/colorbalancergb.c:2060 ../src/iop/colorbalancergb.c:2064
 msgid "power"
-msgstr "Power"
+msgstr "Potenza"
 
 #: ../src/iop/colorbalancergb.c:1959
 msgid "luminance exponent in mid-tones"
@@ -19213,7 +19212,6 @@ msgid "vignetting"
 msgstr "vignettatura"
 
 #: ../src/iop/vignette.c:157
-#, fuzzy
 msgid "simulate a lens fall-off close to edges"
 msgstr "Simula la perdita di luminosità ai margini dell'obiettivo"
 
