@@ -25,7 +25,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     Clone darktable git repository (in this example into ~/src):
      $ mkdir ~/src
      $ cd ~/src
-     $ git clone --recurse-submodules https://github.com/darktable-org/darktable.git
+     $ git clone https://github.com/darktable-org/darktable.git
      $ cd darktable
      $ git submodule init
      $ git config submodule.src/tests/integration.update none
