@@ -9,7 +9,7 @@ release[1] or the latest git version[2] and build the package with makepkg[3].
 [3] http://wiki.archlinux.org/index.php/Makepkg
 
 
-To ease things you could also install yaourt[4], which should automatically
+To ease things you could also install yay[4], which should automatically
 download, build and install the package.
 
-[4] http://wiki.archlinux.org/index.php/Yaourt
+[4] https://wiki.archlinux.org/title/AUR_helpers
