@@ -362,6 +362,7 @@ entry,
 spinbutton button,
 textview
 {
+  background-color: alpha(@fg_color, 0.09);
   margin: 0.07em;
 }
 
@@ -369,7 +370,6 @@ textview
 entry,
 textview
 {
-  background-color: alpha(@fg_color, 0.09);
   padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of workaround just below */
 }
 
