@@ -3265,13 +3265,6 @@
     <longdescription>use the per-camera basecurve by default instead of the generic manufacturer one if there is one available (needs a restart).\nthis option is taken into account when the \"auto-apply pixel workflow defaults\" is set to \"display-referred\".\nto prevent auto-apply basecurve presets \"auto-apply pixel workflow defaults\" should be set to \"none\"</longdescription>
   </dtconfig>
   <dtconfig prefs="processing" section="general">
-    <name>plugins/darkroom/sharpen/auto_apply</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>auto-apply sharpen</shortdescription>
-    <longdescription>this added sharpen is not recommended on cameras without a low-pass filter. you should disable this option if you use one of those more recent cameras or sharpen your images with other means.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="processing" section="general">
     <name>ui/detect_mono_exif</name>
     <type>bool</type>
     <default>false</default>
