@@ -158,6 +158,7 @@ Required dependencies (minimum version):
 * Gtk 3.22
 * Glib 2.40
 * SQLite 3.15 (but 3.24 strongly recommended)
+* Exiv2, will require at least 0.27.4 built with ISOBMFF support for Canon CR3 files to be supported.
 
 Optional dependencies (minimum version):
 * OpenMP 4.5 *(for CPU multi-threading and SIMD vectorization)*
