@@ -37,6 +37,9 @@ on:
         - "data/watermarks/**"
         - "**.md"
 
+permissions:
+  contents: read
+
 jobs:
 
   Linux-minimal:
