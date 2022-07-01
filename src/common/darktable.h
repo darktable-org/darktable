@@ -156,7 +156,7 @@ typedef unsigned int u_int;
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
 // bump this number and make sure you have an updated logic in dt_configure_performance()
-#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 11
+#define DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION 12
 #define DT_PERF_INFOSIZE 4096
 
 // every module has to define this:
