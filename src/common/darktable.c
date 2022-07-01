@@ -1696,17 +1696,26 @@ void dt_configure_runtime_performance(const int old, char *info)
 
   if(!dt_conf_key_not_empty("plugins/darkroom/demosaic/quality"))
   {
-    dt_conf_set_string("plugins/darkroom/demosaic/quality", (sufficient) ? "at most RCD (reasonable)" : "always bilinear (fast)");
+    dt_conf_set_string("plugins/darkroom/demosaic/quality", (sufficient) ? "default" : "always bilinear (fast)");
     dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] plugins/darkroom/demosaic/quality=%s",
-      (sufficient) ? "at most RCD (reasonable)" : "always bilinear (fast)");
+      (sufficient) ? "default" : "always bilinear (fast)");
   }
   else if(old == 2)
   {
     const gchar *demosaic_quality = dt_conf_get_string_const("plugins/darkroom/demosaic/quality");
     if(!strcmp(demosaic_quality, "always bilinear (fast)"))
     {
-      dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most RCD (reasonable)");
-      dt_print(DT_DEBUG_DEV, "[dt_configure_performance] override: plugins/darkroom/demosaic/quality=at most RCD (reasonable)\n");
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "default");
+      dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] override: plugins/darkroom/demosaic/quality=default\n");
+    }
+  }
+  else if(old < 12)
+  {
+    const gchar *demosaic_quality = dt_conf_get_string_const("plugins/darkroom/demosaic/quality");
+    if(!strcmp(demosaic_quality, "at most RCD (reasonable)"))
+    {
+      dt_conf_set_string("plugins/darkroom/demosaic/quality", "default");
+      dt_print(DT_DEBUG_DEV, "[dt_configure_runtime_performance] override: plugins/darkroom/demosaic/quality=default\n");
     }
   }
 
