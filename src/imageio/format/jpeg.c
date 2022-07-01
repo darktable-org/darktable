@@ -511,6 +511,15 @@ int set_params(dt_imageio_module_format_t *self, const void *params, const int s
   return 0;
 }
 
+int dimension(struct dt_imageio_module_format_t *self, struct dt_imageio_module_data_t *data, uint32_t *width,
+              uint32_t *height)
+{
+  /* maximum dimensions supported by JPEG images */
+  *width = 65535U;
+  *height = 65535U;
+  return 1;
+}
+
 int bpp(dt_imageio_module_data_t *p)
 {
   return 8;
