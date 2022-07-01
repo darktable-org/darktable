@@ -390,8 +390,8 @@ void gui_reset(dt_imageio_module_format_t *self)
 
 int flags(dt_imageio_module_data_t *data)
 {
-  // TODO(jinxos): support embedded XMP/ICC
-  return 0;
+  // TODO(jinxos): support embedded ICC
+  return FORMAT_FLAGS_SUPPORT_XMP;
 }
 
 // clang-format off
