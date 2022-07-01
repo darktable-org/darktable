@@ -167,25 +167,25 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
   // metadata has to be written before the pixels
 
   // embed icc profile
-  if(imgid > 0)
+  cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
+  uint32_t len = 0;
+  cmsSaveProfileToMem(out_profile, NULL, &len);
+  if(len > 0)
   {
-    cmsHPROFILE out_profile = dt_colorspaces_get_output_profile(imgid, over_type, over_filename)->profile;
-    uint32_t len = 0;
-    cmsSaveProfileToMem(out_profile, 0, &len);
-    if(len > 0)
+    char *buf = malloc(sizeof(char) * len);
+    if(buf)
     {
-      char *buf = malloc(sizeof(char) * len);
-      char name[512] = { 0 };
       cmsSaveProfileToMem(out_profile, buf, &len);
+      char name[512] = { 0 };
       dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
 
       png_set_iCCP(png_ptr, info_ptr, *name ? name : "icc", 0,
 #if(PNG_LIBPNG_VER < 10500)
-                   (png_charp)buf,
+                    (png_charp)buf,
 #else
-                   (png_const_bytep)buf,
+                    (png_const_bytep)buf,
 #endif
-                   len);
+                    len);
       free(buf);
     }
   }
@@ -195,10 +195,13 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
   {
     /* The legacy tEXt chunk storage scheme implies the "Exif\0\0" APP1 prefix */
     uint8_t *buf = malloc(exif_len + 6);
-    memcpy(buf, "Exif\0\0", 6);
-    memcpy(buf + 6, exif, exif_len);
-    PNGwriteRawProfile(png_ptr, info_ptr, "exif", buf, exif_len + 6);
-    free(buf);
+    if(buf)
+    {
+      memcpy(buf, "Exif\0\0", 6);
+      memcpy(buf + 6, exif, exif_len);
+      PNGwriteRawProfile(png_ptr, info_ptr, "exif", buf, exif_len + 6);
+      free(buf);
+    }
   }
 
   png_write_info(png_ptr, info_ptr);
