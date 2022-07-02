@@ -103,30 +103,6 @@
     <longdescription></longdescription>
   </dtconfig>
   <dtconfig>
-    <name>storage/piwigo/overwrite</name>
-    <type>int</type>
-    <default>0</default>
-    <shortdescription></shortdescription>
-    <longdescription></longdescription>
-  </dtconfig>
-  <dtconfig prefs="storage" section="database">
-    <name>database/maintenance_check</name>
-    <type>
-      <enum>
-        <option>never</option>
-        <option>on startup</option>
-        <option>on close</option>
-        <option>on both</option>
-        <option>on startup (don't ask)</option>
-        <option>on close (don't ask)</option>
-        <option>on both (don't ask)</option>
-      </enum>
-    </type>
-    <default>on close</default>
-    <shortdescription>check for database maintenance</shortdescription>
-    <longdescription>this option indicates when to check database fragmentation and perform maintenance</longdescription>
-  </dtconfig>
-  <dtconfig prefs="storage" section="database">
     <name>database/maintenance_freepage_ratio</name>
     <type>int</type>
     <default>25</default>
@@ -148,7 +124,7 @@
     <shortdescription>create database snapshot</shortdescription>
     <longdescription>database snapshots are created right before closing darktable. options allow you to choose how often to make snapshots:\nnever - simply don't do snapshots. that way the only snapshots done are mandatory version-upgrade snapshots\nonce a month - create snapshot if a month has passed since last snapshot\nonce a week - create snapshot if 7 days had passed since last snapshot\nonce a day - create snapshot if over 24h passed since last snapshot\non close - create snapshot every time darktable is closed</longdescription>
   </dtconfig>
-  <dtconfig prefs="storage" section="database">
+  <dtconfig>
     <name>database/keep_snapshots</name>
     <type>int</type>
     <default>10</default>
