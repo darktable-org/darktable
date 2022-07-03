@@ -3441,7 +3441,7 @@
     <shortdescription>saturation factor of the color zones background</shortdescription>
     <longdescription>higher value means more saturated backgrounds in color zones</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="modules">
+  <dtconfig>
     <name>plugins/darkroom/colorbalance/layout</name>
     <type>
       <enum>
