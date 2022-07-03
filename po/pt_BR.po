@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-06 23:40-0300\n"
-"PO-Revision-Date: 2022-06-07 06:39-0300\n"
+"POT-Creation-Date: 2022-07-03 17:01-0300\n"
+"PO-Revision-Date: 2022-07-03 17:06-0300\n"
 "Last-Translator: Marcus Gama <marcus.gama@gmail.com>\n"
 "Language-Team: Portuguese <darktable-dev@lists.darktable.org>\n"
 "Language: pt_BR\n"
@@ -2487,7 +2487,7 @@ msgstr "preservar cores"
 #: ../src/gui/guides.c:712 ../src/iop/basecurve.c:2082
 #: ../src/iop/channelmixerrgb.c:4229 ../src/iop/clipping.c:1918
 #: ../src/iop/clipping.c:2111 ../src/iop/clipping.c:2126
-#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1909
+#: ../src/iop/lens.cc:2268 ../src/iop/retouch.c:460 ../src/libs/collect.c:1905
 #: ../src/libs/colorpicker.c:51 ../src/libs/export.c:1036
 #: ../src/libs/filters/module_order.c:158 ../src/libs/live_view.c:311
 #: ../src/libs/print_settings.c:2668
@@ -2768,7 +2768,7 @@ msgstr "aberração cromática muito grande"
 #: ../src/iop/channelmixer.c:625 ../src/iop/channelmixer.c:635
 #: ../src/iop/channelmixerrgb.c:4181 ../src/iop/colorzones.c:2302
 #: ../src/iop/temperature.c:1819 ../src/iop/temperature.c:1992
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:260
+#: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:260
 msgid "red"
 msgstr "vermelho"
 
@@ -2780,7 +2780,7 @@ msgstr "vermelho"
 #: ../src/iop/channelmixer.c:626 ../src/iop/channelmixer.c:641
 #: ../src/iop/channelmixerrgb.c:4182 ../src/iop/colorzones.c:2305
 #: ../src/iop/temperature.c:1803 ../src/iop/temperature.c:1821
-#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1793
+#: ../src/iop/temperature.c:1993 ../src/libs/collect.c:1789
 #: ../src/libs/filters/colors.c:262
 msgid "green"
 msgstr "verde"
@@ -2793,7 +2793,7 @@ msgstr "verde"
 #: ../src/iop/channelmixer.c:627 ../src/iop/channelmixer.c:647
 #: ../src/iop/channelmixerrgb.c:4183 ../src/iop/colorzones.c:2307
 #: ../src/iop/temperature.c:1823 ../src/iop/temperature.c:1994
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:263
+#: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:263
 msgid "blue"
 msgstr "azul"
 
@@ -3563,7 +3563,7 @@ msgstr "Markesteijn 3-passos + VNG"
 
 #. history
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:232
-#: ../src/common/collection.c:1448 ../src/libs/collect.c:1747
+#: ../src/common/collection.c:1448 ../src/libs/collect.c:1743
 #: ../src/libs/filters/history.c:38
 msgid "basic"
 msgstr "básico"
@@ -4816,7 +4816,7 @@ msgstr "menu flutuante"
 #: ../src/gui/presets.c:476 ../src/gui/styles_dialog.c:420
 #: ../src/imageio/storage/disk.c:122 ../src/imageio/storage/gallery.c:109
 #: ../src/imageio/storage/latex.c:108 ../src/iop/lut3d.c:1557
-#: ../src/libs/collect.c:406 ../src/libs/copy_history.c:107
+#: ../src/libs/collect.c:409 ../src/libs/copy_history.c:107
 #: ../src/libs/geotagging.c:929 ../src/libs/import.c:1497
 #: ../src/libs/import.c:1601 ../src/libs/styles.c:377 ../src/libs/styles.c:512
 #: ../src/libs/tagging.c:2485 ../src/libs/tagging.c:2521
@@ -5099,7 +5099,7 @@ msgid "camera"
 msgstr "câmera"
 
 #: ../src/common/collection.c:663 ../src/libs/export_metadata.c:189
-#: ../src/libs/tagging.c:3283
+#: ../src/libs/tagging.c:3281
 msgid "tag"
 msgstr "etiqueta"
 
@@ -5107,8 +5107,8 @@ msgstr "etiqueta"
 msgid "capture date"
 msgstr "data de captura"
 
-#: ../src/common/collection.c:677 ../src/libs/collect.c:3313
-#: ../src/libs/filtering.c:1984 ../src/libs/filtering.c:2004
+#: ../src/common/collection.c:677 ../src/libs/collect.c:3309
+#: ../src/libs/filtering.c:1986 ../src/libs/filtering.c:2006
 #: ../src/libs/history.c:85
 msgid "history"
 msgstr "histórico"
@@ -5162,34 +5162,34 @@ msgstr "buscar"
 #: ../src/common/collection.c:1431 ../src/common/colorlabels.c:330
 #: ../src/develop/lightroom.c:836 ../src/gui/guides.c:732
 #: ../src/iop/colorzones.c:2304 ../src/iop/temperature.c:1809
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:261
+#: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:261
 msgid "yellow"
 msgstr "amarelo"
 
 #: ../src/common/collection.c:1437 ../src/common/color_vocabulary.c:339
 #: ../src/common/colorlabels.c:333 ../src/iop/colorzones.c:2308
-#: ../src/libs/collect.c:1793 ../src/libs/filters/colors.c:264
+#: ../src/libs/collect.c:1789 ../src/libs/filters/colors.c:264
 msgid "purple"
 msgstr "roxo"
 
-#: ../src/common/collection.c:1454 ../src/libs/collect.c:1747
+#: ../src/common/collection.c:1454 ../src/libs/collect.c:1743
 #: ../src/libs/filters/history.c:38
 msgid "auto applied"
 msgstr "auto-aplicado"
 
-#: ../src/common/collection.c:1458 ../src/libs/collect.c:1747
+#: ../src/common/collection.c:1458 ../src/libs/collect.c:1743
 #: ../src/libs/filters/history.c:38
 msgid "altered"
 msgstr "alterado"
 
 #: ../src/common/collection.c:1475 ../src/common/collection.c:1571
-#: ../src/libs/collect.c:1182 ../src/libs/collect.c:1321
-#: ../src/libs/collect.c:1345 ../src/libs/collect.c:1464
-#: ../src/libs/collect.c:2505
+#: ../src/libs/collect.c:1164 ../src/libs/collect.c:1328
+#: ../src/libs/collect.c:1352 ../src/libs/collect.c:1471
+#: ../src/libs/collect.c:2501
 msgid "not tagged"
 msgstr "não etiquetado"
 
-#: ../src/common/collection.c:1476 ../src/libs/collect.c:1345
+#: ../src/common/collection.c:1476 ../src/libs/collect.c:1352
 #: ../src/libs/map_locations.c:765
 msgid "tagged"
 msgstr "etiquetado"
@@ -5199,27 +5199,27 @@ msgid "tagged*"
 msgstr "etiquetado*"
 
 #. local copy
-#: ../src/common/collection.c:1510 ../src/libs/collect.c:1761
+#: ../src/common/collection.c:1510 ../src/libs/collect.c:1757
 #: ../src/libs/filters/local_copy.c:38
 msgid "not copied locally"
 msgstr "não copiado localmente"
 
-#: ../src/common/collection.c:1514 ../src/libs/collect.c:1761
+#: ../src/common/collection.c:1514 ../src/libs/collect.c:1757
 #: ../src/libs/filters/local_copy.c:38
 msgid "copied locally"
 msgstr "copiado localmente"
 
-#: ../src/common/collection.c:1889 ../src/libs/collect.c:1881
+#: ../src/common/collection.c:1889 ../src/libs/collect.c:1877
 #: ../src/libs/filters/grouping.c:147 ../src/libs/filters/grouping.c:170
 msgid "group leaders"
 msgstr "líderes de grupo"
 
-#: ../src/common/collection.c:1893 ../src/libs/collect.c:1881
+#: ../src/common/collection.c:1893 ../src/libs/collect.c:1877
 #: ../src/libs/filters/grouping.c:150 ../src/libs/filters/grouping.c:170
 msgid "group followers"
 msgstr "seguidores de grupo"
 
-#: ../src/common/collection.c:2033 ../src/libs/collect.c:1961
+#: ../src/common/collection.c:2033 ../src/libs/collect.c:1957
 msgid "not defined"
 msgstr "não definido"
 
@@ -5741,9 +5741,7 @@ msgstr ""
 msgid ""
 "the user interface and the underlying internals for tuning darktable "
 "performance have changed."
-msgstr ""
-"a interface com o usuário e os mecanismos internos para ajuste fino de "
-"desempenho do darktable mudaram"
+msgstr "a interface com o usuário e os mecanismos internos para ajuste fino de desempenho do darktable mudaram."
 
 #: ../src/common/darktable.c:1739
 msgid ""
@@ -5787,7 +5785,7 @@ msgstr ""
 
 #: ../src/common/darktable.c:1756
 msgid "you may tune as before except 'magic'"
-msgstr "você pode ajustar como antes exceto por 'mágica'"
+msgstr "você pode ajustar como antes exceto por 'magic'"
 
 #: ../src/common/database.c:2722
 #, c-format
@@ -5852,14 +5850,14 @@ msgstr ""
 msgid "error starting darktable"
 msgstr "erro ao iniciar o darktable"
 
-#: ../src/common/database.c:2744 ../src/libs/collect.c:3011
+#: ../src/common/database.c:2744 ../src/libs/collect.c:3007
 #: ../src/libs/export_metadata.c:288 ../src/libs/import.c:1693
 #: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:295 ../src/libs/modulegroups.c:3507
 #: ../src/libs/styles.c:423 ../src/libs/styles.c:606 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1568 ../src/libs/tagging.c:1649
 #: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
-#: ../src/libs/tagging.c:3474
+#: ../src/libs/tagging.c:3472
 msgid "cancel"
 msgstr "cancelar"
 
@@ -6431,25 +6429,25 @@ msgstr "distribuição de Poisson genérica"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "perfil de controle de ruído `%s' não é válido"
 
-#: ../src/common/opencl.c:1073
+#: ../src/common/opencl.c:1101
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr "devido a baixa aceleração de hardware da GPU o opencl foi desativado."
 
-#: ../src/common/opencl.c:1080
+#: ../src/common/opencl.c:1108
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "detectadas múltiplas GPUs - o perfil de escalonamento foi ajustado de acordo."
 
-#: ../src/common/opencl.c:1087
+#: ../src/common/opencl.c:1118
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU muito rápida detectada - o perfil de escalonamento foi ajustado de "
 "acordo."
 
-#: ../src/common/opencl.c:1094
+#: ../src/common/opencl.c:1125
 msgid "opencl scheduling profile set to default"
 msgstr "perfil de escalonamento OpenCL ajustado para padrão."
 
@@ -8199,12 +8197,12 @@ msgstr "nova instância"
 msgid "duplicate instance"
 msgstr "duplicar instância"
 
-#: ../src/develop/imageop.c:939 ../src/develop/imageop.c:3219
+#: ../src/develop/imageop.c:939 ../src/develop/imageop.c:3220
 #: ../src/libs/masks.c:1098
 msgid "move up"
 msgstr "mover para cima"
 
-#: ../src/develop/imageop.c:945 ../src/develop/imageop.c:3220
+#: ../src/develop/imageop.c:945 ../src/develop/imageop.c:3221
 #: ../src/libs/masks.c:1101
 msgid "move down"
 msgstr "mover para baixo"
@@ -8212,24 +8210,24 @@ msgstr "mover para baixo"
 #. delete button label and tooltip will be updated based on trash pref
 #. TODO??? this SHOULD be named "delete group" but because of string freeze for 3.8
 #. we can only do that after 3.8 is released.
-#: ../src/develop/imageop.c:951 ../src/develop/imageop.c:3222
+#: ../src/develop/imageop.c:951 ../src/develop/imageop.c:3223
 #: ../src/gui/accelerators.c:143 ../src/gui/presets.c:477
 #: ../src/libs/image.c:286 ../src/libs/image.c:482 ../src/libs/masks.c:1055
 #: ../src/libs/tagging.c:1480 ../src/libs/tagging.c:1568
 msgid "delete"
 msgstr "excluir"
 
-#: ../src/develop/imageop.c:958 ../src/develop/imageop.c:3223
+#: ../src/develop/imageop.c:958 ../src/develop/imageop.c:3224
 #: ../src/libs/modulegroups.c:3507 ../src/libs/modulegroups.c:3870
 msgid "rename"
 msgstr "renomear"
 
-#: ../src/develop/imageop.c:1024 ../src/develop/imageop.c:2507
+#: ../src/develop/imageop.c:1024 ../src/develop/imageop.c:2508
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está ativado"
 
-#: ../src/develop/imageop.c:1024 ../src/develop/imageop.c:2507
+#: ../src/develop/imageop.c:1024 ../src/develop/imageop.c:2508
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desativado"
@@ -8264,7 +8262,7 @@ msgstr "propósito"
 msgid "process"
 msgstr "processamento"
 
-#: ../src/develop/imageop.c:2476
+#: ../src/develop/imageop.c:2477
 msgid ""
 "multiple instance actions\n"
 "right-click creates new instance"
@@ -8272,7 +8270,7 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "clique-direito cria nova instância"
 
-#: ../src/develop/imageop.c:2487
+#: ../src/develop/imageop.c:2488
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -8280,7 +8278,7 @@ msgstr ""
 "redefinir parâmetros\n"
 "ctrl+clique para reaplicar quaisquer predefinições automáticas"
 
-#: ../src/develop/imageop.c:2496
+#: ../src/develop/imageop.c:2497
 msgid ""
 "presets\n"
 "right-click to apply on new instance"
@@ -8288,15 +8286,15 @@ msgstr ""
 "predefinições\n"
 "clique-direito para aplicar em nova instância"
 
-#: ../src/develop/imageop.c:2718 ../src/develop/imageop.c:2740
+#: ../src/develop/imageop.c:2719 ../src/develop/imageop.c:2741
 msgid "ERROR"
 msgstr "ERRO"
 
-#: ../src/develop/imageop.c:3123
+#: ../src/develop/imageop.c:3124
 msgid "unsupported input"
 msgstr "entrada não suportada"
 
-#: ../src/develop/imageop.c:3124
+#: ../src/develop/imageop.c:3125
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -8308,47 +8306,47 @@ msgstr ""
 "formato de dados não combina\n"
 "com os requisitos."
 
-#: ../src/develop/imageop.c:3218 ../src/develop/imageop.c:3228
+#: ../src/develop/imageop.c:3219 ../src/develop/imageop.c:3229
 #: ../src/gui/accelerators.c:139 ../src/libs/lib.c:1289
 msgid "show"
 msgstr "mostrar"
 
-#: ../src/develop/imageop.c:3221 ../src/libs/modulegroups.c:3353
+#: ../src/develop/imageop.c:3222 ../src/libs/modulegroups.c:3353
 #: ../src/libs/modulegroups.c:3479 ../src/libs/modulegroups.c:3872
-#: ../src/libs/tagging.c:3249
+#: ../src/libs/tagging.c:3247
 msgid "new"
 msgstr "novo"
 
-#: ../src/develop/imageop.c:3224 ../src/libs/duplicate.c:543
+#: ../src/develop/imageop.c:3225 ../src/libs/duplicate.c:543
 #: ../src/libs/image.c:497 ../src/libs/modulegroups.c:3868
 msgid "duplicate"
 msgstr "duplicar"
 
-#: ../src/develop/imageop.c:3229
+#: ../src/develop/imageop.c:3230
 msgid "enable"
 msgstr "ativar"
 
-#: ../src/develop/imageop.c:3230
+#: ../src/develop/imageop.c:3231
 msgid "focus"
 msgstr "foco"
 
-#: ../src/develop/imageop.c:3231 ../src/gui/accelerators.c:2228
+#: ../src/develop/imageop.c:3232 ../src/gui/accelerators.c:2228
 msgid "instance"
 msgstr "instância"
 
-#: ../src/develop/imageop.c:3232 ../src/gui/accelerators.c:105
+#: ../src/develop/imageop.c:3233 ../src/gui/accelerators.c:105
 #: ../src/gui/accelerators.c:114 ../src/iop/atrous.c:1581
 #: ../src/libs/lib.c:1290 ../src/libs/modulegroups.c:3936
 msgid "reset"
 msgstr "redefinir"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:3233 ../src/gui/preferences.c:774
+#: ../src/develop/imageop.c:3234 ../src/gui/preferences.c:774
 #: ../src/libs/lib.c:1291
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:3245
+#: ../src/develop/imageop.c:3246
 msgid "processing module"
 msgstr "módulo de processamento"
 
@@ -8897,7 +8895,7 @@ msgstr "determinar o valor para sempre casar com a data-hora corrente"
 
 #. apply button
 #: ../src/dtgtk/range.c:1045 ../src/gui/accelerators.c:149
-#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:760
+#: ../src/iop/colortransfer.c:670 ../src/libs/metadata.c:758
 #: ../src/libs/styles.c:861
 msgid "apply"
 msgstr "aplicar"
@@ -8912,7 +8910,7 @@ msgstr "determinar o limite da faixa de tempo com este valor"
 #: ../src/gui/accelerators.c:2057 ../src/gui/gtk.c:1192 ../src/gui/gtk.c:2917
 #: ../src/imageio/format/pdf.c:659 ../src/iop/denoiseprofile.c:3581
 #: ../src/iop/lens.cc:2274 ../src/iop/rawdenoise.c:904
-#: ../src/libs/collect.c:3157 ../src/libs/filtering.c:1422
+#: ../src/libs/collect.c:3153 ../src/libs/filtering.c:1424
 #: ../src/libs/filters/colors.c:157 ../src/libs/filters/colors.c:265
 #: ../src/libs/filters/rating.c:211
 msgid "all"
@@ -9356,8 +9354,8 @@ msgid "first"
 msgstr "primeira"
 
 #: ../src/gui/accelerators.c:119 ../src/gui/accelerators.c:131
-#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1710
-#: ../src/libs/filters/rating_range.c:285 ../src/libs/tagging.c:3119
+#: ../src/gui/accelerators.c:241 ../src/libs/filtering.c:1712
+#: ../src/libs/filters/rating_range.c:285 ../src/libs/tagging.c:3117
 #: ../src/views/darkroom.c:2292 ../src/views/darkroom.c:2347
 #: ../src/views/darkroom.c:2587
 msgid "toggle"
@@ -9814,7 +9812,7 @@ msgstr "restaurar atalhos padrão ou estado anterior"
 
 #. import button
 #: ../src/gui/accelerators.c:2340 ../src/libs/styles.c:853
-#: ../src/libs/tagging.c:3252
+#: ../src/libs/tagging.c:3250
 msgid "import..."
 msgstr "importar..."
 
@@ -9824,7 +9822,7 @@ msgstr "importar atalhos completamente ou parcialmente de um arquivo"
 
 #. export button
 #: ../src/gui/accelerators.c:2345 ../src/libs/styles.c:857
-#: ../src/libs/tagging.c:3255
+#: ../src/libs/tagging.c:3253
 msgid "export..."
 msgstr "exportar..."
 
@@ -10617,7 +10615,7 @@ msgstr "falha ao importar predefinição %s"
 msgid "select preset(s) to import"
 msgstr "selecione predefinições para importar"
 
-#: ../src/gui/preferences.c:997 ../src/libs/collect.c:406
+#: ../src/gui/preferences.c:997 ../src/libs/collect.c:409
 #: ../src/libs/copy_history.c:107 ../src/libs/geotagging.c:930
 #: ../src/libs/import.c:1497 ../src/libs/import.c:1601 ../src/libs/styles.c:512
 msgid "_open"
@@ -11158,13 +11156,13 @@ msgid "page orientation"
 msgstr "orientação da página"
 
 #: ../src/imageio/format/pdf.c:608 ../src/iop/borders.c:1042
-#: ../src/libs/filtering.c:285 ../src/libs/filters/ratio.c:122
+#: ../src/libs/filtering.c:286 ../src/libs/filters/ratio.c:122
 #: ../src/libs/print_settings.c:2366
 msgid "portrait"
 msgstr "retrato"
 
 #: ../src/imageio/format/pdf.c:609 ../src/iop/borders.c:1043
-#: ../src/libs/filtering.c:281 ../src/libs/filters/ratio.c:124
+#: ../src/libs/filtering.c:282 ../src/libs/filters/ratio.c:124
 #: ../src/libs/print_settings.c:2367
 msgid "landscape"
 msgstr "paisagem"
@@ -12498,7 +12496,7 @@ msgid "4:3"
 msgstr "4:3"
 
 #: ../src/iop/borders.c:970 ../src/iop/clipping.c:2139 ../src/iop/crop.c:1051
-#: ../src/libs/filtering.c:277 ../src/libs/filters/ratio.c:126
+#: ../src/libs/filtering.c:278 ../src/libs/filters/ratio.c:126
 msgid "square"
 msgstr "quadrado"
 
@@ -19427,36 +19425,36 @@ msgstr "velocidade de disparo"
 msgid "WB"
 msgstr "balanço de branco"
 
-#: ../src/libs/collect.c:148
+#: ../src/libs/collect.c:151
 msgid "collections"
 msgstr "coleções"
 
-#: ../src/libs/collect.c:405
+#: ../src/libs/collect.c:408
 msgid "search filmroll"
 msgstr "procura rolo de filme"
 
-#: ../src/libs/collect.c:488
+#: ../src/libs/collect.c:491
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "problema selecionando novo caminho para o rolo de filme em %s"
 
-#: ../src/libs/collect.c:551
+#: ../src/libs/collect.c:554
 msgid "search filmroll..."
 msgstr "procura rolo de filme..."
 
-#: ../src/libs/collect.c:555
+#: ../src/libs/collect.c:558
 msgid "remove..."
 msgstr "remove..."
 
-#: ../src/libs/collect.c:1216
+#: ../src/libs/collect.c:1223
 msgid "uncategorized"
 msgstr "sem categoria"
 
-#: ../src/libs/collect.c:2140
+#: ../src/libs/collect.c:2136
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "use <, <=, >, >=, <>, =, [;] como operadores"
 
-#: ../src/libs/collect.c:2144
+#: ../src/libs/collect.c:2140
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "star rating: 0-5\n"
@@ -19466,7 +19464,7 @@ msgstr ""
 "classificação em estrelas: 0-5\n"
 "imagens rejeitadas: -1"
 
-#: ../src/libs/collect.c:2151
+#: ../src/libs/collect.c:2147
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form: YYYY:MM:DD hh:mm:ss.sss (only the year is mandatory)"
@@ -19474,12 +19472,12 @@ msgstr ""
 "use <, <=, >, >=, <>, =, [;] como operadores\n"
 "digite datas no formato : YYYY:MM:DD hh:mm:ss.sss (só o ano é obrigatório)"
 
-#: ../src/libs/collect.c:2158
+#: ../src/libs/collect.c:2154
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "use `%' como curinga e `,' para separar valores"
 
-#: ../src/libs/collect.c:2164
+#: ../src/libs/collect.c:2160
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19492,7 +19490,7 @@ msgstr ""
 "shift+clique para incluir somente a hierarquia corrente (sem sufixo)\n"
 "ctrl+clique para incluir somente sub-hierarquias (sufixo `|%')"
 
-#: ../src/libs/collect.c:2176
+#: ../src/libs/collect.c:2172
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19505,7 +19503,7 @@ msgstr ""
 "shift+clique para incluir somente o local atual (sem sufixo)\n"
 "ctrl+clique para incluir somente sub-locais (sufixo `|%`)"
 
-#: ../src/libs/collect.c:2188
+#: ../src/libs/collect.c:2184
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -19518,108 +19516,108 @@ msgstr ""
 "shift+clique para incluir somente a pasta atual (sem sufixo)\n"
 "ctrl+clique para incluir somente sub-pastas (sufixo `|%`)"
 
-#: ../src/libs/collect.c:2199
+#: ../src/libs/collect.c:2195
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "use `%' como curinga"
 
-#: ../src/libs/collect.c:2258 ../src/libs/collect.c:2272
-#: ../src/libs/collect.c:2896
+#: ../src/libs/collect.c:2254 ../src/libs/collect.c:2268
+#: ../src/libs/collect.c:2892
 msgid "clear this rule"
 msgstr "limpar esta regra"
 
-#: ../src/libs/collect.c:2262
+#: ../src/libs/collect.c:2258
 msgid "clear this rule or add new rules"
 msgstr "limpar esta regra ou adicionar nova regra"
 
-#: ../src/libs/collect.c:2902
+#: ../src/libs/collect.c:2898
 msgid "narrow down search"
 msgstr "restringir pesquisa"
 
-#: ../src/libs/collect.c:2907
+#: ../src/libs/collect.c:2903
 msgid "add more images"
 msgstr "adicionar mais imagens"
 
-#: ../src/libs/collect.c:2912
+#: ../src/libs/collect.c:2908
 msgid "exclude images"
 msgstr "excluir imagens"
 
-#: ../src/libs/collect.c:2919
+#: ../src/libs/collect.c:2915
 msgid "change to: and"
 msgstr "muda para: and"
 
-#: ../src/libs/collect.c:2924
+#: ../src/libs/collect.c:2920
 msgid "change to: or"
 msgstr "muda para: ou"
 
-#: ../src/libs/collect.c:2929
+#: ../src/libs/collect.c:2925
 msgid "change to: except"
 msgstr "muda para: exceto"
 
 #. the differents categories
-#: ../src/libs/collect.c:2955 ../src/libs/filtering.c:843
-#: ../src/libs/filtering.c:925
+#: ../src/libs/collect.c:2951 ../src/libs/filtering.c:845
+#: ../src/libs/filtering.c:927
 msgid "files"
 msgstr "arquivos"
 
-#: ../src/libs/collect.c:2960 ../src/libs/export_metadata.c:310
-#: ../src/libs/filtering.c:848 ../src/libs/filtering.c:930
+#: ../src/libs/collect.c:2956 ../src/libs/export_metadata.c:310
+#: ../src/libs/filtering.c:850 ../src/libs/filtering.c:932
 #: ../src/libs/image.c:466 ../src/libs/image.c:576 ../src/libs/image.c:584
 #: ../src/libs/metadata.c:548 ../src/libs/metadata_view.c:1218
 msgid "metadata"
 msgstr "metadados"
 
-#: ../src/libs/collect.c:2979 ../src/libs/filtering.c:869
-#: ../src/libs/filtering.c:951
+#: ../src/libs/collect.c:2975 ../src/libs/filtering.c:871
+#: ../src/libs/filtering.c:953
 msgid "times"
 msgstr "tempo"
 
-#: ../src/libs/collect.c:2987 ../src/libs/filtering.c:877
-#: ../src/libs/filtering.c:959
+#: ../src/libs/collect.c:2983 ../src/libs/filtering.c:879
+#: ../src/libs/filtering.c:961
 msgid "capture details"
 msgstr "detalhes da captura da foto"
 
-#: ../src/libs/collect.c:2996 ../src/libs/filtering.c:886
-#: ../src/libs/filtering.c:968 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2992 ../src/libs/filtering.c:888
+#: ../src/libs/filtering.c:970 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:3009
+#: ../src/libs/collect.c:3005
 msgid "collections settings"
 msgstr "preferências de coleções"
 
-#: ../src/libs/collect.c:3012 ../src/libs/export_metadata.c:288
+#: ../src/libs/collect.c:3008 ../src/libs/export_metadata.c:288
 #: ../src/libs/metadata.c:507 ../src/libs/metadata_view.c:1186
 #: ../src/libs/recentcollect.c:296 ../src/libs/tagging.c:1649
 #: ../src/libs/tagging.c:1779 ../src/libs/tagging.c:2053
-#: ../src/libs/tagging.c:3475
+#: ../src/libs/tagging.c:3473
 msgid "save"
 msgstr "salvar"
 
-#: ../src/libs/collect.c:3032 ../src/libs/export.c:1059
+#: ../src/libs/collect.c:3028 ../src/libs/export.c:1059
 #: ../src/libs/metadata.c:642 ../src/libs/metadata_view.c:1298
-#: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3497
+#: ../src/libs/recentcollect.c:363 ../src/libs/tagging.c:3495
 msgid "preferences..."
 msgstr "preferências..."
 
-#: ../src/libs/collect.c:3132 ../src/libs/filtering.c:1395
+#: ../src/libs/collect.c:3128 ../src/libs/filtering.c:1397
 msgid "AND"
 msgstr "E"
 
-#: ../src/libs/collect.c:3137 ../src/libs/filtering.c:1400
+#: ../src/libs/collect.c:3133 ../src/libs/filtering.c:1402
 msgid "OR"
 msgstr "OU"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/collect.c:3142 ../src/libs/filtering.c:1405
+#: ../src/libs/collect.c:3138 ../src/libs/filtering.c:1407
 msgid "BUT NOT"
 msgstr "MAS NÃO"
 
-#: ../src/libs/collect.c:3314 ../src/libs/filtering.c:1985
+#: ../src/libs/collect.c:3310 ../src/libs/filtering.c:1987
 msgid "revert to a previous set of rules"
 msgstr "reverter para o conjunto anterior de regras"
 
-#: ../src/libs/collect.c:3371
+#: ../src/libs/collect.c:3367
 msgid "jump back to previous collection"
 msgstr "pula para coleção anterior"
 
@@ -20193,43 +20191,43 @@ msgstr "adicionar uma etiqueta de metadados de saída"
 msgid "delete metadata tag"
 msgstr "excluir etiqueta de metadados"
 
-#: ../src/libs/filtering.c:239
+#: ../src/libs/filtering.c:240
 msgid "collection filters"
 msgstr "filtros de coleções"
 
-#: ../src/libs/filtering.c:272
+#: ../src/libs/filtering.c:273
 msgid "initial setting"
 msgstr "configuração inicial"
 
-#: ../src/libs/filtering.c:291
+#: ../src/libs/filtering.c:292
 msgid "imported: last 24h"
 msgstr "importada: últimas 24h"
 
-#: ../src/libs/filtering.c:296
+#: ../src/libs/filtering.c:297
 msgid "imported: last 30 days"
 msgstr "importada: últimos 30 dias"
 
-#: ../src/libs/filtering.c:302
+#: ../src/libs/filtering.c:303
 msgid "taken: last 24h"
 msgstr "tirada: últimas 24h"
 
-#: ../src/libs/filtering.c:306
+#: ../src/libs/filtering.c:307
 msgid "taken: last 30 days"
 msgstr "tirada: últimos 30 dias"
 
-#: ../src/libs/filtering.c:652
+#: ../src/libs/filtering.c:653
 msgid "click or click&#38;drag to select one or multiple values"
 msgstr "clique ou clique&#38;arraste para selecionar múltiplos valores"
 
-#: ../src/libs/filtering.c:653
+#: ../src/libs/filtering.c:654
 msgid "right-click opens a menu to select the available values"
 msgstr "clique direito abre um menu para selecionar valores disponíveis"
 
-#: ../src/libs/filtering.c:656
+#: ../src/libs/filtering.c:657
 msgid "actual selection"
 msgstr "a seleção de fato"
 
-#: ../src/libs/filtering.c:916
+#: ../src/libs/filtering.c:918
 msgid ""
 "rule property\n"
 "this can't be changed as the rule is pinned into the toolbar"
@@ -20239,16 +20237,16 @@ msgstr ""
 "ferramentas"
 
 #. otherwise we add all implemented rules
-#: ../src/libs/filtering.c:923
+#: ../src/libs/filtering.c:925
 msgid "rule property"
 msgstr "propriedade da regra"
 
-#: ../src/libs/filtering.c:1016
+#: ../src/libs/filtering.c:1018
 msgctxt "quickfilter"
 msgid "filter"
 msgstr "filtro"
 
-#: ../src/libs/filtering.c:1042
+#: ../src/libs/filtering.c:1044
 msgid ""
 "this rule is pinned into the top toolbar\n"
 "click to un-pin"
@@ -20256,104 +20254,104 @@ msgstr ""
 "como esta regra está fixada na barra de ferramentas superior\n"
 "clique para retirá-la"
 
-#: ../src/libs/filtering.c:1043
+#: ../src/libs/filtering.c:1045
 msgid "you can't disable the rule as it is pinned into the toolbar"
 msgstr ""
 "você não pode desabilitar esta regra porque ela está fixada na barra de "
 "ferramentas"
 
-#: ../src/libs/filtering.c:1044
+#: ../src/libs/filtering.c:1046
 msgid "you can't remove the rule as it is pinned into the toolbar"
 msgstr ""
 "você não pode remover esta regra porque ela está fixada na barra de "
 "ferramentas"
 
-#: ../src/libs/filtering.c:1048
+#: ../src/libs/filtering.c:1050
 msgid "click to pin this rule into the top toolbar"
 msgstr "crtl-clique para fixar esta regra na barra de ferramentas superior"
 
-#: ../src/libs/filtering.c:1049
+#: ../src/libs/filtering.c:1051
 msgid "remove this collect rule"
 msgstr "remover esta regra de coleta"
 
-#: ../src/libs/filtering.c:1051
+#: ../src/libs/filtering.c:1053
 msgid "this rule is enabled"
 msgstr "esta regra está habilitada"
 
-#: ../src/libs/filtering.c:1053
+#: ../src/libs/filtering.c:1055
 msgid "this rule is disabled"
 msgstr "esta regra está desabilitada"
 
-#: ../src/libs/filtering.c:1166
+#: ../src/libs/filtering.c:1168
 msgid "and"
 msgstr "e"
 
-#: ../src/libs/filtering.c:1167
+#: ../src/libs/filtering.c:1169
 msgid "or"
 msgstr "ou"
 
-#: ../src/libs/filtering.c:1168
+#: ../src/libs/filtering.c:1170
 msgid "and not"
 msgstr "e não"
 
-#: ../src/libs/filtering.c:1170
+#: ../src/libs/filtering.c:1172
 msgid "define how this rule should interact with the previous one"
 msgstr "definir como esta regra deveria interagir com a anterior"
 
-#: ../src/libs/filtering.c:1429
+#: ../src/libs/filtering.c:1431
 msgid " (off)"
 msgstr " (desligado)"
 
-#: ../src/libs/filtering.c:1652
+#: ../src/libs/filtering.c:1654
 msgid "sort order"
 msgstr "ordem de classificação"
 
-#: ../src/libs/filtering.c:1654
+#: ../src/libs/filtering.c:1656
 msgid "determine the sort order of shown images"
 msgstr "determine a ordem em que as imagens são mostradas"
 
-#: ../src/libs/filtering.c:1711
+#: ../src/libs/filtering.c:1713
 msgid "sort direction"
 msgstr "direção da ordenação"
 
-#: ../src/libs/filtering.c:1717
+#: ../src/libs/filtering.c:1719
 msgid "remove this sort order"
 msgstr "remover esta forma de ordenação"
 
-#: ../src/libs/filtering.c:1870
+#: ../src/libs/filtering.c:1872
 msgid "DESC"
 msgstr "DESC"
 
-#: ../src/libs/filtering.c:1870
+#: ../src/libs/filtering.c:1872
 msgid "ASC"
 msgstr "ASC"
 
-#: ../src/libs/filtering.c:1981
+#: ../src/libs/filtering.c:1983
 msgid "new rule"
 msgstr "nova regra"
 
-#: ../src/libs/filtering.c:1982
+#: ../src/libs/filtering.c:1984
 msgid "append new rule to collect images"
 msgstr "adicionar nova regra para coletar imagens"
 
-#: ../src/libs/filtering.c:1993 ../src/libs/tools/filter.c:100
+#: ../src/libs/filtering.c:1995 ../src/libs/tools/filter.c:100
 msgid "sort by"
 msgstr "ordenar por"
 
-#: ../src/libs/filtering.c:2001
+#: ../src/libs/filtering.c:2003
 msgid "new sort"
 msgstr "nova forma de ordenação"
 
-#: ../src/libs/filtering.c:2002
+#: ../src/libs/filtering.c:2004
 msgid "append new sort to order images"
 msgstr "adicionar nova forma de ordenação de imagens"
 
-#: ../src/libs/filtering.c:2005
+#: ../src/libs/filtering.c:2007
 msgid "revert to a previous set of sort orders"
 msgstr "reverter ao conjunto anterior de formas de ordenação"
 
 #. we change the tooltip of the reset button here, as we are sure the header is defined now
-#: ../src/libs/filtering.c:2052
+#: ../src/libs/filtering.c:2056
 msgid ""
 "reset\n"
 "ctrl-click to remove pinned rules too"
@@ -21644,7 +21642,7 @@ msgid ""
 msgstr ""
 "escolha se quiser manter esta informação privada (não exportada com a imagem)"
 
-#: ../src/libs/metadata.c:715
+#: ../src/libs/metadata.c:713
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -21660,60 +21658,60 @@ msgstr ""
 "neste caso, clique-direito dá possibilidade de escolher qual.\n"
 "pressione esc para sair da janela pop-up"
 
-#: ../src/libs/metadata.c:761
+#: ../src/libs/metadata.c:759
 msgid "write metadata for selected images"
 msgstr "escrever metadados para imagens selecionadas"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:817
+#: ../src/libs/metadata.c:815
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:817
+#: ../src/libs/metadata.c:815
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC-BY)"
 
-#: ../src/libs/metadata.c:818
+#: ../src/libs/metadata.c:816
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:818
+#: ../src/libs/metadata.c:816
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:819
+#: ../src/libs/metadata.c:817
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:819
+#: ../src/libs/metadata.c:817
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 
-#: ../src/libs/metadata.c:820
+#: ../src/libs/metadata.c:818
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:820
+#: ../src/libs/metadata.c:818
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:821
+#: ../src/libs/metadata.c:819
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:822
+#: ../src/libs/metadata.c:820
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:823
+#: ../src/libs/metadata.c:821
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:824
+#: ../src/libs/metadata.c:822
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:825
+#: ../src/libs/metadata.c:823
 msgid "all rights reserved"
 msgstr "todos os direitos reservados"
 
@@ -22902,7 +22900,7 @@ msgstr "%zd etiquetas exportadas"
 msgid "drop to root"
 msgstr "soltar na raiz"
 
-#: ../src/libs/tagging.c:3099
+#: ../src/libs/tagging.c:3097
 msgid ""
 "attached tags,\n"
 "press Delete or double-click to detach\n"
@@ -22916,47 +22914,47 @@ msgstr ""
 "pressione Tab para dar o foco à entrada,\n"
 "ctrl-roda para mudar o tamanho da janela"
 
-#: ../src/libs/tagging.c:3111
+#: ../src/libs/tagging.c:3109
 msgid "attach"
 msgstr "anexar"
 
-#: ../src/libs/tagging.c:3112
+#: ../src/libs/tagging.c:3110
 msgid "attach tag to all selected images"
 msgstr "anexa etiqueta a todas as imagens selecionadas"
 
-#: ../src/libs/tagging.c:3115
+#: ../src/libs/tagging.c:3113
 msgid "detach"
 msgstr "desanexar"
 
-#: ../src/libs/tagging.c:3116
+#: ../src/libs/tagging.c:3114
 msgid "detach tag from all selected images"
 msgstr "desanexa etiqueta das imagens selecionadas"
 
-#: ../src/libs/tagging.c:3129
+#: ../src/libs/tagging.c:3127
 msgid "toggle list with / without hierarchy"
 msgstr "alterna lista com / sem hierarquia"
 
-#: ../src/libs/tagging.c:3129
+#: ../src/libs/tagging.c:3127
 msgid "hide"
 msgstr "esconder"
 
-#: ../src/libs/tagging.c:3131
+#: ../src/libs/tagging.c:3129
 msgid "toggle sort by name or by count"
 msgstr "escolhe ordenar por nome ou contagem"
 
-#: ../src/libs/tagging.c:3131
+#: ../src/libs/tagging.c:3129
 msgid "sort"
 msgstr "ordenar"
 
-#: ../src/libs/tagging.c:3133
+#: ../src/libs/tagging.c:3131
 msgid "toggle show or not darktable tags"
 msgstr "alterna mostrar etiquetas darktable"
 
-#: ../src/libs/tagging.c:3133
+#: ../src/libs/tagging.c:3131
 msgid "dttags"
 msgstr "etiquetas do darktable"
 
-#: ../src/libs/tagging.c:3149
+#: ../src/libs/tagging.c:3147
 msgid ""
 "enter tag name\n"
 "press Enter to create a new tag and attach it on selected images\n"
@@ -22970,11 +22968,11 @@ msgstr ""
 "pressione shift+Tab para selecionar somente a primeira etiqueta de usuário "
 "anexada"
 
-#: ../src/libs/tagging.c:3160 ../src/libs/tagging.c:3166
+#: ../src/libs/tagging.c:3158 ../src/libs/tagging.c:3164
 msgid "clear entry"
 msgstr "limpar texto"
 
-#: ../src/libs/tagging.c:3213
+#: ../src/libs/tagging.c:3211
 msgid ""
 "tag dictionary,\n"
 "press Enter or double-click to attach selected tag on selected images,\n"
@@ -22993,7 +22991,7 @@ msgstr ""
 "pressione shift+Tab para dar foco à entrada,\n"
 "ctrl-roda para mudar o tamanho da janela"
 
-#: ../src/libs/tagging.c:3249
+#: ../src/libs/tagging.c:3247
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -23001,43 +22999,43 @@ msgstr ""
 "criar nova etiqueta com o\n"
 "nome entrado"
 
-#: ../src/libs/tagging.c:3252
+#: ../src/libs/tagging.c:3250
 msgid "import tags from a Lightroom keyword file"
 msgstr "importar etiquetas de um arquivo de palavras-chave do Lightroom"
 
-#: ../src/libs/tagging.c:3255
+#: ../src/libs/tagging.c:3253
 msgid "export all tags to a Lightroom keyword file"
 msgstr ""
 "exportar todas as etiquetas para um arquivo de palavras-chave do Lightroom"
 
-#: ../src/libs/tagging.c:3259
+#: ../src/libs/tagging.c:3257
 msgid "toggle list / tree view"
 msgstr "alterna visualização em árvore"
 
-#: ../src/libs/tagging.c:3259
+#: ../src/libs/tagging.c:3257
 msgid "tree"
 msgstr "árvore"
 
-#: ../src/libs/tagging.c:3261
+#: ../src/libs/tagging.c:3259
 msgid "toggle list with / without suggestion"
 msgstr "alterna lista com / sem sugestão"
 
-#: ../src/libs/tagging.c:3261
+#: ../src/libs/tagging.c:3259
 msgid "suggestion"
 msgstr "sugestão"
 
-#: ../src/libs/tagging.c:3284
+#: ../src/libs/tagging.c:3282
 msgid "redo last tag"
 msgstr "repetir última etiqueta"
 
-#: ../src/libs/tagging.c:3368
+#: ../src/libs/tagging.c:3366
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
 "atalho de etiqueta não é ativo na visualização de árvore de etiquetas. por "
 "favor, mude para visualização de lista"
 
-#: ../src/libs/tagging.c:3472
+#: ../src/libs/tagging.c:3470
 msgid "tagging settings"
 msgstr "configurações de etiquetagem"
 
