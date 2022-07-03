@@ -6454,7 +6454,7 @@
           ]
         },
         {
-          "comment": "k-70 contributed by daniel, graphs don't match very well, but this sems to be pentax specific",
+          "comment": "k-70 contributed by daniel, graphs don't match very well, but this seems to be pentax specific",
           "model": "K-70",
           "profiles": [
             {"name": "K-70 iso 100", "iso": 100, "a": [6.01190019431127e-06, 3.01649635178941e-06, 6.71684918826677e-06], "b": [6.88088720028027e-09, 1.23212106450433e-09, 9.03697050283415e-09]},
