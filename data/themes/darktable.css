@@ -66,13 +66,13 @@
 /*** Naming class and ids:
   - classes should be named with underscores, starting by dt_ then what class does (main function). See below.
   Note that some remains with hyphens, they are Gtk ones and can't be changed. It's so also a good way to distinguish Gtk classes to darktable classes.
-  - ids will be used with hyphens, with so item part name (for exemple: bauhaus-slider)
+  - ids will be used with hyphens, with so item part name (for example: bauhaus-slider)
 Why that? Just because it's a developer choice and most classes use underscore in code and id use hyphens. So make it easy and, more important, consistent to avoid being confused and make mistake that would cause bug just by wrong typing.
 ***/
 
 /*** Using classes and ids :
 
-  * classes are used to set same settings for multiples and differents widgets in the UI.
+  * classes are used to set same settings for multiples and different widgets in the UI.
   * ids are used to set a name to a specific widget and so allow to set CSS for this widget
   * some classes had been set on darktable, they all began with a dot. Before adding classes or ids, check what exist before
 

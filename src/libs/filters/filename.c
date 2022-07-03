@@ -106,7 +106,7 @@ void _filename_tree_update(_widgets_filename_t *filename)
   gtk_list_store_clear(GTK_LIST_STORE(ext_model));
 
   // how do we separate filename and extension directly in sqlite :
-  // starting exemple : 'nice.bird.cr2'
+  // starting example : 'nice.bird.cr2'
   // replace(filename, '.', '') => nicebirdcr2 (remove all the point)
   // rtrim(filename, replace(filename, '.', '')) => nice.bird. (remove ending chars presents in 'nice.bird.cr2' and
   // 'nicebirdcr2') rtrim(rtrim(filename, replace(filename, '.', '')), '.') => nice.bird (remove ending '.')

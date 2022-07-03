@@ -512,7 +512,7 @@ static inline float get_tint_from_tinted_xy(const float x, const float y, const 
 #endif
 static inline void xy_to_uv(const float xy[2], float uv[2])
 {
-  // Convert to CIE1960 Yuv color space, usefull to compute CCT
+  // Convert to CIE1960 Yuv color space, useful to compute CCT
   // https://en.wikipedia.org/wiki/CIE_1960_color_space
   const float denom = 12.f * xy[1] - 1.882f * xy[0] + 2.9088f;
   uv[0] = 5.5932f * xy[0] + 1.9116 * xy[1];
