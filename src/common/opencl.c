@@ -282,10 +282,9 @@ gboolean dt_opencl_read_device_config(const int devid)
       cl->dev[devid].disabled = disabled;
       cl->dev[devid].benchmark = benchmark;
     }
-    else // if there is something wrong with the config disable the device
+    else // if there is something wrong with the found conf key reset to defaults
     {
       dt_print(DT_DEBUG_OPENCL, "[dt_opencl_read_device_config] malformed data '%s' for '%s'\n", dat, key);
-      cl->dev[devid].disabled = 1;
     }
   }
   // do some safety housekeeping
