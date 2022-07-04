@@ -1960,7 +1960,7 @@ static void _ui_panel_size_changed(GtkAdjustment *adjustment, GParamSpec *pspec,
   GtkAllocation allocation;
   static float last_height[2] = { 0 };
 
-  int side = GPOINTER_TO_INT(user_data);
+  const int side = GPOINTER_TO_INT(user_data);
 
   // don't do anything when the size didn't actually change.
   const float height = gtk_adjustment_get_upper(adjustment) - gtk_adjustment_get_lower(adjustment);
