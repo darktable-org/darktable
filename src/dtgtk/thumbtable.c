@@ -823,13 +823,15 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 // change zoom value for the classic thumbtable
 static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 {
-  // we find the image to zoom around
+  // nothing to do if thumbtable is empty
+  if(!table->list) return;
+  // we are looking for the image to zoom around
   int x = 0;
   int y = 0;
   dt_thumbnail_t *thumb = NULL;
   if(table->mouse_inside)
   {
-    // if the mouse is inside the table, let's use his position
+    // if the mouse is inside the table, let's use its position
     gdk_window_get_origin(gtk_widget_get_window(table->widget), &x, &y);
     x = table->last_x - x;
     y = table->last_y - y;
@@ -855,7 +857,8 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
       thumb = _thumb_get_at_pos(table, x, y);
       if(!thumb)
       {
-        // and last, take the first at screen
+        // and lastly, take the first at screen
+        // chained dereference is dangerous, but there was a check above in the code
         thumb = (dt_thumbnail_t *)table->list->data;
         x = thumb->x + thumb->width / 2;
         y = thumb->y + thumb->height / 2;
