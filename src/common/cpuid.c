@@ -76,6 +76,12 @@ dt_cpu_flags_t dt_detect_cpu_features()
   g_mutex_unlock(&lock);
   return cpuflags;
 }
+#elif defined(__riscv) && __riscv_xlen == 64
+dt_cpu_flags_t dt_detect_cpu_features()
+{
+  static dt_cpu_flags_t cpuflags = 0;
+  return cpuflags;
+}
 #else
 dt_cpu_flags_t dt_detect_cpu_features()
 {
