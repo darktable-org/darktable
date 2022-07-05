@@ -157,26 +157,32 @@ Required dependencies (minimum version):
 * CMake 3.10
 * Gtk 3.22
 * Glib 2.40
-* SQLite 3.15 (but 3.24 strongly recommended)
-* Exiv2, will require at least 0.27.4 built with ISOBMFF support for Canon CR3 files to be supported.
+* SQLite 3.15 *(but 3.24 or newer strongly recommended)*
+* Exiv2 0.24 *(but at least 0.27.4 built with ISO BMFF support needed for Canon CR3 raw import)*
+
+Required dependencies (no version requirement):
+* Lcms2
 
 Optional dependencies (minimum version):
 * OpenMP 4.5 *(for CPU multi-threading and SIMD vectorization)*
 * LLVM 3.9 *(for OpenCL checks at compilation time)*
 * OpenCL 1.2 *(for GPU-accelerated computing)*
 * Lua 5.4 *(for plugins and extension scripting)*
-* libavif 0.7.2 *(for AVIF import/export)*
-* WebP 0.3.0 *(for WebP exports)*
+* libavif 0.8.2 *(for AVIF import/export)*
+* libheif 1.9.0 *(for HEIF/HEIC/HIF import)*
+* WebP 0.3.0 *(for WebP export)*
+* libgphoto2 2.5 *(for camera tethering)*
 
 Optional dependencies (no version requirement):
-* Gphoto2 *(for camera tethering)*
 * Lensfun *(for automatic lens correction)*
 * OpenEXR *(for EXR import and export)*
 * OpenJPEG *(for Jpeg2000 export)*
 * Colord, Xatom *(for fetching the system display color profile)*
-* G'Mic *(for gmz compressed lut support)*
+* G'Mic *(for .gmz compressed LUT support)*
 * PortMidi *(for MIDI input support)*
 * SDL2 *(for gamepad input support)*
+* Cups *(for print mode support)*
+* GraphicsMagick or ImageMagick *(for misc image format import)*
 
 To install all the dependencies on Linux systems, you may use the source repositories of your distribution
 (provided they are up-to-date):
