@@ -56,8 +56,8 @@ How to make a darktable Windows installer (x64 only):
         ```
     * If you have to set them manually you can do so by setting the variables in your `~/.bash_profile`. Example:
         ```bash
-        export CAMLIBS="/mingw64/lib/libgphoto2/2.5.27/"
-        export IOLIBS="/mingw64/lib/libgphoto2_port/0.12.0/"
+        export CAMLIBS="/mingw64/lib/libgphoto2/2.5.30/"
+        export IOLIBS="/mingw64/lib/libgphoto2_port/0.12.1/"
         ```
 
     Also use this program to install the USB driver on Windows for your camera:
