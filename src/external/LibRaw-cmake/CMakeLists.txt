@@ -197,7 +197,7 @@ MACRO_BOOL_TO_01(JPEG8_FOUND LIBRAW_USE_DNGLOSSYCODEC)
 # OpenMP check
 set(OPENMP_SUPPORT_CAN_BE_COMPILED false)
 if(ENABLE_OPENMP)
-    find_package(OpenMP REQUIRED)
+    find_package(OpenMP)
     if(OpenMP_FOUND)
         set(OPENMP_SUPPORT_CAN_BE_COMPILED true)
     endif()
@@ -207,7 +207,7 @@ endif()
 MACRO_BOOL_TO_01(OPENMP_SUPPORT_CAN_BE_COMPILED LIBRAW_USE_OPENMP)
 
 # Jasper library check
-set(JASPER_FOUND false)
+set(JASPER_SUPPORT_CAN_BE_COMPILED false)
 if(ENABLE_JASPER)
     find_package(Jasper)
 
@@ -215,11 +215,12 @@ if(ENABLE_JASPER)
     if(JASPER_FOUND)
         add_definitions(-DUSE_JASPER)
         include_directories(${JASPER_INCLUDE_DIR})
+        set(JASPER_SUPPORT_CAN_BE_COMPILED true)
     endif()
 endif()
 
 # For registration to libraw_config.h
-MACRO_BOOL_TO_01(JASPER_FOUND LIBRAW_USE_REDCINECODEC)
+MACRO_BOOL_TO_01(JASPER_SUPPORT_CAN_BE_COMPILED LIBRAW_USE_REDCINECODEC)
 
 # For RawSpeed Codec Support
 
@@ -384,7 +385,7 @@ else()
     message(STATUS " Libraw will be compiled with example command-line programs ... NO")
 endif()
 
-if(JASPER_FOUND)
+if(JASPER_SUPPORT_CAN_BE_COMPILED)
     message(STATUS " Libraw will be compiled with RedCine codec support ........... YES")
 else()
     message(STATUS " Libraw will be compiled with RedCine codec support ........... NO")
@@ -509,7 +510,7 @@ if(JPEG8_FOUND)
     target_link_libraries(raw PUBLIC JPEG::JPEG)
 endif()
 
-if(JASPER_FOUND)
+if(JASPER_SUPPORT_CAN_BE_COMPILED)
     target_link_libraries(raw PUBLIC ${JASPER_LIBRARIES})
 endif()
 
@@ -576,7 +577,7 @@ if(JPEG8_FOUND)
     target_link_libraries(raw_r PUBLIC JPEG::JPEG)
 endif()
 
-if(JASPER_FOUND)
+if(JASPER_SUPPORT_CAN_BE_COMPILED)
     target_link_libraries(raw_r PUBLIC ${JASPER_LIBRARIES})
 endif()
 
@@ -624,6 +625,7 @@ if (LIBRAW_INSTALL)
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
            )
+
 
     if(NOT BUILD_SHARED_LIBS AND "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
         message("ClangCl does not support pdb generation with static libraries")
