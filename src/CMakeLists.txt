@@ -1046,7 +1046,7 @@ set(CPACK_COMPONENTS_ALL DTApplication DTDebugSymbols DTDocuments)
 
 if (USE_LIBRAW)
   set(LIBRAW_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/LibRaw" CACHE STRING "Relative path to libraw directory (default=CMAKE_CURRENT_SOURCE_DIR)")
-  if(NOT USE_OPENMP)
+  if(NOT USE_OPENMP OR TRUE) # temporarily disable OpenMP for 0.21-Beta1
     set(ENABLE_OPENMP OFF CACHE BOOL "")
   endif()
 

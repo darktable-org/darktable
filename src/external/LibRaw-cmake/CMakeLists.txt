@@ -194,12 +194,17 @@ endif()
 # For registration to libraw_config.h
 MACRO_BOOL_TO_01(JPEG8_FOUND LIBRAW_USE_DNGLOSSYCODEC)
 
+# OpenMP check
+set(OPENMP_SUPPORT_CAN_BE_COMPILED false)
 if(ENABLE_OPENMP)
     find_package(OpenMP REQUIRED)
+    if(OpenMP_FOUND)
+        set(OPENMP_SUPPORT_CAN_BE_COMPILED true)
+    endif()
 endif()
 
 # For registration to libraw_config.h
-MACRO_BOOL_TO_01(OpenMP_FOUND LIBRAW_USE_OPENMP)
+MACRO_BOOL_TO_01(OPENMP_SUPPORT_CAN_BE_COMPILED LIBRAW_USE_OPENMP)
 
 # Jasper library check
 set(JASPER_FOUND false)
@@ -361,7 +366,7 @@ message(STATUS "----------------------------------------------------------------
 message(STATUS " Libraw ${RAW_LIB_VERSION_STRING} configuration            <http://www.libraw.org>")
 message(STATUS "")
 
-if(OpenMP_FOUND)
+if(OPENMP_SUPPORT_CAN_BE_COMPILED)
     message(STATUS " Libraw will be compiled with OpenMP support .................. YES")
 else()
     message(STATUS " Libraw will be compiled with OpenMP support .................. NO")
@@ -485,7 +490,7 @@ if(WIN32)
     target_link_libraries(raw PUBLIC ws2_32)
 endif()
 
-if(OpenMP_FOUND)
+if(OPENMP_SUPPORT_CAN_BE_COMPILED)
     target_link_libraries(raw PUBLIC OpenMP::OpenMP_CXX)
     if(MINGW)
         target_compile_definitions(raw PRIVATE LIBRAW_FORCE_OPENMP)
@@ -552,7 +557,7 @@ if(WIN32)
     target_link_libraries(raw_r PUBLIC ws2_32)
 endif()
 
-if(OpenMP_FOUND)
+if(OPENMP_SUPPORT_CAN_BE_COMPILED)
     target_link_libraries(raw_r PUBLIC OpenMP::OpenMP_CXX)
     if(MINGW)
         target_compile_definitions(raw_r PRIVATE LIBRAW_FORCE_OPENMP)
