@@ -1349,6 +1349,13 @@ void tiling_callback_blendop(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   tiling->overlap = 0;
   tiling->xalign = 1;
   tiling->yalign = 1;
+
+  dt_develop_blend_params_t *const bldata = (dt_develop_blend_params_t *const)piece->blendop_data;
+  if(bldata)
+  {
+    if(bldata->details != 0.0f)
+      tiling->factor += 0.75f; // details mask requires 3 additional quarter buffers   
+  }
 }
 
 /** check if content of params is all zero, indicating a non-initialized set of
