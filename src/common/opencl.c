@@ -577,9 +577,11 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     const gboolean old_blacklist = dt_conf_get_bool("opencl_disable_drivers_blacklist");
     cl->dev[dev].disabled |= (old_blacklist) ? 0 : 1;
     if(cl->dev[dev].disabled)
+    {
       dt_print_nts(DT_DEBUG_OPENCL, "   *** new device is blacklisted ***\n");   
-    res = -1;
-    goto end;
+      res = -1;
+      goto end;
+    }
   }
 
   dt_print_nts(DT_DEBUG_OPENCL, "   GLOBAL MEM SIZE:          %.0f MB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
