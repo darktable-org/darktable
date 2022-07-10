@@ -5784,7 +5784,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = main_box;
 
-  gtk_widget_set_tooltip_text(g->rotation, _("rotate image\nright-click and drag to define a horizontal or vertical line by drawing on the image"));
+  gtk_widget_set_tooltip_text(g->rotation, _("rotate image\nright-click and drag to define a horizontal or vertical line by drawing on the image\nright-click and type exact angle to overcome soft limit"));
   gtk_widget_set_tooltip_text(g->lensshift_v, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->lensshift_h, _("apply lens shift correction in one direction"));
   gtk_widget_set_tooltip_text(g->shear, _("shear the image along one diagonal"));
