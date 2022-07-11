@@ -125,9 +125,9 @@ static int usage(const char *argv0)
   printf("  --cachedir <user cache directory>\n");
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
-  printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n");
-  printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,demosaic\n");
-  printf("      pwstorage,print,signal,sql,undo,act_on,tiling,verbose}\n");
+  printf("  -d {all,act_on,cache,camctl,camsupport,control,demosaic,dev,imageio,\n");
+  printf("      input,ioporder,lighttable,lua,masks,memory,nan,opencl,params,\n");
+  printf("      perf,print,pwstorage,signal,sql,tiling,undo,verbose}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
   // clang-format on
