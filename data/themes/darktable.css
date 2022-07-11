@@ -348,7 +348,7 @@ entry,
 textview,
 #non-flat
 {
-  padding: 2px; /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
+  padding: 1px; /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
   border: 1px solid @button_border; /* this too */
   border-radius: 0.21em;
   background-color: @button_bg;
@@ -393,8 +393,8 @@ header button,
 .text-button radio, /* this line and following one are needed to set good margin inside some buttons, especially in header buttons in about dialog window and on radio button and label inside star icon overlay menu */
 .text-button label
 {
-  min-height: 1.2em;
-  min-width: 1.2em;
+  min-height: 1.15em;
+  min-width: 1.15em;
   margin: 0.07em;
 }
 
