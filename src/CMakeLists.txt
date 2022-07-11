@@ -36,7 +36,6 @@ FILE(GLOB SOURCE_FILES
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
-  "common/fswatch.c"
   "common/gaussian.c"
   "common/grouping.c"
   "common/guided_filter.c"
