@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 4.0\n"
+"Project-Id-Version: darktable 4.0.1/4.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-18 14:04-0500\n"
-"PO-Revision-Date: 2022-06-19 02:10-0500\n"
+"POT-Creation-Date: 2022-07-02 15:22-0500\n"
+"PO-Revision-Date: 2022-07-10 23:55-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -3284,7 +3284,7 @@ msgstr "JzAzBz (2021)"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:604
 msgid "darktable UCS (2022)"
-msgstr "E.C.U. darktable (2022)"
+msgstr "Espacio de Color Unificado darktable (2022)"
 
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:54
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:121
@@ -3323,7 +3323,7 @@ msgstr "RGB lineal Rec. 709"
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:205
 #: ../src/common/colorspaces.c:1445 ../src/common/colorspaces.c:1661
 msgid "linear Rec2020 RGB"
-msgstr "RGB lineal Rec2020"
+msgstr "RGB lineal Rec. 2020"
 
 #: ../build/lib/darktable/plugins/introspection_colorize.c:65
 #: ../build/lib/darktable/plugins/introspection_colorize.c:128
@@ -3501,7 +3501,7 @@ msgstr "LMMSE perfeccionado"
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:120
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:183
 msgid "dual threshold"
-msgstr "dual threshold"
+msgstr "doble umbral"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:197
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:204
@@ -5999,7 +5999,7 @@ msgstr ""
 
 #: ../src/common/database.c:2948
 msgid "darktable - schema migration"
-msgstr "migración de esquemas de darktable"
+msgstr "Migración de esquemas de darktable"
 
 #: ../src/common/database.c:2949 ../src/common/database.c:3262
 #: ../src/common/database.c:3280 ../src/common/database.c:3442
@@ -6434,8 +6434,8 @@ msgstr "v3.0 JPEG"
 #, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 msgstr ""
-"El perfil de entrada %s está sin soporte y ha sido reemplazado por RGB "
-"Rec2020\n"
+"El perfil de entrada %s está sin soporte y ha sido reemplazado por RGB Rec. "
+"2020\n"
 
 #. clang-format off
 #: ../src/common/metadata.c:46
@@ -6472,14 +6472,14 @@ msgstr "distribución de Poisson"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Archivo de perfil de ruido «%s» no es válido"
 
-#: ../src/common/opencl.c:1099
+#: ../src/common/opencl.c:1101
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated"
 msgstr ""
 "Debido al lento comportamiento de la GPU para la aceleración vía OpenCl, el "
 "hardware se ha desactivado."
 
-#: ../src/common/opencl.c:1106
+#: ../src/common/opencl.c:1108
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly"
 msgstr ""
@@ -6487,14 +6487,14 @@ msgstr ""
 "de OpenCL."
 
 # Ignorar advertencia: en el texto original GPU va en mayúsculas.
-#: ../src/common/opencl.c:1113
+#: ../src/common/opencl.c:1118
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly"
 msgstr ""
 "GPU muy veloz detectada: el perfil de control de OpenCL se ha configurado en "
 "función de la misma."
 
-#: ../src/common/opencl.c:1120
+#: ../src/common/opencl.c:1125
 msgid "opencl scheduling profile set to default"
 msgstr "El perfil de control para OpenCL se ha ajustado al predefinido."
 
@@ -14587,7 +14587,7 @@ msgid ""
 "RGB!"
 msgstr ""
 "No se puede extraer la matriz del espacio de color «%s», por lo que será "
-"reemplazada por Rec2020 RGB"
+"reemplazada por RGB Rec. 2020"
 
 #: ../src/iop/colorin.c:1543
 #, c-format
@@ -17477,7 +17477,7 @@ msgstr "Filtro que se usará para el desenfoque"
 
 #: ../src/iop/lut3d.c:133
 msgid "LUT 3D"
-msgstr "LUT 3D"
+msgstr "lut 3d"
 
 #: ../src/iop/lut3d.c:138
 msgid "perform color space corrections and apply look"
@@ -23308,7 +23308,7 @@ msgstr "Revele y organice las imágenes de cámaras digitales"
 
 #: ../src/libs/tools/darktable.c:301
 msgid "all those of you that made previous releases possible"
-msgstr "a todos aquellos que hicieron posible las versiones anteriores."
+msgstr "todos aquellos que hicieron posible las versiones previas."
 
 #: ../src/libs/tools/darktable.c:306
 msgid "and..."
