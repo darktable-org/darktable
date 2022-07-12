@@ -109,7 +109,7 @@ static char *_pipe_type_to_str(int pipe_type)
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2, 0);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
   pipe->levels = levels;
   pipe->store_all_raster_masks = store_masks;
@@ -118,14 +118,14 @@ int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_
 
 int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
 int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
@@ -133,7 +133,7 @@ int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 8);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 8, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   return res;
 }
@@ -141,7 +141,7 @@ int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 5);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 5, 0);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
   return res;
 }
@@ -149,12 +149,15 @@ int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 8);
+  // not sure what the best maximum size of the iop-cache buffer would be.
+  // At least 500MB is required and a 5% of global mem would be safe from what we take via resourcelevels.
+  const size_t csize = MAX(512lu * 1024lu * 1024lu, darktable.dtresources.total_memory / 20lu);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, csize);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
 
-int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries)
+int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries, size_t memlimit)
 {
   pipe->devid = -1;
   pipe->changed = DT_DEV_PIPE_UNCHANGED;
@@ -162,7 +165,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->processed_height = pipe->backbuf_height = pipe->iheight = 0;
   pipe->nodes = NULL;
   pipe->backbuf_size = size;
-  if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size)) return 0;
+  if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size, memlimit)) return 0;
   pipe->cache_obsolete = 0;
   pipe->backbuf = NULL;
   pipe->backbuf_scale = 0.0f;
@@ -448,7 +451,7 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   }
   else
   {
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for pipe %i\n", pipe->type);
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for [%s]\n", _pipe_type_to_str(pipe->type));
   }
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
@@ -457,7 +460,7 @@ void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&dev->history_mutex);
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changing for pipe %i, flag %i\n", pipe->type, pipe->changed);
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changing for [%s], flag %i\n", _pipe_type_to_str(pipe->type), pipe->changed);
   // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
   if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
   {
@@ -1118,11 +1121,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   }
   if(cache_available)
   {
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] dt_dev_pixelpipe_process_rec, cache available for pipe %i with hash %lu\n", pipe->type, (long unsigned int)hash);
+    dt_print(DT_DEBUG_DEV, "[dt_dev_pixelpipe_process_rec] [%s], cache available for `%s' with hash %lu\n",
+       _pipe_type_to_str(pipe->type), (module) ? module->so->op : "buffer", (long unsigned int)hash);
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe ==
     // dev->preview_pipe ? "[preview]" : "", hash);
 
-    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format);
+    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, (module) ? module->so->op : "buffer");
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return 1;
@@ -1159,7 +1163,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       {
         *output = pipe->input;
       }
-      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format))
+      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, "io-buffer"))
       {
         if(roi_in.scale == 1.0f)
         {
@@ -1252,9 +1256,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   else
     important = (strcmp(module->op, "gamma") == 0);
   if(important)
-    (void)dt_dev_pixelpipe_cache_get_important(&(pipe->cache), basichash, hash, bufsize, output, out_format);
+    (void)dt_dev_pixelpipe_cache_get_important(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : "no module");
   else
-    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format);
+    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : "no module");
 
 // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %p\n", module->op, pipe ==
 // dev->preview_pipe ? "[preview]" : "", hash, *output);
@@ -2155,7 +2159,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   pipe->devid = (pipe->opencl_enabled) ? dt_opencl_lock_device(pipe->type)
                                        : -1; // try to get/lock opencl resource
 
-  dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] using device %d\n", _pipe_type_to_str(pipe->type),
+  dt_print(DT_DEBUG_OPENCL | DT_DEBUG_DEV, "[pixelpipe_process] [%s] using device %d\n", _pipe_type_to_str(pipe->type),
            pipe->devid);
 
   if(darktable.unmuted & DT_DEBUG_MEMORY)
@@ -2167,8 +2171,6 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   if(pipe->devid >= 0) dt_opencl_events_reset(pipe->devid);
 
   dt_iop_roi_t roi = (dt_iop_roi_t){ x, y, width, height, scale };
-  // printf("pixelpipe homebrew process start\n");
-  if(darktable.unmuted & DT_DEBUG_DEV) dt_dev_pixelpipe_cache_print(&pipe->cache);
 
   // get a snapshot of mask list
   if(pipe->forms) g_list_free_full(pipe->forms, (void (*)(void *))dt_masks_free_form);
@@ -2283,7 +2285,9 @@ restart:
   }
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
-  // printf("pixelpipe homebrew process end\n");
+  if(darktable.unmuted & DT_DEBUG_DEV)
+     dt_dev_pixelpipe_cache_print(&pipe->cache,  _pipe_type_to_str(pipe->type));
+
   pipe->processing = 0;
   return 0;
 }
