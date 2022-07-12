@@ -1229,7 +1229,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
+  gboolean use_pinned_memory = dt_opencl_use_pinned_memory(devid);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)
@@ -1537,11 +1537,11 @@ error:
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
-  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
+  const gboolean pinning_error = (use_pinned_memory == FALSE) && dt_opencl_use_pinned_memory(devid);
   dt_print(DT_DEBUG_TILING | DT_DEBUG_OPENCL,
       "[default_process_tiling_opencl_ptp] couldn't run process_cl() for module '%s' in tiling mode:%s %s\n",
       self->op, (pinning_error) ? " pinning problem" : "", cl_errstr(err));
-  if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
+  if(pinning_error) darktable.opencl->dev[devid].runtime_error |= DT_OPENCL_TUNE_PINNED;
   return FALSE;
 }
 
@@ -1590,7 +1590,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
   /* shall we use pinned memory transfers? */
-  gboolean use_pinned_memory = (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
+  gboolean use_pinned_memory = dt_opencl_use_pinned_memory(devid);
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers
                                                                 // which seemingly get allocated not only on
                                                                 // host but also on device (why???)
@@ -1976,11 +1976,11 @@ error:
   dt_opencl_release_mem_object(input);
   dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
-  const gboolean pinning_error = (use_pinned_memory == FALSE) && (dt_opencl_pinned_memory(devid) == DT_OPENCL_PINNING_ON);
+  const gboolean pinning_error = (use_pinned_memory == FALSE) && dt_opencl_use_pinned_memory(devid);
   dt_print(DT_DEBUG_OPENCL | DT_DEBUG_TILING,
       "[default_process_tiling_opencl_roi] couldn't run process_cl() for module '%s' in tiling mode:%s %s\n",
       self->op, (pinning_error) ? " pinning problem" : "", cl_errstr(err));
-  if(pinning_error) darktable.opencl->dev[devid].pinned_memory |= DT_OPENCL_PINNING_ERROR;
+  if(pinning_error) darktable.opencl->dev[devid].runtime_error |= DT_OPENCL_TUNE_PINNED;
   return FALSE;
 }
 
