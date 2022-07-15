@@ -108,7 +108,9 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_ALLOW_FAST_PIPE = 1 << 12,   // Module can work with a fast pipe
   IOP_FLAGS_UNSAFE_COPY = 1 << 13,       // Unsafe to copy as part of history
   IOP_FLAGS_GUIDES_SPECIAL_DRAW = 1 << 14, // handle the grid drawing directly
-  IOP_FLAGS_GUIDES_WIDGET = 1 << 15        // require the guides widget
+  IOP_FLAGS_GUIDES_WIDGET = 1 << 15,       // require the guides widget
+  IOP_FLAGS_CACHE_IMPORTANT_NOW = 1 << 16, // hints for higher priority in iop cache
+  IOP_FLAGS_CACHE_IMPORTANT_NEXT = 1 << 17  
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -298,7 +300,8 @@ typedef struct dt_iop_module_t
   void (*process_plain)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                         const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
                         const struct dt_iop_roi_t *const roi_out);
-
+  // hint for higher io cache priority
+  gboolean cache_next_important;
   // introspection related data
   gboolean have_introspection;
 } dt_iop_module_t;
