@@ -378,7 +378,7 @@ if(USE_HEIF)
       endif()
     endforeach()
   endmacro()
-  
+
   find_libheif(1.12.0;1.11.0;1.10.0;1.9.0)
   if(TARGET heif)
     list(APPEND LIBS heif)
@@ -580,6 +580,7 @@ endif(LensFun_FOUND)
 
 if(OpenEXR_FOUND)
   add_definitions("-DHAVE_OPENEXR")
+  set(DT_SUPPORTED_EXTENSIONS ${DT_SUPPORTED_EXTENSIONS} exr CACHE INTERNAL "")
 endif(OpenEXR_FOUND)
 
 if(USE_OPENCL)
