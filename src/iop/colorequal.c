@@ -81,8 +81,10 @@ typedef struct dt_iop_colorequal_params_t
   float smoothing_brightness;    // $MIN: 0.05 $MAX: 2.0 $DEFAULT: 1.0 $DESCRIPTION: "curve smoothing"
 
   float white_level;  // $MIN: -2.0 $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "white level"
-  float size;         // $MIN: 1.0 $MAX: 250 $DEFAULT: 5 $DESCRIPTION: "chroma smoothing size"
+  float size;         // $MIN: 0.01 $MAX: 250 $DEFAULT: 5 $DESCRIPTION: "chroma smoothing size"
   float feathering;   // $MIN: 0.0 $MAX: 1000. $DEFAULT: 5 $DESCRIPTION: "chroma feathering"
+
+  gboolean use_filter; // $DEFAULT: FALSE $DESCRIPTION: "use guided filter"
 
   // Note: what follows is tedious because each param needs to be declared separately.
   // A more efficient way would be to use 3 arrays of 8 elements,
@@ -138,6 +140,7 @@ typedef struct dt_iop_colorequal_data_t
   float white_level;
   float size;
   float feathering;
+  gboolean use_filter;
   dt_iop_order_iccprofile_info_t *work_profile;
 } dt_iop_colorequal_data_t;
 
@@ -175,7 +178,7 @@ typedef struct dt_iop_colorequal_gui_data_t
   GtkWidget *bright_red, *bright_orange, *bright_lime, *bright_green, *bright_turquoise, *bright_blue, *bright_lavender, *bright_purple;
 
   GtkWidget *smoothing_saturation, *smoothing_bright, *smoothing_hue;
-  GtkWidget *size, *feathering;
+  GtkWidget *size, *feathering, *use_filter;
 
   // Array-like re-indexing of the above for efficient uniform handling in loops
   // Populate the array in gui_init()
@@ -264,7 +267,7 @@ void _guide_with_chromaticity(const float *const restrict U, const float *const 
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(ds_pixels, sat_uv, hue_uv, bri_uv, ds_U, ds_V, ds_corrections)  \
+  dt_omp_firstprivate(ds_pixels, sat_uv, hue_uv, bri_uv, ds_U, ds_V, ds_corrections, stdout)  \
   schedule(simd:static) aligned(sat_uv, hue_uv, bri_uv, ds_U, ds_V, ds_corrections: 64)
 #endif
   for(size_t k = 0; k < ds_pixels; k++)
@@ -273,6 +276,8 @@ void _guide_with_chromaticity(const float *const restrict U, const float *const 
     sat_uv[k * 2 + 0] = ds_corrections[k * 4 + 0] * ds_U[k];
     // corr(V, saturation)
     sat_uv[k * 2 + 1] = ds_corrections[k * 4 + 0] * ds_V[k];
+
+    //fprintf(stdout, "sat_uv : %f - %f\n", sat_uv[k * 2 + 0], sat_uv[k * 2 + 1]);
 
     // corr(U, hue)
     hue_uv[k * 2 + 0] = ds_corrections[k * 4 + 1] * ds_U[k];
@@ -291,8 +296,8 @@ void _guide_with_chromaticity(const float *const restrict U, const float *const 
   // as the by-the-book box blur (unweighted local average) would.
 
   // We use unbounded signals, so don't care for the internal value clipping
-  float max[4] = { INFINITY };
-  float min[4] = { -INFINITY };
+  float max[4] = { 1000.f };
+  float min[4] = { -1000.f };
 
   dt_gaussian_t *gauss_1c = dt_gaussian_init(ds_width, ds_height, 1, max, min, ds_sigma, 0);
   dt_gaussian_blur(gauss_1c, ds_U, ds_U);
@@ -330,7 +335,7 @@ void _guide_with_chromaticity(const float *const restrict U, const float *const 
   // Remember these are actually 3 different guided filters from the same UV
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(ds_pixels, sat_uv, hue_uv, bri_uv, ds_U, ds_V, ds_corrections)  \
+  dt_omp_firstprivate(ds_pixels, sat_uv, hue_uv, bri_uv, ds_U, ds_V, ds_corrections, stdout)  \
   schedule(simd:static) aligned(sat_uv, hue_uv, bri_uv, ds_U, ds_V, ds_corrections: 64)
 #endif
   for(size_t k = 0; k < ds_pixels; k++)
@@ -339,6 +344,8 @@ void _guide_with_chromaticity(const float *const restrict U, const float *const 
     sat_uv[k * 2 + 0] -= ds_corrections[k * 4 + 0] * ds_U[k];
     // covar(V, sat)
     sat_uv[k * 2 + 1] -= ds_corrections[k * 4 + 0] * ds_V[k];
+
+    //fprintf(stdout, "sat_uv : %f - %f\n", sat_uv[k * 2 + 0], sat_uv[k * 2 + 1]);
 
     // covar(U, hue)
     hue_uv[k * 2 + 0] -= ds_corrections[k * 4 + 1] * ds_U[k];
@@ -361,7 +368,7 @@ void _guide_with_chromaticity(const float *const restrict U, const float *const 
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(ds_pixels, sat_uv, hue_uv, bri_uv, ds_U, ds_V, ds_corrections, covariance, a_sat, a_hue, a_bri, b_sat, b_hue, b_bri, epsilon)  \
+  dt_omp_firstprivate(ds_pixels, sat_uv, hue_uv, bri_uv, ds_U, ds_V, ds_corrections, covariance, a_sat, a_hue, a_bri, b_sat, b_hue, b_bri, epsilon, stdout)  \
   schedule(simd:static) aligned(sat_uv, hue_uv, bri_uv, ds_U, ds_V, ds_corrections, covariance, a_sat, a_hue, a_bri, b_sat, b_hue, b_bri: 64)
 #endif
   for(size_t k = 0; k < ds_pixels; k++)
@@ -395,6 +402,12 @@ void _guide_with_chromaticity(const float *const restrict U, const float *const 
     b_sat[k] = ds_corrections[4 * k + 0] - a_sat[2 * k + 0] * ds_U[k] - a_sat[2 * k + 1] * ds_V[k];
     b_hue[k] = ds_corrections[4 * k + 1] - a_hue[2 * k + 0] * ds_U[k] - a_hue[2 * k + 1] * ds_V[k];
     b_bri[k] = ds_corrections[4 * k + 2] - a_bri[2 * k + 0] * ds_U[k] - a_bri[2 * k + 1] * ds_V[k];
+
+    /*
+    fprintf(stdout, "sigma : %f - %f - %f - %f\n", Sigma[0], Sigma[1], Sigma[2], Sigma[3]);
+    fprintf(stdout, "cov : %f - %f\n", sat_uv[2 * k + 0], sat_uv[2 * k + 0]);
+    fprintf(stdout, "a, b : %f - %f - %f\n", a_sat[2 * k + 0], a_sat[2 * k + 1], b_sat[k]);
+    */
   }
 
   dt_free_align(covariance);
@@ -441,7 +454,7 @@ void _guide_with_chromaticity(const float *const restrict U, const float *const 
   // Apply the guided filter
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(pixels, corrections, a_sat_full, a_hue_full, a_bri_full, b_sat_full, b_hue_full, b_bri_full, U, V)  \
+  dt_omp_firstprivate(pixels, corrections, a_sat_full, a_hue_full, a_bri_full, b_sat_full, b_hue_full, b_bri_full, U, V, stdout)  \
   schedule(simd:static) aligned(corrections, a_sat_full, a_hue_full, a_bri_full, b_sat_full, b_hue_full, b_bri_full, U, V: 64)
 #endif
   for(size_t k = 0; k < pixels; k++)
@@ -529,7 +542,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // STEP 2: apply a guided filter on the corrections, guided with UV chromaticity, to ensure
   // spatially-contiguous corrections even though the hue is not perfectly constant
   // this will help avoiding chroma noise.
-  _guide_with_chromaticity(U, V, corrections, roi_out->width, roi_out->height, d->size, 1.f / d->feathering);
+  if(d->use_filter)
+    _guide_with_chromaticity(U, V, corrections, roi_out->width, roi_out->height, d->size, 1.f / d->feathering);
+
+  fprintf(stdout, "use filter: %i, feathering: %f, size: %f\n", d->use_filter, d->feathering, d->size);
 
   // STEP 3: apply the corrections and convert back to RGB
 #ifdef _OPENMP
@@ -698,7 +714,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   d->white_level = exp2f(p->white_level);
   d->size = p->size;
-  p->feathering = p->feathering;
+  d->feathering = p->feathering;
+  d->use_filter = p->use_filter;
 
   float sat_values[NODES];
   float hue_values[NODES];
@@ -1344,6 +1361,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->white_level, -2., +2.);
   dt_bauhaus_slider_set_format(g->white_level, _(" EV"));
 
+  g->use_filter = dt_bauhaus_toggle_from_params(self, "use_filter");
   g->size = dt_bauhaus_slider_from_params(self, "size");
   g->feathering = dt_bauhaus_slider_from_params(self, "feathering");
 
