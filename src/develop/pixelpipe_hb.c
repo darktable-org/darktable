@@ -133,7 +133,8 @@ int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 8, 0);
+  const size_t csize = MAX(256lu * 1024lu * 1024lu, darktable.dtresources.total_memory / 40lu);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 32, csize);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   return res;
 }
@@ -244,6 +245,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->output_backbuf_width = 0;
   pipe->output_backbuf_height = 0;
   pipe->output_imgid = 0;
+  pipe->next_important_module = FALSE;
 
   dt_dev_clear_rawdetail_mask(pipe);
 
@@ -415,7 +417,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with defaults_params for pipe %i\n", pipe->type);
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with defaults_params for [%s]\n", _pipe_type_to_str(pipe->type));
 
   // call reset_params on all pieces first. This is mandatory to init utility modules that don't have an history stack
   for(GList *nodes = pipe->nodes; nodes; nodes = g_list_next(nodes))
@@ -427,7 +429,7 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
                          pipe, piece);
   }
 
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for pipe %i\n", pipe->type);
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for [%s]\n", _pipe_type_to_str(pipe->type));
 
   // go through all history items and adjust params
   GList *history = dev->history;
@@ -446,7 +448,7 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   if(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for pipe %i\n", hist->module->op, pipe->type);
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for [%s]\n", hist->module->op, _pipe_type_to_str(pipe->type));
     dt_dev_pixelpipe_synch(pipe, dev, history);
   }
   else
@@ -1061,6 +1063,24 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   return 0; //no errors
 }
 
+static inline gboolean check_good_pipe(dt_dev_pixelpipe_t *pipe)
+{
+  return (((pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL) ||
+          ((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW));
+}
+
+static inline gboolean check_module_next_important(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *module)
+{
+  if(!check_good_pipe(pipe)) return FALSE;
+  return ((module->flags() & IOP_FLAGS_CACHE_IMPORTANT_NEXT) || module->cache_next_important);
+}
+
+static inline gboolean check_module_now_important(dt_dev_pixelpipe_t *pipe, dt_iop_module_t *module)
+{
+  if(!check_good_pipe(pipe)) return FALSE;
+  return (module->flags() & IOP_FLAGS_CACHE_IMPORTANT_NOW);
+}
+
 // recursive helper for process:
 static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output,
                                         void **cl_mem_output, dt_iop_buffer_dsc_t **out_format,
@@ -1079,7 +1099,6 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   dt_dev_pixelpipe_iop_t *piece = NULL;
 
   // if a module is active, check if this module allow a fast pipe run
-
   if(darktable.develop && dev->gui_module && dev->gui_module->flags() & IOP_FLAGS_ALLOW_FAST_PIPE)
     pipe->type |= DT_DEV_PIXELPIPE_FAST;
   else
@@ -1123,10 +1142,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   {
     dt_print(DT_DEBUG_DEV, "[dt_dev_pixelpipe_process_rec] [%s], cache available for `%s' with hash %lu\n",
        _pipe_type_to_str(pipe->type), (module) ? module->so->op : "buffer", (long unsigned int)hash);
-    // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe ==
-    // dev->preview_pipe ? "[preview]" : "", hash);
 
-    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, (module) ? module->so->op : "buffer");
+    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, (module) ? module->so->op : NULL);
 
     if(dt_atomic_get_int(&pipe->shutdown))
       return 1;
@@ -1163,7 +1180,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       {
         *output = pipe->input;
       }
-      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, "io-buffer"))
+      else if(dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, NULL))
       {
         if(roi_in.scale == 1.0f)
         {
@@ -1255,13 +1272,23 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     important = (strcmp(module->op, "colorout") == 0);
   else
     important = (strcmp(module->op, "gamma") == 0);
-  if(important)
-    (void)dt_dev_pixelpipe_cache_get_important(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : "no module");
-  else
-    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : "no module");
 
-// if(module) printf("reserving new buf in cache for module %s %s: %ld buf %p\n", module->op, pipe ==
-// dev->preview_pipe ? "[preview]" : "", hash, *output);
+  /*
+    As the iop cache holds modules input data we check for an important hint in the current module and
+    keep that infor for the next processed module
+  */
+  gboolean input_important = pipe->next_important_module;
+  if(module)
+    input_important |= check_module_now_important(pipe, module);
+
+  important |= input_important;
+  if(important)
+    (void)dt_dev_pixelpipe_cache_get_important(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : NULL);
+  else
+    (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : NULL);
+
+  if(important && module)
+    dt_print(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] reserving high priority cacheline for `%s'\n", _pipe_type_to_str(pipe->type), module->op);
 
   if(dt_atomic_get_int(&pipe->shutdown))
   {
@@ -1756,14 +1783,16 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       {
         /* Nice, everything went fine */
 
-        /* this is reasonable on slow GPUs only, where it's more expensive to reprocess the whole pixelpipe
-           than
-           regularly copying device buffers back to host. This would slow down fast GPUs considerably.
-           But it is worth copying data back from the GPU which is the input to the currently focused iop,
-           as that is the iop which is most likely to change next.
+        /* Copying device buffers back to host memory is an expensive operation but is required for the iop cache.
+           - this might be reasonable on very slow GPUs, where it's more expensive to reprocess a module than
+             regularly copying device buffers back to host.
+           - But it is worth copying data back from the GPU
+             a) for the currently focused iop, as that is the iop which is most likely to change next
+             b) if there is a hint for a module doing heavy processing.  
         */
         if((darktable.opencl->sync_cache == OPENCL_SYNC_TRUE) ||
-           ((darktable.opencl->sync_cache == OPENCL_SYNC_ACTIVE_MODULE) && (module == darktable.develop->gui_module)))
+           ((darktable.opencl->sync_cache == OPENCL_SYNC_ACTIVE_MODULE) && (module == darktable.develop->gui_module)) ||
+           input_important)
         {
           /* write back input into cache for faster re-usal (not for export or thumbnails) */
           if(cl_mem_input != NULL
@@ -1940,12 +1969,17 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   // in case we get this buffer from the cache in the future, cache some stuff:
   **out_format = piece->dsc_out = pipe->dsc;
 
-  if(module == darktable.develop->gui_module)
+  if((module == darktable.develop->gui_module) || input_important)
   {
     // give the input buffer to the currently focused plugin more weight.
     // the user is likely to change that one soon, so keep it in cache.
-    dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input);
+    dt_dev_pixelpipe_cache_reweight(&(pipe->cache), input, module->so->op);
   }
+
+  // we check for an important hint after processing the module as we want to track a runtime hint too.
+  pipe->next_important_module = check_module_next_important(pipe, module);
+  if(pipe->next_important_module)
+    dt_print(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] module %s passing important hint to next module\n", _pipe_type_to_str(pipe->type), module ? module->so->op : NULL);
 
   // warn on NaN or infinity
 #ifndef _DEBUG
@@ -2118,6 +2152,7 @@ static int dt_dev_pixelpipe_process_rec_and_backcopy(dt_dev_pixelpipe_t *pipe, d
 #ifdef HAVE_OPENCL
   dt_opencl_check_tuning(pipe->devid);
 #endif
+  pipe->next_important_module = FALSE;
   int ret = dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, roi_out, modules, pieces, pos);
 #ifdef HAVE_OPENCL
   // copy back final opencl buffer (if any) to CPU

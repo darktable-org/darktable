@@ -226,8 +226,8 @@ static int _get_free_cacheline(dt_dev_pixelpipe_cache_t *cache, size_t size)
  
     cache->size[oldest] = 0;
     cache->data[oldest] = NULL;
-    cache->hash[oldest] = 0;
-    cache->basichash[oldest] = 0;
+    cache->hash[oldest] = -1;
+    cache->basichash[oldest] = -1;
     cache->used[oldest] = 1;
     oldest = _get_oldest_cacheline(cache);
   }
@@ -317,13 +317,14 @@ void dt_dev_pixelpipe_cache_flush_all_but(dt_dev_pixelpipe_cache_t *cache, uint6
   }
 }
 
-void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data)
+void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data, char *modname)
 {
   for(int k = 0; k < cache->entries; k++)
   {
     if(cache->data[k] == data)
     {
       cache->used[k] = -cache->entries;
+      cache->modname[k] = modname;
     }
   }
 }
