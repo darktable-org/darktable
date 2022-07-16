@@ -2671,10 +2671,14 @@ gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t mov
 
 gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table)
 {
+  // nothing to do if thumbtable is empty
+  if(!table->list) return FALSE;
+
   if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER
      && table->mode != DT_THUMBTABLE_MODE_ZOOM)
     return FALSE;
 
+  // chained dereference is dangerous, but there was a check above in the code
   dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   const int offset = table->thumbs_per_row - ((first->rowid - 1) % table->thumbs_per_row);
   if(offset == 0) return FALSE;
