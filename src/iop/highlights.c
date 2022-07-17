@@ -157,7 +157,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_CACHE_IMPORTANT_NEXT;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -298,21 +298,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_4f_clip, sizes);
     if(err != CL_SUCCESS) goto error;
   }
-  else if(d->mode == DT_IOP_HIGHLIGHTS_CLIP)
-  {
-    // raw images with clip mode (both bayer and xtrans)
-    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 1, sizeof(cl_mem), (void *)&dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 4, sizeof(float), (void *)&clip);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 5, sizeof(int), (void *)&roi_out->x);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 6, sizeof(int), (void *)&roi_out->y);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 7, sizeof(int), (void *)&filters);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_1f_clip, sizes);
-    if(err != CL_SUCCESS) goto error;
-  }
   else if(d->mode == DT_IOP_HIGHLIGHTS_LCH && filters != 9u)
   {
     // bayer sensor raws with LCH mode
@@ -372,6 +357,21 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                                         0.995f * d->clip * piece->pipe->dsc.processed_maximum[1],
                                         0.995f * d->clip * piece->pipe->dsc.processed_maximum[2], clip };
     err = process_laplacian_bayer_cl(self, piece, dev_in, dev_out, roi_in, roi_out, clips);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else // default: if(d->mode == DT_IOP_HIGHLIGHTS_CLIP)
+  {
+    // raw images with clip mode (both bayer and xtrans)
+    size_t sizes[] = { ROUNDUPDWD(width, devid), ROUNDUPDHT(height, devid), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 4, sizeof(float), (void *)&clip);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 5, sizeof(int), (void *)&roi_out->x);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 6, sizeof(int), (void *)&roi_out->y);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_highlights_1f_clip, 7, sizeof(int), (void *)&filters);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_highlights_1f_clip, sizes);
     if(err != CL_SUCCESS) goto error;
   }
 
@@ -2028,6 +2028,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT
   piece->process_cl_ready = (d->mode == DT_IOP_HIGHLIGHTS_INPAINT) ? 0 : 1;
+
+  // check for heavy computing here to give an iop cache hint
+  const gboolean heavy = ((d->mode == DT_IOP_HIGHLIGHTS_LAPLACIAN) && ((d->iterations * 1<<(2+d->scales)) >= 256));
+
+  self->cache_next_important = heavy; 
 }
 
 void init_global(dt_iop_module_so_t *module)
