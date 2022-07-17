@@ -53,6 +53,13 @@ FCxtrans(const int row, const int col, global const unsigned char (*const xtrans
 }
 
 
+static inline float
+dt_fast_hypot(const float x, const float y)
+{
+  return native_sqrt(x * x + y * y);
+}
+
+
 // Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
 // on compatible platforms
 #pragma OPENCL FP_CONTRACT ON

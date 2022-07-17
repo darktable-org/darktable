@@ -2204,7 +2204,7 @@ static gboolean _widget_draw(GtkWidget *widget, cairo_t *crf)
       float combo_height = 0;
       show_pango_text(w, context, cr, text, available_width, 0, 0, TRUE, TRUE, combo_ellipsis, FALSE, FALSE,
                       &combo_width, &combo_height);
-      // we want to center the text verticaly
+      // we want to center the text vertically
       w->top_gap = floor((h3 - fmaxf(label_height, combo_height)) / 2.0f);
       //check if they fit
       if((label_width + combo_width) > available_width)
@@ -2444,7 +2444,7 @@ void dt_bauhaus_show_popup(GtkWidget *widget)
       darktable.bauhaus->change_active = 1;
       if(!d->entries->len) return;
       tmp.height = darktable.bauhaus->line_height * d->entries->len;
-      // if the popup is detached, we show the lable in any cases, in a special line
+      // if the popup is detached, we show the label in any cases, in a special line
       if(w->detached_popup) tmp.height += darktable.bauhaus->line_height;
       if(w->margin) tmp.height += w->margin->top + w->margin->bottom + w->top_gap;
 

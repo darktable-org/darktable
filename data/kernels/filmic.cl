@@ -497,13 +497,12 @@ static inline float4 gamut_check_RGB(constant const float *const matrix_in, cons
   // into gamut.
   const float Y = clamp((Ych_in.x + Ych_brightened.x) / 2.f, CIE_Y_1931_to_CIE_Y_2006(display_black), CIE_Y_1931_to_CIE_Y_2006(display_white));
 
-  // Precompute sin and cos of hue for reuse
-  const float cos_h = native_cos(Ych_in.z);
-  const float sin_h = native_sin(Ych_in.z);
+  const float cos_h = Ych_in.z;
+  const float sin_h = Ych_in.w;
   const float new_chroma = clip_chroma(matrix_out, display_white, Y, cos_h, sin_h, Ych_in.y);
 
   // Go to RGB, using existing luminance and hue and the new chroma
-  const float4 Ych = (float4)(Y, new_chroma, Ych_in.z, 0.f);
+  const float4 Ych = (float4)(Y, new_chroma, cos_h, sin_h);
   const float4 RGB_out = Ych_to_pipe_RGB(Ych, matrix_out);
 
   // Clamp in target RGB as a final catch-all
@@ -521,6 +520,7 @@ static inline float4 gamut_mapping(float4 Ych_final, float4 Ych_original,
 {
   // Force final hue to original
   Ych_final.z = Ych_original.z;
+  Ych_final.w = Ych_original.w;
 
   // Clip luminance
   Ych_final.x = clamp(Ych_final.x,
