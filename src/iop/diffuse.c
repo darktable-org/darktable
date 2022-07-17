@@ -1082,6 +1082,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
 
+  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16); 
+
   gboolean out_of_memory = FALSE;
 
   // wavelets scales buffers
@@ -1343,6 +1345,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int iterations = MAX(ceilf((float)data->iterations), 1);
   const int diffusion_scales = num_steps_to_reach_equivalent_sigma(B_SPLINE_SIGMA, final_radius);
   const int scales = CLAMP(diffusion_scales, 1, MAX_NUM_SCALES);
+
+  self->cache_next_important = ((data->iterations * (data->radius + data->radius_center)) > 16); 
 
   // wavelets scales buffers
   cl_mem HF[MAX_NUM_SCALES];
