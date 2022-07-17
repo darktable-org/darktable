@@ -133,8 +133,7 @@ int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  const size_t csize = MAX(256lu * 1024lu * 1024lu, darktable.dtresources.total_memory / 40lu);
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 32, csize);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 32, dt_get_iopcache_mem() / 5lu);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
   return res;
 }
@@ -150,10 +149,7 @@ int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
 int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe)
 {
   // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
-  // not sure what the best maximum size of the iop-cache buffer would be.
-  // At least 500MB is required and a 5% of global mem would be safe from what we take via resourcelevels.
-  const size_t csize = MAX(512lu * 1024lu * 1024lu, darktable.dtresources.total_memory / 20lu);
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, csize);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, 0, 64, dt_get_iopcache_mem() * 4lu / 5lu);
   pipe->type = DT_DEV_PIXELPIPE_FULL;
   return res;
 }
@@ -1288,7 +1284,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     (void)dt_dev_pixelpipe_cache_get(&(pipe->cache), basichash, hash, bufsize, output, out_format, module ? module->so->op : NULL);
 
   if(important && module)
-    dt_print(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] reserving high priority cacheline for `%s'\n", _pipe_type_to_str(pipe->type), module->op);
+    dt_print(DT_DEBUG_DEV, "[dev_pixelpipe] [%s] reserving high priority cacheline for `%s' (%luMB)\n",
+      _pipe_type_to_str(pipe->type), module->op, bufsize / 1024lu / 1024lu);
 
   if(dt_atomic_get_int(&pipe->shutdown))
   {

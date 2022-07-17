@@ -323,6 +323,10 @@ void dt_dev_pixelpipe_cache_reweight(dt_dev_pixelpipe_cache_t *cache, void *data
   {
     if(cache->data[k] == data)
     {
+      dt_vprint(DT_DEBUG_DEV, "[dt_dev_pixelpipe_cache_reweight] %i->%i, `%s'->`%s'\n",
+        cache->used[k], -cache->entries,
+        cache->modname[k] ? cache->modname[k] : "??",
+        modname ? modname : "??");
       cache->used[k] = -cache->entries;
       cache->modname[k] = modname;
     }
@@ -349,8 +353,8 @@ void dt_dev_pixelpipe_cache_print(dt_dev_pixelpipe_cache_t *cache, char *pipetyp
     for(int k = 0; k < cache->entries; k++)
     {
       if(cache->size[k])
-        fprintf(stderr, "  cacheline%3d,%4luMB, weight%3d, `%s', hash %" PRIu64 " (%" PRIu64 ")\n",
-          k, cache->size[k] / 1024lu / 1024lu, cache->used[k], cache->modname[k] ? cache->modname[k] : "no module name", cache->hash[k], cache->basichash[k]);
+        fprintf(stderr, " [%s]%3d,%4luMB, weight%4d, `%s', hash %" PRIu64 " (%" PRIu64 ")\n",
+          pipetype, k, cache->size[k] / 1024lu / 1024lu, cache->used[k], cache->modname[k] ? cache->modname[k] : "no module name", cache->hash[k], cache->basichash[k]);
     }
   }
   dt_print(DT_DEBUG_DEV, "[dt_dev_pixelpipe_process %s] done, cachemem=%luMB, limit=%luMB, hitrate=%.2f\n",
