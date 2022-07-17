@@ -16,7 +16,6 @@ set(DT_SUPPORTED_EXTENSIONS
     "dng"
     "gpr"
     "erf"
-    "exr"
     "fff"
     "hdr"
     "ia"

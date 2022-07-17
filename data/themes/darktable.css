@@ -66,13 +66,13 @@
 /*** Naming class and ids:
   - classes should be named with underscores, starting by dt_ then what class does (main function). See below.
   Note that some remains with hyphens, they are Gtk ones and can't be changed. It's so also a good way to distinguish Gtk classes to darktable classes.
-  - ids will be used with hyphens, with so item part name (for exemple: bauhaus-slider)
+  - ids will be used with hyphens, with so item part name (for example: bauhaus-slider)
 Why that? Just because it's a developer choice and most classes use underscore in code and id use hyphens. So make it easy and, more important, consistent to avoid being confused and make mistake that would cause bug just by wrong typing.
 ***/
 
 /*** Using classes and ids :
 
-  * classes are used to set same settings for multiples and differents widgets in the UI.
+  * classes are used to set same settings for multiples and different widgets in the UI.
   * ids are used to set a name to a specific widget and so allow to set CSS for this widget
   * some classes had been set on darktable, they all began with a dot. Before adding classes or ids, check what exist before
 
@@ -176,7 +176,7 @@ Why that? Just because it's a developer choice and most classes use underscore i
 /* Views */
 @define-color darkroom_bg_color @grey_50;    /* this need to be middle grey to correctly work on images. And for all themes */
 @define-color darkroom_preview_bg_color @darkroom_bg_color;
-@define-color lighttable_bg_color @grey_45;
+@define-color lighttable_bg_color @grey_40;
 @define-color lighttable_preview_bg_color @darkroom_bg_color;
 @define-color lighttable_bg_font_color @grey_75;
 @define-color print_bg_color @lighttable_bg_color;
@@ -362,6 +362,7 @@ entry,
 spinbutton button,
 textview
 {
+  background-color: alpha(@fg_color, 0.09);
   margin: 0.07em;
 }
 
@@ -369,7 +370,6 @@ textview
 entry,
 textview
 {
-  background-color: alpha(@fg_color, 0.09);
   padding: 0.07em 0.28em;   /* be sure to keep 0.07em padding, at least to scrolledwindow textview part. part of workaround just below */
 }
 
@@ -395,7 +395,7 @@ header button,
 {
   min-height: 1.2em;
   min-width: 1.2em;
-  margin: 0.1em 0.07em;
+  margin: 0.07em;
 }
 
 .dt_module_btn,
@@ -948,6 +948,16 @@ scrollbar slider
 {
   background-color: @scroll_bar_inactive;
   border: 0.14em solid transparent;
+}
+
+scrollbar.horizontal slider
+{
+  min-width: 1em;
+  min-height: 0.42em;
+}
+
+scrollbar.vertical slider
+{
   min-width: 0.42em;
   min-height: 1em;
 }

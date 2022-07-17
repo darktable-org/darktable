@@ -2885,7 +2885,7 @@ GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const ch
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   if(strlen(text) > 2)
     gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
+  gtk_widget_set_tooltip_text(label, tooltip ? tooltip : _(text));
   gtk_widget_set_has_tooltip(GTK_WIDGET(notebook), FALSE);
 
   gint page_num = gtk_notebook_append_page(notebook, page, label);
