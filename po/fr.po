@@ -8696,7 +8696,7 @@ msgid ""
 "<b>add node</b>: ctrl+click"
 msgstr ""
 "<b>déplacer le segment</b> : déplacer\n"
-"<b>ajouter un nœud</b> : clic droit"
+"<b>ajouter un nœud</b> : ctrl+clic"
 
 #: ../src/develop/pixelpipe_hb.c:394
 msgid "enabled as required"
