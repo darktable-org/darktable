@@ -86,7 +86,7 @@ typedef struct dt_iop_equalizer_data_t
 
 const char *name()
 {
-  return _("legacy equalizer");
+  return C_("modulename", "legacy equalizer");
 }
 
 

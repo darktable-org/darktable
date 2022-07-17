@@ -64,7 +64,7 @@ typedef struct dt_iop_hotpixels_data_t
 
 const char *name()
 {
-  return _("hot pixels");
+  return C_("modulename", "hot pixels");
 }
 
 const char **description(struct dt_iop_module_t *self)

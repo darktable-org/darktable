@@ -81,7 +81,7 @@ typedef struct dt_iop_soften_global_data_t
 
 const char *name()
 {
-  return _("soften");
+  return C_("modulename", "soften");
 }
 
 int flags()

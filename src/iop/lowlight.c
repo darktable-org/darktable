@@ -83,7 +83,7 @@ typedef struct dt_iop_lowlight_global_data_t
 
 const char *name()
 {
-  return _("lowlight vision");
+  return C_("modulename", "lowlight vision");
 }
 
 const char **description(struct dt_iop_module_t *self)

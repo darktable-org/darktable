@@ -76,7 +76,7 @@ typedef struct dt_iop_velvia_global_data_t
 
 const char *name()
 {
-  return _("velvia");
+  return C_("modulename", "velvia");
 }
 
 const char *aliases()

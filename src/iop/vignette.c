@@ -149,7 +149,7 @@ typedef struct dt_iop_vignette_global_data_t
 
 const char *name()
 {
-  return _("vignetting");
+  return C_("modulename", "vignetting");
 }
 
 const char **description(struct dt_iop_module_t *self)

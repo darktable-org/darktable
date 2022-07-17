@@ -291,7 +291,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
 
 const char *name()
 {
-  return _("tone equalizer");
+  return C_("modulename", "tone equalizer");
 }
 
 const char *aliases()

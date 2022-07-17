@@ -64,7 +64,7 @@ const char *deprecated_msg()
 
 const char *name()
 {
-  return _("vibrance");
+  return C_("modulename", "vibrance");
 }
 
 const char *aliases()

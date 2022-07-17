@@ -91,7 +91,7 @@ dt_iop_bilat_gui_data_t;
 // this returns a translatable name
 const char *name()
 {
-  return _("local contrast");
+  return C_("modulename", "local contrast");
 }
 
 const char **description(struct dt_iop_module_t *self)

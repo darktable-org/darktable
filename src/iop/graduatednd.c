@@ -141,7 +141,7 @@ typedef struct dt_iop_graduatednd_data_t
 
 const char *name()
 {
-  return _("graduated density");
+  return C_("modulename", "graduated density");
 }
 
 const char **description(struct dt_iop_module_t *self)

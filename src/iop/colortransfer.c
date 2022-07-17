@@ -100,7 +100,7 @@ typedef struct dt_iop_colortransfer_data_t
 
 const char *name()
 {
-  return _("color transfer");
+  return C_("modulename", "color transfer");
 }
 
 int default_group()

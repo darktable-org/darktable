@@ -125,7 +125,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 const char *name()
 {
-  return _("crop");
+  return C_("modulename", "crop");
 }
 
 const char *aliases()

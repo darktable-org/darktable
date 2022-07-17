@@ -71,7 +71,7 @@ typedef struct dt_iop_tonemapping_data_t
 
 const char *name()
 {
-  return _("tone mapping");
+  return C_("modulename", "tone mapping");
 }
 
 

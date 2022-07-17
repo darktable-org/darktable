@@ -178,7 +178,7 @@ typedef struct dt_iop_borders_params_t dt_iop_borders_data_t;
 
 const char *name()
 {
-  return _("framing");
+  return C_("modulename", "framing");
 }
 
 const char **description(struct dt_iop_module_t *self)

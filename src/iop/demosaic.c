@@ -218,7 +218,7 @@ void amaze_demosaic_RT(
 
 const char *name()
 {
-  return _("demosaic");
+  return C_("modulename", "demosaic");
 }
 
 const char **description(struct dt_iop_module_t *self)

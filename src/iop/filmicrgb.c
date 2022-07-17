@@ -338,7 +338,7 @@ typedef struct dt_iop_filmicrgb_global_data_t
 
 const char *name()
 {
-  return _("filmic rgb");
+  return C_("modulename", "filmic rgb");
 }
 
 const char *aliases()

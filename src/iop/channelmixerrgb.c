@@ -217,7 +217,7 @@ void _auto_set_illuminant(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe);
 
 const char *name()
 {
-  return _("color calibration");
+  return C_("modulename", "color calibration");
 }
 
 const char *aliases()

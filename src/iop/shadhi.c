@@ -172,7 +172,7 @@ typedef struct dt_iop_shadhi_global_data_t
 
 const char *name()
 {
-  return _("shadows and highlights");
+  return C_("modulename", "shadows and highlights");
 }
 
 int flags()

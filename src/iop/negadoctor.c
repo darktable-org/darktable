@@ -142,7 +142,7 @@ typedef struct dt_iop_negadoctor_global_data_t
 
 const char *name()
 {
-  return _("negadoctor");
+  return C_("modulename", "negadoctor");
 }
 
 const char *aliases()

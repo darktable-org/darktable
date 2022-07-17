@@ -138,7 +138,7 @@ const char *deprecated_msg()
 
 const char *name()
 {
-  return _("basic adjustments");
+  return C_("modulename", "basic adjustments");
 }
 
 const char **description(struct dt_iop_module_t *self)

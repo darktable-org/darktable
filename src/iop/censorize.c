@@ -74,7 +74,7 @@ typedef struct point_t
 const char *
 name()
 {
-  return _("censorize");
+  return C_("modulename", "censorize");
 }
 
 const char **description(struct dt_iop_module_t *self)

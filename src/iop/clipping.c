@@ -306,7 +306,7 @@ const char *deprecated_msg()
 
 const char *name()
 {
-  return _("crop and rotate");
+  return C_("modulename", "crop and rotate");
 }
 
 const char *aliases()

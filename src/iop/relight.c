@@ -84,7 +84,7 @@ typedef struct dt_iop_relight_global_data_t
 
 const char *name()
 {
-  return _("fill light");
+  return C_("modulename", "fill light");
 }
 
 int flags()

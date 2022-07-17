@@ -53,7 +53,7 @@ typedef struct dt_iop_spots_params_t dt_iop_spots_data_t;
 // this returns a translatable name
 const char *name()
 {
-  return _("spot removal");
+  return C_("modulename", "spot removal");
 }
 
 const char *deprecated_msg()

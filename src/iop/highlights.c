@@ -138,7 +138,7 @@ typedef struct dt_iop_highlights_global_data_t
 
 const char *name()
 {
-  return _("highlight reconstruction");
+  return C_("modulename", "highlight reconstruction");
 }
 
 const char **description(struct dt_iop_module_t *self)

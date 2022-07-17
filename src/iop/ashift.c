@@ -118,7 +118,7 @@ DT_MODULE_INTROSPECTION(5, dt_iop_ashift_params_t)
 
 const char *name()
 {
-  return _("rotate and perspective");
+  return C_("modulename", "rotate and perspective");
 }
 
 const char *aliases()

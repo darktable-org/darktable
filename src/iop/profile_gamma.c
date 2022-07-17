@@ -92,7 +92,7 @@ typedef struct dt_iop_profilegamma_global_data_t
 
 const char *name()
 {
-  return _("unbreak input profile");
+  return C_("modulename", "unbreak input profile");
 }
 
 const char **description(struct dt_iop_module_t *self)

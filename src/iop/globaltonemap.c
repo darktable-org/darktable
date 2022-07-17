@@ -97,7 +97,7 @@ typedef struct dt_iop_global_tonemap_global_data_t
 
 const char *name()
 {
-  return _("global tonemap");
+  return C_("modulename", "global tonemap");
 }
 
 const char *deprecated_msg()

@@ -94,7 +94,7 @@ typedef struct dt_iop_dither_data_t
 
 const char *name()
 {
-  return _("dithering");
+  return C_("modulename", "dithering");
 }
 
 const char **description(struct dt_iop_module_t *self)

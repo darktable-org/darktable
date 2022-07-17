@@ -189,7 +189,7 @@ typedef struct dt_iop_tonecurve_global_data_t
 
 const char *name()
 {
-  return _("tone curve");
+  return C_("modulename", "tone curve");
 }
 
 int default_group()

@@ -78,7 +78,7 @@ typedef struct dt_iop_splittoning_global_data_t
 
 const char *name()
 {
-  return _("split-toning");
+  return C_("modulename", "split-toning");
 }
 
 int flags()

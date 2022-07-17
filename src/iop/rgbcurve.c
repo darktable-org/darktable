@@ -118,7 +118,7 @@ typedef struct dt_iop_rgbcurve_global_data_t
 
 const char *name()
 {
-  return _("rgb curve");
+  return C_("modulename", "rgb curve");
 }
 
 int default_group()

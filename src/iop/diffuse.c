@@ -129,7 +129,7 @@ static inline dt_isotropy_t check_isotropy_mode(const float anisotropy)
 
 const char *name()
 {
-  return _("diffuse or sharpen");
+  return C_("modulename", "diffuse or sharpen");
 }
 
 const char *aliases()

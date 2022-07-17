@@ -76,7 +76,7 @@ typedef struct dt_iop_colisa_global_data_t
 
 const char *name()
 {
-  return _("contrast brightness saturation");
+  return C_("modulename", "contrast brightness saturation");
 }
 
 const char **description(struct dt_iop_module_t *self)

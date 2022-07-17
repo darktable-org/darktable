@@ -107,7 +107,7 @@ typedef struct dt_iop_levels_global_data_t
 
 const char *name()
 {
-  return _("levels");
+  return C_("modulename", "levels");
 }
 
 int default_group()

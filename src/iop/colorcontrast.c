@@ -86,7 +86,7 @@ typedef struct dt_iop_colorcontrast_global_data_t
 
 const char *name()
 {
-  return _("color contrast");
+  return C_("modulename", "color contrast");
 }
 
 const char *aliases()

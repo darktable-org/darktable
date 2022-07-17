@@ -124,7 +124,7 @@ typedef struct dt_iop_lowpass_global_data_t
 
 const char *name()
 {
-  return _("lowpass");
+  return C_("modulename", "lowpass");
 }
 
 const char **description(struct dt_iop_module_t *self)

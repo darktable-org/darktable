@@ -72,7 +72,7 @@ typedef struct dt_iop_bloom_global_data_t
 
 const char *name()
 {
-  return _("bloom");
+  return C_("modulename", "bloom");
 }
 
 const char **description(struct dt_iop_module_t *self)

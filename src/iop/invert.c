@@ -108,7 +108,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 const char *name()
 {
-  return _("invert");
+  return C_("modulename", "invert");
 }
 
 const char *deprecated_msg()

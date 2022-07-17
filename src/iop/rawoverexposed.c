@@ -66,7 +66,7 @@ typedef struct dt_iop_rawoverexposed_global_data_t
 
 const char *name()
 {
-  return _("raw overexposed");
+  return C_("modulename", "raw overexposed");
 }
 
 int default_group()

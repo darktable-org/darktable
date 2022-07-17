@@ -107,7 +107,7 @@ typedef struct dt_iop_useless_global_data_t
 const char *name()
 {
   // make sure you put all your translatable strings into _() !
-  return _("silly example");
+  return C_("modulename", "silly example");
 }
 
 // some additional flags (self explanatory i think):

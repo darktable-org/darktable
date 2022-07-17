@@ -81,7 +81,7 @@ typedef struct dt_iop_colorize_global_data_t
 
 const char *name()
 {
-  return _("colorize");
+  return C_("modulename", "colorize");
 }
 
 int flags()
